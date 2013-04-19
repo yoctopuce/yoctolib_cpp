@@ -1,0 +1,177 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\yocto_api">
+      <UniqueIdentifier>{d8f13b23-8542-4c6b-aaab-7218f0fe0745}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\yocto_api\yapi">
+      <UniqueIdentifier>{978f56cb-4974-49eb-aff4-acef9a9af531}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_temperature.cpp">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_anbutton.cpp">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_api.cpp">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_colorled.cpp">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_dualpower.cpp">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_hubport.cpp">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_humidity.cpp">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_led.cpp">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_relay.cpp">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_servo.cpp">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\yapi.c">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\yfifo.c">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\yhash.c">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\yjson.c">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ymemory.c">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ypkt_lin.c">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ypkt_osx.c">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ypkt_win.c">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\yprog.c">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ystream.c">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ytcp.c">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_lightsensor.cpp">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_pressure.cpp">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ythread.c">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_datalogger.cpp">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\Sources\yocto_temperature.h">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_anbutton.h">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_api.h">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_colorled.h">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_dualpower.h">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_hubport.h">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_humidity.h">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_led.h">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_relay.h">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_servo.h">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\ymemory.h">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yapi.h">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\ydef.h">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yfifo.h">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yhash.h">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yjson.h">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\ytcp.h">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yprog.h">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yproto.h">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_pressure.h">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_lightsensor.h">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\ythread.h">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yversion.h">
+      <Filter>Source Files\yocto_api\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_datalogger.h">
+      <Filter>Source Files\yocto_api</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
