@@ -98,7 +98,7 @@ ALL_OBJS_DYN_32     = $(patsubst %.o, $(OBJDIR_32)%.o, $(ALL_OBJS_DYN))
 ALL_OBJS_DYN_64     = $(patsubst %.o, $(OBJDIR_64)%.o, $(ALL_OBJS_DYN))
 ALL_OBJS_DYN_ARMEL  = $(patsubst %.o, $(OBJDIR_ARMEL)%.o, $(ALL_OBJS_DYN))
 ALL_OBJS_DYN_ARMHF  = $(patsubst %.o, $(OBJDIR_ARMHF)%.o, $(ALL_OBJS_DYN))
-ALL_OBJS_STAT_OSX   = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(ALL_OBJS_DYN))
+ALL_OBJS_DYN_OSX    = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(ALL_OBJS_DYN))
 
 YAPI_OBJS_STAT_32  = $(patsubst %.o, $(OBJDIR_32)%.o, $(YAPI_OBJS_STAT))
 YAPI_OBJS_STAT_64  = $(patsubst %.o, $(OBJDIR_64)%.o, $(YAPI_OBJS_STAT))
