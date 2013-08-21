@@ -46,7 +46,7 @@ int main(int argc, const char * argv[])
             cout << "Module not connected (check identification and USB cable)";
             break;
         }
-        cout << "Current temperature: " << tsensor->get_currentValue() << " ∞C"<<endl;
+        cout << "Current temperature: " << tsensor->get_currentValue() << " °C"<<endl;
         cout << "  (press Ctrl-C to exit)" << endl;
         ySleep(1000,errmsg);
     };
