@@ -116,7 +116,7 @@ ARMEL_OPTS = -mfloat-abi=soft -march=armv5 -marm
 
 # reduced ARMHF options to run properly on raspian-thing, but still be compatible with hard-floats VFP
 ARMHF_OPTS = -mfloat-abi=hard -march=armv6 -marm
-#linux compilation 64 bist
+#linux compilation 64 bits
 LIN64_OPTS =-m64
 #linux compilaltion for 32 bits (limit it to i586 to support entry level computer)
 LIN32_OPTS =-m32 -march=i586
