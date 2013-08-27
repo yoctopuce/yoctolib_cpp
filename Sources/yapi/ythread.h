@@ -1,42 +1,39 @@
 /*********************************************************************
  *
- * $Id: ythread.h 9723 2013-02-06 22:33:59Z seb $
+ * $Id: ythread.h 12321 2013-08-13 14:56:24Z mvuilleu $
  *
- * Generic fifo queue (should be moved into a file that is common on
- * all platform
+ * OS-independent thread and synchronization library
  *
  * - - - - - - - - - License information: - - - - - - - - - 
  *
- * Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
+ *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
- * 1) If you have obtained this file from www.yoctopuce.com using
- *    a valid customer account established in your proper name,
- *    Yoctopuce Sarl (hereafter Licensor) licenses to you (hereafter 
- *    Licensee) the right to use, modify, copy, and integrate this 
- *    source file into your own solution for the sole purpose of 
- *    interfacing a Yoctopuce product integrated into Licensee's
- *    solution.
+ *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
+ *  non-exclusive license to use, modify, copy and integrate this
+ *  file into your software for the sole purpose of interfacing 
+ *  with Yoctopuce products. 
  *
- *    You should refer to the license agreement accompanying this
- *    Software for additional information regarding your rights
- *    and obligations.
+ *  You may reproduce and distribute copies of this file in 
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain 
+ *  this notice in the distributed source file.
  *
- *    THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *    WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
- *    FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
- *    EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *    INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *    COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *    SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
- *    LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
- *    CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
- *    BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
- *    WARRANTY, OR OTHERWISE.
+ *  You should refer to Yoctopuce General Terms and Conditions
+ *  for additional information regarding your rights and 
+ *  obligations.
  *
- * 2) If you have obtained this file from any other source, you
- *    are not entitled to use it, read it or create any derived 
- *    material. You should delete this file immediately.
+ *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
+ *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
+ *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
+ *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
+ *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
 
@@ -49,7 +46,13 @@
  *********************************************************************/
 
 #ifdef WINDOWS_API
+#if defined(__BORLANDC__)
+#pragma warn -8019
 #include <windows.h>
+#pragma warn +8019
+#else
+#include <windows.h>
+#endif
 typedef HANDLE yEvent;
 #else
 #include <pthread.h>
@@ -59,12 +62,15 @@ typedef struct {
     pthread_cond_t   cond;
     pthread_mutex_t  mtx;
     int              verif;
+    int              autoreset;
 } yEvent;
 
 #endif
 
 void   yCreateEvent(yEvent *ev);
+void   yCreateManualEvent(yEvent *event,int initialState);
 void   ySetEvent(yEvent* ev);
+void   yResetEvent(yEvent *ev);
 int    yWaitForEvent(yEvent *ev,int time);
 void   yCloseEvent(yEvent *ev);
 
@@ -101,7 +107,7 @@ void   yThreadSignalStart(yThread *yth);
 void   yThreadSignalEnd(yThread *yth);
 void   yThreadRequestEnd(yThread *yth);
 int    yThreadMustEnd(yThread *yth);
-int    yThreadWaitEnd(yThread *yth);
+void   yThreadKill(yThread *yth);
 int    yThreadIndex(void);
 
 #endif

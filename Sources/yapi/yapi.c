@@ -1,39 +1,39 @@
 /*********************************************************************
  *
- * $Id: yapi.c 11086 2013-04-15 15:38:10Z seb $
+ * $Id: yapi.c 12350 2013-08-15 15:44:03Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
  * - - - - - - - - - License information: - - - - - - - - -
  *
- * Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
+ *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
- * 1) If you have obtained this file from www.yoctopuce.com,
- *    Yoctopuce Sarl licenses to you (hereafter Licensee) the
- *    right to use, modify, copy, and integrate this source file
- *    into your own solution for the sole purpose of interfacing
- *    a Yoctopuce product with Licensee's solution.
+ *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
+ *  non-exclusive license to use, modify, copy and integrate this
+ *  file into your software for the sole purpose of interfacing 
+ *  with Yoctopuce products. 
  *
- *    The use of this file and all relationship between Yoctopuce
- *    and Licensee are governed by Yoctopuce General Terms and
- *    Conditions.
+ *  You may reproduce and distribute copies of this file in 
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain 
+ *  this notice in the distributed source file.
  *
- *    THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
- *    WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
- *    FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
- *    EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *    INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
- *    COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
- *    SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
- *    LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
- *    CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
- *    BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
- *    WARRANTY, OR OTHERWISE.
+ *  You should refer to Yoctopuce General Terms and Conditions
+ *  for additional information regarding your rights and 
+ *  obligations.
  *
- * 2) If your intent is not to interface with Yoctopuce products,
- *    you are not entitled to use, read or create any derived
- *    material from this source file.
+ *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
+ *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
+ *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
+ *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
+ *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
 #define __FILE_ID__  "yapi"
@@ -48,37 +48,109 @@
 #include <sys/time.h>
 #endif
 
-//#define DEBUG_NET_NOTIFICATION
+//#define PERF_API_FUNCTIONS
 
-#ifdef DEBUG_PERF
+#ifdef PERF_API_FUNCTIONS 
 
-void ystat_exit(stat_func *stat,u64 tick)
+
+typedef struct {
+    yPerfMon  yapiInitAPI;
+    yPerfMon  yapiFreeAPI;
+    yPerfMon  yapiRegisterLogFunction;
+    yPerfMon  yapiRegisterDeviceLogCallback;
+    yPerfMon  yapiRegisterDeviceArrivalCallback;
+    yPerfMon  yapiRegisterDeviceRemovalCallback;
+    yPerfMon  yapiRegisterDeviceChangeCallback;
+    yPerfMon  yapiRegisterFunctionUpdateCallback;
+    yPerfMon  yapiLockFunctionCallBack;
+    yPerfMon  yapiUnlockFunctionCallBack;
+    yPerfMon  yapiLockDeviceCallBack;
+    yPerfMon  yapiUnlockDeviceCallBack;
+    yPerfMon  yapiRegisterHub;
+    yPerfMon  yapiPreregisterHub;
+    yPerfMon  yapiUnregisterHub;
+    yPerfMon  yapiUpdateDeviceList;
+    yPerfMon  yapiHandleEvents;
+    yPerfMon  yapiSleep;
+    yPerfMon  yapiGetTickCount;
+    yPerfMon  yapiGetAPIVersion;
+    yPerfMon  yapiSetTraceFile;
+    yPerfMon  yapiGetDevice;
+    yPerfMon  yapiGetAllDevices;
+    yPerfMon  yapiGetDeviceInfo;
+    yPerfMon  yapiGetDevicePath;
+    yPerfMon  yapiGetFunction;
+    yPerfMon  yapiGetFunctionsByClass;
+    yPerfMon  yapiGetFunctionsByDevice;
+    yPerfMon  yapiGetFunctionInfo;
+    yPerfMon  yapiHTTPRequestSyncStartEx;
+    yPerfMon  yapiHTTPRequestSyncStart;
+    yPerfMon  yapiHTTPRequestSyncDone;
+    yPerfMon  yapiHTTPRequestAsync;
+    yPerfMon  yapiHTTPRequestAsyncEx;
+    yPerfMon  yapiHTTPRequest;
+    yPerfMon  yapiGetBootloadersDevs;
+    yPerfMon  yapiFlashDevice;
+    yPerfMon  yapiVerifyDevice;
+} yApiPerfMonSt;
+
+yApiPerfMonSt yApiPerf;
+
+
+#define YPERF_API_ENTER(NAME) {yApiPerf.NAME.count++;yApiPerf.NAME.tmp=yapiGetTickCount();}
+#define YPERF_API_LEAVE(NAME) {yApiPerf.NAME.leave++;yApiPerf.NAME.totaltime += yapiGetTickCount()- yApiPerf.NAME.tmp;}
+
+
+void dumpYApiPerf(void)
 {
-    u64 delta = tick - stat->tmp;
-    if(delta > stat->maxtime)
-        stat->maxtime =  delta;
-    if(delta < stat->mintime)
-        stat->mintime =delta;
-    stat->count++;
-    stat->totaltime += delta;
-}
-void ystat_clear(stat_func *stat)
-{
-    stat->count = 0;
-    stat->totaltime = 0;
-    stat->maxtime = 0;
-    stat->mintime = 0xffffffffffffffff;
-}
-
-void ystat_dump(stat_func *stat)
-{
-    dbglog("STAT (%s) : %d call in %d ms (min:%d  max:%d)\n",
-        stat->name,stat->count,stat->totaltime,stat->mintime,stat->maxtime);
-}
-
-
-
+    dumpYPerfEntry(&yApiPerf.yapiInitAPI,"yapiInitAPI");
+#if 0
+    dumpYPerfEntry(&yApiPerf.yapiFreeAPI,"yapiFreeAPI");
+    dumpYPerfEntry(&yApiPerf.yapiRegisterLogFunction,"yapiRegisterLogFunction");
+    dumpYPerfEntry(&yApiPerf.yapiRegisterDeviceLogCallback,"yapiRegisterDeviceLogCallback");
+    dumpYPerfEntry(&yApiPerf.yapiRegisterDeviceArrivalCallback,"yapiRegisterDeviceArrivalCallback");
+    dumpYPerfEntry(&yApiPerf.yapiRegisterDeviceRemovalCallback,"yapiRegisterDeviceRemovalCallback");
+    dumpYPerfEntry(&yApiPerf.yapiRegisterDeviceChangeCallback,"yapiRegisterDeviceChangeCallback");
+    dumpYPerfEntry(&yApiPerf.yapiRegisterFunctionUpdateCallback,"yapiRegisterFunctionUpdateCallback");
+    dumpYPerfEntry(&yApiPerf.yapiLockFunctionCallBack,"yapiLockFunctionCallBack");
 #endif
+    dumpYPerfEntry(&yApiPerf.yapiUnlockFunctionCallBack,"yapiUnlockFunctionCallBack");
+    dumpYPerfEntry(&yApiPerf.yapiLockDeviceCallBack,"yapiLockDeviceCallBack");
+    dumpYPerfEntry(&yApiPerf.yapiUnlockDeviceCallBack,"yapiUnlockDeviceCallBack");
+    dumpYPerfEntry(&yApiPerf.yapiRegisterHub,"yapiRegisterHub");
+    dumpYPerfEntry(&yApiPerf.yapiPreregisterHub,"yapiPreregisterHub");
+    dumpYPerfEntry(&yApiPerf.yapiUnregisterHub,"yapiUnregisterHub");
+    dumpYPerfEntry(&yApiPerf.yapiUpdateDeviceList,"yapiUpdateDeviceList");
+    dumpYPerfEntry(&yApiPerf.yapiHandleEvents,"yapiHandleEvents");
+    dumpYPerfEntry(&yApiPerf.yapiSleep,"yapiSleep");
+#if 0
+    dumpYPerfEntry(&yApiPerf.yapiGetTickCount,"yapiGetTickCount");
+    dumpYPerfEntry(&yApiPerf.yapiGetAPIVersion,"yapiGetAPIVersion");
+    dumpYPerfEntry(&yApiPerf.yapiSetTraceFile,"yapiSetTraceFile");
+    dumpYPerfEntry(&yApiPerf.yapiGetDevice,"yapiGetDevice");
+    dumpYPerfEntry(&yApiPerf.yapiGetAllDevices,"yapiGetAllDevices");
+    dumpYPerfEntry(&yApiPerf.yapiGetDeviceInfo,"yapiGetDeviceInfo");
+    dumpYPerfEntry(&yApiPerf.yapiGetDevicePath,"yapiGetDevicePath");
+    dumpYPerfEntry(&yApiPerf.yapiGetFunction,"yapiGetFunction");
+    dumpYPerfEntry(&yApiPerf.yapiGetFunctionsByClass,"yapiGetFunctionsByClass");
+    dumpYPerfEntry(&yApiPerf.yapiGetFunctionsByDevice,"yapiGetFunctionsByDevice");
+    dumpYPerfEntry(&yApiPerf.yapiGetFunctionInfo,"yapiGetFunctionInfo");
+#endif
+    dumpYPerfEntry(&yApiPerf.yapiHTTPRequestSyncStartEx,"yapiHTTPRequestSyncStartEx");
+    dumpYPerfEntry(&yApiPerf.yapiHTTPRequestSyncStart,"yapiHTTPRequestSyncStart");
+    dumpYPerfEntry(&yApiPerf.yapiHTTPRequestSyncDone,"yapiHTTPRequestSyncDone");
+    dumpYPerfEntry(&yApiPerf.yapiHTTPRequestAsync,"yapiHTTPRequestAsync");
+    dumpYPerfEntry(&yApiPerf.yapiHTTPRequestAsyncEx,"yapiHTTPRequestAsyncEx");
+    dumpYPerfEntry(&yApiPerf.yapiHTTPRequest,"yapiHTTPRequest");
+    dumpYPerfEntry(&yApiPerf.yapiGetBootloadersDevs,"yapiGetBootloadersDevs");
+    dumpYPerfEntry(&yApiPerf.yapiFlashDevice,"yapiFlashDevice");
+    dumpYPerfEntry(&yApiPerf.yapiVerifyDevice,"yapiVerifyDevice");
+}
+#else
+#define YPERF_API_ENTER(NAME)
+#define YPERF_API_LEAVE(NAME)
+#endif
+
 
 /*****************************************************************************
  Internal functions for hub enumeration
@@ -184,7 +256,7 @@ static void wpRegisterNet(ENU_CONTEXT *enus)
         }
     }
     if(i==enus->nbKnownDevices){
-        wpRegister(enus->serial, enus->logicalName , enus->productName,
+        wpRegister(-1, enus->serial, enus->logicalName , enus->productName,
                    enus->productId, enus->hubref, enus->beacon);
         ypRegister(YSTRREF_MODULE_STRING, enus->serial, yHashPutStr("module"), enus->logicalName, -1, NULL);
         if(enus->devYdx < MAX_YDX_PER_HUB) {
@@ -197,7 +269,7 @@ static void wpRegisterNet(ENU_CONTEXT *enus)
         //dbglog("wpRegisterNet %X on %X\n",enus->serial,enus->hubref);
     } else{
         // Update white pages
-        if(wpRegister(enus->serial, enus->logicalName, INVALID_HASH_IDX, 0, INVALID_HASH_IDX, enus->beacon)){
+        if(wpRegister(-1, enus->serial, enus->logicalName, INVALID_HASH_IDX, 0, enus->hubref, enus->beacon)){
             ypRegister(YSTRREF_MODULE_STRING, enus->serial, yHashPutStr("module"), enus->logicalName, -1, NULL);
             if(enus->devYdx < MAX_YDX_PER_HUB) {
                 // Update hub-specific devYdx mapping between enus->devYdx and our wp devYdx
@@ -214,7 +286,6 @@ static void wpUnregisterNet(yStrRef serialref)
 {
     int devydx;
     
-    //dbglog("wpUnregisterNet %X:\n",serialref);
     if(serialref == INVALID_HASH_IDX) return;
     wpPreventUnregister();
     if(wpMarkForUnregister(serialref)){
@@ -226,7 +297,7 @@ static void wpUnregisterNet(yStrRef serialref)
         }
         // Free device tcp structure, if needed
         devydx = wpGetDevYdx(serialref);
-        if(devydx >= 0) {
+        if(devydx >= 0 && yContext->tcpreq[devydx].hub ) {
             yTcpFreeReq(&yContext->tcpreq[devydx]);
         }        
     }
@@ -272,12 +343,12 @@ static int yEnuJson(ENU_CONTEXT *enus, yJsonStateMachine *j)
             break;
         case ENU_NETWORK_START:
             if(j->st == YJSON_PARSE_STRUCT){
-				enus->state = ENU_NETWORK;
+                enus->state = ENU_NETWORK;
             }
             break;
         case ENU_NETWORK:
             if(j->st == YJSON_PARSE_STRUCT){
-				enus->state = ENU_API;
+                enus->state = ENU_API;
             } else if(j->st == YJSON_PARSE_MEMBNAME){
                 if(YSTRCMP(j->token,"adminPassword")==0){
                     enus->state = ENU_NET_ADMINPWD;
@@ -326,7 +397,7 @@ static int yEnuJson(ENU_CONTEXT *enus, yJsonStateMachine *j)
         case ENU_WP_ENTRY:
             if(j->st ==YJSON_PARSE_STRUCT){
                 wpRegisterNet(enus);
-				enus->state     = ENU_WP_ARRAY;
+                enus->state     = ENU_WP_ARRAY;
             }else if(j->st ==YJSON_PARSE_MEMBNAME){
                 if(YSTRCMP(j->token,"serialNumber")==0){
                     enus->state = ENU_WP_SERIAL;
@@ -550,6 +621,8 @@ static int yNetHubEnum(NetHubSt *hub,int forceupdate,char *errmsg)
             }
         }
     }
+    
+    yTcpCloseReq(&req);
     yTcpFreeReq(&req);
     for(i=0; i < enus.nbKnownDevices ;  i++){
         if (enus.knownDevices[i]!=INVALID_HASH_IDX){
@@ -575,6 +648,68 @@ static int yNetHubEnum(NetHubSt *hub,int forceupdate,char *errmsg)
     return YAPI_SUCCESS;
 }
 
+static void yapiInitHub(NetHubSt *hub, yUrlRef huburl)
+{
+    memset(hub,0,sizeof(NetHubSt));
+    memset(hub->devYdxMap, 255, sizeof(hub->devYdxMap));
+    yInitializeCriticalSection(&hub->authAccess);
+    hub->url = huburl;
+}
+
+static void yapiDeleteHub(NetHubSt *hub)
+{
+    yDeleteCriticalSection(&hub->authAccess);
+    if(hub->user)   yFree(hub->user);
+    if(hub->realm)  yFree(hub->realm);
+    if(hub->pwd)    yFree(hub->pwd);
+    if(hub->nonce)  yFree(hub->nonce);
+    if(hub->opaque) yFree(hub->opaque);
+    if(hub->notReq) {
+        yFifoCleanup(&hub->fifo);
+        yTcpFreeReq(hub->notReq);
+        yFree(hub->notReq);
+    }
+    memset(hub, 0, sizeof(NetHubSt));
+    memset(hub->devYdxMap, 255, sizeof(hub->devYdxMap));
+    hub->url = INVALID_HASH_IDX;
+}
+
+
+
+static void unregisterNetHub(yUrlRef  huburl)
+{
+    int i;
+    u64      timeout;
+    int      nbKnownDevices;
+    yStrRef  knownDevices[128];
+    char     errmsg[YOCTO_ERRMSG_LEN];
+    
+    
+    for(i=0; i < NBMAX_NET_HUB; i++){
+        NetHubSt *hub = &yContext->nethub[i];
+        if(hub->url == huburl) {
+            if(hub->state == NET_HUB_ESTABLISHED || hub->state == NET_HUB_TRYING || hub->state == NET_HUB_DISCONNECTED) {
+                hub->state = NET_HUB_TOCLOSE;
+                yDringWakeUpSocket(&yContext->wuce, 0, errmsg);
+                // wait for the helper thread to stop monitoring these devices
+                timeout = yapiGetTickCount() + 5000;
+                while(hub->state != NET_HUB_CLOSED && yapiGetTickCount() < timeout) {
+                    yApproximateSleep(5);
+                }
+            }
+            yapiDeleteHub(hub);
+            break;
+        }
+    }
+    
+    nbKnownDevices = wpGetAllDevUsingHubUrl(huburl,knownDevices,128);
+    for(i = 0 ; i < nbKnownDevices; i++) {
+        if (knownDevices[i]!=INVALID_HASH_IDX){
+            wpUnregisterNet(knownDevices[i]);
+        }
+    }
+    
+}
 
 
 
@@ -588,10 +723,15 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int detect_type,char *errmsg)
 {
     int i;
     yContextSt *ctx;
+#ifdef PERF_API_FUNCTIONS 
+    memset(&yApiPerf,0,sizeof(yApiPerf));
+#endif
 
     if(yContext!=NULL)
         return YERRMSG(YAPI_DEVICE_BUSY,"Api already started");
 
+    YPERF_API_ENTER(yapiInitAPI);
+#if 0
     YASSERT(sizeof(u8)==1);
     YASSERT(sizeof(s8)==1);
     YASSERT(sizeof(u16)==2);
@@ -601,6 +741,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int detect_type,char *errmsg)
     YASSERT(sizeof(s32)==4);
     YASSERT(sizeof(s64)==8);
     YASSERT(sizeof(YSTREAM_Head)==2);
+#endif
     //init safe malloc
     ySafeMemoryInit(64*1024);
 
@@ -622,7 +763,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int detect_type,char *errmsg)
     ctx->devhdlcount = 1;
     if(detect_type & Y_DETECT_USB) {
         int res;
-        if(YISERR(res=yUSB_init(ctx,errmsg))){
+        if(YISERR(res=yUsbInit(ctx,errmsg))){
             yDeleteCriticalSection(&ctx->updateDev_cs);
             yDeleteCriticalSection(&ctx->handleEv_cs);
             yDeleteCriticalSection(&ctx->enum_cs);
@@ -630,6 +771,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int detect_type,char *errmsg)
             yDeleteCriticalSection(&ctx->deviceCallbackCS);
             yDeleteCriticalSection(&ctx->functionCallbackCS);
             yFree(ctx);
+            YPERF_API_LEAVE(yapiInitAPI);
             return res;
         }
     }
@@ -647,17 +789,40 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int detect_type,char *errmsg)
         yDeleteCriticalSection(&ctx->deviceCallbackCS);
         yDeleteCriticalSection(&ctx->functionCallbackCS);
         yFree(ctx);
+        YPERF_API_LEAVE(yapiInitAPI);
         return YAPI_IO_ERROR;
     }
     // initialise network hub list
     for(i=0; i < NBMAX_NET_HUB; i++) {
         ctx->nethub[i].url=INVALID_HASH_IDX;
     }
-    yContext=ctx;
+    yCreateEvent(&ctx->exitSleepEvent);
 
     if(detect_type & Y_DETECT_NET) {
+#ifdef Y_UPNP_DETECT        
+        if (YISERR(yUPNPStart(&ctx->upnp,errmsg))){
+            yFreeWakeUpSocket(&yContext->wuce);
+            yTcpShutdown();
+            yCloseEvent(&yContext->exitSleepEvent);
+            yDeleteCriticalSection(&ctx->updateDev_cs);
+            yDeleteCriticalSection(&ctx->handleEv_cs);
+            yDeleteCriticalSection(&ctx->enum_cs);
+            yDeleteCriticalSection(&ctx->io_cs);
+            yDeleteCriticalSection(&ctx->deviceCallbackCS);
+            yDeleteCriticalSection(&ctx->functionCallbackCS);
+            yFree(ctx);
+            YPERF_API_LEAVE(yapiInitAPI);
+            return YAPI_IO_ERROR;
+        }
+#else
+        YPERF_API_LEAVE(yapiInitAPI);
         return YERRMSG(YAPI_NOT_SUPPORTED, "Detection of network hubs is not yet supported in this version of the API");
+
+#endif
     }
+    yContext=ctx;
+
+    YPERF_API_LEAVE(yapiInitAPI);
     return YAPI_SUCCESS;
 
     
@@ -667,46 +832,53 @@ static int yTcpTrafficPending(void);
 
 void YAPI_FUNCTION_EXPORT yapiFreeAPI(void)
 {
-    yPrivDeviceSt  *p;
-    yPrivDeviceSt  *next;
     u64             timeout = yapiGetTickCount() + 1000;
     char            errmsg[YOCTO_ERRMSG_LEN];
+    int             i;
 
     if(yContext==NULL)
         return;
 
+#ifdef PERF_API_FUNCTIONS  
+    dumpYApiPerf();
+#endif
+
     while(yapiGetTickCount() < timeout && (yUsbTrafficPending() || yTcpTrafficPending())) {
         yapiHandleEvents(errmsg);
-        yySleep(1);
+        yApproximateSleep(1);
     }
     yEnterCriticalSection(&yContext->updateDev_cs);
     yEnterCriticalSection(&yContext->handleEv_cs);
     yEnterCriticalSection(&yContext->enum_cs);
-    p=yContext->devs;
-    yContext->devs=NULL;
-    while(p) {
-        if(p->dstatus ==YDEV_WORKING){
-            StopDevice(p,NULL);
-        }
-        if(p->replybuf) {
-            yFree(p->replybuf);
-            p->replybuf=NULL;
-        }
-        next=p->next;
-        FreeDevice(p);
-        p=next;
-    }
     if(yContext->detecttype & Y_DETECT_USB) {
-        yUSB_stop(yContext,NULL);
+        yUsbFree(yContext,NULL);
     }
 
-    if(yThreadIsRunning(&yContext->net_thread)) {     
-        yThreadRequestEnd(&yContext->net_thread);
-        yThreadWaitEnd(&yContext->net_thread);
+#ifdef Y_UPNP_DETECT        
+	if(yContext->detecttype & Y_DETECT_NET) {
+        yUPNPStop(&yContext->upnp);
     }
+#endif
+    //unregister all Network hub
+    for(i=0; i < NBMAX_NET_HUB; i++){
+        if(yContext->nethub[i].url !=INVALID_HASH_IDX)
+            unregisterNetHub(yContext->nethub[i].url);
+    }
+
+    if(yThreadIsRunning(&yContext->net_thread)) {
+        u64 timeref;
+        yThreadRequestEnd(&yContext->net_thread);
+        timeref=yapiGetTickCount();
+        while(yThreadIsRunning(&yContext->net_thread) && (yapiGetTickCount()-timeref >YIO_DEFAULT_TCP_TIMEOUT) ) {
+            yApproximateSleep(10);
+        }
+        yThreadKill(&yContext->net_thread);
+    }
+    
     yHashFree();
     yFreeWakeUpSocket(&yContext->wuce);
     yTcpShutdown();
+    yCloseEvent(&yContext->exitSleepEvent);
 
     yLeaveCriticalSection(&yContext->updateDev_cs);
     yLeaveCriticalSection(&yContext->handleEv_cs);
@@ -731,11 +903,13 @@ void YAPI_FUNCTION_EXPORT yapiRegisterLogFunction(yapiLogFunction logfun)
     if(!yContext) {
         yapiInitAPI(0,errmsg);
     }
+    YPERF_API_ENTER(yapiRegisterLogFunction);
     if(yContext) {
         yEnterCriticalSection(&yContext->enum_cs);
         yContext->log = logfun;
         yLeaveCriticalSection(&yContext->enum_cs);
     }
+    YPERF_API_LEAVE(yapiRegisterLogFunction);
 }
 
 void YAPI_FUNCTION_EXPORT yapiRegisterDeviceLogCallback(yapiDeviceUpdateCallback logCallback)
@@ -744,11 +918,13 @@ void YAPI_FUNCTION_EXPORT yapiRegisterDeviceLogCallback(yapiDeviceUpdateCallback
     if(!yContext) {
         yapiInitAPI(0,errmsg);
     }
+    YPERF_API_ENTER(yapiRegisterDeviceLogCallback);
     if(yContext) {
         yEnterCriticalSection(&yContext->enum_cs);
         yContext->logDeviceCallback = logCallback;
         yLeaveCriticalSection(&yContext->enum_cs);
     }
+    YPERF_API_LEAVE(yapiRegisterDeviceLogCallback);
 }
 
 
@@ -759,11 +935,13 @@ void YAPI_FUNCTION_EXPORT yapiRegisterDeviceArrivalCallback(yapiDeviceUpdateCall
     if(!yContext) {
         yapiInitAPI(0,errmsg);
     }
+    YPERF_API_ENTER(yapiRegisterDeviceArrivalCallback);
     if(yContext) {
         yEnterCriticalSection(&yContext->enum_cs);
         yContext->arrivalCallback = arrivalCallback;
         if(arrivalCallback != NULL){
-
+            //FIXME: WE SHOULD USE THE hash table to list all known devices
+#if 0
             // call callback with already detected devices
             yPrivDeviceSt *p=yContext->devs;
             while(p){
@@ -775,9 +953,11 @@ void YAPI_FUNCTION_EXPORT yapiRegisterDeviceArrivalCallback(yapiDeviceUpdateCall
                 devReleaseAcces(p);
                 p=p->next;
             }
+#endif
         }
         yLeaveCriticalSection(&yContext->enum_cs);
     }
+    YPERF_API_LEAVE(yapiRegisterDeviceArrivalCallback);
 }
 
 
@@ -787,11 +967,13 @@ void YAPI_FUNCTION_EXPORT yapiRegisterDeviceRemovalCallback(yapiDeviceUpdateCall
     if(!yContext) {
         yapiInitAPI(0,errmsg);
     }
+    YPERF_API_ENTER(yapiRegisterDeviceRemovalCallback);
     if(yContext) {
         yEnterCriticalSection(&yContext->enum_cs);
         yContext->removalCallback = removalCallback;
         yLeaveCriticalSection(&yContext->enum_cs);
     }
+    YPERF_API_LEAVE(yapiRegisterDeviceRemovalCallback);
 }
 
 
@@ -801,9 +983,11 @@ void YAPI_FUNCTION_EXPORT yapiRegisterDeviceChangeCallback(yapiDeviceUpdateCallb
     if(!yContext) {
         yapiInitAPI(0,errmsg);
     }
+    YPERF_API_ENTER(yapiRegisterDeviceChangeCallback);
     if(yContext) {
         yContext->changeCallback = changeCallback;
     }
+    YPERF_API_LEAVE(yapiRegisterDeviceChangeCallback);
 }
 
 
@@ -813,9 +997,11 @@ void YAPI_FUNCTION_EXPORT yapiRegisterFunctionUpdateCallback(yapiFunctionUpdateC
     if(!yContext) {
         yapiInitAPI(0,errmsg);
     }
+    YPERF_API_ENTER(yapiRegisterFunctionUpdateCallback);
     if(yContext) {
         yContext->functionCallback = updateCallback;
     }
+    YPERF_API_LEAVE(yapiRegisterFunctionUpdateCallback);
 }
 
 
@@ -823,7 +1009,7 @@ void YAPI_FUNCTION_EXPORT yapiRegisterFunctionUpdateCallback(yapiFunctionUpdateC
 static void dumpNotif(const char *buffer)
 {
     FILE *f; 
-    YASSERT(fopen_s(&f,"c:\\tmp\\api_not.txt","ab")==0);
+    YASSERT(YFOPEN(&f,"c:\\tmp\\api_not.txt","ab")==0);
     fwrite(buffer,1,YSTRLEN(buffer),f);
     fclose(f);
 }
@@ -838,6 +1024,7 @@ static void wpUpdateTCP(yUrlRef huburl,const char *serial,const char *name, u8 b
     yStrRef serialref;
     yStrRef lnameref;
     yUrlRef devurl;
+    int devydx;
 
     // Insert device into white pages
     YSTRCPY(devUrl,LOCALURL_LEN, "/bySerial/");
@@ -845,27 +1032,24 @@ static void wpUpdateTCP(yUrlRef huburl,const char *serial,const char *name, u8 b
     YSTRCAT(devUrl,LOCALURL_LEN, "/api");
 
     serialref   = yHashPutStr(serial);
+    devydx = wpGetDevYdx(serialref);
+    if (devydx<0)
+        // drop notification until we have register the device with
+        // a real enumeration
+        return;
     lnameref    = yHashPutStr(name);
     devurl      = yHashUrlFromRef(huburl,devUrl, 0,NULL);
-    status = wpRegister(serialref, lnameref, INVALID_HASH_IDX, 0, devurl, beacon);
+    status = wpRegister(-1, serialref, lnameref, INVALID_HASH_IDX, 0, devurl, beacon);
     if(status==0)
         return; // no change
 
     ypRegister(YSTRREF_MODULE_STRING, serialref, yHashPutStr("module"), lnameref, -1, NULL);
 
     // Forward high-level notification to API user
-    if(status==2){
-        if (yContext->arrivalCallback) {
-            yEnterCriticalSection(&yContext->deviceCallbackCS);
-            yContext->arrivalCallback(serialref);
-            yLeaveCriticalSection(&yContext->deviceCallbackCS);
-        }
-    }else {
-        if(yContext->changeCallback){
-            yEnterCriticalSection(&yContext->deviceCallbackCS);
-            yContext->changeCallback(serialref);
-            yLeaveCriticalSection(&yContext->deviceCallbackCS);
-        }
+    if(yContext->changeCallback){
+        yEnterCriticalSection(&yContext->deviceCallbackCS);
+        yContext->changeCallback(serialref);
+        yLeaveCriticalSection(&yContext->deviceCallbackCS);
     }
 }
 
@@ -1138,8 +1322,9 @@ static void* yhelper_thread(void* ctx)
     yThread     *thread=(yThread*)ctx;
     char        errmsg[YOCTO_ERRMSG_LEN];
     NetHubSt    *hub;
-    TcpReqSt    *req, *selectlist[NBMAX_NET_HUB+ALLOC_YDX_PER_HUB];    
-    int         toread,res;
+    TcpReqSt    *req, *selectlist[NBMAX_NET_HUB+ALLOC_YDX_PER_HUB];
+    u32         toread;
+    int         res;
 #ifdef DEBUG_NET_NOTIFICATION
     char        Dbuffer[1024];
 #endif    
@@ -1154,6 +1339,8 @@ static void* yhelper_thread(void* ctx)
             if(hub->state == NET_HUB_ESTABLISHED || hub->state == NET_HUB_TRYING){
                 selectlist[towatch] = hub->notReq;
                 towatch++;
+            }else if(hub->state == NET_HUB_TOCLOSE){
+                hub->state = NET_HUB_CLOSED;
             } else if (hub->state == NET_HUB_DISCONNECTED) {
                 if(hub->notReq == NULL) {
                     hub->notReq = yMalloc(sizeof(TcpReqSt));
@@ -1191,7 +1378,7 @@ static void* yhelper_thread(void* ctx)
 
         if(YISERR(yTcpSelectReq(selectlist,towatch, 1000, &yContext->wuce, errmsg))){
             dbglog("yTcpSelectReq failed (%s)\n",errmsg);
-            yySleep(1000);
+            yApproximateSleep(1000);
         } else {
             for (i = 0; i < towatch; i++) {
                 req = selectlist[i];
@@ -1272,7 +1459,9 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiLockFunctionCallBack( char *errmsg)
 {
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
+    YPERF_API_ENTER(yapiLockFunctionCallBack);
     yEnterCriticalSection(&yContext->functionCallbackCS);
+    YPERF_API_LEAVE(yapiLockFunctionCallBack);
     return YAPI_SUCCESS;
 }
 
@@ -1282,7 +1471,9 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiUnlockFunctionCallBack(char *errmsg)
 {
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
+    YPERF_API_ENTER(yapiUnlockFunctionCallBack);
     yLeaveCriticalSection(&yContext->functionCallbackCS);
+    YPERF_API_LEAVE(yapiUnlockFunctionCallBack);
     return YAPI_SUCCESS;
 }
 
@@ -1291,7 +1482,9 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiLockDeviceCallBack( char *errmsg)
 {
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
+    YPERF_API_ENTER(yapiLockDeviceCallBack);
     yEnterCriticalSection(&yContext->deviceCallbackCS);
+    YPERF_API_LEAVE(yapiLockDeviceCallBack);
     return YAPI_SUCCESS;
 }
 
@@ -1301,30 +1494,12 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiUnlockDeviceCallBack(char *errmsg)
 {
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
+    YPERF_API_ENTER(yapiUnlockDeviceCallBack);
     yLeaveCriticalSection(&yContext->deviceCallbackCS);
+    YPERF_API_LEAVE(yapiUnlockDeviceCallBack);
     return YAPI_SUCCESS;
 }
 
-static void yapiInitHub(NetHubSt *hub, yUrlRef huburl)
-{
-    memset(hub,0,sizeof(NetHubSt));
-    memset(hub->devYdxMap, 255, sizeof(hub->devYdxMap));
-    yInitializeCriticalSection(&hub->authAccess);
-    hub->url = huburl;
-}
-
-static void yapiDeleteHub(NetHubSt *hub)
-{
-    yDeleteCriticalSection(&hub->authAccess);
-    if(hub->user)   yFree(hub->user);
-    if(hub->realm)  yFree(hub->realm);
-    if(hub->pwd)    yFree(hub->pwd);
-    if(hub->nonce)  yFree(hub->nonce);
-    if(hub->opaque) yFree(hub->opaque);
-    memset(hub, 0, sizeof(NetHubSt));
-    memset(hub->devYdxMap, 255, sizeof(hub->devYdxMap));
-    hub->url = INVALID_HASH_IDX;
-}
 
 static YRETCODE yapiRegisterHubEx(const char *url, int checkacces, char *errmsg)
 {
@@ -1335,11 +1510,12 @@ static YRETCODE yapiRegisterHubEx(const char *url, int checkacces, char *errmsg)
     if(!yContext) {
         YPROPERR(yapiInitAPI(0,errmsg));
     }
+
     if(YSTRICMP(url,"usb")==0){
         if(!(yContext->detecttype & Y_DETECT_USB)){
             yEnterCriticalSection(&yContext->enum_cs);
             yContext->detecttype |=Y_DETECT_USB;
-            res = yUSB_init(yContext,errmsg);
+            res = yUsbInit(yContext,errmsg);
             yLeaveCriticalSection(&yContext->enum_cs);
             YPROPERR(res);
         }
@@ -1409,7 +1585,6 @@ static YRETCODE yapiRegisterHubEx(const char *url, int checkacces, char *errmsg)
             }
 
             if(!yThreadIsRunning(&yContext->net_thread)) {
-                //yThreadCreate will not create a new thread if there is already one running
                 if(YISERR(res = yStartWakeUpSocket(&yContext->wuce, errmsg))){
                     yLeaveCriticalSection(&yContext->enum_cs);
                     return res;
@@ -1440,12 +1615,20 @@ static YRETCODE yapiRegisterHubEx(const char *url, int checkacces, char *errmsg)
 
 YRETCODE YAPI_FUNCTION_EXPORT yapiRegisterHub(const char *url, char *errmsg)
 {
-    return yapiRegisterHubEx(url,1, errmsg);
+    YRETCODE res;
+    YPERF_API_ENTER(yapiRegisterHub);
+    res = yapiRegisterHubEx(url,1, errmsg);
+    YPERF_API_LEAVE(yapiRegisterHub);
+    return res;
 }
 
 YRETCODE YAPI_FUNCTION_EXPORT yapiPreregisterHub(const char *url, char *errmsg)
 {
-    return yapiRegisterHubEx(url,0, errmsg);
+    YRETCODE res;
+    YPERF_API_ENTER(yapiPreregisterHub);
+    res = yapiRegisterHubEx(url,0, errmsg);
+    YPERF_API_LEAVE(yapiPreregisterHub);
+    return res;
 }
 
 void YAPI_FUNCTION_EXPORT yapiUnregisterHub(const char *url)
@@ -1456,19 +1639,15 @@ void YAPI_FUNCTION_EXPORT yapiUnregisterHub(const char *url)
     if(!yContext) {
         return;
     }
+    YPERF_API_ENTER(yapiUnregisterHub);
     if(YSTRICMP(url,"usb")==0){
         if(yContext->detecttype & Y_DETECT_USB) {
             yUSBReleaseAllDevices();
-            yUSB_stop(yContext,NULL);
+            yUsbFree(yContext,NULL);
             yContext->detecttype ^= Y_DETECT_USB;
         }
     }else{
-        int      i;
-        int      nbKnownDevices;
-        yStrRef  knownDevices[128];
-        u64      timeout;
         const char *p;
-
         // skip http prefix
         if(YSTRNCMP(url,"http://",7)==0){
             url += 7;
@@ -1481,35 +1660,15 @@ void YAPI_FUNCTION_EXPORT yapiUnregisterHub(const char *url)
         // compute an hashed url
         huburl = yHashUrl(url,"",1,errmsg);
         if(huburl == INVALID_HASH_IDX){
+            YPERF_API_LEAVE(yapiUnregisterHub);
             return;
         }
         //look if we allready know this
         yEnterCriticalSection(&yContext->enum_cs);
-        for(i=0; i < NBMAX_NET_HUB; i++){
-            NetHubSt *hub = &yContext->nethub[i];
-            if(hub->url == huburl) {
-                if(hub->state == NET_HUB_ESTABLISHED || hub->state == NET_HUB_TRYING || hub->state == NET_HUB_DISCONNECTED) {
-                    hub->state = NET_HUB_TOCLOSE;
-                    yDringWakeUpSocket(&yContext->wuce, 0, errmsg);
-                    // wait for the helper thread to stop monitoring these devices
-                    timeout = yapiGetTickCount() + 5000;
-                    while(hub->state != NET_HUB_CLOSED && yapiGetTickCount() < timeout) {
-                        yySleep(5);
-                    }
-                }
-                yapiDeleteHub(hub);
-                break;
-            }
-        }
-        
-        nbKnownDevices = wpGetAllDevUsingHubUrl(huburl,knownDevices,128);
-        for(i = 0 ; i < nbKnownDevices; i++) {
-            if (knownDevices[i]!=INVALID_HASH_IDX){
-                wpUnregisterNet(knownDevices[i]);
-            }
-        }
+        unregisterNetHub(huburl);
         yLeaveCriticalSection(&yContext->enum_cs);
     }
+    YPERF_API_LEAVE(yapiUnregisterHub);
 }
 
 
@@ -1522,12 +1681,15 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiUpdateDeviceList(u32 forceupdate, char *errmsg
     if(yContext==NULL)
         return YERR(YAPI_NOT_INITIALIZED);
 
+    YPERF_API_ENTER(yapiUpdateDeviceList);
     if(forceupdate) {
         yEnterCriticalSection(&yContext->updateDev_cs);
     } else {
         // if we do not force an update
-        if(!yTryEnterCriticalSection(&yContext->updateDev_cs))
+        if(!yTryEnterCriticalSection(&yContext->updateDev_cs)){
+            YPERF_API_LEAVE(yapiUpdateDeviceList);
             return YAPI_SUCCESS;
+        }
     }
     if(yContext->detecttype & Y_DETECT_USB){
         err = yUSBUpdateDeviceList(errmsg);
@@ -1550,6 +1712,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiUpdateDeviceList(u32 forceupdate, char *errmsg
         }
     }
     yLeaveCriticalSection(&yContext->updateDev_cs);
+    YPERF_API_LEAVE(yapiUpdateDeviceList);
 
     return err;
 }
@@ -1559,31 +1722,46 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHandleEvents(char *errmsg)
 {
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
-    // we need only one thread to handle the event at a time
+   YPERF_API_ENTER(yapiHandleEvents);
+     // we need only one thread to handle the event at a time
     if(yTryEnterCriticalSection(&yContext->handleEv_cs)){
         YRETCODE res =yUsbIdle();
         yLeaveCriticalSection(&yContext->handleEv_cs);
+        YPERF_API_LEAVE(yapiHandleEvents);
         return res;
     }
+    YPERF_API_LEAVE(yapiHandleEvents);
     return YAPI_SUCCESS;
 }
 
+u64 test_pkt=0;
+u64 test_tout=0;
 
 YRETCODE YAPI_FUNCTION_EXPORT yapiSleep(int ms_duration, char *errmsg)
 {
-    u64      timeout = yapiGetTickCount() + ms_duration;
+    u64     now, timeout;
     YRETCODE err = YAPI_SUCCESS;
+
 
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
 
+    YPERF_API_ENTER(yapiSleep);
+    timeout = yapiGetTickCount() + ms_duration;
     do {
         if(err == YAPI_SUCCESS) {
             err = yapiHandleEvents(errmsg);
         }
-        if(yapiGetTickCount() >= timeout) break;
-        yySleep(1);
+        now =yapiGetTickCount();
+        //fixme we may want to use a samller timeout
+        if (now < timeout) {
+           if(yWaitForEvent(&yContext->exitSleepEvent,(int)(timeout-now)))
+               test_pkt++; //just for testing
+           else
+               test_tout++;
+        }
     } while(yapiGetTickCount() < timeout);
+    YPERF_API_LEAVE(yapiSleep);
 
     return err;
 }
@@ -1611,7 +1789,7 @@ u64 YAPI_FUNCTION_EXPORT yapiGetTickCount(void)
     if(tickUseHiRes>0) {
         QueryPerformanceCounter(&performanceCounter);
         performanceCounter.QuadPart -= tickStart.QuadPart;
-		// we add +1 because it is not nice to start with zero
+        // we add +1 because it is not nice to start with zero
         res = performanceCounter.QuadPart * 1000 / tickFrequency.QuadPart + 1;
     } else {
         res = GetTickCount();
@@ -1676,22 +1854,26 @@ int YAPI_FUNCTION_EXPORT yapiCheckLogicalName(const char *name)
 
 u16 YAPI_FUNCTION_EXPORT yapiGetAPIVersion(const char **version,const char **apidate)
 {
+    YPERF_API_ENTER(yapiGetAPIVersion);
     if(version)
         *version = YOCTO_API_VERSION_STR"."YOCTO_API_BUILD_NO;
     if(apidate)
         *apidate = YOCTO_API_BUILD_DATE;
 
+    YPERF_API_LEAVE(yapiGetAPIVersion);
     return YOCTO_API_VERSION_BCD;
 }
 
 void YAPI_FUNCTION_EXPORT yapiSetTraceFile(const char *file)
 {
+    YPERF_API_ENTER(yapiSetTraceFile);
     if(file!=NULL){
         memset(ytracefile,0,TRACEFILE_NAMELEN);
         YSTRNCPY(ytracefile,TRACEFILE_NAMELEN-1,file,TRACEFILE_NAMELEN-1);
     }else{
         ytracefile[0]=0;
     }
+    YPERF_API_LEAVE(yapiSetTraceFile);
 }
 
 
@@ -1704,6 +1886,7 @@ YAPI_DEVICE YAPI_FUNCTION_EXPORT yapiGetDevice(const char *device_str,char *errm
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
 
+    YPERF_API_ENTER(yapiGetDevice);
     if(!strncmp(device_str, "http://", 7)) {
         for(i = 0; i < HASH_BUF_SIZE-1; i++) {
             c = device_str[7+i];
@@ -1714,7 +1897,11 @@ YAPI_DEVICE YAPI_FUNCTION_EXPORT yapiGetDevice(const char *device_str,char *errm
     } else {
         res = wpSearch(device_str);
     }
-    if(res == -1) return YERR(YAPI_DEVICE_NOT_FOUND);
+    if(res == -1) {
+        YPERF_API_LEAVE(yapiGetDevice);
+        return YERR(YAPI_DEVICE_NOT_FOUND);
+    }
+    YPERF_API_LEAVE(yapiGetDevice);
 
     return res;
 }
@@ -1729,8 +1916,11 @@ int YAPI_FUNCTION_EXPORT yapiGetAllDevices(YAPI_DEVICE *buffer,int maxsize,int *
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
 
-    if(buffer==NULL && neededsize==NULL)
+    YPERF_API_ENTER(yapiGetAllDevices);
+    if(buffer==NULL && neededsize==NULL){
+        YPERF_API_LEAVE(yapiGetAllDevices);
         return YERR(YAPI_INVALID_ARGUMENT);
+    }
 
     nbreturned = 0;
     if(buffer) {
@@ -1742,7 +1932,7 @@ int YAPI_FUNCTION_EXPORT yapiGetAllDevices(YAPI_DEVICE *buffer,int maxsize,int *
             devdescr = wpGetAttribute(devhdl, Y_WP_SERIALNUMBER);
             if(devdescr < 0) continue;
             maxdev++;
-            if(maxsize >= sizeof(YAPI_DEVICE)) {
+            if(maxsize >= (int)sizeof(YAPI_DEVICE)) {
                 maxsize -= sizeof(YAPI_DEVICE);
                 *buffer++ = devdescr;
                 nbreturned++;
@@ -1752,6 +1942,7 @@ int YAPI_FUNCTION_EXPORT yapiGetAllDevices(YAPI_DEVICE *buffer,int maxsize,int *
     } else {
         if(neededsize) *neededsize = sizeof(YAPI_DEVICE) * wpEntryCount();
     }
+    YPERF_API_LEAVE(yapiGetAllDevices);
 
     return nbreturned;
 }
@@ -1763,8 +1954,12 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetDeviceInfo(YAPI_DEVICE devdesc,yDeviceSt *i
 
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
-    if(devdesc < 0 || infos == NULL)
+
+    YPERF_API_ENTER(yapiGetDeviceInfo);
+    if(devdesc < 0 || infos == NULL){
+        YPERF_API_LEAVE(yapiGetDeviceInfo);
         return YERR(YAPI_INVALID_ARGUMENT);
+    }
 
     yHashGetStr(devdesc & 0xffff, infos->serial, YOCTO_SERIAL_LEN);
     devhdl = findDevHdlFromStr(infos->serial);
@@ -1778,9 +1973,12 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetDeviceInfo(YAPI_DEVICE devdesc,yDeviceSt *i
         infos->nbinbterfaces = 0;
         memcpy((u8 *)infos->manufacturer, (u8 *)"Yoctopuce", 10);
         memset(infos->firmware, 0, YOCTO_FIRMWARE_LEN);
-        if(wpGetDeviceInfo(devdesc, &infos->deviceid, infos->productname, infos->serial, infos->logicalname, &infos->beacon) < 0)
+        if(wpGetDeviceInfo(devdesc, &infos->deviceid, infos->productname, infos->serial, infos->logicalname, &infos->beacon) < 0){
+            YPERF_API_LEAVE(yapiGetDeviceInfo);
             return YERR(YAPI_DEVICE_NOT_FOUND);
+        }
     }
+    YPERF_API_LEAVE(yapiGetDeviceInfo);
 
     return YAPI_SUCCESS;
 }
@@ -1791,12 +1989,18 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetDevicePath(YAPI_DEVICE devdesc, char *rootd
 
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
-    if(rootdevice==NULL && request==NULL && neededsize==NULL)
+    YPERF_API_ENTER(yapiGetDevicePath);
+    if(rootdevice==NULL && request==NULL && neededsize==NULL) {
+        YPERF_API_LEAVE(yapiGetDevicePath);
         return YERR(YAPI_INVALID_ARGUMENT);
-
+    }
     res = wpGetDeviceUrl(devdesc, rootdevice, request, requestsize, neededsize);
     if(neededsize) *neededsize += 4;
-    if(res < 0) return YERR(YAPI_DEVICE_NOT_FOUND);
+    if(res < 0) {
+        YPERF_API_LEAVE(yapiGetDevicePath);
+        return YERR(YAPI_DEVICE_NOT_FOUND);
+    }
+    YPERF_API_LEAVE(yapiGetDevicePath);
     return res;
 }
 
@@ -1807,11 +2011,17 @@ YAPI_FUNCTION YAPI_FUNCTION_EXPORT yapiGetFunction(const char *class_str, const 
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
 
+    YPERF_API_ENTER(yapiGetFunction);
     res = ypSearch(class_str, function_str);
     if(res < 0) {
-        if(res == -2) return YERRMSG(YAPI_DEVICE_NOT_FOUND, "No function of that class");
+        if(res == -2) {
+            YPERF_API_LEAVE(yapiGetFunction);
+            return YERRMSG(YAPI_DEVICE_NOT_FOUND, "No function of that class");
+        }
+        YPERF_API_LEAVE(yapiGetFunction);
         return YERR(YAPI_DEVICE_NOT_FOUND);
     }
+    YPERF_API_LEAVE(yapiGetFunction);
     return res;
 }
 
@@ -1821,13 +2031,19 @@ int YAPI_FUNCTION_EXPORT yapiGetFunctionsByClass(const char *class_str, YAPI_FUN
     int res;
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
-    if(buffer==NULL && neededsize==NULL)
+    YPERF_API_ENTER(yapiGetFunctionsByClass);
+    if(buffer==NULL && neededsize==NULL){
+        YPERF_API_LEAVE(yapiGetFunctionsByClass);
         return YERR(YAPI_INVALID_ARGUMENT);
+    }
 
     res = ypGetFunctions(class_str, -1, prevfundesc, buffer, maxsize, neededsize);
     if(res < 0) {
+        YPERF_API_LEAVE(yapiGetFunctionsByClass);
         return YERR(YAPI_DEVICE_NOT_FOUND); // prevfundesc is invalid or has been unplugged, restart enum
     }
+    YPERF_API_LEAVE(yapiGetFunctionsByClass);
+
     return res;
 }
 
@@ -1837,13 +2053,17 @@ int YAPI_FUNCTION_EXPORT yapiGetFunctionsByDevice(YAPI_DEVICE devdesc, YAPI_FUNC
     int res;
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
-    if(buffer==NULL && neededsize==NULL)
+    YPERF_API_ENTER(yapiGetFunctionsByDevice);
+    if(buffer==NULL && neededsize==NULL){
+        YPERF_API_LEAVE(yapiGetFunctionsByDevice);
         return YERR(YAPI_INVALID_ARGUMENT);
-
+    }
     res = ypGetFunctions(NULL, devdesc, prevfundesc, buffer, maxsize, neededsize);
     if(res < 0) {
+        YPERF_API_LEAVE(yapiGetFunctionsByDevice);
         return YERR(YAPI_DEVICE_NOT_FOUND); // prevfundesc is invalid or has been unplugged, restart enum
     }
+    YPERF_API_LEAVE(yapiGetFunctionsByDevice);
     return res;
 }
 
@@ -1853,10 +2073,14 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetFunctionInfo(YAPI_FUNCTION fundesc,YAPI_DEV
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
 
-    if(ypGetFunctionInfo(fundesc, serial, funcId, funcName, funcVal) < 0)
+    YPERF_API_ENTER(yapiGetFunctionInfo);
+    if(ypGetFunctionInfo(fundesc, serial, funcId, funcName, funcVal) < 0){
+        YPERF_API_LEAVE(yapiGetFunctionInfo);
         return YERR(YAPI_DEVICE_NOT_FOUND);
+    }
     if(devdesc)
         *devdesc = fundesc & 0xffff;
+    YPERF_API_LEAVE(yapiGetFunctionInfo);
 
     return YAPI_SUCCESS;
 }
@@ -1873,6 +2097,8 @@ static YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *r
     int         devydx;
     TcpReqSt    *tcpreq;
     u64         timeout;
+    int         count=0;
+    yUrlRef     url;
 
     if(!yContext) {
         return YERR(YAPI_NOT_INITIALIZED);
@@ -1885,34 +2111,42 @@ static YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *r
     if(iohdl==NULL){
         iohdl = &localhdl;
     }
-    memset(iohdl,0,sizeof(YIOHDL));
-    iohdl->url = wpGetDeviceUrlRef(dev);
+    memset(iohdl,0,YIOHDL_SIZE);
+   url = wpGetDeviceUrlRef(dev);
 
-    switch(yHashGetUrlPort(iohdl->url, buffer, NULL)) {
+    switch(yHashGetUrlPort(url, buffer, NULL)) {
     case USB_URL:
         yHashGetStr(dev & 0xffff, buffer, YOCTO_SERIAL_LEN);
         timeout = yapiGetTickCount() + YAPI_BLOCKING_USBOPEN_REQUEST_TIMEOUT;
         do {
+            count++;
             res = yUsbOpen(iohdl,buffer,errmsg);
             if(res != YAPI_DEVICE_BUSY) break;
             yapiHandleEvents(errmsg);
             if(firsttime) {
-                yySleep(1);
+                //yApproximateSleep(1);
                 firsttime = 0;
             }
         } while(yapiGetTickCount() < timeout);
-        if(res == YAPI_SUCCESS) {
-            res = yUsbWrite(iohdl,request,reqlen,errmsg);
+        if(res != YAPI_SUCCESS) {
+            dbglog("opend failed %s!",errmsg);
+            //dumpYUSBPerf();
+            res = yUsbOpen(iohdl,buffer,errmsg);
+            //dumpYApiPerf();
+            return res;
+        }
+        res = yUsbWrite(iohdl,request,reqlen,errmsg);
+        if(YISERR(res)) {
+            yUsbClose(iohdl,errmsg);
+            return res;
+        }
+        if(isAsync){
+            res = yUsbSetIOAsync(iohdl,errmsg);
             if(YISERR(res)) {
                 yUsbClose(iohdl,errmsg);
+                return res;
             }
-            if(isAsync){
-                res = yUsbSetIOAsync(iohdl,errmsg);
-                if(YISERR(res)) {
-                    yUsbClose(iohdl,errmsg);
-                }
-            }
-        }
+        } 
         return res;
 
     default:
@@ -1921,7 +2155,7 @@ static YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *r
         tcpreq = &yContext->tcpreq[devydx];
         if(!tcpreq->hub) {
             for(i=0; i < NBMAX_NET_HUB; i++){
-                if(yContext->nethub[i].url == iohdl->url)
+                if(yContext->nethub[i].url == url)
                     break;
             }
             if(i >= NBMAX_NET_HUB) break;
@@ -1941,8 +2175,7 @@ static YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *r
         if(res != YAPI_SUCCESS) return res;
         iohdl->tcpreqidx = devydx;
         iohdl->type = YIO_TCP;
-        if(isAsync) iohdl->flags |= YIO_ASYNC;
-        return YAPI_SUCCESS;
+       return YAPI_SUCCESS;
     }
     return YERR(YAPI_DEVICE_NOT_FOUND);
 }
@@ -1950,33 +2183,36 @@ static YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *r
 YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncStartEx(YIOHDL *iohdl, const char *device, const char *request, int requestsize, char **reply, int *replysize, char *errmsg)
 {
     u64     timeout;
-    int     retcode;
+    int     res;
 
-    YREQLOG("SyncStart for %s \n%s\n",device,request);
-    memset((u8 *)iohdl, 0, sizeof(YIOHDL));
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
-	 *reply =NULL;
-    YPROPERR(yapiRequestOpen(iohdl,device,request,requestsize,0,errmsg));
+    YPERF_API_ENTER(yapiHTTPRequestSyncStartEx);
+    YREQLOG("SyncStart for %s \n%s\n",device,request);
+    memset((u8 *)iohdl, 0,YIOHDL_SIZE);
+     *reply =NULL;
+    if (YISERR(res=yapiRequestOpen(iohdl,device,request,requestsize,0,errmsg))){
+        YPERF_API_LEAVE(yapiHTTPRequestSyncStartEx);
+        return res;
+    }
     if(iohdl->type == YIO_USB){
         yPrivDeviceSt *p;
         int buffpos = 0;
         
         timeout = yapiGetTickCount() + YAPI_BLOCKING_USBREAD_REQUEST_TIMEOUT;
-        p = findDevFromIOHdl(iohdl->hdl);
+        p = findDevFromIOHdl(iohdl);
         if(p==NULL) {
+            YPERF_API_LEAVE(yapiHTTPRequestSyncStartEx);
             return YERR(YAPI_DEVICE_NOT_FOUND);
         }
         if(p->replybuf == NULL) {
             p->replybufsize = 2048;
             p->replybuf = yMalloc(p->replybufsize);
         }
-        while(yUsbEOF(iohdl,errmsg)==0){
-            if(iohdl->flags & YIO_REMOTE_CLOSE){
-                return YERRMSG(YAPI_IO_ERROR,"Device has closed the connection");
-            }
+        while((res =yUsbEOF(iohdl,errmsg))==0){
             if(yapiGetTickCount() > timeout) {
                 yUsbClose(iohdl,NULL);
+                YPERF_API_LEAVE(yapiHTTPRequestSyncStartEx);
                 return YERRMSG(YAPI_TIMEOUT,"Timeout during device request");
             }
             if(buffpos + 256 > p->replybufsize) {                
@@ -1987,50 +2223,59 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncStartEx(YIOHDL *iohdl, const ch
                 yFree(p->replybuf);
                 p->replybuf = newbuff;
             }
-            retcode = yUsbReadNonBlock(iohdl, p->replybuf+buffpos, p->replybufsize-buffpos, errmsg);
-            if(YISERR(retcode)){
+            res = yUsbReadBlock(iohdl, p->replybuf+buffpos, p->replybufsize-buffpos,timeout, errmsg);
+            if(YISERR(res)){
                 yUsbClose(iohdl,NULL);
-                return retcode;
+                YPERF_API_LEAVE(yapiHTTPRequestSyncStartEx);
+                return res;
             }
-            buffpos += retcode;
-            // FIXME: seb, use a blocking read instead
-            if(retcode == 0) yySleep(3);
+            buffpos += res;
         }
         *reply = p->replybuf;
         *replysize = buffpos;
-        return ALLOC_YDX_PER_HUB;
-    } else if(iohdl->type == YIO_TCP) {
-        int retcode;
+        YPERF_API_LEAVE(yapiHTTPRequestSyncStartEx);
+        return res;
+    } else if(iohdl->type == YIO_TCP) {        
         TcpReqSt *tcpreq = &yContext->tcpreq[iohdl->tcpreqidx];
         timeout = yapiGetTickCount() + YAPI_BLOCKING_NET_REQUEST_TIMEOUT;
         do {
             if(yapiGetTickCount() > timeout) {
                 yTcpCloseReq(tcpreq);
+                YPERF_API_LEAVE(yapiHTTPRequestSyncStartEx);
                 return YERRMSG(YAPI_TIMEOUT,"Timeout during device request");
             }
-            retcode = yTcpSelectReq(&tcpreq, 1, 1000, NULL, errmsg);
-            if(YISERR(retcode)){
+            res = yTcpSelectReq(&tcpreq, 1, 1000, NULL, errmsg);
+            if(YISERR(res)){
                 yTcpCloseReq(tcpreq);
-                return retcode;
+                YPERF_API_LEAVE(yapiHTTPRequestSyncStartEx);
+                return res;
             }
-            retcode = yTcpEofReq(tcpreq, errmsg);
-        } while(retcode == 0);
-        if(YISERR(retcode) && retcode != YAPI_NO_MORE_DATA) {
+            res = yTcpEofReq(tcpreq, errmsg);
+        } while(res == 0);
+        if(YISERR(res) && res != YAPI_NO_MORE_DATA) {
             yTcpCloseReq(tcpreq);
-            return retcode;
+            YPERF_API_LEAVE(yapiHTTPRequestSyncStartEx);
+            return res;
         }
         *replysize = yTcpGetReq(tcpreq, reply);
     } else {
+        YPERF_API_LEAVE(yapiHTTPRequestSyncStartEx);
         return YERR(YAPI_INVALID_ARGUMENT);
     }
     YREQLOG("SyncStart for %s done (size=%d iodhl=%x)\n",device,replysize?*replysize:-1,iohdl);
-
+    YPERF_API_LEAVE(yapiHTTPRequestSyncStartEx);
     return YAPI_SUCCESS;
 }
 
 YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncStart(YIOHDL *iohdl, const char *device, const char *request, char **reply, int *replysize, char *errmsg)
 {
-    return yapiHTTPRequestSyncStartEx(iohdl, device, request, YSTRLEN(request), reply, replysize, errmsg);
+    YRETCODE res;
+    if(!yContext)
+        return YERR(YAPI_NOT_INITIALIZED);
+    YPERF_API_ENTER(yapiHTTPRequestSyncStart);
+    res = yapiHTTPRequestSyncStartEx(iohdl, device, request, YSTRLEN(request), reply, replysize, errmsg);
+    YPERF_API_LEAVE(yapiHTTPRequestSyncStart);
+    return res;
 }
 
 YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncDone(YIOHDL *iohdl, char *errmsg)
@@ -2038,6 +2283,8 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncDone(YIOHDL *iohdl, char *errms
 
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
+
+    YPERF_API_ENTER(yapiHTTPRequestSyncDone);
     YREQLOG("SyncDone for %x \n",iohdl);
     if(iohdl->type == YIO_USB) {
         yUsbClose(iohdl, errmsg);
@@ -2046,9 +2293,11 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncDone(YIOHDL *iohdl, char *errms
         
         yTcpCloseReq(tcpreq);
     } else {
+        YPERF_API_LEAVE(yapiHTTPRequestSyncStart);
         return YERR(YAPI_INVALID_ARGUMENT);
     }
-    memset((u8 *)iohdl, 0, sizeof(YIOHDL));
+    memset((u8 *)iohdl, 0, YIOHDL_SIZE);
+    YPERF_API_LEAVE(yapiHTTPRequestSyncDone);
     
     return YAPI_SUCCESS;
 }
@@ -2057,23 +2306,45 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestAsyncEx(const char *device, const c
 {
     YIOHDL  iohdl;
     int     res;
+    int     retryCount=1;
     
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
     
+    YPERF_API_ENTER(yapiHTTPRequestAsyncEx);
     YREQLOG("ASync for %s \n%s\n",device,request);
-
-    res = yapiRequestOpen(&iohdl,device,request,len,1,errmsg);
-    if(!YISERR(res) && iohdl.type == YIO_TCP) {
-        res = yDringWakeUpSocket(&yContext->wuce, 2, errmsg);
-    }
+    do {
+        res = yapiRequestOpen(&iohdl,device,request,len,1,errmsg);
+        if(YISERR(res)) {
+            if (retryCount){
+                char suberr[YOCTO_ERRMSG_LEN];
+                dbglog("ASync request for %s failed. Retrying after yapiUpdateDeviceList\n",device);
+                if(YISERR(yapiUpdateDeviceList(1, suberr))){
+                    dbglog("yapiUpdateDeviceList failled too with %s\n",errmsg);
+                    YPERF_API_LEAVE(yapiHTTPRequestAsyncEx);
+                    return res;
+                }
+            }
+        } else{
+            if(iohdl.type == YIO_TCP) {
+                res = yDringWakeUpSocket(&yContext->wuce, 2, errmsg);
+            } 
+        }
+    } while (res !=YAPI_SUCCESS && retryCount--);
+    YPERF_API_LEAVE(yapiHTTPRequestAsyncEx);
 
     return res;
 }
 
 YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestAsync(const char *device, const char *request, yapiRequestAsyncCallback callback, void *context, char *errmsg)
 {
-    return yapiHTTPRequestAsyncEx(device, request, YSTRLEN(request), callback,context, errmsg);
+    YRETCODE res;
+
+    YPERF_API_ENTER(yapiHTTPRequestAsync);
+    res = yapiHTTPRequestAsyncEx(device, request, YSTRLEN(request), callback,context, errmsg);
+    YPERF_API_LEAVE(yapiHTTPRequestAsync);
+
+    return res;
 }
 
 
@@ -2084,9 +2355,12 @@ int YAPI_FUNCTION_EXPORT yapiHTTPRequest(const char *device, const char *request
     char    *reply=NULL;
     int     replysize=0;
     
+    YPERF_API_ENTER(yapiHTTPRequest);
     YREQLOG("yapiHTTPRequest for %s \n%s\n",device,request);
-    if(!buffer || buffsize < 4)
+    if(!buffer || buffsize < 4){
+        YPERF_API_LEAVE(yapiHTTPRequest);
         return YERR(YAPI_INVALID_ARGUMENT);
+    }
     YPROPERR(yapiHTTPRequestSyncStart(&iohdl, device, request, &reply, &replysize, errmsg));
 
     if(replysize > buffsize-1) {
@@ -2095,33 +2369,40 @@ int YAPI_FUNCTION_EXPORT yapiHTTPRequest(const char *device, const char *request
     memcpy(buffer, reply, replysize);
     buffer[replysize] = 0;
     YPROPERR(yapiHTTPRequestSyncDone(&iohdl, errmsg));
-    
+    YPERF_API_LEAVE(yapiHTTPRequest);
     return replysize;
 }
 
 YRETCODE  YAPI_FUNCTION_EXPORT  yapiFlashDevice(yFlashArg *arg, char *errmsg)
 {
+    YRETCODE res;
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
 
+    YPERF_API_ENTER(yapiFlashDevice);
     if((yContext->detecttype & Y_DETECT_USB) ==0) {
+        YPERF_API_LEAVE(yapiFlashDevice);
         return YERRMSG(YAPI_INVALID_ARGUMENT,"You must init the yAPI with Y_DETECT_USB flag");
     }
-
-
-    return prog_FlashDevice(arg, 1, errmsg);
+    res = prog_FlashDevice(arg, 1, errmsg);
+    YPERF_API_LEAVE(yapiFlashDevice);
+    return res;
 }
 
 YRETCODE YAPI_FUNCTION_EXPORT yapiVerifyDevice(yFlashArg *arg, char *errmsg)
 {
+    YRETCODE res;
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
 
+    YPERF_API_ENTER(yapiVerifyDevice);
     if((yContext->detecttype & Y_DETECT_USB) ==0) {
+        YPERF_API_LEAVE(yapiVerifyDevice);
         return YERRMSG(YAPI_INVALID_ARGUMENT,"You must init the yAPI with Y_DETECT_USB flag");
     }
-
-    return prog_FlashDevice(arg, 0, errmsg);
+    res = prog_FlashDevice(arg, 0, errmsg);
+    YPERF_API_LEAVE(yapiVerifyDevice);
+    return res;
 }
 
 
@@ -2133,15 +2414,21 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetBootloadersDevs(char *serials,unsigned int 
     int             i;
     u32             totalBoot,copyedBoot;
     char            *s=serials;
+    YRETCODE        res;
 
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
 
+    YPERF_API_ENTER(yapiGetBootloadersDevs);
     if((yContext->detecttype & Y_DETECT_USB) ==0) {
+        YPERF_API_LEAVE(yapiGetBootloadersDevs);
         return YERRMSG(YAPI_INVALID_ARGUMENT,"You must init the yAPI with Y_DETECT_USB flag");
     }
 
-    YPROPERR(yUSBGetInterfaces(&runifaces,&nbifaces,errmsg));
+    if (YISERR(res =yyyUSBGetInterfaces(&runifaces,&nbifaces,errmsg))){
+        YPERF_API_LEAVE(yapiGetBootloadersDevs);
+        return res;
+    }
 
     totalBoot=copyedBoot=0;
 
@@ -2162,6 +2449,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetBootloadersDevs(char *serials,unsigned int 
     if(totalBootladers)
         *totalBootladers=totalBoot;
 
+    YPERF_API_LEAVE(yapiGetBootloadersDevs);
     return copyedBoot;
 
 }
@@ -2216,20 +2504,20 @@ YRETCODE ystrncpy_s(char *dst,unsigned dstsize,const char *src,unsigned arglen)
     unsigned len;
     
     if (dst==NULL){
-        YPANNIC;
+        YPANIC;
         return YAPI_INVALID_ARGUMENT;
     }
     if (src==NULL){
-        YPANNIC;
+        YPANIC;
         return YAPI_INVALID_ARGUMENT;
     }
     if(dstsize ==0){
-        YPANNIC;
+        YPANIC;
         return YAPI_INVALID_ARGUMENT;
     }
     len = ystrnlen(src,arglen);
     if(len+1 > dstsize){
-        YPANNIC;
+        YPANIC;
         dst[0]=0;
         return YAPI_INVALID_ARGUMENT;
     }else{
@@ -2245,16 +2533,16 @@ YRETCODE ystrncat_s(char *dst, unsigned dstsize,const char *src,unsigned len)
 {
     unsigned dstlen;
     if (dst==NULL){
-        YPANNIC;
+        YPANIC;
         return YAPI_INVALID_ARGUMENT;
     }
     if (src==NULL){
-        YPANNIC;
+        YPANIC;
         return YAPI_INVALID_ARGUMENT;
     }
     dstlen = ystrnlen(dst, dstsize);
-    if(dstlen+1 >= dstsize){
-        YPANNIC;
+    if(dstlen+1 > dstsize){
+        YPANIC;
         return YAPI_INVALID_ARGUMENT;
     }
     return ystrncpy_s(dst+dstlen, dstsize-dstlen, src, len);
@@ -2264,11 +2552,14 @@ YRETCODE ystrncat_s(char *dst, unsigned dstsize,const char *src,unsigned len)
 int yvsprintf_s (char *dst, unsigned dstsize, const char * fmt, va_list arg )
 {
     int len;
-    
+#if defined(_MSC_VER) && (_MSC_VER <= MSC_VS2003)
+	len = _vsnprintf(dst,dstsize,fmt,arg);
+#else 
 	len = vsnprintf(dst,dstsize,fmt,arg);
+#endif
     if(len <0 || len >=(long)dstsize){
-        YPANNIC;
-		dst[dstsize-1]=0;
+        YPANIC;
+        dst[dstsize-1]=0;
         return YAPI_INVALID_ARGUMENT;
     }
     return len;

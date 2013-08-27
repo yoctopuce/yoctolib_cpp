@@ -1,39 +1,39 @@
 /*********************************************************************
  *
- * $Id: yocto_hubport.h 9921 2013-02-20 09:39:16Z seb $
+ * $Id: yocto_hubport.h 12337 2013-08-14 15:22:22Z mvuilleu $
  *
  * Declares yFindHubPort(), the high-level API for HubPort functions
  *
  * - - - - - - - - - License information: - - - - - - - - - 
  *
- * Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
+ *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
- * 1) If you have obtained this file from www.yoctopuce.com,
- *    Yoctopuce Sarl licenses to you (hereafter Licensee) the
- *    right to use, modify, copy, and integrate this source file
- *    into your own solution for the sole purpose of interfacing
- *    a Yoctopuce product with Licensee's solution.
+ *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
+ *  non-exclusive license to use, modify, copy and integrate this
+ *  file into your software for the sole purpose of interfacing 
+ *  with Yoctopuce products. 
  *
- *    The use of this file and all relationship between Yoctopuce 
- *    and Licensee are governed by Yoctopuce General Terms and 
- *    Conditions.
+ *  You may reproduce and distribute copies of this file in 
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain 
+ *  this notice in the distributed source file.
  *
- *    THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *    WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
- *    FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
- *    EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *    INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *    COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *    SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
- *    LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
- *    CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
- *    BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
- *    WARRANTY, OR OTHERWISE.
+ *  You should refer to Yoctopuce General Terms and Conditions
+ *  for additional information regarding your rights and 
+ *  obligations.
  *
- * 2) If your intent is not to interface with Yoctopuce products,
- *    you are not entitled to use, read or create any derived
- *    material from this source file.
+ *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
+ *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
+ *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
+ *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
+ *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
 
@@ -60,8 +60,10 @@ typedef enum {
 
 typedef enum {
     Y_PORTSTATE_OFF = 0,
-    Y_PORTSTATE_ON = 1,
-    Y_PORTSTATE_RUN = 2,
+    Y_PORTSTATE_OVRLD = 1,
+    Y_PORTSTATE_ON = 2,
+    Y_PORTSTATE_RUN = 3,
+    Y_PORTSTATE_PROG = 4,
     Y_PORTSTATE_INVALID = -1,
 } Y_PORTSTATE_enum;
 
@@ -85,8 +87,6 @@ protected:
     Y_ENABLED_enum  _enabled;
     Y_PORTSTATE_enum _portState;
     int             _baudRate;
-    // Static function object cache
-    static std::map<string,YHubPort*> _HubPortCache;
 
     friend YHubPort *yFindHubPort(const string& func);
     friend YHubPort *yFirstHubPort(void);
@@ -97,19 +97,13 @@ protected:
 
     //--- (YHubPort constructor)
     // Constructor is protected, use yFindHubPort factory function to instantiate
-    YHubPort(const string& func): YFunction("HubPort", func)
+    YHubPort(const string& func);
     //--- (end of YHubPort constructor)
     //--- (HubPort initialization)
-            ,_callback(NULL)
-            ,_logicalName(Y_LOGICALNAME_INVALID)
-            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
-            ,_enabled(Y_ENABLED_INVALID)
-            ,_portState(Y_PORTSTATE_INVALID)
-            ,_baudRate(Y_BAUDRATE_INVALID)
     //--- (end of HubPort initialization)
-    {};
 
 public:
+    ~YHubPort();
     //--- (YHubPort accessors declaration)
 
     static const string LOGICALNAME_INVALID;
@@ -118,8 +112,10 @@ public:
     static const Y_ENABLED_enum ENABLED_TRUE = Y_ENABLED_TRUE;
     static const Y_ENABLED_enum ENABLED_INVALID = Y_ENABLED_INVALID;
     static const Y_PORTSTATE_enum PORTSTATE_OFF = Y_PORTSTATE_OFF;
+    static const Y_PORTSTATE_enum PORTSTATE_OVRLD = Y_PORTSTATE_OVRLD;
     static const Y_PORTSTATE_enum PORTSTATE_ON = Y_PORTSTATE_ON;
     static const Y_PORTSTATE_enum PORTSTATE_RUN = Y_PORTSTATE_RUN;
+    static const Y_PORTSTATE_enum PORTSTATE_PROG = Y_PORTSTATE_PROG;
     static const Y_PORTSTATE_enum PORTSTATE_INVALID = Y_PORTSTATE_INVALID;
     static const int      BAUDRATE_INVALID = -1;
 
@@ -176,7 +172,7 @@ public:
 
     /**
      * Changes the activation of the Yocto-hub port. If the port is enabled, the
-     * *      connected module will be powered. Otherwise, port power will be shut down.
+     * *      connected module is powered. Otherwise, port power is shut down.
      * 
      * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the activation of the Yocto-hub port
      * 
@@ -191,8 +187,8 @@ public:
     /**
      * Returns the current state of the Yocto-hub port.
      * 
-     * @return a value among Y_PORTSTATE_OFF, Y_PORTSTATE_ON and Y_PORTSTATE_RUN corresponding to the
-     * current state of the Yocto-hub port
+     * @return a value among Y_PORTSTATE_OFF, Y_PORTSTATE_OVRLD, Y_PORTSTATE_ON, Y_PORTSTATE_RUN and
+     * Y_PORTSTATE_PROG corresponding to the current state of the Yocto-hub port
      * 
      * On failure, throws an exception or returns Y_PORTSTATE_INVALID.
      */
@@ -203,7 +199,7 @@ public:
     /**
      * Returns the current baud rate used by this Yocto-hub port, in kbps.
      * The default value is 1000 kbps, but a slower rate may be used if communication
-     * problems are hit.
+     * problems are encountered.
      * 
      * @return an integer corresponding to the current baud rate used by this Yocto-hub port, in kbps
      * 

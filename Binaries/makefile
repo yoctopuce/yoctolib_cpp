@@ -63,11 +63,12 @@ OD = arch_type\
 
 YOCTO_API_DIR = ..\Sources\ 
 
-YOCTO_API_OBJS = $(OD)yocto_anbutton.obj $(OD)yocto_api.obj $(OD)yocto_colorled.obj $(OD)yocto_datalogger.obj $(OD)yocto_dualpower.obj $(OD)yocto_humidity.obj \
-$(OD)yocto_led.obj $(OD)yocto_relay.obj $(OD)yocto_servo.obj $(OD)yocto_temperature.obj $(OD)yocto_pressure.obj $(OD)yocto_lightsensor.obj\
-$(OD)yocto_voltage.obj $(OD)yocto_current.obj $(OD)yocto_vsource.obj  $(OD)yocto_carbondioxide.obj\
-$(OD)yocto_wireless.obj $(OD)yocto_network.obj $(OD)yocto_watchdog.obj $(OD)yocto_power.obj $(OD)yocto_voc.obj\
-$(OD)yocto_display.obj $(OD)yocto_files.obj
+YOCTO_API_OBJS =  $(OD)yocto_api.obj $(OD)yocto_anbutton.obj $(OD)yocto_carbondioxide.obj $(OD)yocto_colorled.obj $(OD)yocto_current.obj \
+	$(OD)yocto_datalogger.obj $(OD)yocto_display.obj $(OD)yocto_dualpower.obj $(OD)yocto_files.obj $(OD)yocto_genericsensor.obj \
+	$(OD)yocto_hubport.obj $(OD)yocto_humidity.obj $(OD)yocto_led.obj $(OD)yocto_lightsensor.obj $(OD)yocto_network.obj \
+	$(OD)yocto_oscontrol.obj $(OD)yocto_power.obj $(OD)yocto_pressure.obj $(OD)yocto_realtimeclock.obj $(OD)yocto_relay.obj \
+	$(OD)yocto_servo.obj $(OD)yocto_temperature.obj $(OD)yocto_voc.obj $(OD)yocto_voltage.obj \
+	$(OD)yocto_wakeupmonitor.obj $(OD)yocto_wakeupschedule.obj $(OD)yocto_watchdog.obj $(OD)yocto_wireless.obj $(OD)yocto_digitalio.obj \
 
 YOCTO_API_OBJS32 = $(YOCTO_API_OBJS:arch_type=windows\obj_dir)
 
@@ -160,7 +161,7 @@ $(YAPIOUT32)yapi-static.lib: $(YAPI_OBJS32)
 	@echo building lib ($@)
     @lib /OUT:$@ $**
 
-$(YAPIOUT32)yapi.dll: $(YAPI_OBJS_DLL32) $(YAPI_DIR)winresource.res
+$(YAPIOUT32)yapi.dll: $(YAPI_OBJS_DLL32) $(YAPI_DIR)yapiresource.res
 	@echo building dll $@
 	@$(CC32) $(CFLAGS) $**  /W3 /WX- /O2 /Oi /Oy- /MT /Gy /GL /nologo /Fe$@ /Fa(R) /link  /DLL 
 
@@ -176,7 +177,7 @@ $(YAPIOUT64)yapi-static.lib: $(YAPI_OBJS64)
 	@echo building lib ($@)
     @lib /OUT:$@ $**
 
-$(YAPIOUT64)yapi.dll: $(YAPI_OBJS_DLL64) $(YAPI_DIR)winresource64.res
+$(YAPIOUT64)yapi.dll: $(YAPI_OBJS_DLL64) $(YAPI_DIR)yapiresource64.res
 	@echo building dll $@
 	@$(CC64) $(CFLAGS) $**  /W3 /WX- /O2 /Oi /Oy- /MT /Gy /GL /nologo /Fe$@ /Fa(R) /link $(LINKWITH64) /DLL 
 

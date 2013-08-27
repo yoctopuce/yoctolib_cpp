@@ -1,39 +1,39 @@
 /*********************************************************************
  *
- * $Id: yocto_current.cpp 11112 2013-04-16 14:51:20Z mvuilleu $
+ * $Id: yocto_current.cpp 12324 2013-08-13 15:10:31Z mvuilleu $
  *
  * Implements yFindCurrent(), the high-level API for Current functions
  *
  * - - - - - - - - - License information: - - - - - - - - - 
  *
- * Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
+ *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
- * 1) If you have obtained this file from www.yoctopuce.com,
- *    Yoctopuce Sarl licenses to you (hereafter Licensee) the
- *    right to use, modify, copy, and integrate this source file
- *    into your own solution for the sole purpose of interfacing
- *    a Yoctopuce product with Licensee's solution.
+ *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
+ *  non-exclusive license to use, modify, copy and integrate this
+ *  file into your software for the sole purpose of interfacing 
+ *  with Yoctopuce products. 
  *
- *    The use of this file and all relationship between Yoctopuce 
- *    and Licensee are governed by Yoctopuce General Terms and 
- *    Conditions.
+ *  You may reproduce and distribute copies of this file in 
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain 
+ *  this notice in the distributed source file.
  *
- *    THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *    WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
- *    FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
- *    EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *    INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *    COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *    SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
- *    LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
- *    CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
- *    BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
- *    WARRANTY, OR OTHERWISE.
+ *  You should refer to Yoctopuce General Terms and Conditions
+ *  for additional information regarding your rights and 
+ *  obligations.
  *
- * 2) If your intent is not to interface with Yoctopuce products,
- *    you are not entitled to use, read or create any derived
- *    material from this source file.
+ *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
+ *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
+ *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
+ *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
+ *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
 
@@ -44,8 +44,33 @@
 #include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 #include <stdlib.h>
 
+//--- (YCurrent constructor)
+// Constructor is protected, use yFindCurrent factory function to instantiate
+YCurrent::YCurrent(const string& func): YFunction("Current", func)
+//--- (end of YCurrent constructor)
+//--- (Current initialization)
+            ,_callback(NULL)
+            ,_logicalName(Y_LOGICALNAME_INVALID)
+            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
+            ,_unit(Y_UNIT_INVALID)
+            ,_currentValue(Y_CURRENTVALUE_INVALID)
+            ,_lowestValue(Y_LOWESTVALUE_INVALID)
+            ,_highestValue(Y_HIGHESTVALUE_INVALID)
+            ,_currentRawValue(Y_CURRENTRAWVALUE_INVALID)
+            ,_calibrationParam(Y_CALIBRATIONPARAM_INVALID)
+            ,_resolution(Y_RESOLUTION_INVALID)
+            ,_calibrationOffset(-32767)
+//--- (end of Current initialization)
+{}
+
+YCurrent::~YCurrent() 
+{
+//--- (YCurrent cleanup)
+//--- (end of YCurrent cleanup)
+}
 //--- (YCurrent implementation)
 
 const string YCurrent::LOGICALNAME_INVALID = "!INVALID!";
@@ -55,10 +80,10 @@ const double YCurrent::CURRENTVALUE_INVALID = -DBL_MAX;
 const double YCurrent::LOWESTVALUE_INVALID = -DBL_MAX;
 const double YCurrent::HIGHESTVALUE_INVALID = -DBL_MAX;
 const double YCurrent::CURRENTRAWVALUE_INVALID = -DBL_MAX;
-const double YCurrent::RESOLUTION_INVALID = -DBL_MAX;
 const string YCurrent::CALIBRATIONPARAM_INVALID = "!INVALID!";
+const double YCurrent::RESOLUTION_INVALID = -DBL_MAX;
 
-std::map<string,YCurrent*> YCurrent::_CurrentCache;
+
 
 int YCurrent::_parse(yJsonStateMachine& j)
 {
@@ -88,12 +113,12 @@ int YCurrent::_parse(yJsonStateMachine& j)
         } else if(!strcmp(j.token, "currentRawValue")) {
             if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
             _currentRawValue =  atof(j.token)/65536.0;
-        } else if(!strcmp(j.token, "resolution")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _resolution =  1.0 / floor(65536.0/atof(j.token)+.5);
         } else if(!strcmp(j.token, "calibrationParam")) {
             if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
             _calibrationParam =  _parseString(j);
+        } else if(!strcmp(j.token, "resolution")) {
+            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
+            _resolution =  (atoi(j.token) > 100 ? 1.0 / floor(65536.0/atof(j.token)+.5) : 0.001 / floor(67.0/atof(j.token)+.5));
         } else {
             // ignore unknown field
             yJsonSkip(&j, 1);
@@ -261,29 +286,6 @@ double YCurrent::get_currentRawValue(void)
     return _currentRawValue;
 }
 
-int YCurrent::set_resolution(double newval)
-{
-    string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval*65536.0 +0.5)); rest_val = string(buf);
-    return _setAttr("resolution", rest_val);
-}
-
-/**
- * Returns the resolution of the measured values. The resolution corresponds to the numerical precision
- * of the values, which is not always the same as the actual precision of the sensor.
- * 
- * @return a floating point number corresponding to the resolution of the measured values
- * 
- * On failure, throws an exception or returns Y_RESOLUTION_INVALID.
- */
-double YCurrent::get_resolution(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_RESOLUTION_INVALID;
-    }
-    return _resolution;
-}
-
 string YCurrent::get_calibrationParam(void)
 {
     if(_cacheExpiration <= YAPI::GetTickCount()) {
@@ -304,7 +306,7 @@ int YCurrent::set_calibrationParam(const string& newval)
  * a possible perturbation of the measure caused by an enclosure. It is possible
  * to configure up to five correction points. Correction points must be provided
  * in ascending order, and be in the range of the sensor. The device will automatically
- * perform a lineat interpolatation of the error correction between specified
+ * perform a linear interpolation of the error correction between specified
  * points. Remember to call the saveToFlash() method of the module if the
  * modification must be kept.
  * 
@@ -333,6 +335,39 @@ int YCurrent::loadCalibrationPoints(vector<double> rawValues,vector<double> refV
         if(YISERR(load(YAPI::DefaultCacheValidity))) return _lastErrorType;
     }
     return this->_decodeCalibrationPoints(_calibrationParam,rawValues,refValues,_resolution,_calibrationOffset);
+}
+
+/**
+ * Changes the resolution of the measured values. The resolution corresponds to the numerical precision
+ * when displaying value. It does not change the precision of the measure itself.
+ * 
+ * @param newval : a floating point number corresponding to the resolution of the measured values
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YCurrent::set_resolution(double newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf,"%d", (int)floor(newval*65536.0 +0.5)); rest_val = string(buf);
+    return _setAttr("resolution", rest_val);
+}
+
+/**
+ * Returns the resolution of the measured values. The resolution corresponds to the numerical precision
+ * when displaying value, which is not always the same as the actual precision of the sensor.
+ * 
+ * @return a floating point number corresponding to the resolution of the measured values
+ * 
+ * On failure, throws an exception or returns Y_RESOLUTION_INVALID.
+ */
+double YCurrent::get_resolution(void)
+{
+    if(_cacheExpiration <= YAPI::GetTickCount()) {
+        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_RESOLUTION_INVALID;
+    }
+    return _resolution;
 }
 
 YCurrent *YCurrent::nextCurrent(void)
@@ -368,12 +403,11 @@ void YCurrent::advertiseValue(const string& value)
 
 YCurrent* YCurrent::FindCurrent(const string& func)
 {
-    if(YCurrent::_CurrentCache.find(func) != YCurrent::_CurrentCache.end())
-        return YCurrent::_CurrentCache[func];
+    if(YAPI::_YFunctionsCaches["YCurrent"].find(func) != YAPI::_YFunctionsCaches["YCurrent"].end())
+        return (YCurrent*) YAPI::_YFunctionsCaches["YCurrent"][func];
     
     YCurrent *newCurrent = new YCurrent(func);
-    YCurrent::_CurrentCache[func] = newCurrent;
-    
+    YAPI::_YFunctionsCaches["YCurrent"][func] = newCurrent ;
     return newCurrent;
 }
 

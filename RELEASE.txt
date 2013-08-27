@@ -1,4 +1,15 @@
-- Fix possible crash when disconnecting a black-listed device on Mac OS X
-- Fix segmentation fault during YAPI::FreeAPI() on Linux system with ARM processor
-- Improve handling of device disconnection in the middle of a request close
-- Publish library to GitHub
+- clarify license agreement
+- Improve robustness of low-level USB stack 
+- fix 5 seconds timeout on yapiFreeAPI() when connected through the network
+- fix value notifications that were dropped on plugged devices
+- fix possible 100% CPU load when the API was connecting to an IP Hub
+- fix compilation warning "dereferencing type-punned pointer will break strict-aliasing rules [-Wstrict-aliasing]" reported by gcc
+- fix potential segmentation fault when unplugging a device in bootloader
+- fix small memory leaks
+- add support for C++ builder XE4 
+- change some macro definitions to compile with Visual Studio 2003
+- fix compilation error with Visual Studio 2012
+- update XCode projects to prevent warning with XCode 4.6
+- update Makefiles to ensure Binary_XXX exist
+- rename Windows resources files (this allow simple drag and drop into Visual Studio)
+- fix libyocto.dylib compilation (bug reported and fixed by Ludovic Rousseau)

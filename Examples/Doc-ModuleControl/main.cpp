@@ -44,6 +44,7 @@ int main(int argc, const char * argv[])
            cout << "OFF" << endl;
         cout << "upTime:       " << module->get_upTime()/1000 << " sec" << endl;
         cout << "USB current:  " << module->get_usbCurrent() << " mA" << endl;
+        cout << "Logs:"<< endl << module->get_lastLogs() << endl;
     } else {
         cout << argv[1] << " not connected (check identification and USB cable)" 
              << endl;

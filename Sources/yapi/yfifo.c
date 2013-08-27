@@ -1,39 +1,39 @@
 /*********************************************************************
  *
- * $Id: yfifo.c 10323 2013-03-14 18:27:28Z mvuilleu $
+ * $Id: yfifo.c 12321 2013-08-13 14:56:24Z mvuilleu $
  *
  * Implementation of a generic fifo queue 
  *
  * - - - - - - - - - License information: - - - - - - - - - 
  *
- * Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
+ *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
- * 1) If you have obtained this file from www.yoctopuce.com,
- *    Yoctopuce Sarl licenses to you (hereafter Licensee) the
- *    right to use, modify, copy, and integrate this source file
- *    into your own solution for the sole purpose of interfacing
- *    a Yoctopuce product with Licensee's solution.
+ *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
+ *  non-exclusive license to use, modify, copy and integrate this
+ *  file into your software for the sole purpose of interfacing 
+ *  with Yoctopuce products. 
  *
- *    The use of this file and all relationship between Yoctopuce 
- *    and Licensee are governed by Yoctopuce General Terms and 
- *    Conditions.
+ *  You may reproduce and distribute copies of this file in 
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain 
+ *  this notice in the distributed source file.
  *
- *    THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *    WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
- *    FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
- *    EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *    INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *    COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *    SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
- *    LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
- *    CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
- *    BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
- *    WARRANTY, OR OTHERWISE.
+ *  You should refer to Yoctopuce General Terms and Conditions
+ *  for additional information regarding your rights and 
+ *  obligations.
  *
- * 2) If your intent is not to interface with Yoctopuce products,
- *    you are not entitled to use, read or create any derived 
- *    material from this source file.
+ *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
+ *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
+ *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
+ *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
+ *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
 #define __FILE_ID__  "yfifo"
@@ -108,7 +108,7 @@ u16 yPushFifoEx(yFifoBuf *buf, const u8 *data, u16 datalen)
     if (datalen > freespace) {
         // not enough space available in
         // buffer to handle correctly this packet
-        // (we do not handle parcial packet since usb packet are
+        // (we do not handle partial packet since usb packet are
         // max 64byte long)
         return 0;
     }
@@ -232,7 +232,7 @@ u16 yPeekFifoEx(yFifoBuf *buf, u8 *data, u16 datalen, u16 startofs)
         datalen = buf->datasize - startofs;
     
     ptr=buf->head+startofs;
-    if(ptr > YFIFOEND(buf)){
+    if(ptr >= YFIFOEND(buf)){
         ptr -= buf->buffsize;
     }
     if (ptr + datalen > YFIFOEND(buf)) {
@@ -263,32 +263,28 @@ u16 yPeekFifo(yFifoBuf *buf, u8 *data, u16 datalen, u16 startofs)
 #endif
 
 
-u16 yPeekContinuousFifoEx(yFifoBuf *buf, u8 **ptr,u16 *len, u16 startofs)
+u16 yPeekContinuousFifoEx(yFifoBuf *buf, u8 **ptr, u16 startofs)
 {
     u8 *lptr;
    
-    if(startofs > buf->datasize) {
-        *len =0;
+    if(startofs >= buf->datasize) {
         return 0;
     }
     
     lptr = buf->head + startofs;
     if(lptr >= YFIFOEND(buf)) {
         // wrap
-        *len =buf->datasize - startofs;
-        if(ptr) 
-            *ptr =  lptr - buf->buffsize;
-        return  0;
+        if(ptr) {
+            *ptr = lptr - buf->buffsize;
+        }
+        return buf->datasize - startofs;
     } else {
         // no wrap
         u16 toend = (u16)(YFIFOEND(buf) - lptr);
-        if(toend < buf->datasize)
-            *len = toend;
-        else
-            *len =  buf->datasize;
-        if(ptr) 
+        if(ptr) {
             *ptr = lptr;
-        return  buf->datasize - *len;
+        }
+        return (toend < buf->datasize ? toend : buf->datasize);
     }
 
 }
@@ -296,11 +292,11 @@ u16 yPeekContinuousFifoEx(yFifoBuf *buf, u8 **ptr,u16 *len, u16 startofs)
 
 #ifdef YFIFO_USE_MUTEX    
 
-u16 yPeekContinuousFifo(yFifoBuf *buf, u8 **ptr,u16 *len,u16 startofs)
+u16 yPeekContinuousFifo(yFifoBuf *buf, u8 **ptr, u16 startofs)
 {
     u16 res;
     yFifoEnterCS(buf);
-    res = yPeekContinuousFifoEx(buf,ptr,len,startofs);  
+    res = yPeekContinuousFifoEx(buf,ptr,startofs);  
     yFifoLeaveCS(buf);
     return res;
 }

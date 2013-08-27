@@ -1,39 +1,39 @@
 /*********************************************************************
  *
- * $Id: yocto_watchdog.cpp 9425 2013-01-11 15:50:01Z seb $
+ * $Id: yocto_watchdog.cpp 12324 2013-08-13 15:10:31Z mvuilleu $
  *
  * Implements yFindWatchdog(), the high-level API for Watchdog functions
  *
  * - - - - - - - - - License information: - - - - - - - - - 
  *
- * Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
+ *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
- * 1) If you have obtained this file from www.yoctopuce.com,
- *    Yoctopuce Sarl licenses to you (hereafter Licensee) the
- *    right to use, modify, copy, and integrate this source file
- *    into your own solution for the sole purpose of interfacing
- *    a Yoctopuce product with Licensee's solution.
+ *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
+ *  non-exclusive license to use, modify, copy and integrate this
+ *  file into your software for the sole purpose of interfacing 
+ *  with Yoctopuce products. 
  *
- *    The use of this file and all relationship between Yoctopuce 
- *    and Licensee are governed by Yoctopuce General Terms and 
- *    Conditions.
+ *  You may reproduce and distribute copies of this file in 
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain 
+ *  this notice in the distributed source file.
  *
- *    THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *    WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
- *    FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
- *    EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *    INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *    COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *    SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
- *    LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
- *    CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
- *    BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
- *    WARRANTY, OR OTHERWISE.
+ *  You should refer to Yoctopuce General Terms and Conditions
+ *  for additional information regarding your rights and 
+ *  obligations.
  *
- * 2) If your intent is not to interface with Yoctopuce products,
- *    you are not entitled to use, read or create any derived
- *    material from this source file.
+ *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
+ *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
+ *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
+ *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
+ *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
 
@@ -44,15 +44,41 @@
 #include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 #include <stdlib.h>
 
+//--- (YWatchdog constructor)
+// Constructor is protected, use yFindWatchdog factory function to instantiate
+YWatchdog::YWatchdog(const string& func): YFunction("Watchdog", func)
+//--- (end of YWatchdog constructor)
+//--- (Watchdog initialization)
+            ,_callback(NULL)
+            ,_logicalName(Y_LOGICALNAME_INVALID)
+            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
+            ,_state(Y_STATE_INVALID)
+            ,_output(Y_OUTPUT_INVALID)
+            ,_pulseTimer(Y_PULSETIMER_INVALID)
+            ,_delayedPulseTimer()
+            ,_countdown(Y_COUNTDOWN_INVALID)
+            ,_autoStart(Y_AUTOSTART_INVALID)
+            ,_running(Y_RUNNING_INVALID)
+            ,_triggerDelay(Y_TRIGGERDELAY_INVALID)
+            ,_triggerDuration(Y_TRIGGERDURATION_INVALID)
+//--- (end of Watchdog initialization)
+{}
+
+YWatchdog::~YWatchdog() 
+{
+//--- (YWatchdog cleanup)
+//--- (end of YWatchdog cleanup)
+}
 //--- (YWatchdog implementation)
 YDelayedPulse YWATCHDOG_INVALID_DELAYEDPULSE;
 
 const string YWatchdog::LOGICALNAME_INVALID = "!INVALID!";
 const string YWatchdog::ADVERTISEDVALUE_INVALID = "!INVALID!";
 
-std::map<string,YWatchdog*> YWatchdog::_WatchdogCache;
+
 
 int YWatchdog::_parse(yJsonStateMachine& j)
 {
@@ -500,12 +526,11 @@ void YWatchdog::advertiseValue(const string& value)
 
 YWatchdog* YWatchdog::FindWatchdog(const string& func)
 {
-    if(YWatchdog::_WatchdogCache.find(func) != YWatchdog::_WatchdogCache.end())
-        return YWatchdog::_WatchdogCache[func];
+    if(YAPI::_YFunctionsCaches["YWatchdog"].find(func) != YAPI::_YFunctionsCaches["YWatchdog"].end())
+        return (YWatchdog*) YAPI::_YFunctionsCaches["YWatchdog"][func];
     
     YWatchdog *newWatchdog = new YWatchdog(func);
-    YWatchdog::_WatchdogCache[func] = newWatchdog;
-    
+    YAPI::_YFunctionsCaches["YWatchdog"][func] = newWatchdog ;
     return newWatchdog;
 }
 

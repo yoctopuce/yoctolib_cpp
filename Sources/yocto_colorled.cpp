@@ -1,39 +1,39 @@
 /*********************************************************************
  *
- * $Id: yocto_colorled.cpp 9425 2013-01-11 15:50:01Z seb $
+ * $Id: yocto_colorled.cpp 12324 2013-08-13 15:10:31Z mvuilleu $
  *
  * Implements yFindColorLed(), the high-level API for ColorLed functions
  *
  * - - - - - - - - - License information: - - - - - - - - - 
  *
- * Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
+ *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
- * 1) If you have obtained this file from www.yoctopuce.com,
- *    Yoctopuce Sarl licenses to you (hereafter Licensee) the
- *    right to use, modify, copy, and integrate this source file
- *    into your own solution for the sole purpose of interfacing
- *    a Yoctopuce product with Licensee's solution.
+ *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
+ *  non-exclusive license to use, modify, copy and integrate this
+ *  file into your software for the sole purpose of interfacing 
+ *  with Yoctopuce products. 
  *
- *    The use of this file and all relationship between Yoctopuce 
- *    and Licensee are governed by Yoctopuce General Terms and 
- *    Conditions.
+ *  You may reproduce and distribute copies of this file in 
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain 
+ *  this notice in the distributed source file.
  *
- *    THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *    WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
- *    FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
- *    EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *    INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *    COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *    SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
- *    LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
- *    CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
- *    BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
- *    WARRANTY, OR OTHERWISE.
+ *  You should refer to Yoctopuce General Terms and Conditions
+ *  for additional information regarding your rights and 
+ *  obligations.
  *
- * 2) If your intent is not to interface with Yoctopuce products,
- *    you are not entitled to use, read or create any derived
- *    material from this source file.
+ *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
+ *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
+ *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
+ *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
+ *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
 
@@ -44,15 +44,37 @@
 #include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 #include <stdlib.h>
 
+//--- (YColorLed constructor)
+// Constructor is protected, use yFindColorLed factory function to instantiate
+YColorLed::YColorLed(const string& func): YFunction("ColorLed", func)
+//--- (end of YColorLed constructor)
+//--- (ColorLed initialization)
+            ,_callback(NULL)
+            ,_logicalName(Y_LOGICALNAME_INVALID)
+            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
+            ,_rgbColor(Y_RGBCOLOR_INVALID)
+            ,_hslColor(Y_HSLCOLOR_INVALID)
+            ,_rgbMove()
+            ,_hslMove()
+            ,_rgbColorAtPowerOn(Y_RGBCOLORATPOWERON_INVALID)
+//--- (end of ColorLed initialization)
+{}
+
+YColorLed::~YColorLed() 
+{
+//--- (YColorLed cleanup)
+//--- (end of YColorLed cleanup)
+}
 //--- (YColorLed implementation)
 YMove YCOLORLED_INVALID_MOVE;
 
 const string YColorLed::LOGICALNAME_INVALID = "!INVALID!";
 const string YColorLed::ADVERTISEDVALUE_INVALID = "!INVALID!";
 
-std::map<string,YColorLed*> YColorLed::_ColorLedCache;
+
 
 int YColorLed::_parse(yJsonStateMachine& j)
 {
@@ -362,12 +384,11 @@ void YColorLed::advertiseValue(const string& value)
 
 YColorLed* YColorLed::FindColorLed(const string& func)
 {
-    if(YColorLed::_ColorLedCache.find(func) != YColorLed::_ColorLedCache.end())
-        return YColorLed::_ColorLedCache[func];
+    if(YAPI::_YFunctionsCaches["YColorLed"].find(func) != YAPI::_YFunctionsCaches["YColorLed"].end())
+        return (YColorLed*) YAPI::_YFunctionsCaches["YColorLed"][func];
     
     YColorLed *newColorLed = new YColorLed(func);
-    YColorLed::_ColorLedCache[func] = newColorLed;
-    
+    YAPI::_YFunctionsCaches["YColorLed"][func] = newColorLed ;
     return newColorLed;
 }
 

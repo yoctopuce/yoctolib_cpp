@@ -1,39 +1,39 @@
 /*********************************************************************
  *
- * $Id: ytcp.h 10311 2013-03-14 13:18:58Z mvuilleu $
+ * $Id: ytcp.h 12461 2013-08-22 08:58:05Z seb $
  *
  *  Declaration of a client TCP stack
  *
  * - - - - - - - - - License information: - - - - - - - - - 
  *
- * Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
+ *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
- * 1) If you have obtained this file from www.yoctopuce.com,
- *    Yoctopuce Sarl licenses to you (hereafter Licensee) the
- *    right to use, modify, copy, and integrate this source file
- *    into your own solution for the sole purpose of interfacing
- *    a Yoctopuce product with Licensee's solution.
+ *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
+ *  non-exclusive license to use, modify, copy and integrate this
+ *  file into your software for the sole purpose of interfacing 
+ *  with Yoctopuce products. 
  *
- *    The use of this file and all relationship between Yoctopuce 
- *    and Licensee are governed by Yoctopuce General Terms and 
- *    Conditions.
+ *  You may reproduce and distribute copies of this file in 
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain 
+ *  this notice in the distributed source file.
  *
- *    THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *    WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
- *    FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
- *    EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *    INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *    COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *    SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
- *    LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
- *    CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
- *    BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
- *    WARRANTY, OR OTHERWISE.
+ *  You should refer to Yoctopuce General Terms and Conditions
+ *  for additional information regarding your rights and 
+ *  obligations.
  *
- * 2) If your intent is not to interface with Yoctopuce products,
- *    you are not entitled to use, read or create any derived 
- *    material from this source file.
+ *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
+ *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
+ *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
+ *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
+ *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
 
@@ -58,8 +58,6 @@ extern "C" {
  **************************************************************/
 
 //SOCKET RELATED DEFIITIONS AND INCLUDE
-#include <winsock2.h>
-#include <ws2tcpip.h>
 #else
 #define SOCKET_ERROR -1
 #define INVALID_SOCKET -1
@@ -76,16 +74,6 @@ extern "C" {
 #define SEND_NOSIGPIPE 0
 #endif
 
-#if 0
-#define yTCPLOG(txt, ... )    printf(txt"\n",__VA_ARGS__)
-#else
-#ifdef __BORLANDC__
-#define yTCPLOG notcplog
-#else
-#define yTCPLOG(txt,...)
-#endif
-#endif
-    
 #ifdef WINDOWS_API
 #define SOCK_ERR    (WSAGetLastError())
 #else
@@ -110,7 +98,6 @@ typedef struct {
 } WakeUpSocket;
 
 void yDupSet(char **storage, const char *val);
-
 void yInitWakeUpSocket(WakeUpSocket *wuce);
 int  yStartWakeUpSocket(WakeUpSocket *wuce, char *errmsg);
 int  yDringWakeUpSocket(WakeUpSocket *wuce, u8 signal, char *errmsg);
@@ -128,6 +115,27 @@ int  yTcpReadReq(struct _TcpReqSt *rcoreq, char *buffer, int len);
 void yTcpCloseReq(struct _TcpReqSt *tcpreq);
 void yTcpFreeReq(struct _TcpReqSt *tcpreq);
 void yTcpShutdown(void);
+
+//#define Y_UPNP_DETECT
+#ifdef Y_UPNP_DETECT
+#include "ythread.h"
+
+#define UPNP_PORT  1900
+#define UPNP_MCAST_ADDR "239.255.255.250"
+#define SSDP_URN_YOCTOPUCE "urn:yoctopuce-com:device:hub:1"
+
+
+typedef struct {
+    YSOCKET request_sock;
+    YSOCKET notify_sock;
+    yThread thread;
+} UPNPSocket;
+
+int		yUPNPStart(UPNPSocket *upnp, char *errmsg);
+int		yUPNPDiscover(UPNPSocket *upnp, char *errmsg);
+void	yUPNPStop(UPNPSocket *upnp);
+
+#endif
 #ifdef  __cplusplus
 }
 #endif

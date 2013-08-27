@@ -1,39 +1,39 @@
 /*********************************************************************
  *
- * $Id: ydef.h 10864 2013-04-03 16:20:26Z mvuilleu $
+ * $Id: ydef.h 12321 2013-08-13 14:56:24Z mvuilleu $
  *
  * Standard definitions common to all yoctopuce projects
  *
  * - - - - - - - - - License information: - - - - - - - - -
  *
- * Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
+ *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
- * 1) If you have obtained this file from www.yoctopuce.com,
- *    Yoctopuce Sarl licenses to you (hereafter Licensee) the
- *    right to use, modify, copy, and integrate this source file
- *    into your own solution for the sole purpose of interfacing
- *    a Yoctopuce product with Licensee's solution.
+ *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
+ *  non-exclusive license to use, modify, copy and integrate this
+ *  file into your software for the sole purpose of interfacing 
+ *  with Yoctopuce products. 
  *
- *    The use of this file and all relationship between Yoctopuce
- *    and Licensee are governed by Yoctopuce General Terms and
- *    Conditions.
+ *  You may reproduce and distribute copies of this file in 
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain 
+ *  this notice in the distributed source file.
  *
- *    THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
- *    WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
- *    FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
- *    EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *    INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
- *    COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
- *    SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
- *    LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
- *    CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
- *    BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
- *    WARRANTY, OR OTHERWISE.
+ *  You should refer to Yoctopuce General Terms and Conditions
+ *  for additional information regarding your rights and 
+ *  obligations.
  *
- * 2) If your intent is not to interface with Yoctopuce products,
- *    you are not entitled to use, read or create any derived
- *    material from this source file.
+ *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
+ *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
+ *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
+ *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
+ *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
 
@@ -65,21 +65,26 @@ typedef signed long long        s64;
 #define VARIABLE_SIZE
 
 #else
+
+#ifdef __BORLANDC__
+typedef unsigned __int8         u8;
+typedef __int8                  s8;
+typedef unsigned __int16        u16;
+typedef __int16				    s16;
+typedef unsigned __int32        u32;
+typedef __int32                 s32;
+typedef unsigned __int64        u64;
+typedef __int64                 s64;
+#else
 typedef unsigned char           u8;
 typedef signed char             s8;
 typedef unsigned short int      u16;
 typedef signed short int        s16;
 typedef unsigned int            u32;
-typedef signed int              s32;
-#ifdef __BORLANDC__
-typedef unsigned __int64        u64;
-typedef __int64                 s64;
-#else
-typedef unsigned long           u64;
+typedef signed int              s32;typedef unsigned long           u64;
 typedef signed long             s64;
-#define VARIABLE_SIZE           0
 #endif
-
+#define VARIABLE_SIZE           0
 #endif
 
 
@@ -174,37 +179,51 @@ typedef s32   YAPI_FUNCTION;    /* yStrRef of serial + (ystrRef of funcId << 16)
 #ifdef MICROCHIP_API
 typedef u8              YSOCKET;
 typedef s8              YYSBIO;
-typedef s8              YUSBIO;
-typedef s8              YUSBDEV;
+typedef s8              YTRNKIO;
 #else
-#if defined(WINDOWS_API) && defined(__64BITS__)
+// we have hardcoded the type of SOCKET to
+// prevent to mess up with user own code
+#if defined(WINDOWS_API)
+#if defined(__64BITS__)
 typedef unsigned __int64 YSOCKET;
+#else
+typedef unsigned __int32 YSOCKET;
+#endif
 #else
 typedef int             YSOCKET;
 #endif
-typedef s32             YYSBIO;
 typedef s32             YUSBIO;
 typedef s32             YUSBDEV;
 #endif
 
+#define YIO_INVALID      0
 #define YIO_USB          1
 #define YIO_TCP          2
 #define YIO_YSB          3
-    
-#define YIO_REMOTE_CLOSE 1
-#define YIO_ASYNC        2
+#define YIO_TRUNK        4
 
+#define YIO_DEFAULT_USB_TIMEOUT 2000u
+#define YIO_DEFAULT_TCP_TIMEOUT 5000u
+
+// make sure this union is no more than 8 bytes, YIOHDL is allocated used in all foreign APIs
 typedef struct{
-    u8      type;
-    u8      flags;
-    yUrlRef url;
+#ifdef MICROCHIP_API
     union {
-        // make sure this union stay 32 bit, YIOHDL is used in all foreign APIs
+    YYSBIO  ysb;
+    YTRNKIO trk;
+    };
+#else
+    u8      type;
+    u8      pad8;
+    u16     pad16;
+    union {
         u32     tcpreqidx;
         YUSBIO  hdl;
-        YYSBIO  ysb;
     };
+#endif
 } YIOHDL;
+
+#define YIOHDL_SIZE (sizeof(YIOHDL))
 
 
 #define INVALID_YHANDLE (-1)
@@ -229,9 +248,36 @@ typedef struct{
 
 #ifdef DEBUG_CRITICAL_SECTION
 
+typedef enum  {
+    YCS_UNALLOCATED=0,
+    YCS_ALLOCATED=1,
+    YCS_DELETED=2
+} YCS_STATE;
+
+typedef enum  {
+    YCS_NONE=0,
+    YCS_INIT=1,
+    YCS_LOCK=2,
+    YCS_LOCKTRY=3,
+    YCS_RELEASE=4,
+    YCS_DELETE=5
+} YCS_ACTION;
+
 typedef struct {
-    u32                 no;
-    pthread_mutex_t     *dummy_cs;
+    int         thread;
+    const char* fileid;
+    int         lineno;
+    YCS_ACTION  action;
+} YCS_LOC;
+
+#define YCS_NB_TRACE 5
+
+typedef struct {
+    volatile u32                 no;
+    volatile YCS_STATE           state;
+    volatile int                 lock;
+    pthread_mutex_t     cs;
+    YCS_LOC             last_actions[YCS_NB_TRACE];
 } yCRITICAL_SECTION;
 
 
@@ -290,7 +336,8 @@ typedef enum {
     YAPI_NO_MORE_DATA     = -9,     // there is no more data to read from
     YAPI_EXHAUSTED        = -10,    // you have run out of a limited ressource, check the documentation
     YAPI_DOUBLE_ACCES     = -11,    // you have two process that try to acces to the same device
-    YAPI_UNAUTHORIZED     = -12     // unauthorized access to password-protected device
+    YAPI_UNAUTHORIZED     = -12,    // unauthorized access to password-protected device
+    YAPI_RTC_NOT_READY    = -13     // real-time clock has not been initialized (or time was lost)
 } YRETCODE;
 
 #define YISERR(retcode)   ((retcode) < 0)
@@ -314,6 +361,7 @@ typedef enum {
 #define YOCTO_FIRMWARE_LEN          22
 #define YOCTO_LOGICAL_LEN           20
 #define YOCTO_FUNCTION_LEN          20
+#define YOCTO_UNIT_LEN              10
 #define YOCTO_PUBVAL_SIZE            6 // Size of the data (can be non null terminated)
 #define YOCTO_PUBVAL_LEN            16 // Temporary storage, >= YOCTO_PUBVAL_SIZE+2
 

@@ -1,39 +1,39 @@
 /*********************************************************************
  *
- * $Id: yproto.h 10877 2013-04-04 14:30:47Z mvuilleu $
+ * $Id: yproto.h 12461 2013-08-22 08:58:05Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
  * - - - - - - - - - License information: - - - - - - - - -
  *
- * Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
+ *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
- * 1) If you have obtained this file from www.yoctopuce.com,
- *    Yoctopuce Sarl licenses to you (hereafter Licensee) the
- *    right to use, modify, copy, and integrate this source file
- *    into your own solution for the sole purpose of interfacing
- *    a Yoctopuce product with Licensee's solution.
+ *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
+ *  non-exclusive license to use, modify, copy and integrate this
+ *  file into your software for the sole purpose of interfacing 
+ *  with Yoctopuce products. 
  *
- *    The use of this file and all relationship between Yoctopuce
- *    and Licensee are governed by Yoctopuce General Terms and
- *    Conditions.
+ *  You may reproduce and distribute copies of this file in 
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain 
+ *  this notice in the distributed source file.
  *
- *    THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
- *    WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
- *    FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
- *    EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *    INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
- *    COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
- *    SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
- *    LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
- *    CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
- *    BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
- *    WARRANTY, OR OTHERWISE.
+ *  You should refer to Yoctopuce General Terms and Conditions
+ *  for additional information regarding your rights and 
+ *  obligations.
  *
- * 2) If your intent is not to interface with Yoctopuce products,
- *    you are not entitled to use, read or create any derived
- *    material from this source file.
+ *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
+ *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
+ *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
+ *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
+ *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
 
@@ -41,13 +41,24 @@
 #define  YPROTO_H
 
 #include "ydef.h"
+#ifdef WINDOWS_API
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x400
+#endif
+#endif
 #include "yapi.h"
 #include "ytcp.h"
 #ifdef WINDOWS_API
 /**************************************************************
 * WINDOWS SPECIFIC HEADER
 ***************************************************************/
-#include <Windows.h>
+#if defined(__BORLANDC__)
+#pragma warn -8019
+#include <windows.h>
+#pragma warn +8019
+#else
+#include <windows.h>
+#endif
 #include <dbt.h>
 
 #include <SetupAPI.h>
@@ -144,6 +155,12 @@ typedef struct{
     #define YSTRICMP(A,B)                       _stricmp(A,B)
     #define YSTRNICMP(A,B,len)                  _strnicmp(A,B,len)
     #define YSTRLEN(str)                        ((int)strlen(str))
+#elif defined(WINDOWS_API) && defined(__BORLANDC__)
+	#define YSTRCMP(A,B)                        strcmp(A,B)
+    #define YSTRNCMP(A,B,len)                   strncmp(A,B,len)
+    #define YSTRICMP(A,B)                       strcmpi(A,B)
+    #define YSTRNICMP(A,B,len)                  strncmpi(A,B,len)
+    #define YSTRLEN(str)                        ((int)strlen(str))
 #elif defined(WINCE)
     #define YSTRCMP(A,B)                        strcmp(A,B)
     #define YSTRNCMP(A,B,len)                   strncmp(A,B,len)
@@ -182,53 +199,115 @@ int yvsprintf_s (char *dst, unsigned dstsize, const char * fmt, va_list arg );
 //#define DEBUG_NET_NOTIFICATION
 //#define DEBUG_DUMP_PKT
 //#define DEBUG_USB_TRAFIC
-//#define DEBUG_DEVICE_LOCK
+
+#define MSC_VS2003 1310
 
 #ifdef DEBUG_YAPI_REQ
 #define YREQLOG  dbglog
 #else
+#if defined(_MSC_VER)
+#if (_MSC_VER > MSC_VS2003)
 #define YREQLOG(fmt,...)
+#else
+__forceinline void __YREQLOG(fmt,...){}
+#define YREQLOG __YREQLOG
 #endif
-
+#else
+#define YREQLOG(fmt,args...)
+#endif
+#endif
 
 #ifdef DEBUG_HAL
 #define HALLOG  dbglog
 #else
+#if defined(_MSC_VER)
+#if (_MSC_VER > MSC_VS2003)
 #define HALLOG(fmt,...)
-#endif
-
-#ifdef DEBUG_HAL
-#define HALLOG  dbglog
 #else
-#define HALLOG(fmt,...)
+__forceinline void __HALLOG(fmt,...){}
+#define HALLOG __HALLOG
+#endif
+#else
+#define HALLOG(fmt,args...)
+#endif
 #endif
 
 #ifdef DEBUG_DEV_ENUM
 #define ENUMLOG  dbglog
 #else
+#if defined(_MSC_VER)
+#if (_MSC_VER > MSC_VS2003)
 #define ENUMLOG(fmt,...)
+#else
+__forceinline void __ENUMLOG(fmt,...){}
+#define ENUMLOG __ENUMLOG
+#endif
+#else
+#define ENUMLOG(fmt,args...)
+#endif
 #endif
 
 #ifdef DEBUG_NET_ENUM
 #define NETENUMLOG  dbglog
 #else
+#if defined(_MSC_VER)
+#if (_MSC_VER > MSC_VS2003)
 #define NETENUMLOG(fmt,...)
+#else
+__forceinline void __NETENUMLOG(fmt,...){}
+#define NETENUMLOG __NETENUMLOG
+#endif
+#else
+#define NETENUMLOG(fmt,args...)
+#endif
 #endif
 
+int vdbglogf(const char *fileid,int line,const char *fmt,va_list args);
 int dbglogf(const char *fileid,int line,const char *fmt,...);
-#ifdef WINDOWS_API
 #if defined(_MSC_VER)
-#define dbglog(fmt,...)      dbglogf(__FILE_ID__,__LINE__,fmt, __VA_ARGS__)
+#if (_MSC_VER > MSC_VS2003)
+#define dbglog(...)      dbglogf(__FILE_ID__,__LINE__, __VA_ARGS__)
 #else
-#define dbglog(fmt,args...)  dbglogf(__FILE_ID__,__LINE__,fmt, ## args)
+__forceinline int __dbglog(const char* fmt,...) {
+	int len;
+    va_list args;
+
+    va_start( args, fmt );
+    len = vdbglogf("vs2003",__LINE__,fmt,args);
+    va_end(args);
+    return len;
+}
+#define dbglog __dbglog
 #endif
 #else
-#define dbglog(fmt,args...)  dbglogf(__FILE_ID__,__LINE__,fmt, ## args)
+#define dbglog(args...)  dbglogf(__FILE_ID__,__LINE__, ## args)
+#endif
+
+
+#ifdef DEBUG_DUMP_PKT
+void dumpAnyPacket(char *prefix,int ifaceno,USB_Packet *pkt);
 #endif
 
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
+
+/*****************************************************************************
+ MISC DEFINITION
+ ****************************************************************************/
+#ifdef WINDOWS_API
+#define yApproximateSleep(ms)  Sleep(ms)
+#else
+#include <unistd.h>
+#include <stdio.h>
+#define yApproximateSleep(ms)          usleep(ms*1000)
+#endif
+//secure fopen
+#if defined(_MSC_VER) &&  (_MSC_VER > MSC_VS2003)
+#define YFOPEN(f,filename,mode) fopen_s(f,filename,mode)
+#else
+int YFOPEN(FILE** f, const char *filename, const char *mode);
+#endif
 
 #if 0
 #if defined(WINDOWS_API) && (_MSC_VER)
@@ -240,33 +319,13 @@ int dbglogf(const char *fileid,int line,const char *fmt,...);
 #define YDEBUG_BREAK {}
 #endif
 
-#define YPANNIC                 {dbglog("YPANIC:%s:%d\n",__FILE__ , __LINE__);YDEBUG_BREAK}
-#define YASSERT(x)              if(!(x)){dbglog("ASSERT FAILED:%s:%d\n",__FILE__ , __LINE__);YDEBUG_BREAK}
-#define YPROPERR(call)          {int tmpres=(call); if(YISERR(tmpres)) {return tmpres;}}
+#define YPANIC                  {dbglog("YPANIC:%s:%d\n",__FILE_ID__ , __LINE__);YDEBUG_BREAK}
+#define YASSERT(x)              if(!(x)){dbglog("ASSERT FAILED:%s:%d\n",__FILE_ID__ , __LINE__);YDEBUG_BREAK}
+#define YPROPERR(call)          {int tmpres=(call); if(YISERR(tmpres)) {return (YRETCODE)tmpres;}}
 #define YERR(code)              ySetErr(code,errmsg,NULL,__FILE_ID__,__LINE__)
 #define YERRMSG(code,message)   ySetErr(code,errmsg,message,__FILE_ID__,__LINE__)
-YRETCODE ySetErr(YRETCODE code, char *outmsg, char *erreur,const char *file,u32 line);
+YRETCODE ySetErr(YRETCODE code, char *outmsg, const char *erreur,const char *file,u32 line);
 int FusionErrmsg(int code,char *errmsg,char *generr,char *detailerr);
-void dumpAnyPacket(char *prefix,int ifaceno,USB_Packet *pkt);
-/*****************************************************************************
- MISC DEFINITION
- ****************************************************************************/
-#ifdef WINDOWS_API
-
-#define yySleep(ms)          Sleep(ms)
-#if defined(WINCE) || !defined(_MSC_VER)
-#define fopen_s(f,name,mode) ((*(f)=fopen((name),(mode))) == NULL ? -1 : 0)
-#endif
-
-#else
-
-#include <unistd.h>
-#include <stdio.h>
-#define yySleep(ms)          usleep(ms*1000)
-int fopen_s(FILE** f, const char *filename, const char *mode);
-
-#endif
-
 
 
 /*****************************************************************************
@@ -276,50 +335,24 @@ int fopen_s(FILE** f, const char *filename, const char *mode);
 #define YPKT_VERSION_ORIGINAL_RELEASE    0x0202
 
 /*****************************************************************************
+ PERFORMANCE TEST DEFINITIONS (very old)
+****************************************************************************/
+typedef struct 
+{
+    u64 totaltime;
+    u64 count;
+    u64 leave;
+    u64 tmp;
+} yPerfMon;
+
+void  dumpYPerfEntry(yPerfMon *entry,const char *name);
+
+
+/*****************************************************************************
  INTERNAL STRUCTURES and DEFINITIONS
 ****************************************************************************/
 
-#ifdef DEBUG_PERF
-
-typedef struct _stat_func{
-    u32 count;
-    u64 totaltime;
-    u64 maxtime;
-    u64 mintime;
-    u64 tmp;
-    const char *name;
-}stat_func;
-
-extern stat_func* allstats[];
-#define YSTAT_COUNT (sizeof(stat_func)/sizeof(stat_func))
-#define YSTAT_NAME(name)        (name ## _command)
-#define YSTAT_REGISTER(name)    (&YSTAT_NAME(name) )
-
-#define YSTAT_CREATE(name)      stat_func YSTAT_NAME(name) = {0,0,0,0xffffffffffffffff,0,TOSTRING(name)};
-#ifdef  __cplusplus
-#define YSTAT_EXTERN(name)      extern "C" {extern stat_func YSTAT_NAME(name);}
-#else
-#define YSTAT_EXTERN(name)      extern stat_func YSTAT_NAME(name);
-#endif
-#define YSTAT_ENTER(name)       {YSTAT_NAME(name).tmp = yapiGetTickCount();}
-#define YSTAT_EXIT(name)        {ystat_exit(&YSTAT_NAME(name),yapiGetTickCount());}
-#define YSTAT_CLEAR(name)       {ystat_clear(&YSTAT_NAME(name));}
-#define YSTAT_DUMP(name)        {ystat_dump(&YSTAT_NAME(name));}
-void ystat_exit(stat_func *stat,u64 tick);
-void ystat_clear(stat_func *stat);
-void ystat_dump(stat_func *stat);
-#else
-#define YSTAT_CREATE(name)
-#define YSTAT_EXTERN(name)
-#define YSTAT_ENTER(name)
-#define YSTAT_EXIT(name)
-#define YSTAT_CLEAR(name)
-#define YSTAT_DUMP(name)
-#endif
-
-
-
-// ON WINDOWS PACKET NEED ONE BYTE FOR THE REQUEST ID
+// MISC packet definitions
 #pragma pack(push,1)
 typedef struct{
     u8         dummy;
@@ -327,27 +360,6 @@ typedef struct{
 } OS_USB_Packet;
 #pragma pack(pop)
 
-
-#define NBMAX_NET_HUB               32
-#define NBMAX_USB_DEVICE_CONNECTED  256
-#define WIN_DEVICE_PATH_LEN         512
-#define HTTP_RAW_BUFF_SIZE          (8*1024)
-
-#define NB_LINUX_USB_TR             1
-
-
-
-typedef struct _pktItem{
-    USB_Packet      pkt;
-    struct _pktItem   *next;
-} pktItem;
-
-
-typedef struct {
-    pktItem     *first;
-    pktItem     *last;
-    int         count;
-} pktQueue;
 
 #if defined(LINUX_API)
 typedef struct {
@@ -357,31 +369,69 @@ typedef struct {
 } linRdTr;
 #endif
 
+// packet queue stuff
+typedef struct _pktItem{
+    USB_Packet          pkt;
+#ifdef DEBUG_PKT_TIMING
+    u64                 time;
+    u64                 ospktno;
+#endif
+    struct _pktItem     *next;
+} pktItem;
+
+
+typedef struct {
+    pktItem             *first;
+    pktItem             *last;
+    int                 count;
+	u64					totalPush;
+	u64					totalPop;
+    YRETCODE            status;
+    char                errmsg[YOCTO_ERRMSG_LEN]; 
+    yCRITICAL_SECTION   cs;
+    yEvent              notEmptyEvent;
+    yEvent              emptyEvent;
+} pktQueue;
+
+//pktQueue Helpers
+void yPktQueueInit(pktQueue  *q);
+void yPktQueueFree(pktQueue  *q);
+void yPktQueueSetError(pktQueue  *q,YRETCODE code, const char * msg);
+
+
+
+
+#define NBMAX_NET_HUB               32
+#define NBMAX_USB_DEVICE_CONNECTED  256
+#define WIN_DEVICE_PATH_LEN         512
+#define HTTP_RAW_BUFF_SIZE          (8*1024)
+#define NB_LINUX_USB_TR             1
+
+#define YWIN_EVENT_READ     0
+#define YWIN_EVENT_INTERRUPT 1
+
 typedef struct _yInterfaceSt {
     u16             vendorid;
     u16             deviceid;
     u16             ifaceno;
     u16             pkt_version;
     char            serial[YOCTO_SERIAL_LEN*2];
-
     struct {
-        int         yyySetupDone:1;
+        u32         yyySetupDone:1;
     } flags;
-    pktQueue        rx_ok;
-    pktItem         *txqueue;
-    pktItem         static_txqueue;
-    yCRITICAL_SECTION   rdCS;
+    pktQueue        rxQueue;
+    pktQueue        txQueue;
 #if defined(WINDOWS_API)
+    char            devicePath[WIN_DEVICE_PATH_LEN];
+    yThread         io_thread;    
     HANDLE          wrHDL;
     OVERLAPPED      rdOL;
     HANDLE          rdHDL;
-    HANDLE          rdEV;
-    u8              rdpending;
+    HANDLE          EV[2];
+	u32             rdpending;
     OS_USB_Packet   tmpd2hpkt;
     OS_USB_Packet   tmph2dpkt;
-    char            devicePath[WIN_DEVICE_PATH_LEN];
 #elif defined(OSX_API)
-    yCRITICAL_SECTION   yyyCS;
     IOHIDDeviceRef      devref;
     CFStringRef         run_loop_mode;
     USB_Packet          tmprxpkt;
@@ -392,33 +442,44 @@ typedef struct _yInterfaceSt {
     u8                      wrendp;
     linRdTr                 rdTr[NB_LINUX_USB_TR];
 #endif
-
 } yInterfaceSt;
 
+
+YRETCODE    yPktQueuePushD2H(yInterfaceSt *iface,const USB_Packet *pkt, char * errmsg);
+YRETCODE    yPktQueueWaitAndPopD2H(yInterfaceSt *iface,pktItem **pkt,int ms,char * errmsg);
+YRETCODE    yPktQueuePushH2D(yInterfaceSt *iface,const USB_Packet *pkt, char * errmsg);
+YRETCODE    yPktQueuePeekH2D(yInterfaceSt *iface,pktItem **pkt);
+YRETCODE    yPktQueuePopH2D(yInterfaceSt *iface,pktItem **pkt);
 
 #define NBMAX_INTERFACE_PER_DEV     2
 typedef enum
 {
-    YDEV_UNPLUGED,              // device has been plugged by the past but is no more
-                                // -> YDEV_ARRIVAL
-    YDEV_ALLREADY_THERE,        // temporary state (used only during enumeration)
-                                // the device is working at the beginning of the enumeration
-                                // ->YDEV_WORKING, YDEV_UNPLUGED
-    YDEV_ARRIVAL,               // temporary stat (used during enumeration) a new plug has been detected
-                                // -> YDEV_WORKING
+    YDEV_UNPLUGGED=0,           // device has been plugged by the past but is no more
+                                // -> YDEV_WORKING  or YDEV_NOTRESPONDING
     YDEV_WORKING,               // device is plugged and running
-                                // -> YDEV->UNPLUGET, YDEV_ALLREADY_THERE
+                                // -> YDEV_UNPLUGGED
     YDEV_NOTRESPONDING          // device has not repsond to StartDevice and we will never try to speak with it
                                 // -> none
 } YDEV_STATUS;
+
+
+typedef enum
+{
+    YENU_NONE,
+    YENU_START,
+    YENU_STOP,
+    YENU_RESTART
+} YENU_ACTION;
+
+
 
 typedef enum
 {
     YRUN_STOPED,
     YRUN_AVAIL,                 // device is available for a request
-    YRUN_REQUEST,               // device has be opened for a request
-    YRUN_BUSSY,                 // device is doing IO for the request
-    YRUN_IDLE,                 // device is doing IO for the idle thread
+    YRUN_REQUEST,               // device has be reserved for a request
+    YRUN_BUSY,                  // device is doing IO for the request
+    YRUN_IDLE,                  // device is doing IO for the idle thread
     YRUN_ERROR,                 // device has been stopped because an IO error
 } YRUN_STATUS;
 
@@ -430,40 +491,41 @@ typedef enum
     YHTTP_CLOSE_BY_API
 } YHTTP_STATUS;
 
-#ifdef DEBUG_DEVICE_LOCK
+
+#define YIO_REMOTE_CLOSE 1u
+#define YIO_ASYNC        2u
+
 typedef struct{
-    char    *file;
-    int     line;
-} Flock;
-#endif
+    u8      flags;
+    u64     timeout;
+    YUSBIO  hdl;
+} USB_HDL;
 
+#define NB_MAX_STARTUP_RETRY   5u
 
-#define NB_MAX_STARTUP_RETRY   5
-
+#define NEXT_YPKT_NO(current) ((current+1)& YPKTNOMSK)
+#define NEXT_IFACE_NO(current,total) (current+1>total?0:current+1)
 
 // structure that contain all information about a device
 typedef struct  _yPrivDeviceSt{
-    yCRITICAL_SECTION   acces;
+    yCRITICAL_SECTION   acces_state;
     YUSBDEV             yhdl;       // unique YHANDLE to identify device during execution
-    YDEV_STATUS         dstatus;    // detection status
+    YDEV_STATUS         dStatus;    // detection status
+    YENU_ACTION         enumAction; // action to triger at end of enumeration
     YRUN_STATUS         rstatus;    // running status of the device (valid only on working dev)
-#ifdef DEBUG_DEVICE_LOCK
-    Flock               lastopen;
-#endif
+    char                errmsg[YOCTO_ERRMSG_LEN];
     unsigned int        nb_startup_retry;
     u64                 next_startup_attempt;
-    YUSBIO              iohdl;      // handle open/read/write/close access (valid only if rstatus== bussy)
-    u8                  isAsyncIO;  // when set to true, TCP content can be safely discarded
+    USB_HDL             pendingIO; 
     YHTTP_STATUS        httpstate;
     yDeviceSt           infos;      // device infos
-
     pktItem             *currxpkt;
     u8                  curxofs;
     pktItem             *curtxpkt;
     u8                  curtxofs;
     pktItem             tmptxpkt;
     u8                  lastpktno;
-
+    int                 currentIfaceNo;
     u8                  ifacesMap[NBMAX_INTERFACE_PER_DEV];
     yInterfaceSt        ifaces[NBMAX_INTERFACE_PER_DEV];
     char                *replybuf;      // Used to buffer request result
@@ -545,11 +607,31 @@ typedef struct _TcpReqSt {
     int                 errcode;        // in case an error occured
 } TcpReqSt;
 
+
+#ifdef Y_UPNP_DETECT
+#define UPNP_UUID_LEN   48
+#define UPNP_URL_LEN    48
+
+typedef struct 
+{   
+    char        serial[YOCTO_SERIAL_LEN];
+    char        uuid[UPNP_UUID_LEN];
+    char        url[UPNP_URL_LEN];
+    u64         detectedTime;
+    u64         maxAge;
+} UNPNP_CACHE_ENTRY;
+#endif
+
+
+
+#define SETUPED_IFACE_CACHE_SIZE 128
+
 // structure that contain information about the API
 typedef struct{
     //yapi CS
     yCRITICAL_SECTION   updateDev_cs;
     yCRITICAL_SECTION   handleEv_cs;
+    yEvent              exitSleepEvent;
     // usb stuff
     yCRITICAL_SECTION   enum_cs;
     int                 detecttype;
@@ -567,6 +649,11 @@ typedef struct{
     yRawNotificationCb  rawNotificationCb;
     yCRITICAL_SECTION   deviceCallbackCS;
     yCRITICAL_SECTION   functionCallbackCS;
+#ifdef Y_UPNP_DETECT
+    // upnp stuff
+    UPNPSocket          upnp;            // socket used to talk to the device
+    UNPNP_CACHE_ENTRY*  upnpCache[NBMAX_NET_HUB];
+#endif
     // Public callbacks
     yapiLogFunction             log;
     yapiDeviceUpdateCallback    logDeviceCallback;
@@ -575,10 +662,10 @@ typedef struct{
     yapiDeviceUpdateCallback    removalCallback;
     yapiFunctionUpdateCallback  functionCallback;
     // OS specifics variables
+    yInterfaceSt*       setupedIfaceCache[SETUPED_IFACE_CACHE_SIZE];
 #if defined(WINDOWS_API)
     win_hid_api         hid;
     HANDLE              apiLock;
-    yThread             usb_thread;
 	int					prevEnumCnt;
 	yInterfaceSt		*prevEnum;
 #elif defined(OSX_API)
@@ -603,52 +690,24 @@ extern yContextSt  *yContext;
  * PLATFORM SPECIFIC USB code
 *****************************************************************/
 
-#ifdef WINDOWS_API
-int yWinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-#endif
-
 
 // for devices detection
-int  yUSB_init(yContextSt *ctx,char *errmsg);
-int  yUSB_stop(yContextSt *ctx,char *errmsg);
-int  yUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg);
+int  yyyUSB_init(yContextSt *ctx,char *errmsg);
+int  yyyUSB_stop(yContextSt *ctx,char *errmsg);
+int  yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg);
 int  yyyOShdlCompare( yPrivDeviceSt *dev, DevEnum *newdev);
-// setup all stuff butt does not listen for new packet
-void yyyInitPktQueue(yInterfaceSt  *iface);
-void yyyFreePktQueue(yInterfaceSt  *iface);
 int  yyySetup(yInterfaceSt *iface,char *errmsg);
-// listen for packet
-int  yyyRead(yInterfaceSt *iface,char *errmsg);
-// check if we have received a new packet
-int  yyyReadIdle(yInterfaceSt *iface,char *errmsg);
-// cancel listen packet
-int  yyyReadStop(yInterfaceSt *iface,char *errmsg);
-// send a packet
-int  yyyWrite(yInterfaceSt *iface,USB_Packet *pkt, char *errmsg);
+YRETCODE  yyySendPacket( yInterfaceSt *iface,const USB_Packet *pkt,char *errmsg);
+int  yyySignalOutPkt(yInterfaceSt *iface);
 // close all stuff of setup
 void yyyPacketShutdown(yInterfaceSt *iface);
 
 
-
 /*****************************************************************************
   ENUMERATION RELATED FUNCTION
-  ***************************************************************************/
-
-int devGetAcces(yPrivDeviceSt *dev,int waitacces);
-void devReleaseAcces(yPrivDeviceSt *dev);
-void enuResetDStatus(void);
-yPrivDeviceSt* enuFindDevSlot(yInterfaceSt *iface);
-//thread safe because only modified only by yDetectDevcies which is not reentrant
-void enuUpdateDStatus(void);
-
-yPrivDeviceSt* AllocateDevice(void);
-void FreeDevice(yPrivDeviceSt *dev);
-int  StartDevice(yPrivDeviceSt *dev,char *errmsg);
-int  StopDevice(yPrivDeviceSt *dev,char *errmsg);
-
+******************************************************************************/
 
 //some early declarations
-//yPrivDeviceSt *findDevFromSerial(const char *serial);
 void wpUpdateUSB(const char *serial,const char *logicalname, u8 beacon);
 void wpUnregisterUSB(const char *serial);
 void ypUpdateUSB(const char *serial, const char *funcid, const char *funcname, int funydx, const char *funcval);
@@ -656,42 +715,23 @@ void ypUpdateYdx(int devydx, int funydx, const char *funcval);
 void ypUpdateHybrid(const char *serial, int funydx, const char *funcval);
 
 /*****************************************************************
- * yStream API with cycling logic
+ * yStream API with cycling logic and yyPacket API
 *****************************************************************/
-
-
-//yypacket
-void  yyPushNewPkt(yInterfaceSt *iface,USB_Packet *pkt);
-// this function copy the pkt into the iterface out queue and send the packet
-int yySendPacket( yInterfaceSt *iface,pktItem *qpkt,char *errmsg);
-int yyGetTopPkt(yInterfaceSt *iface, pktItem **ptr, int blocking,char *errmsg);
-void yyPopPkt(yInterfaceSt *iface, pktItem *ptr);
-int yyPacketSetup(yPrivDeviceSt *dev, yInterfaceSt  *iface,int idx,char *errmsg);
-
-//ypacket
-int ySendPacket(yPrivDeviceSt *dev,pktItem *qpkt,char *errmsg);
-int yPacketStopRead(yPrivDeviceSt *dev,char *errmsg);
-void yPacketShutdown(yPrivDeviceSt *dev);
-
-//ystream
-int yStreamReOpen(yPrivDeviceSt *dev,char *errmsg);
-int yStreamGetTxBuff(yPrivDeviceSt *dev, u8 **data, u8 *maxsize, char *errmsg);
-int yStreamTransmit(yPrivDeviceSt *dev, u8 proto,u8 size,char *errmsg);
-int yStreamFlush(yPrivDeviceSt *dev,char *errmsg);
-int yStreamClose(yPrivDeviceSt *dev,char *errmsg);
-int yDispatchReceive(yPrivDeviceSt *dev,char *errmsg);
 
 /**********************************************************************
   GENERIC DEVICE LIST FUNCTION
  **********************************************************************/
 
-
 // return the yDeviceSt *from a matching string (serial or name)
-yPrivDeviceSt *findDevFromStr(const char *str);
+#define FIND_FROM_SERIAL 1
+#define FIND_FROM_NAME   2
+#define FIND_FROM_ANY    (FIND_FROM_SERIAL|FIND_FROM_NAME)
+yPrivDeviceSt *findDev(const char *str,u32 flags);
+
 
 // return the YHANDLE from a matching string (serial or name)
 YUSBDEV findDevHdlFromStr(const char *str);
-yPrivDeviceSt *findDevFromIOHdl(YUSBIO hdl);
+yPrivDeviceSt *findDevFromIOHdl(YIOHDL *hdl);
 void devHdlInfo(YUSBDEV hdl,yDeviceSt *infos);
 
 YRETCODE yUSBUpdateDeviceList(char *errmsg);
@@ -700,15 +740,20 @@ void     yUSBReleaseAllDevices(void);
 /*****************************************************************************
   USB REQUEST FUNCTIONS
   ***************************************************************************/
+
+int  yUsbInit(yContextSt *ctx,char *errmsg);
+int  yUsbFree(yContextSt *ctx,char *errmsg);
 int  yUsbIdle(void);
 int  yUsbTrafficPending(void);
+int  yUsbOpenDevDescr(YIOHDL *ioghdl, yStrRef devdescr, char *errmsg);
 int  yUsbOpen(YIOHDL *ioghdl, const char *device, char *errmsg);
 int  yUsbSetIOAsync(YIOHDL *ioghdl, char *errmsg);
 int  yUsbWrite(YIOHDL *ioghdl, const char *buffer, int writelen,char *errmsg);
 int  yUsbReadNonBlock(YIOHDL *ioghdl, char *buffer, int len,char *errmsg);
-int  yUsbReadSelect(YIOHDL *ioghdl, u64 mstimeout,char *errmsg);
+int  yUsbReadBlock(YIOHDL *ioghdl, char *buffer, int len,u64 blockUntil,char *errmsg);
 int  yUsbEOF(YIOHDL *ioghdl,char *errmsg);
 int  yUsbClose(YIOHDL *ioghdl,char *errmsg);
+
 int  yUSBGetBooloader(const char *serial, const char * name,  yInterfaceSt *iface,char *errmsg);
 
 #endif

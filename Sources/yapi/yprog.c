@@ -1,39 +1,39 @@
 /*********************************************************************
  *
- * $Id: yprog.c 10218 2013-03-08 08:46:40Z seb $
+ * $Id: yprog.c 12321 2013-08-13 14:56:24Z mvuilleu $
  *
  * Implementation of firmware upgrade functions
  *
  * - - - - - - - - - License information: - - - - - - - - - 
  *
- * Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
+ *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
- * 1) If you have obtained this file from www.yoctopuce.com,
- *    Yoctopuce Sarl licenses to you (hereafter Licensee) the
- *    right to use, modify, copy, and integrate this source file
- *    into your own solution for the sole purpose of interfacing
- *    a Yoctopuce product with Licensee's solution.
+ *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
+ *  non-exclusive license to use, modify, copy and integrate this
+ *  file into your software for the sole purpose of interfacing 
+ *  with Yoctopuce products. 
  *
- *    The use of this file and all relationship between Yoctopuce 
- *    and Licensee are governed by Yoctopuce General Terms and 
- *    Conditions.
+ *  You may reproduce and distribute copies of this file in 
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain 
+ *  this notice in the distributed source file.
  *
- *    THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *    WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
- *    FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
- *    EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *    INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *    COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *    SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
- *    LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
- *    CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
- *    BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
- *    WARRANTY, OR OTHERWISE.
+ *  You should refer to Yoctopuce General Terms and Conditions
+ *  for additional information regarding your rights and 
+ *  obligations.
  *
- * 2) If your intent is not to interface with Yoctopuce products,
- *    you are not entitled to use, read or create any derived 
- *    material from this source file.
+ *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
+ *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
+ *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
+ *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
+ *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
 
@@ -51,8 +51,9 @@
 
 const char* prog_GetCPUName(BootloaderSt *dev)
 {
-    switch(dev->devid_family){
-    case FAMILY_PIC24FJ256DA210:
+	char * res="";
+	switch(dev->devid_family){
+	case FAMILY_PIC24FJ256DA210:
         switch(dev->devid_model){
 #ifndef MICROCHIP_API
             case PIC24FJ128DA206 :
@@ -71,14 +72,15 @@ const char* prog_GetCPUName(BootloaderSt *dev)
                 return "PIC24FJ256DA210";
             case PIC24FJ256DA110 :
                 return "PIC24FJ256DA110";
-            default:
-               return "Unknown CPU model(family PIC24FJ256DA210)";
+			default:
+			   res = "Unknown CPU model(family PIC24FJ256DA210)";
+			   break;
 #else
             case PIC24FJ256DA206 :
                 return "PIC24FJ256DA206";
             default: ;
 #endif
-        }
+		}
         break;
     case FAMILY_PIC24FJ64GB004:
         switch(dev->devid_model){
@@ -92,16 +94,18 @@ const char* prog_GetCPUName(BootloaderSt *dev)
             case PIC24FJ64GB004 :
                 return "PIC24FJ64GB004";
             default:
-                return "Unknown CPU model(family PIC24FJ64GB004)";
+				res= "Unknown CPU model(family PIC24FJ64GB004)";
+				break;
 #else
             case PIC24FJ64GB002 :
                 return "PIC24FJ64GB002";
-            default: ;
+			default:
+				break;
 #endif
         }
         break;
     }
-    return "";
+	return res;
 }
 
 int  checkHardwareCompat(BootloaderSt *dev,const char *pictype)
@@ -295,40 +299,37 @@ int ypIsSendBootloaderBusy(BootloaderSt *dev)
 // Return -1 if the output channel is busy and the command could not be sent
 int ypSendBootloaderCmd(BootloaderSt *dev, const USB_Packet *pkt,char *errmsg)
 {
-   return yyyWrite(&dev->iface,(USB_Packet*)pkt,errmsg);
+	return yyySendPacket(&dev->iface,pkt,errmsg);
 }
 
-// Return 0 if a reply packet was available and returned
-// Return -1 if there was no reply available
+// Return 1 if a reply packet was available and returned
+// Return 0 if there was no reply available
+// Return and YRETCODE on errror
 int ypGetBootloaderReply(BootloaderSt *dev, USB_Packet *pkt,char *errmsg)
 {
-    pktItem *ptr=NULL;
-    YPROPERR(yyGetTopPkt(&dev->iface,&ptr,0,errmsg));
+	pktItem *ptr;
+	YPROPERR(yPktQueueWaitAndPopD2H(&dev->iface,&ptr,10,errmsg));
     if(ptr){
-        yyPopPkt(&dev->iface,ptr);
         yTracePtr(ptr);
         memcpy(pkt,&ptr->pkt,sizeof(USB_Packet));
         yFree(ptr);
-        return 0;
+        return 1;
     }
-    return -1;
+	return YAPI_SUCCESS;
 }
 
 //pool a packet form usb for a specific device
 static int BlockingRead(BootloaderSt *dev,USB_Packet *pkt,char *errmsg)
 {
-    //fimxe: change to use ypGetBootloaderReply
-    pktItem *ptr=NULL;
-    YPROPERR(yyyRead(&dev->iface,errmsg));
-    do{
-        YPROPERR(yyGetTopPkt(&dev->iface,&ptr,10000,errmsg));
-    }while(ptr==NULL);
-    yyPopPkt(&dev->iface,ptr);
-    yTracePtr(ptr);
-    memcpy(pkt,&ptr->pkt,sizeof(USB_Packet));
-    yFree(ptr);
-    YPROPERR(yyyReadStop(&dev->iface,errmsg));
-    return YAPI_SUCCESS;
+	pktItem *ptr;
+	YPROPERR(yPktQueueWaitAndPopD2H(&dev->iface,&ptr,1000,errmsg));
+    if (ptr) {
+	    yTracePtr(ptr);
+		memcpy(pkt,&ptr->pkt,sizeof(USB_Packet));
+		yFree(ptr);
+        return YAPI_SUCCESS;
+	}
+	return YERR(YAPI_TIMEOUT);
 }
 
 static int SendDataPacket( BootloaderSt *dev,int program, u32 address, u8 *data,int nbinstr,char *errmsg)
@@ -379,7 +380,9 @@ int prog_BlankDevice(BootloaderSt *dev,char *errmsg)
 {
     int     res;
     char    suberr[YOCTO_ERRMSG_LEN];
-    USB_Packet pkt;
+    USB_Packet  pkt;
+    u32         delay;
+
     memset(&pkt,0,sizeof(USB_Prog_Packet));
     if(dev->ext_total_pages){
         pkt.prog.pkt_ext.type = PROG_ERASE;
@@ -389,7 +392,10 @@ int prog_BlankDevice(BootloaderSt *dev,char *errmsg)
     }else{
         pkt.prog.pkt.type = PROG_ERASE;
         res= ypSendBootloaderCmd(dev,&pkt,suberr);
+        delay = 1000 + (dev->last_addr>>6);
+        yApproximateSleep(delay);
     }
+
     return FusionErrmsg(res,errmsg,"Unable to blank the device",suberr);
 }
 
@@ -519,8 +525,6 @@ static int prog_FlashFlash(yFlashArg *arg,int *step,BootloaderSt *dev, newmemzon
 #ifdef DEBUG_FIRMWARE   
                 ylogf("Drop ROM data past firmware boundary (zone %d at offset %x)\n", fctx.currzone, fctx.zOfs);
 #endif
-                data += len;
-                len = 0;
                 break;
             }
             stepB =0;
@@ -549,12 +553,12 @@ static int prog_FlashFlash(yFlashArg *arg,int *step,BootloaderSt *dev, newmemzon
                 YPROPERR(ypSendBootloaderCmd(dev,&pkt,errmsg));
                 data  += datasize;
                 stepB += datasize;
-            } while ( (addr & (dev->ext_page_size-1)) + datasize < dev->ext_page_size && stepB <len);
+			} while ( ((u16)( (addr & (dev->ext_page_size-1)) + datasize) < dev->ext_page_size) && (stepB <len));
 
             // pageno is already set properly
             addr = page;
             pkt.prog.pkt_ext.dwordpos_lo = (addr >> 2) & 0xff;
-            pkt.prog.pkt_ext.dwordpos_hi = (addr >> 10) & 3;
+			pkt.prog.pkt_ext.dwordpos_hi = (addr >> 10) & 3;
             pkt.prog.pkt_ext.pageno = (u16)(addr / dev->ext_page_size);
             pkt.prog.pkt.type = PROG_VERIF;
             if((res=ypSendBootloaderCmd(dev,&pkt,suberr))<0){
@@ -637,7 +641,6 @@ int  prog_FlashDevice(yFlashArg *arg, int realyflash, char *errmsg)
             return FusionErrmsg(res,errmsg,"Unable to open the device by serial",suberrmsg);
         }
     }
-    yyyInitPktQueue(&dev.iface);
     YPROPERR(yyySetup(&dev.iface,errmsg));
 #ifdef DEBUG_FIRMWARE
     dbglog("get infos\n");
@@ -670,7 +673,7 @@ int  prog_FlashDevice(yFlashArg *arg, int realyflash, char *errmsg)
     if(dev.ext_total_pages ==0){
         for (z=0 ; z < zones.nbrom  ; z++){
 #ifdef DEBUG_FIRMWARE
-    dbglog("prog zone %d\n",z);
+			dbglog("prog zone %d\n",z);
 #endif
 
             if(arg->callback) arg->callback(step,10,arg->context);
@@ -751,7 +754,7 @@ int prog_GetDeviceInfo(BootloaderSt *dev,char *errmsg)
             dev->ext_total_pages = 0;
             dev->first_code_page = 0xffff;
             dev->first_yfs3_page = 0xffff;
-            return 0;
+			break;
         case PROG_INFO_EXT:
             dev->er_blk_size   = pkt.prog.pktinfo_ext.er_blk_size;
             dev->pr_blk_size   = pkt.prog.pktinfo_ext.pr_blk_size;
@@ -772,7 +775,7 @@ int prog_GetDeviceInfo(BootloaderSt *dev,char *errmsg)
             return FusionErrmsg(YAPI_IO_ERROR,errmsg,nicemsg,"Invalid Prog packet");
     }
     
-    return YAPI_SUCCESS;
+	return YAPI_SUCCESS;
 }
 
 
@@ -856,7 +859,7 @@ int yUSBGetBooloader(const char *serial, const char * name,  yInterfaceSt *iface
     yInterfaceSt    *runifaces=NULL;
     int             i;    
     
-    YPROPERR(yUSBGetInterfaces(&runifaces,&nbifaces,errmsg));
+    YPROPERR(yyyUSBGetInterfaces(&runifaces,&nbifaces,errmsg));
     //inspect all interfaces
     for(i=0, curif = runifaces ; i < nbifaces ; i++, curif++){
         // skip real devices

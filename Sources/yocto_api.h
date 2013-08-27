@@ -1,39 +1,39 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 10717 2013-03-27 11:18:20Z mvuilleu $
+ * $Id: yocto_api.h 12326 2013-08-13 15:52:20Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
- * Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
+ *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
- * 1) If you have obtained this file from www.yoctopuce.com,
- *    Yoctopuce Sarl licenses to you (hereafter Licensee) the
- *    right to use, modify, copy, and integrate this source file
- *    into your own solution for the sole purpose of interfacing
- *    a Yoctopuce product with Licensee's solution.
+ *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
+ *  non-exclusive license to use, modify, copy and integrate this
+ *  file into your software for the sole purpose of interfacing 
+ *  with Yoctopuce products. 
  *
- *    The use of this file and all relationship between Yoctopuce 
- *    and Licensee are governed by Yoctopuce General Terms and 
- *    Conditions.
+ *  You may reproduce and distribute copies of this file in 
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain 
+ *  this notice in the distributed source file.
  *
- *    THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *    WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
- *    FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
- *    EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *    INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *    COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *    SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
- *    LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
- *    CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
- *    BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
- *    WARRANTY, OR OTHERWISE.
+ *  You should refer to Yoctopuce General Terms and Conditions
+ *  for additional information regarding your rights and 
+ *  obligations.
  *
- * 2) If your intent is not to interface with Yoctopuce products,
- *    you are not entitled to use, read or create any derived 
- *    material from this source file.
+ *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
+ *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
+ *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
+ *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
+ *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
 
@@ -165,6 +165,9 @@ private:
     static  void        _yapiDeviceChangeCallbackFwd(YDEV_DESCR devdesc);
     static  void        _yapiDeviceLogCallbackFwd(YDEV_DESCR devdesc);
 public:
+    static  std::map<string,std::map<string,YFunction*> > _YFunctionsCaches;
+
+    
     static  void        _notifyLogs(YModule* mod);
     static  void        _yapiFunctionUpdateCallbackFwd(YFUN_DESCR fundesc, const char *value);
     static  double      _decimalToDouble(s16 val);
@@ -201,6 +204,7 @@ public:
        static const int EXHAUSTED             = -10;     // you have run out of a limited ressource, check the documentation
        static const int DOUBLE_ACCES          = -11;     // you have two process that try to acces to the same device
        static const int UNAUTHORIZED          = -12;     // unauthorized access to password-protected device
+       static const int RTC_NOT_READY         = -13;     // real-time clock has not been initialized (or time was lost)
 //--- (end of generated code: return codes)
 
 
@@ -485,10 +489,12 @@ private:
 
   
     // Constructor is private, use getDevice factory method
-    YDevice(YDEV_DESCR devdesc): _devdescr(devdesc), _cacheStamp(0), _subpath(NULL){ };
-     YRETCODE   HTTPRequestPrepare(const string& request, string& fullrequest, char *errbuff);
+    YDevice(YDEV_DESCR devdesc);
+    ~YDevice();
+    YRETCODE   HTTPRequestPrepare(const string& request, string& fullrequest, char *errbuff);
 
 public:
+    static void ClearCache();
     static YDevice *getDevice(YDEV_DESCR devdescr);
     YRETCODE    HTTPRequestAsync(const string& request, HTTPRequestCallback callback, void *context, string& errmsg);
     YRETCODE    HTTPRequest(const string& request, string& buffer, string& errmsg);
@@ -532,7 +538,6 @@ protected:
     
     // Constructor is protected. Use the device-specific factory function to instantiate
     YFunction(const string& classname, const string& func);
-
     // Method used to throw exceptions or save error type/message
     void        _throw(YRETCODE errType, string errMsg);
 
@@ -574,7 +579,8 @@ protected:
     
     
 public:
-    
+    virtual ~YFunction();
+
     static const YFUN_DESCR FUNCTIONDESCRIPTOR_INVALID = Y_FUNCTIONDESCRIPTOR_INVALID;
     static const string     HARDWAREID_INVALID;
     static const string     FUNCTIONID_INVALID;
@@ -779,8 +785,6 @@ protected:
     unsigned        _usbCurrent;
     int             _rebootCountdown;
     Y_USBBANDWIDTH_enum _usbBandwidth;
-    // Static function object cache
-    static std::map<string,YModule*> _ModuleCache;
 
     friend YModule *yFindModule(const string& func);
     friend YModule *yFirstModule(void);
@@ -791,32 +795,17 @@ protected:
     
     //--- (generated code: YModule constructor)
     // Constructor is protected, use yFindModule factory function to instantiate
-    YModule(const string& func): YFunction("Module", func)
+    YModule(const string& func);
     //--- (end of generated code: YModule constructor)
     //--- (generated code: Module initialization)
-            ,_logCallback(NULL)
-            ,_logContinuation("0")
-            ,_productName(Y_PRODUCTNAME_INVALID)
-            ,_serialNumber(Y_SERIALNUMBER_INVALID)
-            ,_logicalName(Y_LOGICALNAME_INVALID)
-            ,_productId(Y_PRODUCTID_INVALID)
-            ,_productRelease(Y_PRODUCTRELEASE_INVALID)
-            ,_firmwareRelease(Y_FIRMWARERELEASE_INVALID)
-            ,_persistentSettings(Y_PERSISTENTSETTINGS_INVALID)
-            ,_luminosity(Y_LUMINOSITY_INVALID)
-            ,_beacon(Y_BEACON_INVALID)
-            ,_upTime(Y_UPTIME_INVALID)
-            ,_usbCurrent(Y_USBCURRENT_INVALID)
-            ,_rebootCountdown(Y_REBOOTCOUNTDOWN_INVALID)
-            ,_usbBandwidth(Y_USBBANDWIDTH_INVALID)
     //--- (end of generated code: Module initialization)
-    {};
 
     // Method used to retrieve details of the nth function of our device
     YRETCODE        _getFunction(int idx, string& serial, string& funcId, string& funcName, string& funcVal, string& errMsg);
     
 public:
-
+    ~YModule();
+    
     /**
      * Returns a global identifier of the function in the format MODULE_NAME&#46;FUNCTION_NAME.
      * The returned string uses the logical names of the module and of the function if they are defined,
@@ -1194,6 +1183,14 @@ public:
      * @return a binary buffer with module icon, in png format.
      */
     string             get_icon2d();
+
+    /**
+     * Returns a string with last logs of the module. This method return only
+     * logs that are still in the module.
+     * 
+     * @return a string with last logs of the module.
+     */
+    string             get_lastLogs();
 
 
     /**

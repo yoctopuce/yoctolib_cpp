@@ -1,39 +1,39 @@
 /*********************************************************************
  *
- * $Id: yocto_power.cpp 11112 2013-04-16 14:51:20Z mvuilleu $
+ * $Id: yocto_power.cpp 12324 2013-08-13 15:10:31Z mvuilleu $
  *
  * Implements yFindPower(), the high-level API for Power functions
  *
  * - - - - - - - - - License information: - - - - - - - - - 
  *
- * Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
+ *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
- * 1) If you have obtained this file from www.yoctopuce.com,
- *    Yoctopuce Sarl licenses to you (hereafter Licensee) the
- *    right to use, modify, copy, and integrate this source file
- *    into your own solution for the sole purpose of interfacing
- *    a Yoctopuce product with Licensee's solution.
+ *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
+ *  non-exclusive license to use, modify, copy and integrate this
+ *  file into your software for the sole purpose of interfacing 
+ *  with Yoctopuce products. 
  *
- *    The use of this file and all relationship between Yoctopuce 
- *    and Licensee are governed by Yoctopuce General Terms and 
- *    Conditions.
+ *  You may reproduce and distribute copies of this file in 
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain 
+ *  this notice in the distributed source file.
  *
- *    THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *    WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
- *    FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
- *    EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *    INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *    COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *    SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
- *    LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
- *    CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
- *    BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
- *    WARRANTY, OR OTHERWISE.
+ *  You should refer to Yoctopuce General Terms and Conditions
+ *  for additional information regarding your rights and 
+ *  obligations.
  *
- * 2) If your intent is not to interface with Yoctopuce products,
- *    you are not entitled to use, read or create any derived
- *    material from this source file.
+ *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
+ *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
+ *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
+ *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
+ *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
 
@@ -44,8 +44,36 @@
 #include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 #include <stdlib.h>
 
+//--- (YPower constructor)
+// Constructor is protected, use yFindPower factory function to instantiate
+YPower::YPower(const string& func): YFunction("Power", func)
+//--- (end of YPower constructor)
+//--- (Power initialization)
+            ,_callback(NULL)
+            ,_logicalName(Y_LOGICALNAME_INVALID)
+            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
+            ,_unit(Y_UNIT_INVALID)
+            ,_currentValue(Y_CURRENTVALUE_INVALID)
+            ,_lowestValue(Y_LOWESTVALUE_INVALID)
+            ,_highestValue(Y_HIGHESTVALUE_INVALID)
+            ,_currentRawValue(Y_CURRENTRAWVALUE_INVALID)
+            ,_calibrationParam(Y_CALIBRATIONPARAM_INVALID)
+            ,_resolution(Y_RESOLUTION_INVALID)
+            ,_cosPhi(Y_COSPHI_INVALID)
+            ,_meter(Y_METER_INVALID)
+            ,_meterTimer(Y_METERTIMER_INVALID)
+            ,_calibrationOffset(-32767)
+//--- (end of Power initialization)
+{}
+
+YPower::~YPower() 
+{
+//--- (YPower cleanup)
+//--- (end of YPower cleanup)
+}
 //--- (YPower implementation)
 
 const string YPower::LOGICALNAME_INVALID = "!INVALID!";
@@ -55,12 +83,12 @@ const double YPower::CURRENTVALUE_INVALID = -DBL_MAX;
 const double YPower::LOWESTVALUE_INVALID = -DBL_MAX;
 const double YPower::HIGHESTVALUE_INVALID = -DBL_MAX;
 const double YPower::CURRENTRAWVALUE_INVALID = -DBL_MAX;
-const double YPower::RESOLUTION_INVALID = -DBL_MAX;
 const string YPower::CALIBRATIONPARAM_INVALID = "!INVALID!";
+const double YPower::RESOLUTION_INVALID = -DBL_MAX;
 const double YPower::COSPHI_INVALID = -DBL_MAX;
 const double YPower::METER_INVALID = -DBL_MAX;
 
-std::map<string,YPower*> YPower::_PowerCache;
+
 
 int YPower::_parse(yJsonStateMachine& j)
 {
@@ -90,12 +118,12 @@ int YPower::_parse(yJsonStateMachine& j)
         } else if(!strcmp(j.token, "currentRawValue")) {
             if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
             _currentRawValue =  atof(j.token)/65536.0;
-        } else if(!strcmp(j.token, "resolution")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _resolution =  1.0 / floor(65536.0/atof(j.token)+.5);
         } else if(!strcmp(j.token, "calibrationParam")) {
             if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
             _calibrationParam =  _parseString(j);
+        } else if(!strcmp(j.token, "resolution")) {
+            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
+            _resolution =  (atoi(j.token) > 100 ? 1.0 / floor(65536.0/atof(j.token)+.5) : 0.001 / floor(67.0/atof(j.token)+.5));
         } else if(!strcmp(j.token, "cosPhi")) {
             if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
             _cosPhi =  floor(atof(j.token)/655.36+.5) / 100;
@@ -272,29 +300,6 @@ double YPower::get_currentRawValue(void)
     return _currentRawValue;
 }
 
-int YPower::set_resolution(double newval)
-{
-    string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval*65536.0 +0.5)); rest_val = string(buf);
-    return _setAttr("resolution", rest_val);
-}
-
-/**
- * Returns the resolution of the measured values. The resolution corresponds to the numerical precision
- * of the values, which is not always the same as the actual precision of the sensor.
- * 
- * @return a floating point number corresponding to the resolution of the measured values
- * 
- * On failure, throws an exception or returns Y_RESOLUTION_INVALID.
- */
-double YPower::get_resolution(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_RESOLUTION_INVALID;
-    }
-    return _resolution;
-}
-
 string YPower::get_calibrationParam(void)
 {
     if(_cacheExpiration <= YAPI::GetTickCount()) {
@@ -315,7 +320,7 @@ int YPower::set_calibrationParam(const string& newval)
  * a possible perturbation of the measure caused by an enclosure. It is possible
  * to configure up to five correction points. Correction points must be provided
  * in ascending order, and be in the range of the sensor. The device will automatically
- * perform a lineat interpolatation of the error correction between specified
+ * perform a linear interpolation of the error correction between specified
  * points. Remember to call the saveToFlash() method of the module if the
  * modification must be kept.
  * 
@@ -344,6 +349,39 @@ int YPower::loadCalibrationPoints(vector<double> rawValues,vector<double> refVal
         if(YISERR(load(YAPI::DefaultCacheValidity))) return _lastErrorType;
     }
     return this->_decodeCalibrationPoints(_calibrationParam,rawValues,refValues,_resolution,_calibrationOffset);
+}
+
+/**
+ * Changes the resolution of the measured values. The resolution corresponds to the numerical precision
+ * when displaying value. It does not change the precision of the measure itself.
+ * 
+ * @param newval : a floating point number corresponding to the resolution of the measured values
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YPower::set_resolution(double newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf,"%d", (int)floor(newval*65536.0 +0.5)); rest_val = string(buf);
+    return _setAttr("resolution", rest_val);
+}
+
+/**
+ * Returns the resolution of the measured values. The resolution corresponds to the numerical precision
+ * when displaying value, which is not always the same as the actual precision of the sensor.
+ * 
+ * @return a floating point number corresponding to the resolution of the measured values
+ * 
+ * On failure, throws an exception or returns Y_RESOLUTION_INVALID.
+ */
+double YPower::get_resolution(void)
+{
+    if(_cacheExpiration <= YAPI::GetTickCount()) {
+        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_RESOLUTION_INVALID;
+    }
+    return _resolution;
 }
 
 /**
@@ -435,12 +473,11 @@ void YPower::advertiseValue(const string& value)
 
 YPower* YPower::FindPower(const string& func)
 {
-    if(YPower::_PowerCache.find(func) != YPower::_PowerCache.end())
-        return YPower::_PowerCache[func];
+    if(YAPI::_YFunctionsCaches["YPower"].find(func) != YAPI::_YFunctionsCaches["YPower"].end())
+        return (YPower*) YAPI::_YFunctionsCaches["YPower"][func];
     
     YPower *newPower = new YPower(func);
-    YPower::_PowerCache[func] = newPower;
-    
+    YAPI::_YFunctionsCaches["YPower"][func] = newPower ;
     return newPower;
 }
 

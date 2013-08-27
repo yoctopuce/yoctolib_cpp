@@ -1,42 +1,42 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 10717 2013-03-27 11:18:20Z mvuilleu $
+ * $Id: yocto_api.cpp 12367 2013-08-15 20:53:49Z seb $
  *
  * High-level programming interface, common to all modules
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
- * Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
+ *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
- * 1) If you have obtained this file from www.yoctopuce.com,
- *    Yoctopuce Sarl licenses to you (hereafter Licensee) the
- *    right to use, modify, copy, and integrate this source file
- *    into your own solution for the sole purpose of interfacing
- *    a Yoctopuce product with Licensee's solution.
+ *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
+ *  non-exclusive license to use, modify, copy and integrate this
+ *  file into your software for the sole purpose of interfacing 
+ *  with Yoctopuce products. 
  *
- *    The use of this file and all relationship between Yoctopuce 
- *    and Licensee are governed by Yoctopuce General Terms and 
- *    Conditions.
+ *  You may reproduce and distribute copies of this file in 
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain 
+ *  this notice in the distributed source file.
  *
- *    THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *    WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
- *    FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
- *    EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *    INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *    COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *    SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
- *    LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
- *    CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
- *    BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
- *    WARRANTY, OR OTHERWISE.
+ *  You should refer to Yoctopuce General Terms and Conditions
+ *  for additional information regarding your rights and 
+ *  obligations.
  *
- * 2) If your intent is not to interface with Yoctopuce products,
- *    you are not entitled to use, read or create any derived 
- *    material from this source file.
+ *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
+ *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
+ *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
+ *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
+ *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
-
+#define __FILE_ID__ "yocto_api"
 #define _CRT_SECURE_NO_DEPRECATE
 #include "yocto_api.h"
 #include "yapi/yapi.h"
@@ -78,6 +78,10 @@ YFunction::YFunction(const string& classname, const string& func):
     _FunctionCache.push_back(this);
 };
 
+YFunction::~YFunction()
+{
+    
+}
 
 std::ostream& operator<<( std::ostream &stream, YFunction &fun )
 {
@@ -770,6 +774,24 @@ void YFunction::advertiseValue(const string& value)
 // This is the internal device cache object
 vector<YDevice*> YDevice::_devCache;
 
+YDevice::YDevice(YDEV_DESCR devdesc): _devdescr(devdesc), _cacheStamp(0), _subpath(NULL){ };
+
+
+YDevice::~YDevice() // destructor
+{
+    if(_subpath != NULL)
+        delete _subpath;
+}
+
+void YDevice::ClearCache()
+{
+    for(unsigned int idx = 0; idx < YDevice::_devCache.size(); idx++) {
+        delete _devCache[idx];
+    }
+    _devCache.clear();
+}
+
+
 YDevice *YDevice::getDevice(YDEV_DESCR devdescr)
 {
     // Search in cache
@@ -947,6 +969,7 @@ yLogFunction            YAPI::LogFunction            = NULL;
 yDeviceUpdateCallback   YAPI::DeviceArrivalCallback  = NULL;
 yDeviceUpdateCallback   YAPI::DeviceRemovalCallback  = NULL;
 yDeviceUpdateCallback   YAPI::DeviceChangeCallback   = NULL;
+std::map<string,std::map<string,YFunction*> > YAPI::_YFunctionsCaches;
 
 void YAPI::_yapiLogFunctionFwd(const char *log, u32 loglen)
 {
@@ -1093,7 +1116,7 @@ s16 YAPI::_doubleToDecimal(double val)
     if(decpow == 15 && mant > 2047.0) {
         res = (15 << 11) + 2047; // overflow
     } else {
-        res = (decpow << 11) + (u16)floor(mant+.5);
+        res = (decpow << 11) ;//fixme+ (u16)floor(mant+.5);
     }
     return (negate ? -res : res);
 }
@@ -1241,6 +1264,22 @@ void YAPI::FreeAPI(void)
         YAPI::_apiInitialized = false;
         yDeleteCriticalSection(&_updateDeviceList_CS);
         yDeleteCriticalSection(&_handleEvent_CS);
+        YDevice::ClearCache();
+        for (std::map<string,std::map<string,YFunction*> >::iterator cache_iterator = _YFunctionsCaches.begin();
+             cache_iterator != _YFunctionsCaches.end(); ++cache_iterator){
+            for (std::map<string,YFunction*>::iterator it=cache_iterator->second.begin(); it!=cache_iterator->second.end(); ++it){
+                delete it->second;
+            }
+        }
+        _YFunctionsCaches.clear();
+        while (!_plug_events.empty()) {
+            _plug_events.pop();
+        }
+        while (!_data_events.empty()) {
+            _data_events.pop();
+        }
+        _calibHandlers.clear();
+
     }
 }
 
@@ -1809,14 +1848,45 @@ string  YapiWrapper::ysprintf(const char *fmt, ...)
     va_list     args;
     char        buffer[2048];
     va_start( args, fmt );
-#ifdef WINDOWS_API
-    vsprintf_s(buffer,sizeof(buffer),fmt,args);
-#else
     vsprintf(buffer,fmt,args);
-#endif
     va_end(args);
     return (string)buffer;
 }
+
+
+
+
+
+
+//--- (generated code: YModule constructor)
+// Constructor is protected, use yFindModule factory function to instantiate
+YModule::YModule(const string& func): YFunction("Module", func)
+//--- (end of generated code: YModule constructor)
+//--- (generated code: Module initialization)
+            ,_logCallback(NULL)
+            ,_logContinuation("0")
+            ,_productName(Y_PRODUCTNAME_INVALID)
+            ,_serialNumber(Y_SERIALNUMBER_INVALID)
+            ,_logicalName(Y_LOGICALNAME_INVALID)
+            ,_productId(Y_PRODUCTID_INVALID)
+            ,_productRelease(Y_PRODUCTRELEASE_INVALID)
+            ,_firmwareRelease(Y_FIRMWARERELEASE_INVALID)
+            ,_persistentSettings(Y_PERSISTENTSETTINGS_INVALID)
+            ,_luminosity(Y_LUMINOSITY_INVALID)
+            ,_beacon(Y_BEACON_INVALID)
+            ,_upTime(Y_UPTIME_INVALID)
+            ,_usbCurrent(Y_USBCURRENT_INVALID)
+            ,_rebootCountdown(Y_REBOOTCOUNTDOWN_INVALID)
+            ,_usbBandwidth(Y_USBBANDWIDTH_INVALID)
+//--- (end of generated code: Module initialization)
+{}
+
+YModule::~YModule()
+{
+    //--- (generated code: YModule cleanup)
+//--- (end of generated code: YModule cleanup)
+}
+
 
 
 
@@ -1827,7 +1897,7 @@ const string YModule::SERIALNUMBER_INVALID = "!INVALID!";
 const string YModule::LOGICALNAME_INVALID = "!INVALID!";
 const string YModule::FIRMWARERELEASE_INVALID = "!INVALID!";
 
-std::map<string,YModule*> YModule::_ModuleCache;
+
 
 int YModule::_parse(yJsonStateMachine& j)
 {
@@ -2259,6 +2329,20 @@ string YModule::get_icon2d()
     
 }
 
+/**
+ * Returns a string with last logs of the module. This method return only
+ * logs that are still in the module.
+ * 
+ * @return a string with last logs of the module.
+ */
+string YModule::get_lastLogs()
+{
+    string content;
+    content = this->_download("logs.txt");
+    return content;
+    
+}
+
 YModule *YModule::nextModule(void)
 {
     string  hwid;
@@ -2272,12 +2356,11 @@ YModule *YModule::nextModule(void)
 
 YModule* YModule::FindModule(const string& func)
 {
-    if(YModule::_ModuleCache.find(func) != YModule::_ModuleCache.end())
-        return YModule::_ModuleCache[func];
+    if(YAPI::_YFunctionsCaches["YModule"].find(func) != YAPI::_YFunctionsCaches["YModule"].end())
+        return (YModule*) YAPI::_YFunctionsCaches["YModule"][func];
     
     YModule *newModule = new YModule(func);
-    YModule::_ModuleCache[func] = newModule;
-    
+    YAPI::_YFunctionsCaches["YModule"][func] = newModule ;
     return newModule;
 }
 

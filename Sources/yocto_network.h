@@ -1,39 +1,39 @@
 /*********************************************************************
  *
- * $Id: yocto_network.h 9921 2013-02-20 09:39:16Z seb $
+ * $Id: yocto_network.h 12337 2013-08-14 15:22:22Z mvuilleu $
  *
  * Declares yFindNetwork(), the high-level API for Network functions
  *
  * - - - - - - - - - License information: - - - - - - - - - 
  *
- * Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
+ *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
- * 1) If you have obtained this file from www.yoctopuce.com,
- *    Yoctopuce Sarl licenses to you (hereafter Licensee) the
- *    right to use, modify, copy, and integrate this source file
- *    into your own solution for the sole purpose of interfacing
- *    a Yoctopuce product with Licensee's solution.
+ *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
+ *  non-exclusive license to use, modify, copy and integrate this
+ *  file into your software for the sole purpose of interfacing 
+ *  with Yoctopuce products. 
  *
- *    The use of this file and all relationship between Yoctopuce 
- *    and Licensee are governed by Yoctopuce General Terms and 
- *    Conditions.
+ *  You may reproduce and distribute copies of this file in 
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain 
+ *  this notice in the distributed source file.
  *
- *    THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *    WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
- *    FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
- *    EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *    INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *    COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *    SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
- *    LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
- *    CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
- *    BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
- *    WARRANTY, OR OTHERWISE.
+ *  You should refer to Yoctopuce General Terms and Conditions
+ *  for additional information regarding your rights and 
+ *  obligations.
  *
- * 2) If your intent is not to interface with Yoctopuce products,
- *    you are not entitled to use, read or create any derived
- *    material from this source file.
+ *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
+ *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
+ *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
+ *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
+ *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
 
@@ -62,6 +62,12 @@ typedef enum {
 } Y_READINESS_enum;
 
 typedef enum {
+    Y_DISCOVERABLE_FALSE = 0,
+    Y_DISCOVERABLE_TRUE = 1,
+    Y_DISCOVERABLE_INVALID = -1,
+} Y_DISCOVERABLE_enum;
+
+typedef enum {
     Y_CALLBACKMETHOD_POST = 0,
     Y_CALLBACKMETHOD_GET = 1,
     Y_CALLBACKMETHOD_PUT = 2,
@@ -88,10 +94,12 @@ typedef enum {
 #define Y_SECONDARYDNS_INVALID          (YAPI::INVALID_STRING)
 #define Y_USERPASSWORD_INVALID          (YAPI::INVALID_STRING)
 #define Y_ADMINPASSWORD_INVALID         (YAPI::INVALID_STRING)
+#define Y_WWWWATCHDOGDELAY_INVALID      (0xffffffff)
 #define Y_CALLBACKURL_INVALID           (YAPI::INVALID_STRING)
 #define Y_CALLBACKCREDENTIALS_INVALID   (YAPI::INVALID_STRING)
 #define Y_CALLBACKMINDELAY_INVALID      (0xffffffff)
 #define Y_CALLBACKMAXDELAY_INVALID      (0xffffffff)
+#define Y_POECURRENT_INVALID            (0xffffffff)
 //--- (end of YNetwork definitions)
 
 //--- (YNetwork declaration)
@@ -117,14 +125,15 @@ protected:
     string          _secondaryDNS;
     string          _userPassword;
     string          _adminPassword;
+    Y_DISCOVERABLE_enum _discoverable;
+    unsigned        _wwwWatchdogDelay;
     string          _callbackUrl;
     Y_CALLBACKMETHOD_enum _callbackMethod;
     Y_CALLBACKENCODING_enum _callbackEncoding;
     string          _callbackCredentials;
     unsigned        _callbackMinDelay;
     unsigned        _callbackMaxDelay;
-    // Static function object cache
-    static std::map<string,YNetwork*> _NetworkCache;
+    unsigned        _poeCurrent;
 
     friend YNetwork *yFindNetwork(const string& func);
     friend YNetwork *yFirstNetwork(void);
@@ -135,32 +144,13 @@ protected:
 
     //--- (YNetwork constructor)
     // Constructor is protected, use yFindNetwork factory function to instantiate
-    YNetwork(const string& func): YFunction("Network", func)
+    YNetwork(const string& func);
     //--- (end of YNetwork constructor)
     //--- (Network initialization)
-            ,_callback(NULL)
-            ,_logicalName(Y_LOGICALNAME_INVALID)
-            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
-            ,_readiness(Y_READINESS_INVALID)
-            ,_macAddress(Y_MACADDRESS_INVALID)
-            ,_ipAddress(Y_IPADDRESS_INVALID)
-            ,_subnetMask(Y_SUBNETMASK_INVALID)
-            ,_router(Y_ROUTER_INVALID)
-            ,_ipConfig(Y_IPCONFIG_INVALID)
-            ,_primaryDNS(Y_PRIMARYDNS_INVALID)
-            ,_secondaryDNS(Y_SECONDARYDNS_INVALID)
-            ,_userPassword(Y_USERPASSWORD_INVALID)
-            ,_adminPassword(Y_ADMINPASSWORD_INVALID)
-            ,_callbackUrl(Y_CALLBACKURL_INVALID)
-            ,_callbackMethod(Y_CALLBACKMETHOD_INVALID)
-            ,_callbackEncoding(Y_CALLBACKENCODING_INVALID)
-            ,_callbackCredentials(Y_CALLBACKCREDENTIALS_INVALID)
-            ,_callbackMinDelay(Y_CALLBACKMINDELAY_INVALID)
-            ,_callbackMaxDelay(Y_CALLBACKMAXDELAY_INVALID)
     //--- (end of Network initialization)
-    {};
 
 public:
+    ~YNetwork();
     //--- (YNetwork accessors declaration)
 
     static const string LOGICALNAME_INVALID;
@@ -180,6 +170,10 @@ public:
     static const string SECONDARYDNS_INVALID;
     static const string USERPASSWORD_INVALID;
     static const string ADMINPASSWORD_INVALID;
+    static const Y_DISCOVERABLE_enum DISCOVERABLE_FALSE = Y_DISCOVERABLE_FALSE;
+    static const Y_DISCOVERABLE_enum DISCOVERABLE_TRUE = Y_DISCOVERABLE_TRUE;
+    static const Y_DISCOVERABLE_enum DISCOVERABLE_INVALID = Y_DISCOVERABLE_INVALID;
+    static const unsigned WWWWATCHDOGDELAY_INVALID = 0xffffffff;
     static const string CALLBACKURL_INVALID;
     static const Y_CALLBACKMETHOD_enum CALLBACKMETHOD_POST = Y_CALLBACKMETHOD_POST;
     static const Y_CALLBACKMETHOD_enum CALLBACKMETHOD_GET = Y_CALLBACKMETHOD_GET;
@@ -194,6 +188,7 @@ public:
     static const string CALLBACKCREDENTIALS_INVALID;
     static const unsigned CALLBACKMINDELAY_INVALID = 0xffffffff;
     static const unsigned CALLBACKMAXDELAY_INVALID = 0xffffffff;
+    static const unsigned POECURRENT_INVALID = 0xffffffff;
 
     /**
      * Returns the logical name of the network interface, corresponding to the network name of the module.
@@ -243,13 +238,13 @@ public:
      * Level 1 (LIVE_1) is reached when the network is detected, but is not yet connected,
      * For a wireless network, this shows that the requested SSID is present.
      * Level 2 (LINK_2) is reached when the hardware connection is established.
-     * For a wired network connection, level 2 means that the cable is attached on both ends.
+     * For a wired network connection, level 2 means that the cable is attached at both ends.
      * For a connection to a wireless access point, it shows that the security parameters
      * are properly configured. For an ad-hoc wireless connection, it means that there is
      * at least one other device connected on the ad-hoc network.
      * Level 3 (DHCP_3) is reached when an IP address has been obtained using DHCP.
      * Level 4 (DNS_4) is reached when the DNS server is reachable on the network.
-     * Level 5 (WWW_5) is reached when global connectivity is demonstrated by properly loading
+     * Level 5 (WWW_5) is reached when global connectivity is demonstrated by properly loading the
      * current time from an NTP server.
      * 
      * @return a value among Y_READINESS_DOWN, Y_READINESS_EXISTS, Y_READINESS_LINKED, Y_READINESS_LAN_OK
@@ -318,7 +313,7 @@ public:
     /**
      * Changes the configuration of the network interface to enable the use of an
      * IP address received from a DHCP server. Until an address is received from a DHCP
-     * server, the module will use the IP parameters specified to this function.
+     * server, the module uses the IP parameters specified to this function.
      * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
      * 
      * @param fallbackIpAddr : fallback IP address, to be used when no DHCP reply is received
@@ -359,7 +354,7 @@ public:
 
     /**
      * Changes the IP address of the primary name server to be used by the module.
-     * When using DHCP, if a value is specified, it will override the value received from the DHCP server.
+     * When using DHCP, if a value is specified, it overrides the value received from the DHCP server.
      * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
      * 
      * @param newval : a string corresponding to the IP address of the primary name server to be used by the module
@@ -385,7 +380,7 @@ public:
 
     /**
      * Changes the IP address of the secondarz name server to be used by the module.
-     * When using DHCP, if a value is specified, it will override the value received from the DHCP server.
+     * When using DHCP, if a value is specified, it overrides the value received from the DHCP server.
      * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
      * 
      * @param newval : a string corresponding to the IP address of the secondarz name server to be used by the module
@@ -399,10 +394,10 @@ public:
     { return this->set_secondaryDNS(newval); }
 
     /**
-     * Returns a hash string if a password has been set for user "user",
+     * Returns a hash string if a password has been set for "user" user,
      * or an empty string otherwise.
      * 
-     * @return a string corresponding to a hash string if a password has been set for user "user",
+     * @return a string corresponding to a hash string if a password has been set for "user" user,
      *         or an empty string otherwise
      * 
      * On failure, throws an exception or returns Y_USERPASSWORD_INVALID.
@@ -459,6 +454,69 @@ public:
     { return this->set_adminPassword(newval); }
 
     /**
+     * Returns the activation state of the multicast announce protocols to allow easy
+     * discovery of the module in the network neighborhood (uPnP/Bonjour protocol).
+     * 
+     * @return either Y_DISCOVERABLE_FALSE or Y_DISCOVERABLE_TRUE, according to the activation state of
+     * the multicast announce protocols to allow easy
+     *         discovery of the module in the network neighborhood (uPnP/Bonjour protocol)
+     * 
+     * On failure, throws an exception or returns Y_DISCOVERABLE_INVALID.
+     */
+           Y_DISCOVERABLE_enum get_discoverable(void);
+    inline Y_DISCOVERABLE_enum discoverable(void)
+    { return this->get_discoverable(); }
+
+    /**
+     * Changes the activation state of the multicast announce protocols to allow easy
+     * discovery of the module in the network neighborhood (uPnP/Bonjour protocol).
+     * 
+     * @param newval : either Y_DISCOVERABLE_FALSE or Y_DISCOVERABLE_TRUE, according to the activation
+     * state of the multicast announce protocols to allow easy
+     *         discovery of the module in the network neighborhood (uPnP/Bonjour protocol)
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_discoverable(Y_DISCOVERABLE_enum newval);
+    inline int      setDiscoverable(Y_DISCOVERABLE_enum newval)
+    { return this->set_discoverable(newval); }
+
+    /**
+     * Returns the allowed downtime of the WWW link (in seconds) before triggering an automated
+     * reboot to try to recover Internet connectivity. A zero value disables automated reboot
+     * in case of Internet connectivity loss.
+     * 
+     * @return an integer corresponding to the allowed downtime of the WWW link (in seconds) before
+     * triggering an automated
+     *         reboot to try to recover Internet connectivity
+     * 
+     * On failure, throws an exception or returns Y_WWWWATCHDOGDELAY_INVALID.
+     */
+           unsigned        get_wwwWatchdogDelay(void);
+    inline unsigned        wwwWatchdogDelay(void)
+    { return this->get_wwwWatchdogDelay(); }
+
+    /**
+     * Changes the allowed downtime of the WWW link (in seconds) before triggering an automated
+     * reboot to try to recover Internet connectivity. A zero value disable automated reboot
+     * in case of Internet connectivity loss. The smallest valid non-zero timeout is
+     * 90 seconds.
+     * 
+     * @param newval : an integer corresponding to the allowed downtime of the WWW link (in seconds)
+     * before triggering an automated
+     *         reboot to try to recover Internet connectivity
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_wwwWatchdogDelay(unsigned newval);
+    inline int      setWwwWatchdogDelay(unsigned newval)
+    { return this->set_wwwWatchdogDelay(newval); }
+
+    /**
      * Returns the callback URL to notify of significant state changes.
      * 
      * @return a string corresponding to the callback URL to notify of significant state changes
@@ -470,10 +528,10 @@ public:
     { return this->get_callbackUrl(); }
 
     /**
-     * Changes the callback URL to notify of significant state changes. Remember to call the
+     * Changes the callback URL to notify significant state changes. Remember to call the
      * saveToFlash() method of the module if the modification must be kept.
      * 
-     * @param newval : a string corresponding to the callback URL to notify of significant state changes
+     * @param newval : a string corresponding to the callback URL to notify significant state changes
      * 
      * @return YAPI_SUCCESS if the call succeeds.
      * 
@@ -484,10 +542,10 @@ public:
     { return this->set_callbackUrl(newval); }
 
     /**
-     * Returns the HTTP Method used to notify callbacks for significant state changes.
+     * Returns the HTTP method used to notify callbacks for significant state changes.
      * 
      * @return a value among Y_CALLBACKMETHOD_POST, Y_CALLBACKMETHOD_GET and Y_CALLBACKMETHOD_PUT
-     * corresponding to the HTTP Method used to notify callbacks for significant state changes
+     * corresponding to the HTTP method used to notify callbacks for significant state changes
      * 
      * On failure, throws an exception or returns Y_CALLBACKMETHOD_INVALID.
      */
@@ -496,10 +554,10 @@ public:
     { return this->get_callbackMethod(); }
 
     /**
-     * Changes the HTTP Method used to notify callbacks for significant state changes.
+     * Changes the HTTP method used to notify callbacks for significant state changes.
      * 
      * @param newval : a value among Y_CALLBACKMETHOD_POST, Y_CALLBACKMETHOD_GET and Y_CALLBACKMETHOD_PUT
-     * corresponding to the HTTP Method used to notify callbacks for significant state changes
+     * corresponding to the HTTP method used to notify callbacks for significant state changes
      * 
      * @return YAPI_SUCCESS if the call succeeds.
      * 
@@ -573,8 +631,8 @@ public:
 
     /**
      * Connects to the notification callback and saves the credentials required to
-     * log in to it. The password will not be stored into the module, only a hashed
-     * copy of the credentials will be saved. Remember to call the
+     * log into it. The password is not stored into the module, only a hashed
+     * copy of the credentials are saved. Remember to call the
      * saveToFlash() method of the module if the modification must be kept.
      * 
      * @param username : username required to log to the callback
@@ -587,9 +645,9 @@ public:
     int             callbackLogin(string username,string password);
 
     /**
-     * Returns the minimum wait time between two callback notifications, in seconds.
+     * Returns the minimum waiting time between two callback notifications, in seconds.
      * 
-     * @return an integer corresponding to the minimum wait time between two callback notifications, in seconds
+     * @return an integer corresponding to the minimum waiting time between two callback notifications, in seconds
      * 
      * On failure, throws an exception or returns Y_CALLBACKMINDELAY_INVALID.
      */
@@ -598,9 +656,10 @@ public:
     { return this->get_callbackMinDelay(); }
 
     /**
-     * Changes the minimum wait time between two callback notifications, in seconds.
+     * Changes the minimum waiting time between two callback notifications, in seconds.
      * 
-     * @param newval : an integer corresponding to the minimum wait time between two callback notifications, in seconds
+     * @param newval : an integer corresponding to the minimum waiting time between two callback
+     * notifications, in seconds
      * 
      * @return YAPI_SUCCESS if the call succeeds.
      * 
@@ -611,9 +670,9 @@ public:
     { return this->set_callbackMinDelay(newval); }
 
     /**
-     * Returns the maximum wait time between two callback notifications, in seconds.
+     * Returns the maximum waiting time between two callback notifications, in seconds.
      * 
-     * @return an integer corresponding to the maximum wait time between two callback notifications, in seconds
+     * @return an integer corresponding to the maximum waiting time between two callback notifications, in seconds
      * 
      * On failure, throws an exception or returns Y_CALLBACKMAXDELAY_INVALID.
      */
@@ -622,9 +681,10 @@ public:
     { return this->get_callbackMaxDelay(); }
 
     /**
-     * Changes the maximum wait time between two callback notifications, in seconds.
+     * Changes the maximum waiting time between two callback notifications, in seconds.
      * 
-     * @param newval : an integer corresponding to the maximum wait time between two callback notifications, in seconds
+     * @param newval : an integer corresponding to the maximum waiting time between two callback
+     * notifications, in seconds
      * 
      * @return YAPI_SUCCESS if the call succeeds.
      * 
@@ -633,6 +693,31 @@ public:
     int             set_callbackMaxDelay(unsigned newval);
     inline int      setCallbackMaxDelay(unsigned newval)
     { return this->set_callbackMaxDelay(newval); }
+
+    /**
+     * Returns the current consumed by the module from Power-over-Ethernet (PoE), in milli-amps.
+     * The current consumption is measured after converting PoE source to 5 Volt, and should
+     * never exceed 1800 mA.
+     * 
+     * @return an integer corresponding to the current consumed by the module from Power-over-Ethernet
+     * (PoE), in milli-amps
+     * 
+     * On failure, throws an exception or returns Y_POECURRENT_INVALID.
+     */
+           unsigned        get_poeCurrent(void);
+    inline unsigned        poeCurrent(void)
+    { return this->get_poeCurrent(); }
+
+    /**
+     * Pings str_host to test the network connectivity. Sends four requests ICMP ECHO_REQUEST from the
+     * module to the target str_host. This method returns a string with the result of the
+     * 4 ICMP ECHO_REQUEST result.
+     * 
+     * @param host : the hostname or the IP address of the target
+     * 
+     * @return a string with the result of the ping.
+     */
+    string             ping(string host);
 
 
     /**

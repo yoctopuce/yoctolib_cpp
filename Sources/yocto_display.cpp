@@ -1,39 +1,39 @@
 /*********************************************************************
  *
- * $Id: pic24config.php 8610 2012-11-07 08:54:50Z mvuilleu $
+ * $Id: yocto_display.cpp 12326 2013-08-13 15:52:20Z mvuilleu $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
- * Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
+ *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
- * 1) If you have obtained this file from www.yoctopuce.com,
- *    Yoctopuce Sarl licenses to you (hereafter Licensee) the
- *    right to use, modify, copy, and integrate this source file
- *    into your own solution for the sole purpose of interfacing
- *    a Yoctopuce product with Licensee's solution.
+ *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
+ *  non-exclusive license to use, modify, copy and integrate this
+ *  file into your software for the sole purpose of interfacing 
+ *  with Yoctopuce products. 
  *
- *    The use of this file and all relationship between Yoctopuce 
- *    and Licensee are governed by Yoctopuce General Terms and 
- *    Conditions.
+ *  You may reproduce and distribute copies of this file in 
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain 
+ *  this notice in the distributed source file.
  *
- *    THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *    WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
- *    FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
- *    EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *    INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *    COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *    SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
- *    LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
- *    CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
- *    BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
- *    WARRANTY, OR OTHERWISE.
+ *  You should refer to Yoctopuce General Terms and Conditions
+ *  for additional information regarding your rights and 
+ *  obligations.
  *
- * 2) If your intent is not to interface with Yoctopuce products,
- *    you are not entitled to use, read or create any derived
- *    material from this source file.
+ *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
+ *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
+ *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
+ *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
+ *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
 
@@ -45,6 +45,10 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+
+
+
 
 int YDisplayLayer::flush_now(void)
 {
@@ -95,6 +99,7 @@ int YDisplayLayer::drawBitmap(int x,int y,int w,const std::vector<unsigned char>
 
 
 //--- (generated code: YDisplayLayer implementation)
+
 
 
 
@@ -611,6 +616,46 @@ int YDisplayLayer::resetHiddenFlag()
 
 
 
+
+
+
+//--- (generated code: YDisplay constructor)
+// Constructor is protected, use yFindDisplay factory function to instantiate
+YDisplay::YDisplay(const string& func): YFunction("Display", func)
+//--- (end of generated code: YDisplay constructor)
+//--- (generated code: Display initialization)
+            ,_callback(NULL)
+            ,_logicalName(Y_LOGICALNAME_INVALID)
+            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
+            ,_powerState(Y_POWERSTATE_INVALID)
+            ,_startupSeq(Y_STARTUPSEQ_INVALID)
+            ,_brightness(Y_BRIGHTNESS_INVALID)
+            ,_orientation(Y_ORIENTATION_INVALID)
+            ,_displayWidth(Y_DISPLAYWIDTH_INVALID)
+            ,_displayHeight(Y_DISPLAYHEIGHT_INVALID)
+            ,_displayType(Y_DISPLAYTYPE_INVALID)
+            ,_layerWidth(Y_LAYERWIDTH_INVALID)
+            ,_layerHeight(Y_LAYERHEIGHT_INVALID)
+            ,_layerCount(Y_LAYERCOUNT_INVALID)
+            ,_command(Y_COMMAND_INVALID)
+//--- (end of generated code: Display initialization)
+            ,_allDisplayLayers(0)
+            ,_recording(false)
+            ,_sequence("")
+{}
+
+YDisplay::~YDisplay()
+{
+    unsigned int i;
+    for (i=0;i<_allDisplayLayers.size();i++){
+        delete _allDisplayLayers[i];
+    }
+    _allDisplayLayers.clear();
+    //--- (generated code: YDisplay cleanup)
+//--- (end of generated code: YDisplay cleanup)
+}
+
+
 //--- (generated code: YDisplay implementation)
 
 const string YDisplay::LOGICALNAME_INVALID = "!INVALID!";
@@ -618,7 +663,7 @@ const string YDisplay::ADVERTISEDVALUE_INVALID = "!INVALID!";
 const string YDisplay::STARTUPSEQ_INVALID = "!INVALID!";
 const string YDisplay::COMMAND_INVALID = "!INVALID!";
 
-std::map<string,YDisplay*> YDisplay::_DisplayCache;
+
 
 int YDisplay::_parse(yJsonStateMachine& j)
 {
@@ -1181,12 +1226,11 @@ void YDisplay::advertiseValue(const string& value)
 
 YDisplay* YDisplay::FindDisplay(const string& func)
 {
-    if(YDisplay::_DisplayCache.find(func) != YDisplay::_DisplayCache.end())
-        return YDisplay::_DisplayCache[func];
+    if(YAPI::_YFunctionsCaches["YDisplay"].find(func) != YAPI::_YFunctionsCaches["YDisplay"].end())
+        return (YDisplay*) YAPI::_YFunctionsCaches["YDisplay"][func];
     
     YDisplay *newDisplay = new YDisplay(func);
-    YDisplay::_DisplayCache[func] = newDisplay;
-    
+    YAPI::_YFunctionsCaches["YDisplay"][func] = newDisplay ;
     return newDisplay;
 }
 

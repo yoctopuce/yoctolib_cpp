@@ -1,39 +1,39 @@
 /*********************************************************************
  *
- * $Id: yhash.c 10661 2013-03-25 09:29:52Z seb $
+ * $Id: yhash.c 12321 2013-08-13 14:56:24Z mvuilleu $
  *
  * Simple hash tables and device/function information store
  *
  * - - - - - - - - - License information: - - - - - - - - - 
  *
- * Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
+ *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
- * 1) If you have obtained this file from www.yoctopuce.com,
- *    Yoctopuce Sarl licenses to you (hereafter Licensee) the
- *    right to use, modify, copy, and integrate this source file
- *    into your own solution for the sole purpose of interfacing
- *    a Yoctopuce product with Licensee's solution.
+ *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
+ *  non-exclusive license to use, modify, copy and integrate this
+ *  file into your software for the sole purpose of interfacing 
+ *  with Yoctopuce products. 
  *
- *    The use of this file and all relationship between Yoctopuce 
- *    and Licensee are governed by Yoctopuce General Terms and 
- *    Conditions.
+ *  You may reproduce and distribute copies of this file in 
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain 
+ *  this notice in the distributed source file.
  *
- *    THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *    WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
- *    FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
- *    EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *    INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *    COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *    SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
- *    LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
- *    CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
- *    BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
- *    WARRANTY, OR OTHERWISE.
+ *  You should refer to Yoctopuce General Terms and Conditions
+ *  for additional information regarding your rights and 
+ *  obligations.
  *
- * 2) If your intent is not to interface with Yoctopuce products,
- *    you are not entitled to use, read or create any derived 
- *    material from this source file.
+ *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
+ *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
+ *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
+ *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
+ *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
 
@@ -66,8 +66,10 @@ yCRITICAL_SECTION yYpMutex;
 #define HLOGF(x)
 #endif
 
+#ifndef MICROCHIP_API
 static u16 usedDevYdx[NB_MAX_DEVICES/16];
 static u16 nextDevYdx = 0;
+#endif
 static u8  nextCatYdx = 1;
 static u16 nextHashEntry = 256;
 
@@ -190,7 +192,6 @@ void yHashInit(void)
     u16     i;
 
     HLOGF(("yHashInit\n"));
-    memset((u8 *)usedDevYdx, 0, sizeof(usedDevYdx));
     for(i = 0; i < 256; i++)
         yHashTable[i].next = 0;
     for(i = 0; i < NB_MAX_DEVICES; i++)
@@ -198,6 +199,7 @@ void yHashInit(void)
     for(i = 0; i < NB_MAX_DEVICES; i++)
         funYdxPtr[i] = INVALID_BLK_HDL;
 #ifndef MICROCHIP_API
+    memset((u8 *)usedDevYdx, 0, sizeof(usedDevYdx));
     yInitializeCriticalSection(&yHashMutex);
     yInitializeCriticalSection(&yFreeMutex);
     yInitializeCriticalSection(&yWpMutex);
@@ -430,14 +432,14 @@ yUrlRef yHashUrlFromRef(yUrlRef urlref, const char *rootUrl, u8 testonly,char *e
 
 
 
-yUrlRef yHashUrlUSB(const char *serial,const char *rootUrl, u8 testonly,char *errmsg)
+yUrlRef yHashUrlUSB(yHash serial,const char *rootUrl, u8 testonly,char *errmsg)
 {
     yAbsUrl huburl;    
     // set all hash as invalid
     memset(&huburl, 0xff, sizeof(huburl));
     // for USB we store only the serial number since
     // we access all devices directly
-    huburl.byusb.serial = yHashPutStr(serial);
+    huburl.byusb.serial = serial;
     if(yComputeRelPath(&huburl, rootUrl, testonly)<0){
         return INVALID_HASH_IDX;
     }
@@ -593,7 +595,9 @@ static void wpExecuteUnregisterUnsec(void)
             }
             funYdxPtr[devYdx] = INVALID_BLK_HDL;
             devYdxPtr[devYdx] = INVALID_BLK_HDL;
+#ifndef MICROCHIP_API
             if(nextDevYdx > devYdx) nextDevYdx = devYdx;
+#endif
             yBlkFree(hdl);
         }
         prev = hdl;
@@ -650,7 +654,7 @@ void wpAllowUnregisterDbg(const char *file, u32 line)
 //      1 -> update
 //      2 -> first register
 
-int wpRegister(yStrRef serial, yStrRef logicalName, yStrRef productName, u16 productId, yUrlRef devUrl, s8 beacon)
+int wpRegister(int devYdx, yStrRef serial, yStrRef logicalName, yStrRef productName, u16 productId, yUrlRef devUrl, s8 beacon)
 {
     yBlkHdl  prev = INVALID_BLK_HDL;
     yBlkHdl  hdl;
@@ -658,6 +662,7 @@ int wpRegister(yStrRef serial, yStrRef logicalName, yStrRef productName, u16 pro
     
     yEnterCriticalSection(&yWpMutex);
     
+    YASSERT(devUrl != INVALID_HASH_IDX);
     hdl = yWpListHead;
     while(hdl != INVALID_BLK_HDL) {
         YASSERT(WP(hdl).blkId == YBLKID_WPENTRY);
@@ -668,20 +673,28 @@ int wpRegister(yStrRef serial, yStrRef logicalName, yStrRef productName, u16 pro
     if(hdl == INVALID_BLK_HDL) {
         hdl = yBlkAlloc();
         changed = 2;
-        YASSERT(nextDevYdx < NB_MAX_DEVICES);
-        devYdxPtr[nextDevYdx] = hdl;
-        WP(hdl).devYdx  = (u8)nextDevYdx;
-        nextDevYdx++;
+#ifndef MICROCHIP_API
+        if(devYdx == -1) devYdx = nextDevYdx;
+        // YASSERT(!(usedDevYdx[devYdx>>4] & (1 << (devYdx&15))));
+        usedDevYdx[devYdx>>4] |= 1 << (devYdx&15);
+        if(nextDevYdx == devYdx) {
+            nextDevYdx++;
+            while(usedDevYdx[nextDevYdx>>4] & (1 << (nextDevYdx&15))) {
+                if(nextDevYdx >= NB_MAX_DEVICES) break;
+                nextDevYdx++;
+            }
+        }
+#endif
+        YASSERT(devYdx < NB_MAX_DEVICES);
+        devYdxPtr[devYdx] = hdl;
+        WP(hdl).devYdx  = (u8)devYdx;
         WP(hdl).blkId   = YBLKID_WPENTRY;
         WP(hdl).serial  = serial;
         WP(hdl).name    = YSTRREF_EMPTY_STRING;
         WP(hdl).product = YSTRREF_EMPTY_STRING;
-        WP(hdl).url     = INVALID_HASH_IDX;
+        WP(hdl).url     = devUrl;
         WP(hdl).devid   = 0;
         WP(hdl).flags   = 0;
-        while(usedDevYdx[nextDevYdx>>4] & (1 << (nextDevYdx&15))) {
-            nextDevYdx++;
-        }
         if(prev == INVALID_BLK_HDL) {
             yWpListHead = hdl;
         } else {
@@ -696,7 +709,7 @@ int wpRegister(yStrRef serial, yStrRef logicalName, yStrRef productName, u16 pro
     }
     if(productName != INVALID_HASH_IDX) WP(hdl).product = productName;
     if(productId != 0)                  WP(hdl).devid   = productId;
-    if(devUrl != INVALID_HASH_IDX)      WP(hdl).url     = devUrl;
+    WP(hdl).url     = devUrl;
     if(beacon >= 0) {
         WP(hdl).flags = (beacon > 0 ? YWP_BEACON_ON : 0);
     } else {
@@ -738,6 +751,24 @@ yStrRef wpGetAttribute(yBlkHdl hdl, yWPAttribute attridx)
     yLeaveCriticalSection(&yWpMutex);
 
     return res;
+}
+
+void wpGetSerial(yBlkHdl hdl, char *serial)
+{
+    yEnterCriticalSection(&yWpMutex);    
+    if(WP(hdl).blkId == YBLKID_WPENTRY) {
+        yHashGetStr(WP(hdl).serial, serial, YOCTO_SERIAL_LEN);
+    }
+    yLeaveCriticalSection(&yWpMutex);
+}
+
+void wpGetLogicalName(yBlkHdl hdl, char *logicalName)
+{
+    yEnterCriticalSection(&yWpMutex);    
+    if(WP(hdl).blkId == YBLKID_WPENTRY) {
+        yHashGetStr(WP(hdl).name, logicalName, YOCTO_LOGICAL_LEN);
+    }
+    yLeaveCriticalSection(&yWpMutex);
 }
 
 int wpMarkForUnregister(yStrRef serial)
@@ -820,6 +851,30 @@ YAPI_DEVICE wpSearch(const char *device_str)
     return res;
 }
 
+YAPI_DEVICE wpSearchByNameHash(yStrRef strref)
+{
+    yBlkHdl hdl;
+    YAPI_DEVICE res = -1;
+    
+    if(strref == INVALID_HASH_IDX) 
+        return -1;
+    
+    yEnterCriticalSection(&yWpMutex);
+    hdl = yWpListHead;
+    while(hdl != INVALID_BLK_HDL) {
+        YASSERT(WP(hdl).blkId == YBLKID_WPENTRY);
+        if(WP(hdl).name == strref) {
+            res = WP(hdl).serial;
+            break;
+        }
+        hdl = WP(hdl).nextPtr;        
+    }
+    yLeaveCriticalSection(&yWpMutex);
+    
+    return res;
+}
+
+
 YAPI_DEVICE wpSearchByUrl(const char *host, const char *rootUrl)
 {
     yStrRef apiref;
@@ -872,8 +927,6 @@ int wpGetAllDevUsingHubUrl( yUrlRef hubUrl, yStrRef *buffer,int sizeInStrRef)
     
     return count;
 }
-
-
 
 
 int wpGetDeviceInfo(YAPI_DEVICE devdesc, u16 *deviceid, char *productname, char *serial, char *logicalname, u8 *beacon)
@@ -1279,11 +1332,11 @@ static void ypUnregister(yStrRef serial)
     yLeaveCriticalSection(&yYpMutex);
 }
 
-YAPI_FUNCTION ypSearch(const char *class_str, const char *func_str)
+YAPI_FUNCTION ypSearch(const char *class_str, const char *func_or_name)
 {
     yStrRef     categref, devref, funcref;
     yBlkHdl     cat_hdl, hdl, byname;
-    const char  *dotpos = func_str;
+    const char  *dotpos = func_or_name;
     char        categname[HASH_BUF_SIZE];
     YAPI_FUNCTION   res = -1;
     int         i;
@@ -1308,7 +1361,7 @@ YAPI_FUNCTION ypSearch(const char *class_str, const char *func_str)
     while(*dotpos && *dotpos != '.') dotpos++;
     if(!*dotpos) {
         // search for a function by pure logical name
-        funcref = yHashTestStr(func_str);
+        funcref = yHashTestStr(func_or_name);
         if(funcref == INVALID_HASH_IDX) 
             return -1;
         yEnterCriticalSection(&yYpMutex);
@@ -1321,7 +1374,7 @@ YAPI_FUNCTION ypSearch(const char *class_str, const char *func_str)
             hdl = YP(hdl).nextPtr;        
         }
         yLeaveCriticalSection(&yYpMutex);
-        if(hdl) return res;
+        if(hdl != INVALID_BLK_HDL) return res;
         // not found, fallback to assuming that str_func is a logical name or serial number
         // of a module with an implicit function name (like serial.module for instance)
         devref = funcref;
@@ -1331,14 +1384,18 @@ YAPI_FUNCTION ypSearch(const char *class_str, const char *func_str)
         if(funcref == INVALID_HASH_IDX) 
             return -1;
     } else {
-        if(dotpos==func_str){
+        if(dotpos==func_or_name){
             // format is ".funcid"
             devref = INVALID_HASH_IDX;
         }else{
             // format is "device.funcid"
-            devref = yHashTestBuf((u8 *)func_str, (u16)( dotpos-func_str));
+            devref = yHashTestBuf((u8 *)func_or_name, (u16)( dotpos-func_or_name));
+			if(devref == INVALID_HASH_IDX) 
+				return -1;
         }
         funcref = yHashTestStr(dotpos+1);
+        if(funcref == INVALID_HASH_IDX) 
+            return -1;
     }
     
     if(devref!= INVALID_HASH_IDX){
@@ -1412,7 +1469,7 @@ int ypGetFunctions(const char *class_str, YAPI_DEVICE devdesc, YAPI_FUNCTION pre
                 fundescr = YP(hdl).hwId;
                 if(use) {
                     maxfun++;
-                    if(maxsize >= sizeof(YAPI_FUNCTION)) {
+                    if(maxsize >= (int)sizeof(YAPI_FUNCTION)) {
                         maxsize -= sizeof(YAPI_FUNCTION);
                         if (buffer){
                             *buffer++ = fundescr;

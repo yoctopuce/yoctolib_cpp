@@ -1,39 +1,39 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 10311 2013-03-14 13:18:58Z mvuilleu $
+ * $Id: ytcp.c 12461 2013-08-22 08:58:05Z seb $
  *
- *  Implementation of a client TCP stack
+ * Implementation of a client TCP stack
  *
  * - - - - - - - - - License information: - - - - - - - - -
  *
- * Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
+ *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
- * 1) If you have obtained this file from www.yoctopuce.com,
- *    Yoctopuce Sarl licenses to you (hereafter Licensee) the
- *    right to use, modify, copy, and integrate this source file
- *    into your own solution for the sole purpose of interfacing
- *    a Yoctopuce product with Licensee's solution.
+ *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
+ *  non-exclusive license to use, modify, copy and integrate this
+ *  file into your software for the sole purpose of interfacing 
+ *  with Yoctopuce products. 
  *
- *    The use of this file and all relationship between Yoctopuce
- *    and Licensee are governed by Yoctopuce General Terms and
- *    Conditions.
+ *  You may reproduce and distribute copies of this file in 
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain 
+ *  this notice in the distributed source file.
  *
- *    THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
- *    WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
- *    FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
- *    EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *    INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
- *    COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
- *    SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
- *    LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
- *    CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
- *    BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
- *    WARRANTY, OR OTHERWISE.
+ *  You should refer to Yoctopuce General Terms and Conditions
+ *  for additional information regarding your rights and 
+ *  obligations.
  *
- * 2) If your intent is not to interface with Yoctopuce products,
- *    you are not entitled to use, read or create any derived
- *    material from this source file.
+ *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
+ *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
+ *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
+ *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
+ *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
 
@@ -42,15 +42,28 @@
 #if defined(WINDOWS_API) && !defined(_MSC_VER)
 #define _WIN32_WINNT 0x501
 #endif
+#ifdef WINDOWS_API
+typedef int socklen_t;
+#if defined(__BORLANDC__)
+#pragma warn -8004
+#pragma warn -8019
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#pragma warn +8004
+#pragma warn +8019
+#else
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#endif
+#endif
 #include "ytcp.h"
 #include "yproto.h"
 #include "yhash.h"
 
-
 #ifdef WIN32
 #ifndef WINCE
 #include <iphlpapi.h>
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined (__BORLANDC__)
 #pragma comment(lib, "Ws2_32.lib")
 #endif
 #else
@@ -62,20 +75,6 @@
 #include <netdb.h>
 #endif
 
-#ifdef __BORLANDC__
-typedef struct addrinfo {
-    int                 ai_flags;       // AI_PASSIVE, AI_CANONNAME, AI_NUMERICHOST
-    int                 ai_family;      // PF_xxx
-    int                 ai_socktype;    // SOCK_xxx
-    int                 ai_protocol;    // 0 or IPPROTO_xxx for IPv4 and IPv6
-    size_t              ai_addrlen;     // Length of ai_addr
-    char *              ai_canonname;   // Canonical name for nodename
-    struct sockaddr *   ai_addr;        // Binary address
-    struct addrinfo *   ai_next;        // Next structure in linked list
-} ADDRINFOA, *PADDRINFOA;
-int WSAAPI getaddrinfo(PCSTR pNodeName,PCSTR pServiceName,const ADDRINFOA *pHints,PADDRINFOA *ppResult);
-void freeaddrinfo(struct addrinfo *ai);
-#endif
 
 
 void  yDupSet(char **storage, const char *val)
@@ -83,7 +82,7 @@ void  yDupSet(char **storage, const char *val)
     int  len = (val ? (int)strlen(val)+1 : 1);
     
     if(*storage) yFree(*storage);
-    *storage = yMalloc(len);
+    *storage = (char*) yMalloc(len);
     if(val) {
         memcpy(*storage, val, len);
     } else {
@@ -113,7 +112,17 @@ int yNetSetErrEx(u32 line,unsigned err,char *errmsg)
 #endif
     return YAPI_IO_ERROR;
 }
-
+#if 1
+#define yNetLogErr()  yNetLogErrEx(__LINE__,SOCK_ERR)
+static int yNetLogErrEx(u32 line,unsigned err)
+{
+    int retval;
+    char errmsg[YOCTO_ERRMSG_LEN];
+    retval = yNetSetErrEx(line,err,errmsg);
+    dbglog("%s",errmsg);
+    return retval;
+}
+#endif
 
 void yInitWakeUpSocket(WakeUpSocket *wuce)
 {
@@ -124,7 +133,8 @@ void yInitWakeUpSocket(WakeUpSocket *wuce)
 
 int yStartWakeUpSocket(WakeUpSocket *wuce, char *errmsg)
 {
-    u32     optval,localh_size;
+    u32     optval;
+    socklen_t     localh_size;
     struct  sockaddr_in     localh;
     
     if(wuce->listensock != INVALID_SOCKET || wuce->signalsock != INVALID_SOCKET) {
@@ -132,7 +142,7 @@ int yStartWakeUpSocket(WakeUpSocket *wuce, char *errmsg)
     }
     //create socket
     wuce->listensock = socket(PF_INET,SOCK_DGRAM,IPPROTO_UDP);
-    if (wuce->listensock<0) {
+    if (wuce->listensock == INVALID_SOCKET) {
         return yNetSetErr();
     }
     optval = 1; 
@@ -150,7 +160,7 @@ int yStartWakeUpSocket(WakeUpSocket *wuce, char *errmsg)
         return yNetSetErr();
     }
     wuce->signalsock = socket(PF_INET,SOCK_DGRAM,IPPROTO_UDP);
-    if (wuce->signalsock<0) {
+    if (wuce->signalsock == INVALID_SOCKET) {
         return yNetSetErr();
     }
     if (connect(wuce->signalsock,(struct sockaddr *)&localh,localh_size)<0) {
@@ -319,7 +329,7 @@ retry:
     if (iResult == SOCKET_ERROR) {
 #ifdef WINDOWS_API
         if(SOCK_ERR == WSAEWOULDBLOCK){
-            yySleep(10);
+            yApproximateSleep(10);
             goto retry;
         }
 #endif
@@ -474,7 +484,7 @@ int  yTcpOpenReq(struct _TcpReqSt *req, const char *request, int reqlen, int isA
     while(req->skt != INVALID_SOCKET) {
         // There is an ongoing request to be finished
         yLeaveCriticalSection(&req->access);
-        yySleep(2);
+        yApproximateSleep(2); //fixme: use select instead
         yEnterCriticalSection(&req->access);
     }
     
@@ -537,6 +547,7 @@ int yTcpSelectReq(struct _TcpReqSt **reqs, int size, u64 ms, WakeUpSocket *wuce,
     YSOCKET     sktmax=0;
     TcpReqSt    *req;
     
+    memset(&timeout,0,sizeof(timeout));
     timeout.tv_sec = (long)ms/1000;
     timeout.tv_usec = (int)(ms % 1000) *1000;
     /* wait for data */
@@ -567,6 +578,9 @@ int yTcpSelectReq(struct _TcpReqSt **reqs, int size, u64 ms, WakeUpSocket *wuce,
         }
     }
     if (res!=0) {
+        if (wuce && FD_ISSET(wuce->listensock,&fds)) {
+            YPROPERR(yConsumeWakeUpSocket(wuce, errmsg));
+        }
         for (i=0; i < size; i++) {
             req = reqs[i];
             if(FD_ISSET(req->skt,&fds)){
@@ -741,3 +755,362 @@ void yTcpShutdown(void)
 #endif
 }
 
+
+
+#ifdef Y_UPNP_DETECT
+
+
+static const char *discovery =
+                "M-SEARCH * HTTP/1.1\r\n"
+                "HOST:" UPNP_MCAST_ADDR ":" TOSTRING(UPNP_PORT) "\r\n"
+                "MAN:\"ssdp:discover\"\r\n"
+                "MX:5\r\n"
+                "ST:" SSDP_URN_YOCTOPUCE"\r\n"
+                "\r\n";
+
+
+#define UPNP_NOTIFY "NOTIFY * HTTP/1.1\r\n"
+#define UPNP_M_SEARCH "M-SEARCH * HTTP/1.1\r\n"
+#define UPNP_HTTP "HTTP/1.1 200 OK\r\n"
+#define UPNP_LINE_MAX_LEN 80u
+
+#define UDP_IN_FIFO yFifoBuf
+
+
+static void yupnpUpdateCache(const char *uuid,const char * url, int cacheValidity)
+{
+    char errmsg[YOCTO_ERRMSG_LEN];
+    int res;
+    int i;
+
+    if(cacheValidity<=0)
+        cacheValidity = 1800;
+    cacheValidity*=1000;
+
+    for (i=0; i<NBMAX_NET_HUB ; i++){
+        UNPNP_CACHE_ENTRY *p = yContext->upnpCache[i];
+        if(p== NULL)
+            break;
+        if (YSTRCMP(uuid,p->uuid)==0){
+            if(YSTRCMP(url,p->url)){
+                yapiUnregisterHub(p->url);
+                YSTRCPY(p->url,UPNP_URL_LEN,url);
+                res =yapiRegisterHub(url,errmsg);
+                if(res <0){
+                    dbglog("upnp:%s",errmsg);
+                }
+            }
+            dbglog("refresh entry (%s -> %s (for %d)\n",uuid,url);
+            p->detectedTime = yapiGetTickCount();
+            p->maxAge = cacheValidity;
+            return;
+        }
+    }
+    if(i <NBMAX_NET_HUB){
+        UNPNP_CACHE_ENTRY *p = yMalloc(sizeof(UNPNP_CACHE_ENTRY));
+        YSTRCPY(p->uuid,UPNP_URL_LEN,uuid);
+        YSTRCPY(p->url,UPNP_URL_LEN,url);
+        p->detectedTime = yapiGetTickCount();
+        p->maxAge = cacheValidity;
+        dbglog("refresh entry (%s -> %s)\n",uuid,url);
+        res =yapiRegisterHub(url,errmsg);
+        if(res <0){
+            dbglog("upnp:%s",errmsg);
+        }
+        yContext->upnpCache[i] = p;
+    }
+}
+
+static void yupnpCheckExpiration()
+{
+    char errmsg[YOCTO_ERRMSG_LEN];
+    int res;
+    int i;
+    u64  now =yapiGetTickCount();
+
+    
+    for (i=0; i<NBMAX_NET_HUB ; i++){
+        UNPNP_CACHE_ENTRY *p = yContext->upnpCache[i];
+        if(p== NULL)
+            break;
+        if ((u64)(now -p->detectedTime) > p->maxAge) { 
+            dbglog("SSDP entry expiration (%s -> %s (for %d)\n",p->uuid,p->url);
+            yapiUnregisterHub(p->url);
+        }
+    }
+}
+
+
+
+
+static void yupnp_parseSSPDMessage(char *message,int msg_len)
+{
+    int len =0;
+    char *p,*start,*lastsep;
+    char *location=NULL;
+    char *usn=NULL;
+    char *cache=NULL;
+
+    if(len>=msg_len){
+        return;
+    }
+
+    if (memcmp(message,UPNP_HTTP,YSTRLEN(UPNP_HTTP))==0) {
+        len=YSTRLEN(UPNP_HTTP);
+    } else if (memcmp(message,UPNP_NOTIFY,YSTRLEN(UPNP_NOTIFY))==0) {
+        len=YSTRLEN(UPNP_NOTIFY);
+    }
+    if (len){
+        //dbglog("UPNP Message:\n%s\n",message);
+        start = p = lastsep= message +len;
+        msg_len-=len;
+        while( msg_len && *p ){
+            switch(*p) {
+            case ':':
+                if (lastsep == start){
+                    lastsep = p;
+                }
+                break;
+            case '\r':
+                if (p==start){
+                    // \r\n\r\n ->end
+                    if(msg_len>1) msg_len=1;
+                    break;
+                }
+
+                if (lastsep == start){
+                    //no : on the line -> drop this message
+                    return;
+                }
+                *lastsep++=0;
+                if (*lastsep==' ') lastsep++;
+                *p=0;
+                if (strcmp(start,"LOCATION")==0){
+                    location=lastsep;
+                }else if (strcmp(start,"USN")==0){
+                    usn=lastsep;
+                }else if (strcmp(start,"CACHE-CONTROL")==0){
+                    cache=lastsep;
+                }
+                break;
+            case '\n':
+                start =lastsep= p+1;
+                break;
+            }
+            p++;
+            msg_len--;
+        }
+        if(location && usn && cache){
+            char last='_';
+            const char *uuid,*urn;
+            int         cacheVal;
+            //dbglog("UPNP: location: %s %s %s\n\n",location,usn,cache);
+            // parse USN
+            p=usn;
+            while (*p && *p++!=':');
+            if (!*p) return;
+            uuid=p;
+            while (*p && *p++!=':');
+            if (*p != ':') return;
+            *(p++-1)=0;
+            if (!*p) return;
+            urn=p;
+            // parse Location
+            if(YSTRNCMP(location,"http://",7)==0){
+                location += 7;
+            }
+            p=location;
+            while (*p && *p != '/') p++;
+            if(*p=='/') *p=0;
+            p=cache;
+            while (*p && *p++!='=');
+            if(!*p) return;
+            cacheVal = atoi(p);
+            if (YSTRCMP(urn,SSDP_URN_YOCTOPUCE)==0){
+                yupnpUpdateCache(uuid,location,cacheVal);
+            }
+        }
+    } 
+#if 0
+    else {
+        dbglog("UPNP drop invalid message:\n%s\n",message);
+    }
+#endif
+}
+
+
+
+static void* yupnp_thread(void* ctx)
+{
+    yThread     *thread=(yThread*)ctx;
+    UPNPSocket *upnp = (UPNPSocket*)thread->ctx;
+    fd_set      fds;
+    u8          buffer[1536];
+    struct timeval timeout;
+    int         res,received;
+    YSOCKET     sktmax=0;
+    yFifoBuf    inFifo;
+    
+    
+    yThreadSignalStart(thread);
+    yFifoInit(&inFifo,buffer,sizeof(buffer));
+
+    while (!yThreadMustEnd(thread)) {
+        yupnpCheckExpiration();
+        memset(&timeout,0,sizeof(timeout));
+        timeout.tv_sec = (long)1;
+        timeout.tv_usec = (int)0;
+        /* wait for data */
+        FD_ZERO(&fds);
+        FD_SET(upnp->request_sock,&fds);
+        if(upnp->notify_sock!=INVALID_SOCKET) {
+            FD_SET(upnp->notify_sock,&fds);
+            if(upnp->notify_sock>sktmax){
+                sktmax = upnp->notify_sock;
+            }
+        }
+        sktmax = upnp->request_sock;
+        res = select((int)sktmax+1,&fds,NULL,NULL,&timeout);
+        if (res<0) {
+    #ifndef WINDOWS_API
+            if(SOCK_ERR ==  EAGAIN){
+                continue;
+            } else
+    #endif
+            {
+                yNetLogErr();
+                break;
+            }
+        }
+        if (res!=0) {
+            if (FD_ISSET(upnp->request_sock,&fds)) {
+                received = (int)recv(upnp->request_sock, (char*)buffer, sizeof(buffer)-1, 0);
+                if (received>0) {
+                    buffer[received]=0;
+                    yupnp_parseSSPDMessage((char*) buffer,received);
+                }
+            }
+            if (FD_ISSET(upnp->notify_sock,&fds)) {
+                received = (int)recv(upnp->notify_sock, (char *) buffer, sizeof(buffer)-1, 0);
+                if (received>0) {
+                    buffer[received]=0;
+                    yupnp_parseSSPDMessage((char*) buffer,received);
+                }
+            }
+        }
+    }
+    yFifoCleanup(&inFifo);
+    yThreadSignalEnd(thread);
+    return NULL;
+}
+
+
+int yUPNPDiscover(UPNPSocket *upnp, char *errmsg)
+{
+    int sent,len;
+    struct sockaddr_in sockaddr_dst;
+
+    memset(&sockaddr_dst, 0, sizeof(struct sockaddr_in));   
+    sockaddr_dst.sin_family = AF_INET;
+    sockaddr_dst.sin_port = htons(UPNP_PORT);
+    sockaddr_dst.sin_addr.s_addr = inet_addr(UPNP_MCAST_ADDR);
+    len =  (int) strlen(discovery);
+    sent = (int) sendto(upnp->request_sock, discovery, len, 0, (struct sockaddr *)&sockaddr_dst,sizeof(struct sockaddr_in));
+    if (sent < 0) {
+        return yNetSetErr();
+    }
+    return YAPI_SUCCESS;
+}
+
+
+int yUPNPStart(UPNPSocket *upnp, char *errmsg)
+{
+    u32     optval;
+    socklen_t    socksize;
+    struct sockaddr_in     sockaddr;
+    struct ip_mreq     mcast_membership; 
+
+    //create M-search socker
+    upnp->request_sock = socket(PF_INET,SOCK_DGRAM,IPPROTO_UDP);
+    if (upnp->request_sock == INVALID_SOCKET) {
+        return yNetSetErr();
+    }
+   
+    optval = 1; 
+    setsockopt(upnp->request_sock,SOL_SOCKET,SO_REUSEADDR,(char *)&optval,sizeof(optval));
+#ifdef SO_REUSEPORT
+    setsockopt(upnp->request_sock,SOL_SOCKET,SO_REUSEPORT,(char *)&optval,sizeof(optval));
+#endif
+
+    // set port to 0 since we accept any port
+    socksize=sizeof(sockaddr);
+    memset(&sockaddr,0,socksize);
+    sockaddr.sin_family = AF_INET;
+    sockaddr.sin_addr.s_addr =INADDR_ANY;
+    if (bind(upnp->request_sock ,(struct sockaddr *)&sockaddr,socksize)<0) {
+        return yNetSetErr();
+    }
+
+    //create NOTIFY socker
+    upnp->notify_sock = socket(PF_INET,SOCK_DGRAM,IPPROTO_UDP);
+    if (upnp->notify_sock == INVALID_SOCKET) {
+        return yNetSetErr();
+    }
+   
+    optval = 1; 
+    setsockopt(upnp->notify_sock,SOL_SOCKET,SO_REUSEADDR,(char *)&optval,sizeof(optval));
+#ifdef SO_REUSEPORT
+    setsockopt(upnp->notify_sock,SOL_SOCKET,SO_REUSEPORT,(char *)&optval,sizeof(optval));
+#endif
+
+    // set port to 0 since we accept any port
+    socksize=sizeof(sockaddr);
+    memset(&sockaddr,0,socksize);
+    sockaddr.sin_family = AF_INET;
+    sockaddr.sin_port = htons(UPNP_PORT);
+    sockaddr.sin_addr.s_addr =INADDR_ANY;
+    if (bind(upnp->notify_sock ,(struct sockaddr *)&sockaddr,socksize)<0) {
+        return yNetSetErr();
+    }
+
+    mcast_membership.imr_multiaddr.s_addr = inet_addr(UPNP_MCAST_ADDR);
+    mcast_membership.imr_interface.s_addr = INADDR_ANY;    
+    if (setsockopt(upnp->notify_sock,IPPROTO_IP,IP_ADD_MEMBERSHIP,(void*)&mcast_membership,sizeof(mcast_membership))<0){
+        dbglog("Unable to add multicat membership for UPNP");
+        yNetLogErr();
+        closesocket(upnp->notify_sock);
+        upnp->notify_sock=INVALID_SOCKET;
+    }
+    //yThreadCreate will not create a new thread if there is already one running
+    if(yThreadCreate(&upnp->thread,yupnp_thread,upnp)<0){
+        return YERRMSG(YAPI_IO_ERROR,"Unable to start helper thread");
+    }
+    return yUPNPDiscover(upnp,errmsg);
+    //return YAPI_SUCCESS;
+}
+
+
+void  yUPNPStop(UPNPSocket *upnp)
+{
+
+   if(yThreadIsRunning(&upnp->thread)) {
+        u64 timeref;
+        yThreadRequestEnd(&upnp->thread);
+        timeref=yapiGetTickCount();
+        while(yThreadIsRunning(&upnp->thread) && (yapiGetTickCount()-timeref >1000) ) {
+            yApproximateSleep(10);
+        }
+        yThreadKill(&upnp->thread);
+    }
+
+    if ( upnp->request_sock != INVALID_SOCKET) {
+        closesocket(upnp->request_sock);
+        upnp->request_sock = INVALID_SOCKET;
+    }
+    if ( upnp->notify_sock != INVALID_SOCKET) {
+        closesocket(upnp->notify_sock);
+        upnp->notify_sock = INVALID_SOCKET;
+    }
+}
+
+#endif

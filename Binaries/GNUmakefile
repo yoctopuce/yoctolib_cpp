@@ -59,7 +59,6 @@ YAPIOUT_ARMEL 	= $(OUTDIR_ARMEL)yapi/
 YAPIOUT_ARMHF 	= $(OUTDIR_ARMHF)yapi/
 YAPIOUT_OSX 	= $(OUTDIR_OSX)yapi/
 
-
 #define all tragets
 TARGETS_32 		= $(OUTDIR_32)libyocto-static.a $(YAPIOUT_32)libyapi-static.a $(OUTDIR_32)libyocto.so.1.0.1 $(YAPIOUT_32)libyapi.so.1.0.1
 TARGETS_64 		= $(OUTDIR_64)libyocto-static.a $(YAPIOUT_64)libyapi-static.a $(OUTDIR_64)libyocto.so.1.0.1 $(YAPIOUT_64)libyapi.so.1.0.1
@@ -72,9 +71,11 @@ TARGETS_OSX 	= $(OUTDIR_OSX)libyocto-static.a  $(YAPIOUT_OSX)libyapi-static.a $(
 #define all object needed 
 YOCTO_API_DIR = ../Sources/
 
-YOCTO_API_OBJS_STAT = yocto_anbutton.o yocto_api.o yocto_colorled.o yocto_datalogger.o yocto_dualpower.o yocto_humidity.o yocto_led.o \
-yocto_relay.o yocto_servo.o yocto_temperature.o yocto_pressure.o yocto_lightsensor.o yocto_current.o yocto_voltage.o yocto_vsource.o \
-yocto_carbondioxide.o yocto_wireless.o yocto_network.o yocto_watchdog.o yocto_power.o yocto_voc.o yocto_display.o yocto_files.o
+YOCTO_API_OBJS_STAT = yocto_api.o yocto_anbutton.o yocto_carbondioxide.o yocto_colorled.o yocto_current.o yocto_datalogger.o yocto_display.o \
+	yocto_dualpower.o yocto_files.o yocto_genericsensor.o yocto_hubport.o yocto_humidity.o yocto_led.o yocto_lightsensor.o \
+	yocto_network.o yocto_oscontrol.o yocto_power.o yocto_pressure.o yocto_realtimeclock.o yocto_relay.o yocto_servo.o \
+	yocto_temperature.o yocto_voc.o yocto_voltage.o yocto_wakeupmonitor.o yocto_wakeupschedule.o yocto_watchdog.o \
+	yocto_wireless.o yocto_digitalio.o
 YOCTO_API_OBJS_DYN	= $(patsubst %.o, %_dyn.o,$(YOCTO_API_OBJS_STAT))
 
 YAPI_DIR    = $(YOCTO_API_DIR)yapi/
@@ -112,14 +113,19 @@ YAPI_OBJS_DYN_ARMHF = $(patsubst %.o, $(OBJDIR_ARMHF)%.o, $(YAPI_OBJS_DYN))
 YAPI_OBJS_DYN_OSX = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(YAPI_OBJS_DYN))
 
 # most compatible ARMEL options, using soft-float
-ARMEL_OPTS = -mfloat-abi=soft -march=armv5 -marm
+ARMEL_OPTS = -O2 -mfloat-abi=soft -march=armv5 -marm
 
 # reduced ARMHF options to run properly on raspian-thing, but still be compatible with hard-floats VFP
-ARMHF_OPTS = -mfloat-abi=hard -march=armv6 -marm
+ARMHF_OPTS = -O2 -mfloat-abi=hard -march=armv6 -marm
 #linux compilation 64 bits
-LIN64_OPTS =-m64
+LIN64_OPTS = -O2 -m64
 #linux compilaltion for 32 bits (limit it to i586 to support entry level computer)
-LIN32_OPTS =-m32 -march=i586
+LIN32_OPTS = -O2 -m32 -march=i586
+
+#linux compilation 64 bist
+OSX64_OPTS = -01 -m64
+GLOBAL_OPT = -g -Wall
+
 
 fwd: default
 
@@ -127,83 +133,83 @@ fwd: default
 #generic compilation rules
 $(OBJDIR_64)%.o : %.c $(ALL_H)
 	@echo compiling $@ 
-	@gcc $(LIN64_OPTS) -I$(YOCTO_API_DIR) -Wall -g -c $< -o $@
+	@gcc $(LIN64_OPTS) $(GLOBAL_OPT) -I$(YOCTO_API_DIR) -c $< -o $@
 
 $(OBJDIR_64)%.o : %.cpp $(ALL_H)
 	@echo compiling $@ 
-	@g++ $(LIN64_OPTS) -I$(YOCTO_API_DIR) -Wall -g -c $< -o $@
+	@g++ $(LIN64_OPTS) $(GLOBAL_OPT) -I$(YOCTO_API_DIR) -c $< -o $@
 
 $(OBJDIR_64)%_dyn.o : %.c $(ALL_H)
 	@echo compiling $@ 
-	@gcc $(LIN64_OPTS) -I$(YOCTO_API_DIR) -Wall -g -fPIC -c $< -o $@
+	@gcc $(LIN64_OPTS) $(GLOBAL_OPT) -I$(YOCTO_API_DIR) -fPIC -c $< -o $@
 
 $(OBJDIR_64)%_dyn.o : %.cpp $(ALL_H)
 	@echo compiling $@ 
-	@g++ $(LIN64_OPTS) -I$(YOCTO_API_DIR) -Wall -g -fPIC -c $< -o $@
+	@g++ $(LIN64_OPTS) $(GLOBAL_OPT) -I$(YOCTO_API_DIR) -fPIC -c $< -o $@
 
 $(OBJDIR_32)%.o : %.c $(ALL_H)
 	@echo compiling $@ 
-	@gcc $(LIN32_OPTS) -I$(YOCTO_API_DIR) -Wall -g -c $< -o $@
+	@gcc $(LIN32_OPTS) $(GLOBAL_OPT) -I$(YOCTO_API_DIR) -c $< -o $@
 
 $(OBJDIR_32)%.o : %.cpp $(ALL_H)
 	@echo compiling $@ 
-	@g++ $(LIN32_OPTS) -I$(YOCTO_API_DIR) -Wall -g -c $< -o $@
+	@g++ $(LIN32_OPTS) $(GLOBAL_OPT) -I$(YOCTO_API_DIR) -c $< -o $@
 
 $(OBJDIR_32)%_dyn.o : %.c $(ALL_H)
 	@echo compiling $@ 
-	@gcc $(LIN32_OPTS) -I$(YOCTO_API_DIR) -Wall -g -fPIC -c $< -o $@
+	@gcc $(LIN32_OPTS) $(GLOBAL_OPT) -I$(YOCTO_API_DIR) -fPIC -c $< -o $@
 
 $(OBJDIR_32)%_dyn.o : %.cpp $(ALL_H)
 	@echo compiling $@ 
-	@g++ $(LIN32_OPTS) -I$(YOCTO_API_DIR) -Wall -g -fPIC -c $< -o $@
+	@g++ $(LIN32_OPTS) $(GLOBAL_OPT) -I$(YOCTO_API_DIR) -fPIC -c $< -o $@
 
 $(OBJDIR_ARMEL)%.o : %.c $(ALL_H)
 	@echo compiling $@ 
-	@gcc $(ARMEL_OPTS) -I$(YOCTO_API_DIR) -Wall -g -c $< -o $@
+	@gcc $(ARMEL_OPTS) $(GLOBAL_OPT) -I$(YOCTO_API_DIR) -c $< -o $@
 
 $(OBJDIR_ARMEL)%.o : %.cpp $(ALL_H)
 	@echo compiling $@ 
-	@g++ $(ARMEL_OPTS) -I$(YOCTO_API_DIR) -Wall -g -c $< -o $@
+	@g++ $(ARMEL_OPTS) $(GLOBAL_OPT) -I$(YOCTO_API_DIR) -c $< -o $@
 
 $(OBJDIR_ARMEL)%_dyn.o : %.c $(ALL_H)
 	@echo compiling $@ 
-	@gcc $(ARMEL_OPTS) -I$(YOCTO_API_DIR) -Wall -g -fPIC -c $< -o $@
+	@gcc $(ARMEL_OPTS) $(GLOBAL_OPT) -I$(YOCTO_API_DIR) -fPIC -c $< -o $@
 
 $(OBJDIR_ARMEL)%_dyn.o : %.cpp $(ALL_H)
 	@echo compiling $@ 
-	@g++ $(ARMEL_OPTS) -I$(YOCTO_API_DIR) -Wall -g -fPIC -c $< -o $@
+	@g++ $(ARMEL_OPTS) $(GLOBAL_OPT) -I$(YOCTO_API_DIR) -fPIC -c $< -o $@
 
 $(OBJDIR_ARMHF)%.o : %.c $(ALL_H)
 	@echo compiling $@ 
-	@gcc $(ARMHF_OPTS) -I$(YOCTO_API_DIR) -Wall -g -c $< -o $@
+	@gcc $(ARMHF_OPTS) $(GLOBAL_OPT) -I$(YOCTO_API_DIR) -c $< -o $@
 
 $(OBJDIR_ARMHF)%.o : %.cpp $(ALL_H)
 	@echo compiling $@ 
-	@g++ $(ARMHF_OPTS) -I$(YOCTO_API_DIR) -Wall -g -c $< -o $@
+	@g++ $(ARMHF_OPTS) $(GLOBAL_OPT) -I$(YOCTO_API_DIR) -c $< -o $@
 
 $(OBJDIR_ARMHF)%_dyn.o : %.c $(ALL_H)
 	@echo compiling $@ 
-	@gcc $(ARMHF_OPTS) -I$(YOCTO_API_DIR) -Wall -g -fPIC -c $< -o $@
+	@gcc $(ARMHF_OPTS) $(GLOBAL_OPT) -I$(YOCTO_API_DIR) -fPIC -c $< -o $@
 
 $(OBJDIR_ARMHF)%_dyn.o : %.cpp $(ALL_H)
 	@echo compiling $@ 
-	@g++ $(ARMHF_OPTS) -I$(YOCTO_API_DIR) -Wall -g -fPIC -c $< -o $@
+	@g++ $(ARMHF_OPTS) $(GLOBAL_OPT) -I$(YOCTO_API_DIR) -fPIC -c $< -o $@
 
 $(OBJDIR_OSX)%.o : %.c $(ALL_H)
 	@echo compiling $@ 
-	@gcc $(LIN64_OPTS) -I$(YOCTO_API_DIR) -Wall -g -c $< -o $@
+	@gcc $(OSX64_OPTS) $(GLOBAL_OPT) -I$(YOCTO_API_DIR) -c $< -o $@
 
 $(OBJDIR_OSX)%.o : %.cpp $(ALL_H)
 	@echo compiling $@ 
-	@g++ $(LIN64_OPTS) -I$(YOCTO_API_DIR) -Wall -g -c $< -o $@
+	@g++ $(OSX64_OPTS) $(GLOBAL_OPT) -I$(YOCTO_API_DIR) -c $< -o $@
 
 $(OBJDIR_OSX)%_dyn.o : %.c $(ALL_H)
 	@echo compiling $@ 
-	@gcc $(LIN64_OPTS) -I$(YOCTO_API_DIR) -Wall -g -fPIC -c $< -o $@
+	@gcc $(OSX64_OPTS) $(GLOBAL_OPT) -I$(YOCTO_API_DIR) -fPIC -c $< -o $@
 
 $(OBJDIR_OSX)%_dyn.o : %.cpp $(ALL_H)
 	@echo compiling $@ 
-	@g++ $(LIN64_OPTS) -I$(YOCTO_API_DIR) -Wall -g -fPIC -c $< -o $@
+	@g++ $(OSX64_OPTS) $(GLOBAL_OPT) -I$(YOCTO_API_DIR) -fPIC -c $< -o $@
 
 $(OUTDIR_64)libyocto-static.a : $(ALL_OBJS_STAT_64) $(ALL_H)
 	@rm -rf $@

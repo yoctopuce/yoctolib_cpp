@@ -1,42 +1,41 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.h 9921 2013-02-20 09:39:16Z seb $
+ * $Id: yocto_wireless.h 12337 2013-08-14 15:22:22Z mvuilleu $
  *
  * Declares yFindWireless(), the high-level API for Wireless functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
- * Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
+ *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
- * 1) If you have obtained this file from www.yoctopuce.com,
- *    Yoctopuce Sarl licenses to you (hereafter Licensee) the
- *    right to use, modify, copy, and integrate this source file
- *    into your own solution for the sole purpose of interfacing
- *    a Yoctopuce product with Licensee's solution.
+ *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
+ *  non-exclusive license to use, modify, copy and integrate this
+ *  file into your software for the sole purpose of interfacing 
+ *  with Yoctopuce products. 
  *
- *    The use of this file and all relationship between Yoctopuce 
- *    and Licensee are governed by Yoctopuce General Terms and 
- *    Conditions.
+ *  You may reproduce and distribute copies of this file in 
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain 
+ *  this notice in the distributed source file.
  *
- *    THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *    WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
- *    FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
- *    EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *    INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *    COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *    SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
- *    LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
- *    CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
- *    BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
- *    WARRANTY, OR OTHERWISE.
+ *  You should refer to Yoctopuce General Terms and Conditions
+ *  for additional information regarding your rights and 
+ *  obligations.
  *
- * 2) If your intent is not to interface with Yoctopuce products,
- *    you are not entitled to use, read or create any derived
- *    material from this source file.
+ *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
+ *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
+ *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
+ *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
+ *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
-
 
 #ifndef YOCTO_WIRELESS_H
 #define YOCTO_WIRELESS_H
@@ -46,9 +45,9 @@
 #include <cmath>
 #include <map>
 
-//--- (return codes)
-//--- (end of return codes)
-//--- (YWireless definitions)
+//--- (generated code: return codes)
+//--- (end of generated code: return codes)
+//--- (generated code: YWireless definitions)
 class YWireless; //forward declaration
 
 typedef void (*YWirelessUpdateCallback)(YWireless *func, const string& functionValue);
@@ -68,9 +67,47 @@ typedef enum {
 #define Y_CHANNEL_INVALID               (0xffffffff)
 #define Y_MESSAGE_INVALID               (YAPI::INVALID_STRING)
 #define Y_WLANCONFIG_INVALID            (YAPI::INVALID_STRING)
-//--- (end of YWireless definitions)
+//--- (end of generated code: YWireless definitions)
 
-//--- (YWireless declaration)
+
+//--- (generated code: YWlanRecord definitions)
+//--- (end of generated code: YWlanRecord definitions)
+
+//--- (generated code: YWlanRecord declaration)
+/**
+ * YWlanRecord Class: Description of a wireless network
+ * 
+ * 
+ */
+class YWlanRecord {
+protected:
+    // Attributes (function value cache)
+    //--- (end of generated code: YWlanRecord declaration)
+    string _ssid;
+    int    _channel;
+    string _sec;
+    int    _rssi;
+    
+public:
+    YWlanRecord(const string& json);
+    //--- (generated code: YWlanRecord accessors declaration)
+
+
+    string             get_ssid();
+
+    int             get_channel();
+
+    string             get_security();
+
+    int             get_linkQuality();
+
+    //--- (end of generated code: YWlanRecord accessors declaration)
+};
+
+
+
+
+//--- (generated code: YWireless declaration)
 /**
  * YWireless Class: Wireless function interface
  * 
@@ -88,35 +125,24 @@ protected:
     Y_SECURITY_enum _security;
     string          _message;
     string          _wlanConfig;
-    // Static function object cache
-    static std::map<string,YWireless*> _WirelessCache;
 
     friend YWireless *yFindWireless(const string& func);
     friend YWireless *yFirstWireless(void);
 
     // Function-specific method for parsing of JSON output and caching result
     int             _parse(yJsonStateMachine& j);
-    //--- (end of YWireless declaration)
+    //--- (end of generated code: YWireless declaration)
 
-    //--- (YWireless constructor)
+    //--- (generated code: YWireless constructor)
     // Constructor is protected, use yFindWireless factory function to instantiate
-    YWireless(const string& func): YFunction("Wireless", func)
-    //--- (end of YWireless constructor)
-    //--- (Wireless initialization)
-            ,_callback(NULL)
-            ,_logicalName(Y_LOGICALNAME_INVALID)
-            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
-            ,_linkQuality(Y_LINKQUALITY_INVALID)
-            ,_ssid(Y_SSID_INVALID)
-            ,_channel(Y_CHANNEL_INVALID)
-            ,_security(Y_SECURITY_INVALID)
-            ,_message(Y_MESSAGE_INVALID)
-            ,_wlanConfig(Y_WLANCONFIG_INVALID)
-    //--- (end of Wireless initialization)
-    {};
+    YWireless(const string& func);
+    //--- (end of generated code: YWireless constructor)
+    //--- (generated code: Wireless initialization)
+    //--- (end of generated code: Wireless initialization)
 
 public:
-    //--- (YWireless accessors declaration)
+    ~YWireless();
+    //--- (generated code: YWireless accessors declaration)
 
     static const string LOGICALNAME_INVALID;
     static const string ADVERTISEDVALUE_INVALID;
@@ -251,7 +277,7 @@ public:
     /**
      * Changes the configuration of the wireless lan interface to create an ad-hoc
      * wireless network, without using an access point. If a security key is specified,
-     * the network will be protected by WEP128, since WPA is not standardized for
+     * the network is protected by WEP128, since WPA is not standardized for
      * ad-hoc networks.
      * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
      * 
@@ -263,6 +289,19 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     int             adhocNetwork(string ssid,string securityKey);
+
+    /**
+     * Returns a list of YWlanRecord objects which describe detected Wireless networks.
+     * This list is not updated when the module is already connected to an acces point (infrastructure mode).
+     * To force an update of this list, adhocNetwork() must be called to disconnect
+     * the module from the current network. The returned list must be unallocated by caller,
+     * 
+     * @return a list of YWlanRecord objects, containing the SSID, channel,
+     *         link quality and the type of security of the wireless network.
+     * 
+     * On failure, throws an exception or returns an empty list.
+     */
+    vector<YWlanRecord*>             get_detectedWlans();
 
 
     /**
@@ -329,10 +368,10 @@ public:
            static YWireless* FirstWireless(void);
     inline static YWireless* First(void)
     { return YWireless::FirstWireless();}
-    //--- (end of YWireless accessors declaration)
+    //--- (end of generated code: YWireless accessors declaration)
 };
 
-//--- (Wireless functions declaration)
+//--- (generated code: Wireless functions declaration)
 
 /**
  * Retrieves a wireless lan interface for a given identifier.
@@ -371,6 +410,6 @@ inline YWireless* yFindWireless(const string& func)
 inline YWireless* yFirstWireless(void)
 { return YWireless::FirstWireless();}
 
-//--- (end of Wireless functions declaration)
+//--- (end of generated code: Wireless functions declaration)
 
 #endif

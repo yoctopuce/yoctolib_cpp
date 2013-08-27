@@ -1,39 +1,39 @@
 /*********************************************************************
  *
- * $Id: ystream.c 11071 2013-04-15 08:58:27Z mvuilleu $
+ * $Id: ystream.c 12480 2013-08-23 09:27:13Z seb $
  *
  * USB multi-interface stream implementation
  *
  * - - - - - - - - - License information: - - - - - - - - -
  *
- * Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
+ *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
- * 1) If you have obtained this file from www.yoctopuce.com,
- *    Yoctopuce Sarl licenses to you (hereafter Licensee) the
- *    right to use, modify, copy, and integrate this source file
- *    into your own solution for the sole purpose of interfacing
- *    a Yoctopuce product with Licensee's solution.
+ *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
+ *  non-exclusive license to use, modify, copy and integrate this
+ *  file into your software for the sole purpose of interfacing 
+ *  with Yoctopuce products. 
  *
- *    The use of this file and all relationship between Yoctopuce
- *    and Licensee are governed by Yoctopuce General Terms and
- *    Conditions.
+ *  You may reproduce and distribute copies of this file in 
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain 
+ *  this notice in the distributed source file.
  *
- *    THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
- *    WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
- *    FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
- *    EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *    INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
- *    COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
- *    SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
- *    LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
- *    CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
- *    BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
- *    WARRANTY, OR OTHERWISE.
+ *  You should refer to Yoctopuce General Terms and Conditions
+ *  for additional information regarding your rights and 
+ *  obligations.
  *
- * 2) If your intent is not to interface with Yoctopuce products,
- *    you are not entitled to use, read or create any derived
- *    material from this source file.
+ *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
+ *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
+ *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
+ *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
+ *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
 
@@ -66,9 +66,9 @@ char  ytracefile[512]="";
  ***************************************************************************/
 
 
-YRETCODE ySetErr(YRETCODE code, char *outmsg, char *erreur,const char *file,u32 line)
+YRETCODE ySetErr(YRETCODE code, char *outmsg, const char *erreur,const char *file,u32 line)
 {
-    char *msg;
+    const char *msg;
     if(outmsg==NULL){
         // no output buffer only return code
         return code;
@@ -112,9 +112,9 @@ int FusionErrmsg(int code,char *errmsg,char *generr,char *detailerr)
 
 
 
-#ifndef WINDOWS_API
+#if !defined(_MSC_VER) ||  (_MSC_VER <= MSC_VS2003)
 
-int fopen_s(FILE** f, const char *filename, const char *mode)
+int YFOPEN(FILE** f, const char *filename, const char *mode)
 {
     *f=fopen(filename,mode);
     if(*f==NULL){
@@ -133,17 +133,17 @@ static int dayofs[] = { 0,31,59,90,120,151,181,212,243,273,304,334 };
 
 static void WriteTsamp(FILE *f)
 {
-	u32  year, month, day, h, m, s;
+    u32  year, month, day, h, m, s;
 
 #ifdef WINCE
-	SYSTEMTIME time;
-	GetLocalTime( &time);
-	year  = time.wYear;
-	month = time.wMonth;
-	day   = time.wDay;
-	h     = time.wHour;
-	m     = time.wMinute;
-	s     = time.wSecond;
+    SYSTEMTIME time;
+    GetLocalTime( &time);
+    year  = time.wYear;
+    month = time.wMonth;
+    day   = time.wDay;
+    h     = time.wHour;
+    m     = time.wMinute;
+    s     = time.wSecond;
 #else
 
     u32 secs, days,y;
@@ -173,21 +173,17 @@ static void WriteTsamp(FILE *f)
 }
 
 
-int dbglogf(const char *fileid,int line,const char *fmt,...)
+int vdbglogf(const char *fileid,int line,const char *fmt,va_list args)
 {
     char buffer[2048];
     int len;
     int  threadIdx;
-    va_list args;
-
-    va_start( args, fmt );
     threadIdx = yThreadIndex();  
     len=YSPRINTF(buffer,2048,"[%d]%s:% 4d: ",threadIdx,fileid,line);
     if(len<0  || YVSPRINTF(buffer+len,2048-len,fmt,args)<0){
         YSTRCPY(buffer,2048,"dbglogf failed\n");
         return -1;
     }
-    va_end(args);
     len =YSTRLEN(buffer);
 
 #if 1
@@ -197,13 +193,24 @@ int dbglogf(const char *fileid,int line,const char *fmt,...)
 
     if(ytracefile[0]){
         FILE *f;
-        if(fopen_s(&f,ytracefile,"a")!=0){
+        if(YFOPEN(&f,ytracefile,"a")!=0){
             return -1;
         }
         WriteTsamp(f);
         fwrite(buffer,1,len,f);
         fclose(f);
     }
+    return len;
+}
+
+int dbglogf(const char *fileid,int line,const char *fmt,...)
+{
+    int len;
+    va_list args;
+
+    va_start( args, fmt );
+    len =vdbglogf(fileid,line,fmt,args);
+    va_end(args);
     return len;
 }
 
@@ -223,8 +230,7 @@ int wcstombs_s(size_t *pReturnValue, char *mbstr, size_t sizeInBytes, const wcha
     return 0;
 }
 #endif
-//some early declarations
-static yPrivDeviceSt *findDevFromSerial(const char *serial);
+
 
 /*****************************************************************************
  Whitepage and Yellowpage wrapper for USB devices
@@ -234,8 +240,8 @@ static void wpRegisterUSB(const yDeviceSt *infos)
 {
     yStrRef serialref = yHashPutStr(infos->serial);
     yStrRef lnameref = yHashPutStr(infos->logicalname);
-    wpRegister(serialref, lnameref, yHashPutStr(infos->productname), infos->deviceid,
-               yHashUrlUSB(infos->serial,"", 0,NULL), infos->beacon);
+    wpRegister(-1, serialref, lnameref, yHashPutStr(infos->productname), infos->deviceid,
+               yHashUrlUSB(serialref,"", 0,NULL), infos->beacon);
     ypRegister(YSTRREF_MODULE_STRING, serialref, yHashPutStr("module"), lnameref, -1, NULL);
 
     // Forward high-level notification to API user
@@ -253,7 +259,7 @@ void wpUpdateUSB(const char *serial,const char *logicalname, u8 beacon)
     yStrRef lnameref = yHashPutStr(logicalname);
 
     // Update white pages
-    wpRegister(serialref, lnameref, INVALID_HASH_IDX, 0, INVALID_HASH_IDX, beacon);
+    wpRegister(-1, serialref, lnameref, INVALID_HASH_IDX, 0, yHashUrlUSB(serialref,"", 0,NULL), beacon);
     ypRegister(YSTRREF_MODULE_STRING, serialref, yHashPutStr("module"), lnameref, -1, NULL);
 
     // Forward high-level notification to API user
@@ -336,206 +342,388 @@ void ypUpdateHybrid(const char *serial, int funydx, const char *funcval)
 /*****************************************************************************
   THEAD / CONCURENCY RELATED FUNCTIONS
  ***************************************************************************/
+//#define DEBUG_DEVICE_LOCK
+#ifdef DEBUG_DEVICE_LOCK
+#define LOCATION int line,
+#define PUSH_LOCATION __LINE__,
+#define PUSH_LOCATION __LINE__,
+#else
+#define LOCATION 
+#define PUSH_LOCATION 
+#endif
 
- static void devInitAccces(yPrivDeviceSt *dev)
+ static void devInitAccces(LOCATION yPrivDeviceSt *dev)
  {
-     yInitializeCriticalSection(&dev->acces);
+    yInitializeCriticalSection(&dev->acces_state);
   }
 
- static void devDeleteAccces(yPrivDeviceSt *dev)
+ static void devDeleteAccces(LOCATION yPrivDeviceSt *dev)
  {
-     yDeleteCriticalSection(&dev->acces);
+     yDeleteCriticalSection(&dev->acces_state);
  }
 
-
- //return 1 if we get the access
- int devGetAcces(yPrivDeviceSt *dev,int waitacces)
- {
-     if(waitacces){
-         yEnterCriticalSection(&dev->acces);
-         return 1;
-     }else{
-         if(yTryEnterCriticalSection(&dev->acces))
-             return 1;
-     }
-     return 0;
- }
-
- void devReleaseAcces(yPrivDeviceSt *dev)
- {
-    yLeaveCriticalSection(&dev->acces);
- }
-
-
-#ifdef DEBUG_DEVICE_LOCK
-#define devSafeStartIdle(dev,iohdl,errmsg)   devSafeStartIdleEx(__FILE_ID__,__LINE__,dev,iohdl,errmsg)
-static int devSafeStartIdleEx(char *file,int line,yPrivDeviceSt *dev, YUSBIO *iohdl,char *errmsg)
-#else
-static int devSafeStartIdle(yPrivDeviceSt *dev, YUSBIO *iohdl,char *errmsg)
-#endif
+static int devStartIdle(LOCATION yPrivDeviceSt *dev,char *errmsg)
 {
     int res =YAPI_DEVICE_BUSY;
     //get access
-    if(devGetAcces(dev,0)==0){
+    if (yTryEnterCriticalSection(&dev->acces_state)==0) {
         return YERR(YAPI_DEVICE_BUSY);
     }
-
-    //dbglog("devSafeStartIdle %s\n",dev->infos.serial);
-    switch(dev->rstatus){
-    case YRUN_STOPED:
-    case YRUN_ERROR:
-        res= YERRMSG(YAPI_DEVICE_NOT_FOUND,"This device is not available");
-        break;
-    case YRUN_REQUEST:
-    case YRUN_BUSSY:
-    case YRUN_IDLE:
-#ifdef DEBUG_DEVICE_LOCK
-        YASSERT(errmsg);
-        YSPRINTF(errmsg,YOCTO_ERRMSG_LEN,"%s:%d:Last Io is not finished (%s:%d)\n",file,line,dev->lastopen.file,dev->lastopen.line);
-        res = YAPI_DEVICE_BUSY;
-#else
-        res = YERR(YAPI_DEVICE_BUSY);
-#endif
-        break;
-    case YRUN_AVAIL:
-        // the device is available keep the critical section
-        dev->rstatus = YRUN_IDLE;
-        yEnterCriticalSection(&yContext->io_cs);
-        *iohdl =  dev->iohdl = ++(yContext->io_counter);
-        yLeaveCriticalSection(&yContext->io_cs);
-#ifdef DEBUG_DEVICE_LOCK
-        dev->lastopen.file=file;
-        dev->lastopen.line=line;
-#endif
-        return YAPI_SUCCESS;
+    
+    if (dev->dStatus!=YDEV_WORKING){
+        yLeaveCriticalSection(&dev->acces_state);
+        return YERR(YAPI_DEVICE_NOT_FOUND);
     }
-
-    devReleaseAcces(dev);
+    
+    switch(dev->rstatus){
+        case YRUN_STOPED:
+        case YRUN_ERROR:
+            res= YERRMSG(YAPI_DEVICE_NOT_FOUND,"This device is not available");
+            break;
+        case YRUN_REQUEST:
+        case YRUN_BUSY:
+            res = YERR(YAPI_DEVICE_BUSY);
+            break;
+        case YRUN_AVAIL:
+            dev->rstatus = YRUN_IDLE;
+            // do not release the mutex on purpose!
+#ifdef DEBUG_DEVICE_LOCK
+            dbglog("start Idle on %s (line %d)\n",dev->infos.serial,line);
+#endif
+            return YAPI_SUCCESS;
+        case YRUN_IDLE:
+#ifdef DEBUG_DEVICE_LOCK
+            dbglog("doube Idle on %s (line %d)\n",dev->infos.serial,line);
+#endif
+            res = YERR(YAPI_DEVICE_BUSY);
+            break;
+    }
+    
+    yLeaveCriticalSection(&dev->acces_state);
     return res;
 }
 
 
-static int devSafeStopIdle(yPrivDeviceSt *dev, YUSBIO iohdl,char *errmsg)
+static void devStopIdle(LOCATION yPrivDeviceSt *dev)
 {
-    
-    //dbglog("devSafeStopIdle %s\n",dev->infos.serial);
-    if(dev->rstatus != YRUN_IDLE || dev->iohdl != iohdl){
-        devReleaseAcces(dev);
-        return YERRMSG(YAPI_INVALID_ARGUMENT,"No Idle started");
+
+    switch(dev->rstatus){
+    case YRUN_STOPED:
+        break;
+    case YRUN_ERROR:
+    case YRUN_REQUEST:
+    case YRUN_BUSY:
+    case YRUN_AVAIL:
+#ifdef DEBUG_DEVICE_LOCK
+        dbglog("panic on %s (line %d)\n",dev->infos.serial,line);
+#endif
+        YPANIC;
+        break;
+    case YRUN_IDLE:
+        dev->rstatus = YRUN_AVAIL;
+#ifdef DEBUG_DEVICE_LOCK
+        dbglog("stop Idle on %s (line %d)\n",dev->infos.serial,line);
+#endif
+        break;
     }
-    dev->rstatus = YRUN_AVAIL;
-    devReleaseAcces(dev);
-    return YAPI_SUCCESS;
+
+    yLeaveCriticalSection(&dev->acces_state);
 }
 
 
-#ifdef DEBUG_DEVICE_LOCK
-#define devSafeStartIO(dev,iohdl,wait,errmsg)   devSafeStartIOEx(__FILE_ID__,__LINE__,dev,iohdl,wait,errmsg)
-static int devSafeStartIOEx(char *file,int line,yPrivDeviceSt *dev, YUSBIO *iohdl,char *errmsg)
-#else
-static int devSafeStartIO(yPrivDeviceSt *dev, YUSBIO *iohdl,char *errmsg)
-#endif
+
+static void devStartEnum(LOCATION yPrivDeviceSt *dev)
+{
+    u64  timeref;
+    //get access
+    yEnterCriticalSection(&dev->acces_state);
+    
+
+    timeref = yapiGetTickCount();
+    if((dev->rstatus == YRUN_IDLE || dev->rstatus == YRUN_BUSY ) && (u64)(yapiGetTickCount()-timeref) < 2000){
+            // if someone is doing IO release the mutex and give him 2 second to quit
+            yLeaveCriticalSection(&dev->acces_state);
+            yApproximateSleep(5);
+            yEnterCriticalSection(&dev->acces_state);
+    }
+    dev->rstatus = YRUN_STOPED;
+    // keep the Mutex on purpose
+}
+
+
+static void devStopEnum(LOCATION yPrivDeviceSt *dev)
+{
+    yLeaveCriticalSection(&dev->acces_state);
+}
+
+
+
+
+static void devReportErrorFromIdle(LOCATION yPrivDeviceSt *dev, char *error_to_set)
 {
     //get access
-    if(devGetAcces(dev,1)==0){
-        return YERR(YAPI_DEVICE_BUSY);
+    dbglog("Error from idle %s(%d) : %s\n",dev->infos.serial,dev->rstatus,error_to_set);
+    switch(dev->rstatus){
+    case YRUN_STOPED:
+        break;
+    case YRUN_ERROR:
+    case YRUN_REQUEST:
+    case YRUN_BUSY:
+    case YRUN_AVAIL:
+#ifdef DEBUG_DEVICE_LOCK
+        dbglog("panic on %s (line %d)\n",dev->infos.serial,line);
+#endif
+        YPANIC;
+        break;
+    case YRUN_IDLE:    
+        dev->rstatus = YRUN_ERROR;
+        YSTRCPY(dev->errmsg,YOCTO_ERRMSG_LEN,error_to_set);
+        break;
+    }
+    yLeaveCriticalSection(&dev->acces_state);
+}
+
+
+
+
+static int devStartIO(LOCATION yPrivDeviceSt *dev, char *errmsg)
+{
+    int res =YAPI_DEVICE_BUSY;
+    //get access
+    yEnterCriticalSection(&dev->acces_state);
+    
+    if (dev->dStatus!=YDEV_WORKING){
+        yLeaveCriticalSection(&dev->acces_state);
+        return YERR(YAPI_DEVICE_NOT_FOUND);
     }
 
-    //dbglog("devSafeStartIO %s\n",dev->infos.serial);
     switch(dev->rstatus){
     case YRUN_STOPED:
     case YRUN_ERROR:
-        devReleaseAcces(dev);
-        return YERRMSG(YAPI_DEVICE_NOT_FOUND,"This device is not available");
+        res = YERRMSG(YAPI_DEVICE_NOT_FOUND,"This device is not available");
         break;
     case YRUN_REQUEST:
-    case YRUN_BUSSY:
-    case YRUN_IDLE:    
-        devReleaseAcces(dev);
-#ifdef DEBUG_DEVICE_LOCK
-        YASSERT(errmsg);
-        YSPRINTF(errmsg,YOCTO_ERRMSG_LEN,"%s:%d:Last Io is not finished (%s:%d)\n",file,line,dev->lastopen.file,dev->lastopen.line);
-        return YAPI_DEVICE_BUSY;
-#else
-        return YERR(YAPI_DEVICE_BUSY);
-#endif
+    case YRUN_BUSY:
+        res = YERR(YAPI_DEVICE_BUSY);
+        break;
     case YRUN_AVAIL:
-        dev->rstatus = YRUN_BUSSY;
-        yEnterCriticalSection(&yContext->io_cs);
-        *iohdl =  dev->iohdl = ++(yContext->io_counter);
-        yLeaveCriticalSection(&yContext->io_cs);
+        dev->rstatus = YRUN_BUSY;
+        res = YAPI_SUCCESS;
 #ifdef DEBUG_DEVICE_LOCK
-        dev->lastopen.file=file;
-        dev->lastopen.line=line;
+        dbglog("start IO on %s (line %d)\n",dev->infos.serial,line);
 #endif
+        break;
+    case YRUN_IDLE:    
+        //should never occure since we keep the mutex during idlle
+#ifdef DEBUG_DEVICE_LOCK
+        dbglog("panic on %s (line %d)\n",dev->infos.serial,line);
+#endif
+        YPANIC;
+        res = YERR(YAPI_DEVICE_BUSY);
+        break;
+    }
+    yLeaveCriticalSection(&dev->acces_state);
+    return res;
+}
 
+
+static int devPauseIO(LOCATION yPrivDeviceSt *dev,char *errmsg)
+{
+    int res = YAPI_SUCCESS;
+
+    yEnterCriticalSection(&dev->acces_state);
+    switch(dev->rstatus){
+    case YRUN_STOPED:
+    case YRUN_ERROR:
+        res = YERRMSG(YAPI_DEVICE_NOT_FOUND,"This device is not available");
+        break;
+    case YRUN_REQUEST:
+        //should never ocuure
+#ifdef DEBUG_DEVICE_LOCK
+        dbglog("panic on %s (line %d)\n",dev->infos.serial,line);
+#endif
+        YPANIC;
+        res = YERR(YAPI_DEVICE_BUSY);
+        break;
+    case YRUN_BUSY:
+        dev->rstatus = YRUN_REQUEST;
+#ifdef DEBUG_DEVICE_LOCK
+        dbglog("pause IO on %s (line %d)\n",dev->infos.serial,line);
+#endif
+        break;
+    case YRUN_AVAIL:
+        res = YERRMSG(YAPI_INVALID_ARGUMENT,"No IO started");
+        break;
+    case YRUN_IDLE:    
+        //should never occure since we keep the mutex during idlle
+#ifdef DEBUG_DEVICE_LOCK
+        dbglog("panic on %s (line %d)\n",dev->infos.serial,line);
+#endif
+        YPANIC;
+        res = YERR(YAPI_DEVICE_BUSY);
         break;
     }
 
-    devReleaseAcces(dev);
-    return YAPI_SUCCESS;
+    yLeaveCriticalSection(&dev->acces_state);
+    return res;
 }
 
 
 
-static int devPauseIO(yPrivDeviceSt *dev,char *errmsg)
+static int devCheckIO(LOCATION yPrivDeviceSt *dev, YIOHDL *iohdl,char *errmsg)
 {
-    //get access
-    if(devGetAcces(dev,1)==0){
-        return YERR(YAPI_DEVICE_BUSY);
+    int res = YAPI_SUCCESS;
+
+    yEnterCriticalSection(&dev->acces_state);
+    
+    if (dev->dStatus!=YDEV_WORKING){
+        yLeaveCriticalSection(&dev->acces_state);
+        return YERR(YAPI_DEVICE_NOT_FOUND);
     }
-    //dbglog("devPauseIO %s\n",dev->infos.serial);
-    if(dev->rstatus != YRUN_BUSSY){
-        devReleaseAcces(dev);
-        return YERRMSG(YAPI_INVALID_ARGUMENT,"No IO started");
-    }
-
-    dev->rstatus = YRUN_REQUEST;
-    devReleaseAcces(dev);
-    return YAPI_SUCCESS;
-}
-
-
-
-static int devSafeCheckIO(yPrivDeviceSt *dev, YUSBIO iohdl,char *errmsg)
-{
-    int res;
-
-    //get access
-    if(devGetAcces(dev,1)==0){
-        return YERR(YAPI_DEVICE_BUSY);
-    }
-
-    //dbglog("devSafeCheckIO %s\n",dev->infos.serial);
-    if(dev->rstatus != YRUN_REQUEST || dev->iohdl != iohdl){
-        if(dev->rstatus == YRUN_BUSSY){
-            res=YERRMSG(YAPI_INVALID_ARGUMENT,"Access violation");
+    
+    switch(dev->rstatus){
+    case YRUN_STOPED:
+    case YRUN_ERROR:
+        res = YERRMSG(YAPI_DEVICE_NOT_FOUND,"This device is not available");
+        break;
+    case YRUN_REQUEST:
+        if(YIO_USB != iohdl->type || dev->pendingIO.hdl != iohdl->hdl){
+            res=YERRMSG(YAPI_INVALID_ARGUMENT,"Invalid  IO Handle");
         }else{
-            res=YERRMSG(YAPI_INVALID_ARGUMENT,"No IO started");
+            dev->rstatus = YRUN_BUSY;
+#ifdef DEBUG_DEVICE_LOCK
+            dbglog("restart IO on %s (line %d)\n",dev->infos.serial,line);
+#endif
         }
-        devReleaseAcces(dev);
-        return res;
+        break;
+   case YRUN_BUSY:
+        res=YERRMSG(YAPI_INVALID_ARGUMENT,"Access violation");
+        break;
+    case YRUN_AVAIL:
+        res = YERRMSG(YAPI_INVALID_ARGUMENT,"No IO started");
+        break;
+    case YRUN_IDLE:    
+        //should never occure since we keep the mutex during idlle
+#ifdef DEBUG_DEVICE_LOCK
+        dbglog("panic on %s (line %d)\n",dev->infos.serial,line);
+#endif
+        YPANIC;
+        res = YERR(YAPI_DEVICE_BUSY);
+        break;
     }
-    dev->rstatus = YRUN_BUSSY;
-    devReleaseAcces(dev);
-    return YAPI_SUCCESS;
+
+    yLeaveCriticalSection(&dev->acces_state);
+    return res;
 }
 
-static int devSafeStopIO(yPrivDeviceSt *dev, YUSBIO iohdl,char *errmsg)
+static int devCheckAsyncIO(LOCATION yPrivDeviceSt *dev, char *errmsg)
 {
-    //get access
-    if(devGetAcces(dev,1)==0){
-        return YERR(YAPI_DEVICE_BUSY);
+    int res = YAPI_SUCCESS;
+
+    yEnterCriticalSection(&dev->acces_state);
+    
+    if (dev->dStatus!=YDEV_WORKING){
+        yLeaveCriticalSection(&dev->acces_state);
+        return YERR(YAPI_DEVICE_NOT_FOUND);
     }
 
-    //dbglog("devSafeStopIO %s\n",dev->infos.serial);
-    if(dev->rstatus != YRUN_BUSSY || dev->iohdl != iohdl){
-        devReleaseAcces(dev);
-        return YERRMSG(YAPI_INVALID_ARGUMENT,"No IO started");
+    switch(dev->rstatus){
+    case YRUN_STOPED:
+    case YRUN_ERROR:
+        res = YERRMSG(YAPI_DEVICE_NOT_FOUND,"This device is not available");
+        break;
+    case YRUN_REQUEST:
+        if ( (dev->pendingIO.flags & YIO_ASYNC ) == 0 ) {
+            res=YERRMSG(YAPI_INVALID_ARGUMENT,"Invalid IO Handle");
+        } else {
+            dev->rstatus = YRUN_BUSY;
+#ifdef DEBUG_DEVICE_LOCK
+            dbglog("Async IO bg process on %s (line %d)\n",dev->infos.serial,line);
+#endif
+        }
+        break;
+   case YRUN_BUSY:
+        res=YERRMSG(YAPI_INVALID_ARGUMENT,"Access violation");
+        break;
+    case YRUN_AVAIL:
+        res = YERRMSG(YAPI_INVALID_ARGUMENT,"No IO started");
+        break;
+    case YRUN_IDLE:    
+        //should never occure since we keep the mutex during idlle
+#ifdef DEBUG_DEVICE_LOCK
+        dbglog("panic on %s (line %d)\n",dev->infos.serial,line);
+#endif
+        YPANIC;
+        res = YERR(YAPI_DEVICE_BUSY);
+        break;
     }
-    dev->rstatus = YRUN_AVAIL;
-    devReleaseAcces(dev);
-    return YAPI_SUCCESS;
+
+    yLeaveCriticalSection(&dev->acces_state);
+    return res;
+}
+
+
+static int devStopIO(LOCATION yPrivDeviceSt *dev, char *errmsg)
+{
+    int res = YAPI_SUCCESS;
+
+    yEnterCriticalSection(&dev->acces_state);
+    switch(dev->rstatus){
+    case YRUN_STOPED:
+    case YRUN_ERROR:
+        res = YERRMSG(YAPI_DEVICE_NOT_FOUND,"This device is not available");
+        break;
+    case YRUN_REQUEST:
+        res=YERRMSG(YAPI_INVALID_ARGUMENT,"Access violation");
+        break;
+   case YRUN_BUSY:
+        dev->rstatus = YRUN_AVAIL;
+#ifdef DEBUG_DEVICE_LOCK
+        dbglog("Stop IO on %s (line %d)\n",dev->infos.serial,line);
+#endif
+        break;
+    case YRUN_AVAIL:
+        res = YERRMSG(YAPI_INVALID_ARGUMENT,"No IO started");
+        break;
+    case YRUN_IDLE:    
+        //should never occure since we keep the mutex during idlle
+#ifdef DEBUG_DEVICE_LOCK
+        dbglog("panic on %s (line %d)\n",dev->infos.serial,line);
+#endif
+        YPANIC;
+        res = YERR(YAPI_DEVICE_BUSY);
+        break;
+    }
+
+    yLeaveCriticalSection(&dev->acces_state);
+    return res;
+
+}
+
+static void devReportError(LOCATION yPrivDeviceSt *dev, char *error_to_set)
+{
+    //get access
+    yEnterCriticalSection(&dev->acces_state);
+    switch(dev->rstatus){
+    case YRUN_STOPED:
+    case YRUN_ERROR:
+    case YRUN_REQUEST:
+    case YRUN_BUSY:
+    case YRUN_AVAIL:
+        dbglog("Error %s(%d) : %s\n",dev->infos.serial,dev->rstatus,error_to_set);
+        dev->rstatus = YRUN_ERROR;
+        YSTRCPY(dev->errmsg,YOCTO_ERRMSG_LEN,error_to_set);
+        break;
+    case YRUN_IDLE:    
+        //should never occure since we keep the mutex during idlle
+#ifdef DEBUG_DEVICE_LOCK
+        dbglog("panic on %s (line %d)\n",dev->infos.serial,line);
+#endif
+        YPANIC;
+        break;
+    }
+
+    yLeaveCriticalSection(&dev->acces_state);
 }
 
 
@@ -558,9 +746,9 @@ static void dumpAnyStream(char *prefix,int iface,u8 pkt,u8 stream,u8 size,u8 *da
 {
 
     USB_Notify_Pkt *notif= (USB_Notify_Pkt*) data;
-	int pos, j;
-	char buff[17];
-	buff[16] = 0;
+    int pos, j;
+    char buff[17];
+    buff[16] = 0;
     dbglog("%s:%d: head: type=%d stream/cmd=%d size=%d (pktno=%d)\n",
            prefix,iface ,pkt ,stream,size,pktno);
 
@@ -618,33 +806,33 @@ static void dumpAnyStream(char *prefix,int iface,u8 pkt,u8 stream,u8 size,u8 *da
                 break;
             case YSTREAM_TCP:
                 dbglog("%s: Stream tcp\n",prefix);
-				for(pos = 0; pos < size; pos += 16) {
-					memset(buff, '.', 16);
-					for(j = 0; j < 16; j++)
-						if(data[pos+j] >= ' ')
-							buff[j] = data[pos+j];
-					dbglog("   %02x.%02x.%02x.%02x %02x.%02x.%02x.%02x %02x.%02x.%02x.%02x %02x.%02x.%02x.%02x   %s\n",
-						   data[pos+0], data[pos+1], data[pos+2], data[pos+3], 
-						   data[pos+4], data[pos+5], data[pos+6], data[pos+7], 
-						   data[pos+8], data[pos+9], data[pos+10], data[pos+11], 
-						   data[pos+12], data[pos+13], data[pos+14], data[pos+15],
-						   buff); 
-				}
+                for(pos = 0; pos < size; pos += 16) {
+                    memset(buff, '.', 16);
+                    for(j = 0; j < 16; j++)
+                        if(data[pos+j] >= ' ')
+                            buff[j] = data[pos+j];
+                    dbglog("   %02x.%02x.%02x.%02x %02x.%02x.%02x.%02x %02x.%02x.%02x.%02x %02x.%02x.%02x.%02x   %s\n",
+                           data[pos+0], data[pos+1], data[pos+2], data[pos+3], 
+                           data[pos+4], data[pos+5], data[pos+6], data[pos+7], 
+                           data[pos+8], data[pos+9], data[pos+10], data[pos+11], 
+                           data[pos+12], data[pos+13], data[pos+14], data[pos+15],
+                           buff); 
+                }
                 break;
             case YSTREAM_TCP_CLOSE:
                 dbglog("%s: Stream tcp close\n",prefix);
-				for(pos = 0; pos < size; pos += 16) {
-					memset(buff, '.', 16);
-					for(j = 0; j < 16; j++)
-						if(data[pos+j] >= ' ')
-							buff[j] = data[pos+j];
-					dbglog("   %02x.%02x.%02x.%02x %02x.%02x.%02x.%02x %02x.%02x.%02x.%02x %02x.%02x.%02x.%02x   %s\n",
-						   data[pos+0], data[pos+1], data[pos+2], data[pos+3], 
-						   data[pos+4], data[pos+5], data[pos+6], data[pos+7], 
-						   data[pos+8], data[pos+9], data[pos+10], data[pos+11], 
-						   data[pos+12], data[pos+13], data[pos+14], data[pos+15],
-						   buff); 
-				}
+                for(pos = 0; pos < size; pos += 16) {
+                    memset(buff, '.', 16);
+                    for(j = 0; j < 16; j++)
+                        if(data[pos+j] >= ' ')
+                            buff[j] = data[pos+j];
+                    dbglog("   %02x.%02x.%02x.%02x %02x.%02x.%02x.%02x %02x.%02x.%02x.%02x %02x.%02x.%02x.%02x   %s\n",
+                           data[pos+0], data[pos+1], data[pos+2], data[pos+3], 
+                           data[pos+4], data[pos+5], data[pos+6], data[pos+7], 
+                           data[pos+8], data[pos+9], data[pos+10], data[pos+11], 
+                           data[pos+12], data[pos+13], data[pos+14], data[pos+15],
+                           buff); 
+                }
                 break;
             default:
                 dbglog("%s: Stream invalid !\n",prefix);
@@ -653,7 +841,7 @@ static void dumpAnyStream(char *prefix,int iface,u8 pkt,u8 stream,u8 size,u8 *da
 
     }
 }
-static u32 dumpAnyStreamHead(char *prefix,int iface,YSTREAM_Head *head)
+static u32 dumpAnyStreamHead(char *prefix,int iface,YSTREAM_Head *head,int dumpContent)
 {
     u8 *data =((u8*)head)+sizeof(YSTREAM_Head);
     dumpAnyStream(prefix,iface,head->pkt , head->stream, head->size, data, head->pktno);
@@ -666,114 +854,352 @@ void dumpAnyPacket(char *prefix, int iface,USB_Packet *pkt)
     //dbglog("%s:%d: DUMP FULL PACKET!\n",prefix,iface);
     while(pos < USB_PKT_SIZE-sizeof(YSTREAM_Head)){
         YSTREAM_Head *head =(YSTREAM_Head*) (pkt->data+pos);
-        pos+=sizeof(YSTREAM_Head)+dumpAnyStreamHead(prefix,iface,head);
+        pos+=sizeof(YSTREAM_Head)+dumpAnyStreamHead(prefix,iface,head,dumpContent);
     }
+
+}
+
+#endif
+
+
+
+/*****************************************************************************
+  PACKET QUEUING FUNCTIONS
+  ***************************************************************************/
+//#define DUMP_USB_PKT_SHORT
+#ifdef DUMP_USB_PKT_SHORT
+static void dumpPktSummary(char *prefix, int iface,int isInput,const USB_Packet *pkt)
+{
+    u32 pos=0;
+    char buffer[512];
+    u32 len;
+    
+    len =YSPRINTF(buffer,512,"%s%s:%d",(isInput?"<-":"->"),prefix,iface);
+#if 0
+    while(pos < USB_PKT_SIZE-sizeof(YSTREAM_Head)){
+        YSTREAM_Head *head =(YSTREAM_Head*) (pkt->data+pos);
+		char ty,st;
+		switch(head->pkt){
+		case YPKT_STREAM :
+			ty='S';
+			switch(head->stream){
+			case YSTREAM_EMPTY:
+				st ='e';
+				break;
+			case YSTREAM_TCP:
+				st ='T';
+				break;
+			case YSTREAM_TCP_CLOSE:
+				st ='C';
+				break;
+			case YSTREAM_NOTICE:
+				st ='N';
+				break;
+			default:
+				st='?';
+				break;
+			}
+			break;			
+		case YPKT_CONF:
+			ty='C';
+			switch(head->stream){
+			case USB_CONF_RESET:
+				st ='R';
+				break;
+			case USB_CONF_START:
+				st ='S';
+				break;
+			default:
+				st='?';
+				break;
+			}
+			break;
+		default:
+			ty='?';
+			st='!';
+			break;
+		}
+        len += YSPRINTF(buffer+len,512-len," /ty=%c st=%c sz=%d pno=%d",
+           ty ,st,head->size,head->pktno);
+        pos+=sizeof(YSTREAM_Head)+head->size;
+    }
+#endif
+    dbglog("%s\n",buffer);
 
 }
 #endif
 
+void yPktQueueInit(pktQueue  *q)
+{
+    memset(q,0,sizeof(pktQueue));
+    q->status = YAPI_SUCCESS;
+    yInitializeCriticalSection(&q->cs);
+    yCreateManualEvent(&q->notEmptyEvent,0);
+    yCreateManualEvent(&q->emptyEvent,0);
+}
 
-void  yyPushNewPkt(yInterfaceSt *iface,USB_Packet *pkt)
+void yPktQueueFree(pktQueue  *q)
+{
+    pktItem *p,*t;
+    
+    p=q->first;
+    while(p){
+        t=p;
+        p=p->next;
+        yFree(t);
+    }
+    yDeleteCriticalSection(&q->cs);
+    yCloseEvent(&q->notEmptyEvent);
+    yCloseEvent(&q->emptyEvent);
+    memset(q,0xca,sizeof(pktQueue));
+}
+
+static YRETCODE  yPktQueuePushEx(pktQueue  *q,const USB_Packet *pkt, char * errmsg)
 {
     pktItem *newpkt;
+    YRETCODE res;
+    yEnterCriticalSection(&q->cs);
 
-    // allocate new buffer
-    newpkt= ( pktItem *) yMalloc(sizeof(pktItem));
-    memcpy(&newpkt->pkt,pkt,sizeof(USB_Packet));
-    newpkt->next = NULL;
-    //lock the queue acces    
-    yEnterCriticalSection(&iface->rdCS);
-    if (iface->rx_ok.first == NULL) {
-        //empty queue
-        iface->rx_ok.first = newpkt;
-        iface->rx_ok.last = newpkt;
-    } else {
-        iface->rx_ok.last->next = newpkt;
-        iface->rx_ok.last = newpkt;
+    if(q->status !=YAPI_SUCCESS){
+        res = q->status;
+        if(errmsg)
+            YSTRCPY(errmsg,YOCTO_ERRMSG_LEN,q->errmsg); 
+        //dbglog("%X:yPktQueuePush drop pkt\n",q);
+    }else{
+        res = YAPI_SUCCESS;
+         // allocate new buffer
+        newpkt= ( pktItem *) yMalloc(sizeof(pktItem));
+        memcpy(&newpkt->pkt,pkt,sizeof(USB_Packet));
+#ifdef DEBUG_PKT_TIMING
+        newpkt->time = yapiGetTickCount();
+        newpkt->ospktno = q->totalPush;
+#endif
+        newpkt->next = NULL;
+        //lock the queue acces    
+        if (q->first == NULL) {
+            //empty queue
+            q->first = newpkt;
+            q->last = newpkt;
+            yResetEvent(&q->emptyEvent);
+            //dbglog("%X:yPktQueuePush First pkt\n",q);
+        } else {
+            q->last->next = newpkt;
+            q->last = newpkt;
+            //dbglog("%X:yPktQueuePush a pkt\n",q);
+        }
+        q->count++;
+        q->totalPush++;
     }
-    iface->rx_ok.count++;
-    yLeaveCriticalSection(&iface->rdCS);
+    ySetEvent(&q->notEmptyEvent);
+    yLeaveCriticalSection(&q->cs);
+    return res;
 }
+
+void  yPktQueueSetError(pktQueue  *q,YRETCODE code, const char * msg)
+{
+    //lock the queue acces    
+    yEnterCriticalSection(&q->cs);
+    //dbglog("PKTSetErr %d:%s\n",code,msg);
+    q->status = code;
+    YSTRCPY(q->errmsg,YOCTO_ERRMSG_LEN,msg);
+    ySetEvent(&q->emptyEvent);
+    ySetEvent(&q->notEmptyEvent);
+    yLeaveCriticalSection(&q->cs);
+}
+
+
+static int yPktQueueIsEmpty(pktQueue *q,char * errmsg)
+{
+    int retval;
+
+    yEnterCriticalSection(&q->cs);
+    retval = q->status;
+    if(retval !=YAPI_SUCCESS){
+        //dbglog("%X:yPktQueuePop error %d:%s\n",q,q->status,q->errmsg);
+        if(errmsg)
+            YSTRCPY(errmsg,YOCTO_ERRMSG_LEN,q->errmsg); 
+    }else{
+        if(q->first==NULL)
+            retval=1;
+    }
+    yLeaveCriticalSection(&q->cs);
+    return retval;
+}
+
+static YRETCODE yPktQueuePeek(pktQueue *q,pktItem **pkt,char * errmsg)
+{
+    YRETCODE retval;
+
+    yEnterCriticalSection(&q->cs);
+    retval = q->status;
+    if(retval !=YAPI_SUCCESS){
+        //dbglog("%X:yPktQueuePop error %d:%s\n",q,q->status,q->errmsg);
+        *pkt = NULL;
+        if(errmsg)
+            YSTRCPY(errmsg,YOCTO_ERRMSG_LEN,q->errmsg); 
+    }else{
+        *pkt = q->first;
+    }
+    yLeaveCriticalSection(&q->cs);
+    return retval;
+}
+
+
+
+static YRETCODE yPktQueuePop(pktQueue *q,pktItem **pkt,char * errmsg)
+{
+    YRETCODE retval;
+
+    yEnterCriticalSection(&q->cs);
+    retval = q->status;
+    if(retval !=YAPI_SUCCESS){
+        //dbglog("%X:yPktQueuePop error %d:%s\n",q,q->status,q->errmsg);
+        *pkt = NULL;
+        if(errmsg)
+            YSTRCPY(errmsg,YOCTO_ERRMSG_LEN,q->errmsg); 
+    }else{
+        *pkt = q->first;
+        if(q->first!=NULL){
+           if(q->first == q->last){
+                q->first=NULL;
+                q->last=NULL;
+                //dbglog("%X:yPktQueuePop last pkt\n",q);
+                yResetEvent(&q->notEmptyEvent);
+                ySetEvent(&q->emptyEvent);
+            }else{
+                //dbglog("%X:yPktQueuePop a pkt\n",q);
+                q->first = q->first->next;
+            }
+            q->count--;
+            q->totalPop++;
+        }
+    }
+    yLeaveCriticalSection(&q->cs);
+    return retval;
+}
+
+
+
+YRETCODE  yPktQueuePushD2H(yInterfaceSt *iface,const USB_Packet *pkt, char * errmsg)
+{
+#ifdef DUMP_USB_PKT_SHORT
+    dumpPktSummary(iface->serial, iface->ifaceno,1,pkt);
+#endif
+    return yPktQueuePushEx(&iface->rxQueue,pkt,errmsg);
+}
+
+YRETCODE yPktQueueWaitAndPopD2H(yInterfaceSt *iface,pktItem **pkt,int ms,char * errmsg)
+{
+    *pkt=NULL;
+    if( ms==0 || yWaitForEvent(&iface->rxQueue.notEmptyEvent,ms)){
+        return  yPktQueuePop(&iface->rxQueue,pkt,errmsg);
+    }
+    return YAPI_SUCCESS;
+}
+
+
+YRETCODE  yPktQueuePushH2D(yInterfaceSt *iface,const USB_Packet *pkt, char * errmsg)
+{
+    return yPktQueuePushEx(&iface->txQueue,pkt,errmsg);
+}
+
+// return 1 if empty, 0 if not empty, or an error code
+static int yPktQueueWaitEmptyH2D(yInterfaceSt *iface,int ms, char * errmsg)
+{
+    if( ms>0){
+        yWaitForEvent(&iface->txQueue.emptyEvent,ms);
+    }
+    return yPktQueueIsEmpty(&iface->txQueue,errmsg);
+}
+
+
+YRETCODE yPktQueuePeekH2D(yInterfaceSt *iface,pktItem **pkt)
+{
+
+#ifdef DUMP_USB_PKT_SHORT
+    pktItem *tmp;
+    YRETCODE res = yPktQueuePeek(&iface->txQueue,&tmp,NULL);
+    if(tmp!=NULL){
+        dumpPktSummary(iface->serial, iface->ifaceno,0,&tmp->pkt);
+    }
+    *pkt=tmp;
+    return res;
+#else
+    return yPktQueuePeek(&iface->txQueue,pkt,NULL);
+#endif
+}
+
+YRETCODE yPktQueuePopH2D(yInterfaceSt *iface,pktItem **pkt)
+{
+
+#ifdef DUMP_USB_PKT_SHORT
+    pktItem *tmp;
+    YRETCODE res = yPktQueuePop(&iface->txQueue,&tmp,NULL);
+    if(tmp!=NULL){
+        dumpPktSummary(iface->serial, iface->ifaceno,0,&tmp->pkt);
+    }
+    *pkt=tmp;
+    return res;
+#else
+    return yPktQueuePop(&iface->txQueue,pkt,NULL);
+#endif
+}
+
+
+
+
+/*****************************************************************************
+  yyPACKET ioFUNCTIONS
+  ***************************************************************************/
+
 
 // this function copy the pkt into the interface out queue and send the packet
-int yySendPacket( yInterfaceSt *iface,pktItem *pkt,char *errmsg)
-{
-    YPROPERR(yyyWrite(iface,&pkt->pkt,errmsg));
-    return YAPI_SUCCESS;
-}
-
-
-int yyGetTopPkt(yInterfaceSt *iface, pktItem **ptr, int ms_timeout,char *errmsg)
-{
-    u64  timeout = yapiGetTickCount() + ms_timeout;
-    //get any potential packet pending on Os stack
-    YPROPERR(yyyReadIdle(iface,errmsg));
-    *ptr =NULL;
-retry:
-    // look if we have received a packet
-    yEnterCriticalSection(&iface->rdCS);
-    if(iface->rx_ok.count)
-        *ptr = iface->rx_ok.first;
-    yLeaveCriticalSection(&iface->rdCS);
-    if(*ptr ==NULL && (timeout >yapiGetTickCount())){
-        YPROPERR(yyyReadIdle(iface,errmsg));
-        goto retry;
-    }
-    return YAPI_SUCCESS;
-}
-
-void yyPopPkt(yInterfaceSt *iface, pktItem *ptr)
-{
-    yEnterCriticalSection(&iface->rdCS);
-    YASSERT(ptr ==iface->rx_ok.first);
-    if(iface->rx_ok.first == iface->rx_ok.last)
-        iface->rx_ok.last=NULL;
-    iface->rx_ok.first = iface->rx_ok.first->next;
-    iface->rx_ok.count--;
-    yLeaveCriticalSection(&iface->rdCS);
-}
-
-static int yyPacketRequestRead(yPrivDeviceSt *dev,yInterfaceSt *iface,char *errmsg)
+YRETCODE yyySendPacket( yInterfaceSt *iface,const USB_Packet *pkt,char *errmsg)
 {
     int res;
-
-    //dbglog("yyPacketRequestRead %d\n",iface->ifaceno);
-    if((res=yyyRead(iface,errmsg)) <0){
-        dev->rstatus = YRUN_ERROR;
-        return res;
+    res = yPktQueuePushH2D(iface,pkt,errmsg);
+    yyySignalOutPkt(iface);
+    res= yPktQueueWaitEmptyH2D(iface,1000,errmsg);
+    if(YISERR(res)){
+        return (YRETCODE) res;
+    }else if(res>0){
+        return YAPI_SUCCESS;
     }
-    return YAPI_SUCCESS;
+    return YERRMSG(YAPI_TIMEOUT,"Unable to send packet to the device");
 }
+
+
 
 // wait for the next Configuration packet to come on a particular interface
 // ALL OTHER PACKET OF THIS INTERFACE ARE DROPED
 static int yyWaitOnlyConfPkt(yInterfaceSt *iface, u8 cmdtowait,pktItem **rpkt,u32 s_timeout,char *errmsg)
 {
-	u64 timeout = yapiGetTickCount() + s_timeout*1000;
+    u64 timeout = yapiGetTickCount() + s_timeout*1000;
     pktItem *tmp;
     u32 dropcount=0;
+    YRETCODE  error;
 
     *rpkt=NULL;
     do{
-        YPROPERR(yyGetTopPkt(iface,&tmp,1000,errmsg));
-        if (tmp){
+        error = yPktQueueWaitAndPopD2H(iface,&tmp,1000,errmsg);
+        if(error!=YAPI_SUCCESS){
+            return error;
+        }
+        if (tmp!=NULL){
             if(tmp->pkt.confpkt.head.pkt==YPKT_CONF && tmp->pkt.confpkt.head.stream==cmdtowait){
                 //conf packet has bee received
                 YASSERT(tmp->pkt.confpkt.head.size>=sizeof(USB_Conf_Pkt));
                 *rpkt=tmp;
                 if(dropcount)
                     dbglog("drop %d pkt on iface %d\n",dropcount,iface->ifaceno);
-                yyPopPkt(iface,tmp);
-                yTracePtr(tmp);
                 return YAPI_SUCCESS;
             }
 #ifdef DEBUG_DUMP_PKT
             else{
-                dumpAnyPacket("Drop non conf pkt",(u8)iface->ifaceno,&tmp->pkt);
+                dumpAnyPacket("Drop non-config pkt",(u8)iface->ifaceno,&tmp->pkt);
             }
 #endif
             dropcount++;
-            yyPopPkt(iface,tmp);
             yFree(tmp);
         }
     }while(timeout> yapiGetTickCount());
@@ -801,16 +1227,16 @@ static int CheckVersionCompatibility(u16 version,const char *serial, char *errms
     if((version & 0xff00) != (YPKT_USB_VERSION_BCD & 0xff00)){
         // major version change
         if((version & 0xff00) > (YPKT_USB_VERSION_BCD & 0xff00)){
-            dbglog("Yoctopuce library is too old (using 0x%x need 0x%x) to handle device %s, please upgrade your Yoctopuce library\n",YPKT_USB_VERSION_BCD,version,serial);
+            dbglog("Yoctopuce library is too old (using 0x%x, need 0x%x) to handle device %s, please upgrade your Yoctopuce library\n",YPKT_USB_VERSION_BCD,version,serial);
             return YERRMSG(YAPI_IO_ERROR,"Library is too old to handle this device");
         } else {
             // implement backward compatibility when implementing a new protocol
-            YASSERT(0);
+            YPANIC;
             return 1;
         }
     } else if(version != YPKT_USB_VERSION_BCD ){
         if(version > YPKT_USB_VERSION_BCD){
-            dbglog("Device %s is using an newer protocol, consider upgrading your Yoctopuce library\n",serial);
+            dbglog("Device %s is using a newer protocol, consider upgrading your Yoctopuce library\n",serial);
         }else{
             dbglog("Device %s is using an older protocol, consider upgrading the device firmware\n",serial);
         }
@@ -833,7 +1259,7 @@ static int yyResetIface( yInterfaceSt  *iface, u16 *ifaceno, u16 *nbifaces,char 
     yyFormatConfPkt(&qpkt,USB_CONF_RESET);
     qpkt.pkt.confpkt.conf.reset.ok = 1;
     TO_SAFE_U16(qpkt.pkt.confpkt.conf.reset.api,YPKT_USB_VERSION_BCD);
-    YPROPERR( yySendPacket(iface,&qpkt,errmsg));
+    YPROPERR( yyySendPacket(iface,&qpkt.pkt,errmsg));
 
     if(YISERR(yyWaitOnlyConfPkt(iface,USB_CONF_RESET,&rpkt,5,errmsg)) || rpkt==NULL){
         return YERRMSG(YAPI_VERSION_MISMATCH,"Device does not respond to reset");
@@ -852,55 +1278,25 @@ static int yyResetIface( yInterfaceSt  *iface, u16 *ifaceno, u16 *nbifaces,char 
     return YAPI_SUCCESS;
 }
 
-
-void yyyInitPktQueue(yInterfaceSt  *iface)
-{
-    yInitializeCriticalSection(&iface->rdCS);
-    memset(&iface->rx_ok,0,sizeof(pktQueue));
-    iface->txqueue = &iface->static_txqueue;
-    iface->static_txqueue.next=NULL;    
-}
-
-void yyyFreePktQueue(yInterfaceSt  *iface)
-{
-    pktItem *p,*t;
-    
-    p=iface->rx_ok.first;
-    while(p){
-        t=p;
-        p=p->next;
-        yFree(t);
-    }
-    yDeleteCriticalSection(&iface->rdCS);
-}
-
-
-
-int yyPacketSetup(yPrivDeviceSt *dev, yInterfaceSt  *iface,int idx,char *errmsg)
+static int yyPacketSetup(yPrivDeviceSt *dev, yInterfaceSt  *iface,int idx,char *errmsg)
 {
     u16 ifaceno,nbifaces;
     int res;
 
-    yyyInitPktQueue(iface);
     YPROPERR(yyySetup(iface,errmsg));
-    //open for new packet
-    res =yyPacketRequestRead(dev,iface,errmsg);
-    if(YISERR(res)) goto error_noread;
     res =yyResetIface(iface,&ifaceno,&nbifaces,errmsg);
     if(YISERR(res)){
         goto error;
     }
     dev->ifacesMap[ifaceno] = idx;
     if(dev->infos.nbinbterfaces !=nbifaces){
-        dbglog("Missing interface on OS enumeration(%d vs %d)\n",dev->infos.nbinbterfaces, nbifaces);
-        res = YERRMSG(YAPI_VERSION_MISMATCH,"Missing interface on OS enumeration");
+        dbglog("Missing interface during OS enumeration(%d vs %d)\n",dev->infos.nbinbterfaces, nbifaces);
+        res = YERRMSG(YAPI_VERSION_MISMATCH,"Missing interface during OS enumeration");
         goto error;
     }
     return YAPI_SUCCESS;
 
 error:
-    yyyReadStop(iface,NULL);
-error_noread:
     yyyPacketShutdown(iface);
     return res;
 }
@@ -931,7 +1327,7 @@ static int ySendStart(yPrivDeviceSt *dev,char *errmsg)
 
     yyFormatConfPkt(&qpkt,USB_CONF_START);
     qpkt.pkt.confpkt.conf.start.nbifaces = (u8)dev->infos.nbinbterfaces;
-    YPROPERR(yySendPacket(Ino2Idx(dev,0),&qpkt,errmsg));
+    YPROPERR(yyySendPacket(Ino2Idx(dev,0),&qpkt.pkt,errmsg));
     YPROPERR(yyWaitOnlyConfPkt(Ino2Idx(dev,0),USB_CONF_START,&rpkt,5,errmsg));
     nextiface = rpkt->pkt.confpkt.conf.start.nbifaces;
     dev->lastpktno = rpkt->pkt.first_stream.pktno;
@@ -961,125 +1357,88 @@ static int yPacketSetup(yPrivDeviceSt *dev,char *errmsg)
 error:
     //shutdown all previously started interfaces;
     for(j=0; j <toclose ; j++){
-        char suberr[YOCTO_ERRMSG_LEN];
-        dbglog("Closing partial opened device %s index=%d\n",dev->infos.serial,j);
-        if(yyyReadStop(&dev->ifaces[j],suberr))
-            dbglog("Unable to cancel read for device %s index=%d:%s\n",dev->infos.serial,j,suberr);
+        dbglog("Closing partially opened device %s index=%d\n",dev->infos.serial,j);
         yyPacketShutdown(&dev->ifaces[j]);
     }
     return res;
 }
 
 
-static int yRestartTransfert(yPrivDeviceSt *dev,char *errmsg)
-{
-    int i;
 
-    for(i=0; i <dev->infos.nbinbterfaces ; i++){
-        YPROPERR(yyResetIface(&dev->ifaces[i],NULL,NULL,errmsg));
-    }
-    YPROPERR(ySendStart(dev,errmsg));
-    return YAPI_SUCCESS;
-}
+
 
 // Trigger a non blocking read
-static int yPacketReopen(yPrivDeviceSt *dev,char *errmsg)
+static int yGetNextPktEx(yPrivDeviceSt *dev, pktItem **pkt_out,u64 blockUntilTime,char *errmsg)
 {
-
-    int i;
-    yInterfaceSt *iface;
-    for(i=0; i <dev->infos.nbinbterfaces ; i++){
-        iface = Ino2Idx(dev,i);
-        YPROPERR(yyPacketRequestRead(dev,iface,errmsg));
-    }
-    return 0;
-}
-// Trigger a non blocking read
-static int yGetNextPkt(yPrivDeviceSt *dev, pktItem **ptr,char *errmsg)
-{
-    int             i,count, dropcount;
+    int             nextiface,dropcount=0;
     u8              nextpktno;
-    pktItem        *tmp=NULL;
-    u8              ifacefull;
+    YRETCODE        res;
+    pktItem         *item;
+    u64             wait;
+    u64             now;
+     yInterfaceSt   *iface;
 
-    count = 5;
-  restart:
-    dropcount = 0;
-    ifacefull = 0;
-    nextpktno = (dev->lastpktno+1)& YPKTNOMSK;
-    *ptr = NULL;
-    for(i=0; i < dev->infos.nbinbterfaces ; i++){
-        yInterfaceSt *iface = Ino2Idx(dev,i);
-    again:
-        YPROPERR(yyGetTopPkt(iface,&tmp,0,errmsg));
-        if(tmp == NULL) continue; // no pkt avail
-        ifacefull++;
-        if(tmp->pkt.first_stream.pkt == YPKT_CONF){
+    *pkt_out=NULL;
+    iface = Ino2Idx(dev,dev->currentIfaceNo);
+again:
+    now = yapiGetTickCount();
+    if (blockUntilTime > now)
+        wait = blockUntilTime - now;
+    else
+        wait=0;
+    // ptr is set to null by yPktQueueWaitAndPop
+    res = yPktQueueWaitAndPopD2H(iface, &item, (int)wait, errmsg);
+    if (YISERR(res)) 
+        return res;
+    nextpktno = NEXT_YPKT_NO(dev->lastpktno);
+    nextiface = NEXT_IFACE_NO(dev->currentIfaceNo,dev->infos.nbinbterfaces);
+    if (item != NULL) {
+        // verfiy the packet
+        if (item->pkt.first_stream.pkt == YPKT_CONF) {
 #ifdef DEBUG_DUMP_PKT
-            dumpAnyPacket("Drop Late conf pkt",iface->ifaceno,&tmp->pkt);
+            dumpAnyPacket("Drop Late config pkt",iface->ifaceno,&item->pkt);
 #endif
-            yyPopPkt(iface,tmp);
-            yFree(tmp);
-            tmp=NULL;
+            yFree(item);
             dropcount++;
-            if(dropcount >100){
-                dbglog("Too many packet dropped, disable %s\n",dev->infos.serial);
-                dev->rstatus =  YRUN_ERROR;
-                return YERRMSG(YAPI_IO_ERROR,"Too many missing packets");
+            if(dropcount >10){
+                dbglog("Too many packets dropped, disable %s\n",dev->infos.serial);
+                return YERRMSG(YAPI_IO_ERROR,"Too many packets dropped");
             }
             goto again;
-        }
+        } 
 
-        if(tmp->pkt.first_stream.pktno == nextpktno){
-            *ptr = tmp;
+        if(item->pkt.first_stream.pktno == nextpktno){
+            *pkt_out = item;
             dev->lastpktno = nextpktno;
-            yyPopPkt(iface,tmp);
-            yTracePtr(tmp);
+            dev->currentIfaceNo = nextiface;
 #ifdef DEBUG_DUMP_PKT
             dumpAnyPacket("POP Pkt",(u8)iface->ifaceno,&tmp->pkt);
 #endif
             return YAPI_SUCCESS;
+        } else {
+            return YERRMSG(YAPI_IO_ERROR,"Missing Packet");
         }
-    }
-
-    if(ifacefull == dev->infos.nbinbterfaces){
-        dbglog("Missing packet (looking for pkt %d)\n",nextpktno);
-        for(i=0; i < dev->infos.nbinbterfaces ; i++){
-            yInterfaceSt *iface = Ino2Idx(dev,i);
-            YPROPERR(yyGetTopPkt(iface,&tmp,0,errmsg));
-            if(tmp == NULL) continue; // no pkt avail
-            dbglog("Packet available on interface %d: %d\n", i, tmp->pkt.first_stream.pktno);
+    } else {
+        // no packet
+        if (dev->infos.nbinbterfaces >1 ) {
+            // fixme look on next interface if we have miss only one packet
         }
-        YPROPERR(yRestartTransfert(dev,errmsg));
-        if(--count ==0){
-            dbglog("Too many missing packets, disable %s\n",dev->infos.serial);
-            dev->rstatus =  YRUN_ERROR;
-            return YERRMSG(YAPI_IO_ERROR,"Too many missing packets");
-        }
-        goto restart;
     }
     return YAPI_SUCCESS;
 }
 // force to flush stream
-int ySendPacket(yPrivDeviceSt *dev,pktItem *pkt,char *errmsg)
+static int ySendPacket(yPrivDeviceSt *dev,pktItem *pkt,char *errmsg)
 {
     yInterfaceSt *iface = Ino2Idx(dev,0);
-    return yySendPacket(iface,pkt,errmsg);
+    return yyySendPacket(iface,&pkt->pkt,errmsg);
 }
-int yPacketStopRead(yPrivDeviceSt *dev,char *errmsg)
-{
-    int i;
-    yInterfaceSt *iface;
-    for(i=0; i <dev->infos.nbinbterfaces ; i++){
-        iface = Ino2Idx(dev,i);
-        YPROPERR(yyyReadStop(iface,errmsg));
-    }
-    return YAPI_SUCCESS;
-}
-void yPacketShutdown(yPrivDeviceSt *dev)
+
+
+static void yPacketShutdown(yPrivDeviceSt *dev)
 {
     int i;
     for(i=0; i <dev->infos.nbinbterfaces ; i++){
+        //YASSERT(dev->rstatus==YRUN_AVAIL);
         yyPacketShutdown(&dev->ifaces[i]);
     }
 }
@@ -1105,11 +1464,8 @@ static int yStreamSetup(yPrivDeviceSt *dev,char *errmsg)
     return YAPI_SUCCESS;
 }
 
-int yStreamReOpen(yPrivDeviceSt *dev,char *errmsg)
-{
-    return yPacketReopen(dev,errmsg);
-}
-static int yStreamReceived(yPrivDeviceSt *dev,  u8 *stream, u8 **data, u8 *size,char *errmsg)
+
+static int yStreamReceived(yPrivDeviceSt *dev,  u8 *stream, u8 **data, u8 *size,u64 blockUntilTime,char *errmsg)
 {
     YSTREAM_Head  *yshead;
     int res;
@@ -1122,7 +1478,7 @@ static int yStreamReceived(yPrivDeviceSt *dev,  u8 *stream, u8 **data, u8 *size,
             yFree(dev->currxpkt);
             dev->currxpkt=NULL;
         }
-        res = yGetNextPkt(dev,&dev->currxpkt,errmsg);
+        res = yGetNextPktEx(dev,&dev->currxpkt,blockUntilTime,errmsg);
         YPROPERR(res);
         if(dev->currxpkt != NULL){
             dev->curxofs=0;
@@ -1140,6 +1496,7 @@ static int yStreamReceived(yPrivDeviceSt *dev,  u8 *stream, u8 **data, u8 *size,
 
     return 1;
 }
+
 static int yStreamReceptionDone(yPrivDeviceSt *dev,char *errmsg)
 {
     YSTREAM_Head * yshead= (YSTREAM_Head*) &dev->currxpkt->pkt.data[dev->curxofs];
@@ -1147,7 +1504,7 @@ static int yStreamReceptionDone(yPrivDeviceSt *dev,char *errmsg)
     return YAPI_SUCCESS;
 }
 // return 0 when no more buff is available
-int yStreamGetTxBuff(yPrivDeviceSt *dev, u8 **data, u8 *maxsize, char *errmsg)
+static int yStreamGetTxBuff(yPrivDeviceSt *dev, u8 **data, u8 *maxsize)
 {
     u8  avail;
     avail = USB_PKT_SIZE - dev->curtxofs;
@@ -1160,7 +1517,32 @@ int yStreamGetTxBuff(yPrivDeviceSt *dev, u8 **data, u8 *maxsize, char *errmsg)
     *data = &dev->curtxpkt->pkt.data[dev->curtxofs+sizeof(YSTREAM_Head)];
     return 1;
 }
-int yStreamTransmit(yPrivDeviceSt *dev, u8 proto,u8 size,char *errmsg)
+
+static int yStreamFlush(yPrivDeviceSt *dev,char *errmsg)
+{
+    u8 avail;
+
+    if(dev->curtxofs==0){
+        return YAPI_SUCCESS;
+    }
+
+    avail = USB_PKT_SIZE - dev->curtxofs;
+
+    if(avail >=sizeof(YSTREAM_Head) ){
+        YSTREAM_Head  *yshead = (YSTREAM_Head*) (dev->curtxpkt->pkt.data + dev->curtxofs);
+        yshead->pkt    = YPKT_STREAM;
+        yshead->stream = YSTREAM_EMPTY;
+        yshead->size   = avail - sizeof(YSTREAM_Head);
+        dev->curtxofs  += sizeof(YSTREAM_Head)+yshead->size;
+    }
+
+    YPROPERR( ySendPacket(dev,dev->curtxpkt,errmsg));
+    dev->curtxofs =0;
+    return YAPI_SUCCESS;
+}
+
+
+static int yStreamTransmit(yPrivDeviceSt *dev, u8 proto,u8 size,char *errmsg)
 {
     //dbglog("yPacketTransmit\n");
 
@@ -1182,33 +1564,8 @@ int yStreamTransmit(yPrivDeviceSt *dev, u8 proto,u8 size,char *errmsg)
         return yStreamFlush(dev,errmsg);
     return YAPI_SUCCESS;
 }
-int yStreamFlush(yPrivDeviceSt *dev,char *errmsg)
-{
-    u8 avail;
-   //dbglog("   yyPacketTxFlush %d(%d) :\n",iface->ifaceno, idx);
-    if(dev->curtxofs==0){
-        return YAPI_SUCCESS;
-    }
 
-    avail = USB_PKT_SIZE - dev->curtxofs;
 
-    if(avail >=sizeof(YSTREAM_Head) ){
-        YSTREAM_Head  *yshead = (YSTREAM_Head*) (dev->curtxpkt->pkt.data + dev->curtxofs);
-        yshead->pkt    = YPKT_STREAM;
-        yshead->stream = YSTREAM_EMPTY;
-        yshead->size   = avail - sizeof(YSTREAM_Head);
-        dev->curtxofs  += sizeof(YSTREAM_Head)+yshead->size;
-    }
-
-    YPROPERR( ySendPacket(dev,dev->curtxpkt,errmsg));
-    dev->curtxofs =0;
-    return YAPI_SUCCESS;
-}
-// stop all pending read operation (needed to be thread safe)
-int yStreamClose(yPrivDeviceSt *dev,char *errmsg)
-{
-    return yPacketStopRead(dev,errmsg);
-}
 static void yStreamShutdown(yPrivDeviceSt *dev)
 {
     if(dev->devYdxMap) {
@@ -1258,7 +1615,7 @@ static void yDispatchNoctice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pkt
         return;
     }
     
-    notDev=findDevFromSerial(notify->head.serial);
+    notDev=findDev(notify->head.serial,FIND_FROM_SERIAL);
     if(notDev==NULL){
         dbglog("drop Notification %d for %s received (device missing)\n", notify->head.type,notify->head.serial);
         return;
@@ -1295,7 +1652,7 @@ static void yDispatchNoctice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pkt
         if(notDev == dev) {
             // build devYdx mapping for immediate child hubs
             if(dev->devYdxMap == NULL) {
-                dev->devYdxMap = yMalloc(ALLOC_YDX_PER_HUB);
+                dev->devYdxMap = (u8*) yMalloc(ALLOC_YDX_PER_HUB);
                 memset(dev->devYdxMap, 255, ALLOC_YDX_PER_HUB);
             }
             dev->devYdxMap[notify->childserial.devydx] = wpGetDevYdx(yHashPutStr(notify->childserial.childserial));
@@ -1368,7 +1725,10 @@ static void yDispatchNoctice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pkt
     }
 }
 
-int yDispatchReceive(yPrivDeviceSt *dev,char *errmsg)
+// blockUntilTime: 
+//    0 -> only check pending (non blocking)
+//    >0 -> wait util yapiGetTickCount is >= blockUntilTime
+static int yDispatchReceive(yPrivDeviceSt *dev,u64 blockUntilTime,char *errmsg)
 {
     u8 stream;
     u8 size;
@@ -1378,13 +1738,13 @@ int yDispatchReceive(yPrivDeviceSt *dev,char *errmsg)
 #endif
     int pktavail;
 
-    pktavail = yStreamReceived(dev, &stream, &data, &size, errmsg);
+    pktavail = yStreamReceived(dev, &stream, &data, &size, blockUntilTime,errmsg);
     YPROPERR(pktavail);
     while (pktavail && yFifoGetFree(&dev->http_fifo) > size) {
         switch (stream) {
             case YSTREAM_TCP_CLOSE:
 #ifdef DEBUG_USB_TRAFIC
-                dbglog("YSTREAM : TCP_CLOSE %d (%d:%d)\n",size,dev->iohdl,dev->httpstate);
+                dbglog("YSTREAM : TCP_CLOSE %d (%d:%d)\n",size,dev->pendingIO.hdl,dev->httpstate);
                 memcpy(dump,data,size);
                 dump[size]=0;
                 dbglog("---------------------------\n");
@@ -1392,7 +1752,7 @@ int yDispatchReceive(yPrivDeviceSt *dev,char *errmsg)
                 dbglog("---------------------------\n");
 #endif
                 if(dev->httpstate == YHTTP_OPENED) {
-                    if(dev->isAsyncIO == 0) {
+                    if((dev->pendingIO.flags & YIO_ASYNC) ==0 ) {
                         //handle new received packet
                         if(size!=yPushFifo(&dev->http_fifo, data, size)){
                             return YERRMSG(YAPI_IO_ERROR,"FIFO overrun");
@@ -1401,19 +1761,18 @@ int yDispatchReceive(yPrivDeviceSt *dev,char *errmsg)
                     dev->httpstate = YHTTP_CLOSE_BY_DEV;
                 } else if(dev->httpstate == YHTTP_CLOSE_BY_API) {
                     dev->httpstate = YHTTP_CLOSED;
-                    dev->isAsyncIO = 0;
                 }
                 break;
             case YSTREAM_TCP:
 #ifdef DEBUG_USB_TRAFIC
-                dbglog("YSTREAM : TCP %d (%d:%d)\n",size,dev->iohdl,dev->httpstate);
+                dbglog("YSTREAM : TCP %d (%d:%d)\n",size,dev->pendingIO.hdl,dev->httpstate);
                 memcpy(dump,data,size);
                 dump[size]='\0';
                 dbglog("---------------------------\n");
                 dbglog("%s\n",dump);
                 dbglog("---------------------------\n");
 #endif
-                if(dev->httpstate==YHTTP_OPENED && dev->isAsyncIO==0){
+                if(dev->httpstate==YHTTP_OPENED &&  (dev->pendingIO.flags & YIO_ASYNC) ==0 ){
                     //handle new received packet
                     if(size!=yPushFifo(&dev->http_fifo, data, size)){
                         return YERRMSG(YAPI_IO_ERROR,"FIFO overrun");
@@ -1430,7 +1789,8 @@ int yDispatchReceive(yPrivDeviceSt *dev,char *errmsg)
         }
         //listen again
         YPROPERR(yStreamReceptionDone(dev,errmsg));
-        pktavail=yStreamReceived(dev,&stream, &data, &size, errmsg);
+        // do not block on second atempt
+        pktavail=yStreamReceived(dev,&stream, &data, &size, 0, errmsg);
         YPROPERR(pktavail);
     }
     return YAPI_SUCCESS;
@@ -1448,11 +1808,6 @@ const char *YDEV_STATUS_TXT[] =
 {
     "YDEV_UNPLUGED",              // device has been plugged by the past but is no more
                                   // -> YDEV_ARRIVAL
-    "YDEV_ALLREADY_THERE",        // temporary state (used only during enumeration)
-                                  // the device is working at the beginning of the enumeration
-                                  // ->YDEV_WORKING, YDEV_UNPLUGED
-    "YDEV_ARRIVAL",               // temporary stat (used during enumeration) a new plug has been detected
-                                  // -> YDEV_WORKING
     "YDEV_WORKING",               // device is plugged and running
                                   // -> YDEV->UNPLUGET, YDEV_ALLREADY_THERE
     "YDEV_NOTRESPONDING"          // device has not repsond to StartDevice and we will never try to speak with it
@@ -1460,7 +1815,7 @@ const char *YDEV_STATUS_TXT[] =
 } ;
 #endif
 
-void enuResetDStatus(void)
+static void enuResetDStatus(void)
 {
 
     yPrivDeviceSt *p=yContext->devs;
@@ -1469,15 +1824,17 @@ void enuResetDStatus(void)
 #ifdef DEBUG_DEV_ENUM_VERBOSE
         dbglog("Initial State of %s is %s\n",p->infos.serial,YDEV_STATUS_TXT[p->dstatus]);
 #endif
-        if(p->dstatus != YDEV_UNPLUGED && p->dstatus != YDEV_NOTRESPONDING){
-            p->dstatus=YDEV_ALLREADY_THERE;
+        if( p->dStatus== YDEV_WORKING){
+            p->enumAction=YENU_STOP;
+        }else{
+            p->enumAction=YENU_NONE;
         }
         p=p->next;
     }
 }
 
 
-yPrivDeviceSt* enuFindDevSlot(yInterfaceSt *iface)
+static yPrivDeviceSt* enuFindDevSlot(yInterfaceSt *iface)
 {
     yPrivDeviceSt  *p;
 
@@ -1491,36 +1848,35 @@ yPrivDeviceSt* enuFindDevSlot(yInterfaceSt *iface)
 }
 
 //allocate a  new device structure
-yPrivDeviceSt* AllocateDevice(void)
+static yPrivDeviceSt* AllocateDevice(void)
 {
     yPrivDeviceSt *dev;
-
-
     dev  = (yPrivDeviceSt*) yMalloc(sizeof(yPrivDeviceSt));
     yMemset(dev,0,sizeof(yPrivDeviceSt));
-    dev->http_raw_buf =  yMalloc(HTTP_RAW_BUFF_SIZE);
+    dev->http_raw_buf =  (u8*) yMalloc(HTTP_RAW_BUFF_SIZE);
     yFifoInit(&dev->http_fifo, dev->http_raw_buf, HTTP_RAW_BUFF_SIZE);
-    devInitAccces(dev);
+	devInitAccces(PUSH_LOCATION dev);
     return dev;
 }
 
-void FreeDevice(yPrivDeviceSt *dev)
+static void FreeDevice(yPrivDeviceSt *dev)
 {
-    devDeleteAccces(dev);
+    devDeleteAccces(PUSH_LOCATION dev);
     yFree(dev->http_raw_buf);
+    yFifoCleanup(&dev->http_fifo);
     yFree(dev);
 }
 
 
 
 // Start an interface
-int StartDevice(yPrivDeviceSt *dev,char *errmsg)
+static int StartDevice(yPrivDeviceSt *dev,char *errmsg)
 {
     int res;
     unsigned delay=10;
     int nb_try;
     
-    for (nb_try=0; nb_try<4 ; nb_try++,yySleep(delay),delay*=4,dbglog("retrying StartDevice...\n")) {
+    for (nb_try=0; nb_try<4 ; nb_try++,delay*=4,dbglog("retrying StartDevice...\n")) {
         u64 timeout;
         int streamres =yStreamSetup(dev,errmsg);
         if (YISERR(streamres)){
@@ -1528,17 +1884,15 @@ int StartDevice(yPrivDeviceSt *dev,char *errmsg)
         }
         timeout=yapiGetTickCount()+10000;
         do {
-            res = yDispatchReceive(dev,errmsg);
+            res = yDispatchReceive(dev,timeout,errmsg);
             if(dev->ifaces[0].pkt_version == YPKT_VERSION_ORIGINAL_RELEASE &&  !dev->infos.productname[0]){
                 dev->rstatus =YRUN_AVAIL;
             }
             if (yapiGetTickCount()>=timeout){
-                yStreamClose(dev,errmsg);
-                return YERRMSG(YAPI_TIMEOUT,"Negotiation failed (device did not responded for 10 secs");
+                return YERRMSG(YAPI_TIMEOUT,"Negotiation failed (device did not respond for 10 secs");
             }
         } while(res==YAPI_SUCCESS && dev->rstatus !=YRUN_AVAIL);
         
-        streamres = yStreamClose(dev,errmsg);
         if (YISERR(streamres)){
             continue;
         }
@@ -1550,103 +1904,105 @@ int StartDevice(yPrivDeviceSt *dev,char *errmsg)
 }
 
 
-int StopDevice(yPrivDeviceSt *dev,char *errmsg)
+static int StopDevice(yPrivDeviceSt *dev,char *errmsg)
 
 {
-    yStreamClose(dev,errmsg);
+    dev->rstatus=YRUN_STOPED;
     yStreamShutdown(dev);
     return YAPI_SUCCESS;
 }
 
 //thread safe because only modified only by yDetectDevices which is not reentrant
-void enuUpdateDStatus(void)
+static void enuUpdateDStatus(void)
 {
     yPrivDeviceSt *p=yContext->devs;
-    int workingdev=0;
     char errmsg[YOCTO_ERRMSG_LEN];
+    int res;
 
-#ifdef DEBUG_DEV_ENUM_VERBOSE
-    dbglog("enum : update status\n");
-#endif
     while(p){
-        devGetAcces(p,1);
-        switch(p->dstatus){
-        case YDEV_ALLREADY_THERE:
+        switch(p->enumAction){
+        case YENU_STOP:
+            devStartEnum(p);
 #ifdef DEBUG_DEV_ENUM
-            dbglog("enum : %s (%d ifaces)\n",p->infos.serial,p->infos.nbinbterfaces);
-            dbglog(": YDEV_ALLREADY_THERE -> YDEV_UNPLUGED\n");
+            dbglog("ENU:%s(%d):%s->YDEV_UNPLUGED\n",p->infos.serial,p->infos.nbinbterfaces,YDEV_STATUS_TXT[p->dStatus]);
 #endif
-            p->dstatus = YDEV_UNPLUGED;
+            p->dStatus = YDEV_UNPLUGGED;
             if(YISERR(StopDevice(p,errmsg))){
                 dbglog("Unable to stop the device %s correctly:(%s)\n",p->infos.serial,errmsg);
             }
             dbglog("Device %s unplugged\n",p->infos.serial);
             wpUnregisterUSB(p->infos.serial);
+            devStopEnum(p);
             break;
-        case YDEV_ARRIVAL:
-                if( p->next_startup_attempt <= yapiGetTickCount()) {
-                    int res;
-                    p->rstatus =YRUN_STOPED;
-#ifdef DEBUG_DEV_ENUM
-                    dbglog("enum : %s (%d ifaces)\n",p->infos.serial,p->infos.nbinbterfaces);
-                    dbglog(": YDEV_ARRIVAL -> ???\n");
+
+        case YENU_RESTART:
+            devStartEnum(p);
+#ifdef DEBUG_DEV_ENUM_VERBOSE
+            dbglog("ENU:%s(%d):%s restarting...\n",p->infos.serial,p->infos.nbinbterfaces,YDEV_STATUS_TXT[p->dStatus]);
 #endif
-                    res = StartDevice(p,errmsg);
-                    if(YISERR(res)){
+            if(YISERR(StopDevice(p,errmsg))){
+                dbglog("Unable to stop the device %s correctly:(%s)\n",p->infos.serial,errmsg);
+            }
+            p->dStatus = YDEV_WORKING; //we need to put the device in working to start device (safe because we alread have the mutex)
+            res = StartDevice(p,errmsg);
+            if(YISERR(res)){
+                // we are unable to restart the device -> unplug it and follow the traditional process (white page update etc...)
 #ifdef DEBUG_DEV_ENUM
-                        dbglog(": YDEV_ARRIVAL -> YDEV_NOTRESPONDING\n");
+                dbglog("ENU:%s(%d):%s->YDEV_UNPLUGED (restart failed)\n",p->infos.serial,p->infos.nbinbterfaces,YDEV_STATUS_TXT[orgstatus]);
 #endif
-                        if (res !=YAPI_TIMEOUT && p->nb_startup_retry < NB_MAX_STARTUP_RETRY) {
-                            dbglog("Unable to start the device %s correctly retry later : %s\n",p->infos.serial,errmsg);
-                            p->dstatus = YDEV_UNPLUGED;
-                            p->next_startup_attempt = yapiGetTickCount()+1000;
-                            p->nb_startup_retry++;
-                        } else {
-                            dbglog("Unable to start the device %s correctly: %s\n",p->infos.serial,errmsg);
-                            dbglog("Disable device %s\n",p->infos.serial);
-                            p->dstatus = YDEV_NOTRESPONDING;
-                        }
-                    }else{
+
+                p->dStatus = YDEV_UNPLUGGED;
+                wpUnregisterUSB(p->infos.serial);
+            }else{
 #ifdef DEBUG_DEV_ENUM
-                        dbglog(": YDEV_ARRIVAL -> YDEV_WORKING\n");
+                dbglog("ENU:%s(%d):%s->YDEV_WORKING(restart)\n",p->infos.serial,p->infos.nbinbterfaces,YDEV_STATUS_TXT[orgstatus]);
 #endif
-                        p->dstatus = YDEV_WORKING;
-                        p->yhdl    = yContext->devhdlcount++;
-                        workingdev++;
-                        dbglog("Device %s plugged\n",p->infos.serial);
-                        wpRegisterUSB(&p->infos);
+            }
+            devStopEnum(p);
+            break;
+
+        case YENU_START:
+            devStartEnum(p);
+            if( p->next_startup_attempt <= yapiGetTickCount()) {
+                p->dStatus = YDEV_WORKING; //we need to put the device in working to start device (safe because we alread have the mutex)
+                res = StartDevice(p,errmsg);
+                if(YISERR(res)){
+                    if (res !=YAPI_TIMEOUT && p->nb_startup_retry < NB_MAX_STARTUP_RETRY) {
+                        dbglog("Unable to start the device %s correctly (%s). retry later\n",p->infos.serial,errmsg);
+#ifdef DEBUG_DEV_ENUM
+                        dbglog("ENU:%s(%d):%s->YDEV_UNPLUGED\n",p->infos.serial,p->infos.nbinbterfaces,YDEV_STATUS_TXT[orgstatus]);
+#endif
+                        p->dStatus = YDEV_UNPLUGGED;
+                        p->next_startup_attempt = yapiGetTickCount()+1000;
+                        p->nb_startup_retry++;
+                    } else {
+#ifdef DEBUG_DEV_ENUM
+                        dbglog("ENU:%s(%d):%s->YDEV_NOTRESPONDING\n",p->infos.serial,p->infos.nbinbterfaces,YDEV_STATUS_TXT[orgstatus]);
+#endif
+                        dbglog("Disable device %s (reason:%s)\n",p->infos.serial,errmsg);
+                        p->dStatus = YDEV_NOTRESPONDING;
+                        wpUnregisterUSB(p->infos.serial);
                     }
-                } else {
-#ifdef DEBUG_DEV_ENUM_VERBOSE
-                    dbglog("enum : %s (%d ifaces) waiting for next attempt\n",p->infos.serial,p->infos.nbinbterfaces);
+                }else{
+#ifdef DEBUG_DEV_ENUM
+                    dbglog("ENU:%s(%d):%s->YDEV_WORKING\n",p->infos.serial,p->infos.nbinbterfaces,YDEV_STATUS_TXT[orgstatus]);
 #endif
-                    p->dstatus = YDEV_UNPLUGED;
+                    p->yhdl    = yContext->devhdlcount++;
+                    dbglog("Device %s plugged\n",p->infos.serial);
+                    wpRegisterUSB(&p->infos);
                 }
-           break;
-        case YDEV_WORKING:
+            } else {
 #ifdef DEBUG_DEV_ENUM_VERBOSE
-            dbglog(": YDEV_WORKING \n");
+                dbglog("enum : %s (%d ifaces) waiting for next attempt\n",p->infos.serial,p->infos.nbinbterfaces);
 #endif
-            workingdev++;
+            }
+            devStopEnum(p);
             break;
-
-        case YDEV_UNPLUGED:
-#ifdef DEBUG_DEV_ENUM_VERBOSE
-            dbglog("enum : %s (%d ifaces)\n",p->infos.serial,p->infos.nbinbterfaces);
-            dbglog(": YDEV_UNPLUGED \n");
-#endif
-        case YDEV_NOTRESPONDING:
-#ifdef DEBUG_DEV_ENUM_VERBOSE
-            dbglog(": YDEV_NOTRESPONDING \n");
-#endif
-
+        case YENU_NONE:
             break;
         }
-        devReleaseAcces(p);
         p=p->next;
     }
-    yContext->nbdevs=workingdev;
-
 }
 
 void yUSBReleaseAllDevices(void)
@@ -1668,7 +2024,7 @@ YRETCODE yUSBUpdateDeviceList(char *errmsg)
 
     int             nbrundev;
 
-    YPROPERR(yUSBGetInterfaces(&runifaces,&nbifaces,errmsg));
+    YPROPERR(yyyUSBGetInterfaces(&runifaces,&nbifaces,errmsg));
 
     // construct the device list by merging interfaces
     nbrundev=0;
@@ -1680,7 +2036,11 @@ YRETCODE yUSBUpdateDeviceList(char *errmsg)
             if(rdev->ifaces[0]->vendorid == iface->vendorid && rdev->ifaces[0]->deviceid == iface->deviceid
                 && strncmp(rdev->ifaces[0]->serial,iface->serial,YOCTO_SERIAL_LEN)==0){
                 //add the current iface
-                rdev->ifaces[rdev->nbifaces++] = iface;
+                if(rdev->nbifaces < 2) {
+                    rdev->ifaces[rdev->nbifaces++] = iface;
+                } else {
+                    dbglog("Too many interfaces!");
+                }
                 break;
             }
         }
@@ -1699,19 +2059,28 @@ YRETCODE yUSBUpdateDeviceList(char *errmsg)
         yPrivDeviceSt *dev =enuFindDevSlot(rundevs[j].ifaces[0]);
         if(dev){
             //device already allocated
-            if(dev->dstatus==YDEV_ALLREADY_THERE){
-                if(dev->rstatus!=YRUN_ERROR && yyyOShdlCompare(dev,&rundevs[j])){
-#ifdef DEBUG_DEV_ENUM_VERBOSE
-                    ENUMLOG("%s was already there set it as working\n",dev->infos.serial);
-#endif
-                    dev->dstatus =  YDEV_WORKING;
-                }else{
-                    ENUMLOG("%s was already there but OS handle are no more valid or we get a runtime error\n",dev->infos.serial);
+            if(dev->dStatus == YDEV_WORKING ){
+                if(!yyyOShdlCompare(dev,&rundevs[j])){
+                    ENUMLOG("%s was already there but OS handles are no more valid\n",dev->infos.serial);
+                    dev->enumAction =  YENU_RESTART;
+                } else if (dev->rstatus==YRUN_ERROR){
+                    ENUMLOG("%s was already there but need to be reset due to runtime error\n",dev->infos.serial);
+                    dev->enumAction =  YENU_RESTART;
+                } else {
+                    // device is working correctly 
+                    dev->enumAction = YENU_NONE;
                 }
-            }else if(dev->dstatus == YDEV_UNPLUGED ||
-                (dev->dstatus == YDEV_NOTRESPONDING && !yyyOShdlCompare(dev,&rundevs[j])) ){
-                ENUMLOG("%s replug of a previously detected device put it into the arrival state\n",dev->infos.serial);
-                dev->dstatus = YDEV_ARRIVAL;
+            }else if(dev->dStatus == YDEV_UNPLUGGED) {
+                ENUMLOG("%s replug of a previously detected device\n",dev->infos.serial);
+                dev->enumAction =  YENU_START;
+                // to be safe we update infos with fresh data form last enumeration
+                dev->infos.nbinbterfaces = rundevs[j].nbifaces;
+                for(i = 0 ; i < rundevs[j].nbifaces; i++){
+                    memcpy(&dev->ifaces[i],rundevs[j].ifaces[i],sizeof(yInterfaceSt));
+                }
+            } else if(dev->dStatus == YDEV_NOTRESPONDING && !yyyOShdlCompare(dev,&rundevs[j]) ){
+                ENUMLOG("%s replug of a previously detected device that was not responding\n",dev->infos.serial);
+                dev->enumAction =  YENU_START;
                 // to be safe we update infos with fresh data form last enumeration
                 dev->infos.nbinbterfaces = rundevs[j].nbifaces;
                 for(i = 0 ; i < rundevs[j].nbifaces; i++){
@@ -1722,7 +2091,7 @@ YRETCODE yUSBUpdateDeviceList(char *errmsg)
             ENUMLOG("%s newly plugged device \n",rundevs[j].ifaces[0]->serial);
             //ALLOCATE A  NEW DEVICE STUCTURE
             dev = AllocateDevice();
-            dev->dstatus = YDEV_ARRIVAL;
+            dev->enumAction =  YENU_START;
             //mark device a stopped
             dev->rstatus = YRUN_STOPED;
             dev->infos.vendorid = rundevs[j].ifaces[0]->vendorid;
@@ -1754,25 +2123,28 @@ YRETCODE yUSBUpdateDeviceList(char *errmsg)
   ***************************************************************************/
 
 // return the YHANDLE from a matching string (serial or name)
-yPrivDeviceSt *findDevFromStr(const char *str)
+yPrivDeviceSt *findDev(const char *str,u32 flags)
 {
     yPrivDeviceSt *p;
     
-    for( p=yContext->devs ; p ; p=p->next){
-        if(p->dstatus == YDEV_UNPLUGED){
-            continue;
-        }
-        if(strncmp(str,p->infos.serial,YOCTO_SERIAL_LEN)==0){
-            return p;
+    if(flags& FIND_FROM_SERIAL){
+        for( p=yContext->devs ; p ; p=p->next){
+            if(p->dStatus == YDEV_UNPLUGGED){
+                continue;
+            }
+            if(strncmp(str,p->infos.serial,YOCTO_SERIAL_LEN)==0){
+                return p;
+            }
         }
     }
-
-    for( p=yContext->devs ; p ; p=p->next){
-        if(p->dstatus == YDEV_UNPLUGED){
-            continue;
-        }
-        if(strncmp(str,p->infos.logicalname,YOCTO_LOGICAL_LEN)==0){
-            return p;
+    if (flags & FIND_FROM_NAME) {
+        for( p=yContext->devs ; p ; p=p->next){
+            if(p->dStatus == YDEV_UNPLUGGED){
+                continue;
+            }
+            if(strncmp(str,p->infos.logicalname,YOCTO_LOGICAL_LEN)==0){
+                return p;
+            }
         }
     }
     
@@ -1783,7 +2155,7 @@ yPrivDeviceSt *findDevFromStr(const char *str)
 // return the YHANDLE from a matching string (serial or name)
 YUSBDEV findDevHdlFromStr(const char *str)
 {
-    yPrivDeviceSt *p = findDevFromStr(str);
+    yPrivDeviceSt *p = findDev(str,FIND_FROM_ANY);
 
     if(p != NULL) {
         return p->yhdl;
@@ -1792,34 +2164,17 @@ YUSBDEV findDevHdlFromStr(const char *str)
 }
 
 
-yPrivDeviceSt *findDevFromIOHdl(YUSBIO hdl)
+yPrivDeviceSt *findDevFromIOHdl(YIOHDL *iohdl)
 {
     yPrivDeviceSt *p;
-    
+    if(iohdl->type!=YIO_USB)
+        return NULL;
     for( p=yContext->devs ; p ; p=p->next){
-        if(p->iohdl ==hdl)
+        if(p->pendingIO.hdl ==iohdl->hdl)
             return p;
     }
     return NULL;
 }
-
-// find a device from his YHANDLE
-static yPrivDeviceSt *findDevFromSerial(const char *serial)
-{
-    yPrivDeviceSt *p;
-
-    for( p=yContext->devs ; p ; p=p->next){
-        if(p->dstatus == YDEV_UNPLUGED){
-            continue;
-        }
-        if(strncmp(serial,p->infos.serial,YOCTO_SERIAL_LEN)==0){
-            return p;
-        }
-    }
-    return NULL;
-}
-
-
 
 // find a device from his YHANDLE
 static yPrivDeviceSt *findDevFromDevHdl(YUSBDEV hdl)
@@ -1851,137 +2206,246 @@ void devHdlInfo(YUSBDEV hdl,yDeviceSt *infos)
   USB REQUEST FUNCTIONS
   ***************************************************************************/
 
+
+void  dumpYPerfEntry(yPerfMon *entry,const char *name)
+{
+    dbglog("%s count %lld(%lld) totaltime=%lld (avg =%lld)\n",name,entry->count,entry->leave,entry->totaltime,(entry->count>0?entry->totaltime/entry->count:0));
+}
+
+
+
+//#define PERF_YHUB_FUNCTIONS
+#ifdef PERF_YHUB_FUNCTIONS 
+
+
+typedef struct {
+    yPerfMon  yUsbIdle;
+    yPerfMon  yUsbTrafficPending;
+    yPerfMon  yUsbOpen;
+    yPerfMon  yUsbSetIOAsync;
+    yPerfMon  yUsbWrite;
+    yPerfMon  yUsbReadNonBlock;
+    yPerfMon  yUsbReadBlock;
+    yPerfMon  yUsbEOF;
+    yPerfMon  yUsbClose;
+} yUsbPerfMonSt;
+
+yUsbPerfMonSt yUsbPerf;
+
+
+#define YPERF_ENTER(NAME) {yUsbPerf.NAME.count++;yUsbPerf.NAME.tmp=yapiGetTickCount();}
+#define YPERF_LEAVE(NAME) {yUsbPerf.NAME.leave++;yUsbPerf.NAME.totaltime += yapiGetTickCount()- yUsbPerf.NAME.tmp;}
+
+
+
+void dumpYUSBPerf(void)
+{
+    dumpYPerfEntry(&yUsbPerf.yUsbIdle,"yUsbIdle");
+    dumpYPerfEntry(&yUsbPerf.yUsbTrafficPending,"yUsbTrafficPending");
+    dumpYPerfEntry(&yUsbPerf.yUsbOpen,"yUsbOpen");
+    dumpYPerfEntry(&yUsbPerf.yUsbSetIOAsync,"yUsbSetIOAsync");
+    dumpYPerfEntry(&yUsbPerf.yUsbWrite,"yUsbWrite");
+    dumpYPerfEntry(&yUsbPerf.yUsbReadNonBlock,"yUsbReadNonBlock");
+    dumpYPerfEntry(&yUsbPerf.yUsbReadBlock,"yUsbReadBlock");
+    dumpYPerfEntry(&yUsbPerf.yUsbEOF,"yUsbEOF");
+    dumpYPerfEntry(&yUsbPerf.yUsbClose,"yUsbClose");
+}
+#else
+#define YPERF_ENTER(NAME)
+#define YPERF_LEAVE(NAME)
+#endif
+
+int yUsbInit(yContextSt *ctx,char *errmsg)
+{
+#ifdef PERF_YHUB_FUNCTIONS 
+    memset(&yUsbPerf,0,sizeof(yUsbPerfMonSt));
+#endif
+    return yyyUSB_init(ctx,errmsg);
+}
+
+
+int yUsbFree(yContextSt *ctx,char *errmsg)
+{
+
+    yPrivDeviceSt   *p,*next;
+
+#ifdef PERF_YHUB_FUNCTIONS 
+    dumpYUSBPerf();
+#endif
+    p=ctx->devs;
+    ctx->devs=NULL;
+    while(p) {
+        if(p->dStatus ==YDEV_WORKING){
+            int csTaken=yTryEnterCriticalSection(&p->acces_state);
+            p->dStatus = YDEV_UNPLUGGED;
+            StopDevice(p,NULL);
+            if(csTaken)
+                yLeaveCriticalSection(&p->acces_state);
+        }
+        if(p->replybuf) {
+            yFree(p->replybuf);
+            p->replybuf=NULL;
+        }
+        next=p->next;
+        FreeDevice(p);
+        p=next;
+    }
+    return yyyUSB_stop(yContext,errmsg);
+}
+
 int yUsbIdle(void)
 {
     yPrivDeviceSt   *p;
-    YUSBIO          iohdl;
+	int				res;
     char            errmsg[YOCTO_ERRMSG_LEN];
 
+    YPERF_ENTER(yUsbIdle);
     for( p=yContext->devs ; p ; p=p->next){
 
-        if(p->dstatus == YDEV_UNPLUGED){
+        if(p->dStatus != YDEV_WORKING){
             continue;
         }
-        memset(&iohdl,0,sizeof(YUSBIO));
-        if(!YISERR(devSafeStartIdle(p,&iohdl,errmsg))){
-            if(YISERR(yStreamReOpen(p,errmsg))){
-                dbglog("yStreamReOpen error:%s\n",errmsg);
-            }else{
-                if(YISERR(yDispatchReceive(p,errmsg))){
-                    dbglog("yPacketDispatchReceive error:%s\n",errmsg);
-                }
-                // stop all pending read operation (needed to be thread safe)
-                if(YISERR(yStreamClose(p,errmsg))){
-                    dbglog("yStreamClose error:%s\n",errmsg);
-                }
+		
+		res = devStartIdle(PUSH_LOCATION p,errmsg);
+		if (res == YAPI_SUCCESS) {
+            if(YISERR(yDispatchReceive(p,0,errmsg))){
+                dbglog("yPacketDispatchReceive error:%s\n",errmsg);
+				devReportErrorFromIdle(PUSH_LOCATION p,errmsg);
+                continue;
             }
-            devSafeStopIdle(p,iohdl,NULL);
-        } else if (p->isAsyncIO) {
-            // if we have an async IO on this device 
-            // simulate read from users but we need to handle
-            // potential stream reopen
-            if (!YISERR(devSafeCheckIO(p,p->iohdl,errmsg))) {
-                if(YISERR(yStreamReOpen(p,errmsg))){
-                    dbglog("yStreamReOpen error:%s\n",errmsg);
-                }else{
-                    if(YISERR(yDispatchReceive(p,errmsg))){
-                        dbglog("yPacketDispatchReceive error:%s\n",errmsg);
-                    }
-                    if(p->httpstate == YHTTP_CLOSE_BY_DEV) {
-                        u8  *pktdata;
-                        u8  maxpktlen;
-                        // send connection reset
-                        if(yStreamGetTxBuff(p,&pktdata, &maxpktlen,errmsg)){
-                            if(YISERR(yStreamTransmit(p,YSTREAM_TCP_CLOSE,0,errmsg))){
-                                dbglog("Unable to send async connection close");
-                            } else if(YISERR(yStreamFlush(p,errmsg))) {
-                                dbglog("Unable to flush async connection close");
-                            }
-                            yFifoEmpty(&p->http_fifo);
-                            p->httpstate = YHTTP_CLOSED;
-                            p->isAsyncIO=0;
-                        } 
-                    }
-                    // stop all pending read operation (needed to be thread safe)
-                    if(YISERR(yStreamClose(p,errmsg))){
-                        dbglog("yStreamClose error:%s\n",errmsg);
-                    }
-                }
-                if(p->httpstate == YHTTP_CLOSED) {
-                    devSafeStopIO(p,p->iohdl,errmsg);
-                } else {
-                    devPauseIO(p,NULL);
-                }
+            devStopIdle(PUSH_LOCATION p);
+		} else if(res == YAPI_DEVICE_BUSY){
+			if (p->httpstate != YHTTP_CLOSED && p->pendingIO.flags & YIO_ASYNC ) {
+				// if we have an async IO on this device 
+				// simulate read from users
+				if (!YISERR(devCheckAsyncIO(PUSH_LOCATION p,errmsg))) {
+					int sendClose=0;
+					if(YISERR(yDispatchReceive(p,0,errmsg))){
+						dbglog("yPacketDispatchReceive error:%s\n",errmsg);
+						devReportError(PUSH_LOCATION p,errmsg);
+						continue;
+					}
+					if(p->httpstate == YHTTP_CLOSE_BY_DEV) {
+						sendClose=1;
+					}else if(p->pendingIO.timeout<yapiGetTickCount()){
+						dbglog("Last async request did not complete (%X:%d)\n",p->pendingIO.hdl,p->httpstate);   
+						sendClose=1;
+					}
+					if (sendClose) {
+						u8  *pktdata;
+						u8  maxpktlen;
+						// send connection close
+						if(yStreamGetTxBuff(p,&pktdata, &maxpktlen)){
+							if(YISERR(yStreamTransmit(p,YSTREAM_TCP_CLOSE,0,errmsg))){
+								dbglog("Unable to send async connection close\n");
+							} else if(YISERR(yStreamFlush(p,errmsg))) {
+								dbglog("Unable to flush async connection close\n");
+							}
+							yFifoEmpty(&p->http_fifo);
+							p->httpstate = YHTTP_CLOSED;
+						} 
+					}
+					if(p->httpstate == YHTTP_CLOSED) {
+						if (YISERR(res =devStopIO(PUSH_LOCATION p,errmsg))) {
+                            dbglog("Idle : devStopIO err %s : %X:%s\n",p->infos.serial,res,errmsg);    
+                        }
+					} else {
+						devPauseIO(PUSH_LOCATION p,NULL);
+					}
+				}
             }
         }
     }
+    YPERF_LEAVE(yUsbIdle);
     return YAPI_SUCCESS;
 }
 
 int yUsbTrafficPending(void)
 {
     yPrivDeviceSt   *p;
-    
+    YPERF_ENTER(yUsbTrafficPending);
     for( p=yContext->devs ; p ; p=p->next){
-        if(p->dstatus == YDEV_UNPLUGED){
+        if(p->dStatus != YDEV_WORKING){
             continue;
         }
-        if(p->isAsyncIO) return 1;
+        if(p->httpstate != YHTTP_CLOSED && p->pendingIO.flags & YIO_ASYNC) {
+            YPERF_LEAVE(yUsbTrafficPending);
+            return 1;
+        }
     }
+    YPERF_LEAVE(yUsbTrafficPending);
     return 0;
+}
+
+int yUsbOpenDevDescr(YIOHDL *ioghdl, yStrRef devdescr, char *errmsg)
+{
+    char    serialBuf[YOCTO_SERIAL_LEN];
+    int     res;
+    
+    YPERF_ENTER(yUsbOpenDevDescr);
+    yHashGetStr(devdescr, serialBuf, YOCTO_SERIAL_LEN);
+    res = yUsbOpen(ioghdl, serialBuf, errmsg);
+    YPERF_LEAVE(yUsbOpenDevDescr);
+    
+    return res;
 }
 
 int yUsbOpen(YIOHDL *ioghdl, const char *device, char *errmsg)
 {
     int           res;
     yPrivDeviceSt *p;
-    YUSBIO        iohdl;
 
-    if(!yContext)
-        return YERR(YAPI_NOT_INITIALIZED);
-
-    p=findDevFromStr(device);
-    if(p==NULL)
+    YPERF_ENTER(yUsbOpen);
+    p=findDev(device,FIND_FROM_ANY);
+    if(p==NULL){
+        YPERF_LEAVE(yUsbOpen);
         return YERR(YAPI_DEVICE_NOT_FOUND);
+    }
     
-    memset(&iohdl,0,sizeof(YUSBIO));
-    res = devSafeStartIO(p,&iohdl,errmsg);
+    memset(ioghdl,0,YIOHDL_SIZE);
+    res = devStartIO(PUSH_LOCATION p,errmsg);
     if(YISERR(res)){
-        return res;
-    }   
-    res=yStreamReOpen(p,errmsg);
-    if(res<0){
-        devSafeStopIO(p,iohdl,NULL);
+        YPERF_LEAVE(yUsbOpen);
         return res;
     }
-    if(YISERR(res=yDispatchReceive(p,errmsg))){
-        devSafeStopIO(p,iohdl,NULL);
+    //process some packet
+    if(YISERR(res=yDispatchReceive(p,0,errmsg))){
+        devReportError(PUSH_LOCATION p,errmsg);
+        YPERF_LEAVE(yUsbOpen);
         return res;
     }
     p->httpstate = YHTTP_OPENED;
-    ioghdl->hdl = iohdl;
     ioghdl->type = YIO_USB;
-    
-    devPauseIO(p,NULL);
-    return YAPI_SUCCESS;
+    memset(&p->pendingIO,0,sizeof(USB_HDL));
+    yEnterCriticalSection(&yContext->io_cs);
+    p->pendingIO.hdl = ioghdl->hdl = ++(yContext->io_counter);
+    yLeaveCriticalSection(&yContext->io_cs);
+    p->pendingIO.timeout = YIO_DEFAULT_USB_TIMEOUT+yapiGetTickCount();
+    res = devPauseIO(PUSH_LOCATION p,errmsg);
+    YPERF_LEAVE(yUsbOpen);
+    return res;
 }
 
 int yUsbSetIOAsync(YIOHDL *ioghdl, char *errmsg)
 {
     int res =YAPI_SUCCESS;
     yPrivDeviceSt *p;
-    if(!yContext)
-        return YERR(YAPI_NOT_INITIALIZED);
-    p=findDevFromIOHdl(ioghdl->hdl);
-    if(p==NULL)
+ 
+    YPERF_ENTER(yUsbSetIOAsync);
+    p=findDevFromIOHdl(ioghdl);
+    if(p==NULL){
+        YPERF_LEAVE(yUsbSetIOAsync);
         return YERR(YAPI_DEVICE_NOT_FOUND);
-    YPROPERR(devSafeCheckIO(p,ioghdl->hdl,errmsg));
-    p->isAsyncIO = 1;
-    res=yStreamClose(p,errmsg);
-    if (!YISERR(res)){
-        ioghdl->flags |= YIO_ASYNC;    
     }
-    devPauseIO(p,NULL);
+    res = devCheckIO(PUSH_LOCATION p,ioghdl,errmsg);
+    if(YISERR(res)){
+        YPERF_LEAVE(yUsbSetIOAsync);
+        return res;
+    }
+    p->pendingIO.flags |= YIO_ASYNC;
+    res = devPauseIO(PUSH_LOCATION p,errmsg);
+    YPERF_LEAVE(yUsbSetIOAsync);
+
     return res;
 }
 
@@ -1995,43 +2459,49 @@ int  yUsbWrite(YIOHDL *ioghdl, const char *buffer, int writelen,char *errmsg)
     u8  maxpktlen;
     int res;
 
-    if(!yContext)
-        return YERR(YAPI_NOT_INITIALIZED);
-
-    p=findDevFromIOHdl(ioghdl->hdl);
-    if(p==NULL)
+    YPERF_ENTER(yUsbWrite);   
+    p=findDevFromIOHdl(ioghdl);
+    if(p==NULL){
+        YPERF_LEAVE(yUsbWrite);
         return YERR(YAPI_DEVICE_NOT_FOUND);
-    YPROPERR(devSafeCheckIO(p,ioghdl->hdl,errmsg));
-    if(YISERR(res=yDispatchReceive(p,errmsg))){
-        goto exit;
+    }
+    YPROPERR(devCheckIO(PUSH_LOCATION p,ioghdl,errmsg));
+    if(YISERR(res=yDispatchReceive(p,0,errmsg))){
+        devReportError(PUSH_LOCATION p,errmsg);
+        YPERF_LEAVE(yUsbWrite);
+        return res;
     }
 
     if(p->httpstate != YHTTP_OPENED){
-        devPauseIO(p,NULL);
+        devPauseIO(PUSH_LOCATION p,NULL);
+        YPERF_LEAVE(yUsbWrite);
         return YERRMSG(YAPI_IO_ERROR,"Connection closed");
     }
 
-    if(writelen==0){
-        goto exitnoerr;
-    }
     while (writelen){
-        while(writelen && yStreamGetTxBuff(p,&pktdata, &maxpktlen,errmsg)==1) {
+        while(writelen && yStreamGetTxBuff(p,&pktdata, &maxpktlen)==1) {
             u8 pktlen =(maxpktlen < writelen ? maxpktlen: writelen);
             memcpy(pktdata,buffer,pktlen);
-            if(YISERR(res=yStreamTransmit(p,YSTREAM_TCP,pktlen,errmsg))) 
-                goto exit;
+            if(YISERR(res=yStreamTransmit(p,YSTREAM_TCP,pktlen,errmsg))) {
+                devReportError(PUSH_LOCATION p,errmsg);
+                YPERF_LEAVE(yUsbWrite);
+                return res;
+            }
             buffer    += pktlen;
             writelen  -= pktlen;
             totalsend += pktlen;
         }
-        if(YISERR(res=yStreamFlush(p,errmsg))) 
-            goto exit;
+        if(YISERR(res=yStreamFlush(p,errmsg))) {
+            devReportError(PUSH_LOCATION p,errmsg);
+            YPERF_LEAVE(yUsbWrite);
+            return res;
+        }
     }
 
-exitnoerr:
-    res=totalsend;
-exit:
-    devPauseIO(p,NULL);
+    res = devPauseIO(PUSH_LOCATION p,errmsg);
+    if(res==YAPI_SUCCESS)
+        res = totalsend;
+    YPERF_LEAVE(yUsbWrite);
     return res;
 }
 
@@ -2043,15 +2513,28 @@ int  yUsbReadNonBlock(YIOHDL *ioghdl, char *buffer, int len,char *errmsg)
     u16 readed;
     int res;
 
-    if(!yContext)
-        return YERR(YAPI_NOT_INITIALIZED);
+    YPERF_ENTER(yUsbReadNonBlock);
 
-    p=findDevFromIOHdl(ioghdl->hdl);
-    if(p==NULL)
+    p=findDevFromIOHdl(ioghdl);
+    if(p==NULL){
+        YPERF_LEAVE(yUsbReadNonBlock);
         return YERR(YAPI_DEVICE_NOT_FOUND);
-    YPROPERR(devSafeCheckIO(p,ioghdl->hdl,errmsg));
-    if(YISERR(res=yDispatchReceive(p,errmsg))){
-        devPauseIO(p,NULL);
+    }
+
+    res =devCheckIO(PUSH_LOCATION p,ioghdl,errmsg);
+    if(YISERR(res)){
+        YPERF_LEAVE(yUsbReadNonBlock);
+        return res ;
+    }
+    if(p->pendingIO.flags & YIO_ASYNC){
+        YPROPERR(devPauseIO(PUSH_LOCATION p,errmsg));
+        YPERF_LEAVE(yUsbReadNonBlock);
+        return YERRMSG(YAPI_INVALID_ARGUMENT,"Operation not supported on async IO");
+    }
+
+    if(YISERR(res=yDispatchReceive(p,0,errmsg))){
+        devReportError(PUSH_LOCATION p,errmsg);
+        YPERF_LEAVE(yUsbReadNonBlock);
         return res;
     }
     if(len > HTTP_RAW_BUFF_SIZE){
@@ -2059,39 +2542,53 @@ int  yUsbReadNonBlock(YIOHDL *ioghdl, char *buffer, int len,char *errmsg)
     }
     //get all available data
     readed=yPopFifo(&p->http_fifo,(u8*)buffer,(u16)len);
-    devPauseIO(p,NULL);
+    YPROPERR(devPauseIO(PUSH_LOCATION p,errmsg));
+    YPERF_LEAVE(yUsbReadNonBlock);
     return readed;
 }
 
 
 
-int  yUsbReadSelect(YIOHDL *ioghdl, u64 mstimeout,char *errmsg)
+
+
+int  yUsbReadBlock(YIOHDL *ioghdl, char *buffer, int len,u64 blockUntil,char *errmsg)
 {
     yPrivDeviceSt *p;
-    int res=0;
-    u64 timeout;
-    
-    if(!yContext)
-        return YERR(YAPI_NOT_INITIALIZED);
-    
-    p=findDevFromIOHdl(ioghdl->hdl);
-    if(p==NULL)
+    u16 readed;
+    int res;
+ 
+    YPERF_ENTER(yUsbReadBlock);
+
+    p=findDevFromIOHdl(ioghdl);
+    if(p==NULL){
+        YPERF_LEAVE(yUsbReadBlock);
         return YERR(YAPI_DEVICE_NOT_FOUND);
-    YPROPERR(devSafeCheckIO(p,ioghdl->hdl,errmsg));
-    
-    timeout=yapiGetTickCount()+mstimeout;
-    do {
-       
-        if(YISERR(res=yDispatchReceive(p,errmsg))){
-            devPauseIO(p,NULL);
-            return res;
-        }
-        if (yFifoGetUsed(&p->http_fifo)>0)
-            res =1;
-    } while(res == 0 && yapiGetTickCount()<timeout);
-    devPauseIO(p,NULL);
-    return res;
+    }
+    res =devCheckIO(PUSH_LOCATION p,ioghdl,errmsg);
+    if(YISERR(res)){
+        YPERF_LEAVE(yUsbReadBlock);
+        return res ;
+    }
+    if(p->pendingIO.flags & YIO_ASYNC){
+        YPROPERR(devPauseIO(PUSH_LOCATION p,errmsg));
+        YPERF_LEAVE(yUsbReadBlock);
+        return YERRMSG(YAPI_INVALID_ARGUMENT,"Operation not supported on async IO");
+    }
+    if(YISERR(res=yDispatchReceive(p,blockUntil,errmsg))){
+        devReportError(PUSH_LOCATION p,errmsg);
+        YPERF_LEAVE(yUsbReadBlock);
+        return res;
+    }
+    if(len > HTTP_RAW_BUFF_SIZE){
+        len = HTTP_RAW_BUFF_SIZE;
+    }
+    //get all available data
+    readed=yPopFifo(&p->http_fifo,(u8*)buffer,(u16)len);
+    YPROPERR(devPauseIO(PUSH_LOCATION p,errmsg));
+    YPERF_LEAVE(yUsbReadBlock);
+    return readed;
 }
+
 
 
 
@@ -2099,24 +2596,37 @@ int  yUsbEOF(YIOHDL *ioghdl,char *errmsg)
 {
     yPrivDeviceSt *p;
     int res;
-    if(!yContext)
-        return YERR(YAPI_NOT_INITIALIZED);
 
-    p=findDevFromIOHdl(ioghdl->hdl);
-    if(p==NULL)
+    YPERF_ENTER(yUsbEOF);
+
+    p=findDevFromIOHdl(ioghdl);
+    if(p==NULL){
+        YPERF_LEAVE(yUsbEOF);
         return YERR(YAPI_DEVICE_NOT_FOUND);
-    YPROPERR(devSafeCheckIO(p,ioghdl->hdl,errmsg));
-    if(YISERR(res=yDispatchReceive(p,errmsg))){
-        devPauseIO(p,NULL);
+    }
+    res =devCheckIO(PUSH_LOCATION p,ioghdl,errmsg);
+    if(YISERR(res)){
+        YPERF_LEAVE(yUsbEOF);
+        return res;
+    }
+    if(p->pendingIO.flags & YIO_ASYNC){
+        YPROPERR(devPauseIO(PUSH_LOCATION p,errmsg));
+        YPERF_LEAVE(yUsbEOF);
+        return YERRMSG(YAPI_INVALID_ARGUMENT,"Operation not supported on async IO");
+    }
+    if(YISERR(res=yDispatchReceive(p,0,errmsg))){
+        devReportError(PUSH_LOCATION p,errmsg);
+        YPERF_LEAVE(yUsbEOF);
         return res;
     }
     res=0;
     if(yFifoGetUsed(&p->http_fifo)==0 && p->httpstate == YHTTP_CLOSE_BY_DEV){
-	    //dbglog("* yUsbEOF for %d is TRUE\n",p->iohdl);
+        //dbglog("* yUsbEOF for %d is TRUE\n",p->iohdl);
         res =1;
-        ioghdl->flags |= YIO_REMOTE_CLOSE;
+        p->pendingIO.flags |= YIO_REMOTE_CLOSE;
     }
-    devPauseIO(p,NULL);
+    devPauseIO(PUSH_LOCATION p,NULL);
+    YPERF_LEAVE(yUsbEOF);
     return res;
 }
 
@@ -2125,30 +2635,42 @@ int  yUsbEOF(YIOHDL *ioghdl,char *errmsg)
 int  yUsbClose(YIOHDL *ioghdl,char *errmsg)
 {
     yPrivDeviceSt *p;
-    int res;
     u8  *pktdata;
     u8  maxpktlen;
     u16 deviceDead = 0;
+    int res;
 
-    //dbglog("R_Close %d\n",hdl);
-    if(!yContext)
-        return YERR(YAPI_NOT_INITIALIZED);
-    p=findDevFromIOHdl(ioghdl->hdl);
-    if(p==NULL)
+    YPERF_ENTER(yUsbClose);
+
+    p=findDevFromIOHdl(ioghdl);
+    if(p==NULL){
+        YPERF_LEAVE(yUsbClose);
         return YERR(YAPI_DEVICE_NOT_FOUND);
+    }
     //dbglog("* yUsbClose for %d, httpstate=%d\n",p->iohdl,p->httpstate);
     if(p->httpstate == YHTTP_CLOSED || p->httpstate == YHTTP_CLOSE_BY_API) {
         dbglog("yUsb double-close");
+        YPERF_LEAVE(yUsbClose);
         return YAPI_SUCCESS;
     }
-    YPROPERR(devSafeCheckIO(p,ioghdl->hdl,errmsg));
+    res = devCheckIO(PUSH_LOCATION p,ioghdl,errmsg);
+    if(YISERR(res)) {
+        YPERF_LEAVE(yUsbClose);
+        return res;
+    }
+    if(p->pendingIO.flags & YIO_ASYNC){
+        YPROPERR(devPauseIO(PUSH_LOCATION p,errmsg));
+        YPERF_LEAVE(yUsbClose);
+        return YERRMSG(YAPI_INVALID_ARGUMENT,"Operation not supported on async IO");
+    }
+
     // send connection close
-    if(!yStreamGetTxBuff(p,&pktdata, &maxpktlen,errmsg)) {
+    if(!yStreamGetTxBuff(p,&pktdata, &maxpktlen)) {
         if(YISERR(yStreamFlush(p,errmsg))) {
             dbglog("Unable to flush pending data");
             deviceDead = 1;
         }
-        yStreamGetTxBuff(p,&pktdata, &maxpktlen,errmsg);
+        yStreamGetTxBuff(p,&pktdata, &maxpktlen);
     }
     if(!deviceDead) {
         if(YISERR(yStreamTransmit(p,YSTREAM_TCP_CLOSE,0,errmsg))) {
@@ -2159,17 +2681,13 @@ int  yUsbClose(YIOHDL *ioghdl,char *errmsg)
             deviceDead = 1;
         }
     }
-	if(p->httpstate == YHTTP_CLOSE_BY_DEV || deviceDead) {
+    if(p->httpstate == YHTTP_CLOSE_BY_DEV || deviceDead) {
         p->httpstate = YHTTP_CLOSED;
-        if(p->isAsyncIO){
-            //dbglog("close Async io");
-            p->isAsyncIO=0;
-        }
     } else {
         //wait for the device close packet
         u64 timeout = yapiGetTickCount() + 100;
         p->httpstate = YHTTP_CLOSE_BY_API;
-        while(!YISERR(yDispatchReceive(p,errmsg))){
+        while(!YISERR(yDispatchReceive(p,0,errmsg))){
             if(p->httpstate == YHTTP_CLOSED) {
                 // received close from device
                 break;
@@ -2181,8 +2699,10 @@ int  yUsbClose(YIOHDL *ioghdl,char *errmsg)
         }
     }
 
-    res=yStreamClose(p,errmsg);
     yFifoEmpty(&p->http_fifo);
-    YPROPERR(devSafeStopIO(p,ioghdl->hdl,errmsg));
+    memset(&p->pendingIO,0,YIOHDL_SIZE);
+    ioghdl->type=YIO_INVALID;
+    res =devStopIO(PUSH_LOCATION p,errmsg);
+    YPERF_LEAVE(yUsbClose);
     return res;
 }

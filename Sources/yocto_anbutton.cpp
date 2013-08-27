@@ -1,39 +1,39 @@
 /*********************************************************************
  *
- * $Id: yocto_anbutton.cpp 9425 2013-01-11 15:50:01Z seb $
+ * $Id: yocto_anbutton.cpp 12324 2013-08-13 15:10:31Z mvuilleu $
  *
  * Implements yFindAnButton(), the high-level API for AnButton functions
  *
  * - - - - - - - - - License information: - - - - - - - - - 
  *
- * Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
+ *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
- * 1) If you have obtained this file from www.yoctopuce.com,
- *    Yoctopuce Sarl licenses to you (hereafter Licensee) the
- *    right to use, modify, copy, and integrate this source file
- *    into your own solution for the sole purpose of interfacing
- *    a Yoctopuce product with Licensee's solution.
+ *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
+ *  non-exclusive license to use, modify, copy and integrate this
+ *  file into your software for the sole purpose of interfacing 
+ *  with Yoctopuce products. 
  *
- *    The use of this file and all relationship between Yoctopuce 
- *    and Licensee are governed by Yoctopuce General Terms and 
- *    Conditions.
+ *  You may reproduce and distribute copies of this file in 
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain 
+ *  this notice in the distributed source file.
  *
- *    THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *    WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
- *    FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
- *    EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *    INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *    COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *    SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
- *    LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
- *    CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
- *    BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
- *    WARRANTY, OR OTHERWISE.
+ *  You should refer to Yoctopuce General Terms and Conditions
+ *  for additional information regarding your rights and 
+ *  obligations.
  *
- * 2) If your intent is not to interface with Yoctopuce products,
- *    you are not entitled to use, read or create any derived
- *    material from this source file.
+ *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
+ *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
+ *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
+ *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
+ *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
 
@@ -44,14 +44,42 @@
 #include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 #include <stdlib.h>
 
+//--- (YAnButton constructor)
+// Constructor is protected, use yFindAnButton factory function to instantiate
+YAnButton::YAnButton(const string& func): YFunction("AnButton", func)
+//--- (end of YAnButton constructor)
+//--- (AnButton initialization)
+            ,_callback(NULL)
+            ,_logicalName(Y_LOGICALNAME_INVALID)
+            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
+            ,_calibratedValue(Y_CALIBRATEDVALUE_INVALID)
+            ,_rawValue(Y_RAWVALUE_INVALID)
+            ,_analogCalibration(Y_ANALOGCALIBRATION_INVALID)
+            ,_calibrationMax(Y_CALIBRATIONMAX_INVALID)
+            ,_calibrationMin(Y_CALIBRATIONMIN_INVALID)
+            ,_sensitivity(Y_SENSITIVITY_INVALID)
+            ,_isPressed(Y_ISPRESSED_INVALID)
+            ,_lastTimePressed(Y_LASTTIMEPRESSED_INVALID)
+            ,_lastTimeReleased(Y_LASTTIMERELEASED_INVALID)
+            ,_pulseCounter(Y_PULSECOUNTER_INVALID)
+            ,_pulseTimer(Y_PULSETIMER_INVALID)
+//--- (end of AnButton initialization)
+{}
+
+YAnButton::~YAnButton() 
+{
+//--- (YAnButton cleanup)
+//--- (end of YAnButton cleanup)
+}
 //--- (YAnButton implementation)
 
 const string YAnButton::LOGICALNAME_INVALID = "!INVALID!";
 const string YAnButton::ADVERTISEDVALUE_INVALID = "!INVALID!";
 
-std::map<string,YAnButton*> YAnButton::_AnButtonCache;
+
 
 int YAnButton::_parse(yJsonStateMachine& j)
 {
@@ -292,9 +320,9 @@ int YAnButton::set_calibrationMin(unsigned newval)
 }
 
 /**
- * Returns the sensibility for the input (between 1 and 255, included) for triggering user callbacks.
+ * Returns the sensibility for the input (between 1 and 1000) for triggering user callbacks.
  * 
- * @return an integer corresponding to the sensibility for the input (between 1 and 255, included) for
+ * @return an integer corresponding to the sensibility for the input (between 1 and 1000) for
  * triggering user callbacks
  * 
  * On failure, throws an exception or returns Y_SENSITIVITY_INVALID.
@@ -308,11 +336,15 @@ unsigned YAnButton::get_sensitivity(void)
 }
 
 /**
- * Changes the sensibility for the input (between 1 and 255, included) for triggering user callbacks.
+ * Changes the sensibility for the input (between 1 and 1000) for triggering user callbacks.
+ * The sensibility is used to filter variations around a fixed value, but does not preclude the
+ * transmission of events when the input value evolves constantly in the same direction.
+ * Special case: when the value 1000 is used, the callback will only be thrown when the logical state
+ * of the input switches from pressed to released and back.
  * Remember to call the saveToFlash() method of the module if the modification must be kept.
  * 
- * @param newval : an integer corresponding to the sensibility for the input (between 1 and 255,
- * included) for triggering user callbacks
+ * @param newval : an integer corresponding to the sensibility for the input (between 1 and 1000) for
+ * triggering user callbacks
  * 
  * @return YAPI_SUCCESS if the call succeeds.
  * 
@@ -461,12 +493,11 @@ void YAnButton::advertiseValue(const string& value)
 
 YAnButton* YAnButton::FindAnButton(const string& func)
 {
-    if(YAnButton::_AnButtonCache.find(func) != YAnButton::_AnButtonCache.end())
-        return YAnButton::_AnButtonCache[func];
+    if(YAPI::_YFunctionsCaches["YAnButton"].find(func) != YAPI::_YFunctionsCaches["YAnButton"].end())
+        return (YAnButton*) YAPI::_YFunctionsCaches["YAnButton"][func];
     
     YAnButton *newAnButton = new YAnButton(func);
-    YAnButton::_AnButtonCache[func] = newAnButton;
-    
+    YAPI::_YFunctionsCaches["YAnButton"][func] = newAnButton ;
     return newAnButton;
 }
 
