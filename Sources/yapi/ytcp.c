@@ -112,7 +112,7 @@ int yNetSetErrEx(u32 line,unsigned err,char *errmsg)
 #endif
     return YAPI_IO_ERROR;
 }
-#if 1
+#ifdef Y_UPNP_DETECT
 #define yNetLogErr()  yNetLogErrEx(__LINE__,SOCK_ERR)
 static int yNetLogErrEx(u32 line,unsigned err)
 {
