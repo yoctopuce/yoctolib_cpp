@@ -81,7 +81,8 @@ typedef signed char             s8;
 typedef unsigned short int      u16;
 typedef signed short int        s16;
 typedef unsigned int            u32;
-typedef signed int              s32;typedef unsigned long           u64;
+typedef signed int              s32;
+typedef unsigned long           u64;
 typedef signed long             s64;
 #endif
 #define VARIABLE_SIZE           0
@@ -185,9 +186,9 @@ typedef s8              YTRNKIO;
 // prevent to mess up with user own code
 #if defined(WINDOWS_API)
 #if defined(__64BITS__)
-typedef unsigned __int64 YSOCKET;
+typedef u64 YSOCKET;
 #else
-typedef unsigned __int32 YSOCKET;
+typedef u32 YSOCKET;
 #endif
 #else
 typedef int             YSOCKET;
