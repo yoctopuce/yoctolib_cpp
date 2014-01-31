@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_dualpower.h 12324 2013-08-13 15:10:31Z mvuilleu $
+ * $Id: yocto_dualpower.h 14275 2014-01-09 14:20:38Z seb $
  *
  * Declares yFindDualPower(), the high-level API for DualPower functions
  *
@@ -46,19 +46,24 @@
 #include <cmath>
 #include <map>
 
-//--- (return codes)
-//--- (end of return codes)
+//--- (YDualPower return codes)
+//--- (end of YDualPower return codes)
 //--- (YDualPower definitions)
-class YDualPower; //forward declaration
+class YDualPower; // forward declaration
 
-typedef void (*YDualPowerUpdateCallback)(YDualPower *func, const string& functionValue);
+typedef void (*YDualPowerValueCallback)(YDualPower *func, const string& functionValue);
+#ifndef _Y_POWERSTATE_ENUM
+#define _Y_POWERSTATE_ENUM
 typedef enum {
     Y_POWERSTATE_OFF = 0,
     Y_POWERSTATE_FROM_USB = 1,
     Y_POWERSTATE_FROM_EXT = 2,
     Y_POWERSTATE_INVALID = -1,
 } Y_POWERSTATE_enum;
+#endif
 
+#ifndef _Y_POWERCONTROL_ENUM
+#define _Y_POWERCONTROL_ENUM
 typedef enum {
     Y_POWERCONTROL_AUTO = 0,
     Y_POWERCONTROL_FROM_USB = 1,
@@ -66,10 +71,9 @@ typedef enum {
     Y_POWERCONTROL_OFF = 3,
     Y_POWERCONTROL_INVALID = -1,
 } Y_POWERCONTROL_enum;
+#endif
 
-#define Y_LOGICALNAME_INVALID           (YAPI::INVALID_STRING)
-#define Y_ADVERTISEDVALUE_INVALID       (YAPI::INVALID_STRING)
-#define Y_EXTVOLTAGE_INVALID            (0xffffffff)
+#define Y_EXTVOLTAGE_INVALID            (YAPI_INVALID_UINT)
 //--- (end of YDualPower definitions)
 
 //--- (YDualPower declaration)
@@ -82,36 +86,30 @@ typedef enum {
  * when a voltage drop is observed on the external power source
  * (external battery running out of power).
  */
-class YDualPower: public YFunction {
+class YOCTO_CLASS_EXPORT YDualPower: public YFunction {
+//--- (end of YDualPower declaration)
 protected:
+    //--- (YDualPower attributes)
     // Attributes (function value cache)
-    YDualPowerUpdateCallback _callback;
-    string          _logicalName;
-    string          _advertisedValue;
     Y_POWERSTATE_enum _powerState;
     Y_POWERCONTROL_enum _powerControl;
-    unsigned        _extVoltage;
+    int             _extVoltage;
+    YDualPowerValueCallback _valueCallbackDualPower;
 
     friend YDualPower *yFindDualPower(const string& func);
     friend YDualPower *yFirstDualPower(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    int             _parse(yJsonStateMachine& j);
-    //--- (end of YDualPower declaration)
+    virtual int     _parseAttr(yJsonStateMachine& j);
 
-    //--- (YDualPower constructor)
     // Constructor is protected, use yFindDualPower factory function to instantiate
     YDualPower(const string& func);
-    //--- (end of YDualPower constructor)
-    //--- (DualPower initialization)
-    //--- (end of DualPower initialization)
+    //--- (end of YDualPower attributes)
 
 public:
     ~YDualPower();
     //--- (YDualPower accessors declaration)
 
-    static const string LOGICALNAME_INVALID;
-    static const string ADVERTISEDVALUE_INVALID;
     static const Y_POWERSTATE_enum POWERSTATE_OFF = Y_POWERSTATE_OFF;
     static const Y_POWERSTATE_enum POWERSTATE_FROM_USB = Y_POWERSTATE_FROM_USB;
     static const Y_POWERSTATE_enum POWERSTATE_FROM_EXT = Y_POWERSTATE_FROM_EXT;
@@ -121,45 +119,7 @@ public:
     static const Y_POWERCONTROL_enum POWERCONTROL_FROM_EXT = Y_POWERCONTROL_FROM_EXT;
     static const Y_POWERCONTROL_enum POWERCONTROL_OFF = Y_POWERCONTROL_OFF;
     static const Y_POWERCONTROL_enum POWERCONTROL_INVALID = Y_POWERCONTROL_INVALID;
-    static const unsigned EXTVOLTAGE_INVALID = 0xffffffff;
-
-    /**
-     * Returns the logical name of the power control.
-     * 
-     * @return a string corresponding to the logical name of the power control
-     * 
-     * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
-     */
-           string          get_logicalName(void);
-    inline string          logicalName(void)
-    { return this->get_logicalName(); }
-
-    /**
-     * Changes the logical name of the power control. You can use yCheckLogicalName()
-     * prior to this call to make sure that your parameter is valid.
-     * Remember to call the saveToFlash() method of the module if the
-     * modification must be kept.
-     * 
-     * @param newval : a string corresponding to the logical name of the power control
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_logicalName(const string& newval);
-    inline int      setLogicalName(const string& newval)
-    { return this->set_logicalName(newval); }
-
-    /**
-     * Returns the current value of the power control (no more than 6 characters).
-     * 
-     * @return a string corresponding to the current value of the power control (no more than 6 characters)
-     * 
-     * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
-     */
-           string          get_advertisedValue(void);
-    inline string          advertisedValue(void)
-    { return this->get_advertisedValue(); }
+    static const int EXTVOLTAGE_INVALID = YAPI_INVALID_UINT;
 
     /**
      * Returns the current power source for module functions that require lots of current.
@@ -169,7 +129,8 @@ public:
      * 
      * On failure, throws an exception or returns Y_POWERSTATE_INVALID.
      */
-           Y_POWERSTATE_enum get_powerState(void);
+    Y_POWERSTATE_enum   get_powerState(void);
+
     inline Y_POWERSTATE_enum powerState(void)
     { return this->get_powerState(); }
 
@@ -181,7 +142,8 @@ public:
      * 
      * On failure, throws an exception or returns Y_POWERCONTROL_INVALID.
      */
-           Y_POWERCONTROL_enum get_powerControl(void);
+    Y_POWERCONTROL_enum get_powerControl(void);
+
     inline Y_POWERCONTROL_enum powerControl(void)
     { return this->get_powerControl(); }
 
@@ -207,36 +169,10 @@ public:
      * 
      * On failure, throws an exception or returns Y_EXTVOLTAGE_INVALID.
      */
-           unsigned        get_extVoltage(void);
-    inline unsigned        extVoltage(void)
+    int                 get_extVoltage(void);
+
+    inline int          extVoltage(void)
     { return this->get_extVoltage(); }
-
-
-    /**
-     * Registers the callback function that is invoked on every change of advertised value.
-     * The callback is invoked only during the execution of ySleep or yHandleEvents.
-     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
-     *         arguments: the function object of which the value has changed, and the character string describing
-     *         the new advertised value.
-     * @noreturn
-     */
-    void registerValueCallback(YDualPowerUpdateCallback callback);
-
-    void advertiseValue(const string& value);
-
-    /**
-     * Continues the enumeration of dual power controls started using yFirstDualPower().
-     * 
-     * @return a pointer to a YDualPower object, corresponding to
-     *         a dual power control currently online, or a null pointer
-     *         if there are no more dual power controls to enumerate.
-     */
-           YDualPower      *nextDualPower(void);
-    inline YDualPower      *next(void)
-    { return this->nextDualPower();}
 
     /**
      * Retrieves a dual power control for a given identifier.
@@ -261,18 +197,40 @@ public:
      * 
      * @return a YDualPower object allowing you to drive the power control.
      */
-           static YDualPower* FindDualPower(const string& func);
-    inline static YDualPower* Find(const string& func)
-    { return YDualPower::FindDualPower(func);}
+    static YDualPower*  FindDualPower(string func);
+
+    using YFunction::registerValueCallback;
+
     /**
-     * Starts the enumeration of dual power controls currently accessible.
-     * Use the method YDualPower.nextDualPower() to iterate on
-     * next dual power controls.
+     * Registers the callback function that is invoked on every change of advertised value.
+     * The callback is invoked only during the execution of ySleep or yHandleEvents.
+     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * 
+     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     *         arguments: the function object of which the value has changed, and the character string describing
+     *         the new advertised value.
+     * @noreturn
+     */
+    virtual int         registerValueCallback(YDualPowerValueCallback callback);
+
+    virtual int         _invokeValueCallback(string value);
+
+
+    inline static YDualPower* Find(string func)
+    { return YDualPower::FindDualPower(func); }
+
+    /**
+     * Continues the enumeration of dual power controls started using yFirstDualPower().
      * 
      * @return a pointer to a YDualPower object, corresponding to
-     *         the first dual power control currently online, or a null pointer
-     *         if there are none.
+     *         a dual power control currently online, or a null pointer
+     *         if there are no more dual power controls to enumerate.
      */
+           YDualPower      *nextDualPower(void);
+    inline YDualPower      *next(void)
+    { return this->nextDualPower();}
+
            static YDualPower* FirstDualPower(void);
     inline static YDualPower* First(void)
     { return YDualPower::FirstDualPower();}

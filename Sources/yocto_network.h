@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.h 12337 2013-08-14 15:22:22Z mvuilleu $
+ * $Id: yocto_network.h 14275 2014-01-09 14:20:38Z seb $
  *
  * Declares yFindNetwork(), the high-level API for Network functions
  *
@@ -46,12 +46,14 @@
 #include <cmath>
 #include <map>
 
-//--- (return codes)
-//--- (end of return codes)
+//--- (YNetwork return codes)
+//--- (end of YNetwork return codes)
 //--- (YNetwork definitions)
-class YNetwork; //forward declaration
+class YNetwork; // forward declaration
 
-typedef void (*YNetworkUpdateCallback)(YNetwork *func, const string& functionValue);
+typedef void (*YNetworkValueCallback)(YNetwork *func, const string& functionValue);
+#ifndef _Y_READINESS_ENUM
+#define _Y_READINESS_ENUM
 typedef enum {
     Y_READINESS_DOWN = 0,
     Y_READINESS_EXISTS = 1,
@@ -60,20 +62,29 @@ typedef enum {
     Y_READINESS_WWW_OK = 4,
     Y_READINESS_INVALID = -1,
 } Y_READINESS_enum;
+#endif
 
+#ifndef _Y_DISCOVERABLE_ENUM
+#define _Y_DISCOVERABLE_ENUM
 typedef enum {
     Y_DISCOVERABLE_FALSE = 0,
     Y_DISCOVERABLE_TRUE = 1,
     Y_DISCOVERABLE_INVALID = -1,
 } Y_DISCOVERABLE_enum;
+#endif
 
+#ifndef _Y_CALLBACKMETHOD_ENUM
+#define _Y_CALLBACKMETHOD_ENUM
 typedef enum {
     Y_CALLBACKMETHOD_POST = 0,
     Y_CALLBACKMETHOD_GET = 1,
     Y_CALLBACKMETHOD_PUT = 2,
     Y_CALLBACKMETHOD_INVALID = -1,
 } Y_CALLBACKMETHOD_enum;
+#endif
 
+#ifndef _Y_CALLBACKENCODING_ENUM
+#define _Y_CALLBACKENCODING_ENUM
 typedef enum {
     Y_CALLBACKENCODING_FORM = 0,
     Y_CALLBACKENCODING_JSON = 1,
@@ -82,24 +93,23 @@ typedef enum {
     Y_CALLBACKENCODING_YOCTO_API = 4,
     Y_CALLBACKENCODING_INVALID = -1,
 } Y_CALLBACKENCODING_enum;
+#endif
 
-#define Y_LOGICALNAME_INVALID           (YAPI::INVALID_STRING)
-#define Y_ADVERTISEDVALUE_INVALID       (YAPI::INVALID_STRING)
-#define Y_MACADDRESS_INVALID            (YAPI::INVALID_STRING)
-#define Y_IPADDRESS_INVALID             (YAPI::INVALID_STRING)
-#define Y_SUBNETMASK_INVALID            (YAPI::INVALID_STRING)
-#define Y_ROUTER_INVALID                (YAPI::INVALID_STRING)
-#define Y_IPCONFIG_INVALID              (YAPI::INVALID_STRING)
-#define Y_PRIMARYDNS_INVALID            (YAPI::INVALID_STRING)
-#define Y_SECONDARYDNS_INVALID          (YAPI::INVALID_STRING)
-#define Y_USERPASSWORD_INVALID          (YAPI::INVALID_STRING)
-#define Y_ADMINPASSWORD_INVALID         (YAPI::INVALID_STRING)
-#define Y_WWWWATCHDOGDELAY_INVALID      (0xffffffff)
-#define Y_CALLBACKURL_INVALID           (YAPI::INVALID_STRING)
-#define Y_CALLBACKCREDENTIALS_INVALID   (YAPI::INVALID_STRING)
-#define Y_CALLBACKMINDELAY_INVALID      (0xffffffff)
-#define Y_CALLBACKMAXDELAY_INVALID      (0xffffffff)
-#define Y_POECURRENT_INVALID            (0xffffffff)
+#define Y_MACADDRESS_INVALID            (YAPI_INVALID_STRING)
+#define Y_IPADDRESS_INVALID             (YAPI_INVALID_STRING)
+#define Y_SUBNETMASK_INVALID            (YAPI_INVALID_STRING)
+#define Y_ROUTER_INVALID                (YAPI_INVALID_STRING)
+#define Y_IPCONFIG_INVALID              (YAPI_INVALID_STRING)
+#define Y_PRIMARYDNS_INVALID            (YAPI_INVALID_STRING)
+#define Y_SECONDARYDNS_INVALID          (YAPI_INVALID_STRING)
+#define Y_USERPASSWORD_INVALID          (YAPI_INVALID_STRING)
+#define Y_ADMINPASSWORD_INVALID         (YAPI_INVALID_STRING)
+#define Y_WWWWATCHDOGDELAY_INVALID      (YAPI_INVALID_UINT)
+#define Y_CALLBACKURL_INVALID           (YAPI_INVALID_STRING)
+#define Y_CALLBACKCREDENTIALS_INVALID   (YAPI_INVALID_STRING)
+#define Y_CALLBACKMINDELAY_INVALID      (YAPI_INVALID_UINT)
+#define Y_CALLBACKMAXDELAY_INVALID      (YAPI_INVALID_UINT)
+#define Y_POECURRENT_INVALID            (YAPI_INVALID_UINT)
 //--- (end of YNetwork definitions)
 
 //--- (YNetwork declaration)
@@ -109,12 +119,11 @@ typedef enum {
  * YNetwork objects provide access to TCP/IP parameters of Yoctopuce
  * modules that include a built-in network interface.
  */
-class YNetwork: public YFunction {
+class YOCTO_CLASS_EXPORT YNetwork: public YFunction {
+//--- (end of YNetwork declaration)
 protected:
+    //--- (YNetwork attributes)
     // Attributes (function value cache)
-    YNetworkUpdateCallback _callback;
-    string          _logicalName;
-    string          _advertisedValue;
     Y_READINESS_enum _readiness;
     string          _macAddress;
     string          _ipAddress;
@@ -126,35 +135,30 @@ protected:
     string          _userPassword;
     string          _adminPassword;
     Y_DISCOVERABLE_enum _discoverable;
-    unsigned        _wwwWatchdogDelay;
+    int             _wwwWatchdogDelay;
     string          _callbackUrl;
     Y_CALLBACKMETHOD_enum _callbackMethod;
     Y_CALLBACKENCODING_enum _callbackEncoding;
     string          _callbackCredentials;
-    unsigned        _callbackMinDelay;
-    unsigned        _callbackMaxDelay;
-    unsigned        _poeCurrent;
+    int             _callbackMinDelay;
+    int             _callbackMaxDelay;
+    int             _poeCurrent;
+    YNetworkValueCallback _valueCallbackNetwork;
 
     friend YNetwork *yFindNetwork(const string& func);
     friend YNetwork *yFirstNetwork(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    int             _parse(yJsonStateMachine& j);
-    //--- (end of YNetwork declaration)
+    virtual int     _parseAttr(yJsonStateMachine& j);
 
-    //--- (YNetwork constructor)
     // Constructor is protected, use yFindNetwork factory function to instantiate
     YNetwork(const string& func);
-    //--- (end of YNetwork constructor)
-    //--- (Network initialization)
-    //--- (end of Network initialization)
+    //--- (end of YNetwork attributes)
 
 public:
     ~YNetwork();
     //--- (YNetwork accessors declaration)
 
-    static const string LOGICALNAME_INVALID;
-    static const string ADVERTISEDVALUE_INVALID;
     static const Y_READINESS_enum READINESS_DOWN = Y_READINESS_DOWN;
     static const Y_READINESS_enum READINESS_EXISTS = Y_READINESS_EXISTS;
     static const Y_READINESS_enum READINESS_LINKED = Y_READINESS_LINKED;
@@ -173,7 +177,7 @@ public:
     static const Y_DISCOVERABLE_enum DISCOVERABLE_FALSE = Y_DISCOVERABLE_FALSE;
     static const Y_DISCOVERABLE_enum DISCOVERABLE_TRUE = Y_DISCOVERABLE_TRUE;
     static const Y_DISCOVERABLE_enum DISCOVERABLE_INVALID = Y_DISCOVERABLE_INVALID;
-    static const unsigned WWWWATCHDOGDELAY_INVALID = 0xffffffff;
+    static const int WWWWATCHDOGDELAY_INVALID = YAPI_INVALID_UINT;
     static const string CALLBACKURL_INVALID;
     static const Y_CALLBACKMETHOD_enum CALLBACKMETHOD_POST = Y_CALLBACKMETHOD_POST;
     static const Y_CALLBACKMETHOD_enum CALLBACKMETHOD_GET = Y_CALLBACKMETHOD_GET;
@@ -186,56 +190,15 @@ public:
     static const Y_CALLBACKENCODING_enum CALLBACKENCODING_YOCTO_API = Y_CALLBACKENCODING_YOCTO_API;
     static const Y_CALLBACKENCODING_enum CALLBACKENCODING_INVALID = Y_CALLBACKENCODING_INVALID;
     static const string CALLBACKCREDENTIALS_INVALID;
-    static const unsigned CALLBACKMINDELAY_INVALID = 0xffffffff;
-    static const unsigned CALLBACKMAXDELAY_INVALID = 0xffffffff;
-    static const unsigned POECURRENT_INVALID = 0xffffffff;
-
-    /**
-     * Returns the logical name of the network interface, corresponding to the network name of the module.
-     * 
-     * @return a string corresponding to the logical name of the network interface, corresponding to the
-     * network name of the module
-     * 
-     * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
-     */
-           string          get_logicalName(void);
-    inline string          logicalName(void)
-    { return this->get_logicalName(); }
-
-    /**
-     * Changes the logical name of the network interface, corresponding to the network name of the module.
-     * You can use yCheckLogicalName()
-     * prior to this call to make sure that your parameter is valid.
-     * Remember to call the saveToFlash() method of the module if the
-     * modification must be kept.
-     * 
-     * @param newval : a string corresponding to the logical name of the network interface, corresponding
-     * to the network name of the module
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_logicalName(const string& newval);
-    inline int      setLogicalName(const string& newval)
-    { return this->set_logicalName(newval); }
-
-    /**
-     * Returns the current value of the network interface (no more than 6 characters).
-     * 
-     * @return a string corresponding to the current value of the network interface (no more than 6 characters)
-     * 
-     * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
-     */
-           string          get_advertisedValue(void);
-    inline string          advertisedValue(void)
-    { return this->get_advertisedValue(); }
+    static const int CALLBACKMINDELAY_INVALID = YAPI_INVALID_UINT;
+    static const int CALLBACKMAXDELAY_INVALID = YAPI_INVALID_UINT;
+    static const int POECURRENT_INVALID = YAPI_INVALID_UINT;
 
     /**
      * Returns the current established working mode of the network interface.
      * Level zero (DOWN_0) means that no hardware link has been detected. Either there is no signal
      * on the network cable, or the selected wireless access point cannot be detected.
-     * Level 1 (LIVE_1) is reached when the network is detected, but is not yet connected,
+     * Level 1 (LIVE_1) is reached when the network is detected, but is not yet connected.
      * For a wireless network, this shows that the requested SSID is present.
      * Level 2 (LINK_2) is reached when the hardware connection is established.
      * For a wired network connection, level 2 means that the cable is attached at both ends.
@@ -252,7 +215,8 @@ public:
      * 
      * On failure, throws an exception or returns Y_READINESS_INVALID.
      */
-           Y_READINESS_enum get_readiness(void);
+    Y_READINESS_enum    get_readiness(void);
+
     inline Y_READINESS_enum readiness(void)
     { return this->get_readiness(); }
 
@@ -264,20 +228,22 @@ public:
      * 
      * On failure, throws an exception or returns Y_MACADDRESS_INVALID.
      */
-           string          get_macAddress(void);
-    inline string          macAddress(void)
+    string              get_macAddress(void);
+
+    inline string       macAddress(void)
     { return this->get_macAddress(); }
 
     /**
-     * Returns the IP address currently in use by the device. The adress may have been configured
+     * Returns the IP address currently in use by the device. The address may have been configured
      * statically, or provided by a DHCP server.
      * 
      * @return a string corresponding to the IP address currently in use by the device
      * 
      * On failure, throws an exception or returns Y_IPADDRESS_INVALID.
      */
-           string          get_ipAddress(void);
-    inline string          ipAddress(void)
+    string              get_ipAddress(void);
+
+    inline string       ipAddress(void)
     { return this->get_ipAddress(); }
 
     /**
@@ -287,8 +253,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_SUBNETMASK_INVALID.
      */
-           string          get_subnetMask(void);
-    inline string          subnetMask(void)
+    string              get_subnetMask(void);
+
+    inline string       subnetMask(void)
     { return this->get_subnetMask(); }
 
     /**
@@ -298,12 +265,14 @@ public:
      * 
      * On failure, throws an exception or returns Y_ROUTER_INVALID.
      */
-           string          get_router(void);
-    inline string          router(void)
+    string              get_router(void);
+
+    inline string       router(void)
     { return this->get_router(); }
 
-           string          get_ipConfig(void);
-    inline string          ipConfig(void)
+    string              get_ipConfig(void);
+
+    inline string       ipConfig(void)
     { return this->get_ipConfig(); }
 
     int             set_ipConfig(const string& newval);
@@ -348,8 +317,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_PRIMARYDNS_INVALID.
      */
-           string          get_primaryDNS(void);
-    inline string          primaryDNS(void)
+    string              get_primaryDNS(void);
+
+    inline string       primaryDNS(void)
     { return this->get_primaryDNS(); }
 
     /**
@@ -374,16 +344,17 @@ public:
      * 
      * On failure, throws an exception or returns Y_SECONDARYDNS_INVALID.
      */
-           string          get_secondaryDNS(void);
-    inline string          secondaryDNS(void)
+    string              get_secondaryDNS(void);
+
+    inline string       secondaryDNS(void)
     { return this->get_secondaryDNS(); }
 
     /**
-     * Changes the IP address of the secondarz name server to be used by the module.
+     * Changes the IP address of the secondary name server to be used by the module.
      * When using DHCP, if a value is specified, it overrides the value received from the DHCP server.
      * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
      * 
-     * @param newval : a string corresponding to the IP address of the secondarz name server to be used by the module
+     * @param newval : a string corresponding to the IP address of the secondary name server to be used by the module
      * 
      * @return YAPI_SUCCESS if the call succeeds.
      * 
@@ -402,8 +373,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_USERPASSWORD_INVALID.
      */
-           string          get_userPassword(void);
-    inline string          userPassword(void)
+    string              get_userPassword(void);
+
+    inline string       userPassword(void)
     { return this->get_userPassword(); }
 
     /**
@@ -432,8 +404,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_ADMINPASSWORD_INVALID.
      */
-           string          get_adminPassword(void);
-    inline string          adminPassword(void)
+    string              get_adminPassword(void);
+
+    inline string       adminPassword(void)
     { return this->get_adminPassword(); }
 
     /**
@@ -463,7 +436,8 @@ public:
      * 
      * On failure, throws an exception or returns Y_DISCOVERABLE_INVALID.
      */
-           Y_DISCOVERABLE_enum get_discoverable(void);
+    Y_DISCOVERABLE_enum get_discoverable(void);
+
     inline Y_DISCOVERABLE_enum discoverable(void)
     { return this->get_discoverable(); }
 
@@ -494,13 +468,14 @@ public:
      * 
      * On failure, throws an exception or returns Y_WWWWATCHDOGDELAY_INVALID.
      */
-           unsigned        get_wwwWatchdogDelay(void);
-    inline unsigned        wwwWatchdogDelay(void)
+    int                 get_wwwWatchdogDelay(void);
+
+    inline int          wwwWatchdogDelay(void)
     { return this->get_wwwWatchdogDelay(); }
 
     /**
      * Changes the allowed downtime of the WWW link (in seconds) before triggering an automated
-     * reboot to try to recover Internet connectivity. A zero value disable automated reboot
+     * reboot to try to recover Internet connectivity. A zero value disables automated reboot
      * in case of Internet connectivity loss. The smallest valid non-zero timeout is
      * 90 seconds.
      * 
@@ -512,8 +487,8 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             set_wwwWatchdogDelay(unsigned newval);
-    inline int      setWwwWatchdogDelay(unsigned newval)
+    int             set_wwwWatchdogDelay(int newval);
+    inline int      setWwwWatchdogDelay(int newval)
     { return this->set_wwwWatchdogDelay(newval); }
 
     /**
@@ -523,8 +498,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_CALLBACKURL_INVALID.
      */
-           string          get_callbackUrl(void);
-    inline string          callbackUrl(void)
+    string              get_callbackUrl(void);
+
+    inline string       callbackUrl(void)
     { return this->get_callbackUrl(); }
 
     /**
@@ -549,7 +525,8 @@ public:
      * 
      * On failure, throws an exception or returns Y_CALLBACKMETHOD_INVALID.
      */
-           Y_CALLBACKMETHOD_enum get_callbackMethod(void);
+    Y_CALLBACKMETHOD_enum get_callbackMethod(void);
+
     inline Y_CALLBACKMETHOD_enum callbackMethod(void)
     { return this->get_callbackMethod(); }
 
@@ -576,7 +553,8 @@ public:
      * 
      * On failure, throws an exception or returns Y_CALLBACKENCODING_INVALID.
      */
-           Y_CALLBACKENCODING_enum get_callbackEncoding(void);
+    Y_CALLBACKENCODING_enum get_callbackEncoding(void);
+
     inline Y_CALLBACKENCODING_enum callbackEncoding(void)
     { return this->get_callbackEncoding(); }
 
@@ -604,8 +582,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_CALLBACKCREDENTIALS_INVALID.
      */
-           string          get_callbackCredentials(void);
-    inline string          callbackCredentials(void)
+    string              get_callbackCredentials(void);
+
+    inline string       callbackCredentials(void)
     { return this->get_callbackCredentials(); }
 
     /**
@@ -651,8 +630,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_CALLBACKMINDELAY_INVALID.
      */
-           unsigned        get_callbackMinDelay(void);
-    inline unsigned        callbackMinDelay(void)
+    int                 get_callbackMinDelay(void);
+
+    inline int          callbackMinDelay(void)
     { return this->get_callbackMinDelay(); }
 
     /**
@@ -665,8 +645,8 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             set_callbackMinDelay(unsigned newval);
-    inline int      setCallbackMinDelay(unsigned newval)
+    int             set_callbackMinDelay(int newval);
+    inline int      setCallbackMinDelay(int newval)
     { return this->set_callbackMinDelay(newval); }
 
     /**
@@ -676,8 +656,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_CALLBACKMAXDELAY_INVALID.
      */
-           unsigned        get_callbackMaxDelay(void);
-    inline unsigned        callbackMaxDelay(void)
+    int                 get_callbackMaxDelay(void);
+
+    inline int          callbackMaxDelay(void)
     { return this->get_callbackMaxDelay(); }
 
     /**
@@ -690,8 +671,8 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             set_callbackMaxDelay(unsigned newval);
-    inline int      setCallbackMaxDelay(unsigned newval)
+    int             set_callbackMaxDelay(int newval);
+    inline int      setCallbackMaxDelay(int newval)
     { return this->set_callbackMaxDelay(newval); }
 
     /**
@@ -704,47 +685,10 @@ public:
      * 
      * On failure, throws an exception or returns Y_POECURRENT_INVALID.
      */
-           unsigned        get_poeCurrent(void);
-    inline unsigned        poeCurrent(void)
+    int                 get_poeCurrent(void);
+
+    inline int          poeCurrent(void)
     { return this->get_poeCurrent(); }
-
-    /**
-     * Pings str_host to test the network connectivity. Sends four requests ICMP ECHO_REQUEST from the
-     * module to the target str_host. This method returns a string with the result of the
-     * 4 ICMP ECHO_REQUEST result.
-     * 
-     * @param host : the hostname or the IP address of the target
-     * 
-     * @return a string with the result of the ping.
-     */
-    string             ping(string host);
-
-
-    /**
-     * Registers the callback function that is invoked on every change of advertised value.
-     * The callback is invoked only during the execution of ySleep or yHandleEvents.
-     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
-     *         arguments: the function object of which the value has changed, and the character string describing
-     *         the new advertised value.
-     * @noreturn
-     */
-    void registerValueCallback(YNetworkUpdateCallback callback);
-
-    void advertiseValue(const string& value);
-
-    /**
-     * Continues the enumeration of network interfaces started using yFirstNetwork().
-     * 
-     * @return a pointer to a YNetwork object, corresponding to
-     *         a network interface currently online, or a null pointer
-     *         if there are no more network interfaces to enumerate.
-     */
-           YNetwork        *nextNetwork(void);
-    inline YNetwork        *next(void)
-    { return this->nextNetwork();}
 
     /**
      * Retrieves a network interface for a given identifier.
@@ -769,18 +713,51 @@ public:
      * 
      * @return a YNetwork object allowing you to drive the network interface.
      */
-           static YNetwork* FindNetwork(const string& func);
-    inline static YNetwork* Find(const string& func)
-    { return YNetwork::FindNetwork(func);}
+    static YNetwork*    FindNetwork(string func);
+
+    using YFunction::registerValueCallback;
+
     /**
-     * Starts the enumeration of network interfaces currently accessible.
-     * Use the method YNetwork.nextNetwork() to iterate on
-     * next network interfaces.
+     * Registers the callback function that is invoked on every change of advertised value.
+     * The callback is invoked only during the execution of ySleep or yHandleEvents.
+     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * 
+     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     *         arguments: the function object of which the value has changed, and the character string describing
+     *         the new advertised value.
+     * @noreturn
+     */
+    virtual int         registerValueCallback(YNetworkValueCallback callback);
+
+    virtual int         _invokeValueCallback(string value);
+
+    /**
+     * Pings str_host to test the network connectivity. Sends four ICMP ECHO_REQUEST requests from the
+     * module to the target str_host. This method returns a string with the result of the
+     * 4 ICMP ECHO_REQUEST requests.
+     * 
+     * @param host : the hostname or the IP address of the target
+     * 
+     * @return a string with the result of the ping.
+     */
+    virtual string      ping(string host);
+
+
+    inline static YNetwork* Find(string func)
+    { return YNetwork::FindNetwork(func); }
+
+    /**
+     * Continues the enumeration of network interfaces started using yFirstNetwork().
      * 
      * @return a pointer to a YNetwork object, corresponding to
-     *         the first network interface currently online, or a null pointer
-     *         if there are none.
+     *         a network interface currently online, or a null pointer
+     *         if there are no more network interfaces to enumerate.
      */
+           YNetwork        *nextNetwork(void);
+    inline YNetwork        *next(void)
+    { return this->nextNetwork();}
+
            static YNetwork* FirstNetwork(void);
     inline static YNetwork* First(void)
     { return YNetwork::FirstNetwork();}

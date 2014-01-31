@@ -13,7 +13,7 @@ static void usage(void)
     cout << "       demo any  [ color | rgb ]                (use any discovered device)" << endl;
     cout << "Eg." << endl;
     cout << "   demo any FF1493 " << endl;
-    cerr << "   demo YRGBLED1-123456 red" << endl;
+    cout << "   demo YRGBLED1-123456 red" << endl;
     u64 now = yGetTickCount();    // dirty active wait loop 
 	while (yGetTickCount()-now<3000);
     exit(1);

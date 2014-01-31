@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_oscontrol.h 12337 2013-08-14 15:22:22Z mvuilleu $
+ * $Id: yocto_oscontrol.h 14275 2014-01-09 14:20:38Z seb $
  *
  * Declares yFindOsControl(), the high-level API for OsControl functions
  *
@@ -46,15 +46,13 @@
 #include <cmath>
 #include <map>
 
-//--- (return codes)
-//--- (end of return codes)
+//--- (YOsControl return codes)
+//--- (end of YOsControl return codes)
 //--- (YOsControl definitions)
-class YOsControl; //forward declaration
+class YOsControl; // forward declaration
 
-typedef void (*YOsControlUpdateCallback)(YOsControl *func, const string& functionValue);
-#define Y_LOGICALNAME_INVALID           (YAPI::INVALID_STRING)
-#define Y_ADVERTISEDVALUE_INVALID       (YAPI::INVALID_STRING)
-#define Y_SHUTDOWNCOUNTDOWN_INVALID     (0xffffffff)
+typedef void (*YOsControlValueCallback)(YOsControl *func, const string& functionValue);
+#define Y_SHUTDOWNCOUNTDOWN_INVALID     (YAPI_INVALID_UINT)
 //--- (end of YOsControl definitions)
 
 //--- (YOsControl declaration)
@@ -65,74 +63,29 @@ typedef void (*YOsControlUpdateCallback)(YOsControl *func, const string& functio
  * OsControl is available on the VirtualHub software only. This feature must be activated at the VirtualHub
  * start up with -o option.
  */
-class YOsControl: public YFunction {
+class YOCTO_CLASS_EXPORT YOsControl: public YFunction {
+//--- (end of YOsControl declaration)
 protected:
+    //--- (YOsControl attributes)
     // Attributes (function value cache)
-    YOsControlUpdateCallback _callback;
-    string          _logicalName;
-    string          _advertisedValue;
-    unsigned        _shutdownCountdown;
+    int             _shutdownCountdown;
+    YOsControlValueCallback _valueCallbackOsControl;
 
     friend YOsControl *yFindOsControl(const string& func);
     friend YOsControl *yFirstOsControl(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    int             _parse(yJsonStateMachine& j);
-    //--- (end of YOsControl declaration)
+    virtual int     _parseAttr(yJsonStateMachine& j);
 
-    //--- (YOsControl constructor)
     // Constructor is protected, use yFindOsControl factory function to instantiate
     YOsControl(const string& func);
-    //--- (end of YOsControl constructor)
-    //--- (OsControl initialization)
-    //--- (end of OsControl initialization)
+    //--- (end of YOsControl attributes)
 
 public:
     ~YOsControl();
     //--- (YOsControl accessors declaration)
 
-    static const string LOGICALNAME_INVALID;
-    static const string ADVERTISEDVALUE_INVALID;
-    static const unsigned SHUTDOWNCOUNTDOWN_INVALID = 0xffffffff;
-
-    /**
-     * Returns the logical name of the OS control, corresponding to the network name of the module.
-     * 
-     * @return a string corresponding to the logical name of the OS control, corresponding to the network
-     * name of the module
-     * 
-     * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
-     */
-           string          get_logicalName(void);
-    inline string          logicalName(void)
-    { return this->get_logicalName(); }
-
-    /**
-     * Changes the logical name of the OS control. You can use yCheckLogicalName()
-     * prior to this call to make sure that your parameter is valid.
-     * Remember to call the saveToFlash() method of the module if the
-     * modification must be kept.
-     * 
-     * @param newval : a string corresponding to the logical name of the OS control
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_logicalName(const string& newval);
-    inline int      setLogicalName(const string& newval)
-    { return this->set_logicalName(newval); }
-
-    /**
-     * Returns the current value of the OS control (no more than 6 characters).
-     * 
-     * @return a string corresponding to the current value of the OS control (no more than 6 characters)
-     * 
-     * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
-     */
-           string          get_advertisedValue(void);
-    inline string          advertisedValue(void)
-    { return this->get_advertisedValue(); }
+    static const int SHUTDOWNCOUNTDOWN_INVALID = YAPI_INVALID_UINT;
 
     /**
      * Returns the remaining number of seconds before the OS shutdown, or zero when no
@@ -143,51 +96,14 @@ public:
      * 
      * On failure, throws an exception or returns Y_SHUTDOWNCOUNTDOWN_INVALID.
      */
-           unsigned        get_shutdownCountdown(void);
-    inline unsigned        shutdownCountdown(void)
+    int                 get_shutdownCountdown(void);
+
+    inline int          shutdownCountdown(void)
     { return this->get_shutdownCountdown(); }
 
-    int             set_shutdownCountdown(unsigned newval);
-    inline int      setShutdownCountdown(unsigned newval)
+    int             set_shutdownCountdown(int newval);
+    inline int      setShutdownCountdown(int newval)
     { return this->set_shutdownCountdown(newval); }
-
-    /**
-     * Schedules an OS shutdown after a given number of seconds.
-     * 
-     * @param secBeforeShutDown : number of seconds before shutdown
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             shutdown(int secBeforeShutDown);
-
-
-    /**
-     * Registers the callback function that is invoked on every change of advertised value.
-     * The callback is invoked only during the execution of ySleep or yHandleEvents.
-     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
-     *         arguments: the function object of which the value has changed, and the character string describing
-     *         the new advertised value.
-     * @noreturn
-     */
-    void registerValueCallback(YOsControlUpdateCallback callback);
-
-    void advertiseValue(const string& value);
-
-    /**
-     * Continues the enumeration of OS control started using yFirstOsControl().
-     * 
-     * @return a pointer to a YOsControl object, corresponding to
-     *         OS control currently online, or a null pointer
-     *         if there are no more OS control to enumerate.
-     */
-           YOsControl      *nextOsControl(void);
-    inline YOsControl      *next(void)
-    { return this->nextOsControl();}
 
     /**
      * Retrieves OS control for a given identifier.
@@ -212,18 +128,51 @@ public:
      * 
      * @return a YOsControl object allowing you to drive the OS control.
      */
-           static YOsControl* FindOsControl(const string& func);
-    inline static YOsControl* Find(const string& func)
-    { return YOsControl::FindOsControl(func);}
+    static YOsControl*  FindOsControl(string func);
+
+    using YFunction::registerValueCallback;
+
     /**
-     * Starts the enumeration of OS control currently accessible.
-     * Use the method YOsControl.nextOsControl() to iterate on
-     * next OS control.
+     * Registers the callback function that is invoked on every change of advertised value.
+     * The callback is invoked only during the execution of ySleep or yHandleEvents.
+     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * 
+     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     *         arguments: the function object of which the value has changed, and the character string describing
+     *         the new advertised value.
+     * @noreturn
+     */
+    virtual int         registerValueCallback(YOsControlValueCallback callback);
+
+    virtual int         _invokeValueCallback(string value);
+
+    /**
+     * Schedules an OS shutdown after a given number of seconds.
+     * 
+     * @param secBeforeShutDown : number of seconds before shutdown
+     * 
+     * @return YAPI_SUCCESS when the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         shutdown(int secBeforeShutDown);
+
+
+    inline static YOsControl* Find(string func)
+    { return YOsControl::FindOsControl(func); }
+
+    /**
+     * Continues the enumeration of OS control started using yFirstOsControl().
      * 
      * @return a pointer to a YOsControl object, corresponding to
-     *         the first OS control currently online, or a null pointer
-     *         if there are none.
+     *         OS control currently online, or a null pointer
+     *         if there are no more OS control to enumerate.
      */
+           YOsControl      *nextOsControl(void);
+    inline YOsControl      *next(void)
+    { return this->nextOsControl();}
+
            static YOsControl* FirstOsControl(void);
     inline static YOsControl* First(void)
     { return YOsControl::FirstOsControl();}

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 12321 2013-08-13 14:56:24Z mvuilleu $
+ * $Id: ydef.h 14711 2014-01-24 14:56:44Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -249,6 +249,10 @@ typedef struct{
 
 #ifdef DEBUG_CRITICAL_SECTION
 
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <WinBase.h>
+
 typedef enum  {
     YCS_UNALLOCATED=0,
     YCS_ALLOCATED=1,
@@ -277,9 +281,15 @@ typedef struct {
     volatile u32                 no;
     volatile YCS_STATE           state;
     volatile int                 lock;
-    pthread_mutex_t     cs;
+#if defined(WINDOWS_API)
+    CRITICAL_SECTION             cs;
+#else
+    pthread_mutex_t              cs;
+#endif
     YCS_LOC             last_actions[YCS_NB_TRACE];
-} yCRITICAL_SECTION;
+} yCRITICAL_SECTION_ST;
+
+typedef yCRITICAL_SECTION_ST* yCRITICAL_SECTION;
 
 
 void yDbgInitializeCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION *cs);
@@ -294,35 +304,25 @@ void yDbgDeleteCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION
 #define yLeaveCriticalSection(cs)       yDbgLeaveCriticalSection(__FILE_ID__,__LINE__,cs)
 #define yDeleteCriticalSection(cs)      yDbgDeleteCriticalSection(__FILE_ID__,__LINE__,cs)
 
-#elif defined(MICROCHIP_API)
-
+#else
+#if defined(MICROCHIP_API)
 #define yCRITICAL_SECTION               u8
 #define yInitializeCriticalSection(cs)
 #define yEnterCriticalSection(cs)
 #define yTryEnterCriticalSection(cs)    1
 #define yLeaveCriticalSection(cs)
 #define yDeleteCriticalSection(cs)
+#else 
 
-#elif defined(WINDOWS_API)
-
-#define yCRITICAL_SECTION               CRITICAL_SECTION
-#define yInitializeCriticalSection(cs)  InitializeCriticalSection(cs)
-#define yEnterCriticalSection(cs)       EnterCriticalSection(cs)
-#define yTryEnterCriticalSection(cs)    TryEnterCriticalSection(cs)
-#define yLeaveCriticalSection(cs)       LeaveCriticalSection(cs)
-#define yDeleteCriticalSection(cs)      DeleteCriticalSection(cs)
-
-#else
-typedef struct {
-    pthread_mutex_t     *mutex_ptr;
-} yCRITICAL_SECTION;
-
+typedef void* yCRITICAL_SECTION;
 void yInitializeCriticalSection(yCRITICAL_SECTION *cs);
 void yEnterCriticalSection(yCRITICAL_SECTION *cs);
 int yTryEnterCriticalSection(yCRITICAL_SECTION *cs);
 void yLeaveCriticalSection(yCRITICAL_SECTION *cs);
 void yDeleteCriticalSection(yCRITICAL_SECTION *cs);
 #endif
+#endif
+
 
 typedef enum {
     YAPI_SUCCESS          = 0,      // everything worked allright
@@ -344,8 +344,8 @@ typedef enum {
 #define YISERR(retcode)   ((retcode) < 0)
 
 // Yoctopuce arbitrary constants
-#define YOCTO_API_VERSION_STR       "1.01"
-#define YOCTO_API_VERSION_BCD       0x0101
+#define YOCTO_API_VERSION_STR       "1.10"
+#define YOCTO_API_VERSION_BCD       0x0110
 #include "yversion.h"
 #define YOCTO_DEFAULT_PORT          4444
 #define YOCTO_VENDORID              0x24e0
@@ -353,7 +353,12 @@ typedef enum {
 #define YOCTO_DEVID_BOOTLOADER      2
 #define YOCTO_DEVID_HIGHEST         0xfefe
 
-// standard buffer sizes
+// Known baseclases
+#define YOCTO_AKA_YFUNCTION         0
+#define YOCTO_AKA_YSENSOR           1
+#define YOCTO_N_BASECLASSES         2
+
+// Standard buffer sizes
 #define YOCTO_ERRMSG_LEN            256
 #define YOCTO_MANUFACTURER_LEN      20
 #define YOCTO_SERIAL_LEN            20
@@ -365,6 +370,11 @@ typedef enum {
 #define YOCTO_UNIT_LEN              10
 #define YOCTO_PUBVAL_SIZE            6 // Size of the data (can be non null terminated)
 #define YOCTO_PUBVAL_LEN            16 // Temporary storage, >= YOCTO_PUBVAL_SIZE+2
+#define YOCTO_REPORT_LEN             9 // Max size of a timed report, including isAvg flag
+    
+// User-defined flash area (used for calibration)
+#define USERFLASH_WORDS 11
+typedef u16 UserFlash[USERFLASH_WORDS];
 
 // firmware description
 typedef union {
@@ -396,14 +406,8 @@ typedef struct {
 #pragma pack(push,1)
 #endif
 
-
 #define USB_PKT_SIZE            64
-#define YPKT_USB_VERSION_BCD    0x0205
-
-
-#define YPKT_STREAM             0
-#define YPKT_CONF               1
-
+#define YPKT_USB_VERSION_BCD    0x0206
 
 #define TO_SAFE_U16(safe,unsafe)        {(safe).low = (unsafe)&0xff; (safe).high=(unsafe)>>8;}
 #define FROM_SAFE_U16(safe,unsafe)      {(unsafe) = (safe).low |((u16)((safe).high)<<8);}
@@ -413,13 +417,6 @@ typedef struct {
     u8 high;
 } SAFE_U16;
 
-
-#define YSTREAM_EMPTY       0
-#define YSTREAM_TCP         1
-#define YSTREAM_TCP_CLOSE   2
-#define YSTREAM_NOTICE      3
-
-
 #define YPKTNOMSK   (0x7)
 typedef struct {
     u8 pktno    : 3;
@@ -427,6 +424,13 @@ typedef struct {
     u8 pkt      : 2;
     u8 size     : 6;
 } YSTREAM_Head;
+
+#define YPKT_STREAM         0
+#define YPKT_CONF           1
+
+//
+// YPKT_CONF packets format
+//
 
 #define USB_CONF_RESET      0
 #define USB_CONF_START      1
@@ -447,6 +451,19 @@ typedef union{
         u8  nbmissing;
     }retry;
 } USB_Conf_Pkt;
+
+//
+// YPKT_STREAM packets can encompass multiple streams
+//
+
+#define YSTREAM_EMPTY       0
+#define YSTREAM_TCP         1
+#define YSTREAM_TCP_CLOSE   2
+#define YSTREAM_NOTICE      3
+#define YSTREAM_REPORT      4
+#define YSTREAM_META        5
+
+// Data in YSTREAM_NOTICE stream
 
 #define NOTIFY_1STBYTE_MAXTINY  63  
 #define NOTIFY_1STBYTE_MINSMALL 128
@@ -516,7 +533,8 @@ typedef struct {
 }Notification_funcval;
 
 typedef struct {
-    char        funcid[YOCTO_FUNCTION_LEN];
+    char        funcidshort[YOCTO_FUNCTION_LEN-1];
+    u8          funclass;       // 0..YOCTO_N_BASECLASSES-1
     char        funcname[YOCTO_LOGICAL_LEN];
     u8          funydx;
 }Notification_funcnameydx;
@@ -549,7 +567,9 @@ typedef union {
 #define NOTIFY_NETPKT_STREAMREADY '6'
 #define NOTIFY_NETPKT_LOG         '7'
 #define NOTIFY_NETPKT_FUNCNAMEYDX '8'
+#define NOTIFY_NETPKT_TIMEVALYDX  'x'
 #define NOTIFY_NETPKT_FUNCVALYDX  'y'
+#define NOTIFY_NETPKT_TIMEAVGYDX  'z'
 #define NOTIFY_NETPKT_NOT_SYNC    '@'
 
 #define NOTIFY_NETPKT_VERSION   "01"
@@ -570,12 +590,52 @@ typedef union {
 #define NOTIFY_PKT_FUNCNAMEYDX_LEN      (sizeof(Notification_header) + sizeof(Notification_funcnameydx))
 #define NOTIFY_PKT_TINYVAL_MAXLEN       (sizeof(Notification_tiny) + YOCTO_PUBVAL_SIZE)
 
-// DEFINITION OF PUBLIC FLASH STORAGE
-#define USERFLASH_WORDS 11
-typedef u16 UserFlash[USERFLASH_WORDS];
-typedef UserFlash *UserFlashRef;
+// Data in YSTREAM_REPORT stream
+//
+// Reports are always first in a packet, which
+// makes it easy to filter packets that contain
+// reports only, and interpret them as fixed offsets
 
-// DEFINITION OF PROGAMING PACKET AND COMMAND SENT OVER USB
+typedef struct {
+    union {
+      struct {
+        u8  funYdx:4;   // (LOWEST NIBBLE) function index on device, 0xf==timestamp
+        u8  extraLen:3; // Number of extra data bytes in addition to first one
+        u8  isAvg:1;    // (HIGHEST BIT) 0:one immediate value (1-4 bytes), 1:min/avg/max (2+4+2 bytes)
+      };
+      u8    head;
+    };
+    u8  data[1];        // Payload itself (numbers in little-endian format)
+} USB_Report_Pkt;
+
+// Data in YSTREAM_META stream
+
+#define USB_META_UTCTIME   1
+#define USB_META_DLFLUSH   2
+
+typedef union {
+    struct {
+        u8  metaType;      // =USB_META_UTCTIME
+        u8  unixTime[4];   // actually a DWORD in little-endian format
+    } utcTime;
+    struct {
+        u8  metaType;      // =USB_META_DLFLUSH (flush datalogger)
+    } dlFlush;
+} USB_Meta_Pkt;
+
+//
+// SSDP global definitions for hubs
+//
+
+#define YSSDP_PORT 1900
+#define YSSDP_MCAST_ADDR_STR  "239.255.255.250"
+#define YSSDP_MCAST_ADDR (0xFAFFFFEF)
+#define YSSDP_URN_YOCTOPUCE "urn:yoctopuce-com:device:hub:1"
+
+
+//
+// PROG packets are only used in bootloader (USB DeviceID=0001/0002)
+//
 
 #define PROG_NOP         0 // nothing to do
 #define PROG_REBOOT      1 // reset the device
@@ -590,7 +650,7 @@ typedef UserFlash *UserFlashRef;
 
 #define ERASE_BLOCK_SIZE_INSTR      512               // the minimal erase size in nb instr
 #define PROGRAM_BLOCK_SIZE_INSTR    64                // the minimal program size in nb instr
-//defins somme address in bytes too
+//define some addresses in bytes too
 #define ERASE_BLOCK_SIZE_BADDR      (ERASE_BLOCK_SIZE_INSTR*2)
 #define PROGRAM_BLOCK_SIZE_BADDR    (PROGRAM_BLOCK_SIZE_INSTR*2)
 

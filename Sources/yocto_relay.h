@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_relay.h 12324 2013-08-13 15:10:31Z mvuilleu $
+ * $Id: yocto_relay.h 14275 2014-01-09 14:20:38Z seb $
  *
  * Declares yFindRelay(), the high-level API for Relay functions
  *
@@ -46,40 +46,61 @@
 #include <cmath>
 #include <map>
 
-//--- (return codes)
-//--- (end of return codes)
+//--- (YRelay return codes)
+//--- (end of YRelay return codes)
 //--- (YRelay definitions)
-class YRelay; //forward declaration
+class YRelay; // forward declaration
 
-typedef void (*YRelayUpdateCallback)(YRelay *func, const string& functionValue);
+typedef void (*YRelayValueCallback)(YRelay *func, const string& functionValue);
+#ifndef _Y_STATE_ENUM
+#define _Y_STATE_ENUM
 typedef enum {
     Y_STATE_A = 0,
     Y_STATE_B = 1,
     Y_STATE_INVALID = -1,
 } Y_STATE_enum;
+#endif
 
+#ifndef _Y_STATEATPOWERON_ENUM
+#define _Y_STATEATPOWERON_ENUM
+typedef enum {
+    Y_STATEATPOWERON_UNCHANGED = 0,
+    Y_STATEATPOWERON_A = 1,
+    Y_STATEATPOWERON_B = 2,
+    Y_STATEATPOWERON_INVALID = -1,
+} Y_STATEATPOWERON_enum;
+#endif
+
+#ifndef _Y_OUTPUT_ENUM
+#define _Y_OUTPUT_ENUM
 typedef enum {
     Y_OUTPUT_OFF = 0,
     Y_OUTPUT_ON = 1,
     Y_OUTPUT_INVALID = -1,
 } Y_OUTPUT_enum;
+#endif
 
 #ifndef _CLASS_YDELAYEDPULSE
 #define _CLASS_YDELAYEDPULSE
-class YDelayedPulse {
+class YOCTO_CLASS_EXPORT YDelayedPulse {
 public:
-    s32             target;
-    s32             ms;
-    u8              moving;
-    YDelayedPulse() {}
+    int             target;
+    int             ms;
+    int             moving;
+
+    YDelayedPulse()
+        :target(YAPI_INVALID_INT), ms(YAPI_INVALID_INT), moving(YAPI_INVALID_UINT)
+    {}
+
+    bool operator==(const YDelayedPulse& o) const {
+         return (target == o.target) && (ms == o.ms) && (moving == o.moving);
+    }
 };
 #endif
-extern YDelayedPulse YRELAY_INVALID_DELAYEDPULSE;
-#define Y_LOGICALNAME_INVALID           (YAPI::INVALID_STRING)
-#define Y_ADVERTISEDVALUE_INVALID       (YAPI::INVALID_STRING)
-#define Y_PULSETIMER_INVALID            (0xffffffff)
-#define Y_DELAYEDPULSETIMER_INVALID     (&YRELAY_INVALID_DELAYEDPULSE)
-#define Y_COUNTDOWN_INVALID             (0xffffffff)
+#define Y_MAXTIMEONSTATEA_INVALID       (YAPI_INVALID_LONG)
+#define Y_MAXTIMEONSTATEB_INVALID       (YAPI_INVALID_LONG)
+#define Y_PULSETIMER_INVALID            (YAPI_INVALID_LONG)
+#define Y_COUNTDOWN_INVALID             (YAPI_INVALID_LONG)
 //--- (end of YRelay definitions)
 
 //--- (YRelay declaration)
@@ -94,84 +115,50 @@ extern YDelayedPulse YRELAY_INVALID_DELAYEDPULSE;
  * with output A corresponding to the idle position (at power off) and the output B corresponding to the
  * active state. If you prefer the alternate default state, simply switch your cables on the board.
  */
-class YRelay: public YFunction {
+class YOCTO_CLASS_EXPORT YRelay: public YFunction {
+//--- (end of YRelay declaration)
 protected:
+    //--- (YRelay attributes)
     // Attributes (function value cache)
-    YRelayUpdateCallback _callback;
-    string          _logicalName;
-    string          _advertisedValue;
     Y_STATE_enum    _state;
+    Y_STATEATPOWERON_enum _stateAtPowerOn;
+    s64             _maxTimeOnStateA;
+    s64             _maxTimeOnStateB;
     Y_OUTPUT_enum   _output;
-    unsigned        _pulseTimer;
+    s64             _pulseTimer;
     YDelayedPulse   _delayedPulseTimer;
-    unsigned        _countdown;
+    s64             _countdown;
+    YRelayValueCallback _valueCallbackRelay;
 
     friend YRelay *yFindRelay(const string& func);
     friend YRelay *yFirstRelay(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    int             _parse(yJsonStateMachine& j);
-    //--- (end of YRelay declaration)
+    virtual int     _parseAttr(yJsonStateMachine& j);
 
-    //--- (YRelay constructor)
     // Constructor is protected, use yFindRelay factory function to instantiate
     YRelay(const string& func);
-    //--- (end of YRelay constructor)
-    //--- (Relay initialization)
-    //--- (end of Relay initialization)
+    //--- (end of YRelay attributes)
 
 public:
     ~YRelay();
     //--- (YRelay accessors declaration)
 
-    static const string LOGICALNAME_INVALID;
-    static const string ADVERTISEDVALUE_INVALID;
     static const Y_STATE_enum STATE_A = Y_STATE_A;
     static const Y_STATE_enum STATE_B = Y_STATE_B;
     static const Y_STATE_enum STATE_INVALID = Y_STATE_INVALID;
+    static const Y_STATEATPOWERON_enum STATEATPOWERON_UNCHANGED = Y_STATEATPOWERON_UNCHANGED;
+    static const Y_STATEATPOWERON_enum STATEATPOWERON_A = Y_STATEATPOWERON_A;
+    static const Y_STATEATPOWERON_enum STATEATPOWERON_B = Y_STATEATPOWERON_B;
+    static const Y_STATEATPOWERON_enum STATEATPOWERON_INVALID = Y_STATEATPOWERON_INVALID;
+    static const s64 MAXTIMEONSTATEA_INVALID = YAPI_INVALID_LONG;
+    static const s64 MAXTIMEONSTATEB_INVALID = YAPI_INVALID_LONG;
     static const Y_OUTPUT_enum OUTPUT_OFF = Y_OUTPUT_OFF;
     static const Y_OUTPUT_enum OUTPUT_ON = Y_OUTPUT_ON;
     static const Y_OUTPUT_enum OUTPUT_INVALID = Y_OUTPUT_INVALID;
-    static const unsigned PULSETIMER_INVALID = 0xffffffff;
-    static const unsigned COUNTDOWN_INVALID = 0xffffffff;
-
-    /**
-     * Returns the logical name of the relay.
-     * 
-     * @return a string corresponding to the logical name of the relay
-     * 
-     * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
-     */
-           string          get_logicalName(void);
-    inline string          logicalName(void)
-    { return this->get_logicalName(); }
-
-    /**
-     * Changes the logical name of the relay. You can use yCheckLogicalName()
-     * prior to this call to make sure that your parameter is valid.
-     * Remember to call the saveToFlash() method of the module if the
-     * modification must be kept.
-     * 
-     * @param newval : a string corresponding to the logical name of the relay
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_logicalName(const string& newval);
-    inline int      setLogicalName(const string& newval)
-    { return this->set_logicalName(newval); }
-
-    /**
-     * Returns the current value of the relay (no more than 6 characters).
-     * 
-     * @return a string corresponding to the current value of the relay (no more than 6 characters)
-     * 
-     * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
-     */
-           string          get_advertisedValue(void);
-    inline string          advertisedValue(void)
-    { return this->get_advertisedValue(); }
+    static const s64 PULSETIMER_INVALID = YAPI_INVALID_LONG;
+    static const YDelayedPulse DELAYEDPULSETIMER_INVALID;
+    static const s64 COUNTDOWN_INVALID = YAPI_INVALID_LONG;
 
     /**
      * Returns the state of the relays (A for the idle position, B for the active position).
@@ -181,8 +168,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_STATE_INVALID.
      */
-           Y_STATE_enum    get_state(void);
-    inline Y_STATE_enum    state(void)
+    Y_STATE_enum        get_state(void);
+
+    inline Y_STATE_enum state(void)
     { return this->get_state(); }
 
     /**
@@ -200,6 +188,90 @@ public:
     { return this->set_state(newval); }
 
     /**
+     * Returns the state of the relays at device startup (A for the idle position, B for the active
+     * position, UNCHANGED for no change).
+     * 
+     * @return a value among Y_STATEATPOWERON_UNCHANGED, Y_STATEATPOWERON_A and Y_STATEATPOWERON_B
+     * corresponding to the state of the relays at device startup (A for the idle position, B for the
+     * active position, UNCHANGED for no change)
+     * 
+     * On failure, throws an exception or returns Y_STATEATPOWERON_INVALID.
+     */
+    Y_STATEATPOWERON_enum get_stateAtPowerOn(void);
+
+    inline Y_STATEATPOWERON_enum stateAtPowerOn(void)
+    { return this->get_stateAtPowerOn(); }
+
+    /**
+     * Preset the state of the relays at device startup (A for the idle position,
+     * B for the active position, UNCHANGED for no modification). Remember to call the matching module saveToFlash()
+     * method, otherwise this call will have no effect.
+     * 
+     * @param newval : a value among Y_STATEATPOWERON_UNCHANGED, Y_STATEATPOWERON_A and Y_STATEATPOWERON_B
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_stateAtPowerOn(Y_STATEATPOWERON_enum newval);
+    inline int      setStateAtPowerOn(Y_STATEATPOWERON_enum newval)
+    { return this->set_stateAtPowerOn(newval); }
+
+    /**
+     * Retourne the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state A before automatically
+     * switching back in to B state. Zero means no maximum time.
+     * 
+     * @return an integer
+     * 
+     * On failure, throws an exception or returns Y_MAXTIMEONSTATEA_INVALID.
+     */
+    s64                 get_maxTimeOnStateA(void);
+
+    inline s64          maxTimeOnStateA(void)
+    { return this->get_maxTimeOnStateA(); }
+
+    /**
+     * Sets the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state A before automatically
+     * switching back in to B state. Use zero for no maximum time.
+     * 
+     * @param newval : an integer
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_maxTimeOnStateA(s64 newval);
+    inline int      setMaxTimeOnStateA(s64 newval)
+    { return this->set_maxTimeOnStateA(newval); }
+
+    /**
+     * Retourne the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state B before automatically
+     * switching back in to A state. Zero means no maximum time.
+     * 
+     * @return an integer
+     * 
+     * On failure, throws an exception or returns Y_MAXTIMEONSTATEB_INVALID.
+     */
+    s64                 get_maxTimeOnStateB(void);
+
+    inline s64          maxTimeOnStateB(void)
+    { return this->get_maxTimeOnStateB(); }
+
+    /**
+     * Sets the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state B before automatically
+     * switching back in to A state. Use zero for no maximum time.
+     * 
+     * @param newval : an integer
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_maxTimeOnStateB(s64 newval);
+    inline int      setMaxTimeOnStateB(s64 newval)
+    { return this->set_maxTimeOnStateB(newval); }
+
+    /**
      * Returns the output state of the relays, when used as a simple switch (single throw).
      * 
      * @return either Y_OUTPUT_OFF or Y_OUTPUT_ON, according to the output state of the relays, when used
@@ -207,8 +279,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_OUTPUT_INVALID.
      */
-           Y_OUTPUT_enum   get_output(void);
-    inline Y_OUTPUT_enum   output(void)
+    Y_OUTPUT_enum       get_output(void);
+
+    inline Y_OUTPUT_enum output(void)
     { return this->get_output(); }
 
     /**
@@ -235,12 +308,13 @@ public:
      * 
      * On failure, throws an exception or returns Y_PULSETIMER_INVALID.
      */
-           unsigned        get_pulseTimer(void);
-    inline unsigned        pulseTimer(void)
+    s64                 get_pulseTimer(void);
+
+    inline s64          pulseTimer(void)
     { return this->get_pulseTimer(); }
 
-    int             set_pulseTimer(unsigned newval);
-    inline int      setPulseTimer(unsigned newval)
+    int             set_pulseTimer(s64 newval);
+    inline int      setPulseTimer(s64 newval)
     { return this->set_pulseTimer(newval); }
 
     /**
@@ -255,12 +329,13 @@ public:
      */
     int             pulse(int ms_duration);
 
-           const YDelayedPulse *get_delayedPulseTimer(void);
-    inline const YDelayedPulse *delayedPulseTimer(void)
+    YDelayedPulse       get_delayedPulseTimer(void);
+
+    inline YDelayedPulse delayedPulseTimer(void)
     { return this->get_delayedPulseTimer(); }
 
-    int             set_delayedPulseTimer(const YDelayedPulse * newval);
-    inline int      setDelayedPulseTimer(const YDelayedPulse * newval)
+    int             set_delayedPulseTimer(YDelayedPulse newval);
+    inline int      setDelayedPulseTimer(YDelayedPulse newval)
     { return this->set_delayedPulseTimer(newval); }
 
     /**
@@ -284,36 +359,10 @@ public:
      * 
      * On failure, throws an exception or returns Y_COUNTDOWN_INVALID.
      */
-           unsigned        get_countdown(void);
-    inline unsigned        countdown(void)
+    s64                 get_countdown(void);
+
+    inline s64          countdown(void)
     { return this->get_countdown(); }
-
-
-    /**
-     * Registers the callback function that is invoked on every change of advertised value.
-     * The callback is invoked only during the execution of ySleep or yHandleEvents.
-     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
-     *         arguments: the function object of which the value has changed, and the character string describing
-     *         the new advertised value.
-     * @noreturn
-     */
-    void registerValueCallback(YRelayUpdateCallback callback);
-
-    void advertiseValue(const string& value);
-
-    /**
-     * Continues the enumeration of relays started using yFirstRelay().
-     * 
-     * @return a pointer to a YRelay object, corresponding to
-     *         a relay currently online, or a null pointer
-     *         if there are no more relays to enumerate.
-     */
-           YRelay          *nextRelay(void);
-    inline YRelay          *next(void)
-    { return this->nextRelay();}
 
     /**
      * Retrieves a relay for a given identifier.
@@ -338,18 +387,40 @@ public:
      * 
      * @return a YRelay object allowing you to drive the relay.
      */
-           static YRelay* FindRelay(const string& func);
-    inline static YRelay* Find(const string& func)
-    { return YRelay::FindRelay(func);}
+    static YRelay*      FindRelay(string func);
+
+    using YFunction::registerValueCallback;
+
     /**
-     * Starts the enumeration of relays currently accessible.
-     * Use the method YRelay.nextRelay() to iterate on
-     * next relays.
+     * Registers the callback function that is invoked on every change of advertised value.
+     * The callback is invoked only during the execution of ySleep or yHandleEvents.
+     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * 
+     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     *         arguments: the function object of which the value has changed, and the character string describing
+     *         the new advertised value.
+     * @noreturn
+     */
+    virtual int         registerValueCallback(YRelayValueCallback callback);
+
+    virtual int         _invokeValueCallback(string value);
+
+
+    inline static YRelay* Find(string func)
+    { return YRelay::FindRelay(func); }
+
+    /**
+     * Continues the enumeration of relays started using yFirstRelay().
      * 
      * @return a pointer to a YRelay object, corresponding to
-     *         the first relay currently online, or a null pointer
-     *         if there are none.
+     *         a relay currently online, or a null pointer
+     *         if there are no more relays to enumerate.
      */
+           YRelay          *nextRelay(void);
+    inline YRelay          *next(void)
+    { return this->nextRelay();}
+
            static YRelay* FirstRelay(void);
     inline static YRelay* First(void)
     { return YRelay::FirstRelay();}

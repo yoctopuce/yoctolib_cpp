@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 12326 2013-08-13 15:52:20Z mvuilleu $
+ * $Id: yocto_display.cpp 14700 2014-01-23 15:40:44Z seb $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -99,8 +99,7 @@ int YDisplayLayer::drawBitmap(int x,int y,int w,const std::vector<unsigned char>
 
 
 //--- (generated code: YDisplayLayer implementation)
-
-
+// static attributes
 
 
 /**
@@ -113,11 +112,10 @@ int YDisplayLayer::drawBitmap(int x,int y,int w,const std::vector<unsigned char>
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YDisplayLayer::reset()
+int YDisplayLayer::reset(void)
 {
-    this->_hidden = false; 
-    return this->command_flush("X"); 
-    
+    _hidden = false;
+    return this->command_flush("X");
 }
 
 /**
@@ -130,7 +128,7 @@ int YDisplayLayer::reset()
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YDisplayLayer::clear()
+int YDisplayLayer::clear(void)
 {
     return this->command_flush("x");
 }
@@ -181,7 +179,7 @@ int YDisplayLayer::selectGrayPen(int graylevel)
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YDisplayLayer::selectEraser()
+int YDisplayLayer::selectEraser(void)
 {
     return this->command_push("e");
 }
@@ -311,8 +309,8 @@ int YDisplayLayer::selectFont(string fontname)
  * to the specified pixel position is called the anchor point, and can be chosen among
  * several options. Text is rendered from left to right, without implicit wrapping.
  * 
- * @param x: the distance from left of layer to the text ancor point, in pixels
- * @param y: the distance from top of layer to the text ancor point, in pixels
+ * @param x: the distance from left of layer to the text anchor point, in pixels
+ * @param y: the distance from top of layer to the text anchor point, in pixels
  * @param anchor: the text anchor point, chosen among the Y_ALIGN enumeration:
  *         Y_ALIGN_TOP_LEFT,    Y_ALIGN_CENTER_LEFT,    Y_ALIGN_BASELINE_LEFT,    Y_ALIGN_BOTTOM_LEFT,
  *         Y_ALIGN_TOP_CENTER,  Y_ALIGN_CENTER,         Y_ALIGN_BASELINE_CENTER,  Y_ALIGN_BOTTOM_CENTER,
@@ -346,7 +344,6 @@ int YDisplayLayer::drawText(int x,int y,Y_ALIGN anchor,string text)
 int YDisplayLayer::drawImage(int x,int y,string imagename)
 {
     return this->command_flush(YapiWrapper::ysprintf("*%d,%d,%s%c",x,y,imagename.c_str(),27));
-    
 }
 
 /**
@@ -372,9 +369,8 @@ int YDisplayLayer::drawImage(int x,int y,string imagename)
 int YDisplayLayer::drawBitmap(int x,int y,int w,string bitmap,int bgcol)
 {
     string destname;
-    destname = YapiWrapper::ysprintf("layer%d:%d,%d@%d,%d",this->_id,w,bgcol,x,y);
-    return this->_display->upload(destname,bitmap);
-    
+    destname = YapiWrapper::ysprintf("layer%d:%d,%d@%d,%d",_id,w,bgcol,x,y);
+    return _display->upload(destname,bitmap);
 }
 
 /**
@@ -441,8 +437,7 @@ int YDisplayLayer::consoleOut(string text)
  */
 int YDisplayLayer::setConsoleMargins(int x1,int y1,int x2,int y2)
 {
-    return this->command_push(YapiWrapper::ysprintf("m%d,%d,%d,%d",x1,y1,x2,y2)); 
-    
+    return this->command_push(YapiWrapper::ysprintf("m%d,%d,%d,%d",x1,y1,x2,y2));
 }
 
 /**
@@ -458,8 +453,7 @@ int YDisplayLayer::setConsoleMargins(int x1,int y1,int x2,int y2)
  */
 int YDisplayLayer::setConsoleBackground(int bgcol)
 {
-    return this->command_push(YapiWrapper::ysprintf("b%d",bgcol)); 
-    
+    return this->command_push(YapiWrapper::ysprintf("b%d",bgcol));
 }
 
 /**
@@ -474,8 +468,7 @@ int YDisplayLayer::setConsoleBackground(int bgcol)
  */
 int YDisplayLayer::setConsoleWordWrap(bool wordwrap)
 {
-    return this->command_push(YapiWrapper::ysprintf("w%d",wordwrap)); 
-    
+    return this->command_push(YapiWrapper::ysprintf("w%d",wordwrap));
 }
 
 /**
@@ -486,7 +479,7 @@ int YDisplayLayer::setConsoleWordWrap(bool wordwrap)
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YDisplayLayer::clearConsole()
+int YDisplayLayer::clearConsole(void)
 {
     return this->command_flush("^");
 }
@@ -507,8 +500,7 @@ int YDisplayLayer::clearConsole()
  */
 int YDisplayLayer::setLayerPosition(int x,int y,int scrollTime)
 {
-    return this->command_flush(YapiWrapper::ysprintf("#%d,%d,%d",x,y,scrollTime)); 
-    
+    return this->command_flush(YapiWrapper::ysprintf("#%d,%d,%d",x,y,scrollTime));
 }
 
 /**
@@ -521,12 +513,11 @@ int YDisplayLayer::setLayerPosition(int x,int y,int scrollTime)
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YDisplayLayer::hide()
+int YDisplayLayer::hide(void)
 {
-    this->command_push("h"); 
-    this->_hidden = true; 
-    return this->flush_now(); 
-    
+    this->command_push("h");
+    _hidden = true;
+    return this->flush_now();
 }
 
 /**
@@ -536,11 +527,10 @@ int YDisplayLayer::hide()
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YDisplayLayer::unhide()
+int YDisplayLayer::unhide(void)
 {
-    this->_hidden = false; 
-    return this->command_flush("s"); 
-    
+    _hidden = false;
+    return this->command_flush("s");
 }
 
 /**
@@ -548,10 +538,9 @@ int YDisplayLayer::unhide()
  * 
  * @return an YDisplay object
  */
-YDisplay* YDisplayLayer::get_display()
+YDisplay* YDisplayLayer::get_display(void)
 {
-    return this->_display; 
-    
+    return _display;
 }
 
 /**
@@ -561,10 +550,9 @@ YDisplay* YDisplayLayer::get_display()
  * 
  * On failure, throws an exception or returns Y_DISPLAYWIDTH_INVALID.
  */
-int YDisplayLayer::get_displayWidth()
+int YDisplayLayer::get_displayWidth(void)
 {
-    return this->_display->get_displayWidth();
-    
+    return _display->get_displayWidth();
 }
 
 /**
@@ -574,10 +562,9 @@ int YDisplayLayer::get_displayWidth()
  * 
  * On failure, throws an exception or returns Y_DISPLAYHEIGHT_INVALID.
  */
-int YDisplayLayer::get_displayHeight()
+int YDisplayLayer::get_displayHeight(void)
 {
-    return this->_display->get_displayHeight();
-    
+    return _display->get_displayHeight();
 }
 
 /**
@@ -587,10 +574,9 @@ int YDisplayLayer::get_displayHeight()
  * 
  * On failure, throws an exception or returns Y_LAYERWIDTH_INVALID.
  */
-int YDisplayLayer::get_layerWidth()
+int YDisplayLayer::get_layerWidth(void)
 {
-    return this->_display->get_layerWidth();
-    
+    return _display->get_layerWidth();
 }
 
 /**
@@ -600,49 +586,40 @@ int YDisplayLayer::get_layerWidth()
  * 
  * On failure, throws an exception or returns Y_LAYERHEIGHT_INVALID.
  */
-int YDisplayLayer::get_layerHeight()
+int YDisplayLayer::get_layerHeight(void)
 {
-    return this->_display->get_layerHeight();
-    
+    return _display->get_layerHeight();
 }
 
-int YDisplayLayer::resetHiddenFlag()
+int YDisplayLayer::resetHiddenFlag(void)
 {
-    this->_hidden = false; 
+    _hidden = false;
     return YAPI_SUCCESS;
-    
 }
 //--- (end of generated code: YDisplayLayer implementation)
 
 
-
-
-
-
-//--- (generated code: YDisplay constructor)
-// Constructor is protected, use yFindDisplay factory function to instantiate
-YDisplay::YDisplay(const string& func): YFunction("Display", func)
-//--- (end of generated code: YDisplay constructor)
+YDisplay::YDisplay(const string& func): YFunction(func)
 //--- (generated code: Display initialization)
-            ,_callback(NULL)
-            ,_logicalName(Y_LOGICALNAME_INVALID)
-            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
-            ,_powerState(Y_POWERSTATE_INVALID)
-            ,_startupSeq(Y_STARTUPSEQ_INVALID)
-            ,_brightness(Y_BRIGHTNESS_INVALID)
-            ,_orientation(Y_ORIENTATION_INVALID)
-            ,_displayWidth(Y_DISPLAYWIDTH_INVALID)
-            ,_displayHeight(Y_DISPLAYHEIGHT_INVALID)
-            ,_displayType(Y_DISPLAYTYPE_INVALID)
-            ,_layerWidth(Y_LAYERWIDTH_INVALID)
-            ,_layerHeight(Y_LAYERHEIGHT_INVALID)
-            ,_layerCount(Y_LAYERCOUNT_INVALID)
-            ,_command(Y_COMMAND_INVALID)
+    ,_enabled(ENABLED_INVALID)
+    ,_startupSeq(STARTUPSEQ_INVALID)
+    ,_brightness(BRIGHTNESS_INVALID)
+    ,_orientation(ORIENTATION_INVALID)
+    ,_displayWidth(DISPLAYWIDTH_INVALID)
+    ,_displayHeight(DISPLAYHEIGHT_INVALID)
+    ,_displayType(DISPLAYTYPE_INVALID)
+    ,_layerWidth(LAYERWIDTH_INVALID)
+    ,_layerHeight(LAYERHEIGHT_INVALID)
+    ,_layerCount(LAYERCOUNT_INVALID)
+    ,_command(COMMAND_INVALID)
+    ,_valueCallbackDisplay(NULL)
 //--- (end of generated code: Display initialization)
             ,_allDisplayLayers(0)
             ,_recording(false)
             ,_sequence("")
-{}
+{
+    _className ="Display";
+}
 
 YDisplay::~YDisplay()
 {
@@ -657,147 +634,103 @@ YDisplay::~YDisplay()
 
 
 //--- (generated code: YDisplay implementation)
+// static attributes
+const string YDisplay::STARTUPSEQ_INVALID = YAPI_INVALID_STRING;
+const string YDisplay::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-const string YDisplay::LOGICALNAME_INVALID = "!INVALID!";
-const string YDisplay::ADVERTISEDVALUE_INVALID = "!INVALID!";
-const string YDisplay::STARTUPSEQ_INVALID = "!INVALID!";
-const string YDisplay::COMMAND_INVALID = "!INVALID!";
-
-
-
-int YDisplay::_parse(yJsonStateMachine& j)
+int YDisplay::_parseAttr(yJsonStateMachine& j)
 {
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
-    failed:
-        return -1;
+    if(!strcmp(j.token, "enabled")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _enabled =  (Y_ENABLED_enum)atoi(j.token);
+        return 1;
     }
-    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-        if(!strcmp(j.token, "logicalName")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _logicalName =  _parseString(j);
-        } else if(!strcmp(j.token, "advertisedValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _advertisedValue =  _parseString(j);
-        } else if(!strcmp(j.token, "powerState")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _powerState =  (Y_POWERSTATE_enum)atoi(j.token);
-        } else if(!strcmp(j.token, "startupSeq")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _startupSeq =  _parseString(j);
-        } else if(!strcmp(j.token, "brightness")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _brightness =  atoi(j.token);
-        } else if(!strcmp(j.token, "orientation")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _orientation =  (Y_ORIENTATION_enum)atoi(j.token);
-        } else if(!strcmp(j.token, "displayWidth")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _displayWidth =  atoi(j.token);
-        } else if(!strcmp(j.token, "displayHeight")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _displayHeight =  atoi(j.token);
-        } else if(!strcmp(j.token, "displayType")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _displayType =  (Y_DISPLAYTYPE_enum)atoi(j.token);
-        } else if(!strcmp(j.token, "layerWidth")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _layerWidth =  atoi(j.token);
-        } else if(!strcmp(j.token, "layerHeight")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _layerHeight =  atoi(j.token);
-        } else if(!strcmp(j.token, "layerCount")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _layerCount =  atoi(j.token);
-        } else if(!strcmp(j.token, "command")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _command =  _parseString(j);
-        } else {
-            // ignore unknown field
-            yJsonSkip(&j, 1);
+    if(!strcmp(j.token, "startupSeq")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _startupSeq =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "brightness")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _brightness =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "orientation")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _orientation =  (Y_ORIENTATION_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "displayWidth")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _displayWidth =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "displayHeight")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _displayHeight =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "displayType")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _displayType =  (Y_DISPLAYTYPE_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "layerWidth")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _layerWidth =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "layerHeight")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _layerHeight =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "layerCount")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _layerCount =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "command")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _command =  _parseString(j);
+        return 1;
+    }
+    failed:
+    return YFunction::_parseAttr(j);
+}
+
+
+/**
+ * Returns true if the screen is powered, false otherwise.
+ * 
+ * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to true if the screen is powered, false otherwise
+ * 
+ * On failure, throws an exception or returns Y_ENABLED_INVALID.
+ */
+Y_ENABLED_enum YDisplay::get_enabled(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDisplay::ENABLED_INVALID;
         }
     }
-    if(j.st != YJSON_PARSE_STRUCT) goto failed;
-    return 0;
-}
-
-/**
- * Returns the logical name of the display.
- * 
- * @return a string corresponding to the logical name of the display
- * 
- * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
- */
-string YDisplay::get_logicalName(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LOGICALNAME_INVALID;
-    }
-    return _logicalName;
-}
-
-/**
- * Changes the logical name of the display. You can use yCheckLogicalName()
- * prior to this call to make sure that your parameter is valid.
- * Remember to call the saveToFlash() method of the module if the
- * modification must be kept.
- * 
- * @param newval : a string corresponding to the logical name of the display
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YDisplay::set_logicalName(const string& newval)
-{
-    string rest_val;
-    rest_val = newval;
-    return _setAttr("logicalName", rest_val);
-}
-
-/**
- * Returns the current value of the display (no more than 6 characters).
- * 
- * @return a string corresponding to the current value of the display (no more than 6 characters)
- * 
- * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
- */
-string YDisplay::get_advertisedValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_ADVERTISEDVALUE_INVALID;
-    }
-    return _advertisedValue;
-}
-
-/**
- * Returns the power state of the display.
- * 
- * @return either Y_POWERSTATE_OFF or Y_POWERSTATE_ON, according to the power state of the display
- * 
- * On failure, throws an exception or returns Y_POWERSTATE_INVALID.
- */
-Y_POWERSTATE_enum YDisplay::get_powerState(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_POWERSTATE_INVALID;
-    }
-    return _powerState;
+    return _enabled;
 }
 
 /**
  * Changes the power state of the display.
  * 
- * @param newval : either Y_POWERSTATE_OFF or Y_POWERSTATE_ON, according to the power state of the display
+ * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the power state of the display
  * 
  * @return YAPI_SUCCESS if the call succeeds.
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YDisplay::set_powerState(Y_POWERSTATE_enum newval)
+int YDisplay::set_enabled(Y_ENABLED_enum newval)
 {
     string rest_val;
     rest_val = (newval>0 ? "1" : "0");
-    return _setAttr("powerState", rest_val);
+    return _setAttr("enabled", rest_val);
 }
 
 /**
@@ -809,8 +742,10 @@ int YDisplay::set_powerState(Y_POWERSTATE_enum newval)
  */
 string YDisplay::get_startupSeq(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_STARTUPSEQ_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDisplay::STARTUPSEQ_INVALID;
+        }
     }
     return _startupSeq;
 }
@@ -842,8 +777,10 @@ int YDisplay::set_startupSeq(const string& newval)
  */
 int YDisplay::get_brightness(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_BRIGHTNESS_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDisplay::BRIGHTNESS_INVALID;
+        }
     }
     return _brightness;
 }
@@ -862,7 +799,7 @@ int YDisplay::get_brightness(void)
 int YDisplay::set_brightness(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
     return _setAttr("brightness", rest_val);
 }
 
@@ -876,8 +813,10 @@ int YDisplay::set_brightness(int newval)
  */
 Y_ORIENTATION_enum YDisplay::get_orientation(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_ORIENTATION_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDisplay::ORIENTATION_INVALID;
+        }
     }
     return _orientation;
 }
@@ -896,7 +835,7 @@ Y_ORIENTATION_enum YDisplay::get_orientation(void)
 int YDisplay::set_orientation(Y_ORIENTATION_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
     return _setAttr("orientation", rest_val);
 }
 
@@ -907,10 +846,12 @@ int YDisplay::set_orientation(Y_ORIENTATION_enum newval)
  * 
  * On failure, throws an exception or returns Y_DISPLAYWIDTH_INVALID.
  */
-unsigned YDisplay::get_displayWidth(void)
+int YDisplay::get_displayWidth(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_DISPLAYWIDTH_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDisplay::DISPLAYWIDTH_INVALID;
+        }
     }
     return _displayWidth;
 }
@@ -922,10 +863,12 @@ unsigned YDisplay::get_displayWidth(void)
  * 
  * On failure, throws an exception or returns Y_DISPLAYHEIGHT_INVALID.
  */
-unsigned YDisplay::get_displayHeight(void)
+int YDisplay::get_displayHeight(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_DISPLAYHEIGHT_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDisplay::DISPLAYHEIGHT_INVALID;
+        }
     }
     return _displayHeight;
 }
@@ -940,8 +883,10 @@ unsigned YDisplay::get_displayHeight(void)
  */
 Y_DISPLAYTYPE_enum YDisplay::get_displayType(void)
 {
-    if(_displayType == Y_DISPLAYTYPE_INVALID) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_DISPLAYTYPE_INVALID;
+    if (_cacheExpiration == 0) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDisplay::DISPLAYTYPE_INVALID;
+        }
     }
     return _displayType;
 }
@@ -953,10 +898,12 @@ Y_DISPLAYTYPE_enum YDisplay::get_displayType(void)
  * 
  * On failure, throws an exception or returns Y_LAYERWIDTH_INVALID.
  */
-unsigned YDisplay::get_layerWidth(void)
+int YDisplay::get_layerWidth(void)
 {
-    if(_layerWidth == Y_LAYERWIDTH_INVALID) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LAYERWIDTH_INVALID;
+    if (_cacheExpiration == 0) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDisplay::LAYERWIDTH_INVALID;
+        }
     }
     return _layerWidth;
 }
@@ -968,10 +915,12 @@ unsigned YDisplay::get_layerWidth(void)
  * 
  * On failure, throws an exception or returns Y_LAYERHEIGHT_INVALID.
  */
-unsigned YDisplay::get_layerHeight(void)
+int YDisplay::get_layerHeight(void)
 {
-    if(_layerHeight == Y_LAYERHEIGHT_INVALID) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LAYERHEIGHT_INVALID;
+    if (_cacheExpiration == 0) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDisplay::LAYERHEIGHT_INVALID;
+        }
     }
     return _layerHeight;
 }
@@ -983,18 +932,22 @@ unsigned YDisplay::get_layerHeight(void)
  * 
  * On failure, throws an exception or returns Y_LAYERCOUNT_INVALID.
  */
-unsigned YDisplay::get_layerCount(void)
+int YDisplay::get_layerCount(void)
 {
-    if(_layerCount == Y_LAYERCOUNT_INVALID) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LAYERCOUNT_INVALID;
+    if (_cacheExpiration == 0) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDisplay::LAYERCOUNT_INVALID;
+        }
     }
     return _layerCount;
 }
 
 string YDisplay::get_command(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_COMMAND_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDisplay::COMMAND_INVALID;
+        }
     }
     return _command;
 }
@@ -1007,18 +960,91 @@ int YDisplay::set_command(const string& newval)
 }
 
 /**
+ * Retrieves a display for a given identifier.
+ * The identifier can be specified using several formats:
+ * <ul>
+ * <li>FunctionLogicalName</li>
+ * <li>ModuleSerialNumber.FunctionIdentifier</li>
+ * <li>ModuleSerialNumber.FunctionLogicalName</li>
+ * <li>ModuleLogicalName.FunctionIdentifier</li>
+ * <li>ModuleLogicalName.FunctionLogicalName</li>
+ * </ul>
+ * 
+ * This function does not require that the display is online at the time
+ * it is invoked. The returned object is nevertheless valid.
+ * Use the method YDisplay.isOnline() to test if the display is
+ * indeed online at a given time. In case of ambiguity when looking for
+ * a display by logical name, no error is notified: the first instance
+ * found is returned. The search is performed first by hardware name,
+ * then by logical name.
+ * 
+ * @param func : a string that uniquely characterizes the display
+ * 
+ * @return a YDisplay object allowing you to drive the display.
+ */
+YDisplay* YDisplay::FindDisplay(string func)
+{
+    YDisplay* obj = NULL;
+    obj = (YDisplay*) YFunction::_FindFromCache("Display", func);
+    if (obj == NULL) {
+        obj = new YDisplay(func);
+        YFunction::_AddToCache("Display", func, obj);
+    }
+    return obj;
+}
+
+/**
+ * Registers the callback function that is invoked on every change of advertised value.
+ * The callback is invoked only during the execution of ySleep or yHandleEvents.
+ * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+ * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * 
+ * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ *         arguments: the function object of which the value has changed, and the character string describing
+ *         the new advertised value.
+ * @noreturn
+ */
+int YDisplay::registerValueCallback(YDisplayValueCallback callback)
+{
+    string val;
+    if (callback != NULL) {
+        YFunction::_UpdateValueCallbackList(this, true);
+    } else {
+        YFunction::_UpdateValueCallbackList(this, false);
+    }
+    _valueCallbackDisplay = callback;
+    // Immediately invoke value callback with current value
+    if (callback != NULL && this->isOnline()) {
+        val = _advertisedValue;
+        if (!(val == "")) {
+            this->_invokeValueCallback(val);
+        }
+    }
+    return 0;
+}
+
+int YDisplay::_invokeValueCallback(string value)
+{
+    if (_valueCallbackDisplay != NULL) {
+        _valueCallbackDisplay(this, value);
+    } else {
+        YFunction::_invokeValueCallback(value);
+    }
+    return 0;
+}
+
+/**
  * Clears the display screen and resets all display layers to their default state.
  * 
  * @return YAPI_SUCCESS if the call succeeds.
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YDisplay::resetAll()
+int YDisplay::resetAll(void)
 {
-    this->flushLayers(); 
+    this->flushLayers();
     this->resetHiddenLayerFlags();
-    return this->sendCommand("Z"); 
-    
+    return this->sendCommand("Z");
 }
 
 /**
@@ -1034,9 +1060,8 @@ int YDisplay::resetAll()
  */
 int YDisplay::fade(int brightness,int duration)
 {
-    this->flushLayers(); 
-    return this->sendCommand(YapiWrapper::ysprintf("+%d,%d",brightness,duration)); 
-    
+    this->flushLayers();
+    return this->sendCommand(YapiWrapper::ysprintf("+%d,%d",brightness,duration));
 }
 
 /**
@@ -1048,13 +1073,12 @@ int YDisplay::fade(int brightness,int duration)
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YDisplay::newSequence()
+int YDisplay::newSequence(void)
 {
     this->flushLayers();
-    this->_sequence = ""; 
-    this->_recording = true; 
-    return YAPI_SUCCESS; 
-    
+    _sequence = "";
+    _recording = true;
+    return YAPI_SUCCESS;
 }
 
 /**
@@ -1071,12 +1095,11 @@ int YDisplay::newSequence()
 int YDisplay::saveSequence(string sequenceName)
 {
     this->flushLayers();
-    this->_recording = false; 
-    this->_upload(sequenceName, this->_sequence);
-    //We need to use YPRINTF("") for Objective-C 
-    this->_sequence = YapiWrapper::ysprintf(""); 
-    return YAPI_SUCCESS; 
-    
+    _recording = false;
+    this->_upload(sequenceName, _sequence);
+    //We need to use YPRINTF("") for Objective-C
+    _sequence = YapiWrapper::ysprintf("");
+    return YAPI_SUCCESS;
 }
 
 /**
@@ -1092,8 +1115,7 @@ int YDisplay::saveSequence(string sequenceName)
 int YDisplay::playSequence(string sequenceName)
 {
     this->flushLayers();
-    return this->sendCommand(YapiWrapper::ysprintf("S%s",sequenceName.c_str())); 
-    
+    return this->sendCommand(YapiWrapper::ysprintf("S%s",sequenceName.c_str()));
 }
 
 /**
@@ -1112,9 +1134,8 @@ int YDisplay::playSequence(string sequenceName)
  */
 int YDisplay::pauseSequence(int delay_ms)
 {
-    this->flushLayers(); 
-    return this->sendCommand(YapiWrapper::ysprintf("W%d",delay_ms)); 
-    
+    this->flushLayers();
+    return this->sendCommand(YapiWrapper::ysprintf("W%d",delay_ms));
 }
 
 /**
@@ -1125,11 +1146,10 @@ int YDisplay::pauseSequence(int delay_ms)
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YDisplay::stopSequence()
+int YDisplay::stopSequence(void)
 {
     this->flushLayers();
-    return this->sendCommand("S"); 
-    
+    return this->sendCommand("S");
 }
 
 /**
@@ -1146,8 +1166,7 @@ int YDisplay::stopSequence()
  */
 int YDisplay::upload(string pathname,string content)
 {
-    return this->_upload(pathname,content);
-    
+    return this->_upload(pathname, content);
 }
 
 /**
@@ -1166,9 +1185,8 @@ int YDisplay::upload(string pathname,string content)
  */
 int YDisplay::copyLayerContent(int srcLayerId,int dstLayerId)
 {
-    this->flushLayers(); 
-    return this->sendCommand(YapiWrapper::ysprintf("o%d,%d",srcLayerId,dstLayerId)); 
-    
+    this->flushLayers();
+    return this->sendCommand(YapiWrapper::ysprintf("o%d,%d",srcLayerId,dstLayerId));
 }
 
 /**
@@ -1188,9 +1206,8 @@ int YDisplay::copyLayerContent(int srcLayerId,int dstLayerId)
  */
 int YDisplay::swapLayerContent(int layerIdA,int layerIdB)
 {
-    this->flushLayers(); 
-    return this->sendCommand(YapiWrapper::ysprintf("E%d,%d",layerIdA,layerIdB)); 
-    
+    this->flushLayers();
+    return this->sendCommand(YapiWrapper::ysprintf("E%d,%d",layerIdA,layerIdB));
 }
 
 YDisplay *YDisplay::nextDisplay(void)
@@ -1200,38 +1217,7 @@ YDisplay *YDisplay::nextDisplay(void)
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
-    return yFindDisplay(hwid);
-}
-
-void YDisplay::registerValueCallback(YDisplayUpdateCallback callback)
-{
-    if (callback != NULL) {
-        _registerFuncCallback(this);
-        yapiLockFunctionCallBack(NULL);
-        YAPI::_yapiFunctionUpdateCallbackFwd(this->functionDescriptor(), this->get_advertisedValue().c_str());
-        yapiUnlockFunctionCallBack(NULL);
-    } else {
-        _unregisterFuncCallback(this);
-    }
-    _callback = callback;
-}
-
-void YDisplay::advertiseValue(const string& value)
-{
-    if (_callback != NULL) {
-        _callback(this, value);
-    }
-}
-
-
-YDisplay* YDisplay::FindDisplay(const string& func)
-{
-    if(YAPI::_YFunctionsCaches["YDisplay"].find(func) != YAPI::_YFunctionsCaches["YDisplay"].end())
-        return (YDisplay*) YAPI::_YFunctionsCaches["YDisplay"][func];
-    
-    YDisplay *newDisplay = new YDisplay(func);
-    YAPI::_YFunctionsCaches["YDisplay"][func] = newDisplay ;
-    return newDisplay;
+    return YDisplay::FindDisplay(hwid);
 }
 
 YDisplay* YDisplay::FirstDisplay(void)

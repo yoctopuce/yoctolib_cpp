@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.h 12337 2013-08-14 15:22:22Z mvuilleu $
+ * $Id: yocto_wireless.h 14275 2014-01-09 14:20:38Z seb $
  *
  * Declares yFindWireless(), the high-level API for Wireless functions
  *
@@ -45,12 +45,12 @@
 #include <cmath>
 #include <map>
 
-//--- (generated code: return codes)
-//--- (end of generated code: return codes)
 //--- (generated code: YWireless definitions)
-class YWireless; //forward declaration
+class YWireless; // forward declaration
 
-typedef void (*YWirelessUpdateCallback)(YWireless *func, const string& functionValue);
+typedef void (*YWirelessValueCallback)(YWireless *func, const string& functionValue);
+#ifndef _Y_SECURITY_ENUM
+#define _Y_SECURITY_ENUM
 typedef enum {
     Y_SECURITY_UNKNOWN = 0,
     Y_SECURITY_OPEN = 1,
@@ -59,14 +59,13 @@ typedef enum {
     Y_SECURITY_WPA2 = 4,
     Y_SECURITY_INVALID = -1,
 } Y_SECURITY_enum;
+#endif
 
-#define Y_LOGICALNAME_INVALID           (YAPI::INVALID_STRING)
-#define Y_ADVERTISEDVALUE_INVALID       (YAPI::INVALID_STRING)
-#define Y_LINKQUALITY_INVALID           (-1)
-#define Y_SSID_INVALID                  (YAPI::INVALID_STRING)
-#define Y_CHANNEL_INVALID               (0xffffffff)
-#define Y_MESSAGE_INVALID               (YAPI::INVALID_STRING)
-#define Y_WLANCONFIG_INVALID            (YAPI::INVALID_STRING)
+#define Y_LINKQUALITY_INVALID           (YAPI_INVALID_UINT)
+#define Y_SSID_INVALID                  (YAPI_INVALID_STRING)
+#define Y_CHANNEL_INVALID               (YAPI_INVALID_UINT)
+#define Y_MESSAGE_INVALID               (YAPI_INVALID_STRING)
+#define Y_WLANCONFIG_INVALID            (YAPI_INVALID_STRING)
 //--- (end of generated code: YWireless definitions)
 
 
@@ -79,27 +78,33 @@ typedef enum {
  * 
  * 
  */
-class YWlanRecord {
-protected:
+class YOCTO_CLASS_EXPORT YWlanRecord {
+//--- (end of generated code: YWlanRecord declaration)
+    //--- (generated code: YWlanRecord attributes)
     // Attributes (function value cache)
-    //--- (end of generated code: YWlanRecord declaration)
-    string _ssid;
-    int    _channel;
-    string _sec;
-    int    _rssi;
+    string          _ssid;
+    int             _channel;
+    string          _sec;
+    int             _rssi;
+    //--- (end of generated code: YWlanRecord attributes)
+    //--- (generated code: YWlanRecord constructor)
+
+    //--- (end of generated code: YWlanRecord constructor)
+    //--- (generated code: WlanRecord initialization)
+    //--- (end of generated code: WlanRecord initialization)
     
 public:
     YWlanRecord(const string& json);
     //--- (generated code: YWlanRecord accessors declaration)
 
 
-    string             get_ssid();
+    virtual string      get_ssid(void);
 
-    int             get_channel();
+    virtual int         get_channel(void);
 
-    string             get_security();
+    virtual string      get_security(void);
 
-    int             get_linkQuality();
+    virtual int         get_linkQuality(void);
 
     //--- (end of generated code: YWlanRecord accessors declaration)
 };
@@ -111,32 +116,30 @@ public:
 /**
  * YWireless Class: Wireless function interface
  * 
- * 
+ * YWireless functions provides control over wireless network parameters
+ * and status for devices that are wireless-enabled.
  */
-class YWireless: public YFunction {
-protected:
+class YOCTO_CLASS_EXPORT YWireless: public YFunction {
+//--- (end of generated code: YWireless declaration)
+    //--- (generated code: YWireless attributes)
     // Attributes (function value cache)
-    YWirelessUpdateCallback _callback;
-    string          _logicalName;
-    string          _advertisedValue;
     int             _linkQuality;
     string          _ssid;
-    unsigned        _channel;
+    int             _channel;
     Y_SECURITY_enum _security;
     string          _message;
     string          _wlanConfig;
+    YWirelessValueCallback _valueCallbackWireless;
 
     friend YWireless *yFindWireless(const string& func);
     friend YWireless *yFirstWireless(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    int             _parse(yJsonStateMachine& j);
-    //--- (end of generated code: YWireless declaration)
+    virtual int     _parseAttr(yJsonStateMachine& j);
 
-    //--- (generated code: YWireless constructor)
     // Constructor is protected, use yFindWireless factory function to instantiate
     YWireless(const string& func);
-    //--- (end of generated code: YWireless constructor)
+    //--- (end of generated code: YWireless attributes)
     //--- (generated code: Wireless initialization)
     //--- (end of generated code: Wireless initialization)
 
@@ -144,11 +147,9 @@ public:
     ~YWireless();
     //--- (generated code: YWireless accessors declaration)
 
-    static const string LOGICALNAME_INVALID;
-    static const string ADVERTISEDVALUE_INVALID;
-    static const int      LINKQUALITY_INVALID = -1;
+    static const int LINKQUALITY_INVALID = YAPI_INVALID_UINT;
     static const string SSID_INVALID;
-    static const unsigned CHANNEL_INVALID = 0xffffffff;
+    static const int CHANNEL_INVALID = YAPI_INVALID_UINT;
     static const Y_SECURITY_enum SECURITY_UNKNOWN = Y_SECURITY_UNKNOWN;
     static const Y_SECURITY_enum SECURITY_OPEN = Y_SECURITY_OPEN;
     static const Y_SECURITY_enum SECURITY_WEP = Y_SECURITY_WEP;
@@ -159,52 +160,15 @@ public:
     static const string WLANCONFIG_INVALID;
 
     /**
-     * Returns the logical name of the wireless lan interface.
+     * Returns the link quality, expressed in percent.
      * 
-     * @return a string corresponding to the logical name of the wireless lan interface
-     * 
-     * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
-     */
-           string          get_logicalName(void);
-    inline string          logicalName(void)
-    { return this->get_logicalName(); }
-
-    /**
-     * Changes the logical name of the wireless lan interface. You can use yCheckLogicalName()
-     * prior to this call to make sure that your parameter is valid.
-     * Remember to call the saveToFlash() method of the module if the
-     * modification must be kept.
-     * 
-     * @param newval : a string corresponding to the logical name of the wireless lan interface
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_logicalName(const string& newval);
-    inline int      setLogicalName(const string& newval)
-    { return this->set_logicalName(newval); }
-
-    /**
-     * Returns the current value of the wireless lan interface (no more than 6 characters).
-     * 
-     * @return a string corresponding to the current value of the wireless lan interface (no more than 6 characters)
-     * 
-     * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
-     */
-           string          get_advertisedValue(void);
-    inline string          advertisedValue(void)
-    { return this->get_advertisedValue(); }
-
-    /**
-     * Returns the link quality, expressed in per cents.
-     * 
-     * @return an integer corresponding to the link quality, expressed in per cents
+     * @return an integer corresponding to the link quality, expressed in percent
      * 
      * On failure, throws an exception or returns Y_LINKQUALITY_INVALID.
      */
-           int             get_linkQuality(void);
-    inline int             linkQuality(void)
+    int                 get_linkQuality(void);
+
+    inline int          linkQuality(void)
     { return this->get_linkQuality(); }
 
     /**
@@ -214,19 +178,22 @@ public:
      * 
      * On failure, throws an exception or returns Y_SSID_INVALID.
      */
-           string          get_ssid(void);
-    inline string          ssid(void)
+    string              get_ssid(void);
+
+    inline string       ssid(void)
     { return this->get_ssid(); }
 
     /**
      * Returns the 802.11 channel currently used, or 0 when the selected network has not been found.
      * 
-     * @return an integer corresponding to the 802
+     * @return an integer corresponding to the 802.11 channel currently used, or 0 when the selected
+     * network has not been found
      * 
      * On failure, throws an exception or returns Y_CHANNEL_INVALID.
      */
-           unsigned        get_channel(void);
-    inline unsigned        channel(void)
+    int                 get_channel(void);
+
+    inline int          channel(void)
     { return this->get_channel(); }
 
     /**
@@ -237,23 +204,26 @@ public:
      * 
      * On failure, throws an exception or returns Y_SECURITY_INVALID.
      */
-           Y_SECURITY_enum get_security(void);
+    Y_SECURITY_enum     get_security(void);
+
     inline Y_SECURITY_enum security(void)
     { return this->get_security(); }
 
     /**
-     * Returns the last status message from the wireless interface.
+     * Returns the latest status message from the wireless interface.
      * 
-     * @return a string corresponding to the last status message from the wireless interface
+     * @return a string corresponding to the latest status message from the wireless interface
      * 
      * On failure, throws an exception or returns Y_MESSAGE_INVALID.
      */
-           string          get_message(void);
-    inline string          message(void)
+    string              get_message(void);
+
+    inline string       message(void)
     { return this->get_message(); }
 
-           string          get_wlanConfig(void);
-    inline string          wlanConfig(void)
+    string              get_wlanConfig(void);
+
+    inline string       wlanConfig(void)
     { return this->get_wlanConfig(); }
 
     int             set_wlanConfig(const string& newval);
@@ -291,46 +261,6 @@ public:
     int             adhocNetwork(string ssid,string securityKey);
 
     /**
-     * Returns a list of YWlanRecord objects which describe detected Wireless networks.
-     * This list is not updated when the module is already connected to an acces point (infrastructure mode).
-     * To force an update of this list, adhocNetwork() must be called to disconnect
-     * the module from the current network. The returned list must be unallocated by caller,
-     * 
-     * @return a list of YWlanRecord objects, containing the SSID, channel,
-     *         link quality and the type of security of the wireless network.
-     * 
-     * On failure, throws an exception or returns an empty list.
-     */
-    vector<YWlanRecord*>             get_detectedWlans();
-
-
-    /**
-     * Registers the callback function that is invoked on every change of advertised value.
-     * The callback is invoked only during the execution of ySleep or yHandleEvents.
-     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
-     *         arguments: the function object of which the value has changed, and the character string describing
-     *         the new advertised value.
-     * @noreturn
-     */
-    void registerValueCallback(YWirelessUpdateCallback callback);
-
-    void advertiseValue(const string& value);
-
-    /**
-     * Continues the enumeration of wireless lan interfaces started using yFirstWireless().
-     * 
-     * @return a pointer to a YWireless object, corresponding to
-     *         a wireless lan interface currently online, or a null pointer
-     *         if there are no more wireless lan interfaces to enumerate.
-     */
-           YWireless       *nextWireless(void);
-    inline YWireless       *next(void)
-    { return this->nextWireless();}
-
-    /**
      * Retrieves a wireless lan interface for a given identifier.
      * The identifier can be specified using several formats:
      * <ul>
@@ -353,18 +283,53 @@ public:
      * 
      * @return a YWireless object allowing you to drive the wireless lan interface.
      */
-           static YWireless* FindWireless(const string& func);
-    inline static YWireless* Find(const string& func)
-    { return YWireless::FindWireless(func);}
+    static YWireless*   FindWireless(string func);
+
+    using YFunction::registerValueCallback;
+
     /**
-     * Starts the enumeration of wireless lan interfaces currently accessible.
-     * Use the method YWireless.nextWireless() to iterate on
-     * next wireless lan interfaces.
+     * Registers the callback function that is invoked on every change of advertised value.
+     * The callback is invoked only during the execution of ySleep or yHandleEvents.
+     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * 
+     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     *         arguments: the function object of which the value has changed, and the character string describing
+     *         the new advertised value.
+     * @noreturn
+     */
+    virtual int         registerValueCallback(YWirelessValueCallback callback);
+
+    virtual int         _invokeValueCallback(string value);
+
+    /**
+     * Returns a list of YWlanRecord objects that describe detected Wireless networks.
+     * This list is not updated when the module is already connected to an acces point (infrastructure mode).
+     * To force an update of this list, adhocNetwork() must be called to disconnect
+     * the module from the current network. The returned list must be unallocated by the caller.
+     * 
+     * @return a list of YWlanRecord objects, containing the SSID, channel,
+     *         link quality and the type of security of the wireless network.
+     * 
+     * On failure, throws an exception or returns an empty list.
+     */
+    virtual vector<YWlanRecord> get_detectedWlans(void);
+
+
+    inline static YWireless* Find(string func)
+    { return YWireless::FindWireless(func); }
+
+    /**
+     * Continues the enumeration of wireless lan interfaces started using yFirstWireless().
      * 
      * @return a pointer to a YWireless object, corresponding to
-     *         the first wireless lan interface currently online, or a null pointer
-     *         if there are none.
+     *         a wireless lan interface currently online, or a null pointer
+     *         if there are no more wireless lan interfaces to enumerate.
      */
+           YWireless       *nextWireless(void);
+    inline YWireless       *next(void)
+    { return this->nextWireless();}
+
            static YWireless* FirstWireless(void);
     inline static YWireless* First(void)
     { return YWireless::FirstWireless();}

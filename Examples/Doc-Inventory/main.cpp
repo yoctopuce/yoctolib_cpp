@@ -9,7 +9,7 @@ int main(int argc, const char * argv[])
     string      errmsg;
 
     // Setup the API to use local USB devices
-    if(yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
+    if(yRegisterHub("net", errmsg) != YAPI_SUCCESS) {
         cerr << "RegisterHub error: " << errmsg << endl;
         return 1;
     }

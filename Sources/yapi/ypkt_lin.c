@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_lin.c 12321 2013-08-13 14:56:24Z mvuilleu $
+ * $Id: ypkt_lin.c 14514 2014-01-16 14:22:38Z seb $
  *
  * OS-specific USB packet layer, Linux version
  *
@@ -491,7 +491,7 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
 
     }
 
-  //HALLOG("%s:%d yyyRead\n",iface->serial ,iface->ifaceno);
+    //HALLOG("%s:%d yyyRead\n",iface->serial ,iface->ifaceno);
     for(j=0;j< NB_LINUX_USB_TR ; j++){
         //HALLOG("%s:%d libusb_TR transmit (%d)\n",iface->serial,iface->ifaceno,j);
         res=libusb_submit_transfer(iface->rdTr[j].tr);
@@ -524,7 +524,6 @@ int yyySignalOutPkt(yInterfaceSt *iface)
                                     5000/*5 sec*/);
         yFree(pktitem);
         if(res<0){
-            //fixme handle io error :yLinSetErr(res,errmsg);        
             return YAPI_IO_ERROR;
         }
         yPktQueuePopH2D(iface, &pktitem);

@@ -195,7 +195,7 @@ clean32: clean_obj32
 clean_obj32:
 	-del /Q /F $(OBJDIR32) 
 	-del /Q /F $(OBJDIR_DLL32) 
-	-del /Q /F $(YAPI_DIR)winresource.res
+	-del /Q /F $(YAPI_DIR)yapiresource.res
 	-del /Q /F $(YOCTO_API_DIR)winresource.res
 	-rmdir $(OBJDIR32)
 	-rmdir $(OBJDIR_DLL32)
@@ -206,7 +206,7 @@ clean64: clean_obj64
 clean_obj64:
 	-del /Q /F $(OBJDIR64) 
 	-del /Q /F $(OBJDIR_DLL64) 
-	-del /Q /F $(YAPI_DIR)winresource64.res
+	-del /Q /F $(YAPI_DIR)yapiresource64.res
 	-del /Q /F $(YOCTO_API_DIR)winresource64.res
 	-rmdir $(OBJDIR64)
 	-rmdir $(OBJDIR_DLL64)

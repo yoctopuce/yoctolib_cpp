@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 12350 2013-08-15 15:44:03Z seb $
+ * $Id: yapi.c 14685 2014-01-23 11:00:27Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -62,6 +62,7 @@ typedef struct {
     yPerfMon  yapiRegisterDeviceRemovalCallback;
     yPerfMon  yapiRegisterDeviceChangeCallback;
     yPerfMon  yapiRegisterFunctionUpdateCallback;
+    yPerfMon  yapiRegisterTimedReportCallback;
     yPerfMon  yapiLockFunctionCallBack;
     yPerfMon  yapiUnlockFunctionCallBack;
     yPerfMon  yapiLockDeviceCallBack;
@@ -92,6 +93,10 @@ typedef struct {
     yPerfMon  yapiGetBootloadersDevs;
     yPerfMon  yapiFlashDevice;
     yPerfMon  yapiVerifyDevice;
+    yPerfMon  tmp1;
+    yPerfMon  tmp2;
+    yPerfMon  tmp3;
+    yPerfMon  tmp4;
 } yApiPerfMonSt;
 
 yApiPerfMonSt yApiPerf;
@@ -145,6 +150,10 @@ void dumpYApiPerf(void)
     dumpYPerfEntry(&yApiPerf.yapiGetBootloadersDevs,"yapiGetBootloadersDevs");
     dumpYPerfEntry(&yApiPerf.yapiFlashDevice,"yapiFlashDevice");
     dumpYPerfEntry(&yApiPerf.yapiVerifyDevice,"yapiVerifyDevice");
+    dumpYPerfEntry(&yApiPerf.tmp1,"tmp1");
+    dumpYPerfEntry(&yApiPerf.tmp2,"tmp2");
+    dumpYPerfEntry(&yApiPerf.tmp3,"tmp3");
+    dumpYPerfEntry(&yApiPerf.tmp4,"tmp4");
 }
 #else
 #define YPERF_API_ENTER(NAME)
@@ -179,6 +188,7 @@ typedef enum
     ENU_YP_TYPE_LIST,
     ENU_YP_ARRAY,
     ENU_YP_ENTRY,
+    ENU_YP_BASETYPE,
     ENU_YP_HARDWAREID,
     ENU_YP_LOGICALNAME,
     ENU_YP_PRODUCTNAME,
@@ -217,7 +227,6 @@ const char * ENU_PARSE_STATE_STR[]=
 
 typedef struct {
     NetHubSt *hub;
-    yUrlRef baseurl;
     ENU_PARSE_STATE state;
     yStrRef serial;
     yStrRef logicalName;
@@ -233,6 +242,7 @@ typedef struct {
             yStrRef ypCateg;
             yStrRef funcId;
             char    advertisedValue[YOCTO_PUBVAL_LEN];
+            u8      funClass;
             u8      funYdx;
         };
     };
@@ -242,7 +252,181 @@ typedef struct {
 
 
 
-static void wpRegisterNet(ENU_CONTEXT *enus)
+
+// return 1 -> if this we should use devUrl instead of registered URL
+static int wpSafeCheckOverwrite(yUrlRef registeredUrl,NetHubSt *hub, yUrlRef devUrl)
+{
+
+    yAsbUrlType urlType         = yHashGetUrlPort(devUrl,NULL,NULL);
+    yAsbUrlType registeredType;
+
+    if (urlType ==USB_URL){
+        // no USB device can unregister previous devices
+#ifdef  DEBUG_WP    
+        dbglog("no USB device can unregister previous devices ( 0x%X) \n",devUrl);
+#endif
+        return 0;
+    }
+    registeredType = yHashGetUrlPort(registeredUrl,NULL,NULL);
+    if(registeredType ==USB_URL){
+#ifdef DEBUG_WP
+        dbglog("unregister same device connected by USB ( 0x%X vs 0x%X) \n",devUrl,hub->url);
+#endif
+        return 1;
+    }else{
+        if (registeredUrl !=  devUrl){
+            if( devUrl == hub->url){
+#ifdef DEBUG_WP
+                dbglog("unregister same device connected by a VirtualHub (0x%X vs 0x%X) \n",devUrl,hub->url);
+#endif
+                return 1;
+            } 
+        }
+    }
+    return 0;
+}
+
+
+/*****************************************************************************
+  Function:
+    void wpSafeRegister( yUrlRef hubUrl, u8 devYdx, yStrRef serialref,yStrRef lnameref, yStrRef productref, u16 deviceid, yUrlRef devUrl,s8 beacon)
+
+  Description:
+    Register a new device into whites page (and yellow page of the module function ). This function 
+    will call the arrivalCallback. This function will work for usb and TCP
+    it will check if this arrival should be dropped (if an hub is connected by usb and ip)
+
+  Parameters:
+    NetHubSt *hub       : HUB used to access the device (for USB this MUSB be NULL)
+    u8 devYdx           : the devYdy relative to the hub (for usb this MUST be MAX_YDX_PER_HUB)
+    yStrRef serialref   : the serial of the device
+    yStrRef lnameref    : the logical name of the device
+    yStrRef productref  : the product name of the device
+    u16 deviceid        : the deviceid of the device
+    yUrlRef devUrl      : the url of the device (not the one of the hub).
+    s8 beacon           : the beacon state
+{
+  
+ ***************************************************************************/
+void wpSafeRegister( NetHubSt *hub, u8 devYdx, yStrRef serialref,yStrRef lnameref, yStrRef productref, u16 deviceid, yUrlRef devUrl,s8 beacon)
+{
+
+    yUrlRef     registeredUrl =wpGetDeviceUrlRef(serialref);
+#ifdef DEBUG_WP
+    {
+        if (hub == NULL){
+            dbglog("SAFE WP: register %s(0x%X) form USB\n",yHashGetStrPtr(serialref),serialref);
+        } else {
+            char host[YOCTO_HOSTNAME_NAME];
+            u16  port;
+            yAsbUrlType type = yHashGetUrlPort(hub->url,host,&port);
+            dbglog("SAFE WP: register %s(0x%X) from %s:%u\n",yHashGetStrPtr(serialref),serialref,host,port);
+            dbglog("url    : hub = %d  dev =%d\n",hub->url,devUrl);
+        }
+
+    }
+    dbglog("name    : %s(0x%X)\n",yHashGetStrPtr(lnameref),lnameref);
+    dbglog("product : %s(0x%X)\n",yHashGetStrPtr(productref),productref);
+    dbglog("device : %x (%d)\n",deviceid,beacon);
+#endif
+
+    if( registeredUrl != INVALID_HASH_IDX && wpSafeCheckOverwrite(registeredUrl,hub,devUrl)){
+        wpSafeUnregister(serialref);
+    }
+    wpRegister(-1, serialref, lnameref, productref, deviceid,devUrl,beacon);
+    ypRegister(YSTRREF_MODULE_STRING, serialref, yHashPutStr("module"), lnameref, YOCTO_AKA_YFUNCTION, -1, NULL);
+    if(hub && devYdx < MAX_YDX_PER_HUB) {
+        // Update hub-specific devYdx mapping between enus->devYdx and our wp devYdx
+        hub->devYdxMap[devYdx] = wpGetDevYdx(serialref);
+    }
+    // Forward high-level notification to API user
+    if (yContext->arrivalCallback) {
+        yEnterCriticalSection(&yContext->deviceCallbackCS);
+        yContext->arrivalCallback(serialref);
+        yLeaveCriticalSection(&yContext->deviceCallbackCS);
+    }
+}
+
+
+
+/*****************************************************************************
+  Function:
+    void wpSafeUpdate( yUrlRef hubUrl,u8 devYdx, yStrRef serialref,yStrRef lnameref, yUrlRef devUrl, s8 beacon)
+
+  Description:
+    Update whites page (and yellow page of the module function ). This function 
+    will call the changeCallback if needed. This function will work for usb and TCP
+    it will check if this update should be dropped (if an hub is connected by usb and ip)
+
+  Parameters:
+    For TCP:
+        NetHubSt *hub       : HUB used to access the device (for USB this MUSB be NULL)
+        u8 devYdx           : the devYdy relative to the hub (for usb this MUST be MAX_YDX_PER_HUB)
+        yStrRef serialref   : the serial of the device
+        yStrRef lnameref    : the logical name of the device
+        yUrlRef devUrl      : the url of the device (not the one of the hub).
+        s8 beacon           : the beacon state
+  
+ ***************************************************************************/
+void wpSafeUpdate(NetHubSt *hub,u8 devYdx, yStrRef serialref,yStrRef lnameref, yUrlRef devUrl, s8 beacon)
+{
+
+    yUrlRef     registeredUrl =wpGetDeviceUrlRef(serialref);
+#ifdef DEBUG_WP
+    {
+        if (hub == NULL){
+            dbglog("SAFE WP: update %s(0x%X) form USB\n",yHashGetStrPtr(serialref),serialref);
+        } else {
+            char host[YOCTO_HOSTNAME_NAME];
+            u16  port;
+            yAsbUrlType type = yHashGetUrlPort(hub->url,host,&port);
+            dbglog("SAFE WP: update %s(0x%X) from %s:%u\n",yHashGetStrPtr(serialref),serialref,host,port);
+            dbglog("url    : hub = %d  dev =%d\n",hub->url,devUrl);
+        }
+    }
+    dbglog("name    : %s(0x%X)\n",yHashGetStrPtr(lnameref),lnameref);
+    dbglog("product : INVALID_HASH_IDX\n");
+    dbglog("device : %x (%d)\n",0,beacon);
+#endif
+    
+    if( registeredUrl != INVALID_HASH_IDX && wpSafeCheckOverwrite(registeredUrl,hub,devUrl)){
+#ifdef DEBUG_WP
+        dbglog("SAFE WP: drop update %s(0x%X)\n",yHashGetStrPtr(serialref),serialref);
+#endif
+        return;
+    }
+    if (wpRegister(-1, serialref, lnameref, INVALID_HASH_IDX, 0, devUrl, beacon)) {
+        ypRegister(YSTRREF_MODULE_STRING, serialref, yHashPutStr("module"), lnameref, YOCTO_AKA_YFUNCTION, -1, NULL);
+        if(hub && devYdx < MAX_YDX_PER_HUB) {
+            // Update hub-specific devYdx mapping between enus->devYdx and our wp devYdx
+            hub->devYdxMap[devYdx] = wpGetDevYdx(serialref);
+        }
+        // Forward high-level notification to API user
+        if(yContext->changeCallback){
+            yEnterCriticalSection(&yContext->deviceCallbackCS);
+            yContext->changeCallback(serialref);
+            yLeaveCriticalSection(&yContext->deviceCallbackCS);
+        }
+    }
+}
+
+
+
+void wpSafeUnregister(yStrRef serialref)
+{
+    wpPreventUnregister();
+    if(wpMarkForUnregister(serialref)){
+        // Forward high-level notification to API user before deleting data
+        if (yContext->removalCallback) {
+            yEnterCriticalSection(&yContext->deviceCallbackCS);
+            yContext->removalCallback(serialref);
+            yLeaveCriticalSection(&yContext->deviceCallbackCS);
+        }
+    }
+    wpAllowUnregister();
+}
+
+static void parseNetWpEntry(ENU_CONTEXT *enus)
 {
     int i;
 
@@ -250,63 +434,37 @@ static void wpRegisterNet(ENU_CONTEXT *enus)
         if(enus->knownDevices[i] != INVALID_HASH_IDX &&
             enus->knownDevices[i] == enus->serial){
                 // mark the device as present (we sweep it later)
-                //dbglog("wpRegisterNet %X was present\n",enus->serial);
+#ifdef DEBUG_WP
+                dbglog("parseNetWpEntry %X was present\n",enus->serial);
+#endif
                 enus->knownDevices[i] = INVALID_HASH_IDX;
                 break;
         }
     }
+
     if(i==enus->nbKnownDevices){
-        wpRegister(-1, enus->serial, enus->logicalName , enus->productName,
-                   enus->productId, enus->hubref, enus->beacon);
-        ypRegister(YSTRREF_MODULE_STRING, enus->serial, yHashPutStr("module"), enus->logicalName, -1, NULL);
-        if(enus->devYdx < MAX_YDX_PER_HUB) {
-            // Update hub-specific devYdx mapping between enus->devYdx and our wp devYdx
-            enus->hub->devYdxMap[enus->devYdx] = wpGetDevYdx(enus->serial);
-        }
-        // Forward high-level notification to API user
-        if(yContext->arrivalCallback)
-            yContext->arrivalCallback(enus->serial);
-        //dbglog("wpRegisterNet %X on %X\n",enus->serial,enus->hubref);
+		wpSafeRegister(enus->hub,enus->devYdx,enus->serial,enus->logicalName,enus->productName,enus->productId,enus->hubref,enus->beacon);
     } else{
-        // Update white pages
-        if(wpRegister(-1, enus->serial, enus->logicalName, INVALID_HASH_IDX, 0, enus->hubref, enus->beacon)){
-            ypRegister(YSTRREF_MODULE_STRING, enus->serial, yHashPutStr("module"), enus->logicalName, -1, NULL);
-            if(enus->devYdx < MAX_YDX_PER_HUB) {
-                // Update hub-specific devYdx mapping between enus->devYdx and our wp devYdx
-                enus->hub->devYdxMap[enus->devYdx] = wpGetDevYdx(enus->serial);
-            }
-            // Forward high-level notification to API user
-            if(yContext->changeCallback)
-                yContext->changeCallback(enus->serial);
-        }
+        wpSafeUpdate(enus->hub,enus->devYdx,enus->serial, enus->logicalName, enus->hubref, enus->beacon);
     }
 }
 
-static void wpUnregisterNet(yStrRef serialref)
+static void unregisterNetDevice(yStrRef serialref)
 {
     int devydx;
     
     if(serialref == INVALID_HASH_IDX) return;
-    wpPreventUnregister();
-    if(wpMarkForUnregister(serialref)){
-        // Forward high-level notification to API user before deleting data
-        if(yContext->removalCallback) {
-            yEnterCriticalSection(&yContext->deviceCallbackCS);
-            yContext->removalCallback(serialref);
-            yLeaveCriticalSection(&yContext->deviceCallbackCS);
-        }
-        // Free device tcp structure, if needed
-        devydx = wpGetDevYdx(serialref);
-        if(devydx >= 0 && yContext->tcpreq[devydx].hub ) {
-            yTcpFreeReq(&yContext->tcpreq[devydx]);
-        }        
-    }
-    wpAllowUnregister();
+    // Free device tcp structure, if needed
+    devydx = wpGetDevYdx(serialref);
+    if(devydx >= 0 && yContext->tcpreq[devydx].hub ) {
+        yTcpFreeReq(&yContext->tcpreq[devydx]);
+    }        
+    wpSafeUnregister(serialref);
 }
 
 static void ypUpdateNet(ENU_CONTEXT *enus)
 {
-    if(ypRegister(enus->ypCateg, enus->serial, enus->funcId, enus->logicalName, enus->funYdx, enus->advertisedValue)){
+    if(ypRegister(enus->ypCateg, enus->serial, enus->funcId, enus->logicalName, enus->funClass, enus->funYdx, enus->advertisedValue)){
         // Forward high-level notification to API user
         if(yContext->functionCallback) {
             yEnterCriticalSection(&yContext->functionCallbackCS);
@@ -396,7 +554,7 @@ static int yEnuJson(ENU_CONTEXT *enus, yJsonStateMachine *j)
             break;
         case ENU_WP_ENTRY:
             if(j->st ==YJSON_PARSE_STRUCT){
-                wpRegisterNet(enus);
+                parseNetWpEntry(enus);
                 enus->state     = ENU_WP_ARRAY;
             }else if(j->st ==YJSON_PARSE_MEMBNAME){
                 if(YSTRCMP(j->token,"serialNumber")==0){
@@ -440,7 +598,7 @@ static int yEnuJson(ENU_CONTEXT *enus, yJsonStateMachine *j)
             break;
         case ENU_WP_DEVURL:
             NETENUMLOG("set url to %s\n",j->token);
-            enus->hubref = yHashUrlFromRef(enus->baseurl, j->token, 0,NULL);
+			enus->hubref = yHashUrlFromRef(enus->hub->url, j->token, 0,NULL);
             enus->state  = ENU_WP_ENTRY;
             break;
         case ENU_WP_BEACON:
@@ -485,6 +643,7 @@ static int yEnuJson(ENU_CONTEXT *enus, yJsonStateMachine *j)
                 enus->serial    = INVALID_HASH_IDX;
                 enus->logicalName = INVALID_HASH_IDX;
                 enus->funcId    = INVALID_HASH_IDX;
+                enus->funClass  = YOCTO_AKA_YFUNCTION;
                 enus->funYdx    = -1;
                 memset(enus->advertisedValue,0, sizeof(enus->advertisedValue));
             }else  if(j->st ==YJSON_PARSE_ARRAY){
@@ -498,18 +657,27 @@ static int yEnuJson(ENU_CONTEXT *enus, yJsonStateMachine *j)
                 ypUpdateNet(enus);
                 enus->state     = ENU_YP_ARRAY;
             }else if(j->st ==YJSON_PARSE_MEMBNAME){
-                if(YSTRCMP(j->token,"logicalName")==0){
-                    enus->state = ENU_YP_LOGICALNAME;
+                if(YSTRCMP(j->token,"baseType")==0){
+                    enus->state = ENU_YP_BASETYPE;
                 } else if(YSTRCMP(j->token,"hardwareId")==0){
                     enus->state = ENU_YP_HARDWAREID;
+                } else if(YSTRCMP(j->token,"logicalName")==0){
+                    enus->state = ENU_YP_LOGICALNAME;
                 } else if(YSTRCMP(j->token,"advertisedValue")==0){
                     enus->state = ENU_YP_ADVERTISEDVALUE;
-                }else{
+                } else if(YSTRCMP(j->token,"index")==0){
+                    enus->state = ENU_YP_INDEX;
+                } else {
                     yJsonSkip(j,1);
                 }
             }
             break;
 
+        case ENU_YP_BASETYPE:
+            NETENUMLOG("set baseType value to %s\n",j->token);
+            enus->funClass = atoi(j->token);
+            enus->state  = ENU_YP_ENTRY;
+            break;
         case ENU_YP_HARDWAREID:
             point = strchr(j->token,'.');
             if(!point) break; //to be safe discart this field if we do not found '.'
@@ -562,102 +730,159 @@ static int yNetHubEnum(NetHubSt *hub,int forceupdate,char *errmsg)
     // et base url (then entry point)
     memset(&enus,0,sizeof(enus));
     enus.hub = hub;
-    enus.baseurl = hub->url;
     enus.knownDevices = knownDevices;
     enus.nbKnownDevices = wpGetAllDevUsingHubUrl( hub->url,enus.knownDevices,128);
     if(enus.nbKnownDevices >128){
         return YERRMSG(YAPI_IO_ERROR,"too many device on this Net hub");
     }
 
-    // setup connection structure
-    yTcpInitReq(&req, hub);
-    if(YISERR((res = yTcpOpenReq(&req, request, YSTRLEN(request), 0,errmsg)))) {
-        yTcpFreeReq(&req);
-        return res;
-    }
-    // init yjson parrser
-    memset(&j,0,sizeof(j));
-    j.st = YJSON_HTTP_START;
-    enus.state = ENU_HTTP_START;
-    enumTimeout = yapiGetTickCount() + 10000;
-    while(jstate == YJSON_NEED_INPUT){
-        res = yTcpSelectReq(&reqptr, 1, 1000, NULL, errmsg);
-        if(YISERR(res)){
-            yTcpFreeReq(&req);
-            return res;
-        }
-        res = yTcpReadReq(&req, buffer, sizeof(buffer));
-        while(res > 0) {
-            j.src = buffer;
-            j.end = buffer + res;
 
-            // parse all we can on this buffer
-            jstate=yJsonParse(&j);
-            while(jstate == YJSON_PARSE_AVAIL){
-                if(YISERR(yEnuJson(&enus,&j))){
-                    jstate = YJSON_FAILED;
-                    break;
-                }
-                jstate=yJsonParse(&j);
+    res = YAPI_SUCCESS;
+
+    if (hub->flags & NETH_F_SEND_PING_NOTIFICATION &&
+         hub->state != NET_HUB_ESTABLISHED) {
+        YSPRINTF(errmsg,YOCTO_ERRMSG_LEN,"hub %s is not reachable",hub->name);
+        res = YAPI_IO_ERROR;
+    } else {
+        // setup connection structure
+        yTcpInitReq(&req, hub);
+        if(YISERR((res = yTcpOpenReq(&req, request, YSTRLEN(request), 0,errmsg)))) {
+            yTcpFreeReq(&req);
+        }
+    }
+    if ( res == YAPI_SUCCESS) {
+        // init yjson parrser
+        memset(&j,0,sizeof(j));
+        j.st = YJSON_HTTP_START;
+        enus.state = ENU_HTTP_START;
+        enumTimeout = yapiGetTickCount() + 10000;
+        while(jstate == YJSON_NEED_INPUT){
+            res = yTcpSelectReq(&reqptr, 1, 1000, NULL, errmsg);
+            if(YISERR(res)){
+                break;
             }
             res = yTcpReadReq(&req, buffer, sizeof(buffer));
-        }
-        if(res <= 0) {
-            res = yTcpEofReq(&req, errmsg);
-            if(YISERR(res)){
-                // any specific error during select
-                yTcpFreeReq(&req);
-                return res;
+            while(res > 0) {
+                j.src = buffer;
+                j.end = buffer + res;
+
+                // parse all we can on this buffer
+                jstate=yJsonParse(&j);
+                while(jstate == YJSON_PARSE_AVAIL){
+                    if(YISERR(yEnuJson(&enus,&j))){
+                        jstate = YJSON_FAILED;
+                        break;
+                    }
+                    jstate=yJsonParse(&j);
+                }
+                res = yTcpReadReq(&req, buffer, sizeof(buffer));
             }
-            if(res == 1) {
-                // connection close before end of result
-                yTcpFreeReq(&req);
-                return YERR(YAPI_IO_ERROR);
+            if(res <= 0) {
+                res = yTcpEofReq(&req, errmsg);
+                if(YISERR(res)){
+                    // any specific error during select
+                    yTcpFreeReq(&req);
+                    return res;
+                }
+                if(res == 1) {
+                    // connection close before end of result
+                    res = YERR(YAPI_IO_ERROR);
+                }
+                if (yapiGetTickCount()>= enumTimeout){
+                    res = YERR(YAPI_TIMEOUT);
+                }
             }
-            if (yapiGetTickCount()>= enumTimeout){
-                // timeout
-                yTcpFreeReq(&req);
-                return YERR(YAPI_TIMEOUT);
-            }
-        }
-    }
-    
-    yTcpCloseReq(&req);
-    yTcpFreeReq(&req);
-    for(i=0; i < enus.nbKnownDevices ;  i++){
-        if (enus.knownDevices[i]!=INVALID_HASH_IDX){
-            wpUnregisterNet(knownDevices[i]);
-        }
+        }  
+        yTcpCloseReq(&req);
+        yTcpFreeReq(&req);
     }
 
-    switch(jstate){
-        case YJSON_NEED_INPUT:
-            return YERRMSG(YAPI_IO_ERROR,"Remote host has close the connection");
-        case YJSON_PARSE_AVAIL:
-        case YJSON_FAILED:
-            return YERRMSG(YAPI_IO_ERROR,"Invalid json data");
-        case YJSON_SUCCESS:
-            break;
+    if(res != YAPI_SUCCESS && hub->flags & NETH_F_MANDATORY) {
+        // if the hub is mandatory we will raise an error
+        // and not unregister the connected devices
+        return res;
     }
-    // reset the
-    if(hub->state == NET_HUB_ESTABLISHED){
-        hub->devListExpires = yapiGetTickCount()+10000; // 10s validity when notification are working properly
-    } else {
-        hub->devListExpires = yapiGetTickCount()+500;
+    for(i=0; i < enus.nbKnownDevices ;  i++){
+        if (enus.knownDevices[i]!=INVALID_HASH_IDX){
+            unregisterNetDevice(knownDevices[i]);
+        }
+    }
+    if( res == YAPI_SUCCESS ){
+        switch(jstate){
+            case YJSON_NEED_INPUT:
+                return YERRMSG(YAPI_IO_ERROR,"Remote host has close the connection");
+            case YJSON_PARSE_AVAIL:
+            case YJSON_FAILED:
+                return YERRMSG(YAPI_IO_ERROR,"Invalid json data");
+            case YJSON_SUCCESS:
+                break;
+        }
+        // reset the
+        if(hub->state == NET_HUB_ESTABLISHED){
+            hub->devListExpires = yapiGetTickCount()+10000; // 10s validity when notification are working properly
+        } else {
+            hub->devListExpires = yapiGetTickCount()+500;
+        }
     }
     return YAPI_SUCCESS;
 }
 
-static void yapiInitHub(NetHubSt *hub, yUrlRef huburl)
+static int yapiInitHub(NetHubSt *hub, const char  *url,char *errmsg)
 {
+    const char *p;
+    char *name,*user=NULL,*pwd=NULL;
+    int len;
+
+    if(YSTRNCMP(url,"http://",7)==0){
+        url += 7;
+    }
+    // search for any authentication info
+    for(p = url; *p && *p != '@' && *p != '/'; p++);
+    if(*p == '@') {
+        for(p = url; *p != ':' && *p != '@'; p++);
+        if(*p != ':') {
+            return YERRMSG(YAPI_INVALID_ARGUMENT, "Missing authentication parameter");
+        }
+        len = (int)(p-url);
+        user = yMalloc(len+1);
+        memcpy(user, url, len);
+        user[len] = 0;
+        url = ++p;
+        while(*p != '@') p++;
+        len = (int)(p-url);
+        pwd = yMalloc(len+1);
+        memcpy(pwd, url, len);
+        pwd[len] = 0;
+        url = p+1;
+    }
+    
+    
     memset(hub,0,sizeof(NetHubSt));
     memset(hub->devYdxMap, 255, sizeof(hub->devYdxMap));
     yInitializeCriticalSection(&hub->authAccess);
-    hub->url = huburl;
-}
+    yInitWakeUpSocket(&hub->wuce);
+    // compute an hashed url
+    hub->url = yHashUrl(url,"",0,errmsg);
+    len =YSTRLEN(url);
+    name = yMalloc(len+1);
+    memcpy(name,url,len+1);
+    hub->name = name;
+    hub->user = user;
+    hub->pwd  = pwd;
+    hub->lastTraffic = yapiGetTickCount();
+#ifdef TRACE_NET_HUB
+    dbglog("HUB: %x->%s initialized \n",hub->url,hub->name);
+#endif
+
+    return YAPI_SUCCESS;
+} 
 
 static void yapiDeleteHub(NetHubSt *hub)
 {
+#ifdef TRACE_NET_HUB
+    dbglog("HUB: %x->%s Deleted \n",hub->url,hub->name);
+#endif
+    yFreeWakeUpSocket(&hub->wuce);
     yDeleteCriticalSection(&hub->authAccess);
     if(hub->user)   yFree(hub->user);
     if(hub->realm)  yFree(hub->realm);
@@ -679,24 +904,27 @@ static void yapiDeleteHub(NetHubSt *hub)
 static void unregisterNetHub(yUrlRef  huburl)
 {
     int i;
-    u64      timeout;
+    u64     timeref;
     int      nbKnownDevices;
     yStrRef  knownDevices[128];
     char     errmsg[YOCTO_ERRMSG_LEN];
     
-    
+
     for(i=0; i < NBMAX_NET_HUB; i++){
         NetHubSt *hub = &yContext->nethub[i];
         if(hub->url == huburl) {
-            if(hub->state == NET_HUB_ESTABLISHED || hub->state == NET_HUB_TRYING || hub->state == NET_HUB_DISCONNECTED) {
-                hub->state = NET_HUB_TOCLOSE;
-                yDringWakeUpSocket(&yContext->wuce, 0, errmsg);
-                // wait for the helper thread to stop monitoring these devices
-                timeout = yapiGetTickCount() + 5000;
-                while(hub->state != NET_HUB_CLOSED && yapiGetTickCount() < timeout) {
-                    yApproximateSleep(5);
-                }
+#ifdef TRACE_NET_HUB
+            dbglog("HUB: unregister %x->%s  \n",huburl,hub->name);
+#endif
+            hub->state = NET_HUB_TOCLOSE;
+            yThreadRequestEnd(&hub->net_thread);
+            yDringWakeUpSocket(&hub->wuce, 0, errmsg);
+            // wait for the helper thread to stop monitoring these devices
+            timeref=yapiGetTickCount();
+            while(yThreadIsRunning(&hub->net_thread) && (yapiGetTickCount()-timeref >YIO_DEFAULT_TCP_TIMEOUT) ) {
+                yApproximateSleep(10);
             }
+            yThreadKill(&hub->net_thread);
             yapiDeleteHub(hub);
             break;
         }
@@ -705,13 +933,37 @@ static void unregisterNetHub(yUrlRef  huburl)
     nbKnownDevices = wpGetAllDevUsingHubUrl(huburl,knownDevices,128);
     for(i = 0 ; i < nbKnownDevices; i++) {
         if (knownDevices[i]!=INVALID_HASH_IDX){
-            wpUnregisterNet(knownDevices[i]);
+            unregisterNetDevice(knownDevices[i]);
         }
     }
     
 }
 
 
+
+static void ssdpEntryUpdate(const char *serial, const char *urlToRegister, const char *urlToUnregister)
+{
+	if (!yContext)
+		// API not yet initialized -> drop everthing
+		return;
+	if (urlToRegister){
+		// still valid entry
+		if (yContext->hubDiscoveryCallback) {
+			yEnterCriticalSection(&yContext->deviceCallbackCS);
+			yContext->hubDiscoveryCallback(serial, urlToRegister);
+			yLeaveCriticalSection(&yContext->deviceCallbackCS);
+		}
+	}
+
+	if (yContext->detecttype & Y_DETECT_NET) {
+		if (urlToUnregister) {
+			yapiUnregisterHub(urlToUnregister);
+		} 
+		if (urlToRegister) {
+			yapiPreregisterHub(urlToRegister, NULL);
+		}
+	}
+}
 
 
 /*****************************************************************************
@@ -780,7 +1032,6 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int detect_type,char *errmsg)
     //initialize white/yellow pages support
     yHashInit();
 
-    yInitWakeUpSocket(&ctx->wuce);
     if (YISERR(yTcpInit(errmsg))){
         yDeleteCriticalSection(&ctx->updateDev_cs);
         yDeleteCriticalSection(&ctx->handleEv_cs);
@@ -799,9 +1050,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int detect_type,char *errmsg)
     yCreateEvent(&ctx->exitSleepEvent);
 
     if(detect_type & Y_DETECT_NET) {
-#ifdef Y_UPNP_DETECT        
-        if (YISERR(yUPNPStart(&ctx->upnp,errmsg))){
-            yFreeWakeUpSocket(&yContext->wuce);
+        if (YISERR(ySSDPStart(&ctx->SSDP, ssdpEntryUpdate, errmsg))){
             yTcpShutdown();
             yCloseEvent(&yContext->exitSleepEvent);
             yDeleteCriticalSection(&ctx->updateDev_cs);
@@ -814,11 +1063,6 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int detect_type,char *errmsg)
             YPERF_API_LEAVE(yapiInitAPI);
             return YAPI_IO_ERROR;
         }
-#else
-        YPERF_API_LEAVE(yapiInitAPI);
-        return YERRMSG(YAPI_NOT_SUPPORTED, "Detection of network hubs is not yet supported in this version of the API");
-
-#endif
     }
     yContext=ctx;
 
@@ -854,29 +1098,16 @@ void YAPI_FUNCTION_EXPORT yapiFreeAPI(void)
         yUsbFree(yContext,NULL);
     }
 
-#ifdef Y_UPNP_DETECT        
-	if(yContext->detecttype & Y_DETECT_NET) {
-        yUPNPStop(&yContext->upnp);
-    }
-#endif
+     ySSDPStop(&yContext->SSDP);
     //unregister all Network hub
     for(i=0; i < NBMAX_NET_HUB; i++){
         if(yContext->nethub[i].url !=INVALID_HASH_IDX)
             unregisterNetHub(yContext->nethub[i].url);
     }
 
-    if(yThreadIsRunning(&yContext->net_thread)) {
-        u64 timeref;
-        yThreadRequestEnd(&yContext->net_thread);
-        timeref=yapiGetTickCount();
-        while(yThreadIsRunning(&yContext->net_thread) && (yapiGetTickCount()-timeref >YIO_DEFAULT_TCP_TIMEOUT) ) {
-            yApproximateSleep(10);
-        }
-        yThreadKill(&yContext->net_thread);
-    }
+ 
     
     yHashFree();
-    yFreeWakeUpSocket(&yContext->wuce);
     yTcpShutdown();
     yCloseEvent(&yContext->exitSleepEvent);
 
@@ -940,7 +1171,7 @@ void YAPI_FUNCTION_EXPORT yapiRegisterDeviceArrivalCallback(yapiDeviceUpdateCall
         yEnterCriticalSection(&yContext->enum_cs);
         yContext->arrivalCallback = arrivalCallback;
         if(arrivalCallback != NULL){
-            //FIXME: WE SHOULD USE THE hash table to list all known devices
+            // FIXME: WE SHOULD USE THE hash table to list all known devices
 #if 0
             // call callback with already detected devices
             yPrivDeviceSt *p=yContext->devs;
@@ -1004,11 +1235,26 @@ void YAPI_FUNCTION_EXPORT yapiRegisterFunctionUpdateCallback(yapiFunctionUpdateC
     YPERF_API_LEAVE(yapiRegisterFunctionUpdateCallback);
 }
 
+void YAPI_FUNCTION_EXPORT yapiRegisterTimedReportCallback(yapiTimedReportCallback timedReportCallback)
+{
+    char errmsg[YOCTO_ERRMSG_LEN];
+    if(!yContext) {
+        yapiInitAPI(0,errmsg);
+    }
+    YPERF_API_ENTER(yapiRegisterTimedReportCallback);
+    if(yContext) {
+        yContext->timedReportCallback = timedReportCallback;
+    }
+    YPERF_API_LEAVE(yapiRegisterTimedReportCallback);
+}
+
+
 
 #ifdef DEBUG_NET_NOTIFICATION
 static void dumpNotif(const char *buffer)
 {
     FILE *f; 
+    printf("%s\n",buffer);
     YASSERT(YFOPEN(&f,"c:\\tmp\\api_not.txt","ab")==0);
     fwrite(buffer,1,YSTRLEN(buffer),f);
     fclose(f);
@@ -1043,7 +1289,7 @@ static void wpUpdateTCP(yUrlRef huburl,const char *serial,const char *name, u8 b
     if(status==0)
         return; // no change
 
-    ypRegister(YSTRREF_MODULE_STRING, serialref, yHashPutStr("module"), lnameref, -1, NULL);
+    ypRegister(YSTRREF_MODULE_STRING, serialref, yHashPutStr("module"), lnameref, YOCTO_AKA_YFUNCTION, -1, NULL);
 
     // Forward high-level notification to API user
     if(yContext->changeCallback){
@@ -1059,14 +1305,15 @@ static int handleNetNotification(NetHubSt *hub)
     u16             end,size;
     char            buffer[128];
     char            *p;
-    u8              pkttype,devydx,funydx;
+    u8              pkttype,devydx,funydx,funclass;
     char            *serial,*name,*funcid,*children;
     char            value[YOCTO_PUBVAL_LEN];
+    u8              report[16];
     char            netstop=NOTIFY_NETPKT_STOP;
 #ifdef DEBUG_NET_NOTIFICATION
     u32             abspos = hub->notifAbsPos;
     char            Dbuffer[1024];
-    u8              throw[1024];
+    u8              throwbuf[1024];
     u16             tmp;
 #endif    
     
@@ -1090,7 +1337,7 @@ static int handleNetNotification(NetHubSt *hub)
     }
     
     // handle short funcvalydx notifications
-    if(pkttype == NOTIFY_NETPKT_FUNCVALYDX) {
+    if(pkttype == NOTIFY_NETPKT_TIMEVALYDX || pkttype == NOTIFY_NETPKT_FUNCVALYDX || pkttype == NOTIFY_NETPKT_TIMEAVGYDX) {
         yPopFifo(&(hub->fifo),(u8*) buffer,end+1);
         hub->notifAbsPos += end+1;
         p = buffer+1;
@@ -1101,19 +1348,48 @@ static int handleNetNotification(NetHubSt *hub)
             devydx += 128;
         }
         pos = 0;
-        while(*p != 0 && *p != NOTIFY_NETPKT_STOP) {
-            value[pos++] = *p++;
-        }
-        value[pos] = 0;
+        if(pkttype == NOTIFY_NETPKT_FUNCVALYDX) {
+            while(*p != 0 && *p != NOTIFY_NETPKT_STOP && pos < YOCTO_PUBVAL_LEN-1) {
+                value[pos++] = *p++;
+            }
+            value[pos] = 0;
 #ifdef DEBUG_NET_NOTIFICATION
-        YSPRINTF(Dbuffer,512,"FuncVYDX >devYdx=%d funYdx=%d val=%s (%d)\n",
-                 devydx,funydx,value,abspos);
-        dumpNotif(Dbuffer);    
+            YSPRINTF(Dbuffer,512,"FuncVYDX >devYdx=%d funYdx=%d val=%s (%d)\n",
+                     devydx,funydx,value,abspos);
+            dumpNotif(Dbuffer);
 #endif
-        // Map hub-specific devydx to our devydx
-        devydx = hub->devYdxMap[devydx];
-        if(devydx < MAX_YDX_PER_HUB) {
-            ypUpdateYdx(devydx,funydx,value);
+            // Map hub-specific devydx to our devydx
+            devydx = hub->devYdxMap[devydx];
+            if(devydx < MAX_YDX_PER_HUB) {
+                ypUpdateYdx(devydx,funydx,value);
+            }
+        } else {
+            report[pos++] = (pkttype == NOTIFY_NETPKT_TIMEVALYDX ? 0 : 1);
+			while (isxdigit((u8)p[0]) && isxdigit((u8)p[1]) && pos < sizeof(report)) {
+                int hi_nib = (p[0] <= '9' ? p[0]-'0' : 10+(p[0]&0x4f)-'A');
+                int lo_nib = (p[1] <= '9' ? p[1]-'0' : 10+(p[1]&0x4f)-'A');
+                report[pos++] = hi_nib * 16 + lo_nib;
+                p += 2;
+            }
+#ifdef DEBUG_NET_NOTIFICATION
+            YSPRINTF(Dbuffer,512,"%s >devYdx=%d funYdx=%d val=%s (%d)\n",
+                     (pkttype == NOTIFY_NETPKT_TIMEVALYDX ? "TimeValR" : "TimeAvgR"),
+                     devydx,funydx,value,abspos);
+            dumpNotif(Dbuffer);
+#endif
+            if(funydx == 15) {
+                u32 t = report[1] + 0x100u * report[2] + 0x10000u * report[3] + 0x1000000u * report[4];
+                hub->devYdxTime[devydx] = (double)t + report[5] / 250.0;
+            } else {
+                double deviceTime = hub->devYdxTime[devydx];
+                // Map hub-specific devydx to our devydx
+                devydx = hub->devYdxMap[devydx];
+                if(devydx < MAX_YDX_PER_HUB) {
+                    YAPI_FUNCTION fundesc;
+                    ypRegisterByYdx(hub->devYdxMap[devydx], funydx, NULL, &fundesc);
+                    yContext->timedReportCallback(fundesc, deviceTime, report, pos);
+                }
+            }
         }
         return 1;
     }
@@ -1123,13 +1399,13 @@ static int handleNetNotification(NetHubSt *hub)
     if(pos != 0) {
         // does not start with signature, drop everything until stop marker
 #ifdef DEBUG_NET_NOTIFICATION
-        memset(throw, 0, sizeof(throw));
+        memset(throwbuf, 0, sizeof(throwbuf));
         tmp = (end > 50 ? 50 : end);
-        yPopFifo(&(hub->fifo),throw,tmp);
+        yPopFifo(&(hub->fifo),throwbuf,tmp);
         yPopFifo(&(hub->fifo),NULL,end+1-tmp);            
         Dbuffer[1023]=0;
         YSPRINTF(Dbuffer,512,"throw %d / %d [%s]\n",
-                 end,pos,throw);
+                 end,pos,throwbuf);
         dumpNotif(Dbuffer);    
 #else            
         yPopFifo(&(hub->fifo),NULL,end+1);            
@@ -1147,12 +1423,23 @@ static int handleNetNotification(NetHubSt *hub)
     pkttype = *buffer;
     p = buffer+1;
     if(pkttype == NOTIFY_NETPKT_NOT_SYNC) {
+        int testPing;
 #ifdef DEBUG_NET_NOTIFICATION
         YSPRINTF(Dbuffer,512,"Sync from %d to %s\n",
              hub->notifAbsPos, p);
         dumpNotif(Dbuffer);    
 #endif
         hub->notifAbsPos = atoi(p);
+        //look if we have a \n just after the sync notification
+        // if yes this mean that the hub will send some ping notification
+        testPing = ySeekFifo(&(hub->fifo), (u8*) &netstop, 1, 0, 1, 0);
+        if(testPing == 0){
+#ifdef DEBUG_NET_NOTIFICATION
+            YSPRINTF(Dbuffer,1024,"HUB: %X->%s will send ping notification\n",hub->url,hub->name);
+            dumpNotif(Dbuffer);
+#endif
+            hub->flags |= NETH_F_SEND_PING_NOTIFICATION;
+        }
         return 1;
     }
     hub->notifAbsPos += size+1+NOTIFY_NETPKT_START_LEN;
@@ -1207,7 +1494,7 @@ static int handleNetNotification(NetHubSt *hub)
                      serial,funcid,name,abspos);
             dumpNotif(Dbuffer);    
 #endif
-            ypUpdateUSB(serial,funcid,name,-1,NULL);
+            ypUpdateUSB(serial,funcid,name,-1,-1,NULL);
             break;
 
         
@@ -1230,7 +1517,7 @@ static int handleNetNotification(NetHubSt *hub)
                 serial,funcid,value,abspos);
             dumpNotif(Dbuffer);    
 #endif
-            ypUpdateUSB(serial,funcid,NULL,-1,value);
+            ypUpdateUSB(serial,funcid,NULL,-1,-1,value);
             break;
 
         
@@ -1254,12 +1541,18 @@ static int handleNetNotification(NetHubSt *hub)
             }
             *p++ = 0;
             funydx = atoi(p);
+            p = strchr(p,NOTIFY_NETPKT_SEP);
+            if(p==NULL || p[1] < '0'){
+                funclass = YOCTO_AKA_YFUNCTION;
+            } else {
+                funclass = p[1]-'0';
+            }
 #ifdef DEBUG_NET_NOTIFICATION
             YSPRINTF(Dbuffer,512,"FuncNYDX >%s  funcid=%s funcname=%s funYdx=%d (%d)\n",
                      serial,funcid,name,funydx,abspos);
             dumpNotif(Dbuffer);    
 #endif
-            ypUpdateUSB(serial,funcid,name,funydx,NULL);
+            ypUpdateUSB(serial,funcid,name,funclass,funydx,NULL);
             break;
             
             
@@ -1280,7 +1573,7 @@ static int handleNetNotification(NetHubSt *hub)
             dumpNotif(Dbuffer);    
 #endif
             if ( *p == '0') {
-                wpUnregisterNet(yHashPutStr(children));
+                unregisterNetDevice(yHashPutStr(children));
             }
             break;
             
@@ -1321,8 +1614,8 @@ static void* yhelper_thread(void* ctx)
     char        buffer[512];
     yThread     *thread=(yThread*)ctx;
     char        errmsg[YOCTO_ERRMSG_LEN];
-    NetHubSt    *hub;
-    TcpReqSt    *req, *selectlist[NBMAX_NET_HUB+ALLOC_YDX_PER_HUB];
+    NetHubSt    *hub = (NetHubSt*) thread->ctx;
+    TcpReqSt    *req, *selectlist[1+ALLOC_YDX_PER_HUB];
     u32         toread;
     int         res;
 #ifdef DEBUG_NET_NOTIFICATION
@@ -1332,57 +1625,57 @@ static void* yhelper_thread(void* ctx)
     yThreadSignalStart(thread);
     while(!yThreadMustEnd(thread)){
         towatch=0;
-        for (i = 0; i < NBMAX_NET_HUB; i++) {
-            hub = &yContext->nethub[i];            
-            if(hub->url == INVALID_HASH_IDX)
-                continue;
-            if(hub->state == NET_HUB_ESTABLISHED || hub->state == NET_HUB_TRYING){
-                selectlist[towatch] = hub->notReq;
-                towatch++;
-            }else if(hub->state == NET_HUB_TOCLOSE){
-                hub->state = NET_HUB_CLOSED;
-            } else if (hub->state == NET_HUB_DISCONNECTED) {
-                if(hub->notReq == NULL) {
-                    hub->notReq = yMalloc(sizeof(TcpReqSt));
-                    yTcpInitReq(hub->notReq, hub);
-                }
-                if (yapiGetTickCount() >= hub->retryWait) {
-                    yFifoInit(&(hub->fifo), hub->buffer,sizeof(hub->buffer));                    
-                    YSPRINTF(buffer, 256,"GET /not.byn?abs=%d HTTP/1.1\r\n\r\n" , hub->notifAbsPos);
-                    res = yTcpOpenReq(hub->notReq, buffer, YSTRLEN(buffer), 0, errmsg);
-                    if (YISERR(res)) {
-                        u32 delay = 500 << hub->retryCount;
-                        if(delay > 8000)
-                            delay = 8000;
-                        hub->retryWait =  yapiGetTickCount() + delay;
-                        hub->retryCount++;
-                    } else {
+        if(hub->state == NET_HUB_ESTABLISHED || hub->state == NET_HUB_TRYING){
+            selectlist[towatch] = hub->notReq;
+            towatch++;
+        }else if(hub->state == NET_HUB_TOCLOSE){
+            hub->state = NET_HUB_CLOSED;
+        } else if (hub->state == NET_HUB_DISCONNECTED) {
+            u64 now;
+            if(hub->notReq == NULL) {
+                hub->notReq = yMalloc(sizeof(TcpReqSt));
+                yTcpInitReq(hub->notReq, hub);
+            }
+            now = yapiGetTickCount();
+            if ( (u64)( now - hub->lastAttempt ) > hub->attemptDelay) {
+                yFifoInit(&(hub->fifo), hub->buffer,sizeof(hub->buffer));                    
+                YSPRINTF(buffer, 256,"GET /not.byn?abs=%d HTTP/1.1\r\n\r\n" , hub->notifAbsPos);
+                res = yTcpOpenReq(hub->notReq, buffer, YSTRLEN(buffer), 0, errmsg);
+                if (YISERR(res)) {
+                    hub->attemptDelay = 500 << hub->retryCount;
+                    if(hub->attemptDelay > 8000)
+                        hub->attemptDelay = 8000;
+                    hub->lastAttempt =  yapiGetTickCount();
+                    hub->retryCount++;
+                } else {
 #ifdef DEBUG_NET_NOTIFICATION
-                        YSPRINTF(Dbuffer,1024,"nethub %X started\n",hub->url);
-                        dumpNotif(Dbuffer);
+                    YSPRINTF(Dbuffer,1024,"HUB: %X->%s started\n",hub->url,hub->name);
+                    dumpNotif(Dbuffer);
 #endif
-                        hub->state = NET_HUB_TRYING;
-                        hub->retryCount=0;
-                        selectlist[towatch++] = hub->notReq;
-                    }
+                    hub->state = NET_HUB_TRYING;
+                    hub->retryCount=0;
+                    selectlist[towatch++] = hub->notReq;
                 }
             }
         }
+   
         // Handle async connections as well in this thread
         for (i=0; i < ALLOC_YDX_PER_HUB; i++) {
             req = &yContext->tcpreq[i];
+            if(req->hub != hub){
+                continue;
+            }
             if(req->isAsyncIO && req->skt != INVALID_SOCKET) {
                 selectlist[towatch++] = req;
             }
         }
 
-        if(YISERR(yTcpSelectReq(selectlist,towatch, 1000, &yContext->wuce, errmsg))){
+        if(YISERR(yTcpSelectReq(selectlist,towatch, 1000, &hub->wuce, errmsg))){
             dbglog("yTcpSelectReq failed (%s)\n",errmsg);
             yApproximateSleep(1000);
         } else {
             for (i = 0; i < towatch; i++) {
                 req = selectlist[i];
-                hub = req->hub;
                 if(req == hub->notReq) {
                     toread = yFifoGetFree(&hub->fifo);
                     while(toread > 0) {
@@ -1391,7 +1684,7 @@ static void* yhelper_thread(void* ctx)
                         if(res > 0) {
                             buffer[res]=0;
 #ifdef DEBUG_NET_NOTIFICATION
-                            YSPRINTF(Dbuffer,1024,"Network hub %X push %d [\n%s\n]\n",hub->url,res,buffer);
+                            YSPRINTF(Dbuffer,1024,"HUB: %X->%s push %d [\n%s\n]\n",hub->url,hub->name,res,buffer);
                             dumpNotif(Dbuffer);
 #endif
                             yPushFifo(&(hub->fifo), (u8*)buffer, res);
@@ -1400,7 +1693,7 @@ static void* yhelper_thread(void* ctx)
                                 if(eoh != 0xffff) {
                                     if(eoh >= 12) {
                                         yPopFifo(&(hub->fifo), (u8 *)buffer, 12);
-                                        yPopFifo(&(hub->fifo), NULL, eoh+2-12);
+                                        yPopFifo(&(hub->fifo), NULL, eoh+4-12);
                                         if(!memcmp((u8 *)buffer, (u8 *)"HTTP/1.1 200", 12)) {
                                             hub->state = NET_HUB_ESTABLISHED;
                                         }
@@ -1418,22 +1711,25 @@ static void* yhelper_thread(void* ctx)
                             if(hub->state == NET_HUB_ESTABLISHED) {
                                 while(handleNetNotification(hub));
                             }
+                            hub->lastTraffic = yapiGetTickCount();
                         } else {
                             res = yTcpEofReq(req, errmsg);
                             if (res != 0) {
-                                char hubname[YOCTO_HOSTNAME_NAME]="";
-                                u16  port;
                                 // error or remote close
                                 yTcpCloseReq(req);
                                 hub->state = NET_HUB_DISCONNECTED;
-                                yHashGetUrlPort(hub->url, hubname, &port);
                                 if(res == 1) YERRMSG(YAPI_IO_ERROR, "Connection closed by remote host");
-                                dbglog("Disconnected from network hub %s: %s\n", hubname, errmsg);
+                                dbglog("Disconnected from network hub %s (%s)\n", hub->name, errmsg);
 #ifdef DEBUG_NET_NOTIFICATION
-                                YSPRINTF(Dbuffer,1024,"Network hub %X has closed the connection for notification\n",hub->url);
+                                YSPRINTF(Dbuffer,1024,"Network hub %X->%s has closed the connection for notification\n",hub->url,hub->name);
                                 dumpNotif(Dbuffer);
 #endif
                             } else {
+                                if (hub->flags & NETH_F_SEND_PING_NOTIFICATION && ( (u64)(yapiGetTickCount() - hub->lastTraffic)) > NET_HUB_NOT_CONNECTION_TIMEOUT){
+                                    dbglog("network hub %s(%x) didn't respond for too long\n", hub->name, hub->url);
+                                    yTcpCloseReq(req);
+                                    hub->state = NET_HUB_DISCONNECTED;
+                                }
                                 // nothing more to be read, exit loop
                                 break;
                             }
@@ -1503,15 +1799,14 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiUnlockDeviceCallBack(char *errmsg)
 
 static YRETCODE yapiRegisterHubEx(const char *url, int checkacces, char *errmsg)
 {
-    yUrlRef  huburl;
     int i;
     int res;
 
     if(!yContext) {
         YPROPERR(yapiInitAPI(0,errmsg));
     }
-
-    if(YSTRICMP(url,"usb")==0){
+   
+   if(YSTRICMP(url,"usb")==0){
         if(!(yContext->detecttype & Y_DETECT_USB)){
             yEnterCriticalSection(&yContext->enum_cs);
             yContext->detecttype |=Y_DETECT_USB;
@@ -1519,42 +1814,21 @@ static YRETCODE yapiRegisterHubEx(const char *url, int checkacces, char *errmsg)
             yLeaveCriticalSection(&yContext->enum_cs);
             YPROPERR(res);
         }
+    } else if(YSTRICMP(url,"net")==0) {
+        if(!(yContext->detecttype & Y_DETECT_NET)){
+            yEnterCriticalSection(&yContext->enum_cs);
+            yContext->detecttype |=Y_DETECT_NET;
+            res = ySSDPStart(&yContext->SSDP, ssdpEntryUpdate, errmsg);            
+            yLeaveCriticalSection(&yContext->enum_cs);
+            YPROPERR(res);
+        }
     }else{
         NetHubSt hubst;
         char     suberr[YOCTO_ERRMSG_LEN];
-        int      len, firstfree;        
-        char     *user = NULL, *pwd = NULL;
-        const char *p;
-        
-        // skip http prefix
-        if(YSTRNCMP(url,"http://",7)==0){
-            url += 7;
-        }
-        // search for any authentication info
-        for(p = url; *p && *p != '@' && *p != '/'; p++);
-        if(*p == '@') {
-            for(p = url; *p != ':' && *p != '@'; p++);
-            if(*p != ':') {
-                return YERRMSG(YAPI_INVALID_ARGUMENT, "Missing authentication parameter");
-            }
-            len = (int)(p-url);
-            user = yMalloc(len+1);
-            memcpy(user, url, len);
-            user[len] = 0;
-            url = ++p;
-            while(*p != '@') p++;
-            len = (int)(p-url);
-            pwd = yMalloc(len+1);
-            memcpy(pwd, url, len);
-            pwd[len] = 0;
-            url = p+1;
-        }
-        // compute an hashed url
-        huburl = yHashUrl(url,"",0,errmsg);
-        if (checkacces) {
-            yapiInitHub(&hubst, huburl);
-            hubst.user = user;
-            hubst.pwd  = pwd;
+        int      firstfree;        
+        YPROPERR(yapiInitHub(&hubst, url,errmsg));
+        if(checkacces) {
+            hubst.flags |= NETH_F_MANDATORY;
             res = yNetHubEnum(&hubst,1,suberr);
             if(YISERR(res)){
                 if (errmsg)
@@ -1567,7 +1841,7 @@ static YRETCODE yapiRegisterHubEx(const char *url, int checkacces, char *errmsg)
         yEnterCriticalSection(&yContext->enum_cs);
         firstfree = NBMAX_NET_HUB;
         for(i=0; i < NBMAX_NET_HUB; i++){
-            if(yContext->nethub[i].url == huburl)
+            if(yContext->nethub[i].url == hubst.url)
                 break;
             if(firstfree == NBMAX_NET_HUB && yContext->nethub[i].url == INVALID_HASH_IDX) {
                 firstfree = i;
@@ -1575,33 +1849,24 @@ static YRETCODE yapiRegisterHubEx(const char *url, int checkacces, char *errmsg)
         }
         if (i>=NBMAX_NET_HUB && firstfree < NBMAX_NET_HUB) {
             i = firstfree;
-            if(checkacces) {
-                // save mapping attributed from first access
-                memcpy(&yContext->nethub[i], &hubst, sizeof(NetHubSt));
-            } else {
-                yapiInitHub(&yContext->nethub[i], huburl);
-                yContext->nethub[i].user = user;
-                yContext->nethub[i].pwd  = pwd;
-            }
+            // save mapping attributed from first access
+#ifdef TRACE_NET_HUB
+            dbglog("HUB: register %x->%s \n",hubst.url,hubst.name);
+#endif
 
-            if(!yThreadIsRunning(&yContext->net_thread)) {
-                if(YISERR(res = yStartWakeUpSocket(&yContext->wuce, errmsg))){
-                    yLeaveCriticalSection(&yContext->enum_cs);
-                    return res;
-                }
-
-                //yThreadCreate will not create a new thread if there is already one running
-                if(yThreadCreate(&yContext->net_thread,yhelper_thread,(void*)yContext)<0){
-                    yLeaveCriticalSection(&yContext->enum_cs);
-                    return YERRMSG(YAPI_IO_ERROR,"Unable to start helper thread");
-                }
+            memcpy(&yContext->nethub[i], &hubst, sizeof(NetHubSt));        
+            if(YISERR(res = yStartWakeUpSocket(&yContext->nethub[i].wuce, errmsg))){
+                yLeaveCriticalSection(&yContext->enum_cs);
+                return res;
             }
-            yDringWakeUpSocket(&yContext->wuce, 1, errmsg);
+            //yThreadCreate will not create a new thread if there is already one running
+            if(yThreadCreate(&yContext->nethub[i].net_thread,yhelper_thread,(void*)&yContext->nethub[i])<0){
+                yLeaveCriticalSection(&yContext->enum_cs);
+                return YERRMSG(YAPI_IO_ERROR,"Unable to start helper thread");
+            }
+            yDringWakeUpSocket(&yContext->nethub[i].wuce, 1, errmsg);
         }
-        if(user) yFree(user);
-        if(pwd) yFree(pwd);
         yLeaveCriticalSection(&yContext->enum_cs);
-
         if (i==NBMAX_NET_HUB) {
             yapiDeleteHub(&hubst);
             return YERRMSG(YAPI_INVALID_ARGUMENT,"Too many network hub registered");
@@ -1645,6 +1910,10 @@ void YAPI_FUNCTION_EXPORT yapiUnregisterHub(const char *url)
             yUSBReleaseAllDevices();
             yUsbFree(yContext,NULL);
             yContext->detecttype ^= Y_DETECT_USB;
+        }
+    }else if(YSTRICMP(url,"net")==0){
+        if(yContext->detecttype & Y_DETECT_NET) {
+            yContext->detecttype ^= Y_DETECT_NET;
         }
     }else{
         const char *p;
@@ -1753,7 +2022,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiSleep(int ms_duration, char *errmsg)
             err = yapiHandleEvents(errmsg);
         }
         now =yapiGetTickCount();
-        //fixme we may want to use a samller timeout
+        // FIXME: we may want to use a samller timeout
         if (now < timeout) {
            if(yWaitForEvent(&yContext->exitSleepEvent,(int)(timeout-now)))
                test_pkt++; //just for testing
@@ -1768,6 +2037,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiSleep(int ms_duration, char *errmsg)
 
 #ifdef WINDOWS_API
 static int                 tickUseHiRes = -1;
+static u64                 tickOffset = 0;
 static LARGE_INTEGER       tickFrequency;
 static LARGE_INTEGER       tickStart;
 #endif
@@ -1778,21 +2048,25 @@ u64 YAPI_FUNCTION_EXPORT yapiGetTickCount(void)
 #ifdef WINDOWS_API
     LARGE_INTEGER performanceCounter;
 
-    if(tickUseHiRes<0){
+    if(tickUseHiRes < 0){
         if (QueryPerformanceFrequency(&tickFrequency)){
-            tickUseHiRes=1;
+            tickUseHiRes = 1;
+            tickOffset = (u64)time(NULL) * 1000u;
             QueryPerformanceCounter(&tickStart);
         } else {
-            tickUseHiRes=0;
+            tickUseHiRes = 0;
+            tickOffset = (u64)time(NULL) * 1000u - GetTickCount();
         }
+        // make sure the offset is always > 0
+        if((s64)tickOffset <= 0) tickOffset = 1;
     }
     if(tickUseHiRes>0) {
         QueryPerformanceCounter(&performanceCounter);
         performanceCounter.QuadPart -= tickStart.QuadPart;
         // we add +1 because it is not nice to start with zero
-        res = performanceCounter.QuadPart * 1000 / tickFrequency.QuadPart + 1;
+        res = performanceCounter.QuadPart * 1000 / tickFrequency.QuadPart + tickOffset;
     } else {
-        res = GetTickCount();
+        res = GetTickCount() + tickOffset;
     }
 #else
     //get the current number of microseconds since January 1st 1970
@@ -2112,7 +2386,7 @@ static YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *r
         iohdl = &localhdl;
     }
     memset(iohdl,0,YIOHDL_SIZE);
-   url = wpGetDeviceUrlRef(dev);
+    url = wpGetDeviceUrlRef(dev);
 
     switch(yHashGetUrlPort(url, buffer, NULL)) {
     case USB_URL:
@@ -2129,10 +2403,7 @@ static YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *r
             }
         } while(yapiGetTickCount() < timeout);
         if(res != YAPI_SUCCESS) {
-            dbglog("opend failed %s!",errmsg);
-            //dumpYUSBPerf();
             res = yUsbOpen(iohdl,buffer,errmsg);
-            //dumpYApiPerf();
             return res;
         }
         res = yUsbWrite(iohdl,request,reqlen,errmsg);
@@ -2150,6 +2421,7 @@ static YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *r
         return res;
 
     default:
+        YPERF_API_ENTER(tmp1);
         devydx = wpGetDevYdx((yStrRef)dev);
         if(devydx < 0) break;
         tcpreq = &yContext->tcpreq[devydx];
@@ -2166,15 +2438,35 @@ static YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *r
                 yEnterCriticalSection(&tcpreq->hub->authAccess);
                 if(!tcpreq->hub->user || strcmp(tcpreq->hub->user,"admin")!=0) {
                     yLeaveCriticalSection(&tcpreq->hub->authAccess);
+                 YPERF_API_LEAVE(tmp1);
                     return YERRMSG(YAPI_UNAUTHORIZED, "Access denied: admin credentials required");
                 }
                 yLeaveCriticalSection(&tcpreq->hub->authAccess);
             }
         }
+        if (tcpreq->hub->flags & NETH_F_SEND_PING_NOTIFICATION && tcpreq->hub->state != NET_HUB_ESTABLISHED) {
+            YSPRINTF(errmsg,YOCTO_ERRMSG_LEN,"hub %s is not reachable",tcpreq->hub->name);
+            YPERF_API_LEAVE(tmp1);
+            return YAPI_IO_ERROR;
+        }
+        YPERF_API_ENTER(tmp2);
         res = yTcpOpenReq(tcpreq,request,reqlen,isAsync,errmsg);
-        if(res != YAPI_SUCCESS) return res;
+        YPERF_API_LEAVE(tmp2);
+        if(res != YAPI_SUCCESS) {
+            YPERF_API_LEAVE(tmp1);
+            return res;
+        }
+
+        if(isAsync) {
+            res =yDringWakeUpSocket(&tcpreq->hub->wuce, 2, errmsg);
+            if(res != YAPI_SUCCESS) {
+                YPERF_API_LEAVE(tmp1);
+                return res;
+            }
+        } 
         iohdl->tcpreqidx = devydx;
         iohdl->type = YIO_TCP;
+        YPERF_API_LEAVE(tmp1);
        return YAPI_SUCCESS;
     }
     return YERR(YAPI_DEVICE_NOT_FOUND);
@@ -2262,7 +2554,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncStartEx(YIOHDL *iohdl, const ch
         YPERF_API_LEAVE(yapiHTTPRequestSyncStartEx);
         return YERR(YAPI_INVALID_ARGUMENT);
     }
-    YREQLOG("SyncStart for %s done (size=%d iodhl=%x)\n",device,replysize?*replysize:-1,iohdl);
+    //YREQLOG("SyncStart for %s done (size=%d iodhl=%x)\n",device,replysize?*replysize:-1,iohdl);
     YPERF_API_LEAVE(yapiHTTPRequestSyncStartEx);
     return YAPI_SUCCESS;
 }
@@ -2285,7 +2577,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncDone(YIOHDL *iohdl, char *errms
         return YERR(YAPI_NOT_INITIALIZED);
 
     YPERF_API_ENTER(yapiHTTPRequestSyncDone);
-    YREQLOG("SyncDone for %x \n",iohdl);
+    //YREQLOG("SyncDone for %x \n",iohdl);
     if(iohdl->type == YIO_USB) {
         yUsbClose(iohdl, errmsg);
     } else if(iohdl->type == YIO_TCP) {
@@ -2325,11 +2617,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestAsyncEx(const char *device, const c
                     return res;
                 }
             }
-        } else{
-            if(iohdl.type == YIO_TCP) {
-                res = yDringWakeUpSocket(&yContext->wuce, 2, errmsg);
-            } 
-        }
+        } 
     } while (res !=YAPI_SUCCESS && retryCount--);
     YPERF_API_LEAVE(yapiHTTPRequestAsyncEx);
 
@@ -2371,6 +2659,27 @@ int YAPI_FUNCTION_EXPORT yapiHTTPRequest(const char *device, const char *request
     YPROPERR(yapiHTTPRequestSyncDone(&iohdl, errmsg));
     YPERF_API_LEAVE(yapiHTTPRequest);
     return replysize;
+}
+
+void YAPI_FUNCTION_EXPORT yapiRegisterHubDiscoveryCallback(yapiHubDiscoveryCallback hubDiscoveryCallback)
+{
+	char errmsg[YOCTO_ERRMSG_LEN];
+	if (!yContext) {
+		yapiInitAPI(0, errmsg);
+	}
+	if (yContext) {
+		yContext->hubDiscoveryCallback = hubDiscoveryCallback;
+	}
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiTriggerHubDiscovery(char *errmsg)
+{
+    if(!yContext)
+        return YERR(YAPI_NOT_INITIALIZED);
+    // ensure SSDP thread is started
+    YPROPERR(ySSDPStart(&yContext->SSDP,ssdpEntryUpdate,errmsg));
+    // triger SSDP discovery
+    return ySSDPDiscover(&yContext->SSDP,errmsg);
 }
 
 YRETCODE  YAPI_FUNCTION_EXPORT  yapiFlashDevice(yFlashArg *arg, char *errmsg)
@@ -2461,6 +2770,16 @@ void yapiRegisterRawNotificationCb(yRawNotificationCb callback)
 
     yEnterCriticalSection(&yContext->enum_cs);
     yContext->rawNotificationCb = callback;
+    yLeaveCriticalSection(&yContext->enum_cs);
+}
+
+void yapiRegisterRawReportCb(yRawReportCb callback)
+{
+    if(!yContext)
+        return;
+    
+    yEnterCriticalSection(&yContext->enum_cs);
+    yContext->rawReportCb = callback;
     yLeaveCriticalSection(&yContext->enum_cs);
 }
 

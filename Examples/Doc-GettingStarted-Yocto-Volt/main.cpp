@@ -15,12 +15,6 @@ static void usage(void)
     exit(1);
 }
 
-static void die(const char* errmsg)
-{
-    cout << errmsg << " (Check cable)"<< endl;
-    exit(1);
-}
-
 int main(int argc, const char * argv[])
 {
     string       errmsg;
@@ -35,35 +29,43 @@ int main(int argc, const char * argv[])
     }
     target = (string) argv[1];
     
+    YAPI::DisableExceptions();
+
     // Setup the API to use local USB devices
-    if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
+    if (YAPI::RegisterHub("usb", errmsg) != YAPI_SUCCESS) {
         cerr << "RegisterHub error: " << errmsg << endl;
         return 1;
     }
 
     if (target == "any") {
         // retreive any voltage sensor (can be AC or DC)
-        sensor = yFirstVoltage();
-        if (sensor==NULL)
-            die ("No module connected");
+        sensor = YVoltage::FirstVoltage();
+        if (sensor==NULL){
+            cerr <<"No module connected (Check cable)"<< endl;
+            exit(1);
+        }
     } else {
-        sensor = yFindVoltage(target + ".voltage1");
+        sensor = YVoltage::FindVoltage(target + ".voltage1");
     }
     
     // we need to retreive both DC and AC voltage from the device.    
     if (sensor->isOnline())  {
         m = sensor->get_module();
-        sensorDC = yFindVoltage(m->get_serialNumber() + ".voltage1");
-        sensorAC = yFindVoltage(m->get_serialNumber() + ".voltage2");
-      } else {
-        die("Module not connected");
-      }
+        sensorDC = YVoltage::FindVoltage(m->get_serialNumber() + ".voltage1");
+        sensorAC = YVoltage::FindVoltage(m->get_serialNumber() + ".voltage2");
+    } else {
+            cerr <<"No module connected (Check cable)"<< endl;
+            exit(1);
+    }
     while(1) {
-        if (!m->isOnline())  die("Module not connected");        
+        if (!sensorDC->isOnline())  {
+            cout << "Module disconnected" << endl;        
+            break;
+        }
         cout << "Voltage,  DC : " << sensorDC->get_currentValue() << " v";
         cout << "   AC : " << sensorAC->get_currentValue() << " v";
         cout << "  (press Ctrl-C to exit)" << endl;
-        ySleep(1000,errmsg);
+        YAPI::Sleep(1000,errmsg);
     };
         
     return 0;

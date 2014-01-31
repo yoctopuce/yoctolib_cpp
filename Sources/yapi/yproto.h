@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 12461 2013-08-22 08:58:05Z seb $
+ * $Id: yproto.h 14682 2014-01-23 09:53:47Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -131,7 +131,7 @@ typedef struct{
 #include "ymemory.h"
 #ifdef YSAFE_MEMORY
 #define yMalloc(size)                   ySafeMalloc(__FILE_ID__,__LINE__,size)
-#define yFree(ptr)                      ySafeFree(__FILE_ID__,__LINE__,ptr)
+#define yFree(ptr)                      {ySafeFree(__FILE_ID__,__LINE__,ptr);ptr=NULL;}
 #define yTracePtr(ptr)                  ySafeTrace(__FILE_ID__,__LINE__,ptr)
 #ifndef YMEMORY_ALLOW_MALLOC
 #undef malloc
@@ -199,6 +199,7 @@ int yvsprintf_s (char *dst, unsigned dstsize, const char * fmt, va_list arg );
 //#define DEBUG_NET_NOTIFICATION
 //#define DEBUG_DUMP_PKT
 //#define DEBUG_USB_TRAFIC
+//#define TRACE_NET_HUB
 
 #define MSC_VS2003 1310
 
@@ -398,7 +399,16 @@ void yPktQueueInit(pktQueue  *q);
 void yPktQueueFree(pktQueue  *q);
 void yPktQueueSetError(pktQueue  *q,YRETCODE code, const char * msg);
 
+#ifdef OSX_API
 
+typedef struct {
+    IOHIDManagerRef     manager;
+    yCRITICAL_SECTION   hidMCS;
+    IOHIDDeviceRef      devref;
+    CFStringRef         run_loop_mode;
+} OSX_HID_REF;
+
+#endif
 
 
 #define NBMAX_NET_HUB               32
@@ -432,8 +442,7 @@ typedef struct _yInterfaceSt {
     OS_USB_Packet   tmpd2hpkt;
     OS_USB_Packet   tmph2dpkt;
 #elif defined(OSX_API)
-    IOHIDDeviceRef      devref;
-    CFStringRef         run_loop_mode;
+    OSX_HID_REF         hid;
     USB_Packet          tmprxpkt;
 #elif defined(LINUX_API)
     libusb_device           *devref;
@@ -515,10 +524,12 @@ typedef struct  _yPrivDeviceSt{
     YRUN_STATUS         rstatus;    // running status of the device (valid only on working dev)
     char                errmsg[YOCTO_ERRMSG_LEN];
     unsigned int        nb_startup_retry;
-    u64                 next_startup_attempt;
+    u64                 next_startup_attempt;    
     USB_HDL             pendingIO; 
     YHTTP_STATUS        httpstate;
     yDeviceSt           infos;      // device infos
+    u32                 lastUtcUpdate;
+    double              deviceTime;
     pktItem             *currxpkt;
     u8                  curxofs;
     pktItem             *curtxpkt;
@@ -563,23 +574,38 @@ typedef enum {
 // If made bigger than 255, change plenty of u8 into u16 and pray
 #define MAX_YDX_PER_HUB 255
 #define ALLOC_YDX_PER_HUB 256
+// NetHubSt flags
+#define NETH_F_MANDATORY                1 
+#define NETH_F_SEND_PING_NOTIFICATION   2 
+#define NETH_F_   2 
+
+#define NET_HUB_NOT_CONNECTION_TIMEOUT   (6*1024)
+
 
 typedef struct _NetHubSt {
     yUrlRef             url;            // hub base URL, or INVALID_HASH_IDX if unused
+    u32                 flags;
+	yStrRef				serial;
+    WakeUpSocket        wuce;
+    yThread             net_thread;
     // the following fields are for the notification helper thread only
     NET_HUB_STATE       state;
     int                 retryCount;
     struct _TcpReqSt    *notReq;
     u32                 notifAbsPos;
-    u64                 retryWait;
+    u64                 lastAttempt;    // time of the last connection attempt (in ms)
+    u64                 attemptDelay;   // delay until next attemps (in ms)
     yFifoBuf            fifo;           // notification fifo
     u8                  buffer[1024];   // buffer for the fifo
     // the following fields are used by hub net enum and notification helper thread
     u64                 devListExpires;
     u8                  devYdxMap[ALLOC_YDX_PER_HUB];   // maps hub's internal devYdx to our WP devYdx
+    double              devYdxTime[ALLOC_YDX_PER_HUB];  // save latest known timestamp for each of the hub devYdx
     int                 writeProtected; // admin password detected
+    u64                 lastTraffic;
     // the following fields are used for authentication to the hub, and require mutex access
     yCRITICAL_SECTION   authAccess;
+    char                *name;
     char                *user;
     char                *realm;
     char                *pwd;
@@ -592,6 +618,7 @@ typedef struct _NetHubSt {
 typedef struct _TcpReqSt {
     NetHubSt            *hub;           // pointer to the NetHubSt handling the device
     yCRITICAL_SECTION   access;
+	yEvent				finished;       // event seted when this request can be reused
     int                 isAsyncIO;      // when set to true, TCP content is handled by hub thread
     YSOCKET             skt;            // socket used to talk to the device
     char                *headerbuf;     // Used to store all lines of the HTTP header (with the double \r\n)
@@ -606,23 +633,6 @@ typedef struct _TcpReqSt {
     int                 retryCount;     // number of authorization attempts
     int                 errcode;        // in case an error occured
 } TcpReqSt;
-
-
-#ifdef Y_UPNP_DETECT
-#define UPNP_UUID_LEN   48
-#define UPNP_URL_LEN    48
-
-typedef struct 
-{   
-    char        serial[YOCTO_SERIAL_LEN];
-    char        uuid[UPNP_UUID_LEN];
-    char        url[UPNP_URL_LEN];
-    u64         detectedTime;
-    u64         maxAge;
-} UNPNP_CACHE_ENTRY;
-#endif
-
-
 
 #define SETUPED_IFACE_CACHE_SIZE 128
 
@@ -643,17 +653,14 @@ typedef struct{
     u32                 io_counter;
     // network discovery info
     NetHubSt            nethub[NBMAX_NET_HUB];
+
     TcpReqSt            tcpreq[ALLOC_YDX_PER_HUB];  // indexed by our own DevYdx
-    WakeUpSocket        wuce;
-    yThread             net_thread;
     yRawNotificationCb  rawNotificationCb;
+    yRawReportCb        rawReportCb;
     yCRITICAL_SECTION   deviceCallbackCS;
     yCRITICAL_SECTION   functionCallbackCS;
-#ifdef Y_UPNP_DETECT
-    // upnp stuff
-    UPNPSocket          upnp;            // socket used to talk to the device
-    UNPNP_CACHE_ENTRY*  upnpCache[NBMAX_NET_HUB];
-#endif
+    // SSDP stuff
+    SSDPInfos           SSDP;            // socket used to talk to the device
     // Public callbacks
     yapiLogFunction             log;
     yapiDeviceUpdateCallback    logDeviceCallback;
@@ -661,6 +668,8 @@ typedef struct{
     yapiDeviceUpdateCallback    changeCallback;
     yapiDeviceUpdateCallback    removalCallback;
     yapiFunctionUpdateCallback  functionCallback;
+    yapiTimedReportCallback     timedReportCallback;
+	yapiHubDiscoveryCallback    hubDiscoveryCallback;
     // OS specifics variables
     yInterfaceSt*       setupedIfaceCache[SETUPED_IFACE_CACHE_SIZE];
 #if defined(WINDOWS_API)
@@ -669,8 +678,7 @@ typedef struct{
 	int					prevEnumCnt;
 	yInterfaceSt		*prevEnum;
 #elif defined(OSX_API)
-    IOHIDManagerRef     hidM;
-    yCRITICAL_SECTION   hidMCS;
+    OSX_HID_REF         hid;
     CFRunLoopRef        usb_run_loop;
     pthread_t           usb_thread;
     USB_THREAD_STATE    usb_thread_state;
@@ -708,9 +716,11 @@ void yyyPacketShutdown(yInterfaceSt *iface);
 ******************************************************************************/
 
 //some early declarations
-void wpUpdateUSB(const char *serial,const char *logicalname, u8 beacon);
-void wpUnregisterUSB(const char *serial);
-void ypUpdateUSB(const char *serial, const char *funcid, const char *funcname, int funydx, const char *funcval);
+void wpSafeRegister( NetHubSt *hub, u8 devYdx, yStrRef serialref,yStrRef lnameref, yStrRef productref, u16 deviceid, yUrlRef devUrl,s8 beacon);
+void wpSafeUpdate( NetHubSt *hub, u8 devYdx, yStrRef serialref,yStrRef lnameref, yUrlRef devUrl, s8 beacon);
+void wpSafeUnregister(yStrRef serialref);
+
+void ypUpdateUSB(const char *serial, const char *funcid, const char *funcname, int funclass, int funydx, const char *funcval);
 void ypUpdateYdx(int devydx, int funydx, const char *funcval);
 void ypUpdateHybrid(const char *serial, int funydx, const char *funcval);
 

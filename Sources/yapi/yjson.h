@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yjson.h 12321 2013-08-13 14:56:24Z mvuilleu $
+ * $Id: yjson.h 13562 2013-11-14 09:55:44Z mvuilleu $
  *
  * Simple JSON parser (actually a slightly enhanced lexer)
  *
@@ -68,7 +68,8 @@ typedef enum {
     YJSON_PARSE_MEMBNAME,   // parsing a structure member name
     YJSON_PARSE_MEMBCOL,    // parsing the colon between member name and value
     YJSON_PARSE_DONE,       // parse completed, end of input data (or end of container)
-    YJSON_PARSE_ERROR       // dead end, parse error encountered
+    YJSON_PARSE_ERROR,      // dead end, parse error encountered
+    YJSON_PARSE_SPECIAL = -1
 } yJsonState;
 
 #ifdef DEBUG_JSON_PARSE

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_relay.cpp 12324 2013-08-13 15:10:31Z mvuilleu $
+ * $Id: yocto_relay.cpp 14700 2014-01-23 15:40:44Z seb $
  *
  * Implements yFindRelay(), the high-level API for Relay functions
  *
@@ -47,21 +47,21 @@
 #include <math.h>
 #include <stdlib.h>
 
-//--- (YRelay constructor)
-// Constructor is protected, use yFindRelay factory function to instantiate
-YRelay::YRelay(const string& func): YFunction("Relay", func)
-//--- (end of YRelay constructor)
+YRelay::YRelay(const string& func): YFunction(func)
 //--- (Relay initialization)
-            ,_callback(NULL)
-            ,_logicalName(Y_LOGICALNAME_INVALID)
-            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
-            ,_state(Y_STATE_INVALID)
-            ,_output(Y_OUTPUT_INVALID)
-            ,_pulseTimer(Y_PULSETIMER_INVALID)
-            ,_delayedPulseTimer()
-            ,_countdown(Y_COUNTDOWN_INVALID)
+    ,_state(STATE_INVALID)
+    ,_stateAtPowerOn(STATEATPOWERON_INVALID)
+    ,_maxTimeOnStateA(MAXTIMEONSTATEA_INVALID)
+    ,_maxTimeOnStateB(MAXTIMEONSTATEB_INVALID)
+    ,_output(OUTPUT_INVALID)
+    ,_pulseTimer(PULSETIMER_INVALID)
+    ,_delayedPulseTimer(DELAYEDPULSETIMER_INVALID)
+    ,_countdown(COUNTDOWN_INVALID)
+    ,_valueCallbackRelay(NULL)
 //--- (end of Relay initialization)
-{}
+{
+    _className="Relay";
+}
 
 YRelay::~YRelay() 
 {
@@ -69,112 +69,68 @@ YRelay::~YRelay()
 //--- (end of YRelay cleanup)
 }
 //--- (YRelay implementation)
-YDelayedPulse YRELAY_INVALID_DELAYEDPULSE;
+// static attributes
+const YDelayedPulse YRelay::DELAYEDPULSETIMER_INVALID = YDelayedPulse();
 
-const string YRelay::LOGICALNAME_INVALID = "!INVALID!";
-const string YRelay::ADVERTISEDVALUE_INVALID = "!INVALID!";
-
-
-
-int YRelay::_parse(yJsonStateMachine& j)
+int YRelay::_parseAttr(yJsonStateMachine& j)
 {
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
-    failed:
-        return -1;
+    if(!strcmp(j.token, "state")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _state =  (Y_STATE_enum)atoi(j.token);
+        return 1;
     }
-    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-        if(!strcmp(j.token, "logicalName")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _logicalName =  _parseString(j);
-        } else if(!strcmp(j.token, "advertisedValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _advertisedValue =  _parseString(j);
-        } else if(!strcmp(j.token, "state")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _state =  (Y_STATE_enum)atoi(j.token);
-        } else if(!strcmp(j.token, "output")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _output =  (Y_OUTPUT_enum)atoi(j.token);
-        } else if(!strcmp(j.token, "pulseTimer")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _pulseTimer =  atoi(j.token);
-        } else if(!strcmp(j.token, "delayedPulseTimer")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            if(j.st != YJSON_PARSE_STRUCT) goto failed;
-            while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-                if(!strcmp(j.token, "moving")) {
-                    if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                    _delayedPulseTimer.moving = atoi(j.token);
-                } else if(!strcmp(j.token, "target")) {
-                    if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                    _delayedPulseTimer.target = atoi(j.token);
-                } else if(!strcmp(j.token, "ms")) {
-                    if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                    _delayedPulseTimer.ms = atoi(j.token);
-                }
+    if(!strcmp(j.token, "stateAtPowerOn")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _stateAtPowerOn =  (Y_STATEATPOWERON_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "maxTimeOnStateA")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _maxTimeOnStateA =  atol(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "maxTimeOnStateB")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _maxTimeOnStateB =  atol(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "output")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _output =  (Y_OUTPUT_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "pulseTimer")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _pulseTimer =  atol(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "delayedPulseTimer")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        if(j.st != YJSON_PARSE_STRUCT) goto failed;
+        while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
+            if(!strcmp(j.token, "moving")) {
+                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+                _delayedPulseTimer.moving = atoi(j.token);
+            } else if(!strcmp(j.token, "target")) {
+                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+                _delayedPulseTimer.target = atoi(j.token);
+            } else if(!strcmp(j.token, "ms")) {
+                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+                _delayedPulseTimer.ms = atoi(j.token);
             }
-            if(j.st != YJSON_PARSE_STRUCT) goto failed; 
-            
-        } else if(!strcmp(j.token, "countdown")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _countdown =  atoi(j.token);
-        } else {
-            // ignore unknown field
-            yJsonSkip(&j, 1);
         }
+        if(j.st != YJSON_PARSE_STRUCT) goto failed;
+        return 1;
     }
-    if(j.st != YJSON_PARSE_STRUCT) goto failed;
-    return 0;
+    if(!strcmp(j.token, "countdown")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _countdown =  atol(j.token);
+        return 1;
+    }
+    failed:
+    return YFunction::_parseAttr(j);
 }
 
-/**
- * Returns the logical name of the relay.
- * 
- * @return a string corresponding to the logical name of the relay
- * 
- * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
- */
-string YRelay::get_logicalName(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LOGICALNAME_INVALID;
-    }
-    return _logicalName;
-}
-
-/**
- * Changes the logical name of the relay. You can use yCheckLogicalName()
- * prior to this call to make sure that your parameter is valid.
- * Remember to call the saveToFlash() method of the module if the
- * modification must be kept.
- * 
- * @param newval : a string corresponding to the logical name of the relay
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YRelay::set_logicalName(const string& newval)
-{
-    string rest_val;
-    rest_val = newval;
-    return _setAttr("logicalName", rest_val);
-}
-
-/**
- * Returns the current value of the relay (no more than 6 characters).
- * 
- * @return a string corresponding to the current value of the relay (no more than 6 characters)
- * 
- * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
- */
-string YRelay::get_advertisedValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_ADVERTISEDVALUE_INVALID;
-    }
-    return _advertisedValue;
-}
 
 /**
  * Returns the state of the relays (A for the idle position, B for the active position).
@@ -186,8 +142,10 @@ string YRelay::get_advertisedValue(void)
  */
 Y_STATE_enum YRelay::get_state(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_STATE_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YRelay::STATE_INVALID;
+        }
     }
     return _state;
 }
@@ -210,6 +168,114 @@ int YRelay::set_state(Y_STATE_enum newval)
 }
 
 /**
+ * Returns the state of the relays at device startup (A for the idle position, B for the active
+ * position, UNCHANGED for no change).
+ * 
+ * @return a value among Y_STATEATPOWERON_UNCHANGED, Y_STATEATPOWERON_A and Y_STATEATPOWERON_B
+ * corresponding to the state of the relays at device startup (A for the idle position, B for the
+ * active position, UNCHANGED for no change)
+ * 
+ * On failure, throws an exception or returns Y_STATEATPOWERON_INVALID.
+ */
+Y_STATEATPOWERON_enum YRelay::get_stateAtPowerOn(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YRelay::STATEATPOWERON_INVALID;
+        }
+    }
+    return _stateAtPowerOn;
+}
+
+/**
+ * Preset the state of the relays at device startup (A for the idle position,
+ * B for the active position, UNCHANGED for no modification). Remember to call the matching module saveToFlash()
+ * method, otherwise this call will have no effect.
+ * 
+ * @param newval : a value among Y_STATEATPOWERON_UNCHANGED, Y_STATEATPOWERON_A and Y_STATEATPOWERON_B
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YRelay::set_stateAtPowerOn(Y_STATEATPOWERON_enum newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+    return _setAttr("stateAtPowerOn", rest_val);
+}
+
+/**
+ * Retourne the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state A before automatically
+ * switching back in to B state. Zero means no maximum time.
+ * 
+ * @return an integer
+ * 
+ * On failure, throws an exception or returns Y_MAXTIMEONSTATEA_INVALID.
+ */
+s64 YRelay::get_maxTimeOnStateA(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YRelay::MAXTIMEONSTATEA_INVALID;
+        }
+    }
+    return _maxTimeOnStateA;
+}
+
+/**
+ * Sets the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state A before automatically
+ * switching back in to B state. Use zero for no maximum time.
+ * 
+ * @param newval : an integer
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YRelay::set_maxTimeOnStateA(s64 newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
+    return _setAttr("maxTimeOnStateA", rest_val);
+}
+
+/**
+ * Retourne the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state B before automatically
+ * switching back in to A state. Zero means no maximum time.
+ * 
+ * @return an integer
+ * 
+ * On failure, throws an exception or returns Y_MAXTIMEONSTATEB_INVALID.
+ */
+s64 YRelay::get_maxTimeOnStateB(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YRelay::MAXTIMEONSTATEB_INVALID;
+        }
+    }
+    return _maxTimeOnStateB;
+}
+
+/**
+ * Sets the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state B before automatically
+ * switching back in to A state. Use zero for no maximum time.
+ * 
+ * @param newval : an integer
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YRelay::set_maxTimeOnStateB(s64 newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
+    return _setAttr("maxTimeOnStateB", rest_val);
+}
+
+/**
  * Returns the output state of the relays, when used as a simple switch (single throw).
  * 
  * @return either Y_OUTPUT_OFF or Y_OUTPUT_ON, according to the output state of the relays, when used
@@ -219,8 +285,10 @@ int YRelay::set_state(Y_STATE_enum newval)
  */
 Y_OUTPUT_enum YRelay::get_output(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_OUTPUT_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YRelay::OUTPUT_INVALID;
+        }
     }
     return _output;
 }
@@ -252,18 +320,20 @@ int YRelay::set_output(Y_OUTPUT_enum newval)
  * 
  * On failure, throws an exception or returns Y_PULSETIMER_INVALID.
  */
-unsigned YRelay::get_pulseTimer(void)
+s64 YRelay::get_pulseTimer(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_PULSETIMER_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YRelay::PULSETIMER_INVALID;
+        }
     }
     return _pulseTimer;
 }
 
-int YRelay::set_pulseTimer(unsigned newval)
+int YRelay::set_pulseTimer(s64 newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
     return _setAttr("pulseTimer", rest_val);
 }
 
@@ -280,22 +350,24 @@ int YRelay::set_pulseTimer(unsigned newval)
 int YRelay::pulse(int ms_duration)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", ms_duration); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%u", (u32)ms_duration); rest_val = string(buf);
     return _setAttr("pulseTimer", rest_val);
 }
 
-const YDelayedPulse * YRelay::get_delayedPulseTimer(void)
+YDelayedPulse YRelay::get_delayedPulseTimer(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_DELAYEDPULSETIMER_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YRelay::DELAYEDPULSETIMER_INVALID;
+        }
     }
-    return &_delayedPulseTimer;
+    return _delayedPulseTimer;
 }
 
-int YRelay::set_delayedPulseTimer(const YDelayedPulse * newval)
+int YRelay::set_delayedPulseTimer(YDelayedPulse newval)
 {
     string rest_val;
-    char buff[64]; sprintf(buff,"%d:%d",newval->target,newval->ms); rest_val = string(buff);
+    char buff[64]; sprintf(buff,"%d:%d",newval.target,newval.ms); rest_val = string(buff);
     return _setAttr("delayedPulseTimer", rest_val);
 }
 
@@ -325,12 +397,88 @@ int YRelay::delayedPulse(int ms_delay,int ms_duration)
  * 
  * On failure, throws an exception or returns Y_COUNTDOWN_INVALID.
  */
-unsigned YRelay::get_countdown(void)
+s64 YRelay::get_countdown(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_COUNTDOWN_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YRelay::COUNTDOWN_INVALID;
+        }
     }
     return _countdown;
+}
+
+/**
+ * Retrieves $AFUNCTION$ for a given identifier.
+ * The identifier can be specified using several formats:
+ * <ul>
+ * <li>FunctionLogicalName</li>
+ * <li>ModuleSerialNumber.FunctionIdentifier</li>
+ * <li>ModuleSerialNumber.FunctionLogicalName</li>
+ * <li>ModuleLogicalName.FunctionIdentifier</li>
+ * <li>ModuleLogicalName.FunctionLogicalName</li>
+ * </ul>
+ * 
+ * This function does not require that $THEFUNCTION$ is online at the time
+ * it is invoked. The returned object is nevertheless valid.
+ * Use the method YRelay.isOnline() to test if $THEFUNCTION$ is
+ * indeed online at a given time. In case of ambiguity when looking for
+ * $AFUNCTION$ by logical name, no error is notified: the first instance
+ * found is returned. The search is performed first by hardware name,
+ * then by logical name.
+ * 
+ * @param func : a string that uniquely characterizes $THEFUNCTION$
+ * 
+ * @return a YRelay object allowing you to drive $THEFUNCTION$.
+ */
+YRelay* YRelay::FindRelay(string func)
+{
+    YRelay* obj = NULL;
+    obj = (YRelay*) YFunction::_FindFromCache("Relay", func);
+    if (obj == NULL) {
+        obj = new YRelay(func);
+        YFunction::_AddToCache("Relay", func, obj);
+    }
+    return obj;
+}
+
+/**
+ * Registers the callback function that is invoked on every change of advertised value.
+ * The callback is invoked only during the execution of ySleep or yHandleEvents.
+ * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+ * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * 
+ * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ *         arguments: the function object of which the value has changed, and the character string describing
+ *         the new advertised value.
+ * @noreturn
+ */
+int YRelay::registerValueCallback(YRelayValueCallback callback)
+{
+    string val;
+    if (callback != NULL) {
+        YFunction::_UpdateValueCallbackList(this, true);
+    } else {
+        YFunction::_UpdateValueCallbackList(this, false);
+    }
+    _valueCallbackRelay = callback;
+    // Immediately invoke value callback with current value
+    if (callback != NULL && this->isOnline()) {
+        val = _advertisedValue;
+        if (!(val == "")) {
+            this->_invokeValueCallback(val);
+        }
+    }
+    return 0;
+}
+
+int YRelay::_invokeValueCallback(string value)
+{
+    if (_valueCallbackRelay != NULL) {
+        _valueCallbackRelay(this, value);
+    } else {
+        YFunction::_invokeValueCallback(value);
+    }
+    return 0;
 }
 
 YRelay *YRelay::nextRelay(void)
@@ -340,38 +488,7 @@ YRelay *YRelay::nextRelay(void)
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
-    return yFindRelay(hwid);
-}
-
-void YRelay::registerValueCallback(YRelayUpdateCallback callback)
-{
-    if (callback != NULL) {
-        _registerFuncCallback(this);
-        yapiLockFunctionCallBack(NULL);
-        YAPI::_yapiFunctionUpdateCallbackFwd(this->functionDescriptor(), this->get_advertisedValue().c_str());
-        yapiUnlockFunctionCallBack(NULL);
-    } else {
-        _unregisterFuncCallback(this);
-    }
-    _callback = callback;
-}
-
-void YRelay::advertiseValue(const string& value)
-{
-    if (_callback != NULL) {
-        _callback(this, value);
-    }
-}
-
-
-YRelay* YRelay::FindRelay(const string& func)
-{
-    if(YAPI::_YFunctionsCaches["YRelay"].find(func) != YAPI::_YFunctionsCaches["YRelay"].end())
-        return (YRelay*) YAPI::_YFunctionsCaches["YRelay"][func];
-    
-    YRelay *newRelay = new YRelay(func);
-    YAPI::_YFunctionsCaches["YRelay"][func] = newRelay ;
-    return newRelay;
+    return YRelay::FindRelay(hwid);
 }
 
 YRelay* YRelay::FirstRelay(void)

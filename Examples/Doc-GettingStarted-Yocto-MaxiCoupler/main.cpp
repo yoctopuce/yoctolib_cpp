@@ -50,12 +50,10 @@ int main(int argc, const char * argv[])
     relay =  yFindRelay((string)target + ".relay" + channel);
     
 
-    if (relay->isOnline()) {
-        
-        relay->set_state(state == "ON" ? Y_STATE_B : Y_STATE_A);
+    if (relay->isOnline()) {        
+        relay->set_output(state == "ON" ? Y_OUTPUT_ON : Y_OUTPUT_OFF);
     } else {
         cout << "Module not connected (check identification and USB cable)" << endl;
-    }
-        
+    }       
     return 0;
 }

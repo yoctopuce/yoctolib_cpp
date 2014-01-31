@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: pic24config.php 12323 2013-08-13 15:09:18Z mvuilleu $
+ * $Id: yocto_digitalio.cpp 14700 2014-01-23 15:40:44Z seb $
  *
  * Implements yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -47,22 +47,20 @@
 #include <math.h>
 #include <stdlib.h>
 
-//--- (YDigitalIO constructor)
-// Constructor is protected, use yFindDigitalIO factory function to instantiate
-YDigitalIO::YDigitalIO(const string& func): YFunction("DigitalIO", func)
-//--- (end of YDigitalIO constructor)
+YDigitalIO::YDigitalIO(const string& func): YFunction(func)
 //--- (DigitalIO initialization)
-            ,_callback(NULL)
-            ,_logicalName(Y_LOGICALNAME_INVALID)
-            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
-            ,_portState(Y_PORTSTATE_INVALID)
-            ,_portDirection(Y_PORTDIRECTION_INVALID)
-            ,_portOpenDrain(Y_PORTOPENDRAIN_INVALID)
-            ,_portSize(Y_PORTSIZE_INVALID)
-            ,_outputVoltage(Y_OUTPUTVOLTAGE_INVALID)
-            ,_command(Y_COMMAND_INVALID)
+    ,_portState(PORTSTATE_INVALID)
+    ,_portDirection(PORTDIRECTION_INVALID)
+    ,_portOpenDrain(PORTOPENDRAIN_INVALID)
+    ,_portPolarity(PORTPOLARITY_INVALID)
+    ,_portSize(PORTSIZE_INVALID)
+    ,_outputVoltage(OUTPUTVOLTAGE_INVALID)
+    ,_command(COMMAND_INVALID)
+    ,_valueCallbackDigitalIO(NULL)
 //--- (end of DigitalIO initialization)
-{}
+{
+    _className="DigitalIO";
+}
 
 YDigitalIO::~YDigitalIO() 
 {
@@ -70,101 +68,50 @@ YDigitalIO::~YDigitalIO()
 //--- (end of YDigitalIO cleanup)
 }
 //--- (YDigitalIO implementation)
+// static attributes
+const string YDigitalIO::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-const string YDigitalIO::LOGICALNAME_INVALID = "!INVALID!";
-const string YDigitalIO::ADVERTISEDVALUE_INVALID = "!INVALID!";
-const string YDigitalIO::COMMAND_INVALID = "!INVALID!";
-
-
-
-int YDigitalIO::_parse(yJsonStateMachine& j)
+int YDigitalIO::_parseAttr(yJsonStateMachine& j)
 {
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
+    if(!strcmp(j.token, "portState")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _portState =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "portDirection")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _portDirection =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "portOpenDrain")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _portOpenDrain =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "portPolarity")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _portPolarity =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "portSize")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _portSize =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "outputVoltage")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _outputVoltage =  (Y_OUTPUTVOLTAGE_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "command")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _command =  _parseString(j);
+        return 1;
+    }
     failed:
-        return -1;
-    }
-    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-        if(!strcmp(j.token, "logicalName")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _logicalName =  _parseString(j);
-        } else if(!strcmp(j.token, "advertisedValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _advertisedValue =  _parseString(j);
-        } else if(!strcmp(j.token, "portState")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _portState =  atoi(j.token);
-        } else if(!strcmp(j.token, "portDirection")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _portDirection =  atoi(j.token);
-        } else if(!strcmp(j.token, "portOpenDrain")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _portOpenDrain =  atoi(j.token);
-        } else if(!strcmp(j.token, "portSize")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _portSize =  atoi(j.token);
-        } else if(!strcmp(j.token, "outputVoltage")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _outputVoltage =  (Y_OUTPUTVOLTAGE_enum)atoi(j.token);
-        } else if(!strcmp(j.token, "command")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _command =  _parseString(j);
-        } else {
-            // ignore unknown field
-            yJsonSkip(&j, 1);
-        }
-    }
-    if(j.st != YJSON_PARSE_STRUCT) goto failed;
-    return 0;
+    return YFunction::_parseAttr(j);
 }
 
-/**
- * Returns the logical name of the digital IO port.
- * 
- * @return a string corresponding to the logical name of the digital IO port
- * 
- * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
- */
-string YDigitalIO::get_logicalName(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LOGICALNAME_INVALID;
-    }
-    return _logicalName;
-}
-
-/**
- * Changes the logical name of the digital IO port. You can use yCheckLogicalName()
- * prior to this call to make sure that your parameter is valid.
- * Remember to call the saveToFlash() method of the module if the
- * modification must be kept.
- * 
- * @param newval : a string corresponding to the logical name of the digital IO port
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YDigitalIO::set_logicalName(const string& newval)
-{
-    string rest_val;
-    rest_val = newval;
-    return _setAttr("logicalName", rest_val);
-}
-
-/**
- * Returns the current value of the digital IO port (no more than 6 characters).
- * 
- * @return a string corresponding to the current value of the digital IO port (no more than 6 characters)
- * 
- * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
- */
-string YDigitalIO::get_advertisedValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_ADVERTISEDVALUE_INVALID;
-    }
-    return _advertisedValue;
-}
 
 /**
  * Returns the digital IO port state: bit 0 represents input 0, and so on.
@@ -175,8 +122,10 @@ string YDigitalIO::get_advertisedValue(void)
  */
 int YDigitalIO::get_portState(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_PORTSTATE_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDigitalIO::PORTSTATE_INVALID;
+        }
     }
     return _portState;
 }
@@ -194,7 +143,7 @@ int YDigitalIO::get_portState(void)
 int YDigitalIO::set_portState(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
     return _setAttr("portState", rest_val);
 }
 
@@ -208,15 +157,17 @@ int YDigitalIO::set_portState(int newval)
  */
 int YDigitalIO::get_portDirection(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_PORTDIRECTION_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDigitalIO::PORTDIRECTION_INVALID;
+        }
     }
     return _portDirection;
 }
 
 /**
  * Changes the IO direction of all bits of the port: 0 makes a bit an input, 1 makes it an output.
- * Remember to call the saveToFlash() method  to make sure the setting will be kept after a reboot.
+ * Remember to call the saveToFlash() method  to make sure the setting is kept after a reboot.
  * 
  * @param newval : an integer corresponding to the IO direction of all bits of the port: 0 makes a bit
  * an input, 1 makes it an output
@@ -228,13 +179,14 @@ int YDigitalIO::get_portDirection(void)
 int YDigitalIO::set_portDirection(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
     return _setAttr("portDirection", rest_val);
 }
 
 /**
- * Returns the electrical interface for each bit of the port. 0 makes a bit a regular input/output, 1 makes
- * it an open-drain (open-collector) input/output.
+ * Returns the electrical interface for each bit of the port. For each bit set to 0  the matching I/O
+ * works in the regular,
+ * intuitive way, for each bit set to 1, the I/O works in reverse mode.
  * 
  * @return an integer corresponding to the electrical interface for each bit of the port
  * 
@@ -242,8 +194,10 @@ int YDigitalIO::set_portDirection(int newval)
  */
 int YDigitalIO::get_portOpenDrain(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_PORTOPENDRAIN_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDigitalIO::PORTOPENDRAIN_INVALID;
+        }
     }
     return _portOpenDrain;
 }
@@ -251,7 +205,7 @@ int YDigitalIO::get_portOpenDrain(void)
 /**
  * Changes the electrical interface for each bit of the port. 0 makes a bit a regular input/output, 1 makes
  * it an open-drain (open-collector) input/output. Remember to call the
- * saveToFlash() method  to make sure the setting will be kept after a reboot.
+ * saveToFlash() method  to make sure the setting is kept after a reboot.
  * 
  * @param newval : an integer corresponding to the electrical interface for each bit of the port
  * 
@@ -262,8 +216,44 @@ int YDigitalIO::get_portOpenDrain(void)
 int YDigitalIO::set_portOpenDrain(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
     return _setAttr("portOpenDrain", rest_val);
+}
+
+/**
+ * Returns the polarity of all the bits of the port.  For each bit set to 0, the matching I/O works the regular,
+ * intuitive way; for each bit set to 1, the I/O works in reverse mode.
+ * 
+ * @return an integer corresponding to the polarity of all the bits of the port
+ * 
+ * On failure, throws an exception or returns Y_PORTPOLARITY_INVALID.
+ */
+int YDigitalIO::get_portPolarity(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDigitalIO::PORTPOLARITY_INVALID;
+        }
+    }
+    return _portPolarity;
+}
+
+/**
+ * Changes the polarity of all the bits of the port: 0 makes a bit an input, 1 makes it an output.
+ * Remember to call the saveToFlash() method  to make sure the setting will be kept after a reboot.
+ * 
+ * @param newval : an integer corresponding to the polarity of all the bits of the port: 0 makes a bit
+ * an input, 1 makes it an output
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YDigitalIO::set_portPolarity(int newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+    return _setAttr("portPolarity", rest_val);
 }
 
 /**
@@ -273,10 +263,12 @@ int YDigitalIO::set_portOpenDrain(int newval)
  * 
  * On failure, throws an exception or returns Y_PORTSIZE_INVALID.
  */
-unsigned YDigitalIO::get_portSize(void)
+int YDigitalIO::get_portSize(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_PORTSIZE_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDigitalIO::PORTSIZE_INVALID;
+        }
     }
     return _portSize;
 }
@@ -284,24 +276,26 @@ unsigned YDigitalIO::get_portSize(void)
 /**
  * Returns the voltage source used to drive output bits.
  * 
- * @return a value among Y_OUTPUTVOLTAGE_USB_5V, Y_OUTPUTVOLTAGE_USB_3V3 and Y_OUTPUTVOLTAGE_EXT_V
+ * @return a value among Y_OUTPUTVOLTAGE_USB_5V, Y_OUTPUTVOLTAGE_USB_3V and Y_OUTPUTVOLTAGE_EXT_V
  * corresponding to the voltage source used to drive output bits
  * 
  * On failure, throws an exception or returns Y_OUTPUTVOLTAGE_INVALID.
  */
 Y_OUTPUTVOLTAGE_enum YDigitalIO::get_outputVoltage(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_OUTPUTVOLTAGE_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDigitalIO::OUTPUTVOLTAGE_INVALID;
+        }
     }
     return _outputVoltage;
 }
 
 /**
  * Changes the voltage source used to drive output bits.
- * Remember to call the saveToFlash() method  to make sure the setting will be kept after a reboot.
+ * Remember to call the saveToFlash() method  to make sure the setting is kept after a reboot.
  * 
- * @param newval : a value among Y_OUTPUTVOLTAGE_USB_5V, Y_OUTPUTVOLTAGE_USB_3V3 and
+ * @param newval : a value among Y_OUTPUTVOLTAGE_USB_5V, Y_OUTPUTVOLTAGE_USB_3V and
  * Y_OUTPUTVOLTAGE_EXT_V corresponding to the voltage source used to drive output bits
  * 
  * @return YAPI_SUCCESS if the call succeeds.
@@ -311,14 +305,16 @@ Y_OUTPUTVOLTAGE_enum YDigitalIO::get_outputVoltage(void)
 int YDigitalIO::set_outputVoltage(Y_OUTPUTVOLTAGE_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
     return _setAttr("outputVoltage", rest_val);
 }
 
 string YDigitalIO::get_command(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_COMMAND_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDigitalIO::COMMAND_INVALID;
+        }
     }
     return _command;
 }
@@ -331,44 +327,122 @@ int YDigitalIO::set_command(const string& newval)
 }
 
 /**
- * Set a single bit of the I/O port.
+ * Retrieves $AFUNCTION$ for a given identifier.
+ * The identifier can be specified using several formats:
+ * <ul>
+ * <li>FunctionLogicalName</li>
+ * <li>ModuleSerialNumber.FunctionIdentifier</li>
+ * <li>ModuleSerialNumber.FunctionLogicalName</li>
+ * <li>ModuleLogicalName.FunctionIdentifier</li>
+ * <li>ModuleLogicalName.FunctionLogicalName</li>
+ * </ul>
  * 
- * @param bitno: the bit number; lowest bit is index 0
- * @param bitval: the value of the bit (1 or 0)
+ * This function does not require that $THEFUNCTION$ is online at the time
+ * it is invoked. The returned object is nevertheless valid.
+ * Use the method YDigitalIO.isOnline() to test if $THEFUNCTION$ is
+ * indeed online at a given time. In case of ambiguity when looking for
+ * $AFUNCTION$ by logical name, no error is notified: the first instance
+ * found is returned. The search is performed first by hardware name,
+ * then by logical name.
+ * 
+ * @param func : a string that uniquely characterizes $THEFUNCTION$
+ * 
+ * @return a YDigitalIO object allowing you to drive $THEFUNCTION$.
+ */
+YDigitalIO* YDigitalIO::FindDigitalIO(string func)
+{
+    YDigitalIO* obj = NULL;
+    obj = (YDigitalIO*) YFunction::_FindFromCache("DigitalIO", func);
+    if (obj == NULL) {
+        obj = new YDigitalIO(func);
+        YFunction::_AddToCache("DigitalIO", func, obj);
+    }
+    return obj;
+}
+
+/**
+ * Registers the callback function that is invoked on every change of advertised value.
+ * The callback is invoked only during the execution of ySleep or yHandleEvents.
+ * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+ * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * 
+ * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ *         arguments: the function object of which the value has changed, and the character string describing
+ *         the new advertised value.
+ * @noreturn
+ */
+int YDigitalIO::registerValueCallback(YDigitalIOValueCallback callback)
+{
+    string val;
+    if (callback != NULL) {
+        YFunction::_UpdateValueCallbackList(this, true);
+    } else {
+        YFunction::_UpdateValueCallbackList(this, false);
+    }
+    _valueCallbackDigitalIO = callback;
+    // Immediately invoke value callback with current value
+    if (callback != NULL && this->isOnline()) {
+        val = _advertisedValue;
+        if (!(val == "")) {
+            this->_invokeValueCallback(val);
+        }
+    }
+    return 0;
+}
+
+int YDigitalIO::_invokeValueCallback(string value)
+{
+    if (_valueCallbackDigitalIO != NULL) {
+        _valueCallbackDigitalIO(this, value);
+    } else {
+        YFunction::_invokeValueCallback(value);
+    }
+    return 0;
+}
+
+/**
+ * Sets a single bit of the I/O port.
+ * 
+ * @param bitno: the bit number; lowest bit has index 0
+ * @param bitstate: the state of the bit (1 or 0)
  * 
  * @return YAPI_SUCCESS if the call succeeds.
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YDigitalIO::set_bitState(int bitno,int bitval)
+int YDigitalIO::set_bitState(int bitno,int bitstate)
 {
-    if (!(bitval >= 0)) {this->_throw( YAPI_INVALID_ARGUMENT, "invalid bitval"); return  YAPI_INVALID_ARGUMENT;};
-    if (!(bitval <= 1)) {this->_throw( YAPI_INVALID_ARGUMENT, "invalid bitval"); return  YAPI_INVALID_ARGUMENT;};
-    return this->set_command(YapiWrapper::ysprintf("%c%d",82+bitval, bitno)); 
-    
+    if (!(bitstate >= 0)) {
+        _throw( YAPI_INVALID_ARGUMENT, "invalid bitstate");
+        return YAPI_INVALID_ARGUMENT;
+    }
+    if (!(bitstate <= 1)) {
+        _throw( YAPI_INVALID_ARGUMENT, "invalid bitstate");
+        return YAPI_INVALID_ARGUMENT;
+    }
+    return this->set_command(YapiWrapper::ysprintf("%c%d",82+bitstate,bitno));
 }
 
 /**
- * Returns the value of a single bit of the I/O port.
+ * Returns the state of a single bit of the I/O port.
  * 
- * @param bitno: the bit number; lowest bit is index 0
+ * @param bitno: the bit number; lowest bit has index 0
  * 
- * @return the bit value (0 or 1)
+ * @return the bit state (0 or 1)
  * 
  * On failure, throws an exception or returns a negative error code.
  */
 int YDigitalIO::get_bitState(int bitno)
 {
-    int portVal;
+    int portVal = 0;
     portVal = this->get_portState();
     return ((((portVal) >> (bitno))) & (1));
-    
 }
 
 /**
- * Revert a single bit of the I/O port.
+ * Reverts a single bit of the I/O port.
  * 
- * @param bitno: the bit number; lowest bit is index 0
+ * @param bitno: the bit number; lowest bit has index 0
  * 
  * @return YAPI_SUCCESS if the call succeeds.
  * 
@@ -376,16 +450,15 @@ int YDigitalIO::get_bitState(int bitno)
  */
 int YDigitalIO::toggle_bitState(int bitno)
 {
-    return this->set_command(YapiWrapper::ysprintf("T%d", bitno)); 
-    
+    return this->set_command(YapiWrapper::ysprintf("T%d",bitno));
 }
 
 /**
- * Change  the direction of a single bit from the I/O port.
+ * Changes  the direction of a single bit from the I/O port.
  * 
- * @param bitno: the bit number; lowest bit is index 0
+ * @param bitno: the bit number; lowest bit has index 0
  * @param bitdirection: direction to set, 0 makes the bit an input, 1 makes it an output.
- *         Remember to call the   saveToFlash() method to make sure the setting will be kept after a reboot.
+ *         Remember to call the   saveToFlash() method to make sure the setting is kept after a reboot.
  * 
  * @return YAPI_SUCCESS if the call succeeds.
  * 
@@ -393,16 +466,21 @@ int YDigitalIO::toggle_bitState(int bitno)
  */
 int YDigitalIO::set_bitDirection(int bitno,int bitdirection)
 {
-    if (!(bitdirection >= 0)) {this->_throw( YAPI_INVALID_ARGUMENT, "invalid direction"); return  YAPI_INVALID_ARGUMENT;};
-    if (!(bitdirection <= 1)) {this->_throw( YAPI_INVALID_ARGUMENT, "invalid direction"); return  YAPI_INVALID_ARGUMENT;};
-    return this->set_command(YapiWrapper::ysprintf("%c%d",73+6*bitdirection, bitno)); 
-    
+    if (!(bitdirection >= 0)) {
+        _throw( YAPI_INVALID_ARGUMENT, "invalid direction");
+        return YAPI_INVALID_ARGUMENT;
+    }
+    if (!(bitdirection <= 1)) {
+        _throw( YAPI_INVALID_ARGUMENT, "invalid direction");
+        return YAPI_INVALID_ARGUMENT;
+    }
+    return this->set_command(YapiWrapper::ysprintf("%c%d",73+6*bitdirection,bitno));
 }
 
 /**
- * Change  the direction of a single bit from the I/O port (0 means the bit is an input, 1  an output).
+ * Returns the direction of a single bit from the I/O port (0 means the bit is an input, 1  an output).
  * 
- * @param bitno: the bit number; lowest bit is index 0
+ * @param bitno: the bit number; lowest bit has index 0
  * 
  * @return YAPI_SUCCESS if the call succeeds.
  * 
@@ -410,19 +488,60 @@ int YDigitalIO::set_bitDirection(int bitno,int bitdirection)
  */
 int YDigitalIO::get_bitDirection(int bitno)
 {
-    int portDir;
+    int portDir = 0;
     portDir = this->get_portDirection();
     return ((((portDir) >> (bitno))) & (1));
-    
 }
 
 /**
- * Change  the electrical interface of a single bit from the I/O port.
+ * Changes the polarity of a single bit from the I/O port.
  * 
- * @param bitno: the bit number; lowest bit is index 0
- * @param opendrain: value to set, 0 makes a bit a regular input/output, 1 makes
+ * @param bitno: the bit number; lowest bit has index 0.
+ * @param bitpolarity: polarity to set, 0 makes the I/O work in regular mode, 1 makes the I/O  works
+ * in reverse mode.
+ *         Remember to call the   saveToFlash() method to make sure the setting is kept after a reboot.
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YDigitalIO::set_bitPolarity(int bitno,int bitpolarity)
+{
+    if (!(bitpolarity >= 0)) {
+        _throw( YAPI_INVALID_ARGUMENT, "invalid bitpolarity");
+        return YAPI_INVALID_ARGUMENT;
+    }
+    if (!(bitpolarity <= 1)) {
+        _throw( YAPI_INVALID_ARGUMENT, "invalid bitpolarity");
+        return YAPI_INVALID_ARGUMENT;
+    }
+    return this->set_command(YapiWrapper::ysprintf("%c%d",110+4*bitpolarity,bitno));
+}
+
+/**
+ * Returns the polarity of a single bit from the I/O port (0 means the I/O works in regular mode, 1
+ * means the I/O  works in reverse mode).
+ * 
+ * @param bitno: the bit number; lowest bit has index 0
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YDigitalIO::get_bitPolarity(int bitno)
+{
+    int portPol = 0;
+    portPol = this->get_portPolarity();
+    return ((((portPol) >> (bitno))) & (1));
+}
+
+/**
+ * Changes  the electrical interface of a single bit from the I/O port.
+ * 
+ * @param bitno: the bit number; lowest bit has index 0
+ * @param opendrain: 0 makes a bit a regular input/output, 1 makes
  *         it an open-drain (open-collector) input/output. Remember to call the
- *         saveToFlash() method to make sure the setting will be kept after a reboot.
+ *         saveToFlash() method to make sure the setting is kept after a reboot.
  * 
  * @return YAPI_SUCCESS if the call succeeds.
  * 
@@ -430,29 +549,68 @@ int YDigitalIO::get_bitDirection(int bitno)
  */
 int YDigitalIO::set_bitOpenDrain(int bitno,int opendrain)
 {
-    if (!(opendrain >= 0)) {this->_throw( YAPI_INVALID_ARGUMENT, "invalid state"); return  YAPI_INVALID_ARGUMENT;};
-    if (!(opendrain <= 1)) {this->_throw( YAPI_INVALID_ARGUMENT, "invalid state"); return  YAPI_INVALID_ARGUMENT;};
-    return this->set_command(YapiWrapper::ysprintf("%c%d",100-32*opendrain, bitno)); 
-    
+    if (!(opendrain >= 0)) {
+        _throw( YAPI_INVALID_ARGUMENT, "invalid state");
+        return YAPI_INVALID_ARGUMENT;
+    }
+    if (!(opendrain <= 1)) {
+        _throw( YAPI_INVALID_ARGUMENT, "invalid state");
+        return YAPI_INVALID_ARGUMENT;
+    }
+    return this->set_command(YapiWrapper::ysprintf("%c%d",100-32*opendrain,bitno));
 }
 
 /**
  * Returns the type of electrical interface of a single bit from the I/O port. (0 means the bit is an
  * input, 1  an output).
  * 
- * @param bitno: the bit number; lowest bit is index 0
+ * @param bitno: the bit number; lowest bit has index 0
  * 
- * @return   0 means the a bit is a regular input/output, 1means the b it an open-drain
- * (open-collector) input/output.
+ * @return   0 means the a bit is a regular input/output, 1 means the bit is an open-drain
+ *         (open-collector) input/output.
  * 
  * On failure, throws an exception or returns a negative error code.
  */
 int YDigitalIO::get_bitOpenDrain(int bitno)
 {
-    int portOpenDrain;
+    int portOpenDrain = 0;
     portOpenDrain = this->get_portOpenDrain();
     return ((((portOpenDrain) >> (bitno))) & (1));
-    
+}
+
+/**
+ * Triggers a pulse on a single bit for a specified duration. The specified bit
+ * will be turned to 1, and then back to 0 after the given duration.
+ * 
+ * @param bitno: the bit number; lowest bit has index 0
+ * @param ms_duration: desired pulse duration in milliseconds. Be aware that the device time
+ *         resolution is not guaranteed up to the millisecond.
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YDigitalIO::pulse(int bitno,int ms_duration)
+{
+    return this->set_command(YapiWrapper::ysprintf("Z%d,0,%d", bitno,ms_duration));
+}
+
+/**
+ * Schedules a pulse on a single bit for a specified duration. The specified bit
+ * will be turned to 1, and then back to 0 after the given duration.
+ * 
+ * @param bitno: the bit number; lowest bit has index 0
+ * @param ms_delay : waiting time before the pulse, in milliseconds
+ * @param ms_duration: desired pulse duration in milliseconds. Be aware that the device time
+ *         resolution is not guaranteed up to the millisecond.
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YDigitalIO::delayedPulse(int bitno,int ms_delay,int ms_duration)
+{
+    return this->set_command(YapiWrapper::ysprintf("Z%d,%d,%d",bitno,ms_delay,ms_duration));
 }
 
 YDigitalIO *YDigitalIO::nextDigitalIO(void)
@@ -462,38 +620,7 @@ YDigitalIO *YDigitalIO::nextDigitalIO(void)
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
-    return yFindDigitalIO(hwid);
-}
-
-void YDigitalIO::registerValueCallback(YDigitalIOUpdateCallback callback)
-{
-    if (callback != NULL) {
-        _registerFuncCallback(this);
-        yapiLockFunctionCallBack(NULL);
-        YAPI::_yapiFunctionUpdateCallbackFwd(this->functionDescriptor(), this->get_advertisedValue().c_str());
-        yapiUnlockFunctionCallBack(NULL);
-    } else {
-        _unregisterFuncCallback(this);
-    }
-    _callback = callback;
-}
-
-void YDigitalIO::advertiseValue(const string& value)
-{
-    if (_callback != NULL) {
-        _callback(this, value);
-    }
-}
-
-
-YDigitalIO* YDigitalIO::FindDigitalIO(const string& func)
-{
-    if(YAPI::_YFunctionsCaches["YDigitalIO"].find(func) != YAPI::_YFunctionsCaches["YDigitalIO"].end())
-        return (YDigitalIO*) YAPI::_YFunctionsCaches["YDigitalIO"][func];
-    
-    YDigitalIO *newDigitalIO = new YDigitalIO(func);
-    YAPI::_YFunctionsCaches["YDigitalIO"][func] = newDigitalIO ;
-    return newDigitalIO;
+    return YDigitalIO::FindDigitalIO(hwid);
 }
 
 YDigitalIO* YDigitalIO::FirstDigitalIO(void)

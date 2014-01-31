@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorled.h 12324 2013-08-13 15:10:31Z mvuilleu $
+ * $Id: yocto_colorled.h 14275 2014-01-09 14:20:38Z seb $
  *
  * Declares yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -46,30 +46,32 @@
 #include <cmath>
 #include <map>
 
-//--- (return codes)
-//--- (end of return codes)
+//--- (YColorLed return codes)
+//--- (end of YColorLed return codes)
 //--- (YColorLed definitions)
-class YColorLed; //forward declaration
+class YColorLed; // forward declaration
 
-typedef void (*YColorLedUpdateCallback)(YColorLed *func, const string& functionValue);
+typedef void (*YColorLedValueCallback)(YColorLed *func, const string& functionValue);
 #ifndef _CLASS_YMOVE
 #define _CLASS_YMOVE
-class YMove {
+class YOCTO_CLASS_EXPORT YMove {
 public:
-    s32             target;
-    s16             ms;
-    u8              moving;
-    YMove() {}
+    int             target;
+    int             ms;
+    int             moving;
+
+    YMove()
+        :target(YAPI_INVALID_INT), ms(YAPI_INVALID_INT), moving(YAPI_INVALID_UINT)
+    {}
+
+    bool operator==(const YMove& o) const {
+         return (target == o.target) && (ms == o.ms) && (moving == o.moving);
+    }
 };
 #endif
-extern YMove YCOLORLED_INVALID_MOVE;
-#define Y_LOGICALNAME_INVALID           (YAPI::INVALID_STRING)
-#define Y_ADVERTISEDVALUE_INVALID       (YAPI::INVALID_STRING)
-#define Y_RGBCOLOR_INVALID              (0xffffffff)
-#define Y_HSLCOLOR_INVALID              (0xffffffff)
-#define Y_RGBMOVE_INVALID               (&YCOLORLED_INVALID_MOVE)
-#define Y_HSLMOVE_INVALID               (&YCOLORLED_INVALID_MOVE)
-#define Y_RGBCOLORATPOWERON_INVALID     (0xffffffff)
+#define Y_RGBCOLOR_INVALID              (YAPI_INVALID_UINT)
+#define Y_HSLCOLOR_INVALID              (YAPI_INVALID_UINT)
+#define Y_RGBCOLORATPOWERON_INVALID     (YAPI_INVALID_UINT)
 //--- (end of YColorLed definitions)
 
 //--- (YColorLed declaration)
@@ -83,79 +85,37 @@ extern YMove YCOLORLED_INVALID_MOVE;
  * saturation or lightness. If needed, you can find more information on the
  * difference between RGB and HSL in the section following this one.
  */
-class YColorLed: public YFunction {
+class YOCTO_CLASS_EXPORT YColorLed: public YFunction {
+//--- (end of YColorLed declaration)
 protected:
+    //--- (YColorLed attributes)
     // Attributes (function value cache)
-    YColorLedUpdateCallback _callback;
-    string          _logicalName;
-    string          _advertisedValue;
-    unsigned        _rgbColor;
-    unsigned        _hslColor;
+    int             _rgbColor;
+    int             _hslColor;
     YMove           _rgbMove;
     YMove           _hslMove;
-    unsigned        _rgbColorAtPowerOn;
+    int             _rgbColorAtPowerOn;
+    YColorLedValueCallback _valueCallbackColorLed;
 
     friend YColorLed *yFindColorLed(const string& func);
     friend YColorLed *yFirstColorLed(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    int             _parse(yJsonStateMachine& j);
-    //--- (end of YColorLed declaration)
+    virtual int     _parseAttr(yJsonStateMachine& j);
 
-    //--- (YColorLed constructor)
     // Constructor is protected, use yFindColorLed factory function to instantiate
     YColorLed(const string& func);
-    //--- (end of YColorLed constructor)
-    //--- (ColorLed initialization)
-    //--- (end of ColorLed initialization)
+    //--- (end of YColorLed attributes)
 
 public:
     ~YColorLed();
     //--- (YColorLed accessors declaration)
 
-    static const string LOGICALNAME_INVALID;
-    static const string ADVERTISEDVALUE_INVALID;
-    static const unsigned RGBCOLOR_INVALID = 0xffffffff;
-    static const unsigned HSLCOLOR_INVALID = 0xffffffff;
-    static const unsigned RGBCOLORATPOWERON_INVALID = 0xffffffff;
-
-    /**
-     * Returns the logical name of the RGB led.
-     * 
-     * @return a string corresponding to the logical name of the RGB led
-     * 
-     * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
-     */
-           string          get_logicalName(void);
-    inline string          logicalName(void)
-    { return this->get_logicalName(); }
-
-    /**
-     * Changes the logical name of the RGB led. You can use yCheckLogicalName()
-     * prior to this call to make sure that your parameter is valid.
-     * Remember to call the saveToFlash() method of the module if the
-     * modification must be kept.
-     * 
-     * @param newval : a string corresponding to the logical name of the RGB led
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_logicalName(const string& newval);
-    inline int      setLogicalName(const string& newval)
-    { return this->set_logicalName(newval); }
-
-    /**
-     * Returns the current value of the RGB led (no more than 6 characters).
-     * 
-     * @return a string corresponding to the current value of the RGB led (no more than 6 characters)
-     * 
-     * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
-     */
-           string          get_advertisedValue(void);
-    inline string          advertisedValue(void)
-    { return this->get_advertisedValue(); }
+    static const int RGBCOLOR_INVALID = YAPI_INVALID_UINT;
+    static const int HSLCOLOR_INVALID = YAPI_INVALID_UINT;
+    static const YMove RGBMOVE_INVALID;
+    static const YMove HSLMOVE_INVALID;
+    static const int RGBCOLORATPOWERON_INVALID = YAPI_INVALID_UINT;
 
     /**
      * Returns the current RGB color of the led.
@@ -164,8 +124,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_RGBCOLOR_INVALID.
      */
-           unsigned        get_rgbColor(void);
-    inline unsigned        rgbColor(void)
+    int                 get_rgbColor(void);
+
+    inline int          rgbColor(void)
     { return this->get_rgbColor(); }
 
     /**
@@ -177,8 +138,8 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             set_rgbColor(unsigned newval);
-    inline int      setRgbColor(unsigned newval)
+    int             set_rgbColor(int newval);
+    inline int      setRgbColor(int newval)
     { return this->set_rgbColor(newval); }
 
     /**
@@ -188,8 +149,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_HSLCOLOR_INVALID.
      */
-           unsigned        get_hslColor(void);
-    inline unsigned        hslColor(void)
+    int                 get_hslColor(void);
+
+    inline int          hslColor(void)
     { return this->get_hslColor(); }
 
     /**
@@ -201,16 +163,17 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             set_hslColor(unsigned newval);
-    inline int      setHslColor(unsigned newval)
+    int             set_hslColor(int newval);
+    inline int      setHslColor(int newval)
     { return this->set_hslColor(newval); }
 
-           const YMove     *get_rgbMove(void);
-    inline const YMove     *rgbMove(void)
+    YMove               get_rgbMove(void);
+
+    inline YMove        rgbMove(void)
     { return this->get_rgbMove(); }
 
-    int             set_rgbMove(const YMove * newval);
-    inline int      setRgbMove(const YMove * newval)
+    int             set_rgbMove(YMove newval);
+    inline int      setRgbMove(YMove newval)
     { return this->set_rgbMove(newval); }
 
     /**
@@ -225,12 +188,13 @@ public:
      */
     int             rgbMove(int rgb_target,int ms_duration);
 
-           const YMove     *get_hslMove(void);
-    inline const YMove     *hslMove(void)
+    YMove               get_hslMove(void);
+
+    inline YMove        hslMove(void)
     { return this->get_hslMove(); }
 
-    int             set_hslMove(const YMove * newval);
-    inline int      setHslMove(const YMove * newval)
+    int             set_hslMove(YMove newval);
+    inline int      setHslMove(YMove newval)
     { return this->set_hslMove(newval); }
 
     /**
@@ -252,8 +216,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_RGBCOLORATPOWERON_INVALID.
      */
-           unsigned        get_rgbColorAtPowerOn(void);
-    inline unsigned        rgbColorAtPowerOn(void)
+    int                 get_rgbColorAtPowerOn(void);
+
+    inline int          rgbColorAtPowerOn(void)
     { return this->get_rgbColorAtPowerOn(); }
 
     /**
@@ -269,36 +234,9 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             set_rgbColorAtPowerOn(unsigned newval);
-    inline int      setRgbColorAtPowerOn(unsigned newval)
+    int             set_rgbColorAtPowerOn(int newval);
+    inline int      setRgbColorAtPowerOn(int newval)
     { return this->set_rgbColorAtPowerOn(newval); }
-
-
-    /**
-     * Registers the callback function that is invoked on every change of advertised value.
-     * The callback is invoked only during the execution of ySleep or yHandleEvents.
-     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
-     *         arguments: the function object of which the value has changed, and the character string describing
-     *         the new advertised value.
-     * @noreturn
-     */
-    void registerValueCallback(YColorLedUpdateCallback callback);
-
-    void advertiseValue(const string& value);
-
-    /**
-     * Continues the enumeration of RGB leds started using yFirstColorLed().
-     * 
-     * @return a pointer to a YColorLed object, corresponding to
-     *         an RGB led currently online, or a null pointer
-     *         if there are no more RGB leds to enumerate.
-     */
-           YColorLed       *nextColorLed(void);
-    inline YColorLed       *next(void)
-    { return this->nextColorLed();}
 
     /**
      * Retrieves an RGB led for a given identifier.
@@ -323,18 +261,40 @@ public:
      * 
      * @return a YColorLed object allowing you to drive the RGB led.
      */
-           static YColorLed* FindColorLed(const string& func);
-    inline static YColorLed* Find(const string& func)
-    { return YColorLed::FindColorLed(func);}
+    static YColorLed*   FindColorLed(string func);
+
+    using YFunction::registerValueCallback;
+
     /**
-     * Starts the enumeration of RGB leds currently accessible.
-     * Use the method YColorLed.nextColorLed() to iterate on
-     * next RGB leds.
+     * Registers the callback function that is invoked on every change of advertised value.
+     * The callback is invoked only during the execution of ySleep or yHandleEvents.
+     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * 
+     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     *         arguments: the function object of which the value has changed, and the character string describing
+     *         the new advertised value.
+     * @noreturn
+     */
+    virtual int         registerValueCallback(YColorLedValueCallback callback);
+
+    virtual int         _invokeValueCallback(string value);
+
+
+    inline static YColorLed* Find(string func)
+    { return YColorLed::FindColorLed(func); }
+
+    /**
+     * Continues the enumeration of RGB leds started using yFirstColorLed().
      * 
      * @return a pointer to a YColorLed object, corresponding to
-     *         the first RGB led currently online, or a null pointer
-     *         if there are none.
+     *         an RGB led currently online, or a null pointer
+     *         if there are no more RGB leds to enumerate.
      */
+           YColorLed       *nextColorLed(void);
+    inline YColorLed       *next(void)
+    { return this->nextColorLed();}
+
            static YColorLed* FirstColorLed(void);
     inline static YColorLed* First(void)
     { return YColorLed::FirstColorLed();}

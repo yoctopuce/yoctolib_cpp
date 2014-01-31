@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_current.cpp 12324 2013-08-13 15:10:31Z mvuilleu $
+ * $Id: yocto_current.cpp 14700 2014-01-23 15:40:44Z seb $
  *
  * Implements yFindCurrent(), the high-level API for Current functions
  *
@@ -47,24 +47,14 @@
 #include <math.h>
 #include <stdlib.h>
 
-//--- (YCurrent constructor)
-// Constructor is protected, use yFindCurrent factory function to instantiate
-YCurrent::YCurrent(const string& func): YFunction("Current", func)
-//--- (end of YCurrent constructor)
+YCurrent::YCurrent(const string& func): YSensor(func)
 //--- (Current initialization)
-            ,_callback(NULL)
-            ,_logicalName(Y_LOGICALNAME_INVALID)
-            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
-            ,_unit(Y_UNIT_INVALID)
-            ,_currentValue(Y_CURRENTVALUE_INVALID)
-            ,_lowestValue(Y_LOWESTVALUE_INVALID)
-            ,_highestValue(Y_HIGHESTVALUE_INVALID)
-            ,_currentRawValue(Y_CURRENTRAWVALUE_INVALID)
-            ,_calibrationParam(Y_CALIBRATIONPARAM_INVALID)
-            ,_resolution(Y_RESOLUTION_INVALID)
-            ,_calibrationOffset(-32767)
+    ,_valueCallbackCurrent(NULL)
+    ,_timedReportCallbackCurrent(NULL)
 //--- (end of Current initialization)
-{}
+{
+    _className="Current";
+}
 
 YCurrent::~YCurrent() 
 {
@@ -72,302 +62,113 @@ YCurrent::~YCurrent()
 //--- (end of YCurrent cleanup)
 }
 //--- (YCurrent implementation)
-
-const string YCurrent::LOGICALNAME_INVALID = "!INVALID!";
-const string YCurrent::ADVERTISEDVALUE_INVALID = "!INVALID!";
-const string YCurrent::UNIT_INVALID = "!INVALID!";
-const double YCurrent::CURRENTVALUE_INVALID = -DBL_MAX;
-const double YCurrent::LOWESTVALUE_INVALID = -DBL_MAX;
-const double YCurrent::HIGHESTVALUE_INVALID = -DBL_MAX;
-const double YCurrent::CURRENTRAWVALUE_INVALID = -DBL_MAX;
-const string YCurrent::CALIBRATIONPARAM_INVALID = "!INVALID!";
-const double YCurrent::RESOLUTION_INVALID = -DBL_MAX;
+// static attributes
 
 
-
-int YCurrent::_parse(yJsonStateMachine& j)
+/**
+ * Retrieves $AFUNCTION$ for a given identifier.
+ * The identifier can be specified using several formats:
+ * <ul>
+ * <li>FunctionLogicalName</li>
+ * <li>ModuleSerialNumber.FunctionIdentifier</li>
+ * <li>ModuleSerialNumber.FunctionLogicalName</li>
+ * <li>ModuleLogicalName.FunctionIdentifier</li>
+ * <li>ModuleLogicalName.FunctionLogicalName</li>
+ * </ul>
+ * 
+ * This function does not require that $THEFUNCTION$ is online at the time
+ * it is invoked. The returned object is nevertheless valid.
+ * Use the method YCurrent.isOnline() to test if $THEFUNCTION$ is
+ * indeed online at a given time. In case of ambiguity when looking for
+ * $AFUNCTION$ by logical name, no error is notified: the first instance
+ * found is returned. The search is performed first by hardware name,
+ * then by logical name.
+ * 
+ * @param func : a string that uniquely characterizes $THEFUNCTION$
+ * 
+ * @return a YCurrent object allowing you to drive $THEFUNCTION$.
+ */
+YCurrent* YCurrent::FindCurrent(string func)
 {
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
-    failed:
-        return -1;
+    YCurrent* obj = NULL;
+    obj = (YCurrent*) YFunction::_FindFromCache("Current", func);
+    if (obj == NULL) {
+        obj = new YCurrent(func);
+        YFunction::_AddToCache("Current", func, obj);
     }
-    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-        if(!strcmp(j.token, "logicalName")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _logicalName =  _parseString(j);
-        } else if(!strcmp(j.token, "advertisedValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _advertisedValue =  _parseString(j);
-        } else if(!strcmp(j.token, "unit")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _unit =  _parseString(j);
-        } else if(!strcmp(j.token, "currentValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _currentValue =  floor(atof(j.token)/65536.0+.5);
-        } else if(!strcmp(j.token, "lowestValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _lowestValue =  floor(atof(j.token)/65536.0+.5);
-        } else if(!strcmp(j.token, "highestValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _highestValue =  floor(atof(j.token)/65536.0+.5);
-        } else if(!strcmp(j.token, "currentRawValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _currentRawValue =  atof(j.token)/65536.0;
-        } else if(!strcmp(j.token, "calibrationParam")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _calibrationParam =  _parseString(j);
-        } else if(!strcmp(j.token, "resolution")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _resolution =  (atoi(j.token) > 100 ? 1.0 / floor(65536.0/atof(j.token)+.5) : 0.001 / floor(67.0/atof(j.token)+.5));
-        } else {
-            // ignore unknown field
-            yJsonSkip(&j, 1);
+    return obj;
+}
+
+/**
+ * Registers the callback function that is invoked on every change of advertised value.
+ * The callback is invoked only during the execution of ySleep or yHandleEvents.
+ * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+ * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * 
+ * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ *         arguments: the function object of which the value has changed, and the character string describing
+ *         the new advertised value.
+ * @noreturn
+ */
+int YCurrent::registerValueCallback(YCurrentValueCallback callback)
+{
+    string val;
+    if (callback != NULL) {
+        YFunction::_UpdateValueCallbackList(this, true);
+    } else {
+        YFunction::_UpdateValueCallbackList(this, false);
+    }
+    _valueCallbackCurrent = callback;
+    // Immediately invoke value callback with current value
+    if (callback != NULL && this->isOnline()) {
+        val = _advertisedValue;
+        if (!(val == "")) {
+            this->_invokeValueCallback(val);
         }
     }
-    if(j.st != YJSON_PARSE_STRUCT) goto failed;
+    return 0;
+}
+
+int YCurrent::_invokeValueCallback(string value)
+{
+    if (_valueCallbackCurrent != NULL) {
+        _valueCallbackCurrent(this, value);
+    } else {
+        YSensor::_invokeValueCallback(value);
+    }
     return 0;
 }
 
 /**
- * Returns the logical name of the current sensor.
+ * Registers the callback function that is invoked on every periodic timed notification.
+ * The callback is invoked only during the execution of ySleep or yHandleEvents.
+ * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+ * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
  * 
- * @return a string corresponding to the logical name of the current sensor
- * 
- * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
+ * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ *         arguments: the function object of which the value has changed, and an YMeasure object describing
+ *         the new advertised value.
+ * @noreturn
  */
-string YCurrent::get_logicalName(void)
+int YCurrent::registerTimedReportCallback(YCurrentTimedReportCallback callback)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LOGICALNAME_INVALID;
+    if (callback != NULL) {
+        YFunction::_UpdateTimedReportCallbackList(this, true);
+    } else {
+        YFunction::_UpdateTimedReportCallbackList(this, false);
     }
-    return _logicalName;
+    _timedReportCallbackCurrent = callback;
+    return 0;
 }
 
-/**
- * Changes the logical name of the current sensor. You can use yCheckLogicalName()
- * prior to this call to make sure that your parameter is valid.
- * Remember to call the saveToFlash() method of the module if the
- * modification must be kept.
- * 
- * @param newval : a string corresponding to the logical name of the current sensor
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YCurrent::set_logicalName(const string& newval)
+int YCurrent::_invokeTimedReportCallback(YMeasure value)
 {
-    string rest_val;
-    rest_val = newval;
-    return _setAttr("logicalName", rest_val);
-}
-
-/**
- * Returns the current value of the current sensor (no more than 6 characters).
- * 
- * @return a string corresponding to the current value of the current sensor (no more than 6 characters)
- * 
- * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
- */
-string YCurrent::get_advertisedValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_ADVERTISEDVALUE_INVALID;
+    if (_timedReportCallbackCurrent != NULL) {
+        _timedReportCallbackCurrent(this, value);
+    } else {
+        YSensor::_invokeTimedReportCallback(value);
     }
-    return _advertisedValue;
-}
-
-/**
- * Returns the measuring unit for the measured value.
- * 
- * @return a string corresponding to the measuring unit for the measured value
- * 
- * On failure, throws an exception or returns Y_UNIT_INVALID.
- */
-string YCurrent::get_unit(void)
-{
-    if(_unit == Y_UNIT_INVALID) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_UNIT_INVALID;
-    }
-    return _unit;
-}
-
-/**
- * Returns the current measured value.
- * 
- * @return a floating point number corresponding to the current measured value
- * 
- * On failure, throws an exception or returns Y_CURRENTVALUE_INVALID.
- */
-double YCurrent::get_currentValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_CURRENTVALUE_INVALID;
-    }
-    double res = YAPI::_applyCalibration(_currentRawValue, _calibrationParam, _calibrationOffset, _resolution);
-    if(res != Y_CURRENTVALUE_INVALID) return res;
-    return _currentValue;
-}
-
-/**
- * Changes the recorded minimal value observed.
- * 
- * @param newval : a floating point number corresponding to the recorded minimal value observed
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YCurrent::set_lowestValue(double newval)
-{
-    string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval*65536.0 +0.5)); rest_val = string(buf);
-    return _setAttr("lowestValue", rest_val);
-}
-
-/**
- * Returns the minimal value observed.
- * 
- * @return a floating point number corresponding to the minimal value observed
- * 
- * On failure, throws an exception or returns Y_LOWESTVALUE_INVALID.
- */
-double YCurrent::get_lowestValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LOWESTVALUE_INVALID;
-    }
-    return _lowestValue;
-}
-
-/**
- * Changes the recorded maximal value observed.
- * 
- * @param newval : a floating point number corresponding to the recorded maximal value observed
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YCurrent::set_highestValue(double newval)
-{
-    string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval*65536.0 +0.5)); rest_val = string(buf);
-    return _setAttr("highestValue", rest_val);
-}
-
-/**
- * Returns the maximal value observed.
- * 
- * @return a floating point number corresponding to the maximal value observed
- * 
- * On failure, throws an exception or returns Y_HIGHESTVALUE_INVALID.
- */
-double YCurrent::get_highestValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_HIGHESTVALUE_INVALID;
-    }
-    return _highestValue;
-}
-
-/**
- * Returns the uncalibrated, unrounded raw value returned by the sensor.
- * 
- * @return a floating point number corresponding to the uncalibrated, unrounded raw value returned by the sensor
- * 
- * On failure, throws an exception or returns Y_CURRENTRAWVALUE_INVALID.
- */
-double YCurrent::get_currentRawValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_CURRENTRAWVALUE_INVALID;
-    }
-    return _currentRawValue;
-}
-
-string YCurrent::get_calibrationParam(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_CALIBRATIONPARAM_INVALID;
-    }
-    return _calibrationParam;
-}
-
-int YCurrent::set_calibrationParam(const string& newval)
-{
-    string rest_val;
-    rest_val = newval;
-    return _setAttr("calibrationParam", rest_val);
-}
-
-/**
- * Configures error correction data points, in particular to compensate for
- * a possible perturbation of the measure caused by an enclosure. It is possible
- * to configure up to five correction points. Correction points must be provided
- * in ascending order, and be in the range of the sensor. The device will automatically
- * perform a linear interpolation of the error correction between specified
- * points. Remember to call the saveToFlash() method of the module if the
- * modification must be kept.
- * 
- * For more information on advanced capabilities to refine the calibration of
- * sensors, please contact support@yoctopuce.com.
- * 
- * @param rawValues : array of floating point numbers, corresponding to the raw
- *         values returned by the sensor for the correction points.
- * @param refValues : array of floating point numbers, corresponding to the corrected
- *         values for the correction points.
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YCurrent::calibrateFromPoints(vector<double> rawValues,vector<double> refValues)
-{
-    string rest_val;
-    rest_val = this->_encodeCalibrationPoints(rawValues,refValues,_resolution,_calibrationOffset,_calibrationParam);
-    return _setAttr("calibrationParam", rest_val);
-}
-
-int YCurrent::loadCalibrationPoints(vector<double> rawValues,vector<double> refValues)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return _lastErrorType;
-    }
-    return this->_decodeCalibrationPoints(_calibrationParam,rawValues,refValues,_resolution,_calibrationOffset);
-}
-
-/**
- * Changes the resolution of the measured values. The resolution corresponds to the numerical precision
- * when displaying value. It does not change the precision of the measure itself.
- * 
- * @param newval : a floating point number corresponding to the resolution of the measured values
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YCurrent::set_resolution(double newval)
-{
-    string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval*65536.0 +0.5)); rest_val = string(buf);
-    return _setAttr("resolution", rest_val);
-}
-
-/**
- * Returns the resolution of the measured values. The resolution corresponds to the numerical precision
- * when displaying value, which is not always the same as the actual precision of the sensor.
- * 
- * @return a floating point number corresponding to the resolution of the measured values
- * 
- * On failure, throws an exception or returns Y_RESOLUTION_INVALID.
- */
-double YCurrent::get_resolution(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_RESOLUTION_INVALID;
-    }
-    return _resolution;
+    return 0;
 }
 
 YCurrent *YCurrent::nextCurrent(void)
@@ -377,38 +178,7 @@ YCurrent *YCurrent::nextCurrent(void)
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
-    return yFindCurrent(hwid);
-}
-
-void YCurrent::registerValueCallback(YCurrentUpdateCallback callback)
-{
-    if (callback != NULL) {
-        _registerFuncCallback(this);
-        yapiLockFunctionCallBack(NULL);
-        YAPI::_yapiFunctionUpdateCallbackFwd(this->functionDescriptor(), this->get_advertisedValue().c_str());
-        yapiUnlockFunctionCallBack(NULL);
-    } else {
-        _unregisterFuncCallback(this);
-    }
-    _callback = callback;
-}
-
-void YCurrent::advertiseValue(const string& value)
-{
-    if (_callback != NULL) {
-        _callback(this, value);
-    }
-}
-
-
-YCurrent* YCurrent::FindCurrent(const string& func)
-{
-    if(YAPI::_YFunctionsCaches["YCurrent"].find(func) != YAPI::_YFunctionsCaches["YCurrent"].end())
-        return (YCurrent*) YAPI::_YFunctionsCaches["YCurrent"][func];
-    
-    YCurrent *newCurrent = new YCurrent(func);
-    YAPI::_YFunctionsCaches["YCurrent"][func] = newCurrent ;
-    return newCurrent;
+    return YCurrent::FindCurrent(hwid);
 }
 
 YCurrent* YCurrent::FirstCurrent(void)

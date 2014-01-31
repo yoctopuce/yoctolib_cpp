@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_realtimeclock.h 12324 2013-08-13 15:10:31Z mvuilleu $
+ * $Id: yocto_realtimeclock.h 14188 2013-12-30 10:42:56Z seb $
  *
  * Declares yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *
@@ -46,23 +46,24 @@
 #include <cmath>
 #include <map>
 
-//--- (return codes)
-//--- (end of return codes)
+//--- (YRealTimeClock return codes)
+//--- (end of YRealTimeClock return codes)
 //--- (YRealTimeClock definitions)
-class YRealTimeClock; //forward declaration
+class YRealTimeClock; // forward declaration
 
-typedef void (*YRealTimeClockUpdateCallback)(YRealTimeClock *func, const string& functionValue);
+typedef void (*YRealTimeClockValueCallback)(YRealTimeClock *func, const string& functionValue);
+#ifndef _Y_TIMESET_ENUM
+#define _Y_TIMESET_ENUM
 typedef enum {
     Y_TIMESET_FALSE = 0,
     Y_TIMESET_TRUE = 1,
     Y_TIMESET_INVALID = -1,
 } Y_TIMESET_enum;
+#endif
 
-#define Y_LOGICALNAME_INVALID           (YAPI::INVALID_STRING)
-#define Y_ADVERTISEDVALUE_INVALID       (YAPI::INVALID_STRING)
-#define Y_UNIXTIME_INVALID              (0xffffffff)
-#define Y_DATETIME_INVALID              (YAPI::INVALID_STRING)
-#define Y_UTCOFFSET_INVALID             (0x80000000)
+#define Y_UNIXTIME_INVALID              (YAPI_INVALID_LONG)
+#define Y_DATETIME_INVALID              (YAPI_INVALID_STRING)
+#define Y_UTCOFFSET_INVALID             (YAPI_INVALID_INT)
 //--- (end of YRealTimeClock definitions)
 
 //--- (YRealTimeClock declaration)
@@ -74,81 +75,37 @@ typedef enum {
  * The current time may represent a local time as well as an UTC time, but no automatic time change
  * will occur to account for daylight saving time.
  */
-class YRealTimeClock: public YFunction {
+class YOCTO_CLASS_EXPORT YRealTimeClock: public YFunction {
+//--- (end of YRealTimeClock declaration)
 protected:
+    //--- (YRealTimeClock attributes)
     // Attributes (function value cache)
-    YRealTimeClockUpdateCallback _callback;
-    string          _logicalName;
-    string          _advertisedValue;
-    unsigned        _unixTime;
+    s64             _unixTime;
     string          _dateTime;
     int             _utcOffset;
     Y_TIMESET_enum  _timeSet;
+    YRealTimeClockValueCallback _valueCallbackRealTimeClock;
 
     friend YRealTimeClock *yFindRealTimeClock(const string& func);
     friend YRealTimeClock *yFirstRealTimeClock(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    int             _parse(yJsonStateMachine& j);
-    //--- (end of YRealTimeClock declaration)
+    virtual int     _parseAttr(yJsonStateMachine& j);
 
-    //--- (YRealTimeClock constructor)
     // Constructor is protected, use yFindRealTimeClock factory function to instantiate
     YRealTimeClock(const string& func);
-    //--- (end of YRealTimeClock constructor)
-    //--- (RealTimeClock initialization)
-    //--- (end of RealTimeClock initialization)
+    //--- (end of YRealTimeClock attributes)
 
 public:
     ~YRealTimeClock();
     //--- (YRealTimeClock accessors declaration)
 
-    static const string LOGICALNAME_INVALID;
-    static const string ADVERTISEDVALUE_INVALID;
-    static const unsigned UNIXTIME_INVALID = 0xffffffff;
+    static const s64 UNIXTIME_INVALID = YAPI_INVALID_LONG;
     static const string DATETIME_INVALID;
-    static const int      UTCOFFSET_INVALID = 0x80000000;
+    static const int UTCOFFSET_INVALID = YAPI_INVALID_INT;
     static const Y_TIMESET_enum TIMESET_FALSE = Y_TIMESET_FALSE;
     static const Y_TIMESET_enum TIMESET_TRUE = Y_TIMESET_TRUE;
     static const Y_TIMESET_enum TIMESET_INVALID = Y_TIMESET_INVALID;
-
-    /**
-     * Returns the logical name of the clock.
-     * 
-     * @return a string corresponding to the logical name of the clock
-     * 
-     * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
-     */
-           string          get_logicalName(void);
-    inline string          logicalName(void)
-    { return this->get_logicalName(); }
-
-    /**
-     * Changes the logical name of the clock. You can use yCheckLogicalName()
-     * prior to this call to make sure that your parameter is valid.
-     * Remember to call the saveToFlash() method of the module if the
-     * modification must be kept.
-     * 
-     * @param newval : a string corresponding to the logical name of the clock
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_logicalName(const string& newval);
-    inline int      setLogicalName(const string& newval)
-    { return this->set_logicalName(newval); }
-
-    /**
-     * Returns the current value of the clock (no more than 6 characters).
-     * 
-     * @return a string corresponding to the current value of the clock (no more than 6 characters)
-     * 
-     * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
-     */
-           string          get_advertisedValue(void);
-    inline string          advertisedValue(void)
-    { return this->get_advertisedValue(); }
 
     /**
      * Returns the current time in Unix format (number of elapsed seconds since Jan 1st, 1970).
@@ -158,8 +115,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_UNIXTIME_INVALID.
      */
-           unsigned        get_unixTime(void);
-    inline unsigned        unixTime(void)
+    s64                 get_unixTime(void);
+
+    inline s64          unixTime(void)
     { return this->get_unixTime(); }
 
     /**
@@ -172,8 +130,8 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             set_unixTime(unsigned newval);
-    inline int      setUnixTime(unsigned newval)
+    int             set_unixTime(s64 newval);
+    inline int      setUnixTime(s64 newval)
     { return this->set_unixTime(newval); }
 
     /**
@@ -183,8 +141,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_DATETIME_INVALID.
      */
-           string          get_dateTime(void);
-    inline string          dateTime(void)
+    string              get_dateTime(void);
+
+    inline string       dateTime(void)
     { return this->get_dateTime(); }
 
     /**
@@ -194,8 +153,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_UTCOFFSET_INVALID.
      */
-           int             get_utcOffset(void);
-    inline int             utcOffset(void)
+    int                 get_utcOffset(void);
+
+    inline int          utcOffset(void)
     { return this->get_utcOffset(); }
 
     /**
@@ -222,36 +182,10 @@ public:
      * 
      * On failure, throws an exception or returns Y_TIMESET_INVALID.
      */
-           Y_TIMESET_enum  get_timeSet(void);
-    inline Y_TIMESET_enum  timeSet(void)
+    Y_TIMESET_enum      get_timeSet(void);
+
+    inline Y_TIMESET_enum timeSet(void)
     { return this->get_timeSet(); }
-
-
-    /**
-     * Registers the callback function that is invoked on every change of advertised value.
-     * The callback is invoked only during the execution of ySleep or yHandleEvents.
-     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
-     *         arguments: the function object of which the value has changed, and the character string describing
-     *         the new advertised value.
-     * @noreturn
-     */
-    void registerValueCallback(YRealTimeClockUpdateCallback callback);
-
-    void advertiseValue(const string& value);
-
-    /**
-     * Continues the enumeration of clocks started using yFirstRealTimeClock().
-     * 
-     * @return a pointer to a YRealTimeClock object, corresponding to
-     *         a clock currently online, or a null pointer
-     *         if there are no more clocks to enumerate.
-     */
-           YRealTimeClock  *nextRealTimeClock(void);
-    inline YRealTimeClock  *next(void)
-    { return this->nextRealTimeClock();}
 
     /**
      * Retrieves a clock for a given identifier.
@@ -276,18 +210,40 @@ public:
      * 
      * @return a YRealTimeClock object allowing you to drive the clock.
      */
-           static YRealTimeClock* FindRealTimeClock(const string& func);
-    inline static YRealTimeClock* Find(const string& func)
-    { return YRealTimeClock::FindRealTimeClock(func);}
+    static YRealTimeClock* FindRealTimeClock(string func);
+
+    using YFunction::registerValueCallback;
+
     /**
-     * Starts the enumeration of clocks currently accessible.
-     * Use the method YRealTimeClock.nextRealTimeClock() to iterate on
-     * next clocks.
+     * Registers the callback function that is invoked on every change of advertised value.
+     * The callback is invoked only during the execution of ySleep or yHandleEvents.
+     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * 
+     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     *         arguments: the function object of which the value has changed, and the character string describing
+     *         the new advertised value.
+     * @noreturn
+     */
+    virtual int         registerValueCallback(YRealTimeClockValueCallback callback);
+
+    virtual int         _invokeValueCallback(string value);
+
+
+    inline static YRealTimeClock* Find(string func)
+    { return YRealTimeClock::FindRealTimeClock(func); }
+
+    /**
+     * Continues the enumeration of clocks started using yFirstRealTimeClock().
      * 
      * @return a pointer to a YRealTimeClock object, corresponding to
-     *         the first clock currently online, or a null pointer
-     *         if there are none.
+     *         a clock currently online, or a null pointer
+     *         if there are no more clocks to enumerate.
      */
+           YRealTimeClock  *nextRealTimeClock(void);
+    inline YRealTimeClock  *next(void)
+    { return this->nextRealTimeClock();}
+
            static YRealTimeClock* FirstRealTimeClock(void);
     inline static YRealTimeClock* First(void)
     { return YRealTimeClock::FirstRealTimeClock();}

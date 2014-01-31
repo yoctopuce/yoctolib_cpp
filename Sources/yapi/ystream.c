@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 12480 2013-08-23 09:27:13Z seb $
+ * $Id: ystream.c 14321 2014-01-10 22:32:34Z mvuilleu $
  *
  * USB multi-interface stream implementation
  *
@@ -193,7 +193,7 @@ int vdbglogf(const char *fileid,int line,const char *fmt,va_list args)
 
     if(ytracefile[0]){
         FILE *f;
-        if(YFOPEN(&f,ytracefile,"a")!=0){
+        if(YFOPEN(&f,ytracefile,"a+")!=0){
             return -1;
         }
         WriteTsamp(f);
@@ -236,58 +236,8 @@ int wcstombs_s(size_t *pReturnValue, char *mbstr, size_t sizeInBytes, const wcha
  Whitepage and Yellowpage wrapper for USB devices
  ****************************************************************************/
 
-static void wpRegisterUSB(const yDeviceSt *infos)
-{
-    yStrRef serialref = yHashPutStr(infos->serial);
-    yStrRef lnameref = yHashPutStr(infos->logicalname);
-    wpRegister(-1, serialref, lnameref, yHashPutStr(infos->productname), infos->deviceid,
-               yHashUrlUSB(serialref,"", 0,NULL), infos->beacon);
-    ypRegister(YSTRREF_MODULE_STRING, serialref, yHashPutStr("module"), lnameref, -1, NULL);
 
-    // Forward high-level notification to API user
-    if (yContext->arrivalCallback) {
-        yEnterCriticalSection(&yContext->deviceCallbackCS);
-        yContext->arrivalCallback(serialref);
-        yLeaveCriticalSection(&yContext->deviceCallbackCS);
-    }
-}
-
-
-void wpUpdateUSB(const char *serial,const char *logicalname, u8 beacon)
-{
-    yStrRef serialref = yHashPutStr(serial);
-    yStrRef lnameref = yHashPutStr(logicalname);
-
-    // Update white pages
-    wpRegister(-1, serialref, lnameref, INVALID_HASH_IDX, 0, yHashUrlUSB(serialref,"", 0,NULL), beacon);
-    ypRegister(YSTRREF_MODULE_STRING, serialref, yHashPutStr("module"), lnameref, -1, NULL);
-
-    // Forward high-level notification to API user
-    if(yContext->changeCallback){
-        yEnterCriticalSection(&yContext->deviceCallbackCS);
-        yContext->changeCallback(serialref);
-        yLeaveCriticalSection(&yContext->deviceCallbackCS);
-    }
-}
-
-void wpUnregisterUSB(const char *serial)
-{
-    yStrRef serialref = yHashTestStr(serial);
-    if(serialref == INVALID_HASH_IDX) return;
-    // Forward high-level notification to API user before deleting data
-    wpPreventUnregister();
-    if(wpMarkForUnregister(serialref)){
-        // Forward high-level notification to API user before deleting data
-        if (yContext->removalCallback) {
-            yEnterCriticalSection(&yContext->deviceCallbackCS);
-            yContext->removalCallback(serialref);
-            yLeaveCriticalSection(&yContext->deviceCallbackCS);
-        }
-    }
-    wpAllowUnregister();
-}
-
-void ypUpdateUSB(const char *serial, const char *funcid, const char *funcname, int funydx, const char *funcval)
+void ypUpdateUSB(const char *serial, const char *funcid, const char *funcname, int funclass, int funydx, const char *funcval)
 {
     char    categ[YOCTO_FUNCTION_LEN];
     yStrRef serialref, funcidref, funcnameref = INVALID_HASH_IDX;
@@ -303,7 +253,7 @@ void ypUpdateUSB(const char *serial, const char *funcid, const char *funcname, i
     serialref = yHashPutStr(serial);
     funcidref = yHashPutStr(funcid);
     if(funcname) funcnameref = yHashPutStr(funcname);
-    if(ypRegister(yHashPutStr(categ), serialref, funcidref, funcnameref, funydx, funcval)){
+    if(ypRegister(yHashPutStr(categ), serialref, funcidref, funcnameref, funclass, funydx, funcval)){
         // Forward high-level notification to API user
         if (yContext->functionCallback) {
             yEnterCriticalSection(&yContext->functionCallbackCS);
@@ -440,7 +390,7 @@ static void devStartEnum(LOCATION yPrivDeviceSt *dev)
     
 
     timeref = yapiGetTickCount();
-    if((dev->rstatus == YRUN_IDLE || dev->rstatus == YRUN_BUSY ) && (u64)(yapiGetTickCount()-timeref) < 2000){
+    while((dev->rstatus == YRUN_IDLE || dev->rstatus == YRUN_BUSY ) && (u64)(yapiGetTickCount()-timeref) < 2000){
             // if someone is doing IO release the mutex and give him 2 second to quit
             yLeaveCriticalSection(&dev->acces_state);
             yApproximateSleep(5);
@@ -1420,8 +1370,8 @@ again:
         }
     } else {
         // no packet
-        if (dev->infos.nbinbterfaces >1 ) {
-            // fixme look on next interface if we have miss only one packet
+        if (dev->infos.nbinbterfaces > 1) {
+            // FIXME: look on next interface if we have misses only one packet
         }
     }
     return YAPI_SUCCESS;
@@ -1460,7 +1410,8 @@ static int yStreamSetup(yPrivDeviceSt *dev,char *errmsg)
     dev->tmptxpkt.next=NULL;
     dev->curtxofs=0;
     dev->devYdxMap=NULL;
-
+    dev->lastUtcUpdate=0;
+    
     return YAPI_SUCCESS;
 }
 
@@ -1576,8 +1527,9 @@ static void yStreamShutdown(yPrivDeviceSt *dev)
 }
 
 
-/// packet dispatcher
-static void yDispatchNoctice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pktsize)
+// Notification packet dispatcher
+//
+static void yDispatchNotice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pktsize)
 {
     yPrivDeviceSt *notDev;
     u16 vendorid,deviceid;
@@ -1585,12 +1537,11 @@ static void yDispatchNoctice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pkt
     if(notify->firstByte <= NOTIFY_1STBYTE_MAXTINY || notify->firstByte >= NOTIFY_1STBYTE_MINSMALL) {
         // Tiny or small pubval notification:
         // create a new null-terminated small notification that we can use and forward
-        char                buff[sizeof(Notification_small)+YOCTO_PUBVAL_SIZE+2];
-        Notification_small *smallnot = (Notification_small *)buff;
-        
+        char buff[sizeof(Notification_small)+YOCTO_PUBVAL_SIZE+2];
+        Notification_small *smallnot = (Notification_small *)buff;        
         memset(smallnot->pubval,0,YOCTO_PUBVAL_SIZE+2);
         if(notify->firstByte <= NOTIFY_1STBYTE_MAXTINY) {
-            memcpy(smallnot->pubval,notify->tinypubvalnot.pubval,pktsize - sizeof(Notification_tiny));
+            memcpy(smallnot->pubval, notify->tinypubvalnot.pubval,pktsize - sizeof(Notification_tiny));
             smallnot->funydx = notify->tinypubvalnot.funydx;
             smallnot->devydx = wpGetDevYdx(yHashPutStr(dev->infos.serial));
         } else {
@@ -1605,7 +1556,7 @@ static void yDispatchNoctice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pkt
 #ifdef DEBUG_NOTIFICATION
         dbglog("notifysmall %d %d %s\n",smallnot->devydx,smallnot->funydx,smallnot->pubval);
 #endif
-        if(smallnot->devydx < 255) {
+        if (smallnot->devydx < 255) {
             ypUpdateYdx(smallnot->devydx,smallnot->funydx,smallnot->pubval);
             smallnot->funydx += NOTIFY_1STBYTE_MINSMALL;
             if(yContext->rawNotificationCb){
@@ -1634,9 +1585,13 @@ static void yDispatchNoctice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pkt
 #ifdef DEBUG_NOTIFICATION
         dbglog("new beacon %x\n",notify->namenot.beacon);
 #endif
-        wpUpdateUSB(notify->head.serial,notify->namenot.name,notify->namenot.beacon);
-        if(yContext->rawNotificationCb){
-            yContext->rawNotificationCb(notify);
+		{
+            yStrRef serialref = yHashPutStr(notify->head.serial);
+            yStrRef lnameref = yHashPutStr(notify->namenot.name);
+			wpSafeUpdate(NULL, MAX_YDX_PER_HUB,serialref,lnameref,yHashUrlUSB(serialref,"", 0,NULL),notify->namenot.beacon);
+            if(yContext->rawNotificationCb){
+                yContext->rawNotificationCb(notify);
+            }
         }
         break;
     case NOTIFY_PKT_PRODNAME:
@@ -1672,14 +1627,19 @@ static void yDispatchNoctice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pkt
         notify->funcnameydxnot.funydx = -1;
         // common code below
     case NOTIFY_PKT_FUNCNAMEYDX:
+        if(notify->funcnameydxnot.funclass >= YOCTO_N_BASECLASSES) {
+            // Unknown subclass, use YFunction instead
+            notify->funcnameydxnot.funclass = YOCTO_AKA_YFUNCTION;
+        }
 #ifdef DEBUG_NOTIFICATION
         if(notify->funcnameydxnot.funydx >= 0) {
-            dbglog("notify functnameydx %s %s %d\n",notify->funcnamenot.funcid, notify->funcnamenot.funcname,notify->funcnameydxnot.funydx);
+            dbglog("notify functnameydx %s %s %d %d\n",notify->funcnamenot.funcid, notify->funcnamenot.funcname,
+                   notify->funcnameydxnot.funydx, notify->funcnameydxnot.funclass);
         } else {
             dbglog("notify functname %s %s\n",notify->funcnamenot.funcid, notify->funcnamenot.funcname);
         }
 #endif
-        ypUpdateUSB(notDev->infos.serial,notify->funcnamenot.funcid,notify->funcnamenot.funcname,notify->funcnameydxnot.funydx,NULL);
+        ypUpdateUSB(notDev->infos.serial,notify->funcnamenot.funcid,notify->funcnamenot.funcname,notify->funcnameydxnot.funclass,notify->funcnameydxnot.funydx,NULL);
         if(yContext->rawNotificationCb){
             yContext->rawNotificationCb(notify);
         }
@@ -1692,7 +1652,7 @@ static void yDispatchNoctice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pkt
 #ifdef DEBUG_NOTIFICATION
             dbglog("notify funcval %s %s\n",notify->pubvalnot.funcid, buff);
 #endif
-            ypUpdateUSB(notDev->infos.serial,notify->pubvalnot.funcid,NULL,-1,buff);
+            ypUpdateUSB(notDev->infos.serial,notify->pubvalnot.funcid,NULL,-1,-1,buff);
             if(yContext->rawNotificationCb){
                 yContext->rawNotificationCb(notify);
             }
@@ -1725,7 +1685,41 @@ static void yDispatchNoctice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pkt
     }
 }
 
-// blockUntilTime: 
+// Timed report packet dispatcher
+//
+static void yDispatchReport(yPrivDeviceSt *dev, u8 *data, int pktsize)
+{
+	yStrRef serialref = yHashPutStr(dev->infos.serial);
+#ifdef DEBUG_NOTIFICATION
+	{
+		USB_Report_Pkt *report = (USB_Report_Pkt*)data;
+		dbglog("timed report for %d %d\n", wpGetDevYdx(serialref), report->funYdx);
+	}
+#endif
+    if(yContext->rawReportCb) {
+        yContext->rawReportCb(serialref, (USB_Report_Pkt*) data, pktsize);
+    }
+    if (yContext->timedReportCallback) {
+        while (pktsize > 0) {
+            USB_Report_Pkt *report = (USB_Report_Pkt*) data;
+            int  len = report->extraLen + 1;
+            if (report->funYdx == 0xf) {
+                u32 t = data[1] + 0x100u * data[2] + 0x10000u * data[3] + 0x1000000u * data[4];
+                dev->deviceTime = (double)t + data[5] / 250.0;
+            } else {
+                YAPI_FUNCTION fundesc;
+                int devydx = wpGetDevYdx(yHashPutStr(dev->infos.serial));
+                ypRegisterByYdx(devydx, report->funYdx, NULL, &fundesc);
+                data[0] = report->isAvg ? 1 : 0;
+                yContext->timedReportCallback(fundesc, dev->deviceTime, data, len + 1);
+            }
+            pktsize -= 1 + len;
+            data += 1 + len;
+        }
+    }
+}
+
+// blockUntilTime:
 //    0 -> only check pending (non blocking)
 //    >0 -> wait util yapiGetTickCount is >= blockUntilTime
 static int yDispatchReceive(yPrivDeviceSt *dev,u64 blockUntilTime,char *errmsg)
@@ -1780,7 +1774,10 @@ static int yDispatchReceive(yPrivDeviceSt *dev,u64 blockUntilTime,char *errmsg)
                 }
                 break;
             case YSTREAM_NOTICE:
-                yDispatchNoctice(dev, (USB_Notify_Pkt*)data, size);
+                yDispatchNotice(dev, (USB_Notify_Pkt*)data, size);
+                break;
+            case YSTREAM_REPORT:
+                yDispatchReport(dev, data, size);
                 break;
             case YSTREAM_EMPTY:
             default:
@@ -1920,26 +1917,24 @@ static void enuUpdateDStatus(void)
     int res;
 
     while(p){
+        yStrRef serialref = yHashPutStr(p->infos.serial);
         switch(p->enumAction){
         case YENU_STOP:
             devStartEnum(p);
 #ifdef DEBUG_DEV_ENUM
-            dbglog("ENU:%s(%d):%s->YDEV_UNPLUGED\n",p->infos.serial,p->infos.nbinbterfaces,YDEV_STATUS_TXT[p->dStatus]);
+            dbglog("ENU:stop %s(%d)->YDEV_UNPLUGED\n",p->infos.serial,p->infos.nbinbterfaces);
 #endif
             p->dStatus = YDEV_UNPLUGGED;
             if(YISERR(StopDevice(p,errmsg))){
                 dbglog("Unable to stop the device %s correctly:(%s)\n",p->infos.serial,errmsg);
             }
             dbglog("Device %s unplugged\n",p->infos.serial);
-            wpUnregisterUSB(p->infos.serial);
+            wpSafeUnregister(serialref);
             devStopEnum(p);
             break;
 
         case YENU_RESTART:
             devStartEnum(p);
-#ifdef DEBUG_DEV_ENUM_VERBOSE
-            dbglog("ENU:%s(%d):%s restarting...\n",p->infos.serial,p->infos.nbinbterfaces,YDEV_STATUS_TXT[p->dStatus]);
-#endif
             if(YISERR(StopDevice(p,errmsg))){
                 dbglog("Unable to stop the device %s correctly:(%s)\n",p->infos.serial,errmsg);
             }
@@ -1948,14 +1943,14 @@ static void enuUpdateDStatus(void)
             if(YISERR(res)){
                 // we are unable to restart the device -> unplug it and follow the traditional process (white page update etc...)
 #ifdef DEBUG_DEV_ENUM
-                dbglog("ENU:%s(%d):%s->YDEV_UNPLUGED (restart failed)\n",p->infos.serial,p->infos.nbinbterfaces,YDEV_STATUS_TXT[orgstatus]);
+                dbglog("ENU:Restart %s(%d)->YDEV_UNPLUGED (restart failed)\n",p->infos.serial,p->infos.nbinbterfaces);
 #endif
 
                 p->dStatus = YDEV_UNPLUGGED;
-                wpUnregisterUSB(p->infos.serial);
+                wpSafeUnregister(serialref);
             }else{
 #ifdef DEBUG_DEV_ENUM
-                dbglog("ENU:%s(%d):%s->YDEV_WORKING(restart)\n",p->infos.serial,p->infos.nbinbterfaces,YDEV_STATUS_TXT[orgstatus]);
+                dbglog("ENU:restart %s(%d)->YDEV_WORKING(restart)\n",p->infos.serial,p->infos.nbinbterfaces);
 #endif
             }
             devStopEnum(p);
@@ -1970,26 +1965,31 @@ static void enuUpdateDStatus(void)
                     if (res !=YAPI_TIMEOUT && p->nb_startup_retry < NB_MAX_STARTUP_RETRY) {
                         dbglog("Unable to start the device %s correctly (%s). retry later\n",p->infos.serial,errmsg);
 #ifdef DEBUG_DEV_ENUM
-                        dbglog("ENU:%s(%d):%s->YDEV_UNPLUGED\n",p->infos.serial,p->infos.nbinbterfaces,YDEV_STATUS_TXT[orgstatus]);
+                        dbglog("ENU:start %s(%d)->YDEV_UNPLUGED\n",p->infos.serial,p->infos.nbinbterfaces);
 #endif
                         p->dStatus = YDEV_UNPLUGGED;
                         p->next_startup_attempt = yapiGetTickCount()+1000;
                         p->nb_startup_retry++;
                     } else {
 #ifdef DEBUG_DEV_ENUM
-                        dbglog("ENU:%s(%d):%s->YDEV_NOTRESPONDING\n",p->infos.serial,p->infos.nbinbterfaces,YDEV_STATUS_TXT[orgstatus]);
+                        dbglog("ENU:start %s(%d)->YDEV_NOTRESPONDING\n",p->infos.serial,p->infos.nbinbterfaces);
 #endif
                         dbglog("Disable device %s (reason:%s)\n",p->infos.serial,errmsg);
                         p->dStatus = YDEV_NOTRESPONDING;
-                        wpUnregisterUSB(p->infos.serial);
+                        wpSafeUnregister(serialref);
                     }
                 }else{
 #ifdef DEBUG_DEV_ENUM
-                    dbglog("ENU:%s(%d):%s->YDEV_WORKING\n",p->infos.serial,p->infos.nbinbterfaces,YDEV_STATUS_TXT[orgstatus]);
+                    dbglog("ENU:start %s(%d)->YDEV_WORKING\n",p->infos.serial,p->infos.nbinbterfaces);
 #endif
                     p->yhdl    = yContext->devhdlcount++;
                     dbglog("Device %s plugged\n",p->infos.serial);
-                    wpRegisterUSB(&p->infos);
+                    {
+                        
+                        yStrRef lnameref = yHashPutStr(p->infos.logicalname);
+                        yUrlRef usb = yHashUrlUSB(serialref,"", 0,NULL);
+                        wpSafeRegister(NULL, MAX_YDX_PER_HUB,serialref, lnameref ,  yHashPutStr(p->infos.productname),p->infos.deviceid, usb, p->infos.beacon);
+                    }
                 }
             } else {
 #ifdef DEBUG_DEV_ENUM_VERBOSE
@@ -2308,11 +2308,32 @@ int yUsbIdle(void)
 		
 		res = devStartIdle(PUSH_LOCATION p,errmsg);
 		if (res == YAPI_SUCCESS) {
+            u32 currUtcTime;
             if(YISERR(yDispatchReceive(p,0,errmsg))){
                 dbglog("yPacketDispatchReceive error:%s\n",errmsg);
 				devReportErrorFromIdle(PUSH_LOCATION p,errmsg);
                 continue;
             }
+            currUtcTime = (u32)time(NULL);
+            if(currUtcTime > (u32)0x51f151f1 && // timestamp appears to be valid
+               (!p->lastUtcUpdate || currUtcTime < p->lastUtcUpdate || currUtcTime > p->lastUtcUpdate+1800u)) {
+                u8  *pktdata;
+                u8  maxpktlen;
+                // send updated UTC timestamp to keep datalogger on time
+                if(yStreamGetTxBuff(p,&pktdata, &maxpktlen) && maxpktlen >= 5){
+                    p->lastUtcUpdate = currUtcTime;
+                    pktdata[0] = USB_META_UTCTIME;
+                    pktdata[1] = currUtcTime & 0xff;
+                    pktdata[2] = (currUtcTime>>8) & 0xff;
+                    pktdata[3] = (currUtcTime>>16) & 0xff;
+                    pktdata[4] = (currUtcTime>>24) & 0xff;
+                    if(YISERR(yStreamTransmit(p,YSTREAM_META,5,errmsg))){
+                        dbglog("Unable to send UTC timestamp\n");
+                    } else if(YISERR(yStreamFlush(p,errmsg))) {
+                        dbglog("Unable to flush UTC timestamp\n");
+                    }
+                }
+            }            
             devStopIdle(PUSH_LOCATION p);
 		} else if(res == YAPI_DEVICE_BUSY){
 			if (p->httpstate != YHTTP_CLOSED && p->pendingIO.flags & YIO_ASYNC ) {

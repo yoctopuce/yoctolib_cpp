@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_servo.h 12324 2013-08-13 15:10:31Z mvuilleu $
+ * $Id: yocto_servo.h 14275 2014-01-09 14:20:38Z seb $
  *
  * Declares yFindServo(), the high-level API for Servo functions
  *
@@ -46,29 +46,32 @@
 #include <cmath>
 #include <map>
 
-//--- (return codes)
-//--- (end of return codes)
+//--- (YServo return codes)
+//--- (end of YServo return codes)
 //--- (YServo definitions)
-class YServo; //forward declaration
+class YServo; // forward declaration
 
-typedef void (*YServoUpdateCallback)(YServo *func, const string& functionValue);
+typedef void (*YServoValueCallback)(YServo *func, const string& functionValue);
 #ifndef _CLASS_YMOVE
 #define _CLASS_YMOVE
-class YMove {
+class YOCTO_CLASS_EXPORT YMove {
 public:
-    s32             target;
-    s16             ms;
-    u8              moving;
-    YMove() {}
+    int             target;
+    int             ms;
+    int             moving;
+
+    YMove()
+        :target(YAPI_INVALID_INT), ms(YAPI_INVALID_INT), moving(YAPI_INVALID_UINT)
+    {}
+
+    bool operator==(const YMove& o) const {
+         return (target == o.target) && (ms == o.ms) && (moving == o.moving);
+    }
 };
 #endif
-extern YMove YSERVO_INVALID_MOVE;
-#define Y_LOGICALNAME_INVALID           (YAPI::INVALID_STRING)
-#define Y_ADVERTISEDVALUE_INVALID       (YAPI::INVALID_STRING)
-#define Y_POSITION_INVALID              (0x80000000)
-#define Y_RANGE_INVALID                 (-1)
-#define Y_NEUTRAL_INVALID               (-1)
-#define Y_MOVE_INVALID                  (&YSERVO_INVALID_MOVE)
+#define Y_POSITION_INVALID              (YAPI_INVALID_INT)
+#define Y_RANGE_INVALID                 (YAPI_INVALID_UINT)
+#define Y_NEUTRAL_INVALID               (YAPI_INVALID_UINT)
 //--- (end of YServo definitions)
 
 //--- (YServo declaration)
@@ -80,78 +83,35 @@ extern YMove YSERVO_INVALID_MOVE;
  * in which the move should be performed. This makes it possible to
  * synchronize two servos involved in a same move.
  */
-class YServo: public YFunction {
+class YOCTO_CLASS_EXPORT YServo: public YFunction {
+//--- (end of YServo declaration)
 protected:
+    //--- (YServo attributes)
     // Attributes (function value cache)
-    YServoUpdateCallback _callback;
-    string          _logicalName;
-    string          _advertisedValue;
     int             _position;
     int             _range;
     int             _neutral;
     YMove           _move;
+    YServoValueCallback _valueCallbackServo;
 
     friend YServo *yFindServo(const string& func);
     friend YServo *yFirstServo(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    int             _parse(yJsonStateMachine& j);
-    //--- (end of YServo declaration)
+    virtual int     _parseAttr(yJsonStateMachine& j);
 
-    //--- (YServo constructor)
     // Constructor is protected, use yFindServo factory function to instantiate
     YServo(const string& func);
-    //--- (end of YServo constructor)
-    //--- (Servo initialization)
-    //--- (end of Servo initialization)
+    //--- (end of YServo attributes)
 
 public:
     ~YServo();
     //--- (YServo accessors declaration)
 
-    static const string LOGICALNAME_INVALID;
-    static const string ADVERTISEDVALUE_INVALID;
-    static const int      POSITION_INVALID = 0x80000000;
-    static const int      RANGE_INVALID = -1;
-    static const int      NEUTRAL_INVALID = -1;
-
-    /**
-     * Returns the logical name of the servo.
-     * 
-     * @return a string corresponding to the logical name of the servo
-     * 
-     * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
-     */
-           string          get_logicalName(void);
-    inline string          logicalName(void)
-    { return this->get_logicalName(); }
-
-    /**
-     * Changes the logical name of the servo. You can use yCheckLogicalName()
-     * prior to this call to make sure that your parameter is valid.
-     * Remember to call the saveToFlash() method of the module if the
-     * modification must be kept.
-     * 
-     * @param newval : a string corresponding to the logical name of the servo
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_logicalName(const string& newval);
-    inline int      setLogicalName(const string& newval)
-    { return this->set_logicalName(newval); }
-
-    /**
-     * Returns the current value of the servo (no more than 6 characters).
-     * 
-     * @return a string corresponding to the current value of the servo (no more than 6 characters)
-     * 
-     * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
-     */
-           string          get_advertisedValue(void);
-    inline string          advertisedValue(void)
-    { return this->get_advertisedValue(); }
+    static const int POSITION_INVALID = YAPI_INVALID_INT;
+    static const int RANGE_INVALID = YAPI_INVALID_UINT;
+    static const int NEUTRAL_INVALID = YAPI_INVALID_UINT;
+    static const YMove MOVE_INVALID;
 
     /**
      * Returns the current servo position.
@@ -160,8 +120,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_POSITION_INVALID.
      */
-           int             get_position(void);
-    inline int             position(void)
+    int                 get_position(void);
+
+    inline int          position(void)
     { return this->get_position(); }
 
     /**
@@ -184,8 +145,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_RANGE_INVALID.
      */
-           int             get_range(void);
-    inline int             range(void)
+    int                 get_range(void);
+
+    inline int          range(void)
     { return this->get_range(); }
 
     /**
@@ -213,8 +175,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_NEUTRAL_INVALID.
      */
-           int             get_neutral(void);
-    inline int             neutral(void)
+    int                 get_neutral(void);
+
+    inline int          neutral(void)
     { return this->get_neutral(); }
 
     /**
@@ -235,12 +198,13 @@ public:
     inline int      setNeutral(int newval)
     { return this->set_neutral(newval); }
 
-           const YMove     *get_move(void);
-    inline const YMove     *move(void)
+    YMove               get_move(void);
+
+    inline YMove        move(void)
     { return this->get_move(); }
 
-    int             set_move(const YMove * newval);
-    inline int      setMove(const YMove * newval)
+    int             set_move(YMove newval);
+    inline int      setMove(YMove newval)
     { return this->set_move(newval); }
 
     /**
@@ -254,33 +218,6 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     int             move(int target,int ms_duration);
-
-
-    /**
-     * Registers the callback function that is invoked on every change of advertised value.
-     * The callback is invoked only during the execution of ySleep or yHandleEvents.
-     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
-     *         arguments: the function object of which the value has changed, and the character string describing
-     *         the new advertised value.
-     * @noreturn
-     */
-    void registerValueCallback(YServoUpdateCallback callback);
-
-    void advertiseValue(const string& value);
-
-    /**
-     * Continues the enumeration of servos started using yFirstServo().
-     * 
-     * @return a pointer to a YServo object, corresponding to
-     *         a servo currently online, or a null pointer
-     *         if there are no more servos to enumerate.
-     */
-           YServo          *nextServo(void);
-    inline YServo          *next(void)
-    { return this->nextServo();}
 
     /**
      * Retrieves a servo for a given identifier.
@@ -305,18 +242,40 @@ public:
      * 
      * @return a YServo object allowing you to drive the servo.
      */
-           static YServo* FindServo(const string& func);
-    inline static YServo* Find(const string& func)
-    { return YServo::FindServo(func);}
+    static YServo*      FindServo(string func);
+
+    using YFunction::registerValueCallback;
+
     /**
-     * Starts the enumeration of servos currently accessible.
-     * Use the method YServo.nextServo() to iterate on
-     * next servos.
+     * Registers the callback function that is invoked on every change of advertised value.
+     * The callback is invoked only during the execution of ySleep or yHandleEvents.
+     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * 
+     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     *         arguments: the function object of which the value has changed, and the character string describing
+     *         the new advertised value.
+     * @noreturn
+     */
+    virtual int         registerValueCallback(YServoValueCallback callback);
+
+    virtual int         _invokeValueCallback(string value);
+
+
+    inline static YServo* Find(string func)
+    { return YServo::FindServo(func); }
+
+    /**
+     * Continues the enumeration of servos started using yFirstServo().
      * 
      * @return a pointer to a YServo object, corresponding to
-     *         the first servo currently online, or a null pointer
-     *         if there are none.
+     *         a servo currently online, or a null pointer
+     *         if there are no more servos to enumerate.
      */
+           YServo          *nextServo(void);
+    inline YServo          *next(void)
+    { return this->nextServo();}
+
            static YServo* FirstServo(void);
     inline static YServo* First(void)
     { return YServo::FirstServo();}

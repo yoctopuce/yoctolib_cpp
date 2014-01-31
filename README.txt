@@ -4,34 +4,34 @@
  *
  * - - - - - - - - - - - License information: - - - - - - - - - - -
  *
- * Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
+ *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
- * 1) If you have obtained this package from www.yoctopuce.com,
- *    Yoctopuce Sarl licenses to you (hereafter Licensee) the
- *    right to use, modify, copy, and integrate this source file
- *    into your own solution for the sole purpose of interfacing
- *    a Yoctopuce product with Licensee's solution.
+ *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
+ *  non-exclusive license to use, modify, copy and integrate this
+ *  file into your software for the sole purpose of interfacing 
+ *  with Yoctopuce products. 
  *
- *    The use of this file and all relationship between Yoctopuce 
- *    and Licensee are governed by Yoctopuce General Terms and 
- *    Conditions.
+ *  You may reproduce and distribute copies of this file in 
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain 
+ *  this notice in the distributed source file.
  *
- *    THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *    WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *    WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
- *    FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
- *    EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *    INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *    COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *    SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
- *    LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
- *    CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
- *    BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
- *    WARRANTY, OR OTHERWISE.
+ *  You should refer to Yoctopuce General Terms and Conditions
+ *  for additional information regarding your rights and 
+ *  obligations.
  *
- * 2) If your intent is not to interface with Yoctopuce products,
- *    you are not entitled to use, read or create any derived 
- *    material from the content of this package
+ *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
+ *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
+ *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
+ *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
+ *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
 
@@ -39,6 +39,8 @@ Content of this package:
 =======================
 build.bat                      Automated build script for Windows
 build.sh                       Automated build script for UNIX platforms
+FILES.txt                      List of files contained in this archive
+RELEASE.txt                    Release notes
 Binaries/GNUmakefile           Makefile for UNIX platforms
 Binaries/makefile              Makefile for Windows (nmake)
 Binaries/make.bat              Batch to start nmake on Windows with right paths
@@ -46,17 +48,19 @@ Binaries/windows/              Directory that contains Windows executables
 Binaries/osx/                  Directory that contains Max OS X executables
 Binaries/linux/32bits/         Directory that contains Linux 32bit executables
 Binaries/linux/64bits/         Directory that contains Linux 64bit executables
+Binaries/linux/armel/          Directory that contains Linux ARM soft float executables
+Binaries/linux/armhf/          Directory that contains Linux ARM hard float executables
 Documentation/                 API Reference, in HTML and PDF format
 Examples/                      Directory with sample programs in C++
 Sources/                       Source code of the high-level library (in C++)
 Sources/yapi/                  Source code of the low-level library (in C)
-udev_conf/					   Udev rules for linux (see Linux Release Notes)
+udev_conf/                     Udev rules for linux (see Linux Release Notes)
 
 The archive is shipped with precompiled libraries. If you want to rebuild 
 them from source, or to compile the examples, use the following command:
 
-on Windows:	build
-on UNIX:	./build.sh
+on Windows: build
+on UNIX:    ./build.sh
 
 For more details, refer to the documentation specific to each product, which
 includes sample code with explanations, and a programming reference manual.
@@ -105,8 +109,8 @@ rights for all other devices will be left unchanged. If this is what you want,
 copy the file "51-yoctopuce_all.rules" to the directory  "/etc/udev/rules.d" 
 and restart your system.
 
-	# udev rules to allow write access to all users for Yoctopuce USB devices
-	SUBSYSTEM=="usb", ATTR{idVendor}=="24e0", MODE="0666"
+    # udev rules to allow write access to all users for Yoctopuce USB devices
+    SUBSYSTEM=="usb", ATTR{idVendor}=="24e0", MODE="0666"
 
 Example 2: 51-yoctopuce_group.rules
 
@@ -116,6 +120,6 @@ unchanged. If this is what you want, you need to copy the file "51-
 yoctopuce_all.rules" to the directory  "/etc/udev/rules.d" and restart your 
 system.
 
-	# udev rules to allow write access to all users of "yoctogroup" for Yoctopuce USB devices
-	SUBSYSTEM=="usb", ATTR{idVendor}=="24e0", MODE="0664",  GROUP="yoctogroup"
+    # udev rules to allow write access to all users of "yoctogroup" for Yoctopuce USB devices
+    SUBSYSTEM=="usb", ATTR{idVendor}=="24e0", MODE="0664",  GROUP="yoctogroup"
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.c 12430 2013-08-21 10:10:22Z seb $
+ * $Id: ythread.c 12590 2013-09-02 13:12:44Z seb $
  *
  * OS-independent thread and synchronization library
  *
@@ -406,12 +406,16 @@ static u32 nbycs=0;
 #ifdef __arm__
 #define CS_BREAK {while(1);}
 #else
-#define CS_BREAK {__asm__("int3");}
+#if defined(WINDOWS_API) && (_MSC_VER)
+#define CS_BREAK { _asm {int 3}}
+#else
+#define CS_BREAK  {__asm__("int3");}
+#endif
 #endif
 
 #define CS_ASSERT(x)   if(!(x)){printf("ASSERT FAILED:%s:%d (%s:%d)\n",__FILE__ , __LINE__,fileid,lineno);CS_BREAK}
 
-static void pushCSAction(const char* fileid, int lineno,yCRITICAL_SECTION *csptr,YCS_ACTION action)
+static void pushCSAction(const char* fileid, int lineno,yCRITICAL_SECTION_ST *csptr,YCS_ACTION action)
 {
     memmove(&csptr->last_actions[1],&csptr->last_actions[0],sizeof(YCS_LOC)*(YCS_NB_TRACE-1));
     csptr->last_actions[0].thread= yThreadIndex();
@@ -424,26 +428,29 @@ static void pushCSAction(const char* fileid, int lineno,yCRITICAL_SECTION *csptr
 void yDbgInitializeCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION *csptr)
 {
     int res;
-
-
-    printf("NEW CS on %s:%d:%p (%d)\n",fileid,lineno,csptr,nbycs);
-    memset(csptr,0,sizeof(yCRITICAL_SECTION));
-    csptr->no = nbycs++;
-    csptr->state = YCS_ALLOCATED;    
-    pushCSAction(fileid,lineno,csptr,YCS_INIT);
+    
+    *csptr = malloc(sizeof(yCRITICAL_SECTION_ST));
+    memset(*csptr,0,sizeof(yCRITICAL_SECTION_ST));
+    printf("NEW CS on %s:%d:%p (%d)\n",fileid,lineno,(*csptr),nbycs);
+    (*csptr)->no = nbycs++;
+    (*csptr)->state = YCS_ALLOCATED;    
+    pushCSAction(fileid,lineno,(*csptr),YCS_INIT);
 #if MICROCHIP_API
-    csptr->cs=0;
+    (*csptr)->cs=0;
     res =0;
 #elif defined(WINDOWS_API)
-    res =InitializeCriticalSection(&(csptr->cs);
+    res =0;
+    InitializeCriticalSection(&((*csptr)->cs));
 #else
-    res = pthread_mutex_init(&(csptr->cs),NULL);
+    res = pthread_mutex_init(&((*csptr)->cs),NULL);
 #endif
+    EnterCriticalSection(&((*csptr)->cs));
+    LeaveCriticalSection(&((*csptr)->cs));
 #if 0
     CS_ASSERT(res==0);
-    res = pthread_mutex_lock(&(csptr->cs));
+    res = pthread_mutex_lock(&((*csptr)->cs));
     CS_ASSERT(res==0);
-    res = pthread_mutex_unlock(&(csptr->cs));
+    res = pthread_mutex_unlock(&((*csptr)->cs));
 #endif
     CS_ASSERT(res==0);
 }
@@ -453,20 +460,25 @@ void yDbgEnterCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION 
 {
     int res;
 
-    CS_ASSERT(csptr->no < nbycs);
-    CS_ASSERT(csptr->state == YCS_ALLOCATED);
+    CS_ASSERT((*csptr)->no < nbycs);
+    CS_ASSERT((*csptr)->state == YCS_ALLOCATED);
+
+    if((*csptr)->no ==15) {
+        printf("enter CS on %s:%d:%p (%p)\n",fileid,lineno,(*csptr),&((*csptr)->cs));
+    }
 
 #if MICROCHIP_API
-    csptr->cs=1;
+    (*csptr)->cs=1;
 #elif defined(WINDOWS_API)
-    res =EnterCriticalSection(&(csptr->cs);
+    res =0;
+    EnterCriticalSection(&((*csptr)->cs));
 #else
-    res = pthread_mutex_lock(&(csptr->cs));
+    res = pthread_mutex_lock(&((*csptr)->cs));
 #endif
     CS_ASSERT(res==0);
-    CS_ASSERT(csptr->lock == 0);
-    csptr->lock++;
-    pushCSAction(fileid,lineno,csptr,YCS_LOCK);
+    CS_ASSERT((*csptr)->lock == 0);
+    (*csptr)->lock++;
+    pushCSAction(fileid,lineno,(*csptr),YCS_LOCK);
 }
 
 
@@ -474,27 +486,27 @@ int yDbgTryEnterCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTIO
 {
     int res;
 
-    CS_ASSERT(csptr->no < nbycs);
-    CS_ASSERT(csptr->state == YCS_ALLOCATED);
+    CS_ASSERT((*csptr)->no < nbycs);
+    CS_ASSERT((*csptr)->state == YCS_ALLOCATED);
 
 #if MICROCHIP_API
-    if(csptr->cs)
+    if((*csptr)->cs)
         return 0;
-    csptr->cs=1;
+    (*csptr)->cs=1;
 #elif defined(WINDOWS_API)
-    res = TryEnterCriticalSection(&(csptr->cs);
+    res = TryEnterCriticalSection(&((*csptr)->cs));
     if(res==0)
-        return 0
+        return 0;
     CS_ASSERT(res==1);
 #else
-    res = pthread_mutex_trylock(&(csptr->cs));
+    res = pthread_mutex_trylock(&((*csptr)->cs));
     if(res ==EBUSY)
         return 0;
     CS_ASSERT(res==0);
 #endif
-    CS_ASSERT(csptr->lock == 0);
-    csptr->lock++;
-    pushCSAction(fileid,lineno,csptr,YCS_LOCKTRY);
+    CS_ASSERT((*csptr)->lock == 0);
+    (*csptr)->lock++;
+    pushCSAction(fileid,lineno,(*csptr),YCS_LOCKTRY);
     return 1;
 }
 
@@ -503,18 +515,24 @@ void yDbgLeaveCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION 
 {
     int res;
 
-    CS_ASSERT(csptr->no < nbycs);
-    CS_ASSERT(csptr->state == YCS_ALLOCATED);
-    CS_ASSERT(csptr->lock == 1);
-    csptr->lock--;
+    CS_ASSERT((*csptr)->no < nbycs);
+    CS_ASSERT((*csptr)->state == YCS_ALLOCATED);
+    CS_ASSERT((*csptr)->lock == 1);
+    if((*csptr)->no ==15) {
+        printf("leave CS on %s:%d:%p (%p)\n",fileid,lineno,(*csptr),&((*csptr)->cs));
+    }
+
+    (*csptr)->lock--;
+    pushCSAction(fileid,lineno,(*csptr),YCS_RELEASE);
 
 #if MICROCHIP_API
-    csptr->cs=0;
+    (*csptr)->cs=0;
     res =0;
 #elif defined(WINDOWS_API)
-    res = LeaveCriticalSection(&(csptr->cs);
+    res =0;    
+    LeaveCriticalSection(&((*csptr)->cs));
 #else
-    res = pthread_mutex_unlock(&(csptr->cs));
+    res = pthread_mutex_unlock(&((*csptr)->cs));
 #endif
     CS_ASSERT(res==0);
 }
@@ -523,60 +541,102 @@ void yDbgDeleteCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION
 {
     int res;
 
-    CS_ASSERT(csptr->no < nbycs);
-    CS_ASSERT(csptr->state == YCS_ALLOCATED);
-    CS_ASSERT(csptr->lock == 0);
+    CS_ASSERT((*csptr)->no < nbycs);
+    CS_ASSERT((*csptr)->state == YCS_ALLOCATED);
+    CS_ASSERT((*csptr)->lock == 0);
 
+    if((*csptr)->no ==15) {
+        printf("delete CS on %s:%d:%p (%p)\n",fileid,lineno,(*csptr),&((*csptr)->cs));
+    }
 
 #if MICROCHIP_API
-    csptr->cs=0xCA;
+    (*csptr)->cs=0xCA;
     res = 0;
 #elif defined(WINDOWS_API)
-    res = DeleteCriticalSection(&(csptr->cs);
+    res = 0;
+    DeleteCriticalSection(&((*csptr)->cs));
 #else
-    res = pthread_mutex_destroy(&(csptr->cs));
+    res = pthread_mutex_destroy(&((*csptr)->cs));
 #endif
     CS_ASSERT(res==0);
-    csptr->state = YCS_DELETED;
-    pushCSAction(fileid,lineno,csptr,YCS_DELETE);
+    (*csptr)->state = YCS_DELETED;
+    pushCSAction(fileid,lineno,(*csptr),YCS_DELETE);
 }
 
-#elif !defined(MICROCHIP_API) && !defined(WINDOWS_API)
+#elif !defined(MICROCHIP_API)
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+
+typedef struct {
+#if defined(WINDOWS_API)
+    CRITICAL_SECTION             cs;
+#else
+    pthread_mutex_t              cs;
+#endif
+} yCRITICAL_SECTION_ST;
+
 
 void yInitializeCriticalSection(yCRITICAL_SECTION *cs)
 {
-    cs->mutex_ptr = malloc(sizeof(pthread_mutex_t));
-    pthread_mutex_init(cs->mutex_ptr,NULL);
+    yCRITICAL_SECTION_ST *ycsptr;
+    ycsptr = (yCRITICAL_SECTION_ST*) malloc(sizeof(yCRITICAL_SECTION_ST));
+    memset(ycsptr,0,sizeof(yCRITICAL_SECTION_ST));
+#if defined(WINDOWS_API)
+    InitializeCriticalSection(&(ycsptr->cs));
+#else
+    pthread_mutex_init(&(ycsptr->cs),NULL);
+#endif
+    *cs = ycsptr;
 }
 
 void yEnterCriticalSection(yCRITICAL_SECTION *cs)
 {
-    pthread_mutex_lock(cs->mutex_ptr);
+    yCRITICAL_SECTION_ST *ycsptr = (yCRITICAL_SECTION_ST*) (*cs);
+#if defined(WINDOWS_API)
+    EnterCriticalSection(&(ycsptr->cs));
+#else
+    pthread_mutex_lock(&(ycsptr->cs));
+#endif
 }
 
 int yTryEnterCriticalSection(yCRITICAL_SECTION *cs)
 {
-    int res;
-    res = pthread_mutex_trylock(cs->mutex_ptr);
-    if(res ==EBUSY)
-        return 0;
-    return 1;
-
+    yCRITICAL_SECTION_ST *ycsptr = (yCRITICAL_SECTION_ST*) (*cs);
+#if defined(WINDOWS_API)
+    return TryEnterCriticalSection(&(ycsptr->cs));
+#else
+    {
+        int res = pthread_mutex_trylock(&(ycsptr->cs));
+        if(res ==EBUSY)
+            return 0;
+        return 1;
+    }
+#endif
 }
 
 void yLeaveCriticalSection(yCRITICAL_SECTION *cs)
 {
-    pthread_mutex_unlock(cs->mutex_ptr);
+    yCRITICAL_SECTION_ST *ycsptr = (yCRITICAL_SECTION_ST*) (*cs);
+#if defined(WINDOWS_API)
+    LeaveCriticalSection(&(ycsptr->cs));
+#else
+    pthread_mutex_unlock(&(ycsptr->cs));
+#endif
 }
 
 void yDeleteCriticalSection(yCRITICAL_SECTION *cs)
 {
-    pthread_mutex_destroy(cs->mutex_ptr);
-    free(cs->mutex_ptr);
-    cs->mutex_ptr=NULL;
+    yCRITICAL_SECTION_ST *ycsptr = (yCRITICAL_SECTION_ST*) (*cs);
+#if defined(WINDOWS_API)
+    DeleteCriticalSection(&(ycsptr->cs));
+#else
+    pthread_mutex_destroy(&(ycsptr->cs));
+#endif
+    free(*cs);
+    *cs=NULL;
 }
 
 #endif

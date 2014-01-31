@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_current.h 12324 2013-08-13 15:10:31Z mvuilleu $
+ * $Id: yocto_current.h 14314 2014-01-10 18:12:33Z seb $
  *
  * Declares yFindCurrent(), the high-level API for Current functions
  *
@@ -46,21 +46,14 @@
 #include <cmath>
 #include <map>
 
-//--- (return codes)
-//--- (end of return codes)
+//--- (YCurrent return codes)
+//--- (end of YCurrent return codes)
 //--- (YCurrent definitions)
-class YCurrent; //forward declaration
+class YCurrent; // forward declaration
 
-typedef void (*YCurrentUpdateCallback)(YCurrent *func, const string& functionValue);
-#define Y_LOGICALNAME_INVALID           (YAPI::INVALID_STRING)
-#define Y_ADVERTISEDVALUE_INVALID       (YAPI::INVALID_STRING)
-#define Y_UNIT_INVALID                  (YAPI::INVALID_STRING)
-#define Y_CURRENTVALUE_INVALID          (-DBL_MAX)
-#define Y_LOWESTVALUE_INVALID           (-DBL_MAX)
-#define Y_HIGHESTVALUE_INVALID          (-DBL_MAX)
-#define Y_CURRENTRAWVALUE_INVALID       (-DBL_MAX)
-#define Y_CALIBRATIONPARAM_INVALID      (YAPI::INVALID_STRING)
-#define Y_RESOLUTION_INVALID            (-DBL_MAX)
+typedef void (*YCurrentValueCallback)(YCurrent *func, const string& functionValue);
+class YMeasure; // forward declaration
+typedef void (*YCurrentTimedReportCallback)(YCurrent *func, YMeasure measure);
 //--- (end of YCurrent definitions)
 
 //--- (YCurrent declaration)
@@ -70,253 +63,25 @@ typedef void (*YCurrentUpdateCallback)(YCurrent *func, const string& functionVal
  * The Yoctopuce application programming interface allows you to read an instant
  * measure of the sensor, as well as the minimal and maximal values observed.
  */
-class YCurrent: public YFunction {
+class YOCTO_CLASS_EXPORT YCurrent: public YSensor {
+//--- (end of YCurrent declaration)
 protected:
+    //--- (YCurrent attributes)
     // Attributes (function value cache)
-    YCurrentUpdateCallback _callback;
-    string          _logicalName;
-    string          _advertisedValue;
-    string          _unit;
-    double          _currentValue;
-    double          _lowestValue;
-    double          _highestValue;
-    double          _currentRawValue;
-    string          _calibrationParam;
-    double          _resolution;
-    int             _calibrationOffset;
+    YCurrentValueCallback _valueCallbackCurrent;
+    YCurrentTimedReportCallback _timedReportCallbackCurrent;
 
     friend YCurrent *yFindCurrent(const string& func);
     friend YCurrent *yFirstCurrent(void);
 
-    // Function-specific method for parsing of JSON output and caching result
-    int             _parse(yJsonStateMachine& j);
-    //--- (end of YCurrent declaration)
-
-    //--- (YCurrent constructor)
     // Constructor is protected, use yFindCurrent factory function to instantiate
     YCurrent(const string& func);
-    //--- (end of YCurrent constructor)
-    //--- (Current initialization)
-    //--- (end of Current initialization)
+    //--- (end of YCurrent attributes)
 
 public:
     ~YCurrent();
     //--- (YCurrent accessors declaration)
 
-    static const string LOGICALNAME_INVALID;
-    static const string ADVERTISEDVALUE_INVALID;
-    static const string UNIT_INVALID;
-    static const double CURRENTVALUE_INVALID;
-    static const double LOWESTVALUE_INVALID;
-    static const double HIGHESTVALUE_INVALID;
-    static const double CURRENTRAWVALUE_INVALID;
-    static const string CALIBRATIONPARAM_INVALID;
-    static const double RESOLUTION_INVALID;
-
-    /**
-     * Returns the logical name of the current sensor.
-     * 
-     * @return a string corresponding to the logical name of the current sensor
-     * 
-     * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
-     */
-           string          get_logicalName(void);
-    inline string          logicalName(void)
-    { return this->get_logicalName(); }
-
-    /**
-     * Changes the logical name of the current sensor. You can use yCheckLogicalName()
-     * prior to this call to make sure that your parameter is valid.
-     * Remember to call the saveToFlash() method of the module if the
-     * modification must be kept.
-     * 
-     * @param newval : a string corresponding to the logical name of the current sensor
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_logicalName(const string& newval);
-    inline int      setLogicalName(const string& newval)
-    { return this->set_logicalName(newval); }
-
-    /**
-     * Returns the current value of the current sensor (no more than 6 characters).
-     * 
-     * @return a string corresponding to the current value of the current sensor (no more than 6 characters)
-     * 
-     * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
-     */
-           string          get_advertisedValue(void);
-    inline string          advertisedValue(void)
-    { return this->get_advertisedValue(); }
-
-    /**
-     * Returns the measuring unit for the measured value.
-     * 
-     * @return a string corresponding to the measuring unit for the measured value
-     * 
-     * On failure, throws an exception or returns Y_UNIT_INVALID.
-     */
-           string          get_unit(void);
-    inline string          unit(void)
-    { return this->get_unit(); }
-
-    /**
-     * Returns the current measured value.
-     * 
-     * @return a floating point number corresponding to the current measured value
-     * 
-     * On failure, throws an exception or returns Y_CURRENTVALUE_INVALID.
-     */
-           double          get_currentValue(void);
-    inline double          currentValue(void)
-    { return this->get_currentValue(); }
-
-    /**
-     * Changes the recorded minimal value observed.
-     * 
-     * @param newval : a floating point number corresponding to the recorded minimal value observed
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_lowestValue(double newval);
-    inline int      setLowestValue(double newval)
-    { return this->set_lowestValue(newval); }
-
-    /**
-     * Returns the minimal value observed.
-     * 
-     * @return a floating point number corresponding to the minimal value observed
-     * 
-     * On failure, throws an exception or returns Y_LOWESTVALUE_INVALID.
-     */
-           double          get_lowestValue(void);
-    inline double          lowestValue(void)
-    { return this->get_lowestValue(); }
-
-    /**
-     * Changes the recorded maximal value observed.
-     * 
-     * @param newval : a floating point number corresponding to the recorded maximal value observed
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_highestValue(double newval);
-    inline int      setHighestValue(double newval)
-    { return this->set_highestValue(newval); }
-
-    /**
-     * Returns the maximal value observed.
-     * 
-     * @return a floating point number corresponding to the maximal value observed
-     * 
-     * On failure, throws an exception or returns Y_HIGHESTVALUE_INVALID.
-     */
-           double          get_highestValue(void);
-    inline double          highestValue(void)
-    { return this->get_highestValue(); }
-
-    /**
-     * Returns the uncalibrated, unrounded raw value returned by the sensor.
-     * 
-     * @return a floating point number corresponding to the uncalibrated, unrounded raw value returned by the sensor
-     * 
-     * On failure, throws an exception or returns Y_CURRENTRAWVALUE_INVALID.
-     */
-           double          get_currentRawValue(void);
-    inline double          currentRawValue(void)
-    { return this->get_currentRawValue(); }
-
-           string          get_calibrationParam(void);
-    inline string          calibrationParam(void)
-    { return this->get_calibrationParam(); }
-
-    int             set_calibrationParam(const string& newval);
-    inline int      setCalibrationParam(const string& newval)
-    { return this->set_calibrationParam(newval); }
-
-    /**
-     * Configures error correction data points, in particular to compensate for
-     * a possible perturbation of the measure caused by an enclosure. It is possible
-     * to configure up to five correction points. Correction points must be provided
-     * in ascending order, and be in the range of the sensor. The device will automatically
-     * perform a linear interpolation of the error correction between specified
-     * points. Remember to call the saveToFlash() method of the module if the
-     * modification must be kept.
-     * 
-     * For more information on advanced capabilities to refine the calibration of
-     * sensors, please contact support@yoctopuce.com.
-     * 
-     * @param rawValues : array of floating point numbers, corresponding to the raw
-     *         values returned by the sensor for the correction points.
-     * @param refValues : array of floating point numbers, corresponding to the corrected
-     *         values for the correction points.
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             calibrateFromPoints(vector<double> rawValues,vector<double> refValues);
-
-    int             loadCalibrationPoints(vector<double> rawValues,vector<double> refValues);
-
-    /**
-     * Changes the resolution of the measured values. The resolution corresponds to the numerical precision
-     * when displaying value. It does not change the precision of the measure itself.
-     * 
-     * @param newval : a floating point number corresponding to the resolution of the measured values
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_resolution(double newval);
-    inline int      setResolution(double newval)
-    { return this->set_resolution(newval); }
-
-    /**
-     * Returns the resolution of the measured values. The resolution corresponds to the numerical precision
-     * when displaying value, which is not always the same as the actual precision of the sensor.
-     * 
-     * @return a floating point number corresponding to the resolution of the measured values
-     * 
-     * On failure, throws an exception or returns Y_RESOLUTION_INVALID.
-     */
-           double          get_resolution(void);
-    inline double          resolution(void)
-    { return this->get_resolution(); }
-
-
-    /**
-     * Registers the callback function that is invoked on every change of advertised value.
-     * The callback is invoked only during the execution of ySleep or yHandleEvents.
-     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
-     *         arguments: the function object of which the value has changed, and the character string describing
-     *         the new advertised value.
-     * @noreturn
-     */
-    void registerValueCallback(YCurrentUpdateCallback callback);
-
-    void advertiseValue(const string& value);
-
-    /**
-     * Continues the enumeration of current sensors started using yFirstCurrent().
-     * 
-     * @return a pointer to a YCurrent object, corresponding to
-     *         a current sensor currently online, or a null pointer
-     *         if there are no more current sensors to enumerate.
-     */
-           YCurrent        *nextCurrent(void);
-    inline YCurrent        *next(void)
-    { return this->nextCurrent();}
 
     /**
      * Retrieves a current sensor for a given identifier.
@@ -341,18 +106,57 @@ public:
      * 
      * @return a YCurrent object allowing you to drive the current sensor.
      */
-           static YCurrent* FindCurrent(const string& func);
-    inline static YCurrent* Find(const string& func)
-    { return YCurrent::FindCurrent(func);}
+    static YCurrent*    FindCurrent(string func);
+
+    using YSensor::registerValueCallback;
+
     /**
-     * Starts the enumeration of current sensors currently accessible.
-     * Use the method YCurrent.nextCurrent() to iterate on
-     * next current sensors.
+     * Registers the callback function that is invoked on every change of advertised value.
+     * The callback is invoked only during the execution of ySleep or yHandleEvents.
+     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * 
+     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     *         arguments: the function object of which the value has changed, and the character string describing
+     *         the new advertised value.
+     * @noreturn
+     */
+    virtual int         registerValueCallback(YCurrentValueCallback callback);
+
+    virtual int         _invokeValueCallback(string value);
+
+    using YSensor::registerTimedReportCallback;
+
+    /**
+     * Registers the callback function that is invoked on every periodic timed notification.
+     * The callback is invoked only during the execution of ySleep or yHandleEvents.
+     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * 
+     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     *         arguments: the function object of which the value has changed, and an YMeasure object describing
+     *         the new advertised value.
+     * @noreturn
+     */
+    virtual int         registerTimedReportCallback(YCurrentTimedReportCallback callback);
+
+    virtual int         _invokeTimedReportCallback(YMeasure value);
+
+
+    inline static YCurrent* Find(string func)
+    { return YCurrent::FindCurrent(func); }
+
+    /**
+     * Continues the enumeration of current sensors started using yFirstCurrent().
      * 
      * @return a pointer to a YCurrent object, corresponding to
-     *         the first current sensor currently online, or a null pointer
-     *         if there are none.
+     *         a current sensor currently online, or a null pointer
+     *         if there are no more current sensors to enumerate.
      */
+           YCurrent        *nextCurrent(void);
+    inline YCurrent        *next(void)
+    { return this->nextCurrent();}
+
            static YCurrent* FirstCurrent(void);
     inline static YCurrent* First(void)
     { return YCurrent::FirstCurrent();}

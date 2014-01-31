@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.cpp 12337 2013-08-14 15:22:22Z mvuilleu $
+ * $Id: yocto_wireless.cpp 14700 2014-01-23 15:40:44Z seb $
  *
  * Implements yFindWireless(), the high-level API for Wireless functions
  *
@@ -93,167 +93,106 @@ YWlanRecord::YWlanRecord(const string& json):_ssid(""),_channel(-1),_sec(""),_rs
 }
 
 //--- (generated code: YWlanRecord implementation)
+// static attributes
 
 
-
-
-string YWlanRecord::get_ssid()
+string YWlanRecord::get_ssid(void)
 {
-    return this->_ssid;
+    return _ssid;
 }
 
-int YWlanRecord::get_channel()
+int YWlanRecord::get_channel(void)
 {
-    return this->_channel;
+    return _channel;
 }
 
-string YWlanRecord::get_security()
+string YWlanRecord::get_security(void)
 {
-    return this->_sec;
+    return _sec;
 }
 
-int YWlanRecord::get_linkQuality()
+int YWlanRecord::get_linkQuality(void)
 {
-    return this->_rssi;
+    return _rssi;
 }
 //--- (end of generated code: YWlanRecord implementation)
 
 
-
-
-
-//--- (generated code: YWireless constructor)
-// Constructor is protected, use yFindWireless factory function to instantiate
-YWireless::YWireless(const string& func): YFunction("Wireless", func)
-//--- (end of generated code: YWireless constructor)
+YWireless::YWireless(const string& func): YFunction(func)
 //--- (generated code: Wireless initialization)
-            ,_callback(NULL)
-            ,_logicalName(Y_LOGICALNAME_INVALID)
-            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
-            ,_linkQuality(Y_LINKQUALITY_INVALID)
-            ,_ssid(Y_SSID_INVALID)
-            ,_channel(Y_CHANNEL_INVALID)
-            ,_security(Y_SECURITY_INVALID)
-            ,_message(Y_MESSAGE_INVALID)
-            ,_wlanConfig(Y_WLANCONFIG_INVALID)
+    ,_linkQuality(LINKQUALITY_INVALID)
+    ,_ssid(SSID_INVALID)
+    ,_channel(CHANNEL_INVALID)
+    ,_security(SECURITY_INVALID)
+    ,_message(MESSAGE_INVALID)
+    ,_wlanConfig(WLANCONFIG_INVALID)
+    ,_valueCallbackWireless(NULL)
 //--- (end of generated code: Wireless initialization)
-{}
+{
+    _className = "Wireless";
+}
 
-    YWireless::~YWireless() 
+YWireless::~YWireless() 
 {
 //--- (generated code: YWireless cleanup)
 //--- (end of generated code: YWireless cleanup)
 }
 //--- (generated code: YWireless implementation)
+// static attributes
+const string YWireless::SSID_INVALID = YAPI_INVALID_STRING;
+const string YWireless::MESSAGE_INVALID = YAPI_INVALID_STRING;
+const string YWireless::WLANCONFIG_INVALID = YAPI_INVALID_STRING;
 
-const string YWireless::LOGICALNAME_INVALID = "!INVALID!";
-const string YWireless::ADVERTISEDVALUE_INVALID = "!INVALID!";
-const string YWireless::SSID_INVALID = "!INVALID!";
-const string YWireless::MESSAGE_INVALID = "!INVALID!";
-const string YWireless::WLANCONFIG_INVALID = "!INVALID!";
-
-
-
-int YWireless::_parse(yJsonStateMachine& j)
+int YWireless::_parseAttr(yJsonStateMachine& j)
 {
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
+    if(!strcmp(j.token, "linkQuality")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _linkQuality =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "ssid")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _ssid =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "channel")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _channel =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "security")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _security =  (Y_SECURITY_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "message")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _message =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "wlanConfig")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _wlanConfig =  _parseString(j);
+        return 1;
+    }
     failed:
-        return -1;
-    }
-    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-        if(!strcmp(j.token, "logicalName")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _logicalName =  _parseString(j);
-        } else if(!strcmp(j.token, "advertisedValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _advertisedValue =  _parseString(j);
-        } else if(!strcmp(j.token, "linkQuality")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _linkQuality =  atoi(j.token);
-        } else if(!strcmp(j.token, "ssid")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _ssid =  _parseString(j);
-        } else if(!strcmp(j.token, "channel")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _channel =  atoi(j.token);
-        } else if(!strcmp(j.token, "security")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _security =  (Y_SECURITY_enum)atoi(j.token);
-        } else if(!strcmp(j.token, "message")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _message =  _parseString(j);
-        } else if(!strcmp(j.token, "wlanConfig")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _wlanConfig =  _parseString(j);
-        } else {
-            // ignore unknown field
-            yJsonSkip(&j, 1);
-        }
-    }
-    if(j.st != YJSON_PARSE_STRUCT) goto failed;
-    return 0;
+    return YFunction::_parseAttr(j);
 }
 
-/**
- * Returns the logical name of the wireless lan interface.
- * 
- * @return a string corresponding to the logical name of the wireless lan interface
- * 
- * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
- */
-string YWireless::get_logicalName(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LOGICALNAME_INVALID;
-    }
-    return _logicalName;
-}
 
 /**
- * Changes the logical name of the wireless lan interface. You can use yCheckLogicalName()
- * prior to this call to make sure that your parameter is valid.
- * Remember to call the saveToFlash() method of the module if the
- * modification must be kept.
+ * Returns the link quality, expressed in percent.
  * 
- * @param newval : a string corresponding to the logical name of the wireless lan interface
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YWireless::set_logicalName(const string& newval)
-{
-    string rest_val;
-    rest_val = newval;
-    return _setAttr("logicalName", rest_val);
-}
-
-/**
- * Returns the current value of the wireless lan interface (no more than 6 characters).
- * 
- * @return a string corresponding to the current value of the wireless lan interface (no more than 6 characters)
- * 
- * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
- */
-string YWireless::get_advertisedValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_ADVERTISEDVALUE_INVALID;
-    }
-    return _advertisedValue;
-}
-
-/**
- * Returns the link quality, expressed in per cents.
- * 
- * @return an integer corresponding to the link quality, expressed in per cents
+ * @return an integer corresponding to the link quality, expressed in percent
  * 
  * On failure, throws an exception or returns Y_LINKQUALITY_INVALID.
  */
 int YWireless::get_linkQuality(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LINKQUALITY_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YWireless::LINKQUALITY_INVALID;
+        }
     }
     return _linkQuality;
 }
@@ -267,8 +206,10 @@ int YWireless::get_linkQuality(void)
  */
 string YWireless::get_ssid(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_SSID_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YWireless::SSID_INVALID;
+        }
     }
     return _ssid;
 }
@@ -276,14 +217,17 @@ string YWireless::get_ssid(void)
 /**
  * Returns the 802.11 channel currently used, or 0 when the selected network has not been found.
  * 
- * @return an integer corresponding to the 802
+ * @return an integer corresponding to the 802.11 channel currently used, or 0 when the selected
+ * network has not been found
  * 
  * On failure, throws an exception or returns Y_CHANNEL_INVALID.
  */
-unsigned YWireless::get_channel(void)
+int YWireless::get_channel(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_CHANNEL_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YWireless::CHANNEL_INVALID;
+        }
     }
     return _channel;
 }
@@ -298,31 +242,37 @@ unsigned YWireless::get_channel(void)
  */
 Y_SECURITY_enum YWireless::get_security(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_SECURITY_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YWireless::SECURITY_INVALID;
+        }
     }
     return _security;
 }
 
 /**
- * Returns the last status message from the wireless interface.
+ * Returns the latest status message from the wireless interface.
  * 
- * @return a string corresponding to the last status message from the wireless interface
+ * @return a string corresponding to the latest status message from the wireless interface
  * 
  * On failure, throws an exception or returns Y_MESSAGE_INVALID.
  */
 string YWireless::get_message(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_MESSAGE_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YWireless::MESSAGE_INVALID;
+        }
     }
     return _message;
 }
 
 string YWireless::get_wlanConfig(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_WLANCONFIG_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YWireless::WLANCONFIG_INVALID;
+        }
     }
     return _wlanConfig;
 }
@@ -375,26 +325,103 @@ int YWireless::adhocNetwork(string ssid,string securityKey)
 }
 
 /**
- * Returns a list of YWlanRecord objects which describe detected Wireless networks.
+ * Retrieves a wireless lan interface for a given identifier.
+ * The identifier can be specified using several formats:
+ * <ul>
+ * <li>FunctionLogicalName</li>
+ * <li>ModuleSerialNumber.FunctionIdentifier</li>
+ * <li>ModuleSerialNumber.FunctionLogicalName</li>
+ * <li>ModuleLogicalName.FunctionIdentifier</li>
+ * <li>ModuleLogicalName.FunctionLogicalName</li>
+ * </ul>
+ * 
+ * This function does not require that the wireless lan interface is online at the time
+ * it is invoked. The returned object is nevertheless valid.
+ * Use the method YWireless.isOnline() to test if the wireless lan interface is
+ * indeed online at a given time. In case of ambiguity when looking for
+ * a wireless lan interface by logical name, no error is notified: the first instance
+ * found is returned. The search is performed first by hardware name,
+ * then by logical name.
+ * 
+ * @param func : a string that uniquely characterizes the wireless lan interface
+ * 
+ * @return a YWireless object allowing you to drive the wireless lan interface.
+ */
+YWireless* YWireless::FindWireless(string func)
+{
+    YWireless* obj = NULL;
+    obj = (YWireless*) YFunction::_FindFromCache("Wireless", func);
+    if (obj == NULL) {
+        obj = new YWireless(func);
+        YFunction::_AddToCache("Wireless", func, obj);
+    }
+    return obj;
+}
+
+/**
+ * Registers the callback function that is invoked on every change of advertised value.
+ * The callback is invoked only during the execution of ySleep or yHandleEvents.
+ * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+ * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * 
+ * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ *         arguments: the function object of which the value has changed, and the character string describing
+ *         the new advertised value.
+ * @noreturn
+ */
+int YWireless::registerValueCallback(YWirelessValueCallback callback)
+{
+    string val;
+    if (callback != NULL) {
+        YFunction::_UpdateValueCallbackList(this, true);
+    } else {
+        YFunction::_UpdateValueCallbackList(this, false);
+    }
+    _valueCallbackWireless = callback;
+    // Immediately invoke value callback with current value
+    if (callback != NULL && this->isOnline()) {
+        val = _advertisedValue;
+        if (!(val == "")) {
+            this->_invokeValueCallback(val);
+        }
+    }
+    return 0;
+}
+
+int YWireless::_invokeValueCallback(string value)
+{
+    if (_valueCallbackWireless != NULL) {
+        _valueCallbackWireless(this, value);
+    } else {
+        YFunction::_invokeValueCallback(value);
+    }
+    return 0;
+}
+
+/**
+ * Returns a list of YWlanRecord objects that describe detected Wireless networks.
  * This list is not updated when the module is already connected to an acces point (infrastructure mode).
  * To force an update of this list, adhocNetwork() must be called to disconnect
- * the module from the current network. The returned list must be unallocated by caller,
+ * the module from the current network. The returned list must be unallocated by the caller.
  * 
  * @return a list of YWlanRecord objects, containing the SSID, channel,
  *         link quality and the type of security of the wireless network.
  * 
  * On failure, throws an exception or returns an empty list.
  */
-vector<YWlanRecord*> YWireless::get_detectedWlans()
+vector<YWlanRecord> YWireless::get_detectedWlans(void)
 {
     string json;
-    vector<string> list;
-    vector<YWlanRecord*> res;
+    vector<string> wlanlist;
+    vector<YWlanRecord> res;
+    // may throw an exception
     json = this->_download("wlan.json?by=name");
-    list = this->_json_get_array(json);
-    for (unsigned i_i=0 ; i_i <list.size() ; i_i++) { res.push_back(new YWlanRecord(list[i_i]));};
+    wlanlist = this->_json_get_array(json);
+    res.clear();
+    for (unsigned ii = 0; ii < wlanlist.size(); ii++) {
+        res.push_back(YWlanRecord(wlanlist[ii]));
+    }
     return res;
-    
 }
 
 YWireless *YWireless::nextWireless(void)
@@ -404,38 +431,7 @@ YWireless *YWireless::nextWireless(void)
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
-    return yFindWireless(hwid);
-}
-
-void YWireless::registerValueCallback(YWirelessUpdateCallback callback)
-{
-    if (callback != NULL) {
-        _registerFuncCallback(this);
-        yapiLockFunctionCallBack(NULL);
-        YAPI::_yapiFunctionUpdateCallbackFwd(this->functionDescriptor(), this->get_advertisedValue().c_str());
-        yapiUnlockFunctionCallBack(NULL);
-    } else {
-        _unregisterFuncCallback(this);
-    }
-    _callback = callback;
-}
-
-void YWireless::advertiseValue(const string& value)
-{
-    if (_callback != NULL) {
-        _callback(this, value);
-    }
-}
-
-
-YWireless* YWireless::FindWireless(const string& func)
-{
-    if(YAPI::_YFunctionsCaches["YWireless"].find(func) != YAPI::_YFunctionsCaches["YWireless"].end())
-        return (YWireless*) YAPI::_YFunctionsCaches["YWireless"][func];
-    
-    YWireless *newWireless = new YWireless(func);
-    YAPI::_YFunctionsCaches["YWireless"][func] = newWireless ;
-    return newWireless;
+    return YWireless::FindWireless(hwid);
 }
 
 YWireless* YWireless::FirstWireless(void)

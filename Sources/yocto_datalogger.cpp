@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_datalogger.cpp 12326 2013-08-13 15:52:20Z mvuilleu $
+ * $Id: yocto_datalogger.cpp 14700 2014-01-23 15:40:44Z seb $
  *
  * Implements yFindDataLogger(), the high-level API for DataLogger functions
  *
@@ -47,11 +47,24 @@
 #include <stdlib.h>
 
 
-const double DATA_INVALID = Y_DATA_INVALID;
-
+YOldDataStream::YOldDataStream(YDataLogger *parent, unsigned run, 
+                               unsigned stamp, unsigned utc, unsigned itv)
+: YDataStream(parent)
+{
+    _dataLogger = parent;
+    _runNo = run;
+    _timeStamp = stamp;
+    _utcStamp = utc;
+    _interval = itv;
+    _samplesPerHour = 3600 / _interval;
+    _isClosed = 1;
+    _minVal = DATA_INVALID;
+    _avgVal = DATA_INVALID;
+    _maxVal = DATA_INVALID;
+}
 
 // Preload all values into the data stream object
-int YDataStream::loadStream(void)
+int YOldDataStream::loadStream(void)
 {
     string              buffer;
     yJsonStateMachine   j;
@@ -67,20 +80,20 @@ int YDataStream::loadStream(void)
     vector<floatArr>    calraw;
     vector<floatArr>    calref;
     
-    vector<unsigned>    udat;
+    vector<int>         udat;
     vector<double>      dat;
     
-    if((res = dataLogger->getData(_runNo, _timeStamp, buffer, j)) != YAPI_SUCCESS) {
+    _values.clear();
+    if((res = _dataLogger->getData(_runNo, _timeStamp, buffer, j)) != YAPI_SUCCESS) {
         return res;
     }
     if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
     fail:
-        dataLogger->_throw(YAPI_IO_ERROR, "Unexpected JSON reply format");
+        _parent->_throw(YAPI_IO_ERROR, "Unexpected JSON reply format");
         return YAPI_IO_ERROR;
     }
     _nRows = _nCols = 0;
     _columnNames.clear();
-    _values.clear();
     while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
         if(!strcmp(j.token, "time")) {
             if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto fail;
@@ -97,12 +110,12 @@ int YDataStream::loadStream(void)
         } else if(!strcmp(j.token, "keys")) {
             if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_ARRAY) break;
             while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_STRING) {
-                _columnNames.push_back(dataLogger->_parseString(j));
+                _columnNames.push_back(_parent->_parseString(j));
             }
             if(j.token[0] != ']') goto fail;
             if(_nCols == 0) {
-                _nCols = (unsigned)_columnNames.size();
-            } else if(_nCols != _columnNames.size()) {
+                _nCols = (int)_columnNames.size();
+            } else if(_nCols != (int)_columnNames.size()) {
                 _nCols = 0; 
                 goto fail;
             }
@@ -113,8 +126,8 @@ int YDataStream::loadStream(void)
             }
             if(j.token[0] != ']') goto fail;
             if(_nCols == 0) {
-                _nCols = (unsigned)coldiv.size();
-            } else if(_nCols != coldiv.size()) {
+                _nCols = (int)coldiv.size();
+            } else if(_nCols != (int)coldiv.size()) {
                 _nCols = 0; 
                 goto fail;
             }
@@ -125,8 +138,8 @@ int YDataStream::loadStream(void)
             }
             if(j.token[0] != ']') goto fail;
             if(_nCols == 0) {
-                _nCols = (unsigned)coltyp.size();
-            } else if(_nCols != coltyp.size()) {
+                _nCols = (int)coltyp.size();
+            } else if(_nCols != (int)coltyp.size()) {
                 _nCols = 0; 
                 goto fail;
             }
@@ -139,19 +152,13 @@ int YDataStream::loadStream(void)
             }
             if(j.token[0] != ']') goto fail;
             if(_nCols == 0) {
-                _nCols = (unsigned)colscl.size();
-            } else if(_nCols != colscl.size()) {
+                _nCols = (int)colscl.size();
+            } else if(_nCols != (int)colscl.size()) {
                 _nCols = 0; 
                 goto fail;
             }
         } else if(!strcmp(j.token, "cal")) {
             if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_ARRAY) break;
-            calhdl = vector<yCalibrationHandler>(_nCols, NULL);
-            caltyp = vector<int>(_nCols, 0);
-            calpar = vector<intArr>(_nCols, intArr());
-            calraw = vector<floatArr>(_nCols, floatArr());
-            calref = vector<floatArr>(_nCols, floatArr());
-            c = 0;
             while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_STRING) {
                 char *p = j.token;
                 int  calibType = (*p ? atoi(p) : 0);
@@ -189,28 +196,10 @@ int YDataStream::loadStream(void)
                 }
             }
             if(yJsonParse(&j) != YJSON_PARSE_AVAIL) break;
-            udat.clear();
             if(j.st == YJSON_PARSE_STRING) {
-                string sdat = dataLogger->_parseString(j);
-                for(p = 0; p < sdat.size();) {
-                    unsigned val;
-                    unsigned c = sdat[p++];
-                    if(c >= 'a') {
-                        int srcpos = (int)udat.size()-1-(c-'a');
-                        if(srcpos < 0) goto fail;
-                        val = udat[srcpos];
-                    } else {
-                        if(p+2 > sdat.size()) goto fail;
-                        val = (c - '0');
-                        c = sdat[p++];
-                        val += (c - '0') << 5;
-                        c = sdat[p++];
-                        if(c == 'z') c = '\\';
-                        val += (c - '0') << 10;
-                    }
-                    udat.push_back(val);
-                }
+                udat = YAPI::_decodeWords(_parent->_parseString(j));
             } else if(j.st == YJSON_PARSE_ARRAY) {
+                udat.clear();
                 while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_NUM) {
                     udat.push_back(atoi(j.token));
                 }
@@ -237,7 +226,8 @@ int YDataStream::loadStream(void)
                     }
                 }
                 dat.push_back(val);
-                if(++c == _nCols) {
+                c++;
+                if((int)c == _nCols) {
                     _values.push_back(dat);
                     dat.clear();
                     c = 0;
@@ -254,23 +244,9 @@ int YDataStream::loadStream(void)
 }
 
 /**
- * Returns the run index of the data stream. A run can be made of
- * multiple datastreams, for different time intervals.
- *
- * This method does not cause any access to the device, as the value
- * is preloaded in the object at instantiation time.
- * 
- * @return an unsigned number corresponding to the run index.
- */
-unsigned YDataStream::get_runIndex(void)
-{
-    return _runNo;
-}
-
-/**
  * Returns the start time of the data stream, relative to the beginning
- * of the run. If you want need an absolute time, use get_startTimeUTC().
- *
+ * of the run. If you need an absolute time, use get_startTimeUTC().
+ * 
  * This method does not cause any access to the device, as the value
  * is preloaded in the object at instantiation time.
  * 
@@ -278,143 +254,25 @@ unsigned YDataStream::get_runIndex(void)
  *         between the start of the run and the beginning of this data
  *         stream.
  */
-unsigned YDataStream::get_startTime(void)
+int YOldDataStream::get_startTime(void)
 {
     return _timeStamp;
 }
 
 /**
- * Returns the start time of the data stream, relative to the Jan 1, 1970.
- * If the UTC time was not set in the datalogger at the time of the recording
- * of this data stream, this method will return 0.
- *
- * This method does not cause any access to the device, as the value
- * is preloaded in the object at instantiation time.
- * 
- * @return an unsigned number corresponding to the number of seconds
- *         between the Jan 1, 1970 and the beginning of this data
- *         stream (i.e. Unix time representation of the absolute time).
- */
-const time_t  &YDataStream::get_startTimeUTC(void)
-{
-    return _utcStamp;
-}
-
-/**
- * Returns the number of seconds elapsed between the every two consecutive 
+ * Returns the number of seconds elapsed between  two consecutive
  * rows of this data stream. By default, the data logger records one row
- * per second, but there might be alternate streams at lower resolution
- * created for archiving purpose by summarizing the original stream.
- *
+ * per second, but there might be alternative streams at lower resolution
+ * created by summarizing the original stream for archiving purposes.
+ * 
  * This method does not cause any access to the device, as the value
  * is preloaded in the object at instantiation time.
  * 
  * @return an unsigned number corresponding to a number of seconds.
  */
-unsigned YDataStream::get_dataSamplesInterval(void)
+double YOldDataStream::get_dataSamplesInterval(void)
 {
     return _interval;
-}
-
-/**
- * Returns the number of data rows present in this stream.
- *
- * This method will cause fetching the whole data stream from the device,
- * if not yet done.
- * 
- * @return an unsigned number corresponding to the number of rows.
- * 
- * On failure, throws an exception or returns zero.
- */
-unsigned YDataStream::get_rowCount(void)
-{
-    if(_nRows == 0) loadStream();
-    return _nRows;
-}
-
-/**
- * Returns the number of data columns present in this stream.
- * The meaning of the values present in each column can be obtained
- * using the method get_columnNames().
- *
- * This method will cause fetching the whole data stream from the device,
- * if not yet done.
- * 
- * @return an unsigned number corresponding to the number of rows.
- * 
- * On failure, throws an exception or returns zero.
- */
-unsigned YDataStream::get_columnCount(void)
-{
-    if(_nCols == 0) loadStream();
-    return _nCols;
-}
-
-/**
- * Returns title (or meaning) of each data columns present in this stream.
- * In most case, the title of the data column is the hardware identifier 
- * of the sensor that produced the data. For archive streams created by
- * summarizing a high-resolution data stream, there can be a suffix appended
- * to the sensor identifier, such as _min for the minimum value, _avg for the
- * average value and _max for the maximal value found in the interval.
- *
- * This method will cause fetching the whole data stream from the device,
- * if not yet done.
- * 
- * @return a vector containing as many strings as there are columns in the 
- *         data stream. 
- * 
- * On failure, throws an exception or returns an empty array.
- */
-const vector<string>& YDataStream::get_columnNames(void)
-{
-    if(_columnNames.size() == 0) loadStream();
-    return _columnNames;
-}
-
-/**
- * Returns the whole data set contained in the stream, as a bidimensional
- * vector of numbers.
- * The meaning of the values present in each column can be obtained
- * using the method get_columnNames().
- *
- * This method will cause fetching the whole data stream from the device,
- * if not yet done.
- * 
- * @return a vector containing as many elements as there are rows in the 
- *         data stream. Each row itself is a vector of floating-point
- *         numbers.
- * 
- * On failure, throws an exception or returns an empty array.
- */
-const vector< vector<double> >& YDataStream::get_dataRows(void)
-{
-    if(_values.size() == 0) loadStream();
-    return _values;
-}
-
-/** 
- * Returns a single measure from the data stream, specified by its
- * row and column index.
- * The meaning of the values present in each column can be obtained
- * using the method get_columnNames().
- *
- * This method will cause fetching the whole data stream from the device,
- * if not yet done.
- *  
- * @param row : row index
- * @param col : column index
- * 
- * @return a floating-point number
- *   
- * On failure, throws an exception or returns Y_DATA_INVALID.
- */
-double YDataStream::get_data(unsigned row, unsigned col)
-{
-    if(_values.size() == 0) loadStream();
-    if(row >= _values.size()) return Y_DATA_INVALID;
-    if(col >= _values[row].size()) return Y_DATA_INVALID;
-    return _values[row][col];
 }
 
 // DataLogger-specific method to retrieve and pre-parse recorded data
@@ -435,9 +293,10 @@ int YDataLogger::getData(unsigned runIdx, unsigned timeIdx, string &buffer, yJso
         return (YRETCODE)res;
     }
     if(timeIdx) {
-        sprintf(query, "GET %s?run=%u&time=%u HTTP/1.1\r\n\r\n", this->dataLoggerURL.c_str(), runIdx, timeIdx);
+        // used by old datalogger only
+        sprintf(query, "GET %s?run=%u&time=%u \r\n\r\n", this->dataLoggerURL.c_str(), runIdx, timeIdx);
     } else {
-        sprintf(query, "GET %s HTTP/1.1\r\n\r\n", this->dataLoggerURL.c_str());
+        sprintf(query, "GET %s \r\n\r\n", this->dataLoggerURL.c_str());
     }
     res = dev->HTTPRequest(query, buffer, errmsg);
     if(YISERR(res)) {
@@ -480,23 +339,15 @@ int YDataLogger::getData(unsigned runIdx, unsigned timeIdx, string &buffer, yJso
 }
 
 /**
- * Clears the data logger memory and discards all recorded data streams.
- * This method also resets the current run index to zero.
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YDataLogger::forgetAllDataStreams(void)
-{
-    return set_clearHistory(Y_CLEARHISTORY_TRUE);
-}
-
-/**
- * Builds a list of all data streams hold by the data logger.
+ * Builds a list of all data streams hold by the data logger (legacy method).
  * The caller must pass by reference an empty array to hold YDataStream
  * objects, and the function fills it with objects describing available
  * data sequences.
+ * 
+ * This is the old way to retrieve data from the DataLogger.
+ * For new applications, you should rather use get_dataSets()
+ * method, or call directly get_recordedData() on the
+ * sensor object.
  * 
  * @param v : an array of YDataStream objects to be filled in
  * 
@@ -508,8 +359,8 @@ int YDataLogger::get_dataStreams(vector<YDataStream *>& v)
 {
     string              buffer;
     yJsonStateMachine   j;
-    int                 i, res;
-    unsigned            arr[4];
+    int                 res;
+    unsigned            i, si, arr[4];
     
     v.clear();
     if((res = getData(0, 0, buffer, j)) != YAPI_SUCCESS) {
@@ -520,17 +371,32 @@ int YDataLogger::get_dataStreams(vector<YDataStream *>& v)
         return YAPI_IO_ERROR;
     }
     // expect arrays in array
-    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.token[0] == '[') {
-        // get four number
-        for(i = 0; i < 4; i++) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_NUM) break;
-            arr[i] = atoi(j.token);
-        }
-        if(i < 4) break;
-        // skip any extra item in array
-        while(yJsonParse(&j) != YJSON_PARSE_AVAIL && j.token[0] != ']');
-        // instantiate a data stream
-        v.push_back(new YDataStream(this,arr[0],arr[1],arr[2],arr[3]));
+    while(yJsonParse(&j) == YJSON_PARSE_AVAIL) {
+        if(j.token[0] == '[') {
+            // old datalogger format: [runIdx, timerel, utc, interval]
+            for(i = 0; i < 4; i++) {
+                if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_NUM) break;
+                arr[i] = atoi(j.token);
+            }
+            if(i < 4) break;
+            // skip any extra item in array
+            while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.token[0] != ']');
+            // instantiate a data stream
+            v.push_back(new YOldDataStream(this,arr[0],arr[1],arr[2],arr[3]));
+        } else if(j.token[0] == '{') {
+            // new datalogger format: {"id":"...","unit":"...","streams":["...",...]}
+            size_t pos = buffer.find("\r\n\r\n", 0);
+            buffer = buffer.substr(pos+4);
+            vector<YDataSet> sets = this->parse_dataSets(buffer);
+            for (i=0; i < sets.size(); i++) { 
+                vector<YDataStream*> ds = sets[i].get_privateDataStreams();
+                for (si=0; si < ds.size(); si++) { 
+                    // return a user-owned copy
+                    v.push_back(new YDataStream(*ds[si]));
+                }
+            }
+            break;
+        } else break;
     }
     
     return YAPI_SUCCESS;
@@ -538,23 +404,18 @@ int YDataLogger::get_dataStreams(vector<YDataStream *>& v)
 
 
 
-//--- (generated code: YDataLogger constructor)
-// Constructor is protected, use yFindDataLogger factory function to instantiate
-YDataLogger::YDataLogger(const string& func): YFunction("DataLogger", func)
-//--- (end of generated code: YDataLogger constructor)
+YDataLogger::YDataLogger(const string& func): YFunction(func)
 //--- (generated code: DataLogger initialization)
-            ,_callback(NULL)
-            ,_logicalName(Y_LOGICALNAME_INVALID)
-            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
-            ,_oldestRunIndex(Y_OLDESTRUNINDEX_INVALID)
-            ,_currentRunIndex(Y_CURRENTRUNINDEX_INVALID)
-            ,_samplingInterval(Y_SAMPLINGINTERVAL_INVALID)
-            ,_timeUTC(Y_TIMEUTC_INVALID)
-            ,_recording(Y_RECORDING_INVALID)
-            ,_autoStart(Y_AUTOSTART_INVALID)
-            ,_clearHistory(Y_CLEARHISTORY_INVALID)
+    ,_currentRunIndex(CURRENTRUNINDEX_INVALID)
+    ,_timeUTC(TIMEUTC_INVALID)
+    ,_recording(RECORDING_INVALID)
+    ,_autoStart(AUTOSTART_INVALID)
+    ,_clearHistory(CLEARHISTORY_INVALID)
+    ,_valueCallbackDataLogger(NULL)
 //--- (end of generated code: DataLogger initialization)
-{}
+{
+    _className = "DataLogger";
+}
 
 YDataLogger::~YDataLogger()
 {
@@ -563,122 +424,40 @@ YDataLogger::~YDataLogger()
 }
 
 
-
-
 //--- (generated code: YDataLogger implementation)
+// static attributes
 
-const string YDataLogger::LOGICALNAME_INVALID = "!INVALID!";
-const string YDataLogger::ADVERTISEDVALUE_INVALID = "!INVALID!";
-
-
-
-int YDataLogger::_parse(yJsonStateMachine& j)
+int YDataLogger::_parseAttr(yJsonStateMachine& j)
 {
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
+    if(!strcmp(j.token, "currentRunIndex")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _currentRunIndex =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "timeUTC")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _timeUTC =  atol(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "recording")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _recording =  (Y_RECORDING_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "autoStart")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _autoStart =  (Y_AUTOSTART_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "clearHistory")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _clearHistory =  (Y_CLEARHISTORY_enum)atoi(j.token);
+        return 1;
+    }
     failed:
-        return -1;
-    }
-    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-        if(!strcmp(j.token, "logicalName")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _logicalName =  _parseString(j);
-        } else if(!strcmp(j.token, "advertisedValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _advertisedValue =  _parseString(j);
-        } else if(!strcmp(j.token, "oldestRunIndex")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _oldestRunIndex =  atoi(j.token);
-        } else if(!strcmp(j.token, "currentRunIndex")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _currentRunIndex =  atoi(j.token);
-        } else if(!strcmp(j.token, "samplingInterval")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _samplingInterval =  atoi(j.token);
-        } else if(!strcmp(j.token, "timeUTC")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _timeUTC =  atoi(j.token);
-        } else if(!strcmp(j.token, "recording")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _recording =  (Y_RECORDING_enum)atoi(j.token);
-        } else if(!strcmp(j.token, "autoStart")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _autoStart =  (Y_AUTOSTART_enum)atoi(j.token);
-        } else if(!strcmp(j.token, "clearHistory")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _clearHistory =  (Y_CLEARHISTORY_enum)atoi(j.token);
-        } else {
-            // ignore unknown field
-            yJsonSkip(&j, 1);
-        }
-    }
-    if(j.st != YJSON_PARSE_STRUCT) goto failed;
-    return 0;
+    return YFunction::_parseAttr(j);
 }
 
-/**
- * Returns the logical name of the data logger.
- * 
- * @return a string corresponding to the logical name of the data logger
- * 
- * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
- */
-string YDataLogger::get_logicalName(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LOGICALNAME_INVALID;
-    }
-    return _logicalName;
-}
-
-/**
- * Changes the logical name of the data logger. You can use yCheckLogicalName()
- * prior to this call to make sure that your parameter is valid.
- * Remember to call the saveToFlash() method of the module if the
- * modification must be kept.
- * 
- * @param newval : a string corresponding to the logical name of the data logger
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YDataLogger::set_logicalName(const string& newval)
-{
-    string rest_val;
-    rest_val = newval;
-    return _setAttr("logicalName", rest_val);
-}
-
-/**
- * Returns the current value of the data logger (no more than 6 characters).
- * 
- * @return a string corresponding to the current value of the data logger (no more than 6 characters)
- * 
- * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
- */
-string YDataLogger::get_advertisedValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_ADVERTISEDVALUE_INVALID;
-    }
-    return _advertisedValue;
-}
-
-/**
- * Returns the index of the oldest run for which the non-volatile memory still holds recorded data.
- * 
- * @return an integer corresponding to the index of the oldest run for which the non-volatile memory
- * still holds recorded data
- * 
- * On failure, throws an exception or returns Y_OLDESTRUNINDEX_INVALID.
- */
-unsigned YDataLogger::get_oldestRunIndex(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_OLDESTRUNINDEX_INVALID;
-    }
-    return _oldestRunIndex;
-}
 
 /**
  * Returns the current run number, corresponding to the number of times the module was
@@ -689,27 +468,14 @@ unsigned YDataLogger::get_oldestRunIndex(void)
  * 
  * On failure, throws an exception or returns Y_CURRENTRUNINDEX_INVALID.
  */
-unsigned YDataLogger::get_currentRunIndex(void)
+int YDataLogger::get_currentRunIndex(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_CURRENTRUNINDEX_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDataLogger::CURRENTRUNINDEX_INVALID;
+        }
     }
     return _currentRunIndex;
-}
-
-unsigned YDataLogger::get_samplingInterval(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_SAMPLINGINTERVAL_INVALID;
-    }
-    return _samplingInterval;
-}
-
-int YDataLogger::set_samplingInterval(unsigned newval)
-{
-    string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
-    return _setAttr("samplingInterval", rest_val);
 }
 
 /**
@@ -719,10 +485,12 @@ int YDataLogger::set_samplingInterval(unsigned newval)
  * 
  * On failure, throws an exception or returns Y_TIMEUTC_INVALID.
  */
-unsigned YDataLogger::get_timeUTC(void)
+s64 YDataLogger::get_timeUTC(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_TIMEUTC_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDataLogger::TIMEUTC_INVALID;
+        }
     }
     return _timeUTC;
 }
@@ -736,10 +504,10 @@ unsigned YDataLogger::get_timeUTC(void)
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YDataLogger::set_timeUTC(unsigned newval)
+int YDataLogger::set_timeUTC(s64 newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
     return _setAttr("timeUTC", rest_val);
 }
 
@@ -752,8 +520,10 @@ int YDataLogger::set_timeUTC(unsigned newval)
  */
 Y_RECORDING_enum YDataLogger::get_recording(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_RECORDING_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDataLogger::RECORDING_INVALID;
+        }
     }
     return _recording;
 }
@@ -785,8 +555,10 @@ int YDataLogger::set_recording(Y_RECORDING_enum newval)
  */
 Y_AUTOSTART_enum YDataLogger::get_autoStart(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_AUTOSTART_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDataLogger::AUTOSTART_INVALID;
+        }
     }
     return _autoStart;
 }
@@ -812,8 +584,10 @@ int YDataLogger::set_autoStart(Y_AUTOSTART_enum newval)
 
 Y_CLEARHISTORY_enum YDataLogger::get_clearHistory(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_CLEARHISTORY_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDataLogger::CLEARHISTORY_INVALID;
+        }
     }
     return _clearHistory;
 }
@@ -825,6 +599,123 @@ int YDataLogger::set_clearHistory(Y_CLEARHISTORY_enum newval)
     return _setAttr("clearHistory", rest_val);
 }
 
+/**
+ * Retrieves a data logger for a given identifier.
+ * The identifier can be specified using several formats:
+ * <ul>
+ * <li>FunctionLogicalName</li>
+ * <li>ModuleSerialNumber.FunctionIdentifier</li>
+ * <li>ModuleSerialNumber.FunctionLogicalName</li>
+ * <li>ModuleLogicalName.FunctionIdentifier</li>
+ * <li>ModuleLogicalName.FunctionLogicalName</li>
+ * </ul>
+ * 
+ * This function does not require that the data logger is online at the time
+ * it is invoked. The returned object is nevertheless valid.
+ * Use the method YDataLogger.isOnline() to test if the data logger is
+ * indeed online at a given time. In case of ambiguity when looking for
+ * a data logger by logical name, no error is notified: the first instance
+ * found is returned. The search is performed first by hardware name,
+ * then by logical name.
+ * 
+ * @param func : a string that uniquely characterizes the data logger
+ * 
+ * @return a YDataLogger object allowing you to drive the data logger.
+ */
+YDataLogger* YDataLogger::FindDataLogger(string func)
+{
+    YDataLogger* obj = NULL;
+    obj = (YDataLogger*) YFunction::_FindFromCache("DataLogger", func);
+    if (obj == NULL) {
+        obj = new YDataLogger(func);
+        YFunction::_AddToCache("DataLogger", func, obj);
+    }
+    return obj;
+}
+
+/**
+ * Registers the callback function that is invoked on every change of advertised value.
+ * The callback is invoked only during the execution of ySleep or yHandleEvents.
+ * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+ * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * 
+ * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ *         arguments: the function object of which the value has changed, and the character string describing
+ *         the new advertised value.
+ * @noreturn
+ */
+int YDataLogger::registerValueCallback(YDataLoggerValueCallback callback)
+{
+    string val;
+    if (callback != NULL) {
+        YFunction::_UpdateValueCallbackList(this, true);
+    } else {
+        YFunction::_UpdateValueCallbackList(this, false);
+    }
+    _valueCallbackDataLogger = callback;
+    // Immediately invoke value callback with current value
+    if (callback != NULL && this->isOnline()) {
+        val = _advertisedValue;
+        if (!(val == "")) {
+            this->_invokeValueCallback(val);
+        }
+    }
+    return 0;
+}
+
+int YDataLogger::_invokeValueCallback(string value)
+{
+    if (_valueCallbackDataLogger != NULL) {
+        _valueCallbackDataLogger(this, value);
+    } else {
+        YFunction::_invokeValueCallback(value);
+    }
+    return 0;
+}
+
+/**
+ * Clears the data logger memory and discards all recorded data streams.
+ * This method also resets the current run index to zero.
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YDataLogger::forgetAllDataStreams(void)
+{
+    return this->set_clearHistory(Y_CLEARHISTORY_TRUE);
+}
+
+/**
+ * Returns a list of YDataSet objects that can be used to retrieve
+ * all measures stored by the data logger.
+ * 
+ * This function only works if the device uses a recent firmware,
+ * as YDataSet objects are not supported by firmwares older than
+ * version 13000.
+ * 
+ * @return a list of YDataSet object.
+ * 
+ * On failure, throws an exception or returns an empty list.
+ */
+vector<YDataSet> YDataLogger::get_dataSets(void)
+{
+    return this->parse_dataSets(this->_download("logger.json"));
+}
+
+vector<YDataSet> YDataLogger::parse_dataSets(string json)
+{
+    vector<string> dslist;
+    vector<YDataSet> res;
+    // may throw an exception
+    dslist = this->_json_get_array(json);
+    res.clear();
+    for (unsigned ii = 0; ii < dslist.size(); ii++) {
+        res.push_back(YDataSet(this,dslist[ii]));
+    }
+    return res;
+}
+
 YDataLogger *YDataLogger::nextDataLogger(void)
 {
     string  hwid;
@@ -832,38 +723,7 @@ YDataLogger *YDataLogger::nextDataLogger(void)
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
-    return yFindDataLogger(hwid);
-}
-
-void YDataLogger::registerValueCallback(YDataLoggerUpdateCallback callback)
-{
-    if (callback != NULL) {
-        _registerFuncCallback(this);
-        yapiLockFunctionCallBack(NULL);
-        YAPI::_yapiFunctionUpdateCallbackFwd(this->functionDescriptor(), this->get_advertisedValue().c_str());
-        yapiUnlockFunctionCallBack(NULL);
-    } else {
-        _unregisterFuncCallback(this);
-    }
-    _callback = callback;
-}
-
-void YDataLogger::advertiseValue(const string& value)
-{
-    if (_callback != NULL) {
-        _callback(this, value);
-    }
-}
-
-
-YDataLogger* YDataLogger::FindDataLogger(const string& func)
-{
-    if(YAPI::_YFunctionsCaches["YDataLogger"].find(func) != YAPI::_YFunctionsCaches["YDataLogger"].end())
-        return (YDataLogger*) YAPI::_YFunctionsCaches["YDataLogger"][func];
-    
-    YDataLogger *newDataLogger = new YDataLogger(func);
-    YAPI::_YFunctionsCaches["YDataLogger"][func] = newDataLogger ;
-    return newDataLogger;
+    return YDataLogger::FindDataLogger(hwid);
 }
 
 YDataLogger* YDataLogger::FirstDataLogger(void)

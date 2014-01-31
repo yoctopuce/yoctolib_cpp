@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_anbutton.h 12324 2013-08-13 15:10:31Z mvuilleu $
+ * $Id: yocto_anbutton.h 14275 2014-01-09 14:20:38Z seb $
  *
  * Declares yFindAnButton(), the high-level API for AnButton functions
  *
@@ -46,35 +46,39 @@
 #include <cmath>
 #include <map>
 
-//--- (return codes)
-//--- (end of return codes)
+//--- (YAnButton return codes)
+//--- (end of YAnButton return codes)
 //--- (YAnButton definitions)
-class YAnButton; //forward declaration
+class YAnButton; // forward declaration
 
-typedef void (*YAnButtonUpdateCallback)(YAnButton *func, const string& functionValue);
+typedef void (*YAnButtonValueCallback)(YAnButton *func, const string& functionValue);
+#ifndef _Y_ANALOGCALIBRATION_ENUM
+#define _Y_ANALOGCALIBRATION_ENUM
 typedef enum {
     Y_ANALOGCALIBRATION_OFF = 0,
     Y_ANALOGCALIBRATION_ON = 1,
     Y_ANALOGCALIBRATION_INVALID = -1,
 } Y_ANALOGCALIBRATION_enum;
+#endif
 
+#ifndef _Y_ISPRESSED_ENUM
+#define _Y_ISPRESSED_ENUM
 typedef enum {
     Y_ISPRESSED_FALSE = 0,
     Y_ISPRESSED_TRUE = 1,
     Y_ISPRESSED_INVALID = -1,
 } Y_ISPRESSED_enum;
+#endif
 
-#define Y_LOGICALNAME_INVALID           (YAPI::INVALID_STRING)
-#define Y_ADVERTISEDVALUE_INVALID       (YAPI::INVALID_STRING)
-#define Y_CALIBRATEDVALUE_INVALID       (0xffffffff)
-#define Y_RAWVALUE_INVALID              (0xffffffff)
-#define Y_CALIBRATIONMAX_INVALID        (0xffffffff)
-#define Y_CALIBRATIONMIN_INVALID        (0xffffffff)
-#define Y_SENSITIVITY_INVALID           (0xffffffff)
-#define Y_LASTTIMEPRESSED_INVALID       (0xffffffff)
-#define Y_LASTTIMERELEASED_INVALID      (0xffffffff)
-#define Y_PULSECOUNTER_INVALID          (0xffffffff)
-#define Y_PULSETIMER_INVALID            (0xffffffff)
+#define Y_CALIBRATEDVALUE_INVALID       (YAPI_INVALID_UINT)
+#define Y_RAWVALUE_INVALID              (YAPI_INVALID_UINT)
+#define Y_CALIBRATIONMAX_INVALID        (YAPI_INVALID_UINT)
+#define Y_CALIBRATIONMIN_INVALID        (YAPI_INVALID_UINT)
+#define Y_SENSITIVITY_INVALID           (YAPI_INVALID_UINT)
+#define Y_LASTTIMEPRESSED_INVALID       (YAPI_INVALID_LONG)
+#define Y_LASTTIMERELEASED_INVALID      (YAPI_INVALID_LONG)
+#define Y_PULSECOUNTER_INVALID          (YAPI_INVALID_LONG)
+#define Y_PULSETIMER_INVALID            (YAPI_INVALID_LONG)
 //--- (end of YAnButton definitions)
 
 //--- (YAnButton declaration)
@@ -88,97 +92,53 @@ typedef enum {
  * in order to compute a calibrated value that varies proportionally with the
  * potentiometer position, regardless of its total resistance.
  */
-class YAnButton: public YFunction {
+class YOCTO_CLASS_EXPORT YAnButton: public YFunction {
+//--- (end of YAnButton declaration)
 protected:
+    //--- (YAnButton attributes)
     // Attributes (function value cache)
-    YAnButtonUpdateCallback _callback;
-    string          _logicalName;
-    string          _advertisedValue;
-    unsigned        _calibratedValue;
-    unsigned        _rawValue;
+    int             _calibratedValue;
+    int             _rawValue;
     Y_ANALOGCALIBRATION_enum _analogCalibration;
-    unsigned        _calibrationMax;
-    unsigned        _calibrationMin;
-    unsigned        _sensitivity;
+    int             _calibrationMax;
+    int             _calibrationMin;
+    int             _sensitivity;
     Y_ISPRESSED_enum _isPressed;
-    unsigned        _lastTimePressed;
-    unsigned        _lastTimeReleased;
-    unsigned        _pulseCounter;
-    unsigned        _pulseTimer;
+    s64             _lastTimePressed;
+    s64             _lastTimeReleased;
+    s64             _pulseCounter;
+    s64             _pulseTimer;
+    YAnButtonValueCallback _valueCallbackAnButton;
 
     friend YAnButton *yFindAnButton(const string& func);
     friend YAnButton *yFirstAnButton(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    int             _parse(yJsonStateMachine& j);
-    //--- (end of YAnButton declaration)
+    virtual int     _parseAttr(yJsonStateMachine& j);
 
-    //--- (YAnButton constructor)
     // Constructor is protected, use yFindAnButton factory function to instantiate
     YAnButton(const string& func);
-    //--- (end of YAnButton constructor)
-    //--- (AnButton initialization)
-    //--- (end of AnButton initialization)
+    //--- (end of YAnButton attributes)
 
 public:
     ~YAnButton();
     //--- (YAnButton accessors declaration)
 
-    static const string LOGICALNAME_INVALID;
-    static const string ADVERTISEDVALUE_INVALID;
-    static const unsigned CALIBRATEDVALUE_INVALID = 0xffffffff;
-    static const unsigned RAWVALUE_INVALID = 0xffffffff;
+    static const int CALIBRATEDVALUE_INVALID = YAPI_INVALID_UINT;
+    static const int RAWVALUE_INVALID = YAPI_INVALID_UINT;
     static const Y_ANALOGCALIBRATION_enum ANALOGCALIBRATION_OFF = Y_ANALOGCALIBRATION_OFF;
     static const Y_ANALOGCALIBRATION_enum ANALOGCALIBRATION_ON = Y_ANALOGCALIBRATION_ON;
     static const Y_ANALOGCALIBRATION_enum ANALOGCALIBRATION_INVALID = Y_ANALOGCALIBRATION_INVALID;
-    static const unsigned CALIBRATIONMAX_INVALID = 0xffffffff;
-    static const unsigned CALIBRATIONMIN_INVALID = 0xffffffff;
-    static const unsigned SENSITIVITY_INVALID = 0xffffffff;
+    static const int CALIBRATIONMAX_INVALID = YAPI_INVALID_UINT;
+    static const int CALIBRATIONMIN_INVALID = YAPI_INVALID_UINT;
+    static const int SENSITIVITY_INVALID = YAPI_INVALID_UINT;
     static const Y_ISPRESSED_enum ISPRESSED_FALSE = Y_ISPRESSED_FALSE;
     static const Y_ISPRESSED_enum ISPRESSED_TRUE = Y_ISPRESSED_TRUE;
     static const Y_ISPRESSED_enum ISPRESSED_INVALID = Y_ISPRESSED_INVALID;
-    static const unsigned LASTTIMEPRESSED_INVALID = 0xffffffff;
-    static const unsigned LASTTIMERELEASED_INVALID = 0xffffffff;
-    static const unsigned PULSECOUNTER_INVALID = 0xffffffff;
-    static const unsigned PULSETIMER_INVALID = 0xffffffff;
-
-    /**
-     * Returns the logical name of the analog input.
-     * 
-     * @return a string corresponding to the logical name of the analog input
-     * 
-     * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
-     */
-           string          get_logicalName(void);
-    inline string          logicalName(void)
-    { return this->get_logicalName(); }
-
-    /**
-     * Changes the logical name of the analog input. You can use yCheckLogicalName()
-     * prior to this call to make sure that your parameter is valid.
-     * Remember to call the saveToFlash() method of the module if the
-     * modification must be kept.
-     * 
-     * @param newval : a string corresponding to the logical name of the analog input
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_logicalName(const string& newval);
-    inline int      setLogicalName(const string& newval)
-    { return this->set_logicalName(newval); }
-
-    /**
-     * Returns the current value of the analog input (no more than 6 characters).
-     * 
-     * @return a string corresponding to the current value of the analog input (no more than 6 characters)
-     * 
-     * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
-     */
-           string          get_advertisedValue(void);
-    inline string          advertisedValue(void)
-    { return this->get_advertisedValue(); }
+    static const s64 LASTTIMEPRESSED_INVALID = YAPI_INVALID_LONG;
+    static const s64 LASTTIMERELEASED_INVALID = YAPI_INVALID_LONG;
+    static const s64 PULSECOUNTER_INVALID = YAPI_INVALID_LONG;
+    static const s64 PULSETIMER_INVALID = YAPI_INVALID_LONG;
 
     /**
      * Returns the current calibrated input value (between 0 and 1000, included).
@@ -187,8 +147,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_CALIBRATEDVALUE_INVALID.
      */
-           unsigned        get_calibratedValue(void);
-    inline unsigned        calibratedValue(void)
+    int                 get_calibratedValue(void);
+
+    inline int          calibratedValue(void)
     { return this->get_calibratedValue(); }
 
     /**
@@ -198,8 +159,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_RAWVALUE_INVALID.
      */
-           unsigned        get_rawValue(void);
-    inline unsigned        rawValue(void)
+    int                 get_rawValue(void);
+
+    inline int          rawValue(void)
     { return this->get_rawValue(); }
 
     /**
@@ -209,7 +171,8 @@ public:
      * 
      * On failure, throws an exception or returns Y_ANALOGCALIBRATION_INVALID.
      */
-           Y_ANALOGCALIBRATION_enum get_analogCalibration(void);
+    Y_ANALOGCALIBRATION_enum get_analogCalibration(void);
+
     inline Y_ANALOGCALIBRATION_enum analogCalibration(void)
     { return this->get_analogCalibration(); }
 
@@ -235,8 +198,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_CALIBRATIONMAX_INVALID.
      */
-           unsigned        get_calibrationMax(void);
-    inline unsigned        calibrationMax(void)
+    int                 get_calibrationMax(void);
+
+    inline int          calibrationMax(void)
     { return this->get_calibrationMax(); }
 
     /**
@@ -252,8 +216,8 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             set_calibrationMax(unsigned newval);
-    inline int      setCalibrationMax(unsigned newval)
+    int             set_calibrationMax(int newval);
+    inline int      setCalibrationMax(int newval)
     { return this->set_calibrationMax(newval); }
 
     /**
@@ -264,8 +228,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_CALIBRATIONMIN_INVALID.
      */
-           unsigned        get_calibrationMin(void);
-    inline unsigned        calibrationMin(void)
+    int                 get_calibrationMin(void);
+
+    inline int          calibrationMin(void)
     { return this->get_calibrationMin(); }
 
     /**
@@ -281,8 +246,8 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             set_calibrationMin(unsigned newval);
-    inline int      setCalibrationMin(unsigned newval)
+    int             set_calibrationMin(int newval);
+    inline int      setCalibrationMin(int newval)
     { return this->set_calibrationMin(newval); }
 
     /**
@@ -293,8 +258,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_SENSITIVITY_INVALID.
      */
-           unsigned        get_sensitivity(void);
-    inline unsigned        sensitivity(void)
+    int                 get_sensitivity(void);
+
+    inline int          sensitivity(void)
     { return this->get_sensitivity(); }
 
     /**
@@ -312,8 +278,8 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             set_sensitivity(unsigned newval);
-    inline int      setSensitivity(unsigned newval)
+    int             set_sensitivity(int newval);
+    inline int      setSensitivity(int newval)
     { return this->set_sensitivity(newval); }
 
     /**
@@ -324,7 +290,8 @@ public:
      * 
      * On failure, throws an exception or returns Y_ISPRESSED_INVALID.
      */
-           Y_ISPRESSED_enum get_isPressed(void);
+    Y_ISPRESSED_enum    get_isPressed(void);
+
     inline Y_ISPRESSED_enum isPressed(void)
     { return this->get_isPressed(); }
 
@@ -338,8 +305,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_LASTTIMEPRESSED_INVALID.
      */
-           unsigned        get_lastTimePressed(void);
-    inline unsigned        lastTimePressed(void)
+    s64                 get_lastTimePressed(void);
+
+    inline s64          lastTimePressed(void)
     { return this->get_lastTimePressed(); }
 
     /**
@@ -352,8 +320,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_LASTTIMERELEASED_INVALID.
      */
-           unsigned        get_lastTimeReleased(void);
-    inline unsigned        lastTimeReleased(void)
+    s64                 get_lastTimeReleased(void);
+
+    inline s64          lastTimeReleased(void)
     { return this->get_lastTimeReleased(); }
 
     /**
@@ -363,12 +332,13 @@ public:
      * 
      * On failure, throws an exception or returns Y_PULSECOUNTER_INVALID.
      */
-           unsigned        get_pulseCounter(void);
-    inline unsigned        pulseCounter(void)
+    s64                 get_pulseCounter(void);
+
+    inline s64          pulseCounter(void)
     { return this->get_pulseCounter(); }
 
-    int             set_pulseCounter(unsigned newval);
-    inline int      setPulseCounter(unsigned newval)
+    int             set_pulseCounter(s64 newval);
+    inline int      setPulseCounter(s64 newval)
     { return this->set_pulseCounter(newval); }
 
     /**
@@ -387,36 +357,10 @@ public:
      * 
      * On failure, throws an exception or returns Y_PULSETIMER_INVALID.
      */
-           unsigned        get_pulseTimer(void);
-    inline unsigned        pulseTimer(void)
+    s64                 get_pulseTimer(void);
+
+    inline s64          pulseTimer(void)
     { return this->get_pulseTimer(); }
-
-
-    /**
-     * Registers the callback function that is invoked on every change of advertised value.
-     * The callback is invoked only during the execution of ySleep or yHandleEvents.
-     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
-     *         arguments: the function object of which the value has changed, and the character string describing
-     *         the new advertised value.
-     * @noreturn
-     */
-    void registerValueCallback(YAnButtonUpdateCallback callback);
-
-    void advertiseValue(const string& value);
-
-    /**
-     * Continues the enumeration of analog inputs started using yFirstAnButton().
-     * 
-     * @return a pointer to a YAnButton object, corresponding to
-     *         an analog input currently online, or a null pointer
-     *         if there are no more analog inputs to enumerate.
-     */
-           YAnButton       *nextAnButton(void);
-    inline YAnButton       *next(void)
-    { return this->nextAnButton();}
 
     /**
      * Retrieves an analog input for a given identifier.
@@ -441,18 +385,40 @@ public:
      * 
      * @return a YAnButton object allowing you to drive the analog input.
      */
-           static YAnButton* FindAnButton(const string& func);
-    inline static YAnButton* Find(const string& func)
-    { return YAnButton::FindAnButton(func);}
+    static YAnButton*   FindAnButton(string func);
+
+    using YFunction::registerValueCallback;
+
     /**
-     * Starts the enumeration of analog inputs currently accessible.
-     * Use the method YAnButton.nextAnButton() to iterate on
-     * next analog inputs.
+     * Registers the callback function that is invoked on every change of advertised value.
+     * The callback is invoked only during the execution of ySleep or yHandleEvents.
+     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * 
+     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     *         arguments: the function object of which the value has changed, and the character string describing
+     *         the new advertised value.
+     * @noreturn
+     */
+    virtual int         registerValueCallback(YAnButtonValueCallback callback);
+
+    virtual int         _invokeValueCallback(string value);
+
+
+    inline static YAnButton* Find(string func)
+    { return YAnButton::FindAnButton(func); }
+
+    /**
+     * Continues the enumeration of analog inputs started using yFirstAnButton().
      * 
      * @return a pointer to a YAnButton object, corresponding to
-     *         the first analog input currently online, or a null pointer
-     *         if there are none.
+     *         an analog input currently online, or a null pointer
+     *         if there are no more analog inputs to enumerate.
      */
+           YAnButton       *nextAnButton(void);
+    inline YAnButton       *next(void)
+    { return this->nextAnButton();}
+
            static YAnButton* FirstAnButton(void);
     inline static YAnButton* First(void)
     { return YAnButton::FirstAnButton();}

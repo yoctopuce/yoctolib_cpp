@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_hubport.cpp 12337 2013-08-14 15:22:22Z mvuilleu $
+ * $Id: yocto_hubport.cpp 14700 2014-01-23 15:40:44Z seb $
  *
  * Implements yFindHubPort(), the high-level API for HubPort functions
  *
@@ -47,19 +47,16 @@
 #include <math.h>
 #include <stdlib.h>
 
-//--- (YHubPort constructor)
-// Constructor is protected, use yFindHubPort factory function to instantiate
-YHubPort::YHubPort(const string& func): YFunction("HubPort", func)
-//--- (end of YHubPort constructor)
+YHubPort::YHubPort(const string& func): YFunction(func)
 //--- (HubPort initialization)
-            ,_callback(NULL)
-            ,_logicalName(Y_LOGICALNAME_INVALID)
-            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
-            ,_enabled(Y_ENABLED_INVALID)
-            ,_portState(Y_PORTSTATE_INVALID)
-            ,_baudRate(Y_BAUDRATE_INVALID)
+    ,_enabled(ENABLED_INVALID)
+    ,_portState(PORTSTATE_INVALID)
+    ,_baudRate(BAUDRATE_INVALID)
+    ,_valueCallbackHubPort(NULL)
 //--- (end of HubPort initialization)
-{}
+{
+    _className="HubPort";
+}
 
 YHubPort::~YHubPort() 
 {
@@ -67,92 +64,29 @@ YHubPort::~YHubPort()
 //--- (end of YHubPort cleanup)
 }
 //--- (YHubPort implementation)
+// static attributes
 
-const string YHubPort::LOGICALNAME_INVALID = "!INVALID!";
-const string YHubPort::ADVERTISEDVALUE_INVALID = "!INVALID!";
-
-
-
-int YHubPort::_parse(yJsonStateMachine& j)
+int YHubPort::_parseAttr(yJsonStateMachine& j)
 {
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
+    if(!strcmp(j.token, "enabled")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _enabled =  (Y_ENABLED_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "portState")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _portState =  (Y_PORTSTATE_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "baudRate")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _baudRate =  atoi(j.token);
+        return 1;
+    }
     failed:
-        return -1;
-    }
-    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-        if(!strcmp(j.token, "logicalName")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _logicalName =  _parseString(j);
-        } else if(!strcmp(j.token, "advertisedValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _advertisedValue =  _parseString(j);
-        } else if(!strcmp(j.token, "enabled")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _enabled =  (Y_ENABLED_enum)atoi(j.token);
-        } else if(!strcmp(j.token, "portState")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _portState =  (Y_PORTSTATE_enum)atoi(j.token);
-        } else if(!strcmp(j.token, "baudRate")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _baudRate =  atoi(j.token);
-        } else {
-            // ignore unknown field
-            yJsonSkip(&j, 1);
-        }
-    }
-    if(j.st != YJSON_PARSE_STRUCT) goto failed;
-    return 0;
+    return YFunction::_parseAttr(j);
 }
 
-/**
- * Returns the logical name of the Yocto-hub port, which is always the serial number of the
- * connected module.
- * 
- * @return a string corresponding to the logical name of the Yocto-hub port, which is always the
- * serial number of the
- *         connected module
- * 
- * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
- */
-string YHubPort::get_logicalName(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LOGICALNAME_INVALID;
-    }
-    return _logicalName;
-}
-
-/**
- * It is not possible to configure the logical name of a Yocto-hub port. The logical
- * name is automatically set to the serial number of the connected module.
- * 
- * @param newval : a string
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YHubPort::set_logicalName(const string& newval)
-{
-    string rest_val;
-    rest_val = newval;
-    return _setAttr("logicalName", rest_val);
-}
-
-/**
- * Returns the current value of the Yocto-hub port (no more than 6 characters).
- * 
- * @return a string corresponding to the current value of the Yocto-hub port (no more than 6 characters)
- * 
- * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
- */
-string YHubPort::get_advertisedValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_ADVERTISEDVALUE_INVALID;
-    }
-    return _advertisedValue;
-}
 
 /**
  * Returns true if the Yocto-hub port is powered, false otherwise.
@@ -164,15 +98,17 @@ string YHubPort::get_advertisedValue(void)
  */
 Y_ENABLED_enum YHubPort::get_enabled(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_ENABLED_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YHubPort::ENABLED_INVALID;
+        }
     }
     return _enabled;
 }
 
 /**
  * Changes the activation of the Yocto-hub port. If the port is enabled, the
- * *      connected module is powered. Otherwise, port power is shut down.
+ * connected module is powered. Otherwise, port power is shut down.
  * 
  * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the activation of the Yocto-hub port
  * 
@@ -197,8 +133,10 @@ int YHubPort::set_enabled(Y_ENABLED_enum newval)
  */
 Y_PORTSTATE_enum YHubPort::get_portState(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_PORTSTATE_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YHubPort::PORTSTATE_INVALID;
+        }
     }
     return _portState;
 }
@@ -214,10 +152,86 @@ Y_PORTSTATE_enum YHubPort::get_portState(void)
  */
 int YHubPort::get_baudRate(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_BAUDRATE_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YHubPort::BAUDRATE_INVALID;
+        }
     }
     return _baudRate;
+}
+
+/**
+ * Retrieves $AFUNCTION$ for a given identifier.
+ * The identifier can be specified using several formats:
+ * <ul>
+ * <li>FunctionLogicalName</li>
+ * <li>ModuleSerialNumber.FunctionIdentifier</li>
+ * <li>ModuleSerialNumber.FunctionLogicalName</li>
+ * <li>ModuleLogicalName.FunctionIdentifier</li>
+ * <li>ModuleLogicalName.FunctionLogicalName</li>
+ * </ul>
+ * 
+ * This function does not require that $THEFUNCTION$ is online at the time
+ * it is invoked. The returned object is nevertheless valid.
+ * Use the method YHubPort.isOnline() to test if $THEFUNCTION$ is
+ * indeed online at a given time. In case of ambiguity when looking for
+ * $AFUNCTION$ by logical name, no error is notified: the first instance
+ * found is returned. The search is performed first by hardware name,
+ * then by logical name.
+ * 
+ * @param func : a string that uniquely characterizes $THEFUNCTION$
+ * 
+ * @return a YHubPort object allowing you to drive $THEFUNCTION$.
+ */
+YHubPort* YHubPort::FindHubPort(string func)
+{
+    YHubPort* obj = NULL;
+    obj = (YHubPort*) YFunction::_FindFromCache("HubPort", func);
+    if (obj == NULL) {
+        obj = new YHubPort(func);
+        YFunction::_AddToCache("HubPort", func, obj);
+    }
+    return obj;
+}
+
+/**
+ * Registers the callback function that is invoked on every change of advertised value.
+ * The callback is invoked only during the execution of ySleep or yHandleEvents.
+ * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+ * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * 
+ * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ *         arguments: the function object of which the value has changed, and the character string describing
+ *         the new advertised value.
+ * @noreturn
+ */
+int YHubPort::registerValueCallback(YHubPortValueCallback callback)
+{
+    string val;
+    if (callback != NULL) {
+        YFunction::_UpdateValueCallbackList(this, true);
+    } else {
+        YFunction::_UpdateValueCallbackList(this, false);
+    }
+    _valueCallbackHubPort = callback;
+    // Immediately invoke value callback with current value
+    if (callback != NULL && this->isOnline()) {
+        val = _advertisedValue;
+        if (!(val == "")) {
+            this->_invokeValueCallback(val);
+        }
+    }
+    return 0;
+}
+
+int YHubPort::_invokeValueCallback(string value)
+{
+    if (_valueCallbackHubPort != NULL) {
+        _valueCallbackHubPort(this, value);
+    } else {
+        YFunction::_invokeValueCallback(value);
+    }
+    return 0;
 }
 
 YHubPort *YHubPort::nextHubPort(void)
@@ -227,38 +241,7 @@ YHubPort *YHubPort::nextHubPort(void)
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
-    return yFindHubPort(hwid);
-}
-
-void YHubPort::registerValueCallback(YHubPortUpdateCallback callback)
-{
-    if (callback != NULL) {
-        _registerFuncCallback(this);
-        yapiLockFunctionCallBack(NULL);
-        YAPI::_yapiFunctionUpdateCallbackFwd(this->functionDescriptor(), this->get_advertisedValue().c_str());
-        yapiUnlockFunctionCallBack(NULL);
-    } else {
-        _unregisterFuncCallback(this);
-    }
-    _callback = callback;
-}
-
-void YHubPort::advertiseValue(const string& value)
-{
-    if (_callback != NULL) {
-        _callback(this, value);
-    }
-}
-
-
-YHubPort* YHubPort::FindHubPort(const string& func)
-{
-    if(YAPI::_YFunctionsCaches["YHubPort"].find(func) != YAPI::_YFunctionsCaches["YHubPort"].end())
-        return (YHubPort*) YAPI::_YFunctionsCaches["YHubPort"][func];
-    
-    YHubPort *newHubPort = new YHubPort(func);
-    YAPI::_YFunctionsCaches["YHubPort"][func] = newHubPort ;
-    return newHubPort;
+    return YHubPort::FindHubPort(hwid);
 }
 
 YHubPort* YHubPort::FirstHubPort(void)

@@ -13,16 +13,16 @@ using namespace std;
 int main(int argc, const char * argv[])
 {
     string      errmsg;
-    unsigned    lastPostman;
-    unsigned    lastColect;
+    s64        lastPostman;
+    s64        lastColect;
 
-    yInitAPI(Y_DETECT_USB, errmsg);
+    YAPI::InitAPI(Y_DETECT_USB, errmsg);
 
-    YAnButton *postmanSensor = yFindAnButton("YBUTTON1-99999.anButton5");
-    YAnButton *colectSensor  = yFindAnButton("YBUTTON1-99999.anButton4");  
+    YAnButton *postmanSensor = YAnButton::FindAnButton("YBUTTON1-99999.anButton5");
+    YAnButton *colectSensor  = YAnButton::FindAnButton("YBUTTON1-99999.anButton4");
      
-    YColorLed *led1 =  yFindColorLed("YRGBLED1-001A8.colorLed1");
-    YColorLed *led2 =  yFindColorLed("YRGBLED1-001A8.colorLed2"); 
+    YColorLed *led1 =  YColorLed::FindColorLed("YRGBLED1-001A8.colorLed1");
+    YColorLed *led2 =  YColorLed::FindColorLed("YRGBLED1-001A8.colorLed2");
     if (!led1->isOnline() || !led2->isOnline()) {
         cout << "the led "<< led1->describe() << " is not connected" << endl;
         return 1;
@@ -38,21 +38,21 @@ int main(int argc, const char * argv[])
     lastPostman = postmanSensor->get_lastTimePressed();
     lastColect =  colectSensor->get_lastTimeReleased();
     while(1){
-        unsigned newPostman =  postmanSensor->get_lastTimePressed();
+        s64 newPostman =  postmanSensor->get_lastTimePressed();
         if(lastPostman !=  newPostman){           
             lastPostman =  newPostman;
             cout << "Postman Deteected"<< endl;
-            led1->set_rgbColor(RGB_RED); 
+            led1->set_rgbColor(RGB_RED);
             led2->set_rgbColor(RGB_RED);  
         }
-        unsigned newColect =  colectSensor->get_lastTimeReleased();
+        s64 newColect =  colectSensor->get_lastTimeReleased();
         if(lastColect !=  newColect){           
             lastColect =  newColect;
             cout << "Colect Deteected"<< endl;
             led1->set_rgbColor(RGB_GREEN); 
             led2->set_rgbColor(RGB_GREEN);  
         }
-//        Sleep(300);
+        YAPI::Sleep(300,errmsg);
     }
 
     return 0;

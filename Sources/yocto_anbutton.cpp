@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_anbutton.cpp 12324 2013-08-13 15:10:31Z mvuilleu $
+ * $Id: yocto_anbutton.cpp 14700 2014-01-23 15:40:44Z seb $
  *
  * Implements yFindAnButton(), the high-level API for AnButton functions
  *
@@ -47,27 +47,24 @@
 #include <math.h>
 #include <stdlib.h>
 
-//--- (YAnButton constructor)
-// Constructor is protected, use yFindAnButton factory function to instantiate
-YAnButton::YAnButton(const string& func): YFunction("AnButton", func)
-//--- (end of YAnButton constructor)
+YAnButton::YAnButton(const string& func): YFunction(func)
 //--- (AnButton initialization)
-            ,_callback(NULL)
-            ,_logicalName(Y_LOGICALNAME_INVALID)
-            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
-            ,_calibratedValue(Y_CALIBRATEDVALUE_INVALID)
-            ,_rawValue(Y_RAWVALUE_INVALID)
-            ,_analogCalibration(Y_ANALOGCALIBRATION_INVALID)
-            ,_calibrationMax(Y_CALIBRATIONMAX_INVALID)
-            ,_calibrationMin(Y_CALIBRATIONMIN_INVALID)
-            ,_sensitivity(Y_SENSITIVITY_INVALID)
-            ,_isPressed(Y_ISPRESSED_INVALID)
-            ,_lastTimePressed(Y_LASTTIMEPRESSED_INVALID)
-            ,_lastTimeReleased(Y_LASTTIMERELEASED_INVALID)
-            ,_pulseCounter(Y_PULSECOUNTER_INVALID)
-            ,_pulseTimer(Y_PULSETIMER_INVALID)
+    ,_calibratedValue(CALIBRATEDVALUE_INVALID)
+    ,_rawValue(RAWVALUE_INVALID)
+    ,_analogCalibration(ANALOGCALIBRATION_INVALID)
+    ,_calibrationMax(CALIBRATIONMAX_INVALID)
+    ,_calibrationMin(CALIBRATIONMIN_INVALID)
+    ,_sensitivity(SENSITIVITY_INVALID)
+    ,_isPressed(ISPRESSED_INVALID)
+    ,_lastTimePressed(LASTTIMEPRESSED_INVALID)
+    ,_lastTimeReleased(LASTTIMERELEASED_INVALID)
+    ,_pulseCounter(PULSECOUNTER_INVALID)
+    ,_pulseTimer(PULSETIMER_INVALID)
+    ,_valueCallbackAnButton(NULL)
 //--- (end of AnButton initialization)
-{}
+{
+    _className="AnButton";
+}
 
 YAnButton::~YAnButton() 
 {
@@ -75,115 +72,69 @@ YAnButton::~YAnButton()
 //--- (end of YAnButton cleanup)
 }
 //--- (YAnButton implementation)
+// static attributes
 
-const string YAnButton::LOGICALNAME_INVALID = "!INVALID!";
-const string YAnButton::ADVERTISEDVALUE_INVALID = "!INVALID!";
-
-
-
-int YAnButton::_parse(yJsonStateMachine& j)
+int YAnButton::_parseAttr(yJsonStateMachine& j)
 {
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
+    if(!strcmp(j.token, "calibratedValue")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _calibratedValue =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "rawValue")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _rawValue =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "analogCalibration")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _analogCalibration =  (Y_ANALOGCALIBRATION_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "calibrationMax")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _calibrationMax =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "calibrationMin")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _calibrationMin =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "sensitivity")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _sensitivity =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "isPressed")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _isPressed =  (Y_ISPRESSED_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "lastTimePressed")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _lastTimePressed =  atol(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "lastTimeReleased")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _lastTimeReleased =  atol(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "pulseCounter")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _pulseCounter =  atol(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "pulseTimer")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _pulseTimer =  atol(j.token);
+        return 1;
+    }
     failed:
-        return -1;
-    }
-    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-        if(!strcmp(j.token, "logicalName")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _logicalName =  _parseString(j);
-        } else if(!strcmp(j.token, "advertisedValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _advertisedValue =  _parseString(j);
-        } else if(!strcmp(j.token, "calibratedValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _calibratedValue =  atoi(j.token);
-        } else if(!strcmp(j.token, "rawValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _rawValue =  atoi(j.token);
-        } else if(!strcmp(j.token, "analogCalibration")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _analogCalibration =  (Y_ANALOGCALIBRATION_enum)atoi(j.token);
-        } else if(!strcmp(j.token, "calibrationMax")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _calibrationMax =  atoi(j.token);
-        } else if(!strcmp(j.token, "calibrationMin")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _calibrationMin =  atoi(j.token);
-        } else if(!strcmp(j.token, "sensitivity")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _sensitivity =  atoi(j.token);
-        } else if(!strcmp(j.token, "isPressed")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _isPressed =  (Y_ISPRESSED_enum)atoi(j.token);
-        } else if(!strcmp(j.token, "lastTimePressed")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _lastTimePressed =  atoi(j.token);
-        } else if(!strcmp(j.token, "lastTimeReleased")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _lastTimeReleased =  atoi(j.token);
-        } else if(!strcmp(j.token, "pulseCounter")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _pulseCounter =  atoi(j.token);
-        } else if(!strcmp(j.token, "pulseTimer")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _pulseTimer =  atoi(j.token);
-        } else {
-            // ignore unknown field
-            yJsonSkip(&j, 1);
-        }
-    }
-    if(j.st != YJSON_PARSE_STRUCT) goto failed;
-    return 0;
+    return YFunction::_parseAttr(j);
 }
 
-/**
- * Returns the logical name of the analog input.
- * 
- * @return a string corresponding to the logical name of the analog input
- * 
- * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
- */
-string YAnButton::get_logicalName(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LOGICALNAME_INVALID;
-    }
-    return _logicalName;
-}
-
-/**
- * Changes the logical name of the analog input. You can use yCheckLogicalName()
- * prior to this call to make sure that your parameter is valid.
- * Remember to call the saveToFlash() method of the module if the
- * modification must be kept.
- * 
- * @param newval : a string corresponding to the logical name of the analog input
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YAnButton::set_logicalName(const string& newval)
-{
-    string rest_val;
-    rest_val = newval;
-    return _setAttr("logicalName", rest_val);
-}
-
-/**
- * Returns the current value of the analog input (no more than 6 characters).
- * 
- * @return a string corresponding to the current value of the analog input (no more than 6 characters)
- * 
- * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
- */
-string YAnButton::get_advertisedValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_ADVERTISEDVALUE_INVALID;
-    }
-    return _advertisedValue;
-}
 
 /**
  * Returns the current calibrated input value (between 0 and 1000, included).
@@ -192,10 +143,12 @@ string YAnButton::get_advertisedValue(void)
  * 
  * On failure, throws an exception or returns Y_CALIBRATEDVALUE_INVALID.
  */
-unsigned YAnButton::get_calibratedValue(void)
+int YAnButton::get_calibratedValue(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_CALIBRATEDVALUE_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YAnButton::CALIBRATEDVALUE_INVALID;
+        }
     }
     return _calibratedValue;
 }
@@ -207,10 +160,12 @@ unsigned YAnButton::get_calibratedValue(void)
  * 
  * On failure, throws an exception or returns Y_RAWVALUE_INVALID.
  */
-unsigned YAnButton::get_rawValue(void)
+int YAnButton::get_rawValue(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_RAWVALUE_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YAnButton::RAWVALUE_INVALID;
+        }
     }
     return _rawValue;
 }
@@ -224,8 +179,10 @@ unsigned YAnButton::get_rawValue(void)
  */
 Y_ANALOGCALIBRATION_enum YAnButton::get_analogCalibration(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_ANALOGCALIBRATION_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YAnButton::ANALOGCALIBRATION_INVALID;
+        }
     }
     return _analogCalibration;
 }
@@ -255,10 +212,12 @@ int YAnButton::set_analogCalibration(Y_ANALOGCALIBRATION_enum newval)
  * 
  * On failure, throws an exception or returns Y_CALIBRATIONMAX_INVALID.
  */
-unsigned YAnButton::get_calibrationMax(void)
+int YAnButton::get_calibrationMax(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_CALIBRATIONMAX_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YAnButton::CALIBRATIONMAX_INVALID;
+        }
     }
     return _calibrationMax;
 }
@@ -276,10 +235,10 @@ unsigned YAnButton::get_calibrationMax(void)
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YAnButton::set_calibrationMax(unsigned newval)
+int YAnButton::set_calibrationMax(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
     return _setAttr("calibrationMax", rest_val);
 }
 
@@ -291,10 +250,12 @@ int YAnButton::set_calibrationMax(unsigned newval)
  * 
  * On failure, throws an exception or returns Y_CALIBRATIONMIN_INVALID.
  */
-unsigned YAnButton::get_calibrationMin(void)
+int YAnButton::get_calibrationMin(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_CALIBRATIONMIN_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YAnButton::CALIBRATIONMIN_INVALID;
+        }
     }
     return _calibrationMin;
 }
@@ -312,10 +273,10 @@ unsigned YAnButton::get_calibrationMin(void)
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YAnButton::set_calibrationMin(unsigned newval)
+int YAnButton::set_calibrationMin(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
     return _setAttr("calibrationMin", rest_val);
 }
 
@@ -327,10 +288,12 @@ int YAnButton::set_calibrationMin(unsigned newval)
  * 
  * On failure, throws an exception or returns Y_SENSITIVITY_INVALID.
  */
-unsigned YAnButton::get_sensitivity(void)
+int YAnButton::get_sensitivity(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_SENSITIVITY_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YAnButton::SENSITIVITY_INVALID;
+        }
     }
     return _sensitivity;
 }
@@ -350,10 +313,10 @@ unsigned YAnButton::get_sensitivity(void)
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YAnButton::set_sensitivity(unsigned newval)
+int YAnButton::set_sensitivity(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
     return _setAttr("sensitivity", rest_val);
 }
 
@@ -367,8 +330,10 @@ int YAnButton::set_sensitivity(unsigned newval)
  */
 Y_ISPRESSED_enum YAnButton::get_isPressed(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_ISPRESSED_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YAnButton::ISPRESSED_INVALID;
+        }
     }
     return _isPressed;
 }
@@ -383,10 +348,12 @@ Y_ISPRESSED_enum YAnButton::get_isPressed(void)
  * 
  * On failure, throws an exception or returns Y_LASTTIMEPRESSED_INVALID.
  */
-unsigned YAnButton::get_lastTimePressed(void)
+s64 YAnButton::get_lastTimePressed(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LASTTIMEPRESSED_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YAnButton::LASTTIMEPRESSED_INVALID;
+        }
     }
     return _lastTimePressed;
 }
@@ -401,10 +368,12 @@ unsigned YAnButton::get_lastTimePressed(void)
  * 
  * On failure, throws an exception or returns Y_LASTTIMERELEASED_INVALID.
  */
-unsigned YAnButton::get_lastTimeReleased(void)
+s64 YAnButton::get_lastTimeReleased(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LASTTIMERELEASED_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YAnButton::LASTTIMERELEASED_INVALID;
+        }
     }
     return _lastTimeReleased;
 }
@@ -416,18 +385,20 @@ unsigned YAnButton::get_lastTimeReleased(void)
  * 
  * On failure, throws an exception or returns Y_PULSECOUNTER_INVALID.
  */
-unsigned YAnButton::get_pulseCounter(void)
+s64 YAnButton::get_pulseCounter(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_PULSECOUNTER_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YAnButton::PULSECOUNTER_INVALID;
+        }
     }
     return _pulseCounter;
 }
 
-int YAnButton::set_pulseCounter(unsigned newval)
+int YAnButton::set_pulseCounter(s64 newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
     return _setAttr("pulseCounter", rest_val);
 }
 
@@ -452,12 +423,88 @@ int YAnButton::resetCounter(void)
  * 
  * On failure, throws an exception or returns Y_PULSETIMER_INVALID.
  */
-unsigned YAnButton::get_pulseTimer(void)
+s64 YAnButton::get_pulseTimer(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_PULSETIMER_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YAnButton::PULSETIMER_INVALID;
+        }
     }
     return _pulseTimer;
+}
+
+/**
+ * Retrieves $AFUNCTION$ for a given identifier.
+ * The identifier can be specified using several formats:
+ * <ul>
+ * <li>FunctionLogicalName</li>
+ * <li>ModuleSerialNumber.FunctionIdentifier</li>
+ * <li>ModuleSerialNumber.FunctionLogicalName</li>
+ * <li>ModuleLogicalName.FunctionIdentifier</li>
+ * <li>ModuleLogicalName.FunctionLogicalName</li>
+ * </ul>
+ * 
+ * This function does not require that $THEFUNCTION$ is online at the time
+ * it is invoked. The returned object is nevertheless valid.
+ * Use the method YAnButton.isOnline() to test if $THEFUNCTION$ is
+ * indeed online at a given time. In case of ambiguity when looking for
+ * $AFUNCTION$ by logical name, no error is notified: the first instance
+ * found is returned. The search is performed first by hardware name,
+ * then by logical name.
+ * 
+ * @param func : a string that uniquely characterizes $THEFUNCTION$
+ * 
+ * @return a YAnButton object allowing you to drive $THEFUNCTION$.
+ */
+YAnButton* YAnButton::FindAnButton(string func)
+{
+    YAnButton* obj = NULL;
+    obj = (YAnButton*) YFunction::_FindFromCache("AnButton", func);
+    if (obj == NULL) {
+        obj = new YAnButton(func);
+        YFunction::_AddToCache("AnButton", func, obj);
+    }
+    return obj;
+}
+
+/**
+ * Registers the callback function that is invoked on every change of advertised value.
+ * The callback is invoked only during the execution of ySleep or yHandleEvents.
+ * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+ * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * 
+ * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ *         arguments: the function object of which the value has changed, and the character string describing
+ *         the new advertised value.
+ * @noreturn
+ */
+int YAnButton::registerValueCallback(YAnButtonValueCallback callback)
+{
+    string val;
+    if (callback != NULL) {
+        YFunction::_UpdateValueCallbackList(this, true);
+    } else {
+        YFunction::_UpdateValueCallbackList(this, false);
+    }
+    _valueCallbackAnButton = callback;
+    // Immediately invoke value callback with current value
+    if (callback != NULL && this->isOnline()) {
+        val = _advertisedValue;
+        if (!(val == "")) {
+            this->_invokeValueCallback(val);
+        }
+    }
+    return 0;
+}
+
+int YAnButton::_invokeValueCallback(string value)
+{
+    if (_valueCallbackAnButton != NULL) {
+        _valueCallbackAnButton(this, value);
+    } else {
+        YFunction::_invokeValueCallback(value);
+    }
+    return 0;
 }
 
 YAnButton *YAnButton::nextAnButton(void)
@@ -467,38 +514,7 @@ YAnButton *YAnButton::nextAnButton(void)
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
-    return yFindAnButton(hwid);
-}
-
-void YAnButton::registerValueCallback(YAnButtonUpdateCallback callback)
-{
-    if (callback != NULL) {
-        _registerFuncCallback(this);
-        yapiLockFunctionCallBack(NULL);
-        YAPI::_yapiFunctionUpdateCallbackFwd(this->functionDescriptor(), this->get_advertisedValue().c_str());
-        yapiUnlockFunctionCallBack(NULL);
-    } else {
-        _unregisterFuncCallback(this);
-    }
-    _callback = callback;
-}
-
-void YAnButton::advertiseValue(const string& value)
-{
-    if (_callback != NULL) {
-        _callback(this, value);
-    }
-}
-
-
-YAnButton* YAnButton::FindAnButton(const string& func)
-{
-    if(YAPI::_YFunctionsCaches["YAnButton"].find(func) != YAPI::_YFunctionsCaches["YAnButton"].end())
-        return (YAnButton*) YAPI::_YFunctionsCaches["YAnButton"][func];
-    
-    YAnButton *newAnButton = new YAnButton(func);
-    YAPI::_YFunctionsCaches["YAnButton"][func] = newAnButton ;
-    return newAnButton;
+    return YAnButton::FindAnButton(hwid);
 }
 
 YAnButton* YAnButton::FirstAnButton(void)

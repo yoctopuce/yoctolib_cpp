@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yjson.c 12321 2013-08-13 14:56:24Z mvuilleu $
+ * $Id: yjson.c 13562 2013-11-14 09:55:44Z mvuilleu $
  *
  * Simple JSON parser (actually a slightly enhanced lexer)
  *
@@ -295,6 +295,9 @@ skip:
                 st = YJSON_PARSE_ERROR;
                 // fall through
             case YJSON_PARSE_ERROR:      // dead end, parse error encountered
+                res = YJSON_FAILED;
+                goto done;
+            case YJSON_PARSE_SPECIAL:    // should never happen
                 res = YJSON_FAILED;
                 goto done;
         }

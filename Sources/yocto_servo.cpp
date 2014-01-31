@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_servo.cpp 12324 2013-08-13 15:10:31Z mvuilleu $
+ * $Id: yocto_servo.cpp 14700 2014-01-23 15:40:44Z seb $
  *
  * Implements yFindServo(), the high-level API for Servo functions
  *
@@ -47,20 +47,17 @@
 #include <math.h>
 #include <stdlib.h>
 
-//--- (YServo constructor)
-// Constructor is protected, use yFindServo factory function to instantiate
-YServo::YServo(const string& func): YFunction("Servo", func)
-//--- (end of YServo constructor)
+YServo::YServo(const string& func): YFunction(func)
 //--- (Servo initialization)
-            ,_callback(NULL)
-            ,_logicalName(Y_LOGICALNAME_INVALID)
-            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
-            ,_position(Y_POSITION_INVALID)
-            ,_range(Y_RANGE_INVALID)
-            ,_neutral(Y_NEUTRAL_INVALID)
-            ,_move()
+    ,_position(POSITION_INVALID)
+    ,_range(RANGE_INVALID)
+    ,_neutral(NEUTRAL_INVALID)
+    ,_move(MOVE_INVALID)
+    ,_valueCallbackServo(NULL)
 //--- (end of Servo initialization)
-{}
+{
+    _className="Servo";
+}
 
 YServo::~YServo() 
 {
@@ -68,109 +65,48 @@ YServo::~YServo()
 //--- (end of YServo cleanup)
 }
 //--- (YServo implementation)
-YMove YSERVO_INVALID_MOVE;
+// static attributes
+const YMove YServo::MOVE_INVALID = YMove();
 
-const string YServo::LOGICALNAME_INVALID = "!INVALID!";
-const string YServo::ADVERTISEDVALUE_INVALID = "!INVALID!";
-
-
-
-int YServo::_parse(yJsonStateMachine& j)
+int YServo::_parseAttr(yJsonStateMachine& j)
 {
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
-    failed:
-        return -1;
+    if(!strcmp(j.token, "position")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _position =  atoi(j.token);
+        return 1;
     }
-    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-        if(!strcmp(j.token, "logicalName")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _logicalName =  _parseString(j);
-        } else if(!strcmp(j.token, "advertisedValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _advertisedValue =  _parseString(j);
-        } else if(!strcmp(j.token, "position")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _position =  atoi(j.token);
-        } else if(!strcmp(j.token, "range")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _range =  atoi(j.token);
-        } else if(!strcmp(j.token, "neutral")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _neutral =  atoi(j.token);
-        } else if(!strcmp(j.token, "move")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            if(j.st != YJSON_PARSE_STRUCT) goto failed;
-            while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-                if(!strcmp(j.token, "moving")) {
-                    if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                    _move.moving = atoi(j.token);
-                } else if(!strcmp(j.token, "target")) {
-                    if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                    _move.target = atoi(j.token);
-                } else if(!strcmp(j.token, "ms")) {
-                    if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                    _move.ms = atoi(j.token);
-                }
+    if(!strcmp(j.token, "range")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _range =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "neutral")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _neutral =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "move")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        if(j.st != YJSON_PARSE_STRUCT) goto failed;
+        while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
+            if(!strcmp(j.token, "moving")) {
+                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+                _move.moving = atoi(j.token);
+            } else if(!strcmp(j.token, "target")) {
+                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+                _move.target = atoi(j.token);
+            } else if(!strcmp(j.token, "ms")) {
+                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+                _move.ms = atoi(j.token);
             }
-            if(j.st != YJSON_PARSE_STRUCT) goto failed; 
-            
-        } else {
-            // ignore unknown field
-            yJsonSkip(&j, 1);
         }
+        if(j.st != YJSON_PARSE_STRUCT) goto failed;
+        return 1;
     }
-    if(j.st != YJSON_PARSE_STRUCT) goto failed;
-    return 0;
+    failed:
+    return YFunction::_parseAttr(j);
 }
 
-/**
- * Returns the logical name of the servo.
- * 
- * @return a string corresponding to the logical name of the servo
- * 
- * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
- */
-string YServo::get_logicalName(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LOGICALNAME_INVALID;
-    }
-    return _logicalName;
-}
-
-/**
- * Changes the logical name of the servo. You can use yCheckLogicalName()
- * prior to this call to make sure that your parameter is valid.
- * Remember to call the saveToFlash() method of the module if the
- * modification must be kept.
- * 
- * @param newval : a string corresponding to the logical name of the servo
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YServo::set_logicalName(const string& newval)
-{
-    string rest_val;
-    rest_val = newval;
-    return _setAttr("logicalName", rest_val);
-}
-
-/**
- * Returns the current value of the servo (no more than 6 characters).
- * 
- * @return a string corresponding to the current value of the servo (no more than 6 characters)
- * 
- * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
- */
-string YServo::get_advertisedValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_ADVERTISEDVALUE_INVALID;
-    }
-    return _advertisedValue;
-}
 
 /**
  * Returns the current servo position.
@@ -181,8 +117,10 @@ string YServo::get_advertisedValue(void)
  */
 int YServo::get_position(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_POSITION_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YServo::POSITION_INVALID;
+        }
     }
     return _position;
 }
@@ -212,8 +150,10 @@ int YServo::set_position(int newval)
  */
 int YServo::get_range(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_RANGE_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YServo::RANGE_INVALID;
+        }
     }
     return _range;
 }
@@ -235,7 +175,7 @@ int YServo::get_range(void)
 int YServo::set_range(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
     return _setAttr("range", rest_val);
 }
 
@@ -248,8 +188,10 @@ int YServo::set_range(int newval)
  */
 int YServo::get_neutral(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_NEUTRAL_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YServo::NEUTRAL_INVALID;
+        }
     }
     return _neutral;
 }
@@ -271,22 +213,24 @@ int YServo::get_neutral(void)
 int YServo::set_neutral(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
     return _setAttr("neutral", rest_val);
 }
 
-const YMove * YServo::get_move(void)
+YMove YServo::get_move(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_MOVE_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YServo::MOVE_INVALID;
+        }
     }
-    return &_move;
+    return _move;
 }
 
-int YServo::set_move(const YMove * newval)
+int YServo::set_move(YMove newval)
 {
     string rest_val;
-    char buff[64]; sprintf(buff,"%d:%d",newval->target,newval->ms); rest_val = string(buff);
+    char buff[64]; sprintf(buff,"%d:%d",newval.target,newval.ms); rest_val = string(buff);
     return _setAttr("move", rest_val);
 }
 
@@ -307,6 +251,80 @@ int YServo::move(int target,int ms_duration)
     return _setAttr("move", rest_val);
 }
 
+/**
+ * Retrieves $AFUNCTION$ for a given identifier.
+ * The identifier can be specified using several formats:
+ * <ul>
+ * <li>FunctionLogicalName</li>
+ * <li>ModuleSerialNumber.FunctionIdentifier</li>
+ * <li>ModuleSerialNumber.FunctionLogicalName</li>
+ * <li>ModuleLogicalName.FunctionIdentifier</li>
+ * <li>ModuleLogicalName.FunctionLogicalName</li>
+ * </ul>
+ * 
+ * This function does not require that $THEFUNCTION$ is online at the time
+ * it is invoked. The returned object is nevertheless valid.
+ * Use the method YServo.isOnline() to test if $THEFUNCTION$ is
+ * indeed online at a given time. In case of ambiguity when looking for
+ * $AFUNCTION$ by logical name, no error is notified: the first instance
+ * found is returned. The search is performed first by hardware name,
+ * then by logical name.
+ * 
+ * @param func : a string that uniquely characterizes $THEFUNCTION$
+ * 
+ * @return a YServo object allowing you to drive $THEFUNCTION$.
+ */
+YServo* YServo::FindServo(string func)
+{
+    YServo* obj = NULL;
+    obj = (YServo*) YFunction::_FindFromCache("Servo", func);
+    if (obj == NULL) {
+        obj = new YServo(func);
+        YFunction::_AddToCache("Servo", func, obj);
+    }
+    return obj;
+}
+
+/**
+ * Registers the callback function that is invoked on every change of advertised value.
+ * The callback is invoked only during the execution of ySleep or yHandleEvents.
+ * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+ * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * 
+ * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ *         arguments: the function object of which the value has changed, and the character string describing
+ *         the new advertised value.
+ * @noreturn
+ */
+int YServo::registerValueCallback(YServoValueCallback callback)
+{
+    string val;
+    if (callback != NULL) {
+        YFunction::_UpdateValueCallbackList(this, true);
+    } else {
+        YFunction::_UpdateValueCallbackList(this, false);
+    }
+    _valueCallbackServo = callback;
+    // Immediately invoke value callback with current value
+    if (callback != NULL && this->isOnline()) {
+        val = _advertisedValue;
+        if (!(val == "")) {
+            this->_invokeValueCallback(val);
+        }
+    }
+    return 0;
+}
+
+int YServo::_invokeValueCallback(string value)
+{
+    if (_valueCallbackServo != NULL) {
+        _valueCallbackServo(this, value);
+    } else {
+        YFunction::_invokeValueCallback(value);
+    }
+    return 0;
+}
+
 YServo *YServo::nextServo(void)
 {
     string  hwid;
@@ -314,38 +332,7 @@ YServo *YServo::nextServo(void)
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
-    return yFindServo(hwid);
-}
-
-void YServo::registerValueCallback(YServoUpdateCallback callback)
-{
-    if (callback != NULL) {
-        _registerFuncCallback(this);
-        yapiLockFunctionCallBack(NULL);
-        YAPI::_yapiFunctionUpdateCallbackFwd(this->functionDescriptor(), this->get_advertisedValue().c_str());
-        yapiUnlockFunctionCallBack(NULL);
-    } else {
-        _unregisterFuncCallback(this);
-    }
-    _callback = callback;
-}
-
-void YServo::advertiseValue(const string& value)
-{
-    if (_callback != NULL) {
-        _callback(this, value);
-    }
-}
-
-
-YServo* YServo::FindServo(const string& func)
-{
-    if(YAPI::_YFunctionsCaches["YServo"].find(func) != YAPI::_YFunctionsCaches["YServo"].end())
-        return (YServo*) YAPI::_YFunctionsCaches["YServo"][func];
-    
-    YServo *newServo = new YServo(func);
-    YAPI::_YFunctionsCaches["YServo"][func] = newServo ;
-    return newServo;
+    return YServo::FindServo(hwid);
 }
 
 YServo* YServo::FirstServo(void)

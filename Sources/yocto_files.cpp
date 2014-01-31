@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.cpp 12326 2013-08-13 15:52:20Z mvuilleu $
+ * $Id: yocto_files.cpp 14700 2014-01-23 15:40:44Z seb $
  *
  * Implements yFindFiles(), the high-level API for Files functions
  *
@@ -84,38 +84,22 @@ YFileRecord::YFileRecord(const string& json)
 }
 
 //--- (generated code: YFileRecord implementation)
+// static attributes
 
 
-
-
-string YFileRecord::get_name()
+string YFileRecord::get_name(void)
 {
-    return this->_name;
+    return _name;
 }
 
-int YFileRecord::get_size()
+int YFileRecord::get_size(void)
 {
-    return this->_size;
+    return _size;
 }
 
-int YFileRecord::get_crc()
+int YFileRecord::get_crc(void)
 {
-    return this->_crc;
-}
-
-string YFileRecord::name()
-{
-    return this->_name;
-}
-
-int YFileRecord::size()
-{
-    return this->_size;
-}
-
-int YFileRecord::crc()
-{
-    return this->_crc;
+    return _crc;
 }
 //--- (end of generated code: YFileRecord implementation)
 
@@ -123,18 +107,15 @@ int YFileRecord::crc()
 
 
 
-//--- (generated code: YFiles constructor)
-// Constructor is protected, use yFindFiles factory function to instantiate
-YFiles::YFiles(const string& func): YFunction("Files", func)
-//--- (end of generated code: YFiles constructor)
+YFiles::YFiles(const string& func): YFunction(func)
     //--- (generated code: Files initialization)
-            ,_callback(NULL)
-            ,_logicalName(Y_LOGICALNAME_INVALID)
-            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
-            ,_filesCount(Y_FILESCOUNT_INVALID)
-            ,_freeSpace(Y_FREESPACE_INVALID)
+    ,_filesCount(FILESCOUNT_INVALID)
+    ,_freeSpace(FREESPACE_INVALID)
+    ,_valueCallbackFiles(NULL)
 //--- (end of generated code: Files initialization)
-{}
+{
+    _className = "Files";
+}
 
 YFiles::~YFiles()
 {
@@ -143,88 +124,24 @@ YFiles::~YFiles()
 }
 
 //--- (generated code: YFiles implementation)
+// static attributes
 
-const string YFiles::LOGICALNAME_INVALID = "!INVALID!";
-const string YFiles::ADVERTISEDVALUE_INVALID = "!INVALID!";
-
-
-
-int YFiles::_parse(yJsonStateMachine& j)
+int YFiles::_parseAttr(yJsonStateMachine& j)
 {
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
+    if(!strcmp(j.token, "filesCount")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _filesCount =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "freeSpace")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _freeSpace =  atoi(j.token);
+        return 1;
+    }
     failed:
-        return -1;
-    }
-    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-        if(!strcmp(j.token, "logicalName")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _logicalName =  _parseString(j);
-        } else if(!strcmp(j.token, "advertisedValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _advertisedValue =  _parseString(j);
-        } else if(!strcmp(j.token, "filesCount")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _filesCount =  atoi(j.token);
-        } else if(!strcmp(j.token, "freeSpace")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _freeSpace =  atoi(j.token);
-        } else {
-            // ignore unknown field
-            yJsonSkip(&j, 1);
-        }
-    }
-    if(j.st != YJSON_PARSE_STRUCT) goto failed;
-    return 0;
+    return YFunction::_parseAttr(j);
 }
 
-/**
- * Returns the logical name of the filesystem.
- * 
- * @return a string corresponding to the logical name of the filesystem
- * 
- * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
- */
-string YFiles::get_logicalName(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LOGICALNAME_INVALID;
-    }
-    return _logicalName;
-}
-
-/**
- * Changes the logical name of the filesystem. You can use yCheckLogicalName()
- * prior to this call to make sure that your parameter is valid.
- * Remember to call the saveToFlash() method of the module if the
- * modification must be kept.
- * 
- * @param newval : a string corresponding to the logical name of the filesystem
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YFiles::set_logicalName(const string& newval)
-{
-    string rest_val;
-    rest_val = newval;
-    return _setAttr("logicalName", rest_val);
-}
-
-/**
- * Returns the current value of the filesystem (no more than 6 characters).
- * 
- * @return a string corresponding to the current value of the filesystem (no more than 6 characters)
- * 
- * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
- */
-string YFiles::get_advertisedValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_ADVERTISEDVALUE_INVALID;
-    }
-    return _advertisedValue;
-}
 
 /**
  * Returns the number of files currently loaded in the filesystem.
@@ -233,10 +150,12 @@ string YFiles::get_advertisedValue(void)
  * 
  * On failure, throws an exception or returns Y_FILESCOUNT_INVALID.
  */
-unsigned YFiles::get_filesCount(void)
+int YFiles::get_filesCount(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_FILESCOUNT_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YFiles::FILESCOUNT_INVALID;
+        }
     }
     return _filesCount;
 }
@@ -248,20 +167,96 @@ unsigned YFiles::get_filesCount(void)
  * 
  * On failure, throws an exception or returns Y_FREESPACE_INVALID.
  */
-unsigned YFiles::get_freeSpace(void)
+int YFiles::get_freeSpace(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_FREESPACE_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YFiles::FREESPACE_INVALID;
+        }
     }
     return _freeSpace;
+}
+
+/**
+ * Retrieves a filesystem for a given identifier.
+ * The identifier can be specified using several formats:
+ * <ul>
+ * <li>FunctionLogicalName</li>
+ * <li>ModuleSerialNumber.FunctionIdentifier</li>
+ * <li>ModuleSerialNumber.FunctionLogicalName</li>
+ * <li>ModuleLogicalName.FunctionIdentifier</li>
+ * <li>ModuleLogicalName.FunctionLogicalName</li>
+ * </ul>
+ * 
+ * This function does not require that the filesystem is online at the time
+ * it is invoked. The returned object is nevertheless valid.
+ * Use the method YFiles.isOnline() to test if the filesystem is
+ * indeed online at a given time. In case of ambiguity when looking for
+ * a filesystem by logical name, no error is notified: the first instance
+ * found is returned. The search is performed first by hardware name,
+ * then by logical name.
+ * 
+ * @param func : a string that uniquely characterizes the filesystem
+ * 
+ * @return a YFiles object allowing you to drive the filesystem.
+ */
+YFiles* YFiles::FindFiles(string func)
+{
+    YFiles* obj = NULL;
+    obj = (YFiles*) YFunction::_FindFromCache("Files", func);
+    if (obj == NULL) {
+        obj = new YFiles(func);
+        YFunction::_AddToCache("Files", func, obj);
+    }
+    return obj;
+}
+
+/**
+ * Registers the callback function that is invoked on every change of advertised value.
+ * The callback is invoked only during the execution of ySleep or yHandleEvents.
+ * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+ * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * 
+ * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ *         arguments: the function object of which the value has changed, and the character string describing
+ *         the new advertised value.
+ * @noreturn
+ */
+int YFiles::registerValueCallback(YFilesValueCallback callback)
+{
+    string val;
+    if (callback != NULL) {
+        YFunction::_UpdateValueCallbackList(this, true);
+    } else {
+        YFunction::_UpdateValueCallbackList(this, false);
+    }
+    _valueCallbackFiles = callback;
+    // Immediately invoke value callback with current value
+    if (callback != NULL && this->isOnline()) {
+        val = _advertisedValue;
+        if (!(val == "")) {
+            this->_invokeValueCallback(val);
+        }
+    }
+    return 0;
+}
+
+int YFiles::_invokeValueCallback(string value)
+{
+    if (_valueCallbackFiles != NULL) {
+        _valueCallbackFiles(this, value);
+    } else {
+        YFunction::_invokeValueCallback(value);
+    }
+    return 0;
 }
 
 string YFiles::sendCommand(string command)
 {
     string url;
-    url =  YapiWrapper::ysprintf("files.json?a=%s",command.c_str());
+    url = YapiWrapper::ysprintf("files.json?a=%s",command.c_str());
+    // may throw an exception
     return this->_download(url);
-    
 }
 
 /**
@@ -272,15 +267,17 @@ string YFiles::sendCommand(string command)
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YFiles::format_fs()
+int YFiles::format_fs(void)
 {
     string json;
     string res;
-    json = this->sendCommand("format"); 
-    res  = this->_json_get_key(json, "res");
-    if (!(res == "ok")) {this->_throw( YAPI_IO_ERROR, "format failed"); return  YAPI_IO_ERROR;};
+    json = this->sendCommand("format");
+    res = this->_json_get_key(json, "res");
+    if (!(res == "ok")) {
+        _throw( YAPI_IO_ERROR, "format failed");
+        return YAPI_IO_ERROR;
+    }
     return YAPI_SUCCESS;
-    
 }
 
 /**
@@ -296,22 +293,24 @@ int YFiles::format_fs()
  * 
  * On failure, throws an exception or returns an empty list.
  */
-vector<YFileRecord*> YFiles::get_list(string pattern)
+vector<YFileRecord> YFiles::get_list(string pattern)
 {
     string json;
-    vector<string> list;
-    vector<YFileRecord*> res;
+    vector<string> filelist;
+    vector<YFileRecord> res;
     json = this->sendCommand(YapiWrapper::ysprintf("dir&f=%s",pattern.c_str()));
-    list = this->_json_get_array(json);
-    for (unsigned i_i=0 ; i_i <list.size() ; i_i++) { res.push_back(new YFileRecord(list[i_i]));};
+    filelist = this->_json_get_array(json);
+    res.clear();
+    for (unsigned ii = 0; ii < filelist.size(); ii++) {
+        res.push_back(YFileRecord(filelist[ii]));
+    }
     return res;
-    
 }
 
 /**
  * Downloads the requested file and returns a binary buffer with its content.
  * 
- * @param pathname : path and name of the new file to load
+ * @param pathname : path and name of the file to download
  * 
  * @return a binary buffer with the file content
  * 
@@ -320,7 +319,6 @@ vector<YFileRecord*> YFiles::get_list(string pattern)
 string YFiles::download(string pathname)
 {
     return this->_download(pathname);
-    
 }
 
 /**
@@ -336,8 +334,7 @@ string YFiles::download(string pathname)
  */
 int YFiles::upload(string pathname,string content)
 {
-    return this->_upload(pathname,content);
-    
+    return this->_upload(pathname, content);
 }
 
 /**
@@ -358,11 +355,13 @@ int YFiles::remove(string pathname)
 {
     string json;
     string res;
-    json = this->sendCommand(YapiWrapper::ysprintf("del&f=%s",pathname.c_str())); 
+    json = this->sendCommand(YapiWrapper::ysprintf("del&f=%s",pathname.c_str()));
     res  = this->_json_get_key(json, "res");
-    if (!(res == "ok")) {this->_throw( YAPI_IO_ERROR, "unable to remove file"); return  YAPI_IO_ERROR;};
+    if (!(res == "ok")) {
+        _throw( YAPI_IO_ERROR, "unable to remove file");
+        return YAPI_IO_ERROR;
+    }
     return YAPI_SUCCESS;
-    
 }
 
 YFiles *YFiles::nextFiles(void)
@@ -372,38 +371,7 @@ YFiles *YFiles::nextFiles(void)
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
-    return yFindFiles(hwid);
-}
-
-void YFiles::registerValueCallback(YFilesUpdateCallback callback)
-{
-    if (callback != NULL) {
-        _registerFuncCallback(this);
-        yapiLockFunctionCallBack(NULL);
-        YAPI::_yapiFunctionUpdateCallbackFwd(this->functionDescriptor(), this->get_advertisedValue().c_str());
-        yapiUnlockFunctionCallBack(NULL);
-    } else {
-        _unregisterFuncCallback(this);
-    }
-    _callback = callback;
-}
-
-void YFiles::advertiseValue(const string& value)
-{
-    if (_callback != NULL) {
-        _callback(this, value);
-    }
-}
-
-
-YFiles* YFiles::FindFiles(const string& func)
-{
-    if(YAPI::_YFunctionsCaches["YFiles"].find(func) != YAPI::_YFunctionsCaches["YFiles"].end())
-        return (YFiles*) YAPI::_YFunctionsCaches["YFiles"][func];
-    
-    YFiles *newFiles = new YFiles(func);
-    YAPI::_YFunctionsCaches["YFiles"][func] = newFiles ;
-    return newFiles;
+    return YFiles::FindFiles(hwid);
 }
 
 YFiles* YFiles::FirstFiles(void)

@@ -3,8 +3,6 @@
 #include <QDebug>
 #include "yocto_api.h"
 
-
-
 void yocto_debug_log_callback(const string& message)
 {
     qDebug(message.c_str());

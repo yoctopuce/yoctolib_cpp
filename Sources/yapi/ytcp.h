@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.h 12461 2013-08-22 08:58:05Z seb $
+ * $Id: ytcp.h 14711 2014-01-24 14:56:44Z seb $
  *
  *  Declaration of a client TCP stack
  *
@@ -116,26 +116,40 @@ void yTcpCloseReq(struct _TcpReqSt *tcpreq);
 void yTcpFreeReq(struct _TcpReqSt *tcpreq);
 void yTcpShutdown(void);
 
-//#define Y_UPNP_DETECT
-#ifdef Y_UPNP_DETECT
 #include "ythread.h"
 
-#define UPNP_PORT  1900
-#define UPNP_MCAST_ADDR "239.255.255.250"
-#define SSDP_URN_YOCTOPUCE "urn:yoctopuce-com:device:hub:1"
+#define SSDP_UUID_LEN   48
+#define SSDP_URL_LEN    48
 
+typedef struct 
+{   
+    char        serial[YOCTO_SERIAL_LEN];
+    char        uuid[SSDP_UUID_LEN];
+    char        url[SSDP_URL_LEN];
+    u64         detectedTime;
+    u64         maxAge;
+} SSDP_CACHE_ENTRY;
+
+
+// prototype of the ssdp hub discovery callback
+// will be called on discover, refresh, and expiration
+typedef void (*ssdpHubDiscoveryCallback)(const char *serial, const char *urlToRegister, const char *urlToUnregister);
+
+#define NB_SSDP_CACHE_ENTRY 32
 
 typedef struct {
+	int started;
+	ssdpHubDiscoveryCallback callback;
     YSOCKET request_sock;
     YSOCKET notify_sock;
     yThread thread;
-} UPNPSocket;
+	SSDP_CACHE_ENTRY*   SSDPCache[NB_SSDP_CACHE_ENTRY];
+} SSDPInfos;
 
-int		yUPNPStart(UPNPSocket *upnp, char *errmsg);
-int		yUPNPDiscover(UPNPSocket *upnp, char *errmsg);
-void	yUPNPStop(UPNPSocket *upnp);
+int 	ySSDPStart(SSDPInfos *SSDP, ssdpHubDiscoveryCallback callback, char *errmsg);
+int		ySSDPDiscover(SSDPInfos *SSDP, char *errmsg);
+void	ySSDPStop(SSDPInfos *SSDP);
 
-#endif
 #ifdef  __cplusplus
 }
 #endif

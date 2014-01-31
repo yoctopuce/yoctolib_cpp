@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_led.cpp 12324 2013-08-13 15:10:31Z mvuilleu $
+ * $Id: yocto_led.cpp 14700 2014-01-23 15:40:44Z seb $
  *
  * Implements yFindLed(), the high-level API for Led functions
  *
@@ -47,19 +47,16 @@
 #include <math.h>
 #include <stdlib.h>
 
-//--- (YLed constructor)
-// Constructor is protected, use yFindLed factory function to instantiate
-YLed::YLed(const string& func): YFunction("Led", func)
-//--- (end of YLed constructor)
+YLed::YLed(const string& func): YFunction(func)
 //--- (Led initialization)
-            ,_callback(NULL)
-            ,_logicalName(Y_LOGICALNAME_INVALID)
-            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
-            ,_power(Y_POWER_INVALID)
-            ,_luminosity(Y_LUMINOSITY_INVALID)
-            ,_blinking(Y_BLINKING_INVALID)
+    ,_power(POWER_INVALID)
+    ,_luminosity(LUMINOSITY_INVALID)
+    ,_blinking(BLINKING_INVALID)
+    ,_valueCallbackLed(NULL)
 //--- (end of Led initialization)
-{}
+{
+    _className="Led";
+}
 
 YLed::~YLed() 
 {
@@ -67,91 +64,29 @@ YLed::~YLed()
 //--- (end of YLed cleanup)
 }
 //--- (YLed implementation)
+// static attributes
 
-const string YLed::LOGICALNAME_INVALID = "!INVALID!";
-const string YLed::ADVERTISEDVALUE_INVALID = "!INVALID!";
-
-
-
-int YLed::_parse(yJsonStateMachine& j)
+int YLed::_parseAttr(yJsonStateMachine& j)
 {
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
+    if(!strcmp(j.token, "power")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _power =  (Y_POWER_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "luminosity")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _luminosity =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "blinking")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _blinking =  (Y_BLINKING_enum)atoi(j.token);
+        return 1;
+    }
     failed:
-        return -1;
-    }
-    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-        if(!strcmp(j.token, "logicalName")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _logicalName =  _parseString(j);
-        } else if(!strcmp(j.token, "advertisedValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _advertisedValue =  _parseString(j);
-        } else if(!strcmp(j.token, "power")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _power =  (Y_POWER_enum)atoi(j.token);
-        } else if(!strcmp(j.token, "luminosity")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _luminosity =  atoi(j.token);
-        } else if(!strcmp(j.token, "blinking")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _blinking =  (Y_BLINKING_enum)atoi(j.token);
-        } else {
-            // ignore unknown field
-            yJsonSkip(&j, 1);
-        }
-    }
-    if(j.st != YJSON_PARSE_STRUCT) goto failed;
-    return 0;
+    return YFunction::_parseAttr(j);
 }
 
-/**
- * Returns the logical name of the led.
- * 
- * @return a string corresponding to the logical name of the led
- * 
- * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
- */
-string YLed::get_logicalName(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LOGICALNAME_INVALID;
-    }
-    return _logicalName;
-}
-
-/**
- * Changes the logical name of the led. You can use yCheckLogicalName()
- * prior to this call to make sure that your parameter is valid.
- * Remember to call the saveToFlash() method of the module if the
- * modification must be kept.
- * 
- * @param newval : a string corresponding to the logical name of the led
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YLed::set_logicalName(const string& newval)
-{
-    string rest_val;
-    rest_val = newval;
-    return _setAttr("logicalName", rest_val);
-}
-
-/**
- * Returns the current value of the led (no more than 6 characters).
- * 
- * @return a string corresponding to the current value of the led (no more than 6 characters)
- * 
- * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
- */
-string YLed::get_advertisedValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_ADVERTISEDVALUE_INVALID;
-    }
-    return _advertisedValue;
-}
 
 /**
  * Returns the current led state.
@@ -162,8 +97,10 @@ string YLed::get_advertisedValue(void)
  */
 Y_POWER_enum YLed::get_power(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_POWER_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YLed::POWER_INVALID;
+        }
     }
     return _power;
 }
@@ -193,8 +130,10 @@ int YLed::set_power(Y_POWER_enum newval)
  */
 int YLed::get_luminosity(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LUMINOSITY_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YLed::LUMINOSITY_INVALID;
+        }
     }
     return _luminosity;
 }
@@ -211,7 +150,7 @@ int YLed::get_luminosity(void)
 int YLed::set_luminosity(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
     return _setAttr("luminosity", rest_val);
 }
 
@@ -225,8 +164,10 @@ int YLed::set_luminosity(int newval)
  */
 Y_BLINKING_enum YLed::get_blinking(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_BLINKING_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YLed::BLINKING_INVALID;
+        }
     }
     return _blinking;
 }
@@ -244,8 +185,82 @@ Y_BLINKING_enum YLed::get_blinking(void)
 int YLed::set_blinking(Y_BLINKING_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
     return _setAttr("blinking", rest_val);
+}
+
+/**
+ * Retrieves $AFUNCTION$ for a given identifier.
+ * The identifier can be specified using several formats:
+ * <ul>
+ * <li>FunctionLogicalName</li>
+ * <li>ModuleSerialNumber.FunctionIdentifier</li>
+ * <li>ModuleSerialNumber.FunctionLogicalName</li>
+ * <li>ModuleLogicalName.FunctionIdentifier</li>
+ * <li>ModuleLogicalName.FunctionLogicalName</li>
+ * </ul>
+ * 
+ * This function does not require that $THEFUNCTION$ is online at the time
+ * it is invoked. The returned object is nevertheless valid.
+ * Use the method YLed.isOnline() to test if $THEFUNCTION$ is
+ * indeed online at a given time. In case of ambiguity when looking for
+ * $AFUNCTION$ by logical name, no error is notified: the first instance
+ * found is returned. The search is performed first by hardware name,
+ * then by logical name.
+ * 
+ * @param func : a string that uniquely characterizes $THEFUNCTION$
+ * 
+ * @return a YLed object allowing you to drive $THEFUNCTION$.
+ */
+YLed* YLed::FindLed(string func)
+{
+    YLed* obj = NULL;
+    obj = (YLed*) YFunction::_FindFromCache("Led", func);
+    if (obj == NULL) {
+        obj = new YLed(func);
+        YFunction::_AddToCache("Led", func, obj);
+    }
+    return obj;
+}
+
+/**
+ * Registers the callback function that is invoked on every change of advertised value.
+ * The callback is invoked only during the execution of ySleep or yHandleEvents.
+ * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+ * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * 
+ * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ *         arguments: the function object of which the value has changed, and the character string describing
+ *         the new advertised value.
+ * @noreturn
+ */
+int YLed::registerValueCallback(YLedValueCallback callback)
+{
+    string val;
+    if (callback != NULL) {
+        YFunction::_UpdateValueCallbackList(this, true);
+    } else {
+        YFunction::_UpdateValueCallbackList(this, false);
+    }
+    _valueCallbackLed = callback;
+    // Immediately invoke value callback with current value
+    if (callback != NULL && this->isOnline()) {
+        val = _advertisedValue;
+        if (!(val == "")) {
+            this->_invokeValueCallback(val);
+        }
+    }
+    return 0;
+}
+
+int YLed::_invokeValueCallback(string value)
+{
+    if (_valueCallbackLed != NULL) {
+        _valueCallbackLed(this, value);
+    } else {
+        YFunction::_invokeValueCallback(value);
+    }
+    return 0;
 }
 
 YLed *YLed::nextLed(void)
@@ -255,38 +270,7 @@ YLed *YLed::nextLed(void)
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
-    return yFindLed(hwid);
-}
-
-void YLed::registerValueCallback(YLedUpdateCallback callback)
-{
-    if (callback != NULL) {
-        _registerFuncCallback(this);
-        yapiLockFunctionCallBack(NULL);
-        YAPI::_yapiFunctionUpdateCallbackFwd(this->functionDescriptor(), this->get_advertisedValue().c_str());
-        yapiUnlockFunctionCallBack(NULL);
-    } else {
-        _unregisterFuncCallback(this);
-    }
-    _callback = callback;
-}
-
-void YLed::advertiseValue(const string& value)
-{
-    if (_callback != NULL) {
-        _callback(this, value);
-    }
-}
-
-
-YLed* YLed::FindLed(const string& func)
-{
-    if(YAPI::_YFunctionsCaches["YLed"].find(func) != YAPI::_YFunctionsCaches["YLed"].end())
-        return (YLed*) YAPI::_YFunctionsCaches["YLed"][func];
-    
-    YLed *newLed = new YLed(func);
-    YAPI::_YFunctionsCaches["YLed"][func] = newLed ;
-    return newLed;
+    return YLed::FindLed(hwid);
 }
 
 YLed* YLed::FirstLed(void)

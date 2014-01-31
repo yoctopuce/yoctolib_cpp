@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_genericsensor.cpp 12324 2013-08-13 15:10:31Z mvuilleu $
+ * $Id: yocto_genericsensor.cpp 14700 2014-01-23 15:40:44Z seb $
  *
  * Implements yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -47,28 +47,18 @@
 #include <math.h>
 #include <stdlib.h>
 
-//--- (YGenericSensor constructor)
-// Constructor is protected, use yFindGenericSensor factory function to instantiate
-YGenericSensor::YGenericSensor(const string& func): YFunction("GenericSensor", func)
-//--- (end of YGenericSensor constructor)
+YGenericSensor::YGenericSensor(const string& func): YSensor(func)
 //--- (GenericSensor initialization)
-            ,_callback(NULL)
-            ,_logicalName(Y_LOGICALNAME_INVALID)
-            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
-            ,_unit(Y_UNIT_INVALID)
-            ,_currentValue(Y_CURRENTVALUE_INVALID)
-            ,_lowestValue(Y_LOWESTVALUE_INVALID)
-            ,_highestValue(Y_HIGHESTVALUE_INVALID)
-            ,_currentRawValue(Y_CURRENTRAWVALUE_INVALID)
-            ,_calibrationParam(Y_CALIBRATIONPARAM_INVALID)
-            ,_signalValue(Y_SIGNALVALUE_INVALID)
-            ,_signalUnit(Y_SIGNALUNIT_INVALID)
-            ,_signalRange(Y_SIGNALRANGE_INVALID)
-            ,_valueRange(Y_VALUERANGE_INVALID)
-            ,_resolution(Y_RESOLUTION_INVALID)
-            ,_calibrationOffset(0)
+    ,_signalValue(SIGNALVALUE_INVALID)
+    ,_signalUnit(SIGNALUNIT_INVALID)
+    ,_signalRange(SIGNALRANGE_INVALID)
+    ,_valueRange(VALUERANGE_INVALID)
+    ,_valueCallbackGenericSensor(NULL)
+    ,_timedReportCallbackGenericSensor(NULL)
 //--- (end of GenericSensor initialization)
-{}
+{
+    _className="GenericSensor";
+}
 
 YGenericSensor::~YGenericSensor() 
 {
@@ -76,141 +66,38 @@ YGenericSensor::~YGenericSensor()
 //--- (end of YGenericSensor cleanup)
 }
 //--- (YGenericSensor implementation)
+// static attributes
+const double YGenericSensor::SIGNALVALUE_INVALID = YAPI_INVALID_DOUBLE;
+const string YGenericSensor::SIGNALUNIT_INVALID = YAPI_INVALID_STRING;
+const string YGenericSensor::SIGNALRANGE_INVALID = YAPI_INVALID_STRING;
+const string YGenericSensor::VALUERANGE_INVALID = YAPI_INVALID_STRING;
 
-const string YGenericSensor::LOGICALNAME_INVALID = "!INVALID!";
-const string YGenericSensor::ADVERTISEDVALUE_INVALID = "!INVALID!";
-const string YGenericSensor::UNIT_INVALID = "!INVALID!";
-const double YGenericSensor::CURRENTVALUE_INVALID = -DBL_MAX;
-const double YGenericSensor::LOWESTVALUE_INVALID = -DBL_MAX;
-const double YGenericSensor::HIGHESTVALUE_INVALID = -DBL_MAX;
-const double YGenericSensor::CURRENTRAWVALUE_INVALID = -DBL_MAX;
-const string YGenericSensor::CALIBRATIONPARAM_INVALID = "!INVALID!";
-const double YGenericSensor::SIGNALVALUE_INVALID = -DBL_MAX;
-const string YGenericSensor::SIGNALUNIT_INVALID = "!INVALID!";
-const string YGenericSensor::SIGNALRANGE_INVALID = "!INVALID!";
-const string YGenericSensor::VALUERANGE_INVALID = "!INVALID!";
-const double YGenericSensor::RESOLUTION_INVALID = -DBL_MAX;
-
-
-
-int YGenericSensor::_parse(yJsonStateMachine& j)
+int YGenericSensor::_parseAttr(yJsonStateMachine& j)
 {
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
+    if(!strcmp(j.token, "signalValue")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _signalValue =  atof(j.token)/65536;
+        return 1;
+    }
+    if(!strcmp(j.token, "signalUnit")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _signalUnit =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "signalRange")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _signalRange =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "valueRange")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _valueRange =  _parseString(j);
+        return 1;
+    }
     failed:
-        return -1;
-    }
-    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-        if(!strcmp(j.token, "logicalName")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _logicalName =  _parseString(j);
-        } else if(!strcmp(j.token, "advertisedValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _advertisedValue =  _parseString(j);
-        } else if(!strcmp(j.token, "unit")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _unit =  _parseString(j);
-        } else if(!strcmp(j.token, "currentValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _currentValue =  floor(atof(j.token)/65.536+.5) / 1000;
-        } else if(!strcmp(j.token, "lowestValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _lowestValue =  floor(atof(j.token)/65.536+.5) / 1000;
-        } else if(!strcmp(j.token, "highestValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _highestValue =  floor(atof(j.token)/65.536+.5) / 1000;
-        } else if(!strcmp(j.token, "currentRawValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _currentRawValue =  atof(j.token)/65536.0;
-        } else if(!strcmp(j.token, "calibrationParam")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _calibrationParam =  _parseString(j);
-        } else if(!strcmp(j.token, "signalValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _signalValue =  floor(atof(j.token)/65.536+.5) / 1000;
-        } else if(!strcmp(j.token, "signalUnit")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _signalUnit =  _parseString(j);
-        } else if(!strcmp(j.token, "signalRange")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _signalRange =  _parseString(j);
-        } else if(!strcmp(j.token, "valueRange")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _valueRange =  _parseString(j);
-        } else if(!strcmp(j.token, "resolution")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _resolution =  (atoi(j.token) > 100 ? 1.0 / floor(65536.0/atof(j.token)+.5) : 0.001 / floor(67.0/atof(j.token)+.5));
-        } else {
-            // ignore unknown field
-            yJsonSkip(&j, 1);
-        }
-    }
-    if(j.st != YJSON_PARSE_STRUCT) goto failed;
-    return 0;
+    return YSensor::_parseAttr(j);
 }
 
-/**
- * Returns the logical name of the generic sensor.
- * 
- * @return a string corresponding to the logical name of the generic sensor
- * 
- * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
- */
-string YGenericSensor::get_logicalName(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LOGICALNAME_INVALID;
-    }
-    return _logicalName;
-}
-
-/**
- * Changes the logical name of the generic sensor. You can use yCheckLogicalName()
- * prior to this call to make sure that your parameter is valid.
- * Remember to call the saveToFlash() method of the module if the
- * modification must be kept.
- * 
- * @param newval : a string corresponding to the logical name of the generic sensor
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YGenericSensor::set_logicalName(const string& newval)
-{
-    string rest_val;
-    rest_val = newval;
-    return _setAttr("logicalName", rest_val);
-}
-
-/**
- * Returns the current value of the generic sensor (no more than 6 characters).
- * 
- * @return a string corresponding to the current value of the generic sensor (no more than 6 characters)
- * 
- * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
- */
-string YGenericSensor::get_advertisedValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_ADVERTISEDVALUE_INVALID;
-    }
-    return _advertisedValue;
-}
-
-/**
- * Returns the measuring unit for the measured value.
- * 
- * @return a string corresponding to the measuring unit for the measured value
- * 
- * On failure, throws an exception or returns Y_UNIT_INVALID.
- */
-string YGenericSensor::get_unit(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_UNIT_INVALID;
-    }
-    return _unit;
-}
 
 /**
  * Changes the measuring unit for the measured value.
@@ -231,151 +118,6 @@ int YGenericSensor::set_unit(const string& newval)
 }
 
 /**
- * Returns the current measured value.
- * 
- * @return a floating point number corresponding to the current measured value
- * 
- * On failure, throws an exception or returns Y_CURRENTVALUE_INVALID.
- */
-double YGenericSensor::get_currentValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_CURRENTVALUE_INVALID;
-    }
-    double res = YAPI::_applyCalibration(_currentRawValue, _calibrationParam, _calibrationOffset, _resolution);
-    if(res != Y_CURRENTVALUE_INVALID) return res;
-    return _currentValue;
-}
-
-/**
- * Changes the recorded minimal value observed.
- * 
- * @param newval : a floating point number corresponding to the recorded minimal value observed
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YGenericSensor::set_lowestValue(double newval)
-{
-    string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval*65536.0 +0.5)); rest_val = string(buf);
-    return _setAttr("lowestValue", rest_val);
-}
-
-/**
- * Returns the minimal value observed.
- * 
- * @return a floating point number corresponding to the minimal value observed
- * 
- * On failure, throws an exception or returns Y_LOWESTVALUE_INVALID.
- */
-double YGenericSensor::get_lowestValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LOWESTVALUE_INVALID;
-    }
-    return _lowestValue;
-}
-
-/**
- * Changes the recorded maximal value observed.
- * 
- * @param newval : a floating point number corresponding to the recorded maximal value observed
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YGenericSensor::set_highestValue(double newval)
-{
-    string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval*65536.0 +0.5)); rest_val = string(buf);
-    return _setAttr("highestValue", rest_val);
-}
-
-/**
- * Returns the maximal value observed.
- * 
- * @return a floating point number corresponding to the maximal value observed
- * 
- * On failure, throws an exception or returns Y_HIGHESTVALUE_INVALID.
- */
-double YGenericSensor::get_highestValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_HIGHESTVALUE_INVALID;
-    }
-    return _highestValue;
-}
-
-/**
- * Returns the uncalibrated, unrounded raw value returned by the sensor.
- * 
- * @return a floating point number corresponding to the uncalibrated, unrounded raw value returned by the sensor
- * 
- * On failure, throws an exception or returns Y_CURRENTRAWVALUE_INVALID.
- */
-double YGenericSensor::get_currentRawValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_CURRENTRAWVALUE_INVALID;
-    }
-    return _currentRawValue;
-}
-
-string YGenericSensor::get_calibrationParam(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_CALIBRATIONPARAM_INVALID;
-    }
-    return _calibrationParam;
-}
-
-int YGenericSensor::set_calibrationParam(const string& newval)
-{
-    string rest_val;
-    rest_val = newval;
-    return _setAttr("calibrationParam", rest_val);
-}
-
-/**
- * Configures error correction data points, in particular to compensate for
- * a possible perturbation of the measure caused by an enclosure. It is possible
- * to configure up to five correction points. Correction points must be provided
- * in ascending order, and be in the range of the sensor. The device will automatically
- * perform a linear interpolation of the error correction between specified
- * points. Remember to call the saveToFlash() method of the module if the
- * modification must be kept.
- * 
- * For more information on advanced capabilities to refine the calibration of
- * sensors, please contact support@yoctopuce.com.
- * 
- * @param rawValues : array of floating point numbers, corresponding to the raw
- *         values returned by the sensor for the correction points.
- * @param refValues : array of floating point numbers, corresponding to the corrected
- *         values for the correction points.
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YGenericSensor::calibrateFromPoints(vector<double> rawValues,vector<double> refValues)
-{
-    string rest_val;
-    rest_val = this->_encodeCalibrationPoints(rawValues,refValues,_resolution,_calibrationOffset,_calibrationParam);
-    return _setAttr("calibrationParam", rest_val);
-}
-
-int YGenericSensor::loadCalibrationPoints(vector<double> rawValues,vector<double> refValues)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return _lastErrorType;
-    }
-    return this->_decodeCalibrationPoints(_calibrationParam,rawValues,refValues,_resolution,_calibrationOffset);
-}
-
-/**
  * Returns the measured value of the electrical signal used by the sensor.
  * 
  * @return a floating point number corresponding to the measured value of the electrical signal used by the sensor
@@ -384,10 +126,12 @@ int YGenericSensor::loadCalibrationPoints(vector<double> rawValues,vector<double
  */
 double YGenericSensor::get_signalValue(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_SIGNALVALUE_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YGenericSensor::SIGNALVALUE_INVALID;
+        }
     }
-    return _signalValue;
+    return (_signalValue * 1000 < 0.0 ? ceil(_signalValue * 1000-0.5) : floor(_signalValue * 1000+0.5)) / 1000;
 }
 
 /**
@@ -399,8 +143,10 @@ double YGenericSensor::get_signalValue(void)
  */
 string YGenericSensor::get_signalUnit(void)
 {
-    if(_signalUnit == Y_SIGNALUNIT_INVALID) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_SIGNALUNIT_INVALID;
+    if (_cacheExpiration == 0) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YGenericSensor::SIGNALUNIT_INVALID;
+        }
     }
     return _signalUnit;
 }
@@ -414,8 +160,10 @@ string YGenericSensor::get_signalUnit(void)
  */
 string YGenericSensor::get_signalRange(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_SIGNALRANGE_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YGenericSensor::SIGNALRANGE_INVALID;
+        }
     }
     return _signalRange;
 }
@@ -445,8 +193,10 @@ int YGenericSensor::set_signalRange(const string& newval)
  */
 string YGenericSensor::get_valueRange(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_VALUERANGE_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YGenericSensor::VALUERANGE_INVALID;
+        }
     }
     return _valueRange;
 }
@@ -469,36 +219,109 @@ int YGenericSensor::set_valueRange(const string& newval)
 }
 
 /**
- * Changes the resolution of the measured physical values. The resolution corresponds to the numerical precision
- * when displaying value. It does not change the precision of the measure itself.
+ * Retrieves $AFUNCTION$ for a given identifier.
+ * The identifier can be specified using several formats:
+ * <ul>
+ * <li>FunctionLogicalName</li>
+ * <li>ModuleSerialNumber.FunctionIdentifier</li>
+ * <li>ModuleSerialNumber.FunctionLogicalName</li>
+ * <li>ModuleLogicalName.FunctionIdentifier</li>
+ * <li>ModuleLogicalName.FunctionLogicalName</li>
+ * </ul>
  * 
- * @param newval : a floating point number corresponding to the resolution of the measured physical values
+ * This function does not require that $THEFUNCTION$ is online at the time
+ * it is invoked. The returned object is nevertheless valid.
+ * Use the method YGenericSensor.isOnline() to test if $THEFUNCTION$ is
+ * indeed online at a given time. In case of ambiguity when looking for
+ * $AFUNCTION$ by logical name, no error is notified: the first instance
+ * found is returned. The search is performed first by hardware name,
+ * then by logical name.
  * 
- * @return YAPI_SUCCESS if the call succeeds.
+ * @param func : a string that uniquely characterizes $THEFUNCTION$
  * 
- * On failure, throws an exception or returns a negative error code.
+ * @return a YGenericSensor object allowing you to drive $THEFUNCTION$.
  */
-int YGenericSensor::set_resolution(double newval)
+YGenericSensor* YGenericSensor::FindGenericSensor(string func)
 {
-    string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval*65536.0 +0.5)); rest_val = string(buf);
-    return _setAttr("resolution", rest_val);
+    YGenericSensor* obj = NULL;
+    obj = (YGenericSensor*) YFunction::_FindFromCache("GenericSensor", func);
+    if (obj == NULL) {
+        obj = new YGenericSensor(func);
+        YFunction::_AddToCache("GenericSensor", func, obj);
+    }
+    return obj;
 }
 
 /**
- * Returns the resolution of the measured values. The resolution corresponds to the numerical precision
- * of the values, which is not always the same as the actual precision of the sensor.
+ * Registers the callback function that is invoked on every change of advertised value.
+ * The callback is invoked only during the execution of ySleep or yHandleEvents.
+ * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+ * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
  * 
- * @return a floating point number corresponding to the resolution of the measured values
- * 
- * On failure, throws an exception or returns Y_RESOLUTION_INVALID.
+ * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ *         arguments: the function object of which the value has changed, and the character string describing
+ *         the new advertised value.
+ * @noreturn
  */
-double YGenericSensor::get_resolution(void)
+int YGenericSensor::registerValueCallback(YGenericSensorValueCallback callback)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_RESOLUTION_INVALID;
+    string val;
+    if (callback != NULL) {
+        YFunction::_UpdateValueCallbackList(this, true);
+    } else {
+        YFunction::_UpdateValueCallbackList(this, false);
     }
-    return _resolution;
+    _valueCallbackGenericSensor = callback;
+    // Immediately invoke value callback with current value
+    if (callback != NULL && this->isOnline()) {
+        val = _advertisedValue;
+        if (!(val == "")) {
+            this->_invokeValueCallback(val);
+        }
+    }
+    return 0;
+}
+
+int YGenericSensor::_invokeValueCallback(string value)
+{
+    if (_valueCallbackGenericSensor != NULL) {
+        _valueCallbackGenericSensor(this, value);
+    } else {
+        YSensor::_invokeValueCallback(value);
+    }
+    return 0;
+}
+
+/**
+ * Registers the callback function that is invoked on every periodic timed notification.
+ * The callback is invoked only during the execution of ySleep or yHandleEvents.
+ * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+ * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * 
+ * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ *         arguments: the function object of which the value has changed, and an YMeasure object describing
+ *         the new advertised value.
+ * @noreturn
+ */
+int YGenericSensor::registerTimedReportCallback(YGenericSensorTimedReportCallback callback)
+{
+    if (callback != NULL) {
+        YFunction::_UpdateTimedReportCallbackList(this, true);
+    } else {
+        YFunction::_UpdateTimedReportCallbackList(this, false);
+    }
+    _timedReportCallbackGenericSensor = callback;
+    return 0;
+}
+
+int YGenericSensor::_invokeTimedReportCallback(YMeasure value)
+{
+    if (_timedReportCallbackGenericSensor != NULL) {
+        _timedReportCallbackGenericSensor(this, value);
+    } else {
+        YSensor::_invokeTimedReportCallback(value);
+    }
+    return 0;
 }
 
 YGenericSensor *YGenericSensor::nextGenericSensor(void)
@@ -508,38 +331,7 @@ YGenericSensor *YGenericSensor::nextGenericSensor(void)
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
-    return yFindGenericSensor(hwid);
-}
-
-void YGenericSensor::registerValueCallback(YGenericSensorUpdateCallback callback)
-{
-    if (callback != NULL) {
-        _registerFuncCallback(this);
-        yapiLockFunctionCallBack(NULL);
-        YAPI::_yapiFunctionUpdateCallbackFwd(this->functionDescriptor(), this->get_advertisedValue().c_str());
-        yapiUnlockFunctionCallBack(NULL);
-    } else {
-        _unregisterFuncCallback(this);
-    }
-    _callback = callback;
-}
-
-void YGenericSensor::advertiseValue(const string& value)
-{
-    if (_callback != NULL) {
-        _callback(this, value);
-    }
-}
-
-
-YGenericSensor* YGenericSensor::FindGenericSensor(const string& func)
-{
-    if(YAPI::_YFunctionsCaches["YGenericSensor"].find(func) != YAPI::_YFunctionsCaches["YGenericSensor"].end())
-        return (YGenericSensor*) YAPI::_YFunctionsCaches["YGenericSensor"][func];
-    
-    YGenericSensor *newGenericSensor = new YGenericSensor(func);
-    YAPI::_YFunctionsCaches["YGenericSensor"][func] = newGenericSensor ;
-    return newGenericSensor;
+    return YGenericSensor::FindGenericSensor(hwid);
 }
 
 YGenericSensor* YGenericSensor::FirstGenericSensor(void)

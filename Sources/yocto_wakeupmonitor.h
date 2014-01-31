@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wakeupmonitor.h 12324 2013-08-13 15:10:31Z mvuilleu $
+ * $Id: yocto_wakeupmonitor.h 14188 2013-12-30 10:42:56Z seb $
  *
  * Declares yFindWakeUpMonitor(), the high-level API for WakeUpMonitor functions
  *
@@ -46,12 +46,14 @@
 #include <cmath>
 #include <map>
 
-//--- (return codes)
-//--- (end of return codes)
+//--- (YWakeUpMonitor return codes)
+//--- (end of YWakeUpMonitor return codes)
 //--- (YWakeUpMonitor definitions)
-class YWakeUpMonitor; //forward declaration
+class YWakeUpMonitor; // forward declaration
 
-typedef void (*YWakeUpMonitorUpdateCallback)(YWakeUpMonitor *func, const string& functionValue);
+typedef void (*YWakeUpMonitorValueCallback)(YWakeUpMonitor *func, const string& functionValue);
+#ifndef _Y_WAKEUPREASON_ENUM
+#define _Y_WAKEUPREASON_ENUM
 typedef enum {
     Y_WAKEUPREASON_USBPOWER = 0,
     Y_WAKEUPREASON_EXTPOWER = 1,
@@ -68,64 +70,61 @@ typedef enum {
     Y_WAKEUPREASON_SCHEDULE6 = 12,
     Y_WAKEUPREASON_INVALID = -1,
 } Y_WAKEUPREASON_enum;
+#endif
 
+#ifndef _Y_WAKEUPSTATE_ENUM
+#define _Y_WAKEUPSTATE_ENUM
 typedef enum {
     Y_WAKEUPSTATE_SLEEPING = 0,
     Y_WAKEUPSTATE_AWAKE = 1,
     Y_WAKEUPSTATE_INVALID = -1,
 } Y_WAKEUPSTATE_enum;
+#endif
 
-#define Y_LOGICALNAME_INVALID           (YAPI::INVALID_STRING)
-#define Y_ADVERTISEDVALUE_INVALID       (YAPI::INVALID_STRING)
-#define Y_POWERDURATION_INVALID         (0x80000000)
-#define Y_SLEEPCOUNTDOWN_INVALID        (0x80000000)
-#define Y_NEXTWAKEUP_INVALID            (0xffffffff)
-#define Y_RTCTIME_INVALID               (0xffffffff)
+#define Y_POWERDURATION_INVALID         (YAPI_INVALID_INT)
+#define Y_SLEEPCOUNTDOWN_INVALID        (YAPI_INVALID_INT)
+#define Y_NEXTWAKEUP_INVALID            (YAPI_INVALID_LONG)
+#define Y_RTCTIME_INVALID               (YAPI_INVALID_LONG)
 //--- (end of YWakeUpMonitor definitions)
 
 //--- (YWakeUpMonitor declaration)
 /**
  * YWakeUpMonitor Class: WakeUpMonitor function interface
  * 
- * 
+ * The WakeUpMonitor function handles globally all wake-up sources, as well
+ * as automated sleep mode.
  */
-class YWakeUpMonitor: public YFunction {
+class YOCTO_CLASS_EXPORT YWakeUpMonitor: public YFunction {
+//--- (end of YWakeUpMonitor declaration)
 protected:
+    //--- (YWakeUpMonitor attributes)
     // Attributes (function value cache)
-    YWakeUpMonitorUpdateCallback _callback;
-    string          _logicalName;
-    string          _advertisedValue;
     int             _powerDuration;
     int             _sleepCountdown;
-    unsigned        _nextWakeUp;
+    s64             _nextWakeUp;
     Y_WAKEUPREASON_enum _wakeUpReason;
     Y_WAKEUPSTATE_enum _wakeUpState;
-    unsigned        _rtcTime;
-    unsigned        _endOfTime;
+    s64             _rtcTime;
+    int             _endOfTime;
+    YWakeUpMonitorValueCallback _valueCallbackWakeUpMonitor;
 
     friend YWakeUpMonitor *yFindWakeUpMonitor(const string& func);
     friend YWakeUpMonitor *yFirstWakeUpMonitor(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    int             _parse(yJsonStateMachine& j);
-    //--- (end of YWakeUpMonitor declaration)
+    virtual int     _parseAttr(yJsonStateMachine& j);
 
-    //--- (YWakeUpMonitor constructor)
     // Constructor is protected, use yFindWakeUpMonitor factory function to instantiate
     YWakeUpMonitor(const string& func);
-    //--- (end of YWakeUpMonitor constructor)
-    //--- (WakeUpMonitor initialization)
-    //--- (end of WakeUpMonitor initialization)
+    //--- (end of YWakeUpMonitor attributes)
 
 public:
     ~YWakeUpMonitor();
     //--- (YWakeUpMonitor accessors declaration)
 
-    static const string LOGICALNAME_INVALID;
-    static const string ADVERTISEDVALUE_INVALID;
-    static const int      POWERDURATION_INVALID = 0x80000000;
-    static const int      SLEEPCOUNTDOWN_INVALID = 0x80000000;
-    static const unsigned NEXTWAKEUP_INVALID = 0xffffffff;
+    static const int POWERDURATION_INVALID = YAPI_INVALID_INT;
+    static const int SLEEPCOUNTDOWN_INVALID = YAPI_INVALID_INT;
+    static const s64 NEXTWAKEUP_INVALID = YAPI_INVALID_LONG;
     static const Y_WAKEUPREASON_enum WAKEUPREASON_USBPOWER = Y_WAKEUPREASON_USBPOWER;
     static const Y_WAKEUPREASON_enum WAKEUPREASON_EXTPOWER = Y_WAKEUPREASON_EXTPOWER;
     static const Y_WAKEUPREASON_enum WAKEUPREASON_ENDOFSLEEP = Y_WAKEUPREASON_ENDOFSLEEP;
@@ -143,62 +142,25 @@ public:
     static const Y_WAKEUPSTATE_enum WAKEUPSTATE_SLEEPING = Y_WAKEUPSTATE_SLEEPING;
     static const Y_WAKEUPSTATE_enum WAKEUPSTATE_AWAKE = Y_WAKEUPSTATE_AWAKE;
     static const Y_WAKEUPSTATE_enum WAKEUPSTATE_INVALID = Y_WAKEUPSTATE_INVALID;
-    static const unsigned RTCTIME_INVALID = 0xffffffff;
+    static const s64 RTCTIME_INVALID = YAPI_INVALID_LONG;
 
     /**
-     * Returns the logical name of the monitor.
+     * Returns the maximal wake up time (in seconds) before automatically going to sleep.
      * 
-     * @return a string corresponding to the logical name of the monitor
-     * 
-     * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
-     */
-           string          get_logicalName(void);
-    inline string          logicalName(void)
-    { return this->get_logicalName(); }
-
-    /**
-     * Changes the logical name of the monitor. You can use yCheckLogicalName()
-     * prior to this call to make sure that your parameter is valid.
-     * Remember to call the saveToFlash() method of the module if the
-     * modification must be kept.
-     * 
-     * @param newval : a string corresponding to the logical name of the monitor
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_logicalName(const string& newval);
-    inline int      setLogicalName(const string& newval)
-    { return this->set_logicalName(newval); }
-
-    /**
-     * Returns the current value of the monitor (no more than 6 characters).
-     * 
-     * @return a string corresponding to the current value of the monitor (no more than 6 characters)
-     * 
-     * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
-     */
-           string          get_advertisedValue(void);
-    inline string          advertisedValue(void)
-    { return this->get_advertisedValue(); }
-
-    /**
-     * Returns the maximal wake up time (seconds) before going to sleep automatically.
-     * 
-     * @return an integer corresponding to the maximal wake up time (seconds) before going to sleep automatically
+     * @return an integer corresponding to the maximal wake up time (in seconds) before automatically going to sleep
      * 
      * On failure, throws an exception or returns Y_POWERDURATION_INVALID.
      */
-           int             get_powerDuration(void);
-    inline int             powerDuration(void)
+    int                 get_powerDuration(void);
+
+    inline int          powerDuration(void)
     { return this->get_powerDuration(); }
 
     /**
-     * Changes the maximal wake up time (seconds) before going to sleep automatically.
+     * Changes the maximal wake up time (seconds) before automatically going to sleep.
      * 
-     * @param newval : an integer corresponding to the maximal wake up time (seconds) before going to
-     * sleep automatically
+     * @param newval : an integer corresponding to the maximal wake up time (seconds) before automatically
+     * going to sleep
      * 
      * @return YAPI_SUCCESS if the call succeeds.
      * 
@@ -209,20 +171,21 @@ public:
     { return this->set_powerDuration(newval); }
 
     /**
-     * Returns the delay before next sleep.
+     * Returns the delay before the  next sleep period.
      * 
-     * @return an integer corresponding to the delay before next sleep
+     * @return an integer corresponding to the delay before the  next sleep period
      * 
      * On failure, throws an exception or returns Y_SLEEPCOUNTDOWN_INVALID.
      */
-           int             get_sleepCountdown(void);
-    inline int             sleepCountdown(void)
+    int                 get_sleepCountdown(void);
+
+    inline int          sleepCountdown(void)
     { return this->get_sleepCountdown(); }
 
     /**
-     * Changes the delay before next sleep.
+     * Changes the delay before the next sleep period.
      * 
-     * @param newval : an integer corresponding to the delay before next sleep
+     * @param newval : an integer corresponding to the delay before the next sleep period
      * 
      * @return YAPI_SUCCESS if the call succeeds.
      * 
@@ -233,40 +196,43 @@ public:
     { return this->set_sleepCountdown(newval); }
 
     /**
-     * Returns the next scheduled wake-up date/time (UNIX format)
+     * Returns the next scheduled wake up date/time (UNIX format)
      * 
-     * @return an integer corresponding to the next scheduled wake-up date/time (UNIX format)
+     * @return an integer corresponding to the next scheduled wake up date/time (UNIX format)
      * 
      * On failure, throws an exception or returns Y_NEXTWAKEUP_INVALID.
      */
-           unsigned        get_nextWakeUp(void);
-    inline unsigned        nextWakeUp(void)
+    s64                 get_nextWakeUp(void);
+
+    inline s64          nextWakeUp(void)
     { return this->get_nextWakeUp(); }
 
     /**
-     * Changes the days of the week where a wake up must take place.
+     * Changes the days of the week when a wake up must take place.
      * 
-     * @param newval : an integer corresponding to the days of the week where a wake up must take place
+     * @param newval : an integer corresponding to the days of the week when a wake up must take place
      * 
      * @return YAPI_SUCCESS if the call succeeds.
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             set_nextWakeUp(unsigned newval);
-    inline int      setNextWakeUp(unsigned newval)
+    int             set_nextWakeUp(s64 newval);
+    inline int      setNextWakeUp(s64 newval)
     { return this->set_nextWakeUp(newval); }
 
     /**
-     * Return the last wake up reason.
+     * Returns the latest wake up reason.
      * 
      * @return a value among Y_WAKEUPREASON_USBPOWER, Y_WAKEUPREASON_EXTPOWER, Y_WAKEUPREASON_ENDOFSLEEP,
      * Y_WAKEUPREASON_EXTSIG1, Y_WAKEUPREASON_EXTSIG2, Y_WAKEUPREASON_EXTSIG3, Y_WAKEUPREASON_EXTSIG4,
      * Y_WAKEUPREASON_SCHEDULE1, Y_WAKEUPREASON_SCHEDULE2, Y_WAKEUPREASON_SCHEDULE3,
-     * Y_WAKEUPREASON_SCHEDULE4, Y_WAKEUPREASON_SCHEDULE5 and Y_WAKEUPREASON_SCHEDULE6
+     * Y_WAKEUPREASON_SCHEDULE4, Y_WAKEUPREASON_SCHEDULE5 and Y_WAKEUPREASON_SCHEDULE6 corresponding to
+     * the latest wake up reason
      * 
      * On failure, throws an exception or returns Y_WAKEUPREASON_INVALID.
      */
-           Y_WAKEUPREASON_enum get_wakeUpReason(void);
+    Y_WAKEUPREASON_enum get_wakeUpReason(void);
+
     inline Y_WAKEUPREASON_enum wakeUpReason(void)
     { return this->get_wakeUpReason(); }
 
@@ -277,7 +243,8 @@ public:
      * 
      * On failure, throws an exception or returns Y_WAKEUPSTATE_INVALID.
      */
-           Y_WAKEUPSTATE_enum get_wakeUpState(void);
+    Y_WAKEUPSTATE_enum  get_wakeUpState(void);
+
     inline Y_WAKEUPSTATE_enum wakeUpState(void)
     { return this->get_wakeUpState(); }
 
@@ -285,89 +252,10 @@ public:
     inline int      setWakeUpState(Y_WAKEUPSTATE_enum newval)
     { return this->set_wakeUpState(newval); }
 
-           unsigned        get_rtcTime(void);
-    inline unsigned        rtcTime(void)
+    s64                 get_rtcTime(void);
+
+    inline s64          rtcTime(void)
     { return this->get_rtcTime(); }
-
-    /**
-     * Forces a wakeup.
-     */
-    int             wakeUp();
-
-    /**
-     * Go to sleep until the next wakeup condition is met,  the
-     * RTC time must have been set before calling this function.
-     * 
-     * @param secBeforeSleep : number of seconds before going into sleep mode,
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             sleep(int secBeforeSleep);
-
-    /**
-     * Go to sleep for a specific time or until the next wakeup condition is met, the
-     * RTC time must have been set before calling this function. The count down before sleep
-     * can be canceled with resetSleepCountDown.
-     * 
-     * @param secUntilWakeUp : sleep duration, in secondes
-     * @param secBeforeSleep : number of seconds before going into sleep mode
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             sleepFor(int secUntilWakeUp,int secBeforeSleep);
-
-    /**
-     * Go to sleep until a specific date is reached or until the next wakeup condition is met, the
-     * RTC time must have been set before calling this function. The count down before sleep
-     * can be canceled with resetSleepCountDown.
-     * 
-     * @param wakeUpTime : wake-up datetime (UNIX format)
-     * @param secBeforeSleep : number of seconds before going into sleep mode
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             sleepUntil(int wakeUpTime,int secBeforeSleep);
-
-    /**
-     * Reset the sleep countdown.
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     *         On failure, throws an exception or returns a negative error code.
-     */
-    int             resetSleepCountDown();
-
-
-    /**
-     * Registers the callback function that is invoked on every change of advertised value.
-     * The callback is invoked only during the execution of ySleep or yHandleEvents.
-     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
-     *         arguments: the function object of which the value has changed, and the character string describing
-     *         the new advertised value.
-     * @noreturn
-     */
-    void registerValueCallback(YWakeUpMonitorUpdateCallback callback);
-
-    void advertiseValue(const string& value);
-
-    /**
-     * Continues the enumeration of monitors started using yFirstWakeUpMonitor().
-     * 
-     * @return a pointer to a YWakeUpMonitor object, corresponding to
-     *         a monitor currently online, or a null pointer
-     *         if there are no more monitors to enumerate.
-     */
-           YWakeUpMonitor  *nextWakeUpMonitor(void);
-    inline YWakeUpMonitor  *next(void)
-    { return this->nextWakeUpMonitor();}
 
     /**
      * Retrieves a monitor for a given identifier.
@@ -392,18 +280,93 @@ public:
      * 
      * @return a YWakeUpMonitor object allowing you to drive the monitor.
      */
-           static YWakeUpMonitor* FindWakeUpMonitor(const string& func);
-    inline static YWakeUpMonitor* Find(const string& func)
-    { return YWakeUpMonitor::FindWakeUpMonitor(func);}
+    static YWakeUpMonitor* FindWakeUpMonitor(string func);
+
+    using YFunction::registerValueCallback;
+
     /**
-     * Starts the enumeration of monitors currently accessible.
-     * Use the method YWakeUpMonitor.nextWakeUpMonitor() to iterate on
-     * next monitors.
+     * Registers the callback function that is invoked on every change of advertised value.
+     * The callback is invoked only during the execution of ySleep or yHandleEvents.
+     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * 
+     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     *         arguments: the function object of which the value has changed, and the character string describing
+     *         the new advertised value.
+     * @noreturn
+     */
+    virtual int         registerValueCallback(YWakeUpMonitorValueCallback callback);
+
+    virtual int         _invokeValueCallback(string value);
+
+    /**
+     * Forces a wake up.
+     */
+    virtual int         wakeUp(void);
+
+    /**
+     * Goes to sleep until the next wake up condition is met,  the
+     * RTC time must have been set before calling this function.
+     * 
+     * @param secBeforeSleep : number of seconds before going into sleep mode,
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         sleep(int secBeforeSleep);
+
+    /**
+     * Goes to sleep for a specific duration or until the next wake up condition is met, the
+     * RTC time must have been set before calling this function. The count down before sleep
+     * can be canceled with resetSleepCountDown.
+     * 
+     * @param secUntilWakeUp : sleep duration, in secondes
+     * @param secBeforeSleep : number of seconds before going into sleep mode
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         sleepFor(int secUntilWakeUp,int secBeforeSleep);
+
+    /**
+     * Go to sleep until a specific date is reached or until the next wake up condition is met, the
+     * RTC time must have been set before calling this function. The count down before sleep
+     * can be canceled with resetSleepCountDown.
+     * 
+     * @param wakeUpTime : wake-up datetime (UNIX format)
+     * @param secBeforeSleep : number of seconds before going into sleep mode
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         sleepUntil(int wakeUpTime,int secBeforeSleep);
+
+    /**
+     * Resets the sleep countdown.
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     *         On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         resetSleepCountDown(void);
+
+
+    inline static YWakeUpMonitor* Find(string func)
+    { return YWakeUpMonitor::FindWakeUpMonitor(func); }
+
+    /**
+     * Continues the enumeration of monitors started using yFirstWakeUpMonitor().
      * 
      * @return a pointer to a YWakeUpMonitor object, corresponding to
-     *         the first monitor currently online, or a null pointer
-     *         if there are none.
+     *         a monitor currently online, or a null pointer
+     *         if there are no more monitors to enumerate.
      */
+           YWakeUpMonitor  *nextWakeUpMonitor(void);
+    inline YWakeUpMonitor  *next(void)
+    { return this->nextWakeUpMonitor();}
+
            static YWakeUpMonitor* FirstWakeUpMonitor(void);
     inline static YWakeUpMonitor* First(void)
     { return YWakeUpMonitor::FirstWakeUpMonitor();}

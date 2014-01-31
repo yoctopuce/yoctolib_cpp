@@ -123,7 +123,7 @@ LIN64_OPTS = -O2 -m64
 LIN32_OPTS = -O2 -m32 -march=i586
 
 #linux compilation 64 bist
-OSX64_OPTS = -01 -m64
+OSX64_OPTS = -O1 -m64
 GLOBAL_OPT = -g -Wall
 
 

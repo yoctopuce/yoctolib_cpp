@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_realtimeclock.cpp 12324 2013-08-13 15:10:31Z mvuilleu $
+ * $Id: yocto_realtimeclock.cpp 14700 2014-01-23 15:40:44Z seb $
  *
  * Implements yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *
@@ -47,20 +47,17 @@
 #include <math.h>
 #include <stdlib.h>
 
-//--- (YRealTimeClock constructor)
-// Constructor is protected, use yFindRealTimeClock factory function to instantiate
-YRealTimeClock::YRealTimeClock(const string& func): YFunction("RealTimeClock", func)
-//--- (end of YRealTimeClock constructor)
+YRealTimeClock::YRealTimeClock(const string& func): YFunction(func)
 //--- (RealTimeClock initialization)
-            ,_callback(NULL)
-            ,_logicalName(Y_LOGICALNAME_INVALID)
-            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
-            ,_unixTime(Y_UNIXTIME_INVALID)
-            ,_dateTime(Y_DATETIME_INVALID)
-            ,_utcOffset(Y_UTCOFFSET_INVALID)
-            ,_timeSet(Y_TIMESET_INVALID)
+    ,_unixTime(UNIXTIME_INVALID)
+    ,_dateTime(DATETIME_INVALID)
+    ,_utcOffset(UTCOFFSET_INVALID)
+    ,_timeSet(TIMESET_INVALID)
+    ,_valueCallbackRealTimeClock(NULL)
 //--- (end of RealTimeClock initialization)
-{}
+{
+    _className="RealTimeClock";
+}
 
 YRealTimeClock::~YRealTimeClock() 
 {
@@ -68,95 +65,35 @@ YRealTimeClock::~YRealTimeClock()
 //--- (end of YRealTimeClock cleanup)
 }
 //--- (YRealTimeClock implementation)
+// static attributes
+const string YRealTimeClock::DATETIME_INVALID = YAPI_INVALID_STRING;
 
-const string YRealTimeClock::LOGICALNAME_INVALID = "!INVALID!";
-const string YRealTimeClock::ADVERTISEDVALUE_INVALID = "!INVALID!";
-const string YRealTimeClock::DATETIME_INVALID = "!INVALID!";
-
-
-
-int YRealTimeClock::_parse(yJsonStateMachine& j)
+int YRealTimeClock::_parseAttr(yJsonStateMachine& j)
 {
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
+    if(!strcmp(j.token, "unixTime")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _unixTime =  atol(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "dateTime")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _dateTime =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "utcOffset")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _utcOffset =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "timeSet")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _timeSet =  (Y_TIMESET_enum)atoi(j.token);
+        return 1;
+    }
     failed:
-        return -1;
-    }
-    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-        if(!strcmp(j.token, "logicalName")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _logicalName =  _parseString(j);
-        } else if(!strcmp(j.token, "advertisedValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _advertisedValue =  _parseString(j);
-        } else if(!strcmp(j.token, "unixTime")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _unixTime =  atoi(j.token);
-        } else if(!strcmp(j.token, "dateTime")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _dateTime =  _parseString(j);
-        } else if(!strcmp(j.token, "utcOffset")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _utcOffset =  atoi(j.token);
-        } else if(!strcmp(j.token, "timeSet")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _timeSet =  (Y_TIMESET_enum)atoi(j.token);
-        } else {
-            // ignore unknown field
-            yJsonSkip(&j, 1);
-        }
-    }
-    if(j.st != YJSON_PARSE_STRUCT) goto failed;
-    return 0;
+    return YFunction::_parseAttr(j);
 }
 
-/**
- * Returns the logical name of the clock.
- * 
- * @return a string corresponding to the logical name of the clock
- * 
- * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
- */
-string YRealTimeClock::get_logicalName(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LOGICALNAME_INVALID;
-    }
-    return _logicalName;
-}
-
-/**
- * Changes the logical name of the clock. You can use yCheckLogicalName()
- * prior to this call to make sure that your parameter is valid.
- * Remember to call the saveToFlash() method of the module if the
- * modification must be kept.
- * 
- * @param newval : a string corresponding to the logical name of the clock
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YRealTimeClock::set_logicalName(const string& newval)
-{
-    string rest_val;
-    rest_val = newval;
-    return _setAttr("logicalName", rest_val);
-}
-
-/**
- * Returns the current value of the clock (no more than 6 characters).
- * 
- * @return a string corresponding to the current value of the clock (no more than 6 characters)
- * 
- * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
- */
-string YRealTimeClock::get_advertisedValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_ADVERTISEDVALUE_INVALID;
-    }
-    return _advertisedValue;
-}
 
 /**
  * Returns the current time in Unix format (number of elapsed seconds since Jan 1st, 1970).
@@ -166,10 +103,12 @@ string YRealTimeClock::get_advertisedValue(void)
  * 
  * On failure, throws an exception or returns Y_UNIXTIME_INVALID.
  */
-unsigned YRealTimeClock::get_unixTime(void)
+s64 YRealTimeClock::get_unixTime(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_UNIXTIME_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YRealTimeClock::UNIXTIME_INVALID;
+        }
     }
     return _unixTime;
 }
@@ -184,10 +123,10 @@ unsigned YRealTimeClock::get_unixTime(void)
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YRealTimeClock::set_unixTime(unsigned newval)
+int YRealTimeClock::set_unixTime(s64 newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
     return _setAttr("unixTime", rest_val);
 }
 
@@ -200,8 +139,10 @@ int YRealTimeClock::set_unixTime(unsigned newval)
  */
 string YRealTimeClock::get_dateTime(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_DATETIME_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YRealTimeClock::DATETIME_INVALID;
+        }
     }
     return _dateTime;
 }
@@ -215,8 +156,10 @@ string YRealTimeClock::get_dateTime(void)
  */
 int YRealTimeClock::get_utcOffset(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_UTCOFFSET_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YRealTimeClock::UTCOFFSET_INVALID;
+        }
     }
     return _utcOffset;
 }
@@ -250,10 +193,86 @@ int YRealTimeClock::set_utcOffset(int newval)
  */
 Y_TIMESET_enum YRealTimeClock::get_timeSet(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_TIMESET_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YRealTimeClock::TIMESET_INVALID;
+        }
     }
     return _timeSet;
+}
+
+/**
+ * Retrieves $AFUNCTION$ for a given identifier.
+ * The identifier can be specified using several formats:
+ * <ul>
+ * <li>FunctionLogicalName</li>
+ * <li>ModuleSerialNumber.FunctionIdentifier</li>
+ * <li>ModuleSerialNumber.FunctionLogicalName</li>
+ * <li>ModuleLogicalName.FunctionIdentifier</li>
+ * <li>ModuleLogicalName.FunctionLogicalName</li>
+ * </ul>
+ * 
+ * This function does not require that $THEFUNCTION$ is online at the time
+ * it is invoked. The returned object is nevertheless valid.
+ * Use the method YRealTimeClock.isOnline() to test if $THEFUNCTION$ is
+ * indeed online at a given time. In case of ambiguity when looking for
+ * $AFUNCTION$ by logical name, no error is notified: the first instance
+ * found is returned. The search is performed first by hardware name,
+ * then by logical name.
+ * 
+ * @param func : a string that uniquely characterizes $THEFUNCTION$
+ * 
+ * @return a YRealTimeClock object allowing you to drive $THEFUNCTION$.
+ */
+YRealTimeClock* YRealTimeClock::FindRealTimeClock(string func)
+{
+    YRealTimeClock* obj = NULL;
+    obj = (YRealTimeClock*) YFunction::_FindFromCache("RealTimeClock", func);
+    if (obj == NULL) {
+        obj = new YRealTimeClock(func);
+        YFunction::_AddToCache("RealTimeClock", func, obj);
+    }
+    return obj;
+}
+
+/**
+ * Registers the callback function that is invoked on every change of advertised value.
+ * The callback is invoked only during the execution of ySleep or yHandleEvents.
+ * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+ * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * 
+ * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ *         arguments: the function object of which the value has changed, and the character string describing
+ *         the new advertised value.
+ * @noreturn
+ */
+int YRealTimeClock::registerValueCallback(YRealTimeClockValueCallback callback)
+{
+    string val;
+    if (callback != NULL) {
+        YFunction::_UpdateValueCallbackList(this, true);
+    } else {
+        YFunction::_UpdateValueCallbackList(this, false);
+    }
+    _valueCallbackRealTimeClock = callback;
+    // Immediately invoke value callback with current value
+    if (callback != NULL && this->isOnline()) {
+        val = _advertisedValue;
+        if (!(val == "")) {
+            this->_invokeValueCallback(val);
+        }
+    }
+    return 0;
+}
+
+int YRealTimeClock::_invokeValueCallback(string value)
+{
+    if (_valueCallbackRealTimeClock != NULL) {
+        _valueCallbackRealTimeClock(this, value);
+    } else {
+        YFunction::_invokeValueCallback(value);
+    }
+    return 0;
 }
 
 YRealTimeClock *YRealTimeClock::nextRealTimeClock(void)
@@ -263,38 +282,7 @@ YRealTimeClock *YRealTimeClock::nextRealTimeClock(void)
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
-    return yFindRealTimeClock(hwid);
-}
-
-void YRealTimeClock::registerValueCallback(YRealTimeClockUpdateCallback callback)
-{
-    if (callback != NULL) {
-        _registerFuncCallback(this);
-        yapiLockFunctionCallBack(NULL);
-        YAPI::_yapiFunctionUpdateCallbackFwd(this->functionDescriptor(), this->get_advertisedValue().c_str());
-        yapiUnlockFunctionCallBack(NULL);
-    } else {
-        _unregisterFuncCallback(this);
-    }
-    _callback = callback;
-}
-
-void YRealTimeClock::advertiseValue(const string& value)
-{
-    if (_callback != NULL) {
-        _callback(this, value);
-    }
-}
-
-
-YRealTimeClock* YRealTimeClock::FindRealTimeClock(const string& func)
-{
-    if(YAPI::_YFunctionsCaches["YRealTimeClock"].find(func) != YAPI::_YFunctionsCaches["YRealTimeClock"].end())
-        return (YRealTimeClock*) YAPI::_YFunctionsCaches["YRealTimeClock"][func];
-    
-    YRealTimeClock *newRealTimeClock = new YRealTimeClock(func);
-    YAPI::_YFunctionsCaches["YRealTimeClock"][func] = newRealTimeClock ;
-    return newRealTimeClock;
+    return YRealTimeClock::FindRealTimeClock(hwid);
 }
 
 YRealTimeClock* YRealTimeClock::FirstRealTimeClock(void)

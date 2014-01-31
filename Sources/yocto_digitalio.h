@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: pic24config.php 12323 2013-08-13 15:09:18Z mvuilleu $
+ * $Id: yocto_digitalio.h 14528 2014-01-16 16:19:06Z mvuilleu $
  *
  * Declares yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -46,114 +46,77 @@
 #include <cmath>
 #include <map>
 
-//--- (return codes)
-//--- (end of return codes)
+//--- (YDigitalIO return codes)
+//--- (end of YDigitalIO return codes)
 //--- (YDigitalIO definitions)
-class YDigitalIO; //forward declaration
+class YDigitalIO; // forward declaration
 
-typedef void (*YDigitalIOUpdateCallback)(YDigitalIO *func, const string& functionValue);
+typedef void (*YDigitalIOValueCallback)(YDigitalIO *func, const string& functionValue);
+#ifndef _Y_OUTPUTVOLTAGE_ENUM
+#define _Y_OUTPUTVOLTAGE_ENUM
 typedef enum {
     Y_OUTPUTVOLTAGE_USB_5V = 0,
-    Y_OUTPUTVOLTAGE_USB_3V3 = 1,
+    Y_OUTPUTVOLTAGE_USB_3V = 1,
     Y_OUTPUTVOLTAGE_EXT_V = 2,
     Y_OUTPUTVOLTAGE_INVALID = -1,
 } Y_OUTPUTVOLTAGE_enum;
+#endif
 
-#define Y_LOGICALNAME_INVALID           (YAPI::INVALID_STRING)
-#define Y_ADVERTISEDVALUE_INVALID       (YAPI::INVALID_STRING)
-#define Y_PORTSTATE_INVALID             (-1)
-#define Y_PORTDIRECTION_INVALID         (-1)
-#define Y_PORTOPENDRAIN_INVALID         (-1)
-#define Y_PORTSIZE_INVALID              (0xffffffff)
-#define Y_COMMAND_INVALID               (YAPI::INVALID_STRING)
+#define Y_PORTSTATE_INVALID             (YAPI_INVALID_UINT)
+#define Y_PORTDIRECTION_INVALID         (YAPI_INVALID_UINT)
+#define Y_PORTOPENDRAIN_INVALID         (YAPI_INVALID_UINT)
+#define Y_PORTPOLARITY_INVALID          (YAPI_INVALID_UINT)
+#define Y_PORTSIZE_INVALID              (YAPI_INVALID_UINT)
+#define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 //--- (end of YDigitalIO definitions)
 
 //--- (YDigitalIO declaration)
 /**
  * YDigitalIO Class: Digital IO function interface
  * 
- * ....
+ * The Yoctopuce application programming interface allows you to switch the state of each
+ * bit of the I/O port. You can switch all bits at once, or one by one. The library
+ * can also automatically generate short pulses of a determined duration. Electrical behavior
+ * of each I/O can be modified (open drain and reverse polarity).
  */
-class YDigitalIO: public YFunction {
+class YOCTO_CLASS_EXPORT YDigitalIO: public YFunction {
+//--- (end of YDigitalIO declaration)
 protected:
+    //--- (YDigitalIO attributes)
     // Attributes (function value cache)
-    YDigitalIOUpdateCallback _callback;
-    string          _logicalName;
-    string          _advertisedValue;
     int             _portState;
     int             _portDirection;
     int             _portOpenDrain;
-    unsigned        _portSize;
+    int             _portPolarity;
+    int             _portSize;
     Y_OUTPUTVOLTAGE_enum _outputVoltage;
     string          _command;
+    YDigitalIOValueCallback _valueCallbackDigitalIO;
 
     friend YDigitalIO *yFindDigitalIO(const string& func);
     friend YDigitalIO *yFirstDigitalIO(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    int             _parse(yJsonStateMachine& j);
-    //--- (end of YDigitalIO declaration)
+    virtual int     _parseAttr(yJsonStateMachine& j);
 
-    //--- (YDigitalIO constructor)
     // Constructor is protected, use yFindDigitalIO factory function to instantiate
     YDigitalIO(const string& func);
-    //--- (end of YDigitalIO constructor)
-    //--- (DigitalIO initialization)
-    //--- (end of DigitalIO initialization)
+    //--- (end of YDigitalIO attributes)
 
 public:
     ~YDigitalIO();
     //--- (YDigitalIO accessors declaration)
 
-    static const string LOGICALNAME_INVALID;
-    static const string ADVERTISEDVALUE_INVALID;
-    static const int      PORTSTATE_INVALID = -1;
-    static const int      PORTDIRECTION_INVALID = -1;
-    static const int      PORTOPENDRAIN_INVALID = -1;
-    static const unsigned PORTSIZE_INVALID = 0xffffffff;
+    static const int PORTSTATE_INVALID = YAPI_INVALID_UINT;
+    static const int PORTDIRECTION_INVALID = YAPI_INVALID_UINT;
+    static const int PORTOPENDRAIN_INVALID = YAPI_INVALID_UINT;
+    static const int PORTPOLARITY_INVALID = YAPI_INVALID_UINT;
+    static const int PORTSIZE_INVALID = YAPI_INVALID_UINT;
     static const Y_OUTPUTVOLTAGE_enum OUTPUTVOLTAGE_USB_5V = Y_OUTPUTVOLTAGE_USB_5V;
-    static const Y_OUTPUTVOLTAGE_enum OUTPUTVOLTAGE_USB_3V3 = Y_OUTPUTVOLTAGE_USB_3V3;
+    static const Y_OUTPUTVOLTAGE_enum OUTPUTVOLTAGE_USB_3V = Y_OUTPUTVOLTAGE_USB_3V;
     static const Y_OUTPUTVOLTAGE_enum OUTPUTVOLTAGE_EXT_V = Y_OUTPUTVOLTAGE_EXT_V;
     static const Y_OUTPUTVOLTAGE_enum OUTPUTVOLTAGE_INVALID = Y_OUTPUTVOLTAGE_INVALID;
     static const string COMMAND_INVALID;
-
-    /**
-     * Returns the logical name of the digital IO port.
-     * 
-     * @return a string corresponding to the logical name of the digital IO port
-     * 
-     * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
-     */
-           string          get_logicalName(void);
-    inline string          logicalName(void)
-    { return this->get_logicalName(); }
-
-    /**
-     * Changes the logical name of the digital IO port. You can use yCheckLogicalName()
-     * prior to this call to make sure that your parameter is valid.
-     * Remember to call the saveToFlash() method of the module if the
-     * modification must be kept.
-     * 
-     * @param newval : a string corresponding to the logical name of the digital IO port
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_logicalName(const string& newval);
-    inline int      setLogicalName(const string& newval)
-    { return this->set_logicalName(newval); }
-
-    /**
-     * Returns the current value of the digital IO port (no more than 6 characters).
-     * 
-     * @return a string corresponding to the current value of the digital IO port (no more than 6 characters)
-     * 
-     * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
-     */
-           string          get_advertisedValue(void);
-    inline string          advertisedValue(void)
-    { return this->get_advertisedValue(); }
 
     /**
      * Returns the digital IO port state: bit 0 represents input 0, and so on.
@@ -162,8 +125,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_PORTSTATE_INVALID.
      */
-           int             get_portState(void);
-    inline int             portState(void)
+    int                 get_portState(void);
+
+    inline int          portState(void)
     { return this->get_portState(); }
 
     /**
@@ -188,13 +152,14 @@ public:
      * 
      * On failure, throws an exception or returns Y_PORTDIRECTION_INVALID.
      */
-           int             get_portDirection(void);
-    inline int             portDirection(void)
+    int                 get_portDirection(void);
+
+    inline int          portDirection(void)
     { return this->get_portDirection(); }
 
     /**
      * Changes the IO direction of all bits of the port: 0 makes a bit an input, 1 makes it an output.
-     * Remember to call the saveToFlash() method  to make sure the setting will be kept after a reboot.
+     * Remember to call the saveToFlash() method  to make sure the setting is kept after a reboot.
      * 
      * @param newval : an integer corresponding to the IO direction of all bits of the port: 0 makes a bit
      * an input, 1 makes it an output
@@ -208,21 +173,23 @@ public:
     { return this->set_portDirection(newval); }
 
     /**
-     * Returns the electrical interface for each bit of the port. 0 makes a bit a regular input/output, 1 makes
-     * it an open-drain (open-collector) input/output.
+     * Returns the electrical interface for each bit of the port. For each bit set to 0  the matching I/O
+     * works in the regular,
+     * intuitive way, for each bit set to 1, the I/O works in reverse mode.
      * 
      * @return an integer corresponding to the electrical interface for each bit of the port
      * 
      * On failure, throws an exception or returns Y_PORTOPENDRAIN_INVALID.
      */
-           int             get_portOpenDrain(void);
-    inline int             portOpenDrain(void)
+    int                 get_portOpenDrain(void);
+
+    inline int          portOpenDrain(void)
     { return this->get_portOpenDrain(); }
 
     /**
      * Changes the electrical interface for each bit of the port. 0 makes a bit a regular input/output, 1 makes
      * it an open-drain (open-collector) input/output. Remember to call the
-     * saveToFlash() method  to make sure the setting will be kept after a reboot.
+     * saveToFlash() method  to make sure the setting is kept after a reboot.
      * 
      * @param newval : an integer corresponding to the electrical interface for each bit of the port
      * 
@@ -235,33 +202,63 @@ public:
     { return this->set_portOpenDrain(newval); }
 
     /**
+     * Returns the polarity of all the bits of the port.  For each bit set to 0, the matching I/O works the regular,
+     * intuitive way; for each bit set to 1, the I/O works in reverse mode.
+     * 
+     * @return an integer corresponding to the polarity of all the bits of the port
+     * 
+     * On failure, throws an exception or returns Y_PORTPOLARITY_INVALID.
+     */
+    int                 get_portPolarity(void);
+
+    inline int          portPolarity(void)
+    { return this->get_portPolarity(); }
+
+    /**
+     * Changes the polarity of all the bits of the port: 0 makes a bit an input, 1 makes it an output.
+     * Remember to call the saveToFlash() method  to make sure the setting will be kept after a reboot.
+     * 
+     * @param newval : an integer corresponding to the polarity of all the bits of the port: 0 makes a bit
+     * an input, 1 makes it an output
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_portPolarity(int newval);
+    inline int      setPortPolarity(int newval)
+    { return this->set_portPolarity(newval); }
+
+    /**
      * Returns the number of bits implemented in the I/O port.
      * 
      * @return an integer corresponding to the number of bits implemented in the I/O port
      * 
      * On failure, throws an exception or returns Y_PORTSIZE_INVALID.
      */
-           unsigned        get_portSize(void);
-    inline unsigned        portSize(void)
+    int                 get_portSize(void);
+
+    inline int          portSize(void)
     { return this->get_portSize(); }
 
     /**
      * Returns the voltage source used to drive output bits.
      * 
-     * @return a value among Y_OUTPUTVOLTAGE_USB_5V, Y_OUTPUTVOLTAGE_USB_3V3 and Y_OUTPUTVOLTAGE_EXT_V
+     * @return a value among Y_OUTPUTVOLTAGE_USB_5V, Y_OUTPUTVOLTAGE_USB_3V and Y_OUTPUTVOLTAGE_EXT_V
      * corresponding to the voltage source used to drive output bits
      * 
      * On failure, throws an exception or returns Y_OUTPUTVOLTAGE_INVALID.
      */
-           Y_OUTPUTVOLTAGE_enum get_outputVoltage(void);
+    Y_OUTPUTVOLTAGE_enum get_outputVoltage(void);
+
     inline Y_OUTPUTVOLTAGE_enum outputVoltage(void)
     { return this->get_outputVoltage(); }
 
     /**
      * Changes the voltage source used to drive output bits.
-     * Remember to call the saveToFlash() method  to make sure the setting will be kept after a reboot.
+     * Remember to call the saveToFlash() method  to make sure the setting is kept after a reboot.
      * 
-     * @param newval : a value among Y_OUTPUTVOLTAGE_USB_5V, Y_OUTPUTVOLTAGE_USB_3V3 and
+     * @param newval : a value among Y_OUTPUTVOLTAGE_USB_5V, Y_OUTPUTVOLTAGE_USB_3V and
      * Y_OUTPUTVOLTAGE_EXT_V corresponding to the voltage source used to drive output bits
      * 
      * @return YAPI_SUCCESS if the call succeeds.
@@ -272,125 +269,14 @@ public:
     inline int      setOutputVoltage(Y_OUTPUTVOLTAGE_enum newval)
     { return this->set_outputVoltage(newval); }
 
-           string          get_command(void);
-    inline string          command(void)
+    string              get_command(void);
+
+    inline string       command(void)
     { return this->get_command(); }
 
     int             set_command(const string& newval);
     inline int      setCommand(const string& newval)
     { return this->set_command(newval); }
-
-    /**
-     * Set a single bit of the I/O port.
-     * 
-     * @param bitno: the bit number; lowest bit is index 0
-     * @param bitval: the value of the bit (1 or 0)
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_bitState(int bitno,int bitval);
-
-    /**
-     * Returns the value of a single bit of the I/O port.
-     * 
-     * @param bitno: the bit number; lowest bit is index 0
-     * 
-     * @return the bit value (0 or 1)
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             get_bitState(int bitno);
-
-    /**
-     * Revert a single bit of the I/O port.
-     * 
-     * @param bitno: the bit number; lowest bit is index 0
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             toggle_bitState(int bitno);
-
-    /**
-     * Change  the direction of a single bit from the I/O port.
-     * 
-     * @param bitno: the bit number; lowest bit is index 0
-     * @param bitdirection: direction to set, 0 makes the bit an input, 1 makes it an output.
-     *         Remember to call the   saveToFlash() method to make sure the setting will be kept after a reboot.
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_bitDirection(int bitno,int bitdirection);
-
-    /**
-     * Change  the direction of a single bit from the I/O port (0 means the bit is an input, 1  an output).
-     * 
-     * @param bitno: the bit number; lowest bit is index 0
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             get_bitDirection(int bitno);
-
-    /**
-     * Change  the electrical interface of a single bit from the I/O port.
-     * 
-     * @param bitno: the bit number; lowest bit is index 0
-     * @param opendrain: value to set, 0 makes a bit a regular input/output, 1 makes
-     *         it an open-drain (open-collector) input/output. Remember to call the
-     *         saveToFlash() method to make sure the setting will be kept after a reboot.
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_bitOpenDrain(int bitno,int opendrain);
-
-    /**
-     * Returns the type of electrical interface of a single bit from the I/O port. (0 means the bit is an
-     * input, 1  an output).
-     * 
-     * @param bitno: the bit number; lowest bit is index 0
-     * 
-     * @return   0 means the a bit is a regular input/output, 1means the b it an open-drain
-     * (open-collector) input/output.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             get_bitOpenDrain(int bitno);
-
-
-    /**
-     * Registers the callback function that is invoked on every change of advertised value.
-     * The callback is invoked only during the execution of ySleep or yHandleEvents.
-     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
-     *         arguments: the function object of which the value has changed, and the character string describing
-     *         the new advertised value.
-     * @noreturn
-     */
-    void registerValueCallback(YDigitalIOUpdateCallback callback);
-
-    void advertiseValue(const string& value);
-
-    /**
-     * Continues the enumeration of digital IO port started using yFirstDigitalIO().
-     * 
-     * @return a pointer to a YDigitalIO object, corresponding to
-     *         a digital IO port currently online, or a null pointer
-     *         if there are no more digital IO port to enumerate.
-     */
-           YDigitalIO      *nextDigitalIO(void);
-    inline YDigitalIO      *next(void)
-    { return this->nextDigitalIO();}
 
     /**
      * Retrieves a digital IO port for a given identifier.
@@ -415,18 +301,180 @@ public:
      * 
      * @return a YDigitalIO object allowing you to drive the digital IO port.
      */
-           static YDigitalIO* FindDigitalIO(const string& func);
-    inline static YDigitalIO* Find(const string& func)
-    { return YDigitalIO::FindDigitalIO(func);}
+    static YDigitalIO*  FindDigitalIO(string func);
+
+    using YFunction::registerValueCallback;
+
     /**
-     * Starts the enumeration of digital IO port currently accessible.
-     * Use the method YDigitalIO.nextDigitalIO() to iterate on
-     * next digital IO port.
+     * Registers the callback function that is invoked on every change of advertised value.
+     * The callback is invoked only during the execution of ySleep or yHandleEvents.
+     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * 
+     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     *         arguments: the function object of which the value has changed, and the character string describing
+     *         the new advertised value.
+     * @noreturn
+     */
+    virtual int         registerValueCallback(YDigitalIOValueCallback callback);
+
+    virtual int         _invokeValueCallback(string value);
+
+    /**
+     * Sets a single bit of the I/O port.
+     * 
+     * @param bitno: the bit number; lowest bit has index 0
+     * @param bitstate: the state of the bit (1 or 0)
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         set_bitState(int bitno,int bitstate);
+
+    /**
+     * Returns the state of a single bit of the I/O port.
+     * 
+     * @param bitno: the bit number; lowest bit has index 0
+     * 
+     * @return the bit state (0 or 1)
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         get_bitState(int bitno);
+
+    /**
+     * Reverts a single bit of the I/O port.
+     * 
+     * @param bitno: the bit number; lowest bit has index 0
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         toggle_bitState(int bitno);
+
+    /**
+     * Changes  the direction of a single bit from the I/O port.
+     * 
+     * @param bitno: the bit number; lowest bit has index 0
+     * @param bitdirection: direction to set, 0 makes the bit an input, 1 makes it an output.
+     *         Remember to call the   saveToFlash() method to make sure the setting is kept after a reboot.
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         set_bitDirection(int bitno,int bitdirection);
+
+    /**
+     * Returns the direction of a single bit from the I/O port (0 means the bit is an input, 1  an output).
+     * 
+     * @param bitno: the bit number; lowest bit has index 0
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         get_bitDirection(int bitno);
+
+    /**
+     * Changes the polarity of a single bit from the I/O port.
+     * 
+     * @param bitno: the bit number; lowest bit has index 0.
+     * @param bitpolarity: polarity to set, 0 makes the I/O work in regular mode, 1 makes the I/O  works
+     * in reverse mode.
+     *         Remember to call the   saveToFlash() method to make sure the setting is kept after a reboot.
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         set_bitPolarity(int bitno,int bitpolarity);
+
+    /**
+     * Returns the polarity of a single bit from the I/O port (0 means the I/O works in regular mode, 1
+     * means the I/O  works in reverse mode).
+     * 
+     * @param bitno: the bit number; lowest bit has index 0
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         get_bitPolarity(int bitno);
+
+    /**
+     * Changes  the electrical interface of a single bit from the I/O port.
+     * 
+     * @param bitno: the bit number; lowest bit has index 0
+     * @param opendrain: 0 makes a bit a regular input/output, 1 makes
+     *         it an open-drain (open-collector) input/output. Remember to call the
+     *         saveToFlash() method to make sure the setting is kept after a reboot.
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         set_bitOpenDrain(int bitno,int opendrain);
+
+    /**
+     * Returns the type of electrical interface of a single bit from the I/O port. (0 means the bit is an
+     * input, 1  an output).
+     * 
+     * @param bitno: the bit number; lowest bit has index 0
+     * 
+     * @return   0 means the a bit is a regular input/output, 1 means the bit is an open-drain
+     *         (open-collector) input/output.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         get_bitOpenDrain(int bitno);
+
+    /**
+     * Triggers a pulse on a single bit for a specified duration. The specified bit
+     * will be turned to 1, and then back to 0 after the given duration.
+     * 
+     * @param bitno: the bit number; lowest bit has index 0
+     * @param ms_duration: desired pulse duration in milliseconds. Be aware that the device time
+     *         resolution is not guaranteed up to the millisecond.
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         pulse(int bitno,int ms_duration);
+
+    /**
+     * Schedules a pulse on a single bit for a specified duration. The specified bit
+     * will be turned to 1, and then back to 0 after the given duration.
+     * 
+     * @param bitno: the bit number; lowest bit has index 0
+     * @param ms_delay : waiting time before the pulse, in milliseconds
+     * @param ms_duration: desired pulse duration in milliseconds. Be aware that the device time
+     *         resolution is not guaranteed up to the millisecond.
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         delayedPulse(int bitno,int ms_delay,int ms_duration);
+
+
+    inline static YDigitalIO* Find(string func)
+    { return YDigitalIO::FindDigitalIO(func); }
+
+    /**
+     * Continues the enumeration of digital IO ports started using yFirstDigitalIO().
      * 
      * @return a pointer to a YDigitalIO object, corresponding to
-     *         the first digital IO port currently online, or a null pointer
-     *         if there are none.
+     *         a digital IO port currently online, or a null pointer
+     *         if there are no more digital IO ports to enumerate.
      */
+           YDigitalIO      *nextDigitalIO(void);
+    inline YDigitalIO      *next(void)
+    { return this->nextDigitalIO();}
+
            static YDigitalIO* FirstDigitalIO(void);
     inline static YDigitalIO* First(void)
     { return YDigitalIO::FirstDigitalIO();}
@@ -461,9 +509,9 @@ public:
 inline YDigitalIO* yFindDigitalIO(const string& func)
 { return YDigitalIO::FindDigitalIO(func);}
 /**
- * Starts the enumeration of digital IO port currently accessible.
+ * Starts the enumeration of digital IO ports currently accessible.
  * Use the method YDigitalIO.nextDigitalIO() to iterate on
- * next digital IO port.
+ * next digital IO ports.
  * 
  * @return a pointer to a YDigitalIO object, corresponding to
  *         the first digital IO port currently online, or a null pointer

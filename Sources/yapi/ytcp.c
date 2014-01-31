@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 12461 2013-08-22 08:58:05Z seb $
+ * $Id: ytcp.c 14711 2014-01-24 14:56:44Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -61,18 +61,61 @@ typedef int socklen_t;
 #include "yhash.h"
 
 #ifdef WIN32
-#ifndef WINCE
-#include <iphlpapi.h>
-#if defined(_MSC_VER) || defined (__BORLANDC__)
-#pragma comment(lib, "Ws2_32.lib")
-#endif
+    #ifndef WINCE
+        #include <iphlpapi.h>
+        #if defined(_MSC_VER) || defined (__BORLANDC__)
+            #pragma comment(lib, "Ws2_32.lib")
+        #endif
+    #else
+        #pragma comment(lib, "Ws2.lib")
+    #endif
 #else
-#pragma comment(lib, "Ws2.lib")
+    #include <unistd.h>
+    #include <fcntl.h>
+    #include <netdb.h>
 #endif
+
+
+//#define PERF_TCP_FUNCTIONS
+#ifdef PERF_TCP_FUNCTIONS 
+
+
+typedef struct {
+    yPerfMon  TCPOpen_socket;
+    yPerfMon  TCPOpen_connect;
+    yPerfMon  TCPOpen_setsockopt_noblock;
+    yPerfMon  TCPOpen_setsockopt_nodelay;
+    yPerfMon  TCPOpenReq_wait;
+    yPerfMon  TCPOpenReq;
+    yPerfMon  tmp1;
+    yPerfMon  tmp2;
+    yPerfMon  tmp3;
+    yPerfMon  tmp4;
+} yTcpPerfMonSt;
+
+yTcpPerfMonSt yTcpPerf;
+
+
+#define YPERF_TCP_ENTER(NAME) {yTcpPerf.NAME.count++;yTcpPerf.NAME.tmp=yapiGetTickCount();}
+#define YPERF_TCP_LEAVE(NAME) {yTcpPerf.NAME.leave++;yTcpPerf.NAME.totaltime += yapiGetTickCount()- yTcpPerf.NAME.tmp;}
+
+
+void dumpYTcpPerf(void)
+{
+    dumpYPerfEntry(&yTcpPerf.TCPOpen_socket,"TCPOpen:socket");
+    dumpYPerfEntry(&yTcpPerf.TCPOpen_connect,"TCPOpen:connect");
+    dumpYPerfEntry(&yTcpPerf.TCPOpen_setsockopt_noblock,"TCPOpen:sockopt_noblock");
+    dumpYPerfEntry(&yTcpPerf.TCPOpen_setsockopt_nodelay,"TCPOpen:sockopt_nodelay");
+    dumpYPerfEntry(&yTcpPerf.TCPOpenReq_wait,"TCPOpenReq:wait");
+    dumpYPerfEntry(&yTcpPerf.TCPOpenReq,"TCPOpenReq");
+    dumpYPerfEntry(&yTcpPerf.tmp1,"TCP:tmp1");
+    dumpYPerfEntry(&yTcpPerf.tmp2,"TCP:tmp2");
+    dumpYPerfEntry(&yTcpPerf.tmp3,"TCP:tmp3");
+    dumpYPerfEntry(&yTcpPerf.tmp4,"TCP:tmp4");
+}
 #else
-#include <unistd.h>
-#include <fcntl.h>
-#include <netdb.h>
+#define YPERF_TCP_ENTER(NAME)
+#define YPERF_TCP_LEAVE(NAME)
 #endif
 
 
@@ -112,7 +155,7 @@ int yNetSetErrEx(u32 line,unsigned err,char *errmsg)
 #endif
     return YAPI_IO_ERROR;
 }
-#ifdef Y_UPNP_DETECT
+#if 1
 #define yNetLogErr()  yNetLogErrEx(__LINE__,SOCK_ERR)
 static int yNetLogErrEx(u32 line,unsigned err)
 {
@@ -202,20 +245,6 @@ void yFreeWakeUpSocket(WakeUpSocket *wuce)
 
 
 
-int yTcpInit(char *errmsg)
-{
-#ifdef WINDOWS_API
-    // Initialize Winsock 2.2
-    WSADATA wsaData;
-    int iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
-    if (iResult != 0){
-        return YERRMSG(YAPI_IO_ERROR,"Unable to start Windows Socket");
-    }
-#endif
-    return YAPI_SUCCESS;
-}
-
-
 u32 yResolveDNS(const char *name,char *errmsg)
 {
     u32 ipv4=0;
@@ -252,13 +281,16 @@ static int yTcpOpen(YSOCKET *newskt, u32 ip, u16 port, char *errmsg)
 #endif    
 #endif
     
+    YPERF_TCP_ENTER(TCPOpen_socket);
     *newskt = INVALID_SOCKET;
     skt = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    YPERF_TCP_LEAVE(TCPOpen_socket);
     if (skt == INVALID_SOCKET) {
         REPORT_ERR("Error at socket()");
         return YAPI_IO_ERROR;
     }
     //dbglog("ytcpOpen %X:%x: skt= %x\n",ip,port,skt);
+    YPERF_TCP_ENTER(TCPOpen_connect);
     //----------------------
     // The sockaddr_in structure specifies the address family,
     // IP address, and port of the server to be connected to.
@@ -269,12 +301,14 @@ static int yTcpOpen(YSOCKET *newskt, u32 ip, u16 port, char *errmsg)
     //----------------------
     // Connect to server.
     iResult = connect(skt, ( struct sockaddr *) &clientService, sizeof(clientService) );
+    YPERF_TCP_LEAVE(TCPOpen_connect);
     if ( iResult == SOCKET_ERROR) {
         REPORT_ERR("Unable to connect to server");
         closesocket (skt);
         return YAPI_IO_ERROR;
     }
 
+    YPERF_TCP_ENTER(TCPOpen_setsockopt_noblock);
     //set socket as non blocking
 #ifdef WINDOWS_API
     flags=1;
@@ -286,7 +320,8 @@ static int yTcpOpen(YSOCKET *newskt, u32 ip, u16 port, char *errmsg)
     setsockopt(skt, SOL_SOCKET, SO_NOSIGPIPE, (void *)&noSigpipe, sizeof(int));
 #endif    
 #endif
-    
+    YPERF_TCP_LEAVE(TCPOpen_setsockopt_noblock);
+    YPERF_TCP_ENTER(TCPOpen_setsockopt_nodelay);
     if(setsockopt(skt, IPPROTO_TCP, TCP_NODELAY, &noDelay, sizeof(noDelay)) < 0) {
 #if 0
         switch(errno) {
@@ -311,8 +346,8 @@ static int yTcpOpen(YSOCKET *newskt, u32 ip, u16 port, char *errmsg)
 #endif
         dbglog("SetSockOpt TCP_NODELAY failed %d\n",errno);
     }
+    YPERF_TCP_LEAVE(TCPOpen_setsockopt_nodelay);
     *newskt = skt;
-
     return YAPI_SUCCESS;
 }
 
@@ -376,7 +411,52 @@ void yTcpInitReq(struct _TcpReqSt *req, struct _NetHubSt *hub)
     req->replybufsize = 1024;
     req->replybuf = yMalloc(req->replybufsize);
     yInitializeCriticalSection(&req->access);
+    yCreateManualEvent(&req->finished,1);
 }
+
+
+#define YDNS_CACHE_SIZE 16
+#define YDNS_CACHE_VALIDITY 600000u //10 minutes
+typedef struct {
+	yUrlRef url;
+	u32		ip;
+	u64		time;
+} DnsCache;
+
+DnsCache dnsCache[YDNS_CACHE_SIZE];
+
+
+static u32 resolveDNSCache(yUrlRef url, char *errmsg)
+{
+	int i,firstFree=-1;
+	char buffer[YOCTO_HOSTNAME_NAME];
+	u16  port;
+    u32  ip;
+
+	for (i=0;i<YDNS_CACHE_SIZE;i++) {
+		if (dnsCache[i].url ==url) {
+			break;
+		}
+		if(firstFree <0 && dnsCache[i].url == INVALID_HASH_IDX){
+			firstFree = i;
+		}
+	}
+	if (i< YDNS_CACHE_SIZE) {
+		if ( (u64) (yapiGetTickCount() - dnsCache[i].time) <= YDNS_CACHE_VALIDITY ){
+			return dnsCache[i].ip;
+		}
+		firstFree=i;
+	}
+	yHashGetUrlPort(url, buffer,&port);
+	ip =yResolveDNS(buffer,errmsg);
+	if (ip != 0 && firstFree < YDNS_CACHE_SIZE) {
+		dnsCache[firstFree].url  = url;
+		dnsCache[firstFree].ip   = ip;
+		dnsCache[firstFree].time = yapiGetTickCount();
+	}
+	return ip;
+}
+
 
 
 static int yTcpOpenReqEx(struct _TcpReqSt *req, char *errmsg)
@@ -386,10 +466,14 @@ static int yTcpOpenReqEx(struct _TcpReqSt *req, char *errmsg)
     u16  port;
     int  res;
     
+    YPERF_TCP_ENTER(tmp1);
     switch(yHashGetUrlPort(req->hub->url, buffer,&port)){
         case NAME_URL:
-            ip = yResolveDNS(buffer,errmsg);
-            if(ip==0){ return YAPI_IO_ERROR;}
+            ip = resolveDNSCache(req->hub->url,errmsg);
+            if(ip==0){ 
+                YPERF_TCP_LEAVE(tmp1);
+                return YAPI_IO_ERROR;
+            }
             break;
         case IP_URL:
             ip = inet_addr(buffer);
@@ -398,6 +482,7 @@ static int yTcpOpenReqEx(struct _TcpReqSt *req, char *errmsg)
             res = YERRMSG(YAPI_IO_ERROR,"not an IP hub");
             req->errcode = res;
             req->skt = INVALID_SOCKET;        
+            YPERF_TCP_LEAVE(tmp1);
             return res;
     }
     
@@ -405,12 +490,15 @@ static int yTcpOpenReqEx(struct _TcpReqSt *req, char *errmsg)
     req->replysize = 0;
     req->errcode = YAPI_SUCCESS;
     
+    YPERF_TCP_ENTER(tmp2);
     res = yTcpOpen(&req->skt, ip, port, errmsg);
     if(YISERR(res)) {
         // yTcpOpen has reset the socket to INVALID
         yTcpClose(req->skt);
         req->errcode = res;
         req->skt = INVALID_SOCKET;        
+        YPERF_TCP_LEAVE(tmp2);
+        YPERF_TCP_LEAVE(tmp1);
         return res;
     }
 
@@ -433,6 +521,8 @@ static int yTcpOpenReqEx(struct _TcpReqSt *req, char *errmsg)
         last =p;
     }
     *p++ = '\r'; *p++ = '\n';
+    YPERF_TCP_LEAVE(tmp2);
+    YPERF_TCP_ENTER(tmp3);
     // insert authorization header in needed
     yEnterCriticalSection(&req->hub->authAccess);
     if(req->hub->user && req->hub->realm) {        
@@ -452,6 +542,8 @@ static int yTcpOpenReqEx(struct _TcpReqSt *req, char *errmsg)
         p = auth+strlen(auth);
     }
     yLeaveCriticalSection(&req->hub->authAccess);
+    YPERF_TCP_LEAVE(tmp3);
+    YPERF_TCP_ENTER(tmp4);
     YSTRCPY(p, (int)(req->headerbuf+req->headerbufsize-p), "Connection: close\r\n\r\n");
     //write header
     res = yTcpWrite(req->skt, req->headerbuf, (int)strlen(req->headerbuf), errmsg);
@@ -459,6 +551,8 @@ static int yTcpOpenReqEx(struct _TcpReqSt *req, char *errmsg)
         yTcpClose(req->skt);
         req->errcode = res;
         req->skt = INVALID_SOCKET;        
+        YPERF_TCP_LEAVE(tmp4);
+        YPERF_TCP_LEAVE(tmp1);
         return res;
     }
     if(req->bodysize > 0){
@@ -468,10 +562,13 @@ static int yTcpOpenReqEx(struct _TcpReqSt *req, char *errmsg)
             yTcpClose(req->skt);
             req->errcode = res;
             req->skt = INVALID_SOCKET;        
+            YPERF_TCP_LEAVE(tmp4);
+            YPERF_TCP_LEAVE(tmp1);
             return res;
         }
     }
-            
+    YPERF_TCP_LEAVE(tmp4);
+    YPERF_TCP_LEAVE(tmp1);
     
     return YAPI_SUCCESS;
 }
@@ -479,15 +576,21 @@ static int yTcpOpenReqEx(struct _TcpReqSt *req, char *errmsg)
 int  yTcpOpenReq(struct _TcpReqSt *req, const char *request, int reqlen, int isAsync, char *errmsg)
 {
     int  minlen,i,res;
+
+	YPERF_TCP_ENTER(TCPOpenReq_wait);    
+	YPERF_TCP_ENTER(TCPOpenReq);
+
     
+    yWaitForEvent(&req->finished,100);
     yEnterCriticalSection(&req->access);
     while(req->skt != INVALID_SOCKET) {
         // There is an ongoing request to be finished
         yLeaveCriticalSection(&req->access);
-        yApproximateSleep(2); //fixme: use select instead
+        yWaitForEvent(&req->finished,100);
         yEnterCriticalSection(&req->access);
     }
     
+	YPERF_TCP_LEAVE(TCPOpenReq_wait);    
     if (request[0]=='G' && request[1]=='E' && request[2]=='T'){
         //for GET request discard all exept the first line
         for(i = 0; i < reqlen; i++) {
@@ -533,9 +636,11 @@ int  yTcpOpenReq(struct _TcpReqSt *req, const char *request, int reqlen, int isA
     res = yTcpOpenReqEx(req, errmsg);
     if(res == YAPI_SUCCESS) {
         req->isAsyncIO = isAsync;
+        yResetEvent(&req->finished);
     }
     yLeaveCriticalSection(&req->access);    
     
+	YPERF_TCP_LEAVE(TCPOpenReq);
     return res;
 }
 
@@ -600,6 +705,7 @@ int yTcpSelectReq(struct _TcpReqSt **reqs, int size, u64 ms, WakeUpSocket *wuce,
                     yTcpClose(req->skt);
                     req->isAsyncIO = 0;
                     req->skt = INVALID_SOCKET;
+                    ySetEvent(&req->finished);
                     req->errcode = res;
                 } else if(res > 0) {
                     req->replysize += res;
@@ -621,6 +727,7 @@ int yTcpSelectReq(struct _TcpReqSt **reqs, int size, u64 ms, WakeUpSocket *wuce,
                                     yTcpClose(req->skt);
                                     req->isAsyncIO = 0;
                                     req->skt = INVALID_SOCKET;
+                                    ySetEvent(&req->finished);
                                     req->errcode = YAPI_UNAUTHORIZED;
                                 } else if(yParseWWWAuthenticate(req->replybuf, req->replysize, &method, &realm, &qop, &nonce, &opaque) >= 0) {
                                     // Authentication header fully received, we can close the connection
@@ -647,6 +754,7 @@ int yTcpSelectReq(struct _TcpReqSt **reqs, int size, u64 ms, WakeUpSocket *wuce,
                                     } else {
                                         // unsupported authentication method for devices, give up
                                         req->errcode = YAPI_UNAUTHORIZED;
+                                        ySetEvent(&req->finished);
                                     }
                                 }
                             }
@@ -730,6 +838,7 @@ void yTcpCloseReq(struct _TcpReqSt *req)
         yTcpClose(req->skt);
         req->isAsyncIO = 0;
         req->skt = INVALID_SOCKET;
+        ySetEvent(&req->finished);
     }
     req->isAsyncIO = 0;
     yLeaveCriticalSection(&req->access);
@@ -744,12 +853,35 @@ void yTcpFreeReq(struct _TcpReqSt *req)
     if(req->headerbuf)  yFree(req->headerbuf);
     if(req->bodybuf)    yFree(req->bodybuf);
     if(req->replybuf)   yFree(req->replybuf);
+    yCloseEvent(&req->finished);
     yDeleteCriticalSection(&req->access);    
     memset(req, 0, sizeof(struct _TcpReqSt));
 }
 
+
+int yTcpInit(char *errmsg)
+{
+	int i;
+#ifdef WINDOWS_API
+    // Initialize Winsock 2.2
+    WSADATA wsaData;
+    int iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
+    if (iResult != 0){
+        return YERRMSG(YAPI_IO_ERROR,"Unable to start Windows Socket");
+    }
+#endif
+	for (i=0; i<YDNS_CACHE_SIZE;i++){
+		dnsCache[i].url = INVALID_HASH_IDX;
+	}
+    return YAPI_SUCCESS;
+}
+
 void yTcpShutdown(void)
 {
+
+#ifdef PERF_TCP_FUNCTIONS 
+    dumpYTcpPerf();
+#endif
 #ifdef WINDOWS_API
     WSACleanup();
 #endif
@@ -757,85 +889,123 @@ void yTcpShutdown(void)
 
 
 
-#ifdef Y_UPNP_DETECT
-
-
 static const char *discovery =
                 "M-SEARCH * HTTP/1.1\r\n"
-                "HOST:" UPNP_MCAST_ADDR ":" TOSTRING(UPNP_PORT) "\r\n"
+                "HOST:" YSSDP_MCAST_ADDR_STR ":" TOSTRING(YSSDP_PORT) "\r\n"
                 "MAN:\"ssdp:discover\"\r\n"
                 "MX:5\r\n"
-                "ST:" SSDP_URN_YOCTOPUCE"\r\n"
+                "ST:" YSSDP_URN_YOCTOPUCE"\r\n"
                 "\r\n";
 
 
-#define UPNP_NOTIFY "NOTIFY * HTTP/1.1\r\n"
-#define UPNP_M_SEARCH "M-SEARCH * HTTP/1.1\r\n"
-#define UPNP_HTTP "HTTP/1.1 200 OK\r\n"
-#define UPNP_LINE_MAX_LEN 80u
+#define SSDP_NOTIFY "NOTIFY * HTTP/1.1\r\n"
+#define SSDP_M_SEARCH "M-SEARCH * HTTP/1.1\r\n"
+#define SSDP_HTTP "HTTP/1.1 200 OK\r\n"
+#define SSDP_LINE_MAX_LEN 80u
 
 #define UDP_IN_FIFO yFifoBuf
 
 
-static void yupnpUpdateCache(const char *uuid,const char * url, int cacheValidity)
+static char  hexatochar(char hi_c, char lo_c)
 {
-    char errmsg[YOCTO_ERRMSG_LEN];
-    int res;
+	u8 hi, lo;
+	hi = ((u8)(hi_c)& 0x1f) ^ 0x10;
+	lo = ((u8)(lo_c) & 0x1f) ^ 0x10;
+	if (hi & 0x10) hi -= 7;
+	if (lo & 0x10) lo -= 7;
+	return (hi << 4) + lo;
+}
+
+static void uuidToSerial(const char * uuid, char *serial)
+{
+	int i;
+	int len;
+	char *s = serial;
+	const char *u = uuid;
+
+	for (i = 0, u = uuid; i< 4; i++, u += 2){
+		*s++ = hexatochar(*u, *(u + 1));
+	}
+	u++;
+	for (; i< 6; i++, u += 2){
+		*s++ = hexatochar(*u, *(u + 1));
+	}
+	u++;
+	for (; i< 8; i++, u += 2){
+		*s++ = hexatochar(*u, *(u + 1));
+	}
+	*s++ ='-';
+	u = strstr(uuid, "-COFF-EE");
+	u += 8;
+	while (*u == '0') u++;
+	len = YSTRLEN(u);
+	for (i = len; i<5; i++){
+		*s++ = '0';
+	}
+	*s = 0;
+	YSTRCAT(serial, YOCTO_SERIAL_LEN, u);
+}
+
+
+static void ySSDPUpdateCache(SSDPInfos *SSDP, const char *uuid, const char * url, int cacheValidity)
+{
     int i;
 
     if(cacheValidity<=0)
         cacheValidity = 1800;
     cacheValidity*=1000;
 
-    for (i=0; i<NBMAX_NET_HUB ; i++){
-        UNPNP_CACHE_ENTRY *p = yContext->upnpCache[i];
+	for (i = 0; i<NB_SSDP_CACHE_ENTRY; i++){
+        SSDP_CACHE_ENTRY *p = SSDP->SSDPCache[i];
         if(p== NULL)
             break;
         if (YSTRCMP(uuid,p->uuid)==0){
-            if(YSTRCMP(url,p->url)){
-                yapiUnregisterHub(p->url);
-                YSTRCPY(p->url,UPNP_URL_LEN,url);
-                res =yapiRegisterHub(url,errmsg);
-                if(res <0){
-                    dbglog("upnp:%s",errmsg);
-                }
-            }
-            dbglog("refresh entry (%s -> %s (for %d)\n",uuid,url);
             p->detectedTime = yapiGetTickCount();
             p->maxAge = cacheValidity;
+
+			if (YSTRCMP(url, p->url)){
+				if (SSDP->callback) {
+					SSDP->callback(p->serial, url, p->url);
+				}
+				YSTRCPY(p->url, SSDP_URL_LEN, url);
+			}
+			else {
+				if (SSDP->callback){
+					SSDP->callback(p->serial, url, NULL);
+				}
+			}
             return;
         }
     }
-    if(i <NBMAX_NET_HUB){
-        UNPNP_CACHE_ENTRY *p = yMalloc(sizeof(UNPNP_CACHE_ENTRY));
-        YSTRCPY(p->uuid,UPNP_URL_LEN,uuid);
-        YSTRCPY(p->url,UPNP_URL_LEN,url);
+	if (i <NB_SSDP_CACHE_ENTRY){
+		SSDP_CACHE_ENTRY *p = yMalloc(sizeof(SSDP_CACHE_ENTRY));
+        YSTRCPY(p->uuid,SSDP_URL_LEN,uuid);
+		uuidToSerial(p->uuid, p->serial);
+        YSTRCPY(p->url,SSDP_URL_LEN,url);
         p->detectedTime = yapiGetTickCount();
         p->maxAge = cacheValidity;
-        dbglog("refresh entry (%s -> %s)\n",uuid,url);
-        res =yapiRegisterHub(url,errmsg);
-        if(res <0){
-            dbglog("upnp:%s",errmsg);
+        SSDP->SSDPCache[i] = p;
+        if (SSDP->callback){
+            SSDP->callback(p->serial, p->url, NULL);
         }
-        yContext->upnpCache[i] = p;
     }
 }
 
-static void yupnpCheckExpiration()
+static void ySSDPCheckExpiration(SSDPInfos *SSDP)
 {
-    char errmsg[YOCTO_ERRMSG_LEN];
-    int res;
     int i;
     u64  now =yapiGetTickCount();
-
     
-    for (i=0; i<NBMAX_NET_HUB ; i++){
-        UNPNP_CACHE_ENTRY *p = yContext->upnpCache[i];
+	for (i = 0; i<NB_SSDP_CACHE_ENTRY; i++){
+		SSDP_CACHE_ENTRY *p = SSDP->SSDPCache[i];
         if(p== NULL)
             break;
-        if ((u64)(now -p->detectedTime) > p->maxAge) { 
-            dbglog("SSDP entry expiration (%s -> %s (for %d)\n",p->uuid,p->url);
-            yapiUnregisterHub(p->url);
+        if ((u64)(now - p->detectedTime) > p->maxAge) { 
+            p->maxAge=0;
+
+            if (SSDP->callback){
+                SSDP->callback(p->serial, NULL, p->url);
+            }
         }
     }
 }
@@ -843,7 +1013,7 @@ static void yupnpCheckExpiration()
 
 
 
-static void yupnp_parseSSPDMessage(char *message,int msg_len)
+static void ySSDP_parseSSPDMessage(SSDPInfos *SSDP, char *message,int msg_len)
 {
     int len =0;
     char *p,*start,*lastsep;
@@ -855,13 +1025,13 @@ static void yupnp_parseSSPDMessage(char *message,int msg_len)
         return;
     }
 
-    if (memcmp(message,UPNP_HTTP,YSTRLEN(UPNP_HTTP))==0) {
-        len=YSTRLEN(UPNP_HTTP);
-    } else if (memcmp(message,UPNP_NOTIFY,YSTRLEN(UPNP_NOTIFY))==0) {
-        len=YSTRLEN(UPNP_NOTIFY);
+    if (memcmp(message,SSDP_HTTP,YSTRLEN(SSDP_HTTP))==0) {
+        len=YSTRLEN(SSDP_HTTP);
+    } else if (memcmp(message,SSDP_NOTIFY,YSTRLEN(SSDP_NOTIFY))==0) {
+        len=YSTRLEN(SSDP_NOTIFY);
     }
     if (len){
-        //dbglog("UPNP Message:\n%s\n",message);
+        //dbglog("SSDP Message:\n%s\n",message);
         start = p = lastsep= message +len;
         msg_len-=len;
         while( msg_len && *p ){
@@ -901,10 +1071,9 @@ static void yupnp_parseSSPDMessage(char *message,int msg_len)
             msg_len--;
         }
         if(location && usn && cache){
-            char last='_';
             const char *uuid,*urn;
             int         cacheVal;
-            //dbglog("UPNP: location: %s %s %s\n\n",location,usn,cache);
+            //dbglog("SSDP: location: %s %s %s\n\n",location,usn,cache);
             // parse USN
             p=usn;
             while (*p && *p++!=':');
@@ -926,24 +1095,24 @@ static void yupnp_parseSSPDMessage(char *message,int msg_len)
             while (*p && *p++!='=');
             if(!*p) return;
             cacheVal = atoi(p);
-            if (YSTRCMP(urn,SSDP_URN_YOCTOPUCE)==0){
-                yupnpUpdateCache(uuid,location,cacheVal);
+            if (YSTRCMP(urn,YSSDP_URN_YOCTOPUCE)==0){
+                ySSDPUpdateCache(SSDP, uuid, location, cacheVal);
             }
         }
     } 
 #if 0
     else {
-        dbglog("UPNP drop invalid message:\n%s\n",message);
+        dbglog("SSDP drop invalid message:\n%s\n",message);
     }
 #endif
 }
 
 
 
-static void* yupnp_thread(void* ctx)
+static void* ySSDP_thread(void* ctx)
 {
     yThread     *thread=(yThread*)ctx;
-    UPNPSocket *upnp = (UPNPSocket*)thread->ctx;
+	SSDPInfos *SSDP = (SSDPInfos*)thread->ctx;
     fd_set      fds;
     u8          buffer[1536];
     struct timeval timeout;
@@ -956,20 +1125,19 @@ static void* yupnp_thread(void* ctx)
     yFifoInit(&inFifo,buffer,sizeof(buffer));
 
     while (!yThreadMustEnd(thread)) {
-        yupnpCheckExpiration();
         memset(&timeout,0,sizeof(timeout));
         timeout.tv_sec = (long)1;
         timeout.tv_usec = (int)0;
         /* wait for data */
         FD_ZERO(&fds);
-        FD_SET(upnp->request_sock,&fds);
-        if(upnp->notify_sock!=INVALID_SOCKET) {
-            FD_SET(upnp->notify_sock,&fds);
-            if(upnp->notify_sock>sktmax){
-                sktmax = upnp->notify_sock;
+        FD_SET(SSDP->request_sock,&fds);
+        if(SSDP->notify_sock!=INVALID_SOCKET) {
+            FD_SET(SSDP->notify_sock,&fds);
+            if(SSDP->notify_sock>sktmax){
+                sktmax = SSDP->notify_sock;
             }
         }
-        sktmax = upnp->request_sock;
+        sktmax = SSDP->request_sock;
         res = select((int)sktmax+1,&fds,NULL,NULL,&timeout);
         if (res<0) {
     #ifndef WINDOWS_API
@@ -982,19 +1150,21 @@ static void* yupnp_thread(void* ctx)
                 break;
             }
         }
+        if(!yContext) continue;
+        ySSDPCheckExpiration(SSDP);
         if (res!=0) {
-            if (FD_ISSET(upnp->request_sock,&fds)) {
-                received = (int)recv(upnp->request_sock, (char*)buffer, sizeof(buffer)-1, 0);
+            if (FD_ISSET(SSDP->request_sock,&fds)) {
+                received = (int)recv(SSDP->request_sock, (char*)buffer, sizeof(buffer)-1, 0);
                 if (received>0) {
                     buffer[received]=0;
-                    yupnp_parseSSPDMessage((char*) buffer,received);
+                    ySSDP_parseSSPDMessage(SSDP, (char*) buffer,received);
                 }
             }
-            if (FD_ISSET(upnp->notify_sock,&fds)) {
-                received = (int)recv(upnp->notify_sock, (char *) buffer, sizeof(buffer)-1, 0);
+            if (FD_ISSET(SSDP->notify_sock,&fds)) {
+                received = (int)recv(SSDP->notify_sock, (char *) buffer, sizeof(buffer)-1, 0);
                 if (received>0) {
                     buffer[received]=0;
-                    yupnp_parseSSPDMessage((char*) buffer,received);
+                    ySSDP_parseSSPDMessage(SSDP, (char*) buffer,received);
                 }
             }
         }
@@ -1005,17 +1175,17 @@ static void* yupnp_thread(void* ctx)
 }
 
 
-int yUPNPDiscover(UPNPSocket *upnp, char *errmsg)
+int ySSDPDiscover(SSDPInfos *SSDP, char *errmsg)
 {
     int sent,len;
     struct sockaddr_in sockaddr_dst;
 
     memset(&sockaddr_dst, 0, sizeof(struct sockaddr_in));   
     sockaddr_dst.sin_family = AF_INET;
-    sockaddr_dst.sin_port = htons(UPNP_PORT);
-    sockaddr_dst.sin_addr.s_addr = inet_addr(UPNP_MCAST_ADDR);
+    sockaddr_dst.sin_port = htons(YSSDP_PORT);
+    sockaddr_dst.sin_addr.s_addr = inet_addr(YSSDP_MCAST_ADDR_STR);
     len =  (int) strlen(discovery);
-    sent = (int) sendto(upnp->request_sock, discovery, len, 0, (struct sockaddr *)&sockaddr_dst,sizeof(struct sockaddr_in));
+    sent = (int) sendto(SSDP->request_sock, discovery, len, 0, (struct sockaddr *)&sockaddr_dst,sizeof(struct sockaddr_in));
     if (sent < 0) {
         return yNetSetErr();
     }
@@ -1023,23 +1193,30 @@ int yUPNPDiscover(UPNPSocket *upnp, char *errmsg)
 }
 
 
-int yUPNPStart(UPNPSocket *upnp, char *errmsg)
+int ySSDPStart(SSDPInfos *SSDP, ssdpHubDiscoveryCallback callback, char *errmsg)
 {
     u32     optval;
     socklen_t    socksize;
     struct sockaddr_in     sockaddr;
     struct ip_mreq     mcast_membership; 
 
+    if (SSDP->started)
+        return YAPI_SUCCESS;
+
+    memset(SSDP, 0, sizeof(SSDPInfos));
+	SSDP->callback = callback;
+
+
     //create M-search socker
-    upnp->request_sock = socket(PF_INET,SOCK_DGRAM,IPPROTO_UDP);
-    if (upnp->request_sock == INVALID_SOCKET) {
+    SSDP->request_sock = socket(PF_INET,SOCK_DGRAM,IPPROTO_UDP);
+    if (SSDP->request_sock == INVALID_SOCKET) {
         return yNetSetErr();
     }
    
     optval = 1; 
-    setsockopt(upnp->request_sock,SOL_SOCKET,SO_REUSEADDR,(char *)&optval,sizeof(optval));
+    setsockopt(SSDP->request_sock,SOL_SOCKET,SO_REUSEADDR,(char *)&optval,sizeof(optval));
 #ifdef SO_REUSEPORT
-    setsockopt(upnp->request_sock,SOL_SOCKET,SO_REUSEPORT,(char *)&optval,sizeof(optval));
+    setsockopt(SSDP->request_sock,SOL_SOCKET,SO_REUSEPORT,(char *)&optval,sizeof(optval));
 #endif
 
     // set port to 0 since we accept any port
@@ -1047,70 +1224,86 @@ int yUPNPStart(UPNPSocket *upnp, char *errmsg)
     memset(&sockaddr,0,socksize);
     sockaddr.sin_family = AF_INET;
     sockaddr.sin_addr.s_addr =INADDR_ANY;
-    if (bind(upnp->request_sock ,(struct sockaddr *)&sockaddr,socksize)<0) {
+    if (bind(SSDP->request_sock ,(struct sockaddr *)&sockaddr,socksize)<0) {
         return yNetSetErr();
     }
 
     //create NOTIFY socker
-    upnp->notify_sock = socket(PF_INET,SOCK_DGRAM,IPPROTO_UDP);
-    if (upnp->notify_sock == INVALID_SOCKET) {
+    SSDP->notify_sock = socket(PF_INET,SOCK_DGRAM,IPPROTO_UDP);
+    if (SSDP->notify_sock == INVALID_SOCKET) {
         return yNetSetErr();
     }
    
     optval = 1; 
-    setsockopt(upnp->notify_sock,SOL_SOCKET,SO_REUSEADDR,(char *)&optval,sizeof(optval));
+    setsockopt(SSDP->notify_sock,SOL_SOCKET,SO_REUSEADDR,(char *)&optval,sizeof(optval));
 #ifdef SO_REUSEPORT
-    setsockopt(upnp->notify_sock,SOL_SOCKET,SO_REUSEPORT,(char *)&optval,sizeof(optval));
+    setsockopt(SSDP->notify_sock,SOL_SOCKET,SO_REUSEPORT,(char *)&optval,sizeof(optval));
 #endif
 
     // set port to 0 since we accept any port
     socksize=sizeof(sockaddr);
     memset(&sockaddr,0,socksize);
     sockaddr.sin_family = AF_INET;
-    sockaddr.sin_port = htons(UPNP_PORT);
+    sockaddr.sin_port = htons(YSSDP_PORT);
     sockaddr.sin_addr.s_addr =INADDR_ANY;
-    if (bind(upnp->notify_sock ,(struct sockaddr *)&sockaddr,socksize)<0) {
+    if (bind(SSDP->notify_sock ,(struct sockaddr *)&sockaddr,socksize)<0) {
         return yNetSetErr();
     }
 
-    mcast_membership.imr_multiaddr.s_addr = inet_addr(UPNP_MCAST_ADDR);
+    mcast_membership.imr_multiaddr.s_addr = inet_addr(YSSDP_MCAST_ADDR_STR);
     mcast_membership.imr_interface.s_addr = INADDR_ANY;    
-    if (setsockopt(upnp->notify_sock,IPPROTO_IP,IP_ADD_MEMBERSHIP,(void*)&mcast_membership,sizeof(mcast_membership))<0){
-        dbglog("Unable to add multicat membership for UPNP");
+    if (setsockopt(SSDP->notify_sock,IPPROTO_IP,IP_ADD_MEMBERSHIP,(void*)&mcast_membership,sizeof(mcast_membership))<0){
+        dbglog("Unable to add multicat membership for SSDP");
         yNetLogErr();
-        closesocket(upnp->notify_sock);
-        upnp->notify_sock=INVALID_SOCKET;
+        closesocket(SSDP->notify_sock);
+        SSDP->notify_sock=INVALID_SOCKET;
     }
     //yThreadCreate will not create a new thread if there is already one running
-    if(yThreadCreate(&upnp->thread,yupnp_thread,upnp)<0){
+    if(yThreadCreate(&SSDP->thread,ySSDP_thread,SSDP)<0){
         return YERRMSG(YAPI_IO_ERROR,"Unable to start helper thread");
     }
-    return yUPNPDiscover(upnp,errmsg);
+    SSDP->started++;
+    return ySSDPDiscover(SSDP,errmsg);
     //return YAPI_SUCCESS;
 }
 
 
-void  yUPNPStop(UPNPSocket *upnp)
+void  ySSDPStop(SSDPInfos *SSDP)
 {
+    int i;
 
-   if(yThreadIsRunning(&upnp->thread)) {
+    if(yThreadIsRunning(&SSDP->thread)) {
         u64 timeref;
-        yThreadRequestEnd(&upnp->thread);
+        yThreadRequestEnd(&SSDP->thread);
         timeref=yapiGetTickCount();
-        while(yThreadIsRunning(&upnp->thread) && (yapiGetTickCount()-timeref >1000) ) {
+        while(yThreadIsRunning(&SSDP->thread) && (yapiGetTickCount()-timeref >1000) ) {
             yApproximateSleep(10);
         }
-        yThreadKill(&upnp->thread);
+        yThreadKill(&SSDP->thread);
     }
 
-    if ( upnp->request_sock != INVALID_SOCKET) {
-        closesocket(upnp->request_sock);
-        upnp->request_sock = INVALID_SOCKET;
+    //unregister all detected hubs
+	for (i = 0; i<NB_SSDP_CACHE_ENTRY; i++){
+		SSDP_CACHE_ENTRY *p = SSDP->SSDPCache[i];
+        if(p== NULL)
+            continue;
+        if (p->maxAge) { 
+            yapiUnregisterHub(p->url);
+            p->maxAge=0;
+            if (SSDP->callback)
+                SSDP->callback(p->serial, NULL, p->url);
+        }
+        yFree(p);
     }
-    if ( upnp->notify_sock != INVALID_SOCKET) {
-        closesocket(upnp->notify_sock);
-        upnp->notify_sock = INVALID_SOCKET;
+
+
+    if ( SSDP->request_sock != INVALID_SOCKET) {
+        closesocket(SSDP->request_sock);
+        SSDP->request_sock = INVALID_SOCKET;
     }
+    if ( SSDP->notify_sock != INVALID_SOCKET) {
+        closesocket(SSDP->notify_sock);
+        SSDP->notify_sock = INVALID_SOCKET;
+    }
+    SSDP->started--;
 }
-
-#endif

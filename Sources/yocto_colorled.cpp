@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorled.cpp 12324 2013-08-13 15:10:31Z mvuilleu $
+ * $Id: yocto_colorled.cpp 14700 2014-01-23 15:40:44Z seb $
  *
  * Implements yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -47,21 +47,18 @@
 #include <math.h>
 #include <stdlib.h>
 
-//--- (YColorLed constructor)
-// Constructor is protected, use yFindColorLed factory function to instantiate
-YColorLed::YColorLed(const string& func): YFunction("ColorLed", func)
-//--- (end of YColorLed constructor)
+YColorLed::YColorLed(const string& func): YFunction(func)
 //--- (ColorLed initialization)
-            ,_callback(NULL)
-            ,_logicalName(Y_LOGICALNAME_INVALID)
-            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
-            ,_rgbColor(Y_RGBCOLOR_INVALID)
-            ,_hslColor(Y_HSLCOLOR_INVALID)
-            ,_rgbMove()
-            ,_hslMove()
-            ,_rgbColorAtPowerOn(Y_RGBCOLORATPOWERON_INVALID)
+    ,_rgbColor(RGBCOLOR_INVALID)
+    ,_hslColor(HSLCOLOR_INVALID)
+    ,_rgbMove(RGBMOVE_INVALID)
+    ,_hslMove(HSLMOVE_INVALID)
+    ,_rgbColorAtPowerOn(RGBCOLORATPOWERON_INVALID)
+    ,_valueCallbackColorLed(NULL)
 //--- (end of ColorLed initialization)
-{}
+{
+    _className="ColorLed";
+}
 
 YColorLed::~YColorLed() 
 {
@@ -69,126 +66,67 @@ YColorLed::~YColorLed()
 //--- (end of YColorLed cleanup)
 }
 //--- (YColorLed implementation)
-YMove YCOLORLED_INVALID_MOVE;
+// static attributes
+const YMove YColorLed::RGBMOVE_INVALID = YMove();
+const YMove YColorLed::HSLMOVE_INVALID = YMove();
 
-const string YColorLed::LOGICALNAME_INVALID = "!INVALID!";
-const string YColorLed::ADVERTISEDVALUE_INVALID = "!INVALID!";
-
-
-
-int YColorLed::_parse(yJsonStateMachine& j)
+int YColorLed::_parseAttr(yJsonStateMachine& j)
 {
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
-    failed:
-        return -1;
+    if(!strcmp(j.token, "rgbColor")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _rgbColor =  atoi(j.token);
+        return 1;
     }
-    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-        if(!strcmp(j.token, "logicalName")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _logicalName =  _parseString(j);
-        } else if(!strcmp(j.token, "advertisedValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _advertisedValue =  _parseString(j);
-        } else if(!strcmp(j.token, "rgbColor")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _rgbColor =  atoi(j.token);
-        } else if(!strcmp(j.token, "hslColor")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _hslColor =  atoi(j.token);
-        } else if(!strcmp(j.token, "rgbMove")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            if(j.st != YJSON_PARSE_STRUCT) goto failed;
-            while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-                if(!strcmp(j.token, "moving")) {
-                    if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                    _rgbMove.moving = atoi(j.token);
-                } else if(!strcmp(j.token, "target")) {
-                    if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                    _rgbMove.target = atoi(j.token);
-                } else if(!strcmp(j.token, "ms")) {
-                    if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                    _rgbMove.ms = atoi(j.token);
-                }
+    if(!strcmp(j.token, "hslColor")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _hslColor =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "rgbMove")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        if(j.st != YJSON_PARSE_STRUCT) goto failed;
+        while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
+            if(!strcmp(j.token, "moving")) {
+                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+                _rgbMove.moving = atoi(j.token);
+            } else if(!strcmp(j.token, "target")) {
+                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+                _rgbMove.target = atoi(j.token);
+            } else if(!strcmp(j.token, "ms")) {
+                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+                _rgbMove.ms = atoi(j.token);
             }
-            if(j.st != YJSON_PARSE_STRUCT) goto failed; 
-            
-        } else if(!strcmp(j.token, "hslMove")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            if(j.st != YJSON_PARSE_STRUCT) goto failed;
-            while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-                if(!strcmp(j.token, "moving")) {
-                    if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                    _hslMove.moving = atoi(j.token);
-                } else if(!strcmp(j.token, "target")) {
-                    if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                    _hslMove.target = atoi(j.token);
-                } else if(!strcmp(j.token, "ms")) {
-                    if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                    _hslMove.ms = atoi(j.token);
-                }
-            }
-            if(j.st != YJSON_PARSE_STRUCT) goto failed; 
-            
-        } else if(!strcmp(j.token, "rgbColorAtPowerOn")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _rgbColorAtPowerOn =  atoi(j.token);
-        } else {
-            // ignore unknown field
-            yJsonSkip(&j, 1);
         }
+        if(j.st != YJSON_PARSE_STRUCT) goto failed;
+        return 1;
     }
-    if(j.st != YJSON_PARSE_STRUCT) goto failed;
-    return 0;
+    if(!strcmp(j.token, "hslMove")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        if(j.st != YJSON_PARSE_STRUCT) goto failed;
+        while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
+            if(!strcmp(j.token, "moving")) {
+                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+                _hslMove.moving = atoi(j.token);
+            } else if(!strcmp(j.token, "target")) {
+                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+                _hslMove.target = atoi(j.token);
+            } else if(!strcmp(j.token, "ms")) {
+                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+                _hslMove.ms = atoi(j.token);
+            }
+        }
+        if(j.st != YJSON_PARSE_STRUCT) goto failed;
+        return 1;
+    }
+    if(!strcmp(j.token, "rgbColorAtPowerOn")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _rgbColorAtPowerOn =  atoi(j.token);
+        return 1;
+    }
+    failed:
+    return YFunction::_parseAttr(j);
 }
 
-/**
- * Returns the logical name of the RGB led.
- * 
- * @return a string corresponding to the logical name of the RGB led
- * 
- * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
- */
-string YColorLed::get_logicalName(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LOGICALNAME_INVALID;
-    }
-    return _logicalName;
-}
-
-/**
- * Changes the logical name of the RGB led. You can use yCheckLogicalName()
- * prior to this call to make sure that your parameter is valid.
- * Remember to call the saveToFlash() method of the module if the
- * modification must be kept.
- * 
- * @param newval : a string corresponding to the logical name of the RGB led
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YColorLed::set_logicalName(const string& newval)
-{
-    string rest_val;
-    rest_val = newval;
-    return _setAttr("logicalName", rest_val);
-}
-
-/**
- * Returns the current value of the RGB led (no more than 6 characters).
- * 
- * @return a string corresponding to the current value of the RGB led (no more than 6 characters)
- * 
- * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
- */
-string YColorLed::get_advertisedValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_ADVERTISEDVALUE_INVALID;
-    }
-    return _advertisedValue;
-}
 
 /**
  * Returns the current RGB color of the led.
@@ -197,10 +135,12 @@ string YColorLed::get_advertisedValue(void)
  * 
  * On failure, throws an exception or returns Y_RGBCOLOR_INVALID.
  */
-unsigned YColorLed::get_rgbColor(void)
+int YColorLed::get_rgbColor(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_RGBCOLOR_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YColorLed::RGBCOLOR_INVALID;
+        }
     }
     return _rgbColor;
 }
@@ -214,7 +154,7 @@ unsigned YColorLed::get_rgbColor(void)
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YColorLed::set_rgbColor(unsigned newval)
+int YColorLed::set_rgbColor(int newval)
 {
     string rest_val;
     char buf[32]; sprintf(buf,"0x%06x",newval); rest_val = string(buf);
@@ -228,10 +168,12 @@ int YColorLed::set_rgbColor(unsigned newval)
  * 
  * On failure, throws an exception or returns Y_HSLCOLOR_INVALID.
  */
-unsigned YColorLed::get_hslColor(void)
+int YColorLed::get_hslColor(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_HSLCOLOR_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YColorLed::HSLCOLOR_INVALID;
+        }
     }
     return _hslColor;
 }
@@ -245,25 +187,27 @@ unsigned YColorLed::get_hslColor(void)
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YColorLed::set_hslColor(unsigned newval)
+int YColorLed::set_hslColor(int newval)
 {
     string rest_val;
     char buf[32]; sprintf(buf,"0x%06x",newval); rest_val = string(buf);
     return _setAttr("hslColor", rest_val);
 }
 
-const YMove * YColorLed::get_rgbMove(void)
+YMove YColorLed::get_rgbMove(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_RGBMOVE_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YColorLed::RGBMOVE_INVALID;
+        }
     }
-    return &_rgbMove;
+    return _rgbMove;
 }
 
-int YColorLed::set_rgbMove(const YMove * newval)
+int YColorLed::set_rgbMove(YMove newval)
 {
     string rest_val;
-    char buff[64]; sprintf(buff,"%d:%d",newval->target,newval->ms); rest_val = string(buff);
+    char buff[64]; sprintf(buff,"%d:%d",newval.target,newval.ms); rest_val = string(buff);
     return _setAttr("rgbMove", rest_val);
 }
 
@@ -284,18 +228,20 @@ int YColorLed::rgbMove(int rgb_target,int ms_duration)
     return _setAttr("rgbMove", rest_val);
 }
 
-const YMove * YColorLed::get_hslMove(void)
+YMove YColorLed::get_hslMove(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_HSLMOVE_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YColorLed::HSLMOVE_INVALID;
+        }
     }
-    return &_hslMove;
+    return _hslMove;
 }
 
-int YColorLed::set_hslMove(const YMove * newval)
+int YColorLed::set_hslMove(YMove newval)
 {
     string rest_val;
-    char buff[64]; sprintf(buff,"%d:%d",newval->target,newval->ms); rest_val = string(buff);
+    char buff[64]; sprintf(buff,"%d:%d",newval.target,newval.ms); rest_val = string(buff);
     return _setAttr("hslMove", rest_val);
 }
 
@@ -323,10 +269,12 @@ int YColorLed::hslMove(int hsl_target,int ms_duration)
  * 
  * On failure, throws an exception or returns Y_RGBCOLORATPOWERON_INVALID.
  */
-unsigned YColorLed::get_rgbColorAtPowerOn(void)
+int YColorLed::get_rgbColorAtPowerOn(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_RGBCOLORATPOWERON_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YColorLed::RGBCOLORATPOWERON_INVALID;
+        }
     }
     return _rgbColorAtPowerOn;
 }
@@ -344,11 +292,85 @@ unsigned YColorLed::get_rgbColorAtPowerOn(void)
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YColorLed::set_rgbColorAtPowerOn(unsigned newval)
+int YColorLed::set_rgbColorAtPowerOn(int newval)
 {
     string rest_val;
     char buf[32]; sprintf(buf,"0x%06x",newval); rest_val = string(buf);
     return _setAttr("rgbColorAtPowerOn", rest_val);
+}
+
+/**
+ * Retrieves $AFUNCTION$ for a given identifier.
+ * The identifier can be specified using several formats:
+ * <ul>
+ * <li>FunctionLogicalName</li>
+ * <li>ModuleSerialNumber.FunctionIdentifier</li>
+ * <li>ModuleSerialNumber.FunctionLogicalName</li>
+ * <li>ModuleLogicalName.FunctionIdentifier</li>
+ * <li>ModuleLogicalName.FunctionLogicalName</li>
+ * </ul>
+ * 
+ * This function does not require that $THEFUNCTION$ is online at the time
+ * it is invoked. The returned object is nevertheless valid.
+ * Use the method YColorLed.isOnline() to test if $THEFUNCTION$ is
+ * indeed online at a given time. In case of ambiguity when looking for
+ * $AFUNCTION$ by logical name, no error is notified: the first instance
+ * found is returned. The search is performed first by hardware name,
+ * then by logical name.
+ * 
+ * @param func : a string that uniquely characterizes $THEFUNCTION$
+ * 
+ * @return a YColorLed object allowing you to drive $THEFUNCTION$.
+ */
+YColorLed* YColorLed::FindColorLed(string func)
+{
+    YColorLed* obj = NULL;
+    obj = (YColorLed*) YFunction::_FindFromCache("ColorLed", func);
+    if (obj == NULL) {
+        obj = new YColorLed(func);
+        YFunction::_AddToCache("ColorLed", func, obj);
+    }
+    return obj;
+}
+
+/**
+ * Registers the callback function that is invoked on every change of advertised value.
+ * The callback is invoked only during the execution of ySleep or yHandleEvents.
+ * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+ * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * 
+ * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ *         arguments: the function object of which the value has changed, and the character string describing
+ *         the new advertised value.
+ * @noreturn
+ */
+int YColorLed::registerValueCallback(YColorLedValueCallback callback)
+{
+    string val;
+    if (callback != NULL) {
+        YFunction::_UpdateValueCallbackList(this, true);
+    } else {
+        YFunction::_UpdateValueCallbackList(this, false);
+    }
+    _valueCallbackColorLed = callback;
+    // Immediately invoke value callback with current value
+    if (callback != NULL && this->isOnline()) {
+        val = _advertisedValue;
+        if (!(val == "")) {
+            this->_invokeValueCallback(val);
+        }
+    }
+    return 0;
+}
+
+int YColorLed::_invokeValueCallback(string value)
+{
+    if (_valueCallbackColorLed != NULL) {
+        _valueCallbackColorLed(this, value);
+    } else {
+        YFunction::_invokeValueCallback(value);
+    }
+    return 0;
 }
 
 YColorLed *YColorLed::nextColorLed(void)
@@ -358,38 +380,7 @@ YColorLed *YColorLed::nextColorLed(void)
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
-    return yFindColorLed(hwid);
-}
-
-void YColorLed::registerValueCallback(YColorLedUpdateCallback callback)
-{
-    if (callback != NULL) {
-        _registerFuncCallback(this);
-        yapiLockFunctionCallBack(NULL);
-        YAPI::_yapiFunctionUpdateCallbackFwd(this->functionDescriptor(), this->get_advertisedValue().c_str());
-        yapiUnlockFunctionCallBack(NULL);
-    } else {
-        _unregisterFuncCallback(this);
-    }
-    _callback = callback;
-}
-
-void YColorLed::advertiseValue(const string& value)
-{
-    if (_callback != NULL) {
-        _callback(this, value);
-    }
-}
-
-
-YColorLed* YColorLed::FindColorLed(const string& func)
-{
-    if(YAPI::_YFunctionsCaches["YColorLed"].find(func) != YAPI::_YFunctionsCaches["YColorLed"].end())
-        return (YColorLed*) YAPI::_YFunctionsCaches["YColorLed"][func];
-    
-    YColorLed *newColorLed = new YColorLed(func);
-    YAPI::_YFunctionsCaches["YColorLed"][func] = newColorLed ;
-    return newColorLed;
+    return YColorLed::FindColorLed(hwid);
 }
 
 YColorLed* YColorLed::FirstColorLed(void)

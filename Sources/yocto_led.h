@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_led.h 12324 2013-08-13 15:10:31Z mvuilleu $
+ * $Id: yocto_led.h 14275 2014-01-09 14:20:38Z seb $
  *
  * Declares yFindLed(), the high-level API for Led functions
  *
@@ -46,18 +46,23 @@
 #include <cmath>
 #include <map>
 
-//--- (return codes)
-//--- (end of return codes)
+//--- (YLed return codes)
+//--- (end of YLed return codes)
 //--- (YLed definitions)
-class YLed; //forward declaration
+class YLed; // forward declaration
 
-typedef void (*YLedUpdateCallback)(YLed *func, const string& functionValue);
+typedef void (*YLedValueCallback)(YLed *func, const string& functionValue);
+#ifndef _Y_POWER_ENUM
+#define _Y_POWER_ENUM
 typedef enum {
     Y_POWER_OFF = 0,
     Y_POWER_ON = 1,
     Y_POWER_INVALID = -1,
 } Y_POWER_enum;
+#endif
 
+#ifndef _Y_BLINKING_ENUM
+#define _Y_BLINKING_ENUM
 typedef enum {
     Y_BLINKING_STILL = 0,
     Y_BLINKING_RELAX = 1,
@@ -67,10 +72,9 @@ typedef enum {
     Y_BLINKING_PANIC = 5,
     Y_BLINKING_INVALID = -1,
 } Y_BLINKING_enum;
+#endif
 
-#define Y_LOGICALNAME_INVALID           (YAPI::INVALID_STRING)
-#define Y_ADVERTISEDVALUE_INVALID       (YAPI::INVALID_STRING)
-#define Y_LUMINOSITY_INVALID            (-1)
+#define Y_LUMINOSITY_INVALID            (YAPI_INVALID_UINT)
 //--- (end of YLed definitions)
 
 //--- (YLed declaration)
@@ -81,40 +85,34 @@ typedef enum {
  * allows you not only to drive the intensity of the led, but also to
  * have it blink at various preset frequencies.
  */
-class YLed: public YFunction {
+class YOCTO_CLASS_EXPORT YLed: public YFunction {
+//--- (end of YLed declaration)
 protected:
+    //--- (YLed attributes)
     // Attributes (function value cache)
-    YLedUpdateCallback _callback;
-    string          _logicalName;
-    string          _advertisedValue;
     Y_POWER_enum    _power;
     int             _luminosity;
     Y_BLINKING_enum _blinking;
+    YLedValueCallback _valueCallbackLed;
 
     friend YLed *yFindLed(const string& func);
     friend YLed *yFirstLed(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    int             _parse(yJsonStateMachine& j);
-    //--- (end of YLed declaration)
+    virtual int     _parseAttr(yJsonStateMachine& j);
 
-    //--- (YLed constructor)
     // Constructor is protected, use yFindLed factory function to instantiate
     YLed(const string& func);
-    //--- (end of YLed constructor)
-    //--- (Led initialization)
-    //--- (end of Led initialization)
+    //--- (end of YLed attributes)
 
 public:
     ~YLed();
     //--- (YLed accessors declaration)
 
-    static const string LOGICALNAME_INVALID;
-    static const string ADVERTISEDVALUE_INVALID;
     static const Y_POWER_enum POWER_OFF = Y_POWER_OFF;
     static const Y_POWER_enum POWER_ON = Y_POWER_ON;
     static const Y_POWER_enum POWER_INVALID = Y_POWER_INVALID;
-    static const int      LUMINOSITY_INVALID = -1;
+    static const int LUMINOSITY_INVALID = YAPI_INVALID_UINT;
     static const Y_BLINKING_enum BLINKING_STILL = Y_BLINKING_STILL;
     static const Y_BLINKING_enum BLINKING_RELAX = Y_BLINKING_RELAX;
     static const Y_BLINKING_enum BLINKING_AWARE = Y_BLINKING_AWARE;
@@ -124,52 +122,15 @@ public:
     static const Y_BLINKING_enum BLINKING_INVALID = Y_BLINKING_INVALID;
 
     /**
-     * Returns the logical name of the led.
-     * 
-     * @return a string corresponding to the logical name of the led
-     * 
-     * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
-     */
-           string          get_logicalName(void);
-    inline string          logicalName(void)
-    { return this->get_logicalName(); }
-
-    /**
-     * Changes the logical name of the led. You can use yCheckLogicalName()
-     * prior to this call to make sure that your parameter is valid.
-     * Remember to call the saveToFlash() method of the module if the
-     * modification must be kept.
-     * 
-     * @param newval : a string corresponding to the logical name of the led
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_logicalName(const string& newval);
-    inline int      setLogicalName(const string& newval)
-    { return this->set_logicalName(newval); }
-
-    /**
-     * Returns the current value of the led (no more than 6 characters).
-     * 
-     * @return a string corresponding to the current value of the led (no more than 6 characters)
-     * 
-     * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
-     */
-           string          get_advertisedValue(void);
-    inline string          advertisedValue(void)
-    { return this->get_advertisedValue(); }
-
-    /**
      * Returns the current led state.
      * 
      * @return either Y_POWER_OFF or Y_POWER_ON, according to the current led state
      * 
      * On failure, throws an exception or returns Y_POWER_INVALID.
      */
-           Y_POWER_enum    get_power(void);
-    inline Y_POWER_enum    power(void)
+    Y_POWER_enum        get_power(void);
+
+    inline Y_POWER_enum power(void)
     { return this->get_power(); }
 
     /**
@@ -192,8 +153,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_LUMINOSITY_INVALID.
      */
-           int             get_luminosity(void);
-    inline int             luminosity(void)
+    int                 get_luminosity(void);
+
+    inline int          luminosity(void)
     { return this->get_luminosity(); }
 
     /**
@@ -217,7 +179,8 @@ public:
      * 
      * On failure, throws an exception or returns Y_BLINKING_INVALID.
      */
-           Y_BLINKING_enum get_blinking(void);
+    Y_BLINKING_enum     get_blinking(void);
+
     inline Y_BLINKING_enum blinking(void)
     { return this->get_blinking(); }
 
@@ -234,33 +197,6 @@ public:
     int             set_blinking(Y_BLINKING_enum newval);
     inline int      setBlinking(Y_BLINKING_enum newval)
     { return this->set_blinking(newval); }
-
-
-    /**
-     * Registers the callback function that is invoked on every change of advertised value.
-     * The callback is invoked only during the execution of ySleep or yHandleEvents.
-     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
-     *         arguments: the function object of which the value has changed, and the character string describing
-     *         the new advertised value.
-     * @noreturn
-     */
-    void registerValueCallback(YLedUpdateCallback callback);
-
-    void advertiseValue(const string& value);
-
-    /**
-     * Continues the enumeration of leds started using yFirstLed().
-     * 
-     * @return a pointer to a YLed object, corresponding to
-     *         a led currently online, or a null pointer
-     *         if there are no more leds to enumerate.
-     */
-           YLed            *nextLed(void);
-    inline YLed            *next(void)
-    { return this->nextLed();}
 
     /**
      * Retrieves a led for a given identifier.
@@ -285,18 +221,40 @@ public:
      * 
      * @return a YLed object allowing you to drive the led.
      */
-           static YLed* FindLed(const string& func);
-    inline static YLed* Find(const string& func)
-    { return YLed::FindLed(func);}
+    static YLed*        FindLed(string func);
+
+    using YFunction::registerValueCallback;
+
     /**
-     * Starts the enumeration of leds currently accessible.
-     * Use the method YLed.nextLed() to iterate on
-     * next leds.
+     * Registers the callback function that is invoked on every change of advertised value.
+     * The callback is invoked only during the execution of ySleep or yHandleEvents.
+     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * 
+     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     *         arguments: the function object of which the value has changed, and the character string describing
+     *         the new advertised value.
+     * @noreturn
+     */
+    virtual int         registerValueCallback(YLedValueCallback callback);
+
+    virtual int         _invokeValueCallback(string value);
+
+
+    inline static YLed* Find(string func)
+    { return YLed::FindLed(func); }
+
+    /**
+     * Continues the enumeration of leds started using yFirstLed().
      * 
      * @return a pointer to a YLed object, corresponding to
-     *         the first led currently online, or a null pointer
-     *         if there are none.
+     *         a led currently online, or a null pointer
+     *         if there are no more leds to enumerate.
      */
+           YLed            *nextLed(void);
+    inline YLed            *next(void)
+    { return this->nextLed();}
+
            static YLed* FirstLed(void);
     inline static YLed* First(void)
     { return YLed::FirstLed();}

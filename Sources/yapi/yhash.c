@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 12321 2013-08-13 14:56:24Z mvuilleu $
+ * $Id: yhash.c 14289 2014-01-10 08:27:59Z mvuilleu $
  *
  * Simple hash tables and device/function information store
  *
@@ -536,22 +536,29 @@ yAsbUrlType  yHashGetUrlPort(yUrlRef urlref, char *url,u16 *port)
  
     if(absurl.byusb.invalid1 ==INVALID_HASH_IDX && absurl.byusb.invalid2 == INVALID_HASH_IDX){
         // we have an USB address
-        *url='\0';
+        if (url) {
+            *url='\0';
+        }
+        if(port) *port = 0;
         return USB_URL;      
     }else if(absurl.byip.invalid == INVALID_HASH_IDX){
         // we have an ip address
-        yHashGetStr(absurl.byip.ip,url,16);
+        if (url) {
+            yHashGetStr(absurl.byip.ip,url,16);
+        }
         if(port) *port = absurl.byip.port;
         return IP_URL;
     }else{
         char *p = url;
-        // we have an hostname
-        if(absurl.byname.host!= INVALID_HASH_IDX){
-            yHashGetStr(absurl.byname.host,p,YOCTO_HOSTNAME_NAME);
-            p = url + YSTRLEN(url);
-            *p++ = '.';
+        if(url) {
+            // we have an hostname
+            if(absurl.byname.host!= INVALID_HASH_IDX){
+                yHashGetStr(absurl.byname.host,p,YOCTO_HOSTNAME_NAME);
+                p = url + YSTRLEN(url);
+                *p++ = '.';
+            }
+            yHashGetStr(absurl.byname.domaine,p,(u16)(YOCTO_HOSTNAME_NAME - (p-url)));
         }
-        yHashGetStr(absurl.byname.domaine,p,(u16)(YOCTO_HOSTNAME_NAME - (p-url)));
         if(port) *port = absurl.byname.port;
         return NAME_URL;
     }
@@ -577,6 +584,22 @@ static void wpExecuteUnregisterUnsec(void)
         YASSERT(WP(hdl).blkId == YBLKID_WPENTRY);
         next = WP(hdl).nextPtr;
         if(WP(hdl).flags & YWP_MARK_FOR_UNREGISTER) {
+#ifdef  DEBUG_WP    
+            {
+                char host[YOCTO_HOSTNAME_NAME];
+                u16  port;
+                yAsbUrlType type = yHashGetUrlPort( WP(hdl).url,host,&port);
+                switch(type){
+                case USB_URL:
+                    dbglog("WP: unregister %s(0x%X) form USB\n",yHashGetStrPtr(WP(hdl).serial),WP(hdl).serial);
+                    break;
+                default:
+                    dbglog("WP: unregister %s(0x%X) from %s:%u\n",yHashGetStrPtr(WP(hdl).serial),WP(hdl).serial,host,port);
+                }
+            }
+#endif
+
+
             // first remove YP entry
             ypUnregister(WP(hdl).serial);
             // entry mark as to remove
@@ -716,6 +739,20 @@ int wpRegister(int devYdx, yStrRef serial, yStrRef logicalName, yStrRef productN
         WP(hdl).flags &= ~YWP_MARK_FOR_UNREGISTER;
     }
     
+#ifdef  DEBUG_WP    
+    {
+        char host[YOCTO_HOSTNAME_NAME];
+        u16  port;
+        yAsbUrlType type = yHashGetUrlPort(devUrl,host,&port);
+        switch(type){
+        case USB_URL:
+            dbglog("WP: regiser %s(0x%X) form USB (res=%d)\n",yHashGetStrPtr(serial),serial,changed);
+            break;
+        default:
+            dbglog("WP: regiser %s(0x%X) from %s:%u (res=%d)\n",yHashGetStrPtr(serial),serial,host,port,changed);
+        }
+    }
+#endif
     yLeaveCriticalSection(&yWpMutex);
     return changed;
 }
@@ -786,12 +823,30 @@ int wpMarkForUnregister(yStrRef serial)
                 WP(hdl).flags |= YWP_MARK_FOR_UNREGISTER;
                 retval = 1;
             }
-            goto exit_ok;
+            break;
         }
         hdl = next;        
     }
-    
-exit_ok:    
+
+#ifdef  DEBUG_WP    
+    {
+        char host[YOCTO_HOSTNAME_NAME];
+        u16  port;
+            if (retval) {
+                yAsbUrlType type = yHashGetUrlPort( WP(hdl).url,host,&port);
+            switch(type){
+            case USB_URL:
+                dbglog("WP: mark for unregister %s(0x%X) form USB\n",yHashGetStrPtr(serial),serial);
+                break;
+            default:
+                dbglog("WP: mark for unregister %s(0x%X) from %s:%u\n",yHashGetStrPtr(serial),serial,host,port);
+            }
+        }else{
+            dbglog("WP: mark for unregister %s(0x%X) witch is unregistred!\n",yHashGetStrPtr(serial),serial);
+        }
+    }
+#endif
+
     yLeaveCriticalSection(&yWpMutex);
     return retval;
 }
@@ -1076,7 +1131,7 @@ int wpGetDeviceUrl(YAPI_DEVICE devdesc, char *roothubserial, char *request, int 
 // =======================================================================
 
 // return 1 on change 0 if value are the same as the cache
-int ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, int funYdx, const char *funcVal)
+int ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, int funClass, int funYdx, const char *funcVal)
 {
     yBlkHdl  prev = INVALID_BLK_HDL;
     yBlkHdl  hdl;
@@ -1114,7 +1169,7 @@ int ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, 
     prev = INVALID_BLK_HDL;
     hdl = YC(cat_hdl).entries;
     while(hdl != INVALID_BLK_HDL) {
-        YASSERT(YP(hdl).blkId == YBLKID_YPENTRY);    
+        YASSERT(YP(hdl).blkId >= YBLKID_YPENTRY && YP(hdl).blkId <= YBLKID_YPENTRYEND);
         if(YP(hdl).serialNum == serial && YP(hdl).funcId == funcId) break;
         prev = hdl;
         hdl = YP(prev).nextPtr;        
@@ -1122,7 +1177,10 @@ int ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, 
     if(hdl == INVALID_BLK_HDL) {
         changed = 1; // new entry-> changed
         hdl = yBlkAlloc();
-        YP(hdl).blkId      = YBLKID_YPENTRY;
+        if(funClass < 0 || funClass >= YOCTO_N_BASECLASSES) {
+            funClass = 0;
+        }
+        YP(hdl).blkId      = YBLKID_YPENTRY+funClass;
         YP(hdl).serialNum  = serial;
         YP(hdl).funcId     = funcId;
         YP(hdl).funcName   = YSTRREF_EMPTY_STRING;
@@ -1234,7 +1292,7 @@ int ypRegisterByYdx(u8 devYdx, u8 funYdx, const char *funcVal, YAPI_FUNCTION *fu
             YASSERT(YA(hdl).blkId == YBLKID_YPARRAY);
             hdl = YA(hdl).entries[funYdx];
             if(hdl != INVALID_BLK_HDL) {
-                YASSERT(YP(hdl).blkId == YBLKID_YPENTRY);    
+                YASSERT(YP(hdl).blkId >= YBLKID_YPENTRY && YP(hdl).blkId <= YBLKID_YPENTRYEND);
                 if(funcVal) {
                     // apply value change
                     for(i = 0; i < YOCTO_PUBVAL_SIZE/2; i++) {
@@ -1273,7 +1331,7 @@ int ypGetAttributes(yBlkHdl hdl, yStrRef *serial, yStrRef *funcId, yStrRef *func
     u16     *funcValWords = (u16 *)funcVal;
     
     yEnterCriticalSection(&yYpMutex);    
-    if(YP(hdl).blkId == YBLKID_YPENTRY) {
+    if(YP(hdl).blkId >= YBLKID_YPENTRY && YP(hdl).blkId <= YBLKID_YPENTRYEND) {
         serialref = YP(hdl).serialNum;
         funcidref = YP(hdl).funcId;
         funcnameref = YP(hdl).funcName;
@@ -1295,6 +1353,19 @@ int ypGetAttributes(yBlkHdl hdl, yStrRef *serial, yStrRef *funcId, yStrRef *func
     return res;
 }
 
+int ypGetType(yBlkHdl hdl)
+{
+    int res = -1;
+    
+    yEnterCriticalSection(&yYpMutex);
+    if(YP(hdl).blkId >= YBLKID_YPENTRY && YP(hdl).blkId <= YBLKID_YPENTRYEND) {
+        res =YP(hdl).blkId - YBLKID_YPENTRY;
+    }
+    yLeaveCriticalSection(&yYpMutex);
+    
+    return res;
+}
+
 static void ypUnregister(yStrRef serial)
 {
     yBlkHdl  prev, next;
@@ -1305,12 +1376,12 @@ static void ypUnregister(yStrRef serial)
     // scan all category nodes
     cat_hdl = yYpListHead;
     while(cat_hdl != INVALID_BLK_HDL) {
-        YASSERT(YP(cat_hdl).blkId == YBLKID_YPCATEG);
+        YASSERT(YC(cat_hdl).blkId == YBLKID_YPCATEG);
         hdl = YC(cat_hdl).entries;
         prev = INVALID_BLK_HDL;
         // scan all yp entries
         while(hdl != INVALID_BLK_HDL) {
-            YASSERT(YP(hdl).blkId == YBLKID_YPENTRY);
+            YASSERT(YP(hdl).blkId >= YBLKID_YPENTRY && YP(hdl).blkId <= YBLKID_YPENTRYEND);
             next = YP(hdl).nextPtr;
             if(YP(hdl).serialNum == serial) {
                 // entry found, remove it
@@ -1334,28 +1405,34 @@ static void ypUnregister(yStrRef serial)
 
 YAPI_FUNCTION ypSearch(const char *class_str, const char *func_or_name)
 {
-    yStrRef     categref, devref, funcref;
+    yStrRef     categref = INVALID_HASH_IDX;
+    yStrRef     devref, funcref;
     yBlkHdl     cat_hdl, hdl, byname;
+    int         abstract = 0;
     const char  *dotpos = func_or_name;
     char        categname[HASH_BUF_SIZE];
     YAPI_FUNCTION   res = -1;
     int         i;
     
     // first search for the category node
-    categref = yHashTestStr(class_str);
-    if(categref == INVALID_HASH_IDX)
-        return -2; // no device of this type so far
-
-    yEnterCriticalSection(&yYpMutex);
-    cat_hdl = yYpListHead;
-    while(cat_hdl != INVALID_BLK_HDL) {
-        YASSERT(YP(cat_hdl).blkId == YBLKID_YPCATEG);
-        if(YC(cat_hdl).name == categref) break;
-        cat_hdl = YC(cat_hdl).nextPtr;        
+    if(!strcmp(class_str, "Sensor")) {
+        abstract = YOCTO_AKA_YSENSOR;
+        cat_hdl = INVALID_BLK_HDL;
+    } else {
+        categref = yHashTestStr(class_str);
+        if(categref == INVALID_HASH_IDX)
+            return -2; // no device of this type so far
+        yEnterCriticalSection(&yYpMutex);
+        cat_hdl = yYpListHead;
+        while(cat_hdl != INVALID_BLK_HDL) {
+            YASSERT(YC(cat_hdl).blkId == YBLKID_YPCATEG);
+            if(YC(cat_hdl).name == categref) break;
+            cat_hdl = YC(cat_hdl).nextPtr;
+        }
+        yLeaveCriticalSection(&yYpMutex);
+        if(cat_hdl == INVALID_BLK_HDL)
+            return -2; // no device of this type so far
     }
-    yLeaveCriticalSection(&yYpMutex);
-    if(cat_hdl == INVALID_BLK_HDL)
-        return -2; // no device of this type so far
     
     // analyse function string
     while(*dotpos && *dotpos != '.') dotpos++;
@@ -1365,13 +1442,32 @@ YAPI_FUNCTION ypSearch(const char *class_str, const char *func_or_name)
         if(funcref == INVALID_HASH_IDX) 
             return -1;
         yEnterCriticalSection(&yYpMutex);
-        hdl = YC(cat_hdl).entries;
-        while(hdl != INVALID_BLK_HDL) {
-            if(YP(hdl).funcName == funcref) {
-                res = YP(hdl).serialNum + ((u32)(YP(hdl).funcId) << 16);
-                break;
+        if(categref != INVALID_HASH_IDX) {
+            // search within defined function category
+            hdl = YC(cat_hdl).entries;
+            while(hdl != INVALID_BLK_HDL) {
+                if(YP(hdl).funcName == funcref) {
+                    res = YP(hdl).serialNum + ((u32)(YP(hdl).funcId) << 16);
+                    break;
+                }
+                hdl = YP(hdl).nextPtr;
             }
-            hdl = YP(hdl).nextPtr;        
+        } else {
+            // search by pure logical name within abstract basetype
+            hdl = INVALID_BLK_HDL;
+            for(cat_hdl = yYpListHead; cat_hdl != INVALID_BLK_HDL; cat_hdl = YC(cat_hdl).nextPtr) {
+                YASSERT(YC(cat_hdl).blkId == YBLKID_YPCATEG);
+                hdl = YC(cat_hdl).entries;
+                while(hdl != INVALID_BLK_HDL) {
+                    // check functions matching abstract baseclass, skip others
+                    if(YP(hdl).blkId == YBLKID_YPENTRY+abstract && YP(hdl).funcName == funcref) {
+                        res = YP(hdl).serialNum + ((u32)(YP(hdl).funcId) << 16);
+                        break;
+                    }
+                    hdl = YP(hdl).nextPtr;
+                }
+                if(hdl != INVALID_BLK_HDL) break;
+            }
         }
         yLeaveCriticalSection(&yYpMutex);
         if(hdl != INVALID_BLK_HDL) return res;
@@ -1419,16 +1515,36 @@ YAPI_FUNCTION ypSearch(const char *class_str, const char *func_or_name)
     }
     // device found, now we can search for function by serial.funcref
     yEnterCriticalSection(&yYpMutex);
-    hdl = YC(cat_hdl).entries;
-    while(hdl != INVALID_BLK_HDL) {
-        if(devref==INVALID_HASH_IDX || YP(hdl).serialNum == devref) {
-            if(YP(hdl).funcId == funcref || YP(hdl).funcName == funcref) {
-                res = YP(hdl).serialNum + ((u32)(YP(hdl).funcId) << 16);
-                break;
+    if(categref != INVALID_HASH_IDX) {
+        // search within defined function category
+        hdl = YC(cat_hdl).entries;
+        while(hdl != INVALID_BLK_HDL) {
+            if(devref==INVALID_HASH_IDX || YP(hdl).serialNum == devref) {
+                if(YP(hdl).funcId == funcref || YP(hdl).funcName == funcref) {
+                    res = YP(hdl).serialNum + ((u32)(YP(hdl).funcId) << 16);
+                    break;
+                }
             }
+            hdl = YP(hdl).nextPtr;        
         }
-        hdl = YP(hdl).nextPtr;        
-    }        
+    } else {
+        // search by pure logical name within abstract basetype
+        for(cat_hdl = yYpListHead; cat_hdl != INVALID_BLK_HDL; cat_hdl = YC(cat_hdl).nextPtr) {
+            YASSERT(YC(cat_hdl).blkId == YBLKID_YPCATEG);
+            hdl = YC(cat_hdl).entries;
+            while(hdl != INVALID_BLK_HDL) {
+                // check functions matching abstract baseclass, skip others
+                if(YP(hdl).blkId == YBLKID_YPENTRY+abstract && (devref==INVALID_HASH_IDX || YP(hdl).serialNum == devref)) {
+                    if(YP(hdl).funcId == funcref || YP(hdl).funcName == funcref) {
+                        res = YP(hdl).serialNum + ((u32)(YP(hdl).funcId) << 16);
+                        break;
+                    }
+                }
+                hdl = YP(hdl).nextPtr;
+            }
+            if(hdl != INVALID_BLK_HDL) break;
+        }
+    }
     yLeaveCriticalSection(&yYpMutex);
     
     return res;
@@ -1439,22 +1555,27 @@ int ypGetFunctions(const char *class_str, YAPI_DEVICE devdesc, YAPI_FUNCTION pre
 {
     yStrRef categref = INVALID_HASH_IDX;
     yBlkHdl cat_hdl, hdl;
+    int     abstract = 0;
     int     maxfun = 0, nbreturned = 0;
     YAPI_FUNCTION fundescr=0;
-    int     use = (prevfundesc==0);// if prefuncdesc == 0  use any functions 
+    int     use = (prevfundesc==0);// if prefuncdesc == 0  use any functions
     
     if(class_str) {
-        categref = yHashTestStr(class_str);
-        if(categref == INVALID_HASH_IDX) {
-            if(*neededsize) *neededsize = 0;
-            return 0;
+        if(!strcmp(class_str, "Sensor")) {
+            abstract = YOCTO_AKA_YSENSOR;
+        } else {
+            categref = yHashTestStr(class_str);
+            if(categref == INVALID_HASH_IDX) {
+                if(*neededsize) *neededsize = 0;
+                return 0;
+            }
         }
     }
     yEnterCriticalSection(&yYpMutex);    
     for(cat_hdl = yYpListHead; cat_hdl != INVALID_BLK_HDL; cat_hdl = YC(cat_hdl).nextPtr) {
-        YASSERT(YP(cat_hdl).blkId == YBLKID_YPCATEG);
+        YASSERT(YC(cat_hdl).blkId == YBLKID_YPCATEG);
         if(categref == INVALID_HASH_IDX) {
-            // search any type of function: skip Module only
+            // search any type of function, but skip Module
             if(YC(cat_hdl).name == YSTRREF_MODULE_STRING) continue;
         } else {
             // search for a specific function type
@@ -1462,6 +1583,11 @@ int ypGetFunctions(const char *class_str, YAPI_DEVICE devdesc, YAPI_FUNCTION pre
         }
         hdl = YC(cat_hdl).entries;
         while(hdl != INVALID_BLK_HDL) {
+            // if an abstract baseclass is specified, skip others
+            if(abstract && YP(hdl).blkId != YBLKID_YPENTRY+abstract) {
+                hdl = YP(hdl).nextPtr;
+                continue;
+            }
             if(devdesc == -1 || YP(hdl).serialNum == (u16)devdesc) {
                 if(!use && prevfundesc == fundescr){
                     use = 1;
@@ -1508,7 +1634,7 @@ static yBlkHdl functionSearch(YAPI_FUNCTION fundesc)
 
     cat_hdl = yYpListHead;
     while(cat_hdl != INVALID_BLK_HDL) {
-        YASSERT(YP(cat_hdl).blkId == YBLKID_YPCATEG);
+        YASSERT(YC(cat_hdl).blkId == YBLKID_YPCATEG);
         if(YC(cat_hdl).name == categref) break;
         cat_hdl = YC(cat_hdl).nextPtr;        
     }

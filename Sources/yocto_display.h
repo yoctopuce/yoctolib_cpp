@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.h 12326 2013-08-13 15:52:20Z mvuilleu $
+ * $Id: yocto_display.h 14687 2014-01-23 11:01:59Z seb $
  *
  * Declares yFindDisplay(), the high-level API for Display functions
  *
@@ -46,19 +46,22 @@
 #include <cmath>
 #include <map>
 
-//--- (generated code: return codes)
-//--- (end of generated code: return codes)
 
 //--- (generated code: YDisplay definitions)
-class YDisplay; //forward declaration
+class YDisplay; // forward declaration
 
-typedef void (*YDisplayUpdateCallback)(YDisplay *func, const string& functionValue);
+typedef void (*YDisplayValueCallback)(YDisplay *func, const string& functionValue);
+#ifndef _Y_ENABLED_ENUM
+#define _Y_ENABLED_ENUM
 typedef enum {
-    Y_POWERSTATE_OFF = 0,
-    Y_POWERSTATE_ON = 1,
-    Y_POWERSTATE_INVALID = -1,
-} Y_POWERSTATE_enum;
+    Y_ENABLED_FALSE = 0,
+    Y_ENABLED_TRUE = 1,
+    Y_ENABLED_INVALID = -1,
+} Y_ENABLED_enum;
+#endif
 
+#ifndef _Y_ORIENTATION_ENUM
+#define _Y_ORIENTATION_ENUM
 typedef enum {
     Y_ORIENTATION_LEFT = 0,
     Y_ORIENTATION_UP = 1,
@@ -66,27 +69,31 @@ typedef enum {
     Y_ORIENTATION_DOWN = 3,
     Y_ORIENTATION_INVALID = -1,
 } Y_ORIENTATION_enum;
+#endif
 
+#ifndef _Y_DISPLAYTYPE_ENUM
+#define _Y_DISPLAYTYPE_ENUM
 typedef enum {
     Y_DISPLAYTYPE_MONO = 0,
     Y_DISPLAYTYPE_GRAY = 1,
     Y_DISPLAYTYPE_RGB = 2,
     Y_DISPLAYTYPE_INVALID = -1,
 } Y_DISPLAYTYPE_enum;
+#endif
 
-#define Y_LOGICALNAME_INVALID           (YAPI::INVALID_STRING)
-#define Y_ADVERTISEDVALUE_INVALID       (YAPI::INVALID_STRING)
-#define Y_STARTUPSEQ_INVALID            (YAPI::INVALID_STRING)
-#define Y_BRIGHTNESS_INVALID            (-1)
-#define Y_DISPLAYWIDTH_INVALID          (0xffffffff)
-#define Y_DISPLAYHEIGHT_INVALID         (0xffffffff)
-#define Y_LAYERWIDTH_INVALID            (0xffffffff)
-#define Y_LAYERHEIGHT_INVALID           (0xffffffff)
-#define Y_LAYERCOUNT_INVALID            (0xffffffff)
-#define Y_COMMAND_INVALID               (YAPI::INVALID_STRING)
+#define Y_STARTUPSEQ_INVALID            (YAPI_INVALID_STRING)
+#define Y_BRIGHTNESS_INVALID            (YAPI_INVALID_UINT)
+#define Y_DISPLAYWIDTH_INVALID          (YAPI_INVALID_UINT)
+#define Y_DISPLAYHEIGHT_INVALID         (YAPI_INVALID_UINT)
+#define Y_LAYERWIDTH_INVALID            (YAPI_INVALID_UINT)
+#define Y_LAYERHEIGHT_INVALID           (YAPI_INVALID_UINT)
+#define Y_LAYERCOUNT_INVALID            (YAPI_INVALID_UINT)
+#define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 //--- (end of generated code: YDisplay definitions)
 
 //--- (generated code: YDisplayLayer definitions)
+    #ifndef _Y_ALIGN
+    #define _Y_ALIGN
     typedef enum {
         Y_ALIGN_TOP_LEFT = 0 ,
         Y_ALIGN_CENTER_LEFT = 1 ,
@@ -105,6 +112,7 @@ typedef enum {
         Y_ALIGN_BASELINE_RIGHT = 14 ,
         Y_ALIGN_BOTTOM_RIGHT = 15 
     } Y_ALIGN;
+    #endif
     
 //--- (end of generated code: YDisplayLayer definitions)
 
@@ -119,10 +127,17 @@ class YDisplay;
  * the layer is active on the screen (and not masked by other
  * overlapping layers).
  */
-class YDisplayLayer {
-protected:
+class YOCTO_CLASS_EXPORT YDisplayLayer {
+//--- (end of generated code: YDisplayLayer declaration)
+    //--- (generated code: YDisplayLayer attributes)
     // Attributes (function value cache)
-    //--- (end of generated code: YDisplayLayer declaration)
+    //--- (end of generated code: YDisplayLayer attributes)
+    //--- (generated code: YDisplayLayer constructor)
+
+    //--- (end of generated code: YDisplayLayer constructor)
+    //--- (generated code: DisplayLayer initialization)
+    //--- (end of generated code: DisplayLayer initialization)
+	
     YDisplay *_display;
     int    _id;
     string _cmdbuff;
@@ -165,7 +180,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             reset();
+    virtual int         reset(void);
 
     /**
      * Erases the whole content of the layer (makes it fully transparent).
@@ -177,7 +192,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             clear();
+    virtual int         clear(void);
 
     /**
      * Selects the pen color for all subsequent drawing functions,
@@ -191,7 +206,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             selectColorPen(int color);
+    virtual int         selectColorPen(int color);
 
     /**
      * Selects the pen gray level for all subsequent drawing functions,
@@ -207,7 +222,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             selectGrayPen(int graylevel);
+    virtual int         selectGrayPen(int graylevel);
 
     /**
      * Selects an eraser instead of a pen for all subsequent drawing functions,
@@ -219,7 +234,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             selectEraser();
+    virtual int         selectEraser(void);
 
     /**
      * Enables or disables anti-aliasing for drawing oblique lines and circles.
@@ -237,7 +252,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             setAntialiasingMode(bool mode);
+    virtual int         setAntialiasingMode(bool mode);
 
     /**
      * Draws a single pixel at the specified position.
@@ -249,7 +264,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             drawPixel(int x,int y);
+    virtual int         drawPixel(int x,int y);
 
     /**
      * Draws an empty rectangle at a specified position.
@@ -263,7 +278,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             drawRect(int x1,int y1,int x2,int y2);
+    virtual int         drawRect(int x1,int y1,int x2,int y2);
 
     /**
      * Draws a filled rectangular bar at a specified position.
@@ -277,7 +292,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             drawBar(int x1,int y1,int x2,int y2);
+    virtual int         drawBar(int x1,int y1,int x2,int y2);
 
     /**
      * Draws an empty circle at a specified position.
@@ -290,7 +305,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             drawCircle(int x,int y,int r);
+    virtual int         drawCircle(int x,int y,int r);
 
     /**
      * Draws a filled disc at a given position.
@@ -303,7 +318,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             drawDisc(int x,int y,int r);
+    virtual int         drawDisc(int x,int y,int r);
 
     /**
      * Selects a font to use for the next text drawing functions, by providing the name of the
@@ -318,15 +333,15 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             selectFont(string fontname);
+    virtual int         selectFont(string fontname);
 
     /**
      * Draws a text string at the specified position. The point of the text that is aligned
      * to the specified pixel position is called the anchor point, and can be chosen among
      * several options. Text is rendered from left to right, without implicit wrapping.
      * 
-     * @param x: the distance from left of layer to the text ancor point, in pixels
-     * @param y: the distance from top of layer to the text ancor point, in pixels
+     * @param x: the distance from left of layer to the text anchor point, in pixels
+     * @param y: the distance from top of layer to the text anchor point, in pixels
      * @param anchor: the text anchor point, chosen among the Y_ALIGN enumeration:
      *         Y_ALIGN_TOP_LEFT,    Y_ALIGN_CENTER_LEFT,    Y_ALIGN_BASELINE_LEFT,    Y_ALIGN_BOTTOM_LEFT,
      *         Y_ALIGN_TOP_CENTER,  Y_ALIGN_CENTER,         Y_ALIGN_BASELINE_CENTER,  Y_ALIGN_BOTTOM_CENTER,
@@ -338,7 +353,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             drawText(int x,int y,Y_ALIGN anchor,string text);
+    virtual int         drawText(int x,int y,Y_ALIGN anchor,string text);
 
     /**
      * Draws a GIF image at the specified position. The GIF image must have been previously
@@ -354,7 +369,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             drawImage(int x,int y,string imagename);
+    virtual int         drawImage(int x,int y,string imagename);
 
     /**
      * Draws a bitmap at the specified position. The bitmap is provided as a binary object,
@@ -376,7 +391,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             drawBitmap(int x,int y,int w,string bitmap,int bgcol);
+    virtual int         drawBitmap(int x,int y,int w,string bitmap,int bgcol);
 
     /**
      * Moves the drawing pointer of this layer to the specified position.
@@ -388,7 +403,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             moveTo(int x,int y);
+    virtual int         moveTo(int x,int y);
 
     /**
      * Draws a line from current drawing pointer position to the specified position.
@@ -402,7 +417,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             lineTo(int x,int y);
+    virtual int         lineTo(int x,int y);
 
     /**
      * Outputs a message in the console area, and advances the console pointer accordingly.
@@ -417,7 +432,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             consoleOut(string text);
+    virtual int         consoleOut(string text);
 
     /**
      * Sets up display margins for the consoleOut function.
@@ -431,7 +446,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             setConsoleMargins(int x1,int y1,int x2,int y2);
+    virtual int         setConsoleMargins(int x1,int y1,int x2,int y2);
 
     /**
      * Sets up the background color used by the clearConsole function and by
@@ -444,7 +459,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             setConsoleBackground(int bgcol);
+    virtual int         setConsoleBackground(int bgcol);
 
     /**
      * Sets up the wrapping behaviour used by the consoleOut function.
@@ -456,7 +471,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             setConsoleWordWrap(bool wordwrap);
+    virtual int         setConsoleWordWrap(bool wordwrap);
 
     /**
      * Blanks the console area within console margins, and resets the console pointer
@@ -466,7 +481,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             clearConsole();
+    virtual int         clearConsole(void);
 
     /**
      * Sets the position of the layer relative to the display upper left corner.
@@ -482,7 +497,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             setLayerPosition(int x,int y,int scrollTime);
+    virtual int         setLayerPosition(int x,int y,int scrollTime);
 
     /**
      * Hides the layer. The state of the layer is perserved but the layer is not displayed
@@ -494,7 +509,7 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             hide();
+    virtual int         hide(void);
 
     /**
      * Shows the layer. Shows the layer again after a hide command.
@@ -503,14 +518,14 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             unhide();
+    virtual int         unhide(void);
 
     /**
      * Gets parent YDisplay. Returns the parent YDisplay object of the current YDisplayLayer.
      * 
      * @return an YDisplay object
      */
-    YDisplay*             get_display();
+    virtual YDisplay*   get_display(void);
 
     /**
      * Returns the display width, in pixels.
@@ -519,7 +534,7 @@ public:
      * 
      * On failure, throws an exception or returns Y_DISPLAYWIDTH_INVALID.
      */
-    int             get_displayWidth();
+    virtual int         get_displayWidth(void);
 
     /**
      * Returns the display height, in pixels.
@@ -528,7 +543,7 @@ public:
      * 
      * On failure, throws an exception or returns Y_DISPLAYHEIGHT_INVALID.
      */
-    int             get_displayHeight();
+    virtual int         get_displayHeight(void);
 
     /**
      * Returns the width of the layers to draw on, in pixels.
@@ -537,7 +552,7 @@ public:
      * 
      * On failure, throws an exception or returns Y_LAYERWIDTH_INVALID.
      */
-    int             get_layerWidth();
+    virtual int         get_layerWidth(void);
 
     /**
      * Returns the height of the layers to draw on, in pixels.
@@ -546,9 +561,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_LAYERHEIGHT_INVALID.
      */
-    int             get_layerHeight();
+    virtual int         get_layerHeight(void);
 
-    int             resetHiddenFlag();
+    virtual int         resetHiddenFlag(void);
 
     //--- (end of generated code: YDisplayLayer accessors declaration)
     int drawBitmap(int x,int y,int w,const std::vector<unsigned char>& data,int bgcol);
@@ -565,131 +580,88 @@ public:
  * and freely moved on the display. It can also replay recorded
  * sequences (animations).
  */
-class YDisplay: public YFunction {
-protected:
+class YOCTO_CLASS_EXPORT YDisplay: public YFunction {
+//--- (end of generated code: YDisplay declaration)
+    //--- (generated code: YDisplay attributes)
     // Attributes (function value cache)
-    YDisplayUpdateCallback _callback;
-    string          _logicalName;
-    string          _advertisedValue;
-    Y_POWERSTATE_enum _powerState;
+    Y_ENABLED_enum  _enabled;
     string          _startupSeq;
     int             _brightness;
     Y_ORIENTATION_enum _orientation;
-    unsigned        _displayWidth;
-    unsigned        _displayHeight;
+    int             _displayWidth;
+    int             _displayHeight;
     Y_DISPLAYTYPE_enum _displayType;
-    unsigned        _layerWidth;
-    unsigned        _layerHeight;
-    unsigned        _layerCount;
+    int             _layerWidth;
+    int             _layerHeight;
+    int             _layerCount;
     string          _command;
+    YDisplayValueCallback _valueCallbackDisplay;
 
     friend YDisplay *yFindDisplay(const string& func);
     friend YDisplay *yFirstDisplay(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    int             _parse(yJsonStateMachine& j);
-    //--- (end of generated code: YDisplay declaration)
+    virtual int     _parseAttr(yJsonStateMachine& j);
+
+    // Constructor is protected, use yFindDisplay factory function to instantiate
+    YDisplay(const string& func);
+    //--- (end of generated code: YDisplay attributes)
     vector<YDisplayLayer*>  _allDisplayLayers;
     bool                    _recording;
     string                  _sequence;
 
-    
-    
-
-    //--- (generated code: YDisplay constructor)
-    // Constructor is protected, use yFindDisplay factory function to instantiate
-    YDisplay(const string& func);
-    //--- (end of generated code: YDisplay constructor)
     //--- (generated code: Display initialization)
     //--- (end of generated code: Display initialization)
+
 public:
     ~YDisplay();
     //--- (generated code: YDisplay accessors declaration)
 
-    static const string LOGICALNAME_INVALID;
-    static const string ADVERTISEDVALUE_INVALID;
-    static const Y_POWERSTATE_enum POWERSTATE_OFF = Y_POWERSTATE_OFF;
-    static const Y_POWERSTATE_enum POWERSTATE_ON = Y_POWERSTATE_ON;
-    static const Y_POWERSTATE_enum POWERSTATE_INVALID = Y_POWERSTATE_INVALID;
+    static const Y_ENABLED_enum ENABLED_FALSE = Y_ENABLED_FALSE;
+    static const Y_ENABLED_enum ENABLED_TRUE = Y_ENABLED_TRUE;
+    static const Y_ENABLED_enum ENABLED_INVALID = Y_ENABLED_INVALID;
     static const string STARTUPSEQ_INVALID;
-    static const int      BRIGHTNESS_INVALID = -1;
+    static const int BRIGHTNESS_INVALID = YAPI_INVALID_UINT;
     static const Y_ORIENTATION_enum ORIENTATION_LEFT = Y_ORIENTATION_LEFT;
     static const Y_ORIENTATION_enum ORIENTATION_UP = Y_ORIENTATION_UP;
     static const Y_ORIENTATION_enum ORIENTATION_RIGHT = Y_ORIENTATION_RIGHT;
     static const Y_ORIENTATION_enum ORIENTATION_DOWN = Y_ORIENTATION_DOWN;
     static const Y_ORIENTATION_enum ORIENTATION_INVALID = Y_ORIENTATION_INVALID;
-    static const unsigned DISPLAYWIDTH_INVALID = 0xffffffff;
-    static const unsigned DISPLAYHEIGHT_INVALID = 0xffffffff;
+    static const int DISPLAYWIDTH_INVALID = YAPI_INVALID_UINT;
+    static const int DISPLAYHEIGHT_INVALID = YAPI_INVALID_UINT;
     static const Y_DISPLAYTYPE_enum DISPLAYTYPE_MONO = Y_DISPLAYTYPE_MONO;
     static const Y_DISPLAYTYPE_enum DISPLAYTYPE_GRAY = Y_DISPLAYTYPE_GRAY;
     static const Y_DISPLAYTYPE_enum DISPLAYTYPE_RGB = Y_DISPLAYTYPE_RGB;
     static const Y_DISPLAYTYPE_enum DISPLAYTYPE_INVALID = Y_DISPLAYTYPE_INVALID;
-    static const unsigned LAYERWIDTH_INVALID = 0xffffffff;
-    static const unsigned LAYERHEIGHT_INVALID = 0xffffffff;
-    static const unsigned LAYERCOUNT_INVALID = 0xffffffff;
+    static const int LAYERWIDTH_INVALID = YAPI_INVALID_UINT;
+    static const int LAYERHEIGHT_INVALID = YAPI_INVALID_UINT;
+    static const int LAYERCOUNT_INVALID = YAPI_INVALID_UINT;
     static const string COMMAND_INVALID;
 
     /**
-     * Returns the logical name of the display.
+     * Returns true if the screen is powered, false otherwise.
      * 
-     * @return a string corresponding to the logical name of the display
+     * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to true if the screen is powered, false otherwise
      * 
-     * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
+     * On failure, throws an exception or returns Y_ENABLED_INVALID.
      */
-           string          get_logicalName(void);
-    inline string          logicalName(void)
-    { return this->get_logicalName(); }
+    Y_ENABLED_enum      get_enabled(void);
 
-    /**
-     * Changes the logical name of the display. You can use yCheckLogicalName()
-     * prior to this call to make sure that your parameter is valid.
-     * Remember to call the saveToFlash() method of the module if the
-     * modification must be kept.
-     * 
-     * @param newval : a string corresponding to the logical name of the display
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_logicalName(const string& newval);
-    inline int      setLogicalName(const string& newval)
-    { return this->set_logicalName(newval); }
-
-    /**
-     * Returns the current value of the display (no more than 6 characters).
-     * 
-     * @return a string corresponding to the current value of the display (no more than 6 characters)
-     * 
-     * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
-     */
-           string          get_advertisedValue(void);
-    inline string          advertisedValue(void)
-    { return this->get_advertisedValue(); }
-
-    /**
-     * Returns the power state of the display.
-     * 
-     * @return either Y_POWERSTATE_OFF or Y_POWERSTATE_ON, according to the power state of the display
-     * 
-     * On failure, throws an exception or returns Y_POWERSTATE_INVALID.
-     */
-           Y_POWERSTATE_enum get_powerState(void);
-    inline Y_POWERSTATE_enum powerState(void)
-    { return this->get_powerState(); }
+    inline Y_ENABLED_enum enabled(void)
+    { return this->get_enabled(); }
 
     /**
      * Changes the power state of the display.
      * 
-     * @param newval : either Y_POWERSTATE_OFF or Y_POWERSTATE_ON, according to the power state of the display
+     * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the power state of the display
      * 
      * @return YAPI_SUCCESS if the call succeeds.
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             set_powerState(Y_POWERSTATE_enum newval);
-    inline int      setPowerState(Y_POWERSTATE_enum newval)
-    { return this->set_powerState(newval); }
+    int             set_enabled(Y_ENABLED_enum newval);
+    inline int      setEnabled(Y_ENABLED_enum newval)
+    { return this->set_enabled(newval); }
 
     /**
      * Returns the name of the sequence to play when the displayed is powered on.
@@ -698,8 +670,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_STARTUPSEQ_INVALID.
      */
-           string          get_startupSeq(void);
-    inline string          startupSeq(void)
+    string              get_startupSeq(void);
+
+    inline string       startupSeq(void)
     { return this->get_startupSeq(); }
 
     /**
@@ -724,8 +697,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_BRIGHTNESS_INVALID.
      */
-           int             get_brightness(void);
-    inline int             brightness(void)
+    int                 get_brightness(void);
+
+    inline int          brightness(void)
     { return this->get_brightness(); }
 
     /**
@@ -751,7 +725,8 @@ public:
      * 
      * On failure, throws an exception or returns Y_ORIENTATION_INVALID.
      */
-           Y_ORIENTATION_enum get_orientation(void);
+    Y_ORIENTATION_enum  get_orientation(void);
+
     inline Y_ORIENTATION_enum orientation(void)
     { return this->get_orientation(); }
 
@@ -777,8 +752,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_DISPLAYWIDTH_INVALID.
      */
-           unsigned        get_displayWidth(void);
-    inline unsigned        displayWidth(void)
+    int                 get_displayWidth(void);
+
+    inline int          displayWidth(void)
     { return this->get_displayWidth(); }
 
     /**
@@ -788,8 +764,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_DISPLAYHEIGHT_INVALID.
      */
-           unsigned        get_displayHeight(void);
-    inline unsigned        displayHeight(void)
+    int                 get_displayHeight(void);
+
+    inline int          displayHeight(void)
     { return this->get_displayHeight(); }
 
     /**
@@ -800,7 +777,8 @@ public:
      * 
      * On failure, throws an exception or returns Y_DISPLAYTYPE_INVALID.
      */
-           Y_DISPLAYTYPE_enum get_displayType(void);
+    Y_DISPLAYTYPE_enum  get_displayType(void);
+
     inline Y_DISPLAYTYPE_enum displayType(void)
     { return this->get_displayType(); }
 
@@ -811,8 +789,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_LAYERWIDTH_INVALID.
      */
-           unsigned        get_layerWidth(void);
-    inline unsigned        layerWidth(void)
+    int                 get_layerWidth(void);
+
+    inline int          layerWidth(void)
     { return this->get_layerWidth(); }
 
     /**
@@ -822,8 +801,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_LAYERHEIGHT_INVALID.
      */
-           unsigned        get_layerHeight(void);
-    inline unsigned        layerHeight(void)
+    int                 get_layerHeight(void);
+
+    inline int          layerHeight(void)
     { return this->get_layerHeight(); }
 
     /**
@@ -833,175 +813,19 @@ public:
      * 
      * On failure, throws an exception or returns Y_LAYERCOUNT_INVALID.
      */
-           unsigned        get_layerCount(void);
-    inline unsigned        layerCount(void)
+    int                 get_layerCount(void);
+
+    inline int          layerCount(void)
     { return this->get_layerCount(); }
 
-           string          get_command(void);
-    inline string          command(void)
+    string              get_command(void);
+
+    inline string       command(void)
     { return this->get_command(); }
 
     int             set_command(const string& newval);
     inline int      setCommand(const string& newval)
     { return this->set_command(newval); }
-
-    /**
-     * Clears the display screen and resets all display layers to their default state.
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             resetAll();
-
-    /**
-     * Smoothly changes the brightness of the screen to produce a fade-in or fade-out
-     * effect.
-     * 
-     * @param brightness: the new screen brightness
-     * @param duration: duration of the brightness transition, in milliseconds.
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             fade(int brightness,int duration);
-
-    /**
-     * Starts to record all display commands into a sequence, for later replay.
-     * The name used to store the sequence is specified when calling
-     * saveSequence(), once the recording is complete.
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             newSequence();
-
-    /**
-     * Stops recording display commands and saves the sequence into the specified
-     * file on the display internal memory. The sequence can be later replayed
-     * using playSequence().
-     * 
-     * @param sequenceName : the name of the newly created sequence
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             saveSequence(string sequenceName);
-
-    /**
-     * Replays a display sequence previously recorded using
-     * newSequence() and saveSequence().
-     * 
-     * @param sequenceName : the name of the newly created sequence
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             playSequence(string sequenceName);
-
-    /**
-     * Waits for a specified delay (in milliseconds) before playing next
-     * commands in current sequence. This method can be used while
-     * recording a display sequence, to insert a timed wait in the sequence
-     * (without any immediate effect). It can also be used dynamically while
-     * playing a pre-recorded sequence, to suspend or resume the execution of
-     * the sequence. To cancel a delay, call the same method with a zero delay.
-     * 
-     * @param delay_ms : the duration to wait, in milliseconds
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             pauseSequence(int delay_ms);
-
-    /**
-     * Stops immediately any ongoing sequence replay.
-     * The display is left as is.
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             stopSequence();
-
-    /**
-     * Uploads an arbitrary file (for instance a GIF file) to the display, to the
-     * specified full path name. If a file already exists with the same path name,
-     * its content is overwritten.
-     * 
-     * @param pathname : path and name of the new file to create
-     * @param content : binary buffer with the content to set
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             upload(string pathname,string content);
-
-    /**
-     * Copies the whole content of a layer to another layer. The color and transparency
-     * of all the pixels from the destination layer are set to match the source pixels.
-     * This method only affects the displayed content, but does not change any
-     * property of the layer object.
-     * Note that layer 0 has no transparency support (it is always completely opaque).
-     * 
-     * @param srcLayerId : the identifier of the source layer (a number in range 0..layerCount-1)
-     * @param dstLayerId : the identifier of the destination layer (a number in range 0..layerCount-1)
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             copyLayerContent(int srcLayerId,int dstLayerId);
-
-    /**
-     * Swaps the whole content of two layers. The color and transparency of all the pixels from
-     * the two layers are swapped. This method only affects the displayed content, but does
-     * not change any property of the layer objects. In particular, the visibility of each
-     * layer stays unchanged. When used between onae hidden layer and a visible layer,
-     * this method makes it possible to easily implement double-buffering.
-     * Note that layer 0 has no transparency support (it is always completely opaque).
-     * 
-     * @param layerIdA : the first layer (a number in range 0..layerCount-1)
-     * @param layerIdB : the second layer (a number in range 0..layerCount-1)
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             swapLayerContent(int layerIdA,int layerIdB);
-
-
-    /**
-     * Registers the callback function that is invoked on every change of advertised value.
-     * The callback is invoked only during the execution of ySleep or yHandleEvents.
-     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
-     *         arguments: the function object of which the value has changed, and the character string describing
-     *         the new advertised value.
-     * @noreturn
-     */
-    void registerValueCallback(YDisplayUpdateCallback callback);
-
-    void advertiseValue(const string& value);
-
-    /**
-     * Continues the enumeration of displays started using yFirstDisplay().
-     * 
-     * @return a pointer to a YDisplay object, corresponding to
-     *         a display currently online, or a null pointer
-     *         if there are no more displays to enumerate.
-     */
-           YDisplay        *nextDisplay(void);
-    inline YDisplay        *next(void)
-    { return this->nextDisplay();}
 
     /**
      * Retrieves a display for a given identifier.
@@ -1026,18 +850,171 @@ public:
      * 
      * @return a YDisplay object allowing you to drive the display.
      */
-           static YDisplay* FindDisplay(const string& func);
-    inline static YDisplay* Find(const string& func)
-    { return YDisplay::FindDisplay(func);}
+    static YDisplay*    FindDisplay(string func);
+
+    using YFunction::registerValueCallback;
+
     /**
-     * Starts the enumeration of displays currently accessible.
-     * Use the method YDisplay.nextDisplay() to iterate on
-     * next displays.
+     * Registers the callback function that is invoked on every change of advertised value.
+     * The callback is invoked only during the execution of ySleep or yHandleEvents.
+     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * 
+     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     *         arguments: the function object of which the value has changed, and the character string describing
+     *         the new advertised value.
+     * @noreturn
+     */
+    virtual int         registerValueCallback(YDisplayValueCallback callback);
+
+    virtual int         _invokeValueCallback(string value);
+
+    /**
+     * Clears the display screen and resets all display layers to their default state.
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         resetAll(void);
+
+    /**
+     * Smoothly changes the brightness of the screen to produce a fade-in or fade-out
+     * effect.
+     * 
+     * @param brightness: the new screen brightness
+     * @param duration: duration of the brightness transition, in milliseconds.
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         fade(int brightness,int duration);
+
+    /**
+     * Starts to record all display commands into a sequence, for later replay.
+     * The name used to store the sequence is specified when calling
+     * saveSequence(), once the recording is complete.
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         newSequence(void);
+
+    /**
+     * Stops recording display commands and saves the sequence into the specified
+     * file on the display internal memory. The sequence can be later replayed
+     * using playSequence().
+     * 
+     * @param sequenceName : the name of the newly created sequence
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         saveSequence(string sequenceName);
+
+    /**
+     * Replays a display sequence previously recorded using
+     * newSequence() and saveSequence().
+     * 
+     * @param sequenceName : the name of the newly created sequence
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         playSequence(string sequenceName);
+
+    /**
+     * Waits for a specified delay (in milliseconds) before playing next
+     * commands in current sequence. This method can be used while
+     * recording a display sequence, to insert a timed wait in the sequence
+     * (without any immediate effect). It can also be used dynamically while
+     * playing a pre-recorded sequence, to suspend or resume the execution of
+     * the sequence. To cancel a delay, call the same method with a zero delay.
+     * 
+     * @param delay_ms : the duration to wait, in milliseconds
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         pauseSequence(int delay_ms);
+
+    /**
+     * Stops immediately any ongoing sequence replay.
+     * The display is left as is.
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         stopSequence(void);
+
+    /**
+     * Uploads an arbitrary file (for instance a GIF file) to the display, to the
+     * specified full path name. If a file already exists with the same path name,
+     * its content is overwritten.
+     * 
+     * @param pathname : path and name of the new file to create
+     * @param content : binary buffer with the content to set
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         upload(string pathname,string content);
+
+    /**
+     * Copies the whole content of a layer to another layer. The color and transparency
+     * of all the pixels from the destination layer are set to match the source pixels.
+     * This method only affects the displayed content, but does not change any
+     * property of the layer object.
+     * Note that layer 0 has no transparency support (it is always completely opaque).
+     * 
+     * @param srcLayerId : the identifier of the source layer (a number in range 0..layerCount-1)
+     * @param dstLayerId : the identifier of the destination layer (a number in range 0..layerCount-1)
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         copyLayerContent(int srcLayerId,int dstLayerId);
+
+    /**
+     * Swaps the whole content of two layers. The color and transparency of all the pixels from
+     * the two layers are swapped. This method only affects the displayed content, but does
+     * not change any property of the layer objects. In particular, the visibility of each
+     * layer stays unchanged. When used between onae hidden layer and a visible layer,
+     * this method makes it possible to easily implement double-buffering.
+     * Note that layer 0 has no transparency support (it is always completely opaque).
+     * 
+     * @param layerIdA : the first layer (a number in range 0..layerCount-1)
+     * @param layerIdB : the second layer (a number in range 0..layerCount-1)
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         swapLayerContent(int layerIdA,int layerIdB);
+
+
+    inline static YDisplay* Find(string func)
+    { return YDisplay::FindDisplay(func); }
+
+    /**
+     * Continues the enumeration of displays started using yFirstDisplay().
      * 
      * @return a pointer to a YDisplay object, corresponding to
-     *         the first display currently online, or a null pointer
-     *         if there are none.
+     *         a display currently online, or a null pointer
+     *         if there are no more displays to enumerate.
      */
+           YDisplay        *nextDisplay(void);
+    inline YDisplay        *next(void)
+    { return this->nextDisplay();}
+
            static YDisplay* FirstDisplay(void);
     inline static YDisplay* First(void)
     { return YDisplay::FirstDisplay();}

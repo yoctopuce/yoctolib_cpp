@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.cpp 12337 2013-08-14 15:22:22Z mvuilleu $
+ * $Id: yocto_network.cpp 14700 2014-01-23 15:40:44Z seb $
  *
  * Implements yFindNetwork(), the high-level API for Network functions
  *
@@ -47,35 +47,32 @@
 #include <math.h>
 #include <stdlib.h>
 
-//--- (YNetwork constructor)
-// Constructor is protected, use yFindNetwork factory function to instantiate
-YNetwork::YNetwork(const string& func): YFunction("Network", func)
-//--- (end of YNetwork constructor)
+YNetwork::YNetwork(const string& func): YFunction(func)
 //--- (Network initialization)
-            ,_callback(NULL)
-            ,_logicalName(Y_LOGICALNAME_INVALID)
-            ,_advertisedValue(Y_ADVERTISEDVALUE_INVALID)
-            ,_readiness(Y_READINESS_INVALID)
-            ,_macAddress(Y_MACADDRESS_INVALID)
-            ,_ipAddress(Y_IPADDRESS_INVALID)
-            ,_subnetMask(Y_SUBNETMASK_INVALID)
-            ,_router(Y_ROUTER_INVALID)
-            ,_ipConfig(Y_IPCONFIG_INVALID)
-            ,_primaryDNS(Y_PRIMARYDNS_INVALID)
-            ,_secondaryDNS(Y_SECONDARYDNS_INVALID)
-            ,_userPassword(Y_USERPASSWORD_INVALID)
-            ,_adminPassword(Y_ADMINPASSWORD_INVALID)
-            ,_discoverable(Y_DISCOVERABLE_INVALID)
-            ,_wwwWatchdogDelay(Y_WWWWATCHDOGDELAY_INVALID)
-            ,_callbackUrl(Y_CALLBACKURL_INVALID)
-            ,_callbackMethod(Y_CALLBACKMETHOD_INVALID)
-            ,_callbackEncoding(Y_CALLBACKENCODING_INVALID)
-            ,_callbackCredentials(Y_CALLBACKCREDENTIALS_INVALID)
-            ,_callbackMinDelay(Y_CALLBACKMINDELAY_INVALID)
-            ,_callbackMaxDelay(Y_CALLBACKMAXDELAY_INVALID)
-            ,_poeCurrent(Y_POECURRENT_INVALID)
+    ,_readiness(READINESS_INVALID)
+    ,_macAddress(MACADDRESS_INVALID)
+    ,_ipAddress(IPADDRESS_INVALID)
+    ,_subnetMask(SUBNETMASK_INVALID)
+    ,_router(ROUTER_INVALID)
+    ,_ipConfig(IPCONFIG_INVALID)
+    ,_primaryDNS(PRIMARYDNS_INVALID)
+    ,_secondaryDNS(SECONDARYDNS_INVALID)
+    ,_userPassword(USERPASSWORD_INVALID)
+    ,_adminPassword(ADMINPASSWORD_INVALID)
+    ,_discoverable(DISCOVERABLE_INVALID)
+    ,_wwwWatchdogDelay(WWWWATCHDOGDELAY_INVALID)
+    ,_callbackUrl(CALLBACKURL_INVALID)
+    ,_callbackMethod(CALLBACKMETHOD_INVALID)
+    ,_callbackEncoding(CALLBACKENCODING_INVALID)
+    ,_callbackCredentials(CALLBACKCREDENTIALS_INVALID)
+    ,_callbackMinDelay(CALLBACKMINDELAY_INVALID)
+    ,_callbackMaxDelay(CALLBACKMAXDELAY_INVALID)
+    ,_poeCurrent(POECURRENT_INVALID)
+    ,_valueCallbackNetwork(NULL)
 //--- (end of Network initialization)
-{}
+{
+    _className="Network";
+}
 
 YNetwork::~YNetwork() 
 {
@@ -83,159 +80,126 @@ YNetwork::~YNetwork()
 //--- (end of YNetwork cleanup)
 }
 //--- (YNetwork implementation)
+// static attributes
+const string YNetwork::MACADDRESS_INVALID = YAPI_INVALID_STRING;
+const string YNetwork::IPADDRESS_INVALID = YAPI_INVALID_STRING;
+const string YNetwork::SUBNETMASK_INVALID = YAPI_INVALID_STRING;
+const string YNetwork::ROUTER_INVALID = YAPI_INVALID_STRING;
+const string YNetwork::IPCONFIG_INVALID = YAPI_INVALID_STRING;
+const string YNetwork::PRIMARYDNS_INVALID = YAPI_INVALID_STRING;
+const string YNetwork::SECONDARYDNS_INVALID = YAPI_INVALID_STRING;
+const string YNetwork::USERPASSWORD_INVALID = YAPI_INVALID_STRING;
+const string YNetwork::ADMINPASSWORD_INVALID = YAPI_INVALID_STRING;
+const string YNetwork::CALLBACKURL_INVALID = YAPI_INVALID_STRING;
+const string YNetwork::CALLBACKCREDENTIALS_INVALID = YAPI_INVALID_STRING;
 
-const string YNetwork::LOGICALNAME_INVALID = "!INVALID!";
-const string YNetwork::ADVERTISEDVALUE_INVALID = "!INVALID!";
-const string YNetwork::MACADDRESS_INVALID = "!INVALID!";
-const string YNetwork::IPADDRESS_INVALID = "!INVALID!";
-const string YNetwork::SUBNETMASK_INVALID = "!INVALID!";
-const string YNetwork::ROUTER_INVALID = "!INVALID!";
-const string YNetwork::IPCONFIG_INVALID = "!INVALID!";
-const string YNetwork::PRIMARYDNS_INVALID = "!INVALID!";
-const string YNetwork::SECONDARYDNS_INVALID = "!INVALID!";
-const string YNetwork::USERPASSWORD_INVALID = "!INVALID!";
-const string YNetwork::ADMINPASSWORD_INVALID = "!INVALID!";
-const string YNetwork::CALLBACKURL_INVALID = "!INVALID!";
-const string YNetwork::CALLBACKCREDENTIALS_INVALID = "!INVALID!";
-
-
-
-int YNetwork::_parse(yJsonStateMachine& j)
+int YNetwork::_parseAttr(yJsonStateMachine& j)
 {
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
+    if(!strcmp(j.token, "readiness")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _readiness =  (Y_READINESS_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "macAddress")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _macAddress =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "ipAddress")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _ipAddress =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "subnetMask")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _subnetMask =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "router")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _router =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "ipConfig")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _ipConfig =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "primaryDNS")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _primaryDNS =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "secondaryDNS")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _secondaryDNS =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "userPassword")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _userPassword =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "adminPassword")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _adminPassword =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "discoverable")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _discoverable =  (Y_DISCOVERABLE_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "wwwWatchdogDelay")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _wwwWatchdogDelay =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "callbackUrl")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _callbackUrl =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "callbackMethod")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _callbackMethod =  (Y_CALLBACKMETHOD_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "callbackEncoding")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _callbackEncoding =  (Y_CALLBACKENCODING_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "callbackCredentials")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _callbackCredentials =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "callbackMinDelay")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _callbackMinDelay =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "callbackMaxDelay")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _callbackMaxDelay =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "poeCurrent")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _poeCurrent =  atoi(j.token);
+        return 1;
+    }
     failed:
-        return -1;
-    }
-    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-        if(!strcmp(j.token, "logicalName")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _logicalName =  _parseString(j);
-        } else if(!strcmp(j.token, "advertisedValue")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _advertisedValue =  _parseString(j);
-        } else if(!strcmp(j.token, "readiness")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _readiness =  (Y_READINESS_enum)atoi(j.token);
-        } else if(!strcmp(j.token, "macAddress")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _macAddress =  _parseString(j);
-        } else if(!strcmp(j.token, "ipAddress")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _ipAddress =  _parseString(j);
-        } else if(!strcmp(j.token, "subnetMask")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _subnetMask =  _parseString(j);
-        } else if(!strcmp(j.token, "router")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _router =  _parseString(j);
-        } else if(!strcmp(j.token, "ipConfig")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _ipConfig =  _parseString(j);
-        } else if(!strcmp(j.token, "primaryDNS")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _primaryDNS =  _parseString(j);
-        } else if(!strcmp(j.token, "secondaryDNS")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _secondaryDNS =  _parseString(j);
-        } else if(!strcmp(j.token, "userPassword")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _userPassword =  _parseString(j);
-        } else if(!strcmp(j.token, "adminPassword")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _adminPassword =  _parseString(j);
-        } else if(!strcmp(j.token, "discoverable")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _discoverable =  (Y_DISCOVERABLE_enum)atoi(j.token);
-        } else if(!strcmp(j.token, "wwwWatchdogDelay")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _wwwWatchdogDelay =  atoi(j.token);
-        } else if(!strcmp(j.token, "callbackUrl")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _callbackUrl =  _parseString(j);
-        } else if(!strcmp(j.token, "callbackMethod")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _callbackMethod =  (Y_CALLBACKMETHOD_enum)atoi(j.token);
-        } else if(!strcmp(j.token, "callbackEncoding")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _callbackEncoding =  (Y_CALLBACKENCODING_enum)atoi(j.token);
-        } else if(!strcmp(j.token, "callbackCredentials")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _callbackCredentials =  _parseString(j);
-        } else if(!strcmp(j.token, "callbackMinDelay")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _callbackMinDelay =  atoi(j.token);
-        } else if(!strcmp(j.token, "callbackMaxDelay")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _callbackMaxDelay =  atoi(j.token);
-        } else if(!strcmp(j.token, "poeCurrent")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) return -1;
-            _poeCurrent =  atoi(j.token);
-        } else {
-            // ignore unknown field
-            yJsonSkip(&j, 1);
-        }
-    }
-    if(j.st != YJSON_PARSE_STRUCT) goto failed;
-    return 0;
+    return YFunction::_parseAttr(j);
 }
 
-/**
- * Returns the logical name of the network interface, corresponding to the network name of the module.
- * 
- * @return a string corresponding to the logical name of the network interface, corresponding to the
- * network name of the module
- * 
- * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
- */
-string YNetwork::get_logicalName(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_LOGICALNAME_INVALID;
-    }
-    return _logicalName;
-}
-
-/**
- * Changes the logical name of the network interface, corresponding to the network name of the module.
- * You can use yCheckLogicalName()
- * prior to this call to make sure that your parameter is valid.
- * Remember to call the saveToFlash() method of the module if the
- * modification must be kept.
- * 
- * @param newval : a string corresponding to the logical name of the network interface, corresponding
- * to the network name of the module
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YNetwork::set_logicalName(const string& newval)
-{
-    string rest_val;
-    rest_val = newval;
-    return _setAttr("logicalName", rest_val);
-}
-
-/**
- * Returns the current value of the network interface (no more than 6 characters).
- * 
- * @return a string corresponding to the current value of the network interface (no more than 6 characters)
- * 
- * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
- */
-string YNetwork::get_advertisedValue(void)
-{
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_ADVERTISEDVALUE_INVALID;
-    }
-    return _advertisedValue;
-}
 
 /**
  * Returns the current established working mode of the network interface.
  * Level zero (DOWN_0) means that no hardware link has been detected. Either there is no signal
  * on the network cable, or the selected wireless access point cannot be detected.
- * Level 1 (LIVE_1) is reached when the network is detected, but is not yet connected,
+ * Level 1 (LIVE_1) is reached when the network is detected, but is not yet connected.
  * For a wireless network, this shows that the requested SSID is present.
  * Level 2 (LINK_2) is reached when the hardware connection is established.
  * For a wired network connection, level 2 means that the cable is attached at both ends.
@@ -254,8 +218,10 @@ string YNetwork::get_advertisedValue(void)
  */
 Y_READINESS_enum YNetwork::get_readiness(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_READINESS_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::READINESS_INVALID;
+        }
     }
     return _readiness;
 }
@@ -270,14 +236,16 @@ Y_READINESS_enum YNetwork::get_readiness(void)
  */
 string YNetwork::get_macAddress(void)
 {
-    if(_macAddress == Y_MACADDRESS_INVALID) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_MACADDRESS_INVALID;
+    if (_cacheExpiration == 0) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::MACADDRESS_INVALID;
+        }
     }
     return _macAddress;
 }
 
 /**
- * Returns the IP address currently in use by the device. The adress may have been configured
+ * Returns the IP address currently in use by the device. The address may have been configured
  * statically, or provided by a DHCP server.
  * 
  * @return a string corresponding to the IP address currently in use by the device
@@ -286,8 +254,10 @@ string YNetwork::get_macAddress(void)
  */
 string YNetwork::get_ipAddress(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_IPADDRESS_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::IPADDRESS_INVALID;
+        }
     }
     return _ipAddress;
 }
@@ -301,8 +271,10 @@ string YNetwork::get_ipAddress(void)
  */
 string YNetwork::get_subnetMask(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_SUBNETMASK_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::SUBNETMASK_INVALID;
+        }
     }
     return _subnetMask;
 }
@@ -316,16 +288,20 @@ string YNetwork::get_subnetMask(void)
  */
 string YNetwork::get_router(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_ROUTER_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::ROUTER_INVALID;
+        }
     }
     return _router;
 }
 
 string YNetwork::get_ipConfig(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_IPCONFIG_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::IPCONFIG_INVALID;
+        }
     }
     return _ipConfig;
 }
@@ -387,8 +363,10 @@ int YNetwork::useStaticIP(string ipAddress,int subnetMaskLen,string router)
  */
 string YNetwork::get_primaryDNS(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_PRIMARYDNS_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::PRIMARYDNS_INVALID;
+        }
     }
     return _primaryDNS;
 }
@@ -420,18 +398,20 @@ int YNetwork::set_primaryDNS(const string& newval)
  */
 string YNetwork::get_secondaryDNS(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_SECONDARYDNS_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::SECONDARYDNS_INVALID;
+        }
     }
     return _secondaryDNS;
 }
 
 /**
- * Changes the IP address of the secondarz name server to be used by the module.
+ * Changes the IP address of the secondary name server to be used by the module.
  * When using DHCP, if a value is specified, it overrides the value received from the DHCP server.
  * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
  * 
- * @param newval : a string corresponding to the IP address of the secondarz name server to be used by the module
+ * @param newval : a string corresponding to the IP address of the secondary name server to be used by the module
  * 
  * @return YAPI_SUCCESS if the call succeeds.
  * 
@@ -455,8 +435,10 @@ int YNetwork::set_secondaryDNS(const string& newval)
  */
 string YNetwork::get_userPassword(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_USERPASSWORD_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::USERPASSWORD_INVALID;
+        }
     }
     return _userPassword;
 }
@@ -492,8 +474,10 @@ int YNetwork::set_userPassword(const string& newval)
  */
 string YNetwork::get_adminPassword(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_ADMINPASSWORD_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::ADMINPASSWORD_INVALID;
+        }
     }
     return _adminPassword;
 }
@@ -530,8 +514,10 @@ int YNetwork::set_adminPassword(const string& newval)
  */
 Y_DISCOVERABLE_enum YNetwork::get_discoverable(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_DISCOVERABLE_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::DISCOVERABLE_INVALID;
+        }
     }
     return _discoverable;
 }
@@ -566,17 +552,19 @@ int YNetwork::set_discoverable(Y_DISCOVERABLE_enum newval)
  * 
  * On failure, throws an exception or returns Y_WWWWATCHDOGDELAY_INVALID.
  */
-unsigned YNetwork::get_wwwWatchdogDelay(void)
+int YNetwork::get_wwwWatchdogDelay(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_WWWWATCHDOGDELAY_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::WWWWATCHDOGDELAY_INVALID;
+        }
     }
     return _wwwWatchdogDelay;
 }
 
 /**
  * Changes the allowed downtime of the WWW link (in seconds) before triggering an automated
- * reboot to try to recover Internet connectivity. A zero value disable automated reboot
+ * reboot to try to recover Internet connectivity. A zero value disables automated reboot
  * in case of Internet connectivity loss. The smallest valid non-zero timeout is
  * 90 seconds.
  * 
@@ -588,10 +576,10 @@ unsigned YNetwork::get_wwwWatchdogDelay(void)
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YNetwork::set_wwwWatchdogDelay(unsigned newval)
+int YNetwork::set_wwwWatchdogDelay(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
     return _setAttr("wwwWatchdogDelay", rest_val);
 }
 
@@ -604,8 +592,10 @@ int YNetwork::set_wwwWatchdogDelay(unsigned newval)
  */
 string YNetwork::get_callbackUrl(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_CALLBACKURL_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::CALLBACKURL_INVALID;
+        }
     }
     return _callbackUrl;
 }
@@ -637,8 +627,10 @@ int YNetwork::set_callbackUrl(const string& newval)
  */
 Y_CALLBACKMETHOD_enum YNetwork::get_callbackMethod(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_CALLBACKMETHOD_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::CALLBACKMETHOD_INVALID;
+        }
     }
     return _callbackMethod;
 }
@@ -656,7 +648,7 @@ Y_CALLBACKMETHOD_enum YNetwork::get_callbackMethod(void)
 int YNetwork::set_callbackMethod(Y_CALLBACKMETHOD_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
     return _setAttr("callbackMethod", rest_val);
 }
 
@@ -671,8 +663,10 @@ int YNetwork::set_callbackMethod(Y_CALLBACKMETHOD_enum newval)
  */
 Y_CALLBACKENCODING_enum YNetwork::get_callbackEncoding(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_CALLBACKENCODING_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::CALLBACKENCODING_INVALID;
+        }
     }
     return _callbackEncoding;
 }
@@ -691,7 +685,7 @@ Y_CALLBACKENCODING_enum YNetwork::get_callbackEncoding(void)
 int YNetwork::set_callbackEncoding(Y_CALLBACKENCODING_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
     return _setAttr("callbackEncoding", rest_val);
 }
 
@@ -706,8 +700,10 @@ int YNetwork::set_callbackEncoding(Y_CALLBACKENCODING_enum newval)
  */
 string YNetwork::get_callbackCredentials(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_CALLBACKCREDENTIALS_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::CALLBACKCREDENTIALS_INVALID;
+        }
     }
     return _callbackCredentials;
 }
@@ -763,10 +759,12 @@ int YNetwork::callbackLogin(string username,string password)
  * 
  * On failure, throws an exception or returns Y_CALLBACKMINDELAY_INVALID.
  */
-unsigned YNetwork::get_callbackMinDelay(void)
+int YNetwork::get_callbackMinDelay(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_CALLBACKMINDELAY_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::CALLBACKMINDELAY_INVALID;
+        }
     }
     return _callbackMinDelay;
 }
@@ -781,10 +779,10 @@ unsigned YNetwork::get_callbackMinDelay(void)
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YNetwork::set_callbackMinDelay(unsigned newval)
+int YNetwork::set_callbackMinDelay(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
     return _setAttr("callbackMinDelay", rest_val);
 }
 
@@ -795,10 +793,12 @@ int YNetwork::set_callbackMinDelay(unsigned newval)
  * 
  * On failure, throws an exception or returns Y_CALLBACKMAXDELAY_INVALID.
  */
-unsigned YNetwork::get_callbackMaxDelay(void)
+int YNetwork::get_callbackMaxDelay(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_CALLBACKMAXDELAY_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::CALLBACKMAXDELAY_INVALID;
+        }
     }
     return _callbackMaxDelay;
 }
@@ -813,10 +813,10 @@ unsigned YNetwork::get_callbackMaxDelay(void)
  * 
  * On failure, throws an exception or returns a negative error code.
  */
-int YNetwork::set_callbackMaxDelay(unsigned newval)
+int YNetwork::set_callbackMaxDelay(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", newval); rest_val = string(buf);
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
     return _setAttr("callbackMaxDelay", rest_val);
 }
 
@@ -830,18 +830,94 @@ int YNetwork::set_callbackMaxDelay(unsigned newval)
  * 
  * On failure, throws an exception or returns Y_POECURRENT_INVALID.
  */
-unsigned YNetwork::get_poeCurrent(void)
+int YNetwork::get_poeCurrent(void)
 {
-    if(_cacheExpiration <= YAPI::GetTickCount()) {
-        if(YISERR(load(YAPI::DefaultCacheValidity))) return Y_POECURRENT_INVALID;
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::POECURRENT_INVALID;
+        }
     }
     return _poeCurrent;
 }
 
 /**
- * Pings str_host to test the network connectivity. Sends four requests ICMP ECHO_REQUEST from the
+ * Retrieves $AFUNCTION$ for a given identifier.
+ * The identifier can be specified using several formats:
+ * <ul>
+ * <li>FunctionLogicalName</li>
+ * <li>ModuleSerialNumber.FunctionIdentifier</li>
+ * <li>ModuleSerialNumber.FunctionLogicalName</li>
+ * <li>ModuleLogicalName.FunctionIdentifier</li>
+ * <li>ModuleLogicalName.FunctionLogicalName</li>
+ * </ul>
+ * 
+ * This function does not require that $THEFUNCTION$ is online at the time
+ * it is invoked. The returned object is nevertheless valid.
+ * Use the method YNetwork.isOnline() to test if $THEFUNCTION$ is
+ * indeed online at a given time. In case of ambiguity when looking for
+ * $AFUNCTION$ by logical name, no error is notified: the first instance
+ * found is returned. The search is performed first by hardware name,
+ * then by logical name.
+ * 
+ * @param func : a string that uniquely characterizes $THEFUNCTION$
+ * 
+ * @return a YNetwork object allowing you to drive $THEFUNCTION$.
+ */
+YNetwork* YNetwork::FindNetwork(string func)
+{
+    YNetwork* obj = NULL;
+    obj = (YNetwork*) YFunction::_FindFromCache("Network", func);
+    if (obj == NULL) {
+        obj = new YNetwork(func);
+        YFunction::_AddToCache("Network", func, obj);
+    }
+    return obj;
+}
+
+/**
+ * Registers the callback function that is invoked on every change of advertised value.
+ * The callback is invoked only during the execution of ySleep or yHandleEvents.
+ * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+ * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * 
+ * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ *         arguments: the function object of which the value has changed, and the character string describing
+ *         the new advertised value.
+ * @noreturn
+ */
+int YNetwork::registerValueCallback(YNetworkValueCallback callback)
+{
+    string val;
+    if (callback != NULL) {
+        YFunction::_UpdateValueCallbackList(this, true);
+    } else {
+        YFunction::_UpdateValueCallbackList(this, false);
+    }
+    _valueCallbackNetwork = callback;
+    // Immediately invoke value callback with current value
+    if (callback != NULL && this->isOnline()) {
+        val = _advertisedValue;
+        if (!(val == "")) {
+            this->_invokeValueCallback(val);
+        }
+    }
+    return 0;
+}
+
+int YNetwork::_invokeValueCallback(string value)
+{
+    if (_valueCallbackNetwork != NULL) {
+        _valueCallbackNetwork(this, value);
+    } else {
+        YFunction::_invokeValueCallback(value);
+    }
+    return 0;
+}
+
+/**
+ * Pings str_host to test the network connectivity. Sends four ICMP ECHO_REQUEST requests from the
  * module to the target str_host. This method returns a string with the result of the
- * 4 ICMP ECHO_REQUEST result.
+ * 4 ICMP ECHO_REQUEST requests.
  * 
  * @param host : the hostname or the IP address of the target
  * 
@@ -850,9 +926,9 @@ unsigned YNetwork::get_poeCurrent(void)
 string YNetwork::ping(string host)
 {
     string content;
+    // may throw an exception
     content = this->_download(YapiWrapper::ysprintf("ping.txt?host=%s",host.c_str()));
     return content;
-    
 }
 
 YNetwork *YNetwork::nextNetwork(void)
@@ -862,38 +938,7 @@ YNetwork *YNetwork::nextNetwork(void)
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
-    return yFindNetwork(hwid);
-}
-
-void YNetwork::registerValueCallback(YNetworkUpdateCallback callback)
-{
-    if (callback != NULL) {
-        _registerFuncCallback(this);
-        yapiLockFunctionCallBack(NULL);
-        YAPI::_yapiFunctionUpdateCallbackFwd(this->functionDescriptor(), this->get_advertisedValue().c_str());
-        yapiUnlockFunctionCallBack(NULL);
-    } else {
-        _unregisterFuncCallback(this);
-    }
-    _callback = callback;
-}
-
-void YNetwork::advertiseValue(const string& value)
-{
-    if (_callback != NULL) {
-        _callback(this, value);
-    }
-}
-
-
-YNetwork* YNetwork::FindNetwork(const string& func)
-{
-    if(YAPI::_YFunctionsCaches["YNetwork"].find(func) != YAPI::_YFunctionsCaches["YNetwork"].end())
-        return (YNetwork*) YAPI::_YFunctionsCaches["YNetwork"][func];
-    
-    YNetwork *newNetwork = new YNetwork(func);
-    YAPI::_YFunctionsCaches["YNetwork"][func] = newNetwork ;
-    return newNetwork;
+    return YNetwork::FindNetwork(hwid);
 }
 
 YNetwork* YNetwork::FirstNetwork(void)

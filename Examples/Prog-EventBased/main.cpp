@@ -1,72 +1,58 @@
 #include <iostream>
 
 #include "yocto_api.h"
-#include "yocto_temperature.h"
 #include "yocto_anbutton.h"
-#include "yocto_lightsensor.h"
 
 using namespace std;
 
-
-static void CustomLog(const string& log)
+static void anButtonValueChangeCallBack(YAnButton *fct, const string& value)
 {
-    cout << "LOG:"<<log;
+    cout << fct->get_hardwareId() << " : " << value << " (new value)" << endl;
 }
 
-static void anButtonChangeCallBack(YAnButton *fct, const string& value)
+static void sensorValueChangeCallBack(YSensor *fct, const string& value)
 {
-    cout << "Position change    :" << fct->describe() << " = " <<value<<endl;
+    cout << fct->get_hardwareId() << " : " << value << " " << fct->get_unit() << " (new value)" << endl;
 }
 
-static void temperatureChangeCallBack(YTemperature *fct, const string& value)
+static void sensorTimedReportCallBack(YSensor *fct, YMeasure measure)
 {
-    cout << "Temperature change :" << fct->describe() << " = " <<value <<"°C"<<endl;
+    cout << fct->get_hardwareId() << " : " << measure.get_averageValue() << " " << fct->get_unit() << " (timed report)" << endl;
 }
-
-static void lightSensorChangeCallBack(YLightSensor *fct, const string& value)
-{
-    cout << "Light change       :" << fct->describe() << " = " << value << "lx"<<endl;
-}
-
 
 static void deviceArrival(YModule *m)
 {
-    cout << "Device arrival          : " << m->describe() <<endl;
+    string serial = m->get_serialNumber();
+    cout << "Device arrival : " << serial << endl;
+    string hardwareId;
+
+    // First solution: look for a specific type of function (eg. anButton)
     int fctcount = m->functionCount();
-    string fctName, fctFullName;
-
     for (int i = 0; i < fctcount; i++) {
-        fctName = m->functionId(i);
-        fctFullName = m->get_serialNumber() + "." + fctName;
-
-        // register call back for anbuttons
-        if (fctName.find("anButton")==0) { 
-            YAnButton *bt = YAnButton::FindAnButton(fctFullName);
-            //fixme: registerValueCallback should call callback with first value?
-            bt->registerValueCallback(anButtonChangeCallBack);
-            cout << "Callback registered for : " << fctFullName<<endl;
+        hardwareId = serial + "." + m->functionId(i);
+        if (hardwareId.find(".anButton") != string::npos) {
+            cout << "- " << hardwareId << endl;
+            YAnButton *bt = YAnButton::FindAnButton(hardwareId);
+            bt->registerValueCallback(anButtonValueChangeCallBack);
         }
-
-        // register call back for temperature sensors
-        if (fctName.find("temperature")==0) { 
-            YTemperature *t = YTemperature::FindTemperature(fctFullName);
-            t->registerValueCallback(temperatureChangeCallBack);
-            cout << "Callback registered for : " << fctFullName << endl;
+    }
+    
+    // Alternate solution: register any kind of sensor on the device
+    YSensor *sensor = YSensor::FirstSensor();
+    while(sensor) {
+        if(sensor->get_module()->get_serialNumber() == serial) {
+            hardwareId = sensor->get_hardwareId();
+            cout << "- " << hardwareId << endl;
+            sensor->registerValueCallback(sensorValueChangeCallBack);
+            sensor->registerTimedReportCallback(sensorTimedReportCallBack);
         }
-
-        // register call back for light sensors
-        if (fctName.find("lightSensor")==0) { 
-            YLightSensor *l = YLightSensor::FindLightSensor(fctFullName);
-            l->registerValueCallback(lightSensorChangeCallBack);
-            cout << "Callback registered for : " << fctFullName<<endl;
-        }
-        // and so on for other sensor type.....
+        sensor = sensor->nextSensor();
     }
 }
 
 static void deviceRemoval(YModule *m)
 {
-  cout << "Device removal          : " << m->get_serialNumber()<<endl;
+  cout << "Device removal : " << m->get_serialNumber()<<endl;
 }
 
 static void log(const string& val)

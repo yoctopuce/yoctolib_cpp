@@ -63,7 +63,7 @@ int main(int argc, const char * argv[])
   w=disp->get_displayWidth();
   h=disp->get_displayHeight();
 
-  //retreive the first layer
+  //reteive the first layer
   l0 = disp->get_displayLayer(0);
 
 

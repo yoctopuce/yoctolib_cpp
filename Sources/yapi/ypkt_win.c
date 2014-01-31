@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_win.c 12321 2013-08-13 14:56:24Z mvuilleu $
+ * $Id: ypkt_win.c 12991 2013-10-03 15:06:00Z mvuilleu $
  *
  * OS-specific USB packet layer, Windows version
  *
@@ -509,8 +509,8 @@ static int StartReadIO(yInterfaceSt *iface,char *errmsg)
     }else{
          yPktQueuePushD2H(iface,&iface->tmpd2hpkt.pkt,NULL);
          ySetEvent(&yContext->exitSleepEvent);
-		 //fixme add some kind of timeout to be able to send reset packet
-		 // if device become crasy
+		 // FIXME: add some kind of timeout to be able to send reset packet
+		 // if device become crazy
          retrycount++;
          goto retry;
     }

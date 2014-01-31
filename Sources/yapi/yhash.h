@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.h 12321 2013-08-13 14:56:24Z mvuilleu $
+ * $Id: yhash.h 14282 2014-01-09 18:16:26Z mvuilleu $
  *
  * Simple hash tables and device/function information store
  *
@@ -47,6 +47,7 @@ extern "C" {
 #include "ydef.h"
 
 //#define DEBUG_WP_LOCK
+//#define DEBUG_WP
 
 #define HASH_BUF_SIZE 28
 #define HASH_BUF_POW   5 /* HASH_BUF_POW = log_2(HASH_BUF_SIZE+2+2) */
@@ -72,9 +73,10 @@ typedef enum {
 } yWPAttribute;
 
 #define YBLKID_WPENTRY    0xf0
-#define YBLKID_YPENTRY    0xf1
-#define YBLKID_YPCATEG    0xf2
-#define YBLKID_YPARRAY    0xf3
+#define YBLKID_YPCATEG    0xf1
+#define YBLKID_YPARRAY    0xf2
+#define YBLKID_YPENTRY    0xf3
+#define YBLKID_YPENTRYEND (YBLKID_YPENTRY+YOCTO_N_BASECLASSES-1)
 
 typedef struct {
     u8          devYdx;
@@ -222,10 +224,11 @@ int     wpGetAllDevUsingHubUrl( yUrlRef hubUrl, yStrRef *buffer,int sizeInStrRef
 int     wpGetDeviceInfo(YAPI_DEVICE devdesc, u16 *deviceid, char *productname, char *serial, char *logicalname, u8 *beacon);
 yUrlRef wpGetDeviceUrlRef(YAPI_DEVICE devdesc);
 int     wpGetDeviceUrl(YAPI_DEVICE devdesc, char *roothubserial, char *request, int requestsize, int *neededsize);
-int     ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, int funYdx, const char *funcVal);
+int     ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, int funClass, int funYdx, const char *funcVal);
 int     ypRegisterByYdx(u8 devYdx, u8 funYdx, const char *funcVal, YAPI_FUNCTION *fundesc);
 void    ypGetCategory(yBlkHdl hdl, char *name, yBlkHdl *entries);
 int     ypGetAttributes(yBlkHdl hdl, yStrRef *serial, yStrRef *funcId, yStrRef *funcName, char *funcVal);
+int     ypGetType(yBlkHdl hdl);
 YAPI_FUNCTION ypSearch(const char *class_str, const char *func_str);
 int     ypGetFunctions(const char *class_str, YAPI_DEVICE devdesc, YAPI_FUNCTION prevfundesc,
                        YAPI_FUNCTION *buffer,int maxsize,int *neededsize);

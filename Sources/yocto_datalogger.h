@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_datalogger.h 12326 2013-08-13 15:52:20Z mvuilleu $
+ * $Id: yocto_datalogger.h 14562 2014-01-17 09:25:56Z mvuilleu $
  *
  * Declares yFindDataLogger(), the high-level API for DataLogger functions
  *
@@ -47,118 +47,83 @@
 #include <cmath>
 #include <map>
 
-class YDataLogger;
-//--- (generated code: definitions)
-class YDataLogger; //forward declaration
+//--- (generated code: YDataLogger definitions)
+class YDataLogger; // forward declaration
 
-typedef void (*YDataLoggerUpdateCallback)(YDataLogger *func, const string& functionValue);
+typedef void (*YDataLoggerValueCallback)(YDataLogger *func, const string& functionValue);
+#ifndef _Y_RECORDING_ENUM
+#define _Y_RECORDING_ENUM
 typedef enum {
     Y_RECORDING_OFF = 0,
     Y_RECORDING_ON = 1,
     Y_RECORDING_INVALID = -1,
 } Y_RECORDING_enum;
+#endif
 
+#ifndef _Y_AUTOSTART_ENUM
+#define _Y_AUTOSTART_ENUM
 typedef enum {
     Y_AUTOSTART_OFF = 0,
     Y_AUTOSTART_ON = 1,
     Y_AUTOSTART_INVALID = -1,
 } Y_AUTOSTART_enum;
+#endif
 
+#ifndef _Y_CLEARHISTORY_ENUM
+#define _Y_CLEARHISTORY_ENUM
 typedef enum {
     Y_CLEARHISTORY_FALSE = 0,
     Y_CLEARHISTORY_TRUE = 1,
     Y_CLEARHISTORY_INVALID = -1,
 } Y_CLEARHISTORY_enum;
+#endif
 
-#define Y_LOGICALNAME_INVALID           (YAPI::INVALID_STRING)
-#define Y_ADVERTISEDVALUE_INVALID       (YAPI::INVALID_STRING)
-#define Y_OLDESTRUNINDEX_INVALID        (0xffffffff)
-#define Y_CURRENTRUNINDEX_INVALID       (0xffffffff)
-#define Y_SAMPLINGINTERVAL_INVALID      (0xffffffff)
-#define Y_TIMEUTC_INVALID               (0xffffffff)
-//--- (end of generated code: definitions)
-
-#define Y_DATA_INVALID                  (-DBL_MAX)
-
-// Forward-declaration
-class YDataLogger;
+#define Y_CURRENTRUNINDEX_INVALID       (YAPI_INVALID_UINT)
+#define Y_TIMEUTC_INVALID               (YAPI_INVALID_LONG)
+//--- (end of generated code: YDataLogger definitions)
 
 /**
- * YDataStream Class: Sequence of measured data, returned by the data logger
- * 
+ * YOldDataStream Class: Sequence of measured data, returned by the data logger
+ *  
  * A data stream is a small collection of consecutive measures for a set
  * of sensors. A few properties are available directly from the object itself
  * (they are preloaded at instantiation time), while most other properties and
  * the actual data are loaded on demand when accessed for the first time.
+ *
+ * This is the old version of the YDataStream class, used for backward-compatibility
+ * with devices with firmware < 13000
  */
-class YDataStream {
+class YOldDataStream: public YDataStream {
 protected:
     // Data preloaded on object instantiation
-    YDataLogger     *dataLogger;
-    unsigned        _runNo, _timeStamp, _interval;
-    time_t          _utcStamp;
+    YDataLogger     *_dataLogger;
+    unsigned        _timeStamp;
+    unsigned        _interval;
     
-    // Data loaded using a specific connection
-    unsigned        _nRows, _nCols;
-    vector<string>  _columnNames;
-    vector< vector<double> > _values;
-
 public:    
-    YDataStream(YDataLogger *parent, unsigned run, 
-                unsigned stamp, unsigned utc, unsigned itv): 
-        dataLogger(parent), _runNo(run), _timeStamp(stamp),  
-        _interval(itv), _utcStamp(utc), _nRows(0), _nCols(0) {};
-    
-    static const double DATA_INVALID;
+    YOldDataStream(YDataLogger *parent, unsigned run, 
+                   unsigned stamp, unsigned utc, unsigned itv);
 
-    
-    // Preload all values into object
-    int             loadStream(void);
-    
-    /**
-     * Returns the run index of the data stream. A run can be made of
-     * multiple datastreams, for different time intervals.
-     * 
-     * This method does not cause any access to the device, as the value
-     * is preloaded in the object at instantiation time.
-     * 
-     * @return an unsigned number corresponding to the run index.
-     */
-           unsigned        get_runIndex(void);
-    inline unsigned        runIndex(void)
-    { return this->get_runIndex(); }
+    // override new version with backward-compatible code
+    int loadStream(void);
 
     /**
-     * Returns the start time of the data stream, relative to the beginning
-     * of the run. If you need an absolute time, use get_startTimeUTC().
-     * 
-     * This method does not cause any access to the device, as the value
-     * is preloaded in the object at instantiation time.
+     * Returns the relative start time of the data stream, measured in seconds.
+     * For recent firmwares, the value is relative to the present time,
+     * which means the value is always negative.
+     * If the device uses a firmware older than version 13000, value is
+     * relative to the start of the time the device was powered on, and
+     * is always positive.
+     * If you need an absolute UTC timestamp, use get_startTimeUTC().
      * 
      * @return an unsigned number corresponding to the number of seconds
      *         between the start of the run and the beginning of this data
      *         stream.
      */
-           unsigned        get_startTime(void);
-    inline unsigned        startTime(void)
+           int          get_startTime(void);
+    inline int          startTime(void)
     { return this->get_startTime(); }
-
-    /**
-     * Returns the start time of the data stream, relative to the Jan 1, 1970.
-     * If the UTC time was not set in the datalogger at the time of the recording
-     * of this data stream, this method returns 0.
-     * 
-     * This method does not cause any access to the device, as the value
-     * is preloaded in the object at instantiation time.
-     * 
-     * @return an unsigned number corresponding to the number of seconds
-     *         between the Jan 1, 1970 and the beginning of this data
-     *         stream (i.e. Unix time representation of the absolute time).
-     */
-           const time_t    &get_startTimeUTC(void);
-    inline const time_t    &startTimeUTC(void)
-    { return this->get_startTimeUTC(); }
-
+    
     /**
      * Returns the number of seconds elapsed between  two consecutive
      * rows of this data stream. By default, the data logger records one row
@@ -170,99 +135,9 @@ public:
      * 
      * @return an unsigned number corresponding to a number of seconds.
      */
-           unsigned        get_dataSamplesInterval(void);
-    inline unsigned        dataSamplesInterval(void)
+           double       get_dataSamplesInterval(void);
+    inline double       dataSamplesInterval(void)
     { return this->get_dataSamplesInterval(); }
-
-    /**
-     * Returns the number of data rows present in this stream.
-     * 
-     * This method fetches the whole data stream from the device,
-     * if not yet done.
-     * 
-     * @return an unsigned number corresponding to the number of rows.
-     * 
-     * On failure, throws an exception or returns zero.
-     */
-            unsigned        get_rowCount(void);
-    inline  unsigned        rowCount(void)
-    { return this->get_rowCount(); }
-
-    
-    /**
-     * Returns the number of data columns present in this stream.
-     * The meaning of the values present in each column can be obtained
-     * using the method get_columnNames().
-     * 
-     * This method fetches the whole data stream from the device,
-     * if not yet done.
-     * 
-     * @return an unsigned number corresponding to the number of rows.
-     * 
-     * On failure, throws an exception or returns zero.
-     */
-           unsigned        get_columnCount(void);
-    inline unsigned        columnCount(void)
-    { return this->get_columnCount(); }
-
-    /**
-     * Returns the title (or meaning) of each data column present in this stream.
-     * In most case, the title of the data column is the hardware identifier
-     * of the sensor that produced the data. For archived streams created by
-     * summarizing a high-resolution data stream, there can be a suffix appended
-     * to the sensor identifier, such as _min for the minimum value, _avg for the
-     * average value and _max for the maximal value.
-     * 
-     * This method fetches the whole data stream from the device,
-     * if not yet done.
-     * 
-     * @return a list containing as many strings as there are columns in the
-     *         data stream.
-     * 
-     * On failure, throws an exception or returns an empty array.
-     */
-           const vector<string>& get_columnNames(void);
-    inline const vector<string>& columnNames(void)
-    { return this->get_columnNames(); }
-
-    /**
-     * Returns the whole data set contained in the stream, as a bidimensional
-     * table of numbers.
-     * The meaning of the values present in each column can be obtained
-     * using the method get_columnNames().
-     * 
-     * This method fetches the whole data stream from the device,
-     * if not yet done.
-     * 
-     * @return a list containing as many elements as there are rows in the
-     *         data stream. Each row itself is a list of floating-point
-     *         numbers.
-     * 
-     * On failure, throws an exception or returns an empty array.
-     */
-           const vector< vector<double> >& get_dataRows(void);
-    inline const vector< vector<double> >& dataRows(void)
-    { return this->get_dataRows(); }
-    
-    /**
-     * Returns a single measure from the data stream, specified by its
-     * row and column index.
-     * The meaning of the values present in each column can be obtained
-     * using the method get_columnNames().
-     * 
-     * This method fetches the whole data stream from the device,
-     * if not yet done.
-     * 
-     * @param row : row index
-     * @param col : column index
-     * 
-     * @return a floating-point number
-     * 
-     * On failure, throws an exception or returns Y_DATA_INVALID.
-     */
-           double get_data(unsigned row, unsigned col);
-    inline double data(unsigned row, unsigned col)
-    { return this->get_data(row,col); }
 };
 
 //--- (generated code: YDataLogger declaration)
@@ -271,38 +146,29 @@ public:
  * 
  * Yoctopuce sensors include a non-volatile memory capable of storing ongoing measured
  * data automatically, without requiring a permanent connection to a computer.
- * The Yoctopuce application programming interface includes functions to control
- * how this internal data logger works.
- * Beacause the sensors do not include a battery, they do not have an absolute time
- * reference. Therefore, measures are simply indexed by the absolute run number
- * and time relative to the start of the run. Every new power up starts a new run.
- * It is however possible to setup an absolute UTC time by software at a given time,
- * so that the data logger keeps track of it until it is next powered off.
+ * The DataLogger function controls the global parameters of the internal data
+ * logger.
  */
-class YDataLogger: public YFunction {
-protected:
+class YOCTO_CLASS_EXPORT YDataLogger: public YFunction {
+//--- (end of generated code: YDataLogger declaration)
+    //--- (generated code: YDataLogger attributes)
     // Attributes (function value cache)
-    YDataLoggerUpdateCallback _callback;
-    string          _logicalName;
-    string          _advertisedValue;
-    unsigned        _oldestRunIndex;
-    unsigned        _currentRunIndex;
-    unsigned        _samplingInterval;
-    unsigned        _timeUTC;
+    int             _currentRunIndex;
+    s64             _timeUTC;
     Y_RECORDING_enum _recording;
     Y_AUTOSTART_enum _autoStart;
     Y_CLEARHISTORY_enum _clearHistory;
+    YDataLoggerValueCallback _valueCallbackDataLogger;
 
     friend YDataLogger *yFindDataLogger(const string& func);
     friend YDataLogger *yFirstDataLogger(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    int             _parse(yJsonStateMachine& j);
-    //--- (end of generated code: YDataLogger declaration)
-    //--- (generated code: YDataLogger constructor)
+    virtual int     _parseAttr(yJsonStateMachine& j);
+
     // Constructor is protected, use yFindDataLogger factory function to instantiate
     YDataLogger(const string& func);
-    //--- (end of generated code: YDataLogger constructor)
+    //--- (end of generated code: YDataLogger attributes)
     //--- (generated code: DataLogger initialization)
     //--- (end of generated code: DataLogger initialization)
 
@@ -312,27 +178,22 @@ protected:
     // DataLogger-specific method to retrieve and pre-parse recorded data
     int             getData(unsigned runIdx, unsigned timeIdx, string &buffer, yJsonStateMachine &j);
     
-    // YDataStream loadStream() will use our method getData()
-    friend int YDataStream::loadStream(void);
+    // YOldDataStream loadStream() will use our method getData()
+    friend int YOldDataStream::loadStream(void);
 
 public:
     ~YDataLogger();
     
     /**
-     * Clears the data logger memory and discards all recorded data streams.
-     * This method also resets the current run index to zero.
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             forgetAllDataStreams(void);
-    
-    /**
-     * Builds a list of all data streams hold by the data logger.
+     * Builds a list of all data streams hold by the data logger (legacy method).
      * The caller must pass by reference an empty array to hold YDataStream
      * objects, and the function fills it with objects describing available
      * data sequences.
+     * 
+     * This is the old way to retrieve data from the DataLogger.
+     * For new applications, you should rather use get_dataSets()
+     * method, or call directly get_recordedData() on the
+     * sensor object.
      * 
      * @param v : an array of YDataStream objects to be filled in
      * 
@@ -347,12 +208,8 @@ public:
     
     //--- (generated code: YDataLogger accessors declaration)
 
-    static const string LOGICALNAME_INVALID;
-    static const string ADVERTISEDVALUE_INVALID;
-    static const unsigned OLDESTRUNINDEX_INVALID = 0xffffffff;
-    static const unsigned CURRENTRUNINDEX_INVALID = 0xffffffff;
-    static const unsigned SAMPLINGINTERVAL_INVALID = 0xffffffff;
-    static const unsigned TIMEUTC_INVALID = 0xffffffff;
+    static const int CURRENTRUNINDEX_INVALID = YAPI_INVALID_UINT;
+    static const s64 TIMEUTC_INVALID = YAPI_INVALID_LONG;
     static const Y_RECORDING_enum RECORDING_OFF = Y_RECORDING_OFF;
     static const Y_RECORDING_enum RECORDING_ON = Y_RECORDING_ON;
     static const Y_RECORDING_enum RECORDING_INVALID = Y_RECORDING_INVALID;
@@ -364,56 +221,6 @@ public:
     static const Y_CLEARHISTORY_enum CLEARHISTORY_INVALID = Y_CLEARHISTORY_INVALID;
 
     /**
-     * Returns the logical name of the data logger.
-     * 
-     * @return a string corresponding to the logical name of the data logger
-     * 
-     * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
-     */
-           string          get_logicalName(void);
-    inline string          logicalName(void)
-    { return this->get_logicalName(); }
-
-    /**
-     * Changes the logical name of the data logger. You can use yCheckLogicalName()
-     * prior to this call to make sure that your parameter is valid.
-     * Remember to call the saveToFlash() method of the module if the
-     * modification must be kept.
-     * 
-     * @param newval : a string corresponding to the logical name of the data logger
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_logicalName(const string& newval);
-    inline int      setLogicalName(const string& newval)
-    { return this->set_logicalName(newval); }
-
-    /**
-     * Returns the current value of the data logger (no more than 6 characters).
-     * 
-     * @return a string corresponding to the current value of the data logger (no more than 6 characters)
-     * 
-     * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
-     */
-           string          get_advertisedValue(void);
-    inline string          advertisedValue(void)
-    { return this->get_advertisedValue(); }
-
-    /**
-     * Returns the index of the oldest run for which the non-volatile memory still holds recorded data.
-     * 
-     * @return an integer corresponding to the index of the oldest run for which the non-volatile memory
-     * still holds recorded data
-     * 
-     * On failure, throws an exception or returns Y_OLDESTRUNINDEX_INVALID.
-     */
-           unsigned        get_oldestRunIndex(void);
-    inline unsigned        oldestRunIndex(void)
-    { return this->get_oldestRunIndex(); }
-
-    /**
      * Returns the current run number, corresponding to the number of times the module was
      * powered on with the dataLogger enabled at some point.
      * 
@@ -422,17 +229,10 @@ public:
      * 
      * On failure, throws an exception or returns Y_CURRENTRUNINDEX_INVALID.
      */
-           unsigned        get_currentRunIndex(void);
-    inline unsigned        currentRunIndex(void)
+    int                 get_currentRunIndex(void);
+
+    inline int          currentRunIndex(void)
     { return this->get_currentRunIndex(); }
-
-           unsigned        get_samplingInterval(void);
-    inline unsigned        samplingInterval(void)
-    { return this->get_samplingInterval(); }
-
-    int             set_samplingInterval(unsigned newval);
-    inline int      setSamplingInterval(unsigned newval)
-    { return this->set_samplingInterval(newval); }
 
     /**
      * Returns the Unix timestamp for current UTC time, if known.
@@ -441,8 +241,9 @@ public:
      * 
      * On failure, throws an exception or returns Y_TIMEUTC_INVALID.
      */
-           unsigned        get_timeUTC(void);
-    inline unsigned        timeUTC(void)
+    s64                 get_timeUTC(void);
+
+    inline s64          timeUTC(void)
     { return this->get_timeUTC(); }
 
     /**
@@ -454,8 +255,8 @@ public:
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             set_timeUTC(unsigned newval);
-    inline int      setTimeUTC(unsigned newval)
+    int             set_timeUTC(s64 newval);
+    inline int      setTimeUTC(s64 newval)
     { return this->set_timeUTC(newval); }
 
     /**
@@ -465,7 +266,8 @@ public:
      * 
      * On failure, throws an exception or returns Y_RECORDING_INVALID.
      */
-           Y_RECORDING_enum get_recording(void);
+    Y_RECORDING_enum    get_recording(void);
+
     inline Y_RECORDING_enum recording(void)
     { return this->get_recording(); }
 
@@ -491,7 +293,8 @@ public:
      * 
      * On failure, throws an exception or returns Y_AUTOSTART_INVALID.
      */
-           Y_AUTOSTART_enum get_autoStart(void);
+    Y_AUTOSTART_enum    get_autoStart(void);
+
     inline Y_AUTOSTART_enum autoStart(void)
     { return this->get_autoStart(); }
 
@@ -511,40 +314,14 @@ public:
     inline int      setAutoStart(Y_AUTOSTART_enum newval)
     { return this->set_autoStart(newval); }
 
-           Y_CLEARHISTORY_enum get_clearHistory(void);
+    Y_CLEARHISTORY_enum get_clearHistory(void);
+
     inline Y_CLEARHISTORY_enum clearHistory(void)
     { return this->get_clearHistory(); }
 
     int             set_clearHistory(Y_CLEARHISTORY_enum newval);
     inline int      setClearHistory(Y_CLEARHISTORY_enum newval)
     { return this->set_clearHistory(newval); }
-
-
-    /**
-     * Registers the callback function that is invoked on every change of advertised value.
-     * The callback is invoked only during the execution of ySleep or yHandleEvents.
-     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
-     *         arguments: the function object of which the value has changed, and the character string describing
-     *         the new advertised value.
-     * @noreturn
-     */
-    void registerValueCallback(YDataLoggerUpdateCallback callback);
-
-    void advertiseValue(const string& value);
-
-    /**
-     * Continues the enumeration of data loggers started using yFirstDataLogger().
-     * 
-     * @return a pointer to a YDataLogger object, corresponding to
-     *         a data logger currently online, or a null pointer
-     *         if there are no more data loggers to enumerate.
-     */
-           YDataLogger     *nextDataLogger(void);
-    inline YDataLogger     *next(void)
-    { return this->nextDataLogger();}
 
     /**
      * Retrieves a data logger for a given identifier.
@@ -569,23 +346,72 @@ public:
      * 
      * @return a YDataLogger object allowing you to drive the data logger.
      */
-           static YDataLogger* FindDataLogger(const string& func);
-    inline static YDataLogger* Find(const string& func)
-    { return YDataLogger::FindDataLogger(func);}
+    static YDataLogger* FindDataLogger(string func);
+
+    using YFunction::registerValueCallback;
+
     /**
-     * Starts the enumeration of data loggers currently accessible.
-     * Use the method YDataLogger.nextDataLogger() to iterate on
-     * next data loggers.
+     * Registers the callback function that is invoked on every change of advertised value.
+     * The callback is invoked only during the execution of ySleep or yHandleEvents.
+     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
+     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * 
+     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     *         arguments: the function object of which the value has changed, and the character string describing
+     *         the new advertised value.
+     * @noreturn
+     */
+    virtual int         registerValueCallback(YDataLoggerValueCallback callback);
+
+    virtual int         _invokeValueCallback(string value);
+
+    /**
+     * Clears the data logger memory and discards all recorded data streams.
+     * This method also resets the current run index to zero.
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         forgetAllDataStreams(void);
+
+    /**
+     * Returns a list of YDataSet objects that can be used to retrieve
+     * all measures stored by the data logger.
+     * 
+     * This function only works if the device uses a recent firmware,
+     * as YDataSet objects are not supported by firmwares older than
+     * version 13000.
+     * 
+     * @return a list of YDataSet object.
+     * 
+     * On failure, throws an exception or returns an empty list.
+     */
+    virtual vector<YDataSet> get_dataSets(void);
+
+    virtual vector<YDataSet> parse_dataSets(string json);
+
+
+    inline static YDataLogger* Find(string func)
+    { return YDataLogger::FindDataLogger(func); }
+
+    /**
+     * Continues the enumeration of data loggers started using yFirstDataLogger().
      * 
      * @return a pointer to a YDataLogger object, corresponding to
-     *         the first data logger currently online, or a null pointer
-     *         if there are none.
+     *         a data logger currently online, or a null pointer
+     *         if there are no more data loggers to enumerate.
      */
+           YDataLogger     *nextDataLogger(void);
+    inline YDataLogger     *next(void)
+    { return this->nextDataLogger();}
+
            static YDataLogger* FirstDataLogger(void);
     inline static YDataLogger* First(void)
     { return YDataLogger::FirstDataLogger();}
     //--- (end of generated code: YDataLogger accessors declaration)
 };
+
 
 //--- (generated code: DataLogger functions declaration)
 

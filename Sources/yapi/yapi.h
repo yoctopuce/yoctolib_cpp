@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h 12321 2013-08-13 14:56:24Z mvuilleu $
+ * $Id: yapi.h 14657 2014-01-21 15:18:52Z seb $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -74,8 +74,14 @@ typedef void YAPI_FUNCTION_EXPORT(*yapiDeviceUpdateCallback)(YAPI_DEVICE devdesc
 //       if not null : notify a new value, (a pointer to a  YOCTO_PUBVAL_LEN bytes null terminated string)
 typedef void YAPI_FUNCTION_EXPORT(*yapiFunctionUpdateCallback)(YAPI_FUNCTION fundescr,const char *value);
 
+// prototype of timed report callback
+typedef void YAPI_FUNCTION_EXPORT(*yapiTimedReportCallback)(YAPI_FUNCTION fundesc, double timestamp, const u8 *bytes, u32 len);
+
 // prototype of the async request completion callback
 typedef void YAPI_FUNCTION_EXPORT(*yapiRequestAsyncCallback)(void *context,int retcode,const char *result,u32 resultlen);
+
+// prototype of the ssdp hub discovery callback
+typedef void YAPI_FUNCTION_EXPORT(*yapiHubDiscoveryCallback)(const char *serial, const char *url);
     
 
 /*****************************************************************************
@@ -231,6 +237,25 @@ void YAPI_FUNCTION_EXPORT yapiRegisterDeviceChangeCallback(yapiDeviceUpdateCallb
 
  ***************************************************************************/
 void YAPI_FUNCTION_EXPORT yapiRegisterFunctionUpdateCallback(yapiFunctionUpdateCallback updateCallback);
+
+/*****************************************************************************
+  Function:
+      void YAPI_FUNCTION_EXPORT yapiRegisterTimedReportCallback(yapiTimedReportCallback timedReportCallback);
+
+  Description:
+    Register a callback function for device function timed report. This function 
+    is only used to notify event you should return as soon as possible of the 
+    callback. To unregister your callback you can call this function with a NULL 
+    pointer.
+
+  Parameters:
+    timedReportCallback : a function to register or NULL to unregister the callback
+
+  Returns:
+    None
+
+ ***************************************************************************/
+void YAPI_FUNCTION_EXPORT yapiRegisterTimedReportCallback(yapiTimedReportCallback timedReportCallback);
 
 YRETCODE YAPI_FUNCTION_EXPORT yapiLockFunctionCallBack( char *errmsg);    
     
@@ -821,6 +846,43 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestAsyncEx(const char *device, const c
  ***************************************************************************/
 int YAPI_FUNCTION_EXPORT yapiHTTPRequest(const char *device, const char *request, char* buffer,int buffsize,int *fullsize, char *errmsg);
 
+/*****************************************************************************
+ Function:
+   void yapiRegisterHubDiscoveryCallback(yapiHubDiscoveryCallback hubDiscoveryCallback);
+ 
+ Description:
+   register a callback function that will be called on every network hub  (or VirtualHub)
+   that send an SSDP annouce or respond to a SSDP search
+ 
+ Parameters:
+   hubDiscoveryCallback : the function to call when an network hub his detected by ssdp or null to
+                          unregister the prévious callback
+ 
+ Returns:
+   
+ Remarks:
+ 
+ ***************************************************************************/
+void YAPI_FUNCTION_EXPORT yapiRegisterHubDiscoveryCallback(yapiHubDiscoveryCallback hubDiscoveryCallback);
+
+/*****************************************************************************
+ Function:
+   YRETCODE YAPI_FUNCTION_EXPORT yapiTriggerHubDiscovery(char *errmsg);
+ 
+ Description:
+   Send an SSDP Msearch Request to force all online hub to annouce itself again.
+ 
+ Parameters:
+   errmsg     : a pointer to a buffer of YOCTO_ERRMSG_LEN bytes to store any error message
+ 
+ Returns:
+   check the result with the YISERR(retcode)
+   on ERROR   : return the YRETCODE
+ 
+ Remarks:
+ 
+ ***************************************************************************/
+YRETCODE YAPI_FUNCTION_EXPORT yapiTriggerHubDiscovery(char *errmsg);
 
 /*****************************************************************************
   Flash API
@@ -844,7 +906,9 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiFlashDevice(yFlashArg *arg,  char *errmsg);
 YRETCODE YAPI_FUNCTION_EXPORT yapiVerifyDevice(yFlashArg *arg, char *errmsg);
 
 typedef  void (*yRawNotificationCb)(USB_Notify_Pkt*);
+typedef  void (*yRawReportCb)(YAPI_DEVICE serialref, USB_Report_Pkt *report, int pktsize);    
 void yapiRegisterRawNotificationCb(yRawNotificationCb callback);
+void yapiRegisterRawReportCb(yRawReportCb callback);
 
 // Misc helper    
 u32 YAPI_FUNCTION_EXPORT yapiGetCNonce(u32 nc);

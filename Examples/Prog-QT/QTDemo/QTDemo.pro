@@ -13,8 +13,14 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        inventory.cpp \
-    ../../../Sources/yocto_wireless.cpp \
+        inventory.cpp
+
+HEADERS  += inventory.h
+
+FORMS    += inventory.ui
+
+
+SOURCES +=  ../../../Sources/yocto_wireless.cpp \
     ../../../Sources/yocto_watchdog.cpp \
     ../../../Sources/yocto_wakeupschedule.cpp \
     ../../../Sources/yocto_wakeupmonitor.cpp \
@@ -57,8 +63,7 @@ SOURCES += main.cpp\
     ../../../Sources/yapi/yfifo.c \
     ../../../Sources/yapi/yapi.c
 
-HEADERS  += inventory.h \
-    ../../../Sources/yocto_wireless.h \
+HEADERS  += ../../../Sources/yocto_wireless.h \
     ../../../Sources/yocto_watchdog.h \
     ../../../Sources/yocto_wakeupschedule.h \
     ../../../Sources/yocto_wakeupmonitor.h \
@@ -99,8 +104,6 @@ HEADERS  += inventory.h \
     ../../../Sources/yapi/yfifo.h \
     ../../../Sources/yapi/ydef.h \
     ../../../Sources/yapi/yapi.h
-
-FORMS    += inventory.ui
 
 
 # add Yoctopuce Library to the Include path
