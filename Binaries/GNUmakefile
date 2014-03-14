@@ -75,7 +75,9 @@ YOCTO_API_OBJS_STAT = yocto_api.o yocto_anbutton.o yocto_carbondioxide.o yocto_c
 	yocto_dualpower.o yocto_files.o yocto_genericsensor.o yocto_hubport.o yocto_humidity.o yocto_led.o yocto_lightsensor.o \
 	yocto_network.o yocto_oscontrol.o yocto_power.o yocto_pressure.o yocto_realtimeclock.o yocto_relay.o yocto_servo.o \
 	yocto_temperature.o yocto_voc.o yocto_voltage.o yocto_wakeupmonitor.o yocto_wakeupschedule.o yocto_watchdog.o \
-	yocto_wireless.o yocto_digitalio.o
+	yocto_wireless.o yocto_digitalio.o yocto_accelerometer.o yocto_magnetometer.o yocto_refframe.o yocto_tilt.o \
+	yocto_compass.o yocto_gyro.o yocto_pwmoutput.o yocto_pwmpowersource.o
+
 YOCTO_API_OBJS_DYN	= $(patsubst %.o, %_dyn.o,$(YOCTO_API_OBJS_STAT))
 
 YAPI_DIR    = $(YOCTO_API_DIR)yapi/

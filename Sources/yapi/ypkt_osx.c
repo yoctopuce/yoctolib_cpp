@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_osx.c 14398 2014-01-14 08:44:38Z seb $
+ * $Id: ypkt_osx.c 15321 2014-03-07 14:32:14Z seb $
  *
  * OS-specific USB packet layer, Mac OS X version
  *
@@ -43,7 +43,9 @@
 #include "yproto.h"
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/sysctl.h>
 #include <fcntl.h>
+
 /*****************************************************************
  * USB ENUMERATION
  *****************************************************************/
@@ -89,27 +91,6 @@ static void yReleaseGlobalAccess(yContextSt *ctx)
         read(fd,&chk_val,sizeof(chk_val));
     }
 }
-
-
-#if 0
-static void hid_device_removal_callback(void *context, IOReturn result,    void *sender, IOHIDDeviceRef dev_ref)
-{
-    int i;
-    yContextSt *ctx =(yContextSt*)context;
-    //dbglog("handle device removal correctly\n");
-    // remove iface from setuped ifaces
-    for (i=0; i< SETUPED_IFACE_CACHE_SIZE ; i++) {
-        if(ctx->setupedIfaceCache[i]!=NULL){
-            yInterfaceSt *iface = ctx->setupedIfaceCache[i];
-            if(iface->_devref == dev_ref){
-                HALLOG("unplug of %s:%d detected\n",iface->serial,iface->ifaceno);
-                iface->_devref=NULL;
-                break;
-            }
-        }
-    }
-}
-#endif
 
 static void *event_thread(void *param)
 {
@@ -176,10 +157,23 @@ static void stopHIDManager(OSX_HID_REF *hid)
 
 int yyyUSB_init(yContextSt *ctx,char *errmsg)
 {
-    
+    char str[256];
+    size_t size = sizeof(str);
     if(!yReserveGlobalAccess(ctx)){
         return YERRMSG(YAPI_DOUBLE_ACCES,"Another process is already using yAPI");
     }
+
+    if (sysctlbyname("kern.osrelease", str, &size, NULL, 0) ==0){
+        //13.x.x  OS X 10.9.x Mavericks
+        //12.x.x  OS X 10.8.x Mountain Lion
+        //11.x.x  OS X 10.7.x Lion
+        //10.x.x  OS X 10.6.x Snow Leopard
+        str[2]=0;
+        if (atoi(str)>=13){
+            ctx->osx_flags |= YCTX_OSX_MULTIPLES_HID;
+        }            
+    }
+    
     ctx->usb_thread_state = USB_THREAD_NOT_STARTED;
     pthread_create(&ctx->usb_thread, NULL, event_thread, ctx);
     while(ctx->usb_thread_state != USB_THREAD_RUNNING){
@@ -300,11 +294,6 @@ static IOHIDDeviceRef* getDevRef(OSX_HID_REF *hid, CFIndex *deviceCount)
     return dev_refs;
 }
 
-#if 0
-  }
-
-#endif
-
 
 int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
 {
@@ -398,11 +387,15 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
     IOHIDDeviceRef *dev_refs;
     
 
-    if (YISERR(setupHIDManager(yContext, &iface->hid,errmsg))) {
-        return YAPI_IO_ERROR;
+    if (yContext->osx_flags & YCTX_OSX_MULTIPLES_HID) {
+        if (YISERR(setupHIDManager(yContext, &iface->hid,errmsg))) {
+            return YAPI_IO_ERROR;
+        }
+        // get all device detected by the OSX
+        dev_refs = getDevRef(&iface->hid, &deviceCount);
+    } else {
+        dev_refs = getDevRef(&yContext->hid, &deviceCount);
     }
-    // get all device detected by the OSX
-    dev_refs = getDevRef(&iface->hid, &deviceCount);
     if(dev_refs == NULL) {
         return YERRMSG(YAPI_IO_ERROR,"Device disapear before yyySetup");
     }
@@ -420,7 +413,7 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
             get_txt_property(dev,serial,YOCTO_SERIAL_LEN * 2, CFSTR(kIOHIDSerialNumberKey));
             if (YSTRCMP(serial, iface->serial) == 0){
                 HALLOG("right Interface detected (%x:%x:%s)\n",vendorid,deviceid,iface->serial);
-                iface->hid.devref = dev;
+                iface->devref = dev;
                 break;
             }
         }
@@ -430,7 +423,7 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
         return YERRMSG(YAPI_IO_ERROR,"Unable to match device detected");
     }
 
-    IOReturn ret = IOHIDDeviceOpen(iface->hid.devref, kIOHIDOptionsTypeNone);
+    IOReturn ret = IOHIDDeviceOpen(iface->devref, kIOHIDOptionsTypeNone);
     if (ret != kIOReturnSuccess) {
         YSPRINTF(str,32,"Unable to open device (0x%x)",ret);
         return YERRMSG(YAPI_IO_ERROR,str);
@@ -441,11 +434,11 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
     
     
     /* Create the Run Loop Mode for this device. printing the reference seems to work. */
-    sprintf(str, "yocto_%p", iface->hid.devref);
-    iface->hid.run_loop_mode = CFStringCreateWithCString(NULL, str, kCFStringEncodingASCII);
+    sprintf(str, "yocto_%p", iface->devref);
+    iface->run_loop_mode = CFStringCreateWithCString(NULL, str, kCFStringEncodingASCII);
     /* Attach the device to a Run Loop */
-    IOHIDDeviceScheduleWithRunLoop(iface->hid.devref, yContext->usb_run_loop, iface->hid.run_loop_mode);
-    IOHIDDeviceRegisterInputReportCallback( iface->hid.devref,              // IOHIDDeviceRef for the HID device
+    IOHIDDeviceScheduleWithRunLoop(iface->devref, yContext->usb_run_loop, iface->run_loop_mode);
+    IOHIDDeviceRegisterInputReportCallback( iface->devref,              // IOHIDDeviceRef for the HID device
                                            (u8*) &iface->tmprxpkt,     // pointer to the report data
                                            USB_PKT_SIZE,               // number of bytes in the report (CFIndex)
                                            &Handle_IOHIDDeviceIOHIDReportCallback,   // the callback routine
@@ -475,11 +468,11 @@ int yyySignalOutPkt(yInterfaceSt *iface)
     
     yPktQueuePopH2D(iface, &pktitem);
     while (pktitem!=NULL){
-        if(iface->hid.devref==NULL){
+        if(iface->devref==NULL){
             yFree(pktitem);
             return YAPI_IO_ERROR;//YERR(YAPI_DEVICE_NOT_FOUND);
         }
-        res = IOHIDDeviceSetReport(iface->hid.devref,
+        res = IOHIDDeviceSetReport(iface->devref,
                                    kIOHIDReportTypeOutput,
                                    0, /* Report ID*/
                                    (u8*)&pktitem->pkt, sizeof(USB_Packet));
@@ -507,20 +500,22 @@ void yyyPacketShutdown(yInterfaceSt  *iface)
         }
     }
     YASSERT(i<SETUPED_IFACE_CACHE_SIZE);
-    if(iface->hid.devref!=NULL){
-        IOHIDDeviceRegisterInputReportCallback(iface->hid.devref,              // IOHIDDeviceRef for the HID device
+    if(iface->devref!=NULL){
+        IOHIDDeviceRegisterInputReportCallback(iface->devref,              // IOHIDDeviceRef for the HID device
                                                (u8*) &iface->tmprxpkt,   // pointer to the report data (uint8_t's)
                                                USB_PKT_SIZE,              // number of bytes in the report (CFIndex)
                                                NULL,   // the callback routine
                                                iface);                      // context passed to callback
-        IOHIDDeviceClose(iface->hid.devref, kIOHIDOptionsTypeNone);
-        iface->hid.devref=NULL;
+        IOHIDDeviceClose(iface->devref, kIOHIDOptionsTypeNone);
+        iface->devref=NULL;
     }
     yPktQueueFree(&iface->rxQueue);
 	yPktQueueFree(&iface->txQueue);
     iface->flags.yyySetupDone = 0;
-    CFRelease(iface->hid.run_loop_mode);
-    stopHIDManager(&iface->hid);
+    CFRelease(iface->run_loop_mode);
+    if (yContext->osx_flags & YCTX_OSX_MULTIPLES_HID) {
+        stopHIDManager(&iface->hid);
+    }
 }
 
 #endif

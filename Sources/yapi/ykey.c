@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.c 12321 2013-08-13 14:56:24Z mvuilleu $
+ * $Id: ykey.c 15448 2014-03-14 11:08:36Z mvuilleu $
  *
  * Implementation of standard key computations
  *
@@ -69,6 +69,8 @@ void bin2str(char *to, const u8 *p, u16 len, u8 addnull)
 	if(addnull)
   		*to = '\0';
 }
+
+#if !defined(MICROCHIP_API) || defined(HTTP_ON_NET)
 
 // compute the ha1 (in binary form)
 void ComputeAuthHA1(u8 *ha1, const char *user, const char *pass,  const char *realm) 
@@ -404,6 +406,8 @@ int yIterPsk(u8 *res, const char *ssid)
     // return 1 to ask for more loops
     return 1;
 }
+
+#endif
 
 #ifndef MICROCHIP_API
 /*

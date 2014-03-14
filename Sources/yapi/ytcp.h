@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.h 14711 2014-01-24 14:56:44Z seb $
+ * $Id: ytcp.h 14910 2014-02-12 08:36:10Z seb $
  *
  *  Declaration of a client TCP stack
  *
@@ -107,11 +107,11 @@ void yFreeWakeUpSocket(WakeUpSocket *wuce);
 int  yTcpInit(char *errmsg);
 u32  yResolveDNS(const char *name,char *errmsg);
 void yTcpInitReq(struct _TcpReqSt *tcpreq, struct _NetHubSt *hub);
-int  yTcpOpenReq(struct _TcpReqSt *tcpreq, const char *request, int reqlen, int isAsync, char *errmsg);
+int  yTcpOpenReq(struct _TcpReqSt *tcpreq, const char *request, int reqlen, yapiRequestAsyncCallback callback, void *context, char *errmsg);
 int  yTcpSelectReq(struct _TcpReqSt **tcpreq, int size, u64 ms, WakeUpSocket *wuce, char *errmsg);
 int  yTcpEofReq(struct _TcpReqSt *tcpreq, char *errmsg);
-int  yTcpGetReq(struct _TcpReqSt *tcpreq, char **buffer);
-int  yTcpReadReq(struct _TcpReqSt *rcoreq, char *buffer, int len);
+int  yTcpGetReq(struct _TcpReqSt *tcpreq, u8 **buffer);
+int  yTcpReadReq(struct _TcpReqSt *rcoreq, u8 *buffer, int len);
 void yTcpCloseReq(struct _TcpReqSt *tcpreq);
 void yTcpFreeReq(struct _TcpReqSt *tcpreq);
 void yTcpShutdown(void);

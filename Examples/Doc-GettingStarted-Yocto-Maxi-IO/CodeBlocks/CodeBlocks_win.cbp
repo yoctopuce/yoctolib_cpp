@@ -136,6 +136,12 @@
         <Unit filename="..\..\..\Sources\yocto_api.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
+        <Unit filename="..\..\..\Sources\yocto_accelerometer.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_accelerometer.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
         <Unit filename="..\..\..\Sources\yocto_anbutton.h">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
@@ -158,6 +164,12 @@
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
         <Unit filename="..\..\..\Sources\yocto_current.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_compass.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_compass.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
         <Unit filename="..\..\..\Sources\yocto_datalogger.h">
@@ -196,6 +208,12 @@
         <Unit filename="..\..\..\Sources\yocto_genericsensor.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
+        <Unit filename="..\..\..\Sources\yocto_gyro.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_gyro.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
         <Unit filename="..\..\..\Sources\yocto_hubport.h">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
@@ -218,6 +236,12 @@
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
         <Unit filename="..\..\..\Sources\yocto_lightsensor.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_magnetometer.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_magnetometer.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
         <Unit filename="..\..\..\Sources\yocto_network.h">
@@ -244,10 +268,28 @@
         <Unit filename="..\..\..\Sources\yocto_pressure.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
+        <Unit filename="..\..\..\Sources\yocto_pwmoutput.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_pwmoutput.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_pwmpowersource.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_pwmpowersource.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
         <Unit filename="..\..\..\Sources\yocto_realtimeclock.h">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
         <Unit filename="..\..\..\Sources\yocto_realtimeclock.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_refframe.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_refframe.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
         <Unit filename="..\..\..\Sources\yocto_relay.h">
@@ -266,6 +308,12 @@
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
         <Unit filename="..\..\..\Sources\yocto_temperature.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_tilt.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_tilt.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
         <Unit filename="..\..\..\Sources\yocto_voc.h">

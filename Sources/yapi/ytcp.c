@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 14711 2014-01-24 14:56:44Z seb $
+ * $Id: ytcp.c 14910 2014-02-12 08:36:10Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -375,7 +375,7 @@ retry:
 }
 
 
-static int yTcpRead(YSOCKET skt, char *buffer, int len,char *errmsg)
+static int yTcpRead(YSOCKET skt, u8 *buffer, int len,char *errmsg)
 {
     int iResult = (int)recv(skt, buffer, len, 0);
     
@@ -466,7 +466,6 @@ static int yTcpOpenReqEx(struct _TcpReqSt *req, char *errmsg)
     u16  port;
     int  res;
     
-    YPERF_TCP_ENTER(tmp1);
     switch(yHashGetUrlPort(req->hub->url, buffer,&port)){
         case NAME_URL:
             ip = resolveDNSCache(req->hub->url,errmsg);
@@ -480,9 +479,7 @@ static int yTcpOpenReqEx(struct _TcpReqSt *req, char *errmsg)
             break;
         default:
             res = YERRMSG(YAPI_IO_ERROR,"not an IP hub");
-            req->errcode = res;
             req->skt = INVALID_SOCKET;        
-            YPERF_TCP_LEAVE(tmp1);
             return res;
     }
     
@@ -490,15 +487,11 @@ static int yTcpOpenReqEx(struct _TcpReqSt *req, char *errmsg)
     req->replysize = 0;
     req->errcode = YAPI_SUCCESS;
     
-    YPERF_TCP_ENTER(tmp2);
     res = yTcpOpen(&req->skt, ip, port, errmsg);
     if(YISERR(res)) {
         // yTcpOpen has reset the socket to INVALID
         yTcpClose(req->skt);
-        req->errcode = res;
         req->skt = INVALID_SOCKET;        
-        YPERF_TCP_LEAVE(tmp2);
-        YPERF_TCP_LEAVE(tmp1);
         return res;
     }
 
@@ -521,8 +514,6 @@ static int yTcpOpenReqEx(struct _TcpReqSt *req, char *errmsg)
         last =p;
     }
     *p++ = '\r'; *p++ = '\n';
-    YPERF_TCP_LEAVE(tmp2);
-    YPERF_TCP_ENTER(tmp3);
     // insert authorization header in needed
     yEnterCriticalSection(&req->hub->authAccess);
     if(req->hub->user && req->hub->realm) {        
@@ -542,17 +533,12 @@ static int yTcpOpenReqEx(struct _TcpReqSt *req, char *errmsg)
         p = auth+strlen(auth);
     }
     yLeaveCriticalSection(&req->hub->authAccess);
-    YPERF_TCP_LEAVE(tmp3);
-    YPERF_TCP_ENTER(tmp4);
     YSTRCPY(p, (int)(req->headerbuf+req->headerbufsize-p), "Connection: close\r\n\r\n");
     //write header
     res = yTcpWrite(req->skt, req->headerbuf, (int)strlen(req->headerbuf), errmsg);
     if(YISERR(res)) {
         yTcpClose(req->skt);
-        req->errcode = res;
         req->skt = INVALID_SOCKET;        
-        YPERF_TCP_LEAVE(tmp4);
-        YPERF_TCP_LEAVE(tmp1);
         return res;
     }
     if(req->bodysize > 0){
@@ -560,20 +546,15 @@ static int yTcpOpenReqEx(struct _TcpReqSt *req, char *errmsg)
         res = yTcpWrite(req->skt, req->bodybuf, req->bodysize, errmsg);
         if(YISERR(res)) {
             yTcpClose(req->skt);
-            req->errcode = res;
             req->skt = INVALID_SOCKET;        
-            YPERF_TCP_LEAVE(tmp4);
-            YPERF_TCP_LEAVE(tmp1);
             return res;
         }
     }
-    YPERF_TCP_LEAVE(tmp4);
-    YPERF_TCP_LEAVE(tmp1);
     
     return YAPI_SUCCESS;
 }
 
-int  yTcpOpenReq(struct _TcpReqSt *req, const char *request, int reqlen, int isAsync, char *errmsg)
+int  yTcpOpenReq(struct _TcpReqSt *req, const char *request, int reqlen, yapiRequestAsyncCallback callback, void *context, char *errmsg)
 {
     int  minlen,i,res;
 
@@ -631,11 +612,12 @@ int  yTcpOpenReq(struct _TcpReqSt *req, const char *request, int reqlen, int isA
     req->headerbuf[reqlen] = 0;
 
     req->retryCount = 0;
-    
+    req->callback = callback;
+    req->context = context;
     // Really build and send the request
     res = yTcpOpenReqEx(req, errmsg);
     if(res == YAPI_SUCCESS) {
-        req->isAsyncIO = isAsync;
+        req->errmsg[0] = '\0';
         yResetEvent(&req->finished);
     }
     yLeaveCriticalSection(&req->access);    
@@ -663,8 +645,8 @@ int yTcpSelectReq(struct _TcpReqSt **reqs, int size, u64 ms, WakeUpSocket *wuce,
     }
     for (i = 0; i < size; i++) {
         req = reqs[i];
-        if(req->skt == INVALID_SOCKET) {
-            req->errcode = YAPI_INVALID_ARGUMENT;
+        if(req->skt == INVALID_SOCKET) {            
+            req->errcode = YERRTO(YAPI_INVALID_ARGUMENT, req->errmsg);
         } else {
             FD_SET(req->skt,&fds);
             if(req->skt > sktmax)
@@ -693,7 +675,7 @@ int yTcpSelectReq(struct _TcpReqSt **reqs, int size, u64 ms, WakeUpSocket *wuce,
                 if(req->replysize >= req->replybufsize - 256) {
                     // need to grow receive buffer
                     int  newsize = req->replybufsize << 1;
-                    char *newbuf = yMalloc(newsize);
+                    u8 *newbuf = yMalloc(newsize);
                     memcpy(newbuf, req->replybuf, req->replysize);
                     yFree(req->replybuf);
                     req->replybuf = newbuf;
@@ -703,10 +685,16 @@ int yTcpSelectReq(struct _TcpReqSt **reqs, int size, u64 ms, WakeUpSocket *wuce,
                 if(res < 0) {
                     // any connection closed by peer ends up with YAPI_NO_MORE_DATA
                     yTcpClose(req->skt);
-                    req->isAsyncIO = 0;
+                    if (req->callback) {
+                        if (res == YAPI_NO_MORE_DATA) {
+                            res = YAPI_SUCCESS;
+                        }
+                        req->callback(req->context, res, req->replybuf, req->replysize);
+                    }
                     req->skt = INVALID_SOCKET;
                     ySetEvent(&req->finished);
-                    req->errcode = res;
+                    req->errcode = YERRTO(res,req->errmsg);
+                    req->callback = NULL;
                 } else if(res > 0) {
                     req->replysize += res;
                     if(req->replypos < 0) {
@@ -725,35 +713,37 @@ int yTcpSelectReq(struct _TcpReqSt **reqs, int size, u64 ms, WakeUpSocket *wuce,
                                 if(!req->hub->user || req->retryCount++ > 3) {
                                     // No credential provided, give up immediately
                                     yTcpClose(req->skt);
-                                    req->isAsyncIO = 0;
+                                    if (req->callback) {
+                                        req->callback(req->callback, YAPI_UNAUTHORIZED, req->replybuf, req->replybufsize);
+                                    }
+                                    req->callback =NULL;
                                     req->skt = INVALID_SOCKET;
                                     ySetEvent(&req->finished);
-                                    req->errcode = YAPI_UNAUTHORIZED;
-                                } else if(yParseWWWAuthenticate(req->replybuf, req->replysize, &method, &realm, &qop, &nonce, &opaque) >= 0) {
+                                    req->errcode = YERRTO(YAPI_UNAUTHORIZED,req->errmsg);
+                                } else if(yParseWWWAuthenticate((char*)req->replybuf, req->replysize, &method, &realm, &qop, &nonce, &opaque) >= 0) {
                                     // Authentication header fully received, we can close the connection
-                                    int isAsync = req->isAsyncIO;
                                     yTcpClose(req->skt);
                                     req->skt = INVALID_SOCKET;
-                                    req->isAsyncIO = 0;
-                                    if(!strcmp(method,"Digest") && !strcmp(qop,"auth")) {
+                                    if (!strcmp(method, "Digest") && !strcmp(qop, "auth")) {
                                         // device requests Digest qop-authentication, good
                                         yEnterCriticalSection(&req->hub->authAccess);
                                         yDupSet(&req->hub->realm, realm);
                                         yDupSet(&req->hub->nonce, nonce);
                                         yDupSet(&req->hub->opaque, opaque);
-                                        if(req->hub->user && req->hub->pwd) {
+                                        if (req->hub->user && req->hub->pwd) {
                                             ComputeAuthHA1(req->hub->ha1, req->hub->user, req->hub->pwd, req->hub->realm);
                                         }
                                         req->hub->nc = 0;
                                         yLeaveCriticalSection(&req->hub->authAccess);
                                         // reopen connection with proper auth parameters
+                                        // callback and context parameters are preserved
                                         res = yTcpOpenReqEx(req, errmsg);
-                                        if(res == YAPI_SUCCESS) {
-                                            req->isAsyncIO = isAsync;
+                                        if (YISERR(res) && req->callback) {
+                                            req->callback(req->context, res, NULL, 0);
                                         }
                                     } else {
                                         // unsupported authentication method for devices, give up
-                                        req->errcode = YAPI_UNAUTHORIZED;
+                                        req->errcode = YERRTO(YAPI_UNAUTHORIZED, req->errmsg);;
                                         ySetEvent(&req->finished);
                                     }
                                 }
@@ -782,7 +772,7 @@ int yTcpEofReq(struct _TcpReqSt *req, char *errmsg)
 }
 
 
-int yTcpGetReq(struct _TcpReqSt *req, char **buffer)
+int yTcpGetReq(struct _TcpReqSt *req, u8 **buffer)
 {
     int avail;
     
@@ -802,7 +792,7 @@ int yTcpGetReq(struct _TcpReqSt *req, char **buffer)
 }
 
 
-int yTcpReadReq(struct _TcpReqSt *req, char *buffer, int len)
+int yTcpReadReq(struct _TcpReqSt *req, u8 *buffer, int len)
 {
     int avail;
     
@@ -836,11 +826,10 @@ void yTcpCloseReq(struct _TcpReqSt *req)
     yEnterCriticalSection(&req->access);
     if(req->skt != INVALID_SOCKET) {
         yTcpClose(req->skt);
-        req->isAsyncIO = 0;
         req->skt = INVALID_SOCKET;
         ySetEvent(&req->finished);
     }
-    req->isAsyncIO = 0;
+    req->callback = NULL;
     yLeaveCriticalSection(&req->access);
 }
 

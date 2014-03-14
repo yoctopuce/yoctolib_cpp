@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 14289 2014-01-10 08:27:59Z mvuilleu $
+ * $Id: yhash.c 14910 2014-02-12 08:36:10Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -619,7 +619,12 @@ static void wpExecuteUnregisterUnsec(void)
             funYdxPtr[devYdx] = INVALID_BLK_HDL;
             devYdxPtr[devYdx] = INVALID_BLK_HDL;
 #ifndef MICROCHIP_API
-            if(nextDevYdx > devYdx) nextDevYdx = devYdx;
+            if(nextDevYdx > devYdx) {
+                nextDevYdx = devYdx;
+            }
+            usedDevYdx[devYdx>>4] &= ~ (u16)(1 << (devYdx&15));
+            //dbglog("wpUnregister serial=%X devYdx=%d (next=%d)\n", WP(hdl).serial, devYdx, nextDevYdx);
+            freeDevYdxInfos(devYdx);
 #endif
             yBlkFree(hdl);
         }
@@ -698,7 +703,7 @@ int wpRegister(int devYdx, yStrRef serial, yStrRef logicalName, yStrRef productN
         changed = 2;
 #ifndef MICROCHIP_API
         if(devYdx == -1) devYdx = nextDevYdx;
-        // YASSERT(!(usedDevYdx[devYdx>>4] & (1 << (devYdx&15))));
+        YASSERT(!(usedDevYdx[devYdx>>4] & (1 << (devYdx&15))));
         usedDevYdx[devYdx>>4] |= 1 << (devYdx&15);
         if(nextDevYdx == devYdx) {
             nextDevYdx++;
@@ -707,6 +712,8 @@ int wpRegister(int devYdx, yStrRef serial, yStrRef logicalName, yStrRef productN
                 nextDevYdx++;
             }
         }
+        //dbglog("wpRegister serial=%X devYdx=%d\n", serial, devYdx);
+        initDevYdxInfos(devYdx,serial);
 #endif
         YASSERT(devYdx < NB_MAX_DEVICES);
         devYdxPtr[devYdx] = hdl;
@@ -758,16 +765,6 @@ int wpRegister(int devYdx, yStrRef serial, yStrRef logicalName, yStrRef productN
 }
 
 
-#if 0
-static int wpCheckHdl(yBlkHdl hdl)
-{
-    if(hdl < 512) return -1;
-    if(hdl >= 2*nextHashEntry) return -1;
-    if(WP(hdl).blkId != YBLKID_WPENTRY) return -1;
-    
-    return 0;
-}
-#endif
 
 yStrRef wpGetAttribute(yBlkHdl hdl, yWPAttribute attridx)
 {

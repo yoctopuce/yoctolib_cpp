@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_win.c 12991 2013-10-03 15:06:00Z mvuilleu $
+ * $Id: ypkt_win.c 14805 2014-01-31 18:24:53Z seb $
  *
  * OS-specific USB packet layer, Windows version
  *
@@ -210,16 +210,18 @@ int yyyUSB_init(yContextSt *ctx,char *errmsg)
     ctx->hid.GetManufacturerString    = (PHidD_GetManufacturerString)     GetProcAddress( ctx->hid.hHID, "HidD_GetManufacturerString");
     ctx->hid.GetProductString         = (PHidD_GetProductString)          GetProcAddress( ctx->hid.hHID, "HidD_GetProductString");
     ctx->hid.GetSerialNumberString    = (PHidD_GetSerialNumberString)     GetProcAddress( ctx->hid.hHID, "HidD_GetSerialNumberString");
- 
+    yInitializeCriticalSection(&ctx->prevEnum_cs);
+
     return YAPI_SUCCESS;
 }
 
 
 int yyyUSB_stop(yContextSt *ctx,char *errmsg)
 {
-	if(ctx->prevEnum) {
+    yDeleteCriticalSection(&ctx->prevEnum_cs);
+    if(ctx->prevEnum) {
         yFree(ctx->prevEnum);
-		ctx->prevEnum=NULL;
+        ctx->prevEnum=NULL;
     }
     yReleaseGlobalAccess(ctx);
     return YAPI_SUCCESS;
@@ -249,6 +251,7 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
     if(DeviceInfoTable == INVALID_HANDLE_VALUE) {
         return yWinSetErr(NULL,errmsg);
     }
+    yEnterCriticalSection(&yContext->prevEnum_cs);
     pDetailedInterfaceData = (PSP_DEVICE_INTERFACE_DETAIL_DATA_A) buffer;
     // allocate buffer for detected interfaces
     *nbifaceDetect = 0;
@@ -276,27 +279,27 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
             SP_DEVICE_INTERFACE_DATA    InterfaceData;
             size_t          len;
             yInterfaceSt    *iface;
-			int             find,retry = 16;
+            int             find,retry = 16;
 
-			//ensure the buffer of detected interface is big enought
-			if(*nbifaceDetect == nbifaceAlloc){
-				yInterfaceSt    *tmp;
-				u32 newsize = nbifaceAlloc*2 * sizeof(yInterfaceSt);
-				tmp = (yInterfaceSt*) yMalloc(newsize);
-				memset(tmp,0,newsize);
-				yMemcpy(tmp,*ifaces, nbifaceAlloc * sizeof(yInterfaceSt) );
-				yFree(*ifaces);
-				*ifaces = tmp;
-				nbifaceAlloc    *=2;
-			}
-			iface = *ifaces + *nbifaceDetect;
-			iface->vendorid = (u16)vendorid;
-			iface->deviceid = (u16)deviceid;
-			iface->ifaceno  = (u16)ifaceno;
+            //ensure the buffer of detected interface is big enought
+            if(*nbifaceDetect == nbifaceAlloc){
+                yInterfaceSt    *tmp;
+                u32 newsize = nbifaceAlloc*2 * sizeof(yInterfaceSt);
+                tmp = (yInterfaceSt*) yMalloc(newsize);
+                memset(tmp,0,newsize);
+                yMemcpy(tmp,*ifaces, nbifaceAlloc * sizeof(yInterfaceSt) );
+                yFree(*ifaces);
+                *ifaces = tmp;
+                nbifaceAlloc    *=2;
+            }
+            iface = *ifaces + *nbifaceDetect;
+            iface->vendorid = (u16)vendorid;
+            iface->deviceid = (u16)deviceid;
+            iface->ifaceno  = (u16)ifaceno;
 
-			InterfaceData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
+            InterfaceData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
             if(!SetupDiEnumDeviceInterfaces(DeviceInfoTable, &DevInfoData, &InterfaceClassGuid, 0, &InterfaceData)){
-				dbglog("Fail to retrieve DeviceInterfaces");
+                dbglog("Fail to retrieve DeviceInterfaces");
                 continue;
             }
             SetupDiGetDeviceInterfaceDetailA(DeviceInfoTable, &InterfaceData, NULL, 0, &needsize, NULL);
@@ -306,36 +309,36 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
             }
             pDetailedInterfaceData->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA_A);
             SetupDiGetDeviceInterfaceDetailA(DeviceInfoTable, &InterfaceData, pDetailedInterfaceData, needsize, NULL, NULL);
-			YSTRNCPY(iface->devicePath,WIN_DEVICE_PATH_LEN,pDetailedInterfaceData->DevicePath,WIN_DEVICE_PATH_LEN);
-			for(find = 0; find < yContext->prevEnumCnt; find++) {
-				if(YSTRCMP(iface->devicePath,yContext->prevEnum[find].devicePath)==0) break;
-			}
-			if(find < yContext->prevEnumCnt) {
-				yMemcpy(iface->serial, yContext->prevEnum[find].serial, YOCTO_SERIAL_LEN*2);
-			} else {
-				HANDLE          control;
-				HALLOG("Get serial for %s\n",pDetailedInterfaceData->DevicePath);
-				control = CreateFileA(pDetailedInterfaceData->DevicePath, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, 0);
-				if(control==INVALID_HANDLE_VALUE){
-					dbglog("Unable to open device %s to get serial\n",pDetailedInterfaceData->DevicePath);
-					continue;
-				}
-				while(!yContext->hid.GetSerialNumberString(control,buffer,WIN_DEVICE_PATH_LEN) && --retry >= 0) {
-					dbglog("Unable to get serial for %s (%d), retrying (%d)\n",pDetailedInterfaceData->DevicePath,GetLastError(),retry);
-					Sleep(17);
-				}
-				if(retry < 0) {
-					dbglog("Unable to get serial for %s (%d), giving up\n",pDetailedInterfaceData->DevicePath, GetLastError());
-					CloseHandle(control);
-					continue;
-				}
+            YSTRNCPY(iface->devicePath,WIN_DEVICE_PATH_LEN,pDetailedInterfaceData->DevicePath,WIN_DEVICE_PATH_LEN);
+            for(find = 0; find < yContext->prevEnumCnt; find++) {
+                if(YSTRCMP(iface->devicePath,yContext->prevEnum[find].devicePath)==0) break;
+            }
+            if(find < yContext->prevEnumCnt) {
+                yMemcpy(iface->serial, yContext->prevEnum[find].serial, YOCTO_SERIAL_LEN*2);
+            } else {
+                HANDLE          control;
+                HALLOG("Get serial for %s\n",pDetailedInterfaceData->DevicePath);
+                control = CreateFileA(pDetailedInterfaceData->DevicePath, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, 0);
+                if(control==INVALID_HANDLE_VALUE){
+                    dbglog("Unable to open device %s to get serial\n",pDetailedInterfaceData->DevicePath);
+                    continue;
+                }
+                while(!yContext->hid.GetSerialNumberString(control,buffer,WIN_DEVICE_PATH_LEN) && --retry >= 0) {
+                    dbglog("Unable to get serial for %s (%d), retrying (%d)\n",pDetailedInterfaceData->DevicePath,GetLastError(),retry);
+                    Sleep(17);
+                }
+                if(retry < 0) {
+                    dbglog("Unable to get serial for %s (%d), giving up\n",pDetailedInterfaceData->DevicePath, GetLastError());
+                    CloseHandle(control);
+                    continue;
+                }
 #if defined(_MSC_VER) && (_MSC_VER > MSC_VS2003)
-				wcstombs_s(&len,iface->serial,YOCTO_SERIAL_LEN*2,(wchar_t*)buffer,_TRUNCATE);
+                wcstombs_s(&len,iface->serial,YOCTO_SERIAL_LEN*2,(wchar_t*)buffer,_TRUNCATE);
 #else
-				wcstombs(iface->serial,(wchar_t*)buffer,YOCTO_SERIAL_LEN*2);
+                wcstombs(iface->serial,(wchar_t*)buffer,YOCTO_SERIAL_LEN*2);
 #endif
-	            CloseHandle(control);
-			}
+                CloseHandle(control);
+            }
             (*nbifaceDetect)++;
             if(deviceid>YOCTO_DEVID_BOOTLOADER){
                 HALLOG("----Running Dev %x:%x:%d:%s ---\n",vendorid,deviceid,ifaceno,iface->serial);
@@ -345,23 +348,24 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
             }else{
                 HALLOG("----Running Firm %x:%x:%d:%s ---\n",vendorid,deviceid,ifaceno,iface->serial);
             }
-		} else {
-			//HALLOG("Drop device vendorid=%x inst_state=%x\n", vendorid, inst_state);
-		}
+        } else {
+            //HALLOG("Drop device vendorid=%x inst_state=%x\n", vendorid, inst_state);
+        }
     }
     // unallocate Device infos
     if(!SetupDiDestroyDeviceInfoList(DeviceInfoTable)){
         HALLOG("Unable to unallocated Device Info Table  (%d)",GetLastError());
     }
-	// save enumeration result to prevent later USB packets to redetect serial
-	if(yContext->prevEnum) yFree(yContext->prevEnum);
-	yContext->prevEnumCnt = *nbifaceDetect;
-	if(*nbifaceDetect>0){
-		yContext->prevEnum = (yInterfaceSt*) yMalloc(*nbifaceDetect * sizeof(yInterfaceSt));
-		yMemcpy(yContext->prevEnum, *ifaces, *nbifaceDetect * sizeof(yInterfaceSt));
-	}else{
-		yContext->prevEnum = NULL;
-	}
+    // save enumeration result to prevent later USB packets to redetect serial
+    if(yContext->prevEnum) yFree(yContext->prevEnum);
+    yContext->prevEnumCnt = *nbifaceDetect;
+    if(*nbifaceDetect>0){
+        yContext->prevEnum = (yInterfaceSt*) yMalloc(*nbifaceDetect * sizeof(yInterfaceSt));
+        yMemcpy(yContext->prevEnum, *ifaces, *nbifaceDetect * sizeof(yInterfaceSt));
+    }else{
+        yContext->prevEnum = NULL;
+    }
+    yLeaveCriticalSection(&yContext->prevEnum_cs);
 
     return YAPI_SUCCESS;
 }
@@ -509,8 +513,8 @@ static int StartReadIO(yInterfaceSt *iface,char *errmsg)
     }else{
          yPktQueuePushD2H(iface,&iface->tmpd2hpkt.pkt,NULL);
          ySetEvent(&yContext->exitSleepEvent);
-		 // FIXME: add some kind of timeout to be able to send reset packet
-		 // if device become crazy
+         // FIXME: add some kind of timeout to be able to send reset packet
+         // if device become crazy
          retrycount++;
          goto retry;
     }
@@ -529,7 +533,7 @@ static int yyyyRead(yInterfaceSt *iface,char *errmsg)
     int             retrycount=1;
 retry:
     if (iface->rdpending ==0){
-		// no IO started -> start a new one
+        // no IO started -> start a new one
         res = StartReadIO(iface,errmsg);
         if(YISERR(res)){
             if(retrycount--){
@@ -545,7 +549,7 @@ retry:
             HALLOG("Read IO error %s:%d (%s/%s)\n",iface->serial,iface->ifaceno,errmsg,DP(iface->devicePath));
             return res;        
         }
-	}
+    }
     if(GetOverlappedResult(iface->rdHDL,&iface->rdOL,&readed,0)){
         iface->rdpending=0;
         if(readed!=sizeof(OS_USB_Packet)){
@@ -597,7 +601,7 @@ retry:
 
 static int yyyyWrite(yInterfaceSt *iface, pktItem *pktItem)
 {
-	char			errmsg[YOCTO_ERRMSG_LEN];
+    char            errmsg[YOCTO_ERRMSG_LEN];
     DWORD           written;
     OS_USB_Packet   winpkt;
     int             retrycount=1;
@@ -631,22 +635,22 @@ retry:
 
 static void* yyyUsbIoThread(void* thread_void)
 {
-	u32			    i;
-	char			errmsg[YOCTO_ERRMSG_LEN];
+    u32             i;
+    char            errmsg[YOCTO_ERRMSG_LEN];
     DWORD           dwEvent;
-	yThread			*thread=(yThread*)thread_void;
-    yInterfaceSt	*iface = (yInterfaceSt*)thread->ctx;
+    yThread         *thread=(yThread*)thread_void;
+    yInterfaceSt    *iface = (yInterfaceSt*)thread->ctx;
     
 
-	iface->wrHDL = INVALID_HANDLE_VALUE;
-	iface->rdHDL = INVALID_HANDLE_VALUE;
-	for (i =0;i<2;i++){
-		iface->EV[i] = NULL;
-	}
-	//open blocking write handle 
+    iface->wrHDL = INVALID_HANDLE_VALUE;
+    iface->rdHDL = INVALID_HANDLE_VALUE;
+    for (i =0;i<2;i++){
+        iface->EV[i] = NULL;
+    }
+    //open blocking write handle 
     if(YISERR(OpenWriteHandles(iface))){
         goto exitThread;
-	}
+    }
     //open blocking write handle 
     if(YISERR(OpenReadHandles(iface))){
         goto exitThread;
@@ -658,7 +662,7 @@ static void* yyyUsbIoThread(void* thread_void)
             HALLOG("IO error %s:%d (%s)\n",iface->serial,iface->ifaceno,errmsg);
             goto exitThread;
     }
-	HALLOG("yyyReady I%x wr=%x rd=%x se=%s\n",iface->ifaceno,iface->wrHDL, iface->rdHDL,iface->serial);
+    HALLOG("yyyReady I%x wr=%x rd=%x se=%s\n",iface->ifaceno,iface->wrHDL, iface->rdHDL,iface->serial);
     yThreadSignalStart(thread);
 
 
@@ -667,9 +671,9 @@ static void* yyyUsbIoThread(void* thread_void)
         goto exitThread;
     }
 
-	while (!yThreadMustEnd(thread)) {
+    while (!yThreadMustEnd(thread)) {
         pktItem *pktItem;
-		yPktQueuePeekH2D(iface,&pktItem);
+        yPktQueuePeekH2D(iface,&pktItem);
         //first write pending out packet
         while (pktItem) {
 #ifdef DEBUG_PKT_TIMING
@@ -681,7 +685,7 @@ static void* yyyUsbIoThread(void* thread_void)
             if (YISERR(yyyyWrite(iface,pktItem))) {
                 goto exitThread;
             }
-			yPktQueuePopH2D(iface,&pktItem);
+            yPktQueuePopH2D(iface,&pktItem);
 #ifdef DEBUG_PKT_TIMING
             stop =yapiGetTickCount();
             timeAfterWrite = stop-pktItem->time;
@@ -696,7 +700,7 @@ static void* yyyUsbIoThread(void* thread_void)
 #endif
             yFree(pktItem);
             yPktQueuePeekH2D(iface,&pktItem);
-	    }
+        }
 
         // Wait for the thread to signal one of the event objects
         dwEvent = WaitForMultipleObjects( 
@@ -719,7 +723,7 @@ static void* yyyUsbIoThread(void* thread_void)
                 break;
             }
         }
-	}
+    }
 
 exitThread:
     HALLOG("----IoThread end of  %s:%d (%s)  ---\n",iface->serial,iface->ifaceno,DP(iface->devicePath));
@@ -736,24 +740,24 @@ exitThread:
 
 int yyySetup(yInterfaceSt *iface,char *errmsg)
 {
-	yPktQueueInit(&iface->rxQueue);
-	yPktQueueInit(&iface->txQueue);
+    yPktQueueInit(&iface->rxQueue);
+    yPktQueueInit(&iface->txQueue);
     if(yThreadCreate(&iface->io_thread,yyyUsbIoThread,(void*)iface)<0){
         return YERRMSG(YAPI_IO_ERROR,"Unable to start USB IO thread");
     }
-	return YAPI_SUCCESS;
+    return YAPI_SUCCESS;
 }
 
 int yyySignalOutPkt(yInterfaceSt *iface)
 {
-	ySetEvent(&iface->EV[YWIN_EVENT_INTERRUPT]);
-	return YAPI_SUCCESS;
+    ySetEvent(&iface->EV[YWIN_EVENT_INTERRUPT]);
+    return YAPI_SUCCESS;
 }
 
 void yyyPacketShutdown(yInterfaceSt *iface)
 {
     HALLOG("yyyPacketShutdown\n");
-	if(yThreadIsRunning(&iface->io_thread)) {     
+    if(yThreadIsRunning(&iface->io_thread)) {     
         u64 timeref;
         yThreadRequestEnd(&iface->io_thread);
         timeref=yapiGetTickCount();
@@ -762,8 +766,8 @@ void yyyPacketShutdown(yInterfaceSt *iface)
         }
         yThreadKill(&iface->io_thread);
     }
-	yPktQueueFree(&iface->rxQueue);
-	yPktQueueFree(&iface->txQueue);
+    yPktQueueFree(&iface->rxQueue);
+    yPktQueueFree(&iface->txQueue);
 }
 
 #endif

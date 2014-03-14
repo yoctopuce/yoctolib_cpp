@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 14799 2014-01-31 14:59:44Z seb $
+ * $Id: yocto_api.cpp 15274 2014-03-06 17:42:59Z martinm $
  *
  * High-level programming interface, common to all modules
  *
@@ -177,7 +177,7 @@ int YDataSet::_parse(const string& json)
                     }
                 }
             }
-            if(_streams.size() > 0) {
+            if((_streams.size() > 0)  && (summaryTotalTime>0)) {
                 // update time boundaries with actual data
                 stream = _streams[_streams.size()-1];
                 s64 endtime = stream->get_startTimeUTC() + stream->get_duration();
@@ -2062,25 +2062,21 @@ void YAPI::_yapiLogFunctionFwd(const char *log, u32 loglen)
 }
 
 
-void YAPI::_yapiDeviceLogCallbackFwd(YDEV_DESCR devdesc)
+void YAPI::_yapiDeviceLogCallbackFwd(YDEV_DESCR devdesc, const char* line)
 {
-    YModule     *module;
-    yDeviceSt   infos;
-    string      errmsg;
+    YModule             *module;
+    yDeviceSt           infos;
+    string              errmsg;
+    YModuleLogCallback  callback;
 
     if(YapiWrapper::getDeviceInfo(devdesc, infos, errmsg) != YAPI_SUCCESS) return;
-    module = yFindModule(string(infos.serial)+".module");
-    YAPI::_notifyLogs(module);
+    module = YModule::FindModule(string(infos.serial)+".module");
+    callback = module->get_logCallback();
+    if (callback) {
+        callback(module, string(line));
+    }
 }
 
-
-void YAPI::_notifyLogs(YModule *module)
-{
-    yapiGlobalEvent ev;    
-    ev.type   = YAPI_DEV_LOG;
-    ev.module = module;
-    _plug_events.push(ev);
-}
 
 void YAPI::_yapiDeviceArrivalCallbackFwd(YDEV_DESCR devdesc)
 {
@@ -2480,7 +2476,7 @@ void YAPI::RegisterHubDiscoveryCallback(YHubDiscoveryCallback hubDiscoveryCallba
 
 /**
  * Force a hub discovery, if a callback as been registered with yRegisterDeviceRemovalCallback it
- * will be called for each net work hub that will respond to the discovery
+ * will be called for each net work hub that will respond to the discovery.
  * 
  * @param errmsg : a string passed by reference to receive any error message.
  * 
@@ -2707,8 +2703,6 @@ YRETCODE YAPI::UpdateDeviceList(string& errmsg)
 				if (!YAPI::_HubDiscoveryCallback) break;
 				YAPI::_HubDiscoveryCallback(string(ev.serial),string(ev.url));
 				break;
-			case YAPI_DEV_LOG:
-				ev.module->checkLogs();
 			default:
                 break;
         }
@@ -3068,8 +3062,6 @@ string  YapiWrapper::ysprintf(const char *fmt, ...)
 YModule::YModule(const string& func): YFunction(func)
 //--- (end of generated code: YModule constructor)
 //--- (generated code: Module initialization)
-  ,_logCallback(NULL)
-  ,_logContinuation("0")
     ,_productName(PRODUCTNAME_INVALID)
     ,_serialNumber(SERIALNUMBER_INVALID)
     ,_productId(PRODUCTID_INVALID)
@@ -3083,6 +3075,7 @@ YModule::YModule(const string& func): YFunction(func)
     ,_rebootCountdown(REBOOTCOUNTDOWN_INVALID)
     ,_usbBandwidth(USBBANDWIDTH_INVALID)
     ,_valueCallbackModule(NULL)
+    ,_logCallback(NULL)
 //--- (end of generated code: Module initialization)
 {
     _className = "Module";
@@ -3756,30 +3749,24 @@ string YModule::functionValue(int functionIndex)
     return funcVal;
 }
 
+/**
+ * todo
+ * 
+ * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ *         arguments: the function object of which the value has changed, and the character string describing
+ *         the new advertised value.
+ * @noreturn
+ */
 void YModule::registerLogCallback(YModuleLogCallback callback)
 {
-    string   errmsg;
     _logCallback = callback;
-    yapiLockFunctionCallBack(NULL);
-    YAPI::_notifyLogs(this);
-    yapiUnlockFunctionCallBack(NULL);
+    yapiStartStopDeviceLogCallback(_serial.c_str(), _logCallback!=NULL);
 }
 
-void YModule::checkLogs(void)
+YModuleLogCallback YModule::get_logCallback()
 {
-    string logs;
-    size_t end;
-
-    if(_logCallback == NULL) {
-        return;
-    }
-    logs = this->_download("/logs.txt?pos="+_logContinuation);
-    end =logs.find_last_of("@");
-    _logCallback(this,logs.substr(0,end));
-    _logContinuation =  logs.substr(end+1);
+    return _logCallback;
 }
-
-
 
 
 //--- (generated code: Module functions)
@@ -4517,6 +4504,10 @@ int YSensor::_invokeTimedReportCallback(YMeasure value)
  *         values returned by the sensor for the correction points.
  * @param refValues : array of floating point numbers, corresponding to the corrected
  *         values for the correction points.
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
  */
 int YSensor::calibrateFromPoints(vector<double> rawValues,vector<double> refValues)
 {

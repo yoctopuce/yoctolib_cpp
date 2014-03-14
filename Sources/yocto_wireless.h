@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.h 14275 2014-01-09 14:20:38Z seb $
+ * $Id: yocto_wireless.h 14826 2014-02-04 14:09:17Z seb $
  *
  * Declares yFindWireless(), the high-level API for Wireless functions
  *
@@ -285,8 +285,6 @@ public:
      */
     static YWireless*   FindWireless(string func);
 
-    using YFunction::registerValueCallback;
-
     /**
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
@@ -299,6 +297,7 @@ public:
      * @noreturn
      */
     virtual int         registerValueCallback(YWirelessValueCallback callback);
+    using YFunction::registerValueCallback;
 
     virtual int         _invokeValueCallback(string value);
 
@@ -330,6 +329,15 @@ public:
     inline YWireless       *next(void)
     { return this->nextWireless();}
 
+    /**
+     * Starts the enumeration of wireless lan interfaces currently accessible.
+     * Use the method YWireless.nextWireless() to iterate on
+     * next wireless lan interfaces.
+     * 
+     * @return a pointer to a YWireless object, corresponding to
+     *         the first wireless lan interface currently online, or a null pointer
+     *         if there are none.
+     */
            static YWireless* FirstWireless(void);
     inline static YWireless* First(void)
     { return YWireless::FirstWireless();}

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_lightsensor.h 14314 2014-01-10 18:12:33Z seb $
+ * $Id: yocto_lightsensor.h 15253 2014-03-06 10:15:50Z seb $
  *
  * Declares yFindLightSensor(), the high-level API for LightSensor functions
  *
@@ -10,24 +10,24 @@
  *
  *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
  *  non-exclusive license to use, modify, copy and integrate this
- *  file into your software for the sole purpose of interfacing 
- *  with Yoctopuce products. 
+ *  file into your software for the sole purpose of interfacing
+ *  with Yoctopuce products.
  *
- *  You may reproduce and distribute copies of this file in 
+ *  You may reproduce and distribute copies of this file in
  *  source or object form, as long as the sole purpose of this
- *  code is to interface with Yoctopuce products. You must retain 
+ *  code is to interface with Yoctopuce products. You must retain
  *  this notice in the distributed source file.
  *
  *  You should refer to Yoctopuce General Terms and Conditions
- *  for additional information regarding your rights and 
+ *  for additional information regarding your rights and
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
  *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
  *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
  *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
@@ -127,8 +127,6 @@ public:
      */
     static YLightSensor* FindLightSensor(string func);
 
-    using YSensor::registerValueCallback;
-
     /**
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
@@ -141,10 +139,9 @@ public:
      * @noreturn
      */
     virtual int         registerValueCallback(YLightSensorValueCallback callback);
+    using YSensor::registerValueCallback;
 
     virtual int         _invokeValueCallback(string value);
-
-    using YSensor::registerTimedReportCallback;
 
     /**
      * Registers the callback function that is invoked on every periodic timed notification.
@@ -158,6 +155,7 @@ public:
      * @noreturn
      */
     virtual int         registerTimedReportCallback(YLightSensorTimedReportCallback callback);
+    using YSensor::registerTimedReportCallback;
 
     virtual int         _invokeTimedReportCallback(YMeasure value);
 
@@ -176,6 +174,15 @@ public:
     inline YLightSensor    *next(void)
     { return this->nextLightSensor();}
 
+    /**
+     * Starts the enumeration of light sensors currently accessible.
+     * Use the method YLightSensor.nextLightSensor() to iterate on
+     * next light sensors.
+     * 
+     * @return a pointer to a YLightSensor object, corresponding to
+     *         the first light sensor currently online, or a null pointer
+     *         if there are none.
+     */
            static YLightSensor* FirstLightSensor(void);
     inline static YLightSensor* First(void)
     { return YLightSensor::FirstLightSensor();}

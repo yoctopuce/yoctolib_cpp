@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_datalogger.h 14562 2014-01-17 09:25:56Z mvuilleu $
+ * $Id: yocto_datalogger.h 14826 2014-02-04 14:09:17Z seb $
  *
  * Declares yFindDataLogger(), the high-level API for DataLogger functions
  *
@@ -348,8 +348,6 @@ public:
      */
     static YDataLogger* FindDataLogger(string func);
 
-    using YFunction::registerValueCallback;
-
     /**
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
@@ -362,6 +360,7 @@ public:
      * @noreturn
      */
     virtual int         registerValueCallback(YDataLoggerValueCallback callback);
+    using YFunction::registerValueCallback;
 
     virtual int         _invokeValueCallback(string value);
 
@@ -406,6 +405,15 @@ public:
     inline YDataLogger     *next(void)
     { return this->nextDataLogger();}
 
+    /**
+     * Starts the enumeration of data loggers currently accessible.
+     * Use the method YDataLogger.nextDataLogger() to iterate on
+     * next data loggers.
+     * 
+     * @return a pointer to a YDataLogger object, corresponding to
+     *         the first data logger currently online, or a null pointer
+     *         if there are none.
+     */
            static YDataLogger* FirstDataLogger(void);
     inline static YDataLogger* First(void)
     { return YDataLogger::FirstDataLogger();}

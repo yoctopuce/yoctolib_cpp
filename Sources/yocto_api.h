@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 14799 2014-01-31 14:59:44Z seb $
+ * $Id: yocto_api.h 15091 2014-02-27 09:36:28Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -85,7 +85,7 @@ typedef void (*YFunctionValueCallback)(YFunction *func, const string& functionVa
 //--- (generated code: YModule definitions)
 class YModule; // forward declaration
 
-typedef void (*YModuleLogCallback)(YModule *module, const string& log);
+typedef void (*YModuleLogCallback)(YModule *module, const string& logline);
 typedef void (*YModuleValueCallback)(YModule *func, const string& functionValue);
 #ifndef _Y_PERSISTENTSETTINGS_ENUM
 #define _Y_PERSISTENTSETTINGS_ENUM
@@ -264,12 +264,11 @@ private:
     static  void        _yapiDeviceArrivalCallbackFwd(YDEV_DESCR devdesc);
     static  void        _yapiDeviceRemovalCallbackFwd(YDEV_DESCR devdesc);
     static  void        _yapiDeviceChangeCallbackFwd(YDEV_DESCR devdesc);
-    static  void        _yapiDeviceLogCallbackFwd(YDEV_DESCR devdesc);
+    static  void        _yapiDeviceLogCallbackFwd(YDEV_DESCR devdesc, const char* line);
     static  void        _yapiFunctionTimedReportCallbackFwd(YAPI_FUNCTION fundesc, double timestamp, const u8 *bytes, u32 len);
 	static  void        _yapiHubDiscoveryCallbackFwd(const char *serial, const char *url);
 
 public:
-    static  void        _notifyLogs(YModule* mod);
     static  void        _yapiFunctionUpdateCallbackFwd(YFUN_DESCR fundesc, const char *value);
     static  double      _decimalToDouble(s16 val);
     static  s16         _doubleToDecimal(double val);
@@ -424,7 +423,7 @@ public:
 
     /**
      * Force a hub discovery, if a callback as been registered with yRegisterDeviceRemovalCallback it
-     * will be called for each net work hub that will respond to the discovery
+     * will be called for each net work hub that will respond to the discovery.
      * 
      * @param errmsg : a string passed by reference to receive any error message.
      * 
@@ -1390,6 +1389,9 @@ public:
     inline YFunction       *next(void)
     { return this->nextFunction();}
 
+    /**
+     * comment from .yc definition
+     */
            static YFunction* FirstFunction(void);
     inline static YFunction* First(void)
     { return YFunction::FirstFunction();}
@@ -1398,7 +1400,8 @@ public:
 
 
     /**
-     * Returns a short text that describes the function in the form TYPE(NAME)=SERIAL&#46;FUNCTIONID.
+     * Returns a short text that describes unambiguously the instance of the function in the form
+     * TYPE(NAME)=SERIAL&#46;FUNCTIONID.
      * More precisely,
      * TYPE       is the type of the function,
      * NAME       it the name used for the first access to the function,
@@ -1554,7 +1557,7 @@ public:
 };
 
 
-typedef void (*YModuleLogCallback)(YModule *module, const string& log);
+typedef void(*YModuleLogCallback)(YModule *module, const string& log);
 
 //--- (generated code: YModule declaration)
 /**
@@ -1569,8 +1572,6 @@ class YOCTO_CLASS_EXPORT YModule: public YFunction {
 protected:
     //--- (generated code: YModule attributes)
     // Attributes (function value cache)
-    YModuleLogCallback _logCallback;
-    string                   _logContinuation;
     string          _productName;
     string          _serialNumber;
     int             _productId;
@@ -1584,6 +1585,7 @@ protected:
     int             _rebootCountdown;
     Y_USBBANDWIDTH_enum _usbBandwidth;
     YModuleValueCallback _valueCallbackModule;
+    YModuleLogCallback _logCallback;
 
     friend YModule *yFindModule(const string& func);
     friend YModule *yFirstModule(void);
@@ -1665,10 +1667,19 @@ public:
     
     void            setImmutableAttributes(yDeviceSt *infos);
 
+    /**
+     * todo
+     * 
+     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     *         arguments: the function object of which the value has changed, and the character string describing
+     *         the new advertised value.
+     * @noreturn
+     */
     void            registerLogCallback(YModuleLogCallback callback);
 
-    void            checkLogs(void);
-
+    
+    YModuleLogCallback get_logCallback();
+    
     
 
     //--- (generated code: YModule accessors declaration)
@@ -1912,8 +1923,6 @@ public:
      */
     static YModule*     FindModule(string func);
 
-    using YFunction::registerValueCallback;
-
     /**
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
@@ -1926,6 +1935,7 @@ public:
      * @noreturn
      */
     virtual int         registerValueCallback(YModuleValueCallback callback);
+    using YFunction::registerValueCallback;
 
     virtual int         _invokeValueCallback(string value);
 
@@ -2014,6 +2024,15 @@ public:
     inline YModule         *next(void)
     { return this->nextModule();}
 
+    /**
+     * Starts the enumeration of modules currently accessible.
+     * Use the method YModule.nextModule() to iterate on the
+     * next modules.
+     * 
+     * @return a pointer to a YModule object, corresponding to
+     *         the first module currently online, or a null pointer
+     *         if there are none.
+     */
            static YModule* FirstModule(void);
     inline static YModule* First(void)
     { return YModule::FirstModule();}
@@ -2302,8 +2321,6 @@ public:
      */
     static YSensor*     FindSensor(string func);
 
-    using YFunction::registerValueCallback;
-
     /**
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
@@ -2316,6 +2333,7 @@ public:
      * @noreturn
      */
     virtual int         registerValueCallback(YSensorValueCallback callback);
+    using YFunction::registerValueCallback;
 
     virtual int         _invokeValueCallback(string value);
 
@@ -2380,6 +2398,10 @@ public:
      *         values returned by the sensor for the correction points.
      * @param refValues : array of floating point numbers, corresponding to the corrected
      *         values for the correction points.
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
      */
     virtual int         calibrateFromPoints(vector<double> rawValues,vector<double> refValues);
 
@@ -2423,6 +2445,15 @@ public:
     inline YSensor         *next(void)
     { return this->nextSensor();}
 
+    /**
+     * Starts the enumeration of sensors currently accessible.
+     * Use the method YSensor.nextSensor() to iterate on
+     * next sensors.
+     * 
+     * @return a pointer to a YSensor object, corresponding to
+     *         the first sensor currently online, or a null pointer
+     *         if there are none.
+     */
            static YSensor* FirstSensor(void);
     inline static YSensor* First(void)
     { return YSensor::FirstSensor();}
@@ -2582,7 +2613,7 @@ inline void yRegisterHubDiscoveryCallback(YHubDiscoveryCallback hubDiscoveryCall
 
 /**
  * Force a hub discovery, if a callback as been registered with yRegisterDeviceRemovalCallback it
- * will be called for each net work hub that will respond to the discovery
+ * will be called for each net work hub that will respond to the discovery.
  * 
  * @param errmsg : a string passed by reference to receive any error message.
  * 

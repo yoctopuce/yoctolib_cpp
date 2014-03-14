@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 14682 2014-01-23 09:53:47Z seb $
+ * $Id: yproto.h 15321 2014-03-07 14:32:14Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -64,6 +64,8 @@
 #include <SetupAPI.h>
 #ifdef _MSC_VER
 #pragma comment(lib, "SetupApi.lib")
+#pragma comment(lib, "OleAut32.lib")
+
 #endif
 /**************************************************************
 * WINDOWS HID ACCES FOR WINODWS
@@ -156,7 +158,7 @@ typedef struct{
     #define YSTRNICMP(A,B,len)                  _strnicmp(A,B,len)
     #define YSTRLEN(str)                        ((int)strlen(str))
 #elif defined(WINDOWS_API) && defined(__BORLANDC__)
-	#define YSTRCMP(A,B)                        strcmp(A,B)
+    #define YSTRCMP(A,B)                        strcmp(A,B)
     #define YSTRNCMP(A,B,len)                   strncmp(A,B,len)
     #define YSTRICMP(A,B)                       strcmpi(A,B)
     #define YSTRNICMP(A,B,len)                  strncmpi(A,B,len)
@@ -200,6 +202,7 @@ int yvsprintf_s (char *dst, unsigned dstsize, const char * fmt, va_list arg );
 //#define DEBUG_DUMP_PKT
 //#define DEBUG_USB_TRAFIC
 //#define TRACE_NET_HUB
+//#define DEBUG_TRACE_FILE "c:\\tmp\\tracefile.txt"
 
 #define MSC_VS2003 1310
 
@@ -270,7 +273,7 @@ int dbglogf(const char *fileid,int line,const char *fmt,...);
 #define dbglog(...)      dbglogf(__FILE_ID__,__LINE__, __VA_ARGS__)
 #else
 __forceinline int __dbglog(const char* fmt,...) {
-	int len;
+    int len;
     va_list args;
 
     va_start( args, fmt );
@@ -324,8 +327,10 @@ int YFOPEN(FILE** f, const char *filename, const char *mode);
 #define YASSERT(x)              if(!(x)){dbglog("ASSERT FAILED:%s:%d\n",__FILE_ID__ , __LINE__);YDEBUG_BREAK}
 #define YPROPERR(call)          {int tmpres=(call); if(YISERR(tmpres)) {return (YRETCODE)tmpres;}}
 #define YERR(code)              ySetErr(code,errmsg,NULL,__FILE_ID__,__LINE__)
+#define YERRTO(code,buffer)     ySetErr(code,buffer,NULL,__FILE_ID__,__LINE__)
 #define YERRMSG(code,message)   ySetErr(code,errmsg,message,__FILE_ID__,__LINE__)
-YRETCODE ySetErr(YRETCODE code, char *outmsg, const char *erreur,const char *file,u32 line);
+#define YERRMSGTO(code,message,buffer)   ySetErr(code,buffer,message,__FILE_ID__,__LINE__)
+YRETCODE ySetErr(YRETCODE code, char *outmsg, const char *erreur, const char *file, u32 line);
 int FusionErrmsg(int code,char *errmsg,char *generr,char *detailerr);
 
 
@@ -385,8 +390,8 @@ typedef struct {
     pktItem             *first;
     pktItem             *last;
     int                 count;
-	u64					totalPush;
-	u64					totalPop;
+    u64                 totalPush;
+    u64                 totalPop;
     YRETCODE            status;
     char                errmsg[YOCTO_ERRMSG_LEN]; 
     yCRITICAL_SECTION   cs;
@@ -404,8 +409,6 @@ void yPktQueueSetError(pktQueue  *q,YRETCODE code, const char * msg);
 typedef struct {
     IOHIDManagerRef     manager;
     yCRITICAL_SECTION   hidMCS;
-    IOHIDDeviceRef      devref;
-    CFStringRef         run_loop_mode;
 } OSX_HID_REF;
 
 #endif
@@ -438,11 +441,13 @@ typedef struct _yInterfaceSt {
     OVERLAPPED      rdOL;
     HANDLE          rdHDL;
     HANDLE          EV[2];
-	u32             rdpending;
+    u32             rdpending;
     OS_USB_Packet   tmpd2hpkt;
     OS_USB_Packet   tmph2dpkt;
 #elif defined(OSX_API)
     OSX_HID_REF         hid;
+    CFStringRef         run_loop_mode;
+    IOHIDDeviceRef      devref;
     USB_Packet          tmprxpkt;
 #elif defined(LINUX_API)
     libusb_device           *devref;
@@ -480,8 +485,6 @@ typedef enum
     YENU_RESTART
 } YENU_ACTION;
 
-
-
 typedef enum
 {
     YRUN_STOPED,
@@ -501,13 +504,32 @@ typedef enum
 } YHTTP_STATUS;
 
 
+// structure that contain generic device information (usb and netowrk)
+#define DEVGEN_LOG_ACTIVATED     1u
+#define DEVGEN_LOG_PENDING       2u
+#define DEVGEN_LOG_PULLING       4u
+typedef struct  _yGenericDeviceSt {
+    yStrRef              serial; // set only once at init -> no need to use the mutex
+    yCRITICAL_SECTION   cs;
+    u32                 flags;
+    u32                 deviceLogPos;
+    yFifoBuf            logFifo;
+    u8*                 logBuffer;
+    double              deviceTime;
+} yGenericDeviceSt;
+
+void initDevYdxInfos(int devYdxy, yStrRef serial);
+void freeDevYdxInfos(int devYdx);
+
+
 #define YIO_REMOTE_CLOSE 1u
-#define YIO_ASYNC        2u
 
 typedef struct{
     u8      flags;
     u64     timeout;
     YUSBIO  hdl;
+    yapiRequestAsyncCallback callback;
+    void *context;
 } USB_HDL;
 
 #define NB_MAX_STARTUP_RETRY   5u
@@ -521,7 +543,7 @@ typedef struct  _yPrivDeviceSt{
     YUSBDEV             yhdl;       // unique YHANDLE to identify device during execution
     YDEV_STATUS         dStatus;    // detection status
     YENU_ACTION         enumAction; // action to triger at end of enumeration
-    YRUN_STATUS         rstatus;    // running status of the device (valid only on working dev)
+    YRUN_STATUS         rstatus;    // running status of the device (valid only on working dev)    
     char                errmsg[YOCTO_ERRMSG_LEN];
     unsigned int        nb_startup_retry;
     u64                 next_startup_attempt;    
@@ -529,7 +551,6 @@ typedef struct  _yPrivDeviceSt{
     YHTTP_STATUS        httpstate;
     yDeviceSt           infos;      // device infos
     u32                 lastUtcUpdate;
-    double              deviceTime;
     pktItem             *currxpkt;
     u8                  curxofs;
     pktItem             *curtxpkt;
@@ -585,7 +606,7 @@ typedef enum {
 typedef struct _NetHubSt {
     yUrlRef             url;            // hub base URL, or INVALID_HASH_IDX if unused
     u32                 flags;
-	yStrRef				serial;
+    yStrRef             serial;
     WakeUpSocket        wuce;
     yThread             net_thread;
     // the following fields are for the notification helper thread only
@@ -600,7 +621,6 @@ typedef struct _NetHubSt {
     // the following fields are used by hub net enum and notification helper thread
     u64                 devListExpires;
     u8                  devYdxMap[ALLOC_YDX_PER_HUB];   // maps hub's internal devYdx to our WP devYdx
-    double              devYdxTime[ALLOC_YDX_PER_HUB];  // save latest known timestamp for each of the hub devYdx
     int                 writeProtected; // admin password detected
     u64                 lastTraffic;
     // the following fields are used for authentication to the hub, and require mutex access
@@ -618,30 +638,35 @@ typedef struct _NetHubSt {
 typedef struct _TcpReqSt {
     NetHubSt            *hub;           // pointer to the NetHubSt handling the device
     yCRITICAL_SECTION   access;
-	yEvent				finished;       // event seted when this request can be reused
-    int                 isAsyncIO;      // when set to true, TCP content is handled by hub thread
+    yEvent              finished;       // event seted when this request can be reused
     YSOCKET             skt;            // socket used to talk to the device
     char                *headerbuf;     // Used to store all lines of the HTTP header (with the double \r\n)
     int                 headerbufsize;  // allocated size of requestbuf
     char                *bodybuf;       // Used to store the body of the POST request
     int                 bodybufsize;    // allocated size of the body of the POST request
     int                 bodysize;       // effective size of the body of the POST request
-    char                *replybuf;      // Used to buffer request result
+    u8                  *replybuf;      // Used to buffer request result
     int                 replybufsize;   // allocated size of replybuf
     int                 replysize;      // write pointer within replybuf
     int                 replypos;       // read pointer within replybuf; -1 when not ready to start reading
     int                 retryCount;     // number of authorization attempts
     int                 errcode;        // in case an error occured
+    char                errmsg[YOCTO_ERRMSG_LEN];
+    yapiRequestAsyncCallback callback;
+    void                *context;
 } TcpReqSt;
 
 #define SETUPED_IFACE_CACHE_SIZE 128
 
+#define YCTX_OSX_MULTIPLES_HID 1
 // structure that contain information about the API
 typedef struct{
     //yapi CS
     yCRITICAL_SECTION   updateDev_cs;
     yCRITICAL_SECTION   handleEv_cs;
     yEvent              exitSleepEvent;
+    // global inforation on all devices
+    yGenericDeviceSt    genericInfos[ALLOC_YDX_PER_HUB];
     // usb stuff
     yCRITICAL_SECTION   enum_cs;
     int                 detecttype;
@@ -653,7 +678,6 @@ typedef struct{
     u32                 io_counter;
     // network discovery info
     NetHubSt            nethub[NBMAX_NET_HUB];
-
     TcpReqSt            tcpreq[ALLOC_YDX_PER_HUB];  // indexed by our own DevYdx
     yRawNotificationCb  rawNotificationCb;
     yRawReportCb        rawReportCb;
@@ -663,21 +687,23 @@ typedef struct{
     SSDPInfos           SSDP;            // socket used to talk to the device
     // Public callbacks
     yapiLogFunction             log;
-    yapiDeviceUpdateCallback    logDeviceCallback;
+    yapiDeviceLogCallback       logDeviceCallback;
     yapiDeviceUpdateCallback    arrivalCallback;
     yapiDeviceUpdateCallback    changeCallback;
     yapiDeviceUpdateCallback    removalCallback;
     yapiFunctionUpdateCallback  functionCallback;
     yapiTimedReportCallback     timedReportCallback;
-	yapiHubDiscoveryCallback    hubDiscoveryCallback;
+    yapiHubDiscoveryCallback    hubDiscoveryCallback;
     // OS specifics variables
     yInterfaceSt*       setupedIfaceCache[SETUPED_IFACE_CACHE_SIZE];
 #if defined(WINDOWS_API)
     win_hid_api         hid;
     HANDLE              apiLock;
-	int					prevEnumCnt;
-	yInterfaceSt		*prevEnum;
+    yCRITICAL_SECTION   prevEnum_cs;
+    int                 prevEnumCnt;
+    yInterfaceSt        *prevEnum;
 #elif defined(OSX_API)
+    u32                 osx_flags;
     OSX_HID_REF         hid;
     CFRunLoopRef        usb_run_loop;
     pthread_t           usb_thread;
@@ -693,6 +719,8 @@ typedef struct{
 
 extern char  ytracefile[];
 extern yContextSt  *yContext;
+
+YRETCODE yapiPullDeviceLog(const char *device);
 
 /*****************************************************************
  * PLATFORM SPECIFIC USB code
@@ -755,9 +783,11 @@ int  yUsbInit(yContextSt *ctx,char *errmsg);
 int  yUsbFree(yContextSt *ctx,char *errmsg);
 int  yUsbIdle(void);
 int  yUsbTrafficPending(void);
+yGenericDeviceSt* yUSBGetGenericInfo(yStrRef devdescr);
+
 int  yUsbOpenDevDescr(YIOHDL *ioghdl, yStrRef devdescr, char *errmsg);
 int  yUsbOpen(YIOHDL *ioghdl, const char *device, char *errmsg);
-int  yUsbSetIOAsync(YIOHDL *ioghdl, char *errmsg);
+int  yUsbSetIOAsync(YIOHDL *ioghdl, yapiRequestAsyncCallback callback, void *context, char *errmsg);
 int  yUsbWrite(YIOHDL *ioghdl, const char *buffer, int writelen,char *errmsg);
 int  yUsbReadNonBlock(YIOHDL *ioghdl, char *buffer, int len,char *errmsg);
 int  yUsbReadBlock(YIOHDL *ioghdl, char *buffer, int len,u64 blockUntil,char *errmsg);

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_watchdog.h 14275 2014-01-09 14:20:38Z seb $
+ * $Id: yocto_watchdog.h 15434 2014-03-14 06:37:47Z mvuilleu $
  *
  * Declares yFindWatchdog(), the high-level API for Watchdog functions
  *
@@ -10,24 +10,24 @@
  *
  *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
  *  non-exclusive license to use, modify, copy and integrate this
- *  file into your software for the sole purpose of interfacing 
- *  with Yoctopuce products. 
+ *  file into your software for the sole purpose of interfacing
+ *  with Yoctopuce products.
  *
- *  You may reproduce and distribute copies of this file in 
+ *  You may reproduce and distribute copies of this file in
  *  source or object form, as long as the sole purpose of this
- *  code is to interface with Yoctopuce products. You must retain 
+ *  code is to interface with Yoctopuce products. You must retain
  *  this notice in the distributed source file.
  *
  *  You should refer to Yoctopuce General Terms and Conditions
- *  for additional information regarding your rights and 
+ *  for additional information regarding your rights and
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
  *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
  *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
  *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
@@ -396,9 +396,9 @@ public:
     { return this->get_countdown(); }
 
     /**
-     * Returns the watchdog runing state at module power up.
+     * Returns the watchdog runing state at module power on.
      * 
-     * @return either Y_AUTOSTART_OFF or Y_AUTOSTART_ON, according to the watchdog runing state at module power up
+     * @return either Y_AUTOSTART_OFF or Y_AUTOSTART_ON, according to the watchdog runing state at module power on
      * 
      * On failure, throws an exception or returns Y_AUTOSTART_INVALID.
      */
@@ -408,11 +408,11 @@ public:
     { return this->get_autoStart(); }
 
     /**
-     * Changes the watchdog runningsttae at module power up. Remember to call the
+     * Changes the watchdog runningsttae at module power on. Remember to call the
      * saveToFlash() method and then to reboot the module to apply this setting.
      * 
      * @param newval : either Y_AUTOSTART_OFF or Y_AUTOSTART_ON, according to the watchdog runningsttae at
-     * module power up
+     * module power on
      * 
      * @return YAPI_SUCCESS if the call succeeds.
      * 
@@ -535,8 +535,6 @@ public:
      */
     static YWatchdog*   FindWatchdog(string func);
 
-    using YFunction::registerValueCallback;
-
     /**
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
@@ -549,6 +547,7 @@ public:
      * @noreturn
      */
     virtual int         registerValueCallback(YWatchdogValueCallback callback);
+    using YFunction::registerValueCallback;
 
     virtual int         _invokeValueCallback(string value);
 
@@ -567,6 +566,15 @@ public:
     inline YWatchdog       *next(void)
     { return this->nextWatchdog();}
 
+    /**
+     * Starts the enumeration of watchdog currently accessible.
+     * Use the method YWatchdog.nextWatchdog() to iterate on
+     * next watchdog.
+     * 
+     * @return a pointer to a YWatchdog object, corresponding to
+     *         the first watchdog currently online, or a null pointer
+     *         if there are none.
+     */
            static YWatchdog* FirstWatchdog(void);
     inline static YWatchdog* First(void)
     { return YWatchdog::FirstWatchdog();}

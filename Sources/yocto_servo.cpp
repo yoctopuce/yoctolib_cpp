@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_servo.cpp 14700 2014-01-23 15:40:44Z seb $
+ * $Id: yocto_servo.cpp 15253 2014-03-06 10:15:50Z seb $
  *
  * Implements yFindServo(), the high-level API for Servo functions
  *
@@ -10,24 +10,24 @@
  *
  *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
  *  non-exclusive license to use, modify, copy and integrate this
- *  file into your software for the sole purpose of interfacing 
- *  with Yoctopuce products. 
+ *  file into your software for the sole purpose of interfacing
+ *  with Yoctopuce products.
  *
- *  You may reproduce and distribute copies of this file in 
+ *  You may reproduce and distribute copies of this file in
  *  source or object form, as long as the sole purpose of this
- *  code is to interface with Yoctopuce products. You must retain 
+ *  code is to interface with Yoctopuce products. You must retain
  *  this notice in the distributed source file.
  *
  *  You should refer to Yoctopuce General Terms and Conditions
- *  for additional information regarding your rights and 
+ *  for additional information regarding your rights and
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
  *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
  *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
  *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
@@ -50,9 +50,12 @@
 YServo::YServo(const string& func): YFunction(func)
 //--- (Servo initialization)
     ,_position(POSITION_INVALID)
+    ,_enabled(ENABLED_INVALID)
     ,_range(RANGE_INVALID)
     ,_neutral(NEUTRAL_INVALID)
     ,_move(MOVE_INVALID)
+    ,_positionAtPowerOn(POSITIONATPOWERON_INVALID)
+    ,_enabledAtPowerOn(ENABLEDATPOWERON_INVALID)
     ,_valueCallbackServo(NULL)
 //--- (end of Servo initialization)
 {
@@ -73,6 +76,11 @@ int YServo::_parseAttr(yJsonStateMachine& j)
     if(!strcmp(j.token, "position")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _position =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "enabled")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _enabled =  (Y_ENABLED_enum)atoi(j.token);
         return 1;
     }
     if(!strcmp(j.token, "range")) {
@@ -101,6 +109,16 @@ int YServo::_parseAttr(yJsonStateMachine& j)
             }
         }
         if(j.st != YJSON_PARSE_STRUCT) goto failed;
+        return 1;
+    }
+    if(!strcmp(j.token, "positionAtPowerOn")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _positionAtPowerOn =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "enabledAtPowerOn")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _enabledAtPowerOn =  (Y_ENABLEDATPOWERON_enum)atoi(j.token);
         return 1;
     }
     failed:
@@ -139,6 +157,39 @@ int YServo::set_position(int newval)
     string rest_val;
     char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
     return _setAttr("position", rest_val);
+}
+
+/**
+ * Returns the state of the servos.
+ * 
+ * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the state of the servos
+ * 
+ * On failure, throws an exception or returns Y_ENABLED_INVALID.
+ */
+Y_ENABLED_enum YServo::get_enabled(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YServo::ENABLED_INVALID;
+        }
+    }
+    return _enabled;
+}
+
+/**
+ * Stops or starts the servo.
+ * 
+ * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YServo::set_enabled(Y_ENABLED_enum newval)
+{
+    string rest_val;
+    rest_val = (newval>0 ? "1" : "0");
+    return _setAttr("enabled", rest_val);
 }
 
 /**
@@ -249,6 +300,75 @@ int YServo::move(int target,int ms_duration)
     string rest_val;
     char buff[64]; sprintf(buff,"%d:%d",target,ms_duration); rest_val = string(buff);
     return _setAttr("move", rest_val);
+}
+
+/**
+ * Returns the servo position at device power up.
+ * 
+ * @return an integer corresponding to the servo position at device power up
+ * 
+ * On failure, throws an exception or returns Y_POSITIONATPOWERON_INVALID.
+ */
+int YServo::get_positionAtPowerOn(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YServo::POSITIONATPOWERON_INVALID;
+        }
+    }
+    return _positionAtPowerOn;
+}
+
+/**
+ * Configure the servo position at device power up. Remember to call the matching
+ * module saveToFlash() method, otherwise this call will have no effect.
+ * 
+ * @param newval : an integer
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YServo::set_positionAtPowerOn(int newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+    return _setAttr("positionAtPowerOn", rest_val);
+}
+
+/**
+ * Returns the servo signal generator state at power up.
+ * 
+ * @return either Y_ENABLEDATPOWERON_FALSE or Y_ENABLEDATPOWERON_TRUE, according to the servo signal
+ * generator state at power up
+ * 
+ * On failure, throws an exception or returns Y_ENABLEDATPOWERON_INVALID.
+ */
+Y_ENABLEDATPOWERON_enum YServo::get_enabledAtPowerOn(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YServo::ENABLEDATPOWERON_INVALID;
+        }
+    }
+    return _enabledAtPowerOn;
+}
+
+/**
+ * Configure the servo signal generator state at power up. Remember to call the matching module saveToFlash()
+ * method, otherwise this call will have no effect.
+ * 
+ * @param newval : either Y_ENABLEDATPOWERON_FALSE or Y_ENABLEDATPOWERON_TRUE
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YServo::set_enabledAtPowerOn(Y_ENABLEDATPOWERON_enum newval)
+{
+    string rest_val;
+    rest_val = (newval>0 ? "1" : "0");
+    return _setAttr("enabledAtPowerOn", rest_val);
 }
 
 /**

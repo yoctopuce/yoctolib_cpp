@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h 14657 2014-01-21 15:18:52Z seb $
+ * $Id: yapi.h 15240 2014-03-05 09:36:17Z seb $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -77,16 +77,21 @@ typedef void YAPI_FUNCTION_EXPORT(*yapiFunctionUpdateCallback)(YAPI_FUNCTION fun
 // prototype of timed report callback
 typedef void YAPI_FUNCTION_EXPORT(*yapiTimedReportCallback)(YAPI_FUNCTION fundesc, double timestamp, const u8 *bytes, u32 len);
 
-// prototype of the async request completion callback
-typedef void YAPI_FUNCTION_EXPORT(*yapiRequestAsyncCallback)(void *context,int retcode,const char *result,u32 resultlen);
-
 // prototype of the ssdp hub discovery callback
 typedef void YAPI_FUNCTION_EXPORT(*yapiHubDiscoveryCallback)(const char *serial, const char *url);
-    
+
+typedef void YAPI_FUNCTION_EXPORT(*yapiDeviceLogCallback)(YAPI_FUNCTION fundescr,const char *line);
+
 
 /*****************************************************************************
  API FUNCTION DECLARATION
  ****************************************************************************/
+
+
+void YAPI_FUNCTION_EXPORT yapiStartStopDeviceLogCallback(const char *serial,int start);
+
+
+
 
  
 /*****************************************************************************
@@ -160,7 +165,7 @@ void YAPI_FUNCTION_EXPORT yapiRegisterLogFunction(yapiLogFunction logfun);
   
 
  ***************************************************************************/
-void YAPI_FUNCTION_EXPORT yapiRegisterDeviceLogCallback(yapiDeviceUpdateCallback arrivalCallback);
+void YAPI_FUNCTION_EXPORT yapiRegisterDeviceLogCallback(yapiDeviceLogCallback logCallback);
 
 /*****************************************************************************
   Function:
@@ -337,7 +342,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiPreregisterHub(const char *rooturl, char *errm
  Remarks:
  
  ***************************************************************************/
-    void YAPI_FUNCTION_EXPORT yapiUnregisterHub(const char *url);
+void YAPI_FUNCTION_EXPORT yapiUnregisterHub(const char *url);
 
 
     
@@ -913,6 +918,8 @@ void yapiRegisterRawReportCb(yRawReportCb callback);
 // Misc helper    
 u32 YAPI_FUNCTION_EXPORT yapiGetCNonce(u32 nc);
     
+
+
 #ifdef  __cplusplus
 }
 #endif

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_lin.c 14514 2014-01-16 14:22:38Z seb $
+ * $Id: ypkt_lin.c 14805 2014-01-31 18:24:53Z seb $
  *
  * OS-specific USB packet layer, Linux version
  *
@@ -289,7 +289,6 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
             continue;
 
         for(j=0 ; j < config->bNumInterfaces; j++){
-
             //ensure the buffer of detected interface is big enough
             if(*nbifaceDetect == nbifaceAlloc){
                 yInterfaceSt    *tmp;

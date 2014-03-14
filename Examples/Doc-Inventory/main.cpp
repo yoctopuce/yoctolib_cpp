@@ -9,14 +9,14 @@ int main(int argc, const char * argv[])
     string      errmsg;
 
     // Setup the API to use local USB devices
-    if(yRegisterHub("net", errmsg) != YAPI_SUCCESS) {
+    if(YAPI::RegisterHub("usb", errmsg) != YAPI_SUCCESS) {
         cerr << "RegisterHub error: " << errmsg << endl;
         return 1;
     }
 
     cout << "Device list: " << endl;
 
-    YModule *module = yFirstModule();
+    YModule *module = YModule::FirstModule();
     while (module != NULL) {
         cout << module->get_serialNumber() << " ";
         cout << module->get_productName()  << endl;

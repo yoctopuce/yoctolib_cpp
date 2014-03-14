@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 14711 2014-01-24 14:56:44Z seb $
+ * $Id: ydef.h 15170 2014-02-28 16:39:24Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -632,6 +632,9 @@ typedef union {
 #define YSSDP_MCAST_ADDR (0xFAFFFFEF)
 #define YSSDP_URN_YOCTOPUCE "urn:yoctopuce-com:device:hub:1"
 
+// prototype of the async request completion callback
+typedef void (*yapiRequestAsyncCallback)(void *context, int retcode, const u8 *result, u32 resultlen);
+
 
 //
 // PROG packets are only used in bootloader (USB DeviceID=0001/0002)
@@ -751,6 +754,8 @@ typedef union {
 
 
 #define YESC                (27u)
+
+
 
 #ifdef  __cplusplus
 }

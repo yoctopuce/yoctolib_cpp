@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.h 14687 2014-01-23 11:01:59Z seb $
+ * $Id: yocto_display.h 14830 2014-02-04 14:44:24Z seb $
  *
  * Declares yFindDisplay(), the high-level API for Display functions
  *
@@ -852,8 +852,6 @@ public:
      */
     static YDisplay*    FindDisplay(string func);
 
-    using YFunction::registerValueCallback;
-
     /**
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
@@ -866,6 +864,7 @@ public:
      * @noreturn
      */
     virtual int         registerValueCallback(YDisplayValueCallback callback);
+    using YFunction::registerValueCallback;
 
     virtual int         _invokeValueCallback(string value);
 
@@ -1015,6 +1014,15 @@ public:
     inline YDisplay        *next(void)
     { return this->nextDisplay();}
 
+    /**
+     * Starts the enumeration of displays currently accessible.
+     * Use the method YDisplay.nextDisplay() to iterate on
+     * next displays.
+     * 
+     * @return a pointer to a YDisplay object, corresponding to
+     *         the first display currently online, or a null pointer
+     *         if there are none.
+     */
            static YDisplay* FirstDisplay(void);
     inline static YDisplay* First(void)
     { return YDisplay::FirstDisplay();}
@@ -1038,22 +1046,8 @@ public:
     YDisplayLayer* get_displayLayer(unsigned layerId);
     
       
-    /**
-     * Force a flush of all commands buffered by all layers.
-     *
-     * @return YAPI_SUCCESS if the call succeeds.
-     *
-     * On failure, throws an exception or returns a negative error code.
-     */
     int flushLayers(void);
     
-    /**
-     * Add a given command string to the currently recorded display sequence
-     *
-     * @return YAPI_SUCCESS if the call succeeds.
-     *
-     * On failure, throws an exception or returns a negative error code.
-     */
     int sendCommand(string cmd);
     
     // internal function to clear hidden flag during resetAll

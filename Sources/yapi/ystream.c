@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 14321 2014-01-10 22:32:34Z mvuilleu $
+ * $Id: ystream.c 14892 2014-02-11 14:36:43Z seb $
  *
  * USB multi-interface stream implementation
  *
@@ -583,7 +583,7 @@ static int devCheckAsyncIO(LOCATION yPrivDeviceSt *dev, char *errmsg)
         res = YERRMSG(YAPI_DEVICE_NOT_FOUND,"This device is not available");
         break;
     case YRUN_REQUEST:
-        if ( (dev->pendingIO.flags & YIO_ASYNC ) == 0 ) {
+        if (dev->pendingIO.callback == NULL) {
             res=YERRMSG(YAPI_INVALID_ARGUMENT,"Invalid IO Handle");
         } else {
             dev->rstatus = YRUN_BUSY;
@@ -1666,15 +1666,24 @@ static void yDispatchNotice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pkts
         break;
     case NOTIFY_PKT_LOG:
         {
-            yStrRef serialref;
+            if (!strncmp(notify->head.serial, dev->infos.serial, YOCTO_SERIAL_LEN)) {
+                yStrRef serialref = yHashPutStr(notify->head.serial);
+                int devydx = wpGetDevYdx(serialref);
+
+                yEnterCriticalSection(&yContext->genericInfos[devydx].cs);
+                if (yContext->genericInfos[devydx].flags & DEVGEN_LOG_ACTIVATED) {
+                    yContext->genericInfos[devydx].flags |= DEVGEN_LOG_PENDING;
 #ifdef DEBUG_NOTIFICATION
-            dbglog("notify device log (%x)\n",notify->raw);
+                    dbglog("notify device log for %s\n",dev->infos.serial);
 #endif
-            serialref = yHashPutStr(notify->head.serial);
-            if (yContext->logDeviceCallback) {
-                yEnterCriticalSection(&yContext->functionCallbackCS);
-                yContext->logDeviceCallback(serialref);
-                yLeaveCriticalSection(&yContext->functionCallbackCS);
+                }
+#ifdef DEBUG_NOTIFICATION
+                else {
+                    dbglog("notify device log for %s dropped\n",dev->infos.serial);
+                }
+#endif
+                yLeaveCriticalSection(&yContext->genericInfos[devydx].cs);
+
             }
             if(yContext->rawNotificationCb){
                 yContext->rawNotificationCb(notify);
@@ -1703,15 +1712,16 @@ static void yDispatchReport(yPrivDeviceSt *dev, u8 *data, int pktsize)
         while (pktsize > 0) {
             USB_Report_Pkt *report = (USB_Report_Pkt*) data;
             int  len = report->extraLen + 1;
+            int  devydx = wpGetDevYdx(serialref);
             if (report->funYdx == 0xf) {
                 u32 t = data[1] + 0x100u * data[2] + 0x10000u * data[3] + 0x1000000u * data[4];
-                dev->deviceTime = (double)t + data[5] / 250.0;
+                yContext->genericInfos[devydx].deviceTime = (double)t + data[5] / 250.0;
             } else {
                 YAPI_FUNCTION fundesc;
                 int devydx = wpGetDevYdx(yHashPutStr(dev->infos.serial));
                 ypRegisterByYdx(devydx, report->funYdx, NULL, &fundesc);
                 data[0] = report->isAvg ? 1 : 0;
-                yContext->timedReportCallback(fundesc, dev->deviceTime, data, len + 1);
+                yContext->timedReportCallback(fundesc, yContext->genericInfos[devydx].deviceTime, data, len + 1);
             }
             pktsize -= 1 + len;
             data += 1 + len;
@@ -1746,11 +1756,9 @@ static int yDispatchReceive(yPrivDeviceSt *dev,u64 blockUntilTime,char *errmsg)
                 dbglog("---------------------------\n");
 #endif
                 if(dev->httpstate == YHTTP_OPENED) {
-                    if((dev->pendingIO.flags & YIO_ASYNC) ==0 ) {
-                        //handle new received packet
-                        if(size!=yPushFifo(&dev->http_fifo, data, size)){
-                            return YERRMSG(YAPI_IO_ERROR,"FIFO overrun");
-                        }
+                    //handle new received packet
+                    if(size!=yPushFifo(&dev->http_fifo, data, size)){
+                        return YERRMSG(YAPI_IO_ERROR,"FIFO overrun");
                     }
                     dev->httpstate = YHTTP_CLOSE_BY_DEV;
                 } else if(dev->httpstate == YHTTP_CLOSE_BY_API) {
@@ -1766,7 +1774,7 @@ static int yDispatchReceive(yPrivDeviceSt *dev,u64 blockUntilTime,char *errmsg)
                 dbglog("%s\n",dump);
                 dbglog("---------------------------\n");
 #endif
-                if(dev->httpstate==YHTTP_OPENED &&  (dev->pendingIO.flags & YIO_ASYNC) ==0 ){
+                if (dev->httpstate == YHTTP_OPENED) {
                     //handle new received packet
                     if(size!=yPushFifo(&dev->http_fifo, data, size)){
                         return YERRMSG(YAPI_IO_ERROR,"FIFO overrun");
@@ -2333,10 +2341,11 @@ int yUsbIdle(void)
                         dbglog("Unable to flush UTC timestamp\n");
                     }
                 }
-            }            
+            }   
             devStopIdle(PUSH_LOCATION p);
+            yapiPullDeviceLog(p->infos.serial);
 		} else if(res == YAPI_DEVICE_BUSY){
-			if (p->httpstate != YHTTP_CLOSED && p->pendingIO.flags & YIO_ASYNC ) {
+            if (p->httpstate != YHTTP_CLOSED && p->pendingIO.callback) {
 				// if we have an async IO on this device 
 				// simulate read from users
 				if (!YISERR(devCheckAsyncIO(PUSH_LOCATION p,errmsg))) {
@@ -2357,11 +2366,16 @@ int yUsbIdle(void)
 						u8  maxpktlen;
 						// send connection close
 						if(yStreamGetTxBuff(p,&pktdata, &maxpktlen)){
+                            u8 * ptr;
+                            u16 len;
 							if(YISERR(yStreamTransmit(p,YSTREAM_TCP_CLOSE,0,errmsg))){
 								dbglog("Unable to send async connection close\n");
 							} else if(YISERR(yStreamFlush(p,errmsg))) {
 								dbglog("Unable to flush async connection close\n");
 							}
+                            // since we empty the fifo at each request we can use yPeekContinuousFifo
+                            len = yPeekContinuousFifo(&p->http_fifo, &ptr, 0);
+                            p->pendingIO.callback(p->pendingIO.context, YAPI_SUCCESS, ptr, len);
 							yFifoEmpty(&p->http_fifo);
 							p->httpstate = YHTTP_CLOSED;
 						} 
@@ -2389,7 +2403,7 @@ int yUsbTrafficPending(void)
         if(p->dStatus != YDEV_WORKING){
             continue;
         }
-        if(p->httpstate != YHTTP_CLOSED && p->pendingIO.flags & YIO_ASYNC) {
+        if(p->httpstate != YHTTP_CLOSED && p->pendingIO.callback) {
             YPERF_LEAVE(yUsbTrafficPending);
             return 1;
         }
@@ -2397,6 +2411,22 @@ int yUsbTrafficPending(void)
     YPERF_LEAVE(yUsbTrafficPending);
     return 0;
 }
+
+#if 0
+yGenericDeviceSt* yUSBGetGenericInfo(yStrRef devdescr)
+{
+    char    serialBuf[YOCTO_SERIAL_LEN];
+    yPrivDeviceSt *p;
+
+    yHashGetStr(devdescr, serialBuf, YOCTO_SERIAL_LEN);
+    p=findDev(serialBuf,FIND_FROM_ANY);
+    if(p==NULL){
+        return NULL;
+    }
+    
+    return &p->generic;
+}
+#endif
 
 int yUsbOpenDevDescr(YIOHDL *ioghdl, yStrRef devdescr, char *errmsg)
 {
@@ -2447,14 +2477,14 @@ int yUsbOpen(YIOHDL *ioghdl, const char *device, char *errmsg)
     return res;
 }
 
-int yUsbSetIOAsync(YIOHDL *ioghdl, char *errmsg)
+int yUsbSetIOAsync(YIOHDL *ioghdl, yapiRequestAsyncCallback callback, void *context, char *errmsg)
 {
     int res =YAPI_SUCCESS;
     yPrivDeviceSt *p;
  
     YPERF_ENTER(yUsbSetIOAsync);
-    p=findDevFromIOHdl(ioghdl);
-    if(p==NULL){
+    p = findDevFromIOHdl(ioghdl);
+    if(p == NULL){
         YPERF_LEAVE(yUsbSetIOAsync);
         return YERR(YAPI_DEVICE_NOT_FOUND);
     }
@@ -2463,7 +2493,8 @@ int yUsbSetIOAsync(YIOHDL *ioghdl, char *errmsg)
         YPERF_LEAVE(yUsbSetIOAsync);
         return res;
     }
-    p->pendingIO.flags |= YIO_ASYNC;
+    p->pendingIO.callback = callback;
+    p->pendingIO.context = context;
     res = devPauseIO(PUSH_LOCATION p,errmsg);
     YPERF_LEAVE(yUsbSetIOAsync);
 
@@ -2547,7 +2578,7 @@ int  yUsbReadNonBlock(YIOHDL *ioghdl, char *buffer, int len,char *errmsg)
         YPERF_LEAVE(yUsbReadNonBlock);
         return res ;
     }
-    if(p->pendingIO.flags & YIO_ASYNC){
+    if(p->pendingIO.callback){
         YPROPERR(devPauseIO(PUSH_LOCATION p,errmsg));
         YPERF_LEAVE(yUsbReadNonBlock);
         return YERRMSG(YAPI_INVALID_ARGUMENT,"Operation not supported on async IO");
@@ -2590,7 +2621,7 @@ int  yUsbReadBlock(YIOHDL *ioghdl, char *buffer, int len,u64 blockUntil,char *er
         YPERF_LEAVE(yUsbReadBlock);
         return res ;
     }
-    if(p->pendingIO.flags & YIO_ASYNC){
+    if(p->pendingIO.callback){
         YPROPERR(devPauseIO(PUSH_LOCATION p,errmsg));
         YPERF_LEAVE(yUsbReadBlock);
         return YERRMSG(YAPI_INVALID_ARGUMENT,"Operation not supported on async IO");
@@ -2630,7 +2661,7 @@ int  yUsbEOF(YIOHDL *ioghdl,char *errmsg)
         YPERF_LEAVE(yUsbEOF);
         return res;
     }
-    if(p->pendingIO.flags & YIO_ASYNC){
+    if(p->pendingIO.callback){
         YPROPERR(devPauseIO(PUSH_LOCATION p,errmsg));
         YPERF_LEAVE(yUsbEOF);
         return YERRMSG(YAPI_INVALID_ARGUMENT,"Operation not supported on async IO");
@@ -2679,7 +2710,7 @@ int  yUsbClose(YIOHDL *ioghdl,char *errmsg)
         YPERF_LEAVE(yUsbClose);
         return res;
     }
-    if(p->pendingIO.flags & YIO_ASYNC){
+    if(p->pendingIO.callback){
         YPROPERR(devPauseIO(PUSH_LOCATION p,errmsg));
         YPERF_LEAVE(yUsbClose);
         return YERRMSG(YAPI_INVALID_ARGUMENT,"Operation not supported on async IO");
@@ -2724,6 +2755,7 @@ int  yUsbClose(YIOHDL *ioghdl,char *errmsg)
     memset(&p->pendingIO,0,YIOHDL_SIZE);
     ioghdl->type=YIO_INVALID;
     res =devStopIO(PUSH_LOCATION p,errmsg);
+    yapiPullDeviceLog(p->infos.serial);
     YPERF_LEAVE(yUsbClose);
     return res;
 }

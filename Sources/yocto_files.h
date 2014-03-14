@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.h 14275 2014-01-09 14:20:38Z seb $
+ * $Id: yocto_files.h 14826 2014-02-04 14:09:17Z seb $
  *
  * Declares yFindFiles(), the high-level API for Files functions
  *
@@ -183,8 +183,6 @@ public:
      */
     static YFiles*      FindFiles(string func);
 
-    using YFunction::registerValueCallback;
-
     /**
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
@@ -197,6 +195,7 @@ public:
      * @noreturn
      */
     virtual int         registerValueCallback(YFilesValueCallback callback);
+    using YFunction::registerValueCallback;
 
     virtual int         _invokeValueCallback(string value);
 
@@ -282,6 +281,15 @@ public:
     inline YFiles          *next(void)
     { return this->nextFiles();}
 
+    /**
+     * Starts the enumeration of filesystems currently accessible.
+     * Use the method YFiles.nextFiles() to iterate on
+     * next filesystems.
+     * 
+     * @return a pointer to a YFiles object, corresponding to
+     *         the first filesystem currently online, or a null pointer
+     *         if there are none.
+     */
            static YFiles* FirstFiles(void);
     inline static YFiles* First(void)
     { return YFiles::FirstFiles();}
