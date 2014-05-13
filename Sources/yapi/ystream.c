@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 14892 2014-02-11 14:36:43Z seb $
+ * $Id: ystream.c 15810 2014-04-15 16:36:08Z seb $
  *
  * USB multi-interface stream implementation
  *
@@ -186,10 +186,8 @@ int vdbglogf(const char *fileid,int line,const char *fmt,va_list args)
     }
     len =YSTRLEN(buffer);
 
-#if 1
     if(yContext && yContext->log)
         yContext->log(buffer,len);
-#endif
 
     if(ytracefile[0]){
         FILE *f;
@@ -804,7 +802,7 @@ void dumpAnyPacket(char *prefix, int iface,USB_Packet *pkt)
     //dbglog("%s:%d: DUMP FULL PACKET!\n",prefix,iface);
     while(pos < USB_PKT_SIZE-sizeof(YSTREAM_Head)){
         YSTREAM_Head *head =(YSTREAM_Head*) (pkt->data+pos);
-        pos+=sizeof(YSTREAM_Head)+dumpAnyStreamHead(prefix,iface,head,dumpContent);
+        pos+=sizeof(YSTREAM_Head)+dumpAnyStreamHead(prefix,iface,head,1);
     }
 
 }
@@ -1040,11 +1038,18 @@ YRETCODE  yPktQueuePushD2H(yInterfaceSt *iface,const USB_Packet *pkt, char * err
 
 YRETCODE yPktQueueWaitAndPopD2H(yInterfaceSt *iface,pktItem **pkt,int ms,char * errmsg)
 {
+
+    YRETCODE res;
     *pkt=NULL;
-    if( ms==0 || yWaitForEvent(&iface->rxQueue.notEmptyEvent,ms)){
+    res= yPktQueuePop(&iface->rxQueue,pkt,errmsg);
+    if(res !=YAPI_SUCCESS || ms==0){
+        return  res;
+    }
+    if (*pkt == NULL) {
+        yWaitForEvent(&iface->rxQueue.notEmptyEvent,ms);
         return  yPktQueuePop(&iface->rxQueue,pkt,errmsg);
     }
-    return YAPI_SUCCESS;
+    return res;
 }
 
 
@@ -1335,7 +1340,7 @@ again:
     if (blockUntilTime > now)
         wait = blockUntilTime - now;
     else
-        wait=0;
+        wait = 0;
     // ptr is set to null by yPktQueueWaitAndPop
     res = yPktQueueWaitAndPopD2H(iface, &item, (int)wait, errmsg);
     if (YISERR(res)) 
@@ -1362,7 +1367,7 @@ again:
             dev->lastpktno = nextpktno;
             dev->currentIfaceNo = nextiface;
 #ifdef DEBUG_DUMP_PKT
-            dumpAnyPacket("POP Pkt",(u8)iface->ifaceno,&tmp->pkt);
+            dumpAnyPacket("POP Pkt",iface->ifaceno,&item->pkt);
 #endif
             return YAPI_SUCCESS;
         } else {
@@ -1669,20 +1674,21 @@ static void yDispatchNotice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pkts
             if (!strncmp(notify->head.serial, dev->infos.serial, YOCTO_SERIAL_LEN)) {
                 yStrRef serialref = yHashPutStr(notify->head.serial);
                 int devydx = wpGetDevYdx(serialref);
-
-                yEnterCriticalSection(&yContext->genericInfos[devydx].cs);
-                if (yContext->genericInfos[devydx].flags & DEVGEN_LOG_ACTIVATED) {
-                    yContext->genericInfos[devydx].flags |= DEVGEN_LOG_PENDING;
+				if (devydx >=0 ) {
+					yEnterCriticalSection(&yContext->genericInfos[devydx].cs);
+					if (yContext->genericInfos[devydx].flags & DEVGEN_LOG_ACTIVATED) {
+						yContext->genericInfos[devydx].flags |= DEVGEN_LOG_PENDING;
 #ifdef DEBUG_NOTIFICATION
-                    dbglog("notify device log for %s\n",dev->infos.serial);
+						dbglog("notify device log for %s\n",dev->infos.serial);
 #endif
-                }
+					}
 #ifdef DEBUG_NOTIFICATION
-                else {
-                    dbglog("notify device log for %s dropped\n",dev->infos.serial);
-                }
+					else {
+						dbglog("notify device log for %s dropped\n",dev->infos.serial);
+					}
 #endif
-                yLeaveCriticalSection(&yContext->genericInfos[devydx].cs);
+					yLeaveCriticalSection(&yContext->genericInfos[devydx].cs);
+				}
 
             }
             if(yContext->rawNotificationCb){
@@ -1713,6 +1719,8 @@ static void yDispatchReport(yPrivDeviceSt *dev, u8 *data, int pktsize)
             USB_Report_Pkt *report = (USB_Report_Pkt*) data;
             int  len = report->extraLen + 1;
             int  devydx = wpGetDevYdx(serialref);
+			if (devydx < 0)
+				return;
             if (report->funYdx == 0xf) {
                 u32 t = data[1] + 0x100u * data[2] + 0x10000u * data[3] + 0x1000000u * data[4];
                 yContext->genericInfos[devydx].deviceTime = (double)t + data[5] / 250.0;
@@ -1894,18 +1902,17 @@ static int StartDevice(yPrivDeviceSt *dev,char *errmsg)
                 dev->rstatus =YRUN_AVAIL;
             }
             if (yapiGetTickCount()>=timeout){
-                return YERRMSG(YAPI_TIMEOUT,"Negotiation failed (device did not respond for 10 secs");
+                yStreamShutdown(dev);
+                return YERRMSG(YAPI_TIMEOUT, "Negotiation failed (device did not respond for 10 secs");
             }
         } while(res==YAPI_SUCCESS && dev->rstatus !=YRUN_AVAIL);
-        
-        if (YISERR(streamres)){
-            continue;
-        }
-        if(dev->rstatus ==YRUN_AVAIL){
+        if(res==YAPI_SUCCESS && dev->rstatus ==YRUN_AVAIL){
             return YAPI_SUCCESS;
+        } else{
+            yStreamShutdown(dev);
         }
     }
-    return YERRMSG(YAPI_IO_ERROR,"Negotiation failed");
+    return YERRMSG(YAPI_IO_ERROR, "Negotiation failed");
 }
 
 
@@ -2285,8 +2292,10 @@ int yUsbFree(yContextSt *ctx,char *errmsg)
     while(p) {
         if(p->dStatus ==YDEV_WORKING){
             int csTaken=yTryEnterCriticalSection(&p->acces_state);
+            yStrRef serialref = yHashTestStr(p->infos.serial);
             p->dStatus = YDEV_UNPLUGGED;
             StopDevice(p,NULL);
+            wpSafeUnregister(serialref);
             if(csTaken)
                 yLeaveCriticalSection(&p->acces_state);
         }
@@ -2606,7 +2615,7 @@ int  yUsbReadNonBlock(YIOHDL *ioghdl, char *buffer, int len,char *errmsg)
 int  yUsbReadBlock(YIOHDL *ioghdl, char *buffer, int len,u64 blockUntil,char *errmsg)
 {
     yPrivDeviceSt *p;
-    u16 readed;
+    u16 readed, avail;
     int res;
  
     YPERF_ENTER(yUsbReadBlock);
@@ -2626,7 +2635,9 @@ int  yUsbReadBlock(YIOHDL *ioghdl, char *buffer, int len,u64 blockUntil,char *er
         YPERF_LEAVE(yUsbReadBlock);
         return YERRMSG(YAPI_INVALID_ARGUMENT,"Operation not supported on async IO");
     }
-    if(YISERR(res=yDispatchReceive(p,blockUntil,errmsg))){
+
+    avail = yFifoGetUsed(&p->http_fifo);
+    if(YISERR(res=yDispatchReceive(p,(avail==0 ? blockUntil : 0) ,errmsg))){
         devReportError(PUSH_LOCATION p,errmsg);
         YPERF_LEAVE(yUsbReadBlock);
         return res;

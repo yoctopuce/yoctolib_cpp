@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 14910 2014-02-12 08:36:10Z seb $
+ * $Id: ytcp.c 15940 2014-04-26 14:35:09Z mvuilleu $
  *
  * Implementation of a client TCP stack
  *
@@ -408,6 +408,7 @@ void yTcpInitReq(struct _TcpReqSt *req, struct _NetHubSt *hub)
     memset(req, 0, sizeof(struct _TcpReqSt));
     req->hub = hub;
     req->skt = INVALID_SOCKET;
+    req->reuseskt = INVALID_SOCKET;
     req->replybufsize = 1024;
     req->replybuf = yMalloc(req->replybufsize);
     yInitializeCriticalSection(&req->access);
@@ -487,12 +488,17 @@ static int yTcpOpenReqEx(struct _TcpReqSt *req, char *errmsg)
     req->replysize = 0;
     req->errcode = YAPI_SUCCESS;
     
-    res = yTcpOpen(&req->skt, ip, port, errmsg);
-    if(YISERR(res)) {
-        // yTcpOpen has reset the socket to INVALID
-        yTcpClose(req->skt);
-        req->skt = INVALID_SOCKET;        
-        return res;
+    if(req->reuseskt != INVALID_SOCKET) {
+        req->skt = req->reuseskt;
+        req->reuseskt = INVALID_SOCKET;
+    } else {
+        res = yTcpOpen(&req->skt, ip, port, errmsg);
+        if(YISERR(res)) {
+            // yTcpOpen has reset the socket to INVALID
+            yTcpClose(req->skt);
+            req->skt = INVALID_SOCKET;        
+            return res;
+        }
     }
 
     p = req->headerbuf;
@@ -533,7 +539,11 @@ static int yTcpOpenReqEx(struct _TcpReqSt *req, char *errmsg)
         p = auth+strlen(auth);
     }
     yLeaveCriticalSection(&req->hub->authAccess);
-    YSTRCPY(p, (int)(req->headerbuf+req->headerbufsize-p), "Connection: close\r\n\r\n");
+    if(req->keepalive) {
+        YSTRCPY(p, (int)(req->headerbuf+req->headerbufsize-p), "\r\n");
+    } else {
+        YSTRCPY(p, (int)(req->headerbuf+req->headerbufsize-p), "Connection: close\r\n\r\n");
+    }
     //write header
     res = yTcpWrite(req->skt, req->headerbuf, (int)strlen(req->headerbuf), errmsg);
     if(YISERR(res)) {
@@ -571,13 +581,20 @@ int  yTcpOpenReq(struct _TcpReqSt *req, const char *request, int reqlen, yapiReq
         yEnterCriticalSection(&req->access);
     }
     
-	YPERF_TCP_LEAVE(TCPOpenReq_wait);    
+	YPERF_TCP_LEAVE(TCPOpenReq_wait);
+    
+    req->keepalive = 0;
     if (request[0]=='G' && request[1]=='E' && request[2]=='T'){
         //for GET request discard all exept the first line
         for(i = 0; i < reqlen; i++) {
             if(request[i] == '\r') {
                 reqlen = i;
                 break;
+            }
+        }
+        if(i > 3) {
+            if(request[i-3] == '&' && request[i-2] == '.' && request[i-1] == ' ') {
+                req->keepalive = 1;
             }
         }
         req->bodysize = 0;
@@ -685,11 +702,10 @@ int yTcpSelectReq(struct _TcpReqSt **reqs, int size, u64 ms, WakeUpSocket *wuce,
                 if(res < 0) {
                     // any connection closed by peer ends up with YAPI_NO_MORE_DATA
                     yTcpClose(req->skt);
+                    req->keepalive = 0;
                     if (req->callback) {
-                        if (res == YAPI_NO_MORE_DATA) {
-                            res = YAPI_SUCCESS;
-                        }
-                        req->callback(req->context, res, req->replybuf, req->replysize);
+                        int callbackRes = (res == YAPI_NO_MORE_DATA ? YAPI_SUCCESS : res);
+                        req->callback(req->context, callbackRes, req->replybuf, req->replysize);
                     }
                     req->skt = INVALID_SOCKET;
                     ySetEvent(&req->finished);
@@ -699,7 +715,20 @@ int yTcpSelectReq(struct _TcpReqSt **reqs, int size, u64 ms, WakeUpSocket *wuce,
                     req->replysize += res;
                     if(req->replypos < 0) {
                         // Need to analyze http headers
-                        if(req->replysize >= 4 && !memcmp(req->replybuf, "OK\r\n", 4)) {
+                        if(req->replysize == 8 && !memcmp(req->replybuf, "0K\r\n\r\n\r\n", 8)) {
+                            // successful abbreviated reply (keepalive)
+                            req->replypos = 0;
+                            req->keepalive = 0;
+                            if (req->callback) {
+                                req->replybuf[0] = 'O';
+                                req->callback(req->context, YAPI_SUCCESS, req->replybuf, req->replysize);
+                            }
+                            req->reuseskt = req->skt;
+                            req->skt = INVALID_SOCKET;
+                            ySetEvent(&req->finished);
+                            req->errcode = YERRTO(YAPI_NO_MORE_DATA,req->errmsg);
+                            req->callback = NULL;
+                        } else if(req->replysize >= 4 && !memcmp(req->replybuf, "OK\r\n", 4)) {
                             // successful short reply, let it go through
                             req->replypos = 0;
                         } else if(req->replysize >= 12) {
@@ -838,6 +867,9 @@ void yTcpFreeReq(struct _TcpReqSt *req)
 {
     if(req->skt != INVALID_SOCKET) {
         yTcpClose(req->skt);
+    }
+    if(req->reuseskt != INVALID_SOCKET) {
+        yTcpClose(req->reuseskt);
     }
     if(req->headerbuf)  yFree(req->headerbuf);
     if(req->bodybuf)    yFree(req->bodybuf);

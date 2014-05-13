@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yfifo.c 12321 2013-08-13 14:56:24Z mvuilleu $
+ * $Id: yfifo.c 15698 2014-04-04 10:31:31Z mvuilleu $
  *
  * Implementation of a generic fifo queue 
  *
@@ -191,7 +191,7 @@ u16 yPopFifo(yFifoBuf *buf, u8 *data, u16 datalen)
 #endif
 
 
-u16 yForceFifoEx(yFifoBuf *buf, const u8 *data, u16 datalen)
+static u16 yForceFifoEx(yFifoBuf *buf, const u8 *data, u16 datalen)
 {
     u16 freespace;
     freespace = buf->buffsize - buf->datasize;
@@ -207,19 +207,27 @@ u16 yForceFifoEx(yFifoBuf *buf, const u8 *data, u16 datalen)
     return yPushFifoEx(buf, data, datalen);
 }
 
-#ifdef YFIFO_USE_MUTEX    
-
-u16 yForceFifo(yFifoBuf *buf, const u8 *data, u16 datalen)
+u16 yForceFifo(yFifoBuf *buf, const u8 *data, u16 datalen, u32 *absCounter)
 {
     u16 res;
+
+#ifdef MICROCHIP_API
+//    _CLI();
+#else
     yFifoEnterCS(buf);
-    res = yForceFifoEx(buf,data,datalen);  
+#endif
+    
+    res = yForceFifoEx(buf,data,datalen);
+    *absCounter += res;
+
+#ifdef MICROCHIP_API
+//    _STI();
+#else
     yFifoLeaveCS(buf);
-    return res;
-}
 #endif
 
-
+    return res;
+}
 
 u16 yPeekFifoEx(yFifoBuf *buf, u8 *data, u16 datalen, u16 startofs)
 {

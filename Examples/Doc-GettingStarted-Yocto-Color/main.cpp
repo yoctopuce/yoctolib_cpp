@@ -14,8 +14,10 @@ static void usage(void)
     cout << "Eg." << endl;
     cout << "   demo any FF1493 " << endl;
     cout << "   demo YRGBLED1-123456 red" << endl;
-    u64 now = yGetTickCount();    // dirty active wait loop 
-	while (yGetTickCount()-now<3000);
+    u64 now = yGetTickCount();
+	while (yGetTickCount()-now<3000) {
+        // wait 3 sec to show the message
+    }
     exit(1);
 }
 

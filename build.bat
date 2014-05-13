@@ -1,5 +1,6 @@
 @ECHO OFF
 if "%VCINSTALLDIR%"=="" call "%VS100COMNTOOLS%vsvars32.bat"
+if "%VCINSTALLDIR%"=="" call "%VS110COMNTOOLS%vsvars32.bat"
 if "%VCINSTALLDIR%"=="" call "%VS120COMNTOOLS%vsvars32.bat"
 echo.
 echo Build yapi static and dynamic libray for C++

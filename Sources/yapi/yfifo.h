@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yfifo.h 12321 2013-08-13 14:56:24Z mvuilleu $
+ * $Id: yfifo.h 15698 2014-04-04 10:31:31Z mvuilleu $
  *
   * Declaration of a generic fifo queue 
  *
@@ -92,13 +92,13 @@ void yFifoCleanup(yFifoBuf *buf);
 // Ex version do not have muxtex
 void yFifoEmptyEx(yFifoBuf *buf);
 u16  yPushFifoEx(yFifoBuf *buf, const u8 *data, u16 datalen);
-u16  yForceFifoEx(yFifoBuf *buf, const u8 *data, u16 datalen);
 u16  yPopFifoEx(yFifoBuf *buf, u8 *data, u16 datalen);
 u16  yPeekFifoEx(yFifoBuf *buf, u8 *data, u16 datalen, u16 startofs);
 u16  yPeekContinuousFifoEx(yFifoBuf *buf, u8 **ptr, u16 startofs);
 u16  ySeekFifoEx(yFifoBuf *buf, const u8* pattern, u16 patlen,  u16 startofs, u16 searchlen, u8 bTextCompare);
 u16  yFifoGetUsedEx(yFifoBuf *buf);
 u16  yFifoGetFreeEx(yFifoBuf *buf);
+u16  yForceFifo(yFifoBuf *buf, const u8 *data, u16 datalen, u32 *absCounter);
 
 #ifdef YFIFO_USE_MUTEX
 // mutex non-Ex function call yFifoEnterCs and yFifoLeaveCs
@@ -108,7 +108,6 @@ void yFifoEnterCS(yFifoBuf *buf);
 void yFifoLeaveCS(yFifoBuf *buf);
 void yFifoEmpty(yFifoBuf *buf);
 u16  yPushFifo(yFifoBuf *buf, const u8 *data, u16 datalen);
-u16  yForceFifo(yFifoBuf *buf, const u8 *data, u16 datalen);
 u16  yPopFifo(yFifoBuf *buf, u8 *data, u16 datalen);
 u16  yPeekFifo(yFifoBuf *buf, u8 *data, u16 datalen, u16 startofs);
 u16  yPeekContinuousFifo(yFifoBuf *buf, u8 **ptr,u16 startofs);
@@ -120,15 +119,14 @@ u16  yFifoGetFree(yFifoBuf *buf);
 // no mutex -> map function to Ex version
 #define yFifoEnterCS(buf)
 #define yFifoLeaveCS(buf)
-#define yFifoEmpty(buf)							yFifoEmptyEx(buf)
-#define yPushFifo(buf,data, datalen)			yPushFifoEx(buf,data,datalen)
-#define yForceFifo(buf, data, datalen)			yForceFifoEx(buf,data,datalen)
-#define yPopFifo(buf, data, datalen)			yPopFifoEx(buf,data,datalen)
-#define yPeekFifo(buf, data, datalen, startofs)	yPeekFifoEx(buf,data,datalen,startofs)
-#define yPeekContinuousFifo(buf,ptr,startofs)	yPeekContinuousFifoEx(buf,ptr,startofs)
-#define ySeekFifo(buf, pattern, patlen,  startofs, searchlen, bTextCompare)	ySeekFifoEx(buf,pattern,patlen,startofs,searchlen,bTextCompare)
-#define yFifoGetUsed(buf)						yFifoGetUsedEx(buf)
-#define yFifoGetFree(buf)						yFifoGetFreeEx(buf)
+#define yFifoEmpty(buf)                                                     yFifoEmptyEx(buf)
+#define yPushFifo(buf,data, datalen)                                        yPushFifoEx(buf,data,datalen)
+#define yPopFifo(buf, data, datalen)                                        yPopFifoEx(buf,data,datalen)
+#define yPeekFifo(buf, data, datalen, startofs)                             yPeekFifoEx(buf,data,datalen,startofs)
+#define yPeekContinuousFifo(buf,ptr,startofs)                               yPeekContinuousFifoEx(buf,ptr,startofs)
+#define ySeekFifo(buf, pattern, patlen,  startofs, searchlen, bTextCompare) ySeekFifoEx(buf,pattern,patlen,startofs,searchlen,bTextCompare)
+#define yFifoGetUsed(buf)                                                   yFifoGetUsedEx(buf)
+#define yFifoGetFree(buf)                                                   yFifoGetFreeEx(buf)
 #endif
 //misc functions
 void yxtoa(u32 x, char *buf, u16 len);

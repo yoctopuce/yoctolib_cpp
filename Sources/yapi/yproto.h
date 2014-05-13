@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 15321 2014-03-07 14:32:14Z seb $
+ * $Id: yproto.h 15940 2014-04-26 14:35:09Z mvuilleu $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -652,6 +652,8 @@ typedef struct _TcpReqSt {
     int                 retryCount;     // number of authorization attempts
     int                 errcode;        // in case an error occured
     char                errmsg[YOCTO_ERRMSG_LEN];
+    int                 keepalive;      // no output data expected, and connection can be reused after query is completed
+    YSOCKET             reuseskt;       // socket to reuse for next query, when keepalive is true
     yapiRequestAsyncCallback callback;
     void                *context;
 } TcpReqSt;
@@ -720,7 +722,8 @@ typedef struct{
 extern char  ytracefile[];
 extern yContextSt  *yContext;
 
-YRETCODE yapiPullDeviceLog(const char *device);
+YRETCODE yapiPullDeviceLogEx(int devydx);
+YRETCODE yapiPullDeviceLog(const char *serial);
 
 /*****************************************************************
  * PLATFORM SPECIFIC USB code

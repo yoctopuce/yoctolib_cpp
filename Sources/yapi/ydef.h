@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 15170 2014-02-28 16:39:24Z seb $
+ * $Id: ydef.h 16026 2014-05-02 08:43:10Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -206,14 +206,12 @@ typedef s32             YUSBDEV;
 #define YIO_DEFAULT_USB_TIMEOUT 2000u
 #define YIO_DEFAULT_TCP_TIMEOUT 5000u
 
+#ifdef MICROCHIP_API
+// same as yhub devhdl
+typedef s16 YIOHDL;
+#else
 // make sure this union is no more than 8 bytes, YIOHDL is allocated used in all foreign APIs
 typedef struct{
-#ifdef MICROCHIP_API
-    union {
-    YYSBIO  ysb;
-    YTRNKIO trk;
-    };
-#else
     u8      type;
     u8      pad8;
     u16     pad16;
@@ -221,11 +219,10 @@ typedef struct{
         u32     tcpreqidx;
         YUSBIO  hdl;
     };
-#endif
 } YIOHDL;
+#endif
 
 #define YIOHDL_SIZE (sizeof(YIOHDL))
-
 
 #define INVALID_YHANDLE (-1)
 
@@ -408,7 +405,6 @@ typedef struct {
 
 #define USB_PKT_SIZE            64
 #define YPKT_USB_VERSION_BCD    0x0206
-
 #define TO_SAFE_U16(safe,unsafe)        {(safe).low = (unsafe)&0xff; (safe).high=(unsafe)>>8;}
 #define FROM_SAFE_U16(safe,unsafe)      {(unsafe) = (safe).low |((u16)((safe).high)<<8);}
 
@@ -417,6 +413,8 @@ typedef struct {
     u8 high;
 } SAFE_U16;
 
+#ifndef CPU_BIG_ENDIAN
+
 #define YPKTNOMSK   (0x7)
 typedef struct {
     u8 pktno    : 3;
@@ -424,7 +422,15 @@ typedef struct {
     u8 pkt      : 2;
     u8 size     : 6;
 } YSTREAM_Head;
-
+#else
+#define YPKTNOMSK   (0x7)
+typedef struct {
+    u8 stream   : 5;
+    u8 pktno    : 3;
+    u8 size     : 6;
+    u8 pkt      : 2;
+} YSTREAM_Head;
+#endif
 #define YPKT_STREAM         0
 #define YPKT_CONF           1
 
@@ -477,6 +483,7 @@ typedef union{
 #define NOTIFY_PKT_STREAMREADY 6
 #define NOTIFY_PKT_LOG         7
 #define NOTIFY_PKT_FUNCNAMEYDX 8
+#define NOTIFY_PKT_PRODINFO    9
 
 typedef struct{
     char        serial[YOCTO_SERIAL_LEN];
@@ -509,6 +516,11 @@ typedef struct{
 }Notification_name;
 
 typedef char    Notification_product[YOCTO_PRODUCTNAME_LEN];
+
+typedef struct {
+    char        name[YOCTO_PRODUCTNAME_LEN];
+    SAFE_U16    deviceid;
+}Notification_prodinfo;
 
 typedef struct {
     char        childserial[YOCTO_SERIAL_LEN];
@@ -548,6 +560,7 @@ typedef union {
         union {
             Notification_name           namenot;
             Notification_product        productname;
+            Notification_prodinfo       productinfo;
             Notification_child          childserial;
             Notification_firmware       firmwarenot;
             Notification_funcname       funcnamenot;
@@ -567,6 +580,8 @@ typedef union {
 #define NOTIFY_NETPKT_STREAMREADY '6'
 #define NOTIFY_NETPKT_LOG         '7'
 #define NOTIFY_NETPKT_FUNCNAMEYDX '8'
+#define NOTIFY_NETPKT_PRODINFO    '9'
+#define NOTIFY_NETPKT_DEVLOGYDX   'w'
 #define NOTIFY_NETPKT_TIMEVALYDX  'x'
 #define NOTIFY_NETPKT_FUNCVALYDX  'y'
 #define NOTIFY_NETPKT_TIMEAVGYDX  'z'
@@ -581,6 +596,7 @@ typedef union {
 
 #define NOTIFY_PKT_NAME_LEN             (sizeof(Notification_header) + sizeof(Notification_name))
 #define NOTIFY_PKT_PRODNAME_LEN         (sizeof(Notification_header) + sizeof(Notification_product))
+#define NOTIFY_PKT_PRODINFO_LEN         (sizeof(Notification_header) + sizeof(Notification_prodinfo))
 #define NOTIFY_PKT_CHILD_LEN            (sizeof(Notification_header) + sizeof(Notification_child))
 #define NOTIFY_PKT_FIRMWARE_LEN         (sizeof(Notification_header) + sizeof(Notification_firmware))
 #define NOTIFY_PKT_STREAMREADY_LEN      (sizeof(Notification_header) + sizeof(u8))
@@ -599,9 +615,15 @@ typedef union {
 typedef struct {
     union {
       struct {
+#ifndef CPU_BIG_ENDIAN
         u8  funYdx:4;   // (LOWEST NIBBLE) function index on device, 0xf==timestamp
         u8  extraLen:3; // Number of extra data bytes in addition to first one
         u8  isAvg:1;    // (HIGHEST BIT) 0:one immediate value (1-4 bytes), 1:min/avg/max (2+4+2 bytes)
+#else 
+        u8  isAvg:1;    // (HIGHEST BIT) 0:one immediate value (1-4 bytes), 1:min/avg/max (2+4+2 bytes)
+        u8  extraLen:3; // Number of extra data bytes in addition to first one
+        u8  funYdx:4;   // (LOWEST NIBBLE) function index on device, 0xf==timestamp
+#endif
       };
       u8    head;
     };

@@ -41,11 +41,17 @@
 
 WINDOWS_SDK_32 = $(WINDOWSSDKDIR)
 
-WINDOWS_SDK_64 =C:\Program Files\Microsoft SDKs\Windows\v7.1\ 
-
 LINKWITH32 =  /LIBPATH:"$(VCINSTALLDIR)lib" /LIBPATH:"$(VCINSTALLDIR)atlmfc\lib" /LIBPATH:"$(WINDOWS_SDK_32)lib"
 
+!IF !EXISTS(c:\Program Files\Microsoft SDKs\Windows\v7.1\)
+WINDOWS_SDK_64 = $(WINDOWSSDKDIR) 
+CC64 = "$(VCINSTALLDIR)bin\x86_amd64\cl"
+LINKWITH64 =  /LIBPATH:"$(VCINSTALLDIR)lib\amd64" /LIBPATH:"$(VCINSTALLDIR)atlmfc\lib\amd64" /LIBPATH:"$(WINDOWS_SDK_64)lib\winv6.3\um\x64"
+!ELSE
+WINDOWS_SDK_64 = c:\Program Files\Microsoft SDKs\Windows\v7.1\ 
+CC64 = "$(VCINSTALLDIR)bin\amd64\cl"
 LINKWITH64 =  /LIBPATH:"$(VCINSTALLDIR)lib\amd64" /LIBPATH:"$(VCINSTALLDIR)atlmfc\lib\amd64" /LIBPATH:"$(WINDOWS_SDK_64)lib\x64"
+!ENDIF
 
 OUTDIR32 = windows\ 
 
@@ -70,7 +76,7 @@ YOCTO_API_OBJS =  $(OD)yocto_api.obj $(OD)yocto_anbutton.obj $(OD)yocto_carbondi
 	$(OD)yocto_servo.obj $(OD)yocto_temperature.obj $(OD)yocto_voc.obj $(OD)yocto_voltage.obj \
 	$(OD)yocto_wakeupmonitor.obj $(OD)yocto_wakeupschedule.obj $(OD)yocto_watchdog.obj $(OD)yocto_wireless.obj $(OD)yocto_digitalio.obj \
 	$(OD)yocto_accelerometer.obj $(OD)yocto_magnetometer.obj $(OD)yocto_refFrame.obj $(OD)yocto_tilt.obj $(OD)yocto_compass.obj \
-	$(OD)yocto_gyro.obj $(OD)yocto_pwmoutput.obj $(OD)yocto_pwmpowersource.obj
+	$(OD)yocto_gyro.obj $(OD)yocto_pwmoutput.obj $(OD)yocto_pwmpowersource.obj $(OD)yocto_altitude.obj $(OD)yocto_motor.obj
 	
 YOCTO_API_OBJS32 = $(YOCTO_API_OBJS:arch_type=windows\obj_dir)
 
@@ -102,8 +108,6 @@ ALL_OBJS_DLL64	= $(YAPI_OBJS_DLL64) $(YOCTO_API_OBJS_DLL64)
 
 CC32 = "$(VCINSTALLDIR)\bin\cl"
 
-CC64 = "$(VCINSTALLDIR)bin\amd64\cl"
-
 {$(YAPI_DIR)}.c{$(OBJDIR32)}.obj: 
 	$(CC32) $(CFLAGS) /nologo /Zl /Fo$@ /c $< 
 
@@ -111,7 +115,7 @@ CC64 = "$(VCINSTALLDIR)bin\amd64\cl"
 	$(CC32) $(CPPFLAGS) /nologo /EHsc /Zl /Fo$@ /c $< 
 
 {$(YAPI_DIR)}.c{$(OBJDIR_DLL32)}.obj: 
-	$(CC32) $(CFLAGS) /D GENERATE_DLL  /W3 /WX- /O2 /Oi /Oy- /Gy /GL /MT /nologo /Fo$@ /c $< 
+	$(CC32) $(CFLAGS) /D GENERATE_DLL /W3 /WX- /O2 /Oi /Oy- /Gy /GL /MT /nologo /Fo$@ /c $< 
 
 {$(YOCTO_API_DIR)}.cpp{$(OBJDIR_DLL32)}.obj: 
 	$(CC32) $(CPPFLAGS) /D GENERATE_DLL /nologo /EHsc  /Fo$@ /c $< 
@@ -123,7 +127,7 @@ CC64 = "$(VCINSTALLDIR)bin\amd64\cl"
 	$(CC64) $(CPPFLAGS) /nologo /EHsc /Zl /Fo$@ /c $< 
 
 {$(YAPI_DIR)}.c{$(OBJDIR_DLL64)}.obj: 
-	$(CC64) $(CFLAGS) /D GENERATE_DLL  /W3 /WX- /O2 /Oi /Oy- /Gy /GL /MT /nologo /Fo$@ /c $< 
+	$(CC64) $(CFLAGS) /D GENERATE_DLL /W3 /WX- /O2 /Oi /Oy- /Gy /GL /MT /nologo /Fo$@ /c $< 
 
 {$(YOCTO_API_DIR)}.cpp{$(OBJDIR_DLL64)}.obj: 
 	$(CC64) $(CPPFLAGS) /D GENERATE_DLL /nologo /EHsc  /Fo$@ /c $< 
@@ -165,7 +169,7 @@ $(YAPIOUT32)yapi-static.lib: $(YAPI_OBJS32)
 
 $(YAPIOUT32)yapi.dll: $(YAPI_OBJS_DLL32) $(YAPI_DIR)yapiresource.res
 	@echo building dll $@
-	@$(CC32) $(CFLAGS) $**  /W3 /WX- /O2 /Oi /Oy- /MT /Gy /GL /nologo /Fe$@ /Fa(R) /link /DLL /DEF:$(YAPI_DIR)yapi.def
+	@$(CC32) $(CFLAGS) $** /W3 /WX- /O2 /Oi /Oy- /MT /Gy /GL /nologo /Fe$@ /Fa(R) /link /DLL /DEF:$(YAPI_DIR)yapi.def
 
 $(OUTDIR64)yocto-static.lib: $(ALL_OBJS64)
 	@echo building lib ($@)

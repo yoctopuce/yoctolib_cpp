@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.h 14282 2014-01-09 18:16:26Z mvuilleu $
+ * $Id: yhash.h 16026 2014-05-02 08:43:10Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -61,6 +61,7 @@ extern "C" {
 
 #define YSTRREF_EMPTY_STRING  0x00ff /* yStrRef value for the empty string    */
 #define YSTRREF_MODULE_STRING 0x0020 /* yStrRef value for the string 'Module' */
+#define YSTRREF_mODULE_STRING 0x00a3 /* yStrRef value for the string 'Module' */
 
 typedef enum {
     Y_WP_SERIALNUMBER,
@@ -107,8 +108,13 @@ typedef struct {
     yBlkHdl     nextPtr;
     union {
       struct {
+#ifndef CPU_BIG_ENDIAN
         yStrRef serialNum;
         yStrRef funcId;
+#else
+        yStrRef funcId;
+        yStrRef serialNum;
+#endif      
       };
       YAPI_FUNCTION hwId;
     };
@@ -217,6 +223,7 @@ void    wpAllowUnregisterEx(void);
 int     wpMarkForUnregister(yStrRef serial);
 u16     wpEntryCount(void);
 int     wpGetDevYdx(yStrRef serial);
+YAPI_DEVICE wpSearchEx(yStrRef strref);
 YAPI_DEVICE wpSearch(const char *device_str);
 YAPI_DEVICE wpSearchByNameHash(yStrRef strref);
 YAPI_DEVICE wpSearchByUrl(const char *host, const char *rootUrl);

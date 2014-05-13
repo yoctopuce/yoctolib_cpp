@@ -142,6 +142,12 @@
         <Unit filename="..\..\..\Sources\yocto_accelerometer.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
+        <Unit filename="..\..\..\Sources\yocto_altitude.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_altitude.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
         <Unit filename="..\..\..\Sources\yocto_anbutton.h">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
@@ -242,6 +248,12 @@
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
         <Unit filename="..\..\..\Sources\yocto_magnetometer.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_motor.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_motor.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
         <Unit filename="..\..\..\Sources\yocto_network.h">

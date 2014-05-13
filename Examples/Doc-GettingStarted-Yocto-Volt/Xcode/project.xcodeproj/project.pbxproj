@@ -12,6 +12,8 @@
 		B8447F5314726957008342F7 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B8447F5214726957008342F7 /* IOKit.framework */; };
 		B8447F5514726963008342F7 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B8447F5414726963008342F7 /* CoreFoundation.framework */; };
 		B857C03C17E0C73D00515071 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B857C03B17E0C73D00515071 /* main.cpp */; };
+		B8989EB3191BEAF600E2585B /* yocto_altitude.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8989EB1191BEAF600E2585B /* yocto_altitude.cpp */; };
+		B8989EB6191BEB0900E2585B /* yocto_motor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8989EB4191BEB0900E2585B /* yocto_motor.cpp */; };
 		B8A727E217E0CD3A005705C0 /* yapi.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A7278D17E0CD3A005705C0 /* yapi.c */; };
 		B8A727E317E0CD3A005705C0 /* yfifo.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A7279217E0CD3A005705C0 /* yfifo.c */; };
 		B8A727E417E0CD3A005705C0 /* yhash.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A7279417E0CD3A005705C0 /* yhash.c */; };
@@ -82,6 +84,10 @@
 		B8447F5214726957008342F7 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		B8447F5414726963008342F7 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		B857C03B17E0C73D00515071 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../main.cpp; sourceTree = "<group>"; };
+		B8989EB1191BEAF600E2585B /* yocto_altitude.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_altitude.cpp; path = ../../../Sources/yocto_altitude.cpp; sourceTree = "<group>"; };
+		B8989EB2191BEAF600E2585B /* yocto_altitude.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_altitude.h; path = ../../../Sources/yocto_altitude.h; sourceTree = "<group>"; };
+		B8989EB4191BEB0900E2585B /* yocto_motor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_motor.cpp; path = ../../../Sources/yocto_motor.cpp; sourceTree = "<group>"; };
+		B8989EB5191BEB0900E2585B /* yocto_motor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_motor.h; path = ../../../Sources/yocto_motor.h; sourceTree = "<group>"; };
 		B8A7278D17E0CD3A005705C0 /* yapi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = yapi.c; sourceTree = "<group>"; };
 		B8A7278E17E0CD3A005705C0 /* yapi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = yapi.h; sourceTree = "<group>"; };
 		B8A7278F17E0CD3A005705C0 /* yapiresource.rc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = yapiresource.rc; sourceTree = "<group>"; };
@@ -201,6 +207,8 @@
 				B8A7278C17E0CD3A005705C0 /* yapi */,
 				B8DB381F18C0D5FB00CD54ED /* yocto_accelerometer.cpp */,
 				B8DB382018C0D5FB00CD54ED /* yocto_accelerometer.h */,
+				B8989EB1191BEAF600E2585B /* yocto_altitude.cpp */,
+				B8989EB2191BEAF600E2585B /* yocto_altitude.h */,
 				B8A727A817E0CD3A005705C0 /* yocto_anbutton.cpp */,
 				B8A727A917E0CD3A005705C0 /* yocto_anbutton.h */,
 				B8A727AA17E0CD3A005705C0 /* yocto_api.cpp */,
@@ -237,6 +245,8 @@
 				B8A727C517E0CD3A005705C0 /* yocto_lightsensor.h */,
 				B8DB382518C0D5FB00CD54ED /* yocto_magnetometer.cpp */,
 				B8DB382618C0D5FB00CD54ED /* yocto_magnetometer.h */,
+				B8989EB4191BEB0900E2585B /* yocto_motor.cpp */,
+				B8989EB5191BEB0900E2585B /* yocto_motor.h */,
 				B8A727C617E0CD3A005705C0 /* yocto_network.cpp */,
 				B8A727C717E0CD3A005705C0 /* yocto_network.h */,
 				B8A727C817E0CD3A005705C0 /* yocto_oscontrol.cpp */,
@@ -433,6 +443,8 @@
 				B8DB383018C0D5FB00CD54ED /* yocto_tilt.cpp in Sources */,
 				B82F4E8B18C9D62A009320CE /* yocto_pwmoutput.cpp in Sources */,
 				B82F4E8C18C9D62A009320CE /* yocto_pwmpowersource.cpp in Sources */,
+				B8989EB3191BEAF600E2585B /* yocto_altitude.cpp in Sources */,
+				B8989EB6191BEB0900E2585B /* yocto_motor.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

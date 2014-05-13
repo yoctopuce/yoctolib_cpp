@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.c 15448 2014-03-14 11:08:36Z mvuilleu $
+ * $Id: ykey.c 15697 2014-04-04 10:30:56Z mvuilleu $
  *
  * Implementation of standard key computations
  *
@@ -49,25 +49,23 @@
 
 static char btohexa_low_high(u8 b)
 {
-	b >>= 4;
-	return (b>0x9u) ? b+'a'-10:b+'0';
+    b >>= 4;
+    return (b>9u) ? b+'a'-10 : b+'0';
 }
 
 static char btohexa_low_low(u8 b)
 {
-	b &= 0x0F;
-	return (b>9u) ? b+'a'-10:b+'0';
+    b &= 0x0F;
+    return (b>9u) ? b+'a'-10 : b+'0';
 }
-
 
 void bin2str(char *to, const u8 *p, u16 len, u8 addnull) 
 {    
-  	for (; len--; p++) {
+    for (; len--; p++) {
     	*to++ = btohexa_low_high(*p);
     	*to++ = btohexa_low_low(*p);
-	}
-	if(addnull)
-  		*to = '\0';
+    }
+    if(addnull) *to = '\0';
 }
 
 #if !defined(MICROCHIP_API) || defined(HTTP_ON_NET)

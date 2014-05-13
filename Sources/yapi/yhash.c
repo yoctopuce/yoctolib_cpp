@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 14910 2014-02-12 08:36:10Z seb $
+ * $Id: yhash.c 15941 2014-04-26 15:20:33Z mvuilleu $
  *
  * Simple hash tables and device/function information store
  *
@@ -188,7 +188,7 @@ static u16 fletcher16(const u8 *data, u16 len, u16 virtlen)
 
 void yHashInit(void)
 {
-    yStrRef empty, module;
+    yStrRef empty, Module, module;
     u16     i;
 
     HLOGF(("yHashInit\n"));
@@ -208,11 +208,18 @@ void yHashInit(void)
 
     // Always init hast table with empty string and Module string
     // This ensures they always get the same magic hash value
-    empty = yHashPutStr("");
-    YASSERT(empty == YSTRREF_EMPTY_STRING);
-    module = yHashPutStr("Module");
-    YASSERT(module == YSTRREF_MODULE_STRING);
-    SerialRef = yHashPutStr(SerialNumberStr);    
+    empty  = yHashPutStr("");
+    Module = yHashPutStr("Module");
+    module = yHashPutStr("module");
+    if(empty != YSTRREF_EMPTY_STRING ||
+       Module != YSTRREF_MODULE_STRING ||
+       module != YSTRREF_mODULE_STRING) {
+        // This should never ever happen, something is really weird
+        // No log is possible here (called within yapiInitAPI), so
+        // the best we can do to help debugging is a tight loop.
+        while(1);
+    }
+    SerialRef = yHashPutStr(SerialNumberStr);
     
     yYpListHead = yBlkAlloc();
     YC(yYpListHead).catYdx  = 0;
@@ -475,7 +482,9 @@ yUrlRef yHashUrl(const char *url, const char *rootUrl, u8 testonly,char *errmsg)
         if(pos && pos < end ){
             len= (int)(end-posplus);
             if(len>7){
+#ifndef MICROCHIP_API
                 if(errmsg) YSTRCPY(errmsg,YOCTO_ERRMSG_LEN,"invalid port");
+#endif
                 return INVALID_HASH_IDX;
             }
             memcpy(buffer,posplus,len);
@@ -490,7 +499,9 @@ yUrlRef yHashUrl(const char *url, const char *rootUrl, u8 testonly,char *errmsg)
         if(pos && pos < end ){
             hostlen = (int)(pos-url);
             if(hostlen>HASH_BUF_SIZE){
+#ifndef MICROCHIP_API
                 if(errmsg) YSTRCPY(errmsg,YOCTO_ERRMSG_LEN,"hostname too long");
+#endif
                 return INVALID_HASH_IDX;
             }
             host = url;
@@ -509,7 +520,9 @@ yUrlRef yHashUrl(const char *url, const char *rootUrl, u8 testonly,char *errmsg)
         }else{
             domlen= (int)(end - url);
             if(domlen >HASH_BUF_SIZE){
+#ifndef MICROCHIP_API
                 if(errmsg) YSTRCPY(errmsg,YOCTO_ERRMSG_LEN,"domain name too long");
+#endif
                 return INVALID_HASH_IDX;
             }
             if(hostlen)    
@@ -571,7 +584,8 @@ yAsbUrlType  yHashGetUrlPort(yUrlRef urlref, char *url,u16 *port)
 
 static void ypUnregister(yStrRef serial);//forward declaration
 
-static int wpLockCount=0;
+static int wpLockCount = 0;
+static int wpSomethingUnregistered = 0;
 
 static void wpExecuteUnregisterUnsec(void)
 {
@@ -627,8 +641,9 @@ static void wpExecuteUnregisterUnsec(void)
             freeDevYdxInfos(devYdx);
 #endif
             yBlkFree(hdl);
+        } else {
+            prev = hdl;
         }
-        prev = hdl;
         hdl = next;        
     }
 }
@@ -638,7 +653,7 @@ static void wpExecuteUnregisterUnsec(void)
 void wpPreventUnregisterEx(void)
 {
     yEnterCriticalSection(&yWpMutex);
-    YASSERT(wpLockCount< 128);
+    YASSERT(wpLockCount < 128);
     wpLockCount++;
     yLeaveCriticalSection(&yWpMutex);
 }
@@ -648,8 +663,10 @@ void wpAllowUnregisterEx(void)
     yEnterCriticalSection(&yWpMutex);
     YASSERT(wpLockCount > 0);
     wpLockCount--;
-    if(wpLockCount==0)
+    if(wpSomethingUnregistered && !wpLockCount) {
         wpExecuteUnregisterUnsec();
+        wpSomethingUnregistered = 0;
+    }
     yLeaveCriticalSection(&yWpMutex);
 }
 
@@ -670,8 +687,9 @@ void wpAllowUnregisterDbg(const char *file, u32 line)
     dbglog("wpAllowUnregisterDbg: %s:%d\n",file,line);
     YASSERT(wpLockCount > 0);
     wpLockCount--;
-    if(wpLockCount==0)
+    if(wpSomethingUnregistered && !wpLockCount) {
         wpExecuteUnregisterUnsec();
+    }
     yLeaveCriticalSection(&yWpMutex);
 }
 
@@ -730,6 +748,18 @@ int wpRegister(int devYdx, yStrRef serial, yStrRef logicalName, yStrRef productN
         } else {
             WP(prev).nextPtr = hdl;
         }
+#ifdef MICROCHIP_API
+    } else if(devYdx != -1 && WP(hdl).devYdx != devYdx) {
+        // allow change of devYdx based on hub role
+        u16 oldDevYdx = WP(hdl).devYdx;
+        if(oldDevYdx < NB_MAX_DEVICES) {
+            funYdxPtr[devYdx] = funYdxPtr[oldDevYdx];
+            funYdxPtr[oldDevYdx] = INVALID_BLK_HDL;
+            devYdxPtr[devYdx] = hdl;
+        }
+        devYdxPtr[oldDevYdx] = INVALID_BLK_HDL;
+        WP(hdl).devYdx  = (u8)devYdx;
+#endif
     }
     if(logicalName != INVALID_HASH_IDX)  {
         if(WP(hdl).name != logicalName){
@@ -818,6 +848,7 @@ int wpMarkForUnregister(yStrRef serial)
         if(WP(hdl).serial == serial) {
             if( (WP(hdl).flags & YWP_MARK_FOR_UNREGISTER)==0 ) {
                 WP(hdl).flags |= YWP_MARK_FOR_UNREGISTER;
+                wpSomethingUnregistered = 1;
                 retval = 1;
             }
             break;
@@ -873,15 +904,11 @@ int wpGetDevYdx(yStrRef serial)
     return res;
 }
 
-YAPI_DEVICE wpSearch(const char *device_str)
+YAPI_DEVICE wpSearchEx(yStrRef strref)
 {
-    yStrRef strref;
     yBlkHdl hdl,byname;
     YAPI_DEVICE res = -1;
     
-    strref = yHashTestStr(device_str);
-    if(strref == INVALID_HASH_IDX) 
-        return -1;
     byname = INVALID_BLK_HDL;
     
     yEnterCriticalSection(&yWpMutex);
@@ -902,6 +929,15 @@ YAPI_DEVICE wpSearch(const char *device_str)
     
     return res;
 }
+
+YAPI_DEVICE wpSearch(const char *device_str)
+{
+    yStrRef strref = yHashTestStr(device_str);
+    if (strref == INVALID_HASH_IDX)
+        return -1;
+    return wpSearchEx(strref);
+}
+
 
 YAPI_DEVICE wpSearchByNameHash(yStrRef strref)
 {

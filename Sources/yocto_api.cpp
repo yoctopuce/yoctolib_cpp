@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 15274 2014-03-06 17:42:59Z martinm $
+ * $Id: yocto_api.cpp 16091 2014-05-08 12:10:31Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -655,7 +655,7 @@ double YMeasure::get_startTimeUTC(void)
 
 /**
  * Returns the end time of the measure, relative to the Jan 1, 1970 UTC
- * (Unix timestamp). When the recording rate is higher then 1 sample
+ * (Unix timestamp). When the recording rate is higher than 1 sample
  * per second, the timestamp may have a fractional part.
  * 
  * @return an floating point number corresponding to the number of seconds
@@ -1428,7 +1428,8 @@ YRETCODE  YFunction::_buildSetRequest( const string& changeattr, const string  *
         }
     }
     // don't append HTTP/1.1 so that we get light headers from hub
-    request.append(" \r\n\r\n");
+    // but append &. suffix to enable connection keepalive on newer hubs
+    request.append("&. \r\n\r\n");
     return YAPI_SUCCESS;
 }
 
@@ -1486,7 +1487,9 @@ YRETCODE YFunction::_setAttr(string attrname, string newvalue)
             return (YRETCODE)res;
         }
     }
-    _cacheExpiration=0;
+    if (_cacheExpiration != 0) {
+        _cacheExpiration=0;
+    }
     return YAPI_SUCCESS;
     
 }
@@ -2427,7 +2430,7 @@ void YAPI::RegisterDeviceArrivalCallback(yDeviceUpdateCallback arrivalCallback)
 {
     YAPI::DeviceArrivalCallback = arrivalCallback;
     if(arrivalCallback) {
-        YModule *mod =yFirstModule();
+        YModule *mod =YModule::FirstModule();
         while(mod){
             if(mod->isOnline()){
                 yapiLockDeviceCallBack(NULL);
@@ -3421,24 +3424,6 @@ Y_USBBANDWIDTH_enum YModule::get_usbBandwidth(void)
 }
 
 /**
- * Changes the number of USB interfaces used by the module. You must reboot the module
- * after changing this setting.
- * 
- * @param newval : either Y_USBBANDWIDTH_SIMPLE or Y_USBBANDWIDTH_DOUBLE, according to the number of
- * USB interfaces used by the module
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YModule::set_usbBandwidth(Y_USBBANDWIDTH_enum newval)
-{
-    string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("usbBandwidth", rest_val);
-}
-
-/**
  * Allows you to find a module from its serial number or from its logical name.
  * 
  * This function does not require that the module is online at the time
@@ -3750,11 +3735,11 @@ string YModule::functionValue(int functionIndex)
 }
 
 /**
- * todo
+ * Registers a device log callback function. This callback will be called each time
+ * that a module sends a new log message. Mostly useful to debug a Yoctopuce module.
  * 
  * @param callback : the callback function to call, or a null pointer. The callback function should take two
- *         arguments: the function object of which the value has changed, and the character string describing
- *         the new advertised value.
+ *         arguments: the module object that emitted the log message, and the character string containing the log.
  * @noreturn
  */
 void YModule::registerLogCallback(YModuleLogCallback callback)
@@ -4592,8 +4577,8 @@ string YSensor::_encodeCalibrationPoints(vector<double> rawValues,vector<double>
         res = YapiWrapper::ysprintf("%d",npt);
         idx = 0;
         while (idx < npt) {
-            iRaw = (int) (rawValues[idx] * _scale - _offset < 0.0 ? ceil(rawValues[idx] * _scale - _offset-0.5) : floor(rawValues[idx] * _scale - _offset+0.5));
-            iRef = (int) (refValues[idx] * _scale - _offset < 0.0 ? ceil(refValues[idx] * _scale - _offset-0.5) : floor(refValues[idx] * _scale - _offset+0.5));
+            iRaw = (int) (rawValues[idx] * _scale + _offset < 0.0 ? ceil(rawValues[idx] * _scale + _offset-0.5) : floor(rawValues[idx] * _scale + _offset+0.5));
+            iRef = (int) (refValues[idx] * _scale + _offset < 0.0 ? ceil(refValues[idx] * _scale + _offset-0.5) : floor(refValues[idx] * _scale + _offset+0.5));
             res = YapiWrapper::ysprintf("%s,%d,%d", res.c_str(), iRaw,iRef);
             idx = idx + 1;
         }

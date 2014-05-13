@@ -38,7 +38,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>true</LinkIncremental>
+    <LinkIncremental>false</LinkIncremental>
     <IncludePath>..\..\..\Sources;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -52,6 +52,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -91,6 +92,7 @@
     <ClCompile Include="..\..\..\Sources\yapi\ykey.c" />
     <ClCompile Include="..\..\..\Sources\yocto_api.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_accelerometer.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_altitude.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_anbutton.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_carbondioxide.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_colorled.cpp" />
@@ -108,6 +110,7 @@
     <ClCompile Include="..\..\..\Sources\yocto_led.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_lightsensor.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_magnetometer.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_motor.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_network.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_oscontrol.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_power.cpp" />
@@ -143,6 +146,7 @@
     <ClInclude Include="..\..\..\Sources\yapi\ykey.h" />
     <ClInclude Include="..\..\..\Sources\yocto_api.h" />
     <ClInclude Include="..\..\..\Sources\yocto_accelerometer.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_altitude.h" />
     <ClInclude Include="..\..\..\Sources\yocto_anbutton.h" />
     <ClInclude Include="..\..\..\Sources\yocto_carbondioxide.h" />
     <ClInclude Include="..\..\..\Sources\yocto_colorled.h" />
@@ -160,6 +164,7 @@
     <ClInclude Include="..\..\..\Sources\yocto_led.h" />
     <ClInclude Include="..\..\..\Sources\yocto_lightsensor.h" />
     <ClInclude Include="..\..\..\Sources\yocto_magnetometer.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_motor.h" />
     <ClInclude Include="..\..\..\Sources\yocto_network.h" />
     <ClInclude Include="..\..\..\Sources\yocto_oscontrol.h" />
     <ClInclude Include="..\..\..\Sources\yocto_power.h" />

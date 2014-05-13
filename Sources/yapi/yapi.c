@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 15316 2014-03-07 11:18:53Z seb $
+ * $Id: yapi.c 16067 2014-05-06 10:20:02Z mvuilleu $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -288,8 +288,6 @@ static int wpSafeCheckOverwrite(yUrlRef registeredUrl,NetHubSt *hub, yUrlRef dev
  * Generic device information stuff
  ***************************************************************************/
 
-
-
 void initDevYdxInfos(int devYdx, yStrRef serial)
 {
     yGenericDeviceSt *gen = yContext->genericInfos + devYdx;
@@ -298,12 +296,13 @@ void initDevYdxInfos(int devYdx, yStrRef serial)
     yInitializeCriticalSection(&gen->cs);
 
 }
+
 void freeDevYdxInfos(int devYdx)
 {
     yGenericDeviceSt *gen = yContext->genericInfos + devYdx;
     yDeleteCriticalSection(&gen->cs);
+    memset(gen,0, sizeof(yGenericDeviceSt));
 }
-
 
 static void logResult(void *context, int retcode, const u8 *result, u32 resultlen)
 {
@@ -330,7 +329,7 @@ static void logResult(void *context, int retcode, const u8 *result, u32 resultle
         resultlen--;
     }
     if (resultlen < 4){
-        return; //invlid packet 
+        return; //invalid packet 
     }
     start = p;
     //look of '@pos'
@@ -377,7 +376,7 @@ static void logResult(void *context, int retcode, const u8 *result, u32 resultle
 
 
 
-YRETCODE yapiPullDeviceLog(const char *serial)
+YRETCODE yapiPullDeviceLogEx(int devydx)
 {
     int     res, used;
     char    rootdevice[YOCTO_SERIAL_LEN];
@@ -385,14 +384,11 @@ YRETCODE yapiPullDeviceLog(const char *serial)
     char    errmsg[YOCTO_ERRMSG_LEN];
     char    *p;
     YAPI_DEVICE dev;
-    int     devydx;
     u32     logPos;
     int     doPull=0;
     yGenericDeviceSt *gen;
 
 
-    dev = wpSearch(serial);
-    devydx = wpGetDevYdx(dev % 0xffff);
     gen = yContext->genericInfos + devydx;
     if ( (gen->flags & DEVGEN_LOG_ACTIVATED) == 0) {
         //first test it without the mutex
@@ -407,6 +403,7 @@ YRETCODE yapiPullDeviceLog(const char *serial)
         gen->flags |= DEVGEN_LOG_PULLING;
     }
     logPos = gen->deviceLogPos;
+    dev = wpSearchEx(gen->serial);
     yLeaveCriticalSection(&gen->cs);
     if (!doPull) {
         return YAPI_SUCCESS;
@@ -416,9 +413,11 @@ YRETCODE yapiPullDeviceLog(const char *serial)
     res = yapiGetDevicePath(dev, rootdevice, p, 512-5, NULL, errmsg);
     if(YISERR(res)) {
         dbglog(errmsg);
-        yEnterCriticalSection(&gen->cs);
-        gen->flags &= ~DEVGEN_LOG_PULLING;
-        yLeaveCriticalSection(&gen->cs);
+        if (res != YAPI_DEVICE_NOT_FOUND) {
+            yEnterCriticalSection(&gen->cs);
+            gen->flags &= ~DEVGEN_LOG_PULLING;
+            yLeaveCriticalSection(&gen->cs);
+        }
         return res;
     }
     used = YSTRLEN(request);
@@ -427,12 +426,28 @@ YRETCODE yapiPullDeviceLog(const char *serial)
     res = yapiHTTPRequestAsync(rootdevice, request, logResult, (void*)gen, errmsg);
     if(YISERR(res))  {
         dbglog(errmsg);
-        yEnterCriticalSection(&gen->cs);
-        gen->flags &= ~DEVGEN_LOG_PULLING;
-        yLeaveCriticalSection(&gen->cs);
+        if (res != YAPI_DEVICE_NOT_FOUND) {
+            yEnterCriticalSection(&gen->cs);
+            gen->flags &= ~DEVGEN_LOG_PULLING;
+            yLeaveCriticalSection(&gen->cs);
+        }
         return res;
     }    
     return res;
+}
+
+
+YRETCODE yapiPullDeviceLog(const char *serial)
+{
+    YAPI_DEVICE dev;
+    int devydx;
+    dev = wpSearch(serial);
+
+    devydx = wpGetDevYdx(dev % 0xffff);
+	if (devydx<0){
+		return YAPI_DEVICE_NOT_FOUND;
+	}
+    return yapiPullDeviceLogEx(devydx);
 }
 
 
@@ -484,7 +499,7 @@ void wpSafeRegister( NetHubSt *hub, u8 devYdx, yStrRef serialref,yStrRef lnamere
         wpSafeUnregister(serialref);
     }
     wpRegister(-1, serialref, lnameref, productref, deviceid,devUrl,beacon);
-    ypRegister(YSTRREF_MODULE_STRING, serialref, yHashPutStr("module"), lnameref, YOCTO_AKA_YFUNCTION, -1, NULL);
+    ypRegister(YSTRREF_MODULE_STRING, serialref, YSTRREF_mODULE_STRING, lnameref, YOCTO_AKA_YFUNCTION, -1, NULL);
     if(hub && devYdx < MAX_YDX_PER_HUB) {
         // Update hub-specific devYdx mapping between enus->devYdx and our wp devYdx
         hub->devYdxMap[devYdx] = wpGetDevYdx(serialref);
@@ -546,7 +561,7 @@ void wpSafeUpdate(NetHubSt *hub,u8 devYdx, yStrRef serialref,yStrRef lnameref, y
         return;
     }
     if (wpRegister(-1, serialref, lnameref, INVALID_HASH_IDX, 0, devUrl, beacon)) {
-        ypRegister(YSTRREF_MODULE_STRING, serialref, yHashPutStr("module"), lnameref, YOCTO_AKA_YFUNCTION, -1, NULL);
+        ypRegister(YSTRREF_MODULE_STRING, serialref, YSTRREF_mODULE_STRING, lnameref, YOCTO_AKA_YFUNCTION, -1, NULL);
         if(hub && devYdx < MAX_YDX_PER_HUB) {
             // Update hub-specific devYdx mapping between enus->devYdx and our wp devYdx
             hub->devYdxMap[devYdx] = wpGetDevYdx(serialref);
@@ -1006,7 +1021,6 @@ static int yapiInitHub(NetHubSt *hub, const char  *url,char *errmsg)
         url = p+1;
     }
     
-    
     memset(hub,0,sizeof(NetHubSt));
     memset(hub->devYdxMap, 255, sizeof(hub->devYdxMap));
     yInitializeCriticalSection(&hub->authAccess);
@@ -1315,6 +1329,8 @@ void YAPI_FUNCTION_EXPORT yapiStartStopDeviceLogCallback(const char *serial,int 
     int devydx;
     serialref = yHashPutStr(serial);
     devydx = wpGetDevYdx(serialref);
+	if (devydx < 0 )
+		return;
     dbglog("activate log %s %d\n", serial, start);
     yEnterCriticalSection(&yContext->genericInfos[devydx].cs);
     if (start) {
@@ -1323,7 +1339,7 @@ void YAPI_FUNCTION_EXPORT yapiStartStopDeviceLogCallback(const char *serial,int 
         yContext->genericInfos[devydx].flags &= ~DEVGEN_LOG_ACTIVATED;
     }
     yLeaveCriticalSection(&yContext->genericInfos[devydx].cs);
-    yapiPullDeviceLog(serial);
+    yapiPullDeviceLogEx(devydx);
 }
 
 void YAPI_FUNCTION_EXPORT yapiRegisterDeviceArrivalCallback(yapiDeviceUpdateCallback arrivalCallback)
@@ -1455,7 +1471,7 @@ static void wpUpdateTCP(yUrlRef huburl,const char *serial,const char *name, u8 b
     if(status==0)
         return; // no change
 
-    ypRegister(YSTRREF_MODULE_STRING, serialref, yHashPutStr("module"), lnameref, YOCTO_AKA_YFUNCTION, -1, NULL);
+    ypRegister(YSTRREF_MODULE_STRING, serialref, YSTRREF_mODULE_STRING, lnameref, YOCTO_AKA_YFUNCTION, -1, NULL);
 
     // Forward high-level notification to API user
     if(yContext->changeCallback){
@@ -1503,7 +1519,8 @@ static int handleNetNotification(NetHubSt *hub)
     }
     
     // handle short funcvalydx notifications
-    if(pkttype == NOTIFY_NETPKT_TIMEVALYDX || pkttype == NOTIFY_NETPKT_FUNCVALYDX || pkttype == NOTIFY_NETPKT_TIMEAVGYDX) {
+    if(pkttype == NOTIFY_NETPKT_TIMEVALYDX || pkttype == NOTIFY_NETPKT_FUNCVALYDX 
+        || pkttype == NOTIFY_NETPKT_TIMEAVGYDX || pkttype == NOTIFY_NETPKT_DEVLOGYDX) {
         yPopFifo(&(hub->fifo),(u8*) buffer,end+1);
         hub->notifAbsPos += end+1;
         p = buffer+1;
@@ -1514,48 +1531,68 @@ static int handleNetNotification(NetHubSt *hub)
             devydx += 128;
         }
         pos = 0;
-        if(pkttype == NOTIFY_NETPKT_FUNCVALYDX) {
-            while(*p != 0 && *p != NOTIFY_NETPKT_STOP && pos < YOCTO_PUBVAL_LEN-1) {
-                value[pos++] = *p++;
-            }
-            value[pos] = 0;
+        switch (pkttype) {
+            case NOTIFY_NETPKT_FUNCVALYDX:
+                while(*p != 0 && *p != NOTIFY_NETPKT_STOP && pos < YOCTO_PUBVAL_LEN-1) {
+                    value[pos++] = *p++;
+                }
+                value[pos] = 0;
 #ifdef DEBUG_NET_NOTIFICATION
-            YSPRINTF(Dbuffer,512,"FuncVYDX >devYdx=%d funYdx=%d val=%s (%d)\n",
-                     devydx,funydx,value,abspos);
-            dumpNotif(Dbuffer);
+                YSPRINTF(Dbuffer,512,"FuncVYDX >devYdx=%d funYdx=%d val=%s (%d)\n",
+                         devydx,funydx,value,abspos);
+                dumpNotif(Dbuffer);
 #endif
-            // Map hub-specific devydx to our devydx
-            devydx = hub->devYdxMap[devydx];
-            if(devydx < MAX_YDX_PER_HUB) {
-                ypUpdateYdx(devydx,funydx,value);
-            }
-        } else {
-            report[pos++] = (pkttype == NOTIFY_NETPKT_TIMEVALYDX ? 0 : 1);
-			while (isxdigit((u8)p[0]) && isxdigit((u8)p[1]) && pos < sizeof(report)) {
-                int hi_nib = (p[0] <= '9' ? p[0]-'0' : 10+(p[0]&0x4f)-'A');
-                int lo_nib = (p[1] <= '9' ? p[1]-'0' : 10+(p[1]&0x4f)-'A');
-                report[pos++] = hi_nib * 16 + lo_nib;
-                p += 2;
-            }
-#ifdef DEBUG_NET_NOTIFICATION
-            YSPRINTF(Dbuffer,512,"%s >devYdx=%d funYdx=%d val=%s (%d)\n",
-                     (pkttype == NOTIFY_NETPKT_TIMEVALYDX ? "TimeValR" : "TimeAvgR"),
-                     devydx,funydx,value,abspos);
-            dumpNotif(Dbuffer);
-#endif
-            if(funydx == 15) {
-                u32 t = report[1] + 0x100u * report[2] + 0x10000u * report[3] + 0x1000000u * report[4];
-                yContext->genericInfos[devydx].deviceTime = (double)t + report[5] / 250.0;
-            } else {
-                double deviceTime = yContext->genericInfos[devydx].deviceTime;
                 // Map hub-specific devydx to our devydx
                 devydx = hub->devYdxMap[devydx];
                 if(devydx < MAX_YDX_PER_HUB) {
+                    ypUpdateYdx(devydx,funydx,value);
+                }
+                break;
+            case NOTIFY_NETPKT_DEVLOGYDX:
+                // Map hub-specific devydx to our devydx
+                devydx = hub->devYdxMap[devydx];
+                if(devydx < MAX_YDX_PER_HUB) {
+                    yEnterCriticalSection(&yContext->genericInfos[devydx].cs);
+                    if (yContext->genericInfos[devydx].flags & DEVGEN_LOG_ACTIVATED) {
+                        yContext->genericInfos[devydx].flags |= DEVGEN_LOG_PENDING;
+#ifdef DEBUG_NET_NOTIFICATION
+                        dbglog("notify device log for devydx %d\n", devydx);
+#endif
+                    }
+                    yLeaveCriticalSection(&yContext->genericInfos[devydx].cs);
+                }
+                break;
+            case NOTIFY_NETPKT_TIMEVALYDX:
+            case NOTIFY_NETPKT_TIMEAVGYDX:
+                // Map hub-specific devydx to our devydx
+                devydx = hub->devYdxMap[devydx];
+                if(devydx >= MAX_YDX_PER_HUB) break;
+                
+                report[pos++] = (pkttype == NOTIFY_NETPKT_TIMEVALYDX ? 0 : 1);
+    			while (isxdigit((u8)p[0]) && isxdigit((u8)p[1]) && pos < sizeof(report)) {
+                    int hi_nib = (p[0] <= '9' ? p[0]-'0' : 10+(p[0]&0x4f)-'A');
+                    int lo_nib = (p[1] <= '9' ? p[1]-'0' : 10+(p[1]&0x4f)-'A');
+                    report[pos++] = hi_nib * 16 + lo_nib;
+                    p += 2;
+                }
+    #ifdef DEBUG_NET_NOTIFICATION
+                YSPRINTF(Dbuffer,512,"%s >devYdx=%d funYdx=%d val=%s (%d)\n",
+                         (pkttype == NOTIFY_NETPKT_TIMEVALYDX ? "TimeValR" : "TimeAvgR"),
+                         devydx,funydx,value,abspos);
+                dumpNotif(Dbuffer);
+    #endif
+                if(funydx == 15) {
+                    u32 t = report[1] + 0x100u * report[2] + 0x10000u * report[3] + 0x1000000u * report[4];
+                    yContext->genericInfos[devydx].deviceTime = (double)t + report[5] / 250.0;
+                } else {
                     YAPI_FUNCTION fundesc;
-                    ypRegisterByYdx(hub->devYdxMap[devydx], funydx, NULL, &fundesc);
+                    double deviceTime = yContext->genericInfos[devydx].deviceTime;
+                    ypRegisterByYdx(devydx, funydx, NULL, &fundesc);
                     yContext->timedReportCallback(fundesc, deviceTime, report, pos);
                 }
-            }
+                break;
+            default:
+                break;
         }
         return 1;
     }
@@ -1750,15 +1787,16 @@ static int handleNetNotification(NetHubSt *hub)
             {
                 yStrRef serialref = yHashPutStr(serial);
                 int devydx = wpGetDevYdx(serialref);
-                yEnterCriticalSection(&yContext->genericInfos[devydx].cs);
-                if (yContext->genericInfos[devydx].flags & DEVGEN_LOG_ACTIVATED) {
-                    yContext->genericInfos[devydx].flags |= DEVGEN_LOG_PENDING;
+				if (devydx >= 0) {
+					yEnterCriticalSection(&yContext->genericInfos[devydx].cs);
+					if (yContext->genericInfos[devydx].flags & DEVGEN_LOG_ACTIVATED) {
+						yContext->genericInfos[devydx].flags |= DEVGEN_LOG_PENDING;
 #ifdef DEBUG_NET_NOTIFICATION
-                    dbglog("notify device log for %s\n", serial);
+						dbglog("notify device log for %s (%d)\n", serial,devydx);
 #endif
-
-                }
-                yLeaveCriticalSection(&yContext->genericInfos[devydx].cs);
+					}
+					yLeaveCriticalSection(&yContext->genericInfos[devydx].cs);
+				}
             }
             break;
         default:
@@ -1808,19 +1846,13 @@ static void* yhelper_thread(void* ctx)
 
     yThreadSignalStart(thread);
     while(!yThreadMustEnd(thread)){
-#if 0
-        // look if we have logs to Handle async connections as well in this thread
-        for (i=0; i < ALLOC_YDX_PER_HUB; i++) {
-            req = &yContext->genericInfos[i];
-            if(req->hub != hub){
-                continue;
-            }
-            if(req->callback && req->skt != INVALID_SOCKET) {
-                selectlist[towatch++] = req;
+        // Handle async connections as well in this thread
+        for (i = 0; i < ALLOC_YDX_PER_HUB; i++) {
+            int devydx = hub->devYdxMap[i];
+            if (devydx != 0xff){
+                yapiPullDeviceLogEx(devydx);
             }
         }
-#endif
-
         towatch=0;
         if(hub->state == NET_HUB_ESTABLISHED || hub->state == NET_HUB_TRYING){
             selectlist[towatch] = hub->notReq;
@@ -1881,7 +1913,7 @@ static void* yhelper_thread(void* ctx)
                         res = yTcpReadReq(req, buffer, toread);
                         if(res > 0) {
                             buffer[res]=0;
-#ifdef DEBUG_NET_NOTIFICATION
+#if 0 //def DEBUG_NET_NOTIFICATION
                             YSPRINTF(Dbuffer,1024,"HUB: %X->%s push %d [\n%s\n]\n",hub->url,hub->name,res,buffer);
                             dumpNotif(Dbuffer);
 #endif
@@ -1939,7 +1971,7 @@ static void* yhelper_thread(void* ctx)
                     if(res != 0) {
                         u8 *ptr;
                         int len = yTcpGetReq(req, &ptr);
-                        req->callback(req->context, YAPI_SUCCESS, ptr, len);
+                        req->callback(req->context, (res == 1 ? YAPI_SUCCESS : res), ptr, len);
                         yTcpCloseReq(req);
                     }
                 }
@@ -2789,15 +2821,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncDone(YIOHDL *iohdl, char *errms
 
 
 static void asyncDrop(void *context, int retcode, const u8 *result, u32 resultlen)
-{
-#if 0
-    char buffer[1024];
-    int len = resultlen < 1024 ? resultlen : 1023;
-    memcpy(buffer, result, len);
-    buffer[len] = 0;
-    dbglog("AsyncDrop: %d (%d)\n%s", retcode, resultlen,buffer);
-#endif
-}
+{}
 
 
 
@@ -3101,13 +3125,25 @@ int yvsprintf_s (char *dst, unsigned dstsize, const char * fmt, va_list arg )
  ****************************************************************************/
 #if defined(WINDOWS_API) && defined(__32BITS__)
 
+
+
 //typedef void YAPI_FUNCTION_EXPORT(_stdcall *vb6_yapiLogFunction)(BSTR log, u32 loglen);
 typedef void YAPI_FUNCTION_EXPORT (_stdcall *vb6_yapiDeviceUpdateCallback)(YAPI_DEVICE devdescr);
 typedef void YAPI_FUNCTION_EXPORT (_stdcall *vb6_yapiFunctionUpdateCallback)(YAPI_FUNCTION fundescr, BSTR value);
 typedef void YAPI_FUNCTION_EXPORT (_stdcall *vb6_yapiTimedReportCallback)(YAPI_FUNCTION fundesc, double timestamp, const u8 *bytes, u32 len);
 typedef void YAPI_FUNCTION_EXPORT (_stdcall *vb6_yapiHubDiscoveryCallback)(BSTR serial, BSTR url);
-typedef void YAPI_FUNCTION_EXPORT(_stdcall *vb6_yapiDeviceLogCallback)(YAPI_DEVICE devdescr, BSTR line);
-typedef void YAPI_FUNCTION_EXPORT (_stdcall *vb6_yapiRequestAsyncCallback)(void *context, int retcode, const u8 *result, u32 resultlen);
+typedef void YAPI_FUNCTION_EXPORT (_stdcall *vb6_yapiDeviceLogCallback)(YAPI_DEVICE devdescr, BSTR line);
+typedef void YAPI_FUNCTION_EXPORT (_stdcall *vb6_yapiRequestAsyncCallback)(void *context, int retcode, BSTR result, u32 resultlen);
+typedef void YAPI_FUNCTION_EXPORT (_stdcall *vb6_yapiLogFunction)(BSTR log, u32 loglen);
+
+
+typedef struct vb6_callback {
+    vb6_yapiRequestAsyncCallback    callback;
+    void                            *context;
+} vb_callback_cache_entry;
+
+static vb_callback_cache_entry vb_callback_cache[NB_MAX_DEVICES];
+
 
 void YAPI_FUNCTION_EXPORT __stdcall vb6_yapiStartStopDeviceLogCallback(const char *serial,int start);
 YRETCODE YAPI_FUNCTION_EXPORT __stdcall vb6_yapiInitAPI(int type,char *errmsg);
@@ -3173,15 +3209,14 @@ void YAPI_FUNCTION_EXPORT __stdcall vb6_yapiFreeAPI(void)
     yapiFreeAPI();
     if (vb6_version) {
         SysFreeString(vb6_version);
-		vb6_version = NULL;
+        vb6_version = NULL;
     }
     if (vb6_apidate) {
         SysFreeString(vb6_apidate);
-		vb6_apidate = NULL;
+        vb6_apidate = NULL;
     }
 }
 
-typedef void YAPI_FUNCTION_EXPORT(_stdcall *vb6_yapiLogFunction)(BSTR log, u32 loglen);
 void YAPI_FUNCTION_EXPORT __stdcall vb6_yapiRegisterLogFunction(vb6_yapiLogFunction logfun);
 
 static BSTR newBSTR(const char * str)
@@ -3453,19 +3488,31 @@ YRETCODE YAPI_FUNCTION_EXPORT __stdcall vb6_yapiHTTPRequestSyncDone(YIOHDL *iohd
 
 YRETCODE YAPI_FUNCTION_EXPORT __stdcall vb6_yapiHTTPRequestAsync(const char *device, const char *request, vb6_yapiRequestAsyncCallback callback, void *context, char *errmsg)
 {
-    return yapiHTTPRequestAsync(device, request, NULL, context, errmsg);
+    return vb6_yapiHTTPRequestAsyncEx(device, request, YSTRLEN(request), callback, context, errmsg);
 }
+
+static void vb6_callback_fwd(void *context, int retcode, const u8 *result, u32 resultlen)
+{
+    YAPI_DEVICE devydx = (YAPI_DEVICE) context;
+    void *vb6_context = vb_callback_cache[devydx].context;
+    BSTR bstrstr = newBSTR((char*) result);
+    vb_callback_cache[devydx].callback(vb6_context, retcode,  bstrstr, resultlen);
+    SysFreeString(bstrstr);
+}
+
 
 YRETCODE YAPI_FUNCTION_EXPORT __stdcall vb6_yapiHTTPRequestAsyncEx(const char *device, const char *request, int requestsize, vb6_yapiRequestAsyncCallback callback, void *context, char *errmsg)
 {
-    return yapiHTTPRequestAsyncEx(device, request, requestsize, NULL, context, errmsg);
+    YAPI_DEVICE devydx = wpSearch(device);
+    vb_callback_cache[devydx].callback = callback;
+    vb_callback_cache[devydx].context = context;
+    return yapiHTTPRequestAsyncEx(device, request, requestsize, vb6_callback_fwd, (void*)devydx, errmsg);
 }
 
 int YAPI_FUNCTION_EXPORT __stdcall vb6_yapiHTTPRequest(const char *device, const char *request, char* buffer, int buffsize, int *fullsize, char *errmsg)
 {
     return yapiHTTPRequest(device, request, buffer, buffsize, fullsize, errmsg);
 }
-
 
 static vb6_yapiHubDiscoveryCallback vb6_yapiHubDiscoveryCallbackFWD = NULL;
 void yapiHubDiscoverCdeclToStdllbackFWD(const char *serial, const char *url)

@@ -10,8 +10,10 @@ static void usage(void)
     cout << "usage: demo <serial_number>  [ on | off ]" << endl;
     cout << "       demo <logical_name> [ on | off ]" << endl;
     cout << "       demo any [ on | off ]                (use any discovered device)" << endl;
-    u64 now = yGetTickCount();    // dirty active wait loop 
-	while (yGetTickCount()-now<3000);
+    u64 now = yGetTickCount();
+	while (yGetTickCount()-now<3000) {
+        // wait 3 sec to show the message
+    }
     exit(1);
 }
 
