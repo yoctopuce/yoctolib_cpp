@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 15998 2014-05-01 08:25:18Z seb $
+ * $Id: yocto_display.cpp 16340 2014-05-30 10:41:54Z seb $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -1035,6 +1035,8 @@ int YDisplay::_invokeValueCallback(string value)
 
 /**
  * Clears the display screen and resets all display layers to their default state.
+ * Using this function in a sequence will kill the sequence play-back. Don't use that
+ * function to reset the display at sequence start-up.
  * 
  * @return YAPI_SUCCESS if the call succeeds.
  * 

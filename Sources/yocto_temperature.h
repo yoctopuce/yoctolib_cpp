@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_temperature.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_temperature.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindTemperature(), the high-level API for Temperature functions
  *
@@ -82,6 +82,9 @@ typedef enum {
  * measure of the sensor, as well as the minimal and maximal values observed.
  */
 class YOCTO_CLASS_EXPORT YTemperature: public YSensor {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YTemperature declaration)
 protected:
     //--- (YTemperature attributes)
@@ -235,6 +238,9 @@ public:
            static YTemperature* FirstTemperature(void);
     inline static YTemperature* First(void)
     { return YTemperature::FirstTemperature();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YTemperature accessors declaration)
 };
 

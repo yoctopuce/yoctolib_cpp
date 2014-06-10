@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_voltage.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_voltage.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindVoltage(), the high-level API for Voltage functions
  *
@@ -64,6 +64,9 @@ typedef void (*YVoltageTimedReportCallback)(YVoltage *func, YMeasure measure);
  * measure of the sensor, as well as the minimal and maximal values observed.
  */
 class YOCTO_CLASS_EXPORT YVoltage: public YSensor {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YVoltage declaration)
 protected:
     //--- (YVoltage attributes)
@@ -167,6 +170,9 @@ public:
            static YVoltage* FirstVoltage(void);
     inline static YVoltage* First(void)
     { return YVoltage::FirstVoltage();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YVoltage accessors declaration)
 };
 

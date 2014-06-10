@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_hubport.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_hubport.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindHubPort(), the high-level API for HubPort functions
  *
@@ -89,6 +89,9 @@ typedef enum {
  * unique serial number of the Yoctopuce device connected to it.
  */
 class YOCTO_CLASS_EXPORT YHubPort: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YHubPort declaration)
 protected:
     //--- (YHubPort attributes)
@@ -245,6 +248,9 @@ public:
            static YHubPort* FirstHubPort(void);
     inline static YHubPort* First(void)
     { return YHubPort::FirstHubPort();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YHubPort accessors declaration)
 };
 

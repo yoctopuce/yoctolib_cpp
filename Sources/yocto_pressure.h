@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pressure.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_pressure.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindPressure(), the high-level API for Pressure functions
  *
@@ -64,6 +64,9 @@ typedef void (*YPressureTimedReportCallback)(YPressure *func, YMeasure measure);
  * measure of the sensor, as well as the minimal and maximal values observed.
  */
 class YOCTO_CLASS_EXPORT YPressure: public YSensor {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YPressure declaration)
 protected:
     //--- (YPressure attributes)
@@ -167,6 +170,9 @@ public:
            static YPressure* FirstPressure(void);
     inline static YPressure* First(void)
     { return YPressure::FirstPressure();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YPressure accessors declaration)
 };
 

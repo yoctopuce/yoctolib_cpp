@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: pic24config.php 15635 2014-03-28 21:04:00Z mvuilleu $
+ * $Id: yocto_altitude.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindAltitude(), the high-level API for Altitude functions
  *
@@ -65,6 +65,9 @@ typedef void (*YAltitudeTimedReportCallback)(YAltitude *func, YMeasure measure);
  * measure of the sensor, as well as the minimal and maximal values observed.
  */
 class YOCTO_CLASS_EXPORT YAltitude: public YSensor {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YAltitude declaration)
 protected:
     //--- (YAltitude attributes)
@@ -218,6 +221,9 @@ public:
            static YAltitude* FirstAltitude(void);
     inline static YAltitude* First(void)
     { return YAltitude::FirstAltitude();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YAltitude accessors declaration)
 };
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wakeupmonitor.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_wakeupmonitor.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindWakeUpMonitor(), the high-level API for WakeUpMonitor functions
  *
@@ -95,6 +95,9 @@ typedef enum {
  * as automated sleep mode.
  */
 class YOCTO_CLASS_EXPORT YWakeUpMonitor: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YWakeUpMonitor declaration)
 protected:
     //--- (YWakeUpMonitor attributes)
@@ -320,7 +323,7 @@ public:
      * RTC time must have been set before calling this function. The count down before sleep
      * can be canceled with resetSleepCountDown.
      * 
-     * @param secUntilWakeUp : sleep duration, in secondes
+     * @param secUntilWakeUp : number of seconds before next wake up
      * @param secBeforeSleep : number of seconds before going into sleep mode
      * 
      * @return YAPI_SUCCESS if the call succeeds.
@@ -378,6 +381,9 @@ public:
            static YWakeUpMonitor* FirstWakeUpMonitor(void);
     inline static YWakeUpMonitor* First(void)
     { return YWakeUpMonitor::FirstWakeUpMonitor();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YWakeUpMonitor accessors declaration)
 };
 

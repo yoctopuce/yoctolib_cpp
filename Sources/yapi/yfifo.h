@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yfifo.h 15698 2014-04-04 10:31:31Z mvuilleu $
+ * $Id: yfifo.h 16197 2014-05-13 06:15:42Z mvuilleu $
  *
   * Declaration of a generic fifo queue 
  *
@@ -40,7 +40,11 @@
 #define YFIFO_H
 #include "ydef.h"
 
-#ifndef MICROCHIP_API
+#ifdef MICROCHIP_API
+#include "Compiler.h"
+#define _CLI()  __builtin_disi(0x3FFF)
+#define _STI()  { DISICNT = 0; }
+#else
 #define YFIFO_USE_MUTEX
 #endif
 

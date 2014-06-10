@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.h 14826 2014-02-04 14:09:17Z seb $
+ * $Id: yocto_wireless.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindWireless(), the high-level API for Wireless functions
  *
@@ -79,6 +79,9 @@ typedef enum {
  * 
  */
 class YOCTO_CLASS_EXPORT YWlanRecord {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of generated code: YWlanRecord declaration)
     //--- (generated code: YWlanRecord attributes)
     // Attributes (function value cache)
@@ -106,6 +109,9 @@ public:
 
     virtual int         get_linkQuality(void);
 
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of generated code: YWlanRecord accessors declaration)
 };
 
@@ -120,6 +126,9 @@ public:
  * and status for devices that are wireless-enabled.
  */
 class YOCTO_CLASS_EXPORT YWireless: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of generated code: YWireless declaration)
     //--- (generated code: YWireless attributes)
     // Attributes (function value cache)
@@ -341,6 +350,9 @@ public:
            static YWireless* FirstWireless(void);
     inline static YWireless* First(void)
     { return YWireless::FirstWireless();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of generated code: YWireless accessors declaration)
 };
 

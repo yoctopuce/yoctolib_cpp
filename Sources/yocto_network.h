@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_network.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindNetwork(), the high-level API for Network functions
  *
@@ -120,6 +120,9 @@ typedef enum {
  * modules that include a built-in network interface.
  */
 class YOCTO_CLASS_EXPORT YNetwork: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YNetwork declaration)
 protected:
     //--- (YNetwork attributes)
@@ -769,6 +772,9 @@ public:
            static YNetwork* FirstNetwork(void);
     inline static YNetwork* First(void)
     { return YNetwork::FirstNetwork();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YNetwork accessors declaration)
 };
 

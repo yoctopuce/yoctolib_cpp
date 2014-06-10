@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 15940 2014-04-26 14:35:09Z mvuilleu $
+ * $Id: ytcp.c 16461 2014-06-06 14:44:21Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -214,7 +214,7 @@ int yStartWakeUpSocket(WakeUpSocket *wuce, char *errmsg)
 
 int yDringWakeUpSocket(WakeUpSocket *wuce, u8 signal, char *errmsg)
 {
-    if(send(wuce->signalsock,&signal,1,SEND_NOSIGPIPE) < 0) {
+    if(send(wuce->signalsock,(char*)&signal,1,SEND_NOSIGPIPE) < 0) {
         return yNetSetErr();
     }
     return YAPI_SUCCESS;
@@ -224,7 +224,7 @@ int yConsumeWakeUpSocket(WakeUpSocket *wuce, char *errmsg)
 {
     u8 signal = 0;
     
-    if(recv(wuce->listensock,&signal,1,0) < 0) {
+    if(recv(wuce->listensock,(char*)&signal,1,0) < 0) {
         return yNetSetErr();
     }
     return signal;
@@ -377,7 +377,7 @@ retry:
 
 static int yTcpRead(YSOCKET skt, u8 *buffer, int len,char *errmsg)
 {
-    int iResult = (int)recv(skt, buffer, len, 0);
+    int iResult = (int)recv(skt, (char*)buffer, len, 0);
     
     if (iResult == 0){
         return YAPI_NO_MORE_DATA;
@@ -410,7 +410,7 @@ void yTcpInitReq(struct _TcpReqSt *req, struct _NetHubSt *hub)
     req->skt = INVALID_SOCKET;
     req->reuseskt = INVALID_SOCKET;
     req->replybufsize = 1024;
-    req->replybuf = yMalloc(req->replybufsize);
+    req->replybuf = (u8*) yMalloc(req->replybufsize);
     yInitializeCriticalSection(&req->access);
     yCreateManualEvent(&req->finished,1);
 }
@@ -612,7 +612,7 @@ int  yTcpOpenReq(struct _TcpReqSt *req, const char *request, int reqlen, yapiReq
         if(req->bodybufsize < bodylen) {
             if(req->bodybuf) yFree(req->bodybuf);
             req->bodybufsize = bodylen + (bodylen>>1);
-            req->bodybuf = yMalloc(req->bodybufsize);
+            req->bodybuf = (char*) yMalloc(req->bodybufsize);
         }
         memcpy(req->bodybuf, p, bodylen);
         req->bodysize = bodylen;
@@ -623,7 +623,7 @@ int  yTcpOpenReq(struct _TcpReqSt *req, const char *request, int reqlen, yapiReq
     if(req->headerbufsize < minlen) {
         if(req->headerbuf) yFree(req->headerbuf);
         req->headerbufsize = minlen + (reqlen>>1);
-        req->headerbuf = yMalloc(req->headerbufsize);
+        req->headerbuf = (char*) yMalloc(req->headerbufsize);
     }
     memcpy(req->headerbuf, request, reqlen);
     req->headerbuf[reqlen] = 0;
@@ -692,7 +692,7 @@ int yTcpSelectReq(struct _TcpReqSt **reqs, int size, u64 ms, WakeUpSocket *wuce,
                 if(req->replysize >= req->replybufsize - 256) {
                     // need to grow receive buffer
                     int  newsize = req->replybufsize << 1;
-                    u8 *newbuf = yMalloc(newsize);
+                    u8 *newbuf = (u8*) yMalloc(newsize);
                     memcpy(newbuf, req->replybuf, req->replysize);
                     yFree(req->replybuf);
                     req->replybuf = newbuf;
@@ -709,7 +709,7 @@ int yTcpSelectReq(struct _TcpReqSt **reqs, int size, u64 ms, WakeUpSocket *wuce,
                     }
                     req->skt = INVALID_SOCKET;
                     ySetEvent(&req->finished);
-                    req->errcode = YERRTO(res,req->errmsg);
+                    req->errcode = YERRTO((YRETCODE) res,req->errmsg);
                     req->callback = NULL;
                 } else if(res > 0) {
                     req->replysize += res;
@@ -743,7 +743,7 @@ int yTcpSelectReq(struct _TcpReqSt **reqs, int size, u64 ms, WakeUpSocket *wuce,
                                     // No credential provided, give up immediately
                                     yTcpClose(req->skt);
                                     if (req->callback) {
-                                        req->callback(req->callback, YAPI_UNAUTHORIZED, req->replybuf, req->replybufsize);
+                                        req->callback((void*) req->callback, YAPI_UNAUTHORIZED, req->replybuf, req->replybufsize);
                                     }
                                     req->callback =NULL;
                                     req->skt = INVALID_SOCKET;
@@ -795,9 +795,9 @@ int yTcpEofReq(struct _TcpReqSt *req, char *errmsg)
     } else if(req->errcode == 0) {
         return 0;
     } else if(req->errcode == YAPI_UNAUTHORIZED) {
-        return YERRMSG(req->errcode, "Access denied, authorization required");
+        return YERRMSG((YRETCODE) req->errcode, "Access denied, authorization required");
     }
-    return YERRMSG(req->errcode, "Network error during select");
+    return YERRMSG((YRETCODE) req->errcode, "Network error during select");
 }
 
 
@@ -999,7 +999,7 @@ static void ySSDPUpdateCache(SSDPInfos *SSDP, const char *uuid, const char * url
         }
     }
 	if (i <NB_SSDP_CACHE_ENTRY){
-		SSDP_CACHE_ENTRY *p = yMalloc(sizeof(SSDP_CACHE_ENTRY));
+		SSDP_CACHE_ENTRY *p = (SSDP_CACHE_ENTRY*) yMalloc(sizeof(SSDP_CACHE_ENTRY));
         YSTRCPY(p->uuid,SSDP_URL_LEN,uuid);
 		uuidToSerial(p->uuid, p->serial);
         YSTRCPY(p->url,SSDP_URL_LEN,url);

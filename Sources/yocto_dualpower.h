@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_dualpower.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_dualpower.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindDualPower(), the high-level API for DualPower functions
  *
@@ -87,6 +87,9 @@ typedef enum {
  * (external battery running out of power).
  */
 class YOCTO_CLASS_EXPORT YDualPower: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YDualPower declaration)
 protected:
     //--- (YDualPower attributes)
@@ -242,6 +245,9 @@ public:
            static YDualPower* FirstDualPower(void);
     inline static YDualPower* First(void)
     { return YDualPower::FirstDualPower();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YDualPower accessors declaration)
 };
 

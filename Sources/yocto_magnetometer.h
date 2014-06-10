@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_magnetometer.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_magnetometer.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindMagnetometer(), the high-level API for Magnetometer functions
  *
@@ -67,6 +67,9 @@ typedef void (*YMagnetometerTimedReportCallback)(YMagnetometer *func, YMeasure m
  * measure of the sensor, as well as the minimal and maximal values observed.
  */
 class YOCTO_CLASS_EXPORT YMagnetometer: public YSensor {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YMagnetometer declaration)
 protected:
     //--- (YMagnetometer attributes)
@@ -218,6 +221,9 @@ public:
            static YMagnetometer* FirstMagnetometer(void);
     inline static YMagnetometer* First(void)
     { return YMagnetometer::FirstMagnetometer();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YMagnetometer accessors declaration)
 };
 

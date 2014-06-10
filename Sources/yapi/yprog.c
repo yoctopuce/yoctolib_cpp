@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 12321 2013-08-13 14:56:24Z mvuilleu $
+ * $Id: yprog.c 16348 2014-05-30 13:40:17Z seb $
  *
  * Implementation of firmware upgrade functions
  *
@@ -51,7 +51,7 @@
 
 const char* prog_GetCPUName(BootloaderSt *dev)
 {
-	char * res="";
+	const char * res="";
 	switch(dev->devid_family){
 	case FAMILY_PIC24FJ256DA210:
         switch(dev->devid_model){
@@ -302,20 +302,21 @@ int ypSendBootloaderCmd(BootloaderSt *dev, const USB_Packet *pkt,char *errmsg)
 	return yyySendPacket(&dev->iface,pkt,errmsg);
 }
 
-// Return 1 if a reply packet was available and returned
-// Return 0 if there was no reply available
-// Return and YRETCODE on errror
+// Return 0 if a reply packet was available and returned
+// Return -1 if there was no reply available or on error
 int ypGetBootloaderReply(BootloaderSt *dev, USB_Packet *pkt,char *errmsg)
 {
 	pktItem *ptr;
+    // clear the dest buffer to avoid any misinterpretation
+    memset(pkt->prog.raw, 0, sizeof(USB_Packet));
 	YPROPERR(yPktQueueWaitAndPopD2H(&dev->iface,&ptr,10,errmsg));
     if(ptr){
         yTracePtr(ptr);
         memcpy(pkt,&ptr->pkt,sizeof(USB_Packet));
         yFree(ptr);
-        return 1;
+        return 0;
     }
-	return YAPI_SUCCESS;
+	return YAPI_TIMEOUT; // not a fatal error, handled by caller
 }
 
 //pool a packet form usb for a specific device
@@ -728,7 +729,7 @@ int prog_GetDeviceInfo(BootloaderSt *dev,char *errmsg)
 {
     int     res;
     char    suberr[YOCTO_ERRMSG_LEN];
-    char    *nicemsg="Unable to get device infos";
+    const char    *nicemsg="Unable to get device infos";
     USB_Packet pkt;
     memset(&pkt,0,sizeof(USB_Prog_Packet));
     pkt.prog.pkt.type = PROG_INFO;

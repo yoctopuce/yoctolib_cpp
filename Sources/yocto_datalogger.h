@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_datalogger.h 14826 2014-02-04 14:09:17Z seb $
+ * $Id: yocto_datalogger.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindDataLogger(), the high-level API for DataLogger functions
  *
@@ -150,6 +150,9 @@ public:
  * logger.
  */
 class YOCTO_CLASS_EXPORT YDataLogger: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of generated code: YDataLogger declaration)
     //--- (generated code: YDataLogger attributes)
     // Attributes (function value cache)
@@ -417,6 +420,9 @@ public:
            static YDataLogger* FirstDataLogger(void);
     inline static YDataLogger* First(void)
     { return YDataLogger::FirstDataLogger();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of generated code: YDataLogger accessors declaration)
 };
 

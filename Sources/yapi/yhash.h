@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.h 16026 2014-05-02 08:43:10Z seb $
+ * $Id: yhash.h 16252 2014-05-19 20:07:34Z mvuilleu $
  *
  * Simple hash tables and device/function information store
  *
@@ -59,9 +59,18 @@ extern "C" {
 #define NB_MAX_DEVICES       256
 #endif
 
-#define YSTRREF_EMPTY_STRING  0x00ff /* yStrRef value for the empty string    */
-#define YSTRREF_MODULE_STRING 0x0020 /* yStrRef value for the string 'Module' */
-#define YSTRREF_mODULE_STRING 0x00a3 /* yStrRef value for the string 'Module' */
+#define YSTRREF_EMPTY_STRING   0x00ff /* yStrRef value for the empty string    */
+#define YSTRREF_MODULE_STRING  0x0020 /* yStrRef value for the string 'Module' */
+#define YSTRREF_mODULE_STRING  0x00a3 /* yStrRef value for the string 'module' */
+#define YSTRREF_HUBPORT_STRING 0x00d6 /* yStrRef value for the string 'HubPort' */
+
+#ifndef CPU_BIG_ENDIAN
+#define WORD_TEXT_PR           0x5250
+#define WORD_TEXT_OG           0x474f
+#else
+#define WORD_TEXT_PR           0x5052
+#define WORD_TEXT_OG           0x4f47
+#endif
 
 typedef enum {
     Y_WP_SERIALNUMBER,
@@ -237,6 +246,8 @@ void    ypGetCategory(yBlkHdl hdl, char *name, yBlkHdl *entries);
 int     ypGetAttributes(yBlkHdl hdl, yStrRef *serial, yStrRef *funcId, yStrRef *funcName, char *funcVal);
 int     ypGetType(yBlkHdl hdl);
 YAPI_FUNCTION ypSearch(const char *class_str, const char *func_str);
+int     ypGetBootDevHdl(const char *serial);
+s16     ypFindBootloaders(yStrRef *serials, u16 maxSerials);
 int     ypGetFunctions(const char *class_str, YAPI_DEVICE devdesc, YAPI_FUNCTION prevfundesc,
                        YAPI_FUNCTION *buffer,int maxsize,int *neededsize);
 int     ypGetFunctionInfo(YAPI_FUNCTION fundesc, char *serial, char *funcId, char *funcName, char *funcVal);

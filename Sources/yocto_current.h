@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_current.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_current.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindCurrent(), the high-level API for Current functions
  *
@@ -64,6 +64,9 @@ typedef void (*YCurrentTimedReportCallback)(YCurrent *func, YMeasure measure);
  * measure of the sensor, as well as the minimal and maximal values observed.
  */
 class YOCTO_CLASS_EXPORT YCurrent: public YSensor {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YCurrent declaration)
 protected:
     //--- (YCurrent attributes)
@@ -167,6 +170,9 @@ public:
            static YCurrent* FirstCurrent(void);
     inline static YCurrent* First(void)
     { return YCurrent::FirstCurrent();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YCurrent accessors declaration)
 };
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorled.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_colorled.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -86,6 +86,9 @@ public:
  * difference between RGB and HSL in the section following this one.
  */
 class YOCTO_CLASS_EXPORT YColorLed: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YColorLed declaration)
 protected:
     //--- (YColorLed attributes)
@@ -306,6 +309,9 @@ public:
            static YColorLed* FirstColorLed(void);
     inline static YColorLed* First(void)
     { return YColorLed::FirstColorLed();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YColorLed accessors declaration)
 };
 

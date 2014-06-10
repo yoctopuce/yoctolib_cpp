@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_accelerometer.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_accelerometer.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindAccelerometer(), the high-level API for Accelerometer functions
  *
@@ -67,6 +67,9 @@ typedef void (*YAccelerometerTimedReportCallback)(YAccelerometer *func, YMeasure
  * measure of the sensor, as well as the minimal and maximal values observed.
  */
 class YOCTO_CLASS_EXPORT YAccelerometer: public YSensor {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YAccelerometer declaration)
 protected:
     //--- (YAccelerometer attributes)
@@ -215,6 +218,9 @@ public:
            static YAccelerometer* FirstAccelerometer(void);
     inline static YAccelerometer* First(void)
     { return YAccelerometer::FirstAccelerometer();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YAccelerometer accessors declaration)
 };
 

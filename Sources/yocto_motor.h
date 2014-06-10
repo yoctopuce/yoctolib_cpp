@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: pic24config.php 15635 2014-03-28 21:04:00Z mvuilleu $
+ * $Id: yocto_motor.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindMotor(), the high-level API for Motor functions
  *
@@ -88,6 +88,9 @@ typedef enum {
  * its terminals: the motor will then act as an electromagnetic break.
  */
 class YOCTO_CLASS_EXPORT YMotor: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YMotor declaration)
 protected:
     //--- (YMotor attributes)
@@ -498,6 +501,9 @@ public:
            static YMotor* FirstMotor(void);
     inline static YMotor* First(void)
     { return YMotor::FirstMotor();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YMotor accessors declaration)
 };
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_tilt.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_tilt.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindTilt(), the high-level API for Tilt functions
  *
@@ -74,6 +74,9 @@ typedef enum {
  * measure of the sensor, as well as the minimal and maximal values observed.
  */
 class YOCTO_CLASS_EXPORT YTilt: public YSensor {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YTilt declaration)
 protected:
     //--- (YTilt attributes)
@@ -190,6 +193,9 @@ public:
            static YTilt* FirstTilt(void);
     inline static YTilt* First(void)
     { return YTilt::FirstTilt();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YTilt accessors declaration)
 };
 

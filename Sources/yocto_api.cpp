@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 16091 2014-05-08 12:10:31Z seb $
+ * $Id: yocto_api.cpp 16461 2014-06-06 14:44:21Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -56,6 +56,7 @@
 #include <cmath>
 #include <time.h>
 #include <stdarg.h>
+#include <math.h>
 
 static  yCRITICAL_SECTION   _updateDeviceList_CS;
 static  yCRITICAL_SECTION   _handleEvent_CS;
@@ -1088,6 +1089,10 @@ string YFunction::get_logicalName(void)
 int YFunction::set_logicalName(const string& newval)
 {
     string rest_val;
+    if (!YAPI::CheckLogicalName(newval)) {
+        _throw(YAPI_INVALID_ARGUMENT, "Invalid name :" + newval);
+        return YAPI_INVALID_ARGUMENT;
+    }
     rest_val = newval;
     return _setAttr("logicalName", rest_val);
 }

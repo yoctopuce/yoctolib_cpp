@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_compass.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_compass.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindCompass(), the high-level API for Compass functions
  *
@@ -75,6 +75,9 @@ typedef enum {
  * measure of the sensor, as well as the minimal and maximal values observed.
  */
 class YOCTO_CLASS_EXPORT YCompass: public YSensor {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YCompass declaration)
 protected:
     //--- (YCompass attributes)
@@ -205,6 +208,9 @@ public:
            static YCompass* FirstCompass(void);
     inline static YCompass* First(void)
     { return YCompass::FirstCompass();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YCompass accessors declaration)
 };
 

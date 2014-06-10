@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yfifo.c 15698 2014-04-04 10:31:31Z mvuilleu $
+ * $Id: yfifo.c 16197 2014-05-13 06:15:42Z mvuilleu $
  *
  * Implementation of a generic fifo queue 
  *
@@ -62,7 +62,7 @@ void yFifoInitEx(
 #endif
 }
 
-#ifndef MIMICROCHIP_API
+#ifndef MICROCHIP_API
 void yFifoCleanup(yFifoBuf *buf)
 {
 #ifdef YFIFO_USE_MUTEX    
@@ -212,7 +212,7 @@ u16 yForceFifo(yFifoBuf *buf, const u8 *data, u16 datalen, u32 *absCounter)
     u16 res;
 
 #ifdef MICROCHIP_API
-//    _CLI();
+    _CLI();
 #else
     yFifoEnterCS(buf);
 #endif
@@ -221,7 +221,7 @@ u16 yForceFifo(yFifoBuf *buf, const u8 *data, u16 datalen, u32 *absCounter)
     *absCounter += res;
 
 #ifdef MICROCHIP_API
-//    _STI();
+    _STI();
 #else
     yFifoLeaveCS(buf);
 #endif

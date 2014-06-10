@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwmoutput.h 15529 2014-03-20 17:54:15Z seb $
+ * $Id: yocto_pwmoutput.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindPwmOutput(), the high-level API for PwmOutput functions
  *
@@ -85,6 +85,9 @@ typedef enum {
  * The Yoctopuce application programming interface allows you to configure, start, and stop the PWM.
  */
 class YOCTO_CLASS_EXPORT YPwmOutput: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YPwmOutput declaration)
 protected:
     //--- (YPwmOutput attributes)
@@ -412,6 +415,9 @@ public:
            static YPwmOutput* FirstPwmOutput(void);
     inline static YPwmOutput* First(void)
     { return YPwmOutput::FirstPwmOutput();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YPwmOutput accessors declaration)
 };
 

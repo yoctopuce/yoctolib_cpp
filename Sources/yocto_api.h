@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 16091 2014-05-08 12:10:31Z seb $
+ * $Id: yocto_api.h 16461 2014-06-06 14:44:21Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -625,6 +625,9 @@ public:
  * a more convenient interface.
  */
 class YOCTO_CLASS_EXPORT YDataStream {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of generated code: YDataStream declaration)
 protected:
     //--- (generated code: YDataStream attributes)
@@ -854,6 +857,9 @@ public:
      */
     virtual double      get_data(int row,int col);
 
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of generated code: YDataStream accessors declaration)
 };
 
@@ -866,6 +872,9 @@ public:
  * used in particular in conjunction with the YDataSet class.
  */
 class YOCTO_CLASS_EXPORT YMeasure {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of generated code: YMeasure declaration)
 protected:
     //--- (generated code: YMeasure attributes)
@@ -936,6 +945,9 @@ public:
      */
     virtual double      get_maxValue(void);
 
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of generated code: YMeasure accessors declaration)
 };
 
@@ -962,6 +974,9 @@ public:
  * as YDataSet objects are not supported by firmwares older than version 13000.
  */
 class YOCTO_CLASS_EXPORT YDataSet {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of generated code: YDataSet declaration)
 protected:
     //--- (generated code: YDataSet attributes)
@@ -1136,6 +1151,9 @@ public:
      */
     virtual vector<YMeasure> get_measures(void);
 
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of generated code: YDataSet accessors declaration)
 };
 
@@ -1201,6 +1219,9 @@ public:
  * the specified function, pre-parsed from the REST API string.
  */
 class YOCTO_CLASS_EXPORT YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of generated code: YFunction declaration)
 protected:
     // Protected attributes
@@ -1395,6 +1416,9 @@ public:
            static YFunction* FirstFunction(void);
     inline static YFunction* First(void)
     { return YFunction::FirstFunction();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of generated code: YFunction accessors declaration)
 
 
@@ -1568,6 +1592,9 @@ typedef void(*YModuleLogCallback)(YModule *module, const string& log);
  * to enumerate the functions provided by each module.
  */
 class YOCTO_CLASS_EXPORT YModule: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of generated code: YModule declaration)
 protected:
     //--- (generated code: YModule attributes)
@@ -2021,6 +2048,9 @@ public:
            static YModule* FirstModule(void);
     inline static YModule* First(void)
     { return YModule::FirstModule();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of generated code: YModule accessors declaration)
 };
 
@@ -2035,6 +2065,9 @@ public:
  * measure of the sensor, as well as the minimal and maximal values observed.
  */
 class YOCTO_CLASS_EXPORT YSensor: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of generated code: YSensor declaration)
 protected:
     //--- (generated code: YSensor attributes)
@@ -2442,6 +2475,9 @@ public:
            static YSensor* FirstSensor(void);
     inline static YSensor* First(void)
     { return YSensor::FirstSensor();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of generated code: YSensor accessors declaration)
 };
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_anbutton.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_anbutton.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindAnButton(), the high-level API for AnButton functions
  *
@@ -93,6 +93,9 @@ typedef enum {
  * potentiometer position, regardless of its total resistance.
  */
 class YOCTO_CLASS_EXPORT YAnButton: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YAnButton declaration)
 protected:
     //--- (YAnButton attributes)
@@ -430,6 +433,9 @@ public:
            static YAnButton* FirstAnButton(void);
     inline static YAnButton* First(void)
     { return YAnButton::FirstAnButton();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YAnButton accessors declaration)
 };
 

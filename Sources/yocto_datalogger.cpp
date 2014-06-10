@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_datalogger.cpp 14700 2014-01-23 15:40:44Z seb $
+ * $Id: yocto_datalogger.cpp 16461 2014-06-06 14:44:21Z seb $
  *
  * Implements yFindDataLogger(), the high-level API for DataLogger functions
  *
@@ -70,7 +70,7 @@ int YOldDataStream::loadStream(void)
     yJsonStateMachine   j;
     int                 res, ival;
     double              fval;
-    unsigned            p, c;
+    unsigned            p, c = 0;
     vector<int>         coldiv, coltyp;
     vector<double>      colscl;
     vector<int>         colofs;
@@ -360,7 +360,8 @@ int YDataLogger::get_dataStreams(vector<YDataStream *>& v)
     string              buffer;
     yJsonStateMachine   j;
     int                 res;
-    unsigned            i, si, arr[4];
+	unsigned            i, si, arr[4];
+	YOldDataStream      *ods;
     
     v.clear();
     if((res = getData(0, 0, buffer, j)) != YAPI_SUCCESS) {
@@ -381,8 +382,9 @@ int YDataLogger::get_dataStreams(vector<YDataStream *>& v)
             if(i < 4) break;
             // skip any extra item in array
             while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.token[0] != ']');
-            // instantiate a data stream
-            v.push_back(new YOldDataStream(this,arr[0],arr[1],arr[2],arr[3]));
+			// instantiate a data stream
+			ods = new YOldDataStream(this,arr[0],arr[1],arr[2],arr[3]);
+			v.push_back(ods);
         } else if(j.token[0] == '{') {
             // new datalogger format: {"id":"...","unit":"...","streams":["...",...]}
             size_t pos = buffer.find("\r\n\r\n", 0);
@@ -391,8 +393,9 @@ int YDataLogger::get_dataStreams(vector<YDataStream *>& v)
             for (i=0; i < sets.size(); i++) { 
                 vector<YDataStream*> ds = sets[i].get_privateDataStreams();
                 for (si=0; si < ds.size(); si++) { 
-                    // return a user-owned copy
-                    v.push_back(new YDataStream(*ds[si]));
+					// return a user-owned copy
+
+					v.push_back(new YDataStream(*ds[si]));
                 }
             }
             break;

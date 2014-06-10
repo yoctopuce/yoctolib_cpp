@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_realtimeclock.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_realtimeclock.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *
@@ -76,6 +76,9 @@ typedef enum {
  * will occur to account for daylight saving time.
  */
 class YOCTO_CLASS_EXPORT YRealTimeClock: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YRealTimeClock declaration)
 protected:
     //--- (YRealTimeClock attributes)
@@ -255,6 +258,9 @@ public:
            static YRealTimeClock* FirstRealTimeClock(void);
     inline static YRealTimeClock* First(void)
     { return YRealTimeClock::FirstRealTimeClock();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YRealTimeClock accessors declaration)
 };
 

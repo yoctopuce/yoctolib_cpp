@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_digitalio.h 15998 2014-05-01 08:25:18Z seb $
+ * $Id: yocto_digitalio.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -80,6 +80,9 @@ typedef enum {
  * of each I/O can be modified (open drain and reverse polarity).
  */
 class YOCTO_CLASS_EXPORT YDigitalIO: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YDigitalIO declaration)
 protected:
     //--- (YDigitalIO attributes)
@@ -486,6 +489,9 @@ public:
            static YDigitalIO* FirstDigitalIO(void);
     inline static YDigitalIO* First(void)
     { return YDigitalIO::FirstDigitalIO();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YDigitalIO accessors declaration)
 };
 

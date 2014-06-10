@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_lin.c 14805 2014-01-31 18:24:53Z seb $
+ * $Id: ypkt_lin.c 16448 2014-06-06 08:14:07Z seb $
  *
  * OS-specific USB packet layer, Linux version
  *
@@ -141,8 +141,87 @@ static void yReleaseGlobalAccess(yContextSt *ctx)
       }
 }
 
+typedef struct {
+    libusb_device *dev;
+    int desc_index;
+    int len;
+    char *string;
+    u64 expiration;
+} stringCacheSt;
+
+#define STRING_CACHE_SIZE 16
+#define STRING_CACHE_EXPIRATION 60000 //1 minutes
+static stringCacheSt stringCache[STRING_CACHE_SIZE];
 
 
+// on success data point to a null terminated string of max length-1 characters
+static int getUsbStringASCII(libusb_device_handle *hdl, libusb_device *dev, u8 desc_index, char *data, u32 length)
+{   
+    u8  buffer[512];
+    u32 l,len;
+    int res,i;
+    stringCacheSt *c = stringCache;
+    stringCacheSt *f = NULL;
+    u64 now = yapiGetTickCount();
+    
+    yEnterCriticalSection(&yContext->string_cache_cs);
+    
+    for (i = 0; i < STRING_CACHE_SIZE; i++, c++) {
+        if (c->expiration > now) {
+            if(c->dev == dev && c->desc_index == desc_index) {
+                if (c->len > 0 && c->string) {
+                    len = c->len;
+                    if (c->len >= length)
+                        len = length-1;
+                    memcpy(data, c->string,  len); 
+                    data[len] = 0;
+                    HALLOG("return string from cache (%p:%d->%s)\n",dev,desc_index,c->string);
+                    yLeaveCriticalSection(&yContext->string_cache_cs);
+                    return c->len;
+                } else {
+                    f = c;
+                    break;
+                }
+            }
+        } else {
+            if (c->string) {
+                yFree(c->string);
+                c->string =NULL;
+            }
+            if (f == NULL) {
+                f = c;
+            }
+        }
+    }
+                
+    res=libusb_control_transfer(hdl, LIBUSB_ENDPOINT_IN,
+        LIBUSB_REQUEST_GET_DESCRIPTOR, (LIBUSB_DT_STRING << 8) | desc_index,
+        0, buffer, 512, 10000);
+    if(res<0) return res;
+
+    len=(buffer[0]-2)/2;
+    if (len >= length) {
+        len = length - 1;
+    }
+
+    for (l = 0; l < len; l++){
+        data[l] = (char) buffer[2+(l*2)];
+    }
+    data[len] = 0;
+
+    if (f != NULL) {
+        f->dev = dev;
+        f->desc_index = desc_index;
+        f->string = yMalloc(len+1);
+        memcpy(f->string, data, len+1);
+        f->len  = len;
+        f->expiration = yapiGetTickCount() + STRING_CACHE_EXPIRATION;
+        HALLOG("add string to cache (%p:%d->%s)\n",dev,desc_index,f->string);
+    }
+    yLeaveCriticalSection(&yContext->string_cache_cs);
+    
+    return len;
+}
 
 
 static void *event_thread(void *param)
@@ -176,7 +255,9 @@ int yyyUSB_init(yContextSt *ctx,char *errmsg)
         return YERRMSG(YAPI_DOUBLE_ACCES,"Another process is already using yAPI");
     }
 
-
+    memset(stringCache, 0, sizeof(stringCache));
+    yInitializeCriticalSection(&ctx->string_cache_cs);
+    
     if(libusb_init(&ctx->libusb)!=0){
         return YERRMSG(YAPI_IO_ERROR,"Unable to start lib USB");
     }
@@ -194,6 +275,9 @@ int yyyUSB_init(yContextSt *ctx,char *errmsg)
 
 int yyyUSB_stop(yContextSt *ctx,char *errmsg)
 {
+    int i;
+    stringCacheSt *c = stringCache;
+
     if(ctx->usb_thread_state == USB_THREAD_RUNNING){
         ctx->usb_thread_state = USB_THREAD_MUST_STOP;
         pthread_join(ctx->usb_thread,NULL);
@@ -202,6 +286,12 @@ int yyyUSB_stop(yContextSt *ctx,char *errmsg)
 
     libusb_exit(ctx->libusb);
     yReleaseGlobalAccess(ctx);
+    for (i = 0; i < STRING_CACHE_SIZE; i++, c++) {
+        if(c->string) {
+            yFree(c->string);
+        }
+    }
+    yDeleteCriticalSection(&ctx->string_cache_cs);
 
     return YAPI_SUCCESS;
 }
@@ -226,34 +316,13 @@ static int getDevConfig(libusb_device *dev, struct libusb_config_descriptor **co
 }
 
 
-static int getUsbStringASCII(libusb_device_handle *dev, u8 desc_index,  u8 *data, u32 length)
-{   
-    u8  buffer[512];
-    u32 l,len;
-    int res;
-                
-    res=libusb_control_transfer(dev, LIBUSB_ENDPOINT_IN,
-        LIBUSB_REQUEST_GET_DESCRIPTOR, (LIBUSB_DT_STRING << 8) | desc_index,
-        0, buffer, 512, 10000);
-    if(res<0) return res;
-
-    len=(buffer[0]-2)/2;
-    for(l=0;l<len && l<length;l++){
-        data[l] = buffer[2+(l*2)];
-    }
-    return len;
-}
-
-
-
-
 int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
 {
     libusb_device   **list;
     ssize_t         nbdev;
     int             returnval=YAPI_SUCCESS;
     int             i,j;
-    u32             nbifaceAlloc;
+    int             nbifaceAlloc;
     yInterfaceSt    *iface;
     
     nbdev=libusb_get_device_list(yContext->libusb,&list);
@@ -315,9 +384,9 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
                 HALLOG("unable to access device %x:%x\n",desc.idVendor,desc.idProduct);                    
                 continue;                
             }
-            HALLOG("try to get serial for %x:%x:%x\n",desc.idVendor,desc.idProduct,desc.iSerialNumber);
+            HALLOG("try to get serial for %x:%x:%x (%p)\n",desc.idVendor,desc.idProduct,desc.iSerialNumber,dev);
             
-            res = getUsbStringASCII(hdl,desc.iSerialNumber,(u8*)iface->serial,YOCTO_SERIAL_LEN);              
+            res = getUsbStringASCII(hdl, dev, desc.iSerialNumber, iface->serial, YOCTO_SERIAL_LEN);              
             if(res<0){
                 HALLOG("unable to get serial for device %x:%x\n",desc.idVendor,desc.idProduct);                                
             }
@@ -374,7 +443,7 @@ static void read_callback(struct libusb_transfer *transfer)
     yInterfaceSt *iface = lintr->iface;
     switch(transfer->status){        
     case LIBUSB_TRANSFER_COMPLETED:
-        HALLOG("%s:%d pkt_arrived (len=%d)\n",iface->serial,iface->ifaceno,transfer->actual_length);
+        //HALLOG("%s:%d pkt_arrived (len=%d)\n",iface->serial,iface->ifaceno,transfer->actual_length);
         yPktQueuePushD2H(iface,&lintr->tmppkt,NULL);
         if (iface->flags.yyySetupDone) {
             res=libusb_submit_transfer(lintr->tr);
@@ -385,6 +454,10 @@ static void read_callback(struct libusb_transfer *transfer)
         return;
     case LIBUSB_TRANSFER_ERROR:
         HALLOG("%s:%d pkt error\n",iface->serial,iface->ifaceno);
+        res=libusb_submit_transfer(lintr->tr);
+        if(res<0){
+            HALLOG("%s:%d libusb_submit_transfer errror %X\n",iface->serial,iface->ifaceno,res);
+        }
         break;
     case LIBUSB_TRANSFER_TIMED_OUT :
         HALLOG("%s:%d pkt timeout\n",iface->serial,iface->ifaceno);

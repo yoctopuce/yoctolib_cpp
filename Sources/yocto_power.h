@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_power.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_power.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindPower(), the high-level API for Power functions
  *
@@ -67,6 +67,9 @@ typedef void (*YPowerTimedReportCallback)(YPower *func, YMeasure measure);
  * measure of the sensor, as well as the minimal and maximal values observed.
  */
 class YOCTO_CLASS_EXPORT YPower: public YSensor {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YPower declaration)
 protected:
     //--- (YPower attributes)
@@ -232,6 +235,9 @@ public:
            static YPower* FirstPower(void);
     inline static YPower* First(void)
     { return YPower::FirstPower();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YPower accessors declaration)
 };
 

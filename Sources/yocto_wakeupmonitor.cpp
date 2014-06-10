@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wakeupmonitor.cpp 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_wakeupmonitor.cpp 16424 2014-06-04 14:26:41Z seb $
  *
  * Implements yFindWakeUpMonitor(), the high-level API for WakeUpMonitor functions
  *
@@ -372,7 +372,7 @@ int YWakeUpMonitor::sleep(int secBeforeSleep)
  * RTC time must have been set before calling this function. The count down before sleep
  * can be canceled with resetSleepCountDown.
  * 
- * @param secUntilWakeUp : sleep duration, in secondes
+ * @param secUntilWakeUp : number of seconds before next wake up
  * @param secBeforeSleep : number of seconds before going into sleep mode
  * 
  * @return YAPI_SUCCESS if the call succeeds.

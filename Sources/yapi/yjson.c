@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yjson.c 13562 2013-11-14 09:55:44Z mvuilleu $
+ * $Id: yjson.c 16348 2014-05-30 13:40:17Z seb $
  *
  * Simple JSON parser (actually a slightly enhanced lexer)
  *
@@ -93,10 +93,10 @@ yJsonRetCode yJsonParse(yJsonStateMachine *j)
 skip:
     res = YJSON_NEED_INPUT;
     if(st == YJSON_HTTP_START || st == YJSON_START || st == YJSON_PARSE_ANY) {
-        j->next = -1;
-    } else if(j->next != -1) {
+        j->next = YJSON_PARSE_SPECIAL;
+    } else if(j->next != YJSON_PARSE_SPECIAL) {
         st = j->next;
-        j->next = -1;
+        j->next = YJSON_PARSE_SPECIAL;
     }
     
     while(1) {
@@ -200,7 +200,11 @@ skip:
                 }
                 src++; // skip double-quote or backslash
                 if(c == '"') goto token_done;
-                st++;
+                if (st == YJSON_PARSE_STRING) {
+                    st = YJSON_PARSE_STRINGQ;
+                } else { 
+                    st = YJSON_PARSE_STRINGCONTQ;
+                }
                 // fall through
             case YJSON_PARSE_STRINGQ:    // parsing a quoted string, within quoted character
             case YJSON_PARSE_STRINGCONTQ:// parsing the continuation of a quoted string, within quoted character
@@ -212,7 +216,12 @@ skip:
                     case 't': *pt++ = '\t'; break;
                     default: *pt++ = c;
                 }
-                st--; // continue string parsing;
+                if (st == YJSON_PARSE_STRINGQ) {
+                    st = YJSON_PARSE_STRING;
+                } else { 
+                    st = YJSON_PARSE_STRINGCONT;
+                }
+                // continue string parsing;
                 continue;
             case YJSON_PARSE_ARRAY:      // parsing an unnamed array
                 while(src < end && (*src == ' ' || *src == '\r' || *src == '\n')) src++;

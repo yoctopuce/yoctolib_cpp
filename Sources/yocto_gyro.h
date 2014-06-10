@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.h 15334 2014-03-07 20:33:05Z mvuilleu $
+ * $Id: yocto_gyro.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindGyro(), the high-level API for Gyro functions
  *
@@ -65,6 +65,9 @@ typedef void (*YQtTimedReportCallback)(YQt *func, YMeasure measure);
  * YGyro class provides a more convenient higher-level interface.
  */
 class YOCTO_CLASS_EXPORT YQt: public YSensor {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of generated code: YQt declaration)
 protected:
     //--- (generated code: YQt attributes)
@@ -168,6 +171,9 @@ public:
            static YQt* FirstQt(void);
     inline static YQt* First(void)
     { return YQt::FirstQt();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of generated code: YQt accessors declaration)
 };
 
@@ -238,6 +244,9 @@ typedef void(*YAnglesCallback)(YGyro *yGyro, double roll, double pitch, double h
  * measure of the sensor, as well as the minimal and maximal values observed.
  */
 class YOCTO_CLASS_EXPORT YGyro: public YSensor {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of generated code: YGyro declaration)
 protected:
     //--- (generated code: YGyro attributes)
@@ -530,6 +539,9 @@ public:
            static YGyro* FirstGyro(void);
     inline static YGyro* First(void)
     { return YGyro::FirstGyro();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of generated code: YGyro accessors declaration)
 };
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.h 15998 2014-05-01 08:25:18Z seb $
+ * $Id: yocto_display.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindDisplay(), the high-level API for Display functions
  *
@@ -128,6 +128,9 @@ class YDisplay;
  * overlapping layers).
  */
 class YOCTO_CLASS_EXPORT YDisplayLayer {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of generated code: YDisplayLayer declaration)
     //--- (generated code: YDisplayLayer attributes)
     // Attributes (function value cache)
@@ -149,6 +152,7 @@ class YOCTO_CLASS_EXPORT YDisplayLayer {
     
 public:
     int flush_now();
+    virtual ~YDisplayLayer(){};
     YDisplayLayer(YDisplay *parent, int id):
     _display(parent),_id(id),_cmdbuff(""),_hidden(false){};
     //--- (generated code: YDisplayLayer accessors declaration)
@@ -565,6 +569,9 @@ public:
 
     virtual int         resetHiddenFlag(void);
 
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of generated code: YDisplayLayer accessors declaration)
     int drawBitmap(int x,int y,int w,const std::vector<unsigned char>& data,int bgcol);
 };
@@ -581,6 +588,9 @@ public:
  * sequences (animations).
  */
 class YOCTO_CLASS_EXPORT YDisplay: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of generated code: YDisplay declaration)
     //--- (generated code: YDisplay attributes)
     // Attributes (function value cache)
@@ -870,6 +880,8 @@ public:
 
     /**
      * Clears the display screen and resets all display layers to their default state.
+     * Using this function in a sequence will kill the sequence play-back. Don't use that
+     * function to reset the display at sequence start-up.
      * 
      * @return YAPI_SUCCESS if the call succeeds.
      * 
@@ -1026,6 +1038,9 @@ public:
            static YDisplay* FirstDisplay(void);
     inline static YDisplay* First(void)
     { return YDisplay::FirstDisplay();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of generated code: YDisplay accessors declaration)
 
     

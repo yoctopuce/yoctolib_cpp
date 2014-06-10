@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.h 14826 2014-02-04 14:09:17Z seb $
+ * $Id: yocto_files.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindFiles(), the high-level API for Files functions
  *
@@ -66,6 +66,9 @@ typedef void (*YFilesValueCallback)(YFiles *func, const string& functionValue);
  * 
  */
 class YOCTO_CLASS_EXPORT YFileRecord {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of generated code: YFileRecord declaration)
     //--- (generated code: YFileRecord attributes)
     // Attributes (function value cache)
@@ -90,6 +93,9 @@ public:
 
     virtual int         get_crc(void);
 
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of generated code: YFileRecord accessors declaration)
 };
 
@@ -107,6 +113,9 @@ public:
  * devices).
  */
 class YOCTO_CLASS_EXPORT YFiles: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of generated code: YFiles declaration)
     //--- (generated code: YFiles attributes)
     // Attributes (function value cache)
@@ -293,6 +302,9 @@ public:
            static YFiles* FirstFiles(void);
     inline static YFiles* First(void)
     { return YFiles::FirstFiles();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of generated code: YFiles accessors declaration)
 };
 

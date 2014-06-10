@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_genericsensor.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_genericsensor.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -68,6 +68,9 @@ typedef void (*YGenericSensorTimedReportCallback)(YGenericSensor *func, YMeasure
  * measure of the sensor, as well as the minimal and maximal values observed.
  */
 class YOCTO_CLASS_EXPORT YGenericSensor: public YSensor {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YGenericSensor declaration)
 protected:
     //--- (YGenericSensor attributes)
@@ -272,6 +275,9 @@ public:
            static YGenericSensor* FirstGenericSensor(void);
     inline static YGenericSensor* First(void)
     { return YGenericSensor::FirstGenericSensor();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YGenericSensor accessors declaration)
 };
 

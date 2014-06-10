@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ymemory.c 12321 2013-08-13 14:56:24Z mvuilleu $
+ * $Id: ymemory.c 16348 2014-05-30 13:40:17Z seb $
  *
  * Basic memory check function to prevent memory leak
  *
@@ -38,6 +38,8 @@
  *********************************************************************/
 
 #define __FILE_ID__  "ymemory"
+ // do not use microsoft secure string
+#define _CRT_SECURE_NO_DEPRECATE
 #define YMEMORY_ALLOW_MALLOC
 #include "yproto.h"
 #ifdef YSAFE_MEMORY
@@ -247,4 +249,105 @@ void  ySafeMemoryStop(void)
     yMapSize = yMapUsed = 0;
 }
 
+
+
 #endif
+
+
+
+
+// return the min of strlen and maxlen
+static unsigned ystrnlen(const char *src,unsigned maxlen)
+{
+    unsigned len;
+    for (len=0 ; *src && len < maxlen ;len++,src++);
+    return len;
+}
+
+YRETCODE ystrcpy_s(char *dst, unsigned dstsize,const char *src)
+{
+
+    return ystrncpy_s(dst,dstsize,src,dstsize);
+}
+
+
+YRETCODE ystrcat_s(char *dst, unsigned dstsize,const char *src)
+{
+    return ystrncat_s(dst, dstsize, src, dstsize);
+}
+
+int ysprintf_s(char *dst, unsigned dstsize,const char *fmt ,...)
+{
+    int len;
+    va_list args;
+    va_start( args, fmt );
+    len = yvsprintf_s(dst,dstsize,fmt,args);
+    va_end(args);
+    return len;
+}
+
+YRETCODE ystrncpy_s(char *dst,unsigned dstsize,const char *src,unsigned arglen)
+{
+    unsigned len;
+
+    if (dst==NULL){
+        YPANIC;
+        return YAPI_INVALID_ARGUMENT;
+    }
+    if (src==NULL){
+        YPANIC;
+        return YAPI_INVALID_ARGUMENT;
+    }
+    if(dstsize ==0){
+        YPANIC;
+        return YAPI_INVALID_ARGUMENT;
+    }
+    len = ystrnlen(src,arglen);
+    if(len+1 > dstsize){
+        YPANIC;
+        dst[0]=0;
+        return YAPI_INVALID_ARGUMENT;
+    }else{
+        memcpy(dst,src,len);
+        dst[len]=0;
+    }
+    return YAPI_SUCCESS;
+}
+
+
+YRETCODE ystrncat_s(char *dst, unsigned dstsize,const char *src,unsigned len)
+{
+    unsigned dstlen;
+    if (dst==NULL){
+        YPANIC;
+        return YAPI_INVALID_ARGUMENT;
+    }
+    if (src==NULL){
+        YPANIC;
+        return YAPI_INVALID_ARGUMENT;
+    }
+    dstlen = ystrnlen(dst, dstsize);
+    if(dstlen+1 > dstsize){
+        YPANIC;
+        return YAPI_INVALID_ARGUMENT;
+    }
+    return ystrncpy_s(dst+dstlen, dstsize-dstlen, src, len);
+}
+
+
+int yvsprintf_s (char *dst, unsigned dstsize, const char * fmt, va_list arg )
+{
+    int len;
+#if defined(_MSC_VER) && (_MSC_VER <= MSC_VS2003)
+    len = _vsnprintf(dst,dstsize,fmt,arg);
+#else
+    len = vsnprintf(dst,dstsize,fmt,arg);
+#endif
+    if(len <0 || len >=(long)dstsize){
+        YPANIC;
+        dst[dstsize-1]=0;
+        return YAPI_INVALID_ARGUMENT;
+    }
+    return len;
+}
+

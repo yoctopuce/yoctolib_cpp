@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wakeupschedule.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_wakeupschedule.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindWakeUpSchedule(), the high-level API for WakeUpSchedule functions
  *
@@ -70,6 +70,9 @@ typedef void (*YWakeUpScheduleValueCallback)(YWakeUpSchedule *func, const string
  * wake up should happen.
  */
 class YOCTO_CLASS_EXPORT YWakeUpSchedule: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YWakeUpSchedule declaration)
 protected:
     //--- (YWakeUpSchedule attributes)
@@ -351,6 +354,9 @@ public:
            static YWakeUpSchedule* FirstWakeUpSchedule(void);
     inline static YWakeUpSchedule* First(void)
     { return YWakeUpSchedule::FirstWakeUpSchedule();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YWakeUpSchedule accessors declaration)
 };
 

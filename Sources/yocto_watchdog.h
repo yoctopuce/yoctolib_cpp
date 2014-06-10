@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_watchdog.h 15434 2014-03-14 06:37:47Z mvuilleu $
+ * $Id: yocto_watchdog.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindWatchdog(), the high-level API for Watchdog functions
  *
@@ -135,6 +135,9 @@ typedef enum {
  * off an appliance for a given duration.
  */
 class YOCTO_CLASS_EXPORT YWatchdog: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YWatchdog declaration)
 protected:
     //--- (YWatchdog attributes)
@@ -578,6 +581,9 @@ public:
            static YWatchdog* FirstWatchdog(void);
     inline static YWatchdog* First(void)
     { return YWatchdog::FirstWatchdog();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YWatchdog accessors declaration)
 };
 

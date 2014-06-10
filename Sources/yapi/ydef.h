@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 16026 2014-05-02 08:43:10Z seb $
+ * $Id: ydef.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -10,26 +10,26 @@
  *
  *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
  *  non-exclusive license to use, modify, copy and integrate this
- *  file into your software for the sole purpose of interfacing 
- *  with Yoctopuce products. 
+ *  file into your software for the sole purpose of interfacing
+ *  with Yoctopuce products.
  *
- *  You may reproduce and distribute copies of this file in 
+ *  You may reproduce and distribute copies of this file in
  *  source or object form, as long as the sole purpose of this
- *  code is to interface with Yoctopuce products. You must retain 
+ *  code is to interface with Yoctopuce products. You must retain
  *  this notice in the distributed source file.
  *
  *  You should refer to Yoctopuce General Terms and Conditions
- *  for additional information regarding your rights and 
+ *  for additional information regarding your rights and
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -82,8 +82,8 @@ typedef unsigned short int      u16;
 typedef signed short int        s16;
 typedef unsigned int            u32;
 typedef signed int              s32;
-typedef unsigned long           u64;
-typedef signed long             s64;
+typedef unsigned long long      u64;
+typedef signed long long        s64;
 #endif
 #define VARIABLE_SIZE           0
 #endif
@@ -238,8 +238,8 @@ typedef struct{
 #define U8ADDR(x)  ((u8 *)&(x))
 #define U16ADDR(x) ((u16 *)&(x))
 
-#define ADDRESSOF(x)    (&(x))    
-#define PTRVAL(x)       (*(x))    
+#define ADDRESSOF(x)    (&(x))
+#define PTRVAL(x)       (*(x))
 
 
 //#define DEBUG_CRITICAL_SECTION
@@ -309,7 +309,7 @@ void yDbgDeleteCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION
 #define yTryEnterCriticalSection(cs)    1
 #define yLeaveCriticalSection(cs)
 #define yDeleteCriticalSection(cs)
-#else 
+#else
 
 typedef void* yCRITICAL_SECTION;
 void yInitializeCriticalSection(yCRITICAL_SECTION *cs);
@@ -368,7 +368,7 @@ typedef enum {
 #define YOCTO_PUBVAL_SIZE            6 // Size of the data (can be non null terminated)
 #define YOCTO_PUBVAL_LEN            16 // Temporary storage, >= YOCTO_PUBVAL_SIZE+2
 #define YOCTO_REPORT_LEN             9 // Max size of a timed report, including isAvg flag
-    
+
 // User-defined flash area (used for calibration)
 #define USERFLASH_WORDS 11
 typedef u16 UserFlash[USERFLASH_WORDS];
@@ -471,7 +471,7 @@ typedef union{
 
 // Data in YSTREAM_NOTICE stream
 
-#define NOTIFY_1STBYTE_MAXTINY  63  
+#define NOTIFY_1STBYTE_MAXTINY  63
 #define NOTIFY_1STBYTE_MINSMALL 128
 
 #define NOTIFY_PKT_NAME        0
@@ -619,7 +619,7 @@ typedef struct {
         u8  funYdx:4;   // (LOWEST NIBBLE) function index on device, 0xf==timestamp
         u8  extraLen:3; // Number of extra data bytes in addition to first one
         u8  isAvg:1;    // (HIGHEST BIT) 0:one immediate value (1-4 bytes), 1:min/avg/max (2+4+2 bytes)
-#else 
+#else
         u8  isAvg:1;    // (HIGHEST BIT) 0:one immediate value (1-4 bytes), 1:min/avg/max (2+4+2 bytes)
         u8  extraLen:3; // Number of extra data bytes in addition to first one
         u8  funYdx:4;   // (LOWEST NIBBLE) function index on device, 0xf==timestamp
@@ -684,15 +684,25 @@ typedef union {
     u8  raw[64];
     u16 words[32];
     struct {
+#ifndef CPU_BIG_ENDIAN
         u8  size : 5;
         u8  type : 3;
+#else
+        u8  type : 3;
+        u8  size : 5;
+#endif
         u8  addres_high;
         u16 adress_low;
         u8  data[MAX_BYTE_IN_PACKET];
     } pkt;
     struct {
+#ifndef CPU_BIG_ENDIAN
         u8   size : 5;
         u8   type : 3;
+#else
+        u8   type : 3;
+        u8   size : 5;
+#endif
         u8   pad;
         u16  pr_blk_size;
         u16  devidl;
@@ -704,11 +714,21 @@ typedef union {
         u16  er_blk_size;
     } pktinfo;
     struct {
+#ifndef CPU_BIG_ENDIAN
         u8   size : 5;
         u8   type : 3;
+#else
+        u8   type : 3;
+        u8   size : 5;
+#endif
         u8   dwordpos_lo;
+#ifndef CPU_BIG_ENDIAN
         u16  pageno : 14;
         u16  dwordpos_hi : 2;
+#else
+        u16  dwordpos_hi : 2;
+        u16  pageno : 14;
+#endif
         union {
         u16  npages;    // for PROG_ERASE
         u16  btsign;    // for PROG_REBOOT
@@ -716,8 +736,13 @@ typedef union {
         } opt;
     } pkt_ext;
     struct {
+#ifndef CPU_BIG_ENDIAN
         u8   size : 5;
         u8   type : 3;
+#else
+        u8   type : 3;
+        u8   size : 5;
+#endif
         u8   version;
         u16  pr_blk_size;
         u16  devidl;
@@ -739,7 +764,7 @@ typedef union {
 #define START_BOOTLOADER_SIGN   ('b'| ('T'<<8))
 #define START_AUTOFLASHER_SIGN  ('b'| ('F'<<8))
 
-    
+
 typedef union {
     u8              data[USB_PKT_SIZE];
     u16             data16[USB_PKT_SIZE/2];

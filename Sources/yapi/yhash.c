@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 15941 2014-04-26 15:20:33Z mvuilleu $
+ * $Id: yhash.c 16461 2014-06-06 14:44:21Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -188,7 +188,7 @@ static u16 fletcher16(const u8 *data, u16 len, u16 virtlen)
 
 void yHashInit(void)
 {
-    yStrRef empty, Module, module;
+    yStrRef empty, Module, module, HubPort;
     u16     i;
 
     HLOGF(("yHashInit\n"));
@@ -211,14 +211,20 @@ void yHashInit(void)
     empty  = yHashPutStr("");
     Module = yHashPutStr("Module");
     module = yHashPutStr("module");
+    HubPort = yHashPutStr("HubPort");
     if(empty != YSTRREF_EMPTY_STRING ||
        Module != YSTRREF_MODULE_STRING ||
-       module != YSTRREF_mODULE_STRING) {
+       module != YSTRREF_mODULE_STRING ||
+       HubPort != YSTRREF_HUBPORT_STRING) {
         // This should never ever happen, something is really weird
         // No log is possible here (called within yapiInitAPI), so
         // the best we can do to help debugging is a tight loop.
-        while(1);
-    }
+#ifdef MICROCHIP_API
+		while(1);
+#else
+		YPANIC;
+#endif
+	}
     SerialRef = yHashPutStr(SerialNumberStr);
     
     yYpListHead = yBlkAlloc();
@@ -1582,6 +1588,88 @@ YAPI_FUNCTION ypSearch(const char *class_str, const char *func_or_name)
     
     return res;
 }
+
+s16 ypFindBootloaders(yStrRef *serials, u16 maxSerials)
+{
+    yBlkHdl     cat_hdl, hdl;
+    s16         res = 0;
+    
+    // first search for the category node
+    yEnterCriticalSection(&yYpMutex);
+    cat_hdl = yYpListHead;
+    while(cat_hdl != INVALID_BLK_HDL) {
+        if(YC(cat_hdl).name == YSTRREF_HUBPORT_STRING) break;
+        cat_hdl = YC(cat_hdl).nextPtr;
+    }
+    yLeaveCriticalSection(&yYpMutex);
+    if(cat_hdl == INVALID_BLK_HDL)
+        return -2; // no hubPort registered so far
+    
+    yEnterCriticalSection(&yYpMutex);
+    hdl = YC(cat_hdl).entries;
+    while(hdl != INVALID_BLK_HDL) {
+        if(YP(hdl).funcValWords[0]==WORD_TEXT_PR && YP(hdl).funcValWords[1]==WORD_TEXT_OG) {
+            if(res++ < maxSerials) {
+                *serials++ = YP(hdl).funcName;
+            }
+        }
+        hdl = YP(hdl).nextPtr;
+    }
+    yLeaveCriticalSection(&yYpMutex);
+    
+    return res;
+}
+
+#ifdef MICROCHIP_API
+int ypGetBootDevHdl(const char *serial)
+{
+    yBlkHdl cat_hdl, hdl;
+    yStrRef serialRef;
+    char    funcid[9];
+    s16     devYdx;
+
+    serialRef = yHashTestStr(serial);
+    if(serialRef == INVALID_HASH_IDX)
+        return -1; // unknown serial
+
+    // search for the category node
+    yEnterCriticalSection(&yYpMutex);
+    cat_hdl = yYpListHead;
+    while(cat_hdl != INVALID_BLK_HDL) {
+        if(YC(cat_hdl).name == YSTRREF_HUBPORT_STRING) break;
+        cat_hdl = YC(cat_hdl).nextPtr;
+    }
+    yLeaveCriticalSection(&yYpMutex);
+    if(cat_hdl == INVALID_BLK_HDL)
+        return -2; // no hubPort registered so far
+
+    yEnterCriticalSection(&yYpMutex);
+    hdl = YC(cat_hdl).entries;
+    while(hdl != INVALID_BLK_HDL) {
+        if(YP(hdl).funcName == serialRef &&
+           YP(hdl).funcValWords[0] == WORD_TEXT_PR &&
+           YP(hdl).funcValWords[1] == WORD_TEXT_OG) {
+            break;
+        }
+        hdl = YP(hdl).nextPtr;
+    }
+    yLeaveCriticalSection(&yYpMutex);
+    if(hdl == INVALID_BLK_HDL)
+        return -3; // serial not connected in PROG mode
+
+    yHashGetStr(YP(hdl).funcId, funcid, sizeof(funcid));
+    if(funcid[7] <'1' || funcid[7] > '4')
+        return -3; // invalid function id
+    devYdx = wpGetDevYdx(YP(hdl).serialNum);
+    if(devYdx == hubDevYdx) {
+        // The 3 root ports use devhdl 0-2
+        return funcid[7] - '1';
+    }
+
+    // ports on shield use hub devYdx+(1..4)
+    return devYdx + funcid[7] - '0';
+}
+#endif
 
 int ypGetFunctions(const char *class_str, YAPI_DEVICE devdesc, YAPI_FUNCTION prevfundesc,
                    YAPI_FUNCTION *buffer,int maxsize,int *neededsize)

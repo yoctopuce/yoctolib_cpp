@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 15940 2014-04-26 14:35:09Z mvuilleu $
+ * $Id: yproto.h 16449 2014-06-06 09:39:40Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -315,7 +315,7 @@ int YFOPEN(FILE** f, const char *filename, const char *mode);
 
 #if 0
 #if defined(WINDOWS_API) && (_MSC_VER)
-#define YDEBUG_BREAK { _asm {int 3}}
+#define YDEBUG_BREAK { __debugbreak();}
 #else
 #define YDEBUG_BREAK  {__asm__("int3");}
 #endif
@@ -331,7 +331,7 @@ int YFOPEN(FILE** f, const char *filename, const char *mode);
 #define YERRMSG(code,message)   ySetErr(code,errmsg,message,__FILE_ID__,__LINE__)
 #define YERRMSGTO(code,message,buffer)   ySetErr(code,buffer,message,__FILE_ID__,__LINE__)
 YRETCODE ySetErr(YRETCODE code, char *outmsg, const char *erreur, const char *file, u32 line);
-int FusionErrmsg(int code,char *errmsg,char *generr,char *detailerr);
+int FusionErrmsg(int code,char *errmsg, const char *generr, const char *detailerr);
 
 
 /*****************************************************************************
@@ -535,7 +535,7 @@ typedef struct{
 #define NB_MAX_STARTUP_RETRY   5u
 
 #define NEXT_YPKT_NO(current) ((current+1)& YPKTNOMSK)
-#define NEXT_IFACE_NO(current,total) (current+1>total?0:current+1)
+#define NEXT_IFACE_NO(current,total) (current+1<total?current+1:0)
 
 // structure that contain all information about a device
 typedef struct  _yPrivDeviceSt{
@@ -598,7 +598,6 @@ typedef enum {
 // NetHubSt flags
 #define NETH_F_MANDATORY                1 
 #define NETH_F_SEND_PING_NOTIFICATION   2 
-#define NETH_F_   2 
 
 #define NET_HUB_NOT_CONNECTION_TIMEOUT   (6*1024)
 
@@ -622,7 +621,7 @@ typedef struct _NetHubSt {
     u64                 devListExpires;
     u8                  devYdxMap[ALLOC_YDX_PER_HUB];   // maps hub's internal devYdx to our WP devYdx
     int                 writeProtected; // admin password detected
-    u64                 lastTraffic;
+    u64                 lastTraffic;    // time of the last data received on the notification socket (in ms)
     // the following fields are used for authentication to the hub, and require mutex access
     yCRITICAL_SECTION   authAccess;
     char                *name;
@@ -711,6 +710,7 @@ typedef struct{
     pthread_t           usb_thread;
     USB_THREAD_STATE    usb_thread_state;
 #elif defined(LINUX_API)
+    yCRITICAL_SECTION   string_cache_cs;
     libusb_context      *libusb;
     pthread_t           usb_thread;
     USB_THREAD_STATE    usb_thread_state;

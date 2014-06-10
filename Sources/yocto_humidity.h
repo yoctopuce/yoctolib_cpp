@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_humidity.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_humidity.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindHumidity(), the high-level API for Humidity functions
  *
@@ -64,6 +64,9 @@ typedef void (*YHumidityTimedReportCallback)(YHumidity *func, YMeasure measure);
  * measure of the sensor, as well as the minimal and maximal values observed.
  */
 class YOCTO_CLASS_EXPORT YHumidity: public YSensor {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YHumidity declaration)
 protected:
     //--- (YHumidity attributes)
@@ -167,6 +170,9 @@ public:
            static YHumidity* FirstHumidity(void);
     inline static YHumidity* First(void)
     { return YHumidity::FirstHumidity();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YHumidity accessors declaration)
 };
 

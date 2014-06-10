@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.h 12321 2013-08-13 14:56:24Z mvuilleu $
+ * $Id: yprog.h 16260 2014-05-20 19:14:30Z mvuilleu $
  *
  * Declaration of firmware upgrade functions
  *
@@ -162,6 +162,9 @@ typedef struct{
 #endif    
 }BootloaderSt;
 
+// from yfirmupd.c
+extern BootloaderSt firm_dev;
+extern USB_Packet   firm_pkt;
 
 #ifndef C30
 #pragma pack(pop)

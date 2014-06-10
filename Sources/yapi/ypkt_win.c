@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_win.c 14805 2014-01-31 18:24:53Z seb $
+ * $Id: ypkt_win.c 16461 2014-06-06 14:44:21Z seb $
  *
  * OS-specific USB packet layer, Windows version
  *
@@ -80,7 +80,7 @@ static int yWinSetErrEx(u32 line,yInterfaceSt *iface,DWORD err,const char *msg,c
 }
 
 
-
+#if 0
 static void yWinPushEx( u32 line,yInterfaceSt *iface, pktQueue  *q,DWORD err)
 {
     int len;
@@ -99,7 +99,7 @@ static void yWinPushEx( u32 line,yInterfaceSt *iface, pktQueue  *q,DWORD err)
     yPktQueueSetError(q,YAPI_IO_ERROR,errmsg);
 }
 
-
+#endif
 
 
 static u32 decodeHex(const char *p,int nbdigit)
@@ -277,7 +277,6 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
         SetupDiGetDeviceRegistryProperty(DeviceInfoTable, &DevInfoData, SPDRP_INSTALL_STATE, NULL, (PBYTE) &inst_state, sizeof(inst_state), &needsize);
         if(vendorid==YOCTO_VENDORID && inst_state==0){
             SP_DEVICE_INTERFACE_DATA    InterfaceData;
-            size_t          len;
             yInterfaceSt    *iface;
             int             find,retry = 16;
 
@@ -333,7 +332,10 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
                     continue;
                 }
 #if defined(_MSC_VER) && (_MSC_VER > MSC_VS2003)
-                wcstombs_s(&len,iface->serial,YOCTO_SERIAL_LEN*2,(wchar_t*)buffer,_TRUNCATE);
+                {
+                    size_t          len;
+                    wcstombs_s(&len, iface->serial, YOCTO_SERIAL_LEN * 2, (wchar_t*)buffer, _TRUNCATE);
+                }
 #else
                 wcstombs(iface->serial,(wchar_t*)buffer,YOCTO_SERIAL_LEN*2);
 #endif
@@ -647,6 +649,8 @@ static void* yyyUsbIoThread(void* thread_void)
     for (i =0;i<2;i++){
         iface->EV[i] = NULL;
     }
+    yThreadSignalStart(thread);
+
     //open blocking write handle 
     if(YISERR(OpenWriteHandles(iface))){
         goto exitThread;
@@ -663,7 +667,6 @@ static void* yyyUsbIoThread(void* thread_void)
             goto exitThread;
     }
     HALLOG("yyyReady I%x wr=%x rd=%x se=%s\n",iface->ifaceno,iface->wrHDL, iface->rdHDL,iface->serial);
-    yThreadSignalStart(thread);
 
 
     if( yyyyRead(iface,errmsg)!=YAPI_SUCCESS) {
@@ -742,6 +745,7 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
 {
     yPktQueueInit(&iface->rxQueue);
     yPktQueueInit(&iface->txQueue);
+    memset(&iface->io_thread,0,sizeof(yThread)); 
     if(yThreadCreate(&iface->io_thread,yyyUsbIoThread,(void*)iface)<0){
         return YERRMSG(YAPI_IO_ERROR,"Unable to start USB IO thread");
     }

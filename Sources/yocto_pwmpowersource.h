@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwmpowersource.h 15529 2014-03-20 17:54:15Z seb $
+ * $Id: yocto_pwmpowersource.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindPwmPowerSource(), the high-level API for PwmPowerSource functions
  *
@@ -73,6 +73,9 @@ typedef enum {
  * the voltage source used by all PWM on the same device.
  */
 class YOCTO_CLASS_EXPORT YPwmPowerSource: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YPwmPowerSource declaration)
 protected:
     //--- (YPwmPowerSource attributes)
@@ -201,6 +204,9 @@ public:
            static YPwmPowerSource* FirstPwmPowerSource(void);
     inline static YPwmPowerSource* First(void)
     { return YPwmPowerSource::FirstPwmPowerSource();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YPwmPowerSource accessors declaration)
 };
 

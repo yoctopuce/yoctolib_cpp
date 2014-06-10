@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_lightsensor.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_lightsensor.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindLightSensor(), the high-level API for LightSensor functions
  *
@@ -64,6 +64,9 @@ typedef void (*YLightSensorTimedReportCallback)(YLightSensor *func, YMeasure mea
  * measure of the sensor, as well as the minimal and maximal values observed.
  */
 class YOCTO_CLASS_EXPORT YLightSensor: public YSensor {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YLightSensor declaration)
 protected:
     //--- (YLightSensor attributes)
@@ -186,6 +189,9 @@ public:
            static YLightSensor* FirstLightSensor(void);
     inline static YLightSensor* First(void)
     { return YLightSensor::FirstLightSensor();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YLightSensor accessors declaration)
 };
 

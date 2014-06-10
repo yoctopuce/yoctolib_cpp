@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_voc.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_voc.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindVoc(), the high-level API for Voc functions
  *
@@ -64,6 +64,9 @@ typedef void (*YVocTimedReportCallback)(YVoc *func, YMeasure measure);
  * measure of the sensor, as well as the minimal and maximal values observed.
  */
 class YOCTO_CLASS_EXPORT YVoc: public YSensor {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YVoc declaration)
 protected:
     //--- (YVoc attributes)
@@ -167,6 +170,9 @@ public:
            static YVoc* FirstVoc(void);
     inline static YVoc* First(void)
     { return YVoc::FirstVoc();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YVoc accessors declaration)
 };
 

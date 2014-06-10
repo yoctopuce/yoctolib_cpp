@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_relay.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_relay.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindRelay(), the high-level API for Relay functions
  *
@@ -116,6 +116,9 @@ public:
  * active state. If you prefer the alternate default state, simply switch your cables on the board.
  */
 class YOCTO_CLASS_EXPORT YRelay: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YRelay declaration)
 protected:
     //--- (YRelay attributes)
@@ -432,6 +435,9 @@ public:
            static YRelay* FirstRelay(void);
     inline static YRelay* First(void)
     { return YRelay::FirstRelay();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YRelay accessors declaration)
 };
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_refframe.h 15998 2014-05-01 08:25:18Z seb $
+ * $Id: yocto_refframe.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -90,6 +90,9 @@ typedef void (*YRefFrameValueCallback)(YRefFrame *func, const string& functionVa
  * of standard gravity and improve the precision of the tilt sensors.
  */
 class YOCTO_CLASS_EXPORT YRefFrame: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YRefFrame declaration)
 protected:
     //--- (YRefFrame attributes)
@@ -420,6 +423,9 @@ public:
            static YRefFrame* FirstRefFrame(void);
     inline static YRefFrame* First(void)
     { return YRefFrame::FirstRefFrame();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YRefFrame accessors declaration)
 };
 

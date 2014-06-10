@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_servo.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_servo.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindServo(), the high-level API for Servo functions
  *
@@ -103,6 +103,9 @@ typedef enum {
  * synchronize two servos involved in a same move.
  */
 class YOCTO_CLASS_EXPORT YServo: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YServo declaration)
 protected:
     //--- (YServo attributes)
@@ -394,6 +397,9 @@ public:
            static YServo* FirstServo(void);
     inline static YServo* First(void)
     { return YServo::FirstServo();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YServo accessors declaration)
 };
 

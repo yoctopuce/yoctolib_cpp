@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 15810 2014-04-15 16:36:08Z seb $
+ * $Id: ystream.c 16348 2014-05-30 13:40:17Z seb $
  *
  * USB multi-interface stream implementation
  *
@@ -98,7 +98,7 @@ YRETCODE ySetErr(YRETCODE code, char *outmsg, const char *erreur,const char *fil
 
 
 
-int FusionErrmsg(int code,char *errmsg,char *generr,char *detailerr)
+int FusionErrmsg(int code,char *errmsg, const char *generr, const char *detailerr)
 {
     int len;
     if(YISERR(code) && errmsg){

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_carbondioxide.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_carbondioxide.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *
@@ -64,6 +64,9 @@ typedef void (*YCarbonDioxideTimedReportCallback)(YCarbonDioxide *func, YMeasure
  * measure of the sensor, as well as the minimal and maximal values observed.
  */
 class YOCTO_CLASS_EXPORT YCarbonDioxide: public YSensor {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YCarbonDioxide declaration)
 protected:
     //--- (YCarbonDioxide attributes)
@@ -167,6 +170,9 @@ public:
            static YCarbonDioxide* FirstCarbonDioxide(void);
     inline static YCarbonDioxide* First(void)
     { return YCarbonDioxide::FirstCarbonDioxide();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YCarbonDioxide accessors declaration)
 };
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_oscontrol.h 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_oscontrol.h 16461 2014-06-06 14:44:21Z seb $
  *
  * Declares yFindOsControl(), the high-level API for OsControl functions
  *
@@ -64,6 +64,9 @@ typedef void (*YOsControlValueCallback)(YOsControl *func, const string& function
  * start up with -o option.
  */
 class YOCTO_CLASS_EXPORT YOsControl: public YFunction {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
 //--- (end of YOsControl declaration)
 protected:
     //--- (YOsControl attributes)
@@ -184,6 +187,9 @@ public:
            static YOsControl* FirstOsControl(void);
     inline static YOsControl* First(void)
     { return YOsControl::FirstOsControl();}
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
     //--- (end of YOsControl accessors declaration)
 };
 
