@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 16348 2014-05-30 13:40:17Z seb $
+ * $Id: ystream.c 17191 2014-08-18 16:04:13Z seb $
  *
  * USB multi-interface stream implementation
  *
@@ -112,6 +112,8 @@ int FusionErrmsg(int code,char *errmsg, const char *generr, const char *detailer
 
 
 
+
+
 #if !defined(_MSC_VER) ||  (_MSC_VER <= MSC_VS2003)
 
 int YFOPEN(FILE** f, const char *filename, const char *mode)
@@ -180,7 +182,7 @@ int vdbglogf(const char *fileid,int line,const char *fmt,va_list args)
     int  threadIdx;
     threadIdx = yThreadIndex();  
     len=YSPRINTF(buffer,2048,"[%d]%s:% 4d: ",threadIdx,fileid,line);
-    if(len<0  || YVSPRINTF(buffer+len,2048-len,fmt,args)<0){
+    if(len<0 || len>=2028 || (len = YVSPRINTF(buffer+len,2048-len,fmt,args))<0){
         YSTRCPY(buffer,2048,"dbglogf failed\n");
         return -1;
     }
@@ -826,47 +828,47 @@ static void dumpPktSummary(char *prefix, int iface,int isInput,const USB_Packet 
 #if 0
     while(pos < USB_PKT_SIZE-sizeof(YSTREAM_Head)){
         YSTREAM_Head *head =(YSTREAM_Head*) (pkt->data+pos);
-		char ty,st;
-		switch(head->pkt){
-		case YPKT_STREAM :
-			ty='S';
-			switch(head->stream){
-			case YSTREAM_EMPTY:
-				st ='e';
-				break;
-			case YSTREAM_TCP:
-				st ='T';
-				break;
-			case YSTREAM_TCP_CLOSE:
-				st ='C';
-				break;
-			case YSTREAM_NOTICE:
-				st ='N';
-				break;
-			default:
-				st='?';
-				break;
-			}
-			break;			
-		case YPKT_CONF:
-			ty='C';
-			switch(head->stream){
-			case USB_CONF_RESET:
-				st ='R';
-				break;
-			case USB_CONF_START:
-				st ='S';
-				break;
-			default:
-				st='?';
-				break;
-			}
-			break;
-		default:
-			ty='?';
-			st='!';
-			break;
-		}
+        char ty,st;
+        switch(head->pkt){
+        case YPKT_STREAM :
+            ty='S';
+            switch(head->stream){
+            case YSTREAM_EMPTY:
+                st ='e';
+                break;
+            case YSTREAM_TCP:
+                st ='T';
+                break;
+            case YSTREAM_TCP_CLOSE:
+                st ='C';
+                break;
+            case YSTREAM_NOTICE:
+                st ='N';
+                break;
+            default:
+                st='?';
+                break;
+            }
+            break;          
+        case YPKT_CONF:
+            ty='C';
+            switch(head->stream){
+            case USB_CONF_RESET:
+                st ='R';
+                break;
+            case USB_CONF_START:
+                st ='S';
+                break;
+            default:
+                st='?';
+                break;
+            }
+            break;
+        default:
+            ty='?';
+            st='!';
+            break;
+        }
         len += YSPRINTF(buffer+len,512-len," /ty=%c st=%c sz=%d pno=%d",
            ty ,st,head->size,head->pktno);
         pos+=sizeof(YSTREAM_Head)+head->size;
@@ -1590,10 +1592,10 @@ static void yDispatchNotice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pkts
 #ifdef DEBUG_NOTIFICATION
         dbglog("new beacon %x\n",notify->namenot.beacon);
 #endif
-		{
+        {
             yStrRef serialref = yHashPutStr(notify->head.serial);
             yStrRef lnameref = yHashPutStr(notify->namenot.name);
-			wpSafeUpdate(NULL, MAX_YDX_PER_HUB,serialref,lnameref,yHashUrlUSB(serialref,"", 0,NULL),notify->namenot.beacon);
+            wpSafeUpdate(NULL, MAX_YDX_PER_HUB,serialref,lnameref,yHashUrlUSB(serialref),notify->namenot.beacon);
             if(yContext->rawNotificationCb){
                 yContext->rawNotificationCb(notify);
             }
@@ -1674,21 +1676,21 @@ static void yDispatchNotice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pkts
             if (!strncmp(notify->head.serial, dev->infos.serial, YOCTO_SERIAL_LEN)) {
                 yStrRef serialref = yHashPutStr(notify->head.serial);
                 int devydx = wpGetDevYdx(serialref);
-				if (devydx >=0 ) {
-					yEnterCriticalSection(&yContext->genericInfos[devydx].cs);
-					if (yContext->genericInfos[devydx].flags & DEVGEN_LOG_ACTIVATED) {
-						yContext->genericInfos[devydx].flags |= DEVGEN_LOG_PENDING;
+                if (devydx >=0 ) {
+                    yEnterCriticalSection(&yContext->generic_cs);
+                    if (yContext->generic_infos[devydx].flags & DEVGEN_LOG_ACTIVATED) {
+                        yContext->generic_infos[devydx].flags |= DEVGEN_LOG_PENDING;
 #ifdef DEBUG_NOTIFICATION
-						dbglog("notify device log for %s\n",dev->infos.serial);
+                        dbglog("notify device log for %s\n",dev->infos.serial);
 #endif
-					}
+                    }
 #ifdef DEBUG_NOTIFICATION
-					else {
-						dbglog("notify device log for %s dropped\n",dev->infos.serial);
-					}
+                    else {
+                        dbglog("notify device log for %s dropped\n",dev->infos.serial);
+                    }
 #endif
-					yLeaveCriticalSection(&yContext->genericInfos[devydx].cs);
-				}
+                    yLeaveCriticalSection(&yContext->generic_cs);
+                }
 
             }
             if(yContext->rawNotificationCb){
@@ -1702,34 +1704,81 @@ static void yDispatchNotice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pkts
 
 // Timed report packet dispatcher
 //
-static void yDispatchReport(yPrivDeviceSt *dev, u8 *data, int pktsize)
+static void yDispatchReportV1(yPrivDeviceSt *dev, u8 *data, int pktsize)
 {
-	yStrRef serialref = yHashPutStr(dev->infos.serial);
+    yStrRef serialref = yHashPutStr(dev->infos.serial);
 #ifdef DEBUG_NOTIFICATION
-	{
-		USB_Report_Pkt *report = (USB_Report_Pkt*)data;
-		dbglog("timed report for %d %d\n", wpGetDevYdx(serialref), report->funYdx);
-	}
+    {
+        USB_Report_Pkt *report = (USB_Report_Pkt*)data;
+        dbglog("timed report (v1) for %d %d\n", wpGetDevYdx(serialref), report->funYdx);
+    }
 #endif
     if(yContext->rawReportCb) {
-        yContext->rawReportCb(serialref, (USB_Report_Pkt*) data, pktsize);
+        yContext->rawReportCb(serialref, (USB_Report_Pkt_V1*) data, pktsize);
     }
     if (yContext->timedReportCallback) {
+        int  devydx = wpGetDevYdx(serialref);
+        if (devydx < 0)
+            return;
         while (pktsize > 0) {
-            USB_Report_Pkt *report = (USB_Report_Pkt*) data;
+            USB_Report_Pkt_V1 *report = (USB_Report_Pkt_V1*) data;
             int  len = report->extraLen + 1;
-            int  devydx = wpGetDevYdx(serialref);
-			if (devydx < 0)
-				return;
             if (report->funYdx == 0xf) {
                 u32 t = data[1] + 0x100u * data[2] + 0x10000u * data[3] + 0x1000000u * data[4];
-                yContext->genericInfos[devydx].deviceTime = (double)t + data[5] / 250.0;
+                yEnterCriticalSection(&yContext->generic_cs);
+                yContext->generic_infos[devydx].deviceTime = (double)t + data[5] / 250.0;
+                yLeaveCriticalSection(&yContext->generic_cs);
             } else {
                 YAPI_FUNCTION fundesc;
-                int devydx = wpGetDevYdx(yHashPutStr(dev->infos.serial));
+                double devtime;
                 ypRegisterByYdx(devydx, report->funYdx, NULL, &fundesc);
                 data[0] = report->isAvg ? 1 : 0;
-                yContext->timedReportCallback(fundesc, yContext->genericInfos[devydx].deviceTime, data, len + 1);
+                yEnterCriticalSection(&yContext->generic_cs);
+                devtime = yContext->generic_infos[devydx].deviceTime;
+                yLeaveCriticalSection(&yContext->generic_cs);
+                yContext->timedReportCallback(fundesc, devtime, data, len + 1);
+            }
+            pktsize -= 1 + len;
+            data += 1 + len;
+        }
+    }
+}
+
+// Timed report packet dispatcher
+//
+static void yDispatchReportV2(yPrivDeviceSt *dev, u8 *data, int pktsize)
+{
+    yStrRef serialref = yHashPutStr(dev->infos.serial);
+#ifdef DEBUG_NOTIFICATION
+    {
+        USB_Report_Pkt *report = (USB_Report_Pkt*)data;
+        dbglog("timed report (v2) for %d %d\n", wpGetDevYdx(serialref), report->funYdx);
+    }
+#endif
+    if(yContext->rawReportV2Cb) {
+        yContext->rawReportV2Cb(serialref, (USB_Report_Pkt_V2*) data, pktsize);
+    }
+    if (yContext->timedReportCallback) {
+        int  devydx = wpGetDevYdx(serialref);
+        if (devydx < 0)
+            return;
+        while (pktsize > 0) {
+            USB_Report_Pkt_V2 *report = (USB_Report_Pkt_V2*) data;
+            int  len = report->extraLen + 1;
+            if (report->funYdx == 0xf) {
+                u32 t = data[1] + 0x100u * data[2] + 0x10000u * data[3] + 0x1000000u * data[4];
+                yEnterCriticalSection(&yContext->generic_cs);
+                yContext->generic_infos[devydx].deviceTime = (double)t + data[5] / 250.0;
+                yLeaveCriticalSection(&yContext->generic_cs);
+            } else {
+                YAPI_FUNCTION fundesc;
+                double devtime;
+                ypRegisterByYdx(devydx, report->funYdx, NULL, &fundesc);
+                data[0] = 2;
+                yEnterCriticalSection(&yContext->generic_cs);
+                devtime = yContext->generic_infos[devydx].deviceTime;
+                yLeaveCriticalSection(&yContext->generic_cs);
+                yContext->timedReportCallback(fundesc, devtime, data, len + 1);
             }
             pktsize -= 1 + len;
             data += 1 + len;
@@ -1793,7 +1842,10 @@ static int yDispatchReceive(yPrivDeviceSt *dev,u64 blockUntilTime,char *errmsg)
                 yDispatchNotice(dev, (USB_Notify_Pkt*)data, size);
                 break;
             case YSTREAM_REPORT:
-                yDispatchReport(dev, data, size);
+                yDispatchReportV1(dev, data, size);
+                break;
+            case YSTREAM_REPORT_V2:
+                yDispatchReportV2(dev, data, size);
                 break;
             case YSTREAM_EMPTY:
             default:
@@ -1868,7 +1920,7 @@ static yPrivDeviceSt* AllocateDevice(void)
     yMemset(dev,0,sizeof(yPrivDeviceSt));
     dev->http_raw_buf =  (u8*) yMalloc(HTTP_RAW_BUFF_SIZE);
     yFifoInit(&dev->http_fifo, dev->http_raw_buf, HTTP_RAW_BUFF_SIZE);
-	devInitAccces(PUSH_LOCATION dev);
+    devInitAccces(PUSH_LOCATION dev);
     return dev;
 }
 
@@ -2002,7 +2054,7 @@ static void enuUpdateDStatus(void)
                     {
                         
                         yStrRef lnameref = yHashPutStr(p->infos.logicalname);
-                        yUrlRef usb = yHashUrlUSB(serialref,"", 0,NULL);
+                        yUrlRef usb = yHashUrlUSB(serialref);
                         wpSafeRegister(NULL, MAX_YDX_PER_HUB,serialref, lnameref ,  yHashPutStr(p->infos.productname),p->infos.deviceid, usb, p->infos.beacon);
                     }
                 }
@@ -2313,7 +2365,7 @@ int yUsbFree(yContextSt *ctx,char *errmsg)
 int yUsbIdle(void)
 {
     yPrivDeviceSt   *p;
-	int				res;
+    int             res;
     char            errmsg[YOCTO_ERRMSG_LEN];
 
     YPERF_ENTER(yUsbIdle);
@@ -2322,13 +2374,13 @@ int yUsbIdle(void)
         if(p->dStatus != YDEV_WORKING){
             continue;
         }
-		
-		res = devStartIdle(PUSH_LOCATION p,errmsg);
-		if (res == YAPI_SUCCESS) {
+        
+        res = devStartIdle(PUSH_LOCATION p,errmsg);
+        if (res == YAPI_SUCCESS) {
             u32 currUtcTime;
             if(YISERR(yDispatchReceive(p,0,errmsg))){
                 dbglog("yPacketDispatchReceive error:%s\n",errmsg);
-				devReportErrorFromIdle(PUSH_LOCATION p,errmsg);
+                devReportErrorFromIdle(PUSH_LOCATION p,errmsg);
                 continue;
             }
             currUtcTime = (u32)time(NULL);
@@ -2353,50 +2405,50 @@ int yUsbIdle(void)
             }   
             devStopIdle(PUSH_LOCATION p);
             yapiPullDeviceLog(p->infos.serial);
-		} else if(res == YAPI_DEVICE_BUSY){
+        } else if(res == YAPI_DEVICE_BUSY){
             if (p->httpstate != YHTTP_CLOSED && p->pendingIO.callback) {
-				// if we have an async IO on this device 
-				// simulate read from users
-				if (!YISERR(devCheckAsyncIO(PUSH_LOCATION p,errmsg))) {
-					int sendClose=0;
-					if(YISERR(yDispatchReceive(p,0,errmsg))){
-						dbglog("yPacketDispatchReceive error:%s\n",errmsg);
-						devReportError(PUSH_LOCATION p,errmsg);
-						continue;
-					}
-					if(p->httpstate == YHTTP_CLOSE_BY_DEV) {
-						sendClose=1;
-					}else if(p->pendingIO.timeout<yapiGetTickCount()){
-						dbglog("Last async request did not complete (%X:%d)\n",p->pendingIO.hdl,p->httpstate);   
-						sendClose=1;
-					}
-					if (sendClose) {
-						u8  *pktdata;
-						u8  maxpktlen;
-						// send connection close
-						if(yStreamGetTxBuff(p,&pktdata, &maxpktlen)){
+                // if we have an async IO on this device 
+                // simulate read from users
+                if (!YISERR(devCheckAsyncIO(PUSH_LOCATION p,errmsg))) {
+                    int sendClose=0;
+                    if(YISERR(yDispatchReceive(p,0,errmsg))){
+                        dbglog("yPacketDispatchReceive error:%s\n",errmsg);
+                        devReportError(PUSH_LOCATION p,errmsg);
+                        continue;
+                    }
+                    if(p->httpstate == YHTTP_CLOSE_BY_DEV) {
+                        sendClose=1;
+                    }else if(p->pendingIO.timeout<yapiGetTickCount()){
+                        dbglog("Last async request did not complete (%X:%d)\n",p->pendingIO.hdl,p->httpstate);   
+                        sendClose=1;
+                    }
+                    if (sendClose) {
+                        u8  *pktdata;
+                        u8  maxpktlen;
+                        // send connection close
+                        if(yStreamGetTxBuff(p,&pktdata, &maxpktlen)){
                             u8 * ptr;
                             u16 len;
-							if(YISERR(yStreamTransmit(p,YSTREAM_TCP_CLOSE,0,errmsg))){
-								dbglog("Unable to send async connection close\n");
-							} else if(YISERR(yStreamFlush(p,errmsg))) {
-								dbglog("Unable to flush async connection close\n");
-							}
+                            if(YISERR(yStreamTransmit(p,YSTREAM_TCP_CLOSE,0,errmsg))){
+                                dbglog("Unable to send async connection close\n");
+                            } else if(YISERR(yStreamFlush(p,errmsg))) {
+                                dbglog("Unable to flush async connection close\n");
+                            }
                             // since we empty the fifo at each request we can use yPeekContinuousFifo
                             len = yPeekContinuousFifo(&p->http_fifo, &ptr, 0);
-                            p->pendingIO.callback(p->pendingIO.context, YAPI_SUCCESS, ptr, len);
-							yFifoEmpty(&p->http_fifo);
-							p->httpstate = YHTTP_CLOSED;
-						} 
-					}
-					if(p->httpstate == YHTTP_CLOSED) {
-						if (YISERR(res =devStopIO(PUSH_LOCATION p,errmsg))) {
+                            p->pendingIO.callback(p->pendingIO.context, ptr, len, YAPI_SUCCESS, NULL);
+                            yFifoEmpty(&p->http_fifo);
+                            p->httpstate = YHTTP_CLOSED;
+                        } 
+                    }
+                    if(p->httpstate == YHTTP_CLOSED) {
+                        if (YISERR(res =devStopIO(PUSH_LOCATION p,errmsg))) {
                             dbglog("Idle : devStopIO err %s : %X:%s\n",p->infos.serial,res,errmsg);    
                         }
-					} else {
-						devPauseIO(PUSH_LOCATION p,NULL);
-					}
-				}
+                    } else {
+                        devPauseIO(PUSH_LOCATION p,NULL);
+                    }
+                }
             }
         }
     }
@@ -2421,21 +2473,6 @@ int yUsbTrafficPending(void)
     return 0;
 }
 
-#if 0
-yGenericDeviceSt* yUSBGetGenericInfo(yStrRef devdescr)
-{
-    char    serialBuf[YOCTO_SERIAL_LEN];
-    yPrivDeviceSt *p;
-
-    yHashGetStr(devdescr, serialBuf, YOCTO_SERIAL_LEN);
-    p=findDev(serialBuf,FIND_FROM_ANY);
-    if(p==NULL){
-        return NULL;
-    }
-    
-    return &p->generic;
-}
-#endif
 
 int yUsbOpenDevDescr(YIOHDL *ioghdl, yStrRef devdescr, char *errmsg)
 {

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_power.cpp 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_power.cpp 16895 2014-07-18 00:12:08Z mvuilleu $
  *
  * Implements yFindPower(), the high-level API for Power functions
  *
@@ -73,12 +73,12 @@ int YPower::_parseAttr(yJsonStateMachine& j)
 {
     if(!strcmp(j.token, "cosPhi")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _cosPhi =  atof(j.token)/65536;
+        _cosPhi =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
         return 1;
     }
     if(!strcmp(j.token, "meter")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _meter =  atof(j.token)/65536;
+        _meter =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
         return 1;
     }
     if(!strcmp(j.token, "meterTimer")) {
@@ -113,7 +113,7 @@ double YPower::get_cosPhi(void)
 int YPower::set_meter(double newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval*65536.0 +0.5)); rest_val = string(buf);
+    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
     return _setAttr("meter", rest_val);
 }
 

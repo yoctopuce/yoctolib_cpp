@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_accelerometer.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_accelerometer.h 17191 2014-08-18 16:04:13Z seb $
  *
  * Declares yFindAccelerometer(), the high-level API for Accelerometer functions
  *
@@ -54,6 +54,15 @@ class YAccelerometer; // forward declaration
 typedef void (*YAccelerometerValueCallback)(YAccelerometer *func, const string& functionValue);
 class YMeasure; // forward declaration
 typedef void (*YAccelerometerTimedReportCallback)(YAccelerometer *func, YMeasure measure);
+#ifndef _Y_GRAVITYCANCELLATION_ENUM
+#define _Y_GRAVITYCANCELLATION_ENUM
+typedef enum {
+    Y_GRAVITYCANCELLATION_OFF = 0,
+    Y_GRAVITYCANCELLATION_ON = 1,
+    Y_GRAVITYCANCELLATION_INVALID = -1,
+} Y_GRAVITYCANCELLATION_enum;
+#endif
+
 #define Y_XVALUE_INVALID                (YAPI_INVALID_DOUBLE)
 #define Y_YVALUE_INVALID                (YAPI_INVALID_DOUBLE)
 #define Y_ZVALUE_INVALID                (YAPI_INVALID_DOUBLE)
@@ -77,6 +86,7 @@ protected:
     double          _xValue;
     double          _yValue;
     double          _zValue;
+    Y_GRAVITYCANCELLATION_enum _gravityCancellation;
     YAccelerometerValueCallback _valueCallbackAccelerometer;
     YAccelerometerTimedReportCallback _timedReportCallbackAccelerometer;
 
@@ -97,6 +107,9 @@ public:
     static const double XVALUE_INVALID;
     static const double YVALUE_INVALID;
     static const double ZVALUE_INVALID;
+    static const Y_GRAVITYCANCELLATION_enum GRAVITYCANCELLATION_OFF = Y_GRAVITYCANCELLATION_OFF;
+    static const Y_GRAVITYCANCELLATION_enum GRAVITYCANCELLATION_ON = Y_GRAVITYCANCELLATION_ON;
+    static const Y_GRAVITYCANCELLATION_enum GRAVITYCANCELLATION_INVALID = Y_GRAVITYCANCELLATION_INVALID;
 
     /**
      * Returns the X component of the acceleration, as a floating point number.
@@ -133,6 +146,15 @@ public:
 
     inline double       zValue(void)
     { return this->get_zValue(); }
+
+    Y_GRAVITYCANCELLATION_enum get_gravityCancellation(void);
+
+    inline Y_GRAVITYCANCELLATION_enum gravityCancellation(void)
+    { return this->get_gravityCancellation(); }
+
+    int             set_gravityCancellation(Y_GRAVITYCANCELLATION_enum newval);
+    inline int      setGravityCancellation(Y_GRAVITYCANCELLATION_enum newval)
+    { return this->set_gravityCancellation(newval); }
 
     /**
      * Retrieves an accelerometer for a given identifier.

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wakeupmonitor.cpp 16424 2014-06-04 14:26:41Z seb $
+ * $Id: yocto_wakeupmonitor.cpp 17229 2014-08-20 12:20:06Z seb $
  *
  * Implements yFindWakeUpMonitor(), the high-level API for WakeUpMonitor functions
  *
@@ -211,10 +211,8 @@ int YWakeUpMonitor::set_nextWakeUp(s64 newval)
  * Returns the latest wake up reason.
  * 
  * @return a value among Y_WAKEUPREASON_USBPOWER, Y_WAKEUPREASON_EXTPOWER, Y_WAKEUPREASON_ENDOFSLEEP,
- * Y_WAKEUPREASON_EXTSIG1, Y_WAKEUPREASON_EXTSIG2, Y_WAKEUPREASON_EXTSIG3, Y_WAKEUPREASON_EXTSIG4,
- * Y_WAKEUPREASON_SCHEDULE1, Y_WAKEUPREASON_SCHEDULE2, Y_WAKEUPREASON_SCHEDULE3,
- * Y_WAKEUPREASON_SCHEDULE4, Y_WAKEUPREASON_SCHEDULE5 and Y_WAKEUPREASON_SCHEDULE6 corresponding to
- * the latest wake up reason
+ * Y_WAKEUPREASON_EXTSIG1, Y_WAKEUPREASON_SCHEDULE1 and Y_WAKEUPREASON_SCHEDULE2 corresponding to the
+ * latest wake up reason
  * 
  * On failure, throws an exception or returns Y_WAKEUPREASON_INVALID.
  */
@@ -359,7 +357,7 @@ int YWakeUpMonitor::sleep(int secBeforeSleep)
     int currTime = 0;
     currTime = (int)(this->get_rtcTime());
     if (!(currTime != 0)) {
-        _throw( YAPI_RTC_NOT_READY, "RTC time not set");
+        _throw(YAPI_RTC_NOT_READY,"RTC time not set");
         return YAPI_RTC_NOT_READY;
     }
     this->set_nextWakeUp(_endOfTime);
@@ -384,7 +382,7 @@ int YWakeUpMonitor::sleepFor(int secUntilWakeUp,int secBeforeSleep)
     int currTime = 0;
     currTime = (int)(this->get_rtcTime());
     if (!(currTime != 0)) {
-        _throw( YAPI_RTC_NOT_READY, "RTC time not set");
+        _throw(YAPI_RTC_NOT_READY,"RTC time not set");
         return YAPI_RTC_NOT_READY;
     }
     this->set_nextWakeUp(currTime+secUntilWakeUp);
@@ -409,7 +407,7 @@ int YWakeUpMonitor::sleepUntil(int wakeUpTime,int secBeforeSleep)
     int currTime = 0;
     currTime = (int)(this->get_rtcTime());
     if (!(currTime != 0)) {
-        _throw( YAPI_RTC_NOT_READY, "RTC time not set");
+        _throw(YAPI_RTC_NOT_READY,"RTC time not set");
         return YAPI_RTC_NOT_READY;
     }
     this->set_nextWakeUp(wakeUpTime);

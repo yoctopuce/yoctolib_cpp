@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yjson.c 16348 2014-05-30 13:40:17Z seb $
+ * $Id: yjson.c 16608 2014-06-18 15:30:14Z mvuilleu $
  *
  * Simple JSON parser (actually a slightly enhanced lexer)
  *
@@ -231,9 +231,11 @@ skip:
                 }else{
                     j->next = YJSON_PARSE_ANY;
                 }
+                c = '[';
                 goto nest;
             case YJSON_PARSE_STRUCT:     // parsing a named structure
                 j->next = YJSON_PARSE_MEMBSTART;
+                c = '{';
             nest:
                 if(j->depth >= YJSON_MAX_DEPTH) goto push_error;
                 j->stack[j->depth++] = st;

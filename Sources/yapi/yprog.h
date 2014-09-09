@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.h 16260 2014-05-20 19:14:30Z mvuilleu $
+ * $Id: yprog.h 17147 2014-08-08 09:14:08Z seb $
  *
  * Declaration of firmware upgrade functions
  *
@@ -46,6 +46,10 @@ typedef int ProgIface;
 #else
 #include "yproto.h"
 typedef yInterfaceSt ProgIface;
+#endif
+
+#if !defined(MICROCHIP_API) || (defined(YHUB) && defined(FLASH_FIRMW_FIRSTPAGE))
+#define PROG_SUBDEV
 #endif
 
 #define MAX_ROM_ZONES_PER_FILES     16
@@ -111,6 +115,8 @@ typedef struct{
      };
 }byn_head_multi;
 
+
+
 #define BYN_HEAD_SIZE_V4    (sizeof(byn_head_sign)+sizeof(byn_head_v4))
 #define BYN_HEAD_SIZE_V5    (sizeof(byn_head_sign)+sizeof(byn_head_v5))
 #define BYN_HEAD_SIZE_V6    (sizeof(byn_head_sign)+sizeof(byn_head_v6))
@@ -120,6 +126,18 @@ typedef struct{
     u32 addr_page;
     u32 len;
 }byn_zone;
+
+#ifdef CPU_BIG_ENDIAN
+void decode_byn_head_multi(byn_head_multi *byn_head);
+void decode_byn_zone(byn_zone *zone);
+#define DECODE_U16(NUM) ((((NUM) & 0xff00) >> 8) | (((NUM)&0xff) << 8))
+#define DECODE_U32(NUM) ((((NUM) >> 24) & 0xff) | (((NUM) << 8) & 0xff0000) | (((NUM) >> 8) & 0xff00) | (((NUM) << 24) & 0xff000000 ))
+#else 
+#define decode_byn_head_multi(dummy) {}
+#define decode_byn_zone(dummy) {}
+#define DECODE_U16(NUM)  (NUM)
+#define DECODE_U32(NUM) (NUM)
+#endif
 
 typedef struct{
     u32 addr;
@@ -169,7 +187,6 @@ extern USB_Packet   firm_pkt;
 #ifndef C30
 #pragma pack(pop)
 #endif
-
 // Return 1 if the communication channel to the device is busy
 // Return 0 if there is no ongoing transaction with the device
 int ypIsSendBootloaderBusy(BootloaderSt *dev);
@@ -183,20 +200,114 @@ int ypGetBootloaderReply(BootloaderSt *dev, USB_Packet *pkt,char *errmsg);
 // Power cycle the device
 void ypBootloaderShutdown(BootloaderSt *dev);
 
-const char* prog_GetCPUName(BootloaderSt *dev);
-int prog_RebootDevice(BootloaderSt *dev,u16 bootmode,char *errmsg);
-int prog_BlankDevice(BootloaderSt *dev,char *errmsg);
-int prog_FlashBlock(BootloaderSt *dev,u32 startAddr, u8 *data,int size,char *errmsg);
-int prog_GetDeviceInfo(BootloaderSt *dev,char *errmsg);
-int checkHardwareCompat(BootloaderSt *dev,const char *pictype);
 int IsValidBynHead(const byn_head_multi *head, u32 size, char *errmsg);
-int ValidateBynCompat(const byn_head_multi *head,u32 size,const char *serial, BootloaderSt *dev,char *errmsg);
+
 
 #ifndef MICROCHIP_API
-int IsValidBynFile(const byn_head_multi *head, u32 size,char *errmsg);
-int prog_FlashDevice(yFlashArg *arg, int realyflash, char *errmsg);
-int DecodeBynFile(const u8 *buffer,u32 size,newmemzones *zones,const char *serial, BootloaderSt *dev,char *errmsg);
-int yUSBGetBooloader(const char *serial, const char * name,  yInterfaceSt *iface,char *errmsg);
-void FreeZones(newmemzones *zones);
+const char* prog_GetCPUName(BootloaderSt *dev);
+int IsValidBynFile(const byn_head_multi  *head, u32 size, char *errmsg);
+int ValidateBynCompat(const byn_head_multi *head, u32 size, const char *serial, BootloaderSt *dev, char *errmsg);
+int BlockingRead(BootloaderSt *dev, USB_Packet *pkt, int maxwait, char *errmsg);
+int SendDataPacket(BootloaderSt *dev, int program, u32 address, u8 *data, int nbinstr, char *errmsg);
+
 #endif
+
+
+
+//#define DEBUG_FIRMWARE
+
+typedef enum
+{
+    YPROG_DONE = 0u,	// Finished with procedure
+    //HTTP_IO_NEED_DATA,	// More data needed to continue, call again later
+    YPROG_WAITING		// Waiting for asynchronous process to complete, call again later
+} YPROG_RESULT;
+
+
+
+#define MAX_FIRMWARE_LEN  0x100000ul
+#define INVALID_FIRMWARE  0xfffffffful
+
+typedef enum{
+    FLASH_FIND_DEV = 0,
+    FLASH_CONNECT,
+    FLASH_GET_INFO,
+    FLASH_VALIDATE_BYN,
+    FLASH_ERASE,
+    FLASH_WAIT_ERASE,
+    FLASH_DOFLASH,
+    FLASH_REBOOT,
+#ifndef MICROCHIP_API
+    FLASH_AUTOFLASH,
+#endif
+    FLASH_SUCCEEDED,
+    FLASH_DISCONNECT,
+    FLASH_DONE
+}FLASH_DEVICE_STATE;
+
+typedef enum {
+    FLASH_ZONE_START,
+    FLASH_ZONE_PROG,
+    FLASH_ZONE_READ,
+    FLASH_ZONE_RECV_OK
+} FLASH_ZONE_STATE;
+
+
+#define BLOCK_FLASH_TIMEOUT       1000u
+#define PROG_GET_INFO_TIMEOUT      300u
+#define ZONE_VERIF_TIMEOUT        1000u
+#define FLASH_SUBDEV_TIMEOUT     59000u
+#define YPROG_BOOTLOADER_TIMEOUT 10000u
+#ifdef MICROCHIP_API
+#define FLASH_ERRMSG_LEN        56
+#else
+#define FLASH_ERRMSG_LEN        YOCTO_ERRMSG_LEN
+#endif
+
+
+#define PROG_IN_ERROR 0x8000
+typedef struct {
+#ifndef MICROCHIP_API
+    u8          *firmware;
+    yCRITICAL_SECTION   cs;
+#endif
+    u32                 len;
+    union {
+        byn_head_multi  bynHead;
+        u8              bynBuff[sizeof(byn_head_multi)];
+    };
+    u16                 currzone;
+    s16                 progress;
+    FLASH_DEVICE_STATE  stepA;
+    FLASH_ZONE_STATE    zst;
+    union {
+        byn_zone        bz;
+        u8              bzBuff[sizeof(byn_zone)];
+    };
+    yTime               timeout;
+    u32                 zOfs;
+    u32                 zNbInstr;
+    u32                 stepB;
+    u16                 flashErase;
+    u16                 flashPage;
+    u16                 flashAddr;
+    char                errmsg[FLASH_ERRMSG_LEN];
+} FIRMWARE_CONTEXT;
+
+extern FIRMWARE_CONTEXT fctx;
+
+
+#ifdef YAPI_IN_YDEVICE
+#define uGetFirmware(ofs, dst, size) hProgGetFirmware(ofs, dst, size)
+#else 
+#define uGetFirmware(ofs, dst, size) yGetFirmware(ofs, dst, size)
+#endif
+#define uGetFirmwareBynHead(head_ptr) {uGetFirmware(0, (u8*)(head_ptr), sizeof(byn_head_multi));decode_byn_head_multi(head_ptr);}
+#define uGetFirmwareBynZone(offset,zone_ptr) {uGetFirmware(offset,(u8*)(zone_ptr),sizeof(byn_zone)); decode_byn_zone(zone_ptr);}
+void  uProgInit(void);
+YPROG_RESULT uFlashDevice(void);
+#ifndef MICROCHIP_API
+void  uProgFree(void);
+#endif
+
 #endif

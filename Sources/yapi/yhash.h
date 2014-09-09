@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.h 16252 2014-05-19 20:07:34Z mvuilleu $
+ * $Id: yhash.h 16598 2014-06-18 06:05:04Z mvuilleu $
  *
  * Simple hash tables and device/function information store
  *
@@ -206,10 +206,13 @@ void  yHashGetBuf(yHash yhash, u8 *destbuf, u16 bufsize);
 void  yHashGetStr(yHash yhash, char *destbuf, u16 bufsize);
 u16   yHashGetStrLen(yHash yhash);
 char  *yHashGetStrPtr(yHash yhash);
-yUrlRef yHashUrlFromRef(yUrlRef urlref, const char *rootUrl, u8 testonly,char *errmsg);
-yUrlRef yHashUrlUSB(yHash serial,const char *rootUrl, u8 testonly,char *errmsg);
-yUrlRef yHashUrl(const char *host, const char *rootUrl, u8 testonly,char *errmsg);
+#ifndef MICROCHIP_API
+yUrlRef yHashUrlFromRef(yUrlRef urlref, const char *rootUrl);
+yUrlRef yHashUrl(const char *host, const char *rootUrl, u8 testonly, char *errmsg);
 yAsbUrlType  yHashGetUrlPort(yUrlRef urlref, char *url,u16 *port);
+#endif
+yUrlRef yHashUrlUSB(yHash serial);
+yUrlRef yHashUrlAPI(void);
 yBlkHdl yBlkAlloc(void);
 void    yBlkFree(yBlkHdl hdl);
 u16     yBlkListLength(yBlkHdl hdl);
@@ -235,8 +238,10 @@ int     wpGetDevYdx(yStrRef serial);
 YAPI_DEVICE wpSearchEx(yStrRef strref);
 YAPI_DEVICE wpSearch(const char *device_str);
 YAPI_DEVICE wpSearchByNameHash(yStrRef strref);
+#ifndef MICROCHIP_API
 YAPI_DEVICE wpSearchByUrl(const char *host, const char *rootUrl);
 int     wpGetAllDevUsingHubUrl( yUrlRef hubUrl, yStrRef *buffer,int sizeInStrRef);
+#endif
 int     wpGetDeviceInfo(YAPI_DEVICE devdesc, u16 *deviceid, char *productname, char *serial, char *logicalname, u8 *beacon);
 yUrlRef wpGetDeviceUrlRef(YAPI_DEVICE devdesc);
 int     wpGetDeviceUrl(YAPI_DEVICE devdesc, char *roothubserial, char *request, int requestsize, int *neededsize);

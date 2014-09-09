@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_lin.c 16448 2014-06-06 08:14:07Z seb $
+ * $Id: ypkt_lin.c 16747 2014-07-01 13:31:33Z seb $
  *
  * OS-specific USB packet layer, Linux version
  *
@@ -46,9 +46,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#define yLinSetErr(err,errmsg)  yLinSetErrEx(__LINE__,err,errmsg)
+#define yLinSetErr(intro, err,errmsg)  yLinSetErrEx(__LINE__,intro, err,errmsg)
 
-static int yLinSetErrEx(u32 line,int err,char *errmsg)
+static int yLinSetErrEx(u32 line,char *intro, int err,char *errmsg)
 {
     const char *msg;
     if(errmsg==NULL)
@@ -70,7 +70,11 @@ static int yLinSetErrEx(u32 line,int err,char *errmsg)
         default:
         case LIBUSB_ERROR_OTHER:        msg="Other error"; break;
     }
-    YSPRINTF(errmsg,YOCTO_ERRMSG_LEN,"LIN(%d):%s",line,msg);
+    if (intro){         
+        YSPRINTF(errmsg,YOCTO_ERRMSG_LEN,"%s:%s",intro,msg);
+    } else{
+        YSPRINTF(errmsg,YOCTO_ERRMSG_LEN,"LIN(%d):%s",line,msg);
+    }
     HALLOG("LIN(%d):%s\n",line,msg);
     return YAPI_IO_ERROR; 
 };
@@ -238,8 +242,7 @@ static void *event_thread(void *param)
         tv.tv_sec = 1;
         res = libusb_handle_events_timeout(ctx->libusb, &tv);
         if (res < 0) {
-            yLinSetErr(res,errmsg);
-            HALLOG("%s",errmsg);
+            yLinSetErr("libusb_handle_events_timeout", res,errmsg);
             break;
         }
     }
@@ -251,15 +254,16 @@ static void *event_thread(void *param)
 
 int yyyUSB_init(yContextSt *ctx,char *errmsg)
 {
+    int res;
     if(!yReserveGlobalAccess(ctx)){
         return YERRMSG(YAPI_DOUBLE_ACCES,"Another process is already using yAPI");
     }
 
     memset(stringCache, 0, sizeof(stringCache));
     yInitializeCriticalSection(&ctx->string_cache_cs);
-    
-    if(libusb_init(&ctx->libusb)!=0){
-        return YERRMSG(YAPI_IO_ERROR,"Unable to start lib USB");
+    res = libusb_init(&ctx->libusb);
+    if(res !=0){
+        return yLinSetErr("Unable to start lib USB", res,errmsg);
     }
 
     ctx->usb_thread_state = USB_THREAD_NOT_STARTED;
@@ -327,7 +331,7 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
     
     nbdev=libusb_get_device_list(yContext->libusb,&list);
     if(nbdev<0)
-        return yLinSetErr(nbdev,errmsg);
+        return yLinSetErr("Unable to get device list",nbdev,errmsg);
     HALLOG("%d devices found\n",nbdev);
 
      // allocate buffer for detected interfaces
@@ -345,7 +349,7 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
         
         libusb_device  *dev=list[i];
         if((res=libusb_get_device_descriptor(dev,&desc))!=0){
-            returnval = yLinSetErr(res,errmsg);
+            returnval = yLinSetErr("Unable to get device descriptor",res,errmsg);
             goto exit;
         }
         if(desc.idVendor!=YOCTO_VENDORID ){
@@ -503,24 +507,24 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
         return YERR(YAPI_DEVICE_NOT_FOUND);
     }
     if((res=libusb_open(iface->devref,&iface->hdl))!=0){
-        return yLinSetErr(res,errmsg);
+        return yLinSetErr("libusb_open", res,errmsg);
     }
     
     if((res=libusb_kernel_driver_active(iface->hdl,iface->ifaceno))<0){
-        error= yLinSetErr(res,errmsg);   
+        error= yLinSetErr("libusb_kernel_driver_active",res,errmsg);   
         goto error;     
     }
     if(res){
-        HALLOG("%s:%d need to detache kernel driver\n",iface->serial,iface->ifaceno);
+        HALLOG("%s:%d need to detach kernel driver\n",iface->serial,iface->ifaceno);
         if((res = libusb_detach_kernel_driver(iface->hdl,iface->ifaceno))<0){
-            error= yLinSetErr(res,errmsg);   
+            error= yLinSetErr("libusb_detach_kernel_driver",res,errmsg);   
             goto error;     
         }
     }
 
     HALLOG("%s:%d Claim interface\n",iface->serial,iface->ifaceno);
     if((res = libusb_claim_interface(iface->hdl,iface->ifaceno))<0){
-        error= yLinSetErr(res,errmsg);   
+        error= yLinSetErr("libusb_claim_interface", res,errmsg);   
         goto error;     
     }
 
@@ -568,7 +572,7 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
         //HALLOG("%s:%d libusb_TR transmit (%d)\n",iface->serial,iface->ifaceno,j);
         res=libusb_submit_transfer(iface->rdTr[j].tr);
         if(res<0){
-            return yLinSetErr(res,errmsg);
+            return yLinSetErr("libusb_submit_transfer",res,errmsg);
         }
     }
     HALLOG("%s:%d yyySetup done\n",iface->serial,iface->ifaceno);

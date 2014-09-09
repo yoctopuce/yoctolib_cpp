@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_lightsensor.cpp 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_lightsensor.cpp 17264 2014-08-22 10:07:43Z seb $
  *
  * Implements yFindLightSensor(), the high-level API for LightSensor functions
  *
@@ -49,6 +49,7 @@
 
 YLightSensor::YLightSensor(const string& func): YSensor(func)
 //--- (LightSensor initialization)
+    ,_measureType(MEASURETYPE_INVALID)
     ,_valueCallbackLightSensor(NULL)
     ,_timedReportCallbackLightSensor(NULL)
 //--- (end of LightSensor initialization)
@@ -64,11 +65,22 @@ YLightSensor::~YLightSensor()
 //--- (YLightSensor implementation)
 // static attributes
 
+int YLightSensor::_parseAttr(yJsonStateMachine& j)
+{
+    if(!strcmp(j.token, "measureType")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _measureType =  (Y_MEASURETYPE_enum)atoi(j.token);
+        return 1;
+    }
+    failed:
+    return YSensor::_parseAttr(j);
+}
+
 
 int YLightSensor::set_currentValue(double newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval*65536.0 +0.5)); rest_val = string(buf);
+    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
     return _setAttr("currentValue", rest_val);
 }
 
@@ -88,8 +100,47 @@ int YLightSensor::set_currentValue(double newval)
 int YLightSensor::calibrate(double calibratedVal)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(calibratedVal*65536.0 +0.5)); rest_val = string(buf);
+    char buf[32]; sprintf(buf,"%d", (int)floor(calibratedVal * 65536.0 + 0.5)); rest_val = string(buf);
     return _setAttr("currentValue", rest_val);
+}
+
+/**
+ * Returns the type of light measure.
+ * 
+ * @return a value among Y_MEASURETYPE_HUMAN_EYE, Y_MEASURETYPE_WIDE_SPECTRUM, Y_MEASURETYPE_INFRARED
+ * and Y_MEASURETYPE_HIGH_RATE corresponding to the type of light measure
+ * 
+ * On failure, throws an exception or returns Y_MEASURETYPE_INVALID.
+ */
+Y_MEASURETYPE_enum YLightSensor::get_measureType(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YLightSensor::MEASURETYPE_INVALID;
+        }
+    }
+    return _measureType;
+}
+
+/**
+ * Modify the light sensor type used in the device. The measure can either
+ * approximate the response of the human eye, focus on a specific light
+ * spectrum, depending on the capabilities of the light-sensitive cell.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
+ * 
+ * @param newval : a value among Y_MEASURETYPE_HUMAN_EYE, Y_MEASURETYPE_WIDE_SPECTRUM,
+ * Y_MEASURETYPE_INFRARED and Y_MEASURETYPE_HIGH_RATE
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YLightSensor::set_measureType(Y_MEASURETYPE_enum newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+    return _setAttr("measureType", rest_val);
 }
 
 /**

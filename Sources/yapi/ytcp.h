@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.h 14910 2014-02-12 08:36:10Z seb $
+ * $Id: ytcp.h 17313 2014-08-27 09:34:05Z seb $
  *
  *  Declaration of a client TCP stack
  *
@@ -85,8 +85,6 @@ extern "C" {
     
 int yNetSetErrEx(u32 line,unsigned err,char *errmsg);
     
-
-// A TCP_SOCKET is stored as a single BYTE
 #define YTCP_REMOTE_CLOSE 1
 
 struct _NetHubSt;    
@@ -103,11 +101,13 @@ int  yStartWakeUpSocket(WakeUpSocket *wuce, char *errmsg);
 int  yDringWakeUpSocket(WakeUpSocket *wuce, u8 signal, char *errmsg);
 int  yConsumeWakeUpSocket(WakeUpSocket *wuce, char *errmsg);
 void yFreeWakeUpSocket(WakeUpSocket *wuce);
-    
+int yTcpDownload(const char *host, const char *url, u8 **out_buffer, u32 mstimeout, char *errmsg);
+
 int  yTcpInit(char *errmsg);
 u32  yResolveDNS(const char *name,char *errmsg);
 void yTcpInitReq(struct _TcpReqSt *tcpreq, struct _NetHubSt *hub);
-int  yTcpOpenReq(struct _TcpReqSt *tcpreq, const char *request, int reqlen, yapiRequestAsyncCallback callback, void *context, char *errmsg);
+int  yTcpOpenReq(struct _TcpReqSt *tcpreq, const char *request, int reqlen, u32 flags, yapiRequestAsyncCallback callback, void *context, char *errmsg);
+int  yTcpIsAsyncReq(struct _TcpReqSt *req);
 int  yTcpSelectReq(struct _TcpReqSt **tcpreq, int size, u64 ms, WakeUpSocket *wuce, char *errmsg);
 int  yTcpEofReq(struct _TcpReqSt *tcpreq, char *errmsg);
 int  yTcpGetReq(struct _TcpReqSt *tcpreq, u8 **buffer);

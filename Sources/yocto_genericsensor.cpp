@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_genericsensor.cpp 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_genericsensor.cpp 16923 2014-07-18 14:47:20Z mvuilleu $
  *
  * Implements yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -53,6 +53,7 @@ YGenericSensor::YGenericSensor(const string& func): YSensor(func)
     ,_signalUnit(SIGNALUNIT_INVALID)
     ,_signalRange(SIGNALRANGE_INVALID)
     ,_valueRange(VALUERANGE_INVALID)
+    ,_signalBias(SIGNALBIAS_INVALID)
     ,_valueCallbackGenericSensor(NULL)
     ,_timedReportCallbackGenericSensor(NULL)
 //--- (end of GenericSensor initialization)
@@ -71,12 +72,13 @@ const double YGenericSensor::SIGNALVALUE_INVALID = YAPI_INVALID_DOUBLE;
 const string YGenericSensor::SIGNALUNIT_INVALID = YAPI_INVALID_STRING;
 const string YGenericSensor::SIGNALRANGE_INVALID = YAPI_INVALID_STRING;
 const string YGenericSensor::VALUERANGE_INVALID = YAPI_INVALID_STRING;
+const double YGenericSensor::SIGNALBIAS_INVALID = YAPI_INVALID_DOUBLE;
 
 int YGenericSensor::_parseAttr(yJsonStateMachine& j)
 {
     if(!strcmp(j.token, "signalValue")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _signalValue =  atof(j.token)/65536;
+        _signalValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
         return 1;
     }
     if(!strcmp(j.token, "signalUnit")) {
@@ -92,6 +94,11 @@ int YGenericSensor::_parseAttr(yJsonStateMachine& j)
     if(!strcmp(j.token, "valueRange")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _valueRange =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "signalBias")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _signalBias =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
         return 1;
     }
     failed:
@@ -131,7 +138,7 @@ double YGenericSensor::get_signalValue(void)
             return YGenericSensor::SIGNALVALUE_INVALID;
         }
     }
-    return (_signalValue * 1000 < 0.0 ? ceil(_signalValue * 1000-0.5) : floor(_signalValue * 1000+0.5)) / 1000;
+    return floor(_signalValue * 1000+0.5) / 1000;
 }
 
 /**
@@ -202,8 +209,8 @@ string YGenericSensor::get_valueRange(void)
 }
 
 /**
- * Changes the physical value range measured by the sensor. The range change may have a side effect
- * on the display resolution, as it may be adapted automatically.
+ * Changes the physical value range measured by the sensor. As a side effect, the range modification may
+ * automatically modify the display resolution.
  * 
  * @param newval : a string corresponding to the physical value range measured by the sensor
  * 
@@ -216,6 +223,43 @@ int YGenericSensor::set_valueRange(const string& newval)
     string rest_val;
     rest_val = newval;
     return _setAttr("valueRange", rest_val);
+}
+
+/**
+ * Changes the electric signal bias for zero shift adjustment.
+ * If your electric signal reads positif when it should be zero, setup
+ * a positive signalBias of the same value to fix the zero shift.
+ * 
+ * @param newval : a floating point number corresponding to the electric signal bias for zero shift adjustment
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YGenericSensor::set_signalBias(double newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+    return _setAttr("signalBias", rest_val);
+}
+
+/**
+ * Returns the electric signal bias for zero shift adjustment.
+ * A positive bias means that the signal is over-reporting the measure,
+ * while a negative bias means that the signal is underreporting the measure.
+ * 
+ * @return a floating point number corresponding to the electric signal bias for zero shift adjustment
+ * 
+ * On failure, throws an exception or returns Y_SIGNALBIAS_INVALID.
+ */
+double YGenericSensor::get_signalBias(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YGenericSensor::SIGNALBIAS_INVALID;
+        }
+    }
+    return _signalBias;
 }
 
 /**
@@ -322,6 +366,23 @@ int YGenericSensor::_invokeTimedReportCallback(YMeasure value)
         YSensor::_invokeTimedReportCallback(value);
     }
     return 0;
+}
+
+/**
+ * Adjusts the signal bias so that the current signal value is need
+ * precisely as zero.
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YGenericSensor::zeroAdjust(void)
+{
+    double currSignal = 0.0;
+    double currBias = 0.0;
+    currSignal = this->get_signalValue();
+    currBias = this->get_signalBias();
+    return this->set_signalBias(currSignal + currBias);
 }
 
 YGenericSensor *YGenericSensor::nextGenericSensor(void)

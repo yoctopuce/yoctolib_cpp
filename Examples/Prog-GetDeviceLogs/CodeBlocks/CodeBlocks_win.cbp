@@ -310,6 +310,12 @@
         <Unit filename="..\..\..\Sources\yocto_relay.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
+        <Unit filename="..\..\..\Sources\yocto_serialport.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_serialport.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
         <Unit filename="..\..\..\Sources\yocto_servo.h">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>

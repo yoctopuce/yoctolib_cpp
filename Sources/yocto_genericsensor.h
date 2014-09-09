@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_genericsensor.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_genericsensor.h 16919 2014-07-18 13:17:02Z mvuilleu $
  *
  * Declares yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -58,6 +58,7 @@ typedef void (*YGenericSensorTimedReportCallback)(YGenericSensor *func, YMeasure
 #define Y_SIGNALUNIT_INVALID            (YAPI_INVALID_STRING)
 #define Y_SIGNALRANGE_INVALID           (YAPI_INVALID_STRING)
 #define Y_VALUERANGE_INVALID            (YAPI_INVALID_STRING)
+#define Y_SIGNALBIAS_INVALID            (YAPI_INVALID_DOUBLE)
 //--- (end of YGenericSensor definitions)
 
 //--- (YGenericSensor declaration)
@@ -79,6 +80,7 @@ protected:
     string          _signalUnit;
     string          _signalRange;
     string          _valueRange;
+    double          _signalBias;
     YGenericSensorValueCallback _valueCallbackGenericSensor;
     YGenericSensorTimedReportCallback _timedReportCallbackGenericSensor;
 
@@ -100,6 +102,7 @@ public:
     static const string SIGNALUNIT_INVALID;
     static const string SIGNALRANGE_INVALID;
     static const string VALUERANGE_INVALID;
+    static const double SIGNALBIAS_INVALID;
 
     /**
      * Changes the measuring unit for the measured value.
@@ -178,8 +181,8 @@ public:
     { return this->get_valueRange(); }
 
     /**
-     * Changes the physical value range measured by the sensor. The range change may have a side effect
-     * on the display resolution, as it may be adapted automatically.
+     * Changes the physical value range measured by the sensor. As a side effect, the range modification may
+     * automatically modify the display resolution.
      * 
      * @param newval : a string corresponding to the physical value range measured by the sensor
      * 
@@ -190,6 +193,35 @@ public:
     int             set_valueRange(const string& newval);
     inline int      setValueRange(const string& newval)
     { return this->set_valueRange(newval); }
+
+    /**
+     * Changes the electric signal bias for zero shift adjustment.
+     * If your electric signal reads positif when it should be zero, setup
+     * a positive signalBias of the same value to fix the zero shift.
+     * 
+     * @param newval : a floating point number corresponding to the electric signal bias for zero shift adjustment
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_signalBias(double newval);
+    inline int      setSignalBias(double newval)
+    { return this->set_signalBias(newval); }
+
+    /**
+     * Returns the electric signal bias for zero shift adjustment.
+     * A positive bias means that the signal is over-reporting the measure,
+     * while a negative bias means that the signal is underreporting the measure.
+     * 
+     * @return a floating point number corresponding to the electric signal bias for zero shift adjustment
+     * 
+     * On failure, throws an exception or returns Y_SIGNALBIAS_INVALID.
+     */
+    double              get_signalBias(void);
+
+    inline double       signalBias(void)
+    { return this->get_signalBias(); }
 
     /**
      * Retrieves a generic sensor for a given identifier.
@@ -247,6 +279,16 @@ public:
     using YSensor::registerTimedReportCallback;
 
     virtual int         _invokeTimedReportCallback(YMeasure value);
+
+    /**
+     * Adjusts the signal bias so that the current signal value is need
+     * precisely as zero.
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         zeroAdjust(void);
 
 
     inline static YGenericSensor* Find(string func)

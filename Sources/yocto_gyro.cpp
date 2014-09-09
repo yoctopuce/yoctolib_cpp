@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.cpp 15152 2014-02-28 14:53:39Z seb $
+ * $Id: yocto_gyro.cpp 16895 2014-07-18 00:12:08Z mvuilleu $
  *
  * Implements yFindGyro(), the high-level API for Gyro functions
  *
@@ -260,17 +260,17 @@ int YGyro::_parseAttr(yJsonStateMachine& j)
 {
     if(!strcmp(j.token, "xValue")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _xValue =  atof(j.token)/65536;
+        _xValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
         return 1;
     }
     if(!strcmp(j.token, "yValue")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _yValue =  atof(j.token)/65536;
+        _yValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
         return 1;
     }
     if(!strcmp(j.token, "zValue")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _zValue =  atof(j.token)/65536;
+        _zValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
         return 1;
     }
     failed:
@@ -497,15 +497,15 @@ int YGyro::_loadAngles(void)
         delta = _y * _w - _x * _z;
         if (delta > 0.499 * norm) {
             _pitch = 90.0;
-            _head  = (2.0 * 1800.0/3.141592653589793238463 * atan2(_x,_w) < 0.0 ? ceil(2.0 * 1800.0/3.141592653589793238463 * atan2(_x,_w)-0.5) : floor(2.0 * 1800.0/3.141592653589793238463 * atan2(_x,_w)+0.5)) / 10.0;
+            _head  = floor(2.0 * 1800.0/3.141592653589793238463 * atan2(_x,_w)+0.5) / 10.0;
         } else {
             if (delta < -0.499 * norm) {
                 _pitch = -90.0;
-                _head  = (-2.0 * 1800.0/3.141592653589793238463 * atan2(_x,_w) < 0.0 ? ceil(-2.0 * 1800.0/3.141592653589793238463 * atan2(_x,_w)-0.5) : floor(-2.0 * 1800.0/3.141592653589793238463 * atan2(_x,_w)+0.5)) / 10.0;
+                _head  = floor(-2.0 * 1800.0/3.141592653589793238463 * atan2(_x,_w)+0.5) / 10.0;
             } else {
-                _roll  = (1800.0/3.141592653589793238463 * atan2(2.0 * (_w * _x + _y * _z),sqw - sqx - sqy + sqz) < 0.0 ? ceil(1800.0/3.141592653589793238463 * atan2(2.0 * (_w * _x + _y * _z),sqw - sqx - sqy + sqz)-0.5) : floor(1800.0/3.141592653589793238463 * atan2(2.0 * (_w * _x + _y * _z),sqw - sqx - sqy + sqz)+0.5)) / 10.0;
-                _pitch = (1800.0/3.141592653589793238463 * asin(2.0 * delta / norm) < 0.0 ? ceil(1800.0/3.141592653589793238463 * asin(2.0 * delta / norm)-0.5) : floor(1800.0/3.141592653589793238463 * asin(2.0 * delta / norm)+0.5)) / 10.0;
-                _head  = (1800.0/3.141592653589793238463 * atan2(2.0 * (_x * _y + _z * _w),sqw + sqx - sqy - sqz) < 0.0 ? ceil(1800.0/3.141592653589793238463 * atan2(2.0 * (_x * _y + _z * _w),sqw + sqx - sqy - sqz)-0.5) : floor(1800.0/3.141592653589793238463 * atan2(2.0 * (_x * _y + _z * _w),sqw + sqx - sqy - sqz)+0.5)) / 10.0;
+                _roll  = floor(1800.0/3.141592653589793238463 * atan2(2.0 * (_w * _x + _y * _z),sqw - sqx - sqy + sqz)+0.5) / 10.0;
+                _pitch = floor(1800.0/3.141592653589793238463 * asin(2.0 * delta / norm)+0.5) / 10.0;
+                _head  = floor(1800.0/3.141592653589793238463 * atan2(2.0 * (_x * _y + _z * _w),sqw + sqx - sqy - sqz)+0.5) / 10.0;
             }
         }
         _angles_stamp = _qt_stamp;

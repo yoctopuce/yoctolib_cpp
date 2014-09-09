@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_datalogger.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_datalogger.h 17191 2014-08-18 16:04:13Z seb $
  *
  * Declares yFindDataLogger(), the high-level API for DataLogger functions
  *
@@ -67,6 +67,15 @@ typedef enum {
     Y_AUTOSTART_ON = 1,
     Y_AUTOSTART_INVALID = -1,
 } Y_AUTOSTART_enum;
+#endif
+
+#ifndef _Y_BEACONDRIVEN_ENUM
+#define _Y_BEACONDRIVEN_ENUM
+typedef enum {
+    Y_BEACONDRIVEN_OFF = 0,
+    Y_BEACONDRIVEN_ON = 1,
+    Y_BEACONDRIVEN_INVALID = -1,
+} Y_BEACONDRIVEN_enum;
 #endif
 
 #ifndef _Y_CLEARHISTORY_ENUM
@@ -160,6 +169,7 @@ class YOCTO_CLASS_EXPORT YDataLogger: public YFunction {
     s64             _timeUTC;
     Y_RECORDING_enum _recording;
     Y_AUTOSTART_enum _autoStart;
+    Y_BEACONDRIVEN_enum _beaconDriven;
     Y_CLEARHISTORY_enum _clearHistory;
     YDataLoggerValueCallback _valueCallbackDataLogger;
 
@@ -219,6 +229,9 @@ public:
     static const Y_AUTOSTART_enum AUTOSTART_OFF = Y_AUTOSTART_OFF;
     static const Y_AUTOSTART_enum AUTOSTART_ON = Y_AUTOSTART_ON;
     static const Y_AUTOSTART_enum AUTOSTART_INVALID = Y_AUTOSTART_INVALID;
+    static const Y_BEACONDRIVEN_enum BEACONDRIVEN_OFF = Y_BEACONDRIVEN_OFF;
+    static const Y_BEACONDRIVEN_enum BEACONDRIVEN_ON = Y_BEACONDRIVEN_ON;
+    static const Y_BEACONDRIVEN_enum BEACONDRIVEN_INVALID = Y_BEACONDRIVEN_INVALID;
     static const Y_CLEARHISTORY_enum CLEARHISTORY_FALSE = Y_CLEARHISTORY_FALSE;
     static const Y_CLEARHISTORY_enum CLEARHISTORY_TRUE = Y_CLEARHISTORY_TRUE;
     static const Y_CLEARHISTORY_enum CLEARHISTORY_INVALID = Y_CLEARHISTORY_INVALID;
@@ -316,6 +329,34 @@ public:
     int             set_autoStart(Y_AUTOSTART_enum newval);
     inline int      setAutoStart(Y_AUTOSTART_enum newval)
     { return this->set_autoStart(newval); }
+
+    /**
+     * Return true if the data logger is synchronied with the localization beacon.
+     * 
+     * @return either Y_BEACONDRIVEN_OFF or Y_BEACONDRIVEN_ON
+     * 
+     * On failure, throws an exception or returns Y_BEACONDRIVEN_INVALID.
+     */
+    Y_BEACONDRIVEN_enum get_beaconDriven(void);
+
+    inline Y_BEACONDRIVEN_enum beaconDriven(void)
+    { return this->get_beaconDriven(); }
+
+    /**
+     * Changes the type of synchronisation of the data logger.
+     * Remember to call the saveToFlash() method of the module if the
+     * modification must be kept.
+     * 
+     * @param newval : either Y_BEACONDRIVEN_OFF or Y_BEACONDRIVEN_ON, according to the type of
+     * synchronisation of the data logger
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_beaconDriven(Y_BEACONDRIVEN_enum newval);
+    inline int      setBeaconDriven(Y_BEACONDRIVEN_enum newval)
+    { return this->set_beaconDriven(newval); }
 
     Y_CLEARHISTORY_enum get_clearHistory(void);
 

@@ -15,8 +15,8 @@ static void usage(void)
     cout << "usage: demo <serial_number> " << endl;
     cout << "       demo <logical_name>" << endl;
     cout << "       demo any                 (use any discovered device)" << endl;
-    u64 now = yGetTickCount();
-	while (yGetTickCount()-now<3000) {
+    u64 now = yGetTickCount(); 
+    while (yGetTickCount()-now<3000) {
         // wait 3 sec to show the message
     }
     exit(1);
@@ -50,10 +50,10 @@ int main(int argc, const char * argv[])
         }
     } else {
         anytilt = YTilt::FindTilt(target + ".tilt1");
-        if (!anytilt->isOnline())
-         { cout << "Module not connected (check identification and USB cable)" << endl;
-           return 1;
-         }
+        if (!anytilt->isOnline()) {
+            cout << "Module not connected (check identification and USB cable)" << endl;
+            return 1;
+        }
     }
     string serial = anytilt->get_module()->get_serialNumber();
 
@@ -65,23 +65,22 @@ int main(int argc, const char * argv[])
     gyro = YGyro::FindGyro(serial + ".gyro");
     int count = 0;
 
-
     while(1) {
         if(!tilt1->isOnline()) {
             cout << "device disconnected";
             break;
         }        
-        if ((count % 10) == 0) 
+        if ((count % 10) == 0) {
             cout <<"tilt1\ntilt2\ncompass\tacc\tgyro"<<endl;
+        }
         cout <<  std::setprecision(2) <<std::setw(8) << tilt1->get_currentValue() <<"\t"
-             << tilt2->get_currentValue() <<"\t"
-             << compass->get_currentValue() <<"\t"
-             << accelerometer->get_currentValue() <<"\t"
-             << gyro->get_currentValue() <<endl;
+            << tilt2->get_currentValue() <<"\t"
+            << compass->get_currentValue() <<"\t"
+            << accelerometer->get_currentValue() <<"\t"
+            << gyro->get_currentValue() <<endl;
         count++;       
-    
         YAPI::Sleep(250,errmsg);
-    };
+    }
         
     return 0;
 }

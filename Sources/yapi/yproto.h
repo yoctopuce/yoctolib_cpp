@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 16449 2014-06-06 09:39:40Z seb $
+ * $Id: yproto.h 17477 2014-09-03 08:36:33Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -10,26 +10,26 @@
  *
  *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
  *  non-exclusive license to use, modify, copy and integrate this
- *  file into your software for the sole purpose of interfacing 
- *  with Yoctopuce products. 
+ *  file into your software for the sole purpose of interfacing
+ *  with Yoctopuce products.
  *
- *  You may reproduce and distribute copies of this file in 
+ *  You may reproduce and distribute copies of this file in
  *  source or object form, as long as the sole purpose of this
- *  code is to interface with Yoctopuce products. You must retain 
+ *  code is to interface with Yoctopuce products. You must retain
  *  this notice in the distributed source file.
  *
  *  You should refer to Yoctopuce General Terms and Conditions
- *  for additional information regarding your rights and 
+ *  for additional information regarding your rights and
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -144,7 +144,7 @@ typedef struct{
 #else
 #define yMalloc(size)                   malloc(size)
 #define yFree(ptr)                      free(ptr)
-#define yTracePtr(ptr)                  
+#define yTracePtr(ptr)
 #endif
 
 #define yMemset(dst,val,size)           memset(dst,val,size)
@@ -177,19 +177,21 @@ typedef struct{
     #define YSTRLEN(str)                        ((int)strlen(str))
 #endif
 
+#define YSTRDUP(src)                        ystrdup_s(src)
 #define YSTRCPY(dst,dstsize,src)            ystrcpy_s(dst,dstsize,src)
 #define YSTRCAT(dst,dstsize,src)            ystrcat_s(dst,dstsize,src)
 #define YSTRNCAT(dst,dstsize,src,len)       ystrncat_s(dst,dstsize,src,len)
 #define YSTRNCPY(dst,dstsize,src,len)       ystrncpy_s(dst,dstsize,src,len)
 #define YSPRINTF                            ysprintf_s
 #define YVSPRINTF                           yvsprintf_s
-YRETCODE ystrcpy_s(char *dst, unsigned dstsize,const char *src);
+char *ystrdup_s(const char *src);
+YRETCODE ystrcpy_s(char *dst, unsigned dstsize, const char *src);
 YRETCODE ystrncpy_s(char *dst,unsigned dstsize,const char *src,unsigned len);
 YRETCODE ystrcat_s(char *dst, unsigned dstsize,const char *src);
 YRETCODE ystrncat_s(char *dst, unsigned dstsize,const char *src,unsigned len);
 int ysprintf_s(char *dst, unsigned dstsize,const char *fmt ,...);
 int yvsprintf_s (char *dst, unsigned dstsize, const char * fmt, va_list arg );
-
+int ymemfind(const u8 *haystack, u32 haystack_len, const u8 *needle, u32 needle_len);
 
 
 //#define DEBUG_YAPI_REQ
@@ -203,6 +205,7 @@ int yvsprintf_s (char *dst, unsigned dstsize, const char * fmt, va_list arg );
 //#define DEBUG_USB_TRAFIC
 //#define TRACE_NET_HUB
 //#define DEBUG_TRACE_FILE "c:\\tmp\\tracefile.txt"
+//#define DEBUG_TCP
 
 #define MSC_VS2003 1310
 
@@ -233,6 +236,21 @@ __forceinline void __HALLOG(fmt,...){}
 #endif
 #else
 #define HALLOG(fmt,args...)
+#endif
+#endif
+
+#ifdef DEBUG_TCP
+#define TCPLOG  dbglog
+#else
+#if defined(_MSC_VER)
+#if (_MSC_VER > MSC_VS2003)
+#define TCPLOG(fmt,...)
+#else
+__forceinline void __TCPLOG(fmt,...){}
+#define TCPLOG __TCPLOG
+#endif
+#else
+#define TCPLOG(fmt,args...)
 #endif
 #endif
 
@@ -343,7 +361,7 @@ int FusionErrmsg(int code,char *errmsg, const char *generr, const char *detailer
 /*****************************************************************************
  PERFORMANCE TEST DEFINITIONS (very old)
 ****************************************************************************/
-typedef struct 
+typedef struct
 {
     u64 totaltime;
     u64 count;
@@ -393,7 +411,7 @@ typedef struct {
     u64                 totalPush;
     u64                 totalPop;
     YRETCODE            status;
-    char                errmsg[YOCTO_ERRMSG_LEN]; 
+    char                errmsg[YOCTO_ERRMSG_LEN];
     yCRITICAL_SECTION   cs;
     yEvent              notEmptyEvent;
     yEvent              emptyEvent;
@@ -436,7 +454,7 @@ typedef struct _yInterfaceSt {
     pktQueue        txQueue;
 #if defined(WINDOWS_API)
     char            devicePath[WIN_DEVICE_PATH_LEN];
-    yThread         io_thread;    
+    yThread         io_thread;
     HANDLE          wrHDL;
     OVERLAPPED      rdOL;
     HANDLE          rdHDL;
@@ -509,8 +527,7 @@ typedef enum
 #define DEVGEN_LOG_PENDING       2u
 #define DEVGEN_LOG_PULLING       4u
 typedef struct  _yGenericDeviceSt {
-    yStrRef              serial; // set only once at init -> no need to use the mutex
-    yCRITICAL_SECTION   cs;
+    yStrRef             serial; // set only once at init -> no need to use the mutex
     u32                 flags;
     u32                 deviceLogPos;
     yFifoBuf            logFifo;
@@ -543,11 +560,11 @@ typedef struct  _yPrivDeviceSt{
     YUSBDEV             yhdl;       // unique YHANDLE to identify device during execution
     YDEV_STATUS         dStatus;    // detection status
     YENU_ACTION         enumAction; // action to triger at end of enumeration
-    YRUN_STATUS         rstatus;    // running status of the device (valid only on working dev)    
+    YRUN_STATUS         rstatus;    // running status of the device (valid only on working dev)
     char                errmsg[YOCTO_ERRMSG_LEN];
     unsigned int        nb_startup_retry;
-    u64                 next_startup_attempt;    
-    USB_HDL             pendingIO; 
+    u64                 next_startup_attempt;
+    USB_HDL             pendingIO;
     YHTTP_STATUS        httpstate;
     yDeviceSt           infos;      // device infos
     u32                 lastUtcUpdate;
@@ -596,8 +613,8 @@ typedef enum {
 #define MAX_YDX_PER_HUB 255
 #define ALLOC_YDX_PER_HUB 256
 // NetHubSt flags
-#define NETH_F_MANDATORY                1 
-#define NETH_F_SEND_PING_NOTIFICATION   2 
+#define NETH_F_MANDATORY                1
+#define NETH_F_SEND_PING_NOTIFICATION   2
 
 #define NET_HUB_NOT_CONNECTION_TIMEOUT   (6*1024)
 
@@ -634,6 +651,10 @@ typedef struct _NetHubSt {
     u32                 nc;             // reset each time a new nonce is received
 } NetHubSt;
 
+
+#define TCPREQ_KEEPALIVE       1
+#define TCPREQ_NOEXPIRATION    2
+
 typedef struct _TcpReqSt {
     NetHubSt            *hub;           // pointer to the NetHubSt handling the device
     yCRITICAL_SECTION   access;
@@ -651,13 +672,27 @@ typedef struct _TcpReqSt {
     int                 retryCount;     // number of authorization attempts
     int                 errcode;        // in case an error occured
     char                errmsg[YOCTO_ERRMSG_LEN];
-    int                 keepalive;      // no output data expected, and connection can be reused after query is completed
+    u64                 open_tm;        // timestamp of the start of a connection used to detect timout of the device
+                                        // (must be reset if we reuse the socket)
+    u64                 read_tm;        // timestamp of the last received packet (must be reset if we reuse the socket)
+    u32                 flags;          // flags for keepalive and no expiration
     YSOCKET             reuseskt;       // socket to reuse for next query, when keepalive is true
     yapiRequestAsyncCallback callback;
     void                *context;
 } TcpReqSt;
 
 #define SETUPED_IFACE_CACHE_SIZE 128
+
+
+typedef struct {
+    char  *serial;
+    char  *firmwarePath;
+    yThread     thread;
+    int         global_progress; //-1:error 0-99:working 100:success
+} FUpdateContext;
+
+
+
 
 #define YCTX_OSX_MULTIPLES_HID 1
 // structure that contain information about the API
@@ -667,7 +702,8 @@ typedef struct{
     yCRITICAL_SECTION   handleEv_cs;
     yEvent              exitSleepEvent;
     // global inforation on all devices
-    yGenericDeviceSt    genericInfos[ALLOC_YDX_PER_HUB];
+    yCRITICAL_SECTION   generic_cs;
+    yGenericDeviceSt    generic_infos[ALLOC_YDX_PER_HUB];
     // usb stuff
     yCRITICAL_SECTION   enum_cs;
     int                 detecttype;
@@ -682,6 +718,7 @@ typedef struct{
     TcpReqSt            tcpreq[ALLOC_YDX_PER_HUB];  // indexed by our own DevYdx
     yRawNotificationCb  rawNotificationCb;
     yRawReportCb        rawReportCb;
+    yRawReportV2Cb      rawReportV2Cb;
     yCRITICAL_SECTION   deviceCallbackCS;
     yCRITICAL_SECTION   functionCallbackCS;
     // SSDP stuff
@@ -695,6 +732,8 @@ typedef struct{
     yapiFunctionUpdateCallback  functionCallback;
     yapiTimedReportCallback     timedReportCallback;
     yapiHubDiscoveryCallback    hubDiscoveryCallback;
+    // Programing api
+    FUpdateContext      fuCtx;
     // OS specifics variables
     yInterfaceSt*       setupedIfaceCache[SETUPED_IFACE_CACHE_SIZE];
 #if defined(WINDOWS_API)

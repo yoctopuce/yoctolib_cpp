@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_compass.cpp 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_compass.cpp 16895 2014-07-18 00:12:08Z mvuilleu $
  *
  * Implements yFindCompass(), the high-level API for Compass functions
  *
@@ -76,7 +76,7 @@ int YCompass::_parseAttr(yJsonStateMachine& j)
     }
     if(!strcmp(j.token, "magneticHeading")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _magneticHeading =  atof(j.token)/65536;
+        _magneticHeading =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
         return 1;
     }
     failed:

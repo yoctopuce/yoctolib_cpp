@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_motor.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_motor.h 17351 2014-08-29 08:55:47Z seb $
  *
  * Declares yFindMotor(), the high-level API for Motor functions
  *
@@ -56,7 +56,7 @@ typedef void (*YMotorValueCallback)(YMotor *func, const string& functionValue);
 #define _Y_MOTORSTATUS_ENUM
 typedef enum {
     Y_MOTORSTATUS_IDLE = 0,
-    Y_MOTORSTATUS_BREAK = 1,
+    Y_MOTORSTATUS_BRAKE = 1,
     Y_MOTORSTATUS_FORWD = 2,
     Y_MOTORSTATUS_BACKWD = 3,
     Y_MOTORSTATUS_LOVOLT = 4,
@@ -68,10 +68,10 @@ typedef enum {
 #endif
 
 #define Y_DRIVINGFORCE_INVALID          (YAPI_INVALID_DOUBLE)
-#define Y_BREAKINGFORCE_INVALID         (YAPI_INVALID_DOUBLE)
+#define Y_BRAKINGFORCE_INVALID          (YAPI_INVALID_DOUBLE)
 #define Y_CUTOFFVOLTAGE_INVALID         (YAPI_INVALID_DOUBLE)
 #define Y_OVERCURRENTLIMIT_INVALID      (YAPI_INVALID_INT)
-#define Y_FREQUENCY_INVALID             (YAPI_INVALID_UINT)
+#define Y_FREQUENCY_INVALID             (YAPI_INVALID_DOUBLE)
 #define Y_STARTERTIME_INVALID           (YAPI_INVALID_INT)
 #define Y_FAILSAFETIMEOUT_INVALID       (YAPI_INVALID_UINT)
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
@@ -82,10 +82,10 @@ typedef enum {
  * YMotor Class: Motor function interface
  * 
  * Yoctopuce application programming interface allows you to drive the
- * power sent to motor to make it turn both ways, but also to drive accelerations
+ * power sent to the motor to make it turn both ways, but also to drive accelerations
  * and decelerations. The motor will then accelerate automatically: you will not
  * have to monitor it. The API also allows to slow down the motor by shortening
- * its terminals: the motor will then act as an electromagnetic break.
+ * its terminals: the motor will then act as an electromagnetic brake.
  */
 class YOCTO_CLASS_EXPORT YMotor: public YFunction {
 #ifdef __BORLANDC__
@@ -97,10 +97,10 @@ protected:
     // Attributes (function value cache)
     Y_MOTORSTATUS_enum _motorStatus;
     double          _drivingForce;
-    double          _breakingForce;
+    double          _brakingForce;
     double          _cutOffVoltage;
     int             _overCurrentLimit;
-    int             _frequency;
+    double          _frequency;
     int             _starterTime;
     int             _failSafeTimeout;
     string          _command;
@@ -121,7 +121,7 @@ public:
     //--- (YMotor accessors declaration)
 
     static const Y_MOTORSTATUS_enum MOTORSTATUS_IDLE = Y_MOTORSTATUS_IDLE;
-    static const Y_MOTORSTATUS_enum MOTORSTATUS_BREAK = Y_MOTORSTATUS_BREAK;
+    static const Y_MOTORSTATUS_enum MOTORSTATUS_BRAKE = Y_MOTORSTATUS_BRAKE;
     static const Y_MOTORSTATUS_enum MOTORSTATUS_FORWD = Y_MOTORSTATUS_FORWD;
     static const Y_MOTORSTATUS_enum MOTORSTATUS_BACKWD = Y_MOTORSTATUS_BACKWD;
     static const Y_MOTORSTATUS_enum MOTORSTATUS_LOVOLT = Y_MOTORSTATUS_LOVOLT;
@@ -130,10 +130,10 @@ public:
     static const Y_MOTORSTATUS_enum MOTORSTATUS_FAILSF = Y_MOTORSTATUS_FAILSF;
     static const Y_MOTORSTATUS_enum MOTORSTATUS_INVALID = Y_MOTORSTATUS_INVALID;
     static const double DRIVINGFORCE_INVALID;
-    static const double BREAKINGFORCE_INVALID;
+    static const double BRAKINGFORCE_INVALID;
     static const double CUTOFFVOLTAGE_INVALID;
     static const int OVERCURRENTLIMIT_INVALID = YAPI_INVALID_INT;
-    static const int FREQUENCY_INVALID = YAPI_INVALID_UINT;
+    static const double FREQUENCY_INVALID;
     static const int STARTERTIME_INVALID = YAPI_INVALID_INT;
     static const int FAILSAFETIMEOUT_INVALID = YAPI_INVALID_UINT;
     static const string COMMAND_INVALID;
@@ -143,16 +143,16 @@ public:
      * IDLE   when the motor is stopped/in free wheel, ready to start;
      * FORWD  when the controller is driving the motor forward;
      * BACKWD when the controller is driving the motor backward;
-     * BREAK  when the controller is breaking;
+     * BRAKE  when the controller is braking;
      * LOVOLT when the controller has detected a low voltage condition;
      * HICURR when the controller has detected an overcurrent condition;
-     * HIHEAT when the controller detected an overheat condition;
+     * HIHEAT when the controller has detected an overheat condition;
      * FAILSF when the controller switched on the failsafe security.
      * 
      * When an error condition occurred (LOVOLT, HICURR, HIHEAT, FAILSF), the controller
      * status must be explicitly reset using the resetStatus function.
      * 
-     * @return a value among Y_MOTORSTATUS_IDLE, Y_MOTORSTATUS_BREAK, Y_MOTORSTATUS_FORWD,
+     * @return a value among Y_MOTORSTATUS_IDLE, Y_MOTORSTATUS_BRAKE, Y_MOTORSTATUS_FORWD,
      * Y_MOTORSTATUS_BACKWD, Y_MOTORSTATUS_LOVOLT, Y_MOTORSTATUS_HICURR, Y_MOTORSTATUS_HIHEAT and Y_MOTORSTATUS_FAILSF
      * 
      * On failure, throws an exception or returns Y_MOTORSTATUS_INVALID.
@@ -171,7 +171,7 @@ public:
      * to 100%. If you want go easy on your mechanics and avoid excessive current consumption,
      * try to avoid brutal power changes. For example, immediate transition from forward full power
      * to reverse full power is a very bad idea. Each time the driving power is modified, the
-     * breaking power is set to zero.
+     * braking power is set to zero.
      * 
      * @param newval : a floating point number corresponding to immediately the power sent to the motor
      * 
@@ -197,44 +197,44 @@ public:
     { return this->get_drivingForce(); }
 
     /**
-     * Changes immediately the breaking force applied to the motor (in per cents).
-     * The value 0 corresponds to no breaking (free wheel). When the breaking force
+     * Changes immediately the braking force applied to the motor (in percents).
+     * The value 0 corresponds to no braking (free wheel). When the braking force
      * is changed, the driving power is set to zero. The value is a percentage.
      * 
-     * @param newval : a floating point number corresponding to immediately the breaking force applied to
-     * the motor (in per cents)
+     * @param newval : a floating point number corresponding to immediately the braking force applied to
+     * the motor (in percents)
      * 
      * @return YAPI_SUCCESS if the call succeeds.
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             set_breakingForce(double newval);
-    inline int      setBreakingForce(double newval)
-    { return this->set_breakingForce(newval); }
+    int             set_brakingForce(double newval);
+    inline int      setBrakingForce(double newval)
+    { return this->set_brakingForce(newval); }
 
     /**
-     * Returns the breaking force applied to the motor, as a percentage.
-     * The value 0 corresponds to no breaking (free wheel).
+     * Returns the braking force applied to the motor, as a percentage.
+     * The value 0 corresponds to no braking (free wheel).
      * 
-     * @return a floating point number corresponding to the breaking force applied to the motor, as a percentage
+     * @return a floating point number corresponding to the braking force applied to the motor, as a percentage
      * 
-     * On failure, throws an exception or returns Y_BREAKINGFORCE_INVALID.
+     * On failure, throws an exception or returns Y_BRAKINGFORCE_INVALID.
      */
-    double              get_breakingForce(void);
+    double              get_brakingForce(void);
 
-    inline double       breakingForce(void)
-    { return this->get_breakingForce(); }
+    inline double       brakingForce(void)
+    { return this->get_brakingForce(); }
 
     /**
-     * Changes the threshold voltage under which the controller will automatically switch to error state
-     * and prevent further current draw. This setting prevent damage to a battery that can
+     * Changes the threshold voltage under which the controller automatically switches to error state
+     * and prevents further current draw. This setting prevent damage to a battery that can
      * occur when drawing current from an "empty" battery.
-     * Note that whatever the cutoff threshold, the controller will switch to undervoltage
+     * Note that whatever the cutoff threshold, the controller switches to undervoltage
      * error state if the power supply goes under 3V, even for a very brief time.
      * 
      * @param newval : a floating point number corresponding to the threshold voltage under which the
-     * controller will automatically switch to error state
-     *         and prevent further current draw
+     * controller automatically switches to error state
+     *         and prevents further current draw
      * 
      * @return YAPI_SUCCESS if the call succeeds.
      * 
@@ -245,13 +245,13 @@ public:
     { return this->set_cutOffVoltage(newval); }
 
     /**
-     * Returns the threshold voltage under which the controller will automatically switch to error state
-     * and prevent further current draw. This setting prevent damage to a battery that can
+     * Returns the threshold voltage under which the controller automatically switches to error state
+     * and prevents further current draw. This setting prevents damage to a battery that can
      * occur when drawing current from an "empty" battery.
      * 
      * @return a floating point number corresponding to the threshold voltage under which the controller
-     * will automatically switch to error state
-     *         and prevent further current draw
+     * automatically switches to error state
+     *         and prevents further current draw
      * 
      * On failure, throws an exception or returns Y_CUTOFFVOLTAGE_INVALID.
      */
@@ -261,11 +261,11 @@ public:
     { return this->get_cutOffVoltage(); }
 
     /**
-     * Returns the current threshold (in mA) above which the controller will automatically
-     * switch to error state. A zero value means that there is no limit.
+     * Returns the current threshold (in mA) above which the controller automatically
+     * switches to error state. A zero value means that there is no limit.
      * 
-     * @return an integer corresponding to the current threshold (in mA) above which the controller will automatically
-     *         switch to error state
+     * @return an integer corresponding to the current threshold (in mA) above which the controller automatically
+     *         switches to error state
      * 
      * On failure, throws an exception or returns Y_OVERCURRENTLIMIT_INVALID.
      */
@@ -275,14 +275,14 @@ public:
     { return this->get_overCurrentLimit(); }
 
     /**
-     * Changes tthe current threshold (in mA) above which the controller will automatically
-     * switch to error state. A zero value means that there is no limit. Note that whatever the
-     * current limit is, the controller will switch to OVERCURRENT status if the current
+     * Changes the current threshold (in mA) above which the controller automatically
+     * switches to error state. A zero value means that there is no limit. Note that whatever the
+     * current limit is, the controller switches to OVERCURRENT status if the current
      * goes above 32A, even for a very brief time.
      * 
-     * @param newval : an integer corresponding to tthe current threshold (in mA) above which the
-     * controller will automatically
-     *         switch to error state
+     * @param newval : an integer corresponding to the current threshold (in mA) above which the
+     * controller automatically
+     *         switches to error state
      * 
      * @return YAPI_SUCCESS if the call succeeds.
      * 
@@ -293,32 +293,32 @@ public:
     { return this->set_overCurrentLimit(newval); }
 
     /**
-     * Returns the PWM frequency used to control the motor.
-     * 
-     * @return an integer corresponding to the PWM frequency used to control the motor
-     * 
-     * On failure, throws an exception or returns Y_FREQUENCY_INVALID.
-     */
-    int                 get_frequency(void);
-
-    inline int          frequency(void)
-    { return this->get_frequency(); }
-
-    /**
      * Changes the PWM frequency used to control the motor. Low frequency is usually
      * more efficient and may help the motor to start, but an audible noise might be
      * generated. A higher frequency reduces the noise, but more energy is converted
      * into heat.
      * 
-     * @param newval : an integer corresponding to the PWM frequency used to control the motor
+     * @param newval : a floating point number corresponding to the PWM frequency used to control the motor
      * 
      * @return YAPI_SUCCESS if the call succeeds.
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    int             set_frequency(int newval);
-    inline int      setFrequency(int newval)
+    int             set_frequency(double newval);
+    inline int      setFrequency(double newval)
     { return this->set_frequency(newval); }
+
+    /**
+     * Returns the PWM frequency used to control the motor.
+     * 
+     * @return a floating point number corresponding to the PWM frequency used to control the motor
+     * 
+     * On failure, throws an exception or returns Y_FREQUENCY_INVALID.
+     */
+    double              get_frequency(void);
+
+    inline double       frequency(void)
+    { return this->get_frequency(); }
 
     /**
      * Returns the duration (in ms) during which the motor is driven at low frequency to help
@@ -353,8 +353,8 @@ public:
 
     /**
      * Returns the delay in milliseconds allowed for the controller to run autonomously without
-     * receiving any instruction from the control process. Once this delay is elapsed,
-     * the controller will automatically stop the motor and switch to FAILSAFE error.
+     * receiving any instruction from the control process. When this delay has elapsed,
+     * the controller automatically stops the motor and switches to FAILSAFE error.
      * Failsafe security is disabled when the value is zero.
      * 
      * @return an integer corresponding to the delay in milliseconds allowed for the controller to run
@@ -370,8 +370,8 @@ public:
 
     /**
      * Changes the delay in milliseconds allowed for the controller to run autonomously without
-     * receiving any instruction from the control process. Once this delay is elapsed,
-     * the controller will automatically stop the motor and switch to FAILSAFE error.
+     * receiving any instruction from the control process. When this delay has elapsed,
+     * the controller automatically stops the motor and switches to FAILSAFE error.
      * Failsafe security is disabled when the value is zero.
      * 
      * @param newval : an integer corresponding to the delay in milliseconds allowed for the controller to
@@ -439,7 +439,7 @@ public:
     /**
      * Rearms the controller failsafe timer. When the motor is running and the failsafe feature
      * is active, this function should be called periodically to prove that the control process
-     * is running properly. Otherwise, the motor will be automatically stopped after the specified
+     * is running properly. Otherwise, the motor is automatically stopped after the specified
      * timeout. Calling a motor <i>set</i> function implicitely rearms the failsafe timer.
      */
     virtual int         keepALive(void);
@@ -453,7 +453,7 @@ public:
     /**
      * Changes progressively the power sent to the moteur for a specific duration.
      * 
-     * @param targetPower : desired motor power, in per cents (between -100% and +100%)
+     * @param targetPower : desired motor power, in percents (between -100% and +100%)
      * @param delay : duration (in ms) of the transition
      * 
      * @return YAPI_SUCCESS if the call succeeds.
@@ -463,16 +463,16 @@ public:
     virtual int         drivingForceMove(double targetPower,int delay);
 
     /**
-     * Changes progressively the breaking force applied to the motor for a specific duration.
+     * Changes progressively the braking force applied to the motor for a specific duration.
      * 
-     * @param targetPower : desired breaking force, in per cents
+     * @param targetPower : desired braking force, in percents
      * @param delay : duration (in ms) of the transition
      * 
      * @return YAPI_SUCCESS if the call succeeds.
      * 
      * On failure, throws an exception or returns a negative error code.
      */
-    virtual int         breakingForceMove(double targetPower,int delay);
+    virtual int         brakingForceMove(double targetPower,int delay);
 
 
     inline static YMotor* Find(string func)

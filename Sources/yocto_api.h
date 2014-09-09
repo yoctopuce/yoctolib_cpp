@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_api.h 17508 2014-09-04 08:56:04Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -106,15 +106,6 @@ typedef enum {
 } Y_BEACON_enum;
 #endif
 
-#ifndef _Y_USBBANDWIDTH_ENUM
-#define _Y_USBBANDWIDTH_ENUM
-typedef enum {
-    Y_USBBANDWIDTH_SIMPLE = 0,
-    Y_USBBANDWIDTH_DOUBLE = 1,
-    Y_USBBANDWIDTH_INVALID = -1,
-} Y_USBBANDWIDTH_enum;
-#endif
-
 #define Y_PRODUCTNAME_INVALID           (YAPI_INVALID_STRING)
 #define Y_SERIALNUMBER_INVALID          (YAPI_INVALID_STRING)
 #define Y_PRODUCTID_INVALID             (YAPI_INVALID_UINT)
@@ -124,6 +115,7 @@ typedef enum {
 #define Y_UPTIME_INVALID                (YAPI_INVALID_LONG)
 #define Y_USBCURRENT_INVALID            (YAPI_INVALID_UINT)
 #define Y_REBOOTCOUNTDOWN_INVALID       (YAPI_INVALID_INT)
+#define Y_USERVAR_INVALID               (YAPI_INVALID_INT)
 //--- (end of generated code: YModule definitions)
 
 class YMeasure; // forward declaration
@@ -147,6 +139,10 @@ typedef void (*YSensorTimedReportCallback)(YSensor *func, YMeasure measure);
 
 //--- (generated code: YDataStream definitions)
 //--- (end of generated code: YDataStream definitions)
+
+//--- (generated code: YFirmwareUpdate definitions)
+//--- (end of generated code: YFirmwareUpdate definitions)
+
 
 //--- (generated code: YMeasure definitions)
 //--- (end of generated code: YMeasure definitions)
@@ -236,7 +232,7 @@ typedef struct{
 			YSensor    *sensor;
 			double      timestamp;
 			int         len;
-			int			report[9];
+			int			report[18];
 		};
 	};
 }yapiDataEvent;
@@ -244,7 +240,7 @@ typedef struct{
 
 // internal helper function
 int _ystrpos(const string& haystack, const string& needle);
-
+vector<string> _strsplit(const string& str, char delimiter);
 
 // 
 // YAPI Context
@@ -274,7 +270,10 @@ public:
     static  s16         _doubleToDecimal(double val);
     static  yCalibrationHandler _getCalibrationHandler(int calibType);
     static  vector<int> _decodeWords(string s);
-    
+    static  vector<int> _decodeFloats(string sdat);
+    static  string      _flattenJsonStruct(string jsonbuffer);
+    static  string      _checkFirmware(const string& serial, const string& rev, const string& path);
+
     static  int         DefaultCacheValidity;
     static  bool        ExceptionsDisabled;
     static  const string      INVALID_STRING;
@@ -610,6 +609,90 @@ public:
     static  string      ysprintf(const char *fmt, ...);
 };
 
+
+//--- (generated code: YFirmwareUpdate declaration)
+/**
+ * YFirmwareUpdate Class: Recorded data sequence
+ * 
+ * YDataSet objects make it possible to retrieve a set of recorded measures
+ * for a given sensor and a specified time interval. They can be used
+ * to load data points with a progress report. When the YDataSet object is
+ * instanciated by the get_recordedData()  function, no data is
+ * yet loaded from the module. It is only when the loadMore()
+ * method is called over and over than data will be effectively loaded
+ * from the dataLogger.
+ * 
+ * A preview of available measures is available using the function
+ * get_preview() as soon as loadMore() has been called
+ * once. Measures themselves are available using function get_measures()
+ * when loaded by subsequent calls to loadMore().
+ * 
+ * This class can only be used on devices that use a recent firmware,
+ * as YDataSet objects are not supported by firmwares older than version 13000.
+ */
+class YOCTO_CLASS_EXPORT YFirmwareUpdate {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
+//--- (end of generated code: YFirmwareUpdate declaration)
+protected:
+    //--- (generated code: YFirmwareUpdate attributes)
+    // Attributes (function value cache)
+    string          _serial;
+    string          _settings;
+    string          _firmwarepath;
+    string          _progress_msg;
+    int             _progress;
+    //--- (end of generated code: YFirmwareUpdate attributes)
+
+  
+public:
+    YFirmwareUpdate(string serialNumber, string path, string settings) : _serial(serialNumber), _settings(settings), _firmwarepath(path) {};
+
+    //--- (generated code: YFirmwareUpdate accessors declaration)
+
+
+    virtual int         processMore(int newupdate);
+
+    /**
+     * Returns the progress of the downloads of the measures from the data logger,
+     * on a scale from 0 to 100. When the object is instanciated by get_dataSet,
+     * the progress is zero. Each time loadMore() is invoked, the progress
+     * is updated, to reach the value 100 only once all measures have been loaded.
+     * 
+     * @return an integer in the range 0 to 100 (percentage of completion).
+     */
+    virtual int         get_progress(void);
+
+    /**
+     * Returns the progress of the downloads of the measures from the data logger,
+     * on a scale from 0 to 100. When the object is instanciated by get_dataSet,
+     * the progress is zero. Each time loadMore() is invoked, the progress
+     * is updated, to reach the value 100 only once all measures have been loaded.
+     * 
+     * @return an integer in the range 0 to 100 (percentage of completion).
+     */
+    virtual string      get_progressMessage(void);
+
+    /**
+     * Loads the the next block of measures from the dataLogger, and updates
+     * the progress indicator.
+     * 
+     * @return an integer in the range 0 to 100 (percentage of completion),
+     *         or a negative error code in case of failure.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         startUpdate(void);
+
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
+    //--- (end of generated code: YFirmwareUpdate accessors declaration)
+};
+
+
+
 //--- (generated code: YDataStream declaration)
 /**
  * YDataStream Class: Unformatted data sequence
@@ -643,6 +726,7 @@ protected:
     bool            _isClosed;
     bool            _isAvg;
     bool            _isScal;
+    bool            _isScal32;
     int             _decimals;
     double          _offset;
     double          _scale;
@@ -1198,6 +1282,7 @@ public:
     YRETCODE    HTTPRequest(const string& request, string& buffer, string& errmsg);
     YRETCODE    requestAPI(string& apires, string& errmsg);
     YRETCODE    getFunctions(vector<YFUN_DESCR> **functions, string& errmsg);
+    string      getHubSerial(void);
 
 };
 
@@ -1310,6 +1395,9 @@ public:
     static const string     FUNCTIONID_INVALID;
     static const string     FRIENDLYNAME_INVALID;
     
+
+
+    string get_hubSerial();
 
 
     //--- (generated code: YFunction accessors declaration)
@@ -1610,7 +1698,7 @@ protected:
     s64             _upTime;
     int             _usbCurrent;
     int             _rebootCountdown;
-    Y_USBBANDWIDTH_enum _usbBandwidth;
+    int             _userVar;
     YModuleValueCallback _valueCallbackModule;
     YModuleLogCallback _logCallback;
 
@@ -1727,9 +1815,7 @@ public:
     static const s64 UPTIME_INVALID = YAPI_INVALID_LONG;
     static const int USBCURRENT_INVALID = YAPI_INVALID_UINT;
     static const int REBOOTCOUNTDOWN_INVALID = YAPI_INVALID_INT;
-    static const Y_USBBANDWIDTH_enum USBBANDWIDTH_SIMPLE = Y_USBBANDWIDTH_SIMPLE;
-    static const Y_USBBANDWIDTH_enum USBBANDWIDTH_DOUBLE = Y_USBBANDWIDTH_DOUBLE;
-    static const Y_USBBANDWIDTH_enum USBBANDWIDTH_INVALID = Y_USBBANDWIDTH_INVALID;
+    static const int USERVAR_INVALID = YAPI_INVALID_INT;
 
     /**
      * Returns the commercial name of the module, as set by the factory.
@@ -1904,17 +1990,31 @@ public:
     { return this->set_rebootCountdown(newval); }
 
     /**
-     * Returns the number of USB interfaces used by the module.
+     * Returns the value previously stored in this attribute.
+     * On startup and after a device reboot, the value is always reset to zero.
      * 
-     * @return either Y_USBBANDWIDTH_SIMPLE or Y_USBBANDWIDTH_DOUBLE, according to the number of USB
-     * interfaces used by the module
+     * @return an integer corresponding to the value previously stored in this attribute
      * 
-     * On failure, throws an exception or returns Y_USBBANDWIDTH_INVALID.
+     * On failure, throws an exception or returns Y_USERVAR_INVALID.
      */
-    Y_USBBANDWIDTH_enum get_usbBandwidth(void);
+    int                 get_userVar(void);
 
-    inline Y_USBBANDWIDTH_enum usbBandwidth(void)
-    { return this->get_usbBandwidth(); }
+    inline int          userVar(void)
+    { return this->get_userVar(); }
+
+    /**
+     * Returns the value previously stored in this attribute.
+     * On startup and after a device reboot, the value is always reset to zero.
+     * 
+     * @param newval : an integer
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_userVar(int newval);
+    inline int      setUserVar(int newval)
+    { return this->set_userVar(newval); }
 
     /**
      * Allows you to find a module from its serial number or from its logical name.
@@ -1995,13 +2095,72 @@ public:
     virtual int         triggerFirmwareUpdate(int secBeforeReboot);
 
     /**
+     * Test if the byn file is valid for this module. This method is useful to test if the module need to be updated.
+     * It's possible to pass an directory instead of a file. In this case this method return the path of
+     * the most recent
+     * appropriate byn file. If the parameter onlynew is true the function will discard firmware that are
+     * older or equal to
+     * the installed firmware.
+     * 
+     * @param path    : the path of a byn file or a directory that contain byn files
+     * @param onlynew : return only files that are strictly newer
+     * 
+     * @return : the path of the byn file to use or a empty string if no byn files match the requirement
+     * 
+     * On failure, throws an exception or returns a string that start with "error:".
+     */
+    virtual string      checkFirmware(string path,bool onlynew);
+
+    /**
+     * Prepare a firmware upgrade of the module. This method return a object YFirmwareUpdate which
+     * will handle the firmware upgrade process.
+     * 
+     * @param path : the path of the byn file to use.
+     * 
+     * @return : A object YFirmwareUpdate.
+     */
+    virtual YFirmwareUpdate updateFirmware(string path);
+
+    /**
+     * Returns all the setting of the module. Useful to backup all the logical name and calibrations parameters
+     * of a connected module.
+     * 
+     * @return a binary buffer with all settings.
+     * 
+     * On failure, throws an exception or returns  YAPI_INVALID_STRING.
+     */
+    virtual string      get_allSettings(void);
+
+    virtual string      _flattenJsonStruct(string jsoncomplex);
+
+    virtual int         calibVersion(string cparams);
+
+    virtual int         calibScale(string unit_name,string sensorType);
+
+    virtual int         calibOffset(string unit_name);
+
+    virtual string      calibConvert(string param,string calibrationParam,string unit_name,string sensorType);
+
+    /**
+     * Restore all the setting of the module. Useful to restore all the logical name and calibrations parameters
+     * of a module from a backup.
+     * 
+     * @param settings : a binary buffer with all settings.
+     * 
+     * @return YAPI_SUCCESS when the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         set_allSettings(string settings);
+
+    /**
      * Downloads the specified built-in file and returns a binary buffer with its content.
      * 
      * @param pathname : name of the new file to load
      * 
      * @return a binary buffer with the file content
      * 
-     * On failure, throws an exception or returns an empty content.
+     * On failure, throws an exception or returns  YAPI_INVALID_STRING.
      */
     virtual string      download(string pathname);
 
@@ -2010,6 +2169,7 @@ public:
      * exceeds 1536 bytes.
      * 
      * @return a binary buffer with module icon, in png format.
+     *         On failure, throws an exception or returns  YAPI_INVALID_STRING.
      */
     virtual string      get_icon2d(void);
 
@@ -2018,6 +2178,7 @@ public:
      * logs that are still in the module.
      * 
      * @return a string with last logs of the module.
+     *         On failure, throws an exception or returns  YAPI_INVALID_STRING.
      */
     virtual string      get_lastLogs(void);
 
@@ -2089,6 +2250,7 @@ protected:
     double          _scale;
     double          _decexp;
     bool            _isScal;
+    bool            _isScal32;
     int             _caltyp;
     vector<int>     _calpar;
     vector<double>  _calraw;
@@ -2108,12 +2270,6 @@ protected:
     //--- (generated code: Sensor initialization)
     //--- (end of generated code: Sensor initialization)
 
-    // Method used to encode calibration points into fixed-point 16-bit integers
-    string      _encodeCalibrationPoints(const floatArr& rawValues, const floatArr& refValues, const string& actualCparams);
-    
-    // Method used to decode calibration points from fixed-point 16-bit integers
-    int         _decodeCalibrationPoints(const string& calibParams,intArr& iParams, floatArr& rawPt, floatArr& calPt);
-    
 public:
     ~YSensor();
     //--- (generated code: YSensor accessors declaration)
@@ -2141,9 +2297,10 @@ public:
     { return this->get_unit(); }
 
     /**
-     * Returns the current value of the measure.
+     * Returns the current value of the measure, in the specified unit, as a floating point number.
      * 
-     * @return a floating point number corresponding to the current value of the measure
+     * @return a floating point number corresponding to the current value of the measure, in the specified
+     * unit, as a floating point number
      * 
      * On failure, throws an exception or returns Y_CURRENTVALUE_INVALID.
      */
@@ -2205,9 +2362,11 @@ public:
     { return this->get_highestValue(); }
 
     /**
-     * Returns the uncalibrated, unrounded raw value returned by the sensor.
+     * Returns the uncalibrated, unrounded raw value returned by the sensor, in the specified unit, as a
+     * floating point number.
      * 
-     * @return a floating point number corresponding to the uncalibrated, unrounded raw value returned by the sensor
+     * @return a floating point number corresponding to the uncalibrated, unrounded raw value returned by
+     * the sensor, in the specified unit, as a floating point number
      * 
      * On failure, throws an exception or returns Y_CURRENTRAWVALUE_INVALID.
      */

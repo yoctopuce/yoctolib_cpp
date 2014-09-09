@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_accelerometer.cpp 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_accelerometer.cpp 17191 2014-08-18 16:04:13Z seb $
  *
  * Implements yFindAccelerometer(), the high-level API for Accelerometer functions
  *
@@ -52,6 +52,7 @@ YAccelerometer::YAccelerometer(const string& func): YSensor(func)
     ,_xValue(XVALUE_INVALID)
     ,_yValue(YVALUE_INVALID)
     ,_zValue(ZVALUE_INVALID)
+    ,_gravityCancellation(GRAVITYCANCELLATION_INVALID)
     ,_valueCallbackAccelerometer(NULL)
     ,_timedReportCallbackAccelerometer(NULL)
 //--- (end of Accelerometer initialization)
@@ -74,17 +75,22 @@ int YAccelerometer::_parseAttr(yJsonStateMachine& j)
 {
     if(!strcmp(j.token, "xValue")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _xValue =  atof(j.token)/65536;
+        _xValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
         return 1;
     }
     if(!strcmp(j.token, "yValue")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _yValue =  atof(j.token)/65536;
+        _yValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
         return 1;
     }
     if(!strcmp(j.token, "zValue")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _zValue =  atof(j.token)/65536;
+        _zValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        return 1;
+    }
+    if(!strcmp(j.token, "gravityCancellation")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _gravityCancellation =  (Y_GRAVITYCANCELLATION_enum)atoi(j.token);
         return 1;
     }
     failed:
@@ -141,6 +147,23 @@ double YAccelerometer::get_zValue(void)
         }
     }
     return _zValue;
+}
+
+Y_GRAVITYCANCELLATION_enum YAccelerometer::get_gravityCancellation(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YAccelerometer::GRAVITYCANCELLATION_INVALID;
+        }
+    }
+    return _gravityCancellation;
+}
+
+int YAccelerometer::set_gravityCancellation(Y_GRAVITYCANCELLATION_enum newval)
+{
+    string rest_val;
+    rest_val = (newval>0 ? "1" : "0");
+    return _setAttr("gravityCancellation", rest_val);
 }
 
 /**

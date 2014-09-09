@@ -34,6 +34,7 @@ static void dumpSensor(YSensor *sensor)
         progress = dataset.loadMore();
         cout <<'\b'<<'\b'<<'\b'<<'\b' << setw(4) << progress << flush;
     } while(progress <100);
+    cout << endl;
     vector<YMeasure> details = dataset.get_measures();
     for(vector<YMeasure>::iterator m = details.begin(); m != details.end(); ++m ){
         timeinfo = localtime (m->get_startTimeUTC_asTime_t(NULL));

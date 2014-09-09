@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: ydef.h 17301 2014-08-26 08:37:56Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -203,8 +203,9 @@ typedef s32             YUSBDEV;
 #define YIO_YSB          3
 #define YIO_TRUNK        4
 
-#define YIO_DEFAULT_USB_TIMEOUT 2000u
-#define YIO_DEFAULT_TCP_TIMEOUT 5000u
+#define YIO_DEFAULT_USB_TIMEOUT  2000u
+#define YIO_DEFAULT_TCP_TIMEOUT 20000u
+#define YIO_IDLE_TCP_TIMEOUT     5000u
 
 #ifdef MICROCHIP_API
 // same as yhub devhdl
@@ -240,6 +241,11 @@ typedef struct{
 
 #define ADDRESSOF(x)    (&(x))
 #define PTRVAL(x)       (*(x))
+
+#if defined(MICROCHIP_API) || defined(VIRTUAL_HUB)
+#define YAPI_IN_YDEVICE
+#endif
+
 
 
 //#define DEBUG_CRITICAL_SECTION
@@ -350,6 +356,8 @@ typedef enum {
 #define YOCTO_DEVID_BOOTLOADER      2
 #define YOCTO_DEVID_HIGHEST         0xfefe
 
+#define YOCTO_CALIB_TYPE_OFS        30
+
 // Known baseclases
 #define YOCTO_AKA_YFUNCTION         0
 #define YOCTO_AKA_YSENSOR           1
@@ -368,10 +376,6 @@ typedef enum {
 #define YOCTO_PUBVAL_SIZE            6 // Size of the data (can be non null terminated)
 #define YOCTO_PUBVAL_LEN            16 // Temporary storage, >= YOCTO_PUBVAL_SIZE+2
 #define YOCTO_REPORT_LEN             9 // Max size of a timed report, including isAvg flag
-
-// User-defined flash area (used for calibration)
-#define USERFLASH_WORDS 11
-typedef u16 UserFlash[USERFLASH_WORDS];
 
 // firmware description
 typedef union {
@@ -404,7 +408,7 @@ typedef struct {
 #endif
 
 #define USB_PKT_SIZE            64
-#define YPKT_USB_VERSION_BCD    0x0206
+#define YPKT_USB_VERSION_BCD    0x0207
 #define TO_SAFE_U16(safe,unsafe)        {(safe).low = (unsafe)&0xff; (safe).high=(unsafe)>>8;}
 #define FROM_SAFE_U16(safe,unsafe)      {(unsafe) = (safe).low |((u16)((safe).high)<<8);}
 
@@ -468,6 +472,7 @@ typedef union{
 #define YSTREAM_NOTICE      3
 #define YSTREAM_REPORT      4
 #define YSTREAM_META        5
+#define YSTREAM_REPORT_V2   6
 
 // Data in YSTREAM_NOTICE stream
 
@@ -581,6 +586,7 @@ typedef union {
 #define NOTIFY_NETPKT_LOG         '7'
 #define NOTIFY_NETPKT_FUNCNAMEYDX '8'
 #define NOTIFY_NETPKT_PRODINFO    '9'
+#define NOTIFY_NETPKT_TIMEV2YDX   'v'
 #define NOTIFY_NETPKT_DEVLOGYDX   'w'
 #define NOTIFY_NETPKT_TIMEVALYDX  'x'
 #define NOTIFY_NETPKT_FUNCVALYDX  'y'
@@ -628,7 +634,43 @@ typedef struct {
       u8    head;
     };
     u8  data[1];        // Payload itself (numbers in little-endian format)
-} USB_Report_Pkt;
+} USB_Report_Pkt_V1;
+
+typedef struct {
+    union {
+      struct {
+#ifndef CPU_BIG_ENDIAN
+        u8  funYdx:4;   // (LOWEST NIBBLE) function index on device, 0xf==timestamp
+        u8  extraLen:4; // Number of extra data bytes in addition to data[0]
+#else
+        u8  extraLen:4; // Number of extra data bytes in addition to data[0]
+        u8  funYdx:4;   // (LOWEST NIBBLE) function index on device, 0xf==timestamp
+#endif
+      };
+      u8    head;
+    };
+    union {
+      // When extraLen >= 4 && funYdx != 0xf : first data byte describes the payload
+      struct {
+#ifndef CPU_BIG_ENDIAN
+        u8  avgExtraLen:2;      // Number of extra bytes in the first value (average value, signed MeasureVal)
+        u8  minDiffExtraLen:2;  // Number of extra bytes to encode the 2nd value (avg - min, always > 0)
+        u8  maxDiffExtraLen:2;  // Number of extra bytes to encode the 3rd value (max - avg, always > 0)
+        u8  reserved:2;         // unused, currently set to 0
+#else
+        u8  reserved:2;         // unused, currently set to 0
+        u8  maxDiffExtraLen:2;  // Number of extra bytes to encode the 3rd value (max - avg)
+        u8  minDiffExtraLen:2;  // Number of extra bytes to encode the 2nd value (avg - min)
+        u8  avgExtraLen:2;      // Number of extra bytes in the first value (average)
+#endif
+      };
+      // When extraLen <= 3 (up to 4 bytes of data): live report value (1-4 bytes)
+      u8  data[1];        // Payload itself (numbers in little-endian format)
+    };
+} USB_Report_Pkt_V2;
+
+// data format in USB_Report_Pkt_V2:
+//
 
 // Data in YSTREAM_META stream
 
@@ -655,7 +697,7 @@ typedef union {
 #define YSSDP_URN_YOCTOPUCE "urn:yoctopuce-com:device:hub:1"
 
 // prototype of the async request completion callback
-typedef void (*yapiRequestAsyncCallback)(void *context, int retcode, const u8 *result, u32 resultlen);
+typedef void (*yapiRequestAsyncCallback)(void *context, const u8 *result, u32 resultlen, int retcode, const char *errmsg);
 
 
 //
@@ -726,13 +768,13 @@ typedef union {
         u16  pageno : 14;
         u16  dwordpos_hi : 2;
 #else
-        u16  dwordpos_hi : 2;
-        u16  pageno : 14;
+        u8  pageno_lo;
+        u8  misc_hi;
 #endif
         union {
-        u16  npages;    // for PROG_ERASE
-        u16  btsign;    // for PROG_REBOOT
-        u8   data[MAX_BYTE_IN_PACKET]; // for PROG_PROG
+            u16  npages;    // for PROG_ERASE
+            u16  btsign;    // for PROG_REBOOT
+            u8   data[MAX_BYTE_IN_PACKET]; // for PROG_PROG
         } opt;
     } pkt_ext;
     struct {
@@ -759,6 +801,26 @@ typedef union {
         u16  first_yfs3_page;
     } pktinfo_ext;
 } USB_Prog_Packet;
+
+#ifndef CPU_BIG_ENDIAN
+#define SET_PROG_POS_PAGENO(PKT_EXT, PAGENO, POS)  {\
+                                (PKT_EXT).dwordpos_lo = (POS) & 0xff;\
+                                (PKT_EXT).dwordpos_hi = ((POS) >> 8) & 3;\
+                                (PKT_EXT).pageno = (PAGENO) & 0x3fff;}
+#define GET_PROG_POS_PAGENO(PKT_EXT, PAGENO, POS)  {\
+                                POS = (PKT_EXT).dwordpos_lo + ((u32)(PKT_EXT).dwordpos_hi <<8);\
+                                PAGENO = (PKT_EXT).pageno;}
+#else
+#define SET_PROG_POS_PAGENO(PKT_EXT, PAGENO, POS)  {\
+                                (PKT_EXT).dwordpos_lo = (POS) & 0xff;\
+                                (PKT_EXT).pageno_lo = (PAGENO) & 0xff;\
+                                (PKT_EXT).misc_hi = (((PAGENO) >>8) & 0x3f)+ (((POS) & 0x300) >>2) ;}
+#define GET_PROG_POS_PAGENO(PKT_EXT, PAGENO, POS)  {\
+                                POS = (PKT_EXT).dwordpos_lo + (((u16)(PKT_EXT).misc_hi << 2) & 0x300);\
+                                PAGENO = (PKT_EXT).pageno_lo + (((u16)(PKT_EXT).misc_hi & 0x3f) << 8);}
+#endif           
+
+
 
 #define START_APPLICATION_SIGN   0
 #define START_BOOTLOADER_SIGN   ('b'| ('T'<<8))

@@ -1,11 +1,2 @@
-- set_logicalName() returns an error if the name is invalid
-- improve documentation
-- improve reliability of USB connection on Linux
-- improve handling of offline TCP hubs
-- fix set_beacon command on USB
-- fix "Unable to start USB IO thread (ypkt_win:746)" error message
-- fix minor memory leak (few bytes per registered IP hub)
-- fix crash if YAPI::RegisterHub("usb") is called twice when another process uses the API
-- fix communication with old firmware that use dual interfaces settings
-- fix some compilation warning with GCC
-- fix compilation with MinGW and C++ Builder
+- Add firmware upgrade API
+- Fix possible TCP disconnection with persistent connections

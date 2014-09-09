@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_lightsensor.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_lightsensor.h 17264 2014-08-22 10:07:43Z seb $
  *
  * Declares yFindLightSensor(), the high-level API for LightSensor functions
  *
@@ -54,6 +54,17 @@ class YLightSensor; // forward declaration
 typedef void (*YLightSensorValueCallback)(YLightSensor *func, const string& functionValue);
 class YMeasure; // forward declaration
 typedef void (*YLightSensorTimedReportCallback)(YLightSensor *func, YMeasure measure);
+#ifndef _Y_MEASURETYPE_ENUM
+#define _Y_MEASURETYPE_ENUM
+typedef enum {
+    Y_MEASURETYPE_HUMAN_EYE = 0,
+    Y_MEASURETYPE_WIDE_SPECTRUM = 1,
+    Y_MEASURETYPE_INFRARED = 2,
+    Y_MEASURETYPE_HIGH_RATE = 3,
+    Y_MEASURETYPE_INVALID = -1,
+} Y_MEASURETYPE_enum;
+#endif
+
 //--- (end of YLightSensor definitions)
 
 //--- (YLightSensor declaration)
@@ -71,11 +82,15 @@ class YOCTO_CLASS_EXPORT YLightSensor: public YSensor {
 protected:
     //--- (YLightSensor attributes)
     // Attributes (function value cache)
+    Y_MEASURETYPE_enum _measureType;
     YLightSensorValueCallback _valueCallbackLightSensor;
     YLightSensorTimedReportCallback _timedReportCallbackLightSensor;
 
     friend YLightSensor *yFindLightSensor(const string& func);
     friend YLightSensor *yFirstLightSensor(void);
+
+    // Function-specific method for parsing of JSON output and caching result
+    virtual int     _parseAttr(yJsonStateMachine& j);
 
     // Constructor is protected, use yFindLightSensor factory function to instantiate
     YLightSensor(const string& func);
@@ -85,6 +100,11 @@ public:
     ~YLightSensor();
     //--- (YLightSensor accessors declaration)
 
+    static const Y_MEASURETYPE_enum MEASURETYPE_HUMAN_EYE = Y_MEASURETYPE_HUMAN_EYE;
+    static const Y_MEASURETYPE_enum MEASURETYPE_WIDE_SPECTRUM = Y_MEASURETYPE_WIDE_SPECTRUM;
+    static const Y_MEASURETYPE_enum MEASURETYPE_INFRARED = Y_MEASURETYPE_INFRARED;
+    static const Y_MEASURETYPE_enum MEASURETYPE_HIGH_RATE = Y_MEASURETYPE_HIGH_RATE;
+    static const Y_MEASURETYPE_enum MEASURETYPE_INVALID = Y_MEASURETYPE_INVALID;
 
     int             set_currentValue(double newval);
     inline int      setCurrentValue(double newval)
@@ -104,6 +124,37 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     int             calibrate(double calibratedVal);
+
+    /**
+     * Returns the type of light measure.
+     * 
+     * @return a value among Y_MEASURETYPE_HUMAN_EYE, Y_MEASURETYPE_WIDE_SPECTRUM, Y_MEASURETYPE_INFRARED
+     * and Y_MEASURETYPE_HIGH_RATE corresponding to the type of light measure
+     * 
+     * On failure, throws an exception or returns Y_MEASURETYPE_INVALID.
+     */
+    Y_MEASURETYPE_enum  get_measureType(void);
+
+    inline Y_MEASURETYPE_enum measureType(void)
+    { return this->get_measureType(); }
+
+    /**
+     * Modify the light sensor type used in the device. The measure can either
+     * approximate the response of the human eye, focus on a specific light
+     * spectrum, depending on the capabilities of the light-sensitive cell.
+     * Remember to call the saveToFlash() method of the module if the
+     * modification must be kept.
+     * 
+     * @param newval : a value among Y_MEASURETYPE_HUMAN_EYE, Y_MEASURETYPE_WIDE_SPECTRUM,
+     * Y_MEASURETYPE_INFRARED and Y_MEASURETYPE_HIGH_RATE
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_measureType(Y_MEASURETYPE_enum newval);
+    inline int      setMeasureType(Y_MEASURETYPE_enum newval)
+    { return this->set_measureType(newval); }
 
     /**
      * Retrieves a light sensor for a given identifier.

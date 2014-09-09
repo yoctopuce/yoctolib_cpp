@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yhash.c 17481 2014-09-03 09:38:35Z mvuilleu $
  *
  * Simple hash tables and device/function information store
  *
@@ -343,8 +343,16 @@ void yHashGetBuf(yHash yhash, u8 *destbuf, u16 bufsize)
 
     HLOGF(("yHashGetBuf(0x%x)\n",yhash));
     YASSERT(yhash >= 0);
+#ifdef MICROCHIP_API
+    if(yhash >= nextHashEntry || yHashTable[yhash].next == 0) {
+        // should never happen !
+        memset(destbuf, 0, bufsize);
+        return;
+    }
+#else
     YASSERT(yhash < nextHashEntry);
     YASSERT(yHashTable[yhash].next != 0); // 0 means unallocated, -1 means end of chain
+#endif
     if(bufsize > HASH_BUF_SIZE) bufsize = HASH_BUF_SIZE;
     p = yHashTable[yhash].buff;
     while(bufsize-- > 0) {
@@ -372,14 +380,18 @@ u16 yHashGetStrLen(yHash yhash)
     
     HLOGF(("yHashGetStrLen(0x%x)\n",yhash));
     YASSERT(yhash >= 0);
-    YASSERT(yhash < nextHashEntry);
-    YASSERT(yHashTable[yhash].next != 0); // 0 means unallocated
 #ifdef MICROCHIP_API
+    if(yhash >= nextHashEntry || yHashTable[yhash].next == 0) {
+        // should never happen
+        return 0;
+    }
     for(i = 0; i < HASH_BUF_SIZE; i++) {
         if(!yHashTable[yhash].buff[i]) break;
     }
     return i;
 #else
+    YASSERT(yhash < nextHashEntry);
+    YASSERT(yHashTable[yhash].next != 0); // 0 means unallocated
     return YSTRLEN((char *)yHashTable[yhash].buff);
 #endif
 }
@@ -407,6 +419,8 @@ char *yHashGetStrPtr(yHash yhash)
 #endif
 }
 
+#ifndef MICROCHIP_API
+
 static int  yComputeRelPath(yAbsUrl *absurl, const char *rootUrl, u8 testonly)
 {
     int i,len;
@@ -427,8 +441,7 @@ static int  yComputeRelPath(yAbsUrl *absurl, const char *rootUrl, u8 testonly)
 
 }
 
-
-yUrlRef yHashUrlFromRef(yUrlRef urlref, const char *rootUrl, u8 testonly,char *errmsg)
+yUrlRef yHashUrlFromRef(yUrlRef urlref, const char *rootUrl)
 {
     yAbsUrl huburl;
     
@@ -437,26 +450,10 @@ yUrlRef yHashUrlFromRef(yUrlRef urlref, const char *rootUrl, u8 testonly,char *e
     yHashGetBuf(urlref, (u8 *)&huburl, sizeof(huburl));
     memset(huburl.path, 0xff, sizeof(huburl.path));
 
-    if(yComputeRelPath(&huburl, rootUrl, testonly)<0){
+    if(yComputeRelPath(&huburl, rootUrl, 0)<0){
         return INVALID_HASH_IDX;
     }
-    return yHashPut((const u8 *)&huburl, sizeof(huburl), testonly);
-}
-
-
-
-yUrlRef yHashUrlUSB(yHash serial,const char *rootUrl, u8 testonly,char *errmsg)
-{
-    yAbsUrl huburl;    
-    // set all hash as invalid
-    memset(&huburl, 0xff, sizeof(huburl));
-    // for USB we store only the serial number since
-    // we access all devices directly
-    huburl.byusb.serial = serial;
-    if(yComputeRelPath(&huburl, rootUrl, testonly)<0){
-        return INVALID_HASH_IDX;
-    }
-    return yHashPut((const u8 *)&huburl, sizeof(huburl), testonly);
+    return yHashPut((const u8 *)&huburl, sizeof(huburl), 0);
 }
 
 /**
@@ -471,7 +468,7 @@ yUrlRef yHashUrl(const char *url, const char *rootUrl, u8 testonly,char *errmsg)
     const char *pos,*posplus;
     const char *host=NULL;
     char buffer[8];
-    
+
     // set all hash as invalid
     HLOGF(("yHashUrl('%s','%s')\n",url,rootUrl));
     memset(&huburl, 0xff, sizeof(huburl));
@@ -488,9 +485,7 @@ yUrlRef yHashUrl(const char *url, const char *rootUrl, u8 testonly,char *errmsg)
         if(pos && pos < end ){
             len= (int)(end-posplus);
             if(len>7){
-#ifndef MICROCHIP_API
                 if(errmsg) YSTRCPY(errmsg,YOCTO_ERRMSG_LEN,"invalid port");
-#endif
                 return INVALID_HASH_IDX;
             }
             memcpy(buffer,posplus,len);
@@ -505,9 +500,7 @@ yUrlRef yHashUrl(const char *url, const char *rootUrl, u8 testonly,char *errmsg)
         if(pos && pos < end ){
             hostlen = (int)(pos-url);
             if(hostlen>HASH_BUF_SIZE){
-#ifndef MICROCHIP_API
                 if(errmsg) YSTRCPY(errmsg,YOCTO_ERRMSG_LEN,"hostname too long");
-#endif
                 return INVALID_HASH_IDX;
             }
             host = url;
@@ -515,26 +508,24 @@ yUrlRef yHashUrl(const char *url, const char *rootUrl, u8 testonly,char *errmsg)
         }else{
             hostlen=0;
         }
-        if(hostlen && hostlen <= 3){        
+        if(hostlen && hostlen <= 3){
             memcpy(buffer,host,hostlen);
             buffer[hostlen]=0;
             iptest=atoi(buffer);
         }
         if(iptest && iptest< 256 && end-host < 16){
-            // this is probably an ip 
+            // this is probably an ip
             huburl.byip.ip = yHashPutBuf((const u8*)host,(u16)(end-host));
         }else{
             domlen= (int)(end - url);
             if(domlen >HASH_BUF_SIZE){
-#ifndef MICROCHIP_API
                 if(errmsg) YSTRCPY(errmsg,YOCTO_ERRMSG_LEN,"domain name too long");
-#endif
                 return INVALID_HASH_IDX;
             }
-            if(hostlen)    
+            if(hostlen)
                 huburl.byname.host = yHashPutBuf((const u8*)host,hostlen);
             else
-                 huburl.byname.host = INVALID_HASH_IDX;    
+                 huburl.byname.host = INVALID_HASH_IDX;
             huburl.byname.domaine = yHashPutBuf((const u8*)url,domlen);
         }
     }
@@ -544,22 +535,21 @@ yUrlRef yHashUrl(const char *url, const char *rootUrl, u8 testonly,char *errmsg)
     return yHashPut((const u8 *)&huburl, sizeof(huburl), testonly);
 }
 
-
 // return port , get hash of the url an a pointer to a buffer of YOCTO_HOSTNAME_NAME len
 yAsbUrlType  yHashGetUrlPort(yUrlRef urlref, char *url,u16 *port)
 {
     yAbsUrl absurl;
-    
+
     // set all path as invalid
     yHashGetBuf(urlref, (u8 *)&absurl, sizeof(absurl));
- 
+
     if(absurl.byusb.invalid1 ==INVALID_HASH_IDX && absurl.byusb.invalid2 == INVALID_HASH_IDX){
         // we have an USB address
         if (url) {
             *url='\0';
         }
         if(port) *port = 0;
-        return USB_URL;      
+        return USB_URL;
     }else if(absurl.byip.invalid == INVALID_HASH_IDX){
         // we have an ip address
         if (url) {
@@ -584,6 +574,29 @@ yAsbUrlType  yHashGetUrlPort(yUrlRef urlref, char *url,u16 *port)
 }
 
 
+#endif
+
+// Return a hash-encoded URL for a local USB/YSB device
+yUrlRef yHashUrlUSB(yHash serial)
+{
+    yAbsUrl huburl;    
+    // set all hash as invalid
+    memset(&huburl, 0xff, sizeof(huburl));
+    // for USB we store only the serial number since
+    // we access all devices directly
+    huburl.byusb.serial = serial;
+    return yHashPut((const u8 *)&huburl, sizeof(huburl), 0);
+}
+
+// Return a hash-encoded URL for our local /api
+yUrlRef yHashUrlAPI(void)
+{
+    yAbsUrl huburl;
+    // set all hash as invalid
+    memset(&huburl, 0xff, sizeof(huburl));
+    return yHashPut((const u8 *)&huburl, sizeof(huburl), 0);
+}
+
 // =======================================================================
 //   White pages support
 // =======================================================================
@@ -598,7 +611,7 @@ static void wpExecuteUnregisterUnsec(void)
     yBlkHdl  prev = INVALID_BLK_HDL, next;
     yBlkHdl  hdl, funHdl, nextHdl;
     u16      devYdx;
-    
+
     hdl = yWpListHead;
     while(hdl != INVALID_BLK_HDL) {
         YASSERT(WP(hdl).blkId == YBLKID_WPENTRY);
@@ -713,7 +726,7 @@ int wpRegister(int devYdx, yStrRef serial, yStrRef logicalName, yStrRef productN
     int      changed=0;
     
     yEnterCriticalSection(&yWpMutex);
-    
+
     YASSERT(devUrl != INVALID_HASH_IDX);
     hdl = yWpListHead;
     while(hdl != INVALID_BLK_HDL) {
@@ -796,6 +809,7 @@ int wpRegister(int devYdx, yStrRef serial, yStrRef logicalName, yStrRef productN
         }
     }
 #endif
+
     yLeaveCriticalSection(&yWpMutex);
     return changed;
 }
@@ -968,6 +982,7 @@ YAPI_DEVICE wpSearchByNameHash(yStrRef strref)
     return res;
 }
 
+#ifndef MICROCHIP_API
 
 YAPI_DEVICE wpSearchByUrl(const char *host, const char *rootUrl)
 {
@@ -1022,6 +1037,7 @@ int wpGetAllDevUsingHubUrl( yUrlRef hubUrl, yStrRef *buffer,int sizeInStrRef)
     return count;
 }
 
+#endif
 
 int wpGetDeviceInfo(YAPI_DEVICE devdesc, u16 *deviceid, char *productname, char *serial, char *logicalname, u8 *beacon)
 {
@@ -1076,7 +1092,7 @@ int wpGetDeviceUrl(YAPI_DEVICE devdesc, char *roothubserial, char *request, int 
 {
     yBlkHdl  hdl;
     yUrlRef  hubref = INVALID_HASH_IDX;
-    yStrRef  strref;
+    yStrRef  strref = INVALID_HASH_IDX;
     yAbsUrl  absurl,huburl;
     char     serial[YOCTO_SERIAL_LEN];
     int      fullsize, len,idx;
@@ -1094,7 +1110,8 @@ int wpGetDeviceUrl(YAPI_DEVICE devdesc, char *roothubserial, char *request, int 
         hdl = WP(hdl).nextPtr;
     }
     yLeaveCriticalSection(&yWpMutex);
-    if(hubref == INVALID_HASH_IDX) return -1;
+    if(hubref == INVALID_HASH_IDX) 
+        return -1;
     
     yHashGetBuf(hubref, (u8 *)&absurl, sizeof(absurl));
     if(absurl.byusb.invalid1 == INVALID_HASH_IDX && absurl.byusb.invalid2 == INVALID_HASH_IDX) {

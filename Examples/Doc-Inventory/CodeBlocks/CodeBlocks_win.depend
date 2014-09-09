@@ -1,0 +1,775 @@
+# depslib dependency file v1.0
+1400142187 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\yfifo.c
+	"ydef.h"
+	"yfifo.h"
+	<string.h>
+	<ctype.h>
+
+1402059162 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\ydef.h
+	<TargetConditionals.h>
+	<pthread.h>
+	<errno.h>
+	<stdint.h>
+	<pthread.h>
+	<errno.h>
+	<winsock2.h>
+	<ws2tcpip.h>
+	<WinBase.h>
+	"yversion.h"
+
+1388771483 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\yversion.h
+
+1400142494 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\yfifo.h
+	"ydef.h"
+	"Compiler.h"
+	<windows.h>
+	<windows.h>
+
+1400655133 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\yhash.c
+	"yhash.h"
+	<string.h>
+	<Yocto/yapi_ext.h>
+	<stdio.h>
+	<stdlib.h>
+	"yproto.h"
+	<Windows.h>
+
+1400576877 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\yhash.h
+	"ydef.h"
+
+1402047595 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\yproto.h
+	"ydef.h"
+	"yapi.h"
+	"ytcp.h"
+	<windows.h>
+	<windows.h>
+	<dbt.h>
+	<SetupAPI.h>
+	<IOKit/hid/IOHIDLib.h>
+	<libusb-1.0/libusb.h>
+	<stdlib.h>
+	<stdarg.h>
+	<stdio.h>
+	<string.h>
+	<ctype.h>
+	<time.h>
+	"yfifo.h"
+	"ythread.h"
+	"ykey.h"
+	"ymemory.h"
+	<unistd.h>
+	<stdio.h>
+
+1394015795 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\yapi.h
+	"ydef.h"
+
+1393237134 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\ytcp.h
+	"ydef.h"
+	<sys/socket.h>
+	<netinet/in.h>
+	<arpa/inet.h>
+	<netinet/tcp.h>
+	"ythread.h"
+
+1388771483 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\ythread.h
+	"ydef.h"
+	<windows.h>
+	<windows.h>
+	<pthread.h>
+
+1388771483 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\ykey.h
+	"ydef.h"
+
+1388771483 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\ymemory.h
+	"ydef.h"
+
+1396856567 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\ykey.c
+	"ykey.h"
+	"Yocto/yocto.h"
+	"Yocto/yapi_ext.h"
+	<string.h>
+	"yproto.h"
+
+1394208218 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\ypkt_osx.c
+	"yapi.h"
+	"yproto.h"
+	<sys/types.h>
+	<sys/stat.h>
+	<sys/sysctl.h>
+	<fcntl.h>
+	"yproto.h"
+
+1397231783 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\ythread.c
+	"ythread.h"
+	<sys/time.h>
+	<pthread.h>
+	<errno.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
+1401457255 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\yjson.c
+	<string.h>
+	"yjson.h"
+	<stdio.h>
+	<stdlib.h>
+	<windows.h>
+	<windows.h>
+
+1393237134 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\yjson.h
+	"ydef.h"
+
+1401457255 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\ymemory.c
+	"yproto.h"
+
+1402042461 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\ypkt_lin.c
+	"yapi.h"
+	"yproto.h"
+	<pthread.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<fcntl.h>
+
+1401891924 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\ypkt_win.c
+	"yapi.h"
+	"yproto.h"
+	"yproto.h"
+
+1402049802 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\yprog.c
+	"yprog.h"
+	<Yocto/yapi_ext.h>
+	"yproto.h"
+
+1402049814 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\yprog.h
+	"ydef.h"
+	"yproto.h"
+
+1401726050 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\ystream.c
+	"yproto.h"
+	"yhash.h"
+	<stdio.h>
+	<ctype.h>
+	<string.h>
+	<stdarg.h>
+	<sys/time.h>
+
+1402059499 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\ytcp.c
+	"ydef.h"
+	<winsock2.h>
+	<ws2tcpip.h>
+	<winsock2.h>
+	<ws2tcpip.h>
+	"ytcp.h"
+	"yproto.h"
+	"yhash.h"
+	<iphlpapi.h>
+	<unistd.h>
+	<fcntl.h>
+	<netdb.h>
+
+1402046857 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_accelerometer.cpp
+	"yocto_accelerometer.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046857 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_accelerometer.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046855 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_api.h
+	"yapi/ydef.h"
+	"yapi/yjson.h"
+	<string>
+	<vector>
+	<queue>
+	<map>
+	<stdexcept>
+	<cfloat>
+	<cmath>
+
+1402046858 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_altitude.cpp
+	"yocto_altitude.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046858 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_altitude.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046860 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_anbutton.cpp
+	"yocto_anbutton.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046860 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_anbutton.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046855 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_api.cpp
+	"yocto_api.h"
+	"yapi/yapi.h"
+	<Windows.h>
+	<unistd.h>
+	<string.h>
+	<stdio.h>
+	<stdlib.h>
+	<cfloat>
+	<cmath>
+	<time.h>
+	<stdarg.h>
+
+1402046861 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_carbondioxide.cpp
+	"yocto_carbondioxide.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046861 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_carbondioxide.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046862 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_colorled.cpp
+	"yocto_colorled.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046862 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_colorled.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046863 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_compass.cpp
+	"yocto_compass.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046863 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_compass.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046864 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_current.cpp
+	"yocto_current.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046864 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_current.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046865 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_datalogger.cpp
+	"yocto_datalogger.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<stdlib.h>
+
+1402046865 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_datalogger.h
+	"yocto_api.h"
+	<ctime>
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046867 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_digitalio.cpp
+	"yocto_digitalio.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046867 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_digitalio.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046869 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_display.cpp
+	"yocto_display.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<stdlib.h>
+
+1402046869 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_display.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046871 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_dualpower.cpp
+	"yocto_dualpower.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046871 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_dualpower.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046872 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_files.cpp
+	"yocto_files.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<stdlib.h>
+
+1402046872 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_files.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046873 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_genericsensor.cpp
+	"yocto_genericsensor.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046873 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_genericsensor.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046875 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_gyro.cpp
+	"yocto_gyro.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046875 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_gyro.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046877 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_hubport.cpp
+	"yocto_hubport.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046877 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_hubport.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046878 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_humidity.cpp
+	"yocto_humidity.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046878 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_humidity.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046879 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_led.cpp
+	"yocto_led.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046879 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_led.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046880 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_lightsensor.cpp
+	"yocto_lightsensor.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046880 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_lightsensor.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046881 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_magnetometer.cpp
+	"yocto_magnetometer.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046881 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_magnetometer.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046882 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_motor.cpp
+	"yocto_motor.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046882 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_motor.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046885 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_network.cpp
+	"yocto_network.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046885 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_network.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046887 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_oscontrol.cpp
+	"yocto_oscontrol.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046887 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_oscontrol.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046888 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_power.cpp
+	"yocto_power.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046888 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_power.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046889 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_pressure.cpp
+	"yocto_pressure.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046889 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_pressure.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046890 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_pwmoutput.cpp
+	"yocto_pwmoutput.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046890 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_pwmoutput.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046891 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_pwmpowersource.cpp
+	"yocto_pwmpowersource.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046891 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_pwmpowersource.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046892 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_realtimeclock.cpp
+	"yocto_realtimeclock.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046892 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_realtimeclock.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046895 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_refframe.cpp
+	"yocto_refframe.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046895 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_refframe.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046899 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_relay.cpp
+	"yocto_relay.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046899 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_relay.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046901 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_servo.cpp
+	"yocto_servo.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046901 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_servo.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046902 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_temperature.cpp
+	"yocto_temperature.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046902 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_temperature.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046903 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_tilt.cpp
+	"yocto_tilt.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046903 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_tilt.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046903 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_voc.cpp
+	"yocto_voc.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046903 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_voc.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046904 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_voltage.cpp
+	"yocto_voltage.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046904 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_voltage.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046905 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_wakeupmonitor.cpp
+	"yocto_wakeupmonitor.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046905 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_wakeupmonitor.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046907 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_wakeupschedule.cpp
+	"yocto_wakeupschedule.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046907 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_wakeupschedule.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046909 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_watchdog.cpp
+	"yocto_watchdog.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<math.h>
+	<stdlib.h>
+
+1402046909 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_watchdog.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1402046911 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_wireless.cpp
+	"yocto_wireless.h"
+	"yapi/yjson.h"
+	"yapi/yapi.h"
+	<string.h>
+	<stdio.h>
+	<stdlib.h>
+
+1402046911 c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yocto_wireless.h
+	"yocto_api.h"
+	<cfloat>
+	<cmath>
+	<map>
+
+1401464603 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\examples\doc-inventory\main.cpp
+	<iostream>
+	"yocto_api.h"
+
+1402059098 source:c:\data\yoctoprod\yoctolib\v1.0\public\cpp\sources\yapi\yapi.c
+	"yapi.h"
+	"yproto.h"
+	"yhash.h"
+	"yjson.h"
+	"yprog.h"
+	<sys/time.h>
+

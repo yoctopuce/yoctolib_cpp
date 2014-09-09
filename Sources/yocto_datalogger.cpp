@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_datalogger.cpp 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_datalogger.cpp 17191 2014-08-18 16:04:13Z seb $
  *
  * Implements yFindDataLogger(), the high-level API for DataLogger functions
  *
@@ -413,6 +413,7 @@ YDataLogger::YDataLogger(const string& func): YFunction(func)
     ,_timeUTC(TIMEUTC_INVALID)
     ,_recording(RECORDING_INVALID)
     ,_autoStart(AUTOSTART_INVALID)
+    ,_beaconDriven(BEACONDRIVEN_INVALID)
     ,_clearHistory(CLEARHISTORY_INVALID)
     ,_valueCallbackDataLogger(NULL)
 //--- (end of generated code: DataLogger initialization)
@@ -450,6 +451,11 @@ int YDataLogger::_parseAttr(yJsonStateMachine& j)
     if(!strcmp(j.token, "autoStart")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _autoStart =  (Y_AUTOSTART_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "beaconDriven")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _beaconDriven =  (Y_BEACONDRIVEN_enum)atoi(j.token);
         return 1;
     }
     if(!strcmp(j.token, "clearHistory")) {
@@ -583,6 +589,42 @@ int YDataLogger::set_autoStart(Y_AUTOSTART_enum newval)
     string rest_val;
     rest_val = (newval>0 ? "1" : "0");
     return _setAttr("autoStart", rest_val);
+}
+
+/**
+ * Return true if the data logger is synchronied with the localization beacon.
+ * 
+ * @return either Y_BEACONDRIVEN_OFF or Y_BEACONDRIVEN_ON
+ * 
+ * On failure, throws an exception or returns Y_BEACONDRIVEN_INVALID.
+ */
+Y_BEACONDRIVEN_enum YDataLogger::get_beaconDriven(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YDataLogger::BEACONDRIVEN_INVALID;
+        }
+    }
+    return _beaconDriven;
+}
+
+/**
+ * Changes the type of synchronisation of the data logger.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
+ * 
+ * @param newval : either Y_BEACONDRIVEN_OFF or Y_BEACONDRIVEN_ON, according to the type of
+ * synchronisation of the data logger
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YDataLogger::set_beaconDriven(Y_BEACONDRIVEN_enum newval)
+{
+    string rest_val;
+    rest_val = (newval>0 ? "1" : "0");
+    return _setAttr("beaconDriven", rest_val);
 }
 
 Y_CLEARHISTORY_enum YDataLogger::get_clearHistory(void)

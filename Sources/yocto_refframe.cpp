@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_refframe.cpp 15998 2014-05-01 08:25:18Z seb $
+ * $Id: yocto_refframe.cpp 17481 2014-09-03 09:38:35Z mvuilleu $
  *
  * Implements yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -89,7 +89,7 @@ int YRefFrame::_parseAttr(yJsonStateMachine& j)
     }
     if(!strcmp(j.token, "bearing")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _bearing =  atof(j.token)/65536;
+        _bearing =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
         return 1;
     }
     if(!strcmp(j.token, "calibrationParam")) {
@@ -144,7 +144,7 @@ int YRefFrame::set_mountPos(int newval)
 int YRefFrame::set_bearing(double newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval*65536.0 +0.5)); rest_val = string(buf);
+    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
     return _setAttr("bearing", rest_val);
 }
 
@@ -273,9 +273,9 @@ int YRefFrame::_invokeValueCallback(string value)
  */
 Y_MOUNTPOSITION YRefFrame::get_mountPosition(void)
 {
-    int pos = 0;
-    pos = this->get_mountPos();
-    return (Y_MOUNTPOSITION) ((pos) >> (2));
+    int position = 0;
+    position = this->get_mountPos();
+    return (Y_MOUNTPOSITION) ((position) >> (2));
 }
 
 /**
@@ -295,9 +295,9 @@ Y_MOUNTPOSITION YRefFrame::get_mountPosition(void)
  */
 Y_MOUNTORIENTATION YRefFrame::get_mountOrientation(void)
 {
-    int pos = 0;
-    pos = this->get_mountPos();
-    return (Y_MOUNTORIENTATION) ((pos) & (3));
+    int position = 0;
+    position = this->get_mountPos();
+    return (Y_MOUNTORIENTATION) ((position) & (3));
 }
 
 /**
@@ -327,9 +327,9 @@ Y_MOUNTORIENTATION YRefFrame::get_mountOrientation(void)
  */
 int YRefFrame::set_mountPosition(Y_MOUNTPOSITION position,Y_MOUNTORIENTATION orientation)
 {
-    int pos = 0;
-    pos = ((position) << (2)) + orientation;
-    return this->set_mountPos(pos);
+    int mixedPos = 0;
+    mixedPos = ((position) << (2)) + orientation;
+    return this->set_mountPos(mixedPos);
 }
 
 int YRefFrame::_calibSort(int start,int stopidx)
@@ -350,20 +350,20 @@ int YRefFrame::_calibSort(int start,int stopidx)
         while (idx < stopidx) {
             b = _calibDataAcc[idx];
             if (a > b) {
-                _calibDataAcc[ idx-1] = b;
-                _calibDataAcc[ idx] = a;
+                _calibDataAcc[idx-1] = b;
+                _calibDataAcc[idx] = a;
                 xa = _calibDataAccX[idx-1];
                 xb = _calibDataAccX[idx];
-                _calibDataAccX[ idx-1] = xb;
-                _calibDataAccX[ idx] = xa;
+                _calibDataAccX[idx-1] = xb;
+                _calibDataAccX[idx] = xa;
                 xa = _calibDataAccY[idx-1];
                 xb = _calibDataAccY[idx];
-                _calibDataAccY[ idx-1] = xb;
-                _calibDataAccY[ idx] = xa;
+                _calibDataAccY[idx-1] = xb;
+                _calibDataAccY[idx] = xa;
                 xa = _calibDataAccZ[idx-1];
                 xb = _calibDataAccZ[idx];
-                _calibDataAccZ[ idx-1] = xb;
-                _calibDataAccZ[ idx] = xa;
+                _calibDataAccZ[idx-1] = xb;
+                _calibDataAccZ[idx] = xa;
                 changed = changed + 1;
             } else {
                 a = b;
@@ -438,7 +438,7 @@ int YRefFrame::more3DCalibration(void)
     double norm = 0.0;
     int orient = 0;
     int idx = 0;
-    int pos = 0;
+    int intpos = 0;
     int err = 0;
     // make sure calibration has been started
     if (_calibStage == 0) {
@@ -489,6 +489,7 @@ int YRefFrame::more3DCalibration(void)
     _calibPrevTick = currTick;
     
     // Determine the device orientation index
+    orient = 0;
     if (zSq > 0.5) {
         if (zVal > 0) {
             orient = 0;
@@ -547,12 +548,12 @@ int YRefFrame::more3DCalibration(void)
     }
     
     // Stage done, compute preliminary result
-    pos = (_calibStage - 1) * _calibCount;
-    this->_calibSort(pos, pos + _calibCount);
-    pos = pos + ((_calibCount) / (2));
+    intpos = (_calibStage - 1) * _calibCount;
+    this->_calibSort(intpos, intpos + _calibCount);
+    intpos = intpos + ((_calibCount) / (2));
     _calibLogMsg = YapiWrapper::ysprintf("Stage %d: median is %d,%d,%d", _calibStage,
-    (int) (1000*_calibDataAccX[pos] < 0.0 ? ceil(1000*_calibDataAccX[pos]-0.5) : floor(1000*_calibDataAccX[pos]+0.5)),
-    (int) (1000*_calibDataAccY[pos] < 0.0 ? ceil(1000*_calibDataAccY[pos]-0.5) : floor(1000*_calibDataAccY[pos]+0.5)),(int) (1000*_calibDataAccZ[pos] < 0.0 ? ceil(1000*_calibDataAccZ[pos]-0.5) : floor(1000*_calibDataAccZ[pos]+0.5)));
+    (int) floor(1000*_calibDataAccX[intpos]+0.5),
+    (int) floor(1000*_calibDataAccY[intpos]+0.5),(int) floor(1000*_calibDataAccZ[intpos]+0.5));
     
     // move to next stage
     _calibStage = _calibStage + 1;
@@ -569,16 +570,16 @@ int YRefFrame::more3DCalibration(void)
     zVal = 0;
     idx = 0;
     while (idx < 6) {
-        pos = idx * _calibCount + ((_calibCount) / (2));
+        intpos = idx * _calibCount + ((_calibCount) / (2));
         orient = _calibOrient[idx];
         if (orient == 0 || orient == 1) {
-            zVal = zVal + _calibDataAccZ[pos];
+            zVal = zVal + _calibDataAccZ[intpos];
         }
         if (orient == 2 || orient == 3) {
-            xVal = xVal + _calibDataAccX[pos];
+            xVal = xVal + _calibDataAccX[intpos];
         }
         if (orient == 4 || orient == 5) {
-            yVal = yVal + _calibDataAccY[pos];
+            yVal = yVal + _calibDataAccY[intpos];
         }
         idx = idx + 1;
     }
@@ -587,19 +588,19 @@ int YRefFrame::more3DCalibration(void)
     _calibAccZOfs = zVal / 2.0;
     
     // Recompute all norms, taking into account the computed shift, and re-sort
-    pos = 0;
-    while (pos < (int)_calibDataAcc.size()) {
-        xVal = _calibDataAccX[pos] - _calibAccXOfs;
-        yVal = _calibDataAccY[pos] - _calibAccYOfs;
-        zVal = _calibDataAccZ[pos] - _calibAccZOfs;
+    intpos = 0;
+    while (intpos < (int)_calibDataAcc.size()) {
+        xVal = _calibDataAccX[intpos] - _calibAccXOfs;
+        yVal = _calibDataAccY[intpos] - _calibAccYOfs;
+        zVal = _calibDataAccZ[intpos] - _calibAccZOfs;
         norm = sqrt(xVal * xVal + yVal * yVal + zVal * zVal);
-        _calibDataAcc[ pos] = norm;
-        pos = pos + 1;
+        _calibDataAcc[intpos] = norm;
+        intpos = intpos + 1;
     }
     idx = 0;
     while (idx < 6) {
-        pos = idx * _calibCount;
-        this->_calibSort(pos, pos + _calibCount);
+        intpos = idx * _calibCount;
+        this->_calibSort(intpos, intpos + _calibCount);
         idx = idx + 1;
     }
     
@@ -609,16 +610,16 @@ int YRefFrame::more3DCalibration(void)
     zVal = 0;
     idx = 0;
     while (idx < 6) {
-        pos = idx * _calibCount + ((_calibCount) / (2));
+        intpos = idx * _calibCount + ((_calibCount) / (2));
         orient = _calibOrient[idx];
         if (orient == 0 || orient == 1) {
-            zVal = zVal + _calibDataAcc[pos];
+            zVal = zVal + _calibDataAcc[intpos];
         }
         if (orient == 2 || orient == 3) {
-            xVal = xVal + _calibDataAcc[pos];
+            xVal = xVal + _calibDataAcc[intpos];
         }
         if (orient == 4 || orient == 5) {
-            yVal = yVal + _calibDataAcc[pos];
+            yVal = yVal + _calibDataAcc[intpos];
         }
         idx = idx + 1;
     }
@@ -714,25 +715,27 @@ int YRefFrame::save3DCalibration(void)
     }
     
     // Compute integer values (correction unit is 732ug/count)
-    shiftX = -(int) (_calibAccXOfs / 0.000732 < 0.0 ? ceil(_calibAccXOfs / 0.000732-0.5) : floor(_calibAccXOfs / 0.000732+0.5));
+    shiftX = -(int) floor(_calibAccXOfs / 0.000732+0.5);
     if (shiftX < 0) {
         shiftX = shiftX + 65536;
     }
-    shiftY = -(int) (_calibAccYOfs / 0.000732 < 0.0 ? ceil(_calibAccYOfs / 0.000732-0.5) : floor(_calibAccYOfs / 0.000732+0.5));
+    shiftY = -(int) floor(_calibAccYOfs / 0.000732+0.5);
     if (shiftY < 0) {
         shiftY = shiftY + 65536;
     }
-    shiftZ = -(int) (_calibAccZOfs / 0.000732 < 0.0 ? ceil(_calibAccZOfs / 0.000732-0.5) : floor(_calibAccZOfs / 0.000732+0.5));
+    shiftZ = -(int) floor(_calibAccZOfs / 0.000732+0.5);
     if (shiftZ < 0) {
         shiftZ = shiftZ + 65536;
     }
-    scaleX = (int) (2048.0 / _calibAccXScale < 0.0 ? ceil(2048.0 / _calibAccXScale-0.5) : floor(2048.0 / _calibAccXScale+0.5)) - 2048;
-    scaleY = (int) (2048.0 / _calibAccYScale < 0.0 ? ceil(2048.0 / _calibAccYScale-0.5) : floor(2048.0 / _calibAccYScale+0.5)) - 2048;
-    scaleZ = (int) (2048.0 / _calibAccZScale < 0.0 ? ceil(2048.0 / _calibAccZScale-0.5) : floor(2048.0 / _calibAccZScale+0.5)) - 2048;
+    scaleX = (int) floor(2048.0 / _calibAccXScale+0.5) - 2048;
+    scaleY = (int) floor(2048.0 / _calibAccYScale+0.5) - 2048;
+    scaleZ = (int) floor(2048.0 / _calibAccZScale+0.5) - 2048;
     if (scaleX < -2048 || scaleX >= 2048 || scaleY < -2048 || scaleY >= 2048 || scaleZ < -2048 || scaleZ >= 2048) {
         scaleExp = 3;
+    } else {
         if (scaleX < -1024 || scaleX >= 1024 || scaleY < -1024 || scaleY >= 1024 || scaleZ < -1024 || scaleZ >= 1024) {
             scaleExp = 2;
+        } else {
             if (scaleX < -512 || scaleX >= 512 || scaleY < -512 || scaleY >= 512 || scaleZ < -512 || scaleZ >= 512) {
                 scaleExp = 1;
             } else {

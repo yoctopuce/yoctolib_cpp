@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_altitude.cpp 16185 2014-05-12 16:00:20Z seb $
+ * $Id: yocto_altitude.cpp 16895 2014-07-18 00:12:08Z mvuilleu $
  *
  * Implements yFindAltitude(), the high-level API for Altitude functions
  *
@@ -70,7 +70,7 @@ int YAltitude::_parseAttr(yJsonStateMachine& j)
 {
     if(!strcmp(j.token, "qnh")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _qnh =  atof(j.token)/65536;
+        _qnh =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
         return 1;
     }
     failed:
@@ -91,7 +91,7 @@ int YAltitude::_parseAttr(yJsonStateMachine& j)
 int YAltitude::set_currentValue(double newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval*65536.0 +0.5)); rest_val = string(buf);
+    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
     return _setAttr("currentValue", rest_val);
 }
 
@@ -111,7 +111,7 @@ int YAltitude::set_currentValue(double newval)
 int YAltitude::set_qnh(double newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval*65536.0 +0.5)); rest_val = string(buf);
+    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
     return _setAttr("qnh", rest_val);
 }
 

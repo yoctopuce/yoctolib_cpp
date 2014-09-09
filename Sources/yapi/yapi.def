@@ -41,8 +41,5 @@ EXPORTS
   vb6_yapiHTTPRequest   @38
   vb6_yapiRegisterHubDiscoveryCallback    @39
   vb6_yapiTriggerHubDiscovery   @40
-  vb6_yapiGetBootloadersDevs    @41
-  vb6_yapiFlashDevice   @42
-  vb6_yapiVerifyDevice    @43
-  vb6_yapiGetCNonce   @44
+  vb6_yapiGetCNonce   @41
   

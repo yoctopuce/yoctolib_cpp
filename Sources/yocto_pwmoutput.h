@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwmoutput.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_pwmoutput.h 17481 2014-09-03 09:38:35Z mvuilleu $
  *
  * Declares yFindPwmOutput(), the high-level API for PwmOutput functions
  *
@@ -70,10 +70,10 @@ typedef enum {
 } Y_ENABLEDATPOWERON_enum;
 #endif
 
+#define Y_FREQUENCY_INVALID             (YAPI_INVALID_DOUBLE)
+#define Y_PERIOD_INVALID                (YAPI_INVALID_DOUBLE)
 #define Y_DUTYCYCLE_INVALID             (YAPI_INVALID_DOUBLE)
 #define Y_PULSEDURATION_INVALID         (YAPI_INVALID_DOUBLE)
-#define Y_FREQUENCY_INVALID             (YAPI_INVALID_UINT)
-#define Y_PERIOD_INVALID                (YAPI_INVALID_DOUBLE)
 #define Y_PWMTRANSITION_INVALID         (YAPI_INVALID_STRING)
 #define Y_DUTYCYCLEATPOWERON_INVALID    (YAPI_INVALID_DOUBLE)
 //--- (end of YPwmOutput definitions)
@@ -93,10 +93,10 @@ protected:
     //--- (YPwmOutput attributes)
     // Attributes (function value cache)
     Y_ENABLED_enum  _enabled;
+    double          _frequency;
+    double          _period;
     double          _dutyCycle;
     double          _pulseDuration;
-    int             _frequency;
-    double          _period;
     string          _pwmTransition;
     Y_ENABLEDATPOWERON_enum _enabledAtPowerOn;
     double          _dutyCycleAtPowerOn;
@@ -119,10 +119,10 @@ public:
     static const Y_ENABLED_enum ENABLED_FALSE = Y_ENABLED_FALSE;
     static const Y_ENABLED_enum ENABLED_TRUE = Y_ENABLED_TRUE;
     static const Y_ENABLED_enum ENABLED_INVALID = Y_ENABLED_INVALID;
+    static const double FREQUENCY_INVALID;
+    static const double PERIOD_INVALID;
     static const double DUTYCYCLE_INVALID;
     static const double PULSEDURATION_INVALID;
-    static const int FREQUENCY_INVALID = YAPI_INVALID_UINT;
-    static const double PERIOD_INVALID;
     static const string PWMTRANSITION_INVALID;
     static const Y_ENABLEDATPOWERON_enum ENABLEDATPOWERON_FALSE = Y_ENABLEDATPOWERON_FALSE;
     static const Y_ENABLEDATPOWERON_enum ENABLEDATPOWERON_TRUE = Y_ENABLEDATPOWERON_TRUE;
@@ -153,6 +153,57 @@ public:
     int             set_enabled(Y_ENABLED_enum newval);
     inline int      setEnabled(Y_ENABLED_enum newval)
     { return this->set_enabled(newval); }
+
+    /**
+     * Changes the PWM frequency. The duty cycle is kept unchanged thanks to an
+     * automatic pulse width change.
+     * 
+     * @param newval : a floating point number corresponding to the PWM frequency
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_frequency(double newval);
+    inline int      setFrequency(double newval)
+    { return this->set_frequency(newval); }
+
+    /**
+     * Returns the PWM frequency in Hz.
+     * 
+     * @return a floating point number corresponding to the PWM frequency in Hz
+     * 
+     * On failure, throws an exception or returns Y_FREQUENCY_INVALID.
+     */
+    double              get_frequency(void);
+
+    inline double       frequency(void)
+    { return this->get_frequency(); }
+
+    /**
+     * Changes the PWM period in milliseconds.
+     * 
+     * @param newval : a floating point number corresponding to the PWM period in milliseconds
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_period(double newval);
+    inline int      setPeriod(double newval)
+    { return this->set_period(newval); }
+
+    /**
+     * Returns the PWM period in milliseconds.
+     * 
+     * @return a floating point number corresponding to the PWM period in milliseconds
+     * 
+     * On failure, throws an exception or returns Y_PERIOD_INVALID.
+     */
+    double              get_period(void);
+
+    inline double       period(void)
+    { return this->get_period(); }
 
     /**
      * Changes the PWM duty cycle, in per cents.
@@ -194,9 +245,10 @@ public:
     { return this->set_pulseDuration(newval); }
 
     /**
-     * Returns the PWM pulse length in milliseconds.
+     * Returns the PWM pulse length in milliseconds, as a floating point number.
      * 
-     * @return a floating point number corresponding to the PWM pulse length in milliseconds
+     * @return a floating point number corresponding to the PWM pulse length in milliseconds, as a
+     * floating point number
      * 
      * On failure, throws an exception or returns Y_PULSEDURATION_INVALID.
      */
@@ -204,57 +256,6 @@ public:
 
     inline double       pulseDuration(void)
     { return this->get_pulseDuration(); }
-
-    /**
-     * Returns the PWM frequency in Hz.
-     * 
-     * @return an integer corresponding to the PWM frequency in Hz
-     * 
-     * On failure, throws an exception or returns Y_FREQUENCY_INVALID.
-     */
-    int                 get_frequency(void);
-
-    inline int          frequency(void)
-    { return this->get_frequency(); }
-
-    /**
-     * Changes the PWM frequency. The duty cycle is kept unchanged thanks to an
-     * automatic pulse width change.
-     * 
-     * @param newval : an integer corresponding to the PWM frequency
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_frequency(int newval);
-    inline int      setFrequency(int newval)
-    { return this->set_frequency(newval); }
-
-    /**
-     * Changes the PWM period.
-     * 
-     * @param newval : a floating point number corresponding to the PWM period
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_period(double newval);
-    inline int      setPeriod(double newval)
-    { return this->set_period(newval); }
-
-    /**
-     * Returns the PWM period in milliseconds.
-     * 
-     * @return a floating point number corresponding to the PWM period in milliseconds
-     * 
-     * On failure, throws an exception or returns Y_PERIOD_INVALID.
-     */
-    double              get_period(void);
-
-    inline double       period(void)
-    { return this->get_period(); }
 
     string              get_pwmTransition(void);
 

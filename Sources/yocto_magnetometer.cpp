@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_magnetometer.cpp 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_magnetometer.cpp 16895 2014-07-18 00:12:08Z mvuilleu $
  *
  * Implements yFindMagnetometer(), the high-level API for Magnetometer functions
  *
@@ -74,17 +74,17 @@ int YMagnetometer::_parseAttr(yJsonStateMachine& j)
 {
     if(!strcmp(j.token, "xValue")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _xValue =  atof(j.token)/65536;
+        _xValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
         return 1;
     }
     if(!strcmp(j.token, "yValue")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _yValue =  atof(j.token)/65536;
+        _yValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
         return 1;
     }
     if(!strcmp(j.token, "zValue")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _zValue =  atof(j.token)/65536;
+        _zValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
         return 1;
     }
     failed:

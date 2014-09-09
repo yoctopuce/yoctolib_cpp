@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwmoutput.cpp 15529 2014-03-20 17:54:15Z seb $
+ * $Id: yocto_pwmoutput.cpp 17481 2014-09-03 09:38:35Z mvuilleu $
  *
  * Implements yFindPwmOutput(), the high-level API for PwmOutput functions
  *
@@ -50,10 +50,10 @@
 YPwmOutput::YPwmOutput(const string& func): YFunction(func)
 //--- (PwmOutput initialization)
     ,_enabled(ENABLED_INVALID)
-    ,_dutyCycle(DUTYCYCLE_INVALID)
-    ,_pulseDuration(PULSEDURATION_INVALID)
     ,_frequency(FREQUENCY_INVALID)
     ,_period(PERIOD_INVALID)
+    ,_dutyCycle(DUTYCYCLE_INVALID)
+    ,_pulseDuration(PULSEDURATION_INVALID)
     ,_pwmTransition(PWMTRANSITION_INVALID)
     ,_enabledAtPowerOn(ENABLEDATPOWERON_INVALID)
     ,_dutyCycleAtPowerOn(DUTYCYCLEATPOWERON_INVALID)
@@ -70,9 +70,10 @@ YPwmOutput::~YPwmOutput()
 }
 //--- (YPwmOutput implementation)
 // static attributes
+const double YPwmOutput::FREQUENCY_INVALID = YAPI_INVALID_DOUBLE;
+const double YPwmOutput::PERIOD_INVALID = YAPI_INVALID_DOUBLE;
 const double YPwmOutput::DUTYCYCLE_INVALID = YAPI_INVALID_DOUBLE;
 const double YPwmOutput::PULSEDURATION_INVALID = YAPI_INVALID_DOUBLE;
-const double YPwmOutput::PERIOD_INVALID = YAPI_INVALID_DOUBLE;
 const string YPwmOutput::PWMTRANSITION_INVALID = YAPI_INVALID_STRING;
 const double YPwmOutput::DUTYCYCLEATPOWERON_INVALID = YAPI_INVALID_DOUBLE;
 
@@ -83,24 +84,24 @@ int YPwmOutput::_parseAttr(yJsonStateMachine& j)
         _enabled =  (Y_ENABLED_enum)atoi(j.token);
         return 1;
     }
-    if(!strcmp(j.token, "dutyCycle")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _dutyCycle =  atof(j.token)/65536;
-        return 1;
-    }
-    if(!strcmp(j.token, "pulseDuration")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _pulseDuration =  atof(j.token)/65536;
-        return 1;
-    }
     if(!strcmp(j.token, "frequency")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _frequency =  atoi(j.token);
+        _frequency =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
         return 1;
     }
     if(!strcmp(j.token, "period")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _period =  atof(j.token)/65536;
+        _period =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        return 1;
+    }
+    if(!strcmp(j.token, "dutyCycle")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _dutyCycle =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        return 1;
+    }
+    if(!strcmp(j.token, "pulseDuration")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _pulseDuration =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
         return 1;
     }
     if(!strcmp(j.token, "pwmTransition")) {
@@ -115,7 +116,7 @@ int YPwmOutput::_parseAttr(yJsonStateMachine& j)
     }
     if(!strcmp(j.token, "dutyCycleAtPowerOn")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _dutyCycleAtPowerOn =  atof(j.token)/65536;
+        _dutyCycleAtPowerOn =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
         return 1;
     }
     failed:
@@ -157,6 +158,73 @@ int YPwmOutput::set_enabled(Y_ENABLED_enum newval)
 }
 
 /**
+ * Changes the PWM frequency. The duty cycle is kept unchanged thanks to an
+ * automatic pulse width change.
+ * 
+ * @param newval : a floating point number corresponding to the PWM frequency
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YPwmOutput::set_frequency(double newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+    return _setAttr("frequency", rest_val);
+}
+
+/**
+ * Returns the PWM frequency in Hz.
+ * 
+ * @return a floating point number corresponding to the PWM frequency in Hz
+ * 
+ * On failure, throws an exception or returns Y_FREQUENCY_INVALID.
+ */
+double YPwmOutput::get_frequency(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YPwmOutput::FREQUENCY_INVALID;
+        }
+    }
+    return _frequency;
+}
+
+/**
+ * Changes the PWM period in milliseconds.
+ * 
+ * @param newval : a floating point number corresponding to the PWM period in milliseconds
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YPwmOutput::set_period(double newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+    return _setAttr("period", rest_val);
+}
+
+/**
+ * Returns the PWM period in milliseconds.
+ * 
+ * @return a floating point number corresponding to the PWM period in milliseconds
+ * 
+ * On failure, throws an exception or returns Y_PERIOD_INVALID.
+ */
+double YPwmOutput::get_period(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YPwmOutput::PERIOD_INVALID;
+        }
+    }
+    return _period;
+}
+
+/**
  * Changes the PWM duty cycle, in per cents.
  * 
  * @param newval : a floating point number corresponding to the PWM duty cycle, in per cents
@@ -168,7 +236,7 @@ int YPwmOutput::set_enabled(Y_ENABLED_enum newval)
 int YPwmOutput::set_dutyCycle(double newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval*65536.0 +0.5)); rest_val = string(buf);
+    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
     return _setAttr("dutyCycle", rest_val);
 }
 
@@ -202,14 +270,15 @@ double YPwmOutput::get_dutyCycle(void)
 int YPwmOutput::set_pulseDuration(double newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval*65536.0 +0.5)); rest_val = string(buf);
+    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
     return _setAttr("pulseDuration", rest_val);
 }
 
 /**
- * Returns the PWM pulse length in milliseconds.
+ * Returns the PWM pulse length in milliseconds, as a floating point number.
  * 
- * @return a floating point number corresponding to the PWM pulse length in milliseconds
+ * @return a floating point number corresponding to the PWM pulse length in milliseconds, as a
+ * floating point number
  * 
  * On failure, throws an exception or returns Y_PULSEDURATION_INVALID.
  */
@@ -221,73 +290,6 @@ double YPwmOutput::get_pulseDuration(void)
         }
     }
     return _pulseDuration;
-}
-
-/**
- * Returns the PWM frequency in Hz.
- * 
- * @return an integer corresponding to the PWM frequency in Hz
- * 
- * On failure, throws an exception or returns Y_FREQUENCY_INVALID.
- */
-int YPwmOutput::get_frequency(void)
-{
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YPwmOutput::FREQUENCY_INVALID;
-        }
-    }
-    return _frequency;
-}
-
-/**
- * Changes the PWM frequency. The duty cycle is kept unchanged thanks to an
- * automatic pulse width change.
- * 
- * @param newval : an integer corresponding to the PWM frequency
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YPwmOutput::set_frequency(int newval)
-{
-    string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("frequency", rest_val);
-}
-
-/**
- * Changes the PWM period.
- * 
- * @param newval : a floating point number corresponding to the PWM period
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YPwmOutput::set_period(double newval)
-{
-    string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval*65536.0 +0.5)); rest_val = string(buf);
-    return _setAttr("period", rest_val);
-}
-
-/**
- * Returns the PWM period in milliseconds.
- * 
- * @return a floating point number corresponding to the PWM period in milliseconds
- * 
- * On failure, throws an exception or returns Y_PERIOD_INVALID.
- */
-double YPwmOutput::get_period(void)
-{
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YPwmOutput::PERIOD_INVALID;
-        }
-    }
-    return _period;
 }
 
 string YPwmOutput::get_pwmTransition(void)
@@ -356,7 +358,7 @@ int YPwmOutput::set_enabledAtPowerOn(Y_ENABLEDATPOWERON_enum newval)
 int YPwmOutput::set_dutyCycleAtPowerOn(double newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval*65536.0 +0.5)); rest_val = string(buf);
+    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
     return _setAttr("dutyCycleAtPowerOn", rest_val);
 }
 
@@ -470,7 +472,7 @@ int YPwmOutput::pulseDurationMove(double ms_target,int ms_duration)
     if (ms_target < 0.0) {
         ms_target = 0.0;
     }
-    newval = YapiWrapper::ysprintf("%dms:%d", (int) (ms_target*65536 < 0.0 ? ceil(ms_target*65536-0.5) : floor(ms_target*65536+0.5)),ms_duration);
+    newval = YapiWrapper::ysprintf("%dms:%d", (int) floor(ms_target*65536+0.5),ms_duration);
     return this->set_pwmTransition(newval);
 }
 
@@ -494,7 +496,7 @@ int YPwmOutput::dutyCycleMove(double target,int ms_duration)
     if (target > 100.0) {
         target = 100.0;
     }
-    newval = YapiWrapper::ysprintf("%d:%d", (int) (target*65536 < 0.0 ? ceil(target*65536-0.5) : floor(target*65536+0.5)),ms_duration);
+    newval = YapiWrapper::ysprintf("%d:%d", (int) floor(target*65536+0.5),ms_duration);
     return this->set_pwmTransition(newval);
 }
 
