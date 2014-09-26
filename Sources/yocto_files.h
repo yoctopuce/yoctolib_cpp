@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_files.h 17672 2014-09-16 16:15:24Z seb $
  *
  * Declares yFindFiles(), the high-level API for Files functions
  *
@@ -211,7 +211,7 @@ public:
     virtual string      sendCommand(string command);
 
     /**
-     * Reinitializes the filesystem to its clean, unfragmented, empty state.
+     * Reinitialize the filesystem to its clean, unfragmented, empty state.
      * All files previously uploaded are permanently lost.
      * 
      * @return YAPI_SUCCESS if the call succeeds.

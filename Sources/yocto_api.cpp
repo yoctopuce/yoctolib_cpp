@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 17508 2014-09-04 08:56:04Z seb $
+ * $Id: yocto_api.cpp 17816 2014-09-24 14:47:30Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -231,32 +231,26 @@ int YDataSet::_parse(const string& json)
 // static attributes
 
 
-int YFirmwareUpdate::processMore(int newupdate)
+int YFirmwareUpdate::_processMore(int newupdate)
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     int res = 0;
     string serial;
     string firmwarepath;
+    string settings;
     serial = _serial;
     firmwarepath = _firmwarepath;
-    res = yapiUpdateFirmware(serial.c_str(), firmwarepath.c_str(), newupdate, errmsg);
+    settings = _settings;
+    res = yapiUpdateFirmware(serial.c_str(), firmwarepath.c_str(), settings.c_str(), newupdate, errmsg);
     _progress = res;
     _progress_msg = string(errmsg);
     return res;
 }
 
-/**
- * Returns the progress of the downloads of the measures from the data logger,
- * on a scale from 0 to 100. When the object is instanciated by get_dataSet,
- * the progress is zero. Each time loadMore() is invoked, the progress
- * is updated, to reach the value 100 only once all measures have been loaded.
- * 
- * @return an integer in the range 0 to 100 (percentage of completion).
- */
 int YFirmwareUpdate::get_progress(void)
 {
     YModule* m = NULL;
-    this->processMore(0);
+    this->_processMore(0);
     if ((_progress == 100) && ((int)(_settings).size() != 0)) {
         m = YModule::FindModule(_serial);
         if (m->isOnline()) {
@@ -268,31 +262,29 @@ int YFirmwareUpdate::get_progress(void)
 }
 
 /**
- * Returns the progress of the downloads of the measures from the data logger,
- * on a scale from 0 to 100. When the object is instanciated by get_dataSet,
- * the progress is zero. Each time loadMore() is invoked, the progress
- * is updated, to reach the value 100 only once all measures have been loaded.
+ * Returns the last progress message of the firmware update process. If an error occur during the
+ * firmware update process the error message is returned
  * 
- * @return an integer in the range 0 to 100 (percentage of completion).
+ * @return an string  with the last progress message, or the error message.
  */
 string YFirmwareUpdate::get_progressMessage(void)
 {
-    this->processMore(0);
     return _progress_msg;
 }
 
 /**
- * Loads the the next block of measures from the dataLogger, and updates
- * the progress indicator.
+ * Start the firmware update process. This method start the firmware update process in background. This method
+ * return immediately. The progress of the firmware update can be monitored with methods get_progress()
+ * and get_progressMessage().
  * 
  * @return an integer in the range 0 to 100 (percentage of completion),
  *         or a negative error code in case of failure.
  * 
- * On failure, throws an exception or returns a negative error code.
+ * On failure returns a negative error code.
  */
 int YFirmwareUpdate::startUpdate(void)
 {
-    this->processMore(1);
+    this->_processMore(1);
     return _progress;
 }
 //--- (end of generated code: YFirmwareUpdate implementation)
@@ -313,7 +305,6 @@ int YDataStream::_initFromDataSet(YDataSet* dataset,vector<int> encoded)
     double fRef = 0.0;
     double duration_float = 0.0;
     vector<int> iCalib;
-    
     // decode sequence header to extract data
     _runNo = encoded[0] + (((encoded[1]) << (16)));
     _utcStamp = encoded[2] + (((encoded[3]) << (16)));
@@ -327,7 +318,6 @@ int YDataStream::_initFromDataSet(YDataSet* dataset,vector<int> encoded)
             _samplesPerHour = _samplesPerHour * 60;
         }
     }
-    
     val = encoded[5];
     if (val > 32767) {
         val = val - 65536;
@@ -337,7 +327,6 @@ int YDataStream::_initFromDataSet(YDataSet* dataset,vector<int> encoded)
     _scale = encoded[6];
     _isScal = (_scale != 0);
     _isScal32 = ((int)encoded.size() >= 14);
-    
     val = encoded[7];
     _isClosed = (val != 0xffff);
     if (val == 0xffff) {
@@ -1010,7 +999,7 @@ s64 YDataSet::get_endTimeUTC(void)
 
 /**
  * Returns the progress of the downloads of the measures from the data logger,
- * on a scale from 0 to 100. When the object is instanciated by get_dataSet,
+ * on a scale from 0 to 100. When the object is instantiated by get_dataSet,
  * the progress is zero. Each time loadMore() is invoked, the progress
  * is updated, to reach the value 100 only once all measures have been loaded.
  * 
@@ -1510,16 +1499,23 @@ vector<string> YFunction::_json_get_array(const string& json)
         this->_throw(YAPI_IO_ERROR,"JSON structure expected");
         return res;
     }
-    int depth =j.depth;
+    int depth = j.depth;
     do {
-        last=j.src;
-        while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.depth > depth);
+        last = j.src;
+        while (yJsonParse(&j) == YJSON_PARSE_AVAIL) {
+            if (j.next == YJSON_PARSE_STRINGCONT || j.depth > depth){
+                continue;
+            }
+            break;
+        }
         if (j.depth == depth) {
-            long location,length;
-            while(*last ==',' || *last =='\n')last++;
-            location = (long)(last -json_cstr);
-            length = (long)(j.src-last);
-            string item = json.substr(location,length);
+            long location, length;
+            while (*last == ',' || *last == '\n'){
+                last++;
+            }
+            location = (long)(last - json_cstr);
+            length = (long)(j.src - last);
+            string item = json.substr(location, length);
             res.push_back(item);
         }
     } while (j.st != YJSON_PARSE_ARRAY);
@@ -2820,7 +2816,7 @@ double YAPI::LinearCalibrationHandler(double rawValue, int calibType, intArr par
  * If access control has been activated on the hub, virtual or not, you want to
  * reach, the URL parameter should look like:
  * 
- * http://username:password@adresse:port
+ * http://username:password@address:port
  * 
  * You can call <i>RegisterHub</i> several times to connect to several machines.
  * 
@@ -3952,7 +3948,7 @@ int YModule::calibVersion(string cparams)
     if (cparams == "" || cparams == "0") {
         return 1;
     }
-    if (((int)(cparams).size() < 2) || (_ystrpos(cparams, ".") >= 0)) {
+    if (((int)(cparams).length() < 2) || (_ystrpos(cparams, ".") >= 0)) {
         return 0;
     } else {
         return 2;
@@ -4192,9 +4188,9 @@ int YModule::set_allSettings(string settings)
     old_json_flat = this->_flattenJsonStruct(settings);
     old_dslist = this->_json_get_array(old_json_flat);
     for (unsigned ii = 0; ii < old_dslist.size(); ii++) {
-        leng = (int)(old_dslist[ii]).size();
+        leng = (int)(old_dslist[ii]).length();
         old_dslist[ii] = (old_dslist[ii]).substr( 1, leng - 2);
-        leng = (int)(old_dslist[ii]).size();
+        leng = (int)(old_dslist[ii]).length();
         eqpos = _ystrpos(old_dslist[ii], "=");
         if ((eqpos < 0) || (leng == 0)) {
             this->_throw(YAPI_INVALID_ARGUMENT, "Invalid settings");
@@ -4204,7 +4200,7 @@ int YModule::set_allSettings(string settings)
         eqpos = eqpos + 1;
         value = (old_dslist[ii]).substr( eqpos, leng - eqpos);
         old_jpath.push_back(jpath);
-        old_jpath_len.push_back((int)(jpath).size());
+        old_jpath_len.push_back((int)(jpath).length());
         old_val.push_back(value);;
     }
     // may throw an exception
@@ -4212,9 +4208,9 @@ int YModule::set_allSettings(string settings)
     actualSettings = this->_flattenJsonStruct(actualSettings);
     new_dslist = this->_json_get_array(actualSettings);
     for (unsigned ii = 0; ii < new_dslist.size(); ii++) {
-        leng = (int)(new_dslist[ii]).size();
+        leng = (int)(new_dslist[ii]).length();
         new_dslist[ii] = (new_dslist[ii]).substr( 1, leng - 2);
-        leng = (int)(new_dslist[ii]).size();
+        leng = (int)(new_dslist[ii]).length();
         eqpos = _ystrpos(new_dslist[ii], "=");
         if ((eqpos < 0) || (leng == 0)) {
             this->_throw(YAPI_INVALID_ARGUMENT, "Invalid settings");
@@ -4224,13 +4220,13 @@ int YModule::set_allSettings(string settings)
         eqpos = eqpos + 1;
         value = (new_dslist[ii]).substr( eqpos, leng - eqpos);
         new_jpath.push_back(jpath);
-        new_jpath_len.push_back((int)(jpath).size());
+        new_jpath_len.push_back((int)(jpath).length());
         new_val.push_back(value);;
     }
     i = 0;
     while (i < (int)new_jpath.size()) {
         njpath = new_jpath[i];
-        leng = (int)(njpath).size();
+        leng = (int)(njpath).length();
         cpos = _ystrpos(njpath, "/");
         if ((cpos < 0) || (leng == 0)) {
             continue;
@@ -5075,7 +5071,6 @@ int YSensor::_parserHelper(void)
     _calpar.clear();
     _calraw.clear();
     _calref.clear();
-    
     // Store inverted resolution, to provide better rounding
     if (_resolution > 0) {
         _iresol = floor(1.0 / _resolution+0.5);
@@ -5083,13 +5078,11 @@ int YSensor::_parserHelper(void)
         _iresol = 10000;
         _resolution = 0.0001;
     }
-    
     // Old format: supported when there is no calibration
     if (_calibrationParam == "" || _calibrationParam == "0") {
         _caltyp = 0;
         return 0;
     }
-    
     if (_ystrpos(_calibrationParam, ",") >= 0) {
         iCalib = YAPI::_decodeFloats(_calibrationParam);
         _caltyp = ((iCalib[0]) / (1000));
@@ -5309,14 +5302,12 @@ int YSensor::loadCalibrationPoints(vector<double>& rawValues,vector<double>& ref
 {
     rawValues.clear();
     refValues.clear();
-    
     // Load function parameters if not yet loaded
     if (_scale == 0) {
         if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
             return YAPI_DEVICE_NOT_FOUND;
         }
     }
-    
     if (_caltyp < 0) {
         this->_throw(YAPI_NOT_SUPPORTED, "Calibration parameters format mismatch. Please upgrade your library or firmware.");
         return YAPI_NOT_SUPPORTED;
@@ -5339,25 +5330,21 @@ string YSensor::_encodeCalibrationPoints(vector<double> rawValues,vector<double>
     int idx = 0;
     int iRaw = 0;
     int iRef = 0;
-    
     npt = (int)rawValues.size();
     if (npt != (int)refValues.size()) {
         this->_throw(YAPI_INVALID_ARGUMENT, "Invalid calibration parameters (size mismatch)");
         return YAPI_INVALID_STRING;
     }
-    
     // Shortcut when building empty calibration parameters
     if (npt == 0) {
         return "0";
     }
-    
     // Load function parameters if not yet loaded
     if (_scale == 0) {
         if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
             return YAPI_INVALID_STRING;
         }
     }
-    
     // Detect old firmware
     if ((_caltyp < 0) || (_scale < 0)) {
         this->_throw(YAPI_NOT_SUPPORTED, "Calibration parameters format mismatch. Please upgrade your library or firmware.");
@@ -5426,7 +5413,6 @@ YMeasure YSensor::_decodeTimedReport(double timestamp,vector<int> report)
     double minVal = 0.0;
     double avgVal = 0.0;
     double maxVal = 0.0;
-    
     startTime = _prevTimedReport;
     endTime = timestamp;
     _prevTimedReport = endTime;
@@ -5542,7 +5528,6 @@ YMeasure YSensor::_decodeTimedReport(double timestamp,vector<int> report)
             maxVal = this->_decodeVal(maxRaw);
         }
     }
-    
     return YMeasure( startTime, endTime, minVal, avgVal,maxVal);
 }
 

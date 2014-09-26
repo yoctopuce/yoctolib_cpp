@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_network.h 17582 2014-09-10 17:12:40Z mvuilleu $
  *
  * Declares yFindNetwork(), the high-level API for Network functions
  *
@@ -281,37 +281,6 @@ public:
     int             set_ipConfig(const string& newval);
     inline int      setIpConfig(const string& newval)
     { return this->set_ipConfig(newval); }
-
-    /**
-     * Changes the configuration of the network interface to enable the use of an
-     * IP address received from a DHCP server. Until an address is received from a DHCP
-     * server, the module uses the IP parameters specified to this function.
-     * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
-     * 
-     * @param fallbackIpAddr : fallback IP address, to be used when no DHCP reply is received
-     * @param fallbackSubnetMaskLen : fallback subnet mask length when no DHCP reply is received, as an
-     *         integer (eg. 24 means 255.255.255.0)
-     * @param fallbackRouter : fallback router IP address, to be used when no DHCP reply is received
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             useDHCP(string fallbackIpAddr,int fallbackSubnetMaskLen,string fallbackRouter);
-
-    /**
-     * Changes the configuration of the network interface to use a static IP address.
-     * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
-     * 
-     * @param ipAddress : device IP address
-     * @param subnetMaskLen : subnet mask length, as an integer (eg. 24 means 255.255.255.0)
-     * @param router : router IP address (default gateway)
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             useStaticIP(string ipAddress,int subnetMaskLen,string router);
 
     /**
      * Returns the IP address of the primary name server to be used by the module.
@@ -733,6 +702,37 @@ public:
     using YFunction::registerValueCallback;
 
     virtual int         _invokeValueCallback(string value);
+
+    /**
+     * Changes the configuration of the network interface to enable the use of an
+     * IP address received from a DHCP server. Until an address is received from a DHCP
+     * server, the module uses the IP parameters specified to this function.
+     * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
+     * 
+     * @param fallbackIpAddr : fallback IP address, to be used when no DHCP reply is received
+     * @param fallbackSubnetMaskLen : fallback subnet mask length when no DHCP reply is received, as an
+     *         integer (eg. 24 means 255.255.255.0)
+     * @param fallbackRouter : fallback router IP address, to be used when no DHCP reply is received
+     * 
+     * @return YAPI_SUCCESS when the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         useDHCP(string fallbackIpAddr,int fallbackSubnetMaskLen,string fallbackRouter);
+
+    /**
+     * Changes the configuration of the network interface to use a static IP address.
+     * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
+     * 
+     * @param ipAddress : device IP address
+     * @param subnetMaskLen : subnet mask length, as an integer (eg. 24 means 255.255.255.0)
+     * @param router : router IP address (default gateway)
+     * 
+     * @return YAPI_SUCCESS when the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         useStaticIP(string ipAddress,int subnetMaskLen,string router);
 
     /**
      * Pings str_host to test the network connectivity. Sends four ICMP ECHO_REQUEST requests from the

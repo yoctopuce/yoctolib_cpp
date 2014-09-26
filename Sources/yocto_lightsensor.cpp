@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_lightsensor.cpp 17264 2014-08-22 10:07:43Z seb $
+ * $Id: yocto_lightsensor.cpp 17655 2014-09-16 12:24:27Z mvuilleu $
  *
  * Implements yFindLightSensor(), the high-level API for LightSensor functions
  *
@@ -107,8 +107,8 @@ int YLightSensor::calibrate(double calibratedVal)
 /**
  * Returns the type of light measure.
  * 
- * @return a value among Y_MEASURETYPE_HUMAN_EYE, Y_MEASURETYPE_WIDE_SPECTRUM, Y_MEASURETYPE_INFRARED
- * and Y_MEASURETYPE_HIGH_RATE corresponding to the type of light measure
+ * @return a value among Y_MEASURETYPE_HUMAN_EYE, Y_MEASURETYPE_WIDE_SPECTRUM, Y_MEASURETYPE_INFRARED,
+ * Y_MEASURETYPE_HIGH_RATE and Y_MEASURETYPE_HIGH_ENERGY corresponding to the type of light measure
  * 
  * On failure, throws an exception or returns Y_MEASURETYPE_INVALID.
  */
@@ -130,7 +130,7 @@ Y_MEASURETYPE_enum YLightSensor::get_measureType(void)
  * modification must be kept.
  * 
  * @param newval : a value among Y_MEASURETYPE_HUMAN_EYE, Y_MEASURETYPE_WIDE_SPECTRUM,
- * Y_MEASURETYPE_INFRARED and Y_MEASURETYPE_HIGH_RATE
+ * Y_MEASURETYPE_INFRARED, Y_MEASURETYPE_HIGH_RATE and Y_MEASURETYPE_HIGH_ENERGY
  * 
  * @return YAPI_SUCCESS if the call succeeds.
  * 

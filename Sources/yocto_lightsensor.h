@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_lightsensor.h 17264 2014-08-22 10:07:43Z seb $
+ * $Id: yocto_lightsensor.h 17655 2014-09-16 12:24:27Z mvuilleu $
  *
  * Declares yFindLightSensor(), the high-level API for LightSensor functions
  *
@@ -61,6 +61,7 @@ typedef enum {
     Y_MEASURETYPE_WIDE_SPECTRUM = 1,
     Y_MEASURETYPE_INFRARED = 2,
     Y_MEASURETYPE_HIGH_RATE = 3,
+    Y_MEASURETYPE_HIGH_ENERGY = 4,
     Y_MEASURETYPE_INVALID = -1,
 } Y_MEASURETYPE_enum;
 #endif
@@ -104,6 +105,7 @@ public:
     static const Y_MEASURETYPE_enum MEASURETYPE_WIDE_SPECTRUM = Y_MEASURETYPE_WIDE_SPECTRUM;
     static const Y_MEASURETYPE_enum MEASURETYPE_INFRARED = Y_MEASURETYPE_INFRARED;
     static const Y_MEASURETYPE_enum MEASURETYPE_HIGH_RATE = Y_MEASURETYPE_HIGH_RATE;
+    static const Y_MEASURETYPE_enum MEASURETYPE_HIGH_ENERGY = Y_MEASURETYPE_HIGH_ENERGY;
     static const Y_MEASURETYPE_enum MEASURETYPE_INVALID = Y_MEASURETYPE_INVALID;
 
     int             set_currentValue(double newval);
@@ -128,8 +130,8 @@ public:
     /**
      * Returns the type of light measure.
      * 
-     * @return a value among Y_MEASURETYPE_HUMAN_EYE, Y_MEASURETYPE_WIDE_SPECTRUM, Y_MEASURETYPE_INFRARED
-     * and Y_MEASURETYPE_HIGH_RATE corresponding to the type of light measure
+     * @return a value among Y_MEASURETYPE_HUMAN_EYE, Y_MEASURETYPE_WIDE_SPECTRUM, Y_MEASURETYPE_INFRARED,
+     * Y_MEASURETYPE_HIGH_RATE and Y_MEASURETYPE_HIGH_ENERGY corresponding to the type of light measure
      * 
      * On failure, throws an exception or returns Y_MEASURETYPE_INVALID.
      */
@@ -146,7 +148,7 @@ public:
      * modification must be kept.
      * 
      * @param newval : a value among Y_MEASURETYPE_HUMAN_EYE, Y_MEASURETYPE_WIDE_SPECTRUM,
-     * Y_MEASURETYPE_INFRARED and Y_MEASURETYPE_HIGH_RATE
+     * Y_MEASURETYPE_INFRARED, Y_MEASURETYPE_HIGH_RATE and Y_MEASURETYPE_HIGH_ENERGY
      * 
      * @return YAPI_SUCCESS if the call succeeds.
      * 

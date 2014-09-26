@@ -280,6 +280,12 @@
         <Unit filename="..\..\..\Sources\yocto_pressure.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
+        <Unit filename="..\..\..\Sources\yocto_pwminput.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_pwminput.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
         <Unit filename="..\..\..\Sources\yocto_pwmoutput.h">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>

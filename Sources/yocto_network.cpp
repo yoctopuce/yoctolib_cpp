@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.cpp 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_network.cpp 17582 2014-09-10 17:12:40Z mvuilleu $
  *
  * Implements yFindNetwork(), the high-level API for Network functions
  *
@@ -310,47 +310,6 @@ int YNetwork::set_ipConfig(const string& newval)
 {
     string rest_val;
     rest_val = newval;
-    return _setAttr("ipConfig", rest_val);
-}
-
-/**
- * Changes the configuration of the network interface to enable the use of an
- * IP address received from a DHCP server. Until an address is received from a DHCP
- * server, the module uses the IP parameters specified to this function.
- * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
- * 
- * @param fallbackIpAddr : fallback IP address, to be used when no DHCP reply is received
- * @param fallbackSubnetMaskLen : fallback subnet mask length when no DHCP reply is received, as an
- *         integer (eg. 24 means 255.255.255.0)
- * @param fallbackRouter : fallback router IP address, to be used when no DHCP reply is received
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YNetwork::useDHCP(string fallbackIpAddr,int fallbackSubnetMaskLen,string fallbackRouter)
-{
-    string rest_val;
-    char buff[128]; sprintf(buff,"DHCP:%s/%d/%s", fallbackIpAddr.c_str(), fallbackSubnetMaskLen, fallbackRouter.c_str()); rest_val = string(buff);
-    return _setAttr("ipConfig", rest_val);
-}
-
-/**
- * Changes the configuration of the network interface to use a static IP address.
- * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
- * 
- * @param ipAddress : device IP address
- * @param subnetMaskLen : subnet mask length, as an integer (eg. 24 means 255.255.255.0)
- * @param router : router IP address (default gateway)
- * 
- * @return YAPI_SUCCESS if the call succeeds.
- * 
- * On failure, throws an exception or returns a negative error code.
- */
-int YNetwork::useStaticIP(string ipAddress,int subnetMaskLen,string router)
-{
-    string rest_val;
-    char buff[128]; sprintf(buff,"STATIC:%s/%d/%s", ipAddress.c_str(), subnetMaskLen, router.c_str()); rest_val = string(buff);
     return _setAttr("ipConfig", rest_val);
 }
 
@@ -912,6 +871,43 @@ int YNetwork::_invokeValueCallback(string value)
         YFunction::_invokeValueCallback(value);
     }
     return 0;
+}
+
+/**
+ * Changes the configuration of the network interface to enable the use of an
+ * IP address received from a DHCP server. Until an address is received from a DHCP
+ * server, the module uses the IP parameters specified to this function.
+ * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
+ * 
+ * @param fallbackIpAddr : fallback IP address, to be used when no DHCP reply is received
+ * @param fallbackSubnetMaskLen : fallback subnet mask length when no DHCP reply is received, as an
+ *         integer (eg. 24 means 255.255.255.0)
+ * @param fallbackRouter : fallback router IP address, to be used when no DHCP reply is received
+ * 
+ * @return YAPI_SUCCESS when the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YNetwork::useDHCP(string fallbackIpAddr,int fallbackSubnetMaskLen,string fallbackRouter)
+{
+    return this->set_ipConfig(YapiWrapper::ysprintf("DHCP:%s/%d/%s", fallbackIpAddr.c_str(), fallbackSubnetMaskLen,fallbackRouter.c_str()));
+}
+
+/**
+ * Changes the configuration of the network interface to use a static IP address.
+ * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
+ * 
+ * @param ipAddress : device IP address
+ * @param subnetMaskLen : subnet mask length, as an integer (eg. 24 means 255.255.255.0)
+ * @param router : router IP address (default gateway)
+ * 
+ * @return YAPI_SUCCESS when the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YNetwork::useStaticIP(string ipAddress,int subnetMaskLen,string router)
+{
+    return this->set_ipConfig(YapiWrapper::ysprintf("STATIC:%s/%d/%s", ipAddress.c_str(), subnetMaskLen,router.c_str()));
 }
 
 /**

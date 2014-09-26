@@ -39,7 +39,7 @@ static int upgradeSerialList(vector<string> allserials)
                 if (module->isOnline()){
                     cout << status << "% Firmware Updated Successfully!" << endl;
                 } else {
-                    cout << status << " Firmware Update failed: module " << serial << "is not online" << endl;
+                    cout << status << " Firmware Update failed: module " << serial << " is not online" << endl;
                     exit(1);
                 }
             }
@@ -69,7 +69,7 @@ int main(int argc, const char * argv[])
             return 1;
         }
     }
-    //fist step construct the list of all hub /shield and devices connected
+    //first step construct the list of all hub /shield and devices connected
     YModule *module = YModule::FirstModule();
     while (module){
         string product = module->get_productName();
@@ -84,7 +84,7 @@ int main(int argc, const char * argv[])
         }
         module = module->nextModule();
     }
-    // fist upgrades all Hubs...
+    // first upgrades all Hubs...
     upgradeSerialList(hubs);
     // ... then all shield..
     upgradeSerialList(shield);

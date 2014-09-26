@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_wireless.h 17581 2014-09-10 17:11:45Z mvuilleu $
  *
  * Declares yFindWireless(), the high-level API for Wireless functions
  *
@@ -240,36 +240,6 @@ public:
     { return this->set_wlanConfig(newval); }
 
     /**
-     * Changes the configuration of the wireless lan interface to connect to an existing
-     * access point (infrastructure mode).
-     * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
-     * 
-     * @param ssid : the name of the network to connect to
-     * @param securityKey : the network key, as a character string
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             joinNetwork(string ssid,string securityKey);
-
-    /**
-     * Changes the configuration of the wireless lan interface to create an ad-hoc
-     * wireless network, without using an access point. If a security key is specified,
-     * the network is protected by WEP128, since WPA is not standardized for
-     * ad-hoc networks.
-     * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
-     * 
-     * @param ssid : the name of the network to connect to
-     * @param securityKey : the network key, as a character string
-     * 
-     * @return YAPI_SUCCESS if the call succeeds.
-     * 
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             adhocNetwork(string ssid,string securityKey);
-
-    /**
      * Retrieves a wireless lan interface for a given identifier.
      * The identifier can be specified using several formats:
      * <ul>
@@ -309,6 +279,62 @@ public:
     using YFunction::registerValueCallback;
 
     virtual int         _invokeValueCallback(string value);
+
+    /**
+     * Changes the configuration of the wireless lan interface to connect to an existing
+     * access point (infrastructure mode).
+     * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
+     * 
+     * @param ssid : the name of the network to connect to
+     * @param securityKey : the network key, as a character string
+     * 
+     * @return YAPI_SUCCESS when the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         joinNetwork(string ssid,string securityKey);
+
+    /**
+     * Changes the configuration of the wireless lan interface to create an ad-hoc
+     * wireless network, without using an access point. On the YoctoHub-Wireless-g,
+     * it is best to use softAPNetworkInstead(), which emulates an access point
+     * (Soft AP) which is more efficient and more widely supported than ad-hoc networks.
+     * 
+     * When a security key is specified for an ad-hoc network, the network is protected
+     * by a WEP40 key (5 characters or 10 hexadecimal digits) or WEP128 key (13 characters
+     * or 26 hexadecimal digits). It is recommended to use a well-randomized WEP128 key
+     * using 26 hexadecimal digits to maximize security.
+     * Remember to call the saveToFlash() method and then to reboot the module
+     * to apply this setting.
+     * 
+     * @param ssid : the name of the network to connect to
+     * @param securityKey : the network key, as a character string
+     * 
+     * @return YAPI_SUCCESS when the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         adhocNetwork(string ssid,string securityKey);
+
+    /**
+     * Changes the configuration of the wireless lan interface to create a new wireless
+     * network by emulating a WiFi access point (Soft AP). This function can only be
+     * used with the YoctoHub-Wireless-g.
+     * 
+     * When a security key is specified for a SoftAP network, the network is protected
+     * by a WEP40 key (5 characters or 10 hexadecimal digits) or WEP128 key (13 characters
+     * or 26 hexadecimal digits). It is recommended to use a well-randomized WEP128 key
+     * using 26 hexadecimal digits to maximize security.
+     * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
+     * 
+     * @param ssid : the name of the network to connect to
+     * @param securityKey : the network key, as a character string
+     * 
+     * @return YAPI_SUCCESS when the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         softAPNetwork(string ssid,string securityKey);
 
     /**
      * Returns a list of YWlanRecord objects that describe detected Wireless networks.

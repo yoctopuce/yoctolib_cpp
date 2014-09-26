@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.h 17469 2014-09-02 17:01:52Z mvuilleu $
+ * $Id: yocto_serialport.h 17610 2014-09-13 11:30:24Z mvuilleu $
  *
  * Declares yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -352,6 +352,17 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         writeBin(string buff);
+
+    /**
+     * Sends a byte sequence (provided as a list of bytes) to the serial port.
+     * 
+     * @param byteList : a list of byte codes
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         writeArray(vector<int> byteList);
 
     /**
      * Sends a byte sequence (provided as a hexadecimal string) to the serial port.

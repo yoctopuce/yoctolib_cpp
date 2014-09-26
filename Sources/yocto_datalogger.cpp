@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_datalogger.cpp 17191 2014-08-18 16:04:13Z seb $
+ * $Id: yocto_datalogger.cpp 17672 2014-09-16 16:15:24Z seb $
  *
  * Implements yFindDataLogger(), the high-level API for DataLogger functions
  *
@@ -592,7 +592,7 @@ int YDataLogger::set_autoStart(Y_AUTOSTART_enum newval)
 }
 
 /**
- * Return true if the data logger is synchronied with the localization beacon.
+ * Return true if the data logger is synchronised with the localization beacon.
  * 
  * @return either Y_BEACONDRIVEN_OFF or Y_BEACONDRIVEN_ON
  * 

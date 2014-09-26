@@ -56,6 +56,7 @@
 		B8A7280917E0CD3A005705C0 /* yocto_wakeupschedule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727DC17E0CD3A005705C0 /* yocto_wakeupschedule.cpp */; };
 		B8A7280A17E0CD3A005705C0 /* yocto_watchdog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727DE17E0CD3A005705C0 /* yocto_watchdog.cpp */; };
 		B8A7280B17E0CD3A005705C0 /* yocto_wireless.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727E017E0CD3A005705C0 /* yocto_wireless.cpp */; };
+		B8D7A57819D0091A00D0833E /* yocto_pwminput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8D7A57619D0091A00D0833E /* yocto_pwminput.cpp */; };
 		B8DB382B18C0D5FB00CD54ED /* yocto_accelerometer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8DB381F18C0D5FB00CD54ED /* yocto_accelerometer.cpp */; };
 		B8DB382C18C0D5FB00CD54ED /* yocto_compass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8DB382118C0D5FB00CD54ED /* yocto_compass.cpp */; };
 		B8DB382D18C0D5FB00CD54ED /* yocto_gyro.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8DB382318C0D5FB00CD54ED /* yocto_gyro.cpp */; };
@@ -174,6 +175,8 @@
 		B8A727DF17E0CD3A005705C0 /* yocto_watchdog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_watchdog.h; path = ../../../Sources/yocto_watchdog.h; sourceTree = "<group>"; };
 		B8A727E017E0CD3A005705C0 /* yocto_wireless.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_wireless.cpp; path = ../../../Sources/yocto_wireless.cpp; sourceTree = "<group>"; };
 		B8A727E117E0CD3A005705C0 /* yocto_wireless.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_wireless.h; path = ../../../Sources/yocto_wireless.h; sourceTree = "<group>"; };
+		B8D7A57619D0091A00D0833E /* yocto_pwminput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_pwminput.cpp; path = ../../../Sources/yocto_pwminput.cpp; sourceTree = "<group>"; };
+		B8D7A57719D0091A00D0833E /* yocto_pwminput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_pwminput.h; path = ../../../Sources/yocto_pwminput.h; sourceTree = "<group>"; };
 		B8DB381F18C0D5FB00CD54ED /* yocto_accelerometer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_accelerometer.cpp; path = ../../../Sources/yocto_accelerometer.cpp; sourceTree = "<group>"; };
 		B8DB382018C0D5FB00CD54ED /* yocto_accelerometer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_accelerometer.h; path = ../../../Sources/yocto_accelerometer.h; sourceTree = "<group>"; };
 		B8DB382118C0D5FB00CD54ED /* yocto_compass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_compass.cpp; path = ../../../Sources/yocto_compass.cpp; sourceTree = "<group>"; };
@@ -258,6 +261,8 @@
 				B8A727CB17E0CD3A005705C0 /* yocto_power.h */,
 				B8A727CC17E0CD3A005705C0 /* yocto_pressure.cpp */,
 				B8A727CD17E0CD3A005705C0 /* yocto_pressure.h */,
+				B8D7A57619D0091A00D0833E /* yocto_pwminput.cpp */,
+				B8D7A57719D0091A00D0833E /* yocto_pwminput.h */,
 				B82F4E8718C9D62A009320CE /* yocto_pwmoutput.cpp */,
 				B82F4E8818C9D62A009320CE /* yocto_pwmoutput.h */,
 				B82F4E8918C9D62A009320CE /* yocto_pwmpowersource.cpp */,
@@ -451,6 +456,7 @@
 				B8989EB3191BEAF600E2585B /* yocto_altitude.cpp in Sources */,
 				B8989EB6191BEB0900E2585B /* yocto_motor.cpp in Sources */,
 				B8F2FD5F19B4C4E1005F9AE9 /* yocto_serialport.cpp in Sources */,
+				B8D7A57819D0091A00D0833E /* yocto_pwminput.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,13 +1,13 @@
 # *********************************************************************
 #
 #  $Id: httpsupport.h 2196 2011-07-28 15:58:38Z seb $
-# 
+#
 #  GNU Makefile for linux and Mac OS X
-# 
+#
 #  - - - - - - - - - License information: - - - - - - - - -
-# 
+#
 #  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
-# 
+#
 #  1) If you have obtained this file from www.yoctopuce.com using
 #     a valid customer account established in your proper name,
 #     Yoctopuce Sarl (hereafter Licensor) licenses to you (hereafter
@@ -15,11 +15,11 @@
 #     source file into your own solution for the sole purpose of
 #     interfacing a Yoctopuce product integrated into Licensee's
 #     solution.
-# 
+#
 #     You should refer to the license agreement accompanying this
 #     Software for additional information regarding your rights
 #     and obligations.
-# 
+#
 #     THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
 #     WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
 #     WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
@@ -32,11 +32,11 @@
 #     CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
 #     BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
 #     WARRANTY, OR OTHERWISE.
-# 
+#
 #  2) If you have obtained this file from any other source, you
 #     are not entitled to use it, read it or create any derived
 #     material. You should delete this file immediately.
-# 
+#
 # ********************************************************************
 
 UNAME := $(shell uname)
@@ -91,7 +91,7 @@ CPP_OSX = g++
 #generic flags
 OPTS_DBG = -g -Wall
 OPTS_PROD = -O2 -Wall
-OPTS_STAT = 
+OPTS_STAT =
 OPTS_DYN = -fPIC
 
 # most compatible ARMEL options, using soft-float
@@ -106,18 +106,18 @@ OPTS_OSX =
 
 
 #link optionsfor each arch
-LINKWITH_I386 = -lm -lpthread -lusb-1.0 
-LINKWITH_X64 = -lm -lpthread -lusb-1.0 
-LINKWITH_ARMEL = -lm -lpthread -lusb-1.0 
-LINKWITH_ARMHF = -lm -lpthread -lusb-1.0 
-LINKWITH_MIPS = -L$(MIPS_TARGET_ROOT)/usr/lib/ -lm -lpthread -lusb-1.0 
+LINKWITH_I386 = -lm -lpthread -lusb-1.0
+LINKWITH_X64 = -lm -lpthread -lusb-1.0
+LINKWITH_ARMEL = -lm -lpthread -lusb-1.0
+LINKWITH_ARMHF = -lm -lpthread -lusb-1.0
+LINKWITH_MIPS = -L$(MIPS_TARGET_ROOT)/usr/lib/ -lm -lpthread -lusb-1.0
 LINKWITH_OSX =
 
-YAPI_LINKWITH_I386 = -lpthread -lusb-1.0 
-YAPI_LINKWITH_X64 = -lpthread -lusb-1.0 
-YAPI_LINKWITH_ARMEL = -lpthread -lusb-1.0 
-YAPI_LINKWITH_ARMHF = -lpthread -lusb-1.0 
-YAPI_LINKWITH_MIPS = -L$(MIPS_TARGET_ROOT)/usr/lib/ -lpthread -lusb-1.0 
+YAPI_LINKWITH_I386 = -lpthread -lusb-1.0
+YAPI_LINKWITH_X64 = -lpthread -lusb-1.0
+YAPI_LINKWITH_ARMEL = -lpthread -lusb-1.0
+YAPI_LINKWITH_ARMHF = -lpthread -lusb-1.0
+YAPI_LINKWITH_MIPS = -L$(MIPS_TARGET_ROOT)/usr/lib/ -lpthread -lusb-1.0
 YAPI_LINKWITH_OSX =
 
 
@@ -133,7 +133,7 @@ LIBS_OSX    = $(DIR_OSX)libyocto-static.a  $(YAPI_DIR_OSX)libyapi-static.a $(DIR
 
 
 
-#define all object needed 
+#define all object needed
 SOURCES_DIR = ../Sources/
 
 YOCTO_API_OBJS_STAT = yocto_api.o yocto_anbutton.o yocto_carbondioxide.o yocto_colorled.o yocto_current.o yocto_datalogger.o yocto_display.o \
@@ -141,7 +141,8 @@ YOCTO_API_OBJS_STAT = yocto_api.o yocto_anbutton.o yocto_carbondioxide.o yocto_c
 	yocto_network.o yocto_oscontrol.o yocto_power.o yocto_pressure.o yocto_realtimeclock.o yocto_relay.o yocto_servo.o \
 	yocto_temperature.o yocto_voc.o yocto_voltage.o yocto_wakeupmonitor.o yocto_wakeupschedule.o yocto_watchdog.o \
 	yocto_wireless.o yocto_digitalio.o yocto_accelerometer.o yocto_magnetometer.o yocto_refframe.o yocto_tilt.o \
-	yocto_compass.o yocto_gyro.o yocto_pwmoutput.o yocto_pwmpowersource.o yocto_altitude.o yocto_motor.o yocto_serialport.o
+	yocto_compass.o yocto_gyro.o yocto_pwmoutput.o yocto_pwmpowersource.o yocto_altitude.o yocto_motor.o yocto_serialport.o \
+	yocto_pwminput.o
 
 YOCTO_API_OBJS_DYN  = $(patsubst %.o, %_dyn.o,$(YOCTO_API_OBJS_STAT))
 
@@ -193,99 +194,99 @@ fwd: default
 
 #generic compilation rules
 $(OBJDIR_I386)%.o: %.c $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CC_I386) $(OPTS_I386) $(OPTS_PROD) $(OPTS_STAT) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_I386)%.o: %.cpp $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CPP_I386) $(OPTS_I386) $(OPTS_PROD) $(OPTS_STAT) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_I386)%_dyn.o: %.c $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CC_I386) $(OPTS_I386) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_I386)%_dyn.o: %.cpp $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CPP_I386) $(OPTS_I386) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_X64)%.o: %.c $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CC_X64) $(OPTS_X64) $(OPTS_PROD) $(OPTS_STAT) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_X64)%.o: %.cpp $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CPP_X64) $(OPTS_X64) $(OPTS_PROD) $(OPTS_STAT) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_X64)%_dyn.o: %.c $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CC_X64) $(OPTS_X64) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_X64)%_dyn.o: %.cpp $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CPP_X64) $(OPTS_X64) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_ARMEL)%.o: %.c $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CC_ARMEL) $(OPTS_ARMEL) $(OPTS_PROD) $(OPTS_STAT) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_ARMEL)%.o: %.cpp $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CPP_ARMEL) $(OPTS_ARMEL) $(OPTS_PROD) $(OPTS_STAT) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_ARMEL)%_dyn.o: %.c $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CC_ARMEL) $(OPTS_ARMEL) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_ARMEL)%_dyn.o: %.cpp $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CPP_ARMEL) $(OPTS_ARMEL) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_ARMHF)%.o: %.c $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CC_ARMHF) $(OPTS_ARMHF) $(OPTS_PROD) $(OPTS_STAT) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_ARMHF)%.o: %.cpp $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CPP_ARMHF) $(OPTS_ARMHF) $(OPTS_PROD) $(OPTS_STAT) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_ARMHF)%_dyn.o: %.c $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CC_ARMHF) $(OPTS_ARMHF) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_ARMHF)%_dyn.o: %.cpp $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CPP_ARMHF) $(OPTS_ARMHF) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_MIPS)%.o: %.c $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CC_MIPS) $(OPTS_MIPS) $(OPTS_PROD) $(OPTS_STAT) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_MIPS)%.o: %.cpp $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CPP_MIPS) $(OPTS_MIPS) $(OPTS_PROD) $(OPTS_STAT) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_MIPS)%_dyn.o: %.c $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CC_MIPS) $(OPTS_MIPS) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_MIPS)%_dyn.o: %.cpp $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CPP_MIPS) $(OPTS_MIPS) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_OSX)%.o: %.c $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CC_OSX) $(OPTS_OSX) $(OPTS_PROD) $(OPTS_STAT) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_OSX)%.o: %.cpp $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CPP_OSX) $(OPTS_OSX) $(OPTS_PROD) $(OPTS_STAT) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_OSX)%_dyn.o: %.c $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CC_OSX) $(OPTS_OSX) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_OSX)%_dyn.o: %.cpp $(ALL_H)
-	@echo compiling $@ 
+	@echo compiling $@
 	@$(CPP_OSX) $(OPTS_OSX) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
 
 fwd: default
@@ -294,16 +295,16 @@ fwd: default
 $(DIR_I386)libyocto-static.a: $(OBJDIR_I386) $(ALL_OBJS_STAT_I386) $(ALL_H)
 	@rm -rf $@
 	@echo linking $@
-	@ar rcs $@  $(ALL_OBJS_STAT_I386) 
+	@ar rcs $@  $(ALL_OBJS_STAT_I386)
 
 $(YAPI_DIR_I386)libyapi-static.a: $(OBJDIR_I386) $(YAPI_DIR_I386) $(YAPI_OBJS_STAT_I386) $(ALL_H)
 	@rm -rf $@
 	@echo linking $@
-	@ar rcs $@  $(YAPI_OBJS_STAT_I386) 
+	@ar rcs $@  $(YAPI_OBJS_STAT_I386)
 
 $(DIR_I386)libyocto.so.1.0.1: $(OBJDIR_I386) $(ALL_OBJS_DYN_I386) $(ALL_H)
 	@echo linking $@
-	@$(CPP_I386) $(OPTS_I386) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_I386) $(LINKWITH_I386)	
+	@$(CPP_I386) $(OPTS_I386) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_I386) $(LINKWITH_I386)
 
 $(YAPI_DIR_I386)libyapi.so.1.0.1: $(OBJDIR_I386) $(YAPI_DIR_I386) $(YAPI_OBJS_DYN_I386) $(ALL_H)
 	@echo linking $@
@@ -313,16 +314,16 @@ $(YAPI_DIR_I386)libyapi.so.1.0.1: $(OBJDIR_I386) $(YAPI_DIR_I386) $(YAPI_OBJS_DY
 $(DIR_X64)libyocto-static.a: $(OBJDIR_X64) $(ALL_OBJS_STAT_X64) $(ALL_H)
 	@rm -rf $@
 	@echo linking $@
-	@ar rcs $@  $(ALL_OBJS_STAT_X64) 
+	@ar rcs $@  $(ALL_OBJS_STAT_X64)
 
 $(YAPI_DIR_X64)libyapi-static.a: $(OBJDIR_X64) $(YAPI_DIR_X64) $(YAPI_OBJS_STAT_X64) $(ALL_H)
 	@rm -rf $@
 	@echo linking $@
-	@ar rcs $@  $(YAPI_OBJS_STAT_X64) 
+	@ar rcs $@  $(YAPI_OBJS_STAT_X64)
 
 $(DIR_X64)libyocto.so.1.0.1: $(OBJDIR_X64) $(ALL_OBJS_DYN_X64) $(ALL_H)
 	@echo linking $@
-	@$(CPP_X64) $(OPTS_X64) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_X64) $(LINKWITH_X64)	
+	@$(CPP_X64) $(OPTS_X64) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_X64) $(LINKWITH_X64)
 
 $(YAPI_DIR_X64)libyapi.so.1.0.1: $(OBJDIR_X64) $(YAPI_DIR_X64) $(YAPI_OBJS_DYN_X64) $(ALL_H)
 	@echo linking $@
@@ -332,16 +333,16 @@ $(YAPI_DIR_X64)libyapi.so.1.0.1: $(OBJDIR_X64) $(YAPI_DIR_X64) $(YAPI_OBJS_DYN_X
 $(DIR_ARMEL)libyocto-static.a: $(OBJDIR_ARMEL) $(ALL_OBJS_STAT_ARMEL) $(ALL_H)
 	@rm -rf $@
 	@echo linking $@
-	@ar rcs $@  $(ALL_OBJS_STAT_ARMEL) 
+	@ar rcs $@  $(ALL_OBJS_STAT_ARMEL)
 
 $(YAPI_DIR_ARMEL)libyapi-static.a: $(OBJDIR_ARMEL) $(YAPI_DIR_ARMEL) $(YAPI_OBJS_STAT_ARMEL) $(ALL_H)
 	@rm -rf $@
 	@echo linking $@
-	@ar rcs $@  $(YAPI_OBJS_STAT_ARMEL) 
+	@ar rcs $@  $(YAPI_OBJS_STAT_ARMEL)
 
 $(DIR_ARMEL)libyocto.so.1.0.1: $(OBJDIR_ARMEL) $(ALL_OBJS_DYN_ARMEL) $(ALL_H)
 	@echo linking $@
-	@$(CPP_ARMEL) $(OPTS_ARMEL) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_ARMEL) $(LINKWITH_ARMEL)	
+	@$(CPP_ARMEL) $(OPTS_ARMEL) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_ARMEL) $(LINKWITH_ARMEL)
 
 $(YAPI_DIR_ARMEL)libyapi.so.1.0.1: $(OBJDIR_ARMEL) $(YAPI_DIR_ARMEL) $(YAPI_OBJS_DYN_ARMEL) $(ALL_H)
 	@echo linking $@
@@ -351,16 +352,16 @@ $(YAPI_DIR_ARMEL)libyapi.so.1.0.1: $(OBJDIR_ARMEL) $(YAPI_DIR_ARMEL) $(YAPI_OBJS
 $(DIR_ARMHF)libyocto-static.a: $(OBJDIR_ARMHF) $(ALL_OBJS_STAT_ARMHF) $(ALL_H)
 	@rm -rf $@
 	@echo linking $@
-	@ar rcs $@  $(ALL_OBJS_STAT_ARMHF) 
+	@ar rcs $@  $(ALL_OBJS_STAT_ARMHF)
 
 $(YAPI_DIR_ARMHF)libyapi-static.a: $(OBJDIR_ARMHF) $(YAPI_DIR_ARMHF) $(YAPI_OBJS_STAT_ARMHF) $(ALL_H)
 	@rm -rf $@
 	@echo linking $@
-	@ar rcs $@  $(YAPI_OBJS_STAT_ARMHF) 
+	@ar rcs $@  $(YAPI_OBJS_STAT_ARMHF)
 
 $(DIR_ARMHF)libyocto.so.1.0.1: $(OBJDIR_ARMHF) $(ALL_OBJS_DYN_ARMHF) $(ALL_H)
 	@echo linking $@
-	@$(CPP_ARMHF) $(OPTS_ARMHF) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_ARMHF) $(LINKWITH_ARMHF)	
+	@$(CPP_ARMHF) $(OPTS_ARMHF) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_ARMHF) $(LINKWITH_ARMHF)
 
 $(YAPI_DIR_ARMHF)libyapi.so.1.0.1: $(OBJDIR_ARMHF) $(YAPI_DIR_ARMHF) $(YAPI_OBJS_DYN_ARMHF) $(ALL_H)
 	@echo linking $@
@@ -370,16 +371,16 @@ $(YAPI_DIR_ARMHF)libyapi.so.1.0.1: $(OBJDIR_ARMHF) $(YAPI_DIR_ARMHF) $(YAPI_OBJS
 $(DIR_MIPS)libyocto-static.a: $(OBJDIR_MIPS) $(ALL_OBJS_STAT_MIPS) $(ALL_H)
 	@rm -rf $@
 	@echo linking $@
-	@ar rcs $@  $(ALL_OBJS_STAT_MIPS) 
+	@ar rcs $@  $(ALL_OBJS_STAT_MIPS)
 
 $(YAPI_DIR_MIPS)libyapi-static.a: $(OBJDIR_MIPS) $(YAPI_DIR_MIPS) $(YAPI_OBJS_STAT_MIPS) $(ALL_H)
 	@rm -rf $@
 	@echo linking $@
-	@ar rcs $@  $(YAPI_OBJS_STAT_MIPS) 
+	@ar rcs $@  $(YAPI_OBJS_STAT_MIPS)
 
 $(DIR_MIPS)libyocto.so.1.0.1: $(OBJDIR_MIPS) $(ALL_OBJS_DYN_MIPS) $(ALL_H)
 	@echo linking $@
-	@$(CPP_MIPS) $(OPTS_MIPS) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_MIPS) $(LINKWITH_MIPS)	
+	@$(CPP_MIPS) $(OPTS_MIPS) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_MIPS) $(LINKWITH_MIPS)
 
 $(YAPI_DIR_MIPS)libyapi.so.1.0.1: $(OBJDIR_MIPS) $(YAPI_DIR_MIPS) $(YAPI_OBJS_DYN_MIPS) $(ALL_H)
 	@echo linking $@
@@ -389,21 +390,20 @@ $(YAPI_DIR_MIPS)libyapi.so.1.0.1: $(OBJDIR_MIPS) $(YAPI_DIR_MIPS) $(YAPI_OBJS_DY
 $(DIR_OSX)libyocto-static.a: $(OBJDIR_OSX) $(ALL_OBJS_STAT_OSX) $(ALL_H)
 	@rm -rf $@
 	@echo linking $@
-	@ar rcs $@  $(ALL_OBJS_STAT_OSX) 
+	@ar rcs $@  $(ALL_OBJS_STAT_OSX)
 
 $(YAPI_DIR_OSX)libyapi-static.a: $(OBJDIR_OSX) $(YAPI_DIR_OSX) $(YAPI_OBJS_STAT_OSX) $(ALL_H)
 	@rm -rf $@
 	@echo linking $@
-	@ar rcs $@  $(YAPI_OBJS_STAT_OSX) 
+	@ar rcs $@  $(YAPI_OBJS_STAT_OSX)
 
 $(DIR_OSX)libyocto.dylib: $(DIR_OSX) $(ALL_OBJS_DYN_OSX) $(ALL_H)
 	@echo linking $@
-	@$(CPP_OSX)  -m64 -dynamiclib -Wl,-reexport_framework,IOKit,-reexport_framework,CoreFoundation,-headerpad_max_install_names,-undefined,dynamic_lookup,-compatibility_version,1.0,-current_version,1.0,-install_name,/usr/local/lib/libyocto.dylib -o $@ $(ALL_OBJS_DYN_OSX) 
+	@$(CPP_OSX)  -m64 -dynamiclib -Wl,-reexport_framework,IOKit,-reexport_framework,CoreFoundation,-headerpad_max_install_names,-undefined,dynamic_lookup,-compatibility_version,1.0,-current_version,1.0,-install_name,/usr/local/lib/libyocto.dylib -o $@ $(ALL_OBJS_DYN_OSX)
 
 $(YAPI_DIR_OSX)libyapi.dylib: $(DIR_OSX) $(YAPI_OBJS_DYN_OSX) $(ALL_H)
 	@echo linking $@
-	@$(CC_OSX} -m64 -dynamiclib -Wl,-reexport_framework,IOKit,-reexport_framework,CoreFoundation,-headerpad_max_install_names,-undefined,dynamic_lookup,-compatibility_version,1.0,-current_version,1.0,-install_name,/usr/local/lib/libyapi.dylib -o $@ $(YAPI_OBJS_DYN_OSX) 
-
+	@$(CC_OSX) -m64 -dynamiclib -Wl,-reexport_framework,IOKit,-reexport_framework,CoreFoundation,-headerpad_max_install_names,-undefined,dynamic_lookup,-compatibility_version,1.0,-current_version,1.0,-install_name,/usr/local/lib/libyapi.dylib -o $@ $(YAPI_OBJS_DYN_OSX)	
 
 i386: $(LIBS_I386)
 
@@ -464,7 +464,7 @@ else
 default: osx
 
 release: release_osx
-	
+
 endif
 
 
@@ -509,5 +509,5 @@ clean_mips: clean_obj_mips
 clean_osx: clean_obj_osx
 	@rm -rf $(DIR_OSX)
 
-clean_all: clean_i386 clean_x64 clean_armel clean_armhf clean_mips clean_osx 
+clean_all: clean_i386 clean_x64 clean_armel clean_armhf clean_mips clean_osx
 

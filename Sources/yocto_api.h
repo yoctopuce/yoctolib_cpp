@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 17508 2014-09-04 08:56:04Z seb $
+ * $Id: yocto_api.h 17816 2014-09-24 14:47:30Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -294,7 +294,7 @@ public:
     static const u32 DETECT_ALL  = (Y_DETECT_USB | Y_DETECT_NET);
 
 //--- (generated code: YFunction return codes)
-    static const int SUCCESS               = 0;       // everything worked allright
+    static const int SUCCESS               = 0;       // everything worked all right
     static const int NOT_INITIALIZED       = -1;      // call yInitAPI() first !
     static const int INVALID_ARGUMENT      = -2;      // one of the arguments passed to the function is invalid
     static const int NOT_SUPPORTED         = -3;      // the operation attempted is (currently) not supported
@@ -304,10 +304,11 @@ public:
     static const int TIMEOUT               = -7;      // the device took too long to provide an answer
     static const int IO_ERROR              = -8;      // there was an I/O problem while talking to the device
     static const int NO_MORE_DATA          = -9;      // there is no more data to read from
-    static const int EXHAUSTED             = -10;     // you have run out of a limited ressource, check the documentation
-    static const int DOUBLE_ACCES          = -11;     // you have two process that try to acces to the same device
+    static const int EXHAUSTED             = -10;     // you have run out of a limited resource, check the documentation
+    static const int DOUBLE_ACCES          = -11;     // you have two process that try to access to the same device
     static const int UNAUTHORIZED          = -12;     // unauthorized access to password-protected device
     static const int RTC_NOT_READY         = -13;     // real-time clock has not been initialized (or time was lost)
+    static const int FILE_NOT_FOUND        = -14;     // the file is not found
 //--- (end of generated code: YFunction return codes)
 
 
@@ -474,7 +475,7 @@ public:
      * If access control has been activated on the hub, virtual or not, you want to
      * reach, the URL parameter should look like:
      * 
-     * http://username:password@adresse:port
+     * http://username:password@address:port
      * 
      * You can call <i>RegisterHub</i> several times to connect to several machines.
      * 
@@ -612,23 +613,11 @@ public:
 
 //--- (generated code: YFirmwareUpdate declaration)
 /**
- * YFirmwareUpdate Class: Recorded data sequence
+ * YFirmwareUpdate Class: Control interface for the firmware update process
  * 
- * YDataSet objects make it possible to retrieve a set of recorded measures
- * for a given sensor and a specified time interval. They can be used
- * to load data points with a progress report. When the YDataSet object is
- * instanciated by the get_recordedData()  function, no data is
- * yet loaded from the module. It is only when the loadMore()
- * method is called over and over than data will be effectively loaded
- * from the dataLogger.
- * 
- * A preview of available measures is available using the function
- * get_preview() as soon as loadMore() has been called
- * once. Measures themselves are available using function get_measures()
- * when loaded by subsequent calls to loadMore().
- * 
- * This class can only be used on devices that use a recent firmware,
- * as YDataSet objects are not supported by firmwares older than version 13000.
+ * The YFirmwareUpdate class let you control the firmware update of a Yoctopuce
+ * module. This class should not be instantiate directly, instead the method
+ * updateFirmware should be called to get an instance of YFirmwareUpdate.
  */
 class YOCTO_CLASS_EXPORT YFirmwareUpdate {
 #ifdef __BORLANDC__
@@ -652,36 +641,27 @@ public:
     //--- (generated code: YFirmwareUpdate accessors declaration)
 
 
-    virtual int         processMore(int newupdate);
+    virtual int         _processMore(int newupdate);
 
-    /**
-     * Returns the progress of the downloads of the measures from the data logger,
-     * on a scale from 0 to 100. When the object is instanciated by get_dataSet,
-     * the progress is zero. Each time loadMore() is invoked, the progress
-     * is updated, to reach the value 100 only once all measures have been loaded.
-     * 
-     * @return an integer in the range 0 to 100 (percentage of completion).
-     */
     virtual int         get_progress(void);
 
     /**
-     * Returns the progress of the downloads of the measures from the data logger,
-     * on a scale from 0 to 100. When the object is instanciated by get_dataSet,
-     * the progress is zero. Each time loadMore() is invoked, the progress
-     * is updated, to reach the value 100 only once all measures have been loaded.
+     * Returns the last progress message of the firmware update process. If an error occur during the
+     * firmware update process the error message is returned
      * 
-     * @return an integer in the range 0 to 100 (percentage of completion).
+     * @return an string  with the last progress message, or the error message.
      */
     virtual string      get_progressMessage(void);
 
     /**
-     * Loads the the next block of measures from the dataLogger, and updates
-     * the progress indicator.
+     * Start the firmware update process. This method start the firmware update process in background. This method
+     * return immediately. The progress of the firmware update can be monitored with methods get_progress()
+     * and get_progressMessage().
      * 
      * @return an integer in the range 0 to 100 (percentage of completion),
      *         or a negative error code in case of failure.
      * 
-     * On failure, throws an exception or returns a negative error code.
+     * On failure returns a negative error code.
      */
     virtual int         startUpdate(void);
 
@@ -1044,7 +1024,7 @@ public:
  * YDataSet objects make it possible to retrieve a set of recorded measures
  * for a given sensor and a specified time interval. They can be used
  * to load data points with a progress report. When the YDataSet object is
- * instanciated by the get_recordedData()  function, no data is
+ * instantiated by the get_recordedData()  function, no data is
  * yet loaded from the module. It is only when the loadMore()
  * method is called over and over than data will be effectively loaded
  * from the dataLogger.
@@ -1153,7 +1133,7 @@ public:
 
     /**
      * Returns the progress of the downloads of the measures from the data logger,
-     * on a scale from 0 to 100. When the object is instanciated by get_dataSet,
+     * on a scale from 0 to 100. When the object is instantiated by get_dataSet,
      * the progress is zero. Each time loadMore() is invoked, the progress
      * is updated, to reach the value 100 only once all measures have been loaded.
      * 
@@ -1533,7 +1513,7 @@ public:
      * Returns a global identifier of the function in the format MODULE_NAME&#46;FUNCTION_NAME.
      * The returned string uses the logical names of the module and of the function if they are defined,
      * otherwise the serial number of the module and the hardware identifier of the function
-     * (for exemple: MyCustomName.relay1)
+     * (for example: MyCustomName.relay1)
      * 
      * @return a string that uniquely identifies the function using logical names
      *         (ex: MyCustomName.relay1)
@@ -1569,7 +1549,7 @@ public:
      * This method is mostly useful when using the Yoctopuce library with
      * exceptions disabled.
      * 
-     * @return a number corresponding to the code of the latest error that occured while
+     * @return a number corresponding to the code of the latest error that occurred while
      *         using the function object
      */
            YRETCODE    get_errorType(void);
@@ -1608,7 +1588,7 @@ public:
      * By default, whenever accessing a device, all function attributes
      * are kept in cache for the standard duration (5 ms). This method can be
      * used to temporarily mark the cache as valid for a longer period, in order
-     * to reduce network trafic for instance.
+     * to reduce network traffic for instance.
      * 
      * @param msValidity : an integer corresponding to the validity attributed to the
      *         loaded function parameters, in milliseconds
@@ -1724,7 +1704,7 @@ public:
      * Returns a global identifier of the function in the format MODULE_NAME&#46;FUNCTION_NAME.
      * The returned string uses the logical names of the module and of the function if they are defined,
      * otherwise the serial number of the module and the hardware identifier of the function
-     * (for exemple: MyCustomName.relay1)
+     * (for example: MyCustomName.relay1)
      * 
      * @return a string that uniquely identifies the function using logical names
      *         (ex: MyCustomName.relay1)
@@ -2843,7 +2823,7 @@ inline void yRegisterCalibrationHandler(int calibrationType, yCalibrationHandler
  * If access control has been activated on the hub, virtual or not, you want to
  * reach, the URL parameter should look like:
  * 
- * http://username:password@adresse:port
+ * http://username:password@address:port
  * 
  * You can call <i>RegisterHub</i> several times to connect to several machines.
  * 

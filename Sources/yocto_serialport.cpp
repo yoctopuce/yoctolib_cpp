@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 17494 2014-09-03 16:14:56Z seb $
+ * $Id: yocto_serialport.cpp 17777 2014-09-23 08:33:15Z seb $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -480,7 +480,7 @@ int YSerialPort::writeStr(string text)
         }
     }
     // send string using file upload
-    return this->_upload("txdata.bin", buff);
+    return this->_upload("txdata", buff);
 }
 
 /**
@@ -494,7 +494,36 @@ int YSerialPort::writeStr(string text)
  */
 int YSerialPort::writeBin(string buff)
 {
-    return this->_upload("txdata.bin", buff);
+    return this->_upload("txdata", buff);
+}
+
+/**
+ * Sends a byte sequence (provided as a list of bytes) to the serial port.
+ * 
+ * @param byteList : a list of byte codes
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YSerialPort::writeArray(vector<int> byteList)
+{
+    string buff;
+    int bufflen = 0;
+    int idx = 0;
+    int hexb = 0;
+    int res = 0;
+    bufflen = (int)byteList.size();
+    buff = string(bufflen, (char)0);
+    idx = 0;
+    while (idx < bufflen) {
+        hexb = byteList[idx];
+        buff[idx] = hexb;
+        idx = idx + 1;
+    }
+    // may throw an exception
+    res = this->_upload("txdata", buff);
+    return res;
 }
 
 /**
@@ -513,7 +542,7 @@ int YSerialPort::writeHex(string hexString)
     int idx = 0;
     int hexb = 0;
     int res = 0;
-    bufflen = (int)(hexString).size();
+    bufflen = (int)(hexString).length();
     if (bufflen < 100) {
         return this->sendCommand(YapiWrapper::ysprintf("$%s",hexString.c_str()));
     }
@@ -526,7 +555,7 @@ int YSerialPort::writeHex(string hexString)
         idx = idx + 1;
     }
     // may throw an exception
-    res = this->_upload("txdata.bin", buff);
+    res = this->_upload("txdata", buff);
     return res;
 }
 
@@ -564,7 +593,7 @@ int YSerialPort::writeLine(string text)
         }
     }
     // send string using file upload
-    return this->_upload("txdata.bin", buff);
+    return this->_upload("txdata", buff);
 }
 
 /**
@@ -879,7 +908,7 @@ vector<int> YSerialPort::queryMODBUS(int slaveNo,vector<int> pduBytes)
     }
     if ((int)reps.size() > 1) {
         rep = this->_json_get_string(reps[0]);
-        replen = (((int)(rep).size() - 3) >> (1));
+        replen = (((int)(rep).length() - 3) >> (1));
         i = 0;
         while (i < replen) {
             hexb = (int)strtoul((rep).substr(2 * i + 3, 2).c_str(), NULL, 16);

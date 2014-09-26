@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 17477 2014-09-03 08:36:33Z seb $
+ * $Id: yproto.h 17782 2014-09-23 13:31:15Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -687,6 +687,8 @@ typedef struct _TcpReqSt {
 typedef struct {
     char  *serial;
     char  *firmwarePath;
+    u8    *settings;
+    int   settings_len;
     yThread     thread;
     int         global_progress; //-1:error 0-99:working 100:success
 } FUpdateContext;

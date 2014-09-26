@@ -1,2 +1,11 @@
-- Add firmware upgrade API
-- Fix possible TCP disconnection with persistent connections
+- Add YPwmInput class to support Yocto-PWM-Rx
+- Add YSerialPort class to support Yocto-RS232
+- Add support for MODBUS devices using SerialPort class
+- Add support for SoftAP mode in the library
+- Add get_allSettings and set_allSettings method in YModule
+- Add checkFirmware and updateFirmware method in YModule
+- Add high energy mode for Yocto-Light-V2
+- Fix possible problem with saving of calibration settings
+- Fix possible TCP disconnection with all YoctoHub
+- Change frequency attribute of YMotor and YPwmOutput is now a double
+- minor fixes and improvement

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_anbutton.cpp 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_anbutton.cpp 17672 2014-09-16 16:15:24Z seb $
  *
  * Implements yFindAnButton(), the high-level API for AnButton functions
  *
@@ -340,11 +340,11 @@ Y_ISPRESSED_enum YAnButton::get_isPressed(void)
 
 /**
  * Returns the number of elapsed milliseconds between the module power on and the last time
- * the input button was pressed (the input contact transitionned from open to closed).
+ * the input button was pressed (the input contact transitioned from open to closed).
  * 
  * @return an integer corresponding to the number of elapsed milliseconds between the module power on
  * and the last time
- *         the input button was pressed (the input contact transitionned from open to closed)
+ *         the input button was pressed (the input contact transitioned from open to closed)
  * 
  * On failure, throws an exception or returns Y_LASTTIMEPRESSED_INVALID.
  */
@@ -360,11 +360,11 @@ s64 YAnButton::get_lastTimePressed(void)
 
 /**
  * Returns the number of elapsed milliseconds between the module power on and the last time
- * the input button was released (the input contact transitionned from closed to open).
+ * the input button was released (the input contact transitioned from closed to open).
  * 
  * @return an integer corresponding to the number of elapsed milliseconds between the module power on
  * and the last time
- *         the input button was released (the input contact transitionned from closed to open)
+ *         the input button was released (the input contact transitioned from closed to open)
  * 
  * On failure, throws an exception or returns Y_LASTTIMERELEASED_INVALID.
  */

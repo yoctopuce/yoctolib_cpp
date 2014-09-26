@@ -32,7 +32,7 @@ int main(int argc, const char * argv[])
             return 1;
         }
     }
-
+    
     int slave, reg, val;
     string cmd;
     do {
@@ -73,6 +73,7 @@ int main(int argc, const char * argv[])
             }
         }
     }
+
     YAPI::FreeAPI();
     return 0;
 }

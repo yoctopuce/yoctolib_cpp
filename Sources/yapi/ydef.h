@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 17301 2014-08-26 08:37:56Z seb $
+ * $Id: ydef.h 17671 2014-09-16 16:13:48Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -328,7 +328,7 @@ void yDeleteCriticalSection(yCRITICAL_SECTION *cs);
 
 
 typedef enum {
-    YAPI_SUCCESS          = 0,      // everything worked allright
+    YAPI_SUCCESS          = 0,      // everything worked all right
     YAPI_NOT_INITIALIZED  = -1,     // call yInitAPI() first !
     YAPI_INVALID_ARGUMENT = -2,     // one of the arguments passed to the function is invalid
     YAPI_NOT_SUPPORTED    = -3,     // the operation attempted is (currently) not supported
@@ -338,10 +338,11 @@ typedef enum {
     YAPI_TIMEOUT          = -7,     // the device took too long to provide an answer
     YAPI_IO_ERROR         = -8,     // there was an I/O problem while talking to the device
     YAPI_NO_MORE_DATA     = -9,     // there is no more data to read from
-    YAPI_EXHAUSTED        = -10,    // you have run out of a limited ressource, check the documentation
-    YAPI_DOUBLE_ACCES     = -11,    // you have two process that try to acces to the same device
+    YAPI_EXHAUSTED        = -10,    // you have run out of a limited resource, check the documentation
+    YAPI_DOUBLE_ACCES     = -11,    // you have two process that try to access to the same device
     YAPI_UNAUTHORIZED     = -12,    // unauthorized access to password-protected device
-    YAPI_RTC_NOT_READY    = -13     // real-time clock has not been initialized (or time was lost)
+    YAPI_RTC_NOT_READY    = -13,    // real-time clock has not been initialized (or time was lost)
+    YAPI_FILE_NOT_FOUND   = -14     // the file is not found
 } YRETCODE;
 
 #define YISERR(retcode)   ((retcode) < 0)
@@ -818,7 +819,7 @@ typedef union {
 #define GET_PROG_POS_PAGENO(PKT_EXT, PAGENO, POS)  {\
                                 POS = (PKT_EXT).dwordpos_lo + (((u16)(PKT_EXT).misc_hi << 2) & 0x300);\
                                 PAGENO = (PKT_EXT).pageno_lo + (((u16)(PKT_EXT).misc_hi & 0x3f) << 8);}
-#endif           
+#endif
 
 
 

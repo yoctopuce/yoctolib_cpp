@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 17486 2014-09-03 14:33:17Z seb $
+ * $Id: yapi.c 17811 2014-09-24 09:22:12Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -3055,44 +3055,11 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetBootloadersDevs(char *serials,unsigned int 
 typedef struct _fullAttrInfo {
     char        func[32];
     char        attr[32];
-    char        value[64];
+    char        value[256];
 } fullAttrInfo;
 
-const char* blacklist[] = {
-    "firmwareRelease",
-    "usbCurrent",
-    "upTime",
-    "persistentSettings",
-    "adminPassword",
-    "userPassword",
-    "rebootCountdown",
-    "advertisedValue",
-    "poeCurrent",
-    "readiness",
-    "ipAddress",
-    "subnetMask",
-    "router",
-    "linkQuality",
-    "ssid",
-    "channel",
-    "security",
-    "message",
-    "currentValue",
-    "currentRawValue",
-    "currentRunIndex",
-    "pulseTimer",
-    "lastTimePressed",
-    "lastTimeReleased",
-    "filesCount",
-    "freeSpace",
-    "timeUTC",
-    "rtcTime",
-    "unixTime",
-    "dateTime",
-    "rawValue"
-};
 
-static fullAttrInfo* parseSettings(const char *settings, int *count, char *errmsg)
+static fullAttrInfo* parseSettings(const char *settings, int *count)
 {
     yJsonStateMachine j;
     int               nbAttr=0,allocAttr=0;
@@ -3113,7 +3080,6 @@ static fullAttrInfo* parseSettings(const char *settings, int *count, char *errms
         if (YSTRCMP(j.token, "services") == 0){
             yJsonSkip(&j, 1);
         } else{
-
             if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
                 nbAttr = -1;
                 goto exit;
@@ -3124,24 +3090,34 @@ static fullAttrInfo* parseSettings(const char *settings, int *count, char *errms
                     nbAttr = -1;
                     goto exit;
                 }
-                if (nbAttr == allocAttr) {
-                    //grow the buffer
-                    fullAttrInfo     *tmp = attrBuff;
-                    if (allocAttr){
-                        allocAttr *= 2;
-                    } else {
-                        allocAttr = 64;
+
+                if (j.st != YJSON_PARSE_STRUCT) {
+                    if (nbAttr == allocAttr) {
+                        //grow the buffer
+                        fullAttrInfo     *tmp = attrBuff;
+                        if (allocAttr){
+                            allocAttr *= 2;
+                        } else {
+                            allocAttr = 64;
+                        }
+                        attrBuff = yMalloc(allocAttr * sizeof(fullAttrInfo));
+                        if (tmp) {
+                            memcpy(attrBuff, tmp, nbAttr * sizeof(fullAttrInfo));
+                            yFree(tmp);
+                        }
                     }
-                    attrBuff = yMalloc(allocAttr * sizeof(fullAttrInfo));
-                    if (tmp) {
-                        memcpy(attrBuff, tmp, nbAttr * sizeof(fullAttrInfo));
-                        yFree(tmp);
+                    YSTRCPY(attrBuff[nbAttr].func, 32, func);
+                    YSTRCPY(attrBuff[nbAttr].attr, 32, attr);
+                    YSPRINTF(attrBuff[nbAttr].value, 256, "%s", j.token);
+                    while (j.next == YJSON_PARSE_STRINGCONT && yJsonParse(&j) == YJSON_PARSE_AVAIL) {
+                        YSTRCAT(attrBuff[nbAttr].value, 256, j.token);
                     }
+                    nbAttr++;
+                } else {
+                    do {
+                        yJsonParse(&j);
+                    } while (j.st != YJSON_PARSE_STRUCT);
                 }
-                YSTRCPY(attrBuff[nbAttr].func, 32, func);
-                YSTRCPY(attrBuff[nbAttr].attr, 32, attr);
-                YSPRINTF(attrBuff[nbAttr].value, 64, "%s", j.token);
-                nbAttr++;
             }
             if (j.st != YJSON_PARSE_STRUCT){
                 nbAttr = -1;
@@ -3155,7 +3131,7 @@ static fullAttrInfo* parseSettings(const char *settings, int *count, char *errms
     }
 exit:
     *count = nbAttr;
-    if (nbAttr < 0 && attrBuff){
+    if (nbAttr < 0 && attrBuff) {
         yFree(attrBuff);
         attrBuff = NULL;
     }
@@ -3173,7 +3149,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetAllJsonKeys(const char *json_buffer, char *
     int             len, avail;
     const char      *sep = "";
 
-    attrs = parseSettings(json_buffer, &attrs_count, errmsg);
+    attrs = parseSettings(json_buffer, &attrs_count);
     if (!attrs) {
         return YERR(YAPI_IO_ERROR);
     }
@@ -3186,8 +3162,8 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetAllJsonKeys(const char *json_buffer, char *
     totalsize++;
 
     for (j = 0; j < attrs_count; j++) {
-        char tmpbuf[512];
-        len = YSPRINTF(tmpbuf, 512, "%s\"%s/%s=%s\"", sep, attrs[j].func, attrs[j].attr, attrs[j].value);
+        char tmpbuf[1024];
+        len = YSPRINTF(tmpbuf, 1024, "%s\"%s/%s=%s\"", sep, attrs[j].func, attrs[j].attr, attrs[j].value);
         if (len < 0) {
             yFree(attrs);
             return YERR(YAPI_IO_ERROR);
@@ -3290,6 +3266,7 @@ YRETCODE YAPI_FUNCTION_EXPORT __stdcall vb6_yapiSleep(int duration_ms, char *err
 u64 YAPI_FUNCTION_EXPORT __stdcall vb6_yapiGetTickCount(void);
 int YAPI_FUNCTION_EXPORT __stdcall vb6_yapiCheckLogicalName(const char *name);
 u16 YAPI_FUNCTION_EXPORT __stdcall vb6_yapiGetAPIVersion(BSTR *version, BSTR *apidate);
+u16 YAPI_FUNCTION_EXPORT __stdcall vb6_yapiGetAPIVersionEx(char *version, char *apidate);
 void YAPI_FUNCTION_EXPORT __stdcall vb6_yapiSetTraceFile(const char *file);
 YAPI_DEVICE YAPI_FUNCTION_EXPORT __stdcall vb6_yapiGetDevice(const char *device_str,char *errmsg);
 int YAPI_FUNCTION_EXPORT __stdcall vb6_yapiGetAllDevices(YAPI_DEVICE *buffer,int maxsize,int *neededsize,char *errmsg);
@@ -3462,6 +3439,7 @@ void yapiRegisterTimedReportCallbackFWD(YAPI_FUNCTION fundesc, double timestamp,
     if (vb6_yapiRegisterTimedReportCallbackFWD)
         vb6_yapiRegisterTimedReportCallbackFWD(fundesc, timestamp, bytes, len);
 }
+
 void YAPI_FUNCTION_EXPORT __stdcall vb6_yapiRegisterTimedReportCallback(vb6_yapiTimedReportCallback timedReportCallback)
 {
     vb6_yapiRegisterTimedReportCallbackFWD = timedReportCallback;
@@ -3536,14 +3514,20 @@ u16 YAPI_FUNCTION_EXPORT __stdcall vb6_yapiGetAPIVersion(BSTR *version, BSTR *ap
 {
     const char * versionA, *apidateA;
     u16 res = yapiGetAPIVersion(&versionA, &apidateA);
-    if (vb6_version == NULL || vb6_apidate == NULL) {
-        vb6_version = newBSTR(versionA);
-        vb6_apidate = newBSTR(apidateA);
-    }
-    *version = vb6_version;
-    *apidate = vb6_apidate;
+    *version = newBSTR(versionA);
+    *apidate = newBSTR(apidateA);
     return res;
 }
+
+u16 YAPI_FUNCTION_EXPORT __stdcall vb6_yapiGetAPIVersionEx(char *version, char *apidate)
+{
+    const char * versionA, *apidateA;
+    u16 res = yapiGetAPIVersion(&versionA, &apidateA);
+    YSTRCPY(version, YOCTO_ERRMSG_LEN, versionA);
+    YSTRCPY(apidate, YOCTO_ERRMSG_LEN, apidateA);
+    return res;
+}
+
 
 void YAPI_FUNCTION_EXPORT __stdcall vb6_yapiSetTraceFile(const char *file)
 {

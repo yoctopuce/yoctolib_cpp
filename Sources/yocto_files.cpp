@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.cpp 17229 2014-08-20 12:20:06Z seb $
+ * $Id: yocto_files.cpp 17672 2014-09-16 16:15:24Z seb $
  *
  * Implements yFindFiles(), the high-level API for Files functions
  *
@@ -260,7 +260,7 @@ string YFiles::sendCommand(string command)
 }
 
 /**
- * Reinitializes the filesystem to its clean, unfragmented, empty state.
+ * Reinitialize the filesystem to its clean, unfragmented, empty state.
  * All files previously uploaded are permanently lost.
  * 
  * @return YAPI_SUCCESS if the call succeeds.
