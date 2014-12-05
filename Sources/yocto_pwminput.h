@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: pic24config.php 17551 2014-09-09 09:06:04Z mvuilleu $
+ * $Id: yocto_pwminput.h 18361 2014-11-13 08:06:41Z mvuilleu $
  *
  * Declares yFindPwmInput(), the high-level API for PwmInput functions
  *
@@ -64,7 +64,6 @@ typedef enum {
     Y_PWMREPORTMODE_INVALID = -1,
 } Y_PWMREPORTMODE_enum;
 #endif
-
 #define Y_DUTYCYCLE_INVALID             (YAPI_INVALID_DOUBLE)
 #define Y_PULSEDURATION_INVALID         (YAPI_INVALID_DOUBLE)
 #define Y_FREQUENCY_INVALID             (YAPI_INVALID_DOUBLE)
@@ -176,7 +175,7 @@ public:
     /**
      * Returns the pulse counter value. Actually that
      * counter is incremented twice per period. That counter is
-     * limited  to 1 billions
+     * limited  to 1 billion
      * 
      * @return an integer corresponding to the pulse counter value
      * 
@@ -219,10 +218,10 @@ public:
     { return this->get_pwmReportMode(); }
 
     /**
-     * Modify the  parameter  type(frequency/duty cycle, pulse width ou edge count) returned by the
+     * Modifies the  parameter  type (frequency/duty cycle, pulse width, or edge count) returned by the
      * get_currentValue function and callbacks.
-     * The edge count value will be limited to the 6 lowest digit, for values greater than one million,
-     * use get_pulseCounter().
+     * The edge count value is limited to the 6 lowest digits. For values greater than one million, use
+     * get_pulseCounter().
      * 
      * @param newval : a value among Y_PWMREPORTMODE_PWM_DUTYCYCLE, Y_PWMREPORTMODE_PWM_FREQUENCY,
      * Y_PWMREPORTMODE_PWM_PULSEDURATION and Y_PWMREPORTMODE_PWM_EDGECOUNT
@@ -236,7 +235,7 @@ public:
     { return this->set_pwmReportMode(newval); }
 
     /**
-     * Retrieves a voltage sensor for a given identifier.
+     * Retrieves a PWM input for a given identifier.
      * The identifier can be specified using several formats:
      * <ul>
      * <li>FunctionLogicalName</li>
@@ -246,17 +245,17 @@ public:
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
      * 
-     * This function does not require that the voltage sensor is online at the time
+     * This function does not require that the PWM input is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YPwmInput.isOnline() to test if the voltage sensor is
+     * Use the method YPwmInput.isOnline() to test if the PWM input is
      * indeed online at a given time. In case of ambiguity when looking for
-     * a voltage sensor by logical name, no error is notified: the first instance
+     * a PWM input by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
      * 
-     * @param func : a string that uniquely characterizes the voltage sensor
+     * @param func : a string that uniquely characterizes the PWM input
      * 
-     * @return a YPwmInput object allowing you to drive the voltage sensor.
+     * @return a YPwmInput object allowing you to drive the PWM input.
      */
     static YPwmInput*   FindPwmInput(string func);
 
@@ -293,7 +292,7 @@ public:
     virtual int         _invokeTimedReportCallback(YMeasure value);
 
     /**
-     * Returns the pulse counter value as well as his timer
+     * Returns the pulse counter value as well as its timer.
      * 
      * @return YAPI_SUCCESS if the call succeeds.
      * 
@@ -306,23 +305,23 @@ public:
     { return YPwmInput::FindPwmInput(func); }
 
     /**
-     * Continues the enumeration of voltage sensors started using yFirstPwmInput().
+     * Continues the enumeration of PWM inputs started using yFirstPwmInput().
      * 
      * @return a pointer to a YPwmInput object, corresponding to
-     *         a voltage sensor currently online, or a null pointer
-     *         if there are no more voltage sensors to enumerate.
+     *         a PWM input currently online, or a null pointer
+     *         if there are no more PWM inputs to enumerate.
      */
            YPwmInput       *nextPwmInput(void);
     inline YPwmInput       *next(void)
     { return this->nextPwmInput();}
 
     /**
-     * Starts the enumeration of voltage sensors currently accessible.
+     * Starts the enumeration of PWM inputs currently accessible.
      * Use the method YPwmInput.nextPwmInput() to iterate on
-     * next voltage sensors.
+     * next PWM inputs.
      * 
      * @return a pointer to a YPwmInput object, corresponding to
-     *         the first voltage sensor currently online, or a null pointer
+     *         the first PWM input currently online, or a null pointer
      *         if there are none.
      */
            static YPwmInput* FirstPwmInput(void);
@@ -337,7 +336,7 @@ public:
 //--- (PwmInput functions declaration)
 
 /**
- * Retrieves a voltage sensor for a given identifier.
+ * Retrieves a PWM input for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -347,27 +346,27 @@ public:
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  * 
- * This function does not require that the voltage sensor is online at the time
+ * This function does not require that the PWM input is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YPwmInput.isOnline() to test if the voltage sensor is
+ * Use the method YPwmInput.isOnline() to test if the PWM input is
  * indeed online at a given time. In case of ambiguity when looking for
- * a voltage sensor by logical name, no error is notified: the first instance
+ * a PWM input by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  * 
- * @param func : a string that uniquely characterizes the voltage sensor
+ * @param func : a string that uniquely characterizes the PWM input
  * 
- * @return a YPwmInput object allowing you to drive the voltage sensor.
+ * @return a YPwmInput object allowing you to drive the PWM input.
  */
 inline YPwmInput* yFindPwmInput(const string& func)
 { return YPwmInput::FindPwmInput(func);}
 /**
- * Starts the enumeration of voltage sensors currently accessible.
+ * Starts the enumeration of PWM inputs currently accessible.
  * Use the method YPwmInput.nextPwmInput() to iterate on
- * next voltage sensors.
+ * next PWM inputs.
  * 
  * @return a pointer to a YPwmInput object, corresponding to
- *         the first voltage sensor currently online, or a null pointer
+ *         the first PWM input currently online, or a null pointer
  *         if there are none.
  */
 inline YPwmInput* yFirstPwmInput(void)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: pic24config.php 17551 2014-09-09 09:06:04Z mvuilleu $
+ * $Id: yocto_pwminput.cpp 18361 2014-11-13 08:06:41Z mvuilleu $
  *
  * Implements yFindPwmInput(), the high-level API for PwmInput functions
  *
@@ -63,7 +63,7 @@ YPwmInput::YPwmInput(const string& func): YSensor(func)
     _className="PwmInput";
 }
 
-YPwmInput::~YPwmInput() 
+YPwmInput::~YPwmInput()
 {
 //--- (YPwmInput cleanup)
 //--- (end of YPwmInput cleanup)
@@ -189,7 +189,7 @@ double YPwmInput::get_period(void)
 /**
  * Returns the pulse counter value. Actually that
  * counter is incremented twice per period. That counter is
- * limited  to 1 billions
+ * limited  to 1 billion
  * 
  * @return an integer corresponding to the pulse counter value
  * 
@@ -250,10 +250,10 @@ Y_PWMREPORTMODE_enum YPwmInput::get_pwmReportMode(void)
 }
 
 /**
- * Modify the  parameter  type(frequency/duty cycle, pulse width ou edge count) returned by the
+ * Modifies the  parameter  type (frequency/duty cycle, pulse width, or edge count) returned by the
  * get_currentValue function and callbacks.
- * The edge count value will be limited to the 6 lowest digit, for values greater than one million,
- * use get_pulseCounter().
+ * The edge count value is limited to the 6 lowest digits. For values greater than one million, use
+ * get_pulseCounter().
  * 
  * @param newval : a value among Y_PWMREPORTMODE_PWM_DUTYCYCLE, Y_PWMREPORTMODE_PWM_FREQUENCY,
  * Y_PWMREPORTMODE_PWM_PULSEDURATION and Y_PWMREPORTMODE_PWM_EDGECOUNT
@@ -376,7 +376,7 @@ int YPwmInput::_invokeTimedReportCallback(YMeasure value)
 }
 
 /**
- * Returns the pulse counter value as well as his timer
+ * Returns the pulse counter value as well as its timer.
  * 
  * @return YAPI_SUCCESS if the call succeeds.
  * 
@@ -390,7 +390,7 @@ int YPwmInput::resetCounter(void)
 YPwmInput *YPwmInput::nextPwmInput(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -402,7 +402,7 @@ YPwmInput* YPwmInput::FirstPwmInput(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("PwmInput", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

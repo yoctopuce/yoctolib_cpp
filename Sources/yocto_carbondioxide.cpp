@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_carbondioxide.cpp 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_carbondioxide.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *
@@ -56,7 +56,7 @@ YCarbonDioxide::YCarbonDioxide(const string& func): YSensor(func)
     _className="CarbonDioxide";
 }
 
-YCarbonDioxide::~YCarbonDioxide() 
+YCarbonDioxide::~YCarbonDioxide()
 {
 //--- (YCarbonDioxide cleanup)
 //--- (end of YCarbonDioxide cleanup)
@@ -174,7 +174,7 @@ int YCarbonDioxide::_invokeTimedReportCallback(YMeasure value)
 YCarbonDioxide *YCarbonDioxide::nextCarbonDioxide(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -186,7 +186,7 @@ YCarbonDioxide* YCarbonDioxide::FirstCarbonDioxide(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("CarbonDioxide", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

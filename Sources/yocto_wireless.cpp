@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.cpp 17594 2014-09-10 21:15:55Z mvuilleu $
+ * $Id: yocto_wireless.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindWireless(), the high-level API for Wireless functions
  *
@@ -452,7 +452,7 @@ vector<YWlanRecord> YWireless::get_detectedWlans(void)
 YWireless *YWireless::nextWireless(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -464,7 +464,7 @@ YWireless* YWireless::FirstWireless(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("Wireless", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

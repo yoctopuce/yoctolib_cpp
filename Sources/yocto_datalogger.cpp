@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_datalogger.cpp 17672 2014-09-16 16:15:24Z seb $
+ * $Id: yocto_datalogger.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindDataLogger(), the high-level API for DataLogger functions
  *
@@ -764,7 +764,7 @@ vector<YDataSet> YDataLogger::parse_dataSets(string json)
 YDataLogger *YDataLogger::nextDataLogger(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -776,7 +776,7 @@ YDataLogger* YDataLogger::FirstDataLogger(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("DataLogger", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.cpp 16895 2014-07-18 00:12:08Z mvuilleu $
+ * $Id: yocto_gyro.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindGyro(), the high-level API for Gyro functions
  *
@@ -176,7 +176,7 @@ int YQt::_invokeTimedReportCallback(YMeasure value)
 YQt *YQt::nextQt(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -188,7 +188,7 @@ YQt* YQt::FirstQt(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("Qt", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {
@@ -739,7 +739,7 @@ int YGyro::_invokeGyroCallbacks(int qtIndex,double qtValue)
 YGyro *YGyro::nextGyro(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -751,7 +751,7 @@ YGyro* YGyro::FirstGyro(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("Gyro", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 17782 2014-09-23 13:31:15Z seb $
+ * $Id: yproto.h 18619 2014-12-02 17:23:47Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -206,6 +206,7 @@ int ymemfind(const u8 *haystack, u32 haystack_len, const u8 *needle, u32 needle_
 //#define TRACE_NET_HUB
 //#define DEBUG_TRACE_FILE "c:\\tmp\\tracefile.txt"
 //#define DEBUG_TCP
+//#define DEBUG_MISSING_PACKET
 
 #define MSC_VS2003 1310
 
@@ -685,12 +686,15 @@ typedef struct _TcpReqSt {
 
 
 typedef struct {
-    char  *serial;
-    char  *firmwarePath;
-    u8    *settings;
-    int   settings_len;
+    char        *serial;
+    char        *firmwarePath;
+    u8          *settings;
+    int         settings_len;
     yThread     thread;
     int         global_progress; //-1:error 0-99:working 100:success
+    char        global_message[YOCTO_ERRMSG_LEN]; // the last message or the error
+    const char* fileid;
+    int         line;
 } FUpdateContext;
 
 
@@ -838,6 +842,6 @@ int  yUsbReadBlock(YIOHDL *ioghdl, char *buffer, int len,u64 blockUntil,char *er
 int  yUsbEOF(YIOHDL *ioghdl,char *errmsg);
 int  yUsbClose(YIOHDL *ioghdl,char *errmsg);
 
+YRETCODE yapiGetBootloadersDevs(char *serials, unsigned int maxNbSerial, unsigned int *totalBootladers, char *errmsg);
 int  yUSBGetBooloader(const char *serial, const char * name,  yInterfaceSt *iface,char *errmsg);
-
 #endif

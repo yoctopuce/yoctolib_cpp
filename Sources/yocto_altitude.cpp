@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_altitude.cpp 16895 2014-07-18 00:12:08Z mvuilleu $
+ * $Id: yocto_altitude.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindAltitude(), the high-level API for Altitude functions
  *
@@ -57,7 +57,7 @@ YAltitude::YAltitude(const string& func): YSensor(func)
     _className="Altitude";
 }
 
-YAltitude::~YAltitude() 
+YAltitude::~YAltitude()
 {
 //--- (YAltitude cleanup)
 //--- (end of YAltitude cleanup)
@@ -243,7 +243,7 @@ int YAltitude::_invokeTimedReportCallback(YMeasure value)
 YAltitude *YAltitude::nextAltitude(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -255,7 +255,7 @@ YAltitude* YAltitude::FirstAltitude(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("Altitude", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

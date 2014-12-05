@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 17811 2014-09-24 09:22:12Z seb $
+ * $Id: ystream.c 18076 2014-10-17 07:27:04Z seb $
  *
  * USB multi-interface stream implementation
  *
@@ -1033,12 +1033,71 @@ static YRETCODE yPktQueuePop(pktQueue *q,pktItem **pkt,char * errmsg)
 }
 
 
+static void yPktQueueDup(pktQueue *q, const char *file, int line)
+{
+    int verifcount = 0;
+    int last_pktno = -1;
+    pktItem *pkt;
+
+    yEnterCriticalSection(&q->cs);
+    dbglogf(file, line, "PKTs: %dpkts (%lld in / %lld out)\n", q->count, q->totalPush, q->totalPop);
+    dbglogf(file, line, "PKTs: start %x stop =%X\n", q->first, q->last);
+    if (q->status != YAPI_SUCCESS) {
+        dbglogf(file, line, "PKTs: state = %s\n", q->status, q->errmsg);
+    }
+    pkt = q->first;
+    if (pkt != NULL){
+        if (last_pktno >= 0){
+            if (last_pktno == 7) {
+                if (pkt->pkt.first_stream.pktno){
+                    dbglogf(file, line, "PKTs: invalid pkt %d (no=%d should be 0\n", verifcount, pkt->pkt.first_stream.pktno);
+                }
+            } else {
+                if (last_pktno + 1 != pkt->pkt.first_stream.pktno){
+                    dbglogf(file, line, "PKTs: invalid pkt %d (no=%d should be %d\n", verifcount, pkt->pkt.first_stream.pktno, last_pktno + 1);
+                }
+            }
+        }
+
+        verifcount++;
+        last_pktno = pkt->pkt.first_stream.pktno;
+        pkt = pkt->next;
+    }
+    if (verifcount != q->count) {
+        dbglogf(file, line, "PKTs: invalid pkt count has %d report %d\n", verifcount, q->count);
+    }
+    yLeaveCriticalSection(&q->cs);
+}
+
 
 YRETCODE  yPktQueuePushD2H(yInterfaceSt *iface,const USB_Packet *pkt, char * errmsg)
 {
 #ifdef DUMP_USB_PKT_SHORT
     dumpPktSummary(iface->serial, iface->ifaceno,1,pkt);
 #endif
+#ifdef DEBUG_MISSING_PACKET
+    {
+        int mustdump = 0;
+        yEnterCriticalSection(&iface->rxQueue.cs);
+        if (pkt->first_stream.pkt != YPKT_CONF) {
+            pktItem *p = iface->rxQueue.last;
+            if (p != NULL && p->pkt.first_stream.pkt == YPKT_CONF) {
+                int pktno = p->pkt.first_stream.pktno + 1;
+                if (pktno > 7)
+                    pktno = 0;
+                if (pkt->first_stream.pktno != pktno) {
+                    dbglog("mssing packet on push (need %d received %d)\n", pktno, pkt->first_stream.pktno );
+                    mustdump++;
+                }
+            }
+        }
+        yLeaveCriticalSection(&iface->rxQueue.cs);
+        if (mustdump) {
+            yPktQueueDup(&iface->rxQueue, __FILE_ID__, __LINE__);
+        }
+    }
+#endif
+
     return yPktQueuePushEx(&iface->rxQueue,pkt,errmsg);
 }
 
@@ -1107,8 +1166,6 @@ YRETCODE yPktQueuePopH2D(yInterfaceSt *iface,pktItem **pkt)
 }
 
 
-
-
 /*****************************************************************************
   yyPACKET ioFUNCTIONS
   ***************************************************************************/
@@ -1121,7 +1178,7 @@ YRETCODE yyySendPacket( yInterfaceSt *iface,const USB_Packet *pkt,char *errmsg)
     res = yPktQueuePushH2D(iface,pkt,errmsg);
     yyySignalOutPkt(iface);
     res= yPktQueueWaitEmptyH2D(iface,1000,errmsg);
-    if(YISERR(res)){
+    if (YISERR(res)) {
         return (YRETCODE) res;
     }else if(res>0){
         return YAPI_SUCCESS;
@@ -1163,7 +1220,7 @@ static int yyWaitOnlyConfPkt(yInterfaceSt *iface, u8 cmdtowait,pktItem **rpkt,u3
             dropcount++;
             yFree(tmp);
         }
-    }while(timeout> yapiGetTickCount());
+    } while(timeout> yapiGetTickCount());
 
     return YERR(YAPI_TIMEOUT);
 }
@@ -1324,10 +1381,6 @@ error:
     return res;
 }
 
-
-
-
-
 // Trigger a non blocking read
 static int yGetNextPktEx(yPrivDeviceSt *dev, pktItem **pkt_out,u64 blockUntilTime,char *errmsg)
 {
@@ -1377,12 +1430,8 @@ again:
 #endif
             return YAPI_SUCCESS;
         } else {
+            yPktQueueDup(&iface->rxQueue, __FILE_ID__, __LINE__);
             return YERRMSG(YAPI_IO_ERROR,"Missing Packet");
-        }
-    } else {
-        // no packet
-        if (dev->infos.nbinbterfaces > 1) {
-            // FIXME: look on next interface if we have misses only one packet
         }
     }
     return YAPI_SUCCESS;

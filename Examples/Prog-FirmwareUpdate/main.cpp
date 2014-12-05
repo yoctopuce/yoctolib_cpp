@@ -74,11 +74,11 @@ int main(int argc, const char * argv[])
     while (module){
         string product = module->get_productName();
         string serial  = module->get_serialNumber();
-        if (product == "YoctoHub-Ethernet" || product == "YoctoHub-Wireless" || product == "YoctoHub-Wireless-SR")
+        if (product == "YoctoHub-Shield") {
+            shield.push_back(serial);
+        } else if (product.substr(0,9) == "YoctoHub-")
         {
             hubs.push_back(serial);
-        } else if (product == "YoctoHub-Shield" ) {
-            shield.push_back(serial);
         } else if (product != "VirtualHub"){
             devices.push_back(serial);
         }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_servo.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_servo.h 18320 2014-11-10 10:47:48Z seb $
  *
  * Declares yFindServo(), the high-level API for Servo functions
  *
@@ -60,7 +60,6 @@ typedef enum {
     Y_ENABLED_INVALID = -1,
 } Y_ENABLED_enum;
 #endif
-
 #ifndef _CLASS_YMOVE
 #define _CLASS_YMOVE
 class YOCTO_CLASS_EXPORT YMove {
@@ -86,7 +85,6 @@ typedef enum {
     Y_ENABLEDATPOWERON_INVALID = -1,
 } Y_ENABLEDATPOWERON_enum;
 #endif
-
 #define Y_POSITION_INVALID              (YAPI_INVALID_INT)
 #define Y_RANGE_INVALID                 (YAPI_INVALID_UINT)
 #define Y_NEUTRAL_INVALID               (YAPI_INVALID_UINT)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.h 17610 2014-09-13 11:30:24Z mvuilleu $
+ * $Id: yocto_serialport.h 18262 2014-11-05 14:22:14Z seb $
  *
  * Declares yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -57,8 +57,10 @@ typedef void (*YSerialPortValueCallback)(YSerialPort *func, const string& functi
 #define Y_RXCOUNT_INVALID               (YAPI_INVALID_UINT)
 #define Y_TXCOUNT_INVALID               (YAPI_INVALID_UINT)
 #define Y_ERRCOUNT_INVALID              (YAPI_INVALID_UINT)
-#define Y_MSGCOUNT_INVALID              (YAPI_INVALID_UINT)
+#define Y_RXMSGCOUNT_INVALID            (YAPI_INVALID_UINT)
+#define Y_TXMSGCOUNT_INVALID            (YAPI_INVALID_UINT)
 #define Y_LASTMSG_INVALID               (YAPI_INVALID_STRING)
+#define Y_STARTUPJOB_INVALID            (YAPI_INVALID_STRING)
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 //--- (end of YSerialPort definitions)
 
@@ -85,8 +87,10 @@ protected:
     int             _rxCount;
     int             _txCount;
     int             _errCount;
-    int             _msgCount;
+    int             _rxMsgCount;
+    int             _txMsgCount;
     string          _lastMsg;
+    string          _startupJob;
     string          _command;
     YSerialPortValueCallback _valueCallbackSerialPort;
     int             _rxptr;
@@ -110,8 +114,10 @@ public:
     static const int RXCOUNT_INVALID = YAPI_INVALID_UINT;
     static const int TXCOUNT_INVALID = YAPI_INVALID_UINT;
     static const int ERRCOUNT_INVALID = YAPI_INVALID_UINT;
-    static const int MSGCOUNT_INVALID = YAPI_INVALID_UINT;
+    static const int RXMSGCOUNT_INVALID = YAPI_INVALID_UINT;
+    static const int TXMSGCOUNT_INVALID = YAPI_INVALID_UINT;
     static const string LASTMSG_INVALID;
+    static const string STARTUPJOB_INVALID;
     static const string COMMAND_INVALID;
 
     /**
@@ -229,12 +235,24 @@ public:
      * 
      * @return an integer corresponding to the total number of messages received since last reset
      * 
-     * On failure, throws an exception or returns Y_MSGCOUNT_INVALID.
+     * On failure, throws an exception or returns Y_RXMSGCOUNT_INVALID.
      */
-    int                 get_msgCount(void);
+    int                 get_rxMsgCount(void);
 
-    inline int          msgCount(void)
-    { return this->get_msgCount(); }
+    inline int          rxMsgCount(void)
+    { return this->get_rxMsgCount(); }
+
+    /**
+     * Returns the total number of messages send since last reset.
+     * 
+     * @return an integer corresponding to the total number of messages send since last reset
+     * 
+     * On failure, throws an exception or returns Y_TXMSGCOUNT_INVALID.
+     */
+    int                 get_txMsgCount(void);
+
+    inline int          txMsgCount(void)
+    { return this->get_txMsgCount(); }
 
     /**
      * Returns the latest message fully received (for Line, Frame and Modbus protocols).
@@ -247,6 +265,33 @@ public:
 
     inline string       lastMsg(void)
     { return this->get_lastMsg(); }
+
+    /**
+     * Returns the job file to use when the device is powered on.
+     * 
+     * @return a string corresponding to the job file to use when the device is powered on
+     * 
+     * On failure, throws an exception or returns Y_STARTUPJOB_INVALID.
+     */
+    string              get_startupJob(void);
+
+    inline string       startupJob(void)
+    { return this->get_startupJob(); }
+
+    /**
+     * Changes the job to use when the device is powered on.
+     * Remember to call the saveToFlash() method of the module if the
+     * modification must be kept.
+     * 
+     * @param newval : a string corresponding to the job to use when the device is powered on
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_startupJob(const string& newval);
+    inline int      setStartupJob(const string& newval)
+    { return this->set_startupJob(newval); }
 
     string              get_command(void);
 
@@ -427,8 +472,8 @@ public:
 
     /**
      * Reads a single line (or message) from the receive buffer, starting at current stream position.
-     * This function can only be used when the serial port is configured for a message protocol,
-     * such as 'Line' mode or MODBUS protocols. It does not  work in plain stream modes, eg. 'Char' or 'Byte').
+     * This function is intended to be used when the serial port is configured for a message protocol,
+     * such as 'Line' mode or MODBUS protocols.
      * 
      * If data at current stream position is not available anymore in the receive buffer,
      * the function returns the oldest available line and moves the stream position just after.
@@ -442,9 +487,8 @@ public:
 
     /**
      * Searches for incoming messages in the serial port receive buffer matching a given pattern,
-     * starting at current position. This function can only be used when the serial port is
-     * configured for a message protocol, such as 'Line' mode or MODBUS protocols.
-     * It does not work in plain stream modes, eg. 'Char' or 'Byte', for which there is no "start" of message.
+     * starting at current position. This function will only compare and return printable characters
+     * in the message strings. Binary protocols are handled as hexadecimal strings.
      * 
      * The search returns all messages matching the expression provided as argument in the buffer.
      * If no matching message is found, the search waits for one up to the specified maximum timeout
@@ -469,15 +513,22 @@ public:
      * does not affect the device, it only changes the value stored in the YSerialPort object
      * for the next read operations.
      * 
-     * @param rxCountVal : the absolute position index (value of rxCount) for next read operations.
+     * @param absPos : the absolute position index for next read operations.
      * 
      * @return nothing.
      */
-    virtual int         read_seek(int rxCountVal);
+    virtual int         read_seek(int absPos);
+
+    /**
+     * Returns the current absolute stream position pointer of the YSerialPort object.
+     * 
+     * @return the absolute position index for next read operations.
+     */
+    virtual int         read_tell(void);
 
     /**
      * Sends a text line query to the serial port, and reads the reply, if any.
-     * This function can only be used when the serial port is configured for 'Line' protocol.
+     * This function is intended to be used when the serial port is configured for 'Line' protocol.
      * 
      * @param query : the line query to send (without CR/LF)
      * @param maxWait : the maximum number of milliseconds to wait for a reply.
@@ -631,6 +682,32 @@ public:
      * On failure, throws an exception or returns an empty array.
      */
     virtual vector<int> modbusWriteAndReadRegisters(int slaveNo,int pduWriteAddr,vector<int> values,int pduReadAddr,int nReadWords);
+
+    /**
+     * Saves the job definition string (JSON data) into a job file.
+     * The job file can be later enabled using selectJob().
+     * 
+     * @param jobfile : name of the job file to save on the device filesystem
+     * @param jsonDef : a string containing a JSON definition of the job
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         uploadJob(string jobfile,string jsonDef);
+
+    /**
+     * Load and start processing the specified job file. The file must have
+     * been previously created using the user interface or uploaded on the
+     * device filesystem using the uploadJob() function.
+     * 
+     * @param jobfile : name of the job file (on the device filesystem)
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         selectJob(string jobfile);
 
 
     inline static YSerialPort* Find(string func)

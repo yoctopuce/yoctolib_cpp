@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_hubport.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_hubport.h 18320 2014-11-10 10:47:48Z seb $
  *
  * Declares yFindHubPort(), the high-level API for HubPort functions
  *
@@ -60,7 +60,6 @@ typedef enum {
     Y_ENABLED_INVALID = -1,
 } Y_ENABLED_enum;
 #endif
-
 #ifndef _Y_PORTSTATE_ENUM
 #define _Y_PORTSTATE_ENUM
 #ifdef Y_PORTSTATE_INVALID
@@ -75,7 +74,6 @@ typedef enum {
     Y_PORTSTATE_INVALID = -1,
 } Y_PORTSTATE_enum;
 #endif
-
 #define Y_BAUDRATE_INVALID              (YAPI_INVALID_UINT)
 //--- (end of YHubPort definitions)
 

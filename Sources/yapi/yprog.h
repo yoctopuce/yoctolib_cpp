@@ -1,35 +1,35 @@
 /*********************************************************************
  *
- * $Id: yprog.h 17147 2014-08-08 09:14:08Z seb $
+ * $Id: yprog.h 18093 2014-10-17 13:49:27Z seb $
  *
  * Declaration of firmware upgrade functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
  *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
  *  non-exclusive license to use, modify, copy and integrate this
- *  file into your software for the sole purpose of interfacing 
- *  with Yoctopuce products. 
+ *  file into your software for the sole purpose of interfacing
+ *  with Yoctopuce products.
  *
- *  You may reproduce and distribute copies of this file in 
+ *  You may reproduce and distribute copies of this file in
  *  source or object form, as long as the sole purpose of this
- *  code is to interface with Yoctopuce products. You must retain 
+ *  code is to interface with Yoctopuce products. You must retain
  *  this notice in the distributed source file.
  *
  *  You should refer to Yoctopuce General Terms and Conditions
- *  for additional information regarding your rights and 
+ *  for additional information regarding your rights and
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -132,7 +132,7 @@ void decode_byn_head_multi(byn_head_multi *byn_head);
 void decode_byn_zone(byn_zone *zone);
 #define DECODE_U16(NUM) ((((NUM) & 0xff00) >> 8) | (((NUM)&0xff) << 8))
 #define DECODE_U32(NUM) ((((NUM) >> 24) & 0xff) | (((NUM) << 8) & 0xff0000) | (((NUM) >> 8) & 0xff00) | (((NUM) << 24) & 0xff000000 ))
-#else 
+#else
 #define decode_byn_head_multi(dummy) {}
 #define decode_byn_zone(dummy) {}
 #define DECODE_U16(NUM)  (NUM)
@@ -144,7 +144,7 @@ typedef struct{
     u32 nbinstr;
     u32 nbblock;
     u8  *ptr;
-    u32 len;    
+    u32 len;
 }romzone;
 
 typedef struct{
@@ -171,13 +171,13 @@ typedef struct{
     u16         devid_rev;
     u32         startconfig;
     u32         endofconfig;
-#ifndef MICROCHIP_API    
+#ifndef MICROCHIP_API
     u16         ext_jedec_id;
     u16         ext_page_size;
     u16         ext_total_pages;
     u16         first_code_page;
     u16         first_yfs3_page;
-#endif    
+#endif
 }BootloaderSt;
 
 // from yfirmupd.c
@@ -198,36 +198,27 @@ int ypSendBootloaderCmd(BootloaderSt *dev, const USB_Packet *pkt,char *errmsg);
 // Return -1 if there was no reply available
 int ypGetBootloaderReply(BootloaderSt *dev, USB_Packet *pkt,char *errmsg);
 // Power cycle the device
-void ypBootloaderShutdown(BootloaderSt *dev);
-
+int ypBootloaderShutdown(BootloaderSt *dev);
 int IsValidBynHead(const byn_head_multi *head, u32 size, char *errmsg);
-
 
 #ifndef MICROCHIP_API
 const char* prog_GetCPUName(BootloaderSt *dev);
-int IsValidBynFile(const byn_head_multi  *head, u32 size, char *errmsg);
 int ValidateBynCompat(const byn_head_multi *head, u32 size, const char *serial, BootloaderSt *dev, char *errmsg);
+int IsValidBynFile(const byn_head_multi *head, u32 size, const char *serial, char *errmsg);
 int BlockingRead(BootloaderSt *dev, USB_Packet *pkt, int maxwait, char *errmsg);
 int SendDataPacket(BootloaderSt *dev, int program, u32 address, u8 *data, int nbinstr, char *errmsg);
-
 #endif
 
-
-
 //#define DEBUG_FIRMWARE
-
 typedef enum
 {
-    YPROG_DONE = 0u,	// Finished with procedure
-    //HTTP_IO_NEED_DATA,	// More data needed to continue, call again later
-    YPROG_WAITING		// Waiting for asynchronous process to complete, call again later
+    YPROG_DONE = 0u,    // Finished with procedure
+    YPROG_WAITING       // Waiting for asynchronous process to complete, call again later
 } YPROG_RESULT;
-
 
 
 #define MAX_FIRMWARE_LEN  0x100000ul
 #define INVALID_FIRMWARE  0xfffffffful
-
 typedef enum{
     FLASH_FIND_DEV = 0,
     FLASH_CONNECT,
@@ -236,7 +227,9 @@ typedef enum{
     FLASH_ERASE,
     FLASH_WAIT_ERASE,
     FLASH_DOFLASH,
+    FLASH_GET_INFO_BFOR_REBOOT,
     FLASH_REBOOT,
+    FLASH_REBOOT_VALIDATE,
 #ifndef MICROCHIP_API
     FLASH_AUTOFLASH,
 #endif
@@ -253,9 +246,9 @@ typedef enum {
 } FLASH_ZONE_STATE;
 
 
-#define BLOCK_FLASH_TIMEOUT       1000u
-#define PROG_GET_INFO_TIMEOUT      300u
-#define ZONE_VERIF_TIMEOUT        1000u
+#define BLOCK_FLASH_TIMEOUT       2000u
+#define PROG_GET_INFO_TIMEOUT     1000u
+#define ZONE_VERIF_TIMEOUT        2000u
 #define FLASH_SUBDEV_TIMEOUT     59000u
 #define YPROG_BOOTLOADER_TIMEOUT 10000u
 #ifdef MICROCHIP_API
@@ -268,7 +261,7 @@ typedef enum {
 #define PROG_IN_ERROR 0x8000
 typedef struct {
 #ifndef MICROCHIP_API
-    u8          *firmware;
+    u8                  *firmware;
     yCRITICAL_SECTION   cs;
 #endif
     u32                 len;
@@ -297,17 +290,23 @@ typedef struct {
 extern FIRMWARE_CONTEXT fctx;
 
 
+// memo: u=universal y=yapi h=hub
+
 #ifdef YAPI_IN_YDEVICE
 #define uGetFirmware(ofs, dst, size) hProgGetFirmware(ofs, dst, size)
-#else 
+void hProgInit(void);
+void hProgFree(void);
+#else
 #define uGetFirmware(ofs, dst, size) yGetFirmware(ofs, dst, size)
+void yProgInit(void);
+void yProgFree(void);
 #endif
+
+
+
 #define uGetFirmwareBynHead(head_ptr) {uGetFirmware(0, (u8*)(head_ptr), sizeof(byn_head_multi));decode_byn_head_multi(head_ptr);}
 #define uGetFirmwareBynZone(offset,zone_ptr) {uGetFirmware(offset,(u8*)(zone_ptr),sizeof(byn_zone)); decode_byn_zone(zone_ptr);}
-void  uProgInit(void);
+
 YPROG_RESULT uFlashDevice(void);
-#ifndef MICROCHIP_API
-void  uProgFree(void);
-#endif
 
 #endif

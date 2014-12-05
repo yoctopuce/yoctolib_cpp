@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_voc.cpp 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_voc.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindVoc(), the high-level API for Voc functions
  *
@@ -56,7 +56,7 @@ YVoc::YVoc(const string& func): YSensor(func)
     _className="Voc";
 }
 
-YVoc::~YVoc() 
+YVoc::~YVoc()
 {
 //--- (YVoc cleanup)
 //--- (end of YVoc cleanup)
@@ -174,7 +174,7 @@ int YVoc::_invokeTimedReportCallback(YMeasure value)
 YVoc *YVoc::nextVoc(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -186,7 +186,7 @@ YVoc* YVoc::FirstVoc(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("Voc", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

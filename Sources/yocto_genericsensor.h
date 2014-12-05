@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_genericsensor.h 16919 2014-07-18 13:17:02Z mvuilleu $
+ * $Id: yocto_genericsensor.h 18320 2014-11-10 10:47:48Z seb $
  *
  * Declares yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -54,6 +54,16 @@ class YGenericSensor; // forward declaration
 typedef void (*YGenericSensorValueCallback)(YGenericSensor *func, const string& functionValue);
 class YMeasure; // forward declaration
 typedef void (*YGenericSensorTimedReportCallback)(YGenericSensor *func, YMeasure measure);
+#ifndef _Y_SIGNALSAMPLING_ENUM
+#define _Y_SIGNALSAMPLING_ENUM
+typedef enum {
+    Y_SIGNALSAMPLING_HIGH_RATE = 0,
+    Y_SIGNALSAMPLING_HIGH_RATE_FILTERED = 1,
+    Y_SIGNALSAMPLING_LOW_NOISE = 2,
+    Y_SIGNALSAMPLING_LOW_NOISE_FILTERED = 3,
+    Y_SIGNALSAMPLING_INVALID = -1,
+} Y_SIGNALSAMPLING_enum;
+#endif
 #define Y_SIGNALVALUE_INVALID           (YAPI_INVALID_DOUBLE)
 #define Y_SIGNALUNIT_INVALID            (YAPI_INVALID_STRING)
 #define Y_SIGNALRANGE_INVALID           (YAPI_INVALID_STRING)
@@ -81,6 +91,7 @@ protected:
     string          _signalRange;
     string          _valueRange;
     double          _signalBias;
+    Y_SIGNALSAMPLING_enum _signalSampling;
     YGenericSensorValueCallback _valueCallbackGenericSensor;
     YGenericSensorTimedReportCallback _timedReportCallbackGenericSensor;
 
@@ -103,6 +114,11 @@ public:
     static const string SIGNALRANGE_INVALID;
     static const string VALUERANGE_INVALID;
     static const double SIGNALBIAS_INVALID;
+    static const Y_SIGNALSAMPLING_enum SIGNALSAMPLING_HIGH_RATE = Y_SIGNALSAMPLING_HIGH_RATE;
+    static const Y_SIGNALSAMPLING_enum SIGNALSAMPLING_HIGH_RATE_FILTERED = Y_SIGNALSAMPLING_HIGH_RATE_FILTERED;
+    static const Y_SIGNALSAMPLING_enum SIGNALSAMPLING_LOW_NOISE = Y_SIGNALSAMPLING_LOW_NOISE;
+    static const Y_SIGNALSAMPLING_enum SIGNALSAMPLING_LOW_NOISE_FILTERED = Y_SIGNALSAMPLING_LOW_NOISE_FILTERED;
+    static const Y_SIGNALSAMPLING_enum SIGNALSAMPLING_INVALID = Y_SIGNALSAMPLING_INVALID;
 
     /**
      * Changes the measuring unit for the measured value.
@@ -222,6 +238,45 @@ public:
 
     inline double       signalBias(void)
     { return this->get_signalBias(); }
+
+    /**
+     * Returns the electric signal sampling method to use.
+     * The HIGH_RATE method uses the highest sampling frequency, without any filtering.
+     * The HIGH_RATE_FILTERED method adds a windowed 7-sample median filter.
+     * The LOW_NOISE method uses a reduced acquisition frequency to reduce noise.
+     * The LOW_NOISE_FILTERED method combines a reduced frequency with the median filter
+     * to get measures as stable as possible when working on a noisy signal.
+     * 
+     * @return a value among Y_SIGNALSAMPLING_HIGH_RATE, Y_SIGNALSAMPLING_HIGH_RATE_FILTERED,
+     * Y_SIGNALSAMPLING_LOW_NOISE and Y_SIGNALSAMPLING_LOW_NOISE_FILTERED corresponding to the electric
+     * signal sampling method to use
+     * 
+     * On failure, throws an exception or returns Y_SIGNALSAMPLING_INVALID.
+     */
+    Y_SIGNALSAMPLING_enum get_signalSampling(void);
+
+    inline Y_SIGNALSAMPLING_enum signalSampling(void)
+    { return this->get_signalSampling(); }
+
+    /**
+     * Changes the electric signal sampling method to use.
+     * The HIGH_RATE method uses the highest sampling frequency, without any filtering.
+     * The HIGH_RATE_FILTERED method adds a windowed 7-sample median filter.
+     * The LOW_NOISE method uses a reduced acquisition frequency to reduce noise.
+     * The LOW_NOISE_FILTERED method combines a reduced frequency with the median filter
+     * to get measures as stable as possible when working on a noisy signal.
+     * 
+     * @param newval : a value among Y_SIGNALSAMPLING_HIGH_RATE, Y_SIGNALSAMPLING_HIGH_RATE_FILTERED,
+     * Y_SIGNALSAMPLING_LOW_NOISE and Y_SIGNALSAMPLING_LOW_NOISE_FILTERED corresponding to the electric
+     * signal sampling method to use
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_signalSampling(Y_SIGNALSAMPLING_enum newval);
+    inline int      setSignalSampling(Y_SIGNALSAMPLING_enum newval)
+    { return this->set_signalSampling(newval); }
 
     /**
      * Retrieves a generic sensor for a given identifier.

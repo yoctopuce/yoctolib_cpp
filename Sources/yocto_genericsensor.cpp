@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_genericsensor.cpp 16923 2014-07-18 14:47:20Z mvuilleu $
+ * $Id: yocto_genericsensor.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -54,6 +54,7 @@ YGenericSensor::YGenericSensor(const string& func): YSensor(func)
     ,_signalRange(SIGNALRANGE_INVALID)
     ,_valueRange(VALUERANGE_INVALID)
     ,_signalBias(SIGNALBIAS_INVALID)
+    ,_signalSampling(SIGNALSAMPLING_INVALID)
     ,_valueCallbackGenericSensor(NULL)
     ,_timedReportCallbackGenericSensor(NULL)
 //--- (end of GenericSensor initialization)
@@ -61,7 +62,7 @@ YGenericSensor::YGenericSensor(const string& func): YSensor(func)
     _className="GenericSensor";
 }
 
-YGenericSensor::~YGenericSensor() 
+YGenericSensor::~YGenericSensor()
 {
 //--- (YGenericSensor cleanup)
 //--- (end of YGenericSensor cleanup)
@@ -99,6 +100,11 @@ int YGenericSensor::_parseAttr(yJsonStateMachine& j)
     if(!strcmp(j.token, "signalBias")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _signalBias =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        return 1;
+    }
+    if(!strcmp(j.token, "signalSampling")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _signalSampling =  (Y_SIGNALSAMPLING_enum)atoi(j.token);
         return 1;
     }
     failed:
@@ -263,6 +269,53 @@ double YGenericSensor::get_signalBias(void)
 }
 
 /**
+ * Returns the electric signal sampling method to use.
+ * The HIGH_RATE method uses the highest sampling frequency, without any filtering.
+ * The HIGH_RATE_FILTERED method adds a windowed 7-sample median filter.
+ * The LOW_NOISE method uses a reduced acquisition frequency to reduce noise.
+ * The LOW_NOISE_FILTERED method combines a reduced frequency with the median filter
+ * to get measures as stable as possible when working on a noisy signal.
+ * 
+ * @return a value among Y_SIGNALSAMPLING_HIGH_RATE, Y_SIGNALSAMPLING_HIGH_RATE_FILTERED,
+ * Y_SIGNALSAMPLING_LOW_NOISE and Y_SIGNALSAMPLING_LOW_NOISE_FILTERED corresponding to the electric
+ * signal sampling method to use
+ * 
+ * On failure, throws an exception or returns Y_SIGNALSAMPLING_INVALID.
+ */
+Y_SIGNALSAMPLING_enum YGenericSensor::get_signalSampling(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YGenericSensor::SIGNALSAMPLING_INVALID;
+        }
+    }
+    return _signalSampling;
+}
+
+/**
+ * Changes the electric signal sampling method to use.
+ * The HIGH_RATE method uses the highest sampling frequency, without any filtering.
+ * The HIGH_RATE_FILTERED method adds a windowed 7-sample median filter.
+ * The LOW_NOISE method uses a reduced acquisition frequency to reduce noise.
+ * The LOW_NOISE_FILTERED method combines a reduced frequency with the median filter
+ * to get measures as stable as possible when working on a noisy signal.
+ * 
+ * @param newval : a value among Y_SIGNALSAMPLING_HIGH_RATE, Y_SIGNALSAMPLING_HIGH_RATE_FILTERED,
+ * Y_SIGNALSAMPLING_LOW_NOISE and Y_SIGNALSAMPLING_LOW_NOISE_FILTERED corresponding to the electric
+ * signal sampling method to use
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YGenericSensor::set_signalSampling(Y_SIGNALSAMPLING_enum newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+    return _setAttr("signalSampling", rest_val);
+}
+
+/**
  * Retrieves $AFUNCTION$ for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
@@ -388,7 +441,7 @@ int YGenericSensor::zeroAdjust(void)
 YGenericSensor *YGenericSensor::nextGenericSensor(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -400,7 +453,7 @@ YGenericSensor* YGenericSensor::FirstGenericSensor(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("GenericSensor", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

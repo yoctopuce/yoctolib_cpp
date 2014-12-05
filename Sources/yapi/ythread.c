@@ -1,35 +1,35 @@
 /*********************************************************************
  *
- * $Id: ythread.c 12590 2013-09-02 13:12:44Z seb $
+ * $Id: ythread.c 17926 2014-10-03 16:54:03Z seb $
  *
  * OS-independent thread and synchronization library
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
  *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
  *  non-exclusive license to use, modify, copy and integrate this
- *  file into your software for the sole purpose of interfacing 
- *  with Yoctopuce products. 
+ *  file into your software for the sole purpose of interfacing
+ *  with Yoctopuce products.
  *
- *  You may reproduce and distribute copies of this file in 
- *  source or object form, as long as the sole purpose of this 
- *  code is to interface with Yoctopuce products. You must retain 
+ *  You may reproduce and distribute copies of this file in
+ *  source or object form, as long as the sole purpose of this
+ *  code is to interface with Yoctopuce products. You must retain
  *  this notice in the distributed source file.
  *
  *  You should refer to Yoctopuce General Terms and Conditions
- *  for additional information regarding your rights and 
+ *  for additional information regarding your rights and
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -48,7 +48,7 @@ static DWORD yNextThreadIdx = 1;
 
 void yCreateEvent(yEvent *event)
 {
-	*event= CreateEvent(0,0,0,0);
+    *event= CreateEvent(0,0,0,0);
 }
 
 void yCreateManualEvent(yEvent *event,int initialState)
@@ -59,7 +59,7 @@ void yCreateManualEvent(yEvent *event,int initialState)
 
 void ySetEvent(yEvent *ev)
 {
-	SetEvent(*ev);
+    SetEvent(*ev);
 }
 
 void yResetEvent(yEvent *ev)
@@ -71,31 +71,31 @@ void yResetEvent(yEvent *ev)
 
 int    yWaitForEvent(yEvent *ev,int time)
 {
-	DWORD usec;
-	DWORD res;
-	if(time<=0){
-		usec=INFINITE;
-	}else{
-		usec=time;
-	}
-	res = WaitForSingleObject(*ev,usec);	
-	return res ==WAIT_OBJECT_0;
+    DWORD usec;
+    DWORD res;
+    if(time<=0){
+        usec=INFINITE;
+    }else{
+        usec=time;
+    }
+    res = WaitForSingleObject(*ev,usec);
+    return res ==WAIT_OBJECT_0;
 }
 
 void   yCloseEvent(yEvent *ev)
 {
-	CloseHandle(*ev);
+    CloseHandle(*ev);
 }
 
 
 static int    yCreateDetachedThreadEx(osThread *th_hdl,void* (*fun)(void *), void *arg)
 {
-    *th_hdl = CreateThread( 
+    *th_hdl = CreateThread(
                     NULL,                   // default security attibutes
-                    0,                      // use default stack size  
+                    0,                      // use default stack size
                     (LPTHREAD_START_ROUTINE)fun,   // thread function name
-                    arg,                    // argument to thread function 
-                    0,                      // use default creation flags 
+                    arg,                    // argument to thread function
+                    0,                      // use default creation flags
                     NULL);
     if (*th_hdl==NULL) {
         return -1;
@@ -118,14 +118,14 @@ static int    yWaitEndThread(osThread *th)
 
 static void yKillThread(osThread *th)
 {
-	TerminateThread(*th,0);
+    TerminateThread(*th,0);
 }
 
 
 int    yThreadIndex(void)
 {
     DWORD res;
-    
+
     if(yTlsBucket == TLS_OUT_OF_INDEXES) {
         // Only happens the very first time, from main thread
         yTlsBucket = TlsAlloc();
@@ -207,7 +207,7 @@ int   yWaitForEvent(yEvent *ev,int time)
                 later.tv_nsec-=1000000000;
             }
             pthread_cond_timedwait(&ev->cond, &ev->mtx, &later);
-            
+
         }else{
             pthread_cond_wait(&ev->cond,&ev->mtx);
         }
@@ -217,7 +217,7 @@ int   yWaitForEvent(yEvent *ev,int time)
         ev->verif=0;
     pthread_mutex_unlock(&ev->mtx);
     return retval;
-	
+
 }
 void   yCloseEvent(yEvent *ev)
 {
@@ -229,18 +229,18 @@ static int    yCreateDetachedThreadEx(osThread *th,void* (*fun)(void *), void *a
 {
     pthread_attr_t attr;
     int result;
-    
+
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    
+
     if(pthread_create(th, &attr ,fun,arg)!=0){
         result=-1;
     }else{
         result=0;
     }
     pthread_attr_destroy(&attr);
-    
-	return result;
+
+    return result;
 }
 
 static void    yReleaseDetachedThreadEx(osThread *th_hdl)
@@ -263,7 +263,7 @@ static void yKillThread(osThread *th)
 int    yThreadIndex(void)
 {
     int res;
-    
+
     pthread_once(&yInitKeyOnce, initTsdKey);
     res = (int)((u8 *)pthread_getspecific(yTsdKey)-(u8 *)NULL);
     if(!res) {
@@ -282,12 +282,12 @@ int    yThreadIndex(void)
 
 int    yCreateDetachedThread(void* (*fun)(void *), void *arg)
 {
-	osThread th_hdl;
-	if(yCreateDetachedThreadEx(&th_hdl,fun,arg)<0){
-		return -1;
-	}
-	yReleaseDetachedThreadEx(&th_hdl);
-	return 0;
+    osThread th_hdl;
+    if(yCreateDetachedThreadEx(&th_hdl,fun,arg)<0){
+        return -1;
+    }
+    yReleaseDetachedThreadEx(&th_hdl);
+    return 0;
 }
 
 
@@ -306,7 +306,7 @@ int    yThreadCreate(yThread *yth,void* (*fun)(void *), void *arg)
             return-1;
         }
         yWaitForEvent(&yth->ev,0);
-        yCloseEvent(&yth->ev);        
+        yCloseEvent(&yth->ev);
         return 1;
     }
     return -1;
@@ -315,8 +315,8 @@ int    yThreadCreate(yThread *yth,void* (*fun)(void *), void *arg)
 int yThreadIsRunning(yThread *yth)
 {
     if(yth->st ==  YTHREAD_RUNNING || yth->st == YTHREAD_MUST_STOP)
-		return 1;
-	return 0;
+        return 1;
+    return 0;
 }
 
 void   yThreadSignalStart(yThread *yth)
@@ -346,7 +346,7 @@ int    yThreadMustEnd(yThread *yth)
 
 void yThreadKill(yThread *yth)
 {
-    
+
     if(yThreadIsRunning(yth)){
         yKillThread(&yth->th);
     }else{
@@ -428,12 +428,12 @@ static void pushCSAction(const char* fileid, int lineno,yCRITICAL_SECTION_ST *cs
 void yDbgInitializeCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION *csptr)
 {
     int res;
-    
+
     *csptr = malloc(sizeof(yCRITICAL_SECTION_ST));
     memset(*csptr,0,sizeof(yCRITICAL_SECTION_ST));
     printf("NEW CS on %s:%d:%p (%d)\n",fileid,lineno,(*csptr),nbycs);
     (*csptr)->no = nbycs++;
-    (*csptr)->state = YCS_ALLOCATED;    
+    (*csptr)->state = YCS_ALLOCATED;
     pushCSAction(fileid,lineno,(*csptr),YCS_INIT);
 #if MICROCHIP_API
     (*csptr)->cs=0;
@@ -529,7 +529,7 @@ void yDbgLeaveCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION 
     (*csptr)->cs=0;
     res =0;
 #elif defined(WINDOWS_API)
-    res =0;    
+    res =0;
     LeaveCriticalSection(&((*csptr)->cs));
 #else
     res = pthread_mutex_unlock(&((*csptr)->cs));

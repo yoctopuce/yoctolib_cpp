@@ -94,6 +94,7 @@
     <ClCompile Include="..\..\..\Sources\yocto_accelerometer.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_altitude.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_anbutton.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_buzzer.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_carbondioxide.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_colorled.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_current.cpp" />
@@ -121,6 +122,7 @@
     <ClCompile Include="..\..\..\Sources\yocto_realtimeclock.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_refframe.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_relay.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_segmenteddisplay.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_serialport.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_servo.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_temperature.cpp" />
@@ -150,6 +152,7 @@
     <ClInclude Include="..\..\..\Sources\yocto_accelerometer.h" />
     <ClInclude Include="..\..\..\Sources\yocto_altitude.h" />
     <ClInclude Include="..\..\..\Sources\yocto_anbutton.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_buzzer.h" />
     <ClInclude Include="..\..\..\Sources\yocto_carbondioxide.h" />
     <ClInclude Include="..\..\..\Sources\yocto_colorled.h" />
     <ClInclude Include="..\..\..\Sources\yocto_current.h" />
@@ -177,6 +180,7 @@
     <ClInclude Include="..\..\..\Sources\yocto_realtimeclock.h" />
     <ClInclude Include="..\..\..\Sources\yocto_refframe.h" />
     <ClInclude Include="..\..\..\Sources\yocto_relay.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_segmenteddisplay.h" />
     <ClInclude Include="..\..\..\Sources\yocto_serialport.h" />
     <ClInclude Include="..\..\..\Sources\yocto_servo.h" />
     <ClInclude Include="..\..\..\Sources\yocto_temperature.h" />

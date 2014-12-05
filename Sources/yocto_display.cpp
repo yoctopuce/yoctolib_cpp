@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 17498 2014-09-03 19:21:24Z mvuilleu $
+ * $Id: yocto_display.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -1215,7 +1215,7 @@ int YDisplay::swapLayerContent(int layerIdA,int layerIdB)
 YDisplay *YDisplay::nextDisplay(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -1227,7 +1227,7 @@ YDisplay* YDisplay::FirstDisplay(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("Display", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

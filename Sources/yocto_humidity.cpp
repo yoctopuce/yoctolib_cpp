@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_humidity.cpp 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_humidity.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindHumidity(), the high-level API for Humidity functions
  *
@@ -56,7 +56,7 @@ YHumidity::YHumidity(const string& func): YSensor(func)
     _className="Humidity";
 }
 
-YHumidity::~YHumidity() 
+YHumidity::~YHumidity()
 {
 //--- (YHumidity cleanup)
 //--- (end of YHumidity cleanup)
@@ -174,7 +174,7 @@ int YHumidity::_invokeTimedReportCallback(YMeasure value)
 YHumidity *YHumidity::nextHumidity(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -186,7 +186,7 @@ YHumidity* YHumidity::FirstHumidity(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("Humidity", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

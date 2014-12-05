@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.cpp 17672 2014-09-16 16:15:24Z seb $
+ * $Id: yocto_files.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindFiles(), the high-level API for Files functions
  *
@@ -367,7 +367,7 @@ int YFiles::remove(string pathname)
 YFiles *YFiles::nextFiles(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -379,7 +379,7 @@ YFiles* YFiles::FirstFiles(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("Files", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

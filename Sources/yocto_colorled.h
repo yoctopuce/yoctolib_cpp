@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorled.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_colorled.h 18524 2014-11-25 17:09:56Z seb $
  *
  * Declares yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -72,13 +72,17 @@ public:
 #define Y_RGBCOLOR_INVALID              (YAPI_INVALID_UINT)
 #define Y_HSLCOLOR_INVALID              (YAPI_INVALID_UINT)
 #define Y_RGBCOLORATPOWERON_INVALID     (YAPI_INVALID_UINT)
+#define Y_BLINKSEQSIZE_INVALID          (YAPI_INVALID_UINT)
+#define Y_BLINKSEQMAXSIZE_INVALID       (YAPI_INVALID_UINT)
+#define Y_BLINKSEQSIGNATURE_INVALID     (YAPI_INVALID_UINT)
+#define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 //--- (end of YColorLed definitions)
 
 //--- (YColorLed declaration)
 /**
  * YColorLed Class: ColorLed function interface
  * 
- * Yoctopuce application programming interface
+ * The Yoctopuce application programming interface
  * allows you to drive a color led using RGB coordinates as well as HSL coordinates.
  * The module performs all conversions form RGB to HSL automatically. It is then
  * self-evident to turn on a led with a given hue and to progressively vary its
@@ -98,6 +102,10 @@ protected:
     YMove           _rgbMove;
     YMove           _hslMove;
     int             _rgbColorAtPowerOn;
+    int             _blinkSeqSize;
+    int             _blinkSeqMaxSize;
+    int             _blinkSeqSignature;
+    string          _command;
     YColorLedValueCallback _valueCallbackColorLed;
 
     friend YColorLed *yFindColorLed(const string& func);
@@ -119,6 +127,10 @@ public:
     static const YMove RGBMOVE_INVALID;
     static const YMove HSLMOVE_INVALID;
     static const int RGBCOLORATPOWERON_INVALID = YAPI_INVALID_UINT;
+    static const int BLINKSEQSIZE_INVALID = YAPI_INVALID_UINT;
+    static const int BLINKSEQMAXSIZE_INVALID = YAPI_INVALID_UINT;
+    static const int BLINKSEQSIGNATURE_INVALID = YAPI_INVALID_UINT;
+    static const string COMMAND_INVALID;
 
     /**
      * Returns the current RGB color of the led.
@@ -226,9 +238,6 @@ public:
 
     /**
      * Changes the color that the led will display by default when the module is turned on.
-     * This color will be displayed as soon as the module is powered on.
-     * Remember to call the saveToFlash() method of the module if the
-     * change should be kept.
      * 
      * @param newval : an integer corresponding to the color that the led will display by default when the
      * module is turned on
@@ -240,6 +249,54 @@ public:
     int             set_rgbColorAtPowerOn(int newval);
     inline int      setRgbColorAtPowerOn(int newval)
     { return this->set_rgbColorAtPowerOn(newval); }
+
+    /**
+     * Returns the current length of the blinking sequence
+     * 
+     * @return an integer corresponding to the current length of the blinking sequence
+     * 
+     * On failure, throws an exception or returns Y_BLINKSEQSIZE_INVALID.
+     */
+    int                 get_blinkSeqSize(void);
+
+    inline int          blinkSeqSize(void)
+    { return this->get_blinkSeqSize(); }
+
+    /**
+     * Returns the maximum length of the blinking sequence
+     * 
+     * @return an integer corresponding to the maximum length of the blinking sequence
+     * 
+     * On failure, throws an exception or returns Y_BLINKSEQMAXSIZE_INVALID.
+     */
+    int                 get_blinkSeqMaxSize(void);
+
+    inline int          blinkSeqMaxSize(void)
+    { return this->get_blinkSeqMaxSize(); }
+
+    /**
+     * Return the blinking sequence signature. Since blinking
+     * sequences cannot be read from the device, this can be used
+     * to detect if a specific blinking sequence is already
+     * programmed.
+     * 
+     * @return an integer
+     * 
+     * On failure, throws an exception or returns Y_BLINKSEQSIGNATURE_INVALID.
+     */
+    int                 get_blinkSeqSignature(void);
+
+    inline int          blinkSeqSignature(void)
+    { return this->get_blinkSeqSignature(); }
+
+    string              get_command(void);
+
+    inline string       command(void)
+    { return this->get_command(); }
+
+    int             set_command(const string& newval);
+    inline int      setCommand(const string& newval)
+    { return this->set_command(newval); }
 
     /**
      * Retrieves an RGB led for a given identifier.
@@ -281,6 +338,58 @@ public:
     using YFunction::registerValueCallback;
 
     virtual int         _invokeValueCallback(string value);
+
+    virtual int         sendCommand(string command);
+
+    /**
+     * Add a new transition to the blinking sequence, the move will
+     * be performed in the HSL space.
+     * 
+     * @param HSLcolor : desired HSL color when the traisntion is completed
+     * @param msDelay : duration of the color transition, in milliseconds.
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     *         On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         addHslMoveToBlinkSeq(int HSLcolor,int msDelay);
+
+    /**
+     * Add a new transition to the blinking sequence, the move will
+     * be performed in the RGB space.
+     * 
+     * @param RGBcolor : desired RGB color when the transition is completed
+     * @param msDelay : duration of the color transition, in milliseconds.
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     *         On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         addRgbMoveToBlinkSeq(int RGBcolor,int msDelay);
+
+    /**
+     * Starts the preprogrammed blinking sequence. The sequence will
+     * run in loop until it is stopped by stopBlinkSeq or an explicit
+     * change.
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     *         On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         startBlinkSeq(void);
+
+    /**
+     * Stops the preprogrammed blinking sequence.
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     *         On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         stopBlinkSeq(void);
+
+    /**
+     * Resets the preprogrammed blinking sequence.
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     *         On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         resetBlinkSeq(void);
 
 
     inline static YColorLed* Find(string func)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_anbutton.cpp 17672 2014-09-16 16:15:24Z seb $
+ * $Id: yocto_anbutton.cpp 18361 2014-11-13 08:06:41Z mvuilleu $
  *
  * Implements yFindAnButton(), the high-level API for AnButton functions
  *
@@ -66,7 +66,7 @@ YAnButton::YAnButton(const string& func): YFunction(func)
     _className="AnButton";
 }
 
-YAnButton::~YAnButton() 
+YAnButton::~YAnButton()
 {
 //--- (YAnButton cleanup)
 //--- (end of YAnButton cleanup)
@@ -494,7 +494,7 @@ int YAnButton::_invokeValueCallback(string value)
 }
 
 /**
- * Returns the pulse counter value as well as his timer
+ * Returns the pulse counter value as well as its timer.
  * 
  * @return YAPI_SUCCESS if the call succeeds.
  * 
@@ -508,7 +508,7 @@ int YAnButton::resetCounter(void)
 YAnButton *YAnButton::nextAnButton(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -520,7 +520,7 @@ YAnButton* YAnButton::FirstAnButton(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("AnButton", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_compass.cpp 16895 2014-07-18 00:12:08Z mvuilleu $
+ * $Id: yocto_compass.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindCompass(), the high-level API for Compass functions
  *
@@ -58,7 +58,7 @@ YCompass::YCompass(const string& func): YSensor(func)
     _className="Compass";
 }
 
-YCompass::~YCompass() 
+YCompass::~YCompass()
 {
 //--- (YCompass cleanup)
 //--- (end of YCompass cleanup)
@@ -220,7 +220,7 @@ int YCompass::_invokeTimedReportCallback(YMeasure value)
 YCompass *YCompass::nextCompass(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -232,7 +232,7 @@ YCompass* YCompass::FirstCompass(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("Compass", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

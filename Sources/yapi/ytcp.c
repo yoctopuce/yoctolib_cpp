@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 17486 2014-09-03 14:33:17Z seb $
+ * $Id: ytcp.c 18075 2014-10-17 07:26:33Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -251,7 +251,7 @@ u32 yResolveDNS(const char *name,char *errmsg)
 
     struct addrinfo *infos,*p;
     if(getaddrinfo(name,NULL,NULL,&infos)!=0){
-        REPORT_ERR("Unable to connect to server");
+        REPORT_ERR("Unable to resolve hostname");
         return 0;
     }
 
@@ -291,6 +291,7 @@ static int yTcpOpen(YSOCKET *newskt, u32 ip, u16 port, char *errmsg)
     }
     //dbglog("ytcpOpen %X:%x: skt= %x\n",ip,port,skt);
     YPERF_TCP_ENTER(TCPOpen_connect);
+    memset(&clientService, 0, sizeof(clientService));
     //----------------------
     // The sockaddr_in structure specifies the address family,
     // IP address, and port of the server to be connected to.

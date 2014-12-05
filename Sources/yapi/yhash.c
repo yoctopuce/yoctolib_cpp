@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 17481 2014-09-03 09:38:35Z mvuilleu $
+ * $Id: yhash.c 17926 2014-10-03 16:54:03Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -1315,7 +1315,7 @@ int ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, 
         if(funcVal != NULL) {
             for(i = 0; i < YOCTO_PUBVAL_SIZE/2; i++) {
                 if(YP(hdl).funcValWords[i] != funcValWords[i]){
-                    changed = 1;                
+                    changed = 1;  
                     YP(hdl).funcValWords[i] = funcValWords[i];
                 }
             }
@@ -1353,7 +1353,7 @@ int ypRegisterByYdx(u8 devYdx, u8 funYdx, const char *funcVal, YAPI_FUNCTION *fu
                     // apply value change
                     for(i = 0; i < YOCTO_PUBVAL_SIZE/2; i++) {
                         if(YP(hdl).funcValWords[i] != funcValWords[i]) {
-                            changed = 1;                
+                            changed = 1;
                             YP(hdl).funcValWords[i] = funcValWords[i];
                         }
                     }

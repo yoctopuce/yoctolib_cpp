@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_magnetometer.cpp 16895 2014-07-18 00:12:08Z mvuilleu $
+ * $Id: yocto_magnetometer.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindMagnetometer(), the high-level API for Magnetometer functions
  *
@@ -59,7 +59,7 @@ YMagnetometer::YMagnetometer(const string& func): YSensor(func)
     _className="Magnetometer";
 }
 
-YMagnetometer::~YMagnetometer() 
+YMagnetometer::~YMagnetometer()
 {
 //--- (YMagnetometer cleanup)
 //--- (end of YMagnetometer cleanup)
@@ -255,7 +255,7 @@ int YMagnetometer::_invokeTimedReportCallback(YMeasure value)
 YMagnetometer *YMagnetometer::nextMagnetometer(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -267,7 +267,7 @@ YMagnetometer* YMagnetometer::FirstMagnetometer(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("Magnetometer", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

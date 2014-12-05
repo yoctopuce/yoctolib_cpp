@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_voltage.cpp 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_voltage.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindVoltage(), the high-level API for Voltage functions
  *
@@ -56,7 +56,7 @@ YVoltage::YVoltage(const string& func): YSensor(func)
     _className="Voltage";
 }
 
-YVoltage::~YVoltage() 
+YVoltage::~YVoltage()
 {
 //--- (YVoltage cleanup)
 //--- (end of YVoltage cleanup)
@@ -174,7 +174,7 @@ int YVoltage::_invokeTimedReportCallback(YMeasure value)
 YVoltage *YVoltage::nextVoltage(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -186,7 +186,7 @@ YVoltage* YVoltage::FirstVoltage(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("Voltage", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

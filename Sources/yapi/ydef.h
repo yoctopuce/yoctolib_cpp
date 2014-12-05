@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 17671 2014-09-16 16:13:48Z seb $
+ * $Id: ydef.h 18360 2014-11-13 07:52:33Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -63,14 +63,16 @@ typedef signed long int         s32;
 typedef unsigned long long      u64;
 typedef signed long long        s64;
 #define VARIABLE_SIZE
-
+#define FMTs64 "lld"
+#define FMTu64 "llu"
+#define FMTx64 "llx"
 #else
 
 #ifdef __BORLANDC__
 typedef unsigned __int8         u8;
 typedef __int8                  s8;
 typedef unsigned __int16        u16;
-typedef __int16				    s16;
+typedef __int16                 s16;
 typedef unsigned __int32        u32;
 typedef __int32                 s32;
 typedef unsigned __int64        u64;
@@ -104,6 +106,9 @@ typedef signed long int         s32;
 typedef unsigned long long      u64;
 typedef signed long long        s64;
 #define VARIABLE_SIZE           0
+#define FMTs64 "lld"
+#define FMTu64 "llu"
+#define FMTx64 "llx"
 
 #elif defined(__APPLE__)
 #include <TargetConditionals.h>
@@ -136,6 +141,9 @@ typedef signed int              s32;
 typedef unsigned long           u64;
 typedef signed long             s64;
 #define VARIABLE_SIZE           0
+#define FMTs64 "ld"
+#define FMTu64 "lu"
+#define FMTx64 "lx"
 #include <pthread.h>
 #include <errno.h>
 
@@ -144,8 +152,19 @@ typedef signed long             s64;
 #define LINUX_API
 #if defined(__i386__)
 #define __32BITS__
+#define FMTs64 "lld"
+#define FMTu64 "llu"
+#define FMTx64 "llx"
 #elif defined(__x86_64__)
 #define __64BITS__
+#define FMTs64 "ld"
+#define FMTu64 "lu"
+#define FMTx64 "lx"
+#else
+#define __32BITS__
+#define FMTs64 "lld"
+#define FMTu64 "llu"
+#define FMTx64 "llx"
 #endif
 
 #include <stdint.h>
@@ -242,10 +261,15 @@ typedef struct{
 #define ADDRESSOF(x)    (&(x))
 #define PTRVAL(x)       (*(x))
 
+#if defined(__PIC24FJ256DA206__)
+#define _FAR __eds__
+#else
+#define _FAR
+#endif
+
 #if defined(MICROCHIP_API) || defined(VIRTUAL_HUB)
 #define YAPI_IN_YDEVICE
 #endif
-
 
 
 //#define DEBUG_CRITICAL_SECTION
@@ -862,10 +886,10 @@ typedef union {
 #define PIC24FJ32GB004      0x0B
 #define PIC24FJ64GB004      0x0F
 
+// Spansion Flash JEDEC id
+#define JEDEC_SPANSION_4MB  0x15
 
 #define YESC                (27u)
-
-
 
 #ifdef  __cplusplus
 }

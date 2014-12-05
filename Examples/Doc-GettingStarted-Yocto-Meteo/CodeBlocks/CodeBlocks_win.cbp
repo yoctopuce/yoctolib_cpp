@@ -154,6 +154,12 @@
         <Unit filename="..\..\..\Sources\yocto_anbutton.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
+        <Unit filename="..\..\..\Sources\yocto_buzzer.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_buzzer.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
         <Unit filename="..\..\..\Sources\yocto_carbondioxide.h">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
@@ -314,6 +320,9 @@
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
         <Unit filename="..\..\..\Sources\yocto_relay.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_segmenteddisplay.h">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
         <Unit filename="..\..\..\Sources\yocto_serialport.h">

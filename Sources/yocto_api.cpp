@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 17816 2014-09-24 14:47:30Z seb $
+ * $Id: yocto_api.cpp 18628 2014-12-03 16:18:53Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -234,30 +234,156 @@ int YDataSet::_parse(const string& json)
 int YFirmwareUpdate::_processMore(int newupdate)
 {
     char errmsg[YOCTO_ERRMSG_LEN];
+    YModule* m = NULL;
     int res = 0;
     string serial;
     string firmwarepath;
     string settings;
-    serial = _serial;
-    firmwarepath = _firmwarepath;
-    settings = _settings;
-    res = yapiUpdateFirmware(serial.c_str(), firmwarepath.c_str(), settings.c_str(), newupdate, errmsg);
-    _progress = res;
-    _progress_msg = string(errmsg);
-    return res;
-}
-
-int YFirmwareUpdate::get_progress(void)
-{
-    YModule* m = NULL;
-    this->_processMore(0);
-    if ((_progress == 100) && ((int)(_settings).size() != 0)) {
-        m = YModule::FindModule(_serial);
-        if (m->isOnline()) {
-            m->set_allSettings(_settings);
-            _settings = string(0, (char)0);
+    string prod_prefix;
+    if (_progress_c < 100) {
+        serial = _serial;
+        firmwarepath = _firmwarepath;
+        settings = _settings;
+        res = yapiUpdateFirmware(serial.c_str(), firmwarepath.c_str(), settings.c_str(), newupdate, errmsg);
+        if (res < 0) {
+            _progress = res;
+            _progress_msg = string(errmsg);
+            return res;
+        }
+        _progress_c = res;
+        _progress = ((_progress_c * 9) / (10));
+        _progress_msg = string(errmsg);
+    } else {
+        if (((int)(_settings).size() != 0)) {
+            _progress_msg = "restoring settings";
+            m = YModule::FindModule(_serial + ".module");
+            if (!(m->isOnline())) {
+                return _progress;
+            }
+            if (_progress < 95) {
+                prod_prefix = (m->get_productName()).substr( 0, 8);
+                if (prod_prefix == "YoctoHub") {
+                    {string ignore_error; YAPI::Sleep(1000, ignore_error);};
+                    _progress = _progress + 1;
+                    return _progress;
+                } else {
+                    _progress = 95;
+                }
+            }
+            if (_progress < 100) {
+                m->set_allSettings(_settings);
+                _settings = string(0, (char)0);
+                _progress = 100;
+                _progress_msg = "success";
+            }
+        } else {
+            _progress =  100;
+            _progress_msg = "success";
         }
     }
+    return _progress;
+}
+
+/**
+ * Retrun a list of all modules in "update" mode. Only USB connected
+ * devices are listed. If the module is connected to a YoctoHub, you have to
+ * connect to the YoctoHub web interface.
+ * 
+ * @return an array of strings containing the serial list of module in "update" mode.
+ */
+vector<string> YFirmwareUpdate::GetAllBootLoaders(void)
+{
+    char errmsg[YOCTO_ERRMSG_LEN];
+    char smallbuff[1024];
+    char *bigbuff;
+    int buffsize = 0;
+    int fullsize = 0;
+    int yapi_res = 0;
+    string bootloader_list;
+    vector<string> bootladers;
+    fullsize = 0;
+    yapi_res = yapiGetBootloaders(smallbuff, 1024, &fullsize, errmsg);
+    if (yapi_res < 0) {
+        bootloader_list = "error:" + string(errmsg);
+        return bootladers;
+    }
+    if (fullsize <= 1024) {
+        bootloader_list = string(smallbuff, fullsize);
+    } else {
+        buffsize = fullsize;
+        bigbuff = (char *)malloc(buffsize);
+        yapi_res = yapiGetBootloaders(bigbuff, buffsize, &fullsize, errmsg);
+        if (yapi_res < 0) {
+            free(bigbuff);
+            return bootladers;
+        } else {
+            bootloader_list = string(bigbuff, fullsize);
+        }
+        free(bigbuff);
+    }
+    bootladers = _strsplit(bootloader_list,',');
+    return bootladers;
+}
+
+/**
+ * Test if the byn file is valid for this module. It's possible to pass an directory instead of a file.
+ * In this case this method return the path of the most recent appropriate byn file. This method will
+ * ignore firmware that are older than mintrelase.
+ * 
+ * @param serial  : the serial number of the module to update
+ * @param path    : the path of a byn file or a directory that contain byn files
+ * @param minrelease : an positif integer
+ * 
+ * @return : the path of the byn file to use or a empty string if no byn files match the requirement
+ * 
+ * On failure, returns a string that start with "error:".
+ */
+string YFirmwareUpdate::CheckFirmware(string serial,string path,int minrelease)
+{
+    char errmsg[YOCTO_ERRMSG_LEN];
+    char smallbuff[1024];
+    char *bigbuff;
+    int buffsize = 0;
+    int fullsize = 0;
+    int res = 0;
+    string firmware_path;
+    string release;
+    fullsize = 0;
+    release = YapiWrapper::ysprintf("%d",minrelease);
+    res = yapiCheckFirmware(serial.c_str(), release.c_str(), path.c_str(), smallbuff, 1024, &fullsize, errmsg);
+    if (res < 0) {
+        firmware_path = "error:" + string(errmsg);
+        return "error:" + string(errmsg);
+    }
+    if (fullsize <= 1024) {
+        firmware_path = string(smallbuff, fullsize);
+    } else {
+        buffsize = fullsize;
+        bigbuff = (char *)malloc(buffsize);
+        res = yapiCheckFirmware(serial.c_str(), release.c_str(), path.c_str(), bigbuff, buffsize, &fullsize, errmsg);
+        if (res < 0) {
+            firmware_path = "error:" + string(errmsg);
+        } else {
+            firmware_path = string(bigbuff, fullsize);
+        }
+        free(bigbuff);
+    }
+    return firmware_path;
+}
+
+/**
+ * Returns the progress of the firmware update, on a scale from 0 to 100. When the object is
+ * instantiated the progress is zero. The value is updated During the firmware update process, until
+ * the value of 100 is reached. The value of 100 mean that the firmware update is terminated with
+ * success. If an error occur during the firmware update a negative value is returned, and the
+ * error message can be retrieved with get_progressMessage.
+ * 
+ * @return an integer in the range 0 to 100 (percentage of completion) or
+ *         or a negative error code in case of failure.
+ */
+int YFirmwareUpdate::get_progress(void)
+{
+    this->_processMore(0);
     return _progress;
 }
 
@@ -284,6 +410,8 @@ string YFirmwareUpdate::get_progressMessage(void)
  */
 int YFirmwareUpdate::startUpdate(void)
 {
+    _progress = 0;
+    _progress_c = 0;
     this->_processMore(1);
     return _progress;
 }
@@ -1326,7 +1454,7 @@ int YFunction::_parserHelper(void)
 YFunction *YFunction::nextFunction(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -1338,7 +1466,7 @@ YFunction* YFunction::FirstFunction(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("Function", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {
@@ -1492,6 +1620,7 @@ vector<string> YFunction::_json_get_array(const string& json)
     vector<string> res;
     yJsonStateMachine j;
     const char *json_cstr,*last;
+    string backup = json;
     j.src = json_cstr = json.c_str();
     j.end = j.src + strlen(j.src);
     j.st = YJSON_START;
@@ -1508,6 +1637,11 @@ vector<string> YFunction::_json_get_array(const string& json)
             }
             break;
         }
+        if (j.st == YJSON_PARSE_ERROR) {
+            this->_throw(YAPI_IO_ERROR, "invalid JSON structure");
+            return res;
+        }
+
         if (j.depth == depth) {
             long location, length;
             while (*last == ',' || *last == '\n'){
@@ -1518,8 +1652,29 @@ vector<string> YFunction::_json_get_array(const string& json)
             string item = json.substr(location, length);
             res.push_back(item);
         }
-    } while (j.st != YJSON_PARSE_ARRAY);
+    } while (j.st != YJSON_PARSE_ARRAY );
     return res;
+}
+
+string  YFunction::_escapeAttr(const string& changeval)
+{
+    const char *p;
+    unsigned char c;
+    unsigned char esc[3];
+    string escaped = "";
+    esc[0] = '%';
+    for (p = changeval.c_str(); (c = *p) != 0; p++) {
+        if (c <= ' ' || (c > 'z' && c != '~') || c == '"' || c == '%' || c == '&' ||
+            c == '+' || c == '<' || c == '=' || c == '>' || c == '\\' || c == '^' || c == '`') {
+            esc[1] = (c >= 0xa0 ? (c >> 4) - 10 + 'A' : (c >> 4) + '0');
+            c &= 0xf;
+            esc[2] = (c >= 0xa ? c - 10 + 'A' : c + '0');
+            escaped.append((char*)esc, 3);
+        } else {
+            escaped.append((char*)&c, 1);
+        }
+    }
+    return escaped;
 }
 
 
@@ -1550,24 +1705,10 @@ YRETCODE  YFunction::_buildSetRequest( const string& changeattr, const string  *
     if(changeattr!="") {
         request.append(changeattr);
         if(changeval) {
-            const char *p;
-            unsigned char        c;
-            unsigned char       esc[3];
             request.append("?");
             request.append(changeattr);
             request.append("=");
-            esc[0]='%';
-            for(p=changeval->c_str(); (c = *p) != 0; p++) {
-                if(c <= ' ' || (c > 'z' && c != '~') || c == '"' || c == '%' || c == '&' ||
-                   c == '+' || c == '<' || c == '=' || c == '>' || c == '\\' || c == '^' || c == '`') {
-                    esc[1]=(c >= 0xa0 ? (c>>4)-10+'A' : (c>>4)+'0');
-                    c &= 0xf;
-                    esc[2]=(c >= 0xa ? c-10+'A' : c+'0');
-                    request.append((char*)esc,3);
-                } else {
-                    request.append((char*)&c,1);
-                }
-            }
+            request.append(_escapeAttr(*changeval));
         }
     }
     // don't append HTTP/1.1 so that we get light headers from hub
@@ -2471,57 +2612,6 @@ vector<int> YAPI::_decodeFloats(string sdat)
     return idat;
 }
 
-string YAPI::_flattenJsonStruct(string jsonbuffer)
-{
-    char errmsg[YOCTO_ERRMSG_LEN];
-    char smallbuff[1024];
-    char *buffer = smallbuff;
-    int  fullsize;
-    YRETCODE retcode;
-    string  res;
-
-    retcode = yapiGetAllJsonKeys(jsonbuffer.c_str(), buffer, sizeof(smallbuff), &fullsize, errmsg);
-    if (YISERR(retcode)) {
-        return "error:" + string(errmsg);
-    }
-    if (fullsize > (int) sizeof(smallbuff)) {
-        int newsize;
-        buffer = (char*)malloc(fullsize);
-        retcode = yapiGetAllJsonKeys(jsonbuffer.c_str(), buffer, fullsize, &newsize, errmsg);
-    }
-    res = string(buffer, fullsize);
-    if (buffer != smallbuff){
-        free(buffer);
-    }
-    return res;
-}
-
-string YAPI::_checkFirmware(const string& serial, const string& rev, const string& path)
-{
-    char errmsg[YOCTO_ERRMSG_LEN];
-    char smallbuff[1024];
-    char *buffer = smallbuff;
-    int  fullsize;
-    YRETCODE res;
-    string  firmware_path;
-
-    res = yapiCheckFirmware(serial.c_str(), rev.c_str(), path.c_str(), buffer, sizeof(smallbuff), &fullsize, errmsg);
-    if (YISERR(res)) {
-        return "error:"+string(errmsg);
-    }
-    if (fullsize > (int) sizeof(smallbuff)) {
-        char *buffer = (char*) malloc(fullsize);
-        res = yapiCheckFirmware(serial.c_str(), rev.c_str(), path.c_str(), buffer, fullsize, NULL, errmsg);
-
-    }
-    firmware_path = string(buffer, fullsize);
-    if (buffer != smallbuff){
-        free(buffer);
-    }
-    return firmware_path;
-}
-
-
 
 /**
  * Returns the version identifier for the Yoctopuce library in use.
@@ -3057,7 +3147,7 @@ YRETCODE YAPI::Sleep(unsigned ms_duration, string& errmsg)
             return res;
         }
         if(waituntil>YAPI::GetTickCount()){
-            res = yapiSleep(3, errbuf);
+            res = yapiSleep(2, errbuf);
             if(YISERR(res)) {
                 errmsg = errbuf;
                 return res;
@@ -3828,43 +3918,16 @@ int YModule::triggerFirmwareUpdate(int secBeforeReboot)
  */
 string YModule::checkFirmware(string path,bool onlynew)
 {
-    char errmsg[YOCTO_ERRMSG_LEN];
-    char smallbuff[1024];
-    char *bigbuff;
-    int buffsize = 0;
-    int fullsize = 0;
-    int res = 0;
-    string firmware_path;
     string serial;
-    string release;
+    int release = 0;
     if (onlynew) {
-        release = this->get_firmwareRelease();
+        release = atoi((this->get_firmwareRelease()).c_str());
     } else {
-        release = "";
+        release = 0;
     }
     //may throw an exception
-    serial = _serial;
-    fullsize = 0;
-    res = yapiCheckFirmware(serial.c_str(), release.c_str(), path.c_str(), smallbuff, 1024, &fullsize, errmsg);
-    if (res < 0) {
-        firmware_path = "error:" + string(errmsg);
-        return "error:" + string(errmsg);
-    }
-    if (fullsize <= 1024) {
-        firmware_path = string(smallbuff, fullsize);
-    } else {
-        buffsize = fullsize;
-        bigbuff = (char *)malloc(buffsize);
-        res = yapiCheckFirmware(serial.c_str(), release.c_str(), path.c_str(), bigbuff, buffsize, &fullsize, errmsg);
-        if (res < 0) {
-            this->_throw(YAPI_INVALID_ARGUMENT, string(errmsg));
-            firmware_path = "error:" + string(errmsg);
-        } else {
-            firmware_path = string(bigbuff, fullsize);
-        }
-        free(bigbuff);
-    }
-    return firmware_path;
+    serial = this->get_serialNumber();
+    return YFirmwareUpdate::CheckFirmware(serial,path, release);
 }
 
 /**
@@ -4160,12 +4223,12 @@ int YModule::set_allSettings(string settings)
     vector<string> old_dslist;
     vector<string> old_jpath;
     vector<int> old_jpath_len;
-    vector<string> old_val;
+    vector<string> old_val_arr;
     string actualSettings;
     vector<string> new_dslist;
     vector<string> new_jpath;
     vector<int> new_jpath_len;
-    vector<string> new_val;
+    vector<string> new_val_arr;
     int cpos = 0;
     int eqpos = 0;
     int leng = 0;
@@ -4182,14 +4245,16 @@ int YModule::set_allSettings(string settings)
     string sensorType;
     string unit_name;
     string newval;
+    string oldval;
     string old_calib;
     bool do_update;
     bool found;
+    oldval = "";
+    newval = "";
     old_json_flat = this->_flattenJsonStruct(settings);
     old_dslist = this->_json_get_array(old_json_flat);
     for (unsigned ii = 0; ii < old_dslist.size(); ii++) {
-        leng = (int)(old_dslist[ii]).length();
-        old_dslist[ii] = (old_dslist[ii]).substr( 1, leng - 2);
+        old_dslist[ii] = this->_json_get_string(old_dslist[ii]);
         leng = (int)(old_dslist[ii]).length();
         eqpos = _ystrpos(old_dslist[ii], "=");
         if ((eqpos < 0) || (leng == 0)) {
@@ -4201,15 +4266,14 @@ int YModule::set_allSettings(string settings)
         value = (old_dslist[ii]).substr( eqpos, leng - eqpos);
         old_jpath.push_back(jpath);
         old_jpath_len.push_back((int)(jpath).length());
-        old_val.push_back(value);;
+        old_val_arr.push_back(value);;
     }
     // may throw an exception
     actualSettings = this->_download("api.json");
     actualSettings = this->_flattenJsonStruct(actualSettings);
     new_dslist = this->_json_get_array(actualSettings);
     for (unsigned ii = 0; ii < new_dslist.size(); ii++) {
-        leng = (int)(new_dslist[ii]).length();
-        new_dslist[ii] = (new_dslist[ii]).substr( 1, leng - 2);
+        new_dslist[ii] = this->_json_get_string(new_dslist[ii]);
         leng = (int)(new_dslist[ii]).length();
         eqpos = _ystrpos(new_dslist[ii], "=");
         if ((eqpos < 0) || (leng == 0)) {
@@ -4221,7 +4285,7 @@ int YModule::set_allSettings(string settings)
         value = (new_dslist[ii]).substr( eqpos, leng - eqpos);
         new_jpath.push_back(jpath);
         new_jpath_len.push_back((int)(jpath).length());
-        new_val.push_back(value);;
+        new_val_arr.push_back(value);;
     }
     i = 0;
     while (i < (int)new_jpath.size()) {
@@ -4347,17 +4411,33 @@ int YModule::set_allSettings(string settings)
             do_update = false;
         }
         if (do_update) {
+            do_update = false;
+            newval = new_val_arr[i];
+            j = 0;
+            found = false;
+            while ((j < (int)old_jpath.size()) && !(found)) {
+                if ((new_jpath_len[i] == old_jpath_len[j]) && (new_jpath[i] == old_jpath[j])) {
+                    found = true;
+                    oldval = old_val_arr[j];
+                    if (!(newval == oldval)) {
+                        do_update = true;
+                    }
+                }
+                j = j + 1;
+            }
+        }
+        if (do_update) {
             if (attr == "calibrationParam") {
                 old_calib = "";
                 unit_name = "";
                 sensorType = "";
-                new_calib = new_val[i];
+                new_calib = newval;
                 j = 0;
                 found = false;
                 while ((j < (int)old_jpath.size()) && !(found)) {
                     if ((new_jpath_len[i] == old_jpath_len[j]) && (new_jpath[i] == old_jpath[j])) {
                         found = true;
-                        old_calib = old_val[j];
+                        old_calib = old_val_arr[j];
                     }
                     j = j + 1;
                 }
@@ -4381,23 +4461,15 @@ int YModule::set_allSettings(string settings)
                     }
                     j = j + 1;
                 }
-                newval = this->calibConvert(new_val[i], old_calib, unit_name, sensorType);
-                url = "api/" + fun + ".json?" + attr + "=" + newval;
+                newval = this->calibConvert(new_val_arr[i], old_calib, unit_name, sensorType);
+                url = "api/" + fun + ".json?" + attr + "=" + this->_escapeAttr(newval);
                 this->_download(url);
             } else {
-                j = 0;
-                found = false;
-                while ((j < (int)old_jpath_len.size()) && !(found)) {
-                    if ((new_jpath_len[i] == old_jpath_len[j]) && (new_jpath[i] == old_jpath[j])) {
-                        found = true;
-                        url = "api/" + fun + ".json?" + attr + "=" + old_val[j];
-                        if (attr == "resolution") {
-                            restoreLast.push_back(url);
-                        } else {
-                            this->_download(url);
-                        }
-                    }
-                    j = j + 1;
+                url = "api/" + fun + ".json?" + attr + "=" + this->_escapeAttr(oldval);
+                if (attr == "resolution") {
+                    restoreLast.push_back(url);
+                } else {
+                    this->_download(url);
                 }
             }
         }
@@ -4453,7 +4525,7 @@ string YModule::get_lastLogs(void)
 YModule *YModule::nextModule(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -4465,7 +4537,7 @@ YModule* YModule::FirstModule(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("Module", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {
@@ -5190,6 +5262,42 @@ int YSensor::_parserHelper(void)
 }
 
 /**
+ * Starts the data logger on the device. Note that the data logger
+ * will only save the measures on this sensor if the logFrequency
+ * is not set to "OFF".
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ */
+int YSensor::startDataLogger(void)
+{
+    string res;
+    // may throw an exception
+    res = this->_download("api/dataLogger/recording?recording=1");
+    if (!((int)(res).size()>0)) {
+        _throw(YAPI_IO_ERROR,"unable to start datalogger");
+        return YAPI_IO_ERROR;
+    }
+    return YAPI_SUCCESS;
+}
+
+/**
+ * Stops the datalogger on the device.
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ */
+int YSensor::stopDataLogger(void)
+{
+    string res;
+    // may throw an exception
+    res = this->_download("api/dataLogger/recording?recording=0");
+    if (!((int)(res).size()>0)) {
+        _throw(YAPI_IO_ERROR,"unable to stop datalogger");
+        return YAPI_IO_ERROR;
+    }
+    return YAPI_SUCCESS;
+}
+
+/**
  * Retrieves a DataSet object holding historical data for this
  * sensor, for a specified time interval. The measures will be
  * retrieved from the data logger, which must have been turned
@@ -5463,7 +5571,7 @@ YMeasure YSensor::_decodeTimedReport(double timestamp,vector<int> report)
             difRaw = 0;
             while ((sublen > 0) && (i < (int)report.size())) {
                 byteVal = report[i];
-                difRaw = avgRaw + poww * byteVal;
+                difRaw = difRaw + poww * byteVal;
                 poww = poww * 0x100;
                 i = i + 1;
                 sublen = sublen - 1;
@@ -5474,7 +5582,7 @@ YMeasure YSensor::_decodeTimedReport(double timestamp,vector<int> report)
             difRaw = 0;
             while ((sublen > 0) && (i < (int)report.size())) {
                 byteVal = report[i];
-                difRaw = avgRaw + poww * byteVal;
+                difRaw = difRaw + poww * byteVal;
                 poww = poww * 0x100;
                 i = i + 1;
                 sublen = sublen - 1;
@@ -5568,7 +5676,7 @@ double YSensor::_decodeAvg(int dw)
 YSensor *YSensor::nextSensor(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -5580,7 +5688,7 @@ YSensor* YSensor::FirstSensor(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("Sensor", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

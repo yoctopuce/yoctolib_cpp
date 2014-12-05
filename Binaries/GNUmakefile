@@ -95,9 +95,9 @@ OPTS_STAT =
 OPTS_DYN = -fPIC
 
 # most compatible ARMEL options, using soft-float
-OPTS_ARMEL = -mfloat-abi=soft -march=armv5
+OPTS_ARMEL = -mfloat-abi=soft -march=armv5 -DBUILD_ARMEL
 # reduced ARMHF options to run properly on raspian-thing, but still be compatible with hard-floats VFP
-OPTS_ARMHF = -mfloat-abi=hard -march=armv6 -marm
+OPTS_ARMHF = -mfloat-abi=hard -march=armv6 -marm -DBUILD_ARMHF
 OPTS_MIPS = -DCPU_BIG_ENDIAN -I$(MIPS_TARGET_ROOT)/usr/include/
 OPTS_X64 = -m64
 OPTS_I386 = -m32 -march=i586
@@ -142,7 +142,7 @@ YOCTO_API_OBJS_STAT = yocto_api.o yocto_anbutton.o yocto_carbondioxide.o yocto_c
 	yocto_temperature.o yocto_voc.o yocto_voltage.o yocto_wakeupmonitor.o yocto_wakeupschedule.o yocto_watchdog.o \
 	yocto_wireless.o yocto_digitalio.o yocto_accelerometer.o yocto_magnetometer.o yocto_refframe.o yocto_tilt.o \
 	yocto_compass.o yocto_gyro.o yocto_pwmoutput.o yocto_pwmpowersource.o yocto_altitude.o yocto_motor.o yocto_serialport.o \
-	yocto_pwminput.o
+	yocto_pwminput.o yocto_segmenteddisplay.o yocto_buzzer.o
 
 YOCTO_API_OBJS_DYN  = $(patsubst %.o, %_dyn.o,$(YOCTO_API_OBJS_STAT))
 
@@ -403,7 +403,7 @@ $(DIR_OSX)libyocto.dylib: $(DIR_OSX) $(ALL_OBJS_DYN_OSX) $(ALL_H)
 
 $(YAPI_DIR_OSX)libyapi.dylib: $(DIR_OSX) $(YAPI_OBJS_DYN_OSX) $(ALL_H)
 	@echo linking $@
-	@$(CC_OSX) -m64 -dynamiclib -Wl,-reexport_framework,IOKit,-reexport_framework,CoreFoundation,-headerpad_max_install_names,-undefined,dynamic_lookup,-compatibility_version,1.0,-current_version,1.0,-install_name,/usr/local/lib/libyapi.dylib -o $@ $(YAPI_OBJS_DYN_OSX)	
+	@$(CC_OSX) -m64 -dynamiclib -Wl,-reexport_framework,IOKit,-reexport_framework,CoreFoundation,-headerpad_max_install_names,-undefined,dynamic_lookup,-compatibility_version,1.0,-current_version,1.0,-install_name,/usr/local/lib/libyapi.dylib -o $@ $(YAPI_OBJS_DYN_OSX)
 
 i386: $(LIBS_I386)
 

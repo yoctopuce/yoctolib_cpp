@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwmpowersource.cpp 15529 2014-03-20 17:54:15Z seb $
+ * $Id: yocto_pwmpowersource.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindPwmPowerSource(), the high-level API for PwmPowerSource functions
  *
@@ -56,7 +56,7 @@ YPwmPowerSource::YPwmPowerSource(const string& func): YFunction(func)
     _className="PwmPowerSource";
 }
 
-YPwmPowerSource::~YPwmPowerSource() 
+YPwmPowerSource::~YPwmPowerSource()
 {
 //--- (YPwmPowerSource cleanup)
 //--- (end of YPwmPowerSource cleanup)
@@ -194,7 +194,7 @@ int YPwmPowerSource::_invokeValueCallback(string value)
 YPwmPowerSource *YPwmPowerSource::nextPwmPowerSource(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -206,7 +206,7 @@ YPwmPowerSource* YPwmPowerSource::FirstPwmPowerSource(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("PwmPowerSource", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

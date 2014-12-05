@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yjson.h 13562 2013-11-14 09:55:44Z mvuilleu $
+ * $Id: yjson.h 18000 2014-10-10 16:43:40Z mvuilleu $
  *
  * Simple JSON parser (actually a slightly enhanced lexer)
  *
@@ -77,8 +77,8 @@ extern const char* yJsonStateStr[];
 #endif
 
 typedef struct {
-    const char  *src;                   // pointer to source buffer to parse (initialized by caller)
-    const char  *end;                   // pointer to end of source data (initialized by caller)
+    _FAR const char *src;               // pointer to source buffer to parse (initialized by caller)
+    _FAR const char *end;               // pointer to end of source data (initialized by caller)
     yJsonState  st;                     // current state (initialized by caller)
     yJsonState  next;                   // next state (when returning with parse_avail)
     yJsonState  stack[YJSON_MAX_DEPTH]; // state stack for handling nested structures

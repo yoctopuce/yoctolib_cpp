@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_hubport.cpp 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_hubport.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindHubPort(), the high-level API for HubPort functions
  *
@@ -58,7 +58,7 @@ YHubPort::YHubPort(const string& func): YFunction(func)
     _className="HubPort";
 }
 
-YHubPort::~YHubPort() 
+YHubPort::~YHubPort()
 {
 //--- (YHubPort cleanup)
 //--- (end of YHubPort cleanup)
@@ -237,7 +237,7 @@ int YHubPort::_invokeValueCallback(string value)
 YHubPort *YHubPort::nextHubPort(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -249,7 +249,7 @@ YHubPort* YHubPort::FirstHubPort(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("HubPort", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

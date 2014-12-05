@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_refframe.cpp 17481 2014-09-03 09:38:35Z mvuilleu $
+ * $Id: yocto_refframe.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -70,7 +70,7 @@ YRefFrame::YRefFrame(const string& func): YFunction(func)
     _className="RefFrame";
 }
 
-YRefFrame::~YRefFrame() 
+YRefFrame::~YRefFrame()
 {
 //--- (YRefFrame cleanup)
 //--- (end of YRefFrame cleanup)
@@ -784,7 +784,7 @@ int YRefFrame::cancel3DCalibration(void)
 YRefFrame *YRefFrame::nextRefFrame(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -796,7 +796,7 @@ YRefFrame* YRefFrame::FirstRefFrame(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("RefFrame", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorled.cpp 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_colorled.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -54,13 +54,17 @@ YColorLed::YColorLed(const string& func): YFunction(func)
     ,_rgbMove(RGBMOVE_INVALID)
     ,_hslMove(HSLMOVE_INVALID)
     ,_rgbColorAtPowerOn(RGBCOLORATPOWERON_INVALID)
+    ,_blinkSeqSize(BLINKSEQSIZE_INVALID)
+    ,_blinkSeqMaxSize(BLINKSEQMAXSIZE_INVALID)
+    ,_blinkSeqSignature(BLINKSEQSIGNATURE_INVALID)
+    ,_command(COMMAND_INVALID)
     ,_valueCallbackColorLed(NULL)
 //--- (end of ColorLed initialization)
 {
     _className="ColorLed";
 }
 
-YColorLed::~YColorLed() 
+YColorLed::~YColorLed()
 {
 //--- (YColorLed cleanup)
 //--- (end of YColorLed cleanup)
@@ -69,6 +73,7 @@ YColorLed::~YColorLed()
 // static attributes
 const YMove YColorLed::RGBMOVE_INVALID = YMove();
 const YMove YColorLed::HSLMOVE_INVALID = YMove();
+const string YColorLed::COMMAND_INVALID = YAPI_INVALID_STRING;
 
 int YColorLed::_parseAttr(yJsonStateMachine& j)
 {
@@ -121,6 +126,26 @@ int YColorLed::_parseAttr(yJsonStateMachine& j)
     if(!strcmp(j.token, "rgbColorAtPowerOn")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _rgbColorAtPowerOn =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "blinkSeqSize")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _blinkSeqSize =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "blinkSeqMaxSize")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _blinkSeqMaxSize =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "blinkSeqSignature")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _blinkSeqSignature =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "command")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _command =  _parseString(j);
         return 1;
     }
     failed:
@@ -281,9 +306,6 @@ int YColorLed::get_rgbColorAtPowerOn(void)
 
 /**
  * Changes the color that the led will display by default when the module is turned on.
- * This color will be displayed as soon as the module is powered on.
- * Remember to call the saveToFlash() method of the module if the
- * change should be kept.
  * 
  * @param newval : an integer corresponding to the color that the led will display by default when the
  * module is turned on
@@ -297,6 +319,77 @@ int YColorLed::set_rgbColorAtPowerOn(int newval)
     string rest_val;
     char buf[32]; sprintf(buf,"0x%06x",newval); rest_val = string(buf);
     return _setAttr("rgbColorAtPowerOn", rest_val);
+}
+
+/**
+ * Returns the current length of the blinking sequence
+ * 
+ * @return an integer corresponding to the current length of the blinking sequence
+ * 
+ * On failure, throws an exception or returns Y_BLINKSEQSIZE_INVALID.
+ */
+int YColorLed::get_blinkSeqSize(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YColorLed::BLINKSEQSIZE_INVALID;
+        }
+    }
+    return _blinkSeqSize;
+}
+
+/**
+ * Returns the maximum length of the blinking sequence
+ * 
+ * @return an integer corresponding to the maximum length of the blinking sequence
+ * 
+ * On failure, throws an exception or returns Y_BLINKSEQMAXSIZE_INVALID.
+ */
+int YColorLed::get_blinkSeqMaxSize(void)
+{
+    if (_cacheExpiration == 0) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YColorLed::BLINKSEQMAXSIZE_INVALID;
+        }
+    }
+    return _blinkSeqMaxSize;
+}
+
+/**
+ * Return the blinking sequence signature. Since blinking
+ * sequences cannot be read from the device, this can be used
+ * to detect if a specific blinking sequence is already
+ * programmed.
+ * 
+ * @return an integer
+ * 
+ * On failure, throws an exception or returns Y_BLINKSEQSIGNATURE_INVALID.
+ */
+int YColorLed::get_blinkSeqSignature(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YColorLed::BLINKSEQSIGNATURE_INVALID;
+        }
+    }
+    return _blinkSeqSignature;
+}
+
+string YColorLed::get_command(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YColorLed::COMMAND_INVALID;
+        }
+    }
+    return _command;
+}
+
+int YColorLed::set_command(const string& newval)
+{
+    string rest_val;
+    rest_val = newval;
+    return _setAttr("command", rest_val);
 }
 
 /**
@@ -373,10 +466,80 @@ int YColorLed::_invokeValueCallback(string value)
     return 0;
 }
 
+int YColorLed::sendCommand(string command)
+{
+    return this->set_command(command);
+}
+
+/**
+ * Add a new transition to the blinking sequence, the move will
+ * be performed in the HSL space.
+ * 
+ * @param HSLcolor : desired HSL color when the traisntion is completed
+ * @param msDelay : duration of the color transition, in milliseconds.
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ *         On failure, throws an exception or returns a negative error code.
+ */
+int YColorLed::addHslMoveToBlinkSeq(int HSLcolor,int msDelay)
+{
+    return this->sendCommand(YapiWrapper::ysprintf("H%d,%d",HSLcolor,msDelay));
+}
+
+/**
+ * Add a new transition to the blinking sequence, the move will
+ * be performed in the RGB space.
+ * 
+ * @param RGBcolor : desired RGB color when the transition is completed
+ * @param msDelay : duration of the color transition, in milliseconds.
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ *         On failure, throws an exception or returns a negative error code.
+ */
+int YColorLed::addRgbMoveToBlinkSeq(int RGBcolor,int msDelay)
+{
+    return this->sendCommand(YapiWrapper::ysprintf("R%d,%d",RGBcolor,msDelay));
+}
+
+/**
+ * Starts the preprogrammed blinking sequence. The sequence will
+ * run in loop until it is stopped by stopBlinkSeq or an explicit
+ * change.
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ *         On failure, throws an exception or returns a negative error code.
+ */
+int YColorLed::startBlinkSeq(void)
+{
+    return this->sendCommand("S");
+}
+
+/**
+ * Stops the preprogrammed blinking sequence.
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ *         On failure, throws an exception or returns a negative error code.
+ */
+int YColorLed::stopBlinkSeq(void)
+{
+    return this->sendCommand("X");
+}
+
+/**
+ * Resets the preprogrammed blinking sequence.
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ *         On failure, throws an exception or returns a negative error code.
+ */
+int YColorLed::resetBlinkSeq(void)
+{
+    return this->sendCommand("Z");
+}
+
 YColorLed *YColorLed::nextColorLed(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -388,7 +551,7 @@ YColorLed* YColorLed::FirstColorLed(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("ColorLed", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

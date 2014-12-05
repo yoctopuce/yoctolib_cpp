@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwmoutput.cpp 17481 2014-09-03 09:38:35Z mvuilleu $
+ * $Id: yocto_pwmoutput.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindPwmOutput(), the high-level API for PwmOutput functions
  *
@@ -63,7 +63,7 @@ YPwmOutput::YPwmOutput(const string& func): YFunction(func)
     _className="PwmOutput";
 }
 
-YPwmOutput::~YPwmOutput() 
+YPwmOutput::~YPwmOutput()
 {
 //--- (YPwmOutput cleanup)
 //--- (end of YPwmOutput cleanup)
@@ -503,7 +503,7 @@ int YPwmOutput::dutyCycleMove(double target,int ms_duration)
 YPwmOutput *YPwmOutput::nextPwmOutput(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -515,7 +515,7 @@ YPwmOutput* YPwmOutput::FirstPwmOutput(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("PwmOutput", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

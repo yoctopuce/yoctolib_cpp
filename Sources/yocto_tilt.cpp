@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_tilt.cpp 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_tilt.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindTilt(), the high-level API for Tilt functions
  *
@@ -57,7 +57,7 @@ YTilt::YTilt(const string& func): YSensor(func)
     _className="Tilt";
 }
 
-YTilt::~YTilt() 
+YTilt::~YTilt()
 {
 //--- (YTilt cleanup)
 //--- (end of YTilt cleanup)
@@ -196,7 +196,7 @@ int YTilt::_invokeTimedReportCallback(YMeasure value)
 YTilt *YTilt::nextTilt(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -208,7 +208,7 @@ YTilt* YTilt::FirstTilt(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("Tilt", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

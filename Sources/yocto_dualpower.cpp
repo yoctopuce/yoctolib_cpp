@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_dualpower.cpp 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_dualpower.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindDualPower(), the high-level API for DualPower functions
  *
@@ -58,7 +58,7 @@ YDualPower::YDualPower(const string& func): YFunction(func)
     _className="DualPower";
 }
 
-YDualPower::~YDualPower() 
+YDualPower::~YDualPower()
 {
 //--- (YDualPower cleanup)
 //--- (end of YDualPower cleanup)
@@ -236,7 +236,7 @@ int YDualPower::_invokeValueCallback(string value)
 YDualPower *YDualPower::nextDualPower(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -248,7 +248,7 @@ YDualPower* YDualPower::FirstDualPower(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("DualPower", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

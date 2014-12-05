@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pressure.cpp 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_pressure.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindPressure(), the high-level API for Pressure functions
  *
@@ -56,7 +56,7 @@ YPressure::YPressure(const string& func): YSensor(func)
     _className="Pressure";
 }
 
-YPressure::~YPressure() 
+YPressure::~YPressure()
 {
 //--- (YPressure cleanup)
 //--- (end of YPressure cleanup)
@@ -174,7 +174,7 @@ int YPressure::_invokeTimedReportCallback(YMeasure value)
 YPressure *YPressure::nextPressure(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -186,7 +186,7 @@ YPressure* YPressure::FirstPressure(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("Pressure", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

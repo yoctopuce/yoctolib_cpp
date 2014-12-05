@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_lightsensor.cpp 17655 2014-09-16 12:24:27Z mvuilleu $
+ * $Id: yocto_lightsensor.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindLightSensor(), the high-level API for LightSensor functions
  *
@@ -57,7 +57,7 @@ YLightSensor::YLightSensor(const string& func): YSensor(func)
     _className="LightSensor";
 }
 
-YLightSensor::~YLightSensor() 
+YLightSensor::~YLightSensor()
 {
 //--- (YLightSensor cleanup)
 //--- (end of YLightSensor cleanup)
@@ -252,7 +252,7 @@ int YLightSensor::_invokeTimedReportCallback(YMeasure value)
 YLightSensor *YLightSensor::nextLightSensor(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -264,7 +264,7 @@ YLightSensor* YLightSensor::FirstLightSensor(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("LightSensor", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

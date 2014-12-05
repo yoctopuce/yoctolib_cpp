@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwmoutput.h 17481 2014-09-03 09:38:35Z mvuilleu $
+ * $Id: yocto_pwmoutput.h 18320 2014-11-10 10:47:48Z seb $
  *
  * Declares yFindPwmOutput(), the high-level API for PwmOutput functions
  *
@@ -60,7 +60,6 @@ typedef enum {
     Y_ENABLED_INVALID = -1,
 } Y_ENABLED_enum;
 #endif
-
 #ifndef _Y_ENABLEDATPOWERON_ENUM
 #define _Y_ENABLEDATPOWERON_ENUM
 typedef enum {
@@ -69,7 +68,6 @@ typedef enum {
     Y_ENABLEDATPOWERON_INVALID = -1,
 } Y_ENABLEDATPOWERON_enum;
 #endif
-
 #define Y_FREQUENCY_INVALID             (YAPI_INVALID_DOUBLE)
 #define Y_PERIOD_INVALID                (YAPI_INVALID_DOUBLE)
 #define Y_DUTYCYCLE_INVALID             (YAPI_INVALID_DOUBLE)

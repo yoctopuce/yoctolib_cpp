@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_realtimeclock.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_realtimeclock.h 18320 2014-11-10 10:47:48Z seb $
  *
  * Declares yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *
@@ -60,7 +60,6 @@ typedef enum {
     Y_TIMESET_INVALID = -1,
 } Y_TIMESET_enum;
 #endif
-
 #define Y_UNIXTIME_INVALID              (YAPI_INVALID_LONG)
 #define Y_DATETIME_INVALID              (YAPI_INVALID_STRING)
 #define Y_UTCOFFSET_INVALID             (YAPI_INVALID_INT)

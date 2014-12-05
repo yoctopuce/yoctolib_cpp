@@ -7,11 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4913476D1A14EE6D00F647C3 /* yocto_buzzer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4913476B1A14EE6D00F647C3 /* yocto_buzzer.cpp */; };
 		B82F4E8B18C9D62A009320CE /* yocto_pwmoutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B82F4E8718C9D62A009320CE /* yocto_pwmoutput.cpp */; };
 		B82F4E8C18C9D62A009320CE /* yocto_pwmpowersource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B82F4E8918C9D62A009320CE /* yocto_pwmpowersource.cpp */; };
 		B8447F5314726957008342F7 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B8447F5214726957008342F7 /* IOKit.framework */; };
 		B8447F5514726963008342F7 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B8447F5414726963008342F7 /* CoreFoundation.framework */; };
 		B857C03C17E0C73D00515071 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B857C03B17E0C73D00515071 /* main.cpp */; };
+		B85A77681A0A62F6004DEF29 /* yocto_segmenteddisplay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B85A77661A0A62F6004DEF29 /* yocto_segmenteddisplay.cpp */; };
 		B8989EB3191BEAF600E2585B /* yocto_altitude.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8989EB1191BEAF600E2585B /* yocto_altitude.cpp */; };
 		B8989EB6191BEB0900E2585B /* yocto_motor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8989EB4191BEB0900E2585B /* yocto_motor.cpp */; };
 		B8A727E217E0CD3A005705C0 /* yapi.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A7278D17E0CD3A005705C0 /* yapi.c */; };
@@ -79,6 +81,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4913476B1A14EE6D00F647C3 /* yocto_buzzer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_buzzer.cpp; path = ../../../Sources/yocto_buzzer.cpp; sourceTree = "<group>"; };
+		4913476C1A14EE6D00F647C3 /* yocto_buzzer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_buzzer.h; path = ../../../Sources/yocto_buzzer.h; sourceTree = "<group>"; };
 		B82F4E8718C9D62A009320CE /* yocto_pwmoutput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_pwmoutput.cpp; path = ../../../Sources/yocto_pwmoutput.cpp; sourceTree = "<group>"; };
 		B82F4E8818C9D62A009320CE /* yocto_pwmoutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_pwmoutput.h; path = ../../../Sources/yocto_pwmoutput.h; sourceTree = "<group>"; };
 		B82F4E8918C9D62A009320CE /* yocto_pwmpowersource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_pwmpowersource.cpp; path = ../../../Sources/yocto_pwmpowersource.cpp; sourceTree = "<group>"; };
@@ -86,6 +90,8 @@
 		B8447F5214726957008342F7 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		B8447F5414726963008342F7 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		B857C03B17E0C73D00515071 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../main.cpp; sourceTree = "<group>"; };
+		B85A77661A0A62F6004DEF29 /* yocto_segmenteddisplay.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_segmenteddisplay.cpp; path = ../../../Sources/yocto_segmenteddisplay.cpp; sourceTree = "<group>"; };
+		B85A77671A0A62F6004DEF29 /* yocto_segmenteddisplay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_segmenteddisplay.h; path = ../../../Sources/yocto_segmenteddisplay.h; sourceTree = "<group>"; };
 		B8989EB1191BEAF600E2585B /* yocto_altitude.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_altitude.cpp; path = ../../../Sources/yocto_altitude.cpp; sourceTree = "<group>"; };
 		B8989EB2191BEAF600E2585B /* yocto_altitude.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_altitude.h; path = ../../../Sources/yocto_altitude.h; sourceTree = "<group>"; };
 		B8989EB4191BEB0900E2585B /* yocto_motor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_motor.cpp; path = ../../../Sources/yocto_motor.cpp; sourceTree = "<group>"; };
@@ -219,6 +225,8 @@
 				B8A727A917E0CD3A005705C0 /* yocto_anbutton.h */,
 				B8A727AA17E0CD3A005705C0 /* yocto_api.cpp */,
 				B8A727AB17E0CD3A005705C0 /* yocto_api.h */,
+				4913476B1A14EE6D00F647C3 /* yocto_buzzer.cpp */,
+				4913476C1A14EE6D00F647C3 /* yocto_buzzer.h */,
 				B8A727AC17E0CD3A005705C0 /* yocto_carbondioxide.cpp */,
 				B8A727AD17E0CD3A005705C0 /* yocto_carbondioxide.h */,
 				B8A727AE17E0CD3A005705C0 /* yocto_colorled.cpp */,
@@ -273,6 +281,8 @@
 				B8DB382818C0D5FB00CD54ED /* yocto_refframe.h */,
 				B8A727D017E0CD3A005705C0 /* yocto_relay.cpp */,
 				B8A727D117E0CD3A005705C0 /* yocto_relay.h */,
+				B85A77661A0A62F6004DEF29 /* yocto_segmenteddisplay.cpp */,
+				B85A77671A0A62F6004DEF29 /* yocto_segmenteddisplay.h */,
 				B8F2FD5D19B4C4E1005F9AE9 /* yocto_serialport.cpp */,
 				B8F2FD5E19B4C4E1005F9AE9 /* yocto_serialport.h */,
 				B8A727D217E0CD3A005705C0 /* yocto_servo.cpp */,
@@ -457,6 +467,8 @@
 				B8989EB6191BEB0900E2585B /* yocto_motor.cpp in Sources */,
 				B8F2FD5F19B4C4E1005F9AE9 /* yocto_serialport.cpp in Sources */,
 				B8D7A57819D0091A00D0833E /* yocto_pwminput.cpp in Sources */,
+				4913476D1A14EE6D00F647C3 /* yocto_buzzer.cpp in Sources */,
+				B85A77681A0A62F6004DEF29 /* yocto_segmenteddisplay.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_temperature.cpp 16543 2014-06-13 12:15:09Z mvuilleu $
+ * $Id: yocto_temperature.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindTemperature(), the high-level API for Temperature functions
  *
@@ -50,6 +50,7 @@
 YTemperature::YTemperature(const string& func): YSensor(func)
 //--- (Temperature initialization)
     ,_sensorType(SENSORTYPE_INVALID)
+    ,_command(COMMAND_INVALID)
     ,_valueCallbackTemperature(NULL)
     ,_timedReportCallbackTemperature(NULL)
 //--- (end of Temperature initialization)
@@ -57,19 +58,25 @@ YTemperature::YTemperature(const string& func): YSensor(func)
     _className="Temperature";
 }
 
-YTemperature::~YTemperature() 
+YTemperature::~YTemperature()
 {
 //--- (YTemperature cleanup)
 //--- (end of YTemperature cleanup)
 }
 //--- (YTemperature implementation)
 // static attributes
+const string YTemperature::COMMAND_INVALID = YAPI_INVALID_STRING;
 
 int YTemperature::_parseAttr(yJsonStateMachine& j)
 {
     if(!strcmp(j.token, "sensorType")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _sensorType =  (Y_SENSORTYPE_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "command")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _command =  _parseString(j);
         return 1;
     }
     failed:
@@ -82,8 +89,9 @@ int YTemperature::_parseAttr(yJsonStateMachine& j)
  * 
  * @return a value among Y_SENSORTYPE_DIGITAL, Y_SENSORTYPE_TYPE_K, Y_SENSORTYPE_TYPE_E,
  * Y_SENSORTYPE_TYPE_J, Y_SENSORTYPE_TYPE_N, Y_SENSORTYPE_TYPE_R, Y_SENSORTYPE_TYPE_S,
- * Y_SENSORTYPE_TYPE_T, Y_SENSORTYPE_PT100_4WIRES, Y_SENSORTYPE_PT100_3WIRES and
- * Y_SENSORTYPE_PT100_2WIRES corresponding to the temperature sensor type
+ * Y_SENSORTYPE_TYPE_T, Y_SENSORTYPE_PT100_4WIRES, Y_SENSORTYPE_PT100_3WIRES,
+ * Y_SENSORTYPE_PT100_2WIRES, Y_SENSORTYPE_RES_OHM, Y_SENSORTYPE_RES_NTC and Y_SENSORTYPE_RES_LINEAR
+ * corresponding to the temperature sensor type
  * 
  * On failure, throws an exception or returns Y_SENSORTYPE_INVALID.
  */
@@ -106,7 +114,8 @@ Y_SENSORTYPE_enum YTemperature::get_sensorType(void)
  * 
  * @param newval : a value among Y_SENSORTYPE_DIGITAL, Y_SENSORTYPE_TYPE_K, Y_SENSORTYPE_TYPE_E,
  * Y_SENSORTYPE_TYPE_J, Y_SENSORTYPE_TYPE_N, Y_SENSORTYPE_TYPE_R, Y_SENSORTYPE_TYPE_S,
- * Y_SENSORTYPE_TYPE_T, Y_SENSORTYPE_PT100_4WIRES, Y_SENSORTYPE_PT100_3WIRES and Y_SENSORTYPE_PT100_2WIRES
+ * Y_SENSORTYPE_TYPE_T, Y_SENSORTYPE_PT100_4WIRES, Y_SENSORTYPE_PT100_3WIRES,
+ * Y_SENSORTYPE_PT100_2WIRES, Y_SENSORTYPE_RES_OHM, Y_SENSORTYPE_RES_NTC and Y_SENSORTYPE_RES_LINEAR
  * 
  * @return YAPI_SUCCESS if the call succeeds.
  * 
@@ -117,6 +126,23 @@ int YTemperature::set_sensorType(Y_SENSORTYPE_enum newval)
     string rest_val;
     char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
     return _setAttr("sensorType", rest_val);
+}
+
+string YTemperature::get_command(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YTemperature::COMMAND_INVALID;
+        }
+    }
+    return _command;
+}
+
+int YTemperature::set_command(const string& newval)
+{
+    string rest_val;
+    rest_val = newval;
+    return _setAttr("command", rest_val);
 }
 
 /**
@@ -225,10 +251,158 @@ int YTemperature::_invokeTimedReportCallback(YMeasure value)
     return 0;
 }
 
+/**
+ * Record a thermistor response table, for interpolating the temperature from
+ * the measured resistance. This function can only be used with temperature
+ * sensor based on thermistors.
+ * 
+ * @param tempValues : array of floating point numbers, corresponding to all
+ *         temperatures (in degrees Celcius) for which the resistance of the
+ *         thermistor is specified.
+ * @param resValues : array of floating point numbers, corresponding to the resistance
+ *         values (in Ohms) for each of the temperature included in the first
+ *         argument, index by index.
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YTemperature::set_thermistorResponseTable(vector<double> tempValues,vector<double> resValues)
+{
+    int siz = 0;
+    int res = 0;
+    int idx = 0;
+    int found = 0;
+    double prev = 0.0;
+    double curr = 0.0;
+    double currTemp = 0.0;
+    double idxres = 0.0;
+    siz = (int)tempValues.size();
+    if (!(siz >= 2)) {
+        _throw(YAPI_INVALID_ARGUMENT,"thermistor response table must have at least two points");
+        return YAPI_INVALID_ARGUMENT;
+    }
+    if (!(siz == (int)resValues.size())) {
+        _throw(YAPI_INVALID_ARGUMENT,"table sizes mismatch");
+        return YAPI_INVALID_ARGUMENT;
+    }
+    
+    // may throw an exception
+    res = this->set_command("Z");
+    if (!(res==YAPI_SUCCESS)) {
+        _throw(YAPI_IO_ERROR,"unable to reset thermistor parameters");
+        return YAPI_IO_ERROR;
+    }
+    
+    // add records in growing resistance value
+    found = 1;
+    prev = 0.0;
+    while (found > 0) {
+        found = 0;
+        curr = 99999999.0;
+        currTemp = -999999.0;
+        idx = 0;
+        while (idx < siz) {
+            idxres = resValues[idx];
+            if ((idxres > prev) && (idxres < curr)) {
+                curr = idxres;
+                currTemp = tempValues[idx];
+                found = 1;
+            }
+            idx = idx + 1;
+        }
+        if (found > 0) {
+            res = this->set_command(YapiWrapper::ysprintf("m%d:%d", (int) floor(1000*curr+0.5),(int) floor(1000*currTemp+0.5)));
+            if (!(res==YAPI_SUCCESS)) {
+                _throw(YAPI_IO_ERROR,"unable to reset thermistor parameters");
+                return YAPI_IO_ERROR;
+            }
+            prev = curr;
+        }
+    }
+    return YAPI_SUCCESS;
+}
+
+/**
+ * Retrieves the thermistor response table previously configured using function
+ * set_thermistorResponseTable. This function can only be used with
+ * temperature sensor based on thermistors.
+ * 
+ * @param tempValues : array of floating point numbers, that will be filled by the function
+ *         with all temperatures (in degrees Celcius) for which the resistance
+ *         of the thermistor is specified.
+ * @param resValues : array of floating point numbers, that will be filled by the function
+ *         with the value (in Ohms) for each of the temperature included in the
+ *         first argument, index by index.
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YTemperature::loadThermistorResponseTable(vector<double>& tempValues,vector<double>& resValues)
+{
+    string id;
+    string bin_json;
+    vector<string> paramlist;
+    vector<double> templist;
+    int siz = 0;
+    int idx = 0;
+    double temp = 0.0;
+    int found = 0;
+    double prev = 0.0;
+    double curr = 0.0;
+    double currRes = 0.0;
+    
+    tempValues.clear();
+    resValues.clear();
+    
+    // may throw an exception
+    id = this->get_functionId();
+    id = (id).substr( 11, (int)(id).length()-1);
+    bin_json = this->_download(YapiWrapper::ysprintf("extra.json?page=%s",id.c_str()));
+    paramlist = this->_json_get_array(bin_json);
+    // first convert all temperatures to float
+    siz = (((int)paramlist.size()) >> (1));
+    templist.clear();
+    idx = 0;
+    while (idx < siz) {
+        temp = atof((paramlist[2*idx+1]).c_str())/1000.0;
+        templist.push_back(temp);
+        idx = idx + 1;
+    }
+    // then add records in growing temperature value
+    tempValues.clear();
+    resValues.clear();
+    found = 1;
+    prev = -999999.0;
+    while (found > 0) {
+        found = 0;
+        curr = 999999.0;
+        currRes = -999999.0;
+        idx = 0;
+        while (idx < siz) {
+            temp = templist[idx];
+            if ((temp > prev) && (temp < curr)) {
+                curr = temp;
+                currRes = atof((paramlist[2*idx]).c_str())/1000.0;
+                found = 1;
+            }
+            idx = idx + 1;
+        }
+        if (found > 0) {
+            tempValues.push_back(curr);
+            resValues.push_back(currRes);
+            prev = curr;
+        }
+    }
+    
+    return YAPI_SUCCESS;
+}
+
 YTemperature *YTemperature::nextTemperature(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -240,7 +414,7 @@ YTemperature* YTemperature::FirstTemperature(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("Temperature", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

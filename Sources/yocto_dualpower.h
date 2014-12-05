@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_dualpower.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_dualpower.h 18320 2014-11-10 10:47:48Z seb $
  *
  * Declares yFindDualPower(), the high-level API for DualPower functions
  *
@@ -61,7 +61,6 @@ typedef enum {
     Y_POWERSTATE_INVALID = -1,
 } Y_POWERSTATE_enum;
 #endif
-
 #ifndef _Y_POWERCONTROL_ENUM
 #define _Y_POWERCONTROL_ENUM
 typedef enum {
@@ -72,7 +71,6 @@ typedef enum {
     Y_POWERCONTROL_INVALID = -1,
 } Y_POWERCONTROL_enum;
 #endif
-
 #define Y_EXTVOLTAGE_INVALID            (YAPI_INVALID_UINT)
 //--- (end of YDualPower definitions)
 

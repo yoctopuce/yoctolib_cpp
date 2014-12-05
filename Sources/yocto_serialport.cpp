@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 17777 2014-09-23 08:33:15Z seb $
+ * $Id: yocto_serialport.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -54,8 +54,10 @@ YSerialPort::YSerialPort(const string& func): YFunction(func)
     ,_rxCount(RXCOUNT_INVALID)
     ,_txCount(TXCOUNT_INVALID)
     ,_errCount(ERRCOUNT_INVALID)
-    ,_msgCount(MSGCOUNT_INVALID)
+    ,_rxMsgCount(RXMSGCOUNT_INVALID)
+    ,_txMsgCount(TXMSGCOUNT_INVALID)
     ,_lastMsg(LASTMSG_INVALID)
+    ,_startupJob(STARTUPJOB_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackSerialPort(NULL)
     ,_rxptr(0)
@@ -64,7 +66,7 @@ YSerialPort::YSerialPort(const string& func): YFunction(func)
     _className="SerialPort";
 }
 
-YSerialPort::~YSerialPort() 
+YSerialPort::~YSerialPort()
 {
 //--- (YSerialPort cleanup)
 //--- (end of YSerialPort cleanup)
@@ -74,6 +76,7 @@ YSerialPort::~YSerialPort()
 const string YSerialPort::SERIALMODE_INVALID = YAPI_INVALID_STRING;
 const string YSerialPort::PROTOCOL_INVALID = YAPI_INVALID_STRING;
 const string YSerialPort::LASTMSG_INVALID = YAPI_INVALID_STRING;
+const string YSerialPort::STARTUPJOB_INVALID = YAPI_INVALID_STRING;
 const string YSerialPort::COMMAND_INVALID = YAPI_INVALID_STRING;
 
 int YSerialPort::_parseAttr(yJsonStateMachine& j)
@@ -103,14 +106,24 @@ int YSerialPort::_parseAttr(yJsonStateMachine& j)
         _errCount =  atoi(j.token);
         return 1;
     }
-    if(!strcmp(j.token, "msgCount")) {
+    if(!strcmp(j.token, "rxMsgCount")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _msgCount =  atoi(j.token);
+        _rxMsgCount =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "txMsgCount")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _txMsgCount =  atoi(j.token);
         return 1;
     }
     if(!strcmp(j.token, "lastMsg")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _lastMsg =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "startupJob")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _startupJob =  _parseString(j);
         return 1;
     }
     if(!strcmp(j.token, "command")) {
@@ -269,16 +282,33 @@ int YSerialPort::get_errCount(void)
  * 
  * @return an integer corresponding to the total number of messages received since last reset
  * 
- * On failure, throws an exception or returns Y_MSGCOUNT_INVALID.
+ * On failure, throws an exception or returns Y_RXMSGCOUNT_INVALID.
  */
-int YSerialPort::get_msgCount(void)
+int YSerialPort::get_rxMsgCount(void)
 {
     if (_cacheExpiration <= YAPI::GetTickCount()) {
         if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSerialPort::MSGCOUNT_INVALID;
+            return YSerialPort::RXMSGCOUNT_INVALID;
         }
     }
-    return _msgCount;
+    return _rxMsgCount;
+}
+
+/**
+ * Returns the total number of messages send since last reset.
+ * 
+ * @return an integer corresponding to the total number of messages send since last reset
+ * 
+ * On failure, throws an exception or returns Y_TXMSGCOUNT_INVALID.
+ */
+int YSerialPort::get_txMsgCount(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YSerialPort::TXMSGCOUNT_INVALID;
+        }
+    }
+    return _txMsgCount;
 }
 
 /**
@@ -296,6 +326,41 @@ string YSerialPort::get_lastMsg(void)
         }
     }
     return _lastMsg;
+}
+
+/**
+ * Returns the job file to use when the device is powered on.
+ * 
+ * @return a string corresponding to the job file to use when the device is powered on
+ * 
+ * On failure, throws an exception or returns Y_STARTUPJOB_INVALID.
+ */
+string YSerialPort::get_startupJob(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YSerialPort::STARTUPJOB_INVALID;
+        }
+    }
+    return _startupJob;
+}
+
+/**
+ * Changes the job to use when the device is powered on.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
+ * 
+ * @param newval : a string corresponding to the job to use when the device is powered on
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YSerialPort::set_startupJob(const string& newval)
+{
+    string rest_val;
+    rest_val = newval;
+    return _setAttr("startupJob", rest_val);
 }
 
 string YSerialPort::get_command(void)
@@ -435,7 +500,6 @@ int YSerialPort::get_CTS(void)
 {
     string buff;
     int res = 0;
-    
     // may throw an exception
     buff = this->_download("cts.txt");
     if (!((int)(buff).size() == 1)) {
@@ -461,7 +525,6 @@ int YSerialPort::writeStr(string text)
     int bufflen = 0;
     int idx = 0;
     int ch = 0;
-    
     buff = text;
     bufflen = (int)(buff).size();
     if (bufflen < 100) {
@@ -574,7 +637,6 @@ int YSerialPort::writeLine(string text)
     int bufflen = 0;
     int idx = 0;
     int ch = 0;
-    
     buff = YapiWrapper::ysprintf("%s\r\n",text.c_str());
     bufflen = (int)(buff).size()-2;
     if (bufflen < 100) {
@@ -658,7 +720,7 @@ string YSerialPort::readStr(int nChars)
     if (nChars > bufflen) {
         nChars = bufflen;
     }
-    _rxptr = _rxptr + nChars;
+    _rxptr = endpos - (bufflen - nChars);
     res = (buff).substr( 0, nChars);
     return res;
 }
@@ -710,7 +772,7 @@ string YSerialPort::readHex(int nBytes)
     if (nBytes > bufflen) {
         nBytes = bufflen;
     }
-    _rxptr = _rxptr + nBytes;
+    _rxptr = endpos - (bufflen - nBytes);
     res = "";
     ofs = 0;
     while (ofs+3 < nBytes) {
@@ -726,8 +788,8 @@ string YSerialPort::readHex(int nBytes)
 
 /**
  * Reads a single line (or message) from the receive buffer, starting at current stream position.
- * This function can only be used when the serial port is configured for a message protocol,
- * such as 'Line' mode or MODBUS protocols. It does not  work in plain stream modes, eg. 'Char' or 'Byte').
+ * This function is intended to be used when the serial port is configured for a message protocol,
+ * such as 'Line' mode or MODBUS protocols.
  * 
  * If data at current stream position is not available anymore in the receive buffer,
  * the function returns the oldest available line and moves the stream position just after.
@@ -764,9 +826,8 @@ string YSerialPort::readLine(void)
 
 /**
  * Searches for incoming messages in the serial port receive buffer matching a given pattern,
- * starting at current position. This function can only be used when the serial port is
- * configured for a message protocol, such as 'Line' mode or MODBUS protocols.
- * It does not work in plain stream modes, eg. 'Char' or 'Byte', for which there is no "start" of message.
+ * starting at current position. This function will only compare and return printable characters
+ * in the message strings. Binary protocols are handled as hexadecimal strings.
  * 
  * The search returns all messages matching the expression provided as argument in the buffer.
  * If no matching message is found, the search waits for one up to the specified maximum timeout
@@ -816,19 +877,29 @@ vector<string> YSerialPort::readMessages(string pattern,int maxWait)
  * does not affect the device, it only changes the value stored in the YSerialPort object
  * for the next read operations.
  * 
- * @param rxCountVal : the absolute position index (value of rxCount) for next read operations.
+ * @param absPos : the absolute position index for next read operations.
  * 
  * @return nothing.
  */
-int YSerialPort::read_seek(int rxCountVal)
+int YSerialPort::read_seek(int absPos)
 {
-    _rxptr = rxCountVal;
+    _rxptr = absPos;
     return YAPI_SUCCESS;
 }
 
 /**
+ * Returns the current absolute stream position pointer of the YSerialPort object.
+ * 
+ * @return the absolute position index for next read operations.
+ */
+int YSerialPort::read_tell(void)
+{
+    return _rxptr;
+}
+
+/**
  * Sends a text line query to the serial port, and reads the reply, if any.
- * This function can only be used when the serial port is configured for 'Line' protocol.
+ * This function is intended to be used when the serial port is configured for 'Line' protocol.
  * 
  * @param query : the line query to send (without CR/LF)
  * @param maxWait : the maximum number of milliseconds to wait for a reply.
@@ -1396,10 +1467,43 @@ vector<int> YSerialPort::modbusWriteAndReadRegisters(int slaveNo,int pduWriteAdd
     return res;
 }
 
+/**
+ * Saves the job definition string (JSON data) into a job file.
+ * The job file can be later enabled using selectJob().
+ * 
+ * @param jobfile : name of the job file to save on the device filesystem
+ * @param jsonDef : a string containing a JSON definition of the job
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YSerialPort::uploadJob(string jobfile,string jsonDef)
+{
+    this->_upload(jobfile, jsonDef);
+    return YAPI_SUCCESS;
+}
+
+/**
+ * Load and start processing the specified job file. The file must have
+ * been previously created using the user interface or uploaded on the
+ * device filesystem using the uploadJob() function.
+ * 
+ * @param jobfile : name of the job file (on the device filesystem)
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YSerialPort::selectJob(string jobfile)
+{
+    return this->sendCommand(YapiWrapper::ysprintf("J%s",jobfile.c_str()));
+}
+
 YSerialPort *YSerialPort::nextSerialPort(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -1411,7 +1515,7 @@ YSerialPort* YSerialPort::FirstSerialPort(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("SerialPort", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

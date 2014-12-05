@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_motor.cpp 17351 2014-08-29 08:55:47Z seb $
+ * $Id: yocto_motor.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindMotor(), the high-level API for Motor functions
  *
@@ -64,7 +64,7 @@ YMotor::YMotor(const string& func): YFunction(func)
     _className="Motor";
 }
 
-YMotor::~YMotor() 
+YMotor::~YMotor()
 {
 //--- (YMotor cleanup)
 //--- (end of YMotor cleanup)
@@ -585,7 +585,7 @@ int YMotor::brakingForceMove(double targetPower,int delay)
 YMotor *YMotor::nextMotor(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -597,7 +597,7 @@ YMotor* YMotor::FirstMotor(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("Motor", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

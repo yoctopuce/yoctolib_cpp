@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_power.cpp 16895 2014-07-18 00:12:08Z mvuilleu $
+ * $Id: yocto_power.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindPower(), the high-level API for Power functions
  *
@@ -59,7 +59,7 @@ YPower::YPower(const string& func): YSensor(func)
     _className="Power";
 }
 
-YPower::~YPower() 
+YPower::~YPower()
 {
 //--- (YPower cleanup)
 //--- (end of YPower cleanup)
@@ -274,7 +274,7 @@ int YPower::reset(void)
 YPower *YPower::nextPower(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -286,7 +286,7 @@ YPower* YPower::FirstPower(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("Power", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

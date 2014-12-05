@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_relay.cpp 15253 2014-03-06 10:15:50Z seb $
+ * $Id: yocto_relay.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindRelay(), the high-level API for Relay functions
  *
@@ -63,7 +63,7 @@ YRelay::YRelay(const string& func): YFunction(func)
     _className="Relay";
 }
 
-YRelay::~YRelay() 
+YRelay::~YRelay()
 {
 //--- (YRelay cleanup)
 //--- (end of YRelay cleanup)
@@ -484,7 +484,7 @@ int YRelay::_invokeValueCallback(string value)
 YRelay *YRelay::nextRelay(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -496,7 +496,7 @@ YRelay* YRelay::FirstRelay(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("Relay", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

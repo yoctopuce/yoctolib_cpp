@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_digitalio.cpp 17229 2014-08-20 12:20:06Z seb $
+ * $Id: yocto_digitalio.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -62,7 +62,7 @@ YDigitalIO::YDigitalIO(const string& func): YFunction(func)
     _className="DigitalIO";
 }
 
-YDigitalIO::~YDigitalIO() 
+YDigitalIO::~YDigitalIO()
 {
 //--- (YDigitalIO cleanup)
 //--- (end of YDigitalIO cleanup)
@@ -616,7 +616,7 @@ int YDigitalIO::delayedPulse(int bitno,int ms_delay,int ms_duration)
 YDigitalIO *YDigitalIO::nextDigitalIO(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -628,7 +628,7 @@ YDigitalIO* YDigitalIO::FirstDigitalIO(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("DigitalIO", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

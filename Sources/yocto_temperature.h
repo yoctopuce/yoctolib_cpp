@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_temperature.h 16543 2014-06-13 12:15:09Z mvuilleu $
+ * $Id: yocto_temperature.h 18320 2014-11-10 10:47:48Z seb $
  *
  * Declares yFindTemperature(), the high-level API for Temperature functions
  *
@@ -68,10 +68,13 @@ typedef enum {
     Y_SENSORTYPE_PT100_4WIRES = 8,
     Y_SENSORTYPE_PT100_3WIRES = 9,
     Y_SENSORTYPE_PT100_2WIRES = 10,
+    Y_SENSORTYPE_RES_OHM = 11,
+    Y_SENSORTYPE_RES_NTC = 12,
+    Y_SENSORTYPE_RES_LINEAR = 13,
     Y_SENSORTYPE_INVALID = -1,
 } Y_SENSORTYPE_enum;
 #endif
-
+#define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 //--- (end of YTemperature definitions)
 
 //--- (YTemperature declaration)
@@ -90,6 +93,7 @@ protected:
     //--- (YTemperature attributes)
     // Attributes (function value cache)
     Y_SENSORTYPE_enum _sensorType;
+    string          _command;
     YTemperatureValueCallback _valueCallbackTemperature;
     YTemperatureTimedReportCallback _timedReportCallbackTemperature;
 
@@ -118,15 +122,20 @@ public:
     static const Y_SENSORTYPE_enum SENSORTYPE_PT100_4WIRES = Y_SENSORTYPE_PT100_4WIRES;
     static const Y_SENSORTYPE_enum SENSORTYPE_PT100_3WIRES = Y_SENSORTYPE_PT100_3WIRES;
     static const Y_SENSORTYPE_enum SENSORTYPE_PT100_2WIRES = Y_SENSORTYPE_PT100_2WIRES;
+    static const Y_SENSORTYPE_enum SENSORTYPE_RES_OHM = Y_SENSORTYPE_RES_OHM;
+    static const Y_SENSORTYPE_enum SENSORTYPE_RES_NTC = Y_SENSORTYPE_RES_NTC;
+    static const Y_SENSORTYPE_enum SENSORTYPE_RES_LINEAR = Y_SENSORTYPE_RES_LINEAR;
     static const Y_SENSORTYPE_enum SENSORTYPE_INVALID = Y_SENSORTYPE_INVALID;
+    static const string COMMAND_INVALID;
 
     /**
      * Returns the temperature sensor type.
      * 
      * @return a value among Y_SENSORTYPE_DIGITAL, Y_SENSORTYPE_TYPE_K, Y_SENSORTYPE_TYPE_E,
      * Y_SENSORTYPE_TYPE_J, Y_SENSORTYPE_TYPE_N, Y_SENSORTYPE_TYPE_R, Y_SENSORTYPE_TYPE_S,
-     * Y_SENSORTYPE_TYPE_T, Y_SENSORTYPE_PT100_4WIRES, Y_SENSORTYPE_PT100_3WIRES and
-     * Y_SENSORTYPE_PT100_2WIRES corresponding to the temperature sensor type
+     * Y_SENSORTYPE_TYPE_T, Y_SENSORTYPE_PT100_4WIRES, Y_SENSORTYPE_PT100_3WIRES,
+     * Y_SENSORTYPE_PT100_2WIRES, Y_SENSORTYPE_RES_OHM, Y_SENSORTYPE_RES_NTC and Y_SENSORTYPE_RES_LINEAR
+     * corresponding to the temperature sensor type
      * 
      * On failure, throws an exception or returns Y_SENSORTYPE_INVALID.
      */
@@ -144,7 +153,8 @@ public:
      * 
      * @param newval : a value among Y_SENSORTYPE_DIGITAL, Y_SENSORTYPE_TYPE_K, Y_SENSORTYPE_TYPE_E,
      * Y_SENSORTYPE_TYPE_J, Y_SENSORTYPE_TYPE_N, Y_SENSORTYPE_TYPE_R, Y_SENSORTYPE_TYPE_S,
-     * Y_SENSORTYPE_TYPE_T, Y_SENSORTYPE_PT100_4WIRES, Y_SENSORTYPE_PT100_3WIRES and Y_SENSORTYPE_PT100_2WIRES
+     * Y_SENSORTYPE_TYPE_T, Y_SENSORTYPE_PT100_4WIRES, Y_SENSORTYPE_PT100_3WIRES,
+     * Y_SENSORTYPE_PT100_2WIRES, Y_SENSORTYPE_RES_OHM, Y_SENSORTYPE_RES_NTC and Y_SENSORTYPE_RES_LINEAR
      * 
      * @return YAPI_SUCCESS if the call succeeds.
      * 
@@ -153,6 +163,15 @@ public:
     int             set_sensorType(Y_SENSORTYPE_enum newval);
     inline int      setSensorType(Y_SENSORTYPE_enum newval)
     { return this->set_sensorType(newval); }
+
+    string              get_command(void);
+
+    inline string       command(void)
+    { return this->get_command(); }
+
+    int             set_command(const string& newval);
+    inline int      setCommand(const string& newval)
+    { return this->set_command(newval); }
 
     /**
      * Retrieves a temperature sensor for a given identifier.
@@ -210,6 +229,42 @@ public:
     using YSensor::registerTimedReportCallback;
 
     virtual int         _invokeTimedReportCallback(YMeasure value);
+
+    /**
+     * Record a thermistor response table, for interpolating the temperature from
+     * the measured resistance. This function can only be used with temperature
+     * sensor based on thermistors.
+     * 
+     * @param tempValues : array of floating point numbers, corresponding to all
+     *         temperatures (in degrees Celcius) for which the resistance of the
+     *         thermistor is specified.
+     * @param resValues : array of floating point numbers, corresponding to the resistance
+     *         values (in Ohms) for each of the temperature included in the first
+     *         argument, index by index.
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         set_thermistorResponseTable(vector<double> tempValues,vector<double> resValues);
+
+    /**
+     * Retrieves the thermistor response table previously configured using function
+     * set_thermistorResponseTable. This function can only be used with
+     * temperature sensor based on thermistors.
+     * 
+     * @param tempValues : array of floating point numbers, that will be filled by the function
+     *         with all temperatures (in degrees Celcius) for which the resistance
+     *         of the thermistor is specified.
+     * @param resValues : array of floating point numbers, that will be filled by the function
+     *         with the value (in Ohms) for each of the temperature included in the
+     *         first argument, index by index.
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         loadThermistorResponseTable(vector<double>& tempValues,vector<double>& resValues);
 
 
     inline static YTemperature* Find(string func)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_tilt.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_tilt.h 18320 2014-11-10 10:47:48Z seb $
  *
  * Declares yFindTilt(), the high-level API for Tilt functions
  *
@@ -63,7 +63,6 @@ typedef enum {
     Y_AXIS_INVALID = -1,
 } Y_AXIS_enum;
 #endif
-
 //--- (end of YTilt definitions)
 
 //--- (YTilt declaration)

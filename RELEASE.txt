@@ -1,11 +1,8 @@
-- Add YPwmInput class to support Yocto-PWM-Rx
-- Add YSerialPort class to support Yocto-RS232
-- Add support for MODBUS devices using SerialPort class
-- Add support for SoftAP mode in the library
-- Add get_allSettings and set_allSettings method in YModule
-- Add checkFirmware and updateFirmware method in YModule
-- Add high energy mode for Yocto-Light-V2
-- Fix possible problem with saving of calibration settings
-- Fix possible TCP disconnection with all YoctoHub
-- Change frequency attribute of YMotor and YPwmOutput is now a double
-- minor fixes and improvement
+- Add firmware update API (YFirmwareUpdate class and helper method of YModules class)
+- Add thermistor configuration functions
+- Add startDataLogger and stopDataLogger to YSensor object
+- Add YBuzzer class
+- Fix handling of calibration parameters
+- Fix averaged timed reports
+- Fix set_allSetting dead lock if the JSON buffer was not valid
+- minor fixes

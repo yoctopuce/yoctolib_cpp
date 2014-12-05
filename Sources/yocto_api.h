@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 17816 2014-09-24 14:47:30Z seb $
+ * $Id: yocto_api.h 18613 2014-12-02 16:26:29Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -96,7 +96,6 @@ typedef enum {
     Y_PERSISTENTSETTINGS_INVALID = -1,
 } Y_PERSISTENTSETTINGS_enum;
 #endif
-
 #ifndef _Y_BEACON_ENUM
 #define _Y_BEACON_ENUM
 typedef enum {
@@ -105,7 +104,6 @@ typedef enum {
     Y_BEACON_INVALID = -1,
 } Y_BEACON_enum;
 #endif
-
 #define Y_PRODUCTNAME_INVALID           (YAPI_INVALID_STRING)
 #define Y_SERIALNUMBER_INVALID          (YAPI_INVALID_STRING)
 #define Y_PRODUCTID_INVALID             (YAPI_INVALID_UINT)
@@ -631,7 +629,9 @@ protected:
     string          _settings;
     string          _firmwarepath;
     string          _progress_msg;
+    int             _progress_c;
     int             _progress;
+    int             _restore_step;
     //--- (end of generated code: YFirmwareUpdate attributes)
 
   
@@ -643,6 +643,40 @@ public:
 
     virtual int         _processMore(int newupdate);
 
+    /**
+     * Retrun a list of all modules in "update" mode. Only USB connected
+     * devices are listed. If the module is connected to a YoctoHub, you have to
+     * connect to the YoctoHub web interface.
+     * 
+     * @return an array of strings containing the serial list of module in "update" mode.
+     */
+    static vector<string> GetAllBootLoaders(void);
+
+    /**
+     * Test if the byn file is valid for this module. It's possible to pass an directory instead of a file.
+     * In this case this method return the path of the most recent appropriate byn file. This method will
+     * ignore firmware that are older than mintrelase.
+     * 
+     * @param serial  : the serial number of the module to update
+     * @param path    : the path of a byn file or a directory that contain byn files
+     * @param minrelease : an positif integer
+     * 
+     * @return : the path of the byn file to use or a empty string if no byn files match the requirement
+     * 
+     * On failure, returns a string that start with "error:".
+     */
+    static string       CheckFirmware(string serial,string path,int minrelease);
+
+    /**
+     * Returns the progress of the firmware update, on a scale from 0 to 100. When the object is
+     * instantiated the progress is zero. The value is updated During the firmware update process, until
+     * the value of 100 is reached. The value of 100 mean that the firmware update is terminated with
+     * success. If an error occur during the firmware update a negative value is returned, and the
+     * error message can be retrieved with get_progressMessage.
+     * 
+     * @return an integer in the range 0 to 100 (percentage of completion) or
+     *         or a negative error code in case of failure.
+     */
     virtual int         get_progress(void);
 
     /**
@@ -1330,7 +1364,8 @@ protected:
     
     int         _parse(yJsonStateMachine& j);
 
-    YRETCODE    _buildSetRequest( const string& changeattr, const string  *changeval, string& request, string& errmsg);
+    string      _escapeAttr(const string& changeval);
+    YRETCODE    _buildSetRequest(const string& changeattr, const string  *changeval, string& request, string& errmsg);
     
     // Method used to change attributes
     YRETCODE    _setAttr(string attrname, string newvalue);
@@ -2495,6 +2530,22 @@ public:
     virtual int         _invokeValueCallback(string value);
 
     virtual int         _parserHelper(void);
+
+    /**
+     * Starts the data logger on the device. Note that the data logger
+     * will only save the measures on this sensor if the logFrequency
+     * is not set to "OFF".
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     */
+    virtual int         startDataLogger(void);
+
+    /**
+     * Stops the datalogger on the device.
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     */
+    virtual int         stopDataLogger(void);
 
     /**
      * Retrieves a DataSet object holding historical data for this

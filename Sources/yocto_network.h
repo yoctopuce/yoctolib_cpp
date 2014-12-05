@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.h 17582 2014-09-10 17:12:40Z mvuilleu $
+ * $Id: yocto_network.h 18320 2014-11-10 10:47:48Z seb $
  *
  * Declares yFindNetwork(), the high-level API for Network functions
  *
@@ -63,7 +63,6 @@ typedef enum {
     Y_READINESS_INVALID = -1,
 } Y_READINESS_enum;
 #endif
-
 #ifndef _Y_DISCOVERABLE_ENUM
 #define _Y_DISCOVERABLE_ENUM
 typedef enum {
@@ -72,7 +71,6 @@ typedef enum {
     Y_DISCOVERABLE_INVALID = -1,
 } Y_DISCOVERABLE_enum;
 #endif
-
 #ifndef _Y_CALLBACKMETHOD_ENUM
 #define _Y_CALLBACKMETHOD_ENUM
 typedef enum {
@@ -82,7 +80,6 @@ typedef enum {
     Y_CALLBACKMETHOD_INVALID = -1,
 } Y_CALLBACKMETHOD_enum;
 #endif
-
 #ifndef _Y_CALLBACKENCODING_ENUM
 #define _Y_CALLBACKENCODING_ENUM
 typedef enum {
@@ -94,7 +91,6 @@ typedef enum {
     Y_CALLBACKENCODING_INVALID = -1,
 } Y_CALLBACKENCODING_enum;
 #endif
-
 #define Y_MACADDRESS_INVALID            (YAPI_INVALID_STRING)
 #define Y_IPADDRESS_INVALID             (YAPI_INVALID_STRING)
 #define Y_SUBNETMASK_INVALID            (YAPI_INVALID_STRING)

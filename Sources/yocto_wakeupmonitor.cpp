@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wakeupmonitor.cpp 17229 2014-08-20 12:20:06Z seb $
+ * $Id: yocto_wakeupmonitor.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindWakeUpMonitor(), the high-level API for WakeUpMonitor functions
  *
@@ -62,7 +62,7 @@ YWakeUpMonitor::YWakeUpMonitor(const string& func): YFunction(func)
     _className="WakeUpMonitor";
 }
 
-YWakeUpMonitor::~YWakeUpMonitor() 
+YWakeUpMonitor::~YWakeUpMonitor()
 {
 //--- (YWakeUpMonitor cleanup)
 //--- (end of YWakeUpMonitor cleanup)
@@ -431,7 +431,7 @@ int YWakeUpMonitor::resetSleepCountDown(void)
 YWakeUpMonitor *YWakeUpMonitor::nextWakeUpMonitor(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -443,7 +443,7 @@ YWakeUpMonitor* YWakeUpMonitor::FirstWakeUpMonitor(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("WakeUpMonitor", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.h 17581 2014-09-10 17:11:45Z mvuilleu $
+ * $Id: yocto_wireless.h 18320 2014-11-10 10:47:48Z seb $
  *
  * Declares yFindWireless(), the high-level API for Wireless functions
  *
@@ -60,7 +60,6 @@ typedef enum {
     Y_SECURITY_INVALID = -1,
 } Y_SECURITY_enum;
 #endif
-
 #define Y_LINKQUALITY_INVALID           (YAPI_INVALID_UINT)
 #define Y_SSID_INVALID                  (YAPI_INVALID_STRING)
 #define Y_CHANNEL_INVALID               (YAPI_INVALID_UINT)

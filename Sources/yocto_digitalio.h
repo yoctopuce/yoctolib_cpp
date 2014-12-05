@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_digitalio.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_digitalio.h 18320 2014-11-10 10:47:48Z seb $
  *
  * Declares yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -61,7 +61,6 @@ typedef enum {
     Y_OUTPUTVOLTAGE_INVALID = -1,
 } Y_OUTPUTVOLTAGE_enum;
 #endif
-
 #define Y_PORTSTATE_INVALID             (YAPI_INVALID_UINT)
 #define Y_PORTDIRECTION_INVALID         (YAPI_INVALID_UINT)
 #define Y_PORTOPENDRAIN_INVALID         (YAPI_INVALID_UINT)

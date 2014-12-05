@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.cpp 17582 2014-09-10 17:12:40Z mvuilleu $
+ * $Id: yocto_network.cpp 18320 2014-11-10 10:47:48Z seb $
  *
  * Implements yFindNetwork(), the high-level API for Network functions
  *
@@ -74,7 +74,7 @@ YNetwork::YNetwork(const string& func): YFunction(func)
     _className="Network";
 }
 
-YNetwork::~YNetwork() 
+YNetwork::~YNetwork()
 {
 //--- (YNetwork cleanup)
 //--- (end of YNetwork cleanup)
@@ -930,7 +930,7 @@ string YNetwork::ping(string host)
 YNetwork *YNetwork::nextNetwork(void)
 {
     string  hwid;
-    
+
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
@@ -942,7 +942,7 @@ YNetwork* YNetwork::FirstNetwork(void)
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
-    
+
     if(YISERR(YapiWrapper::getFunctionsByClass("Network", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {

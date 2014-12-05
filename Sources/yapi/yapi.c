@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 17811 2014-09-24 09:22:12Z seb $
+ * $Id: yapi.c 18628 2014-12-03 16:18:53Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -1114,7 +1114,7 @@ static void unregisterNetHub(yUrlRef  huburl)
             yDringWakeUpSocket(&hub->wuce, 0, errmsg);
             // wait for the helper thread to stop monitoring these devices
             timeref=yapiGetTickCount();
-            while(yThreadIsRunning(&hub->net_thread) && (yapiGetTickCount()-timeref >YIO_DEFAULT_TCP_TIMEOUT) ) {
+            while(yThreadIsRunning(&hub->net_thread) && (yapiGetTickCount()-timeref < YIO_DEFAULT_TCP_TIMEOUT) ) {
                 yApproximateSleep(10);
             }
             yThreadKill(&hub->net_thread);
@@ -1261,7 +1261,9 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int detect_type,char *errmsg)
         }
     }
     yContext=ctx;
-    uProgInit();
+#ifndef YAPI_IN_YDEVICE
+    yProgInit();
+#endif
     YPERF_API_LEAVE(yapiInitAPI);
     return YAPI_SUCCESS;
 
@@ -1289,7 +1291,9 @@ void YAPI_FUNCTION_EXPORT yapiFreeAPI(void)
     }
 
 
-    uProgFree();
+#ifndef YAPI_IN_YDEVICE
+    yProgFree();
+#endif
     yEnterCriticalSection(&yContext->updateDev_cs);
     yEnterCriticalSection(&yContext->handleEv_cs);
     yEnterCriticalSection(&yContext->enum_cs);
@@ -1550,8 +1554,10 @@ static int handleNetNotification(NetHubSt *hub)
         return 0;
     }
 
+
     // handle short funcvalydx notifications
     if(pkttype >= NOTIFY_NETPKT_TIMEV2YDX && pkttype <= NOTIFY_NETPKT_TIMEAVGYDX) {
+        memset(value, 0, YOCTO_PUBVAL_LEN);
         yPopFifo(&(hub->fifo),(u8*) buffer,end+1);
         hub->notifAbsPos += end+1;
         p = buffer+1;
@@ -1917,7 +1923,7 @@ static void* yhelper_thread(void* ctx)
 #endif
                 } else {
 #ifdef TRACE_NET_HUB
-                dbglog("TRACE(%X->%s): notification socket open\n",hub->url,hub->name);
+                    dbglog("TRACE(%X->%s): notification socket open\n",hub->url,hub->name);
 #endif
 #ifdef DEBUG_NET_NOTIFICATION
                     YSPRINTF(Dbuffer,1024,"HUB: %X->%s started\n",hub->url,hub->name);
@@ -1986,7 +1992,10 @@ static void* yhelper_thread(void* ctx)
                             hub->lastTraffic = yapiGetTickCount();
                         } else {
                             if (hub->flags & NETH_F_SEND_PING_NOTIFICATION && ( (u64)(yapiGetTickCount() - hub->lastTraffic)) > NET_HUB_NOT_CONNECTION_TIMEOUT){
-                                //dbglog("network hub %s(%x) didn't respond for too long\n", hub->name, hub->url);
+#ifdef TRACE_NET_HUB
+
+                                dbglog("network hub %s(%x) didn't respond for too long\n", hub->name, hub->url);
+#endif
                                 yTcpCloseReq(req);
                                 hub->state = NET_HUB_DISCONNECTED;
                             }
@@ -3003,7 +3012,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiTriggerHubDiscovery(char *errmsg)
 }
 
 
-YRETCODE YAPI_FUNCTION_EXPORT yapiGetBootloadersDevs(char *serials,unsigned int maxNbSerial, unsigned int *totalBootladers, char *errmsg)
+YRETCODE yapiGetBootloadersDevs(char *serials,unsigned int maxNbSerial, unsigned int *totalBootladers, char *errmsg)
 {
     int             nbifaces=0;
     yInterfaceSt    *iface;
@@ -3048,6 +3057,68 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetBootloadersDevs(char *serials,unsigned int 
 
     YPERF_API_LEAVE(yapiGetBootloadersDevs);
     return (YRETCODE) copyedBoot;
+
+}
+
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiGetBootloaders(char *buffer, int buffersize, int *fullsize, char *errmsg)
+{
+     int             nbifaces=0;
+    yInterfaceSt    *iface;
+    yInterfaceSt    *runifaces=NULL;
+    int             i;
+    char            *p = buffer;
+    YRETCODE        res;
+    int             len, size, total;
+
+    if(!yContext)
+        return YERR(YAPI_NOT_INITIALIZED);
+
+    if(buffersize<1)
+        return YERR(YAPI_INVALID_ARGUMENT);
+
+    YPERF_API_ENTER(yapiGetBootloadersDevs);
+    if((yContext->detecttype & Y_DETECT_USB) ==0) {
+        YPERF_API_LEAVE(yapiGetBootloadersDevs);
+        return YERRMSG(YAPI_INVALID_ARGUMENT,"You must init the yAPI with Y_DETECT_USB flag");
+    }
+
+    if (YISERR(res = (YRETCODE) yyyUSBGetInterfaces(&runifaces,&nbifaces,errmsg))){
+        YPERF_API_LEAVE(yapiGetBootloadersDevs);
+        return res;
+    }
+    buffersize--;// reserve space for \0
+
+    size = total = 0;
+    for (i = 0, iface = runifaces ; i < nbifaces ; i++, iface++){
+        if(iface->deviceid != YOCTO_DEVID_BOOTLOADER)
+            continue;
+
+        if(buffer && size < buffersize && buffer != p) {
+            *p++ = ',';
+            size++;
+        }
+
+        len = YSTRLEN(iface->serial);
+        total += len;
+        if(buffer && size + len < buffersize){
+            YSTRCPY(p, buffersize - size , iface->serial);
+            p += len;
+            size += len;
+        }
+    }
+
+    //ensure buffer is null terminated;
+    *p = 0;
+    // free all tmp ifaces
+    if(runifaces){
+        yFree(runifaces);
+    }
+    if(fullsize)
+        *fullsize = total;
+
+    YPERF_API_LEAVE(yapiGetBootloadersDevs);
+    return (YRETCODE) size;
 
 }
 
@@ -3163,11 +3234,26 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetAllJsonKeys(const char *json_buffer, char *
 
     for (j = 0; j < attrs_count; j++) {
         char tmpbuf[1024];
-        len = YSPRINTF(tmpbuf, 1024, "%s\"%s/%s=%s\"", sep, attrs[j].func, attrs[j].attr, attrs[j].value);
+        char *p, *d;
+        len = YSPRINTF(tmpbuf, 1024, "%s\"%s/%s=", sep, attrs[j].func, attrs[j].attr);
         if (len < 0) {
             yFree(attrs);
             return YERR(YAPI_IO_ERROR);
         }
+        p = attrs[j].value;
+        d = tmpbuf + len;
+        while (*p && len < 1020) {
+            if (*p == '"' || *p == '\\') {
+                *d++ = '\\';
+                len++;
+            }
+            *d++ = *p++;
+            len++;
+            
+        }
+        *d = 0;
+        YSTRCAT(d, 1024-len, "\"");
+        len ++;
         YASSERT(len == YSTRLEN(tmpbuf));
         sep = ",";
         if (buffersize > totalsize) {

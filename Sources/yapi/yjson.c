@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yjson.c 16608 2014-06-18 15:30:14Z mvuilleu $
+ * $Id: yjson.c 18000 2014-10-10 16:43:40Z mvuilleu $
  *
  * Simple JSON parser (actually a slightly enhanced lexer)
  *
@@ -84,8 +84,8 @@ yJsonRetCode yJsonParse(yJsonStateMachine *j)
 {
     yJsonRetCode    res;
     yJsonState      st = j->st;
-    const char      *src = j->src;
-    const char      *end = j->end;
+    _FAR const char *src = j->src;
+    _FAR const char *end = j->end;
     char            *pt = j->pt;
     char            *ept = j->token + sizeof(j->token) - 1;
     char            c=0;
