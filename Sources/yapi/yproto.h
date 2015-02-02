@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 18619 2014-12-02 17:23:47Z seb $
+ * $Id: yproto.h 18831 2014-12-22 22:27:04Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -769,6 +769,7 @@ extern yContextSt  *yContext;
 
 YRETCODE yapiPullDeviceLogEx(int devydx);
 YRETCODE yapiPullDeviceLog(const char *serial);
+YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *request, int reqlen, yapiRequestAsyncCallback callback, void *context, char *errmsg);
 
 /*****************************************************************
  * PLATFORM SPECIFIC USB code
@@ -842,6 +843,5 @@ int  yUsbReadBlock(YIOHDL *ioghdl, char *buffer, int len,u64 blockUntil,char *er
 int  yUsbEOF(YIOHDL *ioghdl,char *errmsg);
 int  yUsbClose(YIOHDL *ioghdl,char *errmsg);
 
-YRETCODE yapiGetBootloadersDevs(char *serials, unsigned int maxNbSerial, unsigned int *totalBootladers, char *errmsg);
 int  yUSBGetBooloader(const char *serial, const char * name,  yInterfaceSt *iface,char *errmsg);
 #endif

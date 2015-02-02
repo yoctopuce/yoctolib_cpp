@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.h 18093 2014-10-17 13:49:27Z seb $
+ * $Id: yprog.h 19152 2015-01-30 00:09:39Z seb $
  *
  * Declaration of firmware upgrade functions
  *
@@ -187,6 +187,8 @@ extern USB_Packet   firm_pkt;
 #ifndef C30
 #pragma pack(pop)
 #endif
+YRETCODE yapiGetBootloadersDevs(char *serials, unsigned int maxNbSerial, unsigned int *totalBootladers, char *errmsg);
+
 // Return 1 if the communication channel to the device is busy
 // Return 0 if there is no ongoing transaction with the device
 int ypIsSendBootloaderBusy(BootloaderSt *dev);
@@ -221,7 +223,9 @@ typedef enum
 #define INVALID_FIRMWARE  0xfffffffful
 typedef enum{
     FLASH_FIND_DEV = 0,
+#ifndef MICROCHIP_API
     FLASH_CONNECT,
+#endif
     FLASH_GET_INFO,
     FLASH_VALIDATE_BYN,
     FLASH_ERASE,
@@ -247,7 +251,7 @@ typedef enum {
 
 
 #define BLOCK_FLASH_TIMEOUT       2000u
-#define PROG_GET_INFO_TIMEOUT     1000u
+#define PROG_GET_INFO_TIMEOUT     5000u
 #define ZONE_VERIF_TIMEOUT        2000u
 #define FLASH_SUBDEV_TIMEOUT     59000u
 #define YPROG_BOOTLOADER_TIMEOUT 10000u
@@ -308,5 +312,5 @@ void yProgFree(void);
 #define uGetFirmwareBynZone(offset,zone_ptr) {uGetFirmware(offset,(u8*)(zone_ptr),sizeof(byn_zone)); decode_byn_zone(zone_ptr);}
 
 YPROG_RESULT uFlashDevice(void);
-
+int yNetHubGetBootloaders(const char *hubserial, char *buffer, char *errmsg);
 #endif

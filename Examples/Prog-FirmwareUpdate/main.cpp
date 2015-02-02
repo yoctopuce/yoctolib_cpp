@@ -9,6 +9,7 @@ static int upgradeSerialList(vector<string> allserials)
 {
     string      errmsg;
 
+
     for (std::vector<string>::iterator it = allserials.begin() ; it != allserials.end(); ++it) {
         string serial = *it;
         YModule *module = YModule::FindModule(serial);
@@ -28,12 +29,12 @@ static int upgradeSerialList(vector<string> allserials)
             do {
                 int newstatus = update.get_progress();
                 if (newstatus != status)
-                    cout << status << "% " << update.get_progressMessage() << endl;
+                    cout << newstatus << "% " << update.get_progressMessage() << endl;
                 YAPI::Sleep(500,errmsg);
                 status = newstatus;
             } while (status < 100 && status >= 0);
             if (status < 0){
-                cout << "    " <<status << " Firmware Update failed: " << update.get_progressMessage() << endl;
+                cout << "Firmware Update failed: " << update.get_progressMessage() << endl;
                 exit(1);
             } else{
                 if (module->isOnline()){

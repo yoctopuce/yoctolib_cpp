@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 18320 2014-11-10 10:47:48Z seb $
+ * $Id: yocto_serialport.cpp 19192 2015-01-30 16:30:16Z mvuilleu $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -51,12 +51,14 @@ YSerialPort::YSerialPort(const string& func): YFunction(func)
 //--- (SerialPort initialization)
     ,_serialMode(SERIALMODE_INVALID)
     ,_protocol(PROTOCOL_INVALID)
+    ,_voltageLevel(VOLTAGELEVEL_INVALID)
     ,_rxCount(RXCOUNT_INVALID)
     ,_txCount(TXCOUNT_INVALID)
     ,_errCount(ERRCOUNT_INVALID)
     ,_rxMsgCount(RXMSGCOUNT_INVALID)
     ,_txMsgCount(TXMSGCOUNT_INVALID)
     ,_lastMsg(LASTMSG_INVALID)
+    ,_currentJob(CURRENTJOB_INVALID)
     ,_startupJob(STARTUPJOB_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackSerialPort(NULL)
@@ -76,6 +78,7 @@ YSerialPort::~YSerialPort()
 const string YSerialPort::SERIALMODE_INVALID = YAPI_INVALID_STRING;
 const string YSerialPort::PROTOCOL_INVALID = YAPI_INVALID_STRING;
 const string YSerialPort::LASTMSG_INVALID = YAPI_INVALID_STRING;
+const string YSerialPort::CURRENTJOB_INVALID = YAPI_INVALID_STRING;
 const string YSerialPort::STARTUPJOB_INVALID = YAPI_INVALID_STRING;
 const string YSerialPort::COMMAND_INVALID = YAPI_INVALID_STRING;
 
@@ -89,6 +92,11 @@ int YSerialPort::_parseAttr(yJsonStateMachine& j)
     if(!strcmp(j.token, "protocol")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _protocol =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "voltageLevel")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _voltageLevel =  (Y_VOLTAGELEVEL_enum)atoi(j.token);
         return 1;
     }
     if(!strcmp(j.token, "rxCount")) {
@@ -119,6 +127,11 @@ int YSerialPort::_parseAttr(yJsonStateMachine& j)
     if(!strcmp(j.token, "lastMsg")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _lastMsg =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "currentJob")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _currentJob =  _parseString(j);
         return 1;
     }
     if(!strcmp(j.token, "startupJob")) {
@@ -227,6 +240,47 @@ int YSerialPort::set_protocol(const string& newval)
 }
 
 /**
+ * Returns the voltage level used on the serial line.
+ * 
+ * @return a value among Y_VOLTAGELEVEL_OFF, Y_VOLTAGELEVEL_TTL3V, Y_VOLTAGELEVEL_TTL3VR,
+ * Y_VOLTAGELEVEL_TTL5V, Y_VOLTAGELEVEL_TTL5VR, Y_VOLTAGELEVEL_RS232 and Y_VOLTAGELEVEL_RS485
+ * corresponding to the voltage level used on the serial line
+ * 
+ * On failure, throws an exception or returns Y_VOLTAGELEVEL_INVALID.
+ */
+Y_VOLTAGELEVEL_enum YSerialPort::get_voltageLevel(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YSerialPort::VOLTAGELEVEL_INVALID;
+        }
+    }
+    return _voltageLevel;
+}
+
+/**
+ * Changes the voltage type used on the serial line. Valid
+ * values  will depend on the Yoctopuce device model featuring
+ * the serial port feature.  Check your device documentation
+ * to find out which values are valid for that specific model.
+ * Trying to set an invalid value will have no effect.
+ * 
+ * @param newval : a value among Y_VOLTAGELEVEL_OFF, Y_VOLTAGELEVEL_TTL3V, Y_VOLTAGELEVEL_TTL3VR,
+ * Y_VOLTAGELEVEL_TTL5V, Y_VOLTAGELEVEL_TTL5VR, Y_VOLTAGELEVEL_RS232 and Y_VOLTAGELEVEL_RS485
+ * corresponding to the voltage type used on the serial line
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YSerialPort::set_voltageLevel(Y_VOLTAGELEVEL_enum newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+    return _setAttr("voltageLevel", rest_val);
+}
+
+/**
  * Returns the total number of bytes received since last reset.
  * 
  * @return an integer corresponding to the total number of bytes received since last reset
@@ -326,6 +380,41 @@ string YSerialPort::get_lastMsg(void)
         }
     }
     return _lastMsg;
+}
+
+/**
+ * Returns the name of the job file currently in use.
+ * 
+ * @return a string corresponding to the name of the job file currently in use
+ * 
+ * On failure, throws an exception or returns Y_CURRENTJOB_INVALID.
+ */
+string YSerialPort::get_currentJob(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YSerialPort::CURRENTJOB_INVALID;
+        }
+    }
+    return _currentJob;
+}
+
+/**
+ * Changes the job to use when the device is powered on.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
+ * 
+ * @param newval : a string corresponding to the job to use when the device is powered on
+ * 
+ * @return YAPI_SUCCESS if the call succeeds.
+ * 
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YSerialPort::set_currentJob(const string& newval)
+{
+    string rest_val;
+    rest_val = newval;
+    return _setAttr("currentJob", rest_val);
 }
 
 /**
@@ -489,7 +578,7 @@ int YSerialPort::set_RTS(int val)
 }
 
 /**
- * Read the level of the CTS line. The CTS line is usually driven by
+ * Reads the level of the CTS line. The CTS line is usually driven by
  * the RTS signal of the connected serial device.
  * 
  * @return 1 if the CTS line is high, 0 if the CTS line is low.
@@ -1497,7 +1586,7 @@ int YSerialPort::uploadJob(string jobfile,string jsonDef)
  */
 int YSerialPort::selectJob(string jobfile)
 {
-    return this->sendCommand(YapiWrapper::ysprintf("J%s",jobfile.c_str()));
+    return this->set_currentJob(jobfile);
 }
 
 YSerialPort *YSerialPort::nextSerialPort(void)

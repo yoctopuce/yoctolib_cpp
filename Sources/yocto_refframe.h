@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_refframe.h 18320 2014-11-10 10:47:48Z seb $
+ * $Id: yocto_refframe.h 19211 2015-02-02 13:18:41Z mvuilleu $
  *
  * Declares yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -58,8 +58,8 @@ typedef void (*YRefFrameValueCallback)(YRefFrame *func, const string& functionVa
         Y_MOUNTPOSITION_BOTTOM = 0 ,
         Y_MOUNTPOSITION_TOP = 1 ,
         Y_MOUNTPOSITION_FRONT = 2 ,
-        Y_MOUNTPOSITION_RIGHT = 3 ,
-        Y_MOUNTPOSITION_REAR = 4 ,
+        Y_MOUNTPOSITION_REAR = 3 ,
+        Y_MOUNTPOSITION_RIGHT = 4 ,
         Y_MOUNTPOSITION_LEFT = 5
     } Y_MOUNTPOSITION;
     #endif
@@ -142,8 +142,8 @@ public:
     static const Y_MOUNTPOSITION MOUNTPOSITION_BOTTOM = Y_MOUNTPOSITION_BOTTOM;
     static const Y_MOUNTPOSITION MOUNTPOSITION_TOP = Y_MOUNTPOSITION_TOP;
     static const Y_MOUNTPOSITION MOUNTPOSITION_FRONT = Y_MOUNTPOSITION_FRONT;
-    static const Y_MOUNTPOSITION MOUNTPOSITION_RIGHT = Y_MOUNTPOSITION_RIGHT;
     static const Y_MOUNTPOSITION MOUNTPOSITION_REAR = Y_MOUNTPOSITION_REAR;
+    static const Y_MOUNTPOSITION MOUNTPOSITION_RIGHT = Y_MOUNTPOSITION_RIGHT;
     static const Y_MOUNTPOSITION MOUNTPOSITION_LEFT = Y_MOUNTPOSITION_LEFT;
     static const Y_MOUNTORIENTATION MOUNTORIENTATION_TWELVE = Y_MOUNTORIENTATION_TWELVE;
     static const Y_MOUNTORIENTATION MOUNTORIENTATION_THREE = Y_MOUNTORIENTATION_THREE;

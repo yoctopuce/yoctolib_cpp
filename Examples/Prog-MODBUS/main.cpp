@@ -1,15 +1,8 @@
 #include "yocto_api.h"
-#include "yocto_relay.h"
+#include "yocto_serialport.h"
 #include <iostream>
 #include <ctype.h>
 #include <stdlib.h>
-
-using namespace std;
-
-#include <iostream>
-
-#include "yocto_api.h"
-#include "yocto_serialport.h"
 
 using namespace std;
 

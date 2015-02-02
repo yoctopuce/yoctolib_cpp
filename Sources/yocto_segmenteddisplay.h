@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: pic24config.php 18250 2014-11-03 16:54:15Z mvuilleu $
+ * $Id: yocto_segmenteddisplay.h 18762 2014-12-16 16:00:39Z seb $
  *
  * Declares yFindSegmentedDisplay(), the high-level API for SegmentedDisplay functions
  *

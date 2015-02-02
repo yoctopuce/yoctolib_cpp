@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.h 18262 2014-11-05 14:22:14Z seb $
+ * $Id: yocto_serialport.h 19192 2015-01-30 16:30:16Z mvuilleu $
  *
  * Declares yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -52,6 +52,19 @@
 class YSerialPort; // forward declaration
 
 typedef void (*YSerialPortValueCallback)(YSerialPort *func, const string& functionValue);
+#ifndef _Y_VOLTAGELEVEL_ENUM
+#define _Y_VOLTAGELEVEL_ENUM
+typedef enum {
+    Y_VOLTAGELEVEL_OFF = 0,
+    Y_VOLTAGELEVEL_TTL3V = 1,
+    Y_VOLTAGELEVEL_TTL3VR = 2,
+    Y_VOLTAGELEVEL_TTL5V = 3,
+    Y_VOLTAGELEVEL_TTL5VR = 4,
+    Y_VOLTAGELEVEL_RS232 = 5,
+    Y_VOLTAGELEVEL_RS485 = 6,
+    Y_VOLTAGELEVEL_INVALID = -1,
+} Y_VOLTAGELEVEL_enum;
+#endif
 #define Y_SERIALMODE_INVALID            (YAPI_INVALID_STRING)
 #define Y_PROTOCOL_INVALID              (YAPI_INVALID_STRING)
 #define Y_RXCOUNT_INVALID               (YAPI_INVALID_UINT)
@@ -60,6 +73,7 @@ typedef void (*YSerialPortValueCallback)(YSerialPort *func, const string& functi
 #define Y_RXMSGCOUNT_INVALID            (YAPI_INVALID_UINT)
 #define Y_TXMSGCOUNT_INVALID            (YAPI_INVALID_UINT)
 #define Y_LASTMSG_INVALID               (YAPI_INVALID_STRING)
+#define Y_CURRENTJOB_INVALID            (YAPI_INVALID_STRING)
 #define Y_STARTUPJOB_INVALID            (YAPI_INVALID_STRING)
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 //--- (end of YSerialPort definitions)
@@ -84,12 +98,14 @@ protected:
     // Attributes (function value cache)
     string          _serialMode;
     string          _protocol;
+    Y_VOLTAGELEVEL_enum _voltageLevel;
     int             _rxCount;
     int             _txCount;
     int             _errCount;
     int             _rxMsgCount;
     int             _txMsgCount;
     string          _lastMsg;
+    string          _currentJob;
     string          _startupJob;
     string          _command;
     YSerialPortValueCallback _valueCallbackSerialPort;
@@ -111,12 +127,21 @@ public:
 
     static const string SERIALMODE_INVALID;
     static const string PROTOCOL_INVALID;
+    static const Y_VOLTAGELEVEL_enum VOLTAGELEVEL_OFF = Y_VOLTAGELEVEL_OFF;
+    static const Y_VOLTAGELEVEL_enum VOLTAGELEVEL_TTL3V = Y_VOLTAGELEVEL_TTL3V;
+    static const Y_VOLTAGELEVEL_enum VOLTAGELEVEL_TTL3VR = Y_VOLTAGELEVEL_TTL3VR;
+    static const Y_VOLTAGELEVEL_enum VOLTAGELEVEL_TTL5V = Y_VOLTAGELEVEL_TTL5V;
+    static const Y_VOLTAGELEVEL_enum VOLTAGELEVEL_TTL5VR = Y_VOLTAGELEVEL_TTL5VR;
+    static const Y_VOLTAGELEVEL_enum VOLTAGELEVEL_RS232 = Y_VOLTAGELEVEL_RS232;
+    static const Y_VOLTAGELEVEL_enum VOLTAGELEVEL_RS485 = Y_VOLTAGELEVEL_RS485;
+    static const Y_VOLTAGELEVEL_enum VOLTAGELEVEL_INVALID = Y_VOLTAGELEVEL_INVALID;
     static const int RXCOUNT_INVALID = YAPI_INVALID_UINT;
     static const int TXCOUNT_INVALID = YAPI_INVALID_UINT;
     static const int ERRCOUNT_INVALID = YAPI_INVALID_UINT;
     static const int RXMSGCOUNT_INVALID = YAPI_INVALID_UINT;
     static const int TXMSGCOUNT_INVALID = YAPI_INVALID_UINT;
     static const string LASTMSG_INVALID;
+    static const string CURRENTJOB_INVALID;
     static const string STARTUPJOB_INVALID;
     static const string COMMAND_INVALID;
 
@@ -195,6 +220,39 @@ public:
     { return this->set_protocol(newval); }
 
     /**
+     * Returns the voltage level used on the serial line.
+     * 
+     * @return a value among Y_VOLTAGELEVEL_OFF, Y_VOLTAGELEVEL_TTL3V, Y_VOLTAGELEVEL_TTL3VR,
+     * Y_VOLTAGELEVEL_TTL5V, Y_VOLTAGELEVEL_TTL5VR, Y_VOLTAGELEVEL_RS232 and Y_VOLTAGELEVEL_RS485
+     * corresponding to the voltage level used on the serial line
+     * 
+     * On failure, throws an exception or returns Y_VOLTAGELEVEL_INVALID.
+     */
+    Y_VOLTAGELEVEL_enum get_voltageLevel(void);
+
+    inline Y_VOLTAGELEVEL_enum voltageLevel(void)
+    { return this->get_voltageLevel(); }
+
+    /**
+     * Changes the voltage type used on the serial line. Valid
+     * values  will depend on the Yoctopuce device model featuring
+     * the serial port feature.  Check your device documentation
+     * to find out which values are valid for that specific model.
+     * Trying to set an invalid value will have no effect.
+     * 
+     * @param newval : a value among Y_VOLTAGELEVEL_OFF, Y_VOLTAGELEVEL_TTL3V, Y_VOLTAGELEVEL_TTL3VR,
+     * Y_VOLTAGELEVEL_TTL5V, Y_VOLTAGELEVEL_TTL5VR, Y_VOLTAGELEVEL_RS232 and Y_VOLTAGELEVEL_RS485
+     * corresponding to the voltage type used on the serial line
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_voltageLevel(Y_VOLTAGELEVEL_enum newval);
+    inline int      setVoltageLevel(Y_VOLTAGELEVEL_enum newval)
+    { return this->set_voltageLevel(newval); }
+
+    /**
      * Returns the total number of bytes received since last reset.
      * 
      * @return an integer corresponding to the total number of bytes received since last reset
@@ -265,6 +323,33 @@ public:
 
     inline string       lastMsg(void)
     { return this->get_lastMsg(); }
+
+    /**
+     * Returns the name of the job file currently in use.
+     * 
+     * @return a string corresponding to the name of the job file currently in use
+     * 
+     * On failure, throws an exception or returns Y_CURRENTJOB_INVALID.
+     */
+    string              get_currentJob(void);
+
+    inline string       currentJob(void)
+    { return this->get_currentJob(); }
+
+    /**
+     * Changes the job to use when the device is powered on.
+     * Remember to call the saveToFlash() method of the module if the
+     * modification must be kept.
+     * 
+     * @param newval : a string corresponding to the job to use when the device is powered on
+     * 
+     * @return YAPI_SUCCESS if the call succeeds.
+     * 
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_currentJob(const string& newval);
+    inline int      setCurrentJob(const string& newval)
+    { return this->set_currentJob(newval); }
 
     /**
      * Returns the job file to use when the device is powered on.
@@ -367,7 +452,7 @@ public:
     virtual int         set_RTS(int val);
 
     /**
-     * Read the level of the CTS line. The CTS line is usually driven by
+     * Reads the level of the CTS line. The CTS line is usually driven by
      * the RTS signal of the connected serial device.
      * 
      * @return 1 if the CTS line is high, 0 if the CTS line is low.

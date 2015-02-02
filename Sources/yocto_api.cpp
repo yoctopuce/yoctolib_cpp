@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 18628 2014-12-03 16:18:53Z seb $
+ * $Id: yocto_api.cpp 19032 2015-01-20 08:03:21Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -96,7 +96,6 @@ vector<string> _strsplit(const string& str, char delimiter)
         }
     } while (found != std::string::npos);
     res.push_back(str.substr(pos));
-    pos = found + 1;
     return res;
 }
 
@@ -285,9 +284,9 @@ int YFirmwareUpdate::_processMore(int newupdate)
 }
 
 /**
- * Retrun a list of all modules in "update" mode. Only USB connected
- * devices are listed. If the module is connected to a YoctoHub, you have to
- * connect to the YoctoHub web interface.
+ * Retruns a list of all the modules in "update" mode. Only USB connected
+ * devices are listed. For modules connected to a YoctoHub, you must
+ * connect yourself to the YoctoHub web interface.
  * 
  * @return an array of strings containing the serial list of module in "update" mode.
  */
@@ -373,12 +372,12 @@ string YFirmwareUpdate::CheckFirmware(string serial,string path,int minrelease)
 
 /**
  * Returns the progress of the firmware update, on a scale from 0 to 100. When the object is
- * instantiated the progress is zero. The value is updated During the firmware update process, until
- * the value of 100 is reached. The value of 100 mean that the firmware update is terminated with
- * success. If an error occur during the firmware update a negative value is returned, and the
+ * instantiated, the progress is zero. The value is updated during the firmware update process until
+ * the value of 100 is reached. The 100 value means that the firmware update was completed
+ * successfully. If an error occurs during the firmware update, a negative value is returned, and the
  * error message can be retrieved with get_progressMessage.
  * 
- * @return an integer in the range 0 to 100 (percentage of completion) or
+ * @return an integer in the range 0 to 100 (percentage of completion)
  *         or a negative error code in case of failure.
  */
 int YFirmwareUpdate::get_progress(void)
@@ -388,10 +387,10 @@ int YFirmwareUpdate::get_progress(void)
 }
 
 /**
- * Returns the last progress message of the firmware update process. If an error occur during the
- * firmware update process the error message is returned
+ * Returns the last progress message of the firmware update process. If an error occurs during the
+ * firmware update process, the error message is returned
  * 
- * @return an string  with the last progress message, or the error message.
+ * @return a string  with the latest progress message, or the error message.
  */
 string YFirmwareUpdate::get_progressMessage(void)
 {
@@ -399,9 +398,9 @@ string YFirmwareUpdate::get_progressMessage(void)
 }
 
 /**
- * Start the firmware update process. This method start the firmware update process in background. This method
- * return immediately. The progress of the firmware update can be monitored with methods get_progress()
- * and get_progressMessage().
+ * Starts the firmware update process. This method starts the firmware update process in background. This method
+ * returns immediately. You can monitor the progress of the firmware update with the get_progress()
+ * and get_progressMessage() methods.
  * 
  * @return an integer in the range 0 to 100 (percentage of completion),
  *         or a negative error code in case of failure.
@@ -2165,6 +2164,17 @@ void YDevice::ClearCache()
     _devCache.clear();
 }
 
+void YDevice::PlugDevice(YDEV_DESCR devdescr)
+{
+    for(unsigned int idx = 0; idx < YDevice::_devCache.size(); idx++) {
+        YDevice *dev = YDevice::_devCache[idx];
+        if(dev->_devdescr == devdescr) {
+            dev->_cacheStamp = 0;
+            dev->_subpath = NULL;
+            break;
+        }
+    }
+}
 
 YDevice *YDevice::getDevice(YDEV_DESCR devdescr)
 {
@@ -2234,7 +2244,11 @@ YRETCODE    YDevice::HTTPRequest(const string& request, string& buffer, string& 
         errmsg = (string)errbuff;
         return res;
     }
-    buffer = string(reply, replysize);
+    if (replysize > 0 && reply != NULL) {
+       buffer = string(reply, replysize);
+    } else {
+        buffer = "";
+    }
     if(YISERR(res=yapiHTTPRequestSyncDone(&iohdl, errbuff))) {
         errmsg = (string)errbuff;
         return res;
@@ -2373,6 +2387,7 @@ void YAPI::_yapiDeviceArrivalCallbackFwd(YDEV_DESCR devdesc)
     string       errmsg;
     vector<YFunction*>::iterator it;
 
+    YDevice::PlugDevice(devdesc);
 	dataEv.type = YAPI_FUN_REFRESH;
     for ( it=_FunctionCallbacks.begin() ; it < _FunctionCallbacks.end(); it++ ){
         if ((*it)->functionDescriptor() == Y_FUNCTIONDESCRIPTOR_INVALID){
@@ -2480,14 +2495,15 @@ static double decExp[16] = {
 double YAPI::_decimalToDouble(s16 val)
 {
     int     negate = 0;
+    int     mantis = val & 2047;
     double  res;
 
-    if(val == 0) return 0.0;
+    if(mantis == 0) return 0.0;
     if(val < 0) {
         negate = 1;
         val = -val;
     }
-    res = (double)(val & 2047) * decExp[val >> 11];
+    res = (double)(mantis) * decExp[val >> 11];
 
     return (negate ? -res : res);
 }
@@ -3902,17 +3918,18 @@ int YModule::triggerFirmwareUpdate(int secBeforeReboot)
 }
 
 /**
- * Test if the byn file is valid for this module. This method is useful to test if the module need to be updated.
- * It's possible to pass an directory instead of a file. In this case this method return the path of
- * the most recent
- * appropriate byn file. If the parameter onlynew is true the function will discard firmware that are
+ * Tests whether the byn file is valid for this module. This method is useful to test if the module
+ * needs to be updated.
+ * It is possible to pass a directory as argument instead of a file. In this case, this method returns
+ * the path of the most recent
+ * appropriate byn file. If the parameter onlynew is true, the function discards firmware that are
  * older or equal to
  * the installed firmware.
  * 
- * @param path    : the path of a byn file or a directory that contain byn files
- * @param onlynew : return only files that are strictly newer
+ * @param path    : the path of a byn file or a directory that contains byn files
+ * @param onlynew : returns only files that are strictly newer
  * 
- * @return : the path of the byn file to use or a empty string if no byn files match the requirement
+ * @return : the path of the byn file to use or a empty string if no byn files matches the requirement
  * 
  * On failure, throws an exception or returns a string that start with "error:".
  */
@@ -3920,6 +3937,7 @@ string YModule::checkFirmware(string path,bool onlynew)
 {
     string serial;
     int release = 0;
+    string tmp_res;
     if (onlynew) {
         release = atoi((this->get_firmwareRelease()).c_str());
     } else {
@@ -3927,16 +3945,20 @@ string YModule::checkFirmware(string path,bool onlynew)
     }
     //may throw an exception
     serial = this->get_serialNumber();
-    return YFirmwareUpdate::CheckFirmware(serial,path, release);
+    tmp_res = YFirmwareUpdate::CheckFirmware(serial,path, release);
+    if (_ystrpos(tmp_res, "error:") == 0) {
+        this->_throw(YAPI_INVALID_ARGUMENT, tmp_res);
+    }
+    return tmp_res;
 }
 
 /**
- * Prepare a firmware upgrade of the module. This method return a object YFirmwareUpdate which
- * will handle the firmware upgrade process.
+ * Prepares a firmware update of the module. This method returns a YFirmwareUpdate object which
+ * handles the firmware update process.
  * 
  * @param path : the path of the byn file to use.
  * 
- * @return : A object YFirmwareUpdate.
+ * @return : A YFirmwareUpdate object.
  */
 YFirmwareUpdate YModule::updateFirmware(string path)
 {
@@ -3949,10 +3971,10 @@ YFirmwareUpdate YModule::updateFirmware(string path)
 }
 
 /**
- * Returns all the setting of the module. Useful to backup all the logical name and calibrations parameters
+ * Returns all the settings of the module. Useful to backup all the logical names and calibrations parameters
  * of a connected module.
  * 
- * @return a binary buffer with all settings.
+ * @return a binary buffer with all the settings.
  * 
  * On failure, throws an exception or returns  YAPI_INVALID_STRING.
  */
@@ -4207,10 +4229,10 @@ string YModule::calibConvert(string param,string calibrationParam,string unit_na
 }
 
 /**
- * Restore all the setting of the module. Useful to restore all the logical name and calibrations parameters
+ * Restores all the settings of the module. Useful to restore all the logical names and calibrations parameters
  * of a module from a backup.
  * 
- * @param settings : a binary buffer with all settings.
+ * @param settings : a binary buffer with all the settings.
  * 
  * @return YAPI_SUCCESS when the call succeeds.
  * 

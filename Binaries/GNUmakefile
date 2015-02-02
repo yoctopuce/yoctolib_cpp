@@ -45,6 +45,8 @@ ARCH  := $(shell uname -m| sed -e s/i.86/i386/ -e s/arm.*/arm/)
 
 MIPS_TARGET_ROOT = $(STAGING_DIR)/target-mips_34kc_uClibc-0.9.33.2/
 
+TEST_SRC = ../Examples/Prog-FirmwareUpdate/main.cpp
+
 #C++ output directories
 DIR_I386 = linux/32bits/
 DIR_X64 = linux/64bits/
@@ -74,8 +76,16 @@ OBJDIR_OSX = $(DIR_OSX)objs/
 #CC compiler for each arch
 CC_I386 = gcc
 CC_X64 = gcc
+ifdef TOOLCHAIN_QARM
+CC_ARMEL = $(TOOLCHAIN_QARM)/bin/arm-none-linux-gnueabi-gcc
+else
 CC_ARMEL = gcc
+endif
+ifdef TOOLCHAIN_ARMHF
+CC_ARMHF = $(TOOLCHAIN_ARMHF)/bin/arm-linux-gnueabihf-gcc
+else
 CC_ARMHF = gcc
+endif
 CC_MIPS = mips-openwrt-linux-gcc
 CC_OSX = gcc
 
@@ -83,21 +93,37 @@ CC_OSX = gcc
 #CPP compiler for each arch
 CPP_I386 = g++
 CPP_X64 = g++
+ifdef TOOLCHAIN_QARM
+CPP_ARMEL = $(TOOLCHAIN_QARM)/bin/arm-none-linux-gnueabi-g++
+else
 CPP_ARMEL = g++
+endif
+ifdef TOOLCHAIN_ARMHF
+CPP_ARMHF = $(TOOLCHAIN_ARMHF)/bin/arm-linux-gnueabihf-g++
+else
 CPP_ARMHF = g++
+endif
 CPP_MIPS = mips-openwrt-linux-g++
 CPP_OSX = g++
 
 #generic flags
 OPTS_DBG = -g -Wall
-OPTS_PROD = -O2 -Wall
+OPTS_PROD = -g -Wall
 OPTS_STAT =
 OPTS_DYN = -fPIC
 
 # most compatible ARMEL options, using soft-float
+ifdef TOOLCHAIN_QARM
+OPTS_ARMEL = -I$(STAGING_QARM)/usr/include/ -O2 -mfloat-abi=soft -march=armv5 -marm -DBUILD_ARMEL
+else
 OPTS_ARMEL = -mfloat-abi=soft -march=armv5 -DBUILD_ARMEL
+endif
+ifdef TOOLCHAIN_ARMHF
 # reduced ARMHF options to run properly on raspian-thing, but still be compatible with hard-floats VFP
+OPTS_ARMHF = -I$(STAGING_ARMHF)/usr/include/ $(OPTS_DBG) -mfloat-abi=hard -march=armv6 -marm -DBUILD_ARMHF
+else
 OPTS_ARMHF = -mfloat-abi=hard -march=armv6 -marm -DBUILD_ARMHF
+endif
 OPTS_MIPS = -DCPU_BIG_ENDIAN -I$(MIPS_TARGET_ROOT)/usr/include/
 OPTS_X64 = -m64
 OPTS_I386 = -m32 -march=i586
@@ -108,15 +134,31 @@ OPTS_OSX =
 #link optionsfor each arch
 LINKWITH_I386 = -lm -lpthread -lusb-1.0
 LINKWITH_X64 = -lm -lpthread -lusb-1.0
+ifdef TOOLCHAIN_QARM
+LINKWITH_ARMEL = -L$(STAGING_QARM)/usr/lib/ -lm -lpthread -lusb-1.0
+else
 LINKWITH_ARMEL = -lm -lpthread -lusb-1.0
+endif
+ifdef TOOLCHAIN_ARMHF
+LINKWITH_ARMHF = -L$(STAGING_ARMHF)/usr/lib/ -lm -lpthread -lusb-1.0
+else
 LINKWITH_ARMHF = -lm -lpthread -lusb-1.0
+endif
 LINKWITH_MIPS = -L$(MIPS_TARGET_ROOT)/usr/lib/ -lm -lpthread -lusb-1.0
 LINKWITH_OSX =
 
 YAPI_LINKWITH_I386 = -lpthread -lusb-1.0
 YAPI_LINKWITH_X64 = -lpthread -lusb-1.0
+ifdef TOOLCHAIN_QARM
+YAPI_LINKWITH_ARMEL = -L$(STAGING_QARM)/usr/lib/ -lpthread -lusb-1.0
+else
 YAPI_LINKWITH_ARMEL = -lpthread -lusb-1.0
+endif
+ifdef TOOLCHAIN_ARMHF
+YAPI_LINKWITH_ARMHF = -L$(STAGING_ARMHF)/usr/lib/    -lpthread -lusb-1.0
+else
 YAPI_LINKWITH_ARMHF = -lpthread -lusb-1.0
+endif
 YAPI_LINKWITH_MIPS = -L$(MIPS_TARGET_ROOT)/usr/lib/ -lpthread -lusb-1.0
 YAPI_LINKWITH_OSX =
 
@@ -310,6 +352,11 @@ $(YAPI_DIR_I386)libyapi.so.1.0.1: $(OBJDIR_I386) $(YAPI_DIR_I386) $(YAPI_OBJS_DY
 	@echo linking $@
 	@$(CC_I386) $(OPTS_I386) -shared -Wl,-soname,$(@F) -o $@ $(YAPI_OBJS_DYN_I386) $(YAPI_LINKWITH_I386)
 
+$(DIR_I386)test: $(OBJDIR_I386) $(YAPI_DIR_I386) $(ALL_OBJS_STAT_I386) $(ALL_H) $(TEST_SRC)
+	@rm -rf $@
+	@echo linking $@
+	@$(CPP_I386) $(OPTS_I386) $(INC_PATH) -o $@ $(TEST_SRC) $(ALL_OBJS_STAT_I386) $(LINKWITH_I386)
+
 # INTEL X64 LIBRARY RULES
 $(DIR_X64)libyocto-static.a: $(OBJDIR_X64) $(ALL_OBJS_STAT_X64) $(ALL_H)
 	@rm -rf $@
@@ -328,6 +375,11 @@ $(DIR_X64)libyocto.so.1.0.1: $(OBJDIR_X64) $(ALL_OBJS_DYN_X64) $(ALL_H)
 $(YAPI_DIR_X64)libyapi.so.1.0.1: $(OBJDIR_X64) $(YAPI_DIR_X64) $(YAPI_OBJS_DYN_X64) $(ALL_H)
 	@echo linking $@
 	@$(CC_X64) $(OPTS_X64) -shared -Wl,-soname,$(@F) -o $@ $(YAPI_OBJS_DYN_X64) $(YAPI_LINKWITH_X64)
+
+$(DIR_X64)test: $(OBJDIR_X64) $(YAPI_DIR_X64) $(ALL_OBJS_STAT_X64) $(ALL_H) $(TEST_SRC)
+	@rm -rf $@
+	@echo linking $@
+	@$(CPP_X64) $(OPTS_X64) $(INC_PATH) -o $@ $(TEST_SRC) $(ALL_OBJS_STAT_X64) $(LINKWITH_X64)
 
 # ARM SOFT FLOAT LIBRARY RULES
 $(DIR_ARMEL)libyocto-static.a: $(OBJDIR_ARMEL) $(ALL_OBJS_STAT_ARMEL) $(ALL_H)
@@ -348,6 +400,11 @@ $(YAPI_DIR_ARMEL)libyapi.so.1.0.1: $(OBJDIR_ARMEL) $(YAPI_DIR_ARMEL) $(YAPI_OBJS
 	@echo linking $@
 	@$(CC_ARMEL) $(OPTS_ARMEL) -shared -Wl,-soname,$(@F) -o $@ $(YAPI_OBJS_DYN_ARMEL) $(YAPI_LINKWITH_ARMEL)
 
+$(DIR_ARMEL)test: $(OBJDIR_ARMEL) $(YAPI_DIR_ARMEL) $(ALL_OBJS_STAT_ARMEL) $(ALL_H) $(TEST_SRC)
+	@rm -rf $@
+	@echo linking $@
+	@$(CPP_ARMEL) $(OPTS_ARMEL) $(INC_PATH) -o $@ $(TEST_SRC) $(ALL_OBJS_STAT_ARMEL) $(LINKWITH_ARMEL)
+
 # ARM HARD FLOAT LIBRARY RULES
 $(DIR_ARMHF)libyocto-static.a: $(OBJDIR_ARMHF) $(ALL_OBJS_STAT_ARMHF) $(ALL_H)
 	@rm -rf $@
@@ -366,6 +423,11 @@ $(DIR_ARMHF)libyocto.so.1.0.1: $(OBJDIR_ARMHF) $(ALL_OBJS_DYN_ARMHF) $(ALL_H)
 $(YAPI_DIR_ARMHF)libyapi.so.1.0.1: $(OBJDIR_ARMHF) $(YAPI_DIR_ARMHF) $(YAPI_OBJS_DYN_ARMHF) $(ALL_H)
 	@echo linking $@
 	@$(CC_ARMHF) $(OPTS_ARMHF) -shared -Wl,-soname,$(@F) -o $@ $(YAPI_OBJS_DYN_ARMHF) $(YAPI_LINKWITH_ARMHF)
+
+$(DIR_ARMHF)test: $(OBJDIR_ARMHF) $(YAPI_DIR_ARMHF) $(ALL_OBJS_STAT_ARMHF) $(ALL_H) $(TEST_SRC)
+	@rm -rf $@
+	@echo linking $@
+	@$(CPP_ARMHF) $(OPTS_ARMHF) $(INC_PATH) -o $@ $(TEST_SRC) $(ALL_OBJS_STAT_ARMHF) $(LINKWITH_ARMHF)
 
 # MIPS LIBRARY RULES
 $(DIR_MIPS)libyocto-static.a: $(OBJDIR_MIPS) $(ALL_OBJS_STAT_MIPS) $(ALL_H)
@@ -386,6 +448,11 @@ $(YAPI_DIR_MIPS)libyapi.so.1.0.1: $(OBJDIR_MIPS) $(YAPI_DIR_MIPS) $(YAPI_OBJS_DY
 	@echo linking $@
 	@$(CC_MIPS) $(OPTS_MIPS) -shared -Wl,-soname,$(@F) -o $@ $(YAPI_OBJS_DYN_MIPS) $(YAPI_LINKWITH_MIPS)
 
+$(DIR_MIPS)test: $(OBJDIR_MIPS) $(YAPI_DIR_MIPS) $ALL_OBJS_STAT_MIPS) $(ALL_H) $(TEST_SRC)
+	@rm -rf $@
+	@echo linking $@
+	@$(CPP_MIPS) $(OPTS_MIPS) $(INC_PATH) -o $@ $(TEST_SRC) $(ALL_OBJS_STAT_MIPS) $(LINKWITH_MIPS)
+
 # OSX LIBRARY RULES
 $(DIR_OSX)libyocto-static.a: $(OBJDIR_OSX) $(ALL_OBJS_STAT_OSX) $(ALL_H)
 	@rm -rf $@
@@ -404,6 +471,11 @@ $(DIR_OSX)libyocto.dylib: $(DIR_OSX) $(ALL_OBJS_DYN_OSX) $(ALL_H)
 $(YAPI_DIR_OSX)libyapi.dylib: $(DIR_OSX) $(YAPI_OBJS_DYN_OSX) $(ALL_H)
 	@echo linking $@
 	@$(CC_OSX) -m64 -dynamiclib -Wl,-reexport_framework,IOKit,-reexport_framework,CoreFoundation,-headerpad_max_install_names,-undefined,dynamic_lookup,-compatibility_version,1.0,-current_version,1.0,-install_name,/usr/local/lib/libyapi.dylib -o $@ $(YAPI_OBJS_DYN_OSX)
+
+$_DIR_OSX)test: $(OBJDIR_OSX) $(YAPI_DIR_OSX) ALL_OBJS_STAT_OSX) $(ALL_H) $(TEST_SRC)
+	@rm -rf $@
+	@echo linking $@
+	@$(CPP_OSX) $(OPTS_OSX) $(INC_PATH) -o $@ $(TEST_SRC) $(ALL_OBJS_STAT_OSX) $(LINKWITH_OSX)
 
 i386: $(LIBS_I386)
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 18628 2014-12-03 16:18:53Z seb $
+ * $Id: yprog.c 19215 2015-02-02 14:38:38Z seb $
  *
  * Implementation of firmware upgrade functions
  *
@@ -516,18 +516,20 @@ static int yLoadFirmwareFile(const char * filename, u8 **buffer, char *errmsg)
     int  readed;
     u8   *ptr;
 
+    *buffer = NULL;
     if (YFOPEN(&f, filename, "rb") != 0) {
         return YERRMSG(YAPI_IO_ERROR, "unable to access file");
     }
     fseek(f, 0, SEEK_END);
     size = (int)ftell(f);
-    if (size > 0x100000){
+    if (size > 0x100000 || size <= 0){
         fclose(f);
         return YERR(YAPI_IO_ERROR);
     }
     ptr = yMalloc(size);
     if (ptr == NULL) {
-        ptr = yMalloc(size);
+        fclose(f);
+        return YERR(YAPI_IO_ERROR);
     }
     fseek(f, 0, SEEK_SET);
     readed = (int)fread(ptr, 1, size, f);
@@ -554,58 +556,47 @@ static void yGetFirmware(u32 ofs, u8 *dst, u16 size)
 
 
 #ifdef YAPI_IN_YDEVICE
+    #define ulog ylog
+    #define ulogU16 ylogU16
+    #define ulogChar ylogChar
+    #define uLogProgress(msg) yProgLogProgress(msg)
 
-#define ulog ylog
-#define ulogU16 ylogU16
-#define ulogChar ylogChar
 
-
-#else
-
-#define ytime() ((u32) yapiGetTickCount())
-#define Flash_ready()  1
-
-#define ulog(str) dbglog("%s",str)
-#define ulogU16(val) dbglog("%x",val)
-#define ulogChar(val) dbglog("%c",val)
-
-// report progress for Yoctolib
-#define setOsGlobalProgress(prog, msg) setOsGlobalProgressEX(__FILE_ID__,__LINE__, prog, msg)
-
-static void setOsGlobalProgressEX(const char *fileid, int line, int prog, const char *msg)
-{
-    yEnterCriticalSection(&fctx.cs);
-    if (prog != 0){
-       yContext->fuCtx.global_progress = prog;
+    // report progress for devices and vhub
+    static void yProgLogProgress(const char *msg)
+    {
+        yEnterCriticalSection(&fctx.cs);
+        YSTRCPY(fctx.errmsg,FLASH_ERRMSG_LEN, msg);
+        hProgLog(msg);
+        yLeaveCriticalSection(&fctx.cs);
     }
-#ifdef DEBUG_FIRMWARE
-    //dbglog("%s:%d:(%d%) %s\n",fileid, line, prog, msg);
-    YSPRINTF(yContext->fuCtx.global_message, YOCTO_ERRMSG_LEN,"%s:%d:%s",fileid, line, msg);
 #else
-    YSTRCPY(yContext->fuCtx.global_message, YOCTO_ERRMSG_LEN, msg);
-#endif
-    yLeaveCriticalSection(&fctx.cs);
-}
+    #define ytime() ((u32) yapiGetTickCount())
+    #define Flash_ready()  1
+    #define ulog(str) dbglog("%s",str)
+    #define ulogU16(val) dbglog("%x",val)
+    #define ulogChar(val) dbglog("%c",val)
+
+    // report progress for Yoctolib
+    #define setOsGlobalProgress(prog, msg) osProgLogProgressEx(__FILE_ID__,__LINE__, prog, msg)
+    #define uLogProgress(msg) osProgLogProgressEx(__FILE_ID__,__LINE__, 0, msg)
+
+    static void osProgLogProgressEx(const char *fileid, int line, int prog, const char *msg)
+    {
+        yEnterCriticalSection(&fctx.cs);
+        if (prog != 0){
+           yContext->fuCtx.global_progress = prog;
+        }
+    #ifdef DEBUG_FIRMWARE
+        dbglog("%s:%d:(%d%%) %s\n",fileid, line, prog, msg);
+        YSPRINTF(yContext->fuCtx.global_message, YOCTO_ERRMSG_LEN,"%s:%d:%s",fileid, line, msg);
+    #else
+        YSTRCPY(yContext->fuCtx.global_message, YOCTO_ERRMSG_LEN, msg);
+    #endif
+        yLeaveCriticalSection(&fctx.cs);
+    }
 
 #endif
-
-// report progress for Yoctolib and devices
-static void uLogProgress(const char *msg)
-{
-    yEnterCriticalSection(&fctx.cs);
-    YSTRCPY(fctx.errmsg,FLASH_ERRMSG_LEN, msg);
-#ifdef YAPI_IN_YDEVICE
-    hProgLog(msg);
-#else
-    setOsGlobalProgress(0,msg);
-#endif
-#ifndef MICROCHIP_API
-#if defined(DEBUG_FIRMWARE)
-    dbglog("UFIRM:%d:%s\n", fctx.progress, fctx.errmsg);
-#endif
-#endif
-    yLeaveCriticalSection(&fctx.cs);
-}
 
 #ifdef MICROCHIP_API
 #define uGetBootloader(serial,ifaceptr)   yGetBootloaderPort(serial,ifaceptr)
@@ -621,32 +612,39 @@ static int uGetDeviceInfo(void)
 {
     switch(fctx.stepB){
     case 0:
-        memset(&firm_pkt,0,sizeof(USB_Prog_Packet));
-        firm_pkt.prog.pkt.type = PROG_INFO;
-        if(ypSendBootloaderCmd(&firm_dev,&firm_pkt,NULL)<0){
-#ifdef DEBUG_FIRMWARE
-            ulog("Cannot send GetInfo pkt\n");
-#endif
-            YSTRCPY(fctx.errmsg,FLASH_ERRMSG_LEN,"GetInfo err");
-            return -1;
-        }
         fctx.stepB++;
         fctx.timeout = ytime() + PROG_GET_INFO_TIMEOUT;
         // no break on purpose;
     case 1:
+        memset(&firm_pkt,0,sizeof(USB_Prog_Packet));
+        firm_pkt.prog.pkt.type = PROG_INFO;
+        if(ypSendBootloaderCmd(&firm_dev,&firm_pkt,NULL)<0){
+            if((s32)(fctx.timeout - ytime()) < 0) {
+#ifdef DEBUG_FIRMWARE
+                ulog("Cannot send GetInfo pkt\n");
+#endif
+                YSTRCPY(fctx.errmsg, FLASH_ERRMSG_LEN, "Cannot send GetInfo");
+                return -1;
+            }
+            return 0;
+        }
+        fctx.stepB++;
+        fctx.timeout = ytime() + PROG_GET_INFO_TIMEOUT;
+        // no break on purpose;
+    case 2:
         if(ypGetBootloaderReply(&firm_dev, &firm_pkt,NULL)<0){
             if((s32)(fctx.timeout - ytime()) < 0) {
 #ifdef DEBUG_FIRMWARE
                 ulog("Bootloader did not respond to GetInfo pkt\n");
 #endif
-                YSTRCPY(fctx.errmsg,FLASH_ERRMSG_LEN,"GetInfo err");
+                YSTRCPY(fctx.errmsg, FLASH_ERRMSG_LEN, "Cannot recv GetInfo");
                 return -1;
             }
             return 0;
         }
         fctx.stepB++;
         // no break on purpose;
-    case 2:
+    case 3:
         if(firm_pkt.prog.pkt.type == PROG_INFO) {
 #ifdef DEBUG_FIRMWARE
             ulog("PROG_INFO received\n");
@@ -697,7 +695,7 @@ static int uGetDeviceInfo(void)
 #ifdef DEBUG_FIRMWARE
             ulog("Not a PROG_INFO pkt\n");
 #endif
-            YSTRCPY(fctx.errmsg,FLASH_ERRMSG_LEN,"Invalid prog packet");
+            YSTRCPY(fctx.errmsg,FLASH_ERRMSG_LEN,"Invalid prog pkt");
             return -1;
         }
         return 1;
@@ -754,7 +752,7 @@ static int uFlashZone()
                 p += ystrlen(p);
             }
 #else
-            YSPRINTF(msg, FLASH_ERRMSG_LEN, "Flash zone %d:%d : %x(%x)\n", fctx.currzone, fctx.zOfs, fctx.bz.addr_page, fctx.bz.len);
+            YSPRINTF(msg, FLASH_ERRMSG_LEN, "Flash zone %d:%d : %x(%x)", fctx.currzone, fctx.zOfs, fctx.bz.addr_page, fctx.bz.len);
             dbglog("Flash zone %d:%x : %x(%x)\n",fctx.currzone,fctx.zOfs,fctx.bz.addr_page,fctx.bz.len);
 #endif
 #endif
@@ -873,7 +871,7 @@ static int uFlashFlash()
     u32 addr, datasize;
     u8  buff[MAX_BYTE_IN_PACKET];
     char msg[FLASH_ERRMSG_LEN];
-   u32 pos, pageno;
+    u32 pos, pageno;
 
     switch(fctx.zst){
     case FLASH_ZONE_START:
@@ -1086,25 +1084,24 @@ YPROG_RESULT uFlashDevice(void)
 #endif
         ulog("\n");
 #endif
+#ifndef MICROCHIP_API
         fctx.stepA = FLASH_CONNECT;
         // no break on purpose
     case FLASH_CONNECT:
-#ifndef MICROCHIP_API
         if(YISERR(yyySetup(&firm_dev.iface,NULL))){
             YSTRCPY(fctx.errmsg,FLASH_ERRMSG_LEN,"Unable to open connection to the device");
             return YPROG_DONE;
         }
-#endif
         uLogProgress("Device connected");
+#endif
         fctx.stepA = FLASH_GET_INFO;
         fctx.stepB = 0;
-        // no break on purpose
+        break;
     case FLASH_GET_INFO:
         if(uGetDeviceInfo()<0){
 #ifdef DEBUG_FIRMWARE
             ulog("uGetDeviceInfo failed\n");
 #endif
-            YSTRCPY(fctx.errmsg, FLASH_ERRMSG_LEN, "Unable to get bootloader informations");
             fctx.stepA = FLASH_DISCONNECT;
         }
         fctx.progress = 2;
@@ -1172,7 +1169,7 @@ YPROG_RESULT uFlashDevice(void)
 #else
         if(firm_dev.ext_total_pages) {
             int npages = firm_dev.ext_total_pages - fctx.flashPage;
-            int maxpages = (firm_dev.ext_jedec_id == JEDEC_SPANSION_4MB ? 16 : 128);
+            int maxpages = (firm_dev.ext_jedec_id == JEDEC_SPANSION_4MB || firm_dev.ext_jedec_id == JEDEC_SPANSION_8MB ? 16 : 128);
 #ifdef DEBUG_FIRMWARE
             ulogU16(npages);
             ulog(" pages still to flash\n");
@@ -1222,7 +1219,7 @@ YPROG_RESULT uFlashDevice(void)
                 } else {
 #ifdef DEBUG_FIRMWARE
                     ulog("clear time: ");
-                    ulogU16(ytime() - fctx.stepB);
+                    ulogU16((u16)(ytime() - fctx.stepB));
                     ulog("\n");
 #endif
                     fctx.progress = 3+(8*fctx.flashPage/firm_dev.ext_total_pages);
@@ -1360,27 +1357,17 @@ YPROG_RESULT uFlashDevice(void)
 }
 
 
+#ifndef MICROCHIP_API
 
-#ifndef YAPI_IN_YDEVICE
+typedef int(*yprogTcpReqCb)(void *ctx, const char* buffer, u32 len, char *errmsg);
 
-
-typedef enum
+static int getTCPBootloaders(void *ctx, const char* buffer, u32 len, char *errmsg)
 {
-    FLASH_HUB_AVAIL = 0u,
-    FLASH_HUB_STATE,
-    FLASH_HUB_LIST,
-    FLASH_HUB_FLASH,
-    FLASH_HUB_UPLOAD,
-    FLASH_HUB_NONE
-} FLASH_HUB_CMD;
-
-
-
-static int checkRequestHeader(FLASH_HUB_CMD cmd, const char *devserial, const char* buffer, u32 len, char *errmsg)
-{
-    int res;
+    int res = 0;
     yJsonStateMachine j;
-    char lastmsg[YOCTO_ERRMSG_LEN] = "invalid";
+    char *p = ctx;
+    memset(p, 0, YOCTO_SERIAL_LEN * 4);
+
     // Parse HTTP header
     j.src = buffer;
     j.end = j.src + len;
@@ -1391,8 +1378,112 @@ static int checkRequestHeader(FLASH_HUB_CMD cmd, const char *devserial, const ch
     if (YSTRCMP(j.token, "200")) {
         return YERRMSG(YAPI_IO_ERROR,"Unexpected HTTP return code");
     }
-    if (cmd == FLASH_HUB_UPLOAD) {
-        return 0;
+    if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_HTTP_READ_MSG) {
+        return YERRMSG(YAPI_IO_ERROR, "Unexpected JSON reply format");
+    }
+    if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
+        return YERRMSG(YAPI_IO_ERROR, "Unexpected JSON reply format");
+    }
+    while (yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
+        if (!strcmp(j.token, "list")) {
+            if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_ARRAY) {
+                return YERRMSG(YAPI_IO_ERROR, "Unexpected JSON reply format");
+            }
+
+            while (yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st != YJSON_PARSE_ARRAY) {
+                if (res < 4) {
+                    YSTRCPY(p + res * YOCTO_SERIAL_LEN, YOCTO_SERIAL_LEN, j.token);
+                }
+                res++;
+            }
+        }
+        yJsonSkip(&j, 1);
+    }
+    return res;
+}
+
+static int processs_tcp_req(const char *hubserial, const char *request, int requestlen, yprogTcpReqCb callback, void *ctx, char *errmsg)
+{
+    int res = -1;
+    YIOHDL  iohdl;
+    u8      *reply = NULL;
+    int     replysize = 0;
+    u64      timeout;
+    TcpReqSt *tcpreq;
+
+    memset(&iohdl, 0, YIOHDL_SIZE);
+    if (YISERR(res = yapiRequestOpen(&iohdl, hubserial, request, requestlen, NULL, NULL, errmsg))) {
+        return res;
+    }
+    tcpreq = &yContext->tcpreq[iohdl.tcpreqidx];
+    timeout = yapiGetTickCount() + FLASH_SUBDEV_TIMEOUT * 2;
+    res = yTcpEofReq(tcpreq, errmsg);
+    while (res == 0) {
+        if (yapiGetTickCount() > timeout) {
+            yTcpCloseReq(tcpreq);
+            return YERRMSG(YAPI_TIMEOUT, "Timeout during device request");
+        }
+        res = yTcpSelectReq(&tcpreq, 1, 1000, NULL, errmsg);
+        if (YISERR(res)){
+            yTcpCloseReq(tcpreq);
+            return res;
+        }
+        res = (YRETCODE)yTcpEofReq(tcpreq, errmsg);
+    }
+    if (YISERR(res) && res != YAPI_NO_MORE_DATA) {
+        yTcpCloseReq(tcpreq);
+        return res;
+    }
+
+    replysize = yTcpGetReq(tcpreq, &reply);
+    res = callback(ctx, (char*)reply, replysize, errmsg);
+    yTcpCloseReq(tcpreq);
+    return res;
+}
+
+
+// return the list of bootladers in a specific hub
+// buffer must be an pointer to a buffer of min 4 * YOCTO_SERIAL_LEN
+// return the number of booloader copyed to buffer
+int yNetHubGetBootloaders(const char *hubserial, char *buffer, char *errmsg)
+{
+    const char * req = "GET /flash.json?a=list \r\n\r\n";
+    return processs_tcp_req(hubserial, req, YSTRLEN(req), getTCPBootloaders, buffer, errmsg);
+}
+
+#endif
+
+
+#ifndef YAPI_IN_YDEVICE
+
+typedef enum
+{
+    FLASH_HUB_AVAIL = 0u,
+    FLASH_HUB_STATE,
+    FLASH_HUB_FLASH,
+    FLASH_HUB_NONE
+} FLASH_HUB_CMD;
+
+
+typedef struct {
+    FLASH_HUB_CMD cmd;
+    const char *devserial;
+}ckReqHeadCtx;
+
+static int checkRequestHeader(void *ctx_ptr, const char* buffer, u32 len, char *errmsg) {
+    ckReqHeadCtx *ctx = ctx_ptr;
+    yJsonStateMachine j;
+    char lastmsg[YOCTO_ERRMSG_LEN] = "invalid";
+    int res;
+    // Parse HTTP header
+    j.src = buffer;
+    j.end = j.src + len;
+    j.st = YJSON_HTTP_START;
+    if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_HTTP_READ_CODE) {
+        return YERRMSG(YAPI_IO_ERROR,"Failed to parse HTTP header");
+    }
+    if (YSTRCMP(j.token, "200")) {
+        return YERRMSG(YAPI_IO_ERROR,"Unexpected HTTP return code");
     }
     if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_HTTP_READ_MSG) {
         return YERRMSG(YAPI_IO_ERROR, "Unexpected JSON reply format");
@@ -1402,7 +1493,7 @@ static int checkRequestHeader(FLASH_HUB_CMD cmd, const char *devserial, const ch
     }
     res = 0;
     while (yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-        switch (cmd){
+        switch (ctx->cmd){
         case FLASH_HUB_STATE:
             if (!strcmp(j.token, "state")) {
                 if (yJsonParse(&j) != YJSON_PARSE_AVAIL) {
@@ -1417,7 +1508,7 @@ static int checkRequestHeader(FLASH_HUB_CMD cmd, const char *devserial, const ch
                 if (yJsonParse(&j) != YJSON_PARSE_AVAIL) {
                     return YERRMSG(YAPI_IO_ERROR, "Unexpected JSON reply format");
                 }
-                if (YSTRNCMP(j.token, devserial,YOCTO_BASE_SERIAL_LEN)) {
+                if (YSTRNCMP(j.token, ctx->devserial,YOCTO_BASE_SERIAL_LEN)) {
                     return YERRMSG(YAPI_IO_ERROR, "Firmware not designed for this module");
                 } else {
                     res++;
@@ -1425,20 +1516,6 @@ static int checkRequestHeader(FLASH_HUB_CMD cmd, const char *devserial, const ch
             } else {
                 yJsonSkip(&j, 1);
             }
-            break;
-        case FLASH_HUB_LIST:
-            if (!strcmp(j.token, "list")) {
-                if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_ARRAY) {
-                    return YERRMSG(YAPI_IO_ERROR, "Unexpected JSON reply format");
-                }
-                while (yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st != YJSON_PARSE_ARRAY) {
-                    if (!strcmp(j.token, devserial)) {
-                        res++;
-                        dbglog("%s in list\n", j.token);
-                    }
-                }
-            }
-            yJsonSkip(&j, 1);
             break;
         case FLASH_HUB_AVAIL:
             yJsonSkip(&j, 1);
@@ -1471,12 +1548,28 @@ static int checkRequestHeader(FLASH_HUB_CMD cmd, const char *devserial, const ch
         }
     }
 
-    if (res < 0 && cmd == FLASH_HUB_FLASH) {
+    if (res < 0 && ctx->cmd == FLASH_HUB_FLASH) {
         YSTRCPY(errmsg,YOCTO_ERRMSG_LEN, lastmsg);
     }
-
     return res;
 }
+
+static int checkHTTPHeader(void *ctx, const char* buffer, u32 len, char *errmsg) {
+    yJsonStateMachine j;
+    // Parse HTTP header
+    j.src = buffer;
+    j.end = j.src + len;
+    j.st = YJSON_HTTP_START;
+    if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_HTTP_READ_CODE) {
+        return YERRMSG(YAPI_IO_ERROR, "Failed to parse HTTP header");
+    }
+    if (YSTRCMP(j.token, "200")) {
+        return YERRMSG(YAPI_IO_ERROR, "Unexpected HTTP return code");
+    }
+
+    return 0;
+}
+
 
 // Method used to upload a file to the device
 static int upload(const char *hubserial, const char *subpath, const char *filename, u8 *data, u32 data_len, char *errmsg)
@@ -1519,7 +1612,7 @@ static int upload(const char *hubserial, const char *subpath, const char *filena
     buffer_size = (int)(p - buffer) + YSTRLEN(p);
     res = yapiHTTPRequestSyncStartEx(&iohdl, hubserial, buffer, buffer_size, &reply, &replysize, errmsg);
     if (res >= 0) {
-        res = checkRequestHeader(FLASH_HUB_UPLOAD, "", reply,replysize, errmsg);
+        res = checkHTTPHeader(NULL, reply, replysize, errmsg);
         yapiHTTPRequestSyncDone(&iohdl, errmsg);
     }
     yFree(buffer);
@@ -1535,22 +1628,18 @@ typedef enum
     FLASH_NET_SUBDEV,
 } FLASH_TYPE;
 
+
 static int sendHubFlashCmd(const char *hubserial, const char *subpath, const char *devserial, FLASH_HUB_CMD cmd, const char *args, char *errmsg)
 {
     char buffer[512];
-    int res = -1;
-    YIOHDL  iohdl;
-    char    *reply = NULL;
-    int     replysize = 0;
     const char *cmd_str;
+    ckReqHeadCtx ctx;
+    int res;
 
     switch (cmd){
     case FLASH_HUB_AVAIL:
     case FLASH_HUB_STATE:
         cmd_str = "state";
-        break;
-    case FLASH_HUB_LIST:
-        cmd_str = "list";
         break;
     case FLASH_HUB_FLASH:
         cmd_str = "flash";
@@ -1558,23 +1647,12 @@ static int sendHubFlashCmd(const char *hubserial, const char *subpath, const cha
     default:
         return YERR(YAPI_INVALID_ARGUMENT);
     }
-
     YSPRINTF(buffer, 512, "GET %sflash.json?a=%s%s \r\n\r\n", subpath, cmd_str, args);
-    res = yapiHTTPRequestSyncStart(&iohdl, hubserial, buffer, &reply, &replysize, errmsg);
-    if (res < 0) {
-        return res;
-    }
-#ifdef DEBUG_FIRMWARE
-    if (cmd == FLASH_HUB_FLASH) {
-        dbglog("flash result from hub:\n%s\n", reply);
-    }
-#endif
-    res = checkRequestHeader(cmd, devserial, reply, replysize, errmsg);
-    yapiHTTPRequestSyncDone(&iohdl, errmsg);
-
+    ctx.cmd = cmd;
+    ctx.devserial = devserial;
+    res = processs_tcp_req(hubserial, buffer, YSTRLEN(buffer), checkRequestHeader, &ctx, errmsg);
     return res;
 }
-
 
 static int isWebPath(const char *path)
 {
@@ -1637,6 +1715,8 @@ static void* yFirmwareUpdate_thread(void* ctx)
     char        errmsg[YOCTO_ERRMSG_LEN];
     char        buffer[256];
     char        subpath[256];
+    char        bootloaders[YOCTO_SERIAL_LEN * 4];
+    char        *p;
     char        replybuf[512];
     const char* reboot_req = "GET %sapi/module/rebootCountdown?rebootCountdown=-3 \r\n\r\n";
     const char* reboot_hub = "GET %sapi/module/rebootCountdown?rebootCountdown=-1003 \r\n\r\n";
@@ -1647,7 +1727,7 @@ static void* yFirmwareUpdate_thread(void* ctx)
     int         ofs,i;
     u64         timeout;
     FLASH_TYPE  type = FLASH_USB;
-    int         online;
+    int         online, found;
     YPROG_RESULT u_flash_res;
 
 
@@ -1678,7 +1758,7 @@ static void* yFirmwareUpdate_thread(void* ctx)
     }
 
     //5% -> 10%
-    setOsGlobalProgress(5, "Enter in bootloader");
+    setOsGlobalProgress(5, "Enter in update mode");
     dev = wpSearch(yContext->fuCtx.serial);
     if (dev != -1) {
         yUrlRef url;
@@ -1699,17 +1779,50 @@ static void* yFirmwareUpdate_thread(void* ctx)
             }
         } else {
             res = sendHubFlashCmd(hubserial, subpath, yContext->fuCtx.serial, FLASH_HUB_AVAIL, "", NULL);
-            if (res <0 ){
-                type = FLASH_NET_SUBDEV;
-                YSPRINTF(buffer, sizeof(buffer), reboot_req, subpath);
-                res = yapiHTTPRequest(hubserial, buffer, replybuf, sizeof(replybuf), NULL, errmsg);
+            if (res < 0 || YSTRNCMP(hubserial, "VIRTHUB", 7) == 0) {
+                int is_shield = YSTRNCMP(yContext->fuCtx.serial, "YHUBSHL1", YOCTO_BASE_SERIAL_LEN)==0;
+                res = yNetHubGetBootloaders(hubserial, bootloaders, errmsg);
                 if (res < 0) {
                     setOsGlobalProgress(res, errmsg);
                     goto exit_and_free;
                 }
-                if (replybuf[0] != 'O' || replybuf[1] != 'K') {
-                    dbglog("reboot to bootloader response:\n%s\n", replybuf);
+                for (i = 0; i < res; i++) {
+                    p = bootloaders + YOCTO_SERIAL_LEN * i;
+                    if (YSTRCMP(yContext->fuCtx.serial, p) == 0) {
+                        break;
+                    }
                 }
+                if (i == res) {
+                    // not in bootloader list...
+                    //...check if list is allready full..
+                    if (res == 4) {
+                        setOsGlobalProgress(YAPI_IO_ERROR, "Too many devices in update mode");
+                        goto exit_and_free;
+                    }
+                    if (is_shield) {
+                        //...and that we do not already have a shield in bootlader..
+                        for (i = 0; i < res; i++) {
+                            p = bootloaders + YOCTO_SERIAL_LEN * i;
+                            if (YSTRNCMP(p, "YHUBSHL1", YOCTO_BASE_SERIAL_LEN)==0) {
+                                setOsGlobalProgress(YAPI_IO_ERROR, "Only one YoctoHub-Shield is allowed in update mode");
+                                goto exit_and_free;
+                            }
+                        }
+                    }
+
+                    // ...must reboot in programtion
+                    setOsGlobalProgress(8, "Reboot to update mode");
+                    YSPRINTF(buffer, sizeof(buffer), reboot_req, subpath);
+                    res = yapiHTTPRequest(hubserial, buffer, replybuf, sizeof(replybuf), NULL, errmsg);
+                    if (res < 0) {
+                        setOsGlobalProgress(res, errmsg);
+                        goto exit_and_free;
+                    }
+                    if (replybuf[0] != 'O' || replybuf[1] != 'K') {
+                        dbglog("reboot to update mode response:\n%s\n", replybuf);
+                    }
+                }
+                type = FLASH_NET_SUBDEV;
             } else  {
                 type = FLASH_NET_SELF;
             }
@@ -1717,7 +1830,7 @@ static void* yFirmwareUpdate_thread(void* ctx)
     }
 
     //10% -> 40%
-    setOsGlobalProgress(10, "Send firmware to bootloader");
+    setOsGlobalProgress(10, "Send firmware to update mode");
     if (type != FLASH_USB){
         // IP connected device -> upload the firmware to the Hub
         res = upload(hubserial, type == FLASH_NET_SELF ? subpath : "/", "firmware", fctx.firmware, fctx.len, errmsg);
@@ -1755,7 +1868,6 @@ static void* yFirmwareUpdate_thread(void* ctx)
     case FLASH_USB:
         setOsGlobalProgress(40, "Flash firmware");
         fctx.timeout = ytime() + YPROG_BOOTLOADER_TIMEOUT;
-        u_flash_res = YPROG_DONE;
         do {
             u_flash_res = uFlashDevice();
             if (u_flash_res != YPROG_DONE){
@@ -1784,20 +1896,27 @@ static void* yFirmwareUpdate_thread(void* ctx)
         break;
     case FLASH_NET_SUBDEV:
         // verify that the device is in bootloader
-        setOsGlobalProgress(40, "Verify that the device is in bootloader");
+        setOsGlobalProgress(40, "Verify that the device is in update mode");
         timeout = yapiGetTickCount() + YPROG_BOOTLOADER_TIMEOUT;
-        do {
-            res = sendHubFlashCmd(hubserial, "/", yContext->fuCtx.serial, FLASH_HUB_LIST, "", errmsg);
+        found = 0;
+        while (!found && yapiGetTickCount()< timeout) {
+            res = yNetHubGetBootloaders(hubserial, bootloaders, errmsg);
             if (res < 0) {
                 setOsGlobalProgress(res, errmsg);
                 goto exit_and_free;
-            } else if (res >0) {
-                break;
+            } else if (res > 0) {
+                for (i = 0; i < res; i++) {
+                    p = bootloaders + YOCTO_SERIAL_LEN * i;
+                    if (YSTRCMP(yContext->fuCtx.serial, p) == 0) {
+                        found = 1;
+                        break;
+                    }
+                }
             }
             // device still rebooting
-            yApproximateSleep(10);
-        } while (yapiGetTickCount()< timeout);
-        if (res <= 0) {
+            yApproximateSleep(100);
+        }
+        if (!found) {
             setOsGlobalProgress(YAPI_IO_ERROR, "Hub did not detect bootloader");
             goto exit_and_free;
         }
@@ -1827,7 +1946,7 @@ static void* yFirmwareUpdate_thread(void* ctx)
         YSPRINTF(buffer, sizeof(buffer), get_api_fmt, subpath);
         res = yapiHTTPRequestSyncStart(&iohdl, hubserial, buffer, &reply, &replysize, tmp_errmsg);
         if (res >= 0) {
-            if (checkRequestHeader(FLASH_HUB_NONE,"", reply, replysize, tmp_errmsg) >= 0){
+            if (checkHTTPHeader(NULL, reply, replysize, tmp_errmsg) >= 0){
                 online = 1;
                 yapiHTTPRequestSyncDone(&iohdl, tmp_errmsg);
                 break;
@@ -1871,13 +1990,12 @@ static int yStartFirmwareUpdate(const char *serial, const char *firmwarePath, co
     yContext->fuCtx.firmwarePath = YSTRDUP(firmwarePath);
     yContext->fuCtx.settings = (u8*) YSTRDUP(settings);
     yContext->fuCtx.settings_len = YSTRLEN(settings);
-    yContext->fuCtx.global_progress = 0;
     fctx.firmware = NULL;
     fctx.len = 0;
     fctx.stepA = FLASH_FIND_DEV;
     YSTRNCPY(fctx.bynHead.h.serial, YOCTO_SERIAL_LEN, serial, YOCTO_SERIAL_LEN - 1);
-    setOsGlobalProgress(0,"Firmware update started");
-    YSTRCPY(msg, FLASH_ERRMSG_LEN, yContext->fuCtx.global_message);
+    yContext->fuCtx.global_progress = 0;
+    YSTRCPY(msg, FLASH_ERRMSG_LEN, "Firmware update started");
     memset(&yContext->fuCtx.thread, 0, sizeof(yThread));
     //yThreadCreate will not create a new thread if there is already one running
     if (yThreadCreate(&yContext->fuCtx.thread, yFirmwareUpdate_thread, NULL)<0){
@@ -1897,10 +2015,9 @@ static YRETCODE yapiCheckFirmwareFile(const char *serial, int current_rev, const
     int size, res, file_rev;
     u8  *p;
 
-
     size = yLoadFirmwareFile(path, &p, errmsg);
-    if (YISERR(size)){
-        return size;
+    if (YISERR(size) || p == NULL){
+        return YAPI_IO_ERROR;
     }
     head = (byn_head_multi*) p;
     res = IsValidBynFile(head, size, serial, errmsg);
@@ -2103,7 +2220,9 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiCheckFirmware(const char *serial, const char *
     }
     if (best_rev <= current_rev) {
         buffer[0] = 0;
-        *fullsize = 0;
+        if (fullsize){
+            *fullsize = 0;
+        }
         return 0;
     }
     return best_rev;

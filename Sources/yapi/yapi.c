@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 18628 2014-12-03 16:18:53Z seb $
+ * $Id: yapi.c 19201 2015-01-30 18:18:15Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -48,8 +48,6 @@
 //#define PERF_API_FUNCTIONS
 
 #ifdef PERF_API_FUNCTIONS
-
-
 typedef struct {
     yPerfMon  yapiInitAPI;
     yPerfMon  yapiFreeAPI;
@@ -95,7 +93,6 @@ typedef struct {
 } yApiPerfMonSt;
 
 yApiPerfMonSt yApiPerf;
-
 
 #define YPERF_API_ENTER(NAME) {yApiPerf.NAME.count++;yApiPerf.NAME.tmp=yapiGetTickCount();}
 #define YPERF_API_LEAVE(NAME) {yApiPerf.NAME.leave++;yApiPerf.NAME.totaltime += yapiGetTickCount()- yApiPerf.NAME.tmp;}
@@ -238,8 +235,6 @@ typedef struct {
     int     nbKnownDevices;
     yStrRef *knownDevices;
 }ENU_CONTEXT;
-
-
 
 
 // return 1 -> if this we should use devUrl instead of registered URL
@@ -978,7 +973,9 @@ static int yNetHubEnum(NetHubSt *hub,int forceupdate,char *errmsg)
         // and not unregister the connected devices
         if (hub->flags & NETH_F_SEND_PING_NOTIFICATION && hub->state != NET_HUB_ESTABLISHED) {
             // the hub send ping notification -> we can rely on helperthread status
-            YSPRINTF(errmsg,YOCTO_ERRMSG_LEN,"hub %s is not reachable",hub->name);
+            if (errmsg) {
+                YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "hub %s is not reachable", hub->name);
+            }
             return YAPI_IO_ERROR;
         } else {
             // the hub does not send ping notification -> we will to a request and potentialy
@@ -1022,6 +1019,7 @@ static int yapiInitHub(NetHubSt *hub, const char  *url,char *errmsg)
     int len;
     yHash huburl;
 
+    memset(hub,0,sizeof(NetHubSt));
     if(YSTRNCMP(url,"http://",7)==0){
         url += 7;
     }
@@ -1046,10 +1044,15 @@ static int yapiInitHub(NetHubSt *hub, const char  *url,char *errmsg)
     }
     huburl = yHashUrl(url,"",0,errmsg);
     if(huburl == INVALID_HASH_IDX) {
+        if (pwd) {
+            yFree(pwd);
+        }
+        if (user) {
+            yFree(user);
+        }
         return YAPI_INVALID_ARGUMENT;
     }
 
-    memset(hub,0,sizeof(NetHubSt));
     memset(hub->devYdxMap, 255, sizeof(hub->devYdxMap));
     yInitializeCriticalSection(&hub->authAccess);
     yInitWakeUpSocket(&hub->wuce);
@@ -1149,10 +1152,10 @@ static void ssdpEntryUpdate(const char *serial, const char *urlToRegister, const
     }
 
     if (yContext->detecttype & Y_DETECT_NET) {
-        if (urlToUnregister) {
-            yapiUnregisterHub(urlToUnregister);
-        }
         if (urlToRegister) {
+            if (urlToUnregister) {
+                yapiUnregisterHub(urlToUnregister);
+            }
             yapiPreregisterHub(urlToRegister, NULL);
         }
     }
@@ -1211,6 +1214,17 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int detect_type,char *errmsg)
     if (sizeof(s32) != 4) return YERRMSG(YAPI_INVALID_ARGUMENT,"invalid definition of s32");
     if (sizeof(s64) != 8) return YERRMSG(YAPI_INVALID_ARGUMENT,"invalid definition of s64");
 #endif
+
+    if(atof("3.14") != 3.14){
+#if defined(BUILD_ARMHF)
+        return YERRMSG(YAPI_INVALID_ARGUMENT,"Invalid arm architecture (try armel binaries)");
+#elif defined(BUILD_ARMEL)
+        return YERRMSG(YAPI_INVALID_ARGUMENT,"Invalid arm architecture (try armhf binaries)");
+#else
+        return YERRMSG(YAPI_INVALID_ARGUMENT,"Invalid architecture");
+#endif
+    }
+
     //init safe malloc
     ySafeMemoryInit(64*1024);
 
@@ -1528,6 +1542,7 @@ static int handleNetNotification(NetHubSt *hub)
     char            value[YOCTO_PUBVAL_LEN];
     u8              report[18];
     char            netstop=NOTIFY_NETPKT_STOP;
+    char            escapechar = 27;
 #ifdef DEBUG_NET_NOTIFICATION
     u32             abspos = hub->notifAbsPos;
     char            Dbuffer[1024];
@@ -1542,7 +1557,7 @@ static int handleNetNotification(NetHubSt *hub)
         if(pkttype != NOTIFY_NETPKT_STOP) break;
         // drop newline and loop
         yPopFifo(&(hub->fifo),NULL,1);
-        hub->notifAbsPos++;
+        // note: keep-alive packets don't count in the notification channel position
         size--;
     }
     if(size < NOTIFY_NETPKT_START_LEN) {
@@ -1551,13 +1566,27 @@ static int handleNetNotification(NetHubSt *hub)
     // make sure we have a full notification
     end = ySeekFifo(&(hub->fifo), (u8*) &netstop, 1, 0, 0, 0);
     if(end == 0xffff){
+        if (yFifoGetFree(&(hub->fifo)) == 0) {
+            dbglog("Too many invalid notifications, clearing buffer\n");
+            yFifoEmpty((&(hub->fifo)));
+            return 1;
+        }
         return 0;
     }
-
-
+    // make sure we have a full notification
+    if (0xffff != ySeekFifo(&(hub->fifo), (u8*) &escapechar, 1, 0, end, 0)) {
+        // drop notification that contain esc char
+        yPopFifo(&(hub->fifo), NULL, end + 1);
+        return 1;
+    }
     // handle short funcvalydx notifications
     if(pkttype >= NOTIFY_NETPKT_TIMEV2YDX && pkttype <= NOTIFY_NETPKT_TIMEAVGYDX) {
         memset(value, 0, YOCTO_PUBVAL_LEN);
+        if (end + 1 > sizeof(buffer)){
+            dbglog("Drop invalid short notification (too long :%d)\n", end + 1);
+            hub->notifAbsPos += end + 1;
+            return 1;
+        }
         yPopFifo(&(hub->fifo),(u8*) buffer,end+1);
         hub->notifAbsPos += end+1;
         p = buffer+1;
@@ -1874,6 +1903,7 @@ static void* yhelper_thread(void* ctx)
     TcpReqSt    *req, *selectlist[1+ALLOC_YDX_PER_HUB];
     u32         toread;
     int         res;
+    int         first_notification_connection=1;
 #ifdef DEBUG_NET_NOTIFICATION
     char        Dbuffer[1024];
 #endif
@@ -1906,10 +1936,14 @@ static void* yhelper_thread(void* ctx)
             if ( (u64)( now - hub->lastAttempt ) > hub->attemptDelay) {
                 char request[256];
 #ifdef TRACE_NET_HUB
-                dbglog("TRACE(%X->%s): try to open notification socket\n",hub->url,hub->name);
+                dbglog("TRACE(%X->%s): try to open notification socket at %d\n",hub->url,hub->name, hub->notifAbsPos);
 #endif
                 yFifoInit(&(hub->fifo), hub->buffer,sizeof(hub->buffer));
-                YSPRINTF(request, 256,"GET /not.byn?abs=%d HTTP/1.1\r\n\r\n" , hub->notifAbsPos);
+                if (first_notification_connection) {
+                    YSPRINTF(request, 256, "GET /not.byn HTTP/1.1\r\n\r\n");
+                } else {
+                    YSPRINTF(request, 256, "GET /not.byn?abs=%u HTTP/1.1\r\n\r\n", hub->notifAbsPos);
+                }
                 res = yTcpOpenReq(hub->notReq, request, YSTRLEN(request), TCPREQ_NOEXPIRATION, NULL, NULL, errmsg);
                 if (YISERR(res)) {
                     hub->attemptDelay = 500 << hub->retryCount;
@@ -1933,6 +1967,8 @@ static void* yhelper_thread(void* ctx)
                     hub->retryCount=0;
                     hub->attemptDelay = 500;
                     selectlist[towatch++] = hub->notReq;
+                    first_notification_connection = 0;
+
                 }
             }
         }
@@ -2640,7 +2676,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetFunctionInfo(YAPI_FUNCTION fundesc,YAPI_DEV
 
 
 // when iohdl is set to NULL, the request is opened in Async mode and will close automatically
-static YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *request, int reqlen, yapiRequestAsyncCallback callback, void *context, char *errmsg)
+YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *request, int reqlen, yapiRequestAsyncCallback callback, void *context, char *errmsg)
 {
     YAPI_DEVICE dev;
     char        buffer[512];
@@ -2729,7 +2765,9 @@ static YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *r
             }
         }
         if ((tcpreq->hub->flags & NETH_F_SEND_PING_NOTIFICATION || !(tcpreq->hub->flags & NETH_F_MANDATORY)) && tcpreq->hub->state != NET_HUB_ESTABLISHED) {
-            YSPRINTF(errmsg,YOCTO_ERRMSG_LEN,"hub %s is not reachable",tcpreq->hub->name);
+            if (errmsg) {
+                YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "hub %s is not reachable", tcpreq->hub->name);
+            }
             return YAPI_IO_ERROR;
         }
         if (strncmp(request,"GET ",4) == 0){
@@ -2895,13 +2933,15 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncDone(YIOHDL *iohdl, char *errms
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
 
+    if(iohdl == NULL)
+        return YERR(YAPI_INVALID_ARGUMENT);
+
     YPERF_API_ENTER(yapiHTTPRequestSyncDone);
     //YREQLOG("SyncDone for %x \n",iohdl);
     if(iohdl->type == YIO_USB) {
         yUsbClose(iohdl, errmsg);
     } else if(iohdl->type == YIO_TCP) {
         TcpReqSt *tcpreq = &yContext->tcpreq[iohdl->tcpreqidx];
-
         yTcpCloseReq(tcpreq);
     } else {
         YPERF_API_LEAVE(yapiHTTPRequestSyncStart);
@@ -3060,68 +3100,93 @@ YRETCODE yapiGetBootloadersDevs(char *serials,unsigned int maxNbSerial, unsigned
 
 }
 
-
 YRETCODE YAPI_FUNCTION_EXPORT yapiGetBootloaders(char *buffer, int buffersize, int *fullsize, char *errmsg)
 {
-     int             nbifaces=0;
-    yInterfaceSt    *iface;
-    yInterfaceSt    *runifaces=NULL;
     int             i;
     char            *p = buffer;
     YRETCODE        res;
-    int             len, size, total;
+    int             size, total, len;
 
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
 
-    if(buffersize<1)
+    if(buffer==NULL || buffersize<1)
         return YERR(YAPI_INVALID_ARGUMENT);
 
-    YPERF_API_ENTER(yapiGetBootloadersDevs);
-    if((yContext->detecttype & Y_DETECT_USB) ==0) {
-        YPERF_API_LEAVE(yapiGetBootloadersDevs);
-        return YERRMSG(YAPI_INVALID_ARGUMENT,"You must init the yAPI with Y_DETECT_USB flag");
-    }
-
-    if (YISERR(res = (YRETCODE) yyyUSBGetInterfaces(&runifaces,&nbifaces,errmsg))){
-        YPERF_API_LEAVE(yapiGetBootloadersDevs);
-        return res;
-    }
     buffersize--;// reserve space for \0
 
     size = total = 0;
-    for (i = 0, iface = runifaces ; i < nbifaces ; i++, iface++){
-        if(iface->deviceid != YOCTO_DEVID_BOOTLOADER)
-            continue;
 
-        if(buffer && size < buffersize && buffer != p) {
-            *p++ = ',';
-            size++;
+    if (yContext->detecttype & Y_DETECT_USB) {
+        int             nbifaces = 0;
+        yInterfaceSt    *iface;
+        yInterfaceSt    *runifaces = NULL;
+
+        if (YISERR(res = (YRETCODE)yyyUSBGetInterfaces(&runifaces, &nbifaces, errmsg))){
+            return res;
         }
 
-        len = YSTRLEN(iface->serial);
-        total += len;
-        if(buffer && size + len < buffersize){
-            YSTRCPY(p, buffersize - size , iface->serial);
-            p += len;
-            size += len;
+        for (i = 0, iface = runifaces; i < nbifaces; i++, iface++){
+            if (iface->deviceid != YOCTO_DEVID_BOOTLOADER)
+                continue;
+
+            if (buffer && size < buffersize && buffer != p) {
+                *p++ = ',';
+                size++;
+            }
+
+            len = YSTRLEN(iface->serial);
+            total += len;
+            if (buffer && size + len < buffersize){
+                YSTRCPY(p, buffersize - size, iface->serial);
+                p += len;
+                size += len;
+            }
+        }
+        // free all tmp ifaces
+        if (runifaces){
+            yFree(runifaces);
+        }
+
+    }
+
+
+    for (i = 0; i < NBMAX_NET_HUB; i++){
+        if (yContext->nethub[i].url != INVALID_HASH_IDX){
+            char bootloaders[4 * YOCTO_SERIAL_LEN];
+            char hubserial[YOCTO_SERIAL_LEN];
+			int res, j;
+            char *serial;
+            yHashGetStr(yContext->nethub[i].serial, hubserial, YOCTO_SERIAL_LEN);
+            res = yNetHubGetBootloaders(hubserial, bootloaders, errmsg);
+            if (YISERR(res)) {
+                return res;
+            }
+            for (j = 0, serial = bootloaders; j < res; j++, serial += YOCTO_SERIAL_LEN){
+                if (buffer && size < buffersize && buffer != p) {
+                    *p++ = ',';
+                    size++;
+                }
+
+                len = YSTRLEN(serial);
+                total += len;
+                if (buffer && size + len < buffersize){
+                    YSTRCPY(p, buffersize - size, serial);
+                    p += len;
+                    size += len;
+                }
+            }
         }
     }
 
     //ensure buffer is null terminated;
     *p = 0;
-    // free all tmp ifaces
-    if(runifaces){
-        yFree(runifaces);
-    }
     if(fullsize)
         *fullsize = total;
 
-    YPERF_API_LEAVE(yapiGetBootloadersDevs);
     return (YRETCODE) size;
 
 }
-
 
 typedef struct _fullAttrInfo {
     char        func[32];
@@ -3249,7 +3314,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetAllJsonKeys(const char *json_buffer, char *
             }
             *d++ = *p++;
             len++;
-            
+
         }
         *d = 0;
         YSTRCAT(d, 1024-len, "\"");
@@ -3259,8 +3324,6 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetAllJsonKeys(const char *json_buffer, char *
         if (buffersize > totalsize) {
             avail = buffersize - totalsize;
             memcpy(buffer + totalsize, tmpbuf, avail);
-        } else {
-            avail = 0;
         }
         totalsize += len;
     }

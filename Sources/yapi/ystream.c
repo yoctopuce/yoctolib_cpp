@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 18076 2014-10-17 07:27:04Z seb $
+ * $Id: ystream.c 19033 2015-01-20 08:04:06Z seb $
  *
  * USB multi-interface stream implementation
  *
@@ -1046,7 +1046,7 @@ static void yPktQueueDup(pktQueue *q, const char *file, int line)
         dbglogf(file, line, "PKTs: state = %s\n", q->status, q->errmsg);
     }
     pkt = q->first;
-    if (pkt != NULL){
+    while (pkt != NULL){
         if (last_pktno >= 0){
             if (last_pktno == 7) {
                 if (pkt->pkt.first_stream.pktno){
@@ -1126,7 +1126,7 @@ YRETCODE  yPktQueuePushH2D(yInterfaceSt *iface,const USB_Packet *pkt, char * err
 // return 1 if empty, 0 if not empty, or an error code
 static int yPktQueueWaitEmptyH2D(yInterfaceSt *iface,int ms, char * errmsg)
 {
-    if( ms>0){
+    if(ms > 0){
         yWaitForEvent(&iface->txQueue.emptyEvent,ms);
     }
     return yPktQueueIsEmpty(&iface->txQueue,errmsg);
@@ -1176,6 +1176,9 @@ YRETCODE yyySendPacket( yInterfaceSt *iface,const USB_Packet *pkt,char *errmsg)
 {
     int res;
     res = yPktQueuePushH2D(iface,pkt,errmsg);
+    if (YISERR(res)) {
+        return (YRETCODE) res;
+    }
     yyySignalOutPkt(iface);
     res= yPktQueueWaitEmptyH2D(iface,1000,errmsg);
     if (YISERR(res)) {

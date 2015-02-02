@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 17926 2014-10-03 16:54:03Z seb $
+ * $Id: yhash.c 18773 2014-12-18 07:41:11Z mvuilleu $
  *
  * Simple hash tables and device/function information store
  *
@@ -1333,13 +1333,19 @@ int ypRegisterByYdx(u8 devYdx, u8 funYdx, const char *funcVal, YAPI_FUNCTION *fu
     int      changed=0;
     const u16 *funcValWords = (const u16 *)funcVal;
 
+    if(funYdx >= 15) {
+        return 0; // discard invalid funYdx
+    }
     yEnterCriticalSection(&yYpMutex);
 
     // Ignore unknown devYdx
     if(devYdxPtr[devYdx] != INVALID_BLK_HDL) {
         hdl = funYdxPtr[devYdx];
         while(hdl != INVALID_BLK_HDL && funYdx >= 6) {
-            YASSERT(YA(hdl).blkId == YBLKID_YPARRAY);
+//          YASSERT(YA(hdl).blkId == YBLKID_YPARRAY);
+            if(YA(hdl).blkId != YBLKID_YPARRAY) {
+                return 0; // discard invalid block silently
+            }
             hdl = YA(hdl).nextPtr;
             funYdx -= 6;
         }

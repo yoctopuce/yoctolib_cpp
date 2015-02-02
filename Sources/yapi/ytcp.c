@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 18075 2014-10-17 07:26:33Z seb $
+ * $Id: ytcp.c 19101 2015-01-27 14:13:32Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -352,6 +352,13 @@ static int yTcpOpen(YSOCKET *newskt, u32 ip, u16 port, char *errmsg)
     return YAPI_SUCCESS;
 }
 
+static void yTcpClose(YSOCKET skt)
+{
+    // cleanup
+    closesocket(skt);
+}
+
+
 // check it a socket is still valid and empty (ie: nothing to read and writable)
 // return 1 if the socket is valid or a error code
 static int yTcpCheckSocketStillValid(YSOCKET skt, char * errmsg)
@@ -380,13 +387,16 @@ retry:
 #endif
         {
             res = yNetSetErr();
+            yTcpClose(skt);
             return res;
         }
     }
     if (FD_ISSET(skt,&exceptfds)) {
+        yTcpClose(skt);
         return YERRMSG(YAPI_IO_ERROR, "Exception on socket");
     }
     if (!FD_ISSET(skt,&writefds)) {
+        yTcpClose(skt);
         return YERRMSG(YAPI_IO_ERROR, "Socket not ready for write");
     }
 
@@ -394,10 +404,13 @@ retry:
         char buffer[128];
         iResult = (int)recv(skt, buffer, sizeof(buffer), 0);
         if (iResult == 0) {
+            yTcpClose(skt);
             return YERR(YAPI_NO_MORE_DATA);
         } if ( iResult < 0 ){
+            yTcpClose(skt);
             return YERR(YAPI_IO_ERROR);
         } else {
+            yTcpClose(skt);
             return YERR(YAPI_DOUBLE_ACCES);
         }
     }
@@ -407,24 +420,52 @@ retry:
 
 static int yTcpWrite(YSOCKET skt, const char *buffer, int len,char *errmsg)
 {
-    int iResult;
+    int res;
+    int tosend = len;
+    const char * p = buffer;
 
-    // Send an initial buffer
+    while (tosend>0) {
+        res = (int) send(skt, p, tosend, SEND_NOSIGPIPE);
+        if (res == SOCKET_ERROR) {
 #ifdef WINDOWS_API
-retry:
+            if(SOCK_ERR != WSAEWOULDBLOCK)
+#else
+            if(SOCK_ERR != EAGAIN)
+
 #endif
-    iResult = (int) send(skt, buffer, len, SEND_NOSIGPIPE);
-    if (iResult == SOCKET_ERROR) {
-#ifdef WINDOWS_API
-        if(SOCK_ERR == WSAEWOULDBLOCK){
-            yApproximateSleep(10);
-            goto retry;
+            {
+                return yNetSetErr();
+            }
+
+        } else {
+            tosend -= res;
+            p += res;
+            // unable to send all data
+            // wait a bit with a select
+            if (tosend != res) {
+                struct timeval timeout;
+                fd_set      fds;
+                memset(&timeout,0,sizeof(timeout));
+                timeout.tv_sec = 5;
+                FD_ZERO(&fds);
+                FD_SET(skt,&fds);
+                res = select((int)skt+1,NULL,&fds,NULL,&timeout);
+                if (res<0) {
+#ifndef WINDOWS_API
+                    if(SOCK_ERR ==  EAGAIN){
+                        continue;
+                    } else
+#endif
+                    {
+                        return yNetSetErr();
+                    }
+                } else if (res == 0) {
+                    return YERRMSG(YAPI_TIMEOUT, "Timeout during TCP write");
+                }
+            }
         }
-#endif
-        REPORT_ERR("send failed");
-        return YAPI_IO_ERROR;
     }
-    return iResult;
+    return len;
 }
 
 
@@ -450,12 +491,6 @@ static int yTcpRead(YSOCKET skt, u8 *buffer, int len,char *errmsg)
     return iResult;
 }
 
-static void yTcpClose(YSOCKET skt)
-{
-    // cleanup
-    closesocket(skt);
-}
-
 
 int yTcpDownload(const char *host, const char *url, u8 **out_buffer, u32 mstimeout, char *errmsg)
 {
@@ -471,10 +506,12 @@ int yTcpDownload(const char *host, const char *url, u8 **out_buffer, u32 mstimeo
 
     ip = yResolveDNS(host, errmsg);
     if (ip==0) {
+        yFree(replybuf);
         return YAPI_IO_ERROR;
     }
     if (yTcpOpen(&skt, ip, 80, errmsg)<0) {
         yTcpClose(skt);
+        yFree(replybuf);
         return YAPI_IO_ERROR;
     }
     len = YSPRINTF(request,512,"GET %s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n"
@@ -677,7 +714,7 @@ static int yTcpOpenReqEx(struct _TcpReqSt *req, char *errmsg)
     }
     req->open_tm = req->read_tm = yapiGetTickCount();
     p = req->headerbuf;
-    //skip firt line
+    //skip first line
     while(*p && *p != '\r') p++;
     end=p;
     last=p;
@@ -690,34 +727,34 @@ static int yTcpOpenReqEx(struct _TcpReqSt *req, char *errmsg)
             if(last != end){
                 memcpy(end,last,len);
             }
-            end+=len;
+            end += len;
         }
-        last =p;
+        last = p;
     }
-    *p++ = '\r'; *p++ = '\n';
+    *end++ = '\r'; *end++ = '\n';
     // insert authorization header in needed
     yEnterCriticalSection(&req->hub->authAccess);
     if(req->hub->user && req->hub->realm) {
         char *method = req->headerbuf, *uri;
-        char *auth = p;
+        char *auth = end;
         // null-terminate method and uri for digest computation
         for(uri = method; *uri != ' '; uri++);
         *uri++ = 0;
         for(p = uri; *p != ' '; p++);
         *p = 0;
-        yDigestAuthorization(auth, (int)(req->headerbuf+req->headerbufsize-auth), req->hub->user, req->hub->realm, req->hub->ha1,
+        yDigestAuthorization(auth, (int)(req->headerbuf + req->headerbufsize - auth), req->hub->user, req->hub->realm, req->hub->ha1,
                              req->hub->nonce, req->hub->opaque, &req->hub->nc, method, uri);
         // restore space separator after method and uri
         *--uri = ' ';
         *p = ' ';
         // prepare to complete request
-        p = auth+strlen(auth);
+        end = auth+strlen(auth);
     }
     yLeaveCriticalSection(&req->hub->authAccess);
     if(req->flags & TCPREQ_KEEPALIVE) {
-        YSTRCPY(p, (int)(req->headerbuf+req->headerbufsize-p), "\r\n");
+        YSTRCPY(end, (int)(req->headerbuf + req->headerbufsize - end), "\r\n");
     } else {
-        YSTRCPY(p, (int)(req->headerbuf+req->headerbufsize-p), "Connection: close\r\n\r\n");
+        YSTRCPY(end, (int)(req->headerbuf + req->headerbufsize - end), "Connection: close\r\n\r\n");
     }
     //write header
     res = yTcpWrite(req->skt, req->headerbuf, (int)strlen(req->headerbuf), errmsg);
@@ -1209,9 +1246,9 @@ static void ySSDPUpdateCache(SSDPInfos *SSDP, const char *uuid, const char * url
 
     for (i = 0; i<NB_SSDP_CACHE_ENTRY; i++){
         SSDP_CACHE_ENTRY *p = SSDP->SSDPCache[i];
-        if(p== NULL)
+        if (p == NULL)
             break;
-        if (YSTRCMP(uuid,p->uuid)==0){
+        if (YSTRCMP(uuid,p->uuid) == 0) {
             p->detectedTime = yapiGetTickCount();
             p->maxAge = cacheValidity;
 
@@ -1220,8 +1257,7 @@ static void ySSDPUpdateCache(SSDPInfos *SSDP, const char *uuid, const char * url
                     SSDP->callback(p->serial, url, p->url);
                 }
                 YSTRCPY(p->url, SSDP_URL_LEN, url);
-            }
-            else {
+            } else {
                 if (SSDP->callback){
                     SSDP->callback(p->serial, url, NULL);
                 }
@@ -1248,14 +1284,13 @@ static void ySSDPCheckExpiration(SSDPInfos *SSDP)
     int i;
     u64  now =yapiGetTickCount();
 
-    for (i = 0; i<NB_SSDP_CACHE_ENTRY; i++){
+    for (i = 0; i<NB_SSDP_CACHE_ENTRY; i++) {
         SSDP_CACHE_ENTRY *p = SSDP->SSDPCache[i];
-        if(p== NULL)
+        if (p == NULL)
             break;
-        if ((u64)(now - p->detectedTime) > p->maxAge) {
-            p->maxAge=0;
-
-            if (SSDP->callback){
+        if ((u64) (now - p->detectedTime) > p->maxAge) {
+            p->maxAge = 0;
+            if (SSDP->callback) {
                 SSDP->callback(p->serial, NULL, p->url);
             }
         }
@@ -1383,13 +1418,13 @@ static void* ySSDP_thread(void* ctx)
         /* wait for data */
         FD_ZERO(&fds);
         FD_SET(SSDP->request_sock,&fds);
+        sktmax = SSDP->request_sock;
         if(SSDP->notify_sock!=INVALID_SOCKET) {
             FD_SET(SSDP->notify_sock,&fds);
             if(SSDP->notify_sock>sktmax){
                 sktmax = SSDP->notify_sock;
             }
         }
-        sktmax = SSDP->request_sock;
         res = select((int)sktmax+1,&fds,NULL,NULL,&timeout);
         if (res<0) {
     #ifndef WINDOWS_API

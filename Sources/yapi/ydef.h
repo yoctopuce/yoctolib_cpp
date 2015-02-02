@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 18360 2014-11-13 07:52:33Z seb $
+ * $Id: ydef.h 18673 2014-12-08 17:39:14Z mvuilleu $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -887,7 +887,8 @@ typedef union {
 #define PIC24FJ64GB004      0x0F
 
 // Spansion Flash JEDEC id
-#define JEDEC_SPANSION_4MB  0x15
+#define JEDEC_SPANSION_4MB  0x16
+#define JEDEC_SPANSION_8MB  0x17
 
 #define YESC                (27u)
 

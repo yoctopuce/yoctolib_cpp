@@ -148,12 +148,6 @@
         <Unit filename="..\..\..\Sources\yocto_altitude.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
-        <Unit filename="..\..\..\Sources\yocto_alti.h">
-            <Option virtualFolder="YoctoLibrary\" />
-        </Unit>
-        <Unit filename="..\..\..\Sources\yocto_alti.cpp">
-            <Option virtualFolder="YoctoLibrary\" />
-        </Unit>
         <Unit filename="..\..\..\Sources\yocto_anbutton.h">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
