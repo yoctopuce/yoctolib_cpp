@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_win.c 19327 2015-02-17 17:30:01Z seb $
+ * $Id: ypkt_win.c 19920 2015-04-07 10:56:40Z seb $
  *
  * OS-specific USB packet layer, Windows version
  *
@@ -646,7 +646,7 @@ static void* yyyUsbIoThread(void* thread_void)
 
     iface->wrHDL = INVALID_HANDLE_VALUE;
     iface->rdHDL = INVALID_HANDLE_VALUE;
-    for (i =0;i<2;i++){
+    for (i =0; i < 2; i++){
         iface->EV[i] = NULL;
     }
     yThreadSignalStart(thread);
@@ -669,7 +669,7 @@ static void* yyyUsbIoThread(void* thread_void)
     HALLOG("yyyReady I%x wr=%x rd=%x se=%s\n",iface->ifaceno,iface->wrHDL, iface->rdHDL,iface->serial);
 
 
-    if( yyyyRead(iface,errmsg)!=YAPI_SUCCESS) {
+    if(yyyyRead(iface,errmsg) != YAPI_SUCCESS) {
         HALLOG("Read error  %s:%d (%s)\n",iface->serial,iface->ifaceno,errmsg);
         goto exitThread;
     }
@@ -743,6 +743,7 @@ exitThread:
 
 int yyySetup(yInterfaceSt *iface,char *errmsg)
 {
+    HALLOG("yyySetup %p\n",iface);
     yPktQueueInit(&iface->rxQueue);
     yPktQueueInit(&iface->txQueue);
     memset(&iface->io_thread,0,sizeof(yThread));
@@ -760,12 +761,12 @@ int yyySignalOutPkt(yInterfaceSt *iface)
 
 void yyyPacketShutdown(yInterfaceSt *iface)
 {
-    HALLOG("yyyPacketShutdown\n");
+    HALLOG("yyyPacketShutdown %p\n", iface);
     if(yThreadIsRunning(&iface->io_thread)) {
-        u64 timeref;
+        u64 timeout;
         yThreadRequestEnd(&iface->io_thread);
-        timeref=yapiGetTickCount();
-        while(yThreadIsRunning(&iface->io_thread) && (yapiGetTickCount()-timeref >YIO_DEFAULT_USB_TIMEOUT) ) {
+        timeout = yapiGetTickCount() + YIO_DEFAULT_USB_TIMEOUT;
+        while(yThreadIsRunning(&iface->io_thread) && (timeout - yapiGetTickCount()) > 0 ) {
             yApproximateSleep(10);
         }
         yThreadKill(&iface->io_thread);

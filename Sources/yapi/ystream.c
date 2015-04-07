@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 19525 2015-02-27 17:41:57Z seb $
+ * $Id: ystream.c 19930 2015-04-07 12:20:02Z seb $
  *
  * USB multi-interface stream implementation
  *
@@ -396,7 +396,7 @@ static void devStartEnum(LOCATION yPrivDeviceSt *dev)
 
 
     timeref = yapiGetTickCount();
-    while((dev->rstatus == YRUN_IDLE || dev->rstatus == YRUN_BUSY ) && (u64)(yapiGetTickCount()-timeref) < 2000){
+    while((dev->rstatus == YRUN_IDLE || dev->rstatus == YRUN_BUSY ) && (u64)(yapiGetTickCount() - timeref) < 2000){
             // if someone is doing IO release the mutex and give him 2 second to quit
             yLeaveCriticalSection(&dev->acces_state);
             yApproximateSleep(5);
@@ -2428,11 +2428,11 @@ int yUsbFree(yContextSt *ctx,char *errmsg)
 #ifdef PERF_YHUB_FUNCTIONS
     dumpYUSBPerf();
 #endif
-    p=ctx->devs;
-    ctx->devs=NULL;
+    p = ctx->devs;
+    ctx->devs = NULL;
     while(p) {
-        if(p->dStatus ==YDEV_WORKING){
-            int csTaken=yTryEnterCriticalSection(&p->acces_state);
+        if(p->dStatus == YDEV_WORKING){
+            int csTaken = yTryEnterCriticalSection(&p->acces_state);
             yStrRef serialref = yHashTestStr(p->infos.serial);
             p->dStatus = YDEV_UNPLUGGED;
             StopDevice(p,NULL);
@@ -2442,11 +2442,11 @@ int yUsbFree(yContextSt *ctx,char *errmsg)
         }
         if(p->replybuf) {
             yFree(p->replybuf);
-            p->replybuf=NULL;
+            p->replybuf = NULL;
         }
-        next=p->next;
+        next = p->next;
         FreeDevice(p);
-        p=next;
+        p = next;
     }
     return yyyUSB_stop(yContext,errmsg);
 }

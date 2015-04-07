@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 19496 2015-02-25 09:25:17Z mvuilleu $
+ * $Id: yproto.h 19904 2015-04-02 09:24:54Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -655,6 +655,7 @@ typedef struct _NetHubSt {
 
 #define TCPREQ_KEEPALIVE       1
 #define TCPREQ_NOEXPIRATION    2
+#define TCPREQ_IN_USE          4
 
 typedef struct _TcpReqSt {
     NetHubSt            *hub;           // pointer to the NetHubSt handling the device

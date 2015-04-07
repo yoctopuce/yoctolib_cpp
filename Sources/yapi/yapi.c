@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 19768 2015-03-18 15:54:22Z seb $
+ * $Id: yapi.c 19930 2015-04-07 12:20:02Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -1116,8 +1116,8 @@ static void unregisterNetHub(yUrlRef  huburl)
             yThreadRequestEnd(&hub->net_thread);
             yDringWakeUpSocket(&hub->wuce, 0, errmsg);
             // wait for the helper thread to stop monitoring these devices
-            timeref=yapiGetTickCount();
-            while(yThreadIsRunning(&hub->net_thread) && (yapiGetTickCount()-timeref < YIO_DEFAULT_TCP_TIMEOUT) ) {
+            timeref = yapiGetTickCount();
+            while(yThreadIsRunning(&hub->net_thread) && (yapiGetTickCount() - timeref < YIO_DEFAULT_TCP_TIMEOUT) ) {
                 yApproximateSleep(10);
             }
             yThreadKill(&hub->net_thread);

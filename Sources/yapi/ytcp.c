@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 19658 2015-03-10 14:16:56Z mvuilleu $
+ * $Id: ytcp.c 19930 2015-04-07 12:20:02Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -523,8 +523,8 @@ int yTcpDownload(const char *host, const char *url, u8 **out_buffer, u32 mstimeo
     if(YISERR(res)) {
         goto exit;
     }
-    expiration = yapiGetTickCount()+ mstimeout;
-    while(yapiGetTickCount() - expiration > 0) {
+    expiration = yapiGetTickCount() + mstimeout;
+    while(expiration - yapiGetTickCount() > 0) {
         struct timeval timeout;
         u64 ms = expiration - yapiGetTickCount();
         memset(&timeout,0,sizeof(timeout));
@@ -670,7 +670,7 @@ static int yTcpCheckReqTimeout(struct _TcpReqSt *req, char *errmsg)
     }
     return YAPI_SUCCESS;
 }
-
+// access mutex taken by caller
 static int yTcpOpenReqEx(struct _TcpReqSt *req, char *errmsg)
 {
     char buffer[YOCTO_HOSTNAME_NAME], *p,*last,*end;
@@ -780,6 +780,39 @@ static int yTcpOpenReqEx(struct _TcpReqSt *req, char *errmsg)
     return YAPI_SUCCESS;
 }
 
+
+// mutex already taken by caller
+
+static void yTcpCloseReqEx(struct _TcpReqSt *req, int canReuseSocket)
+{
+    TCPLOG("yTcpCloseReqEx %p[%x]\n",req,req->skt);
+
+    req->flags &= ~TCPREQ_KEEPALIVE;
+    if (req->callback) {
+        u32 len = req->replysize - req->replypos;
+        u8  *ptr = req->replybuf + req->replypos;
+        if (req->errcode == YAPI_NO_MORE_DATA) {
+            req->callback(req->context, ptr, len, YAPI_SUCCESS, "");
+        } else {
+            req->callback(req->context, ptr, len, req->errcode, req->errmsg);
+        }
+        req->callback = NULL;
+        // ASYNC Request are automaticaly released
+        req->flags &= ~TCPREQ_IN_USE;
+    }
+
+    if(req->skt != INVALID_SOCKET) {
+        if (canReuseSocket) {
+            req->reuseskt = req->skt;
+        } else {
+            yTcpClose(req->skt);
+        }
+        req->skt = INVALID_SOCKET;
+    }
+    ySetEvent(&req->finished);
+}
+
+
 int  yTcpOpenReq(struct _TcpReqSt *req, const char *request, int reqlen, u32 flags, yapiRequestAsyncCallback callback, void *context, char *errmsg)
 {
     int  minlen,i,res;
@@ -793,7 +826,7 @@ int  yTcpOpenReq(struct _TcpReqSt *req, const char *request, int reqlen, u32 fla
     yEnterCriticalSection(&req->access);
     //TCPLOG("yTcpOpenReq %p[%x]\n",req,req->skt);
     startwait = yapiGetTickCount();
-    while(req->skt != INVALID_SOCKET ) {
+    while(req->skt != INVALID_SOCKET || (req->flags & TCPREQ_IN_USE) ) {
         // There is an ongoing request to be finished
         yLeaveCriticalSection(&req->access);
         yWaitForEvent(&req->finished,100);
@@ -857,8 +890,8 @@ int  yTcpOpenReq(struct _TcpReqSt *req, const char *request, int reqlen, u32 fla
     res = yTcpOpenReqEx(req, errmsg);
     if(res == YAPI_SUCCESS) {
         req->errmsg[0] = '\0';
+        req->flags |= TCPREQ_IN_USE;
         yResetEvent(&req->finished);
-        res = yTcpCheckReqTimeout(req, errmsg);
     }
     TCPLOG("yTcpOpenReq %p[%x]\n",req,req->skt);
 
@@ -934,17 +967,10 @@ int yTcpSelectReq(struct _TcpReqSt **reqs, int size, u64 ms, WakeUpSocket *wuce,
                 req->read_tm = yapiGetTickCount();
                 if(res < 0) {
                     // any connection closed by peer ends up with YAPI_NO_MORE_DATA
-                    yTcpClose(req->skt);
-                    req->flags &= ~TCPREQ_KEEPALIVE;
-                    if (req->callback) {
-                        int callbackRes = (res == YAPI_NO_MORE_DATA ? YAPI_SUCCESS : res);
-                        req->callback(req->context, req->replybuf, req->replysize, callbackRes, errmsg);
-                    }
-                    TCPLOG("yTcpSelectReq %p[%x] connection closed by peer\n",req,req->skt);
-                    req->callback = NULL;
-                    req->skt = INVALID_SOCKET;
-                    ySetEvent(&req->finished);
+                    req->replypos = 0;
                     req->errcode = YERRTO((YRETCODE) res,req->errmsg);
+                    TCPLOG("yTcpSelectReq %p[%x] connection closed by peer\n",req,req->skt);
+                    yTcpCloseReqEx(req, 0);
                 } else if(res > 0) {
                     req->replysize += res;
                     if(req->replypos < 0) {
@@ -953,17 +979,9 @@ int yTcpSelectReq(struct _TcpReqSt **reqs, int size, u64 ms, WakeUpSocket *wuce,
                             TCPLOG("yTcpSelectReq %p[%x] untrashort reply\n",req,req->skt);
                             // successful abbreviated reply (keepalive)
                             req->replypos = 0;
-                            req->flags &= ~TCPREQ_KEEPALIVE;
-                            if (req->callback) {
-                                req->replybuf[0] = 'O';
-                                req->callback(req->context, req->replybuf, req->replysize, YAPI_SUCCESS, NULL);
-
-                            }
-                            req->callback = NULL;
-                            req->reuseskt = req->skt;
-                            req->skt = INVALID_SOCKET;
-                            ySetEvent(&req->finished);
-                            req->errcode = YERRTO(YAPI_NO_MORE_DATA,req->errmsg);
+                            req->replybuf[0] = 'O';
+                            req->errcode = YERRTO(YAPI_NO_MORE_DATA, req->errmsg);
+                            yTcpCloseReqEx(req, 1);
                         } else if(req->replysize >= 4 && !memcmp(req->replybuf, "OK\r\n", 4)) {
                             // successful short reply, let it go through
                             req->replypos = 0;
@@ -977,19 +995,16 @@ int yTcpSelectReq(struct _TcpReqSt **reqs, int size, u64 ms, WakeUpSocket *wuce,
 
                                 if(!req->hub->user || req->retryCount++ > 3) {
                                     // No credential provided, give up immediately
-                                    yTcpClose(req->skt);
+                                    req->replypos = 0;
+                                    req->replysize = 0;
                                     req->errcode = YERRTO(YAPI_UNAUTHORIZED, req->errmsg);
-                                    if (req->callback) {
-                                        req->callback((void*)req->callback, NULL, 0, req->errcode, req->errmsg);
-                                    }
-                                    req->callback =NULL;
-                                    req->skt = INVALID_SOCKET;
-                                    ySetEvent(&req->finished);
+                                    yTcpCloseReqEx(req, 0);
                                 } else if(yParseWWWAuthenticate((char*)req->replybuf, req->replysize, &method, &realm, &qop, &nonce, &opaque) >= 0) {
                                     // Authentication header fully received, we can close the connection
-                                    yTcpClose(req->skt);
-                                    req->skt = INVALID_SOCKET;
                                     if (!strcmp(method, "Digest") && !strcmp(qop, "auth")) {
+                                        // partial close to reopen with authentication settings
+                                        yTcpClose(req->skt);
+                                        req->skt = INVALID_SOCKET;
                                         // device requests Digest qop-authentication, good
                                         yEnterCriticalSection(&req->hub->authAccess);
                                         yDupSet(&req->hub->realm, realm);
@@ -1002,14 +1017,15 @@ int yTcpSelectReq(struct _TcpReqSt **reqs, int size, u64 ms, WakeUpSocket *wuce,
                                         yLeaveCriticalSection(&req->hub->authAccess);
                                         // reopen connection with proper auth parameters
                                         // callback and context parameters are preserved
-                                        res = yTcpOpenReqEx(req, errmsg);
-                                        if (YISERR(res) && req->callback) {
-                                            req->callback((void*)req->callback, NULL, 0, req->errcode, req->errmsg);
+                                        req->errcode = yTcpOpenReqEx(req, req->errmsg);
+                                        if (YISERR(req->errcode)) {
+                                            yTcpCloseReqEx(req, 0);
                                         }
                                     } else {
                                         // unsupported authentication method for devices, give up
-                                        req->errcode = YERRTO(YAPI_UNAUTHORIZED, req->errmsg);;
-                                        ySetEvent(&req->finished);
+                                        req->replypos = 0;
+                                        req->errcode = YERRTO(YAPI_UNAUTHORIZED, req->errmsg);
+                                        yTcpCloseReqEx(req, 0);
                                     }
                                 }
                             }
@@ -1098,24 +1114,10 @@ int yTcpReadReq(struct _TcpReqSt *req, u8 *buffer, int len)
 
 void yTcpCloseReq(struct _TcpReqSt *req)
 {
-    u8 *ptr;
     TCPLOG("yTcpCloseReq %p[%x]\n",req,req->skt);
     yEnterCriticalSection(&req->access);
-    if (req->callback) {
-        if(req->errcode == YAPI_NO_MORE_DATA) {
-            u32 len = req->replysize - req->replypos;
-            ptr = req->replybuf + req->replypos;
-            req->callback(req->context, ptr, len, YAPI_SUCCESS, NULL);
-        } else {
-            req->callback(req->context,NULL, 0, req->errcode, req->errmsg);
-        }
-        req->callback = NULL;
-    }
-    if(req->skt != INVALID_SOCKET) {
-        yTcpClose(req->skt);
-        req->skt = INVALID_SOCKET;
-        ySetEvent(&req->finished);
-    }
+    yTcpCloseReqEx(req, 0);
+    req->flags &= ~TCPREQ_IN_USE;
     yLeaveCriticalSection(&req->access);
 }
 
@@ -1246,7 +1248,7 @@ static void ySSDPUpdateCache(SSDPInfos *SSDP, const char *uuid, const char * url
         cacheValidity = 1800;
     cacheValidity*=1000;
 
-    for (i = 0; i<NB_SSDP_CACHE_ENTRY; i++){
+    for (i = 0; i < NB_SSDP_CACHE_ENTRY; i++){
         SSDP_CACHE_ENTRY *p = SSDP->SSDPCache[i];
         if (p == NULL)
             break;
@@ -1267,7 +1269,7 @@ static void ySSDPUpdateCache(SSDPInfos *SSDP, const char *uuid, const char * url
             return;
         }
     }
-    if (i <NB_SSDP_CACHE_ENTRY){
+    if (i < NB_SSDP_CACHE_ENTRY){
         SSDP_CACHE_ENTRY *p = (SSDP_CACHE_ENTRY*) yMalloc(sizeof(SSDP_CACHE_ENTRY));
         YSTRCPY(p->uuid,SSDP_URL_LEN,uuid);
         uuidToSerial(p->uuid, p->serial);
@@ -1439,6 +1441,7 @@ static void* ySSDP_thread(void* ctx)
                 break;
             }
         }
+
         if(!yContext) continue;
         ySSDPCheckExpiration(SSDP);
         if (res!=0) {
@@ -1497,7 +1500,7 @@ int ySSDPStart(SSDPInfos *SSDP, ssdpHubDiscoveryCallback callback, char *errmsg)
 
 
     //create M-search socker
-    SSDP->request_sock = socket(PF_INET,SOCK_DGRAM,IPPROTO_UDP);
+    SSDP->request_sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (SSDP->request_sock == INVALID_SOCKET) {
         return yNetSetErr();
     }
@@ -1509,11 +1512,11 @@ int ySSDPStart(SSDPInfos *SSDP, ssdpHubDiscoveryCallback callback, char *errmsg)
 #endif
 
     // set port to 0 since we accept any port
-    socksize=sizeof(sockaddr);
+    socksize = sizeof(sockaddr);
     memset(&sockaddr,0,socksize);
     sockaddr.sin_family = AF_INET;
-    sockaddr.sin_addr.s_addr =INADDR_ANY;
-    if (bind(SSDP->request_sock ,(struct sockaddr *)&sockaddr,socksize)<0) {
+    sockaddr.sin_addr.s_addr = INADDR_ANY;
+    if (bind(SSDP->request_sock ,(struct sockaddr*) &sockaddr, socksize) < 0) {
         return yNetSetErr();
     }
 
@@ -1564,8 +1567,8 @@ void  ySSDPStop(SSDPInfos *SSDP)
     if(yThreadIsRunning(&SSDP->thread)) {
         u64 timeref;
         yThreadRequestEnd(&SSDP->thread);
-        timeref=yapiGetTickCount();
-        while(yThreadIsRunning(&SSDP->thread) && (yapiGetTickCount()-timeref >1000) ) {
+        timeref = yapiGetTickCount();
+        while(yThreadIsRunning(&SSDP->thread) && (yapiGetTickCount() - timeref < 1000) ) {
             yApproximateSleep(10);
         }
         yThreadKill(&SSDP->thread);

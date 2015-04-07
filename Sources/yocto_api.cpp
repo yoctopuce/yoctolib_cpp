@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 19854 2015-03-26 10:17:46Z seb $
+ * $Id: yocto_api.cpp 19900 2015-03-31 13:11:09Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -304,7 +304,6 @@ vector<string> YFirmwareUpdate::GetAllBootLoaders(void)
     fullsize = 0;
     yapi_res = yapiGetBootloaders(smallbuff, 1024, &fullsize, errmsg);
     if (yapi_res < 0) {
-        bootloader_list = "error:" + string(errmsg);
         return bootladers;
     }
     if (fullsize <= 1024) {

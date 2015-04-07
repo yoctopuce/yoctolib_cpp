@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yfifo.c 19559 2015-03-03 15:41:24Z seb $
+ * $Id: yfifo.c 19910 2015-04-03 10:36:18Z mvuilleu $
  *
  * Implementation of a generic fifo queue
  *
@@ -453,7 +453,7 @@ void decodePubVal(Notification_funydx funInfo, const char *funcval, char *buffer
             case PUBVAL_4RAWBYTES:
             case PUBVAL_5RAWBYTES:
             case PUBVAL_6RAWBYTES:
-                // 1..5 hex bytes
+                // 1..6 hex bytes
                 for(i = 0; i < funcValType; i++) {
                     unsigned c = *p++;
                     unsigned b = c >> 4;

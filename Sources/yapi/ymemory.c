@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ymemory.c 19327 2015-02-17 17:30:01Z seb $
+ * $Id: ymemory.c 19921 2015-04-07 10:57:04Z seb $
  *
  * Basic memory check function to prevent memory leak
  *
@@ -185,10 +185,10 @@ void  ySafeFree(const char *file,u32 line,void *ptr)
         ymemdump();
         YASSERT(0);
     }
+    free(entry->ptr);
     entry->free_file = file;
     entry->free_line = line;
     entry->state = YMEM_FREED;
-    free(entry->ptr);
     entry->ptr=NULL;
 
     yLeaveCriticalSection(&yMapCS);
