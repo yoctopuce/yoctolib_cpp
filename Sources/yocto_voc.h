@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_voc.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_voc.h 19606 2015-03-05 10:35:57Z seb $
  *
  * Declares yFindVoc(), the high-level API for Voc functions
  *
@@ -59,9 +59,10 @@ typedef void (*YVocTimedReportCallback)(YVoc *func, YMeasure measure);
 //--- (YVoc declaration)
 /**
  * YVoc Class: Voc function interface
- * 
- * The Yoctopuce application programming interface allows you to read an instant
- * measure of the sensor, as well as the minimal and maximal values observed.
+ *
+ * The Yoctopuce class YVoc allows you to read and configure Yoctopuce Volatile Organic
+ * Compound sensors. It inherits from YSensor class the core functions to read measurements,
+ * register callback functions, access to the autonomous datalogger.
  */
 class YOCTO_CLASS_EXPORT YVoc: public YSensor {
 #ifdef __BORLANDC__
@@ -96,7 +97,7 @@ public:
      * <li>ModuleLogicalName.FunctionIdentifier</li>
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
-     * 
+     *
      * This function does not require that the Volatile Organic Compound sensor is online at the time
      * it is invoked. The returned object is nevertheless valid.
      * Use the method YVoc.isOnline() to test if the Volatile Organic Compound sensor is
@@ -104,9 +105,9 @@ public:
      * a Volatile Organic Compound sensor by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
-     * 
+     *
      * @param func : a string that uniquely characterizes the Volatile Organic Compound sensor
-     * 
+     *
      * @return a YVoc object allowing you to drive the Volatile Organic Compound sensor.
      */
     static YVoc*        FindVoc(string func);
@@ -116,7 +117,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
@@ -132,7 +133,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and an YMeasure object describing
      *         the new advertised value.
@@ -149,7 +150,7 @@ public:
 
     /**
      * Continues the enumeration of Volatile Organic Compound sensors started using yFirstVoc().
-     * 
+     *
      * @return a pointer to a YVoc object, corresponding to
      *         a Volatile Organic Compound sensor currently online, or a null pointer
      *         if there are no more Volatile Organic Compound sensors to enumerate.
@@ -162,7 +163,7 @@ public:
      * Starts the enumeration of Volatile Organic Compound sensors currently accessible.
      * Use the method YVoc.nextVoc() to iterate on
      * next Volatile Organic Compound sensors.
-     * 
+     *
      * @return a pointer to a YVoc object, corresponding to
      *         the first Volatile Organic Compound sensor currently online, or a null pointer
      *         if there are none.
@@ -188,7 +189,7 @@ public:
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that the Volatile Organic Compound sensor is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YVoc.isOnline() to test if the Volatile Organic Compound sensor is
@@ -196,9 +197,9 @@ public:
  * a Volatile Organic Compound sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes the Volatile Organic Compound sensor
- * 
+ *
  * @return a YVoc object allowing you to drive the Volatile Organic Compound sensor.
  */
 inline YVoc* yFindVoc(const string& func)
@@ -207,7 +208,7 @@ inline YVoc* yFindVoc(const string& func)
  * Starts the enumeration of Volatile Organic Compound sensors currently accessible.
  * Use the method YVoc.nextVoc() to iterate on
  * next Volatile Organic Compound sensors.
- * 
+ *
  * @return a pointer to a YVoc object, corresponding to
  *         the first Volatile Organic Compound sensor currently online, or a null pointer
  *         if there are none.

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_refframe.cpp 18320 2014-11-10 10:47:48Z seb $
+ * $Id: yocto_refframe.cpp 19606 2015-03-05 10:35:57Z seb $
  *
  * Implements yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -123,22 +123,22 @@ int YRefFrame::set_mountPos(int newval)
  * Changes the reference bearing used by the compass. The relative bearing
  * indicated by the compass is the difference between the measured magnetic
  * heading and the reference bearing indicated here.
- * 
+ *
  * For instance, if you setup as reference bearing the value of the earth
  * magnetic declination, the compass will provide the orientation relative
  * to the geographic North.
- * 
+ *
  * Similarly, when the sensor is not mounted along the standard directions
  * because it has an additional yaw angle, you can set this angle in the reference
  * bearing so that the compass provides the expected natural direction.
- * 
+ *
  * Remember to call the saveToFlash()
  * method of the module if the modification must be kept.
- * 
+ *
  * @param newval : a floating point number corresponding to the reference bearing used by the compass
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YRefFrame::set_bearing(double newval)
@@ -152,9 +152,9 @@ int YRefFrame::set_bearing(double newval)
  * Returns the reference bearing used by the compass. The relative bearing
  * indicated by the compass is the difference between the measured magnetic
  * heading and the reference bearing indicated here.
- * 
+ *
  * @return a floating point number corresponding to the reference bearing used by the compass
- * 
+ *
  * On failure, throws an exception or returns Y_BEARING_INVALID.
  */
 double YRefFrame::get_bearing(void)
@@ -194,7 +194,7 @@ int YRefFrame::set_calibrationParam(const string& newval)
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that $THEFUNCTION$ is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YRefFrame.isOnline() to test if $THEFUNCTION$ is
@@ -202,9 +202,9 @@ int YRefFrame::set_calibrationParam(const string& newval)
  * $AFUNCTION$ by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes $THEFUNCTION$
- * 
+ *
  * @return a YRefFrame object allowing you to drive $THEFUNCTION$.
  */
 YRefFrame* YRefFrame::FindRefFrame(string func)
@@ -223,7 +223,7 @@ YRefFrame* YRefFrame::FindRefFrame(string func)
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
  * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
- * 
+ *
  * @param callback : the callback function to call, or a null pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and the character string describing
  *         the new advertised value.
@@ -262,13 +262,13 @@ int YRefFrame::_invokeValueCallback(string value)
  * Returns the installation position of the device, as configured
  * in order to define the reference frame for the compass and the
  * pitch/roll tilt sensors.
- * 
+ *
  * @return a value among the Y_MOUNTPOSITION enumeration
  *         (Y_MOUNTPOSITION_BOTTOM,   Y_MOUNTPOSITION_TOP,
  *         Y_MOUNTPOSITION_FRONT,    Y_MOUNTPOSITION_RIGHT,
  *         Y_MOUNTPOSITION_REAR,     Y_MOUNTPOSITION_LEFT),
  *         corresponding to the installation in a box, on one of the six faces.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 Y_MOUNTPOSITION YRefFrame::get_mountPosition(void)
@@ -282,7 +282,7 @@ Y_MOUNTPOSITION YRefFrame::get_mountPosition(void)
  * Returns the installation orientation of the device, as configured
  * in order to define the reference frame for the compass and the
  * pitch/roll tilt sensors.
- * 
+ *
  * @return a value among the enumeration Y_MOUNTORIENTATION
  *         (Y_MOUNTORIENTATION_TWELVE, Y_MOUNTORIENTATION_THREE,
  *         Y_MOUNTORIENTATION_SIX,     Y_MOUNTORIENTATION_NINE)
@@ -290,7 +290,7 @@ Y_MOUNTPOSITION YRefFrame::get_mountPosition(void)
  *         as on a clock dial seen from an observer in the center of the box.
  *         On the bottom face, the 12H orientation points to the front, while
  *         on the top face, the 12H orientation points to the rear.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 Y_MOUNTORIENTATION YRefFrame::get_mountOrientation(void)
@@ -306,7 +306,7 @@ Y_MOUNTORIENTATION YRefFrame::get_mountOrientation(void)
  * parallel to the earth surface. In case the device is not installed upright
  * and horizontally, you must select its reference orientation (parallel to
  * the earth surface) so that the measures are made relative to this position.
- * 
+ *
  * @param position : a value among the Y_MOUNTPOSITION enumeration
  *         (Y_MOUNTPOSITION_BOTTOM,   Y_MOUNTPOSITION_TOP,
  *         Y_MOUNTPOSITION_FRONT,    Y_MOUNTPOSITION_RIGHT,
@@ -319,10 +319,10 @@ Y_MOUNTORIENTATION YRefFrame::get_mountOrientation(void)
  *         as on a clock dial seen from an observer in the center of the box.
  *         On the bottom face, the 12H orientation points to the front, while
  *         on the top face, the 12H orientation points to the rear.
- * 
+ *
  * Remember to call the saveToFlash()
  * method of the module if the modification must be kept.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YRefFrame::set_mountPosition(Y_MOUNTPOSITION position,Y_MOUNTORIENTATION orientation)
@@ -378,7 +378,7 @@ int YRefFrame::_calibSort(int start,int stopidx)
  * Initiates the sensors tridimensional calibration process.
  * This calibration is used at low level for inertial position estimation
  * and to enhance the precision of the tilt sensors.
- * 
+ *
  * After calling this method, the device should be moved according to the
  * instructions provided by method get_3DCalibrationHint,
  * and more3DCalibration should be invoked about 5 times per second.
@@ -387,7 +387,7 @@ int YRefFrame::_calibSort(int start,int stopidx)
  * the computed calibration parameters can be applied using method
  * save3DCalibration. The calibration process can be canceled
  * at any time using method cancel3DCalibration.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YRefFrame::start3DCalibration(void)
@@ -422,7 +422,7 @@ int YRefFrame::start3DCalibration(void)
  * positioning the device according to the instructions provided by method
  * get_3DCalibrationHint. Note that the instructions change during
  * the calibration process.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YRefFrame::more3DCalibration(void)
@@ -636,7 +636,7 @@ int YRefFrame::more3DCalibration(void)
 /**
  * Returns instructions to proceed to the tridimensional calibration initiated with
  * method start3DCalibration.
- * 
+ *
  * @return a character string.
  */
 string YRefFrame::get_3DCalibrationHint(void)
@@ -647,7 +647,7 @@ string YRefFrame::get_3DCalibrationHint(void)
 /**
  * Returns the global process indicator for the tridimensional calibration
  * initiated with method start3DCalibration.
- * 
+ *
  * @return an integer between 0 (not started) and 100 (stage completed).
  */
 int YRefFrame::get_3DCalibrationProgress(void)
@@ -658,7 +658,7 @@ int YRefFrame::get_3DCalibrationProgress(void)
 /**
  * Returns index of the current stage of the calibration
  * initiated with method start3DCalibration.
- * 
+ *
  * @return an integer, growing each time a calibration stage is completed.
  */
 int YRefFrame::get_3DCalibrationStage(void)
@@ -669,7 +669,7 @@ int YRefFrame::get_3DCalibrationStage(void)
 /**
  * Returns the process indicator for the current stage of the calibration
  * initiated with method start3DCalibration.
- * 
+ *
  * @return an integer between 0 (not started) and 100 (stage completed).
  */
 int YRefFrame::get_3DCalibrationStageProgress(void)
@@ -680,7 +680,7 @@ int YRefFrame::get_3DCalibrationStageProgress(void)
 /**
  * Returns the latest log message from the calibration process.
  * When no new message is available, returns an empty string.
- * 
+ *
  * @return a character string.
  */
 string YRefFrame::get_3DCalibrationLogMsg(void)
@@ -695,7 +695,7 @@ string YRefFrame::get_3DCalibrationLogMsg(void)
  * Applies the sensors tridimensional calibration parameters that have just been computed.
  * Remember to call the saveToFlash()  method of the module if the changes
  * must be kept when the device is restarted.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YRefFrame::save3DCalibration(void)
@@ -768,7 +768,7 @@ int YRefFrame::save3DCalibration(void)
 
 /**
  * Aborts the sensors tridimensional calibration process et restores normal settings.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YRefFrame::cancel3DCalibration(void)

@@ -166,6 +166,12 @@
         <Unit filename="..\..\..\Sources\yocto_carbondioxide.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
+        <Unit filename="..\..\..\Sources\yocto_cellular.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_cellular.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
         <Unit filename="..\..\..\Sources\yocto_colorled.h">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
@@ -220,6 +226,18 @@
         <Unit filename="..\..\..\Sources\yocto_genericsensor.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
+        <Unit filename="..\..\..\Sources\yocto_gps.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_gps.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_groundspeed.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_groundspeed.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
         <Unit filename="..\..\..\Sources\yocto_gyro.h">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
@@ -238,6 +256,12 @@
         <Unit filename="..\..\..\Sources\yocto_humidity.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
+        <Unit filename="..\..\..\Sources\yocto_latitude.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_latitude.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
         <Unit filename="..\..\..\Sources\yocto_led.h">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
@@ -248,6 +272,12 @@
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
         <Unit filename="..\..\..\Sources\yocto_lightsensor.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_longitude.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_longitude.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
         <Unit filename="..\..\..\Sources\yocto_magnetometer.h">
@@ -278,6 +308,12 @@
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
         <Unit filename="..\..\..\Sources\yocto_power.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_poweroutput.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_poweroutput.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
         <Unit filename="..\..\..\Sources\yocto_pressure.h">

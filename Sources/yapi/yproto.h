@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 18831 2014-12-22 22:27:04Z seb $
+ * $Id: yproto.h 19496 2015-02-25 09:25:17Z mvuilleu $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -798,8 +798,8 @@ void wpSafeUpdate( NetHubSt *hub, u8 devYdx, yStrRef serialref,yStrRef lnameref,
 void wpSafeUnregister(yStrRef serialref);
 
 void ypUpdateUSB(const char *serial, const char *funcid, const char *funcname, int funclass, int funydx, const char *funcval);
-void ypUpdateYdx(int devydx, int funydx, const char *funcval);
-void ypUpdateHybrid(const char *serial, int funydx, const char *funcval);
+void ypUpdateYdx(int devydx, Notification_funydx funInfo, const char *funcval);
+void ypUpdateHybrid(const char *serial, Notification_funydx funInfo, const char *funcval);
 
 /*****************************************************************
  * yStream API with cycling logic and yyPacket API

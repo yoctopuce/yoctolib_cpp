@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_win.c 17996 2014-10-10 10:12:26Z seb $
+ * $Id: ypkt_win.c 19327 2015-02-17 17:30:01Z seb $
  *
  * OS-specific USB packet layer, Windows version
  *

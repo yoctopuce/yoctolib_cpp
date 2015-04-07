@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_lin.c 18744 2014-12-11 09:19:53Z seb $
+ * $Id: ypkt_lin.c 19327 2015-02-17 17:30:01Z seb $
  *
  * OS-specific USB packet layer, Linux version
  *

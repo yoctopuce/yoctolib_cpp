@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_tilt.h 18320 2014-11-10 10:47:48Z seb $
+ * $Id: yocto_tilt.h 19606 2015-03-05 10:35:57Z seb $
  *
  * Declares yFindTilt(), the high-level API for Tilt functions
  *
@@ -68,9 +68,16 @@ typedef enum {
 //--- (YTilt declaration)
 /**
  * YTilt Class: Tilt function interface
- * 
- * The Yoctopuce application programming interface allows you to read an instant
- * measure of the sensor, as well as the minimal and maximal values observed.
+ *
+ * The YSensor class is the parent class for all Yoctopuce sensors. It can be
+ * used to read the current value and unit of any sensor, read the min/max
+ * value, configure autonomous recording frequency and access recorded data.
+ * It also provide a function to register a callback invoked each time the
+ * observed value changes, or at a predefined interval. Using this class rather
+ * than a specific subclass makes it possible to create generic applications
+ * that work with any Yoctopuce sensor, even those that do not yet exist.
+ * Note: The YAnButton class is the only analog input which does not inherit
+ * from YSensor.
  */
 class YOCTO_CLASS_EXPORT YTilt: public YSensor {
 #ifdef __BORLANDC__
@@ -118,7 +125,7 @@ public:
      * <li>ModuleLogicalName.FunctionIdentifier</li>
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
-     * 
+     *
      * This function does not require that the tilt sensor is online at the time
      * it is invoked. The returned object is nevertheless valid.
      * Use the method YTilt.isOnline() to test if the tilt sensor is
@@ -126,9 +133,9 @@ public:
      * a tilt sensor by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
-     * 
+     *
      * @param func : a string that uniquely characterizes the tilt sensor
-     * 
+     *
      * @return a YTilt object allowing you to drive the tilt sensor.
      */
     static YTilt*       FindTilt(string func);
@@ -138,7 +145,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
@@ -154,7 +161,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and an YMeasure object describing
      *         the new advertised value.
@@ -171,7 +178,7 @@ public:
 
     /**
      * Continues the enumeration of tilt sensors started using yFirstTilt().
-     * 
+     *
      * @return a pointer to a YTilt object, corresponding to
      *         a tilt sensor currently online, or a null pointer
      *         if there are no more tilt sensors to enumerate.
@@ -184,7 +191,7 @@ public:
      * Starts the enumeration of tilt sensors currently accessible.
      * Use the method YTilt.nextTilt() to iterate on
      * next tilt sensors.
-     * 
+     *
      * @return a pointer to a YTilt object, corresponding to
      *         the first tilt sensor currently online, or a null pointer
      *         if there are none.
@@ -210,7 +217,7 @@ public:
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that the tilt sensor is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YTilt.isOnline() to test if the tilt sensor is
@@ -218,9 +225,9 @@ public:
  * a tilt sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes the tilt sensor
- * 
+ *
  * @return a YTilt object allowing you to drive the tilt sensor.
  */
 inline YTilt* yFindTilt(const string& func)
@@ -229,7 +236,7 @@ inline YTilt* yFindTilt(const string& func)
  * Starts the enumeration of tilt sensors currently accessible.
  * Use the method YTilt.nextTilt() to iterate on
  * next tilt sensors.
- * 
+ *
  * @return a pointer to a YTilt object, corresponding to
  *         the first tilt sensor currently online, or a null pointer
  *         if there are none.

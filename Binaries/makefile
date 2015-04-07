@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: httpsupport.h 2196 2011-07-28 15:58:38Z seb $
+#  $Id: makefile 19412 2015-02-19 11:06:34Z seb $
 #
 #  makefile for C++ library
 #  - - - - - - - - - License information: - - - - - - - - -
@@ -77,7 +77,8 @@ YOCTO_API_OBJS =  $(OD)\yocto_api.obj $(OD)\yocto_anbutton.obj $(OD)\yocto_carbo
 	$(OD)\yocto_wakeupmonitor.obj $(OD)\yocto_wakeupschedule.obj $(OD)\yocto_watchdog.obj $(OD)\yocto_wireless.obj $(OD)\yocto_digitalio.obj \
 	$(OD)\yocto_accelerometer.obj $(OD)\yocto_magnetometer.obj $(OD)\yocto_refFrame.obj $(OD)\yocto_tilt.obj $(OD)\yocto_compass.obj \
 	$(OD)\yocto_gyro.obj $(OD)\yocto_pwmoutput.obj $(OD)\yocto_pwmpowersource.obj $(OD)\yocto_altitude.obj $(OD)\yocto_motor.obj \
-	$(OD)\yocto_serialport.obj $(OD)\yocto_pwminput.obj $(OD)\yocto_segmenteddisplay.obj $(OD)\yocto_buzzer.obj
+	$(OD)\yocto_serialport.obj $(OD)\yocto_pwminput.obj $(OD)\yocto_segmenteddisplay.obj $(OD)\yocto_buzzer.obj $(OD)\yocto_gps.obj \
+	$(OD)\yocto_cellular.obj $(OD)\yocto_groundspeed.obj $(OD)\yocto_latitude.obj $(OD)\yocto_longitude.obj  $(OD)\yocto_poweroutput.obj
 
 YOCTO_API_OBJS32 = $(YOCTO_API_OBJS:arch_type=windows\obj_dir)
 

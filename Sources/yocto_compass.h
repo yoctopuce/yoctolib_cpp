@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_compass.h 18320 2014-11-10 10:47:48Z seb $
+ * $Id: yocto_compass.h 19606 2015-03-05 10:35:57Z seb $
  *
  * Declares yFindCompass(), the high-level API for Compass functions
  *
@@ -69,9 +69,16 @@ typedef enum {
 //--- (YCompass declaration)
 /**
  * YCompass Class: Compass function interface
- * 
- * The Yoctopuce application programming interface allows you to read an instant
- * measure of the sensor, as well as the minimal and maximal values observed.
+ *
+ * The YSensor class is the parent class for all Yoctopuce sensors. It can be
+ * used to read the current value and unit of any sensor, read the min/max
+ * value, configure autonomous recording frequency and access recorded data.
+ * It also provide a function to register a callback invoked each time the
+ * observed value changes, or at a predefined interval. Using this class rather
+ * than a specific subclass makes it possible to create generic applications
+ * that work with any Yoctopuce sensor, even those that do not yet exist.
+ * Note: The YAnButton class is the only analog input which does not inherit
+ * from YSensor.
  */
 class YOCTO_CLASS_EXPORT YCompass: public YSensor {
 #ifdef __BORLANDC__
@@ -113,9 +120,9 @@ public:
 
     /**
      * Returns the magnetic heading, regardless of the configured bearing.
-     * 
+     *
      * @return a floating point number corresponding to the magnetic heading, regardless of the configured bearing
-     * 
+     *
      * On failure, throws an exception or returns Y_MAGNETICHEADING_INVALID.
      */
     double              get_magneticHeading(void);
@@ -133,7 +140,7 @@ public:
      * <li>ModuleLogicalName.FunctionIdentifier</li>
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
-     * 
+     *
      * This function does not require that the compass is online at the time
      * it is invoked. The returned object is nevertheless valid.
      * Use the method YCompass.isOnline() to test if the compass is
@@ -141,9 +148,9 @@ public:
      * a compass by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
-     * 
+     *
      * @param func : a string that uniquely characterizes the compass
-     * 
+     *
      * @return a YCompass object allowing you to drive the compass.
      */
     static YCompass*    FindCompass(string func);
@@ -153,7 +160,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
@@ -169,7 +176,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and an YMeasure object describing
      *         the new advertised value.
@@ -186,7 +193,7 @@ public:
 
     /**
      * Continues the enumeration of compasses started using yFirstCompass().
-     * 
+     *
      * @return a pointer to a YCompass object, corresponding to
      *         a compass currently online, or a null pointer
      *         if there are no more compasses to enumerate.
@@ -199,7 +206,7 @@ public:
      * Starts the enumeration of compasses currently accessible.
      * Use the method YCompass.nextCompass() to iterate on
      * next compasses.
-     * 
+     *
      * @return a pointer to a YCompass object, corresponding to
      *         the first compass currently online, or a null pointer
      *         if there are none.
@@ -225,7 +232,7 @@ public:
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that the compass is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YCompass.isOnline() to test if the compass is
@@ -233,9 +240,9 @@ public:
  * a compass by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes the compass
- * 
+ *
  * @return a YCompass object allowing you to drive the compass.
  */
 inline YCompass* yFindCompass(const string& func)
@@ -244,7 +251,7 @@ inline YCompass* yFindCompass(const string& func)
  * Starts the enumeration of compasses currently accessible.
  * Use the method YCompass.nextCompass() to iterate on
  * next compasses.
- * 
+ *
  * @return a pointer to a YCompass object, corresponding to
  *         the first compass currently online, or a null pointer
  *         if there are none.

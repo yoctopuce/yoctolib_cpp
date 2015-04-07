@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.h 16598 2014-06-18 06:05:04Z mvuilleu $
+ * $Id: yhash.h 19508 2015-02-26 08:16:37Z mvuilleu $
  *
  * Simple hash tables and device/function information store
  *
@@ -51,7 +51,7 @@ extern "C" {
 
 #define HASH_BUF_SIZE 28
 #define HASH_BUF_POW   5 /* HASH_BUF_POW = log_2(HASH_BUF_SIZE+2+2) */
-#ifdef __C30__
+#ifdef MICROCHIP_API
 #define NB_MAX_HASH_ENTRIES 1023     /* keep hash table size <32KB on Yocto-Hub */
 #define NB_MAX_DEVICES        80     /* base hub + up to 15 shields (up to 4 slave ports) */
 #else
@@ -112,7 +112,7 @@ typedef struct {
 } yYellowPageArray;
 
 typedef struct {
-    u8          funYdx;
+    Notification_funydx funInfo;
     u8          blkId;
     yBlkHdl     nextPtr;
     union {
@@ -246,9 +246,9 @@ int     wpGetDeviceInfo(YAPI_DEVICE devdesc, u16 *deviceid, char *productname, c
 yUrlRef wpGetDeviceUrlRef(YAPI_DEVICE devdesc);
 int     wpGetDeviceUrl(YAPI_DEVICE devdesc, char *roothubserial, char *request, int requestsize, int *neededsize);
 int     ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, int funClass, int funYdx, const char *funcVal);
-int     ypRegisterByYdx(u8 devYdx, u8 funYdx, const char *funcVal, YAPI_FUNCTION *fundesc);
+int     ypRegisterByYdx(u8 devYdx, Notification_funydx funInfo, const char *funcVal, YAPI_FUNCTION *fundesc);
 void    ypGetCategory(yBlkHdl hdl, char *name, yBlkHdl *entries);
-int     ypGetAttributes(yBlkHdl hdl, yStrRef *serial, yStrRef *funcId, yStrRef *funcName, char *funcVal);
+int     ypGetAttributes(yBlkHdl hdl, yStrRef *serial, yStrRef *funcId, yStrRef *funcName, Notification_funydx *funcInfo, char *funcVal);
 int     ypGetType(yBlkHdl hdl);
 YAPI_FUNCTION ypSearch(const char *class_str, const char *func_str);
 int     ypGetBootDevHdl(const char *serial);
@@ -256,6 +256,7 @@ s16     ypFindBootloaders(yStrRef *serials, u16 maxSerials);
 int     ypGetFunctions(const char *class_str, YAPI_DEVICE devdesc, YAPI_FUNCTION prevfundesc,
                        YAPI_FUNCTION *buffer,int maxsize,int *neededsize);
 int     ypGetFunctionInfo(YAPI_FUNCTION fundesc, char *serial, char *funcId, char *funcName, char *funcVal);
+int     decodeNetFuncValV2(const u8 *p, Notification_funydx *funInfo, char *funcVal);
 
 #ifdef  __cplusplus
 }

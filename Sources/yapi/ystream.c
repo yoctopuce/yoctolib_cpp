@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 19033 2015-01-20 08:04:06Z seb $
+ * $Id: ystream.c 19525 2015-02-27 17:41:57Z seb $
  *
  * USB multi-interface stream implementation
  *
@@ -240,7 +240,6 @@ int wcstombs_s(size_t *pReturnValue, char *mbstr, size_t sizeInBytes, const wcha
  Whitepage and Yellowpage wrapper for USB devices
  ****************************************************************************/
 
-
 void ypUpdateUSB(const char *serial, const char *funcid, const char *funcname, int funclass, int funydx, const char *funcval)
 {
     char    categ[YOCTO_FUNCTION_LEN];
@@ -260,28 +259,31 @@ void ypUpdateUSB(const char *serial, const char *funcid, const char *funcname, i
     if(ypRegister(yHashPutStr(categ), serialref, funcidref, funcnameref, funclass, funydx, funcval)){
         // Forward high-level notification to API user
         if (yContext->functionCallback) {
+            // old notifications never need to be decoded
             yEnterCriticalSection(&yContext->functionCallbackCS);
-            yContext->functionCallback(((s32)funcidref << 16) | serialref,funcval);
+            yContext->functionCallback(((s32)funcidref << 16) | serialref, funcval);
             yLeaveCriticalSection(&yContext->functionCallbackCS);
         }
     }
 }
 
-void ypUpdateYdx(int devydx, int funydx, const char *funcval)
+void ypUpdateYdx(int devydx, Notification_funydx funInfo, const char *funcval)
 {
     YAPI_FUNCTION fundesc;
 
-    if(ypRegisterByYdx(devydx, funydx, funcval, &fundesc)){
+    if(ypRegisterByYdx(devydx, funInfo, funcval, &fundesc)){
         // Forward high-level notification to API user
-        if (yContext->functionCallback) {
+        if (yContext->functionCallback && funcval) {
+            char buffer[YOCTO_PUBVAL_LEN];
+            decodePubVal(funInfo, funcval, buffer);
             yEnterCriticalSection(&yContext->functionCallbackCS);
-            yContext->functionCallback(fundesc,funcval);
+            yContext->functionCallback(fundesc,buffer);
             yLeaveCriticalSection(&yContext->functionCallbackCS);
         }
     }
 }
 
-void ypUpdateHybrid(const char *serial, int funydx, const char *funcval)
+void ypUpdateHybrid(const char *serial, Notification_funydx funInfo, const char *funcval)
 {
     int     devydx;
     yStrRef serialref;
@@ -289,7 +291,7 @@ void ypUpdateHybrid(const char *serial, int funydx, const char *funcval)
     serialref = yHashPutStr(serial);
     devydx = wpGetDevYdx(serialref);
     if(devydx >= 0) {
-        ypUpdateYdx(devydx, funydx, funcval);
+        ypUpdateYdx(devydx, funInfo, funcval);
     }
 }
 
@@ -724,6 +726,7 @@ static void dumpAnyStream(char *prefix,int iface,u8 pkt,u8 stream,u8 size,u8 *da
                 dbglog("%s: Stream Empty\n",prefix);
                 break;
             case YSTREAM_NOTICE:
+            case YSTREAM_NOTICE_V2:
                 if(notif->firstByte <= NOTIFY_1STBYTE_MAXTINY) {
                     dbglog("%s: TINY FUNCTION VALUE\n",prefix);
                 } else if(notif->firstByte >= NOTIFY_1STBYTE_MINSMALL) {
@@ -848,6 +851,18 @@ static void dumpPktSummary(char *prefix, int iface,int isInput,const USB_Packet 
                 break;
             case YSTREAM_NOTICE:
                 st ='N';
+                break;
+            case YSTREAM_REPORT:
+                st ='X';
+                break;
+            case YSTREAM_META:
+                st ='M';
+                break;
+            case YSTREAM_REPORT_V2:
+                st ='V';
+                break;
+            case YSTREAM_NOTICE_V2:
+                st ='U';
                 break;
             default:
                 st='?';
@@ -1592,24 +1607,30 @@ static void yStreamShutdown(yPrivDeviceSt *dev)
 
 // Notification packet dispatcher
 //
-static void yDispatchNotice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pktsize)
+static void yDispatchNotice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pktsize, int isV2)
 {
     yPrivDeviceSt *notDev;
     u16 vendorid,deviceid;
 
-    if(notify->firstByte <= NOTIFY_1STBYTE_MAXTINY || notify->firstByte >= NOTIFY_1STBYTE_MINSMALL) {
+    if(isV2 || notify->firstByte <= NOTIFY_1STBYTE_MAXTINY || notify->firstByte >= NOTIFY_1STBYTE_MINSMALL) {
         // Tiny or small pubval notification:
         // create a new null-terminated small notification that we can use and forward
         char buff[sizeof(Notification_small)+YOCTO_PUBVAL_SIZE+2];
         Notification_small *smallnot = (Notification_small *)buff;
         memset(smallnot->pubval,0,YOCTO_PUBVAL_SIZE+2);
-        if(notify->firstByte <= NOTIFY_1STBYTE_MAXTINY) {
+
+        if (notify->smallpubvalnot.funInfo.v2.isSmall == 0) {
+            // convert tiny notification to samll notification
             memcpy(smallnot->pubval, notify->tinypubvalnot.pubval,pktsize - sizeof(Notification_tiny));
-            smallnot->funydx = notify->tinypubvalnot.funydx;
+            smallnot->funInfo.v2.funydx = notify->tinypubvalnot.funInfo.v2.funydx;
+            smallnot->funInfo.v2.typeV2 = notify->tinypubvalnot.funInfo.v2.typeV2;
+            smallnot->funInfo.v2.isSmall = 1;
             smallnot->devydx = wpGetDevYdx(yHashPutStr(dev->infos.serial));
         } else {
+            YASSERT(0);
+            // Assert added on 2015-02-25, remove code below when confirmed dead code
             memcpy(smallnot->pubval,notify->smallpubvalnot.pubval,pktsize - sizeof(Notification_small));
-            smallnot->funydx = notify->smallpubvalnot.funydx - NOTIFY_1STBYTE_MINSMALL;
+            smallnot->funInfo.raw = notify->smallpubvalnot.funInfo.raw;
             if(dev->devYdxMap) {
                 smallnot->devydx = dev->devYdxMap[notify->smallpubvalnot.devydx];
             } else {
@@ -1617,11 +1638,16 @@ static void yDispatchNotice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pkts
             }
         }
 #ifdef DEBUG_NOTIFICATION
-        dbglog("notifysmall %d %d %s\n",smallnot->devydx,smallnot->funydx,smallnot->pubval);
+        if(smallnot->funInfo.v2.typeV2 == NOTIFY_V2_LEGACY) {
+            dbglog("notifysmall %d %d %s\n",smallnot->devydx,smallnot->funInfo.v2.funydx,smallnot->pubval);
+        } else {
+            u8 *tmpbuff = (u8 *)smallnot->pubval;
+            dbglog("notifysmall %d %d %d:%02x.%02x.%02x.%02x.%02x.%02x\n",smallnot->devydx,smallnot->funInfo.v2.funydx,smallnot->funInfo.v2.typeV2,
+                   tmpbuff[0],tmpbuff[1],tmpbuff[2],tmpbuff[3],tmpbuff[4],tmpbuff[5]);
+        }
 #endif
-        if (smallnot->devydx < 255) {
-            ypUpdateYdx(smallnot->devydx,smallnot->funydx,smallnot->pubval);
-            smallnot->funydx += NOTIFY_1STBYTE_MINSMALL;
+        if (smallnot->devydx < 255 && smallnot->funInfo.v2.typeV2 != NOTIFY_V2_FLUSHGROUP) {
+            ypUpdateYdx(smallnot->devydx,smallnot->funInfo,smallnot->pubval);
             if(yContext->rawNotificationCb){
                 yContext->rawNotificationCb((USB_Notify_Pkt *)smallnot);
             }
@@ -1787,7 +1813,9 @@ static void yDispatchReportV1(yPrivDeviceSt *dev, u8 *data, int pktsize)
             } else {
                 YAPI_FUNCTION fundesc;
                 double devtime;
-                ypRegisterByYdx(devydx, report->funYdx, NULL, &fundesc);
+                Notification_funydx funInfo;
+                funInfo.raw = report->funYdx;
+                ypRegisterByYdx(devydx, funInfo, NULL, &fundesc);
                 data[0] = report->isAvg ? 1 : 0;
                 yEnterCriticalSection(&yContext->generic_cs);
                 devtime = yContext->generic_infos[devydx].deviceTime;
@@ -1829,7 +1857,9 @@ static void yDispatchReportV2(yPrivDeviceSt *dev, u8 *data, int pktsize)
             } else {
                 YAPI_FUNCTION fundesc;
                 double devtime;
-                ypRegisterByYdx(devydx, report->funYdx, NULL, &fundesc);
+                Notification_funydx funInfo;
+                funInfo.raw = report->funYdx;
+                ypRegisterByYdx(devydx, funInfo, NULL, &fundesc);
                 data[0] = 2;
                 yEnterCriticalSection(&yContext->generic_cs);
                 devtime = yContext->generic_infos[devydx].deviceTime;
@@ -1895,7 +1925,10 @@ static int yDispatchReceive(yPrivDeviceSt *dev,u64 blockUntilTime,char *errmsg)
                 }
                 break;
             case YSTREAM_NOTICE:
-                yDispatchNotice(dev, (USB_Notify_Pkt*)data, size);
+                yDispatchNotice(dev, (USB_Notify_Pkt*)data, size, 0);
+                break;
+            case YSTREAM_NOTICE_V2:
+                yDispatchNotice(dev, (USB_Notify_Pkt*)data, size, 1);
                 break;
             case YSTREAM_REPORT:
                 yDispatchReportV1(dev, data, size);

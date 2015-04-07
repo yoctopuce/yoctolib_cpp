@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 18673 2014-12-08 17:39:14Z mvuilleu $
+ * $Id: ydef.h 19502 2015-02-25 17:20:51Z mvuilleu $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -498,6 +498,7 @@ typedef union{
 #define YSTREAM_REPORT      4
 #define YSTREAM_META        5
 #define YSTREAM_REPORT_V2   6
+#define YSTREAM_NOTICE_V2   7
 
 // Data in YSTREAM_NOTICE stream
 
@@ -515,6 +516,23 @@ typedef union{
 #define NOTIFY_PKT_FUNCNAMEYDX 8
 #define NOTIFY_PKT_PRODINFO    9
 
+#define NOTIFY_V2_LEGACY       0       // unused (reserved for compatibility with legacy notifications)
+#define NOTIFY_V2_6RAWBYTES    1       // largest type: data is always 6 bytes
+#define NOTIFY_V2_TYPEDDATA    2       // other types: first data byte holds the decoding format
+#define NOTIFY_V2_FLUSHGROUP   3       // no data associated
+
+// New types of generic notifications
+#define PUBVAL_LEGACY                       0   // 0-6 ASCII characters (normally sent as YSTREAM_NOTICE)
+#define PUBVAL_1RAWBYTE                     1   // 1 raw byte  (=2 characters)
+#define PUBVAL_2RAWBYTES                    2   // 2 raw bytes (=4 characters)
+#define PUBVAL_3RAWBYTES                    3   // 3 raw bytes (=6 characters)
+#define PUBVAL_4RAWBYTES                    4   // 4 raw bytes (=8 characters)
+#define PUBVAL_5RAWBYTES                    5   // 5 raw bytes (=10 characters)
+#define PUBVAL_6RAWBYTES                    6   // 6 hex bytes (=12 characters) (sent as V2_6RAWBYTES)
+#define PUBVAL_C_LONG                       7   // 32-bit C signed integer
+#define PUBVAL_C_FLOAT                      8   // 32-bit C float
+#define PUBVAL_YOCTO_FLOAT_E3               9   // 32-bit Yocto fixed-point format (e-3)
+
 typedef struct{
     char        serial[YOCTO_SERIAL_LEN];
     u8          type;
@@ -525,13 +543,31 @@ typedef struct{
 #pragma warning( disable : 4200 )
 #endif
 
+typedef union {
+    // This definition must match packet generated in yoctoPacket.c
+    u8          raw;                    // originally shifted by NOTIFY_1STBYTE_MINSMALL for smallnot
+    struct {
+#ifndef CPU_BIG_ENDIAN
+        u8      funydx:4;
+        u8      typeV2:3;
+        u8      isSmall:1;
+#else
+        u8      isSmall:1;
+        u8      typeV2:3;
+        u8      funydx:4;
+#endif
+    } v2;
+}Notification_funydx;
+
 typedef struct{
-    u8          funydx;
+    // This definition must match packet generated in yoctoPacket.c
+    Notification_funydx funInfo;
     char        pubval[VARIABLE_SIZE]; // deduce actual size from YSTREAM_head
 }Notification_tiny;
 
 typedef struct{
-    u8          funydx;   // shifted by NOTIFY_1STBYTE_MINSMALL
+    // This definition must match packet generated in yoctoPacket.c
+    Notification_funydx funInfo;
     u8          devydx;
     char        pubval[VARIABLE_SIZE]; // deduce actual size from YSTREAM_head
 }Notification_small;
@@ -611,6 +647,8 @@ typedef union {
 #define NOTIFY_NETPKT_LOG         '7'
 #define NOTIFY_NETPKT_FUNCNAMEYDX '8'
 #define NOTIFY_NETPKT_PRODINFO    '9'
+#define NOTIFY_NETPKT_FLUSHV2YDX  't'
+#define NOTIFY_NETPKT_FUNCV2YDX   'u'
 #define NOTIFY_NETPKT_TIMEV2YDX   'v'
 #define NOTIFY_NETPKT_DEVLOGYDX   'w'
 #define NOTIFY_NETPKT_TIMEVALYDX  'x'

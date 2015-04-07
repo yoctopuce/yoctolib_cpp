@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_altitude.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_altitude.h 19746 2015-03-17 10:34:00Z seb $
  *
  * Declares yFindAltitude(), the high-level API for Altitude functions
  *
@@ -55,14 +55,18 @@ typedef void (*YAltitudeValueCallback)(YAltitude *func, const string& functionVa
 class YMeasure; // forward declaration
 typedef void (*YAltitudeTimedReportCallback)(YAltitude *func, YMeasure measure);
 #define Y_QNH_INVALID                   (YAPI_INVALID_DOUBLE)
+#define Y_TECHNOLOGY_INVALID            (YAPI_INVALID_STRING)
 //--- (end of YAltitude definitions)
 
 //--- (YAltitude declaration)
 /**
  * YAltitude Class: Altitude function interface
- * 
- * The Yoctopuce application programming interface allows you to read an instant
- * measure of the sensor, as well as the minimal and maximal values observed.
+ *
+ * The Yoctopuce class YAltitude allows you to read and configure Yoctopuce altitude
+ * sensors. It inherits from the YSensor class the core functions to read measurements,
+ * register callback functions, access to the autonomous datalogger.
+ * This class adds the ability to configure the barometric pressure adjusted to
+ * sea level (QNH) for barometric sensors.
  */
 class YOCTO_CLASS_EXPORT YAltitude: public YSensor {
 #ifdef __BORLANDC__
@@ -73,6 +77,7 @@ protected:
     //--- (YAltitude attributes)
     // Attributes (function value cache)
     double          _qnh;
+    string          _technology;
     YAltitudeValueCallback _valueCallbackAltitude;
     YAltitudeTimedReportCallback _timedReportCallbackAltitude;
 
@@ -91,15 +96,16 @@ public:
     //--- (YAltitude accessors declaration)
 
     static const double QNH_INVALID;
+    static const string TECHNOLOGY_INVALID;
 
     /**
      * Changes the current estimated altitude. This allows to compensate for
      * ambient pressure variations and to work in relative mode.
-     * 
+     *
      * @param newval : a floating point number corresponding to the current estimated altitude
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             set_currentValue(double newval);
@@ -110,13 +116,13 @@ public:
      * Changes the barometric pressure adjusted to sea level used to compute
      * the altitude (QNH). This enables you to compensate for atmospheric pressure
      * changes due to weather conditions.
-     * 
+     *
      * @param newval : a floating point number corresponding to the barometric pressure adjusted to sea
      * level used to compute
      *         the altitude (QNH)
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             set_qnh(double newval);
@@ -126,16 +132,30 @@ public:
     /**
      * Returns the barometric pressure adjusted to sea level used to compute
      * the altitude (QNH).
-     * 
+     *
      * @return a floating point number corresponding to the barometric pressure adjusted to sea level used to compute
      *         the altitude (QNH)
-     * 
+     *
      * On failure, throws an exception or returns Y_QNH_INVALID.
      */
     double              get_qnh(void);
 
     inline double       qnh(void)
     { return this->get_qnh(); }
+
+    /**
+     * Returns the technology used by the sesnor to compute
+     * altitude. Possibles values are  "barometric" and "gps"
+     *
+     * @return a string corresponding to the technology used by the sesnor to compute
+     *         altitude
+     *
+     * On failure, throws an exception or returns Y_TECHNOLOGY_INVALID.
+     */
+    string              get_technology(void);
+
+    inline string       technology(void)
+    { return this->get_technology(); }
 
     /**
      * Retrieves an altimeter for a given identifier.
@@ -147,7 +167,7 @@ public:
      * <li>ModuleLogicalName.FunctionIdentifier</li>
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
-     * 
+     *
      * This function does not require that the altimeter is online at the time
      * it is invoked. The returned object is nevertheless valid.
      * Use the method YAltitude.isOnline() to test if the altimeter is
@@ -155,9 +175,9 @@ public:
      * an altimeter by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
-     * 
+     *
      * @param func : a string that uniquely characterizes the altimeter
-     * 
+     *
      * @return a YAltitude object allowing you to drive the altimeter.
      */
     static YAltitude*   FindAltitude(string func);
@@ -167,7 +187,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
@@ -183,7 +203,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and an YMeasure object describing
      *         the new advertised value.
@@ -200,7 +220,7 @@ public:
 
     /**
      * Continues the enumeration of altimeters started using yFirstAltitude().
-     * 
+     *
      * @return a pointer to a YAltitude object, corresponding to
      *         an altimeter currently online, or a null pointer
      *         if there are no more altimeters to enumerate.
@@ -213,7 +233,7 @@ public:
      * Starts the enumeration of altimeters currently accessible.
      * Use the method YAltitude.nextAltitude() to iterate on
      * next altimeters.
-     * 
+     *
      * @return a pointer to a YAltitude object, corresponding to
      *         the first altimeter currently online, or a null pointer
      *         if there are none.
@@ -239,7 +259,7 @@ public:
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that the altimeter is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YAltitude.isOnline() to test if the altimeter is
@@ -247,9 +267,9 @@ public:
  * an altimeter by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes the altimeter
- * 
+ *
  * @return a YAltitude object allowing you to drive the altimeter.
  */
 inline YAltitude* yFindAltitude(const string& func)
@@ -258,7 +278,7 @@ inline YAltitude* yFindAltitude(const string& func)
  * Starts the enumeration of altimeters currently accessible.
  * Use the method YAltitude.nextAltitude() to iterate on
  * next altimeters.
- * 
+ *
  * @return a pointer to a YAltitude object, corresponding to
  *         the first altimeter currently online, or a null pointer
  *         if there are none.

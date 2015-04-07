@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_realtimeclock.cpp 18320 2014-11-10 10:47:48Z seb $
+ * $Id: yocto_realtimeclock.cpp 19606 2015-03-05 10:35:57Z seb $
  *
  * Implements yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *
@@ -97,10 +97,10 @@ int YRealTimeClock::_parseAttr(yJsonStateMachine& j)
 
 /**
  * Returns the current time in Unix format (number of elapsed seconds since Jan 1st, 1970).
- * 
+ *
  * @return an integer corresponding to the current time in Unix format (number of elapsed seconds
  * since Jan 1st, 1970)
- * 
+ *
  * On failure, throws an exception or returns Y_UNIXTIME_INVALID.
  */
 s64 YRealTimeClock::get_unixTime(void)
@@ -116,11 +116,11 @@ s64 YRealTimeClock::get_unixTime(void)
 /**
  * Changes the current time. Time is specifid in Unix format (number of elapsed seconds since Jan 1st, 1970).
  * If current UTC time is known, utcOffset will be automatically adjusted for the new specified time.
- * 
+ *
  * @param newval : an integer corresponding to the current time
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YRealTimeClock::set_unixTime(s64 newval)
@@ -132,9 +132,9 @@ int YRealTimeClock::set_unixTime(s64 newval)
 
 /**
  * Returns the current time in the form "YYYY/MM/DD hh:mm:ss"
- * 
+ *
  * @return a string corresponding to the current time in the form "YYYY/MM/DD hh:mm:ss"
- * 
+ *
  * On failure, throws an exception or returns Y_DATETIME_INVALID.
  */
 string YRealTimeClock::get_dateTime(void)
@@ -149,9 +149,9 @@ string YRealTimeClock::get_dateTime(void)
 
 /**
  * Returns the number of seconds between current time and UTC time (time zone).
- * 
+ *
  * @return an integer corresponding to the number of seconds between current time and UTC time (time zone)
- * 
+ *
  * On failure, throws an exception or returns Y_UTCOFFSET_INVALID.
  */
 int YRealTimeClock::get_utcOffset(void)
@@ -169,11 +169,11 @@ int YRealTimeClock::get_utcOffset(void)
  * The timezone is automatically rounded to the nearest multiple of 15 minutes.
  * If current UTC time is known, the current time will automatically be updated according to the
  * selected time zone.
- * 
+ *
  * @param newval : an integer corresponding to the number of seconds between current time and UTC time (time zone)
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YRealTimeClock::set_utcOffset(int newval)
@@ -185,10 +185,10 @@ int YRealTimeClock::set_utcOffset(int newval)
 
 /**
  * Returns true if the clock has been set, and false otherwise.
- * 
+ *
  * @return either Y_TIMESET_FALSE or Y_TIMESET_TRUE, according to true if the clock has been set, and
  * false otherwise
- * 
+ *
  * On failure, throws an exception or returns Y_TIMESET_INVALID.
  */
 Y_TIMESET_enum YRealTimeClock::get_timeSet(void)
@@ -211,7 +211,7 @@ Y_TIMESET_enum YRealTimeClock::get_timeSet(void)
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that $THEFUNCTION$ is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YRealTimeClock.isOnline() to test if $THEFUNCTION$ is
@@ -219,9 +219,9 @@ Y_TIMESET_enum YRealTimeClock::get_timeSet(void)
  * $AFUNCTION$ by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes $THEFUNCTION$
- * 
+ *
  * @return a YRealTimeClock object allowing you to drive $THEFUNCTION$.
  */
 YRealTimeClock* YRealTimeClock::FindRealTimeClock(string func)
@@ -240,7 +240,7 @@ YRealTimeClock* YRealTimeClock::FindRealTimeClock(string func)
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
  * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
- * 
+ *
  * @param callback : the callback function to call, or a null pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and the character string describing
  *         the new advertised value.

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 19101 2015-01-27 14:13:32Z seb $
+ * $Id: ytcp.c 19658 2015-03-10 14:16:56Z mvuilleu $
  *
  * Implementation of a client TCP stack
  *
@@ -446,7 +446,9 @@ static int yTcpWrite(YSOCKET skt, const char *buffer, int len,char *errmsg)
                 struct timeval timeout;
                 fd_set      fds;
                 memset(&timeout,0,sizeof(timeout));
-                timeout.tv_sec = 5;
+                // Upload of large files (external firmware updates) may need
+                // a long time to process (on OSX: seen more than 40 seconds !)
+                timeout.tv_sec = 60;
                 FD_ZERO(&fds);
                 FD_SET(skt,&fds);
                 res = select((int)skt+1,NULL,&fds,NULL,&timeout);

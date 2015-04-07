@@ -20,10 +20,16 @@ static void sensorTimedReportCallBack(YSensor *fct, YMeasure measure)
     cout << fct->get_hardwareId() << " : " << measure.get_averageValue() << " " << fct->get_unit() << " (timed report)" << endl;
 }
 
+static void deviceLog(YModule *module, const string& logline)
+{
+	cout <<"log:"<< module->get_hardwareId() << ":"<<logline<<endl;
+}
+
 static void deviceArrival(YModule *m)
 {
     string serial = m->get_serialNumber();
     cout << "Device arrival : " << serial << endl;
+	m->registerLogCallback(deviceLog);
     string hardwareId;
 
     // First solution: look for a specific type of function (eg. anButton)

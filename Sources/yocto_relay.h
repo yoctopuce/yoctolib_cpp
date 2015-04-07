@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_relay.h 18320 2014-11-10 10:47:48Z seb $
+ * $Id: yocto_relay.h 19606 2015-03-05 10:35:57Z seb $
  *
  * Declares yFindRelay(), the high-level API for Relay functions
  *
@@ -103,7 +103,7 @@ public:
 //--- (YRelay declaration)
 /**
  * YRelay Class: Relay function interface
- * 
+ *
  * The Yoctopuce application programming interface allows you to switch the relay state.
  * This change is not persistent: the relay will automatically return to its idle position
  * whenever power is lost or if the module is restarted.
@@ -162,10 +162,10 @@ public:
 
     /**
      * Returns the state of the relays (A for the idle position, B for the active position).
-     * 
+     *
      * @return either Y_STATE_A or Y_STATE_B, according to the state of the relays (A for the idle
      * position, B for the active position)
-     * 
+     *
      * On failure, throws an exception or returns Y_STATE_INVALID.
      */
     Y_STATE_enum        get_state(void);
@@ -175,12 +175,12 @@ public:
 
     /**
      * Changes the state of the relays (A for the idle position, B for the active position).
-     * 
+     *
      * @param newval : either Y_STATE_A or Y_STATE_B, according to the state of the relays (A for the idle
      * position, B for the active position)
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             set_state(Y_STATE_enum newval);
@@ -190,11 +190,11 @@ public:
     /**
      * Returns the state of the relays at device startup (A for the idle position, B for the active
      * position, UNCHANGED for no change).
-     * 
+     *
      * @return a value among Y_STATEATPOWERON_UNCHANGED, Y_STATEATPOWERON_A and Y_STATEATPOWERON_B
      * corresponding to the state of the relays at device startup (A for the idle position, B for the
      * active position, UNCHANGED for no change)
-     * 
+     *
      * On failure, throws an exception or returns Y_STATEATPOWERON_INVALID.
      */
     Y_STATEATPOWERON_enum get_stateAtPowerOn(void);
@@ -206,11 +206,11 @@ public:
      * Preset the state of the relays at device startup (A for the idle position,
      * B for the active position, UNCHANGED for no modification). Remember to call the matching module saveToFlash()
      * method, otherwise this call will have no effect.
-     * 
+     *
      * @param newval : a value among Y_STATEATPOWERON_UNCHANGED, Y_STATEATPOWERON_A and Y_STATEATPOWERON_B
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             set_stateAtPowerOn(Y_STATEATPOWERON_enum newval);
@@ -220,9 +220,9 @@ public:
     /**
      * Retourne the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state A before automatically
      * switching back in to B state. Zero means no maximum time.
-     * 
+     *
      * @return an integer
-     * 
+     *
      * On failure, throws an exception or returns Y_MAXTIMEONSTATEA_INVALID.
      */
     s64                 get_maxTimeOnStateA(void);
@@ -233,11 +233,11 @@ public:
     /**
      * Sets the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state A before automatically
      * switching back in to B state. Use zero for no maximum time.
-     * 
+     *
      * @param newval : an integer
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             set_maxTimeOnStateA(s64 newval);
@@ -247,9 +247,9 @@ public:
     /**
      * Retourne the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state B before automatically
      * switching back in to A state. Zero means no maximum time.
-     * 
+     *
      * @return an integer
-     * 
+     *
      * On failure, throws an exception or returns Y_MAXTIMEONSTATEB_INVALID.
      */
     s64                 get_maxTimeOnStateB(void);
@@ -260,11 +260,11 @@ public:
     /**
      * Sets the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state B before automatically
      * switching back in to A state. Use zero for no maximum time.
-     * 
+     *
      * @param newval : an integer
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             set_maxTimeOnStateB(s64 newval);
@@ -273,10 +273,10 @@ public:
 
     /**
      * Returns the output state of the relays, when used as a simple switch (single throw).
-     * 
+     *
      * @return either Y_OUTPUT_OFF or Y_OUTPUT_ON, according to the output state of the relays, when used
      * as a simple switch (single throw)
-     * 
+     *
      * On failure, throws an exception or returns Y_OUTPUT_INVALID.
      */
     Y_OUTPUT_enum       get_output(void);
@@ -286,12 +286,12 @@ public:
 
     /**
      * Changes the output state of the relays, when used as a simple switch (single throw).
-     * 
+     *
      * @param newval : either Y_OUTPUT_OFF or Y_OUTPUT_ON, according to the output state of the relays,
      * when used as a simple switch (single throw)
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             set_output(Y_OUTPUT_enum newval);
@@ -301,11 +301,11 @@ public:
     /**
      * Returns the number of milliseconds remaining before the relays is returned to idle position
      * (state A), during a measured pulse generation. When there is no ongoing pulse, returns zero.
-     * 
+     *
      * @return an integer corresponding to the number of milliseconds remaining before the relays is
      * returned to idle position
      *         (state A), during a measured pulse generation
-     * 
+     *
      * On failure, throws an exception or returns Y_PULSETIMER_INVALID.
      */
     s64                 get_pulseTimer(void);
@@ -320,11 +320,11 @@ public:
     /**
      * Sets the relay to output B (active) for a specified duration, then brings it
      * automatically back to output A (idle state).
-     * 
+     *
      * @param ms_duration : pulse duration, in millisecondes
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             pulse(int ms_duration);
@@ -340,12 +340,12 @@ public:
 
     /**
      * Schedules a pulse.
-     * 
+     *
      * @param ms_delay : waiting time before the pulse, in millisecondes
      * @param ms_duration : pulse duration, in millisecondes
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             delayedPulse(int ms_delay,int ms_duration);
@@ -353,10 +353,10 @@ public:
     /**
      * Returns the number of milliseconds remaining before a pulse (delayedPulse() call)
      * When there is no scheduled pulse, returns zero.
-     * 
+     *
      * @return an integer corresponding to the number of milliseconds remaining before a pulse (delayedPulse() call)
      *         When there is no scheduled pulse, returns zero
-     * 
+     *
      * On failure, throws an exception or returns Y_COUNTDOWN_INVALID.
      */
     s64                 get_countdown(void);
@@ -374,7 +374,7 @@ public:
      * <li>ModuleLogicalName.FunctionIdentifier</li>
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
-     * 
+     *
      * This function does not require that the relay is online at the time
      * it is invoked. The returned object is nevertheless valid.
      * Use the method YRelay.isOnline() to test if the relay is
@@ -382,9 +382,9 @@ public:
      * a relay by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
-     * 
+     *
      * @param func : a string that uniquely characterizes the relay
-     * 
+     *
      * @return a YRelay object allowing you to drive the relay.
      */
     static YRelay*      FindRelay(string func);
@@ -394,7 +394,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
@@ -411,7 +411,7 @@ public:
 
     /**
      * Continues the enumeration of relays started using yFirstRelay().
-     * 
+     *
      * @return a pointer to a YRelay object, corresponding to
      *         a relay currently online, or a null pointer
      *         if there are no more relays to enumerate.
@@ -424,7 +424,7 @@ public:
      * Starts the enumeration of relays currently accessible.
      * Use the method YRelay.nextRelay() to iterate on
      * next relays.
-     * 
+     *
      * @return a pointer to a YRelay object, corresponding to
      *         the first relay currently online, or a null pointer
      *         if there are none.
@@ -450,7 +450,7 @@ public:
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that the relay is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YRelay.isOnline() to test if the relay is
@@ -458,9 +458,9 @@ public:
  * a relay by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes the relay
- * 
+ *
  * @return a YRelay object allowing you to drive the relay.
  */
 inline YRelay* yFindRelay(const string& func)
@@ -469,7 +469,7 @@ inline YRelay* yFindRelay(const string& func)
  * Starts the enumeration of relays currently accessible.
  * Use the method YRelay.nextRelay() to iterate on
  * next relays.
- * 
+ *
  * @return a pointer to a YRelay object, corresponding to
  *         the first relay currently online, or a null pointer
  *         if there are none.

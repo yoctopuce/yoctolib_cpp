@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 19201 2015-01-30 18:18:15Z seb $
+ * $Id: yapi.c 19768 2015-03-18 15:54:22Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -1215,7 +1215,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int detect_type,char *errmsg)
     if (sizeof(s64) != 8) return YERRMSG(YAPI_INVALID_ARGUMENT,"invalid definition of s64");
 #endif
 
-    if(atof("3.14") != 3.14){
+    if(atof("1") != 1.0){
 #if defined(BUILD_ARMHF)
         return YERRMSG(YAPI_INVALID_ARGUMENT,"Invalid arm architecture (try armel binaries)");
 #elif defined(BUILD_ARMEL)
@@ -1580,7 +1580,7 @@ static int handleNetNotification(NetHubSt *hub)
         return 1;
     }
     // handle short funcvalydx notifications
-    if(pkttype >= NOTIFY_NETPKT_TIMEV2YDX && pkttype <= NOTIFY_NETPKT_TIMEAVGYDX) {
+    if(pkttype >= NOTIFY_NETPKT_FLUSHV2YDX && pkttype <= NOTIFY_NETPKT_TIMEAVGYDX) {
         memset(value, 0, YOCTO_PUBVAL_LEN);
         if (end + 1 > sizeof(buffer)){
             dbglog("Drop invalid short notification (too long :%d)\n", end + 1);
@@ -1611,7 +1611,9 @@ static int handleNetNotification(NetHubSt *hub)
                 // Map hub-specific devydx to our devydx
                 devydx = hub->devYdxMap[devydx];
                 if(devydx < MAX_YDX_PER_HUB) {
-                    ypUpdateYdx(devydx,funydx,value);
+                    Notification_funydx funInfo;
+                    funInfo.raw = funydx;
+                    ypUpdateYdx(devydx,funInfo,value);
                 }
                 break;
             case NOTIFY_NETPKT_DEVLOGYDX:
@@ -1655,14 +1657,46 @@ static int handleNetNotification(NetHubSt *hub)
                     yContext->generic_infos[devydx].deviceTime = (double)t + report[5] / 250.0;
                     yLeaveCriticalSection(&yContext->generic_cs);
                 } else {
+                    Notification_funydx funInfo;
                     YAPI_FUNCTION fundesc;
                     double deviceTime;
                     yEnterCriticalSection(&yContext->generic_cs);
                     deviceTime = yContext->generic_infos[devydx].deviceTime;
                     yLeaveCriticalSection(&yContext->generic_cs);
-                    ypRegisterByYdx(devydx, funydx, NULL, &fundesc);
+                    funInfo.raw = funydx;
+                    ypRegisterByYdx(devydx, funInfo, NULL, &fundesc);
                     yContext->timedReportCallback(fundesc, deviceTime, report, pos);
                 }
+                break;
+            case NOTIFY_NETPKT_FUNCV2YDX:
+                while(*p != 0 && *p != NOTIFY_NETPKT_STOP && pos < YOCTO_PUBVAL_LEN-1) {
+                    value[pos++] = *p++;
+                }
+                value[pos] = 0;
+                // Map hub-specific devydx to our devydx
+                devydx = hub->devYdxMap[devydx];
+                if(devydx < MAX_YDX_PER_HUB) {
+                    Notification_funydx funInfo;
+                    unsigned char value8bit[YOCTO_PUBVAL_LEN];
+                    memset(value8bit, 0, YOCTO_PUBVAL_LEN);
+                    funInfo.raw = funydx;
+                    if(decodeNetFuncValV2((u8*)value, &funInfo, (char*)value8bit) >= 0) {
+#ifdef DEBUG_NET_NOTIFICATION
+                        if(!funInfo.v2.typeV2) {
+                            YSPRINTF(Dbuffer,512,"FuncV2YDX >devYdx=%d funYdx=%d val=%s (%d)\n",devydx,funydx,value8bit,abspos);
+                        } else {
+                            YSPRINTF(Dbuffer,512,"FuncV2YDX >devYdx=%d funYdx=%d val=%d:%02x.%02x.%02x.%02x.%02x.%02x (%d)\n",
+                                     devydx, funInfo.v2.funydx, funInfo.v2.typeV2,
+                                     value8bit[0],value8bit[1],value8bit[2],value8bit[3],value8bit[4],value8bit[5],abspos);
+                        }
+                        dumpNotif(Dbuffer);
+#endif
+                        ypUpdateYdx(devydx,funInfo,(char *)value8bit);
+                    }
+                }
+                break;
+            case NOTIFY_NETPKT_FLUSHV2YDX:
+                // To be implemented later
                 break;
             default:
                 break;
@@ -3051,7 +3085,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiTriggerHubDiscovery(char *errmsg)
     return (YRETCODE) ySSDPDiscover(&yContext->SSDP,errmsg);
 }
 
-
+// used only by VirtualHub
 YRETCODE yapiGetBootloadersDevs(char *serials,unsigned int maxNbSerial, unsigned int *totalBootladers, char *errmsg)
 {
     int             nbifaces=0;
@@ -3100,6 +3134,7 @@ YRETCODE yapiGetBootloadersDevs(char *serials,unsigned int maxNbSerial, unsigned
 
 }
 
+//used by API
 YRETCODE YAPI_FUNCTION_EXPORT yapiGetBootloaders(char *buffer, int buffersize, int *fullsize, char *errmsg)
 {
     int             i;

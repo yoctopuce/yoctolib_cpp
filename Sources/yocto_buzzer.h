@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_buzzer.h 18762 2014-12-16 16:00:39Z seb $
+ * $Id: yocto_buzzer.h 19606 2015-03-05 10:35:57Z seb $
  *
  * Declares yFindBuzzer(), the high-level API for Buzzer functions
  *
@@ -63,7 +63,7 @@ typedef void (*YBuzzerValueCallback)(YBuzzer *func, const string& functionValue)
 //--- (YBuzzer declaration)
 /**
  * YBuzzer Class: Buzzer function interface
- * 
+ *
  * The Yoctopuce application programming interface allows you to
  * choose the frequency and volume at which the buzzer must sound.
  * You can also pre-program a play sequence.
@@ -107,11 +107,11 @@ public:
 
     /**
      * Changes the frequency of the signal sent to the buzzer. A zero value stops the buzzer.
-     * 
+     *
      * @param newval : a floating point number corresponding to the frequency of the signal sent to the buzzer
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             set_frequency(double newval);
@@ -120,9 +120,9 @@ public:
 
     /**
      * Returns the  frequency of the signal sent to the buzzer/speaker.
-     * 
+     *
      * @return a floating point number corresponding to the  frequency of the signal sent to the buzzer/speaker
-     * 
+     *
      * On failure, throws an exception or returns Y_FREQUENCY_INVALID.
      */
     double              get_frequency(void);
@@ -132,9 +132,9 @@ public:
 
     /**
      * Returns the volume of the signal sent to the buzzer/speaker.
-     * 
+     *
      * @return an integer corresponding to the volume of the signal sent to the buzzer/speaker
-     * 
+     *
      * On failure, throws an exception or returns Y_VOLUME_INVALID.
      */
     int                 get_volume(void);
@@ -144,11 +144,11 @@ public:
 
     /**
      * Changes the volume of the signal sent to the buzzer/speaker.
-     * 
+     *
      * @param newval : an integer corresponding to the volume of the signal sent to the buzzer/speaker
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             set_volume(int newval);
@@ -157,9 +157,9 @@ public:
 
     /**
      * Returns the current length of the playing sequence
-     * 
+     *
      * @return an integer corresponding to the current length of the playing sequence
-     * 
+     *
      * On failure, throws an exception or returns Y_PLAYSEQSIZE_INVALID.
      */
     int                 get_playSeqSize(void);
@@ -169,9 +169,9 @@ public:
 
     /**
      * Returns the maximum length of the playing sequence
-     * 
+     *
      * @return an integer corresponding to the maximum length of the playing sequence
-     * 
+     *
      * On failure, throws an exception or returns Y_PLAYSEQMAXSIZE_INVALID.
      */
     int                 get_playSeqMaxSize(void);
@@ -184,9 +184,9 @@ public:
      * sequences cannot be read from the device, this can be used
      * to detect if a specific playing sequence is already
      * programmed.
-     * 
+     *
      * @return an integer corresponding to the playing sequence signature
-     * 
+     *
      * On failure, throws an exception or returns Y_PLAYSEQSIGNATURE_INVALID.
      */
     int                 get_playSeqSignature(void);
@@ -213,7 +213,7 @@ public:
      * <li>ModuleLogicalName.FunctionIdentifier</li>
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
-     * 
+     *
      * This function does not require that the buzzer is online at the time
      * it is invoked. The returned object is nevertheless valid.
      * Use the method YBuzzer.isOnline() to test if the buzzer is
@@ -221,9 +221,9 @@ public:
      * a buzzer by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
-     * 
+     *
      * @param func : a string that uniquely characterizes the buzzer
-     * 
+     *
      * @return a YBuzzer object allowing you to drive the buzzer.
      */
     static YBuzzer*     FindBuzzer(string func);
@@ -233,7 +233,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
@@ -248,10 +248,10 @@ public:
 
     /**
      * Adds a new frequency transition to the playing sequence.
-     * 
+     *
      * @param freq    : desired frequency when the transition is completed, in Hz
      * @param msDelay : duration of the frequency transition, in milliseconds.
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
@@ -259,10 +259,10 @@ public:
 
     /**
      * Adds a pulse to the playing sequence.
-     * 
+     *
      * @param freq : pulse frequency, in Hz
      * @param msDuration : pulse duration, in milliseconds.
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
@@ -271,10 +271,10 @@ public:
     /**
      * Adds a new volume transition to the playing sequence. Frequency stays untouched:
      * if frequency is at zero, the transition has no effect.
-     * 
+     *
      * @param volume    : desired volume when the transition is completed, as a percentage.
      * @param msDuration : duration of the volume transition, in milliseconds.
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
@@ -284,7 +284,7 @@ public:
      * Starts the preprogrammed playing sequence. The sequence
      * runs in loop until it is stopped by stopPlaySeq or an explicit
      * change.
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
@@ -292,7 +292,7 @@ public:
 
     /**
      * Stops the preprogrammed playing sequence and sets the frequency to zero.
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
@@ -300,7 +300,7 @@ public:
 
     /**
      * Resets the preprogrammed playing sequence and sets the frequency to zero.
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
@@ -308,36 +308,36 @@ public:
 
     /**
      * Activates the buzzer for a short duration.
-     * 
+     *
      * @param frequency : pulse frequency, in hertz
      * @param duration : pulse duration in millseconds
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         pulse(int frequency,int duration);
 
     /**
      * Makes the buzzer frequency change over a period of time.
-     * 
+     *
      * @param frequency : frequency to reach, in hertz. A frequency under 25Hz stops the buzzer.
      * @param duration :  pulse duration in millseconds
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         freqMove(int frequency,int duration);
 
     /**
      * Makes the buzzer volume change over a period of time, frequency  stays untouched.
-     * 
+     *
      * @param volume : volume to reach in %
      * @param duration : change duration in millseconds
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         volumeMove(int volume,int duration);
@@ -348,7 +348,7 @@ public:
 
     /**
      * Continues the enumeration of buzzers started using yFirstBuzzer().
-     * 
+     *
      * @return a pointer to a YBuzzer object, corresponding to
      *         a buzzer currently online, or a null pointer
      *         if there are no more buzzers to enumerate.
@@ -361,7 +361,7 @@ public:
      * Starts the enumeration of buzzers currently accessible.
      * Use the method YBuzzer.nextBuzzer() to iterate on
      * next buzzers.
-     * 
+     *
      * @return a pointer to a YBuzzer object, corresponding to
      *         the first buzzer currently online, or a null pointer
      *         if there are none.
@@ -387,7 +387,7 @@ public:
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that the buzzer is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YBuzzer.isOnline() to test if the buzzer is
@@ -395,9 +395,9 @@ public:
  * a buzzer by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes the buzzer
- * 
+ *
  * @return a YBuzzer object allowing you to drive the buzzer.
  */
 inline YBuzzer* yFindBuzzer(const string& func)
@@ -406,7 +406,7 @@ inline YBuzzer* yFindBuzzer(const string& func)
  * Starts the enumeration of buzzers currently accessible.
  * Use the method YBuzzer.nextBuzzer() to iterate on
  * next buzzers.
- * 
+ *
  * @return a pointer to a YBuzzer object, corresponding to
  *         the first buzzer currently online, or a null pointer
  *         if there are none.

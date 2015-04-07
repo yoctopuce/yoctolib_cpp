@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_gyro.h 19606 2015-03-05 10:35:57Z seb $
  *
  * Declares yFindGyro(), the high-level API for Gyro functions
  *
@@ -59,7 +59,7 @@ typedef void (*YQtTimedReportCallback)(YQt *func, YMeasure measure);
 //--- (generated code: YQt declaration)
 /**
  * YQt Class: Quaternion interface
- * 
+ *
  * The Yoctopuce API YQt class provides direct access to the Yocto3D attitude estimation
  * using a quaternion. It is usually not needed to use the YQt class directly, as the
  * YGyro class provides a more convenient higher-level interface.
@@ -97,7 +97,7 @@ public:
      * <li>ModuleLogicalName.FunctionIdentifier</li>
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
-     * 
+     *
      * This function does not require that the quaternion component is online at the time
      * it is invoked. The returned object is nevertheless valid.
      * Use the method YQt.isOnline() to test if the quaternion component is
@@ -105,9 +105,9 @@ public:
      * a quaternion component by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
-     * 
+     *
      * @param func : a string that uniquely characterizes the quaternion component
-     * 
+     *
      * @return a YQt object allowing you to drive the quaternion component.
      */
     static YQt*         FindQt(string func);
@@ -117,7 +117,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
@@ -133,7 +133,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and an YMeasure object describing
      *         the new advertised value.
@@ -150,7 +150,7 @@ public:
 
     /**
      * Continues the enumeration of quaternion components started using yFirstQt().
-     * 
+     *
      * @return a pointer to a YQt object, corresponding to
      *         a quaternion component currently online, or a null pointer
      *         if there are no more quaternion components to enumerate.
@@ -163,7 +163,7 @@ public:
      * Starts the enumeration of quaternion components currently accessible.
      * Use the method YQt.nextQt() to iterate on
      * next quaternion components.
-     * 
+     *
      * @return a pointer to a YQt object, corresponding to
      *         the first quaternion component currently online, or a null pointer
      *         if there are none.
@@ -189,7 +189,7 @@ public:
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that the quaternion component is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YQt.isOnline() to test if the quaternion component is
@@ -197,9 +197,9 @@ public:
  * a quaternion component by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes the quaternion component
- * 
+ *
  * @return a YQt object allowing you to drive the quaternion component.
  */
 inline YQt* yFindQt(const string& func)
@@ -208,7 +208,7 @@ inline YQt* yFindQt(const string& func)
  * Starts the enumeration of quaternion components currently accessible.
  * Use the method YQt.nextQt() to iterate on
  * next quaternion components.
- * 
+ *
  * @return a pointer to a YQt object, corresponding to
  *         the first quaternion component currently online, or a null pointer
  *         if there are none.
@@ -239,9 +239,16 @@ typedef void(*YAnglesCallback)(YGyro *yGyro, double roll, double pitch, double h
 //--- (generated code: YGyro declaration)
 /**
  * YGyro Class: Gyroscope function interface
- * 
- * The Yoctopuce application programming interface allows you to read an instant
- * measure of the sensor, as well as the minimal and maximal values observed.
+ *
+ * The YSensor class is the parent class for all Yoctopuce sensors. It can be
+ * used to read the current value and unit of any sensor, read the min/max
+ * value, configure autonomous recording frequency and access recorded data.
+ * It also provide a function to register a callback invoked each time the
+ * observed value changes, or at a predefined interval. Using this class rather
+ * than a specific subclass makes it possible to create generic applications
+ * that work with any Yoctopuce sensor, even those that do not yet exist.
+ * Note: The YAnButton class is the only analog input which does not inherit
+ * from YSensor.
  */
 class YOCTO_CLASS_EXPORT YGyro: public YSensor {
 #ifdef __BORLANDC__
@@ -292,10 +299,10 @@ public:
 
     /**
      * Returns the angular velocity around the X axis of the device, as a floating point number.
-     * 
+     *
      * @return a floating point number corresponding to the angular velocity around the X axis of the
      * device, as a floating point number
-     * 
+     *
      * On failure, throws an exception or returns Y_XVALUE_INVALID.
      */
     double              get_xValue(void);
@@ -305,10 +312,10 @@ public:
 
     /**
      * Returns the angular velocity around the Y axis of the device, as a floating point number.
-     * 
+     *
      * @return a floating point number corresponding to the angular velocity around the Y axis of the
      * device, as a floating point number
-     * 
+     *
      * On failure, throws an exception or returns Y_YVALUE_INVALID.
      */
     double              get_yValue(void);
@@ -318,10 +325,10 @@ public:
 
     /**
      * Returns the angular velocity around the Z axis of the device, as a floating point number.
-     * 
+     *
      * @return a floating point number corresponding to the angular velocity around the Z axis of the
      * device, as a floating point number
-     * 
+     *
      * On failure, throws an exception or returns Y_ZVALUE_INVALID.
      */
     double              get_zValue(void);
@@ -339,7 +346,7 @@ public:
      * <li>ModuleLogicalName.FunctionIdentifier</li>
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
-     * 
+     *
      * This function does not require that the gyroscope is online at the time
      * it is invoked. The returned object is nevertheless valid.
      * Use the method YGyro.isOnline() to test if the gyroscope is
@@ -347,9 +354,9 @@ public:
      * a gyroscope by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
-     * 
+     *
      * @param func : a string that uniquely characterizes the gyroscope
-     * 
+     *
      * @return a YGyro object allowing you to drive the gyroscope.
      */
     static YGyro*       FindGyro(string func);
@@ -359,7 +366,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
@@ -375,7 +382,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and an YMeasure object describing
      *         the new advertised value.
@@ -397,7 +404,7 @@ public:
      * The axis corresponding to the roll angle can be mapped to any
      * of the device X, Y or Z physical directions using methods of
      * the class YRefFrame.
-     * 
+     *
      * @return a floating-point number corresponding to roll angle
      *         in degrees, between -180 and +180.
      */
@@ -410,7 +417,7 @@ public:
      * The axis corresponding to the pitch angle can be mapped to any
      * of the device X, Y or Z physical directions using methods of
      * the class YRefFrame.
-     * 
+     *
      * @return a floating-point number corresponding to pitch angle
      *         in degrees, between -90 and +90.
      */
@@ -423,7 +430,7 @@ public:
      * The axis corresponding to the heading can be mapped to any
      * of the device X, Y or Z physical directions using methods of
      * the class YRefFrame.
-     * 
+     *
      * @return a floating-point number corresponding to heading
      *         in degrees, between 0 and 360.
      */
@@ -434,7 +441,7 @@ public:
      * describing the device estimated orientation, based on the
      * integration of gyroscopic measures combined with acceleration and
      * magnetic field measurements.
-     * 
+     *
      * @return a floating-point number corresponding to the w
      *         component of the quaternion.
      */
@@ -446,7 +453,7 @@ public:
      * integration of gyroscopic measures combined with acceleration and
      * magnetic field measurements. The x component is
      * mostly correlated with rotations on the roll axis.
-     * 
+     *
      * @return a floating-point number corresponding to the x
      *         component of the quaternion.
      */
@@ -458,7 +465,7 @@ public:
      * integration of gyroscopic measures combined with acceleration and
      * magnetic field measurements. The y component is
      * mostly correlated with rotations on the pitch axis.
-     * 
+     *
      * @return a floating-point number corresponding to the y
      *         component of the quaternion.
      */
@@ -470,7 +477,7 @@ public:
      * integration of gyroscopic measures combined with acceleration and
      * magnetic field measurements. The x component is
      * mostly correlated with changes of heading.
-     * 
+     *
      * @return a floating-point number corresponding to the z
      *         component of the quaternion.
      */
@@ -483,7 +490,7 @@ public:
      * This provides control over the time when the callback is triggered.
      * For good responsiveness, remember to call one of these two functions periodically.
      * To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to invoke, or a null pointer.
      *         The callback function should take five arguments:
      *         the YGyro object of the turning device, and the floating
@@ -500,7 +507,7 @@ public:
      * This provides control over the time when the callback is triggered.
      * For good responsiveness, remember to call one of these two functions periodically.
      * To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to invoke, or a null pointer.
      *         The callback function should take four arguments:
      *         the YGyro object of the turning device, and the floating
@@ -518,7 +525,7 @@ public:
 
     /**
      * Continues the enumeration of gyroscopes started using yFirstGyro().
-     * 
+     *
      * @return a pointer to a YGyro object, corresponding to
      *         a gyroscope currently online, or a null pointer
      *         if there are no more gyroscopes to enumerate.
@@ -531,7 +538,7 @@ public:
      * Starts the enumeration of gyroscopes currently accessible.
      * Use the method YGyro.nextGyro() to iterate on
      * next gyroscopes.
-     * 
+     *
      * @return a pointer to a YGyro object, corresponding to
      *         the first gyro currently online, or a null pointer
      *         if there are none.
@@ -557,7 +564,7 @@ public:
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that the gyroscope is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YGyro.isOnline() to test if the gyroscope is
@@ -565,9 +572,9 @@ public:
  * a gyroscope by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes the gyroscope
- * 
+ *
  * @return a YGyro object allowing you to drive the gyroscope.
  */
 inline YGyro* yFindGyro(const string& func)
@@ -576,7 +583,7 @@ inline YGyro* yFindGyro(const string& func)
  * Starts the enumeration of gyroscopes currently accessible.
  * Use the method YGyro.nextGyro() to iterate on
  * next gyroscopes.
- * 
+ *
  * @return a pointer to a YGyro object, corresponding to
  *         the first gyro currently online, or a null pointer
  *         if there are none.

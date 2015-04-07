@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.cpp 18320 2014-11-10 10:47:48Z seb $
+ * $Id: yocto_files.cpp 19606 2015-03-05 10:35:57Z seb $
  *
  * Implements yFindFiles(), the high-level API for Files functions
  *
@@ -145,9 +145,9 @@ int YFiles::_parseAttr(yJsonStateMachine& j)
 
 /**
  * Returns the number of files currently loaded in the filesystem.
- * 
+ *
  * @return an integer corresponding to the number of files currently loaded in the filesystem
- * 
+ *
  * On failure, throws an exception or returns Y_FILESCOUNT_INVALID.
  */
 int YFiles::get_filesCount(void)
@@ -162,9 +162,9 @@ int YFiles::get_filesCount(void)
 
 /**
  * Returns the free space for uploading new files to the filesystem, in bytes.
- * 
+ *
  * @return an integer corresponding to the free space for uploading new files to the filesystem, in bytes
- * 
+ *
  * On failure, throws an exception or returns Y_FREESPACE_INVALID.
  */
 int YFiles::get_freeSpace(void)
@@ -187,7 +187,7 @@ int YFiles::get_freeSpace(void)
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that the filesystem is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YFiles.isOnline() to test if the filesystem is
@@ -195,9 +195,9 @@ int YFiles::get_freeSpace(void)
  * a filesystem by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes the filesystem
- * 
+ *
  * @return a YFiles object allowing you to drive the filesystem.
  */
 YFiles* YFiles::FindFiles(string func)
@@ -216,7 +216,7 @@ YFiles* YFiles::FindFiles(string func)
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
  * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
- * 
+ *
  * @param callback : the callback function to call, or a null pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and the character string describing
  *         the new advertised value.
@@ -262,9 +262,9 @@ string YFiles::sendCommand(string command)
 /**
  * Reinitialize the filesystem to its clean, unfragmented, empty state.
  * All files previously uploaded are permanently lost.
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YFiles::format_fs(void)
@@ -283,14 +283,14 @@ int YFiles::format_fs(void)
 /**
  * Returns a list of YFileRecord objects that describe files currently loaded
  * in the filesystem.
- * 
+ *
  * @param pattern : an optional filter pattern, using star and question marks
  *         as wildcards. When an empty pattern is provided, all file records
  *         are returned.
- * 
+ *
  * @return a list of YFileRecord objects, containing the file path
  *         and name, byte size and 32-bit CRC of the file content.
- * 
+ *
  * On failure, throws an exception or returns an empty list.
  */
 vector<YFileRecord> YFiles::get_list(string pattern)
@@ -309,11 +309,11 @@ vector<YFileRecord> YFiles::get_list(string pattern)
 
 /**
  * Downloads the requested file and returns a binary buffer with its content.
- * 
+ *
  * @param pathname : path and name of the file to download
- * 
+ *
  * @return a binary buffer with the file content
- * 
+ *
  * On failure, throws an exception or returns an empty content.
  */
 string YFiles::download(string pathname)
@@ -324,12 +324,12 @@ string YFiles::download(string pathname)
 /**
  * Uploads a file to the filesystem, to the specified full path name.
  * If a file already exists with the same path name, its content is overwritten.
- * 
+ *
  * @param pathname : path and name of the new file to create
  * @param content : binary buffer with the content to set
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YFiles::upload(string pathname,string content)
@@ -344,11 +344,11 @@ int YFiles::upload(string pathname,string content)
  * with the same path name will always reuse any space not freed previously.
  * If you need to ensure that no space is taken by previously deleted files,
  * you can use format_fs to fully reinitialize the filesystem.
- * 
+ *
  * @param pathname : path and name of the file to remove.
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YFiles::remove(string pathname)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_led.cpp 18320 2014-11-10 10:47:48Z seb $
+ * $Id: yocto_led.cpp 19606 2015-03-05 10:35:57Z seb $
  *
  * Implements yFindLed(), the high-level API for Led functions
  *
@@ -90,9 +90,9 @@ int YLed::_parseAttr(yJsonStateMachine& j)
 
 /**
  * Returns the current led state.
- * 
+ *
  * @return either Y_POWER_OFF or Y_POWER_ON, according to the current led state
- * 
+ *
  * On failure, throws an exception or returns Y_POWER_INVALID.
  */
 Y_POWER_enum YLed::get_power(void)
@@ -107,11 +107,11 @@ Y_POWER_enum YLed::get_power(void)
 
 /**
  * Changes the state of the led.
- * 
+ *
  * @param newval : either Y_POWER_OFF or Y_POWER_ON, according to the state of the led
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YLed::set_power(Y_POWER_enum newval)
@@ -123,9 +123,9 @@ int YLed::set_power(Y_POWER_enum newval)
 
 /**
  * Returns the current led intensity (in per cent).
- * 
+ *
  * @return an integer corresponding to the current led intensity (in per cent)
- * 
+ *
  * On failure, throws an exception or returns Y_LUMINOSITY_INVALID.
  */
 int YLed::get_luminosity(void)
@@ -140,11 +140,11 @@ int YLed::get_luminosity(void)
 
 /**
  * Changes the current led intensity (in per cent).
- * 
+ *
  * @param newval : an integer corresponding to the current led intensity (in per cent)
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YLed::set_luminosity(int newval)
@@ -156,10 +156,10 @@ int YLed::set_luminosity(int newval)
 
 /**
  * Returns the current led signaling mode.
- * 
+ *
  * @return a value among Y_BLINKING_STILL, Y_BLINKING_RELAX, Y_BLINKING_AWARE, Y_BLINKING_RUN,
  * Y_BLINKING_CALL and Y_BLINKING_PANIC corresponding to the current led signaling mode
- * 
+ *
  * On failure, throws an exception or returns Y_BLINKING_INVALID.
  */
 Y_BLINKING_enum YLed::get_blinking(void)
@@ -174,12 +174,12 @@ Y_BLINKING_enum YLed::get_blinking(void)
 
 /**
  * Changes the current led signaling mode.
- * 
+ *
  * @param newval : a value among Y_BLINKING_STILL, Y_BLINKING_RELAX, Y_BLINKING_AWARE, Y_BLINKING_RUN,
  * Y_BLINKING_CALL and Y_BLINKING_PANIC corresponding to the current led signaling mode
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YLed::set_blinking(Y_BLINKING_enum newval)
@@ -199,7 +199,7 @@ int YLed::set_blinking(Y_BLINKING_enum newval)
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that $THEFUNCTION$ is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YLed.isOnline() to test if $THEFUNCTION$ is
@@ -207,9 +207,9 @@ int YLed::set_blinking(Y_BLINKING_enum newval)
  * $AFUNCTION$ by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes $THEFUNCTION$
- * 
+ *
  * @return a YLed object allowing you to drive $THEFUNCTION$.
  */
 YLed* YLed::FindLed(string func)
@@ -228,7 +228,7 @@ YLed* YLed::FindLed(string func)
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
  * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
- * 
+ *
  * @param callback : the callback function to call, or a null pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and the character string describing
  *         the new advertised value.

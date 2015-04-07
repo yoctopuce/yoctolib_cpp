@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.h 12321 2013-08-13 14:56:24Z mvuilleu $
+ * $Id: ykey.h 19327 2015-02-17 17:30:01Z seb $
  *
  * Declaration of standard key computations
  *

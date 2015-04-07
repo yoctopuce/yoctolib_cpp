@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwminput.h 18361 2014-11-13 08:06:41Z mvuilleu $
+ * $Id: yocto_pwminput.h 19606 2015-03-05 10:35:57Z seb $
  *
  * Declares yFindPwmInput(), the high-level API for PwmInput functions
  *
@@ -75,9 +75,12 @@ typedef enum {
 //--- (YPwmInput declaration)
 /**
  * YPwmInput Class: PwmInput function interface
- * 
- * The Yoctopuce application programming interface allows you to read an instant
- * measure of the sensor, as well as the minimal and maximal values observed.
+ *
+ * The Yoctopuce class YPwmInput allows you to read and configure Yoctopuce PWM
+ * sensors. It inherits from YSensor class the core functions to read measurements,
+ * register callback functions, access to the autonomous datalogger.
+ * This class adds the ability to configure the signal parameter used to transmit
+ * information: the duty cacle, the frequency or the pulse width.
  */
 class YOCTO_CLASS_EXPORT YPwmInput: public YSensor {
 #ifdef __BORLANDC__
@@ -125,9 +128,9 @@ public:
 
     /**
      * Returns the PWM duty cycle, in per cents.
-     * 
+     *
      * @return a floating point number corresponding to the PWM duty cycle, in per cents
-     * 
+     *
      * On failure, throws an exception or returns Y_DUTYCYCLE_INVALID.
      */
     double              get_dutyCycle(void);
@@ -137,10 +140,10 @@ public:
 
     /**
      * Returns the PWM pulse length in milliseconds, as a floating point number.
-     * 
+     *
      * @return a floating point number corresponding to the PWM pulse length in milliseconds, as a
      * floating point number
-     * 
+     *
      * On failure, throws an exception or returns Y_PULSEDURATION_INVALID.
      */
     double              get_pulseDuration(void);
@@ -150,9 +153,9 @@ public:
 
     /**
      * Returns the PWM frequency in Hz.
-     * 
+     *
      * @return a floating point number corresponding to the PWM frequency in Hz
-     * 
+     *
      * On failure, throws an exception or returns Y_FREQUENCY_INVALID.
      */
     double              get_frequency(void);
@@ -162,9 +165,9 @@ public:
 
     /**
      * Returns the PWM period in milliseconds.
-     * 
+     *
      * @return a floating point number corresponding to the PWM period in milliseconds
-     * 
+     *
      * On failure, throws an exception or returns Y_PERIOD_INVALID.
      */
     double              get_period(void);
@@ -176,9 +179,9 @@ public:
      * Returns the pulse counter value. Actually that
      * counter is incremented twice per period. That counter is
      * limited  to 1 billion
-     * 
+     *
      * @return an integer corresponding to the pulse counter value
-     * 
+     *
      * On failure, throws an exception or returns Y_PULSECOUNTER_INVALID.
      */
     s64                 get_pulseCounter(void);
@@ -192,9 +195,9 @@ public:
 
     /**
      * Returns the timer of the pulses counter (ms)
-     * 
+     *
      * @return an integer corresponding to the timer of the pulses counter (ms)
-     * 
+     *
      * On failure, throws an exception or returns Y_PULSETIMER_INVALID.
      */
     s64                 get_pulseTimer(void);
@@ -205,11 +208,11 @@ public:
     /**
      * Returns the parameter (frequency/duty cycle, pulse width, edges count) returned by the
      * get_currentValue function and callbacks. Attention
-     * 
+     *
      * @return a value among Y_PWMREPORTMODE_PWM_DUTYCYCLE, Y_PWMREPORTMODE_PWM_FREQUENCY,
      * Y_PWMREPORTMODE_PWM_PULSEDURATION and Y_PWMREPORTMODE_PWM_EDGECOUNT corresponding to the parameter
      * (frequency/duty cycle, pulse width, edges count) returned by the get_currentValue function and callbacks
-     * 
+     *
      * On failure, throws an exception or returns Y_PWMREPORTMODE_INVALID.
      */
     Y_PWMREPORTMODE_enum get_pwmReportMode(void);
@@ -222,12 +225,12 @@ public:
      * get_currentValue function and callbacks.
      * The edge count value is limited to the 6 lowest digits. For values greater than one million, use
      * get_pulseCounter().
-     * 
+     *
      * @param newval : a value among Y_PWMREPORTMODE_PWM_DUTYCYCLE, Y_PWMREPORTMODE_PWM_FREQUENCY,
      * Y_PWMREPORTMODE_PWM_PULSEDURATION and Y_PWMREPORTMODE_PWM_EDGECOUNT
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             set_pwmReportMode(Y_PWMREPORTMODE_enum newval);
@@ -244,7 +247,7 @@ public:
      * <li>ModuleLogicalName.FunctionIdentifier</li>
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
-     * 
+     *
      * This function does not require that the PWM input is online at the time
      * it is invoked. The returned object is nevertheless valid.
      * Use the method YPwmInput.isOnline() to test if the PWM input is
@@ -252,9 +255,9 @@ public:
      * a PWM input by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
-     * 
+     *
      * @param func : a string that uniquely characterizes the PWM input
-     * 
+     *
      * @return a YPwmInput object allowing you to drive the PWM input.
      */
     static YPwmInput*   FindPwmInput(string func);
@@ -264,7 +267,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
@@ -280,7 +283,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and an YMeasure object describing
      *         the new advertised value.
@@ -293,9 +296,9 @@ public:
 
     /**
      * Returns the pulse counter value as well as its timer.
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         resetCounter(void);
@@ -306,7 +309,7 @@ public:
 
     /**
      * Continues the enumeration of PWM inputs started using yFirstPwmInput().
-     * 
+     *
      * @return a pointer to a YPwmInput object, corresponding to
      *         a PWM input currently online, or a null pointer
      *         if there are no more PWM inputs to enumerate.
@@ -319,7 +322,7 @@ public:
      * Starts the enumeration of PWM inputs currently accessible.
      * Use the method YPwmInput.nextPwmInput() to iterate on
      * next PWM inputs.
-     * 
+     *
      * @return a pointer to a YPwmInput object, corresponding to
      *         the first PWM input currently online, or a null pointer
      *         if there are none.
@@ -345,7 +348,7 @@ public:
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that the PWM input is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YPwmInput.isOnline() to test if the PWM input is
@@ -353,9 +356,9 @@ public:
  * a PWM input by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes the PWM input
- * 
+ *
  * @return a YPwmInput object allowing you to drive the PWM input.
  */
 inline YPwmInput* yFindPwmInput(const string& func)
@@ -364,7 +367,7 @@ inline YPwmInput* yFindPwmInput(const string& func)
  * Starts the enumeration of PWM inputs currently accessible.
  * Use the method YPwmInput.nextPwmInput() to iterate on
  * next PWM inputs.
- * 
+ *
  * @return a pointer to a YPwmInput object, corresponding to
  *         the first PWM input currently online, or a null pointer
  *         if there are none.

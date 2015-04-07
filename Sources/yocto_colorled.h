@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorled.h 18524 2014-11-25 17:09:56Z seb $
+ * $Id: yocto_colorled.h 19606 2015-03-05 10:35:57Z seb $
  *
  * Declares yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -81,7 +81,7 @@ public:
 //--- (YColorLed declaration)
 /**
  * YColorLed Class: ColorLed function interface
- * 
+ *
  * The Yoctopuce application programming interface
  * allows you to drive a color led using RGB coordinates as well as HSL coordinates.
  * The module performs all conversions form RGB to HSL automatically. It is then
@@ -134,9 +134,9 @@ public:
 
     /**
      * Returns the current RGB color of the led.
-     * 
+     *
      * @return an integer corresponding to the current RGB color of the led
-     * 
+     *
      * On failure, throws an exception or returns Y_RGBCOLOR_INVALID.
      */
     int                 get_rgbColor(void);
@@ -146,11 +146,11 @@ public:
 
     /**
      * Changes the current color of the led, using a RGB color. Encoding is done as follows: 0xRRGGBB.
-     * 
+     *
      * @param newval : an integer corresponding to the current color of the led, using a RGB color
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             set_rgbColor(int newval);
@@ -159,9 +159,9 @@ public:
 
     /**
      * Returns the current HSL color of the led.
-     * 
+     *
      * @return an integer corresponding to the current HSL color of the led
-     * 
+     *
      * On failure, throws an exception or returns Y_HSLCOLOR_INVALID.
      */
     int                 get_hslColor(void);
@@ -171,11 +171,11 @@ public:
 
     /**
      * Changes the current color of the led, using a color HSL. Encoding is done as follows: 0xHHSSLL.
-     * 
+     *
      * @param newval : an integer corresponding to the current color of the led, using a color HSL
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             set_hslColor(int newval);
@@ -193,12 +193,12 @@ public:
 
     /**
      * Performs a smooth transition in the RGB color space between the current color and a target color.
-     * 
+     *
      * @param rgb_target  : desired RGB color at the end of the transition
      * @param ms_duration : duration of the transition, in millisecond
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             rgbMove(int rgb_target,int ms_duration);
@@ -214,21 +214,21 @@ public:
 
     /**
      * Performs a smooth transition in the HSL color space between the current color and a target color.
-     * 
+     *
      * @param hsl_target  : desired HSL color at the end of the transition
      * @param ms_duration : duration of the transition, in millisecond
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             hslMove(int hsl_target,int ms_duration);
 
     /**
      * Returns the configured color to be displayed when the module is turned on.
-     * 
+     *
      * @return an integer corresponding to the configured color to be displayed when the module is turned on
-     * 
+     *
      * On failure, throws an exception or returns Y_RGBCOLORATPOWERON_INVALID.
      */
     int                 get_rgbColorAtPowerOn(void);
@@ -238,12 +238,12 @@ public:
 
     /**
      * Changes the color that the led will display by default when the module is turned on.
-     * 
+     *
      * @param newval : an integer corresponding to the color that the led will display by default when the
      * module is turned on
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             set_rgbColorAtPowerOn(int newval);
@@ -252,9 +252,9 @@ public:
 
     /**
      * Returns the current length of the blinking sequence
-     * 
+     *
      * @return an integer corresponding to the current length of the blinking sequence
-     * 
+     *
      * On failure, throws an exception or returns Y_BLINKSEQSIZE_INVALID.
      */
     int                 get_blinkSeqSize(void);
@@ -264,9 +264,9 @@ public:
 
     /**
      * Returns the maximum length of the blinking sequence
-     * 
+     *
      * @return an integer corresponding to the maximum length of the blinking sequence
-     * 
+     *
      * On failure, throws an exception or returns Y_BLINKSEQMAXSIZE_INVALID.
      */
     int                 get_blinkSeqMaxSize(void);
@@ -279,9 +279,9 @@ public:
      * sequences cannot be read from the device, this can be used
      * to detect if a specific blinking sequence is already
      * programmed.
-     * 
+     *
      * @return an integer
-     * 
+     *
      * On failure, throws an exception or returns Y_BLINKSEQSIGNATURE_INVALID.
      */
     int                 get_blinkSeqSignature(void);
@@ -308,7 +308,7 @@ public:
      * <li>ModuleLogicalName.FunctionIdentifier</li>
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
-     * 
+     *
      * This function does not require that the RGB led is online at the time
      * it is invoked. The returned object is nevertheless valid.
      * Use the method YColorLed.isOnline() to test if the RGB led is
@@ -316,9 +316,9 @@ public:
      * an RGB led by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
-     * 
+     *
      * @param func : a string that uniquely characterizes the RGB led
-     * 
+     *
      * @return a YColorLed object allowing you to drive the RGB led.
      */
     static YColorLed*   FindColorLed(string func);
@@ -328,7 +328,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
@@ -344,10 +344,10 @@ public:
     /**
      * Add a new transition to the blinking sequence, the move will
      * be performed in the HSL space.
-     * 
+     *
      * @param HSLcolor : desired HSL color when the traisntion is completed
      * @param msDelay : duration of the color transition, in milliseconds.
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
@@ -356,10 +356,10 @@ public:
     /**
      * Add a new transition to the blinking sequence, the move will
      * be performed in the RGB space.
-     * 
+     *
      * @param RGBcolor : desired RGB color when the transition is completed
      * @param msDelay : duration of the color transition, in milliseconds.
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
@@ -369,7 +369,7 @@ public:
      * Starts the preprogrammed blinking sequence. The sequence will
      * run in loop until it is stopped by stopBlinkSeq or an explicit
      * change.
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
@@ -377,7 +377,7 @@ public:
 
     /**
      * Stops the preprogrammed blinking sequence.
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
@@ -385,7 +385,7 @@ public:
 
     /**
      * Resets the preprogrammed blinking sequence.
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
@@ -397,7 +397,7 @@ public:
 
     /**
      * Continues the enumeration of RGB leds started using yFirstColorLed().
-     * 
+     *
      * @return a pointer to a YColorLed object, corresponding to
      *         an RGB led currently online, or a null pointer
      *         if there are no more RGB leds to enumerate.
@@ -410,7 +410,7 @@ public:
      * Starts the enumeration of RGB leds currently accessible.
      * Use the method YColorLed.nextColorLed() to iterate on
      * next RGB leds.
-     * 
+     *
      * @return a pointer to a YColorLed object, corresponding to
      *         the first RGB led currently online, or a null pointer
      *         if there are none.
@@ -436,7 +436,7 @@ public:
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that the RGB led is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YColorLed.isOnline() to test if the RGB led is
@@ -444,9 +444,9 @@ public:
  * an RGB led by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes the RGB led
- * 
+ *
  * @return a YColorLed object allowing you to drive the RGB led.
  */
 inline YColorLed* yFindColorLed(const string& func)
@@ -455,7 +455,7 @@ inline YColorLed* yFindColorLed(const string& func)
  * Starts the enumeration of RGB leds currently accessible.
  * Use the method YColorLed.nextColorLed() to iterate on
  * next RGB leds.
- * 
+ *
  * @return a pointer to a YColorLed object, corresponding to
  *         the first RGB led currently online, or a null pointer
  *         if there are none.

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_voltage.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_voltage.h 19606 2015-03-05 10:35:57Z seb $
  *
  * Declares yFindVoltage(), the high-level API for Voltage functions
  *
@@ -59,9 +59,10 @@ typedef void (*YVoltageTimedReportCallback)(YVoltage *func, YMeasure measure);
 //--- (YVoltage declaration)
 /**
  * YVoltage Class: Voltage function interface
- * 
- * The Yoctopuce application programming interface allows you to read an instant
- * measure of the sensor, as well as the minimal and maximal values observed.
+ *
+ * The Yoctopuce class YVoltage allows you to read and configure Yoctopuce voltage
+ * sensors. It inherits from YSensor class the core functions to read measurements,
+ * register callback functions, access to the autonomous datalogger.
  */
 class YOCTO_CLASS_EXPORT YVoltage: public YSensor {
 #ifdef __BORLANDC__
@@ -96,7 +97,7 @@ public:
      * <li>ModuleLogicalName.FunctionIdentifier</li>
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
-     * 
+     *
      * This function does not require that the voltage sensor is online at the time
      * it is invoked. The returned object is nevertheless valid.
      * Use the method YVoltage.isOnline() to test if the voltage sensor is
@@ -104,9 +105,9 @@ public:
      * a voltage sensor by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
-     * 
+     *
      * @param func : a string that uniquely characterizes the voltage sensor
-     * 
+     *
      * @return a YVoltage object allowing you to drive the voltage sensor.
      */
     static YVoltage*    FindVoltage(string func);
@@ -116,7 +117,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
@@ -132,7 +133,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and an YMeasure object describing
      *         the new advertised value.
@@ -149,7 +150,7 @@ public:
 
     /**
      * Continues the enumeration of voltage sensors started using yFirstVoltage().
-     * 
+     *
      * @return a pointer to a YVoltage object, corresponding to
      *         a voltage sensor currently online, or a null pointer
      *         if there are no more voltage sensors to enumerate.
@@ -162,7 +163,7 @@ public:
      * Starts the enumeration of voltage sensors currently accessible.
      * Use the method YVoltage.nextVoltage() to iterate on
      * next voltage sensors.
-     * 
+     *
      * @return a pointer to a YVoltage object, corresponding to
      *         the first voltage sensor currently online, or a null pointer
      *         if there are none.
@@ -188,7 +189,7 @@ public:
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that the voltage sensor is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YVoltage.isOnline() to test if the voltage sensor is
@@ -196,9 +197,9 @@ public:
  * a voltage sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes the voltage sensor
- * 
+ *
  * @return a YVoltage object allowing you to drive the voltage sensor.
  */
 inline YVoltage* yFindVoltage(const string& func)
@@ -207,7 +208,7 @@ inline YVoltage* yFindVoltage(const string& func)
  * Starts the enumeration of voltage sensors currently accessible.
  * Use the method YVoltage.nextVoltage() to iterate on
  * next voltage sensors.
- * 
+ *
  * @return a pointer to a YVoltage object, corresponding to
  *         the first voltage sensor currently online, or a null pointer
  *         if there are none.

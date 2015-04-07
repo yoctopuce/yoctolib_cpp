@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_accelerometer.h 18320 2014-11-10 10:47:48Z seb $
+ * $Id: yocto_accelerometer.h 19606 2015-03-05 10:35:57Z seb $
  *
  * Declares yFindAccelerometer(), the high-level API for Accelerometer functions
  *
@@ -70,9 +70,16 @@ typedef enum {
 //--- (YAccelerometer declaration)
 /**
  * YAccelerometer Class: Accelerometer function interface
- * 
- * The Yoctopuce application programming interface allows you to read an instant
- * measure of the sensor, as well as the minimal and maximal values observed.
+ *
+ * The YSensor class is the parent class for all Yoctopuce sensors. It can be
+ * used to read the current value and unit of any sensor, read the min/max
+ * value, configure autonomous recording frequency and access recorded data.
+ * It also provide a function to register a callback invoked each time the
+ * observed value changes, or at a predefined interval. Using this class rather
+ * than a specific subclass makes it possible to create generic applications
+ * that work with any Yoctopuce sensor, even those that do not yet exist.
+ * Note: The YAnButton class is the only analog input which does not inherit
+ * from YSensor.
  */
 class YOCTO_CLASS_EXPORT YAccelerometer: public YSensor {
 #ifdef __BORLANDC__
@@ -112,9 +119,9 @@ public:
 
     /**
      * Returns the X component of the acceleration, as a floating point number.
-     * 
+     *
      * @return a floating point number corresponding to the X component of the acceleration, as a floating point number
-     * 
+     *
      * On failure, throws an exception or returns Y_XVALUE_INVALID.
      */
     double              get_xValue(void);
@@ -124,9 +131,9 @@ public:
 
     /**
      * Returns the Y component of the acceleration, as a floating point number.
-     * 
+     *
      * @return a floating point number corresponding to the Y component of the acceleration, as a floating point number
-     * 
+     *
      * On failure, throws an exception or returns Y_YVALUE_INVALID.
      */
     double              get_yValue(void);
@@ -136,9 +143,9 @@ public:
 
     /**
      * Returns the Z component of the acceleration, as a floating point number.
-     * 
+     *
      * @return a floating point number corresponding to the Z component of the acceleration, as a floating point number
-     * 
+     *
      * On failure, throws an exception or returns Y_ZVALUE_INVALID.
      */
     double              get_zValue(void);
@@ -165,7 +172,7 @@ public:
      * <li>ModuleLogicalName.FunctionIdentifier</li>
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
-     * 
+     *
      * This function does not require that the accelerometer is online at the time
      * it is invoked. The returned object is nevertheless valid.
      * Use the method YAccelerometer.isOnline() to test if the accelerometer is
@@ -173,9 +180,9 @@ public:
      * an accelerometer by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
-     * 
+     *
      * @param func : a string that uniquely characterizes the accelerometer
-     * 
+     *
      * @return a YAccelerometer object allowing you to drive the accelerometer.
      */
     static YAccelerometer* FindAccelerometer(string func);
@@ -185,7 +192,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
@@ -201,7 +208,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and an YMeasure object describing
      *         the new advertised value.
@@ -218,7 +225,7 @@ public:
 
     /**
      * Continues the enumeration of accelerometers started using yFirstAccelerometer().
-     * 
+     *
      * @return a pointer to a YAccelerometer object, corresponding to
      *         an accelerometer currently online, or a null pointer
      *         if there are no more accelerometers to enumerate.
@@ -231,7 +238,7 @@ public:
      * Starts the enumeration of accelerometers currently accessible.
      * Use the method YAccelerometer.nextAccelerometer() to iterate on
      * next accelerometers.
-     * 
+     *
      * @return a pointer to a YAccelerometer object, corresponding to
      *         the first accelerometer currently online, or a null pointer
      *         if there are none.
@@ -257,7 +264,7 @@ public:
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that the accelerometer is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YAccelerometer.isOnline() to test if the accelerometer is
@@ -265,9 +272,9 @@ public:
  * an accelerometer by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes the accelerometer
- * 
+ *
  * @return a YAccelerometer object allowing you to drive the accelerometer.
  */
 inline YAccelerometer* yFindAccelerometer(const string& func)
@@ -276,7 +283,7 @@ inline YAccelerometer* yFindAccelerometer(const string& func)
  * Starts the enumeration of accelerometers currently accessible.
  * Use the method YAccelerometer.nextAccelerometer() to iterate on
  * next accelerometers.
- * 
+ *
  * @return a pointer to a YAccelerometer object, corresponding to
  *         the first accelerometer currently online, or a null pointer
  *         if there are none.

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.c 17926 2014-10-03 16:54:03Z seb $
+ * $Id: ythread.c 19327 2015-02-17 17:30:01Z seb $
  *
  * OS-independent thread and synchronization library
  *

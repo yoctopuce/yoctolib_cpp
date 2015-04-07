@@ -1,35 +1,35 @@
 /*********************************************************************
  *
- * $Id: yjson.c 18000 2014-10-10 16:43:40Z mvuilleu $
+ * $Id: yjson.c 19399 2015-02-19 09:57:51Z seb $
  *
  * Simple JSON parser (actually a slightly enhanced lexer)
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
  *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
  *  non-exclusive license to use, modify, copy and integrate this
- *  file into your software for the sole purpose of interfacing 
- *  with Yoctopuce products. 
+ *  file into your software for the sole purpose of interfacing
+ *  with Yoctopuce products.
  *
- *  You may reproduce and distribute copies of this file in 
+ *  You may reproduce and distribute copies of this file in
  *  source or object form, as long as the sole purpose of this
- *  code is to interface with Yoctopuce products. You must retain 
+ *  code is to interface with Yoctopuce products. You must retain
  *  this notice in the distributed source file.
  *
  *  You should refer to Yoctopuce General Terms and Conditions
- *  for additional information regarding your rights and 
+ *  for additional information regarding your rights and
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -88,7 +88,7 @@ yJsonRetCode yJsonParse(yJsonStateMachine *j)
     _FAR const char *end = j->end;
     char            *pt = j->pt;
     char            *ept = j->token + sizeof(j->token) - 1;
-    char            c=0;
+    unsigned char   c=0;
 
 skip:
     res = YJSON_NEED_INPUT;
@@ -98,7 +98,7 @@ skip:
         st = j->next;
         j->next = YJSON_PARSE_SPECIAL;
     }
-    
+
     while(1) {
         switch(st) {
             case YJSON_HTTP_START:       // about to parse HTTP header, up to first space before return code
@@ -136,12 +136,12 @@ skip:
                 pt = j->token;
                 j->next = YJSON_HTTP_SKIP;
                 res = YJSON_PARSE_AVAIL;
-                goto done;                
+                goto done;
             case YJSON_HTTP_SKIP:        // skipping rest of HTTP header until double-CRLF
                 while(src < end && pt < j->token+2) {
                     c = *src++;
                     if(c == '\n') *pt++ = '\n';
-                    else if(c != '\r') pt = j->token; 
+                    else if(c != '\r') pt = j->token;
                 }
                 if(src >= end) goto done;
                 st = YJSON_START;
@@ -175,7 +175,7 @@ skip:
                 *pt = 0;
                 j->next = YJSON_PARSE_DONE;
                 res = YJSON_PARSE_AVAIL;
-                goto done;                
+                goto done;
             case YJSON_PARSE_NUM:        // parsing a number
                 while(src < end && pt < ept && ( (c = *src)=='-' || (c >= '0' && c <= '9') ))  {
                     *pt++ = c;
@@ -202,7 +202,7 @@ skip:
                 if(c == '"') goto token_done;
                 if (st == YJSON_PARSE_STRING) {
                     st = YJSON_PARSE_STRINGQ;
-                } else { 
+                } else {
                     st = YJSON_PARSE_STRINGCONTQ;
                 }
                 // fall through
@@ -218,7 +218,7 @@ skip:
                 }
                 if (st == YJSON_PARSE_STRINGQ) {
                     st = YJSON_PARSE_STRING;
-                } else { 
+                } else {
                     st = YJSON_PARSE_STRINGCONT;
                 }
                 // continue string parsing;
@@ -281,16 +281,16 @@ skip:
                     if(src >= end) goto done;
                     if(j->stack[j->depth-1] == YJSON_PARSE_STRUCT) {
                         if(c == ',') { src++; st = YJSON_PARSE_MEMBSTART; }
-                        else if(c == '}') goto un_nest; 
+                        else if(c == '}') goto un_nest;
                         else goto push_error;
                     } else { // YJSON_PARSE_ARRAY
                         if(c == ',') { src++; st = YJSON_PARSE_ANY; }
                         else if(c == ']') {
             un_nest:
-                            *pt++ = *src++; 
-                            st = j->stack[--(j->depth)]; 
-                            goto token_done; 
-                        } 
+                            *pt++ = *src++;
+                            st = j->stack[--(j->depth)];
+                            goto token_done;
+                        }
                         else goto push_error;
                     }
                     continue; // continue to parse nested block

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pressure.h 16461 2014-06-06 14:44:21Z seb $
+ * $Id: yocto_pressure.h 19606 2015-03-05 10:35:57Z seb $
  *
  * Declares yFindPressure(), the high-level API for Pressure functions
  *
@@ -59,9 +59,10 @@ typedef void (*YPressureTimedReportCallback)(YPressure *func, YMeasure measure);
 //--- (YPressure declaration)
 /**
  * YPressure Class: Pressure function interface
- * 
- * The Yoctopuce application programming interface allows you to read an instant
- * measure of the sensor, as well as the minimal and maximal values observed.
+ *
+ * The Yoctopuce class YPressure allows you to read and configure Yoctopuce pressure
+ * sensors. It inherits from YSensor class the core functions to read measurements,
+ * register callback functions, access to the autonomous datalogger.
  */
 class YOCTO_CLASS_EXPORT YPressure: public YSensor {
 #ifdef __BORLANDC__
@@ -96,7 +97,7 @@ public:
      * <li>ModuleLogicalName.FunctionIdentifier</li>
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
-     * 
+     *
      * This function does not require that the pressure sensor is online at the time
      * it is invoked. The returned object is nevertheless valid.
      * Use the method YPressure.isOnline() to test if the pressure sensor is
@@ -104,9 +105,9 @@ public:
      * a pressure sensor by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
-     * 
+     *
      * @param func : a string that uniquely characterizes the pressure sensor
-     * 
+     *
      * @return a YPressure object allowing you to drive the pressure sensor.
      */
     static YPressure*   FindPressure(string func);
@@ -116,7 +117,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
@@ -132,7 +133,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and an YMeasure object describing
      *         the new advertised value.
@@ -149,7 +150,7 @@ public:
 
     /**
      * Continues the enumeration of pressure sensors started using yFirstPressure().
-     * 
+     *
      * @return a pointer to a YPressure object, corresponding to
      *         a pressure sensor currently online, or a null pointer
      *         if there are no more pressure sensors to enumerate.
@@ -162,7 +163,7 @@ public:
      * Starts the enumeration of pressure sensors currently accessible.
      * Use the method YPressure.nextPressure() to iterate on
      * next pressure sensors.
-     * 
+     *
      * @return a pointer to a YPressure object, corresponding to
      *         the first pressure sensor currently online, or a null pointer
      *         if there are none.
@@ -188,7 +189,7 @@ public:
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that the pressure sensor is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YPressure.isOnline() to test if the pressure sensor is
@@ -196,9 +197,9 @@ public:
  * a pressure sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes the pressure sensor
- * 
+ *
  * @return a YPressure object allowing you to drive the pressure sensor.
  */
 inline YPressure* yFindPressure(const string& func)
@@ -207,7 +208,7 @@ inline YPressure* yFindPressure(const string& func)
  * Starts the enumeration of pressure sensors currently accessible.
  * Use the method YPressure.nextPressure() to iterate on
  * next pressure sensors.
- * 
+ *
  * @return a pointer to a YPressure object, corresponding to
  *         the first pressure sensor currently online, or a null pointer
  *         if there are none.

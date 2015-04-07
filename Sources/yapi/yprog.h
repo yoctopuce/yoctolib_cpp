@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.h 19152 2015-01-30 00:09:39Z seb $
+ * $Id: yprog.h 19756 2015-03-17 16:39:22Z seb $
  *
  * Declaration of firmware upgrade functions
  *
@@ -221,6 +221,8 @@ typedef enum
 
 #define MAX_FIRMWARE_LEN  0x100000ul
 #define INVALID_FIRMWARE  0xfffffffful
+#define FLASH_NB_REBOOT_RETRY  1
+
 typedef enum{
     FLASH_FIND_DEV = 0,
 #ifndef MICROCHIP_API

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 19032 2015-01-20 08:03:21Z seb $
+ * $Id: yocto_api.cpp 19854 2015-03-26 10:17:46Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -271,6 +271,7 @@ int YFirmwareUpdate::_processMore(int newupdate)
             }
             if (_progress < 100) {
                 m->set_allSettings(_settings);
+                m->saveToFlash();
                 _settings = string(0, (char)0);
                 _progress = 100;
                 _progress_msg = "success";
@@ -287,7 +288,7 @@ int YFirmwareUpdate::_processMore(int newupdate)
  * Retruns a list of all the modules in "update" mode. Only USB connected
  * devices are listed. For modules connected to a YoctoHub, you must
  * connect yourself to the YoctoHub web interface.
- * 
+ *
  * @return an array of strings containing the serial list of module in "update" mode.
  */
 vector<string> YFirmwareUpdate::GetAllBootLoaders(void)
@@ -320,7 +321,9 @@ vector<string> YFirmwareUpdate::GetAllBootLoaders(void)
         }
         free(bigbuff);
     }
-    bootladers = _strsplit(bootloader_list,',');
+    if (!(bootloader_list == "")) {
+        bootladers = _strsplit(bootloader_list,',');
+    }
     return bootladers;
 }
 
@@ -328,13 +331,13 @@ vector<string> YFirmwareUpdate::GetAllBootLoaders(void)
  * Test if the byn file is valid for this module. It's possible to pass an directory instead of a file.
  * In this case this method return the path of the most recent appropriate byn file. This method will
  * ignore firmware that are older than mintrelase.
- * 
+ *
  * @param serial  : the serial number of the module to update
  * @param path    : the path of a byn file or a directory that contain byn files
  * @param minrelease : an positif integer
- * 
+ *
  * @return : the path of the byn file to use or a empty string if no byn files match the requirement
- * 
+ *
  * On failure, returns a string that start with "error:".
  */
 string YFirmwareUpdate::CheckFirmware(string serial,string path,int minrelease)
@@ -376,7 +379,7 @@ string YFirmwareUpdate::CheckFirmware(string serial,string path,int minrelease)
  * the value of 100 is reached. The 100 value means that the firmware update was completed
  * successfully. If an error occurs during the firmware update, a negative value is returned, and the
  * error message can be retrieved with get_progressMessage.
- * 
+ *
  * @return an integer in the range 0 to 100 (percentage of completion)
  *         or a negative error code in case of failure.
  */
@@ -389,7 +392,7 @@ int YFirmwareUpdate::get_progress(void)
 /**
  * Returns the last progress message of the firmware update process. If an error occurs during the
  * firmware update process, the error message is returned
- * 
+ *
  * @return a string  with the latest progress message, or the error message.
  */
 string YFirmwareUpdate::get_progressMessage(void)
@@ -401,10 +404,10 @@ string YFirmwareUpdate::get_progressMessage(void)
  * Starts the firmware update process. This method starts the firmware update process in background. This method
  * returns immediately. You can monitor the progress of the firmware update with the get_progress()
  * and get_progressMessage() methods.
- * 
+ *
  * @return an integer in the range 0 to 100 (percentage of completion),
  *         or a negative error code in case of failure.
- * 
+ *
  * On failure returns a negative error code.
  */
 int YFirmwareUpdate::startUpdate(void)
@@ -651,7 +654,7 @@ bool YDataStream::isClosed(void)
 /**
  * Returns the run index of the data stream. A run can be made of
  * multiple datastreams, for different time intervals.
- * 
+ *
  * @return an unsigned number corresponding to the run index.
  */
 int YDataStream::get_runIndex(void)
@@ -667,7 +670,7 @@ int YDataStream::get_runIndex(void)
  * relative to the start of the time the device was powered on, and
  * is always positive.
  * If you need an absolute UTC timestamp, use get_startTimeUTC().
- * 
+ *
  * @return an unsigned number corresponding to the number of seconds
  *         between the start of the run and the beginning of this data
  *         stream.
@@ -681,7 +684,7 @@ int YDataStream::get_startTime(void)
  * Returns the start time of the data stream, relative to the Jan 1, 1970.
  * If the UTC time was not set in the datalogger at the time of the recording
  * of this data stream, this method returns 0.
- * 
+ *
  * @return an unsigned number corresponding to the number of seconds
  *         between the Jan 1, 1970 and the beginning of this data
  *         stream (i.e. Unix time representation of the absolute time).
@@ -696,7 +699,7 @@ s64 YDataStream::get_startTimeUTC(void)
  * rows of this data stream. By default, the data logger records one row
  * per second, but the recording frequency can be changed for
  * each device function
- * 
+ *
  * @return an unsigned number corresponding to a number of milliseconds.
  */
 int YDataStream::get_dataSamplesIntervalMs(void)
@@ -711,13 +714,13 @@ double YDataStream::get_dataSamplesInterval(void)
 
 /**
  * Returns the number of data rows present in this stream.
- * 
+ *
  * If the device uses a firmware older than version 13000,
  * this method fetches the whole data stream from the device
  * if not yet done, which can cause a little delay.
- * 
+ *
  * @return an unsigned number corresponding to the number of rows.
- * 
+ *
  * On failure, throws an exception or returns zero.
  */
 int YDataStream::get_rowCount(void)
@@ -733,13 +736,13 @@ int YDataStream::get_rowCount(void)
  * Returns the number of data columns present in this stream.
  * The meaning of the values present in each column can be obtained
  * using the method get_columnNames().
- * 
+ *
  * If the device uses a firmware older than version 13000,
  * this method fetches the whole data stream from the device
  * if not yet done, which can cause a little delay.
- * 
+ *
  * @return an unsigned number corresponding to the number of columns.
- * 
+ *
  * On failure, throws an exception or returns zero.
  */
 int YDataStream::get_columnCount(void)
@@ -758,14 +761,14 @@ int YDataStream::get_columnCount(void)
  * recording rate, the dataLogger stores the min, average and max value
  * during each measure interval into three columns with suffixes _min,
  * _avg and _max respectively.
- * 
+ *
  * If the device uses a firmware older than version 13000,
  * this method fetches the whole data stream from the device
  * if not yet done, which can cause a little delay.
- * 
+ *
  * @return a list containing as many strings as there are columns in the
  *         data stream.
- * 
+ *
  * On failure, throws an exception or returns an empty array.
  */
 vector<string> YDataStream::get_columnNames(void)
@@ -781,10 +784,10 @@ vector<string> YDataStream::get_columnNames(void)
  * Returns the smallest measure observed within this stream.
  * If the device uses a firmware older than version 13000,
  * this method will always return Y_DATA_INVALID.
- * 
+ *
  * @return a floating-point number corresponding to the smallest value,
  *         or Y_DATA_INVALID if the stream is not yet complete (still recording).
- * 
+ *
  * On failure, throws an exception or returns Y_DATA_INVALID.
  */
 double YDataStream::get_minValue(void)
@@ -796,10 +799,10 @@ double YDataStream::get_minValue(void)
  * Returns the average of all measures observed within this stream.
  * If the device uses a firmware older than version 13000,
  * this method will always return Y_DATA_INVALID.
- * 
+ *
  * @return a floating-point number corresponding to the average value,
  *         or Y_DATA_INVALID if the stream is not yet complete (still recording).
- * 
+ *
  * On failure, throws an exception or returns Y_DATA_INVALID.
  */
 double YDataStream::get_averageValue(void)
@@ -811,10 +814,10 @@ double YDataStream::get_averageValue(void)
  * Returns the largest measure observed within this stream.
  * If the device uses a firmware older than version 13000,
  * this method will always return Y_DATA_INVALID.
- * 
+ *
  * @return a floating-point number corresponding to the largest value,
  *         or Y_DATA_INVALID if the stream is not yet complete (still recording).
- * 
+ *
  * On failure, throws an exception or returns Y_DATA_INVALID.
  */
 double YDataStream::get_maxValue(void)
@@ -824,9 +827,9 @@ double YDataStream::get_maxValue(void)
 
 /**
  * Returns the approximate duration of this stream, in seconds.
- * 
+ *
  * @return the number of seconds covered by this stream.
- * 
+ *
  * On failure, throws an exception or returns Y_DURATION_INVALID.
  */
 int YDataStream::get_duration(void)
@@ -842,14 +845,14 @@ int YDataStream::get_duration(void)
  * table of numbers.
  * The meaning of the values present in each column can be obtained
  * using the method get_columnNames().
- * 
+ *
  * This method fetches the whole data stream from the device,
  * if not yet done.
- * 
+ *
  * @return a list containing as many elements as there are rows in the
  *         data stream. Each row itself is a list of floating-point
  *         numbers.
- * 
+ *
  * On failure, throws an exception or returns an empty array.
  */
 vector< vector<double> > YDataStream::get_dataRows(void)
@@ -865,15 +868,15 @@ vector< vector<double> > YDataStream::get_dataRows(void)
  * row and column index.
  * The meaning of the values present in each column can be obtained
  * using the method get_columnNames().
- * 
+ *
  * This method fetches the whole data stream from the device,
  * if not yet done.
- * 
+ *
  * @param row : row index
  * @param col : column index
- * 
+ *
  * @return a floating-point number
- * 
+ *
  * On failure, throws an exception or returns Y_DATA_INVALID.
  */
 double YDataStream::get_data(int row,int col)
@@ -900,7 +903,7 @@ double YDataStream::get_data(int row,int col)
  * Returns the start time of the measure, relative to the Jan 1, 1970 UTC
  * (Unix timestamp). When the recording rate is higher then 1 sample
  * per second, the timestamp may have a fractional part.
- * 
+ *
  * @return an floating point number corresponding to the number of seconds
  *         between the Jan 1, 1970 UTC and the beginning of this measure.
  */
@@ -913,7 +916,7 @@ double YMeasure::get_startTimeUTC(void)
  * Returns the end time of the measure, relative to the Jan 1, 1970 UTC
  * (Unix timestamp). When the recording rate is higher than 1 sample
  * per second, the timestamp may have a fractional part.
- * 
+ *
  * @return an floating point number corresponding to the number of seconds
  *         between the Jan 1, 1970 UTC and the end of this measure.
  */
@@ -925,7 +928,7 @@ double YMeasure::get_endTimeUTC(void)
 /**
  * Returns the smallest value observed during the time interval
  * covered by this measure.
- * 
+ *
  * @return a floating-point number corresponding to the smallest value observed.
  */
 double YMeasure::get_minValue(void)
@@ -936,7 +939,7 @@ double YMeasure::get_minValue(void)
 /**
  * Returns the average value observed during the time interval
  * covered by this measure.
- * 
+ *
  * @return a floating-point number corresponding to the average value observed.
  */
 double YMeasure::get_averageValue(void)
@@ -947,7 +950,7 @@ double YMeasure::get_averageValue(void)
 /**
  * Returns the largest value observed during the time interval
  * covered by this measure.
- * 
+ *
  * @return a floating-point number corresponding to the largest value observed.
  */
 double YMeasure::get_maxValue(void)
@@ -1051,9 +1054,9 @@ vector<YDataStream*> YDataSet::get_privateDataStreams(void)
  * in the form SERIAL.FUNCTIONID. The unique hardware identifier is composed of the
  * device serial number and of the hardware identifier of the function
  * (for example THRMCPL1-123456.temperature1)
- * 
+ *
  * @return a string that uniquely identifies the function (ex: THRMCPL1-123456.temperature1)
- * 
+ *
  * On failure, throws an exception or returns  Y_HARDWAREID_INVALID.
  */
 string YDataSet::get_hardwareId(void)
@@ -1070,7 +1073,7 @@ string YDataSet::get_hardwareId(void)
 /**
  * Returns the hardware identifier of the function that performed the measure,
  * without reference to the module. For example temperature1.
- * 
+ *
  * @return a string that identifies the function (ex: temperature1)
  */
 string YDataSet::get_functionId(void)
@@ -1080,9 +1083,9 @@ string YDataSet::get_functionId(void)
 
 /**
  * Returns the measuring unit for the measured value.
- * 
+ *
  * @return a string that represents a physical unit.
- * 
+ *
  * On failure, throws an exception or returns  Y_UNIT_INVALID.
  */
 string YDataSet::get_unit(void)
@@ -1097,7 +1100,7 @@ string YDataSet::get_unit(void)
  * very first call to loadMore(), the start time is updated
  * to reflect the timestamp of the first measure actually found in the
  * dataLogger within the specified range.
- * 
+ *
  * @return an unsigned number corresponding to the number of seconds
  *         between the Jan 1, 1970 and the beginning of this data
  *         set (i.e. Unix time representation of the absolute time).
@@ -1114,7 +1117,7 @@ s64 YDataSet::get_startTimeUTC(void)
  * very first call to loadMore(), the end time is updated
  * to reflect the timestamp of the last measure actually found in the
  * dataLogger within the specified range.
- * 
+ *
  * @return an unsigned number corresponding to the number of seconds
  *         between the Jan 1, 1970 and the end of this data
  *         set (i.e. Unix time representation of the absolute time).
@@ -1129,7 +1132,7 @@ s64 YDataSet::get_endTimeUTC(void)
  * on a scale from 0 to 100. When the object is instantiated by get_dataSet,
  * the progress is zero. Each time loadMore() is invoked, the progress
  * is updated, to reach the value 100 only once all measures have been loaded.
- * 
+ *
  * @return an integer in the range 0 to 100 (percentage of completion).
  */
 int YDataSet::get_progress(void)
@@ -1147,10 +1150,10 @@ int YDataSet::get_progress(void)
 /**
  * Loads the the next block of measures from the dataLogger, and updates
  * the progress indicator.
- * 
+ *
  * @return an integer in the range 0 to 100 (percentage of completion),
  *         or a negative error code in case of failure.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YDataSet::loadMore(void)
@@ -1178,10 +1181,10 @@ int YDataSet::loadMore(void)
  * - the minimal value observed during the time interval
  * - the average value observed during the time interval
  * - the maximal value observed during the time interval
- * 
+ *
  * This summary is available as soon as loadMore() has
  * been called for the first time.
- * 
+ *
  * @return an YMeasure object
  */
 YMeasure YDataSet::get_summary(void)
@@ -1198,13 +1201,13 @@ YMeasure YDataSet::get_summary(void)
  * - the minimal value observed during the time interval
  * - the average value observed during the time interval
  * - the maximal value observed during the time interval
- * 
+ *
  * This preview is available as soon as loadMore() has
  * been called for the first time.
- * 
+ *
  * @return a table of records, where each record depicts the
  *         measured values during a time interval
- * 
+ *
  * On failure, throws an exception or returns an empty array.
  */
 vector<YMeasure> YDataSet::get_preview(void)
@@ -1220,21 +1223,21 @@ vector<YMeasure> YDataSet::get_preview(void)
  * - the minimal value observed during the time interval
  * - the average value observed during the time interval
  * - the maximal value observed during the time interval
- * 
+ *
  * Before calling this method, you should call loadMore()
  * to load data from the device. You may have to call loadMore()
  * several time until all rows are loaded, but you can start
  * looking at available data rows before the load is complete.
- * 
+ *
  * The oldest measures are always loaded first, and the most
  * recent measures will be loaded last. As a result, timestamps
  * are normally sorted in ascending order within the measure table,
  * unless there was an unexpected adjustment of the datalogger UTC
  * clock.
- * 
+ *
  * @return a table of records, where each record depicts the
  *         measured value for a given time interval
- * 
+ *
  * On failure, throws an exception or returns an empty array.
  */
 vector<YMeasure> YDataSet::get_measures(void)
@@ -1317,9 +1320,9 @@ int YFunction::_parseAttr(yJsonStateMachine& j)
 
 /**
  * Returns the logical name of the function.
- * 
+ *
  * @return a string corresponding to the logical name of the function
- * 
+ *
  * On failure, throws an exception or returns Y_LOGICALNAME_INVALID.
  */
 string YFunction::get_logicalName(void)
@@ -1337,11 +1340,11 @@ string YFunction::get_logicalName(void)
  * prior to this call to make sure that your parameter is valid.
  * Remember to call the saveToFlash() method of the module if the
  * modification must be kept.
- * 
+ *
  * @param newval : a string corresponding to the logical name of the function
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YFunction::set_logicalName(const string& newval)
@@ -1356,10 +1359,10 @@ int YFunction::set_logicalName(const string& newval)
 }
 
 /**
- * Returns the current value of the function (no more than 6 characters).
- * 
- * @return a string corresponding to the current value of the function (no more than 6 characters)
- * 
+ * Returns a short string representing the current state of the function.
+ *
+ * @return a string corresponding to a short string representing the current state of the function
+ *
  * On failure, throws an exception or returns Y_ADVERTISEDVALUE_INVALID.
  */
 string YFunction::get_advertisedValue(void)
@@ -1382,7 +1385,7 @@ string YFunction::get_advertisedValue(void)
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that the function is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YFunction.isOnline() to test if the function is
@@ -1390,9 +1393,9 @@ string YFunction::get_advertisedValue(void)
  * a function by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes the function
- * 
+ *
  * @return a YFunction object allowing you to drive the function.
  */
 YFunction* YFunction::FindFunction(string func)
@@ -1411,7 +1414,7 @@ YFunction* YFunction::FindFunction(string func)
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
  * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
- * 
+ *
  * @param callback : the callback function to call, or a null pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and the character string describing
  *         the new advertised value.
@@ -1567,11 +1570,31 @@ YRETCODE YFunction::_nextFunction(string& hwid)
 // Parse a long JSON string
 string  YFunction::_parseString(yJsonStateMachine& j)
 {
-    string  res = j.token;
+    string  res;
 
-    while(j.next == YJSON_PARSE_STRINGCONT && yJsonParse(&j) == YJSON_PARSE_AVAIL) {
+    do {
+#ifdef WINDOWS_API
         res += j.token;
-    }
+#else
+        char buffer[128];
+        char *pt, *s;
+        s = j.token;
+        pt = buffer;
+        while (*s) {
+            unsigned char c = *s++;
+            if (c < 128) {
+                *pt++ = c;
+            } else {
+                // UTF8-encode character
+                *pt++ = 0xc2 + (c>0xbf ? 1 : 0);
+                *pt++ = (c & 0x3f) + 0x80;
+            }
+        }
+        *pt = 0;
+        res += buffer;
+#endif
+    } while (j.next == YJSON_PARSE_STRINGCONT && yJsonParse(&j) == YJSON_PARSE_AVAIL);
+
     return res;
 }
 
@@ -1665,6 +1688,12 @@ string  YFunction::_escapeAttr(const string& changeval)
     for (p = changeval.c_str(); (c = *p) != 0; p++) {
         if (c <= ' ' || (c > 'z' && c != '~') || c == '"' || c == '%' || c == '&' ||
             c == '+' || c == '<' || c == '=' || c == '>' || c == '\\' || c == '^' || c == '`') {
+            if ((c==0xc2 || c==0xc3) && (p[1] & 0xc0)==0x80) {
+                // UTF8-encoded ISO-8859-1 character: translate to plain ISO-8859-1
+                c = (c & 1) * 0x40;
+                p++;
+                c += *p;
+            }
             esc[1] = (c >= 0xa0 ? (c >> 4) - 10 + 'A' : (c >> 4) + '0');
             c &= 0xf;
             esc[2] = (c >= 0xa ? c - 10 + 'A' : c + '0');
@@ -2636,13 +2665,13 @@ vector<int> YAPI::_decodeFloats(string sdat)
  * DLL (for instance C#, VisualBasic or Delphi), the character string
  * includes as well the DLL version, for instance
  * "1.01.5535 (1.01.5439)".
- * 
+ *
  * If you want to verify in your code that the library version is
  * compatible with the version that you have used during development,
  * verify that the major number is strictly equal and that the minor
  * number is greater or equal. The build number is not relevant
  * with respect to the library compatibility.
- * 
+ *
  * @return a character string describing the library version.
  */
 string YAPI::GetAPIVersion(void)
@@ -2659,19 +2688,19 @@ string YAPI::GetAPIVersion(void)
  * It is not strictly needed to call yInitAPI(), as the library is
  * automatically  initialized when calling yRegisterHub() for the
  * first time.
- * 
+ *
  * When Y_DETECT_NONE is used as detection mode,
  * you must explicitly use yRegisterHub() to point the API to the
  * VirtualHub on which your devices are connected before trying to access them.
- * 
+ *
  * @param mode : an integer corresponding to the type of automatic
  *         device detection to use. Possible values are
  *         Y_DETECT_NONE, Y_DETECT_USB, Y_DETECT_NET,
  *         and Y_DETECT_ALL.
  * @param errmsg : a string passed by reference to receive any error message.
- * 
+ *
  * @return YAPI_SUCCESS when the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 YRETCODE YAPI::InitAPI(int mode, string& errmsg)
@@ -2756,7 +2785,7 @@ void YAPI::EnableExceptions(void)
 /**
  * Registers a log callback function. This callback will be called each time
  * the API have something to say. Quite useful to debug the API.
- * 
+ *
  * @param logfun : a procedure taking a string parameter, or null
  *         to unregister a previously registered  callback.
  */
@@ -2769,7 +2798,7 @@ void YAPI::RegisterLogFunction(yLogFunction logfun)
  * Register a callback function, to be called each time
  * a device is plugged. This callback will be invoked while yUpdateDeviceList
  * is running. You will have to call this function on a regular basis.
- * 
+ *
  * @param arrivalCallback : a procedure taking a YModule parameter, or null
  *         to unregister a previously registered  callback.
  */
@@ -2793,7 +2822,7 @@ void YAPI::RegisterDeviceArrivalCallback(yDeviceUpdateCallback arrivalCallback)
  * Register a callback function, to be called each time
  * a device is unplugged. This callback will be invoked while yUpdateDeviceList
  * is running. You will have to call this function on a regular basis.
- * 
+ *
  * @param removalCallback : a procedure taking a YModule parameter, or null
  *         to unregister a previously registered  callback.
  */
@@ -2813,7 +2842,7 @@ void YAPI::RegisterDeviceChangeCallback(yDeviceUpdateCallback changeCallback)
  * contain the serial number of the hub and the second contain the URL of the
  * network hub (this URL can be passed to RegisterHub). This callback will be invoked
  * while yUpdateDeviceList is running. You will have to call this function on a regular basis.
- * 
+ *
  * @param hubDiscoveryCallback : a procedure taking two string parameter, or null
  *         to unregister a previously registered  callback.
  */
@@ -2827,9 +2856,9 @@ void YAPI::RegisterHubDiscoveryCallback(YHubDiscoveryCallback hubDiscoveryCallba
 /**
  * Force a hub discovery, if a callback as been registered with yRegisterDeviceRemovalCallback it
  * will be called for each net work hub that will respond to the discovery.
- * 
+ *
  * @param errmsg : a string passed by reference to receive any error message.
- * 
+ *
  * @return YAPI_SUCCESS when the call succeeds.
  *         On failure, throws an exception or returns a negative error code.
  */
@@ -2893,24 +2922,24 @@ double YAPI::LinearCalibrationHandler(double rawValue, int calibType, intArr par
 /**
  * Setup the Yoctopuce library to use modules connected on a given machine. The
  * parameter will determine how the API will work. Use the following values:
- * 
+ *
  * <b>usb</b>: When the usb keyword is used, the API will work with
  * devices connected directly to the USB bus. Some programming languages such a Javascript,
  * PHP, and Java don't provide direct access to USB hardware, so usb will
  * not work with these. In this case, use a VirtualHub or a networked YoctoHub (see below).
- * 
+ *
  * <b><i>x.x.x.x</i></b> or <b><i>hostname</i></b>: The API will use the devices connected to the
  * host with the given IP address or hostname. That host can be a regular computer
  * running a VirtualHub, or a networked YoctoHub such as YoctoHub-Ethernet or
  * YoctoHub-Wireless. If you want to use the VirtualHub running on you local
  * computer, use the IP address 127.0.0.1.
- * 
+ *
  * <b>callback</b>: that keyword make the API run in "<i>HTTP Callback</i>" mode.
  * This a special mode allowing to take control of Yoctopuce devices
  * through a NAT filter when using a VirtualHub or a networked YoctoHub. You only
  * need to configure your hub to call your server script on a regular basis.
  * This mode is currently available for PHP and Node.JS only.
- * 
+ *
  * Be aware that only one application can use direct USB access at a
  * given time on a machine. Multiple access would cause conflicts
  * while trying to access the USB modules. In particular, this means
@@ -2918,20 +2947,20 @@ double YAPI::LinearCalibrationHandler(double rawValue, int calibType, intArr par
  * an application that uses direct USB access. The workaround
  * for this limitation is to setup the library to use the VirtualHub
  * rather than direct USB access.
- * 
+ *
  * If access control has been activated on the hub, virtual or not, you want to
  * reach, the URL parameter should look like:
- * 
+ *
  * http://username:password@address:port
- * 
+ *
  * You can call <i>RegisterHub</i> several times to connect to several machines.
- * 
+ *
  * @param url : a string containing either "usb","callback" or the
  *         root URL of the hub to monitor
  * @param errmsg : a string passed by reference to receive any error message.
- * 
+ *
  * @return YAPI_SUCCESS when the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 YRETCODE YAPI::RegisterHub(const string& url, string& errmsg)
@@ -2955,13 +2984,13 @@ YRETCODE YAPI::RegisterHub(const string& url, string& errmsg)
  * an error when the selected hub is not available at the time of the function call.
  * This makes it possible to register a network hub independently of the current
  * connectivity, and to try to contact it only when a device is actively needed.
- * 
+ *
  * @param url : a string containing either "usb","callback" or the
  *         root URL of the hub to monitor
  * @param errmsg : a string passed by reference to receive any error message.
- * 
+ *
  * @return YAPI_SUCCESS when the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 YRETCODE YAPI::PreregisterHub(const string& url, string& errmsg)
@@ -2981,7 +3010,7 @@ YRETCODE YAPI::PreregisterHub(const string& url, string& errmsg)
 /**
  * Setup the Yoctopuce library to no more use modules connected on a previously
  * registered machine with RegisterHub.
- * 
+ *
  * @param url : a string containing either "usb" or the
  *         root URL of the hub to monitor
  */
@@ -2999,14 +3028,14 @@ void YAPI::UnregisterHub(const string& url)
  * The library searches the machines or USB ports previously registered using
  * yRegisterHub(), and invokes any user-defined callback function
  * in case a change in the list of connected devices is detected.
- * 
+ *
  * This function can be called as frequently as desired to refresh the device list
  * and to make the application aware of hot-plug events.
- * 
+ *
  * @param errmsg : a string passed by reference to receive any error message.
- * 
+ *
  * @return YAPI_SUCCESS when the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 YRETCODE YAPI::UpdateDeviceList(string& errmsg)
@@ -3073,14 +3102,14 @@ YRETCODE YAPI::UpdateDeviceList(string& errmsg)
  * the information pushed by the modules on the communication channels.
  * This is not strictly necessary, but it may improve the reactivity
  * of the library for the following commands.
- * 
+ *
  * This function may signal an error in case there is a communication problem
  * while contacting a module.
- * 
+ *
  * @param errmsg : a string passed by reference to receive any error message.
- * 
+ *
  * @return YAPI_SUCCESS when the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 YRETCODE YAPI::HandleEvents(string& errmsg)
@@ -3138,16 +3167,16 @@ YRETCODE YAPI::HandleEvents(string& errmsg)
  * other threads and processes. During the pause, the library nevertheless
  * reads from time to time information from the Yoctopuce modules by
  * calling yHandleEvents(), in order to stay up-to-date.
- * 
+ *
  * This function may signal an error in case there is a communication problem
  * while contacting a module.
- * 
+ *
  * @param ms_duration : an integer corresponding to the duration of the pause,
  *         in milliseconds.
  * @param errmsg : a string passed by reference to receive any error message.
- * 
+ *
  * @return YAPI_SUCCESS when the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 YRETCODE YAPI::Sleep(unsigned ms_duration, string& errmsg)
@@ -3178,7 +3207,7 @@ YRETCODE YAPI::Sleep(unsigned ms_duration, string& errmsg)
  * Returns the current value of a monotone millisecond-based time counter.
  * This counter can be used to compute delays in relation with
  * Yoctopuce devices, which also uses the millisecond as timebase.
- * 
+ *
  * @return a long integer corresponding to the millisecond counter.
  */
 u64 YAPI::GetTickCount(void)
@@ -3192,9 +3221,9 @@ u64 YAPI::GetTickCount(void)
  * A..Z, a..z, 0..9, _, and -.
  * If you try to configure a logical name with an incorrect string,
  * the invalid characters are ignored.
- * 
+ *
  * @param name : a string containing the name to check.
- * 
+ *
  * @return true if the name is valid, false otherwise.
  */
 bool YAPI::CheckLogicalName(const string& name)
@@ -3522,9 +3551,9 @@ int YModule::_parseAttr(yJsonStateMachine& j)
 
 /**
  * Returns the commercial name of the module, as set by the factory.
- * 
+ *
  * @return a string corresponding to the commercial name of the module, as set by the factory
- * 
+ *
  * On failure, throws an exception or returns Y_PRODUCTNAME_INVALID.
  */
 string YModule::get_productName(void)
@@ -3539,9 +3568,9 @@ string YModule::get_productName(void)
 
 /**
  * Returns the serial number of the module, as set by the factory.
- * 
+ *
  * @return a string corresponding to the serial number of the module, as set by the factory
- * 
+ *
  * On failure, throws an exception or returns Y_SERIALNUMBER_INVALID.
  */
 string YModule::get_serialNumber(void)
@@ -3556,9 +3585,9 @@ string YModule::get_serialNumber(void)
 
 /**
  * Returns the USB device identifier of the module.
- * 
+ *
  * @return an integer corresponding to the USB device identifier of the module
- * 
+ *
  * On failure, throws an exception or returns Y_PRODUCTID_INVALID.
  */
 int YModule::get_productId(void)
@@ -3573,9 +3602,9 @@ int YModule::get_productId(void)
 
 /**
  * Returns the hardware release version of the module.
- * 
+ *
  * @return an integer corresponding to the hardware release version of the module
- * 
+ *
  * On failure, throws an exception or returns Y_PRODUCTRELEASE_INVALID.
  */
 int YModule::get_productRelease(void)
@@ -3590,9 +3619,9 @@ int YModule::get_productRelease(void)
 
 /**
  * Returns the version of the firmware embedded in the module.
- * 
+ *
  * @return a string corresponding to the version of the firmware embedded in the module
- * 
+ *
  * On failure, throws an exception or returns Y_FIRMWARERELEASE_INVALID.
  */
 string YModule::get_firmwareRelease(void)
@@ -3607,10 +3636,10 @@ string YModule::get_firmwareRelease(void)
 
 /**
  * Returns the current state of persistent module settings.
- * 
+ *
  * @return a value among Y_PERSISTENTSETTINGS_LOADED, Y_PERSISTENTSETTINGS_SAVED and
  * Y_PERSISTENTSETTINGS_MODIFIED corresponding to the current state of persistent module settings
- * 
+ *
  * On failure, throws an exception or returns Y_PERSISTENTSETTINGS_INVALID.
  */
 Y_PERSISTENTSETTINGS_enum YModule::get_persistentSettings(void)
@@ -3632,9 +3661,9 @@ int YModule::set_persistentSettings(Y_PERSISTENTSETTINGS_enum newval)
 
 /**
  * Returns the luminosity of the  module informative leds (from 0 to 100).
- * 
+ *
  * @return an integer corresponding to the luminosity of the  module informative leds (from 0 to 100)
- * 
+ *
  * On failure, throws an exception or returns Y_LUMINOSITY_INVALID.
  */
 int YModule::get_luminosity(void)
@@ -3652,11 +3681,11 @@ int YModule::get_luminosity(void)
  * value between 0 and 100.
  * Remember to call the saveToFlash() method of the module if the
  * modification must be kept.
- * 
+ *
  * @param newval : an integer corresponding to the luminosity of the module informative leds
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YModule::set_luminosity(int newval)
@@ -3668,9 +3697,9 @@ int YModule::set_luminosity(int newval)
 
 /**
  * Returns the state of the localization beacon.
- * 
+ *
  * @return either Y_BEACON_OFF or Y_BEACON_ON, according to the state of the localization beacon
- * 
+ *
  * On failure, throws an exception or returns Y_BEACON_INVALID.
  */
 Y_BEACON_enum YModule::get_beacon(void)
@@ -3685,11 +3714,11 @@ Y_BEACON_enum YModule::get_beacon(void)
 
 /**
  * Turns on or off the module localization beacon.
- * 
+ *
  * @param newval : either Y_BEACON_OFF or Y_BEACON_ON
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YModule::set_beacon(Y_BEACON_enum newval)
@@ -3701,9 +3730,9 @@ int YModule::set_beacon(Y_BEACON_enum newval)
 
 /**
  * Returns the number of milliseconds spent since the module was powered on.
- * 
+ *
  * @return an integer corresponding to the number of milliseconds spent since the module was powered on
- * 
+ *
  * On failure, throws an exception or returns Y_UPTIME_INVALID.
  */
 s64 YModule::get_upTime(void)
@@ -3718,9 +3747,9 @@ s64 YModule::get_upTime(void)
 
 /**
  * Returns the current consumed by the module on the USB bus, in milli-amps.
- * 
+ *
  * @return an integer corresponding to the current consumed by the module on the USB bus, in milli-amps
- * 
+ *
  * On failure, throws an exception or returns Y_USBCURRENT_INVALID.
  */
 int YModule::get_usbCurrent(void)
@@ -3736,10 +3765,10 @@ int YModule::get_usbCurrent(void)
 /**
  * Returns the remaining number of seconds before the module restarts, or zero when no
  * reboot has been scheduled.
- * 
+ *
  * @return an integer corresponding to the remaining number of seconds before the module restarts, or zero when no
  *         reboot has been scheduled
- * 
+ *
  * On failure, throws an exception or returns Y_REBOOTCOUNTDOWN_INVALID.
  */
 int YModule::get_rebootCountdown(void)
@@ -3762,9 +3791,9 @@ int YModule::set_rebootCountdown(int newval)
 /**
  * Returns the value previously stored in this attribute.
  * On startup and after a device reboot, the value is always reset to zero.
- * 
+ *
  * @return an integer corresponding to the value previously stored in this attribute
- * 
+ *
  * On failure, throws an exception or returns Y_USERVAR_INVALID.
  */
 int YModule::get_userVar(void)
@@ -3780,11 +3809,11 @@ int YModule::get_userVar(void)
 /**
  * Returns the value previously stored in this attribute.
  * On startup and after a device reboot, the value is always reset to zero.
- * 
+ *
  * @param newval : an integer
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YModule::set_userVar(int newval)
@@ -3796,7 +3825,7 @@ int YModule::set_userVar(int newval)
 
 /**
  * Allows you to find a module from its serial number or from its logical name.
- * 
+ *
  * This function does not require that the module is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YModule.isOnline() to test if the module is
@@ -3804,10 +3833,10 @@ int YModule::set_userVar(int newval)
  * a module by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string containing either the serial number or
  *         the logical name of the desired module
- * 
+ *
  * @return a YModule object allowing you to drive the module
  *         or get additional information on the module.
  */
@@ -3827,7 +3856,7 @@ YModule* YModule::FindModule(string func)
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
  * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
- * 
+ *
  * @param callback : the callback function to call, or a null pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and the character string describing
  *         the new advertised value.
@@ -3866,9 +3895,9 @@ int YModule::_invokeValueCallback(string value)
  * Saves current settings in the nonvolatile memory of the module.
  * Warning: the number of allowed save operations during a module life is
  * limited (about 100000 cycles). Do not call this function within a loop.
- * 
+ *
  * @return YAPI_SUCCESS when the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YModule::saveToFlash(void)
@@ -3879,9 +3908,9 @@ int YModule::saveToFlash(void)
 /**
  * Reloads the settings stored in the nonvolatile memory, as
  * when the module is powered on.
- * 
+ *
  * @return YAPI_SUCCESS when the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YModule::revertFromFlash(void)
@@ -3891,11 +3920,11 @@ int YModule::revertFromFlash(void)
 
 /**
  * Schedules a simple module reboot after the given number of seconds.
- * 
+ *
  * @param secBeforeReboot : number of seconds before rebooting
- * 
+ *
  * @return YAPI_SUCCESS when the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YModule::reboot(int secBeforeReboot)
@@ -3905,11 +3934,11 @@ int YModule::reboot(int secBeforeReboot)
 
 /**
  * Schedules a module reboot into special firmware update mode.
- * 
+ *
  * @param secBeforeReboot : number of seconds before rebooting
- * 
+ *
  * @return YAPI_SUCCESS when the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YModule::triggerFirmwareUpdate(int secBeforeReboot)
@@ -3925,12 +3954,12 @@ int YModule::triggerFirmwareUpdate(int secBeforeReboot)
  * appropriate byn file. If the parameter onlynew is true, the function discards firmware that are
  * older or equal to
  * the installed firmware.
- * 
+ *
  * @param path    : the path of a byn file or a directory that contains byn files
  * @param onlynew : returns only files that are strictly newer
- * 
+ *
  * @return : the path of the byn file to use or a empty string if no byn files matches the requirement
- * 
+ *
  * On failure, throws an exception or returns a string that start with "error:".
  */
 string YModule::checkFirmware(string path,bool onlynew)
@@ -3955,9 +3984,9 @@ string YModule::checkFirmware(string path,bool onlynew)
 /**
  * Prepares a firmware update of the module. This method returns a YFirmwareUpdate object which
  * handles the firmware update process.
- * 
+ *
  * @param path : the path of the byn file to use.
- * 
+ *
  * @return : A YFirmwareUpdate object.
  */
 YFirmwareUpdate YModule::updateFirmware(string path)
@@ -3973,9 +4002,9 @@ YFirmwareUpdate YModule::updateFirmware(string path)
 /**
  * Returns all the settings of the module. Useful to backup all the logical names and calibrations parameters
  * of a connected module.
- * 
+ *
  * @return a binary buffer with all the settings.
- * 
+ *
  * On failure, throws an exception or returns  YAPI_INVALID_STRING.
  */
 string YModule::get_allSettings(void)
@@ -4069,7 +4098,7 @@ int YModule::calibOffset(string unit_name)
     return 32767;
 }
 
-string YModule::calibConvert(string param,string calibrationParam,string unit_name,string sensorType)
+string YModule::calibConvert(string param,string currentFuncValue,string unit_name,string sensorType)
 {
     int paramVer = 0;
     int funVer = 0;
@@ -4089,14 +4118,14 @@ string YModule::calibConvert(string param,string calibrationParam,string unit_na
     double wordVal = 0.0;
     // Initial guess for parameter encoding
     paramVer = this->calibVersion(param);
-    funVer = this->calibVersion(calibrationParam);
+    funVer = this->calibVersion(currentFuncValue);
     funScale = this->calibScale(unit_name, sensorType);
     funOffset = this->calibOffset(unit_name);
     paramScale = funScale;
     paramOffset = funOffset;
     if (funVer < 3) {
         if (funVer == 2) {
-            words = YAPI::_decodeWords(calibrationParam);
+            words = YAPI::_decodeWords(currentFuncValue);
             if ((words[0] == 1366) && (words[1] == 12500)) {
                 funScale = 1;
                 funOffset = 0;
@@ -4106,7 +4135,7 @@ string YModule::calibConvert(string param,string calibrationParam,string unit_na
             }
         } else {
             if (funVer == 1) {
-                if (calibrationParam == "" || (atoi((calibrationParam).c_str()) > 10)) {
+                if (currentFuncValue == "" || (atoi((currentFuncValue).c_str()) > 10)) {
                     funScale = 0;
                 }
             }
@@ -4230,12 +4259,13 @@ string YModule::calibConvert(string param,string calibrationParam,string unit_na
 
 /**
  * Restores all the settings of the module. Useful to restore all the logical names and calibrations parameters
- * of a module from a backup.
- * 
+ * of a module from a backup.Remember to call the saveToFlash() method of the module if the
+ * modifications must be kept.
+ *
  * @param settings : a binary buffer with all the settings.
- * 
+ *
  * @return YAPI_SUCCESS when the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YModule::set_allSettings(string settings)
@@ -4269,6 +4299,7 @@ int YModule::set_allSettings(string settings)
     string newval;
     string oldval;
     string old_calib;
+    string each_str;
     bool do_update;
     bool found;
     oldval = "";
@@ -4276,16 +4307,16 @@ int YModule::set_allSettings(string settings)
     old_json_flat = this->_flattenJsonStruct(settings);
     old_dslist = this->_json_get_array(old_json_flat);
     for (unsigned ii = 0; ii < old_dslist.size(); ii++) {
-        old_dslist[ii] = this->_json_get_string(old_dslist[ii]);
-        leng = (int)(old_dslist[ii]).length();
-        eqpos = _ystrpos(old_dslist[ii], "=");
+        each_str = this->_json_get_string(old_dslist[ii]);
+        leng = (int)(each_str).length();
+        eqpos = _ystrpos(each_str, "=");
         if ((eqpos < 0) || (leng == 0)) {
             this->_throw(YAPI_INVALID_ARGUMENT, "Invalid settings");
             return YAPI_INVALID_ARGUMENT;
         }
-        jpath = (old_dslist[ii]).substr( 0, eqpos);
+        jpath = (each_str).substr( 0, eqpos);
         eqpos = eqpos + 1;
-        value = (old_dslist[ii]).substr( eqpos, leng - eqpos);
+        value = (each_str).substr( eqpos, leng - eqpos);
         old_jpath.push_back(jpath);
         old_jpath_len.push_back((int)(jpath).length());
         old_val_arr.push_back(value);;
@@ -4295,16 +4326,16 @@ int YModule::set_allSettings(string settings)
     actualSettings = this->_flattenJsonStruct(actualSettings);
     new_dslist = this->_json_get_array(actualSettings);
     for (unsigned ii = 0; ii < new_dslist.size(); ii++) {
-        new_dslist[ii] = this->_json_get_string(new_dslist[ii]);
-        leng = (int)(new_dslist[ii]).length();
-        eqpos = _ystrpos(new_dslist[ii], "=");
+        each_str = this->_json_get_string(new_dslist[ii]);
+        leng = (int)(each_str).length();
+        eqpos = _ystrpos(each_str, "=");
         if ((eqpos < 0) || (leng == 0)) {
             this->_throw(YAPI_INVALID_ARGUMENT, "Invalid settings");
             return YAPI_INVALID_ARGUMENT;
         }
-        jpath = (new_dslist[ii]).substr( 0, eqpos);
+        jpath = (each_str).substr( 0, eqpos);
         eqpos = eqpos + 1;
-        value = (new_dslist[ii]).substr( eqpos, leng - eqpos);
+        value = (each_str).substr( eqpos, leng - eqpos);
         new_jpath.push_back(jpath);
         new_jpath_len.push_back((int)(jpath).length());
         new_val_arr.push_back(value);;
@@ -4469,7 +4500,7 @@ int YModule::set_allSettings(string settings)
                 while ((j < (int)new_jpath.size()) && !(found)) {
                     if (tmp == new_jpath[j]) {
                         found = true;
-                        unit_name = new_jpath[j];
+                        unit_name = new_val_arr[j];
                     }
                     j = j + 1;
                 }
@@ -4479,11 +4510,11 @@ int YModule::set_allSettings(string settings)
                 while ((j < (int)new_jpath.size()) && !(found)) {
                     if (tmp == new_jpath[j]) {
                         found = true;
-                        sensorType = new_jpath[j];
+                        sensorType = new_val_arr[j];
                     }
                     j = j + 1;
                 }
-                newval = this->calibConvert(new_val_arr[i], old_calib, unit_name, sensorType);
+                newval = this->calibConvert(old_calib, new_val_arr[i], unit_name, sensorType);
                 url = "api/" + fun + ".json?" + attr + "=" + this->_escapeAttr(newval);
                 this->_download(url);
             } else {
@@ -4505,11 +4536,11 @@ int YModule::set_allSettings(string settings)
 
 /**
  * Downloads the specified built-in file and returns a binary buffer with its content.
- * 
+ *
  * @param pathname : name of the new file to load
- * 
+ *
  * @return a binary buffer with the file content
- * 
+ *
  * On failure, throws an exception or returns  YAPI_INVALID_STRING.
  */
 string YModule::download(string pathname)
@@ -4520,7 +4551,7 @@ string YModule::download(string pathname)
 /**
  * Returns the icon of the module. The icon is a PNG image and does not
  * exceeds 1536 bytes.
- * 
+ *
  * @return a binary buffer with module icon, in png format.
  *         On failure, throws an exception or returns  YAPI_INVALID_STRING.
  */
@@ -4532,7 +4563,7 @@ string YModule::get_icon2d(void)
 /**
  * Returns a string with last logs of the module. This method return only
  * logs that are still in the module.
- * 
+ *
  * @return a string with last logs of the module.
  *         On failure, throws an exception or returns  YAPI_INVALID_STRING.
  */
@@ -4696,7 +4727,7 @@ string YModule::functionValue(int functionIndex)
 /**
  * Registers a device log callback function. This callback will be called each time
  * that a module sends a new log message. Mostly useful to debug a Yoctopuce module.
- * 
+ *
  * @param callback : the callback function to call, or a null pointer. The callback function should take two
  *         arguments: the module object that emitted the log message, and the character string containing the log.
  * @noreturn
@@ -4816,9 +4847,9 @@ int YSensor::_parseAttr(yJsonStateMachine& j)
 
 /**
  * Returns the measuring unit for the measure.
- * 
+ *
  * @return a string corresponding to the measuring unit for the measure
- * 
+ *
  * On failure, throws an exception or returns Y_UNIT_INVALID.
  */
 string YSensor::get_unit(void)
@@ -4833,10 +4864,10 @@ string YSensor::get_unit(void)
 
 /**
  * Returns the current value of the measure, in the specified unit, as a floating point number.
- * 
+ *
  * @return a floating point number corresponding to the current value of the measure, in the specified
  * unit, as a floating point number
- * 
+ *
  * On failure, throws an exception or returns Y_CURRENTVALUE_INVALID.
  */
 double YSensor::get_currentValue(void)
@@ -4857,11 +4888,11 @@ double YSensor::get_currentValue(void)
 
 /**
  * Changes the recorded minimal value observed.
- * 
+ *
  * @param newval : a floating point number corresponding to the recorded minimal value observed
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YSensor::set_lowestValue(double newval)
@@ -4873,10 +4904,10 @@ int YSensor::set_lowestValue(double newval)
 
 /**
  * Returns the minimal value observed for the measure since the device was started.
- * 
+ *
  * @return a floating point number corresponding to the minimal value observed for the measure since
  * the device was started
- * 
+ *
  * On failure, throws an exception or returns Y_LOWESTVALUE_INVALID.
  */
 double YSensor::get_lowestValue(void)
@@ -4893,11 +4924,11 @@ double YSensor::get_lowestValue(void)
 
 /**
  * Changes the recorded maximal value observed.
- * 
+ *
  * @param newval : a floating point number corresponding to the recorded maximal value observed
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YSensor::set_highestValue(double newval)
@@ -4909,10 +4940,10 @@ int YSensor::set_highestValue(double newval)
 
 /**
  * Returns the maximal value observed for the measure since the device was started.
- * 
+ *
  * @return a floating point number corresponding to the maximal value observed for the measure since
  * the device was started
- * 
+ *
  * On failure, throws an exception or returns Y_HIGHESTVALUE_INVALID.
  */
 double YSensor::get_highestValue(void)
@@ -4930,10 +4961,10 @@ double YSensor::get_highestValue(void)
 /**
  * Returns the uncalibrated, unrounded raw value returned by the sensor, in the specified unit, as a
  * floating point number.
- * 
+ *
  * @return a floating point number corresponding to the uncalibrated, unrounded raw value returned by
  * the sensor, in the specified unit, as a floating point number
- * 
+ *
  * On failure, throws an exception or returns Y_CURRENTRAWVALUE_INVALID.
  */
 double YSensor::get_currentRawValue(void)
@@ -4949,10 +4980,10 @@ double YSensor::get_currentRawValue(void)
 /**
  * Returns the datalogger recording frequency for this function, or "OFF"
  * when measures are not stored in the data logger flash memory.
- * 
+ *
  * @return a string corresponding to the datalogger recording frequency for this function, or "OFF"
  *         when measures are not stored in the data logger flash memory
- * 
+ *
  * On failure, throws an exception or returns Y_LOGFREQUENCY_INVALID.
  */
 string YSensor::get_logFrequency(void)
@@ -4971,11 +5002,11 @@ string YSensor::get_logFrequency(void)
  * as sample per minute (for instance "15/m") or in samples per
  * hour (eg. "4/h"). To disable recording for this function, use
  * the value "OFF".
- * 
+ *
  * @param newval : a string corresponding to the datalogger recording frequency for this function
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YSensor::set_logFrequency(const string& newval)
@@ -4988,10 +5019,10 @@ int YSensor::set_logFrequency(const string& newval)
 /**
  * Returns the timed value notification frequency, or "OFF" if timed
  * value notifications are disabled for this function.
- * 
+ *
  * @return a string corresponding to the timed value notification frequency, or "OFF" if timed
  *         value notifications are disabled for this function
- * 
+ *
  * On failure, throws an exception or returns Y_REPORTFREQUENCY_INVALID.
  */
 string YSensor::get_reportFrequency(void)
@@ -5010,11 +5041,11 @@ string YSensor::get_reportFrequency(void)
  * as sample per minute (for instance "15/m") or in samples per
  * hour (eg. "4/h"). To disable timed value notifications for this
  * function, use the value "OFF".
- * 
+ *
  * @param newval : a string corresponding to the timed value notification frequency for this function
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YSensor::set_reportFrequency(const string& newval)
@@ -5044,11 +5075,11 @@ int YSensor::set_calibrationParam(const string& newval)
 /**
  * Changes the resolution of the measured physical values. The resolution corresponds to the numerical precision
  * when displaying value. It does not change the precision of the measure itself.
- * 
+ *
  * @param newval : a floating point number corresponding to the resolution of the measured physical values
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YSensor::set_resolution(double newval)
@@ -5061,9 +5092,9 @@ int YSensor::set_resolution(double newval)
 /**
  * Returns the resolution of the measured values. The resolution corresponds to the numerical precision
  * of the measures, which is not always the same as the actual precision of the sensor.
- * 
+ *
  * @return a floating point number corresponding to the resolution of the measured values
- * 
+ *
  * On failure, throws an exception or returns Y_RESOLUTION_INVALID.
  */
 double YSensor::get_resolution(void)
@@ -5086,7 +5117,7 @@ double YSensor::get_resolution(void)
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that the sensor is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YSensor.isOnline() to test if the sensor is
@@ -5094,9 +5125,9 @@ double YSensor::get_resolution(void)
  * a sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes the sensor
- * 
+ *
  * @return a YSensor object allowing you to drive the sensor.
  */
 YSensor* YSensor::FindSensor(string func)
@@ -5115,7 +5146,7 @@ YSensor* YSensor::FindSensor(string func)
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
  * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
- * 
+ *
  * @param callback : the callback function to call, or a null pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and the character string describing
  *         the new advertised value.
@@ -5287,7 +5318,7 @@ int YSensor::_parserHelper(void)
  * Starts the data logger on the device. Note that the data logger
  * will only save the measures on this sensor if the logFrequency
  * is not set to "OFF".
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
  */
 int YSensor::startDataLogger(void)
@@ -5304,7 +5335,7 @@ int YSensor::startDataLogger(void)
 
 /**
  * Stops the datalogger on the device.
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
  */
 int YSensor::stopDataLogger(void)
@@ -5327,11 +5358,11 @@ int YSensor::stopDataLogger(void)
  * class for information on how to get an overview of the
  * recorded data, and how to load progressively a large set
  * of measures from the data logger.
- * 
+ *
  * This function only works if the device uses a recent firmware,
  * as DataSet objects are not supported by firmwares older than
  * version 13000.
- * 
+ *
  * @param startTime : the start of the desired measure time interval,
  *         as a Unix timestamp, i.e. the number of seconds since
  *         January 1, 1970 UTC. The special value 0 can be used
@@ -5340,7 +5371,7 @@ int YSensor::stopDataLogger(void)
  *         as a Unix timestamp, i.e. the number of seconds since
  *         January 1, 1970 UTC. The special value 0 can be used
  *         to include any meaasure, without ending limit.
- * 
+ *
  * @return an instance of YDataSet, providing access to historical
  *         data. Past measures can be loaded progressively
  *         using methods from the YDataSet object.
@@ -5360,7 +5391,7 @@ YDataSet YSensor::get_recordedData(s64 startTime,s64 endTime)
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
  * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
- * 
+ *
  * @param callback : the callback function to call, or a null pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and an YMeasure object describing
  *         the new advertised value.
@@ -5394,17 +5425,17 @@ int YSensor::_invokeTimedReportCallback(YMeasure value)
  * perform a linear interpolation of the error correction between specified
  * points. Remember to call the saveToFlash() method of the module if the
  * modification must be kept.
- * 
+ *
  * For more information on advanced capabilities to refine the calibration of
  * sensors, please contact support@yoctopuce.com.
- * 
+ *
  * @param rawValues : array of floating point numbers, corresponding to the raw
  *         values returned by the sensor for the correction points.
  * @param refValues : array of floating point numbers, corresponding to the corrected
  *         values for the correction points.
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YSensor::calibrateFromPoints(vector<double> rawValues,vector<double> refValues)
@@ -5418,14 +5449,14 @@ int YSensor::calibrateFromPoints(vector<double> rawValues,vector<double> refValu
 /**
  * Retrieves error correction data points previously entered using the method
  * calibrateFromPoints.
- * 
+ *
  * @param rawValues : array of floating point numbers, that will be filled by the
  *         function with the raw sensor values for the correction points.
  * @param refValues : array of floating point numbers, that will be filled by the
  *         function with the desired values for the correction points.
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YSensor::loadCalibrationPoints(vector<double>& rawValues,vector<double>& refValues)

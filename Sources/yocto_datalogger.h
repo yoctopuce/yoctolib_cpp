@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_datalogger.h 18320 2014-11-10 10:47:48Z seb $
+ * $Id: yocto_datalogger.h 19606 2015-03-05 10:35:57Z seb $
  *
  * Declares yFindDataLogger(), the high-level API for DataLogger functions
  *
@@ -148,7 +148,7 @@ public:
 //--- (generated code: YDataLogger declaration)
 /**
  * YDataLogger Class: DataLogger function interface
- * 
+ *
  * Yoctopuce sensors include a non-volatile memory capable of storing ongoing measured
  * data automatically, without requiring a permanent connection to a computer.
  * The DataLogger function controls the global parameters of the internal data
@@ -198,16 +198,16 @@ public:
      * The caller must pass by reference an empty array to hold YDataStream
      * objects, and the function fills it with objects describing available
      * data sequences.
-     * 
+     *
      * This is the old way to retrieve data from the DataLogger.
      * For new applications, you should rather use get_dataSets()
      * method, or call directly get_recordedData() on the
      * sensor object.
-     * 
+     *
      * @param v : an array of YDataStream objects to be filled in
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             get_dataStreams(vector<YDataStream *>& v);
@@ -235,10 +235,10 @@ public:
     /**
      * Returns the current run number, corresponding to the number of times the module was
      * powered on with the dataLogger enabled at some point.
-     * 
+     *
      * @return an integer corresponding to the current run number, corresponding to the number of times the module was
      *         powered on with the dataLogger enabled at some point
-     * 
+     *
      * On failure, throws an exception or returns Y_CURRENTRUNINDEX_INVALID.
      */
     int                 get_currentRunIndex(void);
@@ -248,9 +248,9 @@ public:
 
     /**
      * Returns the Unix timestamp for current UTC time, if known.
-     * 
+     *
      * @return an integer corresponding to the Unix timestamp for current UTC time, if known
-     * 
+     *
      * On failure, throws an exception or returns Y_TIMEUTC_INVALID.
      */
     s64                 get_timeUTC(void);
@@ -260,11 +260,11 @@ public:
 
     /**
      * Changes the current UTC time reference used for recorded data.
-     * 
+     *
      * @param newval : an integer corresponding to the current UTC time reference used for recorded data
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             set_timeUTC(s64 newval);
@@ -273,9 +273,9 @@ public:
 
     /**
      * Returns the current activation state of the data logger.
-     * 
+     *
      * @return either Y_RECORDING_OFF or Y_RECORDING_ON, according to the current activation state of the data logger
-     * 
+     *
      * On failure, throws an exception or returns Y_RECORDING_INVALID.
      */
     Y_RECORDING_enum    get_recording(void);
@@ -285,12 +285,12 @@ public:
 
     /**
      * Changes the activation state of the data logger to start/stop recording data.
-     * 
+     *
      * @param newval : either Y_RECORDING_OFF or Y_RECORDING_ON, according to the activation state of the
      * data logger to start/stop recording data
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             set_recording(Y_RECORDING_enum newval);
@@ -299,10 +299,10 @@ public:
 
     /**
      * Returns the default activation state of the data logger on power up.
-     * 
+     *
      * @return either Y_AUTOSTART_OFF or Y_AUTOSTART_ON, according to the default activation state of the
      * data logger on power up
-     * 
+     *
      * On failure, throws an exception or returns Y_AUTOSTART_INVALID.
      */
     Y_AUTOSTART_enum    get_autoStart(void);
@@ -314,12 +314,12 @@ public:
      * Changes the default activation state of the data logger on power up.
      * Remember to call the saveToFlash() method of the module if the
      * modification must be kept.
-     * 
+     *
      * @param newval : either Y_AUTOSTART_OFF or Y_AUTOSTART_ON, according to the default activation state
      * of the data logger on power up
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             set_autoStart(Y_AUTOSTART_enum newval);
@@ -328,9 +328,9 @@ public:
 
     /**
      * Return true if the data logger is synchronised with the localization beacon.
-     * 
+     *
      * @return either Y_BEACONDRIVEN_OFF or Y_BEACONDRIVEN_ON
-     * 
+     *
      * On failure, throws an exception or returns Y_BEACONDRIVEN_INVALID.
      */
     Y_BEACONDRIVEN_enum get_beaconDriven(void);
@@ -342,12 +342,12 @@ public:
      * Changes the type of synchronisation of the data logger.
      * Remember to call the saveToFlash() method of the module if the
      * modification must be kept.
-     * 
+     *
      * @param newval : either Y_BEACONDRIVEN_OFF or Y_BEACONDRIVEN_ON, according to the type of
      * synchronisation of the data logger
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             set_beaconDriven(Y_BEACONDRIVEN_enum newval);
@@ -373,7 +373,7 @@ public:
      * <li>ModuleLogicalName.FunctionIdentifier</li>
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
-     * 
+     *
      * This function does not require that the data logger is online at the time
      * it is invoked. The returned object is nevertheless valid.
      * Use the method YDataLogger.isOnline() to test if the data logger is
@@ -381,9 +381,9 @@ public:
      * a data logger by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
-     * 
+     *
      * @param func : a string that uniquely characterizes the data logger
-     * 
+     *
      * @return a YDataLogger object allowing you to drive the data logger.
      */
     static YDataLogger* FindDataLogger(string func);
@@ -393,7 +393,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
@@ -407,9 +407,9 @@ public:
     /**
      * Clears the data logger memory and discards all recorded data streams.
      * This method also resets the current run index to zero.
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         forgetAllDataStreams(void);
@@ -417,13 +417,13 @@ public:
     /**
      * Returns a list of YDataSet objects that can be used to retrieve
      * all measures stored by the data logger.
-     * 
+     *
      * This function only works if the device uses a recent firmware,
      * as YDataSet objects are not supported by firmwares older than
      * version 13000.
-     * 
+     *
      * @return a list of YDataSet object.
-     * 
+     *
      * On failure, throws an exception or returns an empty list.
      */
     virtual vector<YDataSet> get_dataSets(void);
@@ -436,7 +436,7 @@ public:
 
     /**
      * Continues the enumeration of data loggers started using yFirstDataLogger().
-     * 
+     *
      * @return a pointer to a YDataLogger object, corresponding to
      *         a data logger currently online, or a null pointer
      *         if there are no more data loggers to enumerate.
@@ -449,7 +449,7 @@ public:
      * Starts the enumeration of data loggers currently accessible.
      * Use the method YDataLogger.nextDataLogger() to iterate on
      * next data loggers.
-     * 
+     *
      * @return a pointer to a YDataLogger object, corresponding to
      *         the first data logger currently online, or a null pointer
      *         if there are none.
@@ -476,7 +476,7 @@ public:
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that the data logger is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YDataLogger.isOnline() to test if the data logger is
@@ -484,9 +484,9 @@ public:
  * a data logger by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes the data logger
- * 
+ *
  * @return a YDataLogger object allowing you to drive the data logger.
  */
 inline YDataLogger* yFindDataLogger(const string& func)
@@ -495,7 +495,7 @@ inline YDataLogger* yFindDataLogger(const string& func)
  * Starts the enumeration of data loggers currently accessible.
  * Use the method YDataLogger.nextDataLogger() to iterate on
  * next data loggers.
- * 
+ *
  * @return a pointer to a YDataLogger object, corresponding to
  *         the first data logger currently online, or a null pointer
  *         if there are none.

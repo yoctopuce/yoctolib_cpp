@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_hubport.h 18320 2014-11-10 10:47:48Z seb $
+ * $Id: yocto_hubport.h 19606 2015-03-05 10:35:57Z seb $
  *
  * Declares yFindHubPort(), the high-level API for HubPort functions
  *
@@ -80,7 +80,7 @@ typedef enum {
 //--- (YHubPort declaration)
 /**
  * YHubPort Class: Yocto-hub port interface
- * 
+ *
  * YHubPort objects provide control over the power supply for every
  * YoctoHub port and provide information about the device connected to it.
  * The logical name of a YHubPort is always automatically set to the
@@ -126,10 +126,10 @@ public:
 
     /**
      * Returns true if the Yocto-hub port is powered, false otherwise.
-     * 
+     *
      * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to true if the Yocto-hub port is
      * powered, false otherwise
-     * 
+     *
      * On failure, throws an exception or returns Y_ENABLED_INVALID.
      */
     Y_ENABLED_enum      get_enabled(void);
@@ -140,11 +140,11 @@ public:
     /**
      * Changes the activation of the Yocto-hub port. If the port is enabled, the
      * connected module is powered. Otherwise, port power is shut down.
-     * 
+     *
      * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the activation of the Yocto-hub port
-     * 
+     *
      * @return YAPI_SUCCESS if the call succeeds.
-     * 
+     *
      * On failure, throws an exception or returns a negative error code.
      */
     int             set_enabled(Y_ENABLED_enum newval);
@@ -153,10 +153,10 @@ public:
 
     /**
      * Returns the current state of the Yocto-hub port.
-     * 
+     *
      * @return a value among Y_PORTSTATE_OFF, Y_PORTSTATE_OVRLD, Y_PORTSTATE_ON, Y_PORTSTATE_RUN and
      * Y_PORTSTATE_PROG corresponding to the current state of the Yocto-hub port
-     * 
+     *
      * On failure, throws an exception or returns Y_PORTSTATE_INVALID.
      */
     Y_PORTSTATE_enum    get_portState(void);
@@ -168,9 +168,9 @@ public:
      * Returns the current baud rate used by this Yocto-hub port, in kbps.
      * The default value is 1000 kbps, but a slower rate may be used if communication
      * problems are encountered.
-     * 
+     *
      * @return an integer corresponding to the current baud rate used by this Yocto-hub port, in kbps
-     * 
+     *
      * On failure, throws an exception or returns Y_BAUDRATE_INVALID.
      */
     int                 get_baudRate(void);
@@ -188,7 +188,7 @@ public:
      * <li>ModuleLogicalName.FunctionIdentifier</li>
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
-     * 
+     *
      * This function does not require that the Yocto-hub port is online at the time
      * it is invoked. The returned object is nevertheless valid.
      * Use the method YHubPort.isOnline() to test if the Yocto-hub port is
@@ -196,9 +196,9 @@ public:
      * a Yocto-hub port by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
-     * 
+     *
      * @param func : a string that uniquely characterizes the Yocto-hub port
-     * 
+     *
      * @return a YHubPort object allowing you to drive the Yocto-hub port.
      */
     static YHubPort*    FindHubPort(string func);
@@ -208,7 +208,7 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
      * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
-     * 
+     *
      * @param callback : the callback function to call, or a null pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
@@ -225,7 +225,7 @@ public:
 
     /**
      * Continues the enumeration of Yocto-hub ports started using yFirstHubPort().
-     * 
+     *
      * @return a pointer to a YHubPort object, corresponding to
      *         a Yocto-hub port currently online, or a null pointer
      *         if there are no more Yocto-hub ports to enumerate.
@@ -238,7 +238,7 @@ public:
      * Starts the enumeration of Yocto-hub ports currently accessible.
      * Use the method YHubPort.nextHubPort() to iterate on
      * next Yocto-hub ports.
-     * 
+     *
      * @return a pointer to a YHubPort object, corresponding to
      *         the first Yocto-hub port currently online, or a null pointer
      *         if there are none.
@@ -264,7 +264,7 @@ public:
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that the Yocto-hub port is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YHubPort.isOnline() to test if the Yocto-hub port is
@@ -272,9 +272,9 @@ public:
  * a Yocto-hub port by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes the Yocto-hub port
- * 
+ *
  * @return a YHubPort object allowing you to drive the Yocto-hub port.
  */
 inline YHubPort* yFindHubPort(const string& func)
@@ -283,7 +283,7 @@ inline YHubPort* yFindHubPort(const string& func)
  * Starts the enumeration of Yocto-hub ports currently accessible.
  * Use the method YHubPort.nextHubPort() to iterate on
  * next Yocto-hub ports.
- * 
+ *
  * @return a pointer to a YHubPort object, corresponding to
  *         the first Yocto-hub port currently online, or a null pointer
  *         if there are none.

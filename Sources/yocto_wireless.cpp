@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.cpp 18320 2014-11-10 10:47:48Z seb $
+ * $Id: yocto_wireless.cpp 19606 2015-03-05 10:35:57Z seb $
  *
  * Implements yFindWireless(), the high-level API for Wireless functions
  *
@@ -182,9 +182,9 @@ int YWireless::_parseAttr(yJsonStateMachine& j)
 
 /**
  * Returns the link quality, expressed in percent.
- * 
+ *
  * @return an integer corresponding to the link quality, expressed in percent
- * 
+ *
  * On failure, throws an exception or returns Y_LINKQUALITY_INVALID.
  */
 int YWireless::get_linkQuality(void)
@@ -199,9 +199,9 @@ int YWireless::get_linkQuality(void)
 
 /**
  * Returns the wireless network name (SSID).
- * 
+ *
  * @return a string corresponding to the wireless network name (SSID)
- * 
+ *
  * On failure, throws an exception or returns Y_SSID_INVALID.
  */
 string YWireless::get_ssid(void)
@@ -216,10 +216,10 @@ string YWireless::get_ssid(void)
 
 /**
  * Returns the 802.11 channel currently used, or 0 when the selected network has not been found.
- * 
+ *
  * @return an integer corresponding to the 802.11 channel currently used, or 0 when the selected
  * network has not been found
- * 
+ *
  * On failure, throws an exception or returns Y_CHANNEL_INVALID.
  */
 int YWireless::get_channel(void)
@@ -234,10 +234,10 @@ int YWireless::get_channel(void)
 
 /**
  * Returns the security algorithm used by the selected wireless network.
- * 
+ *
  * @return a value among Y_SECURITY_UNKNOWN, Y_SECURITY_OPEN, Y_SECURITY_WEP, Y_SECURITY_WPA and
  * Y_SECURITY_WPA2 corresponding to the security algorithm used by the selected wireless network
- * 
+ *
  * On failure, throws an exception or returns Y_SECURITY_INVALID.
  */
 Y_SECURITY_enum YWireless::get_security(void)
@@ -252,9 +252,9 @@ Y_SECURITY_enum YWireless::get_security(void)
 
 /**
  * Returns the latest status message from the wireless interface.
- * 
+ *
  * @return a string corresponding to the latest status message from the wireless interface
- * 
+ *
  * On failure, throws an exception or returns Y_MESSAGE_INVALID.
  */
 string YWireless::get_message(void)
@@ -294,7 +294,7 @@ int YWireless::set_wlanConfig(const string& newval)
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that the wireless lan interface is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YWireless.isOnline() to test if the wireless lan interface is
@@ -302,9 +302,9 @@ int YWireless::set_wlanConfig(const string& newval)
  * a wireless lan interface by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes the wireless lan interface
- * 
+ *
  * @return a YWireless object allowing you to drive the wireless lan interface.
  */
 YWireless* YWireless::FindWireless(string func)
@@ -323,7 +323,7 @@ YWireless* YWireless::FindWireless(string func)
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
  * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
- * 
+ *
  * @param callback : the callback function to call, or a null pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and the character string describing
  *         the new advertised value.
@@ -362,12 +362,12 @@ int YWireless::_invokeValueCallback(string value)
  * Changes the configuration of the wireless lan interface to connect to an existing
  * access point (infrastructure mode).
  * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
- * 
+ *
  * @param ssid : the name of the network to connect to
  * @param securityKey : the network key, as a character string
- * 
+ *
  * @return YAPI_SUCCESS when the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YWireless::joinNetwork(string ssid,string securityKey)
@@ -380,19 +380,19 @@ int YWireless::joinNetwork(string ssid,string securityKey)
  * wireless network, without using an access point. On the YoctoHub-Wireless-g,
  * it is best to use softAPNetworkInstead(), which emulates an access point
  * (Soft AP) which is more efficient and more widely supported than ad-hoc networks.
- * 
+ *
  * When a security key is specified for an ad-hoc network, the network is protected
  * by a WEP40 key (5 characters or 10 hexadecimal digits) or WEP128 key (13 characters
  * or 26 hexadecimal digits). It is recommended to use a well-randomized WEP128 key
  * using 26 hexadecimal digits to maximize security.
  * Remember to call the saveToFlash() method and then to reboot the module
  * to apply this setting.
- * 
+ *
  * @param ssid : the name of the network to connect to
  * @param securityKey : the network key, as a character string
- * 
+ *
  * @return YAPI_SUCCESS when the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YWireless::adhocNetwork(string ssid,string securityKey)
@@ -404,18 +404,18 @@ int YWireless::adhocNetwork(string ssid,string securityKey)
  * Changes the configuration of the wireless lan interface to create a new wireless
  * network by emulating a WiFi access point (Soft AP). This function can only be
  * used with the YoctoHub-Wireless-g.
- * 
+ *
  * When a security key is specified for a SoftAP network, the network is protected
  * by a WEP40 key (5 characters or 10 hexadecimal digits) or WEP128 key (13 characters
  * or 26 hexadecimal digits). It is recommended to use a well-randomized WEP128 key
  * using 26 hexadecimal digits to maximize security.
  * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
- * 
+ *
  * @param ssid : the name of the network to connect to
  * @param securityKey : the network key, as a character string
- * 
+ *
  * @return YAPI_SUCCESS when the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YWireless::softAPNetwork(string ssid,string securityKey)
@@ -428,10 +428,10 @@ int YWireless::softAPNetwork(string ssid,string securityKey)
  * This list is not updated when the module is already connected to an acces point (infrastructure mode).
  * To force an update of this list, adhocNetwork() must be called to disconnect
  * the module from the current network. The returned list must be unallocated by the caller.
- * 
+ *
  * @return a list of YWlanRecord objects, containing the SSID, channel,
  *         link quality and the type of security of the wireless network.
- * 
+ *
  * On failure, throws an exception or returns an empty list.
  */
 vector<YWlanRecord> YWireless::get_detectedWlans(void)

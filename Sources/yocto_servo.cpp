@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_servo.cpp 18320 2014-11-10 10:47:48Z seb $
+ * $Id: yocto_servo.cpp 19606 2015-03-05 10:35:57Z seb $
  *
  * Implements yFindServo(), the high-level API for Servo functions
  *
@@ -128,9 +128,9 @@ int YServo::_parseAttr(yJsonStateMachine& j)
 
 /**
  * Returns the current servo position.
- * 
+ *
  * @return an integer corresponding to the current servo position
- * 
+ *
  * On failure, throws an exception or returns Y_POSITION_INVALID.
  */
 int YServo::get_position(void)
@@ -145,11 +145,11 @@ int YServo::get_position(void)
 
 /**
  * Changes immediately the servo driving position.
- * 
+ *
  * @param newval : an integer corresponding to immediately the servo driving position
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YServo::set_position(int newval)
@@ -161,9 +161,9 @@ int YServo::set_position(int newval)
 
 /**
  * Returns the state of the servos.
- * 
+ *
  * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the state of the servos
- * 
+ *
  * On failure, throws an exception or returns Y_ENABLED_INVALID.
  */
 Y_ENABLED_enum YServo::get_enabled(void)
@@ -178,11 +178,11 @@ Y_ENABLED_enum YServo::get_enabled(void)
 
 /**
  * Stops or starts the servo.
- * 
+ *
  * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YServo::set_enabled(Y_ENABLED_enum newval)
@@ -194,9 +194,9 @@ int YServo::set_enabled(Y_ENABLED_enum newval)
 
 /**
  * Returns the current range of use of the servo.
- * 
+ *
  * @return an integer corresponding to the current range of use of the servo
- * 
+ *
  * On failure, throws an exception or returns Y_RANGE_INVALID.
  */
 int YServo::get_range(void)
@@ -216,11 +216,11 @@ int YServo::get_range(void)
  * from 0.5 [ms] to 2.5 [ms], you can select a range of 200%.
  * Be aware that using a range higher than what is supported by the servo
  * is likely to damage the servo.
- * 
+ *
  * @param newval : an integer corresponding to the range of use of the servo, specified in per cents
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YServo::set_range(int newval)
@@ -232,9 +232,9 @@ int YServo::set_range(int newval)
 
 /**
  * Returns the duration in microseconds of a neutral pulse for the servo.
- * 
+ *
  * @return an integer corresponding to the duration in microseconds of a neutral pulse for the servo
- * 
+ *
  * On failure, throws an exception or returns Y_NEUTRAL_INVALID.
  */
 int YServo::get_neutral(void)
@@ -253,12 +253,12 @@ int YServo::get_neutral(void)
  * This setting makes it possible to shift the range of use of the servo.
  * Be aware that using a range higher than what is supported by the servo is
  * likely to damage the servo.
- * 
+ *
  * @param newval : an integer corresponding to the duration of the pulse corresponding to the neutral
  * position of the servo
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YServo::set_neutral(int newval)
@@ -287,12 +287,12 @@ int YServo::set_move(YMove newval)
 
 /**
  * Performs a smooth move at constant speed toward a given position.
- * 
+ *
  * @param target      : new position at the end of the move
  * @param ms_duration : total duration of the move, in milliseconds
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YServo::move(int target,int ms_duration)
@@ -304,9 +304,9 @@ int YServo::move(int target,int ms_duration)
 
 /**
  * Returns the servo position at device power up.
- * 
+ *
  * @return an integer corresponding to the servo position at device power up
- * 
+ *
  * On failure, throws an exception or returns Y_POSITIONATPOWERON_INVALID.
  */
 int YServo::get_positionAtPowerOn(void)
@@ -322,11 +322,11 @@ int YServo::get_positionAtPowerOn(void)
 /**
  * Configure the servo position at device power up. Remember to call the matching
  * module saveToFlash() method, otherwise this call will have no effect.
- * 
+ *
  * @param newval : an integer
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YServo::set_positionAtPowerOn(int newval)
@@ -338,10 +338,10 @@ int YServo::set_positionAtPowerOn(int newval)
 
 /**
  * Returns the servo signal generator state at power up.
- * 
+ *
  * @return either Y_ENABLEDATPOWERON_FALSE or Y_ENABLEDATPOWERON_TRUE, according to the servo signal
  * generator state at power up
- * 
+ *
  * On failure, throws an exception or returns Y_ENABLEDATPOWERON_INVALID.
  */
 Y_ENABLEDATPOWERON_enum YServo::get_enabledAtPowerOn(void)
@@ -357,11 +357,11 @@ Y_ENABLEDATPOWERON_enum YServo::get_enabledAtPowerOn(void)
 /**
  * Configure the servo signal generator state at power up. Remember to call the matching module saveToFlash()
  * method, otherwise this call will have no effect.
- * 
+ *
  * @param newval : either Y_ENABLEDATPOWERON_FALSE or Y_ENABLEDATPOWERON_TRUE
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YServo::set_enabledAtPowerOn(Y_ENABLEDATPOWERON_enum newval)
@@ -381,7 +381,7 @@ int YServo::set_enabledAtPowerOn(Y_ENABLEDATPOWERON_enum newval)
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that $THEFUNCTION$ is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YServo.isOnline() to test if $THEFUNCTION$ is
@@ -389,9 +389,9 @@ int YServo::set_enabledAtPowerOn(Y_ENABLEDATPOWERON_enum newval)
  * $AFUNCTION$ by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes $THEFUNCTION$
- * 
+ *
  * @return a YServo object allowing you to drive $THEFUNCTION$.
  */
 YServo* YServo::FindServo(string func)
@@ -410,7 +410,7 @@ YServo* YServo::FindServo(string func)
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
  * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
- * 
+ *
  * @param callback : the callback function to call, or a null pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and the character string describing
  *         the new advertised value.

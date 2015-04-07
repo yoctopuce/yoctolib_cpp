@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.c 15697 2014-04-04 10:30:56Z mvuilleu $
+ * $Id: ykey.c 19327 2015-02-17 17:30:01Z seb $
  *
  * Implementation of standard key computations
  *

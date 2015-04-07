@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwmpowersource.cpp 18320 2014-11-10 10:47:48Z seb $
+ * $Id: yocto_pwmpowersource.cpp 19606 2015-03-05 10:35:57Z seb $
  *
  * Implements yFindPwmPowerSource(), the high-level API for PwmPowerSource functions
  *
@@ -78,10 +78,10 @@ int YPwmPowerSource::_parseAttr(yJsonStateMachine& j)
 
 /**
  * Returns the selected power source for the PWM on the same device
- * 
+ *
  * @return a value among Y_POWERMODE_USB_5V, Y_POWERMODE_USB_3V, Y_POWERMODE_EXT_V and
  * Y_POWERMODE_OPNDRN corresponding to the selected power source for the PWM on the same device
- * 
+ *
  * On failure, throws an exception or returns Y_POWERMODE_INVALID.
  */
 Y_POWERMODE_enum YPwmPowerSource::get_powerMode(void)
@@ -102,12 +102,12 @@ Y_POWERMODE_enum YPwmPowerSource::get_powerMode(void)
  * all PWM located on the same device are  affected.
  * If you want the change to be kept after a device reboot, make sure  to call the matching
  * module saveToFlash().
- * 
+ *
  * @param newval : a value among Y_POWERMODE_USB_5V, Y_POWERMODE_USB_3V, Y_POWERMODE_EXT_V and
  * Y_POWERMODE_OPNDRN corresponding to  the PWM power source
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YPwmPowerSource::set_powerMode(Y_POWERMODE_enum newval)
@@ -127,7 +127,7 @@ int YPwmPowerSource::set_powerMode(Y_POWERMODE_enum newval)
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that $THEFUNCTION$ is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YPwmPowerSource.isOnline() to test if $THEFUNCTION$ is
@@ -135,9 +135,9 @@ int YPwmPowerSource::set_powerMode(Y_POWERMODE_enum newval)
  * $AFUNCTION$ by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes $THEFUNCTION$
- * 
+ *
  * @return a YPwmPowerSource object allowing you to drive $THEFUNCTION$.
  */
 YPwmPowerSource* YPwmPowerSource::FindPwmPowerSource(string func)
@@ -156,7 +156,7 @@ YPwmPowerSource* YPwmPowerSource::FindPwmPowerSource(string func)
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
  * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
- * 
+ *
  * @param callback : the callback function to call, or a null pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and the character string describing
  *         the new advertised value.

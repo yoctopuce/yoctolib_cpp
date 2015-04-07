@@ -1,35 +1,35 @@
 /*********************************************************************
  *
- * $Id: yfifo.c 16197 2014-05-13 06:15:42Z mvuilleu $
+ * $Id: yfifo.c 19559 2015-03-03 15:41:24Z seb $
  *
- * Implementation of a generic fifo queue 
+ * Implementation of a generic fifo queue
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
  *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
  *  non-exclusive license to use, modify, copy and integrate this
- *  file into your software for the sole purpose of interfacing 
- *  with Yoctopuce products. 
+ *  file into your software for the sole purpose of interfacing
+ *  with Yoctopuce products.
  *
- *  You may reproduce and distribute copies of this file in 
+ *  You may reproduce and distribute copies of this file in
  *  source or object form, as long as the sole purpose of this
- *  code is to interface with Yoctopuce products. You must retain 
+ *  code is to interface with Yoctopuce products. You must retain
  *  this notice in the distributed source file.
  *
  *  You should refer to Yoctopuce General Terms and Conditions
- *  for additional information regarding your rights and 
+ *  for additional information regarding your rights and
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -39,9 +39,13 @@
 #define __FILE_ID__  "yfifo"
 
 #include "ydef.h"
+
+#if defined(MICROCHIP_API)
+#include "api.h"
+#else
 #include "yfifo.h"
-#include <string.h>
-#include <ctype.h>
+#include "yproto.h"
+#endif
 
 void yFifoInitEx(
 #ifdef DEBUG_FIFO
@@ -65,14 +69,14 @@ void yFifoInitEx(
 #ifndef MICROCHIP_API
 void yFifoCleanup(yFifoBuf *buf)
 {
-#ifdef YFIFO_USE_MUTEX    
+#ifdef YFIFO_USE_MUTEX
     yDeleteCriticalSection(&(buf->cs));
-#endif    
+#endif
     memset(buf,0,sizeof(yFifoBuf));
 }
 #endif
 
-#ifdef YFIFO_USE_MUTEX    
+#ifdef YFIFO_USE_MUTEX
 
 void yFifoEnterCS(yFifoBuf *buf)
 {
@@ -88,10 +92,10 @@ void yFifoLeaveCS(yFifoBuf *buf)
 void yFifoEmptyEx(yFifoBuf *buf)
 {
     buf->datasize = 0;
-    buf->head = buf->tail =  buf->buff;    
+    buf->head = buf->tail =  buf->buff;
 }
 
-#ifdef YFIFO_USE_MUTEX    
+#ifdef YFIFO_USE_MUTEX
 
 void yFifoEmpty(yFifoBuf *buf)
 {
@@ -128,13 +132,13 @@ u16 yPushFifoEx(yFifoBuf *buf, const u8 *data, u16 datalen)
     // the number of bytes really available in buffer (may be polled
     // from within interrupt handlers)
     buf->datasize += datalen;
-#ifdef DEBUG_FIFO    
+#ifdef DEBUG_FIFO
     buf->totalPushed += datalen;
-#endif    
+#endif
     return datalen;
 }
 
-#ifdef YFIFO_USE_MUTEX    
+#ifdef YFIFO_USE_MUTEX
 
 u16 yPushFifo(yFifoBuf *buf, const u8 *data, u16 datalen)
 {
@@ -171,14 +175,14 @@ u16 yPopFifoEx(yFifoBuf *buf, u8 *data, u16 datalen)
     // remain the number of bytes really free in buffer (may be polled
     // from within interrupt handlers)
     buf->datasize -= datalen;
-#ifdef DEBUG_FIFO    
+#ifdef DEBUG_FIFO
     buf->totalPopded += datalen;
-#endif    
+#endif
     return datalen;
 }
 
 
-#ifdef YFIFO_USE_MUTEX    
+#ifdef YFIFO_USE_MUTEX
 
 u16 yPopFifo(yFifoBuf *buf, u8 *data, u16 datalen)
 {
@@ -216,7 +220,7 @@ u16 yForceFifo(yFifoBuf *buf, const u8 *data, u16 datalen, u32 *absCounter)
 #else
     yFifoEnterCS(buf);
 #endif
-    
+
     res = yForceFifoEx(buf,data,datalen);
     *absCounter += res;
 
@@ -238,7 +242,7 @@ u16 yPeekFifoEx(yFifoBuf *buf, u8 *data, u16 datalen, u16 startofs)
 
     if (datalen + startofs > buf->datasize)
         datalen = buf->datasize - startofs;
-    
+
     ptr=buf->head+startofs;
     if(ptr >= YFIFOEND(buf)){
         ptr -= buf->buffsize;
@@ -258,7 +262,7 @@ u16 yPeekFifoEx(yFifoBuf *buf, u8 *data, u16 datalen, u16 startofs)
     return datalen;
 }
 
-#ifdef YFIFO_USE_MUTEX    
+#ifdef YFIFO_USE_MUTEX
 
 u16 yPeekFifo(yFifoBuf *buf, u8 *data, u16 datalen, u16 startofs)
 {
@@ -274,11 +278,11 @@ u16 yPeekFifo(yFifoBuf *buf, u8 *data, u16 datalen, u16 startofs)
 u16 yPeekContinuousFifoEx(yFifoBuf *buf, u8 **ptr, u16 startofs)
 {
     u8 *lptr;
-   
+
     if(startofs >= buf->datasize) {
         return 0;
     }
-    
+
     lptr = buf->head + startofs;
     if(lptr >= YFIFOEND(buf)) {
         // wrap
@@ -298,13 +302,13 @@ u16 yPeekContinuousFifoEx(yFifoBuf *buf, u8 **ptr, u16 startofs)
 }
 
 
-#ifdef YFIFO_USE_MUTEX    
+#ifdef YFIFO_USE_MUTEX
 
 u16 yPeekContinuousFifo(yFifoBuf *buf, u8 **ptr, u16 startofs)
 {
     u16 res;
     yFifoEnterCS(buf);
-    res = yPeekContinuousFifoEx(buf,ptr,startofs);  
+    res = yPeekContinuousFifoEx(buf,ptr,startofs);
     yFifoLeaveCS(buf);
     return res;
 }
@@ -331,23 +335,14 @@ u16 ySeekFifoEx(yFifoBuf *buf, const u8* pattern, u16 patlen,  u16 startofs, u16
 
     patidx = 0;
     while (searchlen > 0 && patidx < patlen) {
-        u8 bletter = *ptr;
-        u8 match = 0;
+        u16 bletter = *ptr;
+        u16 pletter = pattern[patidx];
 
-        if (!bTextCompare){
-            if(pattern[patidx] == bletter) {
-                match = 1;
-            }
-        } else {
-            if (pattern[patidx] >= 'a' && pattern[patidx] <= 'z'){
-               bletter = tolower(bletter);        
-            }else{             
-               bletter = toupper(bletter);
-            }
-            if (bletter == pattern[patidx])
-                match = 1;
+        if (bTextCompare && pletter >= 'A' && bletter >= 'A' && pletter <= 'z' && bletter <= 'z') {
+            pletter &= ~32;
+            bletter &= ~32;
         }
-        if (match) {
+        if (pletter == bletter) {
             if(patidx == 0) {
                 firstmatch = startofs;
             }
@@ -362,7 +357,7 @@ u16 ySeekFifoEx(yFifoBuf *buf, const u8* pattern, u16 patlen,  u16 startofs, u16
         ptr++;
         if (ptr >= YFIFOEND(buf))
             ptr -= buf->buffsize;
-        
+
     }
     if (patidx == patlen) {
         return firstmatch;
@@ -371,7 +366,7 @@ u16 ySeekFifoEx(yFifoBuf *buf, const u8* pattern, u16 patlen,  u16 startofs, u16
 }
 
 
-#ifdef YFIFO_USE_MUTEX    
+#ifdef YFIFO_USE_MUTEX
 
 u16 ySeekFifo(yFifoBuf *buf, const u8* pattern, u16 patlen,  u16 startofs, u16 searchlen, u8 bTextCompare)
 {
@@ -389,7 +384,7 @@ u16 yFifoGetUsedEx(yFifoBuf *buf)
     return buf->datasize;
 }
 
-#ifdef YFIFO_USE_MUTEX    
+#ifdef YFIFO_USE_MUTEX
 
 u16 yFifoGetUsed(yFifoBuf *buf)
 {
@@ -406,7 +401,7 @@ u16 yFifoGetFreeEx(yFifoBuf *buf)
     return buf->buffsize-buf->datasize;
 }
 
-#ifdef YFIFO_USE_MUTEX    
+#ifdef YFIFO_USE_MUTEX
 u16 yFifoGetFree(yFifoBuf *buf)
 {
     u16 res;
@@ -419,17 +414,119 @@ u16 yFifoGetFree(yFifoBuf *buf)
 #endif
 
 
-static char btohexa_low_low(u8 b)
-{
-    b &= 0x0F;
-    return (b>9u) ? b+'a'-10:b+'0';
-}
-
 void yxtoa(u32 x, char *buf, u16 len)
 {
     buf[len] = 0;
     while(len > 0) {
-        buf[--len] = btohexa_low_low(x & 0xff);
+        unsigned b = x & 0xf;
+        buf[--len] = (b>9u) ? b+'a'-10 : b+'0';
         x >>= 4;
     }
 }
+
+#if defined(USE_TYPED_NOTIFICATIONS) || !defined(MICROCHIP_API)
+
+// Decode a standard (V1) or typed notification (V2), possibly not null terminated,
+// to its text representation (always null terminated)
+//
+void decodePubVal(Notification_funydx funInfo, const char *funcval, char *buffer)
+{
+    const unsigned char *p = (const unsigned char *)funcval;
+    u16     funcValType;
+    s32     numVal;
+    float   floatVal;
+    int     i;
+
+    if(funInfo.v2.typeV2 == NOTIFY_V2_6RAWBYTES || funInfo.v2.typeV2 == NOTIFY_V2_TYPEDDATA) {
+        if(funInfo.v2.typeV2 == NOTIFY_V2_6RAWBYTES) {
+            funcValType = PUBVAL_6RAWBYTES;
+        } else {
+            funcValType = *p++;
+        }
+        switch(funcValType) {
+            case PUBVAL_LEGACY:
+                // fallback to legacy handling, just in case
+                break;
+            case PUBVAL_1RAWBYTE:
+            case PUBVAL_2RAWBYTES:
+            case PUBVAL_3RAWBYTES:
+            case PUBVAL_4RAWBYTES:
+            case PUBVAL_5RAWBYTES:
+            case PUBVAL_6RAWBYTES:
+                // 1..5 hex bytes
+                for(i = 0; i < funcValType; i++) {
+                    unsigned c = *p++;
+                    unsigned b = c >> 4;
+                    buffer[2*i]   = (b>9u) ? b+'a'-10 : b+'0';
+                    b = c & 0xf;
+                    buffer[2*i+1] = (b>9u) ? b+'a'-10 : b+'0';
+                }
+                buffer[2*i] = 0;
+                return;
+            case PUBVAL_C_LONG:
+            case PUBVAL_YOCTO_FLOAT_E3:
+                // 32bit integer in little endian format or Yoctopuce 10-3 format
+                numVal = *p++;
+                numVal += (s32)*p++ << 8;
+                numVal += (s32)*p++ << 16;
+                numVal += (s32)*p++ << 24;
+#ifdef MICROCHIP_API
+                if(funcValType == PUBVAL_C_LONG) {
+                    s32toa(numVal, buffer);
+                } else {
+                    dectoa(numVal, buffer, YOCTO_PUBVAL_LEN-1, 1);
+                }
+#else
+                if(funcValType == PUBVAL_C_LONG) {
+                    YSPRINTF(buffer, YOCTO_PUBVAL_LEN, "%d", numVal);
+                } else {
+                    char *endp;
+                    YSPRINTF(buffer, YOCTO_PUBVAL_LEN, "%.3f", numVal/1000.0);
+                    endp = buffer + strlen(buffer);
+                    while(endp > buffer && endp[-1] == '0') {
+                        *--endp = 0;
+                    }
+                    if(endp > buffer && endp[-1] == '.') {
+                        *--endp = 0;
+                    }
+                }
+#endif
+                return;
+            case PUBVAL_C_FLOAT:
+                // 32bit (short) float
+                memcpy(&floatVal, p, sizeof(floatVal));
+#ifdef MICROCHIP_API
+                dectoa(floatVal*1000.0, buffer, YOCTO_PUBVAL_LEN-1, 1);
+#else
+                {
+                    char largeBuffer[64];
+                    char *endp;
+                    YSPRINTF(largeBuffer, 64, "%.6f", floatVal);
+                    endp = largeBuffer + strlen(largeBuffer);
+                    while(endp > largeBuffer && endp[-1] == '0') {
+                        *--endp = 0;
+                    }
+                    if(endp > largeBuffer && endp[-1] == '.') {
+                        *--endp = 0;
+                    }
+                    YSTRCPY(buffer, YOCTO_PUBVAL_LEN, largeBuffer);
+                }
+#endif
+                return;
+            default:
+                buffer[0] = '?';
+                buffer[1] = 0;
+                return;
+        }
+    }
+
+    // Legacy handling: just pad with NUL up to 7 chars
+    for(i = 0; i < 6; i++,p++) {
+        u8 c = *p;
+        if(!c) break;
+        buffer[i] = c;
+    }
+    buffer[i] = 0;
+}
+
+#endif

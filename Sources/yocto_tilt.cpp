@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_tilt.cpp 18320 2014-11-10 10:47:48Z seb $
+ * $Id: yocto_tilt.cpp 19606 2015-03-05 10:35:57Z seb $
  *
  * Implements yFindTilt(), the high-level API for Tilt functions
  *
@@ -97,7 +97,7 @@ Y_AXIS_enum YTilt::get_axis(void)
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that $THEFUNCTION$ is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YTilt.isOnline() to test if $THEFUNCTION$ is
@@ -105,9 +105,9 @@ Y_AXIS_enum YTilt::get_axis(void)
  * $AFUNCTION$ by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes $THEFUNCTION$
- * 
+ *
  * @return a YTilt object allowing you to drive $THEFUNCTION$.
  */
 YTilt* YTilt::FindTilt(string func)
@@ -126,7 +126,7 @@ YTilt* YTilt::FindTilt(string func)
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
  * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
- * 
+ *
  * @param callback : the callback function to call, or a null pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and the character string describing
  *         the new advertised value.
@@ -166,7 +166,7 @@ int YTilt::_invokeValueCallback(string value)
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
  * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
- * 
+ *
  * @param callback : the callback function to call, or a null pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and an YMeasure object describing
  *         the new advertised value.

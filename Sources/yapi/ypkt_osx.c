@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_osx.c 15321 2014-03-07 14:32:14Z seb $
+ * $Id: ypkt_osx.c 19327 2015-02-17 17:30:01Z seb $
  *
  * OS-specific USB packet layer, Mac OS X version
  *

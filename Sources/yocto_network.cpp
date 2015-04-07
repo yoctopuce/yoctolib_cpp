@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.cpp 18320 2014-11-10 10:47:48Z seb $
+ * $Id: yocto_network.cpp 19606 2015-03-05 10:35:57Z seb $
  *
  * Implements yFindNetwork(), the high-level API for Network functions
  *
@@ -210,10 +210,10 @@ int YNetwork::_parseAttr(yJsonStateMachine& j)
  * Level 4 (DNS_4) is reached when the DNS server is reachable on the network.
  * Level 5 (WWW_5) is reached when global connectivity is demonstrated by properly loading the
  * current time from an NTP server.
- * 
+ *
  * @return a value among Y_READINESS_DOWN, Y_READINESS_EXISTS, Y_READINESS_LINKED, Y_READINESS_LAN_OK
  * and Y_READINESS_WWW_OK corresponding to the current established working mode of the network interface
- * 
+ *
  * On failure, throws an exception or returns Y_READINESS_INVALID.
  */
 Y_READINESS_enum YNetwork::get_readiness(void)
@@ -229,9 +229,9 @@ Y_READINESS_enum YNetwork::get_readiness(void)
 /**
  * Returns the MAC address of the network interface. The MAC address is also available on a sticker
  * on the module, in both numeric and barcode forms.
- * 
+ *
  * @return a string corresponding to the MAC address of the network interface
- * 
+ *
  * On failure, throws an exception or returns Y_MACADDRESS_INVALID.
  */
 string YNetwork::get_macAddress(void)
@@ -247,9 +247,9 @@ string YNetwork::get_macAddress(void)
 /**
  * Returns the IP address currently in use by the device. The address may have been configured
  * statically, or provided by a DHCP server.
- * 
+ *
  * @return a string corresponding to the IP address currently in use by the device
- * 
+ *
  * On failure, throws an exception or returns Y_IPADDRESS_INVALID.
  */
 string YNetwork::get_ipAddress(void)
@@ -264,9 +264,9 @@ string YNetwork::get_ipAddress(void)
 
 /**
  * Returns the subnet mask currently used by the device.
- * 
+ *
  * @return a string corresponding to the subnet mask currently used by the device
- * 
+ *
  * On failure, throws an exception or returns Y_SUBNETMASK_INVALID.
  */
 string YNetwork::get_subnetMask(void)
@@ -281,9 +281,9 @@ string YNetwork::get_subnetMask(void)
 
 /**
  * Returns the IP address of the router on the device subnet (default gateway).
- * 
+ *
  * @return a string corresponding to the IP address of the router on the device subnet (default gateway)
- * 
+ *
  * On failure, throws an exception or returns Y_ROUTER_INVALID.
  */
 string YNetwork::get_router(void)
@@ -315,9 +315,9 @@ int YNetwork::set_ipConfig(const string& newval)
 
 /**
  * Returns the IP address of the primary name server to be used by the module.
- * 
+ *
  * @return a string corresponding to the IP address of the primary name server to be used by the module
- * 
+ *
  * On failure, throws an exception or returns Y_PRIMARYDNS_INVALID.
  */
 string YNetwork::get_primaryDNS(void)
@@ -334,11 +334,11 @@ string YNetwork::get_primaryDNS(void)
  * Changes the IP address of the primary name server to be used by the module.
  * When using DHCP, if a value is specified, it overrides the value received from the DHCP server.
  * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
- * 
+ *
  * @param newval : a string corresponding to the IP address of the primary name server to be used by the module
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YNetwork::set_primaryDNS(const string& newval)
@@ -350,9 +350,9 @@ int YNetwork::set_primaryDNS(const string& newval)
 
 /**
  * Returns the IP address of the secondary name server to be used by the module.
- * 
+ *
  * @return a string corresponding to the IP address of the secondary name server to be used by the module
- * 
+ *
  * On failure, throws an exception or returns Y_SECONDARYDNS_INVALID.
  */
 string YNetwork::get_secondaryDNS(void)
@@ -369,11 +369,11 @@ string YNetwork::get_secondaryDNS(void)
  * Changes the IP address of the secondary name server to be used by the module.
  * When using DHCP, if a value is specified, it overrides the value received from the DHCP server.
  * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
- * 
+ *
  * @param newval : a string corresponding to the IP address of the secondary name server to be used by the module
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YNetwork::set_secondaryDNS(const string& newval)
@@ -386,10 +386,10 @@ int YNetwork::set_secondaryDNS(const string& newval)
 /**
  * Returns a hash string if a password has been set for "user" user,
  * or an empty string otherwise.
- * 
+ *
  * @return a string corresponding to a hash string if a password has been set for "user" user,
  *         or an empty string otherwise
- * 
+ *
  * On failure, throws an exception or returns Y_USERPASSWORD_INVALID.
  */
 string YNetwork::get_userPassword(void)
@@ -408,11 +408,11 @@ string YNetwork::get_userPassword(void)
  * empty string, a password is not required anymore.
  * Remember to call the saveToFlash() method of the module if the
  * modification must be kept.
- * 
+ *
  * @param newval : a string corresponding to the password for the "user" user
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YNetwork::set_userPassword(const string& newval)
@@ -425,10 +425,10 @@ int YNetwork::set_userPassword(const string& newval)
 /**
  * Returns a hash string if a password has been set for user "admin",
  * or an empty string otherwise.
- * 
+ *
  * @return a string corresponding to a hash string if a password has been set for user "admin",
  *         or an empty string otherwise
- * 
+ *
  * On failure, throws an exception or returns Y_ADMINPASSWORD_INVALID.
  */
 string YNetwork::get_adminPassword(void)
@@ -447,11 +447,11 @@ string YNetwork::get_adminPassword(void)
  * empty string, a password is not required anymore.
  * Remember to call the saveToFlash() method of the module if the
  * modification must be kept.
- * 
+ *
  * @param newval : a string corresponding to the password for the "admin" user
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YNetwork::set_adminPassword(const string& newval)
@@ -464,11 +464,11 @@ int YNetwork::set_adminPassword(const string& newval)
 /**
  * Returns the activation state of the multicast announce protocols to allow easy
  * discovery of the module in the network neighborhood (uPnP/Bonjour protocol).
- * 
+ *
  * @return either Y_DISCOVERABLE_FALSE or Y_DISCOVERABLE_TRUE, according to the activation state of
  * the multicast announce protocols to allow easy
  *         discovery of the module in the network neighborhood (uPnP/Bonjour protocol)
- * 
+ *
  * On failure, throws an exception or returns Y_DISCOVERABLE_INVALID.
  */
 Y_DISCOVERABLE_enum YNetwork::get_discoverable(void)
@@ -484,13 +484,13 @@ Y_DISCOVERABLE_enum YNetwork::get_discoverable(void)
 /**
  * Changes the activation state of the multicast announce protocols to allow easy
  * discovery of the module in the network neighborhood (uPnP/Bonjour protocol).
- * 
+ *
  * @param newval : either Y_DISCOVERABLE_FALSE or Y_DISCOVERABLE_TRUE, according to the activation
  * state of the multicast announce protocols to allow easy
  *         discovery of the module in the network neighborhood (uPnP/Bonjour protocol)
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YNetwork::set_discoverable(Y_DISCOVERABLE_enum newval)
@@ -504,11 +504,11 @@ int YNetwork::set_discoverable(Y_DISCOVERABLE_enum newval)
  * Returns the allowed downtime of the WWW link (in seconds) before triggering an automated
  * reboot to try to recover Internet connectivity. A zero value disables automated reboot
  * in case of Internet connectivity loss.
- * 
+ *
  * @return an integer corresponding to the allowed downtime of the WWW link (in seconds) before
  * triggering an automated
  *         reboot to try to recover Internet connectivity
- * 
+ *
  * On failure, throws an exception or returns Y_WWWWATCHDOGDELAY_INVALID.
  */
 int YNetwork::get_wwwWatchdogDelay(void)
@@ -526,13 +526,13 @@ int YNetwork::get_wwwWatchdogDelay(void)
  * reboot to try to recover Internet connectivity. A zero value disables automated reboot
  * in case of Internet connectivity loss. The smallest valid non-zero timeout is
  * 90 seconds.
- * 
+ *
  * @param newval : an integer corresponding to the allowed downtime of the WWW link (in seconds)
  * before triggering an automated
  *         reboot to try to recover Internet connectivity
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YNetwork::set_wwwWatchdogDelay(int newval)
@@ -544,9 +544,9 @@ int YNetwork::set_wwwWatchdogDelay(int newval)
 
 /**
  * Returns the callback URL to notify of significant state changes.
- * 
+ *
  * @return a string corresponding to the callback URL to notify of significant state changes
- * 
+ *
  * On failure, throws an exception or returns Y_CALLBACKURL_INVALID.
  */
 string YNetwork::get_callbackUrl(void)
@@ -562,11 +562,11 @@ string YNetwork::get_callbackUrl(void)
 /**
  * Changes the callback URL to notify significant state changes. Remember to call the
  * saveToFlash() method of the module if the modification must be kept.
- * 
+ *
  * @param newval : a string corresponding to the callback URL to notify significant state changes
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YNetwork::set_callbackUrl(const string& newval)
@@ -578,10 +578,10 @@ int YNetwork::set_callbackUrl(const string& newval)
 
 /**
  * Returns the HTTP method used to notify callbacks for significant state changes.
- * 
+ *
  * @return a value among Y_CALLBACKMETHOD_POST, Y_CALLBACKMETHOD_GET and Y_CALLBACKMETHOD_PUT
  * corresponding to the HTTP method used to notify callbacks for significant state changes
- * 
+ *
  * On failure, throws an exception or returns Y_CALLBACKMETHOD_INVALID.
  */
 Y_CALLBACKMETHOD_enum YNetwork::get_callbackMethod(void)
@@ -596,12 +596,12 @@ Y_CALLBACKMETHOD_enum YNetwork::get_callbackMethod(void)
 
 /**
  * Changes the HTTP method used to notify callbacks for significant state changes.
- * 
+ *
  * @param newval : a value among Y_CALLBACKMETHOD_POST, Y_CALLBACKMETHOD_GET and Y_CALLBACKMETHOD_PUT
  * corresponding to the HTTP method used to notify callbacks for significant state changes
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YNetwork::set_callbackMethod(Y_CALLBACKMETHOD_enum newval)
@@ -613,11 +613,11 @@ int YNetwork::set_callbackMethod(Y_CALLBACKMETHOD_enum newval)
 
 /**
  * Returns the encoding standard to use for representing notification values.
- * 
+ *
  * @return a value among Y_CALLBACKENCODING_FORM, Y_CALLBACKENCODING_JSON,
  * Y_CALLBACKENCODING_JSON_ARRAY, Y_CALLBACKENCODING_CSV and Y_CALLBACKENCODING_YOCTO_API
  * corresponding to the encoding standard to use for representing notification values
- * 
+ *
  * On failure, throws an exception or returns Y_CALLBACKENCODING_INVALID.
  */
 Y_CALLBACKENCODING_enum YNetwork::get_callbackEncoding(void)
@@ -632,13 +632,13 @@ Y_CALLBACKENCODING_enum YNetwork::get_callbackEncoding(void)
 
 /**
  * Changes the encoding standard to use for representing notification values.
- * 
+ *
  * @param newval : a value among Y_CALLBACKENCODING_FORM, Y_CALLBACKENCODING_JSON,
  * Y_CALLBACKENCODING_JSON_ARRAY, Y_CALLBACKENCODING_CSV and Y_CALLBACKENCODING_YOCTO_API
  * corresponding to the encoding standard to use for representing notification values
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YNetwork::set_callbackEncoding(Y_CALLBACKENCODING_enum newval)
@@ -651,10 +651,10 @@ int YNetwork::set_callbackEncoding(Y_CALLBACKENCODING_enum newval)
 /**
  * Returns a hashed version of the notification callback credentials if set,
  * or an empty string otherwise.
- * 
+ *
  * @return a string corresponding to a hashed version of the notification callback credentials if set,
  *         or an empty string otherwise
- * 
+ *
  * On failure, throws an exception or returns Y_CALLBACKCREDENTIALS_INVALID.
  */
 string YNetwork::get_callbackCredentials(void)
@@ -677,11 +677,11 @@ string YNetwork::get_callbackCredentials(void)
  * way to configure callback credentials, use function callbackLogin instead.
  * Remember to call the saveToFlash() method of the module if the
  * modification must be kept.
- * 
+ *
  * @param newval : a string corresponding to the credentials required to connect to the callback address
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YNetwork::set_callbackCredentials(const string& newval)
@@ -696,12 +696,12 @@ int YNetwork::set_callbackCredentials(const string& newval)
  * log into it. The password is not stored into the module, only a hashed
  * copy of the credentials are saved. Remember to call the
  * saveToFlash() method of the module if the modification must be kept.
- * 
+ *
  * @param username : username required to log to the callback
  * @param password : password required to log to the callback
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YNetwork::callbackLogin(string username,string password)
@@ -713,9 +713,9 @@ int YNetwork::callbackLogin(string username,string password)
 
 /**
  * Returns the minimum waiting time between two callback notifications, in seconds.
- * 
+ *
  * @return an integer corresponding to the minimum waiting time between two callback notifications, in seconds
- * 
+ *
  * On failure, throws an exception or returns Y_CALLBACKMINDELAY_INVALID.
  */
 int YNetwork::get_callbackMinDelay(void)
@@ -730,12 +730,12 @@ int YNetwork::get_callbackMinDelay(void)
 
 /**
  * Changes the minimum waiting time between two callback notifications, in seconds.
- * 
+ *
  * @param newval : an integer corresponding to the minimum waiting time between two callback
  * notifications, in seconds
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YNetwork::set_callbackMinDelay(int newval)
@@ -747,9 +747,9 @@ int YNetwork::set_callbackMinDelay(int newval)
 
 /**
  * Returns the maximum waiting time between two callback notifications, in seconds.
- * 
+ *
  * @return an integer corresponding to the maximum waiting time between two callback notifications, in seconds
- * 
+ *
  * On failure, throws an exception or returns Y_CALLBACKMAXDELAY_INVALID.
  */
 int YNetwork::get_callbackMaxDelay(void)
@@ -764,12 +764,12 @@ int YNetwork::get_callbackMaxDelay(void)
 
 /**
  * Changes the maximum waiting time between two callback notifications, in seconds.
- * 
+ *
  * @param newval : an integer corresponding to the maximum waiting time between two callback
  * notifications, in seconds
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YNetwork::set_callbackMaxDelay(int newval)
@@ -783,10 +783,10 @@ int YNetwork::set_callbackMaxDelay(int newval)
  * Returns the current consumed by the module from Power-over-Ethernet (PoE), in milli-amps.
  * The current consumption is measured after converting PoE source to 5 Volt, and should
  * never exceed 1800 mA.
- * 
+ *
  * @return an integer corresponding to the current consumed by the module from Power-over-Ethernet
  * (PoE), in milli-amps
- * 
+ *
  * On failure, throws an exception or returns Y_POECURRENT_INVALID.
  */
 int YNetwork::get_poeCurrent(void)
@@ -809,7 +809,7 @@ int YNetwork::get_poeCurrent(void)
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that $THEFUNCTION$ is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YNetwork.isOnline() to test if $THEFUNCTION$ is
@@ -817,9 +817,9 @@ int YNetwork::get_poeCurrent(void)
  * $AFUNCTION$ by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes $THEFUNCTION$
- * 
+ *
  * @return a YNetwork object allowing you to drive $THEFUNCTION$.
  */
 YNetwork* YNetwork::FindNetwork(string func)
@@ -838,7 +838,7 @@ YNetwork* YNetwork::FindNetwork(string func)
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
  * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
- * 
+ *
  * @param callback : the callback function to call, or a null pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and the character string describing
  *         the new advertised value.
@@ -878,14 +878,14 @@ int YNetwork::_invokeValueCallback(string value)
  * IP address received from a DHCP server. Until an address is received from a DHCP
  * server, the module uses the IP parameters specified to this function.
  * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
- * 
+ *
  * @param fallbackIpAddr : fallback IP address, to be used when no DHCP reply is received
  * @param fallbackSubnetMaskLen : fallback subnet mask length when no DHCP reply is received, as an
  *         integer (eg. 24 means 255.255.255.0)
  * @param fallbackRouter : fallback router IP address, to be used when no DHCP reply is received
- * 
+ *
  * @return YAPI_SUCCESS when the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YNetwork::useDHCP(string fallbackIpAddr,int fallbackSubnetMaskLen,string fallbackRouter)
@@ -896,13 +896,13 @@ int YNetwork::useDHCP(string fallbackIpAddr,int fallbackSubnetMaskLen,string fal
 /**
  * Changes the configuration of the network interface to use a static IP address.
  * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
- * 
+ *
  * @param ipAddress : device IP address
  * @param subnetMaskLen : subnet mask length, as an integer (eg. 24 means 255.255.255.0)
  * @param router : router IP address (default gateway)
- * 
+ *
  * @return YAPI_SUCCESS when the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YNetwork::useStaticIP(string ipAddress,int subnetMaskLen,string router)
@@ -914,9 +914,9 @@ int YNetwork::useStaticIP(string ipAddress,int subnetMaskLen,string router)
  * Pings str_host to test the network connectivity. Sends four ICMP ECHO_REQUEST requests from the
  * module to the target str_host. This method returns a string with the result of the
  * 4 ICMP ECHO_REQUEST requests.
- * 
+ *
  * @param host : the hostname or the IP address of the target
- * 
+ *
  * @return a string with the result of the ping.
  */
 string YNetwork::ping(string host)

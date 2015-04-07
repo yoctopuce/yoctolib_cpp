@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_lightsensor.cpp 18320 2014-11-10 10:47:48Z seb $
+ * $Id: yocto_lightsensor.cpp 19606 2015-03-05 10:35:57Z seb $
  *
  * Implements yFindLightSensor(), the high-level API for LightSensor functions
  *
@@ -87,14 +87,14 @@ int YLightSensor::set_currentValue(double newval)
 /**
  * Changes the sensor-specific calibration parameter so that the current value
  * matches a desired target (linear scaling).
- * 
+ *
  * @param calibratedVal : the desired target value.
- * 
+ *
  * Remember to call the saveToFlash() method of the module if the
  * modification must be kept.
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YLightSensor::calibrate(double calibratedVal)
@@ -106,10 +106,10 @@ int YLightSensor::calibrate(double calibratedVal)
 
 /**
  * Returns the type of light measure.
- * 
+ *
  * @return a value among Y_MEASURETYPE_HUMAN_EYE, Y_MEASURETYPE_WIDE_SPECTRUM, Y_MEASURETYPE_INFRARED,
  * Y_MEASURETYPE_HIGH_RATE and Y_MEASURETYPE_HIGH_ENERGY corresponding to the type of light measure
- * 
+ *
  * On failure, throws an exception or returns Y_MEASURETYPE_INVALID.
  */
 Y_MEASURETYPE_enum YLightSensor::get_measureType(void)
@@ -128,12 +128,12 @@ Y_MEASURETYPE_enum YLightSensor::get_measureType(void)
  * spectrum, depending on the capabilities of the light-sensitive cell.
  * Remember to call the saveToFlash() method of the module if the
  * modification must be kept.
- * 
+ *
  * @param newval : a value among Y_MEASURETYPE_HUMAN_EYE, Y_MEASURETYPE_WIDE_SPECTRUM,
  * Y_MEASURETYPE_INFRARED, Y_MEASURETYPE_HIGH_RATE and Y_MEASURETYPE_HIGH_ENERGY
- * 
+ *
  * @return YAPI_SUCCESS if the call succeeds.
- * 
+ *
  * On failure, throws an exception or returns a negative error code.
  */
 int YLightSensor::set_measureType(Y_MEASURETYPE_enum newval)
@@ -153,7 +153,7 @@ int YLightSensor::set_measureType(Y_MEASURETYPE_enum newval)
  * <li>ModuleLogicalName.FunctionIdentifier</li>
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
- * 
+ *
  * This function does not require that $THEFUNCTION$ is online at the time
  * it is invoked. The returned object is nevertheless valid.
  * Use the method YLightSensor.isOnline() to test if $THEFUNCTION$ is
@@ -161,9 +161,9 @@ int YLightSensor::set_measureType(Y_MEASURETYPE_enum newval)
  * $AFUNCTION$ by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
- * 
+ *
  * @param func : a string that uniquely characterizes $THEFUNCTION$
- * 
+ *
  * @return a YLightSensor object allowing you to drive $THEFUNCTION$.
  */
 YLightSensor* YLightSensor::FindLightSensor(string func)
@@ -182,7 +182,7 @@ YLightSensor* YLightSensor::FindLightSensor(string func)
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
  * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
- * 
+ *
  * @param callback : the callback function to call, or a null pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and the character string describing
  *         the new advertised value.
@@ -222,7 +222,7 @@ int YLightSensor::_invokeValueCallback(string value)
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
  * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
- * 
+ *
  * @param callback : the callback function to call, or a null pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and an YMeasure object describing
  *         the new advertised value.
