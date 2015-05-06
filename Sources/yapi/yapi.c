@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 19930 2015-04-07 12:20:02Z seb $
+ * $Id: yapi.c 20208 2015-05-04 12:23:47Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -42,109 +42,162 @@
 #include "yhash.h"
 #include "yjson.h"
 #include "yprog.h"
+
 #ifndef WINDOWS_API
 #include <sys/time.h>
 #endif
-//#define PERF_API_FUNCTIONS
 
-#ifdef PERF_API_FUNCTIONS
-typedef struct {
-    yPerfMon  yapiInitAPI;
-    yPerfMon  yapiFreeAPI;
-    yPerfMon  yapiRegisterLogFunction;
-    yPerfMon  yapiRegisterDeviceLogCallback;
-    yPerfMon  yapiRegisterDeviceArrivalCallback;
-    yPerfMon  yapiRegisterDeviceRemovalCallback;
-    yPerfMon  yapiRegisterDeviceChangeCallback;
-    yPerfMon  yapiRegisterFunctionUpdateCallback;
-    yPerfMon  yapiRegisterTimedReportCallback;
-    yPerfMon  yapiLockFunctionCallBack;
-    yPerfMon  yapiUnlockFunctionCallBack;
-    yPerfMon  yapiLockDeviceCallBack;
-    yPerfMon  yapiUnlockDeviceCallBack;
-    yPerfMon  yapiRegisterHub;
-    yPerfMon  yapiPreregisterHub;
-    yPerfMon  yapiUnregisterHub;
-    yPerfMon  yapiUpdateDeviceList;
-    yPerfMon  yapiHandleEvents;
-    yPerfMon  yapiSleep;
-    yPerfMon  yapiGetTickCount;
-    yPerfMon  yapiGetAPIVersion;
-    yPerfMon  yapiSetTraceFile;
-    yPerfMon  yapiGetDevice;
-    yPerfMon  yapiGetAllDevices;
-    yPerfMon  yapiGetDeviceInfo;
-    yPerfMon  yapiGetDevicePath;
-    yPerfMon  yapiGetFunction;
-    yPerfMon  yapiGetFunctionsByClass;
-    yPerfMon  yapiGetFunctionsByDevice;
-    yPerfMon  yapiGetFunctionInfo;
-    yPerfMon  yapiHTTPRequestSyncStartEx;
-    yPerfMon  yapiHTTPRequestSyncStart;
-    yPerfMon  yapiHTTPRequestSyncDone;
-    yPerfMon  yapiHTTPRequestAsync;
-    yPerfMon  yapiHTTPRequestAsyncEx;
-    yPerfMon  yapiHTTPRequest;
-    yPerfMon  yapiGetBootloadersDevs;
-    yPerfMon  tmp1;
-    yPerfMon  tmp2;
-    yPerfMon  tmp3;
-    yPerfMon  tmp4;
-} yApiPerfMonSt;
+static YRETCODE  yapiUpdateDeviceList_internal(u32 forceupdate, char *errmsg);
+static void  yapiUnregisterHub_internal(const char *url);
+static YRETCODE  yapiPreregisterHub_internal(const char *url, char *errmsg);
+static YRETCODE  yapiHandleEvents_internal(char *errmsg);
 
-yApiPerfMonSt yApiPerf;
-
-#define YPERF_API_ENTER(NAME) {yApiPerf.NAME.count++;yApiPerf.NAME.tmp=yapiGetTickCount();}
-#define YPERF_API_LEAVE(NAME) {yApiPerf.NAME.leave++;yApiPerf.NAME.totaltime += yapiGetTickCount()- yApiPerf.NAME.tmp;}
+//#define DEBUG_YAPI_REQ
 
 
-void dumpYApiPerf(void)
+#ifdef DEBUG_YAPI_REQ
+
+#include <direct.h>
+static int global_req_count = 0;
+
+static write_onfile(int fileno, char *mode, const char *firstline, int firstline_len, const char * buffer, int bufferlen)
 {
-    dumpYPerfEntry(&yApiPerf.yapiInitAPI,"yapiInitAPI");
-#if 0
-    dumpYPerfEntry(&yApiPerf.yapiFreeAPI,"yapiFreeAPI");
-    dumpYPerfEntry(&yApiPerf.yapiRegisterLogFunction,"yapiRegisterLogFunction");
-    dumpYPerfEntry(&yApiPerf.yapiRegisterDeviceLogCallback,"yapiRegisterDeviceLogCallback");
-    dumpYPerfEntry(&yApiPerf.yapiRegisterDeviceArrivalCallback,"yapiRegisterDeviceArrivalCallback");
-    dumpYPerfEntry(&yApiPerf.yapiRegisterDeviceRemovalCallback,"yapiRegisterDeviceRemovalCallback");
-    dumpYPerfEntry(&yApiPerf.yapiRegisterDeviceChangeCallback,"yapiRegisterDeviceChangeCallback");
-    dumpYPerfEntry(&yApiPerf.yapiRegisterFunctionUpdateCallback,"yapiRegisterFunctionUpdateCallback");
-    dumpYPerfEntry(&yApiPerf.yapiLockFunctionCallBack,"yapiLockFunctionCallBack");
-#endif
-    dumpYPerfEntry(&yApiPerf.yapiUnlockFunctionCallBack,"yapiUnlockFunctionCallBack");
-    dumpYPerfEntry(&yApiPerf.yapiLockDeviceCallBack,"yapiLockDeviceCallBack");
-    dumpYPerfEntry(&yApiPerf.yapiUnlockDeviceCallBack,"yapiUnlockDeviceCallBack");
-    dumpYPerfEntry(&yApiPerf.yapiRegisterHub,"yapiRegisterHub");
-    dumpYPerfEntry(&yApiPerf.yapiPreregisterHub,"yapiPreregisterHub");
-    dumpYPerfEntry(&yApiPerf.yapiUnregisterHub,"yapiUnregisterHub");
-    dumpYPerfEntry(&yApiPerf.yapiUpdateDeviceList,"yapiUpdateDeviceList");
-    dumpYPerfEntry(&yApiPerf.yapiHandleEvents,"yapiHandleEvents");
-    dumpYPerfEntry(&yApiPerf.yapiSleep,"yapiSleep");
-#if 0
-    dumpYPerfEntry(&yApiPerf.yapiGetTickCount,"yapiGetTickCount");
-    dumpYPerfEntry(&yApiPerf.yapiGetAPIVersion,"yapiGetAPIVersion");
-    dumpYPerfEntry(&yApiPerf.yapiSetTraceFile,"yapiSetTraceFile");
-    dumpYPerfEntry(&yApiPerf.yapiGetDevice,"yapiGetDevice");
-    dumpYPerfEntry(&yApiPerf.yapiGetAllDevices,"yapiGetAllDevices");
-    dumpYPerfEntry(&yApiPerf.yapiGetDeviceInfo,"yapiGetDeviceInfo");
-    dumpYPerfEntry(&yApiPerf.yapiGetDevicePath,"yapiGetDevicePath");
-    dumpYPerfEntry(&yApiPerf.yapiGetFunction,"yapiGetFunction");
-    dumpYPerfEntry(&yApiPerf.yapiGetFunctionsByClass,"yapiGetFunctionsByClass");
-    dumpYPerfEntry(&yApiPerf.yapiGetFunctionsByDevice,"yapiGetFunctionsByDevice");
-    dumpYPerfEntry(&yApiPerf.yapiGetFunctionInfo,"yapiGetFunctionInfo");
-#endif
-    dumpYPerfEntry(&yApiPerf.yapiHTTPRequestSyncStartEx,"yapiHTTPRequestSyncStartEx");
-    dumpYPerfEntry(&yApiPerf.yapiHTTPRequestSyncStart,"yapiHTTPRequestSyncStart");
-    dumpYPerfEntry(&yApiPerf.yapiHTTPRequestSyncDone,"yapiHTTPRequestSyncDone");
-    dumpYPerfEntry(&yApiPerf.yapiHTTPRequestAsync,"yapiHTTPRequestAsync");
-    dumpYPerfEntry(&yApiPerf.yapiHTTPRequestAsyncEx,"yapiHTTPRequestAsyncEx");
-    dumpYPerfEntry(&yApiPerf.yapiHTTPRequest,"yapiHTTPRequest");
-    dumpYPerfEntry(&yApiPerf.yapiGetBootloadersDevs,"yapiGetBootloadersDevs");
+    char filename[128];
+    FILE *f;
+    int retry_count = 1;
+    YSPRINTF(filename, 128,"req_trace\\req_%d.bin", fileno);
+    // write on file
+retry:
+    if (YFOPEN(&f, filename, mode) != 0) {
+        if (retry_count--){
+            _mkdir("req_trace");
+            goto retry;
+        }
+        return -1;
+    }
+    fwrite(firstline, 1, firstline_len, f);
+    fwrite(buffer, 1, bufferlen, f);
+    fclose(f);
+    return 0;
 }
-#else
-#define YPERF_API_ENTER(NAME)
-#define YPERF_API_LEAVE(NAME)
+
+
+static int YREQ_LOG_START(const char *msg, const char *device, const char * request, int requestsize)
+{
+    char buffer[2048], buffer2[64];;
+    struct tm timeinfo;
+    time_t rawtime;
+    int threadIdx, count, first_len;
+
+    //we may need to add mutex here
+    count = global_req_count++;
+    int fileno = count & 0xff;
+    // compute time string
+    time(&rawtime);
+    localtime_s(&timeinfo, &rawtime);
+    strftime(buffer2, sizeof(buffer2), "%Y-%m-%d %H:%M:%S", &timeinfo);
+    //format first info line
+    threadIdx = yThreadIndex();
+    first_len = YSPRINTF(buffer, 2048, "[%s/%"FMTu64"](%d):no=%d = %s on %s\n",buffer2, yapiGetTickCount(), threadIdx, count, msg, device);
+    write_onfile(fileno, "wb", buffer, first_len, request, requestsize);
+    return count;
+}
+
+static int YREQ_LOG_APPEND(int count, const char *msg, const char * response, int responsesize)
+{
+    char buffer[2048], buffer2[64];;
+    struct tm timeinfo;
+    time_t rawtime;
+    int threadIdx, first_len;
+
+    //we may need to add mutex here
+    int fileno = count & 0xff;
+    // compute time string
+    time(&rawtime);
+    localtime_s(&timeinfo, &rawtime);
+    strftime(buffer2, sizeof(buffer2), "%Y-%m-%d %H:%M:%S", &timeinfo);
+    //format first info line
+    threadIdx = yThreadIndex();
+    first_len = YSPRINTF(buffer, 2048, "[%s/%"FMTu64"](%d):no=%d : %s responsesize=%d\n",buffer2, yapiGetTickCount(), threadIdx, count, msg, responsesize);
+    // write on file
+    write_onfile(fileno, "ab", buffer, first_len, response, responsesize);
+    return count;
+}
 #endif
+
+
+//#define DEBUG_CALLBACK
+
+#ifdef DEBUG_CALLBACK
+
+
+#include <direct.h>
+static int global_callback_count = 0;
+
+static write_cb_onfile(YAPI_FUNCTION fundescr, const char *value)
+{
+    char filename[128];
+    FILE *f;
+    int retry_count = 1;
+    int fileno = global_callback_count >> 16;
+    char *mode ="ab";
+    char buffer[2048], buffer2[64];;
+    struct tm timeinfo;
+    time_t rawtime;
+    int threadIdx, bufferlen;
+    char serial[YOCTO_SERIAL_LEN], funcId[YOCTO_FUNCTION_LEN];
+
+    if ((global_callback_count & 0xffff) == 0) {
+        mode = "wb";
+    }
+
+    YSPRINTF(filename, 128,"callback_trace\\callback_%d.txt", fileno);
+    // compute time string
+    time(&rawtime);
+    localtime_s(&timeinfo, &rawtime);
+    strftime(buffer2, sizeof(buffer2), "%Y-%m-%d %H:%M:%S", &timeinfo);
+    //format first info line
+    threadIdx = yThreadIndex();
+    if (value == NULL){
+        value = "(NULL)";
+    }
+    if(ypGetFunctionInfo(fundescr, serial, funcId, NULL, NULL) < 0){
+        bufferlen = YSPRINTF(buffer, 2048, "[%s/%"FMTu64"](%d):no=%d : invalid function ID (%X)\n",buffer2, yapiGetTickCount(), threadIdx, global_callback_count, fundescr);
+    }else {
+        bufferlen = YSPRINTF(buffer, 2048, "[%s/%"FMTu64"](%d):no=%d : %s.%s (%X)=%s\n",buffer2, yapiGetTickCount(), threadIdx, global_callback_count, serial,funcId, fundescr, value);
+    }
+    global_callback_count++;
+
+
+    // write on file
+retry:
+    if (YFOPEN(&f, filename, mode) != 0) {
+        if (retry_count--){
+            _mkdir("callback_trace");
+            goto retry;
+        }
+        return -1;
+    }
+    fwrite(buffer, 1, bufferlen, f);
+    fclose(f);
+    return 0;
+}
+
+
+#endif
+
+
+void yFunctionUpdate(YAPI_FUNCTION fundescr, const char *value)
+{
+    if(yContext->functionCallback) {
+        yEnterCriticalSection(&yContext->functionCallbackCS);
+#ifdef DEBUG_CALLBACK
+        write_cb_onfile(fundescr, value);
+#endif
+        yContext->functionCallback(fundescr, value);
+        yLeaveCriticalSection(&yContext->functionCallbackCS);
+    }
+}
 
 
 /*****************************************************************************
@@ -620,11 +673,7 @@ static void ypUpdateNet(ENU_CONTEXT *enus)
 {
     if(ypRegister(enus->ypCateg, enus->serial, enus->funcId, enus->logicalName, enus->funClass, enus->funYdx, enus->advertisedValue)){
         // Forward high-level notification to API user
-        if(yContext->functionCallback) {
-            yEnterCriticalSection(&yContext->functionCallbackCS);
-            yContext->functionCallback(((s32)enus->funcId << 16) | enus->serial,enus->advertisedValue);
-            yLeaveCriticalSection(&yContext->functionCallbackCS);
-        }
+        yFunctionUpdate(((s32)enus->funcId << 16) | enus->serial,enus->advertisedValue);
     }
 }
 
@@ -879,9 +928,11 @@ static int yNetHubEnumEx(NetHubSt *hub, ENU_CONTEXT *enus, char *errmsg)
     yJsonRetCode    jstate = YJSON_NEED_INPUT;
     u64             enumTimeout;
     TcpReqSt        req, *reqptr = &req;
-
+#ifdef DEBUG_YAPI_REQ
+    int req_count = YREQ_LOG_START("yNetHubEnumEx", hub->name, request, YSTRLEN(request));
+#endif
     yTcpInitReq(&req, hub);
-    if(YISERR((res = yTcpOpenReq(&req, request, YSTRLEN(request), 0, NULL, NULL, errmsg)))) {
+    if (YISERR((res = yTcpOpenReq(&req, request, YSTRLEN(request), YIO_DEFAULT_TCP_TIMEOUT, NULL, NULL, errmsg)))) {
         yTcpFreeReq(&req);
         return res;
     }
@@ -897,6 +948,9 @@ static int yNetHubEnumEx(NetHubSt *hub, ENU_CONTEXT *enus, char *errmsg)
         }
         res = yTcpReadReq(&req, buffer, sizeof(buffer));
         while(res > 0) {
+#ifdef DEBUG_YAPI_REQ
+            YREQ_LOG_APPEND(req_count,"yNetHubEnumEx", buffer, res);
+#endif
             j.src = (char*)buffer;
             j.end = (char*)buffer + res;
             // parse all we can on this buffer
@@ -1154,9 +1208,9 @@ static void ssdpEntryUpdate(const char *serial, const char *urlToRegister, const
     if (yContext->detecttype & Y_DETECT_NET) {
         if (urlToRegister) {
             if (urlToUnregister) {
-                yapiUnregisterHub(urlToUnregister);
+                yapiUnregisterHub_internal(urlToUnregister);
             }
-            yapiPreregisterHub(urlToRegister, NULL);
+            yapiPreregisterHub_internal(urlToRegister, NULL);
         }
     }
 }
@@ -1192,7 +1246,7 @@ static void deleteAllCS(yContextSt *ctx)
  ****************************************************************************/
 
 
-YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int detect_type,char *errmsg)
+static YRETCODE yapiInitAPI_internal(int detect_type,char *errmsg)
 {
     int i;
     yContextSt *ctx;
@@ -1203,7 +1257,6 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int detect_type,char *errmsg)
     if(yContext!=NULL)
         return YERRMSG(YAPI_DEVICE_BUSY,"Api already started");
 
-    YPERF_API_ENTER(yapiInitAPI);
 #if 0
     if (sizeof(u8) != 1) return YERRMSG(YAPI_INVALID_ARGUMENT,"invalid definition of u8");
     if (sizeof(s8) != 1) return YERRMSG(YAPI_INVALID_ARGUMENT,"invalid definition of s8");
@@ -1243,7 +1296,6 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int detect_type,char *errmsg)
         if(YISERR(res=yUsbInit(ctx,errmsg))){
             deleteAllCS(ctx);
             yFree(ctx);
-            YPERF_API_LEAVE(yapiInitAPI);
             return (YRETCODE)res;
         }
     }
@@ -1255,7 +1307,6 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int detect_type,char *errmsg)
     if (YISERR(yTcpInit(errmsg))){
         deleteAllCS(ctx);
         yFree(ctx);
-        YPERF_API_LEAVE(yapiInitAPI);
         return YAPI_IO_ERROR;
     }
     // initialise network hub list
@@ -1270,7 +1321,6 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int detect_type,char *errmsg)
             yCloseEvent(&yContext->exitSleepEvent);
             deleteAllCS(ctx);
             yFree(ctx);
-            YPERF_API_LEAVE(yapiInitAPI);
             return YAPI_IO_ERROR;
         }
     }
@@ -1278,15 +1328,13 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int detect_type,char *errmsg)
 #ifndef YAPI_IN_YDEVICE
     yProgInit();
 #endif
-    YPERF_API_LEAVE(yapiInitAPI);
     return YAPI_SUCCESS;
-
-
 }
 
 static int yTcpTrafficPending(void);
 
-void YAPI_FUNCTION_EXPORT yapiFreeAPI(void)
+
+static void yapiFreeAPI_internal(void)
 {
     u64             timeout = yapiGetTickCount() + 1000;
     char            errmsg[YOCTO_ERRMSG_LEN];
@@ -1300,7 +1348,7 @@ void YAPI_FUNCTION_EXPORT yapiFreeAPI(void)
 #endif
 
     while(yapiGetTickCount() < timeout && (yUsbTrafficPending() || yTcpTrafficPending())) {
-        yapiHandleEvents(errmsg);
+        yapiHandleEvents_internal(errmsg);
         yApproximateSleep(1);
     }
 
@@ -1337,38 +1385,34 @@ void YAPI_FUNCTION_EXPORT yapiFreeAPI(void)
 }
 
 
-void YAPI_FUNCTION_EXPORT yapiRegisterLogFunction(yapiLogFunction logfun)
+static void yapiRegisterLogFunction_internal(yapiLogFunction logfun)
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     if(!yContext) {
-        yapiInitAPI(0,errmsg);
+        yapiInitAPI_internal(0,errmsg);
     }
-    YPERF_API_ENTER(yapiRegisterLogFunction);
     if(yContext) {
         yEnterCriticalSection(&yContext->enum_cs);
         yContext->log = logfun;
         yLeaveCriticalSection(&yContext->enum_cs);
     }
-    YPERF_API_LEAVE(yapiRegisterLogFunction);
 }
 
 
-void YAPI_FUNCTION_EXPORT yapiRegisterDeviceLogCallback(yapiDeviceLogCallback logCallback)
+static void yapiRegisterDeviceLogCallback_internal(yapiDeviceLogCallback logCallback)
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     if(!yContext) {
-        yapiInitAPI(0,errmsg);
+        yapiInitAPI_internal(0,errmsg);
     }
-    YPERF_API_ENTER(yapiRegisterDeviceLogCallback);
     if(yContext) {
         yEnterCriticalSection(&yContext->enum_cs);
         yContext->logDeviceCallback = logCallback;
         yLeaveCriticalSection(&yContext->enum_cs);
     }
-    YPERF_API_LEAVE(yapiRegisterDeviceLogCallback);
 }
 
-void YAPI_FUNCTION_EXPORT yapiStartStopDeviceLogCallback(const char *serial,int start)
+static void yapiStartStopDeviceLogCallback_internal(const char *serial,int start)
 {
     yStrRef serialref;
     int devydx;
@@ -1387,13 +1431,12 @@ void YAPI_FUNCTION_EXPORT yapiStartStopDeviceLogCallback(const char *serial,int 
     yapiPullDeviceLogEx(devydx);
 }
 
-void YAPI_FUNCTION_EXPORT yapiRegisterDeviceArrivalCallback(yapiDeviceUpdateCallback arrivalCallback)
+static void  yapiRegisterDeviceArrivalCallback_internal(yapiDeviceUpdateCallback arrivalCallback)
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     if(!yContext) {
-        yapiInitAPI(0,errmsg);
+        yapiInitAPI_internal(0,errmsg);
     }
-    YPERF_API_ENTER(yapiRegisterDeviceArrivalCallback);
     if(yContext) {
         yEnterCriticalSection(&yContext->enum_cs);
         yContext->arrivalCallback = arrivalCallback;
@@ -1415,64 +1458,55 @@ void YAPI_FUNCTION_EXPORT yapiRegisterDeviceArrivalCallback(yapiDeviceUpdateCall
         }
         yLeaveCriticalSection(&yContext->enum_cs);
     }
-    YPERF_API_LEAVE(yapiRegisterDeviceArrivalCallback);
 }
 
 
-void YAPI_FUNCTION_EXPORT yapiRegisterDeviceRemovalCallback(yapiDeviceUpdateCallback removalCallback)
+static void  yapiRegisterDeviceRemovalCallback_internal(yapiDeviceUpdateCallback removalCallback)
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     if(!yContext) {
-        yapiInitAPI(0,errmsg);
+        yapiInitAPI_internal(0,errmsg);
     }
-    YPERF_API_ENTER(yapiRegisterDeviceRemovalCallback);
     if(yContext) {
         yEnterCriticalSection(&yContext->enum_cs);
         yContext->removalCallback = removalCallback;
         yLeaveCriticalSection(&yContext->enum_cs);
     }
-    YPERF_API_LEAVE(yapiRegisterDeviceRemovalCallback);
 }
 
 
-void YAPI_FUNCTION_EXPORT yapiRegisterDeviceChangeCallback(yapiDeviceUpdateCallback changeCallback)
+static void  yapiRegisterDeviceChangeCallback_internal(yapiDeviceUpdateCallback changeCallback)
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     if(!yContext) {
-        yapiInitAPI(0,errmsg);
+        yapiInitAPI_internal(0,errmsg);
     }
-    YPERF_API_ENTER(yapiRegisterDeviceChangeCallback);
     if(yContext) {
         yContext->changeCallback = changeCallback;
     }
-    YPERF_API_LEAVE(yapiRegisterDeviceChangeCallback);
 }
 
 
-void YAPI_FUNCTION_EXPORT yapiRegisterFunctionUpdateCallback(yapiFunctionUpdateCallback updateCallback)
+static void  yapiRegisterFunctionUpdateCallback_internal(yapiFunctionUpdateCallback updateCallback)
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     if(!yContext) {
-        yapiInitAPI(0,errmsg);
+        yapiInitAPI_internal(0,errmsg);
     }
-    YPERF_API_ENTER(yapiRegisterFunctionUpdateCallback);
     if(yContext) {
         yContext->functionCallback = updateCallback;
     }
-    YPERF_API_LEAVE(yapiRegisterFunctionUpdateCallback);
 }
 
-void YAPI_FUNCTION_EXPORT yapiRegisterTimedReportCallback(yapiTimedReportCallback timedReportCallback)
+static void  yapiRegisterTimedReportCallback_internal(yapiTimedReportCallback timedReportCallback)
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     if(!yContext) {
-        yapiInitAPI(0,errmsg);
+        yapiInitAPI_internal(0,errmsg);
     }
-    YPERF_API_ENTER(yapiRegisterTimedReportCallback);
     if(yContext) {
         yContext->timedReportCallback = timedReportCallback;
     }
-    YPERF_API_LEAVE(yapiRegisterTimedReportCallback);
 }
 
 
@@ -1978,7 +2012,7 @@ static void* yhelper_thread(void* ctx)
                 } else {
                     YSPRINTF(request, 256, "GET /not.byn?abs=%u HTTP/1.1\r\n\r\n", hub->notifAbsPos);
                 }
-                res = yTcpOpenReq(hub->notReq, request, YSTRLEN(request), TCPREQ_NOEXPIRATION, NULL, NULL, errmsg);
+                res = yTcpOpenReq(hub->notReq, request, YSTRLEN(request), 0, NULL, NULL, errmsg);
                 if (YISERR(res)) {
                     hub->attemptDelay = 500 << hub->retryCount;
                     if(hub->attemptDelay > 8000)
@@ -2101,48 +2135,39 @@ static void* yhelper_thread(void* ctx)
 }
 
 
-YRETCODE YAPI_FUNCTION_EXPORT yapiLockFunctionCallBack( char *errmsg)
+static YRETCODE  yapiLockFunctionCallBack_internal(char *errmsg)
 {
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
-    YPERF_API_ENTER(yapiLockFunctionCallBack);
     yEnterCriticalSection(&yContext->functionCallbackCS);
-    YPERF_API_LEAVE(yapiLockFunctionCallBack);
     return YAPI_SUCCESS;
 }
 
 
-
-YRETCODE YAPI_FUNCTION_EXPORT yapiUnlockFunctionCallBack(char *errmsg)
+static YRETCODE  yapiUnlockFunctionCallBack_internal(char *errmsg)
 {
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
-    YPERF_API_ENTER(yapiUnlockFunctionCallBack);
     yLeaveCriticalSection(&yContext->functionCallbackCS);
-    YPERF_API_LEAVE(yapiUnlockFunctionCallBack);
     return YAPI_SUCCESS;
 }
 
 
-YRETCODE YAPI_FUNCTION_EXPORT yapiLockDeviceCallBack( char *errmsg)
+static YRETCODE  yapiLockDeviceCallBack_internal(char *errmsg)
 {
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
-    YPERF_API_ENTER(yapiLockDeviceCallBack);
     yEnterCriticalSection(&yContext->deviceCallbackCS);
-    YPERF_API_LEAVE(yapiLockDeviceCallBack);
     return YAPI_SUCCESS;
 }
 
 
 
-YRETCODE YAPI_FUNCTION_EXPORT yapiUnlockDeviceCallBack(char *errmsg)
+static YRETCODE  yapiUnlockDeviceCallBack_internal(char *errmsg)
 {
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
-    YPERF_API_ENTER(yapiUnlockDeviceCallBack);
     yLeaveCriticalSection(&yContext->deviceCallbackCS);
-    YPERF_API_LEAVE(yapiUnlockDeviceCallBack);
     return YAPI_SUCCESS;
 }
 
@@ -2153,7 +2178,7 @@ static YRETCODE yapiRegisterHubEx(const char *url, int checkacces, char *errmsg)
     int res;
 
     if(!yContext) {
-        YPROPERR(yapiInitAPI(0,errmsg));
+        YPROPERR(yapiInitAPI_internal(0,errmsg));
     }
 
    if(YSTRICMP(url,"usb")==0){
@@ -2225,36 +2250,129 @@ static YRETCODE yapiRegisterHubEx(const char *url, int checkacces, char *errmsg)
 
     }
     if(checkacces)
-        return yapiUpdateDeviceList(1,errmsg);
+        return yapiUpdateDeviceList_internal(1,errmsg);
     return YAPI_SUCCESS;
 }
 
-YRETCODE YAPI_FUNCTION_EXPORT yapiRegisterHub(const char *url, char *errmsg)
+
+static int pingURLOnhub(NetHubSt *hubst, const char *request, int mstimeout, char *errmsg)
+{
+    yJsonStateMachine j;
+    u8              buffer[1500];
+    int             res;
+    yJsonRetCode    jstate = YJSON_NEED_INPUT;
+    u64             globalTimeout;
+    TcpReqSt        req, *reqptr = &req;
+
+    globalTimeout = yapiGetTickCount() + mstimeout;
+
+    yTcpInitReq(&req, hubst);
+    if (YISERR((res = yTcpOpenReq(&req, request, YSTRLEN(request), mstimeout, NULL, NULL, errmsg)))) {
+        yTcpFreeReq(&req);
+        return res;
+    }
+    // init yjson parser
+    memset(&j, 0, sizeof(j));
+    j.st = YJSON_HTTP_START;
+    while (jstate == YJSON_NEED_INPUT) {
+        res = yTcpSelectReq(&reqptr, 1, 500, NULL, errmsg);
+        if (YISERR(res)) {
+            break;
+        }
+        res = yTcpReadReq(&req, buffer, sizeof(buffer));
+        while (res > 0) {
+            j.src = (char*) buffer;
+            j.end = (char*) buffer + res;
+            // parse all we can on this buffer
+            jstate = yJsonParse(&j);
+            while (jstate == YJSON_PARSE_AVAIL) {
+                jstate = yJsonParse(&j);
+            }
+            res = yTcpReadReq(&req, buffer, sizeof(buffer));
+        }
+        if (res <= 0) {
+            res = yTcpEofReq(&req, errmsg);
+            if (YISERR(res)) {
+                // any specific error during select
+                yTcpFreeReq(&req);
+                return res;
+            }
+            if (res == 1) {
+                // connection close before end of result
+                res = YERR(YAPI_IO_ERROR);
+            }
+            if (yapiGetTickCount() >= globalTimeout) {
+                res = YERR(YAPI_TIMEOUT);
+            }
+        }
+    }
+    yTcpCloseReq(&req);
+    yTcpFreeReq(&req);
+
+    if (res == YAPI_SUCCESS) {
+        switch (jstate) {
+            case YJSON_NEED_INPUT:
+                return YERRMSG(YAPI_IO_ERROR,"Remote host has close the connection");
+            case YJSON_PARSE_AVAIL:
+            case YJSON_FAILED:
+                return YERRMSG(YAPI_IO_ERROR,"Invalid json data");
+            case YJSON_SUCCESS:
+                break;
+        }
+    }
+    return res;
+}
+
+static YRETCODE  yapiTestHub_internal(const char *url, int mstimeout, char *errmsg)
+{
+    int freeApi = 0;
+    int res;
+
+    if(!yContext) {
+        YPROPERR(yapiInitAPI_internal(0,errmsg));
+        freeApi = 1;
+    }
+
+   if(YSTRICMP(url, "usb") == 0) {
+        res = YAPI_SUCCESS;
+    } else if(YSTRICMP(url, "net") == 0) {
+        res = YAPI_SUCCESS;
+    }else{
+        NetHubSt hubst;
+        res = yapiInitHub(&hubst, url, errmsg);
+        if (res >= 0){
+            res = pingURLOnhub(&hubst, "GET /api/module/firmwareRelease.json \r\n\r\n", mstimeout, errmsg);
+            yapiDeleteHub(&hubst);
+        }
+    }
+    if (freeApi) {
+        yapiFreeAPI_internal();
+    }
+    return res;
+}
+
+
+static YRETCODE  yapiRegisterHub_internal(const char *url, char *errmsg)
 {
     YRETCODE res;
-    YPERF_API_ENTER(yapiRegisterHub);
     res = yapiRegisterHubEx(url,1, errmsg);
-    YPERF_API_LEAVE(yapiRegisterHub);
     return res;
 }
 
-YRETCODE YAPI_FUNCTION_EXPORT yapiPreregisterHub(const char *url, char *errmsg)
+static YRETCODE  yapiPreregisterHub_internal(const char *url, char *errmsg)
 {
     YRETCODE res;
-    YPERF_API_ENTER(yapiPreregisterHub);
     res = yapiRegisterHubEx(url,0, errmsg);
-    YPERF_API_LEAVE(yapiPreregisterHub);
     return res;
 }
 
-void YAPI_FUNCTION_EXPORT yapiUnregisterHub(const char *url)
+static void  yapiUnregisterHub_internal(const char *url)
 {
     yUrlRef  huburl;
 
     if(!yContext) {
         return;
     }
-    YPERF_API_ENTER(yapiUnregisterHub);
     if(YSTRICMP(url,"usb")==0){
         if(yContext->detecttype & Y_DETECT_USB) {
             yUSBReleaseAllDevices();
@@ -2279,7 +2397,6 @@ void YAPI_FUNCTION_EXPORT yapiUnregisterHub(const char *url)
         // compute an hashed url
         huburl = yHashUrl(url,"",1,NULL);
         if(huburl == INVALID_HASH_IDX){
-            YPERF_API_LEAVE(yapiUnregisterHub);
             return;
         }
         //look if we allready know this
@@ -2287,11 +2404,10 @@ void YAPI_FUNCTION_EXPORT yapiUnregisterHub(const char *url)
         unregisterNetHub(huburl);
         yLeaveCriticalSection(&yContext->enum_cs);
     }
-    YPERF_API_LEAVE(yapiUnregisterHub);
 }
 
 
-YRETCODE YAPI_FUNCTION_EXPORT yapiUpdateDeviceList(u32 forceupdate, char *errmsg)
+static YRETCODE  yapiUpdateDeviceList_internal(u32 forceupdate, char *errmsg)
 {
     int i;
     YRETCODE err =YAPI_SUCCESS;
@@ -2300,13 +2416,11 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiUpdateDeviceList(u32 forceupdate, char *errmsg
     if(yContext==NULL)
         return YERR(YAPI_NOT_INITIALIZED);
 
-    YPERF_API_ENTER(yapiUpdateDeviceList);
     if(forceupdate) {
         yEnterCriticalSection(&yContext->updateDev_cs);
     } else {
         // if we do not force an update
         if(!yTryEnterCriticalSection(&yContext->updateDev_cs)){
-            YPERF_API_LEAVE(yapiUpdateDeviceList);
             return YAPI_SUCCESS;
         }
     }
@@ -2330,32 +2444,28 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiUpdateDeviceList(u32 forceupdate, char *errmsg
         }
     }
     yLeaveCriticalSection(&yContext->updateDev_cs);
-    YPERF_API_LEAVE(yapiUpdateDeviceList);
 
     return err;
 }
 
 
-YRETCODE YAPI_FUNCTION_EXPORT yapiHandleEvents(char *errmsg)
+static YRETCODE  yapiHandleEvents_internal(char *errmsg)
 {
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
-   YPERF_API_ENTER(yapiHandleEvents);
      // we need only one thread to handle the event at a time
     if(yTryEnterCriticalSection(&yContext->handleEv_cs)){
         YRETCODE res = (YRETCODE) yUsbIdle();
         yLeaveCriticalSection(&yContext->handleEv_cs);
-        YPERF_API_LEAVE(yapiHandleEvents);
         return res;
     }
-    YPERF_API_LEAVE(yapiHandleEvents);
     return YAPI_SUCCESS;
 }
 
 u64 test_pkt=0;
 u64 test_tout=0;
 
-YRETCODE YAPI_FUNCTION_EXPORT yapiSleep(int ms_duration, char *errmsg)
+static YRETCODE  yapiSleep_internal(int ms_duration, char *errmsg)
 {
     u64     now, timeout;
     YRETCODE err = YAPI_SUCCESS;
@@ -2364,11 +2474,10 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiSleep(int ms_duration, char *errmsg)
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
 
-    YPERF_API_ENTER(yapiSleep);
     timeout = yapiGetTickCount() + ms_duration;
     do {
         if(err == YAPI_SUCCESS) {
-            err = yapiHandleEvents(errmsg);
+            err = yapiHandleEvents_internal(errmsg);
         }
         now =yapiGetTickCount();
         // FIXME: we may want to use a samller timeout
@@ -2379,7 +2488,6 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiSleep(int ms_duration, char *errmsg)
                test_tout++;
         }
     } while(yapiGetTickCount() < timeout);
-    YPERF_API_LEAVE(yapiSleep);
 
     return err;
 }
@@ -2427,7 +2535,7 @@ u64 YAPI_FUNCTION_EXPORT yapiGetTickCount(void)
     return res;
 }
 
-u32 YAPI_FUNCTION_EXPORT yapiGetCNonce(u32 nc)
+u32  yapiGetCNonce(u32 nc)
 {
     HASH_SUM ctx;
     u32      md5[4];
@@ -2456,7 +2564,7 @@ u32 YAPI_FUNCTION_EXPORT yapiGetCNonce(u32 nc)
     return md5[1];
 }
 
-int YAPI_FUNCTION_EXPORT yapiCheckLogicalName(const char *name)
+static int  yapiCheckLogicalName_internal(const char *name)
 {
     char c;
 
@@ -2475,32 +2583,28 @@ int YAPI_FUNCTION_EXPORT yapiCheckLogicalName(const char *name)
 }
 
 
-u16 YAPI_FUNCTION_EXPORT yapiGetAPIVersion(const char **version,const char **apidate)
+static u16  yapiGetAPIVersion_internal(const char **version, const char **apidate)
 {
-    YPERF_API_ENTER(yapiGetAPIVersion);
     if(version)
         *version = YOCTO_API_VERSION_STR"."YOCTO_API_BUILD_NO;
     if(apidate)
         *apidate = YOCTO_API_BUILD_DATE;
 
-    YPERF_API_LEAVE(yapiGetAPIVersion);
     return YOCTO_API_VERSION_BCD;
 }
 
-void YAPI_FUNCTION_EXPORT yapiSetTraceFile(const char *file)
+static void  yapiSetTraceFile_internal(const char *file)
 {
-    YPERF_API_ENTER(yapiSetTraceFile);
     if(file!=NULL){
         memset(ytracefile,0,TRACEFILE_NAMELEN);
         YSTRNCPY(ytracefile,TRACEFILE_NAMELEN-1,file,TRACEFILE_NAMELEN-1);
     }else{
         ytracefile[0]=0;
     }
-    YPERF_API_LEAVE(yapiSetTraceFile);
 }
 
 
-YAPI_DEVICE YAPI_FUNCTION_EXPORT yapiGetDevice(const char *device_str,char *errmsg)
+static YAPI_DEVICE  yapiGetDevice_internal(const char *device_str, char *errmsg)
 {
     char    hostname[HASH_BUF_SIZE], c;
     int     i;
@@ -2509,7 +2613,6 @@ YAPI_DEVICE YAPI_FUNCTION_EXPORT yapiGetDevice(const char *device_str,char *errm
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
 
-    YPERF_API_ENTER(yapiGetDevice);
     if(!strncmp(device_str, "http://", 7)) {
         for(i = 0; i < HASH_BUF_SIZE-1; i++) {
             c = device_str[7+i];
@@ -2521,16 +2624,14 @@ YAPI_DEVICE YAPI_FUNCTION_EXPORT yapiGetDevice(const char *device_str,char *errm
         res = wpSearch(device_str);
     }
     if(res == -1) {
-        YPERF_API_LEAVE(yapiGetDevice);
         return YERR(YAPI_DEVICE_NOT_FOUND);
     }
-    YPERF_API_LEAVE(yapiGetDevice);
 
     return res;
 }
 
 
-int YAPI_FUNCTION_EXPORT yapiGetAllDevices(YAPI_DEVICE *buffer,int maxsize,int *neededsize,char *errmsg)
+static int  yapiGetAllDevices_internal(YAPI_DEVICE *buffer, int maxsize, int *neededsize, char *errmsg)
 {
     int     maxdev,nbreturned;
     yBlkHdl devhdl;
@@ -2539,9 +2640,7 @@ int YAPI_FUNCTION_EXPORT yapiGetAllDevices(YAPI_DEVICE *buffer,int maxsize,int *
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
 
-    YPERF_API_ENTER(yapiGetAllDevices);
     if(buffer==NULL && neededsize==NULL){
-        YPERF_API_LEAVE(yapiGetAllDevices);
         return YERR(YAPI_INVALID_ARGUMENT);
     }
 
@@ -2565,22 +2664,19 @@ int YAPI_FUNCTION_EXPORT yapiGetAllDevices(YAPI_DEVICE *buffer,int maxsize,int *
     } else {
         if(neededsize) *neededsize = sizeof(YAPI_DEVICE) * wpEntryCount();
     }
-    YPERF_API_LEAVE(yapiGetAllDevices);
 
     return nbreturned;
 }
 
 
-YRETCODE YAPI_FUNCTION_EXPORT yapiGetDeviceInfo(YAPI_DEVICE devdesc,yDeviceSt *infos,char *errmsg)
+static YRETCODE  yapiGetDeviceInfo_internal(YAPI_DEVICE devdesc, yDeviceSt *infos, char *errmsg)
 {
     YUSBDEV devhdl;
 
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
 
-    YPERF_API_ENTER(yapiGetDeviceInfo);
     if(devdesc < 0 || infos == NULL){
-        YPERF_API_LEAVE(yapiGetDeviceInfo);
         return YERR(YAPI_INVALID_ARGUMENT);
     }
 
@@ -2597,120 +2693,99 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetDeviceInfo(YAPI_DEVICE devdesc,yDeviceSt *i
         memcpy((u8 *)infos->manufacturer, (u8 *)"Yoctopuce", 10);
         memset(infos->firmware, 0, YOCTO_FIRMWARE_LEN);
         if(wpGetDeviceInfo(devdesc, &infos->deviceid, infos->productname, infos->serial, infos->logicalname, &infos->beacon) < 0){
-            YPERF_API_LEAVE(yapiGetDeviceInfo);
             return YERR(YAPI_DEVICE_NOT_FOUND);
         }
     }
-    YPERF_API_LEAVE(yapiGetDeviceInfo);
 
     return YAPI_SUCCESS;
 }
 
-YRETCODE YAPI_FUNCTION_EXPORT yapiGetDevicePath(YAPI_DEVICE devdesc, char *rootdevice, char *request, int requestsize, int *neededsize, char *errmsg)
+static YRETCODE  yapiGetDevicePath_internal(YAPI_DEVICE devdesc, char *rootdevice, char *request, int requestsize, int *neededsize, char *errmsg)
 {
     YRETCODE res;
 
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
-    YPERF_API_ENTER(yapiGetDevicePath);
     if(rootdevice==NULL && request==NULL && neededsize==NULL) {
-        YPERF_API_LEAVE(yapiGetDevicePath);
         return YERR(YAPI_INVALID_ARGUMENT);
     }
     res = (YRETCODE) wpGetDeviceUrl(devdesc, rootdevice, request, requestsize, neededsize);
     if(neededsize) *neededsize += 4;
     if(res < 0) {
-        YPERF_API_LEAVE(yapiGetDevicePath);
         return YERR(YAPI_DEVICE_NOT_FOUND);
     }
-    YPERF_API_LEAVE(yapiGetDevicePath);
     return res;
 }
 
-YAPI_FUNCTION YAPI_FUNCTION_EXPORT yapiGetFunction(const char *class_str, const char *function_str,char *errmsg)
+static YAPI_FUNCTION  yapiGetFunction_internal(const char *class_str, const char *function_str, char *errmsg)
 {
     YAPI_FUNCTION res;
 
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
 
-    YPERF_API_ENTER(yapiGetFunction);
     res = ypSearch(class_str, function_str);
     if(res < 0) {
         if(res == -2) {
-            YPERF_API_LEAVE(yapiGetFunction);
             return YERRMSG(YAPI_DEVICE_NOT_FOUND, "No function of that class");
         }
-        YPERF_API_LEAVE(yapiGetFunction);
         return YERR(YAPI_DEVICE_NOT_FOUND);
     }
-    YPERF_API_LEAVE(yapiGetFunction);
     return res;
 }
 
-int YAPI_FUNCTION_EXPORT yapiGetFunctionsByClass(const char *class_str, YAPI_FUNCTION prevfundesc,
+static int  yapiGetFunctionsByClass_internal(const char *class_str, YAPI_FUNCTION prevfundesc,
                                           YAPI_FUNCTION *buffer,int maxsize,int *neededsize,char *errmsg)
 {
     int res;
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
-    YPERF_API_ENTER(yapiGetFunctionsByClass);
     if(buffer==NULL && neededsize==NULL){
-        YPERF_API_LEAVE(yapiGetFunctionsByClass);
         return YERR(YAPI_INVALID_ARGUMENT);
     }
 
     res = ypGetFunctions(class_str, -1, prevfundesc, buffer, maxsize, neededsize);
     if(res < 0) {
-        YPERF_API_LEAVE(yapiGetFunctionsByClass);
         return YERR(YAPI_DEVICE_NOT_FOUND); // prevfundesc is invalid or has been unplugged, restart enum
     }
-    YPERF_API_LEAVE(yapiGetFunctionsByClass);
 
     return res;
 }
 
-int YAPI_FUNCTION_EXPORT yapiGetFunctionsByDevice(YAPI_DEVICE devdesc, YAPI_FUNCTION prevfundesc,
+static int  yapiGetFunctionsByDevice_internal(YAPI_DEVICE devdesc, YAPI_FUNCTION prevfundesc,
                                            YAPI_FUNCTION *buffer,int maxsize,int *neededsize,char *errmsg)
 {
     int res;
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
-    YPERF_API_ENTER(yapiGetFunctionsByDevice);
     if(buffer==NULL && neededsize==NULL){
-        YPERF_API_LEAVE(yapiGetFunctionsByDevice);
         return YERR(YAPI_INVALID_ARGUMENT);
     }
     res = ypGetFunctions(NULL, devdesc, prevfundesc, buffer, maxsize, neededsize);
     if(res < 0) {
-        YPERF_API_LEAVE(yapiGetFunctionsByDevice);
         return YERR(YAPI_DEVICE_NOT_FOUND); // prevfundesc is invalid or has been unplugged, restart enum
     }
-    YPERF_API_LEAVE(yapiGetFunctionsByDevice);
     return res;
 }
 
 
-YRETCODE YAPI_FUNCTION_EXPORT yapiGetFunctionInfo(YAPI_FUNCTION fundesc,YAPI_DEVICE *devdesc,char *serial,char *funcId,char *funcName,char *funcVal,char *errmsg)
+static YRETCODE  yapiGetFunctionInfo_internal(YAPI_FUNCTION fundesc, YAPI_DEVICE *devdesc, char *serial, char *funcId, char *funcName, char *funcVal, char *errmsg)
 {
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
 
-    YPERF_API_ENTER(yapiGetFunctionInfo);
     if(ypGetFunctionInfo(fundesc, serial, funcId, funcName, funcVal) < 0){
-        YPERF_API_LEAVE(yapiGetFunctionInfo);
         return YERR(YAPI_DEVICE_NOT_FOUND);
     }
     if(devdesc)
         *devdesc = fundesc & 0xffff;
-    YPERF_API_LEAVE(yapiGetFunctionInfo);
 
     return YAPI_SUCCESS;
 }
 
 
 // when iohdl is set to NULL, the request is opened in Async mode and will close automatically
-YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *request, int reqlen, yapiRequestAsyncCallback callback, void *context, char *errmsg)
+YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *request, int reqlen,  yapiRequestAsyncCallback callback, void *context, char *errmsg)
 {
     YAPI_DEVICE dev;
     char        buffer[512];
@@ -2721,8 +2796,8 @@ YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *request,
     TcpReqSt    *tcpreq;
     u64         timeout;
     int         count=0;
-    int         reqflags = TCPREQ_NOEXPIRATION;
     yUrlRef     url;
+    u64         mstimeout = 0;
 
     if(!yContext) {
         return YERR(YAPI_NOT_INITIALIZED);
@@ -2746,7 +2821,7 @@ YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *request,
             count++;
             res = (YRETCODE) yUsbOpen(iohdl,buffer,errmsg);
             if(res != YAPI_DEVICE_BUSY) break;
-            yapiHandleEvents(errmsg);
+            yapiHandleEvents_internal(errmsg);
             if(firsttime) {
                 //yApproximateSleep(1);
                 firsttime = 0;
@@ -2776,7 +2851,6 @@ YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *request,
         return res;
 
     default:
-        YPERF_API_ENTER(tmp1);
         devydx = wpGetDevYdx((yStrRef)dev);
         if(devydx < 0) break;
         tcpreq = &yContext->tcpreq[devydx];
@@ -2807,10 +2881,10 @@ YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *request,
         if (strncmp(request,"GET ",4) == 0){
             int len = reqlen < 2*YOCTO_SERIAL_LEN ? reqlen: 2*YOCTO_SERIAL_LEN;
             if (ymemfind((u8*)request + 4, len, (u8*)"/api.json", 9)>=0) {
-                reqflags = 0;
+                mstimeout = YIO_DEFAULT_TCP_TIMEOUT;
             }
         }
-        res = (YRETCODE) yTcpOpenReq(tcpreq,request,reqlen, reqflags, callback, context,errmsg);
+        res = (YRETCODE) yTcpOpenReq(tcpreq,request,reqlen, mstimeout, callback, context,errmsg);
         if(res != YAPI_SUCCESS) {
             return res;
         }
@@ -2828,53 +2902,21 @@ YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *request,
     return YERR(YAPI_DEVICE_NOT_FOUND);
 }
 
-#ifdef DEBUG_YAPI_REQ
-
-void YREQLOGREQ(const char *msg, const char * device, const char * request)
-{
-    char buffer[512];
-    char *p;
-    int ofs;
-
-    ofs = YSPRINTF(buffer,512,"%s for %s :",msg,device);
-
-    p = buffer + ofs;
-    while(*request && *request != '\r' && *request != '\n'){
-        *p++ = *request++;
-    }
-
-    *p=0;
-
-    dbglog("[%s]\n",buffer);
-}
-
-#else
-#if defined(_MSC_VER)
-#if (_MSC_VER > MSC_VS2003)
-#define YREQLOGREQ(fmt,...)
-#else
-__forceinline void YREQLOGREQ(fmt,...){}
-#define YREQLOGREQ __YREQLOGREQ
-#endif
-#else
-#define YREQLOGREQ(fmt,args...)
-#endif
-#endif
 
 
-YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncStartEx(YIOHDL *iohdl, const char *device, const char *request, int requestsize, char **reply, int *replysize, char *errmsg)
+YRETCODE  yapiHTTPRequestSyncStartEx_internal(YIOHDL *iohdl, const char *device, const char *request, int requestsize, char **reply, int *replysize, char *errmsg)
 {
     u64      timeout;
     YRETCODE res;
-
+#ifdef DEBUG_YAPI_REQ
+    int req_count = YREQ_LOG_START("SyncStartEx", device, request, requestsize);
+#endif
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
-    YPERF_API_ENTER(yapiHTTPRequestSyncStartEx);
-    YREQLOGREQ("SyncStart",device,request);
+
     memset((u8 *)iohdl, 0,YIOHDL_SIZE);
      *reply =NULL;
     if (YISERR(res=yapiRequestOpen(iohdl,device,request,requestsize,NULL,NULL,errmsg))){
-        YPERF_API_LEAVE(yapiHTTPRequestSyncStartEx);
         return res;
     }
     if(iohdl->type == YIO_USB){
@@ -2884,7 +2926,6 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncStartEx(YIOHDL *iohdl, const ch
         timeout = yapiGetTickCount() + YAPI_BLOCKING_USBREAD_REQUEST_TIMEOUT;
         p = findDevFromIOHdl(iohdl);
         if(p==NULL) {
-            YPERF_API_LEAVE(yapiHTTPRequestSyncStartEx);
             return YERR(YAPI_DEVICE_NOT_FOUND);
         }
         if(p->replybuf == NULL) {
@@ -2894,7 +2935,6 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncStartEx(YIOHDL *iohdl, const ch
         while((res = (YRETCODE) yUsbEOF(iohdl,errmsg))==0){
             if(yapiGetTickCount() > timeout) {
                 yUsbClose(iohdl,NULL);
-                YPERF_API_LEAVE(yapiHTTPRequestSyncStartEx);
                 return YERRMSG(YAPI_TIMEOUT,"Timeout during device request");
             }
             if(buffpos + 256 > p->replybufsize) {
@@ -2908,14 +2948,12 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncStartEx(YIOHDL *iohdl, const ch
             res = (YRETCODE) yUsbReadBlock(iohdl, p->replybuf+buffpos, p->replybufsize-buffpos,timeout, errmsg);
             if(YISERR(res)){
                 yUsbClose(iohdl,NULL);
-                YPERF_API_LEAVE(yapiHTTPRequestSyncStartEx);
                 return res;
             }
             buffpos += res;
         }
         *reply = p->replybuf;
         *replysize = buffpos;
-        YPERF_API_LEAVE(yapiHTTPRequestSyncStartEx);
         return res;
     } else if(iohdl->type == YIO_TCP) {
         TcpReqSt *tcpreq = &yContext->tcpreq[iohdl->tcpreqidx];
@@ -2924,44 +2962,39 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncStartEx(YIOHDL *iohdl, const ch
         while(res==0) {
             if(yapiGetTickCount() > timeout) {
                 yTcpCloseReq(tcpreq);
-                YPERF_API_LEAVE(yapiHTTPRequestSyncStartEx);
                 return YERRMSG(YAPI_TIMEOUT,"Timeout during device request");
             }
             res = (YRETCODE) yTcpSelectReq(&tcpreq, 1, 1000, NULL, errmsg);
             if(YISERR(res)){
                 yTcpCloseReq(tcpreq);
-                YPERF_API_LEAVE(yapiHTTPRequestSyncStartEx);
                 return res;
             }
             res = (YRETCODE) yTcpEofReq(tcpreq, errmsg);
         }
         if(YISERR(res) && res != YAPI_NO_MORE_DATA) {
             yTcpCloseReq(tcpreq);
-            YPERF_API_LEAVE(yapiHTTPRequestSyncStartEx);
             return res;
         }
         *replysize = yTcpGetReq(tcpreq, (u8**)reply);
     } else {
-        YPERF_API_LEAVE(yapiHTTPRequestSyncStartEx);
         return YERR(YAPI_INVALID_ARGUMENT);
     }
-    YREQLOG("SyncStart for %s done (size=%d res=%d err=%s iodhl=%x)\n",device,replysize?*replysize:-1,res,errmsg, iohdl);
-    YPERF_API_LEAVE(yapiHTTPRequestSyncStartEx);
+#ifdef DEBUG_YAPI_REQ
+    YREQ_LOG_APPEND(req_count, "SyncStartEx", *reply, *replysize);
+#endif
     return YAPI_SUCCESS;
 }
 
-YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncStart(YIOHDL *iohdl, const char *device, const char *request, char **reply, int *replysize, char *errmsg)
+static YRETCODE  yapiHTTPRequestSyncStart_internal(YIOHDL *iohdl, const char *device, const char *request, char **reply, int *replysize, char *errmsg)
 {
     YRETCODE res;
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
-    YPERF_API_ENTER(yapiHTTPRequestSyncStart);
-    res = yapiHTTPRequestSyncStartEx(iohdl, device, request, YSTRLEN(request), reply, replysize, errmsg);
-    YPERF_API_LEAVE(yapiHTTPRequestSyncStart);
+    res = yapiHTTPRequestSyncStartEx_internal(iohdl, device, request, YSTRLEN(request), reply, replysize, errmsg);
     return res;
 }
 
-YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncDone(YIOHDL *iohdl, char *errmsg)
+YRETCODE  yapiHTTPRequestSyncDone_internal(YIOHDL *iohdl, char *errmsg)
 {
 
     if(!yContext)
@@ -2970,86 +3003,75 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncDone(YIOHDL *iohdl, char *errms
     if(iohdl == NULL)
         return YERR(YAPI_INVALID_ARGUMENT);
 
-    YPERF_API_ENTER(yapiHTTPRequestSyncDone);
-    //YREQLOG("SyncDone for %x \n",iohdl);
     if(iohdl->type == YIO_USB) {
         yUsbClose(iohdl, errmsg);
     } else if(iohdl->type == YIO_TCP) {
         TcpReqSt *tcpreq = &yContext->tcpreq[iohdl->tcpreqidx];
         yTcpCloseReq(tcpreq);
     } else {
-        YPERF_API_LEAVE(yapiHTTPRequestSyncStart);
         return YERR(YAPI_INVALID_ARGUMENT);
     }
     memset((u8 *)iohdl, 0, YIOHDL_SIZE);
-    YPERF_API_LEAVE(yapiHTTPRequestSyncDone);
 
     return YAPI_SUCCESS;
 }
 
 static void asyncDrop(void *context, const u8 *result, u32 resultlen, int retcode, const char *errmsg)
-{}
-
-
-YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestAsyncEx(const char *device, const char *request, int len, yapiRequestAsyncCallback callback, void *context, char *errmsg)
 {
-    YIOHDL  iohdl;
-    YRETCODE     res;
-    int     retryCount=1;
+#ifdef DEBUG_YAPI_REQ
+    int req_count = (((u8*)context) - ((u8*)NULL));
+    YREQ_LOG_APPEND(req_count, "ASync", result, resultlen);
+#endif
+}
+
+
+static YRETCODE  yapiHTTPRequestAsyncEx_internal(const char *device, const char *request, int len, yapiRequestAsyncCallback callback, void *context, char *errmsg)
+{
+    YIOHDL iohdl;
+    YRETCODE res;
+    int retryCount = 1;
+#ifdef DEBUG_YAPI_REQ
+    int yreq_count = YREQ_LOG_START("ASync", device, request, len);
+#endif
 
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
 
-    YPERF_API_ENTER(yapiHTTPRequestAsyncEx);
-    YREQLOGREQ("ASync",device,request);
     do {
         if (callback == NULL) {
             callback = asyncDrop;
+#ifdef DEBUG_YAPI_REQ
+            context = ((u8*)NULL) + yreq_count;
+#endif
         }
         res = yapiRequestOpen(&iohdl, device, request, len, callback, context, errmsg);
         if(YISERR(res)) {
             if (retryCount){
                 char suberr[YOCTO_ERRMSG_LEN];
                 dbglog("ASync request for %s failed. Retrying after yapiUpdateDeviceList\n",device);
-                if(YISERR(yapiUpdateDeviceList(1, suberr))){
+                if(YISERR(yapiUpdateDeviceList_internal(1, suberr))){
                     dbglog("yapiUpdateDeviceList failled too with %s\n",errmsg);
-                    YPERF_API_LEAVE(yapiHTTPRequestAsyncEx);
                     return res;
                 }
             }
         }
     } while (res !=YAPI_SUCCESS && retryCount--);
-    YPERF_API_LEAVE(yapiHTTPRequestAsyncEx);
-
-    return res;
-}
-
-YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestAsync(const char *device, const char *request, yapiRequestAsyncCallback callback, void *context, char *errmsg)
-{
-    YRETCODE res;
-
-    YPERF_API_ENTER(yapiHTTPRequestAsync);
-    res = yapiHTTPRequestAsyncEx(device, request, YSTRLEN(request), callback,context, errmsg);
-    YPERF_API_LEAVE(yapiHTTPRequestAsync);
 
     return res;
 }
 
 
 
-int YAPI_FUNCTION_EXPORT yapiHTTPRequest(const char *device, const char *request, char* buffer,int buffsize, int *fullsize,char *errmsg)
+static int  yapiHTTPRequest_internal(const char *device, const char *request, char* buffer, int buffsize, int *fullsize, char *errmsg)
 {
     YIOHDL  iohdl;
     char    *reply=NULL;
     int     replysize=0;
 
-    YPERF_API_ENTER(yapiHTTPRequest);
-    YREQLOG("yapiHTTPRequest for %s \n%s\n",device,request);
     if(!buffer || buffsize < 4){
-        YPERF_API_LEAVE(yapiHTTPRequest);
         return YERR(YAPI_INVALID_ARGUMENT);
     }
-    YPROPERR(yapiHTTPRequestSyncStart(&iohdl, device, request, &reply, &replysize, errmsg));
+    YPROPERR(yapiHTTPRequestSyncStart_internal(&iohdl, device, request, &reply, &replysize, errmsg));
 
     if (fullsize)
         *fullsize = replysize;
@@ -3059,23 +3081,22 @@ int YAPI_FUNCTION_EXPORT yapiHTTPRequest(const char *device, const char *request
     }
     memcpy(buffer, reply, replysize);
     buffer[replysize] = 0;
-    YPROPERR(yapiHTTPRequestSyncDone(&iohdl, errmsg));
-    YPERF_API_LEAVE(yapiHTTPRequest);
+    YPROPERR(yapiHTTPRequestSyncDone_internal(&iohdl, errmsg));
     return replysize;
 }
 
-void YAPI_FUNCTION_EXPORT yapiRegisterHubDiscoveryCallback(yapiHubDiscoveryCallback hubDiscoveryCallback)
+static void  yapiRegisterHubDiscoveryCallback_internal(yapiHubDiscoveryCallback hubDiscoveryCallback)
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     if (!yContext) {
-        yapiInitAPI(0, errmsg);
+        yapiInitAPI_internal(0, errmsg);
     }
     if (yContext) {
         yContext->hubDiscoveryCallback = hubDiscoveryCallback;
     }
 }
 
-YRETCODE YAPI_FUNCTION_EXPORT yapiTriggerHubDiscovery(char *errmsg)
+static YRETCODE  yapiTriggerHubDiscovery_internal(char *errmsg)
 {
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
@@ -3099,14 +3120,11 @@ YRETCODE yapiGetBootloadersDevs(char *serials,unsigned int maxNbSerial, unsigned
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
 
-    YPERF_API_ENTER(yapiGetBootloadersDevs);
     if((yContext->detecttype & Y_DETECT_USB) ==0) {
-        YPERF_API_LEAVE(yapiGetBootloadersDevs);
         return YERRMSG(YAPI_INVALID_ARGUMENT,"You must init the yAPI with Y_DETECT_USB flag");
     }
 
     if (YISERR(res = (YRETCODE) yyyUSBGetInterfaces(&runifaces,&nbifaces,errmsg))){
-        YPERF_API_LEAVE(yapiGetBootloadersDevs);
         return res;
     }
 
@@ -3129,13 +3147,12 @@ YRETCODE yapiGetBootloadersDevs(char *serials,unsigned int maxNbSerial, unsigned
     if(totalBootladers)
         *totalBootladers=totalBoot;
 
-    YPERF_API_LEAVE(yapiGetBootloadersDevs);
     return (YRETCODE) copyedBoot;
 
 }
 
 //used by API
-YRETCODE YAPI_FUNCTION_EXPORT yapiGetBootloaders(char *buffer, int buffersize, int *fullsize, char *errmsg)
+static YRETCODE  yapiGetBootloaders_internal(char *buffer, int buffersize, int *fullsize, char *errmsg)
 {
     int             i;
     char            *p = buffer;
@@ -3310,9 +3327,7 @@ exit:
 }
 
 
-
-
-YRETCODE YAPI_FUNCTION_EXPORT yapiGetAllJsonKeys(const char *json_buffer, char *buffer, int buffersize, int *fullsize, char *errmsg)
+static YRETCODE  yapiGetAllJsonKeys_internal(const char *json_buffer, char *buffer, int buffersize, int *fullsize, char *errmsg)
 {
     fullAttrInfo    *attrs;
     int             attrs_count;
@@ -3358,9 +3373,11 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetAllJsonKeys(const char *json_buffer, char *
         sep = ",";
         if (buffersize > totalsize) {
             avail = buffersize - totalsize;
-            memcpy(buffer + totalsize, tmpbuf, avail);
+            if (avail > len) {
+                memcpy(buffer + totalsize, tmpbuf, len);
+                totalsize += len;
+            }
         }
-        totalsize += len;
     }
 
     if (buffersize > totalsize ) {
@@ -3403,6 +3420,530 @@ void yapiRegisterRawReportV2Cb(yRawReportV2Cb callback)
 }
 
 
+//#define YDLL_TRACE_FILE "c:\\tmp\\dll_trace.txt"
+
+#ifdef YDLL_TRACE_FILE
+
+typedef enum
+{
+    trcInitAPI = 0,
+    trcFreeAPI,
+    trcRegisterLogFunction,
+    trcRegisterDeviceLogCallback,
+    trcStartStopDeviceLogCallback,
+    trcRegisterDeviceArrivalCallback,
+    trcRegisterDeviceRemovalCallback,
+    trcRegisterDeviceChangeCallback,
+    trcRegisterFunctionUpdateCallback,
+    trcRegisterTimedReportCallback,
+    trcLockFunctionCallBack,
+    trcUnlockFunctionCallBack,
+    trcLockDeviceCallBack,
+    trcUnlockDeviceCallBack,
+    trcTestHub,
+    trcRegisterHub,
+    trcPreregisterHub,
+    trcUnregisterHub,
+    trcUpdateDeviceList,
+    trcHandleEvents,
+    trcSleep,
+    trcCheckLogicalName,
+    trcGetAPIVersion,
+    trcSetTraceFile,
+    trcGetDevice,
+    trcGetAllDevices,
+    trcGetDeviceInfo,
+    trcGetDevicePath,
+    trcGetFunction,
+    trcGetFunctionsByClass,
+    trcGetFunctionsByDevice,
+    trcGetFunctionInfo,
+    trcHTTPRequestSyncStartEx,
+    trcHTTPRequestSyncStart,
+    trcHTTPRequestSyncDone,
+    trcHTTPRequestAsyncEx,
+    trcHTTPRequestAsync,
+    trcHTTPRequest,
+    trcRegisterHubDiscoveryCallback,
+    trcTriggerHubDiscovery,
+    trcGetBootloaders,
+    trcGetAllJsonKeys,
+    trcCheckFirmware,
+    trcUpdateFirmware
+} TRC_FUN;
+
+static const char * trc_funname[] =
+{
+    "init",
+    "free",
+    "RegLog",
+    "RegDeviceLog",
+    "StartStopDevLog",
+    "RegDeviceArrival",
+    "RegDeviceRemoval",
+    "RegDeviceChange",
+    "RegUpdateCallback",
+    "RegTimedCallback",
+    "LockFunCback",
+    "UnLockFunCback",
+    "LockDeviceCback",
+    "UnLockDeviceCback",
+    "TestHub",
+    "RegHub",
+    "PreRegHub",
+    "UnRegHub",
+    "UpDL",
+    "HE",
+    "Sl",
+    "CheckLName",
+    "GetAPIVersion",
+    "SetTrcFile",
+    "GDev",
+    "GAllDev",
+    "GDevInfo",
+    "GDevPath",
+    "GFun",
+    "GFunByClass",
+    "GFunByDev",
+    "GFunInfo",
+    "ReqSyncStartEx",
+    "ReqSyncStart",
+    "ReqSyncDone",
+    "ReqAsyncEx",
+    "ReqAsync",
+    "Req",
+    "RegHubDiscovery",
+    "THubDiscov",
+    "GBoot",
+    "GAllJsonK",
+    "CkFw",
+    "UpFw"
+};
+
+static const char *dlltracefile = YDLL_TRACE_FILE;
+
+static void write_line(const char *ptr, int len)
+{
+    FILE *f;
+    if (YFOPEN(&f,dlltracefile,"a+") != 0) {
+        return;
+    }
+    fwrite(ptr,1,len,f);
+    fclose(f);
+
+}
+
+static u64 trc_basetime = 0;
+
+static void trace_dll(u64 t, char prefix, TRC_FUN trcfun, const char *action)
+{
+    char buffer[512];
+    if (trc_basetime == 0) {
+        trc_basetime = t;
+    }
+    int len = YSPRINTF(buffer, 512, "%"FMTu64"%c%s%s\n", (t-trc_basetime), prefix, trc_funname[trcfun], action);
+    write_line(buffer, len);
+}
+
+#define YDLL_CALL_ENTER(funname)    TRC_FUN trcfun = funname;\
+                                    u64 dll_start, dll_stop;\
+                                    char dbg_msg[128];\
+                                    dll_start = yapiGetTickCount();\
+                                    trace_dll(dll_start, '>' ,trcfun, "");
+
+//#define YDLL_CALL_LEAVEVOID(name)
+//#define YDLL_CALL_LEAVE(name, value)
+#if 1
+#define YDLL_CALL_LEAVEVOID()        dll_stop = yapiGetTickCount();\
+                                            YSPRINTF(dbg_msg, 128, ":%"FMTs64, (dll_stop - dll_start)); \
+                                            trace_dll(dll_start, '<' ,trcfun, dbg_msg);
+
+#define YDLL_CALL_LEAVE(value)     dll_stop = yapiGetTickCount();\
+                                            YSPRINTF(dbg_msg, 128, ":%"FMTx64"=%d", (dll_stop - dll_start), (int)(value), (u64)(value)); \
+                                            trace_dll(dll_start, '<' ,trcfun, dbg_msg);
+#endif
+#else
+#define YDLL_CALL_ENTER(funname)
+#define YDLL_CALL_LEAVEVOID()
+#define YDLL_CALL_LEAVE(value)
+#endif
+
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int detect_type, char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcInitAPI);
+    res = yapiInitAPI_internal(detect_type, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+void YAPI_FUNCTION_EXPORT yapiFreeAPI(void)
+{
+    YDLL_CALL_ENTER(trcFreeAPI);
+    yapiFreeAPI_internal();
+    YDLL_CALL_LEAVEVOID();
+}
+
+void YAPI_FUNCTION_EXPORT yapiRegisterLogFunction(yapiLogFunction logfun)
+{
+    YDLL_CALL_ENTER(trcRegisterLogFunction);
+    yapiRegisterLogFunction_internal(logfun);
+    YDLL_CALL_LEAVEVOID();
+}
+
+void YAPI_FUNCTION_EXPORT yapiRegisterDeviceLogCallback(yapiDeviceLogCallback logCallback)
+{
+    YDLL_CALL_ENTER(trcRegisterDeviceLogCallback);
+    yapiRegisterDeviceLogCallback_internal(logCallback);
+    YDLL_CALL_LEAVEVOID();
+}
+
+void YAPI_FUNCTION_EXPORT yapiStartStopDeviceLogCallback(const char *serial, int start)
+{
+    YDLL_CALL_ENTER(trcStartStopDeviceLogCallback);
+    yapiStartStopDeviceLogCallback_internal(serial, start);
+    YDLL_CALL_LEAVEVOID();
+}
+
+void YAPI_FUNCTION_EXPORT yapiRegisterDeviceArrivalCallback(yapiDeviceUpdateCallback arrivalCallback)
+{
+    YDLL_CALL_ENTER(trcRegisterDeviceArrivalCallback);
+    yapiRegisterDeviceArrivalCallback_internal(arrivalCallback);
+    YDLL_CALL_LEAVEVOID();
+}
+
+void YAPI_FUNCTION_EXPORT yapiRegisterDeviceRemovalCallback(yapiDeviceUpdateCallback removalCallback)
+{
+    YDLL_CALL_ENTER(trcRegisterDeviceRemovalCallback);
+    yapiRegisterDeviceRemovalCallback_internal(removalCallback);
+    YDLL_CALL_LEAVEVOID();
+}
+
+void YAPI_FUNCTION_EXPORT yapiRegisterDeviceChangeCallback(yapiDeviceUpdateCallback changeCallback)
+{
+    YDLL_CALL_ENTER(trcRegisterDeviceChangeCallback);
+    yapiRegisterDeviceChangeCallback_internal(changeCallback);
+    YDLL_CALL_LEAVEVOID();
+}
+
+void YAPI_FUNCTION_EXPORT yapiRegisterFunctionUpdateCallback(yapiFunctionUpdateCallback updateCallback)
+{
+    YDLL_CALL_ENTER(trcRegisterFunctionUpdateCallback);
+    yapiRegisterFunctionUpdateCallback_internal(updateCallback);
+    YDLL_CALL_LEAVEVOID();
+}
+
+void YAPI_FUNCTION_EXPORT yapiRegisterTimedReportCallback(yapiTimedReportCallback timedReportCallback)
+{
+    YDLL_CALL_ENTER(trcRegisterTimedReportCallback);
+    yapiRegisterTimedReportCallback_internal(timedReportCallback);
+    YDLL_CALL_LEAVEVOID();
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiLockFunctionCallBack(char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcLockFunctionCallBack);
+    res = yapiLockFunctionCallBack_internal(errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiUnlockFunctionCallBack(char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcUnlockFunctionCallBack);
+    res = yapiUnlockFunctionCallBack_internal(errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiLockDeviceCallBack(char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcLockDeviceCallBack);
+    res = yapiLockDeviceCallBack_internal(errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiUnlockDeviceCallBack(char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcUnlockDeviceCallBack);
+    res = yapiUnlockDeviceCallBack_internal(errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiTestHub(const char *url, int mstimeout, char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcTestHub);
+    res = yapiTestHub_internal(url, mstimeout, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiRegisterHub(const char *url, char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcRegisterHub);
+    res = yapiRegisterHub_internal(url, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiPreregisterHub(const char *url, char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcPreregisterHub);
+    res = yapiPreregisterHub_internal(url, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+void YAPI_FUNCTION_EXPORT yapiUnregisterHub(const char *url)
+{
+    YDLL_CALL_ENTER(trcUnregisterHub);
+    yapiUnregisterHub_internal(url);
+    YDLL_CALL_LEAVEVOID();
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiUpdateDeviceList(u32 forceupdate, char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcUpdateDeviceList);
+    res = yapiUpdateDeviceList_internal(forceupdate, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiHandleEvents(char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcHandleEvents);
+    res = yapiHandleEvents_internal(errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiSleep(int ms_duration, char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcSleep);
+    res = yapiSleep_internal(ms_duration, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+int YAPI_FUNCTION_EXPORT yapiCheckLogicalName(const char *name)
+{
+    int res;
+    YDLL_CALL_ENTER(trcCheckLogicalName);
+    res = yapiCheckLogicalName_internal(name);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+u16 YAPI_FUNCTION_EXPORT yapiGetAPIVersion(const char **version, const char **apidate)
+{
+    u16 res;
+    YDLL_CALL_ENTER(trcGetAPIVersion);
+    res = yapiGetAPIVersion_internal(version, apidate);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+void YAPI_FUNCTION_EXPORT yapiSetTraceFile(const char *file)
+{
+    YDLL_CALL_ENTER(trcSetTraceFile);
+    yapiSetTraceFile_internal(file);
+    YDLL_CALL_LEAVEVOID();
+}
+
+YAPI_DEVICE YAPI_FUNCTION_EXPORT yapiGetDevice(const char *device_str, char *errmsg)
+{
+    YAPI_DEVICE res;
+    YDLL_CALL_ENTER(trcGetDevice);
+    res = yapiGetDevice_internal(device_str, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+int YAPI_FUNCTION_EXPORT yapiGetAllDevices(YAPI_DEVICE *buffer, int maxsize, int *neededsize, char *errmsg)
+{
+    int res;
+    YDLL_CALL_ENTER(trcGetAllDevices);
+    res = yapiGetAllDevices_internal(buffer, maxsize, neededsize, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiGetDeviceInfo(YAPI_DEVICE devdesc, yDeviceSt *infos, char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcGetDeviceInfo);
+    res = yapiGetDeviceInfo_internal(devdesc, infos, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiGetDevicePath(YAPI_DEVICE devdesc, char *rootdevice, char *request, int requestsize, int *neededsize, char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcGetDevicePath);
+    res = yapiGetDevicePath_internal(devdesc, rootdevice, request, requestsize, neededsize, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YAPI_FUNCTION YAPI_FUNCTION_EXPORT yapiGetFunction(const char *class_str, const char *function_str,char *errmsg)
+{
+    YAPI_FUNCTION res;
+    YDLL_CALL_ENTER(trcGetFunction);
+    res = yapiGetFunction_internal(class_str, function_str, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+int YAPI_FUNCTION_EXPORT yapiGetFunctionsByClass(const char *class_str, YAPI_FUNCTION prevfundesc,
+                                YAPI_FUNCTION *buffer, int maxsize, int *neededsize, char *errmsg)
+{
+    int res;
+    YDLL_CALL_ENTER(trcGetFunctionsByClass);
+    res = yapiGetFunctionsByClass_internal(class_str, prevfundesc, buffer, maxsize, neededsize, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+int YAPI_FUNCTION_EXPORT yapiGetFunctionsByDevice(YAPI_DEVICE devdesc, YAPI_FUNCTION prevfundesc,
+                                YAPI_FUNCTION *buffer, int maxsize, int *neededsize, char *errmsg)
+{
+    int res;
+    YDLL_CALL_ENTER(trcGetFunctionsByDevice);
+    res = yapiGetFunctionsByDevice_internal(devdesc, prevfundesc, buffer, maxsize, neededsize, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiGetFunctionInfo(YAPI_FUNCTION fundesc, YAPI_DEVICE *devdesc, char *serial, char *funcId, char *funcName, char *funcVal, char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcGetFunctionInfo);
+    res = yapiGetFunctionInfo_internal(fundesc, devdesc, serial, funcId,funcName,funcVal, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncStartEx(YIOHDL *iohdl, const char *device, const char *request, int requestsize, char **reply, int *replysize, char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcHTTPRequestSyncStartEx);
+    res = yapiHTTPRequestSyncStartEx_internal(iohdl, device, request, requestsize, reply, replysize, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncStart(YIOHDL *iohdl, const char *device, const char *request, char **reply, int *replysize, char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcHTTPRequestSyncStart);
+    res = yapiHTTPRequestSyncStart_internal(iohdl, device, request, reply, replysize, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncDone(YIOHDL *iohdl, char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcHTTPRequestSyncDone);
+    res = yapiHTTPRequestSyncDone_internal(iohdl, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestAsyncEx(const char *device, const char *request, int len, yapiRequestAsyncCallback callback, void *context, char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcHTTPRequestAsyncEx);
+    res = yapiHTTPRequestAsyncEx_internal(device, request, len, callback, context, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestAsync(const char *device, const char *request, yapiRequestAsyncCallback callback, void *context, char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcHTTPRequestAsync);
+    res = yapiHTTPRequestAsyncEx_internal(device, request, YSTRLEN(request), callback, context, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+int YAPI_FUNCTION_EXPORT yapiHTTPRequest(const char *device, const char *request, char* buffer,int buffsize, int *fullsize, char *errmsg)
+{
+    int res;
+    YDLL_CALL_ENTER(trcHTTPRequest);
+    res = yapiHTTPRequest_internal(device, request, buffer, buffsize, fullsize, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+void YAPI_FUNCTION_EXPORT yapiRegisterHubDiscoveryCallback(yapiHubDiscoveryCallback hubDiscoveryCallback)
+{
+    YDLL_CALL_ENTER(trcRegisterHubDiscoveryCallback);
+    yapiRegisterHubDiscoveryCallback_internal(hubDiscoveryCallback);
+    YDLL_CALL_LEAVEVOID();
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiTriggerHubDiscovery(char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcTriggerHubDiscovery);
+    res = yapiTriggerHubDiscovery_internal(errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiGetBootloaders(char *buffer, int buffersize, int *fullsize, char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcGetBootloaders);
+    res = yapiGetBootloaders_internal(buffer, buffersize, fullsize, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiGetAllJsonKeys(const char *json_buffer, char *buffer, int buffersize, int *fullsize, char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcGetAllJsonKeys);
+    res = yapiGetAllJsonKeys_internal(json_buffer, buffer, buffersize, fullsize, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+#ifndef YAPI_IN_YDEVICE
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiCheckFirmware(const char *serial, const char *rev, const char *path, char *buffer, int buffersize, int *fullsize, char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcCheckFirmware);
+    res = yapiCheckFirmware_internal(serial, rev, path, buffer, buffersize, fullsize, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiUpdateFirmware(const char *serial, const char *firmwarePath, const char *settings, int startUpdate, char *msg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcUpdateFirmware);
+    res = yapiUpdateFirmware_internal(serial, firmwarePath, settings, startUpdate, msg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+#endif
 
 /*****************************************************************************
  Same function but defined with stdcall
@@ -3468,7 +4009,6 @@ YRETCODE YAPI_FUNCTION_EXPORT __stdcall vb6_yapiHTTPRequestAsyncEx(const char *d
 int YAPI_FUNCTION_EXPORT __stdcall vb6_yapiHTTPRequest(const char *device, const char *request, char* buffer,int buffsize,int *fullsize, char *errmsg);
 void YAPI_FUNCTION_EXPORT __stdcall vb6_yapiRegisterHubDiscoveryCallback(vb6_yapiHubDiscoveryCallback hubDiscoveryCallback);
 YRETCODE YAPI_FUNCTION_EXPORT __stdcall vb6_yapiTriggerHubDiscovery(char *errmsg);
-u32 YAPI_FUNCTION_EXPORT __stdcall vb6_yapiGetCNonce(u32 nc);
 
 static BSTR vb6_version = NULL;
 static BSTR vb6_apidate = NULL;
@@ -3827,10 +4367,6 @@ YRETCODE YAPI_FUNCTION_EXPORT __stdcall vb6_yapiTriggerHubDiscovery(char *errmsg
     return yapiTriggerHubDiscovery(errmsg);
 }
 
-u32 YAPI_FUNCTION_EXPORT __stdcall vb6_yapiGetCNonce(u32 nc)
-{
-    return yapiGetCNonce(nc);
-}
 
 #endif
 

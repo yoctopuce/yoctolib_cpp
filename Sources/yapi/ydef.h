@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 19502 2015-02-25 17:20:51Z mvuilleu $
+ * $Id: ydef.h 19952 2015-04-08 10:00:24Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -269,6 +269,9 @@ typedef struct{
 
 #if defined(MICROCHIP_API) || defined(VIRTUAL_HUB)
 #define YAPI_IN_YDEVICE
+#define YSTATIC
+#else
+#define YSTATIC static
 #endif
 
 

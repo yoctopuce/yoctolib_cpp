@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 19904 2015-04-02 09:24:54Z seb $
+ * $Id: yproto.h 20208 2015-05-04 12:23:47Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -654,8 +654,7 @@ typedef struct _NetHubSt {
 
 
 #define TCPREQ_KEEPALIVE       1
-#define TCPREQ_NOEXPIRATION    2
-#define TCPREQ_IN_USE          4
+#define TCPREQ_IN_USE          2
 
 typedef struct _TcpReqSt {
     NetHubSt            *hub;           // pointer to the NetHubSt handling the device
@@ -677,6 +676,7 @@ typedef struct _TcpReqSt {
     u64                 open_tm;        // timestamp of the start of a connection used to detect timout of the device
                                         // (must be reset if we reuse the socket)
     u64                 read_tm;        // timestamp of the last received packet (must be reset if we reuse the socket)
+    u64                 timeout_tm;     // the maximum time to live of this connection
     u32                 flags;          // flags for keepalive and no expiration
     YSOCKET             reuseskt;       // socket to reuse for next query, when keepalive is true
     yapiRequestAsyncCallback callback;
@@ -845,4 +845,10 @@ int  yUsbEOF(YIOHDL *ioghdl,char *errmsg);
 int  yUsbClose(YIOHDL *ioghdl,char *errmsg);
 
 int  yUSBGetBooloader(const char *serial, const char * name,  yInterfaceSt *iface,char *errmsg);
+
+// Misc helper
+u32 yapiGetCNonce(u32 nc);
+YRETCODE  yapiHTTPRequestSyncStartEx_internal(YIOHDL *iohdl, const char *device, const char *request, int requestsize, char **reply, int *replysize, char *errmsg);
+YRETCODE  yapiHTTPRequestSyncDone_internal(YIOHDL *iohdl, char *errmsg);
+void yFunctionUpdate(YAPI_FUNCTION fundescr, const char *value);
 #endif

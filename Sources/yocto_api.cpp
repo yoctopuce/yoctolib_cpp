@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 19900 2015-03-31 13:11:09Z seb $
+ * $Id: yocto_api.cpp 20183 2015-04-29 14:41:00Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -2289,7 +2289,8 @@ YRETCODE    YDevice::HTTPRequest(const string& request, string& buffer, string& 
 YRETCODE YDevice::requestAPI(string& apires, string& errmsg)
 {
     yJsonStateMachine j;
-    string          rootdev, request, buffer;
+    string          rootdev,  buffer;
+    string          request = "GET /api.json \r\n\r\n";
     int             res;
 
     // Check if we have a valid cache value
@@ -2299,7 +2300,7 @@ YRETCODE YDevice::requestAPI(string& apires, string& errmsg)
     }
 
     // send request, without HTTP/1.1 suffix to get light headers
-    res = this->HTTPRequest("GET /api.json \r\n\r\n", buffer, errmsg);
+    res = this->HTTPRequest(request, buffer, errmsg);
     if(YISERR(res)) {
         // Check if an update of the device list does not solve the issue
         res = YapiWrapper::updateDeviceList(true,errmsg);
@@ -2307,7 +2308,7 @@ YRETCODE YDevice::requestAPI(string& apires, string& errmsg)
             return (YRETCODE)res;
         }
         // send request, without HTTP/1.1 suffix to get light headers
-        res = this->HTTPRequest("GET /api.json \r\n\r\n", buffer, errmsg);
+        res = this->HTTPRequest(request, buffer, errmsg);
         if(YISERR(res)) {
             return (YRETCODE)res;
         }
@@ -2919,6 +2920,33 @@ double YAPI::LinearCalibrationHandler(double rawValue, int calibType, intArr par
 
 
 /**
+ * Test if the hub is reachable. This method do not register the hub, it only test if the
+ * hub is usable. The url parameter follow the same convention as the RegisterHub
+ * method. This method is useful to verify the authentication parameters for a hub. It
+ * is possible to force this method to return after mstimeout milliseconds.
+ *
+ * @param url : a string containing either "usb","callback" or the
+ *         root URL of the hub to monitor
+ * @param mstimeout : the number of millisecond available to test the connection.
+ * @param errmsg : a string passed by reference to receive any error message.
+ *
+ * @return YAPI_SUCCESS when the call succeeds.
+ *
+ * On failure returns a negative error code.
+ */
+YRETCODE YAPI::TestHub(const string& url, int mstimeout, string& errmsg)
+{
+    char        errbuf[YOCTO_ERRMSG_LEN];
+    YRETCODE    res;
+    res = yapiTestHub(url.c_str(), mstimeout, errbuf);
+    if (YISERR(res)) {
+        errmsg = errbuf;
+    }
+    return res;
+}
+
+
+/**
  * Setup the Yoctopuce library to use modules connected on a given machine. The
  * parameter will determine how the API will work. Use the following values:
  *
@@ -3180,10 +3208,9 @@ YRETCODE YAPI::HandleEvents(string& errmsg)
  */
 YRETCODE YAPI::Sleep(unsigned ms_duration, string& errmsg)
 {
-    char         errbuf[YOCTO_ERRMSG_LEN];
-    YRETCODE    res;
-
-    u64         waituntil=YAPI::GetTickCount()+ms_duration;
+    char errbuf[YOCTO_ERRMSG_LEN];
+    YRETCODE res;
+    u64 waituntil = YAPI::GetTickCount() + ms_duration;
     do{
        res = YAPI::HandleEvents(errmsg);
         if(YISERR(res)) {
@@ -4032,6 +4059,7 @@ string YModule::_flattenJsonStruct(string jsoncomplex)
     if (fullsize <= 1024) {
         jsonflat = string(smallbuff, fullsize);
     } else {
+        fullsize = fullsize * 2;
         buffsize = fullsize;
         bigbuff = (char *)malloc(buffsize);
         res = yapiGetAllJsonKeys(jsoncomplexstr.c_str(), bigbuff, buffsize, &fullsize, errmsg);

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 19930 2015-04-07 12:20:02Z seb $
+ * $Id: ystream.c 20208 2015-05-04 12:23:47Z seb $
  *
  * USB multi-interface stream implementation
  *
@@ -258,12 +258,7 @@ void ypUpdateUSB(const char *serial, const char *funcid, const char *funcname, i
     if(funcname) funcnameref = yHashPutStr(funcname);
     if(ypRegister(yHashPutStr(categ), serialref, funcidref, funcnameref, funclass, funydx, funcval)){
         // Forward high-level notification to API user
-        if (yContext->functionCallback) {
-            // old notifications never need to be decoded
-            yEnterCriticalSection(&yContext->functionCallbackCS);
-            yContext->functionCallback(((s32)funcidref << 16) | serialref, funcval);
-            yLeaveCriticalSection(&yContext->functionCallbackCS);
-        }
+        yFunctionUpdate(((s32)funcidref << 16) | serialref, funcval);
     }
 }
 
@@ -273,12 +268,10 @@ void ypUpdateYdx(int devydx, Notification_funydx funInfo, const char *funcval)
 
     if(ypRegisterByYdx(devydx, funInfo, funcval, &fundesc)){
         // Forward high-level notification to API user
-        if (yContext->functionCallback && funcval) {
+        if (funcval) {
             char buffer[YOCTO_PUBVAL_LEN];
             decodePubVal(funInfo, funcval, buffer);
-            yEnterCriticalSection(&yContext->functionCallbackCS);
-            yContext->functionCallback(fundesc,buffer);
-            yLeaveCriticalSection(&yContext->functionCallbackCS);
+            yFunctionUpdate(fundesc,buffer);
         }
     }
 }
@@ -1048,10 +1041,9 @@ static YRETCODE yPktQueuePop(pktQueue *q,pktItem **pkt,char * errmsg)
 }
 
 
-static void yPktQueueDup(pktQueue *q, const char *file, int line)
+static void yPktQueueDup(pktQueue *q, int expected_pkt_no, const char *file, int line)
 {
     int verifcount = 0;
-    int last_pktno = -1;
     pktItem *pkt;
 
     yEnterCriticalSection(&q->cs);
@@ -1062,20 +1054,12 @@ static void yPktQueueDup(pktQueue *q, const char *file, int line)
     }
     pkt = q->first;
     while (pkt != NULL){
-        if (last_pktno >= 0){
-            if (last_pktno == 7) {
-                if (pkt->pkt.first_stream.pktno){
-                    dbglogf(file, line, "PKTs: invalid pkt %d (no=%d should be 0\n", verifcount, pkt->pkt.first_stream.pktno);
-                }
-            } else {
-                if (last_pktno + 1 != pkt->pkt.first_stream.pktno){
-                    dbglogf(file, line, "PKTs: invalid pkt %d (no=%d should be %d\n", verifcount, pkt->pkt.first_stream.pktno, last_pktno + 1);
-                }
-            }
+        if (expected_pkt_no != pkt->pkt.first_stream.pktno) {
+            dbglogf(file, line, "PKTs: invalid pkt %d (no=%d should be %d\n", verifcount, pkt->pkt.first_stream.pktno, expected_pkt_no);
         }
 
         verifcount++;
-        last_pktno = pkt->pkt.first_stream.pktno;
+        expected_pkt_no = NEXT_YPKT_NO(expected_pkt_no);
         pkt = pkt->next;
     }
     if (verifcount != q->count) {
@@ -1210,29 +1194,29 @@ YRETCODE yyySendPacket( yInterfaceSt *iface,const USB_Packet *pkt,char *errmsg)
 // ALL OTHER PACKET OF THIS INTERFACE ARE DROPED
 static int yyWaitOnlyConfPkt(yInterfaceSt *iface, u8 cmdtowait,pktItem **rpkt,u32 s_timeout,char *errmsg)
 {
-    u64 timeout = yapiGetTickCount() + s_timeout*1000;
+    u64 timeout = yapiGetTickCount() + s_timeout * 1000;
     pktItem *tmp;
-    u32 dropcount=0;
+    u32 dropcount = 0;
     YRETCODE  error;
 
-    *rpkt=NULL;
+    *rpkt = NULL;
     do{
-        error = yPktQueueWaitAndPopD2H(iface,&tmp,1000,errmsg);
+        error = yPktQueueWaitAndPopD2H(iface, &tmp, 1000, errmsg);
         if(error!=YAPI_SUCCESS){
             return error;
         }
-        if (tmp!=NULL){
-            if(tmp->pkt.confpkt.head.pkt==YPKT_CONF && tmp->pkt.confpkt.head.stream==cmdtowait){
+        if (tmp != NULL){
+            if(tmp->pkt.confpkt.head.pkt == YPKT_CONF && tmp->pkt.confpkt.head.stream == cmdtowait){
                 //conf packet has bee received
-                YASSERT(tmp->pkt.confpkt.head.size>=sizeof(USB_Conf_Pkt));
+                YASSERT(tmp->pkt.confpkt.head.size >= sizeof(USB_Conf_Pkt));
                 *rpkt=tmp;
                 if(dropcount)
-                    dbglog("drop %d pkt on iface %d\n",dropcount,iface->ifaceno);
+                    dbglog("drop %d pkt on iface %d\n",dropcount, iface->ifaceno);
                 return YAPI_SUCCESS;
             }
 #ifdef DEBUG_DUMP_PKT
             else{
-                dumpAnyPacket("Drop non-config pkt",(u8)iface->ifaceno,&tmp->pkt);
+                dumpAnyPacket("Drop non-config pkt",(u8)iface->ifaceno, &tmp->pkt);
             }
 #endif
             dropcount++;
@@ -1448,8 +1432,8 @@ again:
 #endif
             return YAPI_SUCCESS;
         } else {
-            yPktQueueDup(&iface->rxQueue, __FILE_ID__, __LINE__);
-            return YERRMSG(YAPI_IO_ERROR,"Missing Packet");
+            yPktQueueDup(&iface->rxQueue, nextpktno, __FILE_ID__, __LINE__);
+            return YERRMSG(YAPI_IO_ERROR, "Missing Packet");
         }
     }
     return YAPI_SUCCESS;

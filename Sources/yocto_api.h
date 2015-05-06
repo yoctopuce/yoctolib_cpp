@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 19854 2015-03-26 10:17:46Z seb $
+ * $Id: yocto_api.h 20070 2015-04-16 15:34:40Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -10,26 +10,26 @@
  *
  *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
  *  non-exclusive license to use, modify, copy and integrate this
- *  file into your software for the sole purpose of interfacing 
- *  with Yoctopuce products. 
+ *  file into your software for the sole purpose of interfacing
+ *  with Yoctopuce products.
  *
- *  You may reproduce and distribute copies of this file in 
+ *  You may reproduce and distribute copies of this file in
  *  source or object form, as long as the sole purpose of this
- *  code is to interface with Yoctopuce products. You must retain 
+ *  code is to interface with Yoctopuce products. You must retain
  *  this notice in the distributed source file.
  *
  *  You should refer to Yoctopuce General Terms and Conditions
- *  for additional information regarding your rights and 
+ *  for additional information regarding your rights and
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -50,7 +50,7 @@
 #include <cfloat>
 #include <cmath>
 
-#if defined(WINDOWS_API) 
+#if defined(WINDOWS_API)
 #if defined(GENERATE_DLL) || defined(YOCTOPUCEDLL_EXPORTS)
 #define YOCTO_CLASS_EXPORT __declspec(dllexport)
 #pragma warning(disable: 4251)
@@ -69,7 +69,7 @@ using std::map;
 #define YAPI_INVALID_STRING         "!INVALID!"
 #define YAPI_INVALID_INT            (0x7FFFFFFF)
 #define YAPI_INVALID_UINT           (-1)
-#define YAPI_INVALID_LONG           (0x7FFFFFFFFFFFFFFFLL)  
+#define YAPI_INVALID_LONG           (0x7FFFFFFFFFFFFFFFLL)
 #define YAPI_INVALID_DOUBLE         (-DBL_MAX)
 
 
@@ -181,7 +181,7 @@ typedef YAPI_FUNCTION   YFUN_DESCR;
 #define Y_DATA_INVALID                  (-DBL_MAX)
 #define Y_DURATION_INVALID              (-1)
 
-// 
+//
 // Class used to report exceptions within Yocto-API
 // Do not instantiate directly
 //
@@ -240,7 +240,7 @@ typedef struct{
 int _ystrpos(const string& haystack, const string& needle);
 vector<string> _strsplit(const string& str, char delimiter);
 
-// 
+//
 // YAPI Context
 //
 // This class provides C++-style entry points to lowlevcel functions defined to yapi.h
@@ -368,7 +368,7 @@ public:
      * this reference manual.
      */
     static  void        DisableExceptions(void);
-    
+
     /**
      * Re-enables the use of exceptions for runtime error handling.
      * Be aware than when exceptions are enabled, every function that fails
@@ -376,7 +376,7 @@ public:
      * it  either fires the debugger or aborts (i.e. crash) the program.
      * On failure, throws an exception or returns a negative error code.
      */
-    static  void        EnableExceptions(void); 
+    static  void        EnableExceptions(void);
 
     /**
      * Registers a log callback function. This callback will be called each time
@@ -436,11 +436,27 @@ public:
     // Register a new value calibration handler for a given calibration type
     //
     static void         RegisterCalibrationHandler(int calibrationType, yCalibrationHandler calibrationHandler);
-    
+
     // Standard value calibration handler (n-point linear error correction)
     //
     static double       LinearCalibrationHandler(double rawValue, int calibType, intArr params, floatArr rawValues, floatArr refValues);
-    
+
+    /**
+     * Test if the hub is reachable. This method do not register the hub, it only test if the
+     * hub is usable. The url parameter follow the same convention as the RegisterHub
+     * method. This method is useful to verify the authentication parameters for a hub. It
+     * is possible to force this method to return after mstimeout milliseconds.
+     *
+     * @param url : a string containing either "usb","callback" or the
+     *         root URL of the hub to monitor
+     * @param mstimeout : the number of millisecond available to test the connection.
+     * @param errmsg : a string passed by reference to receive any error message.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure returns a negative error code.
+     */
+    static  YRETCODE    TestHub(const string& url, int mstimeout, string& errmsg);
     /**
      * Setup the Yoctopuce library to use modules connected on a given machine. The
      * parameter will determine how the API will work. Use the following values:
@@ -486,7 +502,7 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     static  YRETCODE    RegisterHub(const string& url, string& errmsg);
-    
+
     /**
      * Fault-tolerant alternative to RegisterHub(). This function has the same
      * purpose and same arguments as RegisterHub(), but does not trigger
@@ -589,7 +605,7 @@ public:
     static  bool        CheckLogicalName(const string& name);
 };
 
-    
+
 // Wrappers to yapi low-level API
 class YapiWrapper {
 public:
@@ -634,7 +650,7 @@ protected:
     int             _restore_step;
     //--- (end of generated code: YFirmwareUpdate attributes)
 
-  
+
 public:
     YFirmwareUpdate(string serialNumber, string path, string settings) : _serial(serialNumber), _settings(settings), _firmwarepath(path) {};
 
@@ -755,16 +771,16 @@ protected:
     vector<double>  _calref;
     vector< vector<double> > _values;
     //--- (end of generated code: YDataStream attributes)
- 
+
     yCalibrationHandler _calhdl;
-    
-public:    
+
+public:
     YDataStream(YFunction *parent): _parent(parent) {};
     YDataStream(YFunction *parent, YDataSet &dataset, const vector<int>& encoded);
-    
+
     static const double DATA_INVALID;
     static const int    DURATION_INVALID = -1;
-    
+
     //--- (generated code: YDataStream accessors declaration)
 
 
@@ -983,7 +999,7 @@ protected:
     double          _avgVal;
     double          _maxVal;
     //--- (end of generated code: YMeasure attributes)
- 
+
 
     time_t              _startTime_t;
     time_t              _stopTime_t;
@@ -995,7 +1011,7 @@ public:
 
     time_t*        get_startTimeUTC_asTime_t(time_t *time);
     time_t*        get_endTimeUTC_asTime_t(time_t *time);
-    
+
     //--- (generated code: YMeasure accessors declaration)
 
 
@@ -1092,7 +1108,7 @@ protected:
     vector<YMeasure> _preview;
     vector<YMeasure> _measures;
     //--- (end of generated code: YDataSet attributes)
- 
+
     int _parse(const string& json);
 
 public:
@@ -1255,7 +1271,7 @@ public:
     //--- (end of generated code: YDataSet accessors declaration)
 };
 
-// 
+//
 // YDevice Class (used internally)
 //
 // This class is used to cache device-level information
@@ -1271,19 +1287,19 @@ typedef void (*HTTPRequestCallback)(YDevice *device,void *context,YRETCODE retur
 
 class YDevice
 {
-private:    
+private:
     // Static device-based JSON string cache
     static vector<YDevice*> _devCache;
-    
+
     // Device cache entries
-    YDEV_DESCR          _devdescr;    
+    YDEV_DESCR          _devdescr;
     u64                 _cacheStamp; // used only by requestAPI method
     string              _cacheJson;  // used only ba requestAPI method
     vector<YFUN_DESCR>  _functions;
     char                _rootdevice[YOCTO_SERIAL_LEN];
     char                *_subpath;
 
-  
+
     // Constructor is private, use getDevice factory method
     YDevice(YDEV_DESCR devdesc);
     ~YDevice();
@@ -1352,45 +1368,45 @@ protected:
     YFunction(const string& func);
     //--- (end of generated code: YFunction attributes)
     static  std::map<string,YFunction*> _cache;
-    
+
 
     // Method used to retrieve our unique function descriptor (may trigger a hub scan)
     YRETCODE    _getDescriptor(YFUN_DESCR& fundescr, string& errMsg);
-    
+
     // Method used to retrieve our device object (may trigger a hub scan)
     YRETCODE    _getDevice(YDevice*& dev, string& errMsg);
 
     // Method used to find the next instance of our function
     YRETCODE    _nextFunction(string &hwId);
-    
+
     int         _parse(yJsonStateMachine& j);
 
     string      _escapeAttr(const string& changeval);
     YRETCODE    _buildSetRequest(const string& changeattr, const string  *changeval, string& request, string& errmsg);
-    
+
     // Method used to change attributes
     YRETCODE    _setAttr(string attrname, string newvalue);
-    
+
     static void _UpdateValueCallbackList(YFunction* func, bool add);
     static void _UpdateTimedReportCallbackList(YFunction* func, bool add);
 
     // function cache methods
     static YFunction*  _FindFromCache(const string& classname, const string& func);
     static void        _AddToCache(const string& classname, const string& func, YFunction *obj);
-   
+
 public:
     virtual ~YFunction();
-    
+
     // clear cache of all YFunction object (use only on YAPI::FreeAPI)
     static void _ClearCache(void);
 
     // Method used to throw exceptions or save error type/message
     void        _throw(YRETCODE errType, string errMsg);
-    
+
     // Method used to send http request to the device (not the function)
     string      _request(const string& request);
     string      _download(const string& url);
-    
+
     // Method used to upload a file to the device
     YRETCODE    _upload(const string& path, const string& content);
 
@@ -1405,12 +1421,12 @@ public:
 
     // Method used to cache DataStream objects (new DataLogger)
     YDataStream *_findDataStream(YDataSet& dataset, const string& def);
-    
+
     static const YFUN_DESCR FUNCTIONDESCRIPTOR_INVALID = Y_FUNCTIONDESCRIPTOR_INVALID;
     static const string     HARDWAREID_INVALID;
     static const string     FUNCTIONID_INVALID;
     static const string     FRIENDLYNAME_INVALID;
-    
+
 
 
     string get_hubSerial();
@@ -1579,7 +1595,7 @@ public:
      */
     string      get_functionId(void);
 
-    
+
     /**
      * Returns the numerical error code of the latest error with the function.
      * This method is mostly useful when using the Yoctopuce library with
@@ -1593,7 +1609,7 @@ public:
     {return this->get_errorType();}
     inline YRETCODE    errType(void)
     {return this->get_errorType();}
-    
+
     /**
      * Returns the error message of the latest error with the function.
      * This method is mostly useful when using the Yoctopuce library with
@@ -1607,7 +1623,7 @@ public:
     {return this->get_errorMessage();}
     inline string      errMessage(void)
     {return this->get_errorMessage();}
-    
+
     /**
      * Checks if the function is currently reachable, without raising any error.
      * If there is a cached value for the function in cache, that has not yet
@@ -1681,7 +1697,7 @@ public:
            void        set_userData(void* data);
     inline void        setUserData(void* data)
     { this->set_userData(data);}
-    
+
 };
 
 
@@ -1732,10 +1748,10 @@ protected:
 
     // Method used to retrieve details of the nth function of our device
     YRETCODE        _getFunction(int idx, string& serial, string& funcId, string& funcName, string& funcVal, string& errMsg);
-    
+
 public:
     ~YModule();
-    
+
     /**
      * Returns a global identifier of the function in the format MODULE_NAME&#46;FUNCTION_NAME.
      * The returned string uses the logical names of the module and of the function if they are defined,
@@ -1758,7 +1774,7 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     int             functionCount();
-    
+
     /**
      * Retrieves the hardware identifier of the <i>n</i>th function on the module.
      *
@@ -1770,7 +1786,7 @@ public:
      * On failure, throws an exception or returns an empty string.
      */
     string          functionId(int functionIndex);
-    
+
     /**
      * Retrieves the logical name of the <i>n</i>th function on the module.
      *
@@ -1782,7 +1798,7 @@ public:
      * On failure, throws an exception or returns an empty string.
      */
     string          functionName(int functionIndex);
-    
+
     /**
      * Retrieves the advertised value of the <i>n</i>th function on the module.
      *
@@ -1795,7 +1811,7 @@ public:
      * On failure, throws an exception or returns an empty string.
      */
     string          functionValue(int functionIndex);
-    
+
     void            setImmutableAttributes(yDeviceSt *infos);
 
     /**
@@ -1808,10 +1824,10 @@ public:
      */
     void            registerLogCallback(YModuleLogCallback callback);
 
-    
+
     YModuleLogCallback get_logCallback();
-    
-    
+
+
 
     //--- (generated code: YModule accessors declaration)
 
@@ -2723,7 +2739,7 @@ inline YSensor* yFirstSensor(void)
 //--- (end of generated code: Sensor functions declaration)
 
 
-inline string yGetAPIVersion() 
+inline string yGetAPIVersion()
 { return YAPI::GetAPIVersion(); }
 
 
@@ -2748,7 +2764,7 @@ inline string yGetAPIVersion()
  *
  * On failure, throws an exception or returns a negative error code.
  */
-inline YRETCODE yInitAPI(int mode, string& errmsg) 
+inline YRETCODE yInitAPI(int mode, string& errmsg)
 { return YAPI::InitAPI(mode,errmsg); }
 
 /**
@@ -2759,7 +2775,7 @@ inline YRETCODE yInitAPI(int mode, string& errmsg)
  * You should not call any other library function after calling
  * yFreeAPI(), or your program will crash.
  */
-inline void yFreeAPI() 
+inline void yFreeAPI()
 { YAPI::FreeAPI(); }
 
 /**
@@ -2768,7 +2784,7 @@ inline void yFreeAPI()
  * error value which depends on its type and which is documented in
  * this reference manual.
  */
-inline void yDisableExceptions(void) 
+inline void yDisableExceptions(void)
 { YAPI::DisableExceptions(); }
 
 /**
@@ -2778,7 +2794,7 @@ inline void yDisableExceptions(void)
  * it  either fires the debugger or aborts (i.e. crash) the program.
  * On failure, throws an exception or returns a negative error code.
  */
-inline void yEnableExceptions(void)  
+inline void yEnableExceptions(void)
 { YAPI::EnableExceptions(); }
 
 /**
@@ -2788,7 +2804,7 @@ inline void yEnableExceptions(void)
  * @param logfun : a procedure taking a string parameter, or null
  *         to unregister a previously registered  callback.
  */
-inline void yRegisterLogFunction(yLogFunction logfun)                               
+inline void yRegisterLogFunction(yLogFunction logfun)
 { YAPI::RegisterLogFunction(logfun); }
 
 /**
@@ -2799,7 +2815,7 @@ inline void yRegisterLogFunction(yLogFunction logfun)
  * @param arrivalCallback : a procedure taking a YModule parameter, or null
  *         to unregister a previously registered  callback.
  */
-inline void yRegisterDeviceArrivalCallback(yDeviceUpdateCallback arrivalCallback)   
+inline void yRegisterDeviceArrivalCallback(yDeviceUpdateCallback arrivalCallback)
 { YAPI::RegisterDeviceArrivalCallback(arrivalCallback); }
 
 /**
@@ -2810,10 +2826,10 @@ inline void yRegisterDeviceArrivalCallback(yDeviceUpdateCallback arrivalCallback
  * @param removalCallback : a procedure taking a YModule parameter, or null
  *         to unregister a previously registered  callback.
  */
-inline void yRegisterDeviceRemovalCallback(yDeviceUpdateCallback removalCallback)   
+inline void yRegisterDeviceRemovalCallback(yDeviceUpdateCallback removalCallback)
 { YAPI::RegisterDeviceRemovalCallback(removalCallback); }
 
-inline void yRegisterDeviceChangeCallback(yDeviceUpdateCallback removalCallback)    
+inline void yRegisterDeviceChangeCallback(yDeviceUpdateCallback removalCallback)
 { YAPI::RegisterDeviceChangeCallback(removalCallback); }
 
 
@@ -2896,7 +2912,7 @@ inline void yRegisterCalibrationHandler(int calibrationType, yCalibrationHandler
  *
  * On failure, throws an exception or returns a negative error code.
  */
-inline YRETCODE yRegisterHub(const string& url, string& errmsg) 
+inline YRETCODE yRegisterHub(const string& url, string& errmsg)
 { return YAPI::RegisterHub(url,errmsg); }
 
 /**
@@ -2914,7 +2930,7 @@ inline YRETCODE yRegisterHub(const string& url, string& errmsg)
  *
  * On failure, throws an exception or returns a negative error code.
  */
-inline YRETCODE yPreregisterHub(const string& url, string& errmsg) 
+inline YRETCODE yPreregisterHub(const string& url, string& errmsg)
 { return YAPI::PreregisterHub(url,errmsg); }
 
 /**
@@ -2924,10 +2940,26 @@ inline YRETCODE yPreregisterHub(const string& url, string& errmsg)
  * @param url : a string containing either "usb" or the
  *         root URL of the hub to monitor
  */
-inline void yUnregisterHub(const string& url) 
+inline void yUnregisterHub(const string& url)
 { YAPI::UnregisterHub(url); }
 
-
+/**
+ * Test if the hub is reachable. This method do not register the hub, it only test if the
+ * hub is usable. The url parameter follow the same convention as the RegisterHub
+ * method. This method is useful to verify the authentication parameters for a hub. It
+ * is possible to force this method to return after mstimeout milliseconds.
+ *
+ * @param url : a string containing either "usb","callback" or the
+ *         root URL of the hub to monitor
+ * @param mstimeout : the number of millisecond available to test the connection.
+ * @param errmsg : a string passed by reference to receive any error message.
+ *
+ * @return YAPI_SUCCESS when the call succeeds.
+ *
+ * On failure returns a negative error code.
+ */
+inline YRETCODE yTestHub(const string& url, int mstimeout, string& errmsg)
+{ return YAPI::TestHub(url, mstimeout, errmsg); }
 
 /**
  * Triggers a (re)detection of connected Yoctopuce modules.
@@ -2944,7 +2976,7 @@ inline void yUnregisterHub(const string& url)
  *
  * On failure, throws an exception or returns a negative error code.
  */
-inline YRETCODE yUpdateDeviceList(string& errmsg) 
+inline YRETCODE yUpdateDeviceList(string& errmsg)
 { return YAPI::UpdateDeviceList(errmsg); }
 
 /**

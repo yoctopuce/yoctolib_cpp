@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h 19327 2015-02-17 17:30:01Z seb $
+ * $Id: yapi.h 20141 2015-04-24 09:38:55Z seb $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -273,6 +273,31 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiLockDeviceCallBack( char *errmsg);
 YRETCODE YAPI_FUNCTION_EXPORT yapiUnlockDeviceCallBack(char *errmsg);
 
 
+
+
+/*****************************************************************************
+ Function:
+   YRETCODE yapiTestHub(const char *rooturl, int mstimeout, char *errmsg)
+
+ Description:
+   Test if a network URL can be used for yapiRegisterHub and yapiPreregisterHub. This
+   function will not register the hub but will test that the hub is reachable and that
+   authentication parameters are correct. This function will return before  mstimeout (or
+   2 * mstimeout if the hub use authentication)
+
+ Parameters:
+   rooturl: The network URL of the hub, for instance "http://192.168.2.34", or "usb"
+   mstimeout: The number of ms that the function has to test the URL
+   errmsg: a pointer to a buffer of YOCTO_ERRMSG_LEN bytes to store any error message
+
+ Returns:
+   on ERROR  : error code
+   on SUCCES : YAPI_SUCCESS
+
+ Remarks:
+
+ ***************************************************************************/
+YRETCODE YAPI_FUNCTION_EXPORT yapiTestHub(const char *rooturl, int mstimeout, char *errmsg);
 
 
 /*****************************************************************************
@@ -907,8 +932,6 @@ void yapiRegisterRawNotificationCb(yRawNotificationCb callback);
 void yapiRegisterRawReportCb(yRawReportCb callback);
 void yapiRegisterRawReportV2Cb(yRawReportV2Cb callback);
 
-// Misc helper
-u32 YAPI_FUNCTION_EXPORT yapiGetCNonce(u32 nc);
 
 
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.c 19327 2015-02-17 17:30:01Z seb $
+ * $Id: ythread.c 19957 2015-04-08 14:40:57Z seb $
  *
  * OS-independent thread and synchronization library
  *
@@ -346,9 +346,15 @@ int    yThreadMustEnd(yThread *yth)
 
 void yThreadKill(yThread *yth)
 {
-
-    if(yThreadIsRunning(yth)){
-        yKillThread(&yth->th);
+    if (yThreadIsRunning(yth)) {
+#ifdef WINDOWS_API
+        //means thread still running lets give it some time
+        if (!yWaitForEvent(&yth->th, 10000)) {
+           yKillThread(&yth->th);
+        }
+#else
+           yKillThread(&yth->th);
+#endif
     }else{
         yWaitEndThread(&yth->th);
         yReleaseDetachedThreadEx(&yth->th);

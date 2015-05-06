@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 19727 2015-03-13 16:22:10Z mvuilleu $
+ * $Id: yocto_cellular.cpp 20168 2015-04-27 14:25:00Z seb $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -99,6 +99,7 @@ YCellular::YCellular(const string& func): YFunction(func)
 //--- (generated code: Cellular initialization)
     ,_linkQuality(LINKQUALITY_INVALID)
     ,_cellOperator(CELLOPERATOR_INVALID)
+    ,_imsi(IMSI_INVALID)
     ,_message(MESSAGE_INVALID)
     ,_pin(PIN_INVALID)
     ,_lockedOperator(LOCKEDOPERATOR_INVALID)
@@ -120,6 +121,7 @@ YCellular::~YCellular()
 //--- (generated code: YCellular implementation)
 // static attributes
 const string YCellular::CELLOPERATOR_INVALID = YAPI_INVALID_STRING;
+const string YCellular::IMSI_INVALID = YAPI_INVALID_STRING;
 const string YCellular::MESSAGE_INVALID = YAPI_INVALID_STRING;
 const string YCellular::PIN_INVALID = YAPI_INVALID_STRING;
 const string YCellular::LOCKEDOPERATOR_INVALID = YAPI_INVALID_STRING;
@@ -137,6 +139,11 @@ int YCellular::_parseAttr(yJsonStateMachine& j)
     if(!strcmp(j.token, "cellOperator")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _cellOperator =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "imsi")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _imsi =  _parseString(j);
         return 1;
     }
     if(!strcmp(j.token, "message")) {
@@ -211,6 +218,27 @@ string YCellular::get_cellOperator(void)
         }
     }
     return _cellOperator;
+}
+
+/**
+ * Returns an opaque string if a PIN code has been configured in the device to access
+ * the SIM card, or an empty string if none has been configured or if the code provided
+ * was rejected by the SIM card.
+ *
+ * @return a string corresponding to an opaque string if a PIN code has been configured in the device to access
+ *         the SIM card, or an empty string if none has been configured or if the code provided
+ *         was rejected by the SIM card
+ *
+ * On failure, throws an exception or returns Y_IMSI_INVALID.
+ */
+string YCellular::get_imsi(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YCellular::IMSI_INVALID;
+        }
+    }
+    return _imsi;
 }
 
 /**

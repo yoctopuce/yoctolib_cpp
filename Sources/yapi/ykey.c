@@ -1,35 +1,35 @@
 /*********************************************************************
  *
- * $Id: ykey.c 19327 2015-02-17 17:30:01Z seb $
+ * $Id: ykey.c 20141 2015-04-24 09:38:55Z seb $
  *
  * Implementation of standard key computations
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
  *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
  *  non-exclusive license to use, modify, copy and integrate this
- *  file into your software for the sole purpose of interfacing 
- *  with Yoctopuce products. 
+ *  file into your software for the sole purpose of interfacing
+ *  with Yoctopuce products.
  *
- *  You may reproduce and distribute copies of this file in 
+ *  You may reproduce and distribute copies of this file in
  *  source or object form, as long as the sole purpose of this
- *  code is to interface with Yoctopuce products. You must retain 
+ *  code is to interface with Yoctopuce products. You must retain
  *  this notice in the distributed source file.
  *
  *  You should refer to Yoctopuce General Terms and Conditions
- *  for additional information regarding your rights and 
+ *  for additional information regarding your rights and
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -59,8 +59,8 @@ static char btohexa_low_low(u8 b)
     return (b>9u) ? b+'a'-10 : b+'0';
 }
 
-void bin2str(char *to, const u8 *p, u16 len, u8 addnull) 
-{    
+void bin2str(char *to, const u8 *p, u16 len, u8 addnull)
+{
     for (; len--; p++) {
     	*to++ = btohexa_low_high(*p);
     	*to++ = btohexa_low_low(*p);
@@ -71,10 +71,10 @@ void bin2str(char *to, const u8 *p, u16 len, u8 addnull)
 #if !defined(MICROCHIP_API) || defined(HTTP_ON_NET)
 
 // compute the ha1 (in binary form)
-void ComputeAuthHA1(u8 *ha1, const char *user, const char *pass,  const char *realm) 
+void ComputeAuthHA1(u8 *ha1, const char *user, const char *pass,  const char *realm)
 {
     HASH_SUM ctx;
-    
+
     MD5Initialize(&ctx);
     MD5AddData(&ctx, (u8*)user,  YSTRLEN(user));
     MD5AddData(&ctx, (u8*)":",  1);
@@ -85,10 +85,10 @@ void ComputeAuthHA1(u8 *ha1, const char *user, const char *pass,  const char *re
 }
 
 // compute the ha2 (in binary form)
-void ComputeAuthHA2(u8 *ha2, const char *method, const char *uri) 
+void ComputeAuthHA2(u8 *ha2, const char *method, const char *uri)
 {
     HASH_SUM ctx;
-    
+
     MD5Initialize(&ctx);
     MD5AddData(&ctx, (u8*)method, YSTRLEN(method));
     MD5AddData(&ctx, (u8*)":",  1);
@@ -98,12 +98,12 @@ void ComputeAuthHA2(u8 *ha2, const char *method, const char *uri)
 
 
 // Return stringified MD5 hash for the specified parameters
-void ComputeAuthResponse(char *buf, const u8 *ha1, const char *nonce, const char *nc,  const char *cnonce, const u8* ha2) 
+void ComputeAuthResponse(char *buf, const u8 *ha1, const char *nonce, const char *nc,  const char *cnonce, const u8* ha2)
 {
     u8       hash[HTTP_AUTH_MD5_SIZE];
     char     tmpha[HTTP_AUTH_MD5_STRLEN+1];
     HASH_SUM ctx;
-    
+
     MD5Initialize(&ctx);
     // convert ha1 into str before using it
     bin2str(tmpha, ha1, HTTP_AUTH_MD5_SIZE,1);
@@ -131,7 +131,7 @@ int yParseWWWAuthenticate(char *replybuf, int replysize, char **method, char **r
 {
     int     pos = 0;
     char    *p=replybuf, *start;
-    
+
     while(pos < replysize) {
         while(pos < replysize && replybuf[pos] != '\r') pos++;
         if(pos < replysize && replybuf[++pos] == '\n') pos++;
@@ -196,15 +196,15 @@ int yParseWWWAuthenticate(char *replybuf, int replysize, char **method, char **r
     }
     // if no non-empty realm has been specified, the authentication header is not valid
     if(!**realm) return -1;
-    
+
     return 0;
 }
 
 // Write an authorization header in the buffer provided
 // method and uri can be provided in the same memory zone as destination if needed
-void yDigestAuthorization(char *buf, int bufsize, const char *user, const char *realm, const u8 *ha1, 
+void yDigestAuthorization(char *buf, int bufsize, const char *user, const char *realm, const u8 *ha1,
                           const char *nonce, const char *opaque, u32 *nc, const char *method, const char *uri)
-{ 
+{
     u32     cnonce;
     char    ncbuf[9], cnoncebuf[9];
     u8      ha2[HTTP_AUTH_MD5_SIZE];
@@ -226,7 +226,7 @@ void yDigestAuthorization(char *buf, int bufsize, const char *user, const char *
         yxtoa(cnonce, cnoncebuf, sizeof(cnoncebuf)-1);
         len = (int)strlen(buf);
         buf += len;
-        bufsize -= len;    
+        bufsize -= len;
         YSTRCAT(buf, bufsize, "\", qop=auth, nc=");
         YSTRCAT(buf, bufsize, ncbuf);
         YSTRCAT(buf, bufsize, ", cnonce=\"");
@@ -235,12 +235,12 @@ void yDigestAuthorization(char *buf, int bufsize, const char *user, const char *
     YSTRCAT(buf, bufsize, "\", response=\"");
     len = (int)strlen(buf);
     buf += len;
-    bufsize -= len;    
+    bufsize -= len;
     ComputeAuthResponse(buf, ha1, nonce, (nc?ncbuf:NULL), (nc?cnoncebuf:NULL), ha2);
     if(opaque) {
         len = (int)strlen(buf);
         buf += len;
-        bufsize -= len;    
+        bufsize -= len;
         YSTRCAT(buf, bufsize, "\", opaque=\"");
         YSTRCAT(buf, bufsize, opaque);
     }
@@ -442,26 +442,26 @@ static void byteReverse(unsigned char *buf, unsigned longs) {
 
 // Start MD5 accumulation.  Set bit count to 0 and buffer to mysterious
 // initialization constants.
-void MD5Initialize(HASH_SUM *ctx) 
+void MD5Initialize(HASH_SUM *ctx)
 {
     ctx->buf[0] = 0x67452301;
     ctx->buf[1] = 0xefcdab89;
     ctx->buf[2] = 0x98badcfe;
     ctx->buf[3] = 0x10325476;
-    
+
     ctx->bits[0] = 0;
     ctx->bits[1] = 0;
 }
 
-static void MD5Transform(u32 buf[4], u32 const in[16]) 
+static void MD5Transform(u32 buf[4], u32 const in[16])
 {
     register u32 a, b, c, d;
-    
+
     a = buf[0];
     b = buf[1];
     c = buf[2];
     d = buf[3];
-    
+
     MD5STEP(F1, a, b, c, d, in[0] + 0xd76aa478, 7);
     MD5STEP(F1, d, a, b, c, in[1] + 0xe8c7b756, 12);
     MD5STEP(F1, c, d, a, b, in[2] + 0x242070db, 17);
@@ -478,7 +478,7 @@ static void MD5Transform(u32 buf[4], u32 const in[16])
     MD5STEP(F1, d, a, b, c, in[13] + 0xfd987193, 12);
     MD5STEP(F1, c, d, a, b, in[14] + 0xa679438e, 17);
     MD5STEP(F1, b, c, d, a, in[15] + 0x49b40821, 22);
-    
+
     MD5STEP(F2, a, b, c, d, in[1] + 0xf61e2562, 5);
     MD5STEP(F2, d, a, b, c, in[6] + 0xc040b340, 9);
     MD5STEP(F2, c, d, a, b, in[11] + 0x265e5a51, 14);
@@ -495,7 +495,7 @@ static void MD5Transform(u32 buf[4], u32 const in[16])
     MD5STEP(F2, d, a, b, c, in[2] + 0xfcefa3f8, 9);
     MD5STEP(F2, c, d, a, b, in[7] + 0x676f02d9, 14);
     MD5STEP(F2, b, c, d, a, in[12] + 0x8d2a4c8a, 20);
-    
+
     MD5STEP(F3, a, b, c, d, in[5] + 0xfffa3942, 4);
     MD5STEP(F3, d, a, b, c, in[8] + 0x8771f681, 11);
     MD5STEP(F3, c, d, a, b, in[11] + 0x6d9d6122, 16);
@@ -512,7 +512,7 @@ static void MD5Transform(u32 buf[4], u32 const in[16])
     MD5STEP(F3, d, a, b, c, in[12] + 0xe6db99e5, 11);
     MD5STEP(F3, c, d, a, b, in[15] + 0x1fa27cf8, 16);
     MD5STEP(F3, b, c, d, a, in[2] + 0xc4ac5665, 23);
-    
+
     MD5STEP(F4, a, b, c, d, in[0] + 0xf4292244, 6);
     MD5STEP(F4, d, a, b, c, in[7] + 0x432aff97, 10);
     MD5STEP(F4, c, d, a, b, in[14] + 0xab9423a7, 15);
@@ -529,27 +529,27 @@ static void MD5Transform(u32 buf[4], u32 const in[16])
     MD5STEP(F4, d, a, b, c, in[11] + 0xbd3af235, 10);
     MD5STEP(F4, c, d, a, b, in[2] + 0x2ad7d2bb, 15);
     MD5STEP(F4, b, c, d, a, in[9] + 0xeb86d391, 21);
-    
+
     buf[0] += a;
     buf[1] += b;
     buf[2] += c;
     buf[3] += d;
 }
 
-void MD5AddData(HASH_SUM *ctx,  const u8 *buf, u32 len) 
+void MD5AddData(HASH_SUM *ctx,  const u8 *buf, u32 len)
 {
     u32 t;
-    
+
     t = ctx->bits[0];
     if ((ctx->bits[0] = t + ((u32) len << 3)) < t)
         ctx->bits[1]++;
     ctx->bits[1] += len >> 29;
-    
+
     t = (t >> 3) & 0x3f;
-    
+
     if (t) {
         unsigned char *p = (unsigned char *) ctx->in + t;
-        
+
         t = 64 - t;
         if (len < t) {
             memcpy(p, buf, len);
@@ -561,7 +561,7 @@ void MD5AddData(HASH_SUM *ctx,  const u8 *buf, u32 len)
         buf += t;
         len -= t;
     }
-    
+
     while (len >= 64) {
         memcpy(ctx->in, buf, 64);
         byteReverse(ctx->in, 16);
@@ -569,17 +569,17 @@ void MD5AddData(HASH_SUM *ctx,  const u8 *buf, u32 len)
         buf += 64;
         len -= 64;
     }
-    
+
     memcpy(ctx->in, buf, len);
 }
 
-void MD5Calculate(HASH_SUM *ctx, u8 digest[16]) 
+void MD5Calculate(HASH_SUM *ctx, u8 digest[16])
 {
     unsigned count;
     unsigned char *p;
-    
+
     count = (ctx->bits[0] >> 3) & 0x3F;
-    
+
     p = ctx->in + count;
     *p++ = 0x80;
     count = 64 - 1 - count;
@@ -592,10 +592,10 @@ void MD5Calculate(HASH_SUM *ctx, u8 digest[16])
         memset(p, 0, count - 8);
     }
     byteReverse(ctx->in, 14);
-    
+
     ctx->in32[14] = ctx->bits[0];
     ctx->in32[15] = ctx->bits[1];
-    
+
     MD5Transform(ctx->buf, (u32 *) ctx->in);
     byteReverse((unsigned char *) ctx->buf, 4);
     memcpy(digest, ctx->buf, 16);

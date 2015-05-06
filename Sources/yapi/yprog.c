@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 19806 2015-03-23 09:08:03Z seb $
+ * $Id: yprog.c 20141 2015-04-24 09:38:55Z seb $
  *
  * Implementation of firmware upgrade functions
  *
@@ -1542,7 +1542,7 @@ static int checkRequestHeader(void *ctx_ptr, const char* buffer, u32 len, char *
     yJsonStateMachine j;
     char lastmsg[YOCTO_ERRMSG_LEN] = "invalid";
     int count = 0, return_code = 0;;
-    
+
     // Parse HTTP header
     j.src = buffer;
     j.end = j.src + len;
@@ -1661,7 +1661,7 @@ static int upload(const char *hubserial, const char *subpath, const char *filena
 
     do {
         YSPRINTF(boundary, 32, "Zz%06xzZ", rand() & 0xffffff);
-    } while (ymemfind(data, data_len, (u8*)boundary, YSTRLEN(boundary)) >= 0 );
+    } while (ymemfind(data, data_len, (u8*)boundary, YSTRLEN(boundary)) >= 0);
 
     YSTRCPY(buffer, buffer_size, "POST ");
     YSTRCAT(buffer, buffer_size, subpath);
@@ -1685,15 +1685,14 @@ static int upload(const char *hubserial, const char *subpath, const char *filena
     YSTRCAT(p, buffer_size, boundary);
     YSTRCAT(p, buffer_size, "--\r\n");
     buffer_size = (int)(p - buffer) + YSTRLEN(p);
-    res = yapiHTTPRequestSyncStartEx(&iohdl, hubserial, buffer, buffer_size, &reply, &replysize, errmsg);
+    res = yapiHTTPRequestSyncStartEx_internal(&iohdl, hubserial, buffer, buffer_size, &reply, &replysize, errmsg);
     if (res >= 0) {
         res = checkHTTPHeader(NULL, reply, replysize, errmsg);
-        yapiHTTPRequestSyncDone(&iohdl, errmsg);
+        yapiHTTPRequestSyncDone_internal(&iohdl, errmsg);
     }
     yFree(buffer);
     return res;
 }
-
 
 
 typedef enum
@@ -2038,14 +2037,14 @@ static void* yFirmwareUpdate_thread(void* ctx)
         if (dev != -1) {
             wpGetDeviceUrl(dev, hubserial, subpath, 256, NULL);
             YSPRINTF(buffer, sizeof(buffer), get_api_fmt, subpath);
-            res = yapiHTTPRequestSyncStart(&iohdl, hubserial, buffer, &reply, &replysize, tmp_errmsg);
+            res = yapiHTTPRequestSyncStartEx_internal(&iohdl, hubserial, buffer, YSTRLEN(buffer), &reply, &replysize, tmp_errmsg);
             if (res >= 0) {
                 if (checkHTTPHeader(NULL, reply, replysize, tmp_errmsg) >= 0){
                     online = 1;
-                    yapiHTTPRequestSyncDone(&iohdl, tmp_errmsg);
+                    yapiHTTPRequestSyncDone_internal(&iohdl, tmp_errmsg);
                     break;
                 }
-                yapiHTTPRequestSyncDone(&iohdl, tmp_errmsg);
+                yapiHTTPRequestSyncDone_internal(&iohdl, tmp_errmsg);
             }
         }
         // idle a bit
@@ -2294,7 +2293,7 @@ static int checkFirmwareFromWeb(const char * serial, char * out_url, int url_max
     return res;
 }
 
-YRETCODE YAPI_FUNCTION_EXPORT yapiCheckFirmware(const char *serial, const char *rev, const char *path, char *buffer, int buffersize, int *fullsize, char *errmsg)
+YRETCODE yapiCheckFirmware_internal(const char *serial, const char *rev, const char *path, char *buffer, int buffersize, int *fullsize, char *errmsg)
 {
     int current_rev = 0;
     int best_rev = 0;
@@ -2323,7 +2322,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiCheckFirmware(const char *serial, const char *
     return best_rev;
 }
 
-YRETCODE YAPI_FUNCTION_EXPORT yapiUpdateFirmware(const char *serial, const char *firmwarePath, const char *settings, int startUpdate, char *msg)
+YRETCODE yapiUpdateFirmware_internal(const char *serial, const char *firmwarePath, const char *settings, int startUpdate, char *msg)
 {
     YRETCODE res;
     yEnterCriticalSection(&fctx.cs);

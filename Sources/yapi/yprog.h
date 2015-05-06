@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.h 19756 2015-03-17 16:39:22Z seb $
+ * $Id: yprog.h 20141 2015-04-24 09:38:55Z seb $
  *
  * Declaration of firmware upgrade functions
  *
@@ -306,6 +306,8 @@ void hProgFree(void);
 #define uGetFirmware(ofs, dst, size) yGetFirmware(ofs, dst, size)
 void yProgInit(void);
 void yProgFree(void);
+YRETCODE yapiCheckFirmware_internal(const char *serial, const char *rev, const char *path, char *buffer, int buffersize, int *fullsize, char *errmsg);
+YRETCODE yapiUpdateFirmware_internal(const char *serial, const char *firmwarePath, const char *settings, int startUpdate, char *msg);
 #endif
 
 

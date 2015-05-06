@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.h 19678 2015-03-11 07:44:40Z mvuilleu $
+ * $Id: yocto_cellular.h 20168 2015-04-27 14:25:00Z seb $
  *
  * Declares yFindCellular(), the high-level API for Cellular functions
  *
@@ -63,6 +63,7 @@ typedef enum {
 #endif
 #define Y_LINKQUALITY_INVALID           (YAPI_INVALID_UINT)
 #define Y_CELLOPERATOR_INVALID          (YAPI_INVALID_STRING)
+#define Y_IMSI_INVALID                  (YAPI_INVALID_STRING)
 #define Y_MESSAGE_INVALID               (YAPI_INVALID_STRING)
 #define Y_PIN_INVALID                   (YAPI_INVALID_STRING)
 #define Y_LOCKEDOPERATOR_INVALID        (YAPI_INVALID_STRING)
@@ -144,6 +145,7 @@ protected:
     // Attributes (function value cache)
     int             _linkQuality;
     string          _cellOperator;
+    string          _imsi;
     string          _message;
     string          _pin;
     string          _lockedOperator;
@@ -169,6 +171,7 @@ public:
 
     static const int LINKQUALITY_INVALID = YAPI_INVALID_UINT;
     static const string CELLOPERATOR_INVALID;
+    static const string IMSI_INVALID;
     static const string MESSAGE_INVALID;
     static const string PIN_INVALID;
     static const string LOCKEDOPERATOR_INVALID;
@@ -203,6 +206,22 @@ public:
 
     inline string       cellOperator(void)
     { return this->get_cellOperator(); }
+
+    /**
+     * Returns an opaque string if a PIN code has been configured in the device to access
+     * the SIM card, or an empty string if none has been configured or if the code provided
+     * was rejected by the SIM card.
+     *
+     * @return a string corresponding to an opaque string if a PIN code has been configured in the device to access
+     *         the SIM card, or an empty string if none has been configured or if the code provided
+     *         was rejected by the SIM card
+     *
+     * On failure, throws an exception or returns Y_IMSI_INVALID.
+     */
+    string              get_imsi(void);
+
+    inline string       imsi(void)
+    { return this->get_imsi(); }
 
     /**
      * Returns the latest status message from the wireless interface.

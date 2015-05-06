@@ -1,35 +1,35 @@
 /*********************************************************************
  *
- * $Id: ytcp.h 19327 2015-02-17 17:30:01Z seb $
+ * $Id: ytcp.h 19995 2015-04-10 14:52:06Z seb $
  *
  *  Declaration of a client TCP stack
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
  *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
  *  non-exclusive license to use, modify, copy and integrate this
- *  file into your software for the sole purpose of interfacing 
- *  with Yoctopuce products. 
+ *  file into your software for the sole purpose of interfacing
+ *  with Yoctopuce products.
  *
- *  You may reproduce and distribute copies of this file in 
+ *  You may reproduce and distribute copies of this file in
  *  source or object form, as long as the sole purpose of this
- *  code is to interface with Yoctopuce products. You must retain 
+ *  code is to interface with Yoctopuce products. You must retain
  *  this notice in the distributed source file.
  *
  *  You should refer to Yoctopuce General Terms and Conditions
- *  for additional information regarding your rights and 
+ *  for additional information regarding your rights and
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -46,7 +46,7 @@
 #ifdef  __cplusplus
 extern "C" {
 #endif
-    
+
 #include "ydef.h"
 
 
@@ -80,14 +80,14 @@ extern "C" {
 #define SOCK_ERR    (errno)
 #endif
 #define REPORT_ERR(msg) if(errmsg){ YSPRINTF(errmsg,YOCTO_ERRMSG_LEN,"%s:errno=%d",(msg),SOCK_ERR);errmsg[YOCTO_ERRMSG_LEN-1]='\0';}
-    
+
 #define yNetSetErr()  yNetSetErrEx(__LINE__,SOCK_ERR,errmsg)
-    
+
 int yNetSetErrEx(u32 line,unsigned err,char *errmsg);
-    
+
 #define YTCP_REMOTE_CLOSE 1
 
-struct _NetHubSt;    
+struct _NetHubSt;
 struct _TcpReqSt;
 
 typedef struct {
@@ -106,7 +106,7 @@ int yTcpDownload(const char *host, const char *url, u8 **out_buffer, u32 mstimeo
 int  yTcpInit(char *errmsg);
 u32  yResolveDNS(const char *name,char *errmsg);
 void yTcpInitReq(struct _TcpReqSt *tcpreq, struct _NetHubSt *hub);
-int  yTcpOpenReq(struct _TcpReqSt *tcpreq, const char *request, int reqlen, u32 flags, yapiRequestAsyncCallback callback, void *context, char *errmsg);
+int  yTcpOpenReq(struct _TcpReqSt *tcpreq, const char *request, int reqlen, u64 mstimeout, yapiRequestAsyncCallback callback, void *context, char *errmsg);
 int  yTcpIsAsyncReq(struct _TcpReqSt *req);
 int  yTcpSelectReq(struct _TcpReqSt **tcpreq, int size, u64 ms, WakeUpSocket *wuce, char *errmsg);
 int  yTcpEofReq(struct _TcpReqSt *tcpreq, char *errmsg);
@@ -118,11 +118,26 @@ void yTcpShutdown(void);
 
 #include "ythread.h"
 
+#define OS_IFACE_CAN_MCAST 1
+
+typedef struct {
+    u32 flags;
+    u32 ip;
+    u32 netmask;
+} os_ifaces;
+
+#ifdef YAPI_IN_YDEVICE
+extern os_ifaces detectedIfaces[];
+extern int nbDetectedIfaces;
+int yDetectNetworkInterfaces(u32 only_ip);
+
+#endif
+
 #define SSDP_UUID_LEN   48
 #define SSDP_URL_LEN    48
 
-typedef struct 
-{   
+typedef struct
+{
     char        serial[YOCTO_SERIAL_LEN];
     char        uuid[SSDP_UUID_LEN];
     char        url[SSDP_URL_LEN];
@@ -136,12 +151,14 @@ typedef struct
 typedef void (*ssdpHubDiscoveryCallback)(const char *serial, const char *urlToRegister, const char *urlToUnregister);
 
 #define NB_SSDP_CACHE_ENTRY 32
+#define NB_OS_IFACES 8
+
 
 typedef struct {
 	int started;
 	ssdpHubDiscoveryCallback callback;
-    YSOCKET request_sock;
-    YSOCKET notify_sock;
+    YSOCKET request_sock[NB_OS_IFACES];
+    YSOCKET notify_sock[NB_OS_IFACES];
     yThread thread;
 	SSDP_CACHE_ENTRY*   SSDPCache[NB_SSDP_CACHE_ENTRY];
 } SSDPInfos;

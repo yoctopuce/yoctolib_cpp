@@ -41,6 +41,5 @@ EXPORTS
   vb6_yapiHTTPRequest   @38
   vb6_yapiRegisterHubDiscoveryCallback    @39
   vb6_yapiTriggerHubDiscovery   @40
-  vb6_yapiGetCNonce   @41
-  vb6_yapiGetAPIVersionEx   @42
+  vb6_yapiGetAPIVersionEx   @41
 
