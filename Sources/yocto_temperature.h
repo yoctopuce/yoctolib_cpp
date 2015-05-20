@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_temperature.h 19619 2015-03-05 18:11:23Z mvuilleu $
+ * $Id: yocto_temperature.h 20381 2015-05-19 16:47:34Z mvuilleu $
  *
  * Declares yFindTemperature(), the high-level API for Temperature functions
  *
@@ -253,6 +253,21 @@ public:
     using YSensor::registerTimedReportCallback;
 
     virtual int         _invokeTimedReportCallback(YMeasure value);
+
+    /**
+     * Configure NTC thermistor parameters in order to properly compute the temperature from
+     * the measured resistance. For increased precision, you can enter a complete mapping
+     * table using set_thermistorResponseTable. This function can only be used with a
+     * temperature sensor based on thermistors.
+     *
+     * @param res25 : thermistor resistance at 25 degrees Celsius
+     * @param beta : Beta value
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         set_ntcParameters(double res25,double beta);
 
     /**
      * Records a thermistor response table, in order to interpolate the temperature from

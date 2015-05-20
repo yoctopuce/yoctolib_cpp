@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.c 20141 2015-04-24 09:38:55Z seb $
+ * $Id: ykey.c 20277 2015-05-07 22:03:42Z mvuilleu $
  *
  * Implementation of standard key computations
  *
@@ -199,6 +199,8 @@ int yParseWWWAuthenticate(char *replybuf, int replysize, char **method, char **r
 
     return 0;
 }
+
+extern u32 yapiGetCNonce(u32 nc);
 
 // Write an authorization header in the buffer provided
 // method and uri can be provided in the same memory zone as destination if needed

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_servo.h 19606 2015-03-05 10:35:57Z seb $
+ * $Id: yocto_servo.h 20287 2015-05-08 13:40:21Z seb $
  *
  * Declares yFindServo(), the high-level API for Servo functions
  *
@@ -211,7 +211,8 @@ public:
      * from 1 [ms] to 2 [ms], When using a servo that supports a double range,
      * from 0.5 [ms] to 2.5 [ms], you can select a range of 200%.
      * Be aware that using a range higher than what is supported by the servo
-     * is likely to damage the servo.
+     * is likely to damage the servo. Remember to call the matching module
+     * saveToFlash() method, otherwise this call will have no effect.
      *
      * @param newval : an integer corresponding to the range of use of the servo, specified in per cents
      *
@@ -240,7 +241,8 @@ public:
      * The duration is specified in microseconds, and the standard value is 1500 [us].
      * This setting makes it possible to shift the range of use of the servo.
      * Be aware that using a range higher than what is supported by the servo is
-     * likely to damage the servo.
+     * likely to damage the servo. Remember to call the matching module
+     * saveToFlash() method, otherwise this call will have no effect.
      *
      * @param newval : an integer corresponding to the duration of the pulse corresponding to the neutral
      * position of the servo

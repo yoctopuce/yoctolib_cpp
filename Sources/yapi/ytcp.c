@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 20022 2015-04-13 16:08:44Z seb $
+ * $Id: ytcp.c 20339 2015-05-15 09:43:11Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -75,6 +75,9 @@ typedef int socklen_t;
     #include <netdb.h>
 #endif
 
+
+#define DEBUG_SLOW_TCP
+//#define TRACE_TCP_REQ
 
 //#define PERF_TCP_FUNCTIONS
 #ifdef PERF_TCP_FUNCTIONS
@@ -615,7 +618,33 @@ exit:
     return res;
 }
 
+#ifdef TRACE_TCP_REQ
 
+static void dumpTCPReq(const char *fileid, int lineno, struct _TcpReqSt *req)
+{
+
+    int w;
+    dbglog("dump TCPReq %p from %s:%d\n", req, fileid, lineno);
+    if (req->hub){
+        dbglog("Hub: %s\n", req->hub->name);
+    } else{
+        dbglog("Hub: null\n");
+    }
+
+    dbglog("state retcode=%d (retrycount=%d) errmsg=%s\n", req->errcode, req->retryCount, req->errmsg);
+    dbglog("socket=%x (reuse=%x) flags=%x\n", req->skt, req->reuseskt, req->flags);
+    dbglog("time open=%"FMTx64" last read=%"FMTx64"  timeout=%"FMTx64"\n", req->open_tm, req->read_tm, req->timeout_tm);
+    dbglog("readed=%d (readpos=%d)\n", req->replysize, req->replysize);
+    dbglog("callback=%p context=%p\n", req->callback, req->context);
+    if (req->headerbuf){
+        dbglog("req[%s]\n", req->headerbuf);
+    } else {
+        dbglog("null\n");
+    }
+    w = yWaitForEvent(&req->finished, 1);
+    dbglog("finished=%d\n", w);
+}
+#endif
 void yTcpInitReq(struct _TcpReqSt *req, struct _NetHubSt *hub)
 {
     memset(req, 0, sizeof(struct _TcpReqSt));
@@ -673,7 +702,6 @@ static u32 resolveDNSCache(yUrlRef url, char *errmsg)
 }
 
 
-#define DEBUG_SLOW_TCP
 static int yTcpCheckReqTimeout(struct _TcpReqSt *req, char *errmsg)
 {
     if (req->timeout_tm != 0) {
@@ -869,6 +897,9 @@ int  yTcpOpenReq(struct _TcpReqSt *req, const char *request, int reqlen, u64 mst
         yLeaveCriticalSection(&req->access);
         yWaitForEvent(&req->finished,100);
         if ((yapiGetTickCount() - startwait) > 2 * YIO_DEFAULT_TCP_TIMEOUT) {
+#ifdef TRACE_TCP_REQ
+            dumpTCPReq(__FILE_ID__, __LINE__, req);
+#endif
             return YERRMSG(YAPI_TIMEOUT,"last TCP request is not finished");
         }
         yEnterCriticalSection(&req->access);

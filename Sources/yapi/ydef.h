@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 19952 2015-04-08 10:00:24Z seb $
+ * $Id: ydef.h 20375 2015-05-19 14:09:49Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -222,9 +222,11 @@ typedef s32             YUSBDEV;
 #define YIO_YSB          3
 #define YIO_TRUNK        4
 
-#define YIO_DEFAULT_USB_TIMEOUT  2000u
-#define YIO_DEFAULT_TCP_TIMEOUT 20000u
-#define YIO_IDLE_TCP_TIMEOUT     5000u
+#define YIO_DEFAULT_USB_TIMEOUT      2000u
+#define YIO_DEFAULT_TCP_TIMEOUT     20000u
+#define YIO_1_MINUTE_TCP_TIMEOUT    60000u
+#define YIO_10_MINUTES_TCP_TIMEOUT 600000u
+#define YIO_IDLE_TCP_TIMEOUT         5000u
 
 #ifdef MICROCHIP_API
 // same as yhub devhdl
@@ -436,7 +438,8 @@ typedef struct {
 #endif
 
 #define USB_PKT_SIZE            64
-#define YPKT_USB_VERSION_BCD    0x0207
+#define YPKT_USB_VERSION_NO_RETRY_BCD    0x0207
+#define YPKT_USB_VERSION_BCD             0x0208
 #define TO_SAFE_U16(safe,unsafe)        {(safe).low = (unsafe)&0xff; (safe).high=(unsafe)>>8;}
 #define FROM_SAFE_U16(safe,unsafe)      {(unsafe) = (safe).low |((u16)((safe).high)<<8);}
 
@@ -472,7 +475,6 @@ typedef struct {
 
 #define USB_CONF_RESET      0
 #define USB_CONF_START      1
-#define USB_CONF_RETRY      2
 
 typedef union{
     struct{
@@ -480,14 +482,11 @@ typedef union{
         u8  ok;
         u8  ifaceno;
         u8  nbifaces;
-    }reset;
+    } reset;
     struct{
         u8  nbifaces;
-    }start;
-    struct{
-        u8  pktno;
-        u8  nbmissing;
-    }retry;
+        u8  ack_delay;
+    } start;
 } USB_Conf_Pkt;
 
 //
@@ -740,8 +739,9 @@ typedef struct {
 
 // Data in YSTREAM_META stream
 
-#define USB_META_UTCTIME   1
-#define USB_META_DLFLUSH   2
+#define USB_META_UTCTIME        1
+#define USB_META_DLFLUSH        2
+#define USB_META_ACK_D2H_PACKET 3
 
 typedef union {
     struct {
@@ -751,6 +751,10 @@ typedef union {
     struct {
         u8  metaType;      // =USB_META_DLFLUSH (flush datalogger)
     } dlFlush;
+    struct {
+        u8  metaType;      // =USB_META_ACK_D2H_PACKET (ack last device to host packet)
+        u8  pktno;         // = last pktno that the host has received
+    } pktAck;
 } USB_Meta_Pkt;
 
 //

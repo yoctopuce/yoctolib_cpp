@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 20208 2015-05-04 12:23:47Z seb $
+ * $Id: yproto.h 20375 2015-05-19 14:09:49Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -575,6 +575,7 @@ typedef struct  _yPrivDeviceSt{
     u8                  curtxofs;
     pktItem             tmptxpkt;
     u8                  lastpktno;
+    int                 pktAckDelay;
     int                 currentIfaceNo;
     u8                  ifacesMap[NBMAX_INTERFACE_PER_DEV];
     yInterfaceSt        ifaces[NBMAX_INTERFACE_PER_DEV];
@@ -851,4 +852,5 @@ u32 yapiGetCNonce(u32 nc);
 YRETCODE  yapiHTTPRequestSyncStartEx_internal(YIOHDL *iohdl, const char *device, const char *request, int requestsize, char **reply, int *replysize, char *errmsg);
 YRETCODE  yapiHTTPRequestSyncDone_internal(YIOHDL *iohdl, char *errmsg);
 void yFunctionUpdate(YAPI_FUNCTION fundescr, const char *value);
+void yFunctionTimedUpdate(YAPI_FUNCTION fundescr, double deviceTime, const u8 *report, u32 len);
 #endif

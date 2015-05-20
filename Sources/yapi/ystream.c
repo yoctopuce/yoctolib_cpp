@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 20208 2015-05-04 12:23:47Z seb $
+ * $Id: ystream.c 20378 2015-05-19 15:39:27Z seb $
  *
  * USB multi-interface stream implementation
  *
@@ -1171,7 +1171,7 @@ YRETCODE yPktQueuePopH2D(yInterfaceSt *iface,pktItem **pkt)
 
 
 // this function copy the pkt into the interface out queue and send the packet
-YRETCODE yyySendPacket( yInterfaceSt *iface,const USB_Packet *pkt,char *errmsg)
+YRETCODE yyySendPacket(yInterfaceSt *iface, const USB_Packet *pkt, char *errmsg)
 {
     int res;
     res = yPktQueuePushH2D(iface,pkt,errmsg);
@@ -1187,6 +1187,27 @@ YRETCODE yyySendPacket( yInterfaceSt *iface,const USB_Packet *pkt,char *errmsg)
     }
     return YERRMSG(YAPI_TIMEOUT,"Unable to send packet to the device");
 }
+
+static YRETCODE yAckPkt(yInterfaceSt *iface, int pktno, char *errmsg)
+{
+
+    pktItem qpkt;
+
+    YSTREAM_Head  *yshead = (YSTREAM_Head*)(qpkt.pkt.data);
+    u8 *data = qpkt.pkt.data + sizeof(YSTREAM_Head);
+    yshead->pktno = 0;
+    yshead->pkt = YPKT_STREAM;
+    yshead->stream = YSTREAM_META;
+    yshead->size = 2;
+    data[0] = USB_META_ACK_D2H_PACKET;
+    data[1] = pktno & 0xff;
+    yshead = (YSTREAM_Head*)(qpkt.pkt.data + 2 + sizeof(YSTREAM_Head));
+    yshead->pkt = YPKT_STREAM;
+    yshead->stream = YSTREAM_EMPTY;
+    yshead->size = USB_PKT_SIZE - (2 * sizeof(YSTREAM_Head) + 2);
+    return yyySendPacket(iface, &qpkt.pkt, errmsg);
+}
+
 
 
 
@@ -1243,10 +1264,9 @@ static void yyFormatConfPkt(pktItem *pkt, u8 conftype)
 // incompatible -> return YAPI_IO_ERROR
 static int CheckVersionCompatibility(u16 version,const char *serial, char *errmsg)
 {
-
-    if((version & 0xff00) != (YPKT_USB_VERSION_BCD & 0xff00)){
+    if ((version & 0xff00) != (YPKT_USB_VERSION_BCD & 0xff00)) {
         // major version change
-        if((version & 0xff00) > (YPKT_USB_VERSION_BCD & 0xff00)){
+        if ((version & 0xff00) > (YPKT_USB_VERSION_BCD & 0xff00)) {
             dbglog("Yoctopuce library is too old (using 0x%x, need 0x%x) to handle device %s, please upgrade your Yoctopuce library\n",YPKT_USB_VERSION_BCD,version,serial);
             return YERRMSG(YAPI_IO_ERROR,"Library is too old to handle this device");
         } else {
@@ -1254,15 +1274,18 @@ static int CheckVersionCompatibility(u16 version,const char *serial, char *errms
             YPANIC;
             return 1;
         }
-    } else if(version != YPKT_USB_VERSION_BCD ){
-        if(version > YPKT_USB_VERSION_BCD){
+    } else if (version != YPKT_USB_VERSION_BCD) {
+        if (version == YPKT_USB_VERSION_NO_RETRY_BCD && (yContext->detecttype & Y_RESEND_MISSING_PKT) == 0) {
+            // do prompt for firmware update since the Y_RESEND_MISSING_PKT feature is not used
+            return 1;
+        }
+        if (version > YPKT_USB_VERSION_BCD) {
             dbglog("Device %s is using a newer protocol, consider upgrading your Yoctopuce library\n",serial);
-        }else{
+        } else {
             dbglog("Device %s is using an older protocol, consider upgrading the device firmware\n",serial);
         }
         return 0;
     }
-
     return 1;
 }
 
@@ -1278,7 +1301,7 @@ static int yyResetIface( yInterfaceSt  *iface, u16 *ifaceno, u16 *nbifaces,char 
     if(nbifaces) *nbifaces = 0;
     yyFormatConfPkt(&qpkt,USB_CONF_RESET);
     qpkt.pkt.confpkt.conf.reset.ok = 1;
-    TO_SAFE_U16(qpkt.pkt.confpkt.conf.reset.api,YPKT_USB_VERSION_BCD);
+    TO_SAFE_U16(qpkt.pkt.confpkt.conf.reset.api, YPKT_USB_VERSION_BCD);
     YPROPERR( yyySendPacket(iface,&qpkt.pkt,errmsg));
 
     if(YISERR(yyWaitOnlyConfPkt(iface,USB_CONF_RESET,&rpkt,5,errmsg)) || rpkt==NULL){
@@ -1346,10 +1369,21 @@ static int ySendStart(yPrivDeviceSt *dev,char *errmsg)
     pktItem  qpkt,*rpkt;
 
     yyFormatConfPkt(&qpkt,USB_CONF_START);
+    if (yContext->detecttype & Y_RESEND_MISSING_PKT && Ino2Idx(dev, 0)->pkt_version >= YPKT_USB_VERSION_BCD) {
+        dev->pktAckDelay = Y_DEFAULT_PKT_RESEND_DELAY;
+    } else{
+        dev->pktAckDelay = 0;
+    }
     qpkt.pkt.confpkt.conf.start.nbifaces = (u8)dev->infos.nbinbterfaces;
-    YPROPERR(yyySendPacket(Ino2Idx(dev,0),&qpkt.pkt,errmsg));
-    YPROPERR(yyWaitOnlyConfPkt(Ino2Idx(dev,0),USB_CONF_START,&rpkt,5,errmsg));
+    qpkt.pkt.confpkt.conf.start.ack_delay = dev->pktAckDelay;
+    YPROPERR(yyySendPacket(Ino2Idx(dev,0), &qpkt.pkt, errmsg));
+    YPROPERR(yyWaitOnlyConfPkt(Ino2Idx(dev,0), USB_CONF_START, &rpkt, 5, errmsg));
     nextiface = rpkt->pkt.confpkt.conf.start.nbifaces;
+    if (dev->pktAckDelay) {
+        // update ack delay with the one from the device (in case device does not implement pkt ack)
+        dev->pktAckDelay = rpkt->pkt.confpkt.conf.start.ack_delay;
+        dbglog("Acktivate USB pkt ack (%dms)\n", dev->pktAckDelay);
+    }
     dev->lastpktno = rpkt->pkt.first_stream.pktno;
     yFree(rpkt);
     if(nextiface!=0 ){
@@ -1409,6 +1443,11 @@ again:
     nextpktno = NEXT_YPKT_NO(dev->lastpktno);
     nextiface = NEXT_IFACE_NO(dev->currentIfaceNo,dev->infos.nbinbterfaces);
     if (item != NULL) {
+        if (dev->pktAckDelay > 0) {
+            res = yAckPkt(iface, item->pkt.first_stream.pktno, errmsg);
+            if (YISERR(res))
+                return res;
+        }
         // verfiy the packet
         if (item->pkt.first_stream.pkt == YPKT_CONF) {
 #ifdef DEBUG_DUMP_PKT
@@ -1420,6 +1459,10 @@ again:
                 dbglog("Too many packets dropped, disable %s\n",dev->infos.serial);
                 return YERRMSG(YAPI_IO_ERROR,"Too many packets dropped");
             }
+            goto again;
+        }
+        if (item->pkt.first_stream.pktno == dev->lastpktno) {
+            //late retry : drop it since we allready have the packet.
             goto again;
         }
 
@@ -1502,7 +1545,7 @@ static int yStreamReceived(yPrivDeviceSt *dev,  u8 *stream, u8 **data, u8 *size,
     }
 
     yshead= (YSTREAM_Head*) &dev->currxpkt->pkt.data[dev->curxofs];
-    YASSERT( dev->curxofs +sizeof(YSTREAM_Head) + yshead->size <= USB_PKT_SIZE);
+    YASSERT(dev->curxofs + sizeof(YSTREAM_Head) + yshead->size <= USB_PKT_SIZE);
     *stream = yshead->stream;
     *size  = yshead->size;
     *data  = &dev->currxpkt->pkt.data[ dev->curxofs + sizeof(YSTREAM_Head) ];
@@ -1804,7 +1847,7 @@ static void yDispatchReportV1(yPrivDeviceSt *dev, u8 *data, int pktsize)
                 yEnterCriticalSection(&yContext->generic_cs);
                 devtime = yContext->generic_infos[devydx].deviceTime;
                 yLeaveCriticalSection(&yContext->generic_cs);
-                yContext->timedReportCallback(fundesc, devtime, data, len + 1);
+                yFunctionTimedUpdate(fundesc, devtime, data, len + 1);
             }
             pktsize -= 1 + len;
             data += 1 + len;
@@ -1848,7 +1891,7 @@ static void yDispatchReportV2(yPrivDeviceSt *dev, u8 *data, int pktsize)
                 yEnterCriticalSection(&yContext->generic_cs);
                 devtime = yContext->generic_infos[devydx].deviceTime;
                 yLeaveCriticalSection(&yContext->generic_cs);
-                yContext->timedReportCallback(fundesc, devtime, data, len + 1);
+                yFunctionTimedUpdate(fundesc, devtime, data, len + 1);
             }
             pktsize -= 1 + len;
             data += 1 + len;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 20208 2015-05-04 12:23:47Z seb $
+ * $Id: yapi.c 20337 2015-05-15 09:15:44Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -141,7 +141,7 @@ static write_cb_onfile(YAPI_FUNCTION fundescr, const char *value)
     int retry_count = 1;
     int fileno = global_callback_count >> 16;
     char *mode ="ab";
-    char buffer[2048], buffer2[64];;
+    char buffer[2048], buffer2[64];
     struct tm timeinfo;
     time_t rawtime;
     int threadIdx, bufferlen;
@@ -183,6 +183,12 @@ retry:
     return 0;
 }
 
+static write_timedcb_onfile(YAPI_FUNCTION fundescr, double deviceTime, const u8 *report, u32 len)
+{
+    char buffer[256];
+    YSPRINTF(buffer, 2048, "Timed %f %p:%u",deviceTime, report, len);
+    return write_cb_onfile(fundescr, buffer);
+}
 
 #endif
 
@@ -195,6 +201,18 @@ void yFunctionUpdate(YAPI_FUNCTION fundescr, const char *value)
         write_cb_onfile(fundescr, value);
 #endif
         yContext->functionCallback(fundescr, value);
+        yLeaveCriticalSection(&yContext->functionCallbackCS);
+    }
+}
+
+void yFunctionTimedUpdate(YAPI_FUNCTION fundescr, double deviceTime, const u8 *report, u32 len)
+{
+    if(yContext->timedReportCallback) {
+        yEnterCriticalSection(&yContext->functionCallbackCS);
+#ifdef DEBUG_CALLBACK
+        write_timedcb_onfile(fundescr, deviceTime, report, len);
+#endif
+        yContext->timedReportCallback(fundescr, deviceTime, report, len);
         yLeaveCriticalSection(&yContext->functionCallbackCS);
     }
 }
@@ -1699,7 +1717,7 @@ static int handleNetNotification(NetHubSt *hub)
                     yLeaveCriticalSection(&yContext->generic_cs);
                     funInfo.raw = funydx;
                     ypRegisterByYdx(devydx, funInfo, NULL, &fundesc);
-                    yContext->timedReportCallback(fundesc, deviceTime, report, pos);
+                    yFunctionTimedUpdate(fundesc, deviceTime, report, pos);
                 }
                 break;
             case NOTIFY_NETPKT_FUNCV2YDX:
@@ -2797,7 +2815,8 @@ YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *request,
     u64         timeout;
     int         count=0;
     yUrlRef     url;
-    u64         mstimeout = 0;
+    u64         mstimeout = YIO_DEFAULT_TCP_TIMEOUT;
+    int         len;
 
     if(!yContext) {
         return YERR(YAPI_NOT_INITIALIZED);
@@ -2878,10 +2897,20 @@ YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *request,
             }
             return YAPI_IO_ERROR;
         }
-        if (strncmp(request,"GET ",4) == 0){
-            int len = reqlen < 2*YOCTO_SERIAL_LEN ? reqlen: 2*YOCTO_SERIAL_LEN;
-            if (ymemfind((u8*)request + 4, len, (u8*)"/api.json", 9)>=0) {
-                mstimeout = YIO_DEFAULT_TCP_TIMEOUT;
+
+
+        len = (reqlen < YOCTO_SERIAL_LEN + 32 ? reqlen : YOCTO_SERIAL_LEN + 32);
+        if (memcmp(request, "GET ", 4) == 0) {
+            if (ymemfind((u8*)request + 4, len, (u8*)"/testcb.txt", 11) >= 0) {
+                mstimeout = YIO_1_MINUTE_TCP_TIMEOUT;
+            } else if (ymemfind((u8*)request + 4, len, (u8*)"/rxmsg.json", 11) >= 0) {
+                mstimeout = YIO_1_MINUTE_TCP_TIMEOUT;
+            } else if (ymemfind((u8*)request + 4, len, (u8*)"/flash.json", 11) >= 0) {
+                mstimeout = YIO_10_MINUTES_TCP_TIMEOUT;
+            }
+        } else {
+            if (ymemfind((u8*)request + 4, len, (u8*)"/upload.html", 12) >= 0) {
+                mstimeout = YIO_10_MINUTES_TCP_TIMEOUT;
             }
         }
         res = (YRETCODE) yTcpOpenReq(tcpreq,request,reqlen, mstimeout, callback, context,errmsg);
@@ -3469,13 +3498,15 @@ typedef enum
     trcGetBootloaders,
     trcGetAllJsonKeys,
     trcCheckFirmware,
-    trcUpdateFirmware
+    trcUpdateFirmware,
+    trcGetMem,
+    trcFreeMem
 } TRC_FUN;
 
 static const char * trc_funname[] =
 {
-    "init",
-    "free",
+    "initApi",
+    "freeApi",
     "RegLog",
     "RegDeviceLog",
     "StartStopDevLog",
@@ -3517,7 +3548,9 @@ static const char * trc_funname[] =
     "GBoot",
     "GAllJsonK",
     "CkFw",
-    "UpFw"
+    "UpFw",
+    "getmem",
+    "freemem"
 };
 
 static const char *dlltracefile = YDLL_TRACE_FILE;
@@ -3551,9 +3584,6 @@ static void trace_dll(u64 t, char prefix, TRC_FUN trcfun, const char *action)
                                     dll_start = yapiGetTickCount();\
                                     trace_dll(dll_start, '>' ,trcfun, "");
 
-//#define YDLL_CALL_LEAVEVOID(name)
-//#define YDLL_CALL_LEAVE(name, value)
-#if 1
 #define YDLL_CALL_LEAVEVOID()        dll_stop = yapiGetTickCount();\
                                             YSPRINTF(dbg_msg, 128, ":%"FMTs64, (dll_stop - dll_start)); \
                                             trace_dll(dll_start, '<' ,trcfun, dbg_msg);
@@ -3561,7 +3591,6 @@ static void trace_dll(u64 t, char prefix, TRC_FUN trcfun, const char *action)
 #define YDLL_CALL_LEAVE(value)     dll_stop = yapiGetTickCount();\
                                             YSPRINTF(dbg_msg, 128, ":%"FMTx64"=%d", (dll_stop - dll_start), (int)(value), (u64)(value)); \
                                             trace_dll(dll_start, '<' ,trcfun, dbg_msg);
-#endif
 #else
 #define YDLL_CALL_ENTER(funname)
 #define YDLL_CALL_LEAVEVOID()
@@ -3922,6 +3951,22 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetAllJsonKeys(const char *json_buffer, char *
     res = yapiGetAllJsonKeys_internal(json_buffer, buffer, buffersize, fullsize, errmsg);
     YDLL_CALL_LEAVE(res);
     return res;
+}
+
+YAPI_FUNCTION_EXPORT void* yapiGetMem(int size)
+{
+    void *res;
+    YDLL_CALL_ENTER(trcGetMem);
+    res = yMalloc(size);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YAPI_FUNCTION_EXPORT void yapiFreeMem(void *ptr)
+{
+    YDLL_CALL_ENTER(trcFreeMem);
+    yFree(ptr);
+    YDLL_CALL_LEAVEVOID()
 }
 
 #ifndef YAPI_IN_YDEVICE

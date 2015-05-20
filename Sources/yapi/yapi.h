@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h 20141 2015-04-24 09:38:55Z seb $
+ * $Id: yapi.h 20375 2015-05-19 14:09:49Z seb $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -119,10 +119,13 @@ void YAPI_FUNCTION_EXPORT yapiStartStopDeviceLogCallback(const char *serial,int 
   ***************************************************************************/
 YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int type,char *errmsg);
 
-#define Y_DETECT_NONE  0
-#define Y_DETECT_USB   1
-#define Y_DETECT_NET   2
+#define Y_DETECT_NONE           0
+#define Y_DETECT_USB            1
+#define Y_DETECT_NET            2
+#define Y_RESEND_MISSING_PKT    4
 #define Y_DETECT_ALL   (Y_DETECT_USB | Y_DETECT_NET)
+
+#define Y_DEFAULT_PKT_RESEND_DELAY 50
 
 
 /*****************************************************************************
@@ -923,6 +926,13 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiCheckFirmware(const char *serial, const char *
 YRETCODE YAPI_FUNCTION_EXPORT yapiGetBootloaders(char *buffer, int buffersize, int *fullsize, char *errmsg);
 YRETCODE YAPI_FUNCTION_EXPORT yapiUpdateFirmware(const char *serial, const char *firmwarePath, const char *settings, int startUpdate, char *errmsg);
 
+
+
+/*****************************************************************************
+  helper for delphi
+ ***************************************************************************/
+YAPI_FUNCTION_EXPORT void* yapiGetMem(int size);
+YAPI_FUNCTION_EXPORT void yapiFreeMem(void *ptr);
 
 
 typedef  void (*yRawNotificationCb)(USB_Notify_Pkt*);

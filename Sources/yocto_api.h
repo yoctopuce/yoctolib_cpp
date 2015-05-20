@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 20070 2015-04-16 15:34:40Z seb $
+ * $Id: yocto_api.h 20380 2015-05-19 16:28:16Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -149,6 +149,7 @@ typedef void (*YSensorTimedReportCallback)(YSensor *func, YMeasure measure);
 const int Y_DETECT_NONE = 0;
 const int Y_DETECT_USB = 1;
 const int Y_DETECT_NET = 2;
+const int Y_RESEND_MISSING_PKT = 4;
 const int Y_DETECT_ALL = (Y_DETECT_USB | Y_DETECT_NET);
 
 // Forward-declaration
@@ -286,9 +287,10 @@ public:
     static  yDeviceUpdateCallback   DeviceRemovalCallback;
     static  yDeviceUpdateCallback   DeviceChangeCallback;
 
-    static const u32 DETECT_NONE = 0;
-    static const u32 DETECT_USB  = 1;
-    static const u32 DETECT_NET  = 2;
+    static const u32 DETECT_NONE        = 0;
+    static const u32 DETECT_USB         = 1;
+    static const u32 DETECT_NET         = 2;
+    static const u32 RESEND_MISSING_PKT = 4;
     static const u32 DETECT_ALL  = (Y_DETECT_USB | Y_DETECT_NET);
 
 //--- (generated code: YFunction return codes)
