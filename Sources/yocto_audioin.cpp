@@ -1,8 +1,8 @@
 /*********************************************************************
  *
- * $Id: yocto_audioout.cpp 20565 2015-06-04 09:59:10Z seb $
+ * $Id: pic24config.php 20612 2015-06-09 01:27:02Z mvuilleu $
  *
- * Implements yFindAudioOut(), the high-level API for AudioOut functions
+ * Implements yFindAudioIn(), the high-level API for AudioIn functions
  *
  * - - - - - - - - - License information: - - - - - - - - - 
  *
@@ -39,7 +39,7 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
-#include "yocto_audioout.h"
+#include "yocto_audioin.h"
 #include "yapi/yjson.h"
 #include "yapi/yapi.h"
 #include <string.h>
@@ -47,27 +47,27 @@
 #include <math.h>
 #include <stdlib.h>
 
-YAudioOut::YAudioOut(const string& func): YFunction(func)
-//--- (AudioOut initialization)
+YAudioIn::YAudioIn(const string& func): YFunction(func)
+//--- (AudioIn initialization)
     ,_volume(VOLUME_INVALID)
     ,_mute(MUTE_INVALID)
     ,_signal(SIGNAL_INVALID)
     ,_noSignalFor(NOSIGNALFOR_INVALID)
-    ,_valueCallbackAudioOut(NULL)
-//--- (end of AudioOut initialization)
+    ,_valueCallbackAudioIn(NULL)
+//--- (end of AudioIn initialization)
 {
-    _className="AudioOut";
+    _className="AudioIn";
 }
 
-YAudioOut::~YAudioOut()
+YAudioIn::~YAudioIn()
 {
-//--- (YAudioOut cleanup)
-//--- (end of YAudioOut cleanup)
+//--- (YAudioIn cleanup)
+//--- (end of YAudioIn cleanup)
 }
-//--- (YAudioOut implementation)
+//--- (YAudioIn implementation)
 // static attributes
 
-int YAudioOut::_parseAttr(yJsonStateMachine& j)
+int YAudioIn::_parseAttr(yJsonStateMachine& j)
 {
     if(!strcmp(j.token, "volume")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
@@ -95,32 +95,32 @@ int YAudioOut::_parseAttr(yJsonStateMachine& j)
 
 
 /**
- * Returns audio output volume, in per cents.
+ * Returns audio input gain, in per cents.
  *
- * @return an integer corresponding to audio output volume, in per cents
+ * @return an integer corresponding to audio input gain, in per cents
  *
  * On failure, throws an exception or returns Y_VOLUME_INVALID.
  */
-int YAudioOut::get_volume(void)
+int YAudioIn::get_volume(void)
 {
     if (_cacheExpiration <= YAPI::GetTickCount()) {
         if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAudioOut::VOLUME_INVALID;
+            return YAudioIn::VOLUME_INVALID;
         }
     }
     return _volume;
 }
 
 /**
- * Changes audio output volume, in per cents.
+ * Changes audio input gain, in per cents.
  *
- * @param newval : an integer corresponding to audio output volume, in per cents
+ * @param newval : an integer corresponding to audio input gain, in per cents
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YAudioOut::set_volume(int newval)
+int YAudioIn::set_volume(int newval)
 {
     string rest_val;
     char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
@@ -134,11 +134,11 @@ int YAudioOut::set_volume(int newval)
  *
  * On failure, throws an exception or returns Y_MUTE_INVALID.
  */
-Y_MUTE_enum YAudioOut::get_mute(void)
+Y_MUTE_enum YAudioIn::get_mute(void)
 {
     if (_cacheExpiration <= YAPI::GetTickCount()) {
         if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAudioOut::MUTE_INVALID;
+            return YAudioIn::MUTE_INVALID;
         }
     }
     return _mute;
@@ -154,7 +154,7 @@ Y_MUTE_enum YAudioOut::get_mute(void)
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YAudioOut::set_mute(Y_MUTE_enum newval)
+int YAudioIn::set_mute(Y_MUTE_enum newval)
 {
     string rest_val;
     rest_val = (newval>0 ? "1" : "0");
@@ -162,17 +162,17 @@ int YAudioOut::set_mute(Y_MUTE_enum newval)
 }
 
 /**
- * Returns the detected output current level.
+ * Returns the detected input signal level.
  *
- * @return an integer corresponding to the detected output current level
+ * @return an integer corresponding to the detected input signal level
  *
  * On failure, throws an exception or returns Y_SIGNAL_INVALID.
  */
-int YAudioOut::get_signal(void)
+int YAudioIn::get_signal(void)
 {
     if (_cacheExpiration <= YAPI::GetTickCount()) {
         if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAudioOut::SIGNAL_INVALID;
+            return YAudioIn::SIGNAL_INVALID;
         }
     }
     return _signal;
@@ -185,11 +185,11 @@ int YAudioOut::get_signal(void)
  *
  * On failure, throws an exception or returns Y_NOSIGNALFOR_INVALID.
  */
-int YAudioOut::get_noSignalFor(void)
+int YAudioIn::get_noSignalFor(void)
 {
     if (_cacheExpiration <= YAPI::GetTickCount()) {
         if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAudioOut::NOSIGNALFOR_INVALID;
+            return YAudioIn::NOSIGNALFOR_INVALID;
         }
     }
     return _noSignalFor;
@@ -208,7 +208,7 @@ int YAudioOut::get_noSignalFor(void)
  *
  * This function does not require that $THEFUNCTION$ is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YAudioOut.isOnline() to test if $THEFUNCTION$ is
+ * Use the method YAudioIn.isOnline() to test if $THEFUNCTION$ is
  * indeed online at a given time. In case of ambiguity when looking for
  * $AFUNCTION$ by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -216,15 +216,15 @@ int YAudioOut::get_noSignalFor(void)
  *
  * @param func : a string that uniquely characterizes $THEFUNCTION$
  *
- * @return a YAudioOut object allowing you to drive $THEFUNCTION$.
+ * @return a YAudioIn object allowing you to drive $THEFUNCTION$.
  */
-YAudioOut* YAudioOut::FindAudioOut(string func)
+YAudioIn* YAudioIn::FindAudioIn(string func)
 {
-    YAudioOut* obj = NULL;
-    obj = (YAudioOut*) YFunction::_FindFromCache("AudioOut", func);
+    YAudioIn* obj = NULL;
+    obj = (YAudioIn*) YFunction::_FindFromCache("AudioIn", func);
     if (obj == NULL) {
-        obj = new YAudioOut(func);
-        YFunction::_AddToCache("AudioOut", func, obj);
+        obj = new YAudioIn(func);
+        YFunction::_AddToCache("AudioIn", func, obj);
     }
     return obj;
 }
@@ -240,7 +240,7 @@ YAudioOut* YAudioOut::FindAudioOut(string func)
  *         the new advertised value.
  * @noreturn
  */
-int YAudioOut::registerValueCallback(YAudioOutValueCallback callback)
+int YAudioIn::registerValueCallback(YAudioInValueCallback callback)
 {
     string val;
     if (callback != NULL) {
@@ -248,7 +248,7 @@ int YAudioOut::registerValueCallback(YAudioOutValueCallback callback)
     } else {
         YFunction::_UpdateValueCallbackList(this, false);
     }
-    _valueCallbackAudioOut = callback;
+    _valueCallbackAudioIn = callback;
     // Immediately invoke value callback with current value
     if (callback != NULL && this->isOnline()) {
         val = _advertisedValue;
@@ -259,41 +259,41 @@ int YAudioOut::registerValueCallback(YAudioOutValueCallback callback)
     return 0;
 }
 
-int YAudioOut::_invokeValueCallback(string value)
+int YAudioIn::_invokeValueCallback(string value)
 {
-    if (_valueCallbackAudioOut != NULL) {
-        _valueCallbackAudioOut(this, value);
+    if (_valueCallbackAudioIn != NULL) {
+        _valueCallbackAudioIn(this, value);
     } else {
         YFunction::_invokeValueCallback(value);
     }
     return 0;
 }
 
-YAudioOut *YAudioOut::nextAudioOut(void)
+YAudioIn *YAudioIn::nextAudioIn(void)
 {
     string  hwid;
 
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
-    return YAudioOut::FindAudioOut(hwid);
+    return YAudioIn::FindAudioIn(hwid);
 }
 
-YAudioOut* YAudioOut::FirstAudioOut(void)
+YAudioIn* YAudioIn::FirstAudioIn(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
 
-    if(YISERR(YapiWrapper::getFunctionsByClass("AudioOut", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
+    if(YISERR(YapiWrapper::getFunctionsByClass("AudioIn", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {
         return NULL;
     }
-    return YAudioOut::FindAudioOut(serial+"."+funcId);
+    return YAudioIn::FindAudioIn(serial+"."+funcId);
 }
 
-//--- (end of YAudioOut implementation)
+//--- (end of YAudioIn implementation)
 
-//--- (AudioOut functions)
-//--- (end of AudioOut functions)
+//--- (AudioIn functions)
+//--- (end of AudioIn functions)

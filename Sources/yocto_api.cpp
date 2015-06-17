@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 20183 2015-04-29 14:41:00Z seb $
+ * $Id: yocto_api.cpp 20412 2015-05-22 08:52:39Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -4788,6 +4788,7 @@ YSensor::YSensor(const string& func): YFunction(func)
     ,_reportFrequency(REPORTFREQUENCY_INVALID)
     ,_calibrationParam(CALIBRATIONPARAM_INVALID)
     ,_resolution(RESOLUTION_INVALID)
+    ,_sensorState(SENSORSTATE_INVALID)
     ,_valueCallbackSensor(NULL)
     ,_timedReportCallbackSensor(NULL)
     ,_prevTimedReport(0.0)
@@ -4865,6 +4866,11 @@ int YSensor::_parseAttr(yJsonStateMachine& j)
     if(!strcmp(j.token, "resolution")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _resolution =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        return 1;
+    }
+    if(!strcmp(j.token, "sensorState")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _sensorState =  atoi(j.token);
         return 1;
     }
     failed:
@@ -5135,6 +5141,26 @@ double YSensor::get_resolution(void)
 }
 
 /**
+ * Returns the sensor health state code, which is zero when there is an up-to-date measure
+ * available or a positive code if the sensor is not able to provide a measure right now.
+ *
+ * @return an integer corresponding to the sensor health state code, which is zero when there is an
+ * up-to-date measure
+ *         available or a positive code if the sensor is not able to provide a measure right now
+ *
+ * On failure, throws an exception or returns Y_SENSORSTATE_INVALID.
+ */
+int YSensor::get_sensorState(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YSensor::SENSORSTATE_INVALID;
+        }
+    }
+    return _sensorState;
+}
+
+/**
  * Retrieves a sensor for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
@@ -5339,6 +5365,25 @@ int YSensor::_parserHelper(void)
         }
     }
     return 0;
+}
+
+/**
+ * Checks if the sensor is currently able to provide an up-to-date measure.
+ * Returns false if the device is unreachable, or if the sensor does not have
+ * a current measure to transmit. No exception is raised if there is an error
+ * while trying to contact the device hosting $THEFUNCTION$.
+ *
+ * @return true if the sensor can provide an up-to-date measure, and false otherwise
+ */
+bool YSensor::isSensorReady(void)
+{
+    if (!(this->isOnline())) {
+        return false;
+    }
+    if (!(_sensorState == 0)) {
+        return false;
+    }
+    return true;
 }
 
 /**

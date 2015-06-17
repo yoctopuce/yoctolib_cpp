@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_bluetoothlink.cpp 20326 2015-05-12 15:35:18Z seb $
+ * $Id: yocto_bluetoothlink.cpp 20644 2015-06-12 16:04:33Z seb $
  *
  * Implements yFindBluetoothLink(), the high-level API for BluetoothLink functions
  *
@@ -52,7 +52,12 @@ YBluetoothLink::YBluetoothLink(const string& func): YFunction(func)
     ,_ownAddress(OWNADDRESS_INVALID)
     ,_pairingPin(PAIRINGPIN_INVALID)
     ,_remoteAddress(REMOTEADDRESS_INVALID)
-    ,_message(MESSAGE_INVALID)
+    ,_remoteName(REMOTENAME_INVALID)
+    ,_mute(MUTE_INVALID)
+    ,_preAmplifier(PREAMPLIFIER_INVALID)
+    ,_volume(VOLUME_INVALID)
+    ,_linkState(LINKSTATE_INVALID)
+    ,_linkQuality(LINKQUALITY_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackBluetoothLink(NULL)
 //--- (end of BluetoothLink initialization)
@@ -70,7 +75,7 @@ YBluetoothLink::~YBluetoothLink()
 const string YBluetoothLink::OWNADDRESS_INVALID = YAPI_INVALID_STRING;
 const string YBluetoothLink::PAIRINGPIN_INVALID = YAPI_INVALID_STRING;
 const string YBluetoothLink::REMOTEADDRESS_INVALID = YAPI_INVALID_STRING;
-const string YBluetoothLink::MESSAGE_INVALID = YAPI_INVALID_STRING;
+const string YBluetoothLink::REMOTENAME_INVALID = YAPI_INVALID_STRING;
 const string YBluetoothLink::COMMAND_INVALID = YAPI_INVALID_STRING;
 
 int YBluetoothLink::_parseAttr(yJsonStateMachine& j)
@@ -90,9 +95,34 @@ int YBluetoothLink::_parseAttr(yJsonStateMachine& j)
         _remoteAddress =  _parseString(j);
         return 1;
     }
-    if(!strcmp(j.token, "message")) {
+    if(!strcmp(j.token, "remoteName")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _message =  _parseString(j);
+        _remoteName =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "mute")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _mute =  (Y_MUTE_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "preAmplifier")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _preAmplifier =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "volume")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _volume =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "linkState")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _linkState =  (Y_LINKSTATE_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "linkQuality")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _linkQuality =  atoi(j.token);
         return 1;
     }
     if(!strcmp(j.token, "command")) {
@@ -196,20 +226,156 @@ int YBluetoothLink::set_remoteAddress(const string& newval)
 }
 
 /**
- * Returns the latest status message from the bluetooth interface.
+ * Returns the bluetooth name the remote device, if found on the bluetooth network.
  *
- * @return a string corresponding to the latest status message from the bluetooth interface
+ * @return a string corresponding to the bluetooth name the remote device, if found on the bluetooth network
  *
- * On failure, throws an exception or returns Y_MESSAGE_INVALID.
+ * On failure, throws an exception or returns Y_REMOTENAME_INVALID.
  */
-string YBluetoothLink::get_message(void)
+string YBluetoothLink::get_remoteName(void)
 {
     if (_cacheExpiration <= YAPI::GetTickCount()) {
         if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YBluetoothLink::MESSAGE_INVALID;
+            return YBluetoothLink::REMOTENAME_INVALID;
         }
     }
-    return _message;
+    return _remoteName;
+}
+
+/**
+ * Returns the state of the mute function.
+ *
+ * @return either Y_MUTE_FALSE or Y_MUTE_TRUE, according to the state of the mute function
+ *
+ * On failure, throws an exception or returns Y_MUTE_INVALID.
+ */
+Y_MUTE_enum YBluetoothLink::get_mute(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YBluetoothLink::MUTE_INVALID;
+        }
+    }
+    return _mute;
+}
+
+/**
+ * Changes the state of the mute function. Remember to call the matching module
+ * saveToFlash() method to save the setting permanently.
+ *
+ * @param newval : either Y_MUTE_FALSE or Y_MUTE_TRUE, according to the state of the mute function
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YBluetoothLink::set_mute(Y_MUTE_enum newval)
+{
+    string rest_val;
+    rest_val = (newval>0 ? "1" : "0");
+    return _setAttr("mute", rest_val);
+}
+
+/**
+ * Returns the audio pre-amplifier volume, in per cents.
+ *
+ * @return an integer corresponding to the audio pre-amplifier volume, in per cents
+ *
+ * On failure, throws an exception or returns Y_PREAMPLIFIER_INVALID.
+ */
+int YBluetoothLink::get_preAmplifier(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YBluetoothLink::PREAMPLIFIER_INVALID;
+        }
+    }
+    return _preAmplifier;
+}
+
+/**
+ * Changes the audio pre-amplifier volume, in per cents.
+ *
+ * @param newval : an integer corresponding to the audio pre-amplifier volume, in per cents
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YBluetoothLink::set_preAmplifier(int newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+    return _setAttr("preAmplifier", rest_val);
+}
+
+/**
+ * Returns the connected headset volume, in per cents.
+ *
+ * @return an integer corresponding to the connected headset volume, in per cents
+ *
+ * On failure, throws an exception or returns Y_VOLUME_INVALID.
+ */
+int YBluetoothLink::get_volume(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YBluetoothLink::VOLUME_INVALID;
+        }
+    }
+    return _volume;
+}
+
+/**
+ * Changes the connected headset volume, in per cents.
+ *
+ * @param newval : an integer corresponding to the connected headset volume, in per cents
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YBluetoothLink::set_volume(int newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+    return _setAttr("volume", rest_val);
+}
+
+/**
+ * Returns the bluetooth link state.
+ *
+ * @return a value among Y_LINKSTATE_DOWN, Y_LINKSTATE_FREE, Y_LINKSTATE_SEARCH, Y_LINKSTATE_EXISTS,
+ * Y_LINKSTATE_LINKED and Y_LINKSTATE_PLAY corresponding to the bluetooth link state
+ *
+ * On failure, throws an exception or returns Y_LINKSTATE_INVALID.
+ */
+Y_LINKSTATE_enum YBluetoothLink::get_linkState(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YBluetoothLink::LINKSTATE_INVALID;
+        }
+    }
+    return _linkState;
+}
+
+/**
+ * Returns the bluetooth receiver signal strength, in pourcents, or 0 if no connection is established.
+ *
+ * @return an integer corresponding to the bluetooth receiver signal strength, in pourcents, or 0 if
+ * no connection is established
+ *
+ * On failure, throws an exception or returns Y_LINKQUALITY_INVALID.
+ */
+int YBluetoothLink::get_linkQuality(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YBluetoothLink::LINKQUALITY_INVALID;
+        }
+    }
+    return _linkQuality;
 }
 
 string YBluetoothLink::get_command(void)

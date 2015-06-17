@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.h 19606 2015-03-05 10:35:57Z seb $
+ * $Id: yocto_network.h 20599 2015-06-08 12:16:39Z seb $
  *
  * Declares yFindNetwork(), the high-level API for Network functions
  *
@@ -88,6 +88,8 @@ typedef enum {
     Y_CALLBACKENCODING_JSON_ARRAY = 2,
     Y_CALLBACKENCODING_CSV = 3,
     Y_CALLBACKENCODING_YOCTO_API = 4,
+    Y_CALLBACKENCODING_JSON_NUM = 5,
+    Y_CALLBACKENCODING_EMONCMS = 6,
     Y_CALLBACKENCODING_INVALID = -1,
 } Y_CALLBACKENCODING_enum;
 #endif
@@ -98,8 +100,11 @@ typedef enum {
 #define Y_IPCONFIG_INVALID              (YAPI_INVALID_STRING)
 #define Y_PRIMARYDNS_INVALID            (YAPI_INVALID_STRING)
 #define Y_SECONDARYDNS_INVALID          (YAPI_INVALID_STRING)
+#define Y_NTPSERVER_INVALID             (YAPI_INVALID_STRING)
 #define Y_USERPASSWORD_INVALID          (YAPI_INVALID_STRING)
 #define Y_ADMINPASSWORD_INVALID         (YAPI_INVALID_STRING)
+#define Y_HTTPPORT_INVALID              (YAPI_INVALID_UINT)
+#define Y_DEFAULTPAGE_INVALID           (YAPI_INVALID_STRING)
 #define Y_WWWWATCHDOGDELAY_INVALID      (YAPI_INVALID_UINT)
 #define Y_CALLBACKURL_INVALID           (YAPI_INVALID_STRING)
 #define Y_CALLBACKCREDENTIALS_INVALID   (YAPI_INVALID_STRING)
@@ -131,8 +136,11 @@ protected:
     string          _ipConfig;
     string          _primaryDNS;
     string          _secondaryDNS;
+    string          _ntpServer;
     string          _userPassword;
     string          _adminPassword;
+    int             _httpPort;
+    string          _defaultPage;
     Y_DISCOVERABLE_enum _discoverable;
     int             _wwwWatchdogDelay;
     string          _callbackUrl;
@@ -171,8 +179,11 @@ public:
     static const string IPCONFIG_INVALID;
     static const string PRIMARYDNS_INVALID;
     static const string SECONDARYDNS_INVALID;
+    static const string NTPSERVER_INVALID;
     static const string USERPASSWORD_INVALID;
     static const string ADMINPASSWORD_INVALID;
+    static const int HTTPPORT_INVALID = YAPI_INVALID_UINT;
+    static const string DEFAULTPAGE_INVALID;
     static const Y_DISCOVERABLE_enum DISCOVERABLE_FALSE = Y_DISCOVERABLE_FALSE;
     static const Y_DISCOVERABLE_enum DISCOVERABLE_TRUE = Y_DISCOVERABLE_TRUE;
     static const Y_DISCOVERABLE_enum DISCOVERABLE_INVALID = Y_DISCOVERABLE_INVALID;
@@ -187,6 +198,8 @@ public:
     static const Y_CALLBACKENCODING_enum CALLBACKENCODING_JSON_ARRAY = Y_CALLBACKENCODING_JSON_ARRAY;
     static const Y_CALLBACKENCODING_enum CALLBACKENCODING_CSV = Y_CALLBACKENCODING_CSV;
     static const Y_CALLBACKENCODING_enum CALLBACKENCODING_YOCTO_API = Y_CALLBACKENCODING_YOCTO_API;
+    static const Y_CALLBACKENCODING_enum CALLBACKENCODING_JSON_NUM = Y_CALLBACKENCODING_JSON_NUM;
+    static const Y_CALLBACKENCODING_enum CALLBACKENCODING_EMONCMS = Y_CALLBACKENCODING_EMONCMS;
     static const Y_CALLBACKENCODING_enum CALLBACKENCODING_INVALID = Y_CALLBACKENCODING_INVALID;
     static const string CALLBACKCREDENTIALS_INVALID;
     static const int CALLBACKMINDELAY_INVALID = YAPI_INVALID_UINT;
@@ -333,6 +346,32 @@ public:
     { return this->set_secondaryDNS(newval); }
 
     /**
+     * Returns the IP address of the NTP server to be used by the device.
+     *
+     * @return a string corresponding to the IP address of the NTP server to be used by the device
+     *
+     * On failure, throws an exception or returns Y_NTPSERVER_INVALID.
+     */
+    string              get_ntpServer(void);
+
+    inline string       ntpServer(void)
+    { return this->get_ntpServer(); }
+
+    /**
+     * Changes the IP address of the NTP server to be used by the module.
+     * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
+     *
+     * @param newval : a string corresponding to the IP address of the NTP server to be used by the module
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_ntpServer(const string& newval);
+    inline int      setNtpServer(const string& newval)
+    { return this->set_ntpServer(newval); }
+
+    /**
      * Returns a hash string if a password has been set for "user" user,
      * or an empty string otherwise.
      *
@@ -393,6 +432,60 @@ public:
     int             set_adminPassword(const string& newval);
     inline int      setAdminPassword(const string& newval)
     { return this->set_adminPassword(newval); }
+
+    /**
+     * Returns the HTML page to serve for the URL "/"" of the hub.
+     *
+     * @return an integer corresponding to the HTML page to serve for the URL "/"" of the hub
+     *
+     * On failure, throws an exception or returns Y_HTTPPORT_INVALID.
+     */
+    int                 get_httpPort(void);
+
+    inline int          httpPort(void)
+    { return this->get_httpPort(); }
+
+    /**
+     * Changes the default HTML page returned by the hub. If not value are set the hub return
+     * "index.html" which is the web interface of the hub. It is possible de change this page
+     * for file that has been uploaded on the hub.
+     *
+     * @param newval : an integer corresponding to the default HTML page returned by the hub
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_httpPort(int newval);
+    inline int      setHttpPort(int newval)
+    { return this->set_httpPort(newval); }
+
+    /**
+     * Returns the HTML page to serve for the URL "/"" of the hub.
+     *
+     * @return a string corresponding to the HTML page to serve for the URL "/"" of the hub
+     *
+     * On failure, throws an exception or returns Y_DEFAULTPAGE_INVALID.
+     */
+    string              get_defaultPage(void);
+
+    inline string       defaultPage(void)
+    { return this->get_defaultPage(); }
+
+    /**
+     * Changes the default HTML page returned by the hub. If not value are set the hub return
+     * "index.html" which is the web interface of the hub. It is possible de change this page
+     * for file that has been uploaded on the hub.
+     *
+     * @param newval : a string corresponding to the default HTML page returned by the hub
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_defaultPage(const string& newval);
+    inline int      setDefaultPage(const string& newval)
+    { return this->set_defaultPage(newval); }
 
     /**
      * Returns the activation state of the multicast announce protocols to allow easy
@@ -516,8 +609,9 @@ public:
      * Returns the encoding standard to use for representing notification values.
      *
      * @return a value among Y_CALLBACKENCODING_FORM, Y_CALLBACKENCODING_JSON,
-     * Y_CALLBACKENCODING_JSON_ARRAY, Y_CALLBACKENCODING_CSV and Y_CALLBACKENCODING_YOCTO_API
-     * corresponding to the encoding standard to use for representing notification values
+     * Y_CALLBACKENCODING_JSON_ARRAY, Y_CALLBACKENCODING_CSV, Y_CALLBACKENCODING_YOCTO_API,
+     * Y_CALLBACKENCODING_JSON_NUM and Y_CALLBACKENCODING_EMONCMS corresponding to the encoding standard
+     * to use for representing notification values
      *
      * On failure, throws an exception or returns Y_CALLBACKENCODING_INVALID.
      */
@@ -530,8 +624,9 @@ public:
      * Changes the encoding standard to use for representing notification values.
      *
      * @param newval : a value among Y_CALLBACKENCODING_FORM, Y_CALLBACKENCODING_JSON,
-     * Y_CALLBACKENCODING_JSON_ARRAY, Y_CALLBACKENCODING_CSV and Y_CALLBACKENCODING_YOCTO_API
-     * corresponding to the encoding standard to use for representing notification values
+     * Y_CALLBACKENCODING_JSON_ARRAY, Y_CALLBACKENCODING_CSV, Y_CALLBACKENCODING_YOCTO_API,
+     * Y_CALLBACKENCODING_JSON_NUM and Y_CALLBACKENCODING_EMONCMS corresponding to the encoding standard
+     * to use for representing notification values
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.cpp 19606 2015-03-05 10:35:57Z seb $
+ * $Id: yocto_network.cpp 20599 2015-06-08 12:16:39Z seb $
  *
  * Implements yFindNetwork(), the high-level API for Network functions
  *
@@ -57,8 +57,11 @@ YNetwork::YNetwork(const string& func): YFunction(func)
     ,_ipConfig(IPCONFIG_INVALID)
     ,_primaryDNS(PRIMARYDNS_INVALID)
     ,_secondaryDNS(SECONDARYDNS_INVALID)
+    ,_ntpServer(NTPSERVER_INVALID)
     ,_userPassword(USERPASSWORD_INVALID)
     ,_adminPassword(ADMINPASSWORD_INVALID)
+    ,_httpPort(HTTPPORT_INVALID)
+    ,_defaultPage(DEFAULTPAGE_INVALID)
     ,_discoverable(DISCOVERABLE_INVALID)
     ,_wwwWatchdogDelay(WWWWATCHDOGDELAY_INVALID)
     ,_callbackUrl(CALLBACKURL_INVALID)
@@ -88,8 +91,10 @@ const string YNetwork::ROUTER_INVALID = YAPI_INVALID_STRING;
 const string YNetwork::IPCONFIG_INVALID = YAPI_INVALID_STRING;
 const string YNetwork::PRIMARYDNS_INVALID = YAPI_INVALID_STRING;
 const string YNetwork::SECONDARYDNS_INVALID = YAPI_INVALID_STRING;
+const string YNetwork::NTPSERVER_INVALID = YAPI_INVALID_STRING;
 const string YNetwork::USERPASSWORD_INVALID = YAPI_INVALID_STRING;
 const string YNetwork::ADMINPASSWORD_INVALID = YAPI_INVALID_STRING;
+const string YNetwork::DEFAULTPAGE_INVALID = YAPI_INVALID_STRING;
 const string YNetwork::CALLBACKURL_INVALID = YAPI_INVALID_STRING;
 const string YNetwork::CALLBACKCREDENTIALS_INVALID = YAPI_INVALID_STRING;
 
@@ -135,6 +140,11 @@ int YNetwork::_parseAttr(yJsonStateMachine& j)
         _secondaryDNS =  _parseString(j);
         return 1;
     }
+    if(!strcmp(j.token, "ntpServer")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _ntpServer =  _parseString(j);
+        return 1;
+    }
     if(!strcmp(j.token, "userPassword")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _userPassword =  _parseString(j);
@@ -143,6 +153,16 @@ int YNetwork::_parseAttr(yJsonStateMachine& j)
     if(!strcmp(j.token, "adminPassword")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _adminPassword =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "httpPort")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _httpPort =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "defaultPage")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _defaultPage =  _parseString(j);
         return 1;
     }
     if(!strcmp(j.token, "discoverable")) {
@@ -384,6 +404,40 @@ int YNetwork::set_secondaryDNS(const string& newval)
 }
 
 /**
+ * Returns the IP address of the NTP server to be used by the device.
+ *
+ * @return a string corresponding to the IP address of the NTP server to be used by the device
+ *
+ * On failure, throws an exception or returns Y_NTPSERVER_INVALID.
+ */
+string YNetwork::get_ntpServer(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::NTPSERVER_INVALID;
+        }
+    }
+    return _ntpServer;
+}
+
+/**
+ * Changes the IP address of the NTP server to be used by the module.
+ * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
+ *
+ * @param newval : a string corresponding to the IP address of the NTP server to be used by the module
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YNetwork::set_ntpServer(const string& newval)
+{
+    string rest_val;
+    rest_val = newval;
+    return _setAttr("ntpServer", rest_val);
+}
+
+/**
  * Returns a hash string if a password has been set for "user" user,
  * or an empty string otherwise.
  *
@@ -459,6 +513,76 @@ int YNetwork::set_adminPassword(const string& newval)
     string rest_val;
     rest_val = newval;
     return _setAttr("adminPassword", rest_val);
+}
+
+/**
+ * Returns the HTML page to serve for the URL "/"" of the hub.
+ *
+ * @return an integer corresponding to the HTML page to serve for the URL "/"" of the hub
+ *
+ * On failure, throws an exception or returns Y_HTTPPORT_INVALID.
+ */
+int YNetwork::get_httpPort(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::HTTPPORT_INVALID;
+        }
+    }
+    return _httpPort;
+}
+
+/**
+ * Changes the default HTML page returned by the hub. If not value are set the hub return
+ * "index.html" which is the web interface of the hub. It is possible de change this page
+ * for file that has been uploaded on the hub.
+ *
+ * @param newval : an integer corresponding to the default HTML page returned by the hub
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YNetwork::set_httpPort(int newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+    return _setAttr("httpPort", rest_val);
+}
+
+/**
+ * Returns the HTML page to serve for the URL "/"" of the hub.
+ *
+ * @return a string corresponding to the HTML page to serve for the URL "/"" of the hub
+ *
+ * On failure, throws an exception or returns Y_DEFAULTPAGE_INVALID.
+ */
+string YNetwork::get_defaultPage(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::DEFAULTPAGE_INVALID;
+        }
+    }
+    return _defaultPage;
+}
+
+/**
+ * Changes the default HTML page returned by the hub. If not value are set the hub return
+ * "index.html" which is the web interface of the hub. It is possible de change this page
+ * for file that has been uploaded on the hub.
+ *
+ * @param newval : a string corresponding to the default HTML page returned by the hub
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YNetwork::set_defaultPage(const string& newval)
+{
+    string rest_val;
+    rest_val = newval;
+    return _setAttr("defaultPage", rest_val);
 }
 
 /**
@@ -615,8 +739,9 @@ int YNetwork::set_callbackMethod(Y_CALLBACKMETHOD_enum newval)
  * Returns the encoding standard to use for representing notification values.
  *
  * @return a value among Y_CALLBACKENCODING_FORM, Y_CALLBACKENCODING_JSON,
- * Y_CALLBACKENCODING_JSON_ARRAY, Y_CALLBACKENCODING_CSV and Y_CALLBACKENCODING_YOCTO_API
- * corresponding to the encoding standard to use for representing notification values
+ * Y_CALLBACKENCODING_JSON_ARRAY, Y_CALLBACKENCODING_CSV, Y_CALLBACKENCODING_YOCTO_API,
+ * Y_CALLBACKENCODING_JSON_NUM and Y_CALLBACKENCODING_EMONCMS corresponding to the encoding standard
+ * to use for representing notification values
  *
  * On failure, throws an exception or returns Y_CALLBACKENCODING_INVALID.
  */
@@ -634,8 +759,9 @@ Y_CALLBACKENCODING_enum YNetwork::get_callbackEncoding(void)
  * Changes the encoding standard to use for representing notification values.
  *
  * @param newval : a value among Y_CALLBACKENCODING_FORM, Y_CALLBACKENCODING_JSON,
- * Y_CALLBACKENCODING_JSON_ARRAY, Y_CALLBACKENCODING_CSV and Y_CALLBACKENCODING_YOCTO_API
- * corresponding to the encoding standard to use for representing notification values
+ * Y_CALLBACKENCODING_JSON_ARRAY, Y_CALLBACKENCODING_CSV, Y_CALLBACKENCODING_YOCTO_API,
+ * Y_CALLBACKENCODING_JSON_NUM and Y_CALLBACKENCODING_EMONCMS corresponding to the encoding standard
+ * to use for representing notification values
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *

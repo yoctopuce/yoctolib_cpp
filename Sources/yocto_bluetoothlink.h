@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_bluetoothlink.h 20326 2015-05-12 15:35:18Z seb $
+ * $Id: yocto_bluetoothlink.h 20644 2015-06-12 16:04:33Z seb $
  *
  * Declares yFindBluetoothLink(), the high-level API for BluetoothLink functions
  *
@@ -52,10 +52,33 @@
 class YBluetoothLink; // forward declaration
 
 typedef void (*YBluetoothLinkValueCallback)(YBluetoothLink *func, const string& functionValue);
+#ifndef _Y_MUTE_ENUM
+#define _Y_MUTE_ENUM
+typedef enum {
+    Y_MUTE_FALSE = 0,
+    Y_MUTE_TRUE = 1,
+    Y_MUTE_INVALID = -1,
+} Y_MUTE_enum;
+#endif
+#ifndef _Y_LINKSTATE_ENUM
+#define _Y_LINKSTATE_ENUM
+typedef enum {
+    Y_LINKSTATE_DOWN = 0,
+    Y_LINKSTATE_FREE = 1,
+    Y_LINKSTATE_SEARCH = 2,
+    Y_LINKSTATE_EXISTS = 3,
+    Y_LINKSTATE_LINKED = 4,
+    Y_LINKSTATE_PLAY = 5,
+    Y_LINKSTATE_INVALID = -1,
+} Y_LINKSTATE_enum;
+#endif
 #define Y_OWNADDRESS_INVALID            (YAPI_INVALID_STRING)
 #define Y_PAIRINGPIN_INVALID            (YAPI_INVALID_STRING)
 #define Y_REMOTEADDRESS_INVALID         (YAPI_INVALID_STRING)
-#define Y_MESSAGE_INVALID               (YAPI_INVALID_STRING)
+#define Y_REMOTENAME_INVALID            (YAPI_INVALID_STRING)
+#define Y_PREAMPLIFIER_INVALID          (YAPI_INVALID_UINT)
+#define Y_VOLUME_INVALID                (YAPI_INVALID_UINT)
+#define Y_LINKQUALITY_INVALID           (YAPI_INVALID_UINT)
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 //--- (end of YBluetoothLink definitions)
 
@@ -77,7 +100,12 @@ protected:
     string          _ownAddress;
     string          _pairingPin;
     string          _remoteAddress;
-    string          _message;
+    string          _remoteName;
+    Y_MUTE_enum     _mute;
+    int             _preAmplifier;
+    int             _volume;
+    Y_LINKSTATE_enum _linkState;
+    int             _linkQuality;
     string          _command;
     YBluetoothLinkValueCallback _valueCallbackBluetoothLink;
 
@@ -98,7 +126,20 @@ public:
     static const string OWNADDRESS_INVALID;
     static const string PAIRINGPIN_INVALID;
     static const string REMOTEADDRESS_INVALID;
-    static const string MESSAGE_INVALID;
+    static const string REMOTENAME_INVALID;
+    static const Y_MUTE_enum MUTE_FALSE = Y_MUTE_FALSE;
+    static const Y_MUTE_enum MUTE_TRUE = Y_MUTE_TRUE;
+    static const Y_MUTE_enum MUTE_INVALID = Y_MUTE_INVALID;
+    static const int PREAMPLIFIER_INVALID = YAPI_INVALID_UINT;
+    static const int VOLUME_INVALID = YAPI_INVALID_UINT;
+    static const Y_LINKSTATE_enum LINKSTATE_DOWN = Y_LINKSTATE_DOWN;
+    static const Y_LINKSTATE_enum LINKSTATE_FREE = Y_LINKSTATE_FREE;
+    static const Y_LINKSTATE_enum LINKSTATE_SEARCH = Y_LINKSTATE_SEARCH;
+    static const Y_LINKSTATE_enum LINKSTATE_EXISTS = Y_LINKSTATE_EXISTS;
+    static const Y_LINKSTATE_enum LINKSTATE_LINKED = Y_LINKSTATE_LINKED;
+    static const Y_LINKSTATE_enum LINKSTATE_PLAY = Y_LINKSTATE_PLAY;
+    static const Y_LINKSTATE_enum LINKSTATE_INVALID = Y_LINKSTATE_INVALID;
+    static const int LINKQUALITY_INVALID = YAPI_INVALID_UINT;
     static const string COMMAND_INVALID;
 
     /**
@@ -171,16 +212,118 @@ public:
     { return this->set_remoteAddress(newval); }
 
     /**
-     * Returns the latest status message from the bluetooth interface.
+     * Returns the bluetooth name the remote device, if found on the bluetooth network.
      *
-     * @return a string corresponding to the latest status message from the bluetooth interface
+     * @return a string corresponding to the bluetooth name the remote device, if found on the bluetooth network
      *
-     * On failure, throws an exception or returns Y_MESSAGE_INVALID.
+     * On failure, throws an exception or returns Y_REMOTENAME_INVALID.
      */
-    string              get_message(void);
+    string              get_remoteName(void);
 
-    inline string       message(void)
-    { return this->get_message(); }
+    inline string       remoteName(void)
+    { return this->get_remoteName(); }
+
+    /**
+     * Returns the state of the mute function.
+     *
+     * @return either Y_MUTE_FALSE or Y_MUTE_TRUE, according to the state of the mute function
+     *
+     * On failure, throws an exception or returns Y_MUTE_INVALID.
+     */
+    Y_MUTE_enum         get_mute(void);
+
+    inline Y_MUTE_enum  mute(void)
+    { return this->get_mute(); }
+
+    /**
+     * Changes the state of the mute function. Remember to call the matching module
+     * saveToFlash() method to save the setting permanently.
+     *
+     * @param newval : either Y_MUTE_FALSE or Y_MUTE_TRUE, according to the state of the mute function
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_mute(Y_MUTE_enum newval);
+    inline int      setMute(Y_MUTE_enum newval)
+    { return this->set_mute(newval); }
+
+    /**
+     * Returns the audio pre-amplifier volume, in per cents.
+     *
+     * @return an integer corresponding to the audio pre-amplifier volume, in per cents
+     *
+     * On failure, throws an exception or returns Y_PREAMPLIFIER_INVALID.
+     */
+    int                 get_preAmplifier(void);
+
+    inline int          preAmplifier(void)
+    { return this->get_preAmplifier(); }
+
+    /**
+     * Changes the audio pre-amplifier volume, in per cents.
+     *
+     * @param newval : an integer corresponding to the audio pre-amplifier volume, in per cents
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_preAmplifier(int newval);
+    inline int      setPreAmplifier(int newval)
+    { return this->set_preAmplifier(newval); }
+
+    /**
+     * Returns the connected headset volume, in per cents.
+     *
+     * @return an integer corresponding to the connected headset volume, in per cents
+     *
+     * On failure, throws an exception or returns Y_VOLUME_INVALID.
+     */
+    int                 get_volume(void);
+
+    inline int          volume(void)
+    { return this->get_volume(); }
+
+    /**
+     * Changes the connected headset volume, in per cents.
+     *
+     * @param newval : an integer corresponding to the connected headset volume, in per cents
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_volume(int newval);
+    inline int      setVolume(int newval)
+    { return this->set_volume(newval); }
+
+    /**
+     * Returns the bluetooth link state.
+     *
+     * @return a value among Y_LINKSTATE_DOWN, Y_LINKSTATE_FREE, Y_LINKSTATE_SEARCH, Y_LINKSTATE_EXISTS,
+     * Y_LINKSTATE_LINKED and Y_LINKSTATE_PLAY corresponding to the bluetooth link state
+     *
+     * On failure, throws an exception or returns Y_LINKSTATE_INVALID.
+     */
+    Y_LINKSTATE_enum    get_linkState(void);
+
+    inline Y_LINKSTATE_enum linkState(void)
+    { return this->get_linkState(); }
+
+    /**
+     * Returns the bluetooth receiver signal strength, in pourcents, or 0 if no connection is established.
+     *
+     * @return an integer corresponding to the bluetooth receiver signal strength, in pourcents, or 0 if
+     * no connection is established
+     *
+     * On failure, throws an exception or returns Y_LINKQUALITY_INVALID.
+     */
+    int                 get_linkQuality(void);
+
+    inline int          linkQuality(void)
+    { return this->get_linkQuality(); }
 
     string              get_command(void);
 

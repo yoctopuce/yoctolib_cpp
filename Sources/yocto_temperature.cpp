@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_temperature.cpp 20383 2015-05-19 23:44:31Z mvuilleu $
+ * $Id: yocto_temperature.cpp 20410 2015-05-22 08:30:27Z seb $
  *
  * Implements yFindTemperature(), the high-level API for Temperature functions
  *
@@ -304,8 +304,6 @@ int YTemperature::set_ntcParameters(double res25,double beta)
     resValues.push_back(res25);
     tempValues.push_back(100.0);
     resValues.push_back(res100);
-    
-    
     return this->set_thermistorResponseTable(tempValues, resValues);
 }
 
@@ -344,14 +342,12 @@ int YTemperature::set_thermistorResponseTable(vector<double> tempValues,vector<d
         _throw(YAPI_INVALID_ARGUMENT,"table sizes mismatch");
         return YAPI_INVALID_ARGUMENT;
     }
-    
     // may throw an exception
     res = this->set_command("Z");
     if (!(res==YAPI_SUCCESS)) {
         _throw(YAPI_IO_ERROR,"unable to reset thermistor parameters");
         return YAPI_IO_ERROR;
     }
-    
     // add records in growing resistance value
     found = 1;
     prev = 0.0;
@@ -410,10 +406,8 @@ int YTemperature::loadThermistorResponseTable(vector<double>& tempValues,vector<
     double prev = 0.0;
     double curr = 0.0;
     double currRes = 0.0;
-    
     tempValues.clear();
     resValues.clear();
-    
     // may throw an exception
     id = this->get_functionId();
     id = (id).substr( 11, (int)(id).length()-1);
@@ -453,7 +447,6 @@ int YTemperature::loadThermistorResponseTable(vector<double>& tempValues,vector<
             prev = curr;
         }
     }
-    
     return YAPI_SUCCESS;
 }
 
