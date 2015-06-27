@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 20378 2015-05-19 15:39:27Z seb $
+ * $Id: ystream.c 20686 2015-06-19 07:33:53Z mvuilleu $
  *
  * USB multi-interface stream implementation
  *
@@ -2501,7 +2501,7 @@ int yUsbIdle(void)
             }
             currUtcTime = (u32)time(NULL);
             if(currUtcTime > (u32)0x51f151f1 && // timestamp appears to be valid
-               (!p->lastUtcUpdate || currUtcTime < p->lastUtcUpdate || currUtcTime > p->lastUtcUpdate+1800u)) {
+               (!p->lastUtcUpdate || currUtcTime < p->lastUtcUpdate || currUtcTime >= p->lastUtcUpdate+60u)) {
                 u8  *pktdata;
                 u8  maxpktlen;
                 // send updated UTC timestamp to keep datalogger on time

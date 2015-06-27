@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_datalogger.h 19606 2015-03-05 10:35:57Z seb $
+ * $Id: yocto_datalogger.h 20704 2015-06-20 19:43:34Z mvuilleu $
  *
  * Declares yFindDataLogger(), the high-level API for DataLogger functions
  *
@@ -56,6 +56,7 @@ typedef void (*YDataLoggerValueCallback)(YDataLogger *func, const string& functi
 typedef enum {
     Y_RECORDING_OFF = 0,
     Y_RECORDING_ON = 1,
+    Y_RECORDING_PENDING = 2,
     Y_RECORDING_INVALID = -1,
 } Y_RECORDING_enum;
 #endif
@@ -221,6 +222,7 @@ public:
     static const s64 TIMEUTC_INVALID = YAPI_INVALID_LONG;
     static const Y_RECORDING_enum RECORDING_OFF = Y_RECORDING_OFF;
     static const Y_RECORDING_enum RECORDING_ON = Y_RECORDING_ON;
+    static const Y_RECORDING_enum RECORDING_PENDING = Y_RECORDING_PENDING;
     static const Y_RECORDING_enum RECORDING_INVALID = Y_RECORDING_INVALID;
     static const Y_AUTOSTART_enum AUTOSTART_OFF = Y_AUTOSTART_OFF;
     static const Y_AUTOSTART_enum AUTOSTART_ON = Y_AUTOSTART_ON;
@@ -274,7 +276,8 @@ public:
     /**
      * Returns the current activation state of the data logger.
      *
-     * @return either Y_RECORDING_OFF or Y_RECORDING_ON, according to the current activation state of the data logger
+     * @return a value among Y_RECORDING_OFF, Y_RECORDING_ON and Y_RECORDING_PENDING corresponding to the
+     * current activation state of the data logger
      *
      * On failure, throws an exception or returns Y_RECORDING_INVALID.
      */
@@ -286,8 +289,8 @@ public:
     /**
      * Changes the activation state of the data logger to start/stop recording data.
      *
-     * @param newval : either Y_RECORDING_OFF or Y_RECORDING_ON, according to the activation state of the
-     * data logger to start/stop recording data
+     * @param newval : a value among Y_RECORDING_OFF, Y_RECORDING_ON and Y_RECORDING_PENDING corresponding
+     * to the activation state of the data logger to start/stop recording data
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *

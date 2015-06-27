@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yfifo.c 19910 2015-04-03 10:36:18Z mvuilleu $
+ * $Id: yfifo.c 20734 2015-06-24 07:32:14Z mvuilleu $
  *
  * Implementation of a generic fifo queue
  *
@@ -413,7 +413,7 @@ u16 yFifoGetFree(yFifoBuf *buf)
 
 #endif
 
-
+#ifndef REDUCE_COMMON_CODE
 void yxtoa(u32 x, char *buf, u16 len)
 {
     buf[len] = 0;
@@ -423,6 +423,7 @@ void yxtoa(u32 x, char *buf, u16 len)
         x >>= 4;
     }
 }
+#endif
 
 #if defined(USE_TYPED_NOTIFICATIONS) || !defined(MICROCHIP_API)
 

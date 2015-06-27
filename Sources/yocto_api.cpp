@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 20412 2015-05-22 08:52:39Z seb $
+ * $Id: yocto_api.cpp 20711 2015-06-22 08:46:36Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -171,6 +171,8 @@ int YDataSet::_parse(const string& json)
             }
         } else if (!strcmp(j.token, "streams")) {
             YDataStream *stream;
+            s64 streamEndTime, endTime = 0;
+            s64 streamStartTime, startTime = 0x7fffffff;
             _streams = vector<YDataStream*>();
             _preview = vector<YMeasure>();
             _measures = vector<YMeasure>();
@@ -180,14 +182,22 @@ int YDataSet::_parse(const string& json)
             // select streams for specified timeframe
             while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.token[0] != ']') {
                 stream = _parent->_findDataStream(*this,_parent->_parseString(j));
-                if(_startTime > 0 && stream->get_startTimeUTC() + stream->get_duration() <= _startTime) {
+                streamStartTime = stream->get_startTimeUTC() - stream->get_dataSamplesIntervalMs()/1000;
+                streamEndTime = stream->get_startTimeUTC() + stream->get_duration();
+                if(_startTime > 0 && streamEndTime <= _startTime) {
                     // this stream is too early, drop it
                 } else if(_endTime > 0 && stream->get_startTimeUTC() > _endTime) {
                     // this stream is too late, drop it
                 } else {
                     _streams.push_back(stream);
+                    if(startTime > streamStartTime) {
+                        startTime = streamStartTime;
+                    }
+                    if(endTime < streamEndTime) {
+                        endTime = streamEndTime;
+                    }
                     if(stream->isClosed() && stream->get_startTimeUTC() >= _startTime &&
-                       (_endTime == 0 || stream->get_startTimeUTC() + stream->get_duration() <= _endTime)) {
+                       (_endTime == 0 || streamEndTime <= _endTime)) {
                         if (summaryMinVal > stream->get_minValue())
                             summaryMinVal =stream->get_minValue();
                         if (summaryMaxVal < stream->get_maxValue())
@@ -196,7 +206,7 @@ int YDataSet::_parse(const string& json)
                         summaryTotalTime += stream->get_duration();
 
                         YMeasure rec = YMeasure((double)stream->get_startTimeUTC(),
-                                                (double)(stream->get_startTimeUTC() + stream->get_duration()),
+                                                (double)streamEndTime,
                                                 stream->get_minValue(),
                                                 stream->get_averageValue(),
                                                 stream->get_maxValue());
@@ -206,14 +216,11 @@ int YDataSet::_parse(const string& json)
             }
             if((_streams.size() > 0)  && (summaryTotalTime>0)) {
                 // update time boundaries with actual data
-                stream = _streams[_streams.size()-1];
-                s64 endtime = stream->get_startTimeUTC() + stream->get_duration();
-                s64 startTime = _streams[0]->get_startTimeUTC() - stream->get_dataSamplesIntervalMs()/1000;
                 if(_startTime < startTime) {
                     _startTime = startTime;
                 }
-                if(_endTime == 0 || _endTime > endtime) {
-                    _endTime = endtime;
+                if(_endTime == 0 || _endTime > endTime) {
+                    _endTime = endTime;
                 }
                 _summary = YMeasure((double)_startTime,(double)_endTime,summaryMinVal,summaryTotalAvg/summaryTotalTime,summaryMaxVal);
             }

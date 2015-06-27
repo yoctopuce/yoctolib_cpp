@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 20337 2015-05-15 09:15:44Z seb $
+ * $Id: yapi.c 20747 2015-06-25 13:11:13Z mvuilleu $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -3361,7 +3361,7 @@ static YRETCODE  yapiGetAllJsonKeys_internal(const char *json_buffer, char *buff
     fullAttrInfo    *attrs;
     int             attrs_count;
     int             j, totalsize=0;
-    int             len, avail;
+    int             len;
     const char      *sep = "";
 
     attrs = parseSettings(json_buffer, &attrs_count);
@@ -3400,13 +3400,10 @@ static YRETCODE  yapiGetAllJsonKeys_internal(const char *json_buffer, char *buff
         len ++;
         YASSERT(len == YSTRLEN(tmpbuf));
         sep = ",";
-        if (buffersize > totalsize) {
-            avail = buffersize - totalsize;
-            if (avail > len) {
-                memcpy(buffer + totalsize, tmpbuf, len);
-                totalsize += len;
-            }
+        if (buffersize > totalsize+len) {
+            memcpy(buffer + totalsize, tmpbuf, len);
         }
+        totalsize += len;
     }
 
     if (buffersize > totalsize ) {

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_datalogger.cpp 19606 2015-03-05 10:35:57Z seb $
+ * $Id: yocto_datalogger.cpp 20704 2015-06-20 19:43:34Z mvuilleu $
  *
  * Implements yFindDataLogger(), the high-level API for DataLogger functions
  *
@@ -523,7 +523,8 @@ int YDataLogger::set_timeUTC(s64 newval)
 /**
  * Returns the current activation state of the data logger.
  *
- * @return either Y_RECORDING_OFF or Y_RECORDING_ON, according to the current activation state of the data logger
+ * @return a value among Y_RECORDING_OFF, Y_RECORDING_ON and Y_RECORDING_PENDING corresponding to the
+ * current activation state of the data logger
  *
  * On failure, throws an exception or returns Y_RECORDING_INVALID.
  */
@@ -540,8 +541,8 @@ Y_RECORDING_enum YDataLogger::get_recording(void)
 /**
  * Changes the activation state of the data logger to start/stop recording data.
  *
- * @param newval : either Y_RECORDING_OFF or Y_RECORDING_ON, according to the activation state of the
- * data logger to start/stop recording data
+ * @param newval : a value among Y_RECORDING_OFF, Y_RECORDING_ON and Y_RECORDING_PENDING corresponding
+ * to the activation state of the data logger to start/stop recording data
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -550,7 +551,7 @@ Y_RECORDING_enum YDataLogger::get_recording(void)
 int YDataLogger::set_recording(Y_RECORDING_enum newval)
 {
     string rest_val;
-    rest_val = (newval>0 ? "1" : "0");
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
     return _setAttr("recording", rest_val);
 }
 
