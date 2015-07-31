@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 20400 2015-05-21 14:58:16Z mvuilleu $
+ * $Id: yocto_api.h 20908 2015-07-23 06:46:26Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -271,6 +271,8 @@ public:
     static  yCalibrationHandler _getCalibrationHandler(int calibType);
     static  vector<int> _decodeWords(string s);
     static  vector<int> _decodeFloats(string sdat);
+    static  string      _bin2HexStr(const string& data);
+    static  string      _hexStr2Bin(const string& str);
     static  string      _flattenJsonStruct(string jsonbuffer);
     static  string      _checkFirmware(const string& serial, const string& rev, const string& path);
 
@@ -1242,6 +1244,21 @@ public:
     virtual vector<YMeasure> get_preview(void);
 
     /**
+     * Returns the detailed set of measures for the time interval corresponding
+     * to a given condensed measures previously returned by get_preview().
+     * The result is provided as a list of YMeasure objects.
+     *
+     * @param measure : condensed measure from the list previously returned by
+     *         get_preview().
+     *
+     * @return a table of records, where each record depicts the
+     *         measured values during a time interval
+     *
+     * On failure, throws an exception or returns an empty array.
+     */
+    virtual vector<YMeasure> get_measuresAt(YMeasure measure);
+
+    /**
      * Returns all measured values currently available for this DataSet,
      * as a list of YMeasure objects. Each item includes:
      * - the start of the measure time interval
@@ -1815,6 +1832,19 @@ public:
      */
     string          functionValue(int functionIndex);
 
+    /**
+     * Retrieves the type of the <i>n</i>th function on the module.
+     *
+     * @param functionIndex : the index of the function for which the information is desired, starting at
+     * 0 for the first function.
+     *
+     * @return a the type of the function
+     *
+     * On failure, throws an exception or returns an empty string.
+     */
+    string          functionType(int functionIndex);
+
+
     void            setImmutableAttributes(yDeviceSt *infos);
 
     /**
@@ -2166,6 +2196,10 @@ public:
      * On failure, throws an exception or returns  YAPI_INVALID_STRING.
      */
     virtual string      get_allSettings(void);
+
+    virtual bool        hasFunction(string funcId);
+
+    virtual vector<string> get_functionIds(string funType);
 
     virtual string      _flattenJsonStruct(string jsoncomplex);
 

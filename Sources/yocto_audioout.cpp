@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_audioout.cpp 20565 2015-06-04 09:59:10Z seb $
+ * $Id: yocto_audioout.cpp 20797 2015-07-06 16:49:40Z mvuilleu $
  *
  * Implements yFindAudioOut(), the high-level API for AudioOut functions
  *
@@ -51,6 +51,7 @@ YAudioOut::YAudioOut(const string& func): YFunction(func)
 //--- (AudioOut initialization)
     ,_volume(VOLUME_INVALID)
     ,_mute(MUTE_INVALID)
+    ,_volumeRange(VOLUMERANGE_INVALID)
     ,_signal(SIGNAL_INVALID)
     ,_noSignalFor(NOSIGNALFOR_INVALID)
     ,_valueCallbackAudioOut(NULL)
@@ -66,6 +67,7 @@ YAudioOut::~YAudioOut()
 }
 //--- (YAudioOut implementation)
 // static attributes
+const string YAudioOut::VOLUMERANGE_INVALID = YAPI_INVALID_STRING;
 
 int YAudioOut::_parseAttr(yJsonStateMachine& j)
 {
@@ -77,6 +79,11 @@ int YAudioOut::_parseAttr(yJsonStateMachine& j)
     if(!strcmp(j.token, "mute")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _mute =  (Y_MUTE_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "volumeRange")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _volumeRange =  _parseString(j);
         return 1;
     }
     if(!strcmp(j.token, "signal")) {
@@ -159,6 +166,26 @@ int YAudioOut::set_mute(Y_MUTE_enum newval)
     string rest_val;
     rest_val = (newval>0 ? "1" : "0");
     return _setAttr("mute", rest_val);
+}
+
+/**
+ * Returns the supported volume range. The low value of the
+ * range corresponds to the minimal audible value. To
+ * completely mute the sound, use set_mute()
+ * instead of the set_volume().
+ *
+ * @return a string corresponding to the supported volume range
+ *
+ * On failure, throws an exception or returns Y_VOLUMERANGE_INVALID.
+ */
+string YAudioOut::get_volumeRange(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YAudioOut::VOLUMERANGE_INVALID;
+        }
+    }
+    return _volumeRange;
 }
 
 /**

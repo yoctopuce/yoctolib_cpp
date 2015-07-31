@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_audioin.cpp 20746 2015-06-25 11:15:45Z seb $
+ * $Id: yocto_audioin.cpp 20797 2015-07-06 16:49:40Z mvuilleu $
  *
  * Implements yFindAudioIn(), the high-level API for AudioIn functions
  *
@@ -51,6 +51,7 @@ YAudioIn::YAudioIn(const string& func): YFunction(func)
 //--- (AudioIn initialization)
     ,_volume(VOLUME_INVALID)
     ,_mute(MUTE_INVALID)
+    ,_volumeRange(VOLUMERANGE_INVALID)
     ,_signal(SIGNAL_INVALID)
     ,_noSignalFor(NOSIGNALFOR_INVALID)
     ,_valueCallbackAudioIn(NULL)
@@ -66,6 +67,7 @@ YAudioIn::~YAudioIn()
 }
 //--- (YAudioIn implementation)
 // static attributes
+const string YAudioIn::VOLUMERANGE_INVALID = YAPI_INVALID_STRING;
 
 int YAudioIn::_parseAttr(yJsonStateMachine& j)
 {
@@ -77,6 +79,11 @@ int YAudioIn::_parseAttr(yJsonStateMachine& j)
     if(!strcmp(j.token, "mute")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _mute =  (Y_MUTE_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "volumeRange")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _volumeRange =  _parseString(j);
         return 1;
     }
     if(!strcmp(j.token, "signal")) {
@@ -159,6 +166,26 @@ int YAudioIn::set_mute(Y_MUTE_enum newval)
     string rest_val;
     rest_val = (newval>0 ? "1" : "0");
     return _setAttr("mute", rest_val);
+}
+
+/**
+ * Returns the supported volume range. The low value of the
+ * range corresponds to the minimal audible value. To
+ * completely mute the sound, use set_mute()
+ * instead of the set_volume().
+ *
+ * @return a string corresponding to the supported volume range
+ *
+ * On failure, throws an exception or returns Y_VOLUMERANGE_INVALID.
+ */
+string YAudioIn::get_volumeRange(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YAudioIn::VOLUMERANGE_INVALID;
+        }
+    }
+    return _volumeRange;
 }
 
 /**

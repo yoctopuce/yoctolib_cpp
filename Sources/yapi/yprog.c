@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 20141 2015-04-24 09:38:55Z seb $
+ * $Id: yprog.c 20894 2015-07-22 13:20:30Z seb $
  *
  * Implementation of firmware upgrade functions
  *
@@ -1246,7 +1246,7 @@ YPROG_RESULT uFlashDevice(void)
             } else
 #endif
             {
-                u32 delay = 1000 + (firm_dev.last_addr>>6);
+                u32 delay = 1000 + (firm_dev.last_addr>>5);
                 if((u32)(ytime() - fctx.stepB) < delay) {
                     return YPROG_WAITING;
                 }

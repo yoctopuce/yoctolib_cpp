@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 20711 2015-06-22 08:46:36Z mvuilleu $
+ * $Id: yocto_api.cpp 20916 2015-07-23 08:54:20Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -559,6 +559,10 @@ int YDataStream::parse(string sdata)
     int idx = 0;
     vector<int> udat;
     vector<double> dat;
+    if ((int)(sdata).size() == 0) {
+        _nRows = 0;
+        return YAPI_SUCCESS;
+    }
     // may throw an exception
     udat = YAPI::_decodeWords(_parent->_json_get_string(sdata));
     _values.clear();
@@ -1219,6 +1223,76 @@ YMeasure YDataSet::get_summary(void)
 vector<YMeasure> YDataSet::get_preview(void)
 {
     return _preview;
+}
+
+/**
+ * Returns the detailed set of measures for the time interval corresponding
+ * to a given condensed measures previously returned by get_preview().
+ * The result is provided as a list of YMeasure objects.
+ *
+ * @param measure : condensed measure from the list previously returned by
+ *         get_preview().
+ *
+ * @return a table of records, where each record depicts the
+ *         measured values during a time interval
+ *
+ * On failure, throws an exception or returns an empty array.
+ */
+vector<YMeasure> YDataSet::get_measuresAt(YMeasure measure)
+{
+    s64 startUtc = 0;
+    YDataStream* stream = NULL;
+    vector< vector<double> > dataRows;
+    vector<YMeasure> measures;
+    double tim = 0.0;
+    double itv = 0.0;
+    int nCols = 0;
+    int minCol = 0;
+    int avgCol = 0;
+    int maxCol = 0;
+    // may throw an exception
+    startUtc = (s64) floor(measure.get_startTimeUTC()+0.5);
+    stream = NULL;
+    for (unsigned ii = 0; ii < _streams.size(); ii++) {
+        if (_streams[ii]->get_startTimeUTC() == startUtc) {
+            stream = _streams[ii];
+        }
+        ;;
+    }
+    if (stream == NULL) {
+        return measures;
+    }
+    dataRows = stream->get_dataRows();
+    if ((int)dataRows.size() == 0) {
+        return measures;
+    }
+    tim = (double) stream->get_startTimeUTC();
+    itv = stream->get_dataSamplesInterval();
+    if (tim < itv) {
+        tim = itv;
+    }
+    nCols = (int)dataRows[0].size();
+    minCol = 0;
+    if (nCols > 2) {
+        avgCol = 1;
+    } else {
+        avgCol = 0;
+    }
+    if (nCols > 2) {
+        maxCol = 2;
+    } else {
+        maxCol = 0;
+    }
+    
+    for (unsigned ii = 0; ii < dataRows.size(); ii++) {
+        if ((tim >= _startTime) && ((_endTime == 0) || (tim <= _endTime))) {
+            measures.push_back(YMeasure(tim - itv, tim,
+            dataRows[ii][minCol],
+            dataRows[ii][avgCol],dataRows[ii][maxCol]));
+        }
+        tim = tim + itv;;
+    }
+    return measures;
 }
 
 /**
@@ -2665,6 +2739,48 @@ vector<int> YAPI::_decodeFloats(string sdat)
 }
 
 
+static const char* hexArray = "0123456789ABCDEF";
+
+string YAPI::_bin2HexStr(const string& data)
+{
+    const u8 *ptr = (u8*) data.data();
+    unsigned long len = data.length();
+    string res = string(len * 2, 0);
+    for (unsigned long j = 0; j < len; j++, ptr++) {
+        u8 v = *ptr;
+        res[j * 2] = hexArray[v >> 4];
+        res[j * 2 + 1] = hexArray[v & 0x0F];
+    }
+    return res;
+
+}
+
+string YAPI::_hexStr2Bin(const string& hex_str)
+{
+    unsigned long len = hex_str.length() / 2;
+    const char *p  = hex_str.c_str();
+    string res = string(len, 0);
+    for (unsigned long i = 0; i < len; i++) {
+        u8 b = 0;
+        int j;
+        for(j = 0; j < 2; j++) {
+            b <<= 4;
+            if(*p >= 'a' && *p <='f'){
+                b +=  10 + *p - 'a';
+            }else if(*p >= 'A' && *p <='F'){
+                b +=  10 + *p - 'A';
+            }else if(*p >='0' && *p <='9'){
+                b += *p - '0';
+            }
+            p++;
+        }
+        res[i] = b;
+    }
+    return res;
+}
+
+
+
 /**
  * Returns the version identifier for the Yoctopuce library in use.
  * The version is a string in the form "Major.Minor.Build",
@@ -3464,12 +3580,35 @@ YRETCODE YapiWrapper::handleEvents(string& errmsg)
 
 string  YapiWrapper::ysprintf(const char *fmt, ...)
 {
-    va_list     args;
-    char        buffer[2048];
-    va_start( args, fmt );
-    vsprintf(buffer,fmt,args);
-    va_end(args);
-    return (string)buffer;
+    va_list args;
+    char on_stack_buffer[1024];
+    int n, size = 1024;
+    char *buffer = on_stack_buffer;
+    string res = "";
+
+    for (int i = 0; i < 13; i++)  {
+        va_start(args, fmt);
+        n = vsnprintf(buffer, size, fmt, args);
+        va_end(args);
+        if (n > -1 && n < size) {
+            res = string(buffer);
+            break;
+        }
+
+        if (n > -1) {
+            size  = n + 1;
+        } else {
+            size *= 2;
+        }
+        if (buffer != on_stack_buffer) {
+            free(buffer);
+        }
+        buffer = (char*)malloc(size);
+    }
+    if (buffer != on_stack_buffer) {
+        free(buffer);
+    }
+    return res;
 }
 
 
@@ -4043,6 +4182,43 @@ YFirmwareUpdate YModule::updateFirmware(string path)
 string YModule::get_allSettings(void)
 {
     return this->_download("api.json");
+}
+
+bool YModule::hasFunction(string funcId)
+{
+    int count = 0;
+    int i = 0;
+    string fid;
+    // may throw an exception
+    count  = this->functionCount();
+    i = 0;
+    while (i < count) {
+        fid  = this->functionId(i);
+        if (fid == funcId) {
+            return true;
+        }
+        i = i + 1;
+    }
+    return false;
+}
+
+vector<string> YModule::get_functionIds(string funType)
+{
+    int count = 0;
+    int i = 0;
+    string ftype;
+    vector<string> res;
+    // may throw an exception
+    count = this->functionCount();
+    i = 0;
+    while (i < count) {
+        ftype  = this->functionType(i);
+        if (ftype == funType) {
+            res.push_back(this->functionId(i));
+        }
+        i = i + 1;
+    }
+    return res;
 }
 
 string YModule::_flattenJsonStruct(string jsoncomplex)
@@ -4756,6 +4932,28 @@ string YModule::functionValue(int functionIndex)
     }
 
     return funcVal;
+}
+
+
+// Retrieve the Id of the nth function (beside "module") in the device
+string YModule::functionType(int functionIndex)
+{
+    string      serial, funcId, funcName, funcVal, errmsg;
+    char        buffer[YOCTO_FUNCTION_LEN], *d = buffer;
+    const char *p;
+
+    int res = _getFunction(functionIndex, serial, funcId, funcName, funcVal, errmsg);
+    if (YISERR(res)) {
+        _throw((YRETCODE)res, errmsg);
+        return YAPI_INVALID_STRING;
+    }
+    p = funcId.c_str();
+    *d++ = *p++ & 0xdf;
+    while (*p && (*p <'0' || *p >'9')) {
+        *d++ = *p++;
+    }
+    *d = 0;
+    return string(buffer);
 }
 
 /**

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_audioout.h 20565 2015-06-04 09:59:10Z seb $
+ * $Id: yocto_audioout.h 20797 2015-07-06 16:49:40Z mvuilleu $
  *
  * Declares yFindAudioOut(), the high-level API for AudioOut functions
  *
@@ -61,6 +61,7 @@ typedef enum {
 } Y_MUTE_enum;
 #endif
 #define Y_VOLUME_INVALID                (YAPI_INVALID_UINT)
+#define Y_VOLUMERANGE_INVALID           (YAPI_INVALID_STRING)
 #define Y_SIGNAL_INVALID                (YAPI_INVALID_INT)
 #define Y_NOSIGNALFOR_INVALID           (YAPI_INVALID_INT)
 //--- (end of YAudioOut definitions)
@@ -81,6 +82,7 @@ protected:
     // Attributes (function value cache)
     int             _volume;
     Y_MUTE_enum     _mute;
+    string          _volumeRange;
     int             _signal;
     int             _noSignalFor;
     YAudioOutValueCallback _valueCallbackAudioOut;
@@ -103,6 +105,7 @@ public:
     static const Y_MUTE_enum MUTE_FALSE = Y_MUTE_FALSE;
     static const Y_MUTE_enum MUTE_TRUE = Y_MUTE_TRUE;
     static const Y_MUTE_enum MUTE_INVALID = Y_MUTE_INVALID;
+    static const string VOLUMERANGE_INVALID;
     static const int SIGNAL_INVALID = YAPI_INVALID_INT;
     static const int NOSIGNALFOR_INVALID = YAPI_INVALID_INT;
 
@@ -156,6 +159,21 @@ public:
     int             set_mute(Y_MUTE_enum newval);
     inline int      setMute(Y_MUTE_enum newval)
     { return this->set_mute(newval); }
+
+    /**
+     * Returns the supported volume range. The low value of the
+     * range corresponds to the minimal audible value. To
+     * completely mute the sound, use set_mute()
+     * instead of the set_volume().
+     *
+     * @return a string corresponding to the supported volume range
+     *
+     * On failure, throws an exception or returns Y_VOLUMERANGE_INVALID.
+     */
+    string              get_volumeRange(void);
+
+    inline string       volumeRange(void)
+    { return this->get_volumeRange(); }
 
     /**
      * Returns the detected output current level.

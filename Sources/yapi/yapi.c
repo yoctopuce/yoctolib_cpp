@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 20747 2015-06-25 13:11:13Z mvuilleu $
+ * $Id: yapi.c 20868 2015-07-17 10:19:31Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -76,22 +76,26 @@ retry:
         return -1;
     }
     fwrite(firstline, 1, firstline_len, f);
-    fwrite(buffer, 1, bufferlen, f);
+    if (buffer) {
+        fwrite(buffer, 1, bufferlen, f);
+    }
     fclose(f);
     return 0;
 }
 
 
+#define FILE_NO_BIT_MASK 0XFFF
+
 static int YREQ_LOG_START(const char *msg, const char *device, const char * request, int requestsize)
 {
-    char buffer[2048], buffer2[64];;
+    char buffer[2048], buffer2[64];
     struct tm timeinfo;
     time_t rawtime;
     int threadIdx, count, first_len;
 
     //we may need to add mutex here
     count = global_req_count++;
-    int fileno = count & 0xff;
+    int fileno = count & FILE_NO_BIT_MASK;
     // compute time string
     time(&rawtime);
     localtime_s(&timeinfo, &rawtime);
@@ -105,13 +109,13 @@ static int YREQ_LOG_START(const char *msg, const char *device, const char * requ
 
 static int YREQ_LOG_APPEND(int count, const char *msg, const char * response, int responsesize)
 {
-    char buffer[2048], buffer2[64];;
+    char buffer[2048], buffer2[64];
     struct tm timeinfo;
     time_t rawtime;
     int threadIdx, first_len;
 
     //we may need to add mutex here
-    int fileno = count & 0xff;
+    int fileno = count & FILE_NO_BIT_MASK;
     // compute time string
     time(&rawtime);
     localtime_s(&timeinfo, &rawtime);
@@ -121,6 +125,27 @@ static int YREQ_LOG_APPEND(int count, const char *msg, const char * response, in
     first_len = YSPRINTF(buffer, 2048, "[%s/%"FMTu64"](%d):no=%d : %s responsesize=%d\n",buffer2, yapiGetTickCount(), threadIdx, count, msg, responsesize);
     // write on file
     write_onfile(fileno, "ab", buffer, first_len, response, responsesize);
+    return count;
+}
+
+static int YREQ_LOG_APPEND_ERR(int count, const char *msg, const char *errmsg, int error)
+{
+    char buffer[2048], buffer2[64];
+    struct tm timeinfo;
+    time_t rawtime;
+    int threadIdx, first_len;
+
+    //we may need to add mutex here
+    int fileno = count & FILE_NO_BIT_MASK;
+    // compute time string
+    time(&rawtime);
+    localtime_s(&timeinfo, &rawtime);
+    strftime(buffer2, sizeof(buffer2), "%Y-%m-%d %H:%M:%S", &timeinfo);
+    //format first info line
+    threadIdx = yThreadIndex();
+    first_len = YSPRINTF(buffer, 2048, "[%s/%"FMTu64"](%d):no=%d : %s errmsg(%d)=%s\n", buffer2, yapiGetTickCount(), threadIdx, count, msg, error, errmsg);
+    // write on file
+    write_onfile(fileno, "ab", buffer, first_len, NULL, 0);
     return count;
 }
 #endif
@@ -2547,7 +2572,7 @@ u64 YAPI_FUNCTION_EXPORT yapiGetTickCount(void)
     //get the current number of microseconds since January 1st 1970
     struct timeval tim;
     gettimeofday(&tim, NULL);
-    res= tim.tv_sec * 1000 + (tim.tv_usec / 1000);
+    res = (u64)tim.tv_sec * 1000 + (tim.tv_usec / 1000);
 #endif
 
     return res;
@@ -2937,9 +2962,7 @@ YRETCODE  yapiHTTPRequestSyncStartEx_internal(YIOHDL *iohdl, const char *device,
 {
     u64      timeout;
     YRETCODE res;
-#ifdef DEBUG_YAPI_REQ
-    int req_count = YREQ_LOG_START("SyncStartEx", device, request, requestsize);
-#endif
+
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
 
@@ -2978,12 +3001,13 @@ YRETCODE  yapiHTTPRequestSyncStartEx_internal(YIOHDL *iohdl, const char *device,
             if(YISERR(res)){
                 yUsbClose(iohdl,NULL);
                 return res;
+            } else if (res > 0) {
+                timeout = yapiGetTickCount() + YAPI_BLOCKING_USBREAD_REQUEST_TIMEOUT;
             }
             buffpos += res;
         }
         *reply = p->replybuf;
         *replysize = buffpos;
-        return res;
     } else if(iohdl->type == YIO_TCP) {
         TcpReqSt *tcpreq = &yContext->tcpreq[iohdl->tcpreqidx];
         timeout = yapiGetTickCount() + YAPI_BLOCKING_NET_REQUEST_TIMEOUT;
@@ -3005,13 +3029,11 @@ YRETCODE  yapiHTTPRequestSyncStartEx_internal(YIOHDL *iohdl, const char *device,
             return res;
         }
         *replysize = yTcpGetReq(tcpreq, (u8**)reply);
+        res = YAPI_SUCCESS;
     } else {
         return YERR(YAPI_INVALID_ARGUMENT);
     }
-#ifdef DEBUG_YAPI_REQ
-    YREQ_LOG_APPEND(req_count, "SyncStartEx", *reply, *replysize);
-#endif
-    return YAPI_SUCCESS;
+    return res;
 }
 
 static YRETCODE  yapiHTTPRequestSyncStart_internal(YIOHDL *iohdl, const char *device, const char *request, char **reply, int *replysize, char *errmsg)
@@ -3236,7 +3258,7 @@ static YRETCODE  yapiGetBootloaders_internal(char *buffer, int buffersize, int *
         if (yContext->nethub[i].url != INVALID_HASH_IDX){
             char bootloaders[4 * YOCTO_SERIAL_LEN];
             char hubserial[YOCTO_SERIAL_LEN];
-			int res, j;
+            int res, j;
             char *serial;
             yHashGetStr(yContext->nethub[i].serial, hubserial, YOCTO_SERIAL_LEN);
             res = yNetHubGetBootloaders(hubserial, bootloaders, errmsg);
@@ -3446,7 +3468,7 @@ void yapiRegisterRawReportV2Cb(yRawReportV2Cb callback)
 }
 
 
-//#define YDLL_TRACE_FILE "c:\\tmp\\dll_trace.txt"
+//#define YDLL_TRACE_FILE "dll_trace.txt"
 
 #ifdef YDLL_TRACE_FILE
 
@@ -3866,7 +3888,17 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncStartEx(YIOHDL *iohdl, const ch
 {
     YRETCODE res;
     YDLL_CALL_ENTER(trcHTTPRequestSyncStartEx);
+#ifdef DEBUG_YAPI_REQ
+    int req_count = YREQ_LOG_START("SyncStartEx", device, request, requestsize);
+#endif
     res = yapiHTTPRequestSyncStartEx_internal(iohdl, device, request, requestsize, reply, replysize, errmsg);
+#ifdef DEBUG_YAPI_REQ
+    if (res < 0) {
+        YREQ_LOG_APPEND_ERR(req_count, "SyncStartEx", errmsg, res);
+    } else {
+        YREQ_LOG_APPEND(req_count, "SyncStartEx", *reply, *replysize);
+    }
+#endif
     YDLL_CALL_LEAVE(res);
     return res;
 }
@@ -3875,7 +3907,17 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncStart(YIOHDL *iohdl, const char
 {
     YRETCODE res;
     YDLL_CALL_ENTER(trcHTTPRequestSyncStart);
+#ifdef DEBUG_YAPI_REQ
+    int req_count = YREQ_LOG_START("SyncStart", device, request, YSTRLEN(request));
+#endif
     res = yapiHTTPRequestSyncStart_internal(iohdl, device, request, reply, replysize, errmsg);
+#ifdef DEBUG_YAPI_REQ
+    if (res < 0) {
+        YREQ_LOG_APPEND_ERR(req_count, "SyncStart", errmsg, res);
+    } else {
+        YREQ_LOG_APPEND(req_count, "SyncStart", *reply, *replysize);
+    }
+#endif
     YDLL_CALL_LEAVE(res);
     return res;
 }

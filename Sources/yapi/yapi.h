@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h 20375 2015-05-19 14:09:49Z seb $
+ * $Id: yapi.h 20895 2015-07-22 13:22:15Z seb $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -54,7 +54,7 @@ extern "C" {
 
 // Timeout for blocking requests to the devices, in milliseconds
 #define YAPI_BLOCKING_USBOPEN_REQUEST_TIMEOUT    2000
-#define YAPI_BLOCKING_USBREAD_REQUEST_TIMEOUT    5000
+#define YAPI_BLOCKING_USBREAD_REQUEST_TIMEOUT    8000
 #define YAPI_BLOCKING_NET_REQUEST_TIMEOUT       30000
 
 /*****************************************************************************
