@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_win.c 19920 2015-04-07 10:56:40Z seb $
+ * $Id: ypkt_win.c 21201 2015-08-19 13:12:14Z seb $
  *
  * OS-specific USB packet layer, Windows version
  *
@@ -223,6 +223,7 @@ int yyyUSB_stop(yContextSt *ctx,char *errmsg)
         yFree(ctx->prevEnum);
         ctx->prevEnum=NULL;
     }
+    ctx->prevEnumCnt = 0;
     yReleaseGlobalAccess(ctx);
     return YAPI_SUCCESS;
 }
@@ -649,24 +650,27 @@ static void* yyyUsbIoThread(void* thread_void)
     for (i =0; i < 2; i++){
         iface->EV[i] = NULL;
     }
-    yThreadSignalStart(thread);
 
     //open blocking write handle
-    if(YISERR(OpenWriteHandles(iface))){
+    if (YISERR(OpenWriteHandles(iface))) {
+        yThreadSignalStart(thread);
         goto exitThread;
     }
     //open blocking write handle
-    if(YISERR(OpenReadHandles(iface))){
+    if (YISERR(OpenReadHandles(iface))) {
+        yThreadSignalStart(thread);
         goto exitThread;
     }
     // create Event for breaking wait
     iface->EV[YWIN_EVENT_INTERRUPT] = CreateEvent(NULL, FALSE, FALSE, NULL);
-    if(iface->EV[YWIN_EVENT_INTERRUPT] == NULL){
+    if (iface->EV[YWIN_EVENT_INTERRUPT] == NULL) {
             yWinSetErr(iface,errmsg);
             HALLOG("IO error %s:%d (%s)\n",iface->serial,iface->ifaceno,errmsg);
+            yThreadSignalStart(thread);
             goto exitThread;
     }
     HALLOG("yyyReady I%x wr=%x rd=%x se=%s\n",iface->ifaceno,iface->wrHDL, iface->rdHDL,iface->serial);
+    yThreadSignalStart(thread);
 
 
     if(yyyyRead(iface,errmsg) != YAPI_SUCCESS) {

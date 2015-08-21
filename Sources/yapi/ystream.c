@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 20686 2015-06-19 07:33:53Z mvuilleu $
+ * $Id: ystream.c 21030 2015-08-05 14:38:36Z seb $
  *
  * USB multi-interface stream implementation
  *
@@ -447,8 +447,10 @@ static int devStartIO(LOCATION yPrivDeviceSt *dev, char *errmsg)
     }
 
     switch(dev->rstatus){
-    case YRUN_STOPED:
     case YRUN_ERROR:
+        res = YERRMSG(YAPI_IO_ERROR,dev->errmsg);
+        break;
+    case YRUN_STOPED:
         res = YERRMSG(YAPI_DEVICE_NOT_FOUND,"This device is not available");
         break;
     case YRUN_REQUEST:
@@ -482,8 +484,10 @@ static int devPauseIO(LOCATION yPrivDeviceSt *dev,char *errmsg)
 
     yEnterCriticalSection(&dev->acces_state);
     switch(dev->rstatus){
-    case YRUN_STOPED:
     case YRUN_ERROR:
+        res = YERRMSG(YAPI_IO_ERROR,dev->errmsg);
+        break;
+    case YRUN_STOPED:
         res = YERRMSG(YAPI_DEVICE_NOT_FOUND,"This device is not available");
         break;
     case YRUN_REQUEST:
@@ -531,8 +535,10 @@ static int devCheckIO(LOCATION yPrivDeviceSt *dev, YIOHDL *iohdl,char *errmsg)
     }
 
     switch(dev->rstatus){
-    case YRUN_STOPED:
     case YRUN_ERROR:
+        res = YERRMSG(YAPI_IO_ERROR,dev->errmsg);
+        break;
+    case YRUN_STOPED:
         res = YERRMSG(YAPI_DEVICE_NOT_FOUND,"This device is not available");
         break;
     case YRUN_REQUEST:
@@ -577,8 +583,10 @@ static int devCheckAsyncIO(LOCATION yPrivDeviceSt *dev, char *errmsg)
     }
 
     switch(dev->rstatus){
-    case YRUN_STOPED:
     case YRUN_ERROR:
+        res = YERRMSG(YAPI_IO_ERROR,dev->errmsg);
+        break;
+    case YRUN_STOPED:
         res = YERRMSG(YAPI_DEVICE_NOT_FOUND,"This device is not available");
         break;
     case YRUN_REQUEST:
@@ -618,8 +626,10 @@ static int devStopIO(LOCATION yPrivDeviceSt *dev, char *errmsg)
 
     yEnterCriticalSection(&dev->acces_state);
     switch(dev->rstatus){
-    case YRUN_STOPED:
     case YRUN_ERROR:
+        res = YERRMSG(YAPI_IO_ERROR,dev->errmsg);
+        break;
+    case YRUN_STOPED:
         res = YERRMSG(YAPI_DEVICE_NOT_FOUND,"This device is not available");
         break;
     case YRUN_REQUEST:

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 20916 2015-07-23 08:54:20Z seb $
+ * $Id: yocto_api.cpp 21200 2015-08-19 13:09:00Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -1758,6 +1758,42 @@ vector<string> YFunction::_json_get_array(const string& json)
     return res;
 }
 
+string YFunction::_get_json_path(const string& json, const string& path)
+{
+    const char *json_data = json.c_str();
+    int len = (int)(json.length() & 0x0fffffff);
+    const char *p;
+    char        errbuff[YOCTO_ERRMSG_LEN];
+    int res;
+
+    res = yapiJsonGetPath(path.c_str(), json_data, len, &p, errbuff);
+    if (res >= 0) {
+        string result = string(p, res);
+        return result;
+    }
+    return "";
+}
+
+string YFunction::_decode_json_string(const string& json)
+{
+    int len = (int)(json.length() & 0x0fffffff);
+    char buffer[128];
+    char *p = buffer;
+    int decoded_len;
+
+    if (len >= 127){
+        p = (char*) malloc(len + 1);
+
+    }
+    decoded_len = yapiJsonDecodeString(json.c_str(), p);
+    string result = string(p, decoded_len);
+    if (len >= 127){
+        free(p);
+    }
+    return result;
+}
+
+
 string  YFunction::_escapeAttr(const string& changeval)
 {
     const char *p;
@@ -1980,6 +2016,12 @@ YDataStream *YFunction::_findDataStream(YDataSet& dataset, const string& def)
     YDataStream *newDataStream = new YDataStream(this, dataset, YAPI::_decodeWords(def));
     _dataStreams[key] = newDataStream;
     return newDataStream;
+}
+
+// Method used to clear cache of DataStream object (undocumented)
+void YFunction::_clearDataStreamCache()
+{
+    _dataStreams.clear();
 }
 
 
@@ -4184,6 +4226,91 @@ string YModule::get_allSettings(void)
     return this->_download("api.json");
 }
 
+string YModule::get_allSettings_dev(void)
+{
+    string settings;
+    string json;
+    string res;
+    string sep;
+    string name;
+    string file_data;
+    string file_data_bin;
+    string all_file_data;
+    vector<string> filelist;
+    // may throw an exception
+    settings = this->_download("api.json");
+    all_file_data = ", \"files\":[";
+    if (this->hasFunction("files")) {
+        json = this->_download("files.json?a=dir&f=");
+        filelist = this->_json_get_array(json);
+        sep = "";
+        for (unsigned ii = 0; ii <  filelist.size(); ii++) {
+            name = this->_json_get_key( filelist[ii], "name");
+            file_data_bin = this->_download(this->_escapeAttr(name));
+            file_data = YAPI::_bin2HexStr(file_data_bin);
+            file_data = YapiWrapper::ysprintf("%s{\"name\":\"%s\", \"data\":\"%s\"}\n", sep.c_str(), name.c_str(),file_data.c_str());
+            sep = ",";
+            all_file_data = all_file_data + file_data;;
+        }
+    }
+    all_file_data = all_file_data + "]}";
+    res = "{ \"api\":" + settings + all_file_data;
+    return res;
+}
+
+/**
+ * Restores all the settings of the module. Useful to restore all the logical names and calibrations parameters
+ * of a module from a backup.Remember to call the saveToFlash() method of the module if the
+ * modifications must be kept.
+ *
+ * @param settings : a binary buffer with all the settings.
+ *
+ * @return YAPI_SUCCESS when the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YModule::set_allSettings_dev(string settings)
+{
+    string down;
+    string json;
+    string json_api;
+    string json_files;
+    json = settings;
+    json_api = this->_get_json_path(json, "api");
+    this->set_allSettings(json_api);
+    if (this->hasFunction("files")) {
+        vector<string> files;
+        string res;
+        string name;
+        string data;
+        down = this->_download("files.json?a=format");
+        res = this->_get_json_path(down, "res");
+        res = this->_decode_json_string(res);
+        if (!(res == "ok")) {
+            _throw(YAPI_IO_ERROR,"format failed");
+            return YAPI_IO_ERROR;
+        }
+        json_files = this->_get_json_path(json, "files");
+        files = this->_json_get_array(json_files);
+        for (unsigned ii = 0; ii <  files.size(); ii++) {
+            name = this->_get_json_path( files[ii], "name");
+            name = this->_decode_json_string(name);
+            data = this->_get_json_path( files[ii], "data");
+            data = this->_decode_json_string(data);
+            this->_upload(name, YAPI::_hexStr2Bin(data));;
+        }
+    }
+    return YAPI_SUCCESS;
+}
+
+/**
+ * Test if the device has a specific function. This method took an function identifier
+ * and return a boolean.
+ *
+ * @param funcId : the requested function identifier
+ *
+ * @return : true if the device has the function identifier
+ */
 bool YModule::hasFunction(string funcId)
 {
     int count = 0;
@@ -4202,6 +4329,13 @@ bool YModule::hasFunction(string funcId)
     return false;
 }
 
+/**
+ * Retrieve all hardware identifier that match the type passed in argument.
+ *
+ * @param funType : The type of function (Relay, LightSensor, Voltage,...)
+ *
+ * @return : A array of string.
+ */
 vector<string> YModule::get_functionIds(string funType)
 {
     int count = 0;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h 20895 2015-07-22 13:22:15Z seb $
+ * $Id: yapi.h 21078 2015-08-12 09:22:35Z seb $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -926,6 +926,9 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiCheckFirmware(const char *serial, const char *
 YRETCODE YAPI_FUNCTION_EXPORT yapiGetBootloaders(char *buffer, int buffersize, int *fullsize, char *errmsg);
 YRETCODE YAPI_FUNCTION_EXPORT yapiUpdateFirmware(const char *serial, const char *firmwarePath, const char *settings, int startUpdate, char *errmsg);
 
+
+int YAPI_FUNCTION_EXPORT yapiJsonDecodeString(const char *json_string, char *output);
+int YAPI_FUNCTION_EXPORT yapiJsonGetPath(const char *path, const char *json_data, int json_size, const char  **result, char *errmsg);
 
 
 /*****************************************************************************

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 20868 2015-07-17 10:19:31Z seb $
+ * $Id: yapi.c 21106 2015-08-14 14:26:47Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -3290,12 +3290,214 @@ static YRETCODE  yapiGetBootloaders_internal(char *buffer, int buffersize, int *
     return (YRETCODE) size;
 
 }
+#ifndef YAPI_IN_YDEVICE
+static const char*  yapiJsonValueParseArray(yJsonStateMachine *j, const char *path, int *result, char *errmsg);
+
+
+static void skipJsonStruct(yJsonStateMachine *j)
+{
+#ifdef DEBUG_JSON_PARSE
+    dbglog("skip  %s(%d):%s\n", yJsonStateStr[j->st], j->st, j->token);
+#endif
+    yJsonParse(j);
+    do {
+#ifdef DEBUG_JSON_PARSE
+        dbglog("... %s(%d):%s\n", yJsonStateStr[j->st], j->st, j->token);
+#endif
+        yJsonSkip(j, 1);
+    } while (yJsonParse(j) == YJSON_PARSE_AVAIL && j->st != YJSON_PARSE_STRUCT);
+}
+
+
+static void skipJsonArray(yJsonStateMachine *j)
+{
+#ifdef DEBUG_JSON_PARSE
+    dbglog("skip  %s(%d):%s\n", yJsonStateStr[j->st], j->st, j->token);
+#endif
+    yJsonParse(j);
+    do {
+#ifdef DEBUG_JSON_PARSE
+        dbglog("... %s(%d):%s\n", yJsonStateStr[j->st], j->st, j->token);
+#endif
+        yJsonSkip(j, 1);
+    } while (yJsonParse(j) == YJSON_PARSE_AVAIL && j->st != YJSON_PARSE_ARRAY);
+}
+
+
+static const char*  yapiJsonValueParseStruct(yJsonStateMachine *j, const char *path, int *result, char *errmsg)
+{
+
+    int len = 0;
+    const char *p = path;
+
+    while (*p && *p != '|'){
+        p++;
+        len++;
+    }
+
+    while (yJsonParse(j) == YJSON_PARSE_AVAIL) {
+        if (j->st == YJSON_PARSE_MEMBNAME) {
+            if (YSTRNCMP(path, j->token, len) == 0){
+                if (*p) {
+#ifdef DEBUG_JSON_PARSE
+                    dbglog("recurse %s %s(%d):%s\n", j->token, yJsonStateStr[j->st], j->st, j->token);
+#endif
+                    yJsonParse(j);
+                    if (j->st == YJSON_PARSE_STRUCT) {
+                        return yapiJsonValueParseStruct(j, ++p, result, errmsg);
+                    } else if (j->st == YJSON_PARSE_ARRAY) {
+                        return yapiJsonValueParseArray(j, ++p, result, errmsg);
+                    } else{
+                        *result = YERRMSG(YAPI_INVALID_ARGUMENT, "Invalid JSON struct");
+                        return "";
+                    }
+                } else{
+                    const char *start_of_json;
+#ifdef DEBUG_JSON_PARSE
+                    dbglog("found %s %s(%d):%s\n", j->token, yJsonStateStr[j->st], j->st, j->token);
+#endif
+                    yJsonParse(j);
+                    start_of_json = j->state_start;
+                    switch (j->st){
+                    case YJSON_PARSE_STRING:
+                    case YJSON_PARSE_NUM:
+                        *result = (u32)(j->state_end - start_of_json);
+                        return  start_of_json;
+                    case YJSON_PARSE_STRUCT:
+                        skipJsonStruct(j);
+                        *result = (u32)(j->state_end - start_of_json);
+                        return  start_of_json;
+                    case YJSON_PARSE_ARRAY:
+                        skipJsonArray(j);
+                        *result = (u32)(j->state_end - start_of_json);
+                        return  start_of_json;
+                    default:
+                        *result = YERRMSG(YAPI_INVALID_ARGUMENT, "Only String and numerical target are supported");
+                        return "";
+                    }
+                }
+            } else {
+#ifdef DEBUG_JSON_PARSE
+                dbglog("skip %s %s(%d):%s\n", j->token, yJsonStateStr[j->st], j->st, j->token);
+#endif
+                yJsonSkip(j, 1);
+            }
+        }
+#ifdef DEBUG_JSON_PARSE
+        else{
+            dbglog("%s(%d):%s\n", yJsonStateStr[j->st], j->st, j->token);
+        }
+#endif
+    }
+    *result = YERRMSG(YAPI_INVALID_ARGUMENT, "Path not found");
+    return "";
+}
+
+
+static const char*  yapiJsonValueParseArray(yJsonStateMachine *j, const char *path, int *result, char *errmsg)
+{
+
+    int len = 0;
+    const char *p = path;
+    char buffer[16];
+    int index, count = 0;
+    yJsonState array_type;
+
+    while (*p && *p != '|'){
+        p++;
+        len++;
+    }
+    YASSERT(len < 16);
+    memcpy(buffer, path, len);
+    buffer[len] = 0;
+    index = atoi(buffer);
+
+    if (yJsonParse(j) != YJSON_PARSE_AVAIL) {
+        *result = YERRMSG(YAPI_INVALID_ARGUMENT, "Invalid JSON array");
+        return "";
+    }
+
+    array_type = j->st;
+    if (j->st != YJSON_PARSE_STRUCT) {
+#ifdef DEBUG_JSON_PARSE
+        dbglog("fixme %s %s(%d):%s\n", j->token, yJsonStateStr[j->st], j->st, j->token);
+#endif
+        *result = YERRMSG(YAPI_NOT_SUPPORTED, "Unsupported JSON array");
+        return "";
+    }
+    do {
+        if (index == count) {
+                return yapiJsonValueParseStruct(j, ++p, result, errmsg);
+        } else {
+#ifdef DEBUG_JSON_PARSE
+            dbglog("skip  %s(%d):%s\n", yJsonStateStr[j->st], j->st, j->token);
+#endif
+            yJsonParse(j);
+            do {
+#ifdef DEBUG_JSON_PARSE
+                dbglog("... %s(%d):%s\n", yJsonStateStr[j->st], j->st, j->token);
+#endif
+                yJsonSkip(j, 1);
+            } while (yJsonParse(j) == YJSON_PARSE_AVAIL && j->st != array_type);
+        }
+        count++;
+    } while (yJsonParse(j) == YJSON_PARSE_AVAIL);
+
+    *result = YERRMSG(YAPI_INVALID_ARGUMENT, "Path not found");
+    return "";
+}
+
+
+static int  yapiJsonDecodeString_internal(const char *json_string, char *output)
+{
+    yJsonStateMachine j;
+    char *p = output;
+    int maxsize = YSTRLEN(json_string);
+
+    j.src = json_string;
+    j.end = j.src + maxsize;
+    j.st = YJSON_START;
+    yJsonParse(&j);
+    do {
+        int len = YSTRLEN(j.token);
+        yMemcpy(p, j.token, len);
+        p += len;
+    } while (j.next == YJSON_PARSE_STRINGCONT && yJsonParse(&j) == YJSON_PARSE_AVAIL);
+    *p = 0;
+
+    return (u32)(p - output);
+}
+
+
+
+
+static int yapiJsonGetPath_internal(const char *path, const char *json_data, int json_size, const char **output, char *errmsg)
+{
+    yJsonStateMachine j;
+    int result;
+
+    j.src = json_data;
+    j.end = j.src + json_size;
+    j.st = YJSON_START;
+
+    if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
+        *output = "";
+        return YERRMSG(YAPI_INVALID_ARGUMENT, "Not a JSON struct");
+    }
+
+    *output = yapiJsonValueParseStruct(&j, path, &result, errmsg);
+    return result;
+}
+
+#endif
 
 typedef struct _fullAttrInfo {
     char        func[32];
     char        attr[32];
     char        value[256];
 } fullAttrInfo;
+
+
 
 
 static fullAttrInfo* parseSettings(const char *settings, int *count)
@@ -3376,6 +3578,9 @@ exit:
     }
     return attrBuff;
 }
+
+
+
 
 
 static YRETCODE  yapiGetAllJsonKeys_internal(const char *json_buffer, char *buffer, int buffersize, int *fullsize, char *errmsg)
@@ -3515,6 +3720,8 @@ typedef enum
     trcRegisterHubDiscoveryCallback,
     trcTriggerHubDiscovery,
     trcGetBootloaders,
+    trcJsonDecodeString,
+    trcJsonGetPath,
     trcGetAllJsonKeys,
     trcCheckFirmware,
     trcUpdateFirmware,
@@ -3565,6 +3772,8 @@ static const char * trc_funname[] =
     "RegHubDiscovery",
     "THubDiscov",
     "GBoot",
+    "JsonDecStr",
+    "JsonGetPath",
     "GAllJsonK",
     "CkFw",
     "UpFw",
@@ -3982,7 +4191,26 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetBootloaders(char *buffer, int buffersize, i
     YDLL_CALL_LEAVE(res);
     return res;
 }
+#ifndef YAPI_IN_YDEVICE
 
+int YAPI_FUNCTION_EXPORT yapiJsonDecodeString(const char *json_string, char *output)
+{
+    int res;
+    YDLL_CALL_ENTER(trcJsonDecodeString);
+    res = yapiJsonDecodeString_internal(json_string, output);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+int YAPI_FUNCTION_EXPORT yapiJsonGetPath(const char *path, const char *json_data, int json_size, const char  **result, char *errmsg)
+{
+    int res;
+    YDLL_CALL_ENTER(trcJsonGetPath);
+    res = yapiJsonGetPath_internal(path, json_data, json_size, result, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+#endif
 YRETCODE YAPI_FUNCTION_EXPORT yapiGetAllJsonKeys(const char *json_buffer, char *buffer, int buffersize, int *fullsize, char *errmsg)
 {
     YRETCODE res;

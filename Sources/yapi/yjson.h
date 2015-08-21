@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yjson.h 19559 2015-03-03 15:41:24Z seb $
+ * $Id: yjson.h 21066 2015-08-10 16:27:20Z seb $
  *
  * Simple JSON parser (actually a slightly enhanced lexer)
  *
@@ -89,6 +89,10 @@ typedef struct {
     char        *pt;                    // pointer in token buffer
     int         skipcnt;                // number of items to skip
     int         skipdepth;              // stack depth at which skipping started
+#ifndef YAPI_IN_YDEVICE
+    _FAR const char *state_start;       // pointer to the start of the current state
+    _FAR const char *state_end;         // pointer to end of of the current state
+#endif
 } yJsonStateMachine;
 
 

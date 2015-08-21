@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 20908 2015-07-23 06:46:26Z seb $
+ * $Id: yocto_api.h 21180 2015-08-18 17:11:53Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -1434,6 +1434,8 @@ public:
     string      _json_get_key(const string& json, const string& data);
     string      _json_get_string(const string& json);
     vector<string> _json_get_array(const string& json);
+    string      _get_json_path(const string& json, const string& path);
+    string      _decode_json_string(const string& json);
     string      _parseString(yJsonStateMachine& j);
     int         _parseEx(yJsonStateMachine& j);
 
@@ -1441,6 +1443,10 @@ public:
 
     // Method used to cache DataStream objects (new DataLogger)
     YDataStream *_findDataStream(YDataSet& dataset, const string& def);
+    // Method used to clear cache of DataStream object (undocumented)
+    void _clearDataStreamCache();
+
+
 
     static const YFUN_DESCR FUNCTIONDESCRIPTOR_INVALID = Y_FUNCTIONDESCRIPTOR_INVALID;
     static const string     HARDWAREID_INVALID;
@@ -2197,8 +2203,38 @@ public:
      */
     virtual string      get_allSettings(void);
 
+    virtual string      get_allSettings_dev(void);
+
+    /**
+     * Restores all the settings of the module. Useful to restore all the logical names and calibrations parameters
+     * of a module from a backup.Remember to call the saveToFlash() method of the module if the
+     * modifications must be kept.
+     *
+     * @param settings : a binary buffer with all the settings.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         set_allSettings_dev(string settings);
+
+    /**
+     * Test if the device has a specific function. This method took an function identifier
+     * and return a boolean.
+     *
+     * @param funcId : the requested function identifier
+     *
+     * @return : true if the device has the function identifier
+     */
     virtual bool        hasFunction(string funcId);
 
+    /**
+     * Retrieve all hardware identifier that match the type passed in argument.
+     *
+     * @param funType : The type of function (Relay, LightSensor, Voltage,...)
+     *
+     * @return : A array of string.
+     */
     virtual vector<string> get_functionIds(string funType);
 
     virtual string      _flattenJsonStruct(string jsoncomplex);

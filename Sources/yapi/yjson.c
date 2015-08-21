@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yjson.c 19399 2015-02-19 09:57:51Z seb $
+ * $Id: yjson.c 21084 2015-08-12 16:13:53Z seb $
  *
  * Simple JSON parser (actually a slightly enhanced lexer)
  *
@@ -155,11 +155,37 @@ skip:
                 while(src < end && ((c = *src) == ' ' || c == '\r' || c == '\n')) src++;
                 if(src >= end) goto done;
                 pt = j->token;
-                if(c == '{') { src++; st = YJSON_PARSE_STRUCT; }
-                else if(c == '[') { src++; st = YJSON_PARSE_ARRAY; }
-                else if(c == '"') { src++; st = YJSON_PARSE_STRING; }
-                else if(c=='-' || (c >= '0' && c <= '9')) { st = YJSON_PARSE_NUM; }
-                else if(c >= 'A' && c <= 'z') { st = YJSON_PARSE_SYMBOL; }
+                if(c == '{') {
+#ifndef YAPI_IN_YDEVICE
+                    j->state_start = src;
+#endif
+                    src++; st = YJSON_PARSE_STRUCT;
+
+                }
+                else if(c == '[') {
+#ifndef YAPI_IN_YDEVICE
+                    j->state_start = src;
+#endif
+                    src++; st = YJSON_PARSE_ARRAY;
+                }
+                else if(c == '"') {
+#ifndef YAPI_IN_YDEVICE
+                    j->state_start = src;
+#endif
+                    src++; st = YJSON_PARSE_STRING;
+                }
+                else if(c=='-' || (c >= '0' && c <= '9')) {
+#ifndef YAPI_IN_YDEVICE
+                    j->state_start = src;
+#endif
+                    st = YJSON_PARSE_NUM;
+                }
+                else if(c >= 'A' && c <= 'z') {
+#ifndef YAPI_IN_YDEVICE
+                    j->state_start = src;
+#endif
+                    st = YJSON_PARSE_SYMBOL;
+                }
                 else if(j->depth > 0 && c == ']') { st = YJSON_PARSE_DONE; }
                 else goto push_error;
                 // continue into the selected state
@@ -174,6 +200,9 @@ skip:
             token_done:
                 *pt = 0;
                 j->next = YJSON_PARSE_DONE;
+#ifndef YAPI_IN_YDEVICE
+                j->state_end = src;
+#endif
                 res = YJSON_PARSE_AVAIL;
                 goto done;
             case YJSON_PARSE_NUM:        // parsing a number
