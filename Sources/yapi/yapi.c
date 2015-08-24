@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 21106 2015-08-14 14:26:47Z seb $
+ * $Id: yapi.c 21297 2015-08-24 08:23:33Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -1287,11 +1287,23 @@ static void deleteAllCS(yContextSt *ctx)
 /*****************************************************************************
   API FUNCTIONS
  ****************************************************************************/
+#pragma pack(push,1)
+typedef union{
+    u32 raw;
+    struct{
+        u8  a;
+        u8  b;
+        u8  c;
+        u8  d;
+    } bytes;
+} test_compile;
+#pragma pack(pop)
 
 
 static YRETCODE yapiInitAPI_internal(int detect_type,char *errmsg)
 {
     int i;
+    test_compile test;
     yContextSt *ctx;
 #ifdef PERF_API_FUNCTIONS
     memset(&yApiPerf,0,sizeof(yApiPerf));
@@ -1300,7 +1312,6 @@ static YRETCODE yapiInitAPI_internal(int detect_type,char *errmsg)
     if(yContext!=NULL)
         return YERRMSG(YAPI_DEVICE_BUSY,"Api already started");
 
-#if 0
     if (sizeof(u8) != 1) return YERRMSG(YAPI_INVALID_ARGUMENT,"invalid definition of u8");
     if (sizeof(s8) != 1) return YERRMSG(YAPI_INVALID_ARGUMENT,"invalid definition of s8");
     if (sizeof(u16) != 2) return YERRMSG(YAPI_INVALID_ARGUMENT,"invalid definition of u16");
@@ -1309,7 +1320,22 @@ static YRETCODE yapiInitAPI_internal(int detect_type,char *errmsg)
     if (sizeof(s16) != 2) return YERRMSG(YAPI_INVALID_ARGUMENT,"invalid definition of s16");
     if (sizeof(s32) != 4) return YERRMSG(YAPI_INVALID_ARGUMENT,"invalid definition of s32");
     if (sizeof(s64) != 8) return YERRMSG(YAPI_INVALID_ARGUMENT,"invalid definition of s64");
+    test.raw = 0xdeadbeef;
+
+    if (test.bytes.a == 0xef && test.bytes.d == 0xde) {
+        // little endian
+        if (sizeof(test_compile) != 4) return YERRMSG(YAPI_INVALID_ARGUMENT, "pragma pack is not supported");
+#ifdef CPU_BIG_ENDIAN
+        return YERRMSG(YAPI_INVALID_ARGUMENT, "Invalid endianness. Lib is compiled for big endian but is used on little endian cpu");
 #endif
+    } else {
+        // big endian
+        if (sizeof(test_compile) != 4) return YERRMSG(YAPI_INVALID_ARGUMENT, "pragma pack is not supported");
+#ifndef CPU_BIG_ENDIAN
+        return YERRMSG(YAPI_INVALID_ARGUMENT, "Invalid endianness. Lib is compiled for little endian but is used on big endian cpu");
+#endif
+    }
+
 
     if(atof("1") != 1.0){
 #if defined(BUILD_ARMHF)
