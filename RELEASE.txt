@@ -1,2 +1,4 @@
-- Fix potential crash if YAPI.RegisterHUB("usb") is called after YAPI.UnregisterHub("usb")
-- Add compiler sanity check on library initialization
+- Add new methods set_allSettingsAndFiles() that restore settings and files.
+- Add precompiled bundle for Mac OS X.
+- Add compiler sanity check on library initialization.
+- Fix potential crash if YAPI.RegisterHUB("usb") is called after YAPI.UnregisterHub("usb").

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 21297 2015-08-24 08:23:33Z seb $
+ * $Id: yapi.c 21383 2015-09-02 11:55:24Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -3386,6 +3386,9 @@ static const char*  yapiJsonValueParseStruct(yJsonStateMachine *j, const char *p
                     start_of_json = j->state_start;
                     switch (j->st){
                     case YJSON_PARSE_STRING:
+                        while (j->next == YJSON_PARSE_STRINGCONT) {
+                            yJsonParse(j);
+                        }
                     case YJSON_PARSE_NUM:
                         *result = (u32)(j->state_end - start_of_json);
                         return  start_of_json;

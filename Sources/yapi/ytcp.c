@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 20339 2015-05-15 09:43:11Z seb $
+ * $Id: ytcp.c 21423 2015-09-08 09:54:29Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -1319,6 +1319,7 @@ YSTATIC int yDetectNetworkInterfaces(u32 only_ip)
             tmp = (struct sockaddr_in*)p->ifa_addr;
             ip = tmp->sin_addr.s_addr;
             if (only_ip != 0 && only_ip != ip){
+                p = p->ifa_next;
                 continue;
             }
             tmp = (struct sockaddr_in*)p->ifa_netmask;

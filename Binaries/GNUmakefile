@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 19412 2015-02-19 11:06:34Z seb $
+#  $Id: GNUmakefile 21432 2015-09-08 15:39:19Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -473,7 +473,7 @@ $(YAPI_DIR_OSX)libyapi.dylib: $(DIR_OSX) $(YAPI_OBJS_DYN_OSX) $(ALL_H)
 	@echo linking $@
 	@$(CC_OSX) -m64 -dynamiclib -Wl,-reexport_framework,IOKit,-reexport_framework,CoreFoundation,-headerpad_max_install_names,-undefined,dynamic_lookup,-compatibility_version,1.0,-current_version,1.0,-install_name,/usr/local/lib/libyapi.dylib -o $@ $(YAPI_OBJS_DYN_OSX)
 
-$_DIR_OSX)test: $(OBJDIR_OSX) $(YAPI_DIR_OSX) ALL_OBJS_STAT_OSX) $(ALL_H) $(TEST_SRC)
+$(DIR_OSX)test: $(OBJDIR_OSX) $(YAPI_DIR_OSX) ALL_OBJS_STAT_OSX) $(ALL_H) $(TEST_SRC)
 	@rm -rf $@
 	@echo linking $@
 	@$(CPP_OSX) $(OPTS_OSX) $(INC_PATH) -o $@ $(TEST_SRC) $(ALL_OBJS_STAT_OSX) $(LINKWITH_OSX)
@@ -498,11 +498,16 @@ mips: $(LIBS_MIPS)
 
 release_mips: $(LIBS_MIPS) clean_obj_mips
 
-osx: $(LIBS_OSX)
+$(YAPI_DIR_OSX)/yapi.bundle:
+	xcodebuild -project xcode/yapi/yapi.xcodeproj
+	cp -R xcode/yapi/build/Release/* $(YAPI_DIR_OSX)
 
-release_osx: $(LIBS_OSX) clean_obj_osx
+clean_bundle:
+	rm -rf xcode/yapi/build
 
+osx: $(LIBS_OSX) $(YAPI_DIR_OSX)/yapi.bundle
 
+release_osx: $(LIBS_OSX) $(YAPI_DIR_OSX)/yapi.bundle clean_obj_osx clean_bundle
 
 ifeq ($(UNAME), Linux)
 #linux

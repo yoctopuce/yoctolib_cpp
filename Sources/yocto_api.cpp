@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 21200 2015-08-19 13:09:00Z seb $
+ * $Id: yocto_api.cpp 21368 2015-08-31 10:10:55Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -277,7 +277,7 @@ int YFirmwareUpdate::_processMore(int newupdate)
                 }
             }
             if (_progress < 100) {
-                m->set_allSettings(_settings);
+                m->set_allSettingsAndFiles(_settings);
                 m->saveToFlash();
                 _settings = string(0, (char)0);
                 _progress = 100;
@@ -4214,19 +4214,15 @@ YFirmwareUpdate YModule::updateFirmware(string path)
 }
 
 /**
- * Returns all the settings of the module. Useful to backup all the logical names and calibrations parameters
- * of a connected module.
+ * Returns all the settings and uploaded files of the module. Useful to backup all the logical names,
+ * calibrations parameters,
+ * and uploaded files of a connected module.
  *
  * @return a binary buffer with all the settings.
  *
  * On failure, throws an exception or returns  YAPI_INVALID_STRING.
  */
 string YModule::get_allSettings(void)
-{
-    return this->_download("api.json");
-}
-
-string YModule::get_allSettings_dev(void)
 {
     string settings;
     string json;
@@ -4259,8 +4255,9 @@ string YModule::get_allSettings_dev(void)
 }
 
 /**
- * Restores all the settings of the module. Useful to restore all the logical names and calibrations parameters
- * of a module from a backup.Remember to call the saveToFlash() method of the module if the
+ * Restores all the settings and uploaded files of the module. Useful to restore all the logical names
+ * and calibrations parameters, uploaded
+ * files etc.. of a module from a backup.Remember to call the saveToFlash() method of the module if the
  * modifications must be kept.
  *
  * @param settings : a binary buffer with all the settings.
@@ -4269,7 +4266,7 @@ string YModule::get_allSettings_dev(void)
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YModule::set_allSettings_dev(string settings)
+int YModule::set_allSettingsAndFiles(string settings)
 {
     string down;
     string json;
@@ -4277,6 +4274,9 @@ int YModule::set_allSettings_dev(string settings)
     string json_files;
     json = settings;
     json_api = this->_get_json_path(json, "api");
+    if (json_api == "") {
+        return this->set_allSettings(settings);
+    }
     this->set_allSettings(json_api);
     if (this->hasFunction("files")) {
         vector<string> files;
@@ -4646,6 +4646,11 @@ int YModule::set_allSettings(string settings)
     string each_str;
     bool do_update;
     bool found;
+    tmp = settings;
+    tmp = this->_get_json_path(tmp, "api");
+    if (!(tmp == "")) {
+        settings = tmp;
+    }
     oldval = "";
     newval = "";
     old_json_flat = this->_flattenJsonStruct(settings);

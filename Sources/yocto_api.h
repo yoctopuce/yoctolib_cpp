@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 21180 2015-08-18 17:11:53Z seb $
+ * $Id: yocto_api.h 21368 2015-08-31 10:10:55Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -2194,8 +2194,9 @@ public:
     virtual YFirmwareUpdate updateFirmware(string path);
 
     /**
-     * Returns all the settings of the module. Useful to backup all the logical names and calibrations parameters
-     * of a connected module.
+     * Returns all the settings and uploaded files of the module. Useful to backup all the logical names,
+     * calibrations parameters,
+     * and uploaded files of a connected module.
      *
      * @return a binary buffer with all the settings.
      *
@@ -2203,11 +2204,10 @@ public:
      */
     virtual string      get_allSettings(void);
 
-    virtual string      get_allSettings_dev(void);
-
     /**
-     * Restores all the settings of the module. Useful to restore all the logical names and calibrations parameters
-     * of a module from a backup.Remember to call the saveToFlash() method of the module if the
+     * Restores all the settings and uploaded files of the module. Useful to restore all the logical names
+     * and calibrations parameters, uploaded
+     * files etc.. of a module from a backup.Remember to call the saveToFlash() method of the module if the
      * modifications must be kept.
      *
      * @param settings : a binary buffer with all the settings.
@@ -2216,7 +2216,7 @@ public:
      *
      * On failure, throws an exception or returns a negative error code.
      */
-    virtual int         set_allSettings_dev(string settings);
+    virtual int         set_allSettingsAndFiles(string settings);
 
     /**
      * Test if the device has a specific function. This method took an function identifier

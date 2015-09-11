@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 20410 2015-05-22 08:30:27Z seb $
+ * $Id: yocto_cellular.cpp 21485 2015-09-11 14:10:22Z seb $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -99,6 +99,7 @@ YCellular::YCellular(const string& func): YFunction(func)
 //--- (generated code: Cellular initialization)
     ,_linkQuality(LINKQUALITY_INVALID)
     ,_cellOperator(CELLOPERATOR_INVALID)
+    ,_cellIdentifier(CELLIDENTIFIER_INVALID)
     ,_imsi(IMSI_INVALID)
     ,_message(MESSAGE_INVALID)
     ,_pin(PIN_INVALID)
@@ -121,6 +122,7 @@ YCellular::~YCellular()
 //--- (generated code: YCellular implementation)
 // static attributes
 const string YCellular::CELLOPERATOR_INVALID = YAPI_INVALID_STRING;
+const string YCellular::CELLIDENTIFIER_INVALID = YAPI_INVALID_STRING;
 const string YCellular::IMSI_INVALID = YAPI_INVALID_STRING;
 const string YCellular::MESSAGE_INVALID = YAPI_INVALID_STRING;
 const string YCellular::PIN_INVALID = YAPI_INVALID_STRING;
@@ -139,6 +141,11 @@ int YCellular::_parseAttr(yJsonStateMachine& j)
     if(!strcmp(j.token, "cellOperator")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _cellOperator =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "cellIdentifier")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _cellIdentifier =  _parseString(j);
         return 1;
     }
     if(!strcmp(j.token, "imsi")) {
@@ -218,6 +225,24 @@ string YCellular::get_cellOperator(void)
         }
     }
     return _cellOperator;
+}
+
+/**
+ * Returns the unique identifier of the cellular antenna in use: MCC, MNC, LAC and Cell ID.
+ *
+ * @return a string corresponding to the unique identifier of the cellular antenna in use: MCC, MNC,
+ * LAC and Cell ID
+ *
+ * On failure, throws an exception or returns Y_CELLIDENTIFIER_INVALID.
+ */
+string YCellular::get_cellIdentifier(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YCellular::CELLIDENTIFIER_INVALID;
+        }
+    }
+    return _cellIdentifier;
 }
 
 /**

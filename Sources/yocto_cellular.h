@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.h 20168 2015-04-27 14:25:00Z seb $
+ * $Id: yocto_cellular.h 21485 2015-09-11 14:10:22Z seb $
  *
  * Declares yFindCellular(), the high-level API for Cellular functions
  *
@@ -63,6 +63,7 @@ typedef enum {
 #endif
 #define Y_LINKQUALITY_INVALID           (YAPI_INVALID_UINT)
 #define Y_CELLOPERATOR_INVALID          (YAPI_INVALID_STRING)
+#define Y_CELLIDENTIFIER_INVALID        (YAPI_INVALID_STRING)
 #define Y_IMSI_INVALID                  (YAPI_INVALID_STRING)
 #define Y_MESSAGE_INVALID               (YAPI_INVALID_STRING)
 #define Y_PIN_INVALID                   (YAPI_INVALID_STRING)
@@ -145,6 +146,7 @@ protected:
     // Attributes (function value cache)
     int             _linkQuality;
     string          _cellOperator;
+    string          _cellIdentifier;
     string          _imsi;
     string          _message;
     string          _pin;
@@ -171,6 +173,7 @@ public:
 
     static const int LINKQUALITY_INVALID = YAPI_INVALID_UINT;
     static const string CELLOPERATOR_INVALID;
+    static const string CELLIDENTIFIER_INVALID;
     static const string IMSI_INVALID;
     static const string MESSAGE_INVALID;
     static const string PIN_INVALID;
@@ -206,6 +209,19 @@ public:
 
     inline string       cellOperator(void)
     { return this->get_cellOperator(); }
+
+    /**
+     * Returns the unique identifier of the cellular antenna in use: MCC, MNC, LAC and Cell ID.
+     *
+     * @return a string corresponding to the unique identifier of the cellular antenna in use: MCC, MNC,
+     * LAC and Cell ID
+     *
+     * On failure, throws an exception or returns Y_CELLIDENTIFIER_INVALID.
+     */
+    string              get_cellIdentifier(void);
+
+    inline string       cellIdentifier(void)
+    { return this->get_cellIdentifier(); }
 
     /**
      * Returns an opaque string if a PIN code has been configured in the device to access
