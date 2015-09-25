@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 21368 2015-08-31 10:10:55Z seb $
+ * $Id: yocto_api.cpp 21601 2015-09-23 08:22:34Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -391,7 +391,9 @@ string YFirmwareUpdate::CheckFirmware(string serial,string path,int minrelease)
  */
 int YFirmwareUpdate::get_progress(void)
 {
-    this->_processMore(0);
+    if (_progress >= 0) {
+        this->_processMore(0);
+    }
     return _progress;
 }
 
@@ -418,9 +420,18 @@ string YFirmwareUpdate::get_progressMessage(void)
  */
 int YFirmwareUpdate::startUpdate(void)
 {
-    _progress = 0;
-    _progress_c = 0;
-    this->_processMore(1);
+    string err;
+    int leng = 0;
+    err = _settings;
+    leng = (int)(err).length();
+    if (( leng >= 6) && ("error:" == (err).substr(0, 6))) {
+        _progress = -1;
+        _progress_msg = (err).substr( 6, leng - 6);
+    } else {
+        _progress = 0;
+        _progress_c = 0;
+        this->_processMore(1);
+    }
     return _progress;
 }
 //--- (end of generated code: YFirmwareUpdate implementation)
@@ -4201,7 +4212,7 @@ string YModule::checkFirmware(string path,bool onlynew)
  *
  * @param path : the path of the byn file to use.
  *
- * @return : A YFirmwareUpdate object.
+ * @return : A YFirmwareUpdate object or NULL on error.
  */
 YFirmwareUpdate YModule::updateFirmware(string path)
 {
@@ -4210,6 +4221,10 @@ YFirmwareUpdate YModule::updateFirmware(string path)
     // may throw an exception
     serial = this->get_serialNumber();
     settings = this->get_allSettings();
+    if ((int)(settings).size() == 0) {
+        this->_throw(YAPI_IO_ERROR, "Unable to get device settings");
+        settings = "error:Unable to get device settings";
+    }
     return YFirmwareUpdate(serial,path,settings);
 }
 
@@ -4220,7 +4235,7 @@ YFirmwareUpdate YModule::updateFirmware(string path)
  *
  * @return a binary buffer with all the settings.
  *
- * On failure, throws an exception or returns  YAPI_INVALID_STRING.
+ * On failure, throws an exception or returns an binary object of size 0.
  */
 string YModule::get_allSettings(void)
 {
@@ -4229,29 +4244,105 @@ string YModule::get_allSettings(void)
     string res;
     string sep;
     string name;
+    string item;
+    string t_type;
+    string id;
+    string url;
     string file_data;
     string file_data_bin;
-    string all_file_data;
+    string temp_data_bin;
+    string ext_settings;
     vector<string> filelist;
+    vector<string> templist;
     // may throw an exception
     settings = this->_download("api.json");
-    all_file_data = ", \"files\":[";
+    if ((int)(settings).size() == 0) {
+        return settings;
+    }
+    ext_settings = ", \"extras\":[";
+    templist = this->get_functionIds("Temperature");
+    sep = "";
+    for (unsigned ii = 0; ii <  templist.size(); ii++) {
+        if (atoi((this->get_firmwareRelease()).c_str()) > 9000) {
+            url = YapiWrapper::ysprintf("api/%s/sensorType", templist[ii].c_str());
+            t_type = this->_download(url);
+            if (t_type == "RES_NTC") {
+                id = ( templist[ii]).substr( 11, (int)( templist[ii]).length() - 11);
+                temp_data_bin = this->_download(YapiWrapper::ysprintf("extra.json?page=%s",id.c_str()));
+                if ((int)(temp_data_bin).size() == 0) {
+                    return temp_data_bin;
+                }
+                item = YapiWrapper::ysprintf("%s{\"fid\":\"%s\", \"json\":%s}\n", sep.c_str(),  templist[ii].c_str(),temp_data_bin.c_str());
+                ext_settings = ext_settings + item;
+                sep = ",";
+            }
+        }
+    }
+    ext_settings =  ext_settings + "],\n\"files\":[";
     if (this->hasFunction("files")) {
         json = this->_download("files.json?a=dir&f=");
+        if ((int)(json).size() == 0) {
+            return json;
+        }
         filelist = this->_json_get_array(json);
         sep = "";
         for (unsigned ii = 0; ii <  filelist.size(); ii++) {
             name = this->_json_get_key( filelist[ii], "name");
+            if ((int)(name).length() == 0) {
+                return name;
+            }
             file_data_bin = this->_download(this->_escapeAttr(name));
             file_data = YAPI::_bin2HexStr(file_data_bin);
-            file_data = YapiWrapper::ysprintf("%s{\"name\":\"%s\", \"data\":\"%s\"}\n", sep.c_str(), name.c_str(),file_data.c_str());
-            sep = ",";
-            all_file_data = all_file_data + file_data;;
+            item = YapiWrapper::ysprintf("%s{\"name\":\"%s\", \"data\":\"%s\"}\n", sep.c_str(), name.c_str(),file_data.c_str());
+            ext_settings = ext_settings + item;
+            sep = ",";;
         }
     }
-    all_file_data = all_file_data + "]}";
-    res = "{ \"api\":" + settings + all_file_data;
+    ext_settings = ext_settings + "]}";
+    res = "{ \"api\":" + settings + ext_settings;
     return res;
+}
+
+int YModule::loadThermistorExtra(string funcId,string jsonExtra)
+{
+    vector<string> values;
+    string url;
+    string curr;
+    string currTemp;
+    int ofs = 0;
+    int size = 0;
+    url = "api/" + funcId + ".json?command=Z";
+    // may throw an exception
+    this->_download(url);
+    // add records in growing resistance value
+    values = this->_json_get_array(jsonExtra);
+    ofs = 0;
+    size = (int)values.size();
+    while (ofs + 1 < size) {
+        curr = values[ofs];
+        currTemp = values[ofs + 1];
+        url = YapiWrapper::ysprintf("api/%s/.json?command=m%s:%s",  funcId.c_str(), curr.c_str(),currTemp.c_str());
+        this->_download(url);
+        ofs = ofs + 2;
+    }
+    return YAPI_SUCCESS;
+}
+
+int YModule::set_extraSettings(string jsonExtra)
+{
+    vector<string> extras;
+    string functionId;
+    string data;
+    extras = this->_json_get_array(jsonExtra);
+    for (unsigned ii = 0; ii <  extras.size(); ii++) {
+        functionId = this->_get_json_path( extras[ii], "fid");
+        functionId = this->_decode_json_string(functionId);
+        data = this->_get_json_path( extras[ii], "json");
+        if (this->hasFunction(functionId)) {
+            this->loadThermistorExtra(functionId, data);
+        }
+    }
+    return YAPI_SUCCESS;
 }
 
 /**
@@ -4272,10 +4363,15 @@ int YModule::set_allSettingsAndFiles(string settings)
     string json;
     string json_api;
     string json_files;
+    string json_extra;
     json = settings;
     json_api = this->_get_json_path(json, "api");
     if (json_api == "") {
         return this->set_allSettings(settings);
+    }
+    json_extra = this->_get_json_path(json, "extras");
+    if (!(json_extra == "")) {
+        this->set_extraSettings(json_extra);
     }
     this->set_allSettings(json_api);
     if (this->hasFunction("files")) {

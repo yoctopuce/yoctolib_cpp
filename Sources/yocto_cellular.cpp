@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 21485 2015-09-11 14:10:22Z seb $
+ * $Id: yocto_cellular.cpp 21511 2015-09-14 16:25:19Z seb $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -622,7 +622,14 @@ string YCellular::_AT(string cmd)
 {
     int chrPos = 0;
     int cmdLen = 0;
-    string content;
+    int waitMore = 0;
+    string res;
+    string buff;
+    int bufflen = 0;
+    string buffstr;
+    int buffstrlen = 0;
+    int idx = 0;
+    int suffixlen = 0;
     // quote dangerous characters used in AT commands
     cmdLen = (int)(cmd).length();
     chrPos = _ystrpos(cmd, "#");
@@ -643,9 +650,67 @@ string YCellular::_AT(string cmd)
         cmdLen = cmdLen + 2;
         chrPos = _ystrpos(cmd, "=");
     }
+    cmd = YapiWrapper::ysprintf("at.txt?cmd=%s",cmd.c_str());
+    res = YapiWrapper::ysprintf("");
+    // max 2 minutes (each iteration may take up to 5 seconds if waiting)
+    waitMore = 24;
+    while (waitMore > 0) {
+        buff = this->_download(cmd);
+        bufflen = (int)(buff).size();
+        buffstr = buff;
+        buffstrlen = (int)(buffstr).length();
+        idx = bufflen - 1;
+        while ((idx > 0) && (((u8)buff[idx]) != 64) && (((u8)buff[idx]) != 10) && (((u8)buff[idx]) != 13)) {
+            idx = idx - 1;
+        }
+        if (((u8)buff[idx]) == 64) {
+            suffixlen = bufflen - idx;
+            cmd = YapiWrapper::ysprintf("at.txt?cmd=%s",(buffstr).substr( buffstrlen - suffixlen, suffixlen).c_str());
+            buffstr = (buffstr).substr( 0, buffstrlen - suffixlen);
+            waitMore = waitMore - 1;
+        } else {
+            waitMore = 0;
+        }
+        res = YapiWrapper::ysprintf("%s%s", res.c_str(),buffstr.c_str());
+    }
+    return res;
+}
+
+/**
+ * Returns the list detected cell operators in the neighborhood.
+ * This function will typically take between 30 seconds to 1 minute to
+ * return. Note that any SIM card can usually only connect to specific
+ * operators. All networks returned by this function might therefore
+ * not be available for connection.
+ *
+ * @return a list of string (cell operator names).
+ */
+vector<string> YCellular::get_availableOperators(void)
+{
+    string cops;
+    int idx = 0;
+    int slen = 0;
+    vector<string> res;
     // may throw an exception
-    content = this->_download(YapiWrapper::ysprintf("at.txt?cmd=%s",cmd.c_str()));
-    return content;
+    cops = this->_AT("+COPS=?");
+    slen = (int)(cops).length();
+    res.clear();
+    idx = _ystrpos(cops, "(");
+    while (idx >= 0) {
+        slen = slen - (idx+1);
+        cops = (cops).substr( idx+1, slen);
+        idx = _ystrpos(cops, "\"");
+        if (idx > 0) {
+            slen = slen - (idx+1);
+            cops = (cops).substr( idx+1, slen);
+            idx = _ystrpos(cops, "\"");
+            if (idx > 0) {
+                res.push_back((cops).substr( 0, idx));
+            }
+        }
+        idx = _ystrpos(cops, "(");
+    }
+    return res;
 }
 
 /**

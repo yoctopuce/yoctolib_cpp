@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 21368 2015-08-31 10:10:55Z seb $
+ * $Id: yocto_api.h 21576 2015-09-21 13:17:28Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -2189,7 +2189,7 @@ public:
      *
      * @param path : the path of the byn file to use.
      *
-     * @return : A YFirmwareUpdate object.
+     * @return : A YFirmwareUpdate object or NULL on error.
      */
     virtual YFirmwareUpdate updateFirmware(string path);
 
@@ -2200,9 +2200,13 @@ public:
      *
      * @return a binary buffer with all the settings.
      *
-     * On failure, throws an exception or returns  YAPI_INVALID_STRING.
+     * On failure, throws an exception or returns an binary object of size 0.
      */
     virtual string      get_allSettings(void);
+
+    virtual int         loadThermistorExtra(string funcId,string jsonExtra);
+
+    virtual int         set_extraSettings(string jsonExtra);
 
     /**
      * Restores all the settings and uploaded files of the module. Useful to restore all the logical names

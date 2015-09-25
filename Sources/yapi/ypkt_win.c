@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_win.c 21201 2015-08-19 13:12:14Z seb $
+ * $Id: ypkt_win.c 21565 2015-09-18 13:22:27Z seb $
  *
  * OS-specific USB packet layer, Windows version
  *
@@ -41,8 +41,7 @@
 #include "yapi.h"
 #if defined(WINDOWS_API) && !defined(WINCE)
 #include "yproto.h"
-
-
+#include <TlHelp32.h>
 #ifdef LOG_DEVICE_PATH
 #define DP(PATH) (PATH)
 #else
@@ -175,16 +174,119 @@ void DecodeHardwareid(char *str, u32 *vendorid,u32 *deviceid,u32 *release, u32 *
 }
 
 
+
+static int getProcName(char *buffer, int buffer_size)
+{
+    HANDLE hProcessSnap;
+    PROCESSENTRY32 pe32;
+    DWORD pid = GetCurrentProcessId();
+    *buffer = 0;
+
+    // Take a snapshot of all processes in the system.
+    hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (hProcessSnap == INVALID_HANDLE_VALUE)
+    {
+        dbglog("CreateToolhelp32Snapshot (of processes)\n");
+        return pid;
+    }
+
+    // Set the size of the structure before using it.
+    pe32.dwSize = sizeof(PROCESSENTRY32);
+
+    // Retrieve information about the first process,
+    // and exit if unsuccessful
+    if (!Process32First(hProcessSnap, &pe32)) {
+        dbglog("Process32First error\n"); // show cause of failure
+        CloseHandle(hProcessSnap);          // clean the snapshot object
+        return pid;
+    }
+
+    // Now walk the snapshot of processes, and
+    // display information about each process in turn
+    do
+    {
+        if (pid == pe32.th32ProcessID){
+#ifndef  UNICODE
+            YSTRCPY(buffer, buffer_size, pe32.szExeFile);
+#else
+#if defined(_MSC_VER) && (_MSC_VER > MSC_VS2003)
+            {
+                size_t          len;
+                wcstombs_s(&len, buffer, buffer_size, (wchar_t*)pe32.szExeFile, _TRUNCATE);
+            }
+#else
+            wcstombs(buffer, (wchar_t*)pe32.szExeFile, buffer_size);
+#endif
+#endif
+
+            break;
+        }
+    } while (Process32Next(hProcessSnap, &pe32));
+    buffer[buffer_size - 1] = 0;
+    CloseHandle(hProcessSnap);
+    return pid;
+}
+
+
 // return 1 if we can reserve access to the device 0 if the device
 // is already reserved
-static int yReserveGlobalAccess(yContextSt *ctx)
+static int yReserveGlobalAccess(yContextSt *ctx, char * errmsg)
 {
+    int has_reg_key = 1;
+    char process_name[512];
+    char buffer[32];
+    DWORD  value_length = 512;
+    int retval;
+    s64 pid;
+    HKEY key;
+    LONG res;
+
+    if (ctx->registry.hREG != NULL && ctx->registry.yRegCreateKeyEx(HKEY_LOCAL_MACHINE, "Software\\Yoctopuce\\", 0, NULL, REG_OPTION_VOLATILE,
+        KEY_WRITE | KEY_READ | KEY_WOW64_32KEY,NULL,&key,NULL) != ERROR_SUCCESS) {
+        has_reg_key = 0;
+    }
+
     ctx->apiLock = CreateMailslotA("\\\\.\\mailslot\\yoctopuce_yapi",8,0,NULL);
     if (ctx->apiLock == INVALID_HANDLE_VALUE) {
         // unable to create lock -> another instance is already using the device
-        return 0;
+        retval = YAPI_DOUBLE_ACCES;
+        YERRMSG(YAPI_DOUBLE_ACCES, "Another process is already using yAPI");
+        if (has_reg_key) {
+            pid = -1;
+            res = ctx->registry.yRegQueryValueEx(key, "process_id", NULL, NULL, buffer, &value_length);
+            if (res == ERROR_SUCCESS){
+                pid = atoi(buffer);
+            }
+            value_length = 512;
+            res = ctx->registry.yRegQueryValueEx(key, "process_name", NULL, NULL, process_name, &value_length);
+            if (res == ERROR_SUCCESS && pid >= 0) {
+                char current_name[512];
+                getProcName(current_name, 512);
+                if (YSTRCMP(process_name, current_name)){
+                    YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Another process named %s (pid %"FMTs64") is already using yAPI", process_name, pid);
+                } else {
+                    YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Another instace of %s (pid %"FMTs64") is already using yAPI", process_name, pid);
+                }
+            }
+        }
+    }else {
+        retval = YAPI_SUCCESS;
+        if (has_reg_key) {
+            int pid = getProcName(process_name, 512);
+            YSPRINTF(buffer, 32, "%d", pid);
+            if (ctx->registry.yRegSetValueEx(key, "process_id", 0, REG_SZ, buffer, YSTRLEN(buffer)) != ERROR_SUCCESS) {
+                dbglog("Unable to set registry value yapi_process");
+            }
+            if (ctx->registry.yRegSetValueEx(key, "process_name", 0, REG_SZ, process_name, YSTRLEN(process_name)) != ERROR_SUCCESS) {
+                dbglog("Unable to set registry value yapi_process");
+            }
+        }
     }
-    return 1;
+    if (has_reg_key) {
+        ctx->registry.yRegCloseKey(key);
+    }
+
+    return retval;
 }
 
 static void yReleaseGlobalAccess(yContextSt *ctx)
@@ -197,9 +299,17 @@ static void yReleaseGlobalAccess(yContextSt *ctx)
 
 int yyyUSB_init(yContextSt *ctx,char *errmsg)
 {
-    if(!yReserveGlobalAccess(ctx)){
-        return YERRMSG(YAPI_DOUBLE_ACCES,"Another process is already using yAPI");
+    ctx->registry.hREG = LoadLibraryA("Advapi32.dll");
+    if (ctx->registry.hREG != NULL){
+        //Update the pointers:
+        ctx->registry.yRegCreateKeyEx = (PYRegCreateKeyEx) GetProcAddress(ctx->registry.hREG, "RegCreateKeyExA");
+        ctx->registry.yRegSetValueEx = (PYRegSetValueEx) GetProcAddress(ctx->registry.hREG, "RegSetValueExA");
+        ctx->registry.yRegQueryValueEx = (PYRegQueryValueEx) GetProcAddress(ctx->registry.hREG, "RegQueryValueExA");
+        ctx->registry.yRegCloseKey = (PYRegCloseKey) GetProcAddress(ctx->registry.hREG, "RegCloseKey");
     }
+
+
+    YPROPERR(yReserveGlobalAccess(ctx, errmsg));
     ctx->hid.hHID = LoadLibraryA("HID.DLL");
     if( ctx->hid.hHID == NULL){
           return yWinSetErr(NULL,errmsg);

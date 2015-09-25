@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_lin.c 19327 2015-02-17 17:30:01Z seb $
+ * $Id: ypkt_lin.c 21565 2015-09-18 13:22:27Z seb $
  *
  * OS-specific USB packet layer, Linux version
  *
@@ -45,6 +45,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #define yLinSetErr(intro, err,errmsg)  yLinSetErrEx(__LINE__,intro, err,errmsg)
 
@@ -89,13 +90,14 @@ static int yLinSetErrEx(u32 line,char *intro, int err,char *errmsg)
 
 // return 1 if we can reserve access to the device 0 if the device
 // is already reserved
-static int yReserveGlobalAccess(yContextSt *ctx)
+static int yReserveGlobalAccess(yContextSt *ctx, char *errmsg)
 {
     int fd;
-    int chk_val;
+    int chk_val, mypid, usedpid = 0;
     size_t res;
     mode_t mode=0666;
     mode_t oldmode = umask(0000);
+    char msg[YOCTO_ERRMSG_LEN];
 
     HALLOG("old mode (%#o)\n",oldmode);
     HALLOG("create fifo with (%#o)\n",mode);
@@ -107,30 +109,39 @@ static int yReserveGlobalAccess(yContextSt *ctx)
     if(fd<0){
         HALLOG("unable to open lock fifo (%d)\n",errno);
         if(errno==EACCES) {
-            HALLOG("we do not have acces to lock fifo\n");
-            return 0;
+            return YERRMSG(YAPI_DOUBLE_ACCES, "we do not have acces to lock fifo");
         }else{
             // we cannot open lock file so we cannot realy
             // check double instance so we asume that we are
             // alone
-            return 1;
+            return YAPI_SUCCESS;
         }
     }
-    chk_val=0;
-    res = read(fd,&chk_val,sizeof(chk_val));
-    if(res==sizeof(chk_val)){
+    chk_val = 0;
+    mypid = (int) getpid();
+    res = read(fd, &chk_val, sizeof(chk_val));
+    if (res == sizeof(chk_val)) {
         //there is allready someone
-        chk_val=1;
+        usedpid = chk_val;
+    } else{
+        // nobody there -> store my PID
+        chk_val = mypid;
     }
-    res = write(fd,&chk_val,sizeof(chk_val));
-    if(res!=sizeof(chk_val)) {
-        HALLOG("write to lock fifo failed (%d)",res);
-        return 0;
+    res = write(fd, &chk_val, sizeof(chk_val));
+    if(res != sizeof(chk_val)) {
+        YSPRINTF(msg, YOCTO_ERRMSG_LEN, "Write to lock fifo failed (%d)", res);
+        return YERRMSG(YAPI_DOUBLE_ACCES, msg);
     }
-
-    if(chk_val==1)
-        return 0;
-    return 1;
+    if (usedpid != 0) {
+        if (usedpid == 1) {
+            // locked by api that not store the pid
+            return YERRMSG(YAPI_DOUBLE_ACCES, "Another process is already using yAPI");
+        } else {
+            YSPRINTF(msg, YOCTO_ERRMSG_LEN, "Another process (pid %d) is already using yAPI", (u32) usedpid);
+            return YERRMSG(YAPI_DOUBLE_ACCES, msg);
+        }
+    }
+    return YAPI_SUCCESS;
 }
 
 
@@ -255,10 +266,8 @@ static void *event_thread(void *param)
 int yyyUSB_init(yContextSt *ctx,char *errmsg)
 {
     int res;
-    if(!yReserveGlobalAccess(ctx)){
-        return YERRMSG(YAPI_DOUBLE_ACCES,"Another process is already using yAPI");
-    }
 
+    YPROPERR(yReserveGlobalAccess(ctx, errmsg));
     memset(stringCache, 0, sizeof(stringCache));
     yInitializeCriticalSection(&ctx->string_cache_cs);
     res = libusb_init(&ctx->libusb);

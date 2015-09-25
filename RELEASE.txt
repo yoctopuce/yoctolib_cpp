@@ -1,4 +1,4 @@
-- Add new methods set_allSettingsAndFiles() that restore settings and files.
-- Add precompiled bundle for Mac OS X.
-- Add compiler sanity check on library initialization.
-- Fix potential crash if YAPI.RegisterHUB("usb") is called after YAPI.UnregisterHub("usb").
+- Add Prog-NMEA example
+- Improve error message when another process is already locking the USB port.
+- Fix loadThermistorResponseTable()
+- Save thermistor response table during firmware update

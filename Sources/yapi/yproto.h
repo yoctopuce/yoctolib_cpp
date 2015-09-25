@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 20375 2015-05-19 14:09:49Z seb $
+ * $Id: yproto.h 21533 2015-09-16 16:25:07Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -94,6 +94,42 @@ typedef struct{
     PHidD_GetProductString      GetProductString;
     PHidD_GetSerialNumberString GetSerialNumberString;
 }win_hid_api;
+
+
+//Pointers to a registry function  used
+
+typedef LONG (__stdcall *PYRegCreateKeyEx)( HKEY hKey,
+                                            char *                lpSubKey,
+                                            DWORD                 Reserved,
+                                            LPTSTR                lpClass,
+                                            DWORD                 dwOptions,
+                                            REGSAM                samDesired,
+                                            LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+                                            PHKEY                 phkResult,
+                                            LPDWORD               lpdwDisposition);
+
+typedef LONG (__stdcall *PYRegSetValueEx)(  HKEY    hKey,
+                                            char *  lpValueName,
+                                            DWORD   Reserved,
+                                            DWORD   dwType,
+                                            const BYTE    *lpData,
+                                            DWORD   cbData);
+
+typedef LONG (__stdcall *PYRegQueryValueEx)(    HKEY    hKey,
+                                                char *  lpValueName,
+                                                LPDWORD lpReserved,
+                                                LPDWORD lpType,
+                                                LPBYTE  lpData,
+                                                LPDWORD lpcbData);
+typedef LONG (__stdcall *PYRegCloseKey)(HKEY hKey);
+
+typedef struct{
+    HINSTANCE                  hREG;
+    PYRegCreateKeyEx           yRegCreateKeyEx;
+    PYRegSetValueEx            yRegSetValueEx;
+    PYRegQueryValueEx          yRegQueryValueEx;
+    PYRegCloseKey              yRegCloseKey;
+}win_reg_api;
 
 
 
@@ -750,6 +786,7 @@ typedef struct{
     yCRITICAL_SECTION   prevEnum_cs;
     int                 prevEnumCnt;
     yInterfaceSt        *prevEnum;
+    win_reg_api         registry;
 #elif defined(OSX_API)
     u32                 osx_flags;
     OSX_HID_REF         hid;

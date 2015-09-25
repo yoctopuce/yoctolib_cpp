@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_osx.c 19327 2015-02-17 17:30:01Z seb $
+ * $Id: ypkt_osx.c 21565 2015-09-18 13:22:27Z seb $
  *
  * OS-specific USB packet layer, Mac OS X version
  *
@@ -45,6 +45,7 @@
 #include <sys/stat.h>
 #include <sys/sysctl.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 /*****************************************************************
  * USB ENUMERATION
@@ -53,32 +54,44 @@
 
 #define YOCTO_LOCK_PIPE "/tmp/.yoctolock"
 
-// return 1 if we can reserve access to the device 0 if the device
-// is already reserved
-static int yReserveGlobalAccess(yContextSt *ctx)
+// return YAPI_SUCCESS if we can reserve access to the device return
+// an error if the device is already reserved
+static int yReserveGlobalAccess(yContextSt *ctx, char *errmsg)
 {
     int fd;
-    int chk_val;
+    int chk_val, mypid, usedpid = 0;
     size_t res;
-    
-    mkfifo(YOCTO_LOCK_PIPE,0600);
-    fd = open(YOCTO_LOCK_PIPE,O_RDWR|O_NONBLOCK);
-    if(fd<0){
+
+    mkfifo(YOCTO_LOCK_PIPE, 0600);
+    fd = open(YOCTO_LOCK_PIPE, O_RDWR|O_NONBLOCK);
+    if (fd < 0) {
         // we cannot open lock file so we cannot realy
         // check double instance so we asume that we are
         // alone
-        return 1;
+        return YAPI_SUCCESS;
     }
-    chk_val=0;
-    res = read(fd,&chk_val,sizeof(chk_val));
-    if(res==sizeof(chk_val)){
+    chk_val = 0;
+    mypid = (int) getpid();
+    res = read(fd, &chk_val, sizeof(chk_val));
+    if (res == sizeof(chk_val)) {
         //there is allready someone
-        chk_val=1;
+        usedpid = chk_val;
+    } else{
+        // nobody there -> store my PID
+        chk_val = mypid;
     }
-    write(fd,&chk_val,sizeof(chk_val));
-    if(chk_val==1)
-        return 0;
-    return 1;
+    write(fd, &chk_val, sizeof(chk_val));
+    if (usedpid != 0) {
+        if (usedpid == 1) {
+            // locked by api that not store the pid
+            return YERRMSG(YAPI_DOUBLE_ACCES, "Another process is already using yAPI");
+        } else {
+            char msg[YOCTO_ERRMSG_LEN];
+            YSPRINTF(msg, YOCTO_ERRMSG_LEN, "Another process (pid %d) is already using yAPI", (u32) usedpid);
+            return YERRMSG(YAPI_DOUBLE_ACCES, msg);
+        }
+    }
+    return YAPI_SUCCESS;
 }
 
 
@@ -95,7 +108,7 @@ static void yReleaseGlobalAccess(yContextSt *ctx)
 static void *event_thread(void *param)
 {
     yContextSt  *ctx=param;
-    
+
     ctx->usb_run_loop     = CFRunLoopGetCurrent();
     ctx->usb_thread_state = USB_THREAD_RUNNING;
     /* Non-blocking. See if the OS has any reports to give. */
@@ -103,7 +116,7 @@ static void *event_thread(void *param)
     while (ctx->usb_thread_state != USB_THREAD_MUST_STOP) {
         CFRunLoopRunInMode( kCFRunLoopDefaultMode, 10, FALSE);
     }
-    
+
     HALLOG("event_thread run loop stoped\n");
     ctx->usb_thread_state = USB_THREAD_STOPED;
     return NULL;
@@ -116,7 +129,7 @@ static int setupHIDManager(yContextSt *ctx, OSX_HID_REF *hid, char *errmsg)
     CFMutableDictionaryRef dictionary;
     CFNumberRef     Vendorid;
     IOReturn        tIOReturn;
-    
+
     yInitializeCriticalSection(&hid->hidMCS);
     // Initialize HID Manager
     hid->manager = IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDOptionsTypeNone);
@@ -131,7 +144,7 @@ static int setupHIDManager(yContextSt *ctx, OSX_HID_REF *hid, char *errmsg)
     CFRelease(dictionary);
     // sechedulle the HID Manager with our global run loop
     IOHIDManagerScheduleWithRunLoop(hid->manager, ctx->usb_run_loop, kCFRunLoopDefaultMode);
-    
+
     // Now open the IO HID Manager reference
     tIOReturn = IOHIDManagerOpen(hid->manager, kIOHIDOptionsTypeNone );
     if(kIOReturnSuccess != tIOReturn ||CFGetTypeID(hid->manager) != IOHIDManagerGetTypeID()){
@@ -139,7 +152,7 @@ static int setupHIDManager(yContextSt *ctx, OSX_HID_REF *hid, char *errmsg)
         return YERRMSG(YAPI_NOT_SUPPORTED,"Unable to Open HID Manager");
     }
     return YAPI_SUCCESS;
-    
+
 }
 
 
@@ -159,9 +172,7 @@ int yyyUSB_init(yContextSt *ctx,char *errmsg)
 {
     char str[256];
     size_t size = sizeof(str);
-    if(!yReserveGlobalAccess(ctx)){
-        return YERRMSG(YAPI_DOUBLE_ACCES,"Another process is already using yAPI");
-    }
+    YPROPERR(yReserveGlobalAccess(ctx, errmsg));
 
     if (sysctlbyname("kern.osrelease", str, &size, NULL, 0) ==0){
         //13.x.x  OS X 10.9.x Mavericks
@@ -171,15 +182,15 @@ int yyyUSB_init(yContextSt *ctx,char *errmsg)
         str[2]=0;
         if (atoi(str)>=13){
             ctx->osx_flags |= YCTX_OSX_MULTIPLES_HID;
-        }            
+        }
     }
-    
+
     ctx->usb_thread_state = USB_THREAD_NOT_STARTED;
     pthread_create(&ctx->usb_thread, NULL, event_thread, ctx);
     while(ctx->usb_thread_state != USB_THREAD_RUNNING){
         usleep(50000);
     }
-    
+
     if (YISERR(setupHIDManager(ctx, &ctx->hid,errmsg))) {
         return YAPI_IO_ERROR;
     }
@@ -190,16 +201,16 @@ int yyyUSB_init(yContextSt *ctx,char *errmsg)
 int yyyUSB_stop(yContextSt *ctx,char *errmsg)
 {
     stopHIDManager(&ctx->hid);
-    
+
     if(ctx->usb_thread_state == USB_THREAD_RUNNING){
         ctx->usb_thread_state = USB_THREAD_MUST_STOP;
         CFRunLoopStop(ctx->usb_run_loop);
     }
     pthread_join(ctx->usb_thread,NULL);
     YASSERT(ctx->usb_thread_state == USB_THREAD_STOPED);
-    
+
     yReleaseGlobalAccess(ctx);
-    
+
     return 0;
 }
 
@@ -210,7 +221,7 @@ static u32 get_int_property(IOHIDDeviceRef device, CFStringRef key)
 {
     CFTypeRef ref;
     u32 value;
-    
+
     ref = IOHIDDeviceGetProperty(device, key);
     if (ref) {
         if (CFGetTypeID(ref) == CFNumberGetTypeID() && CFNumberGetValue((CFNumberRef) ref, kCFNumberSInt32Type, &value)) {
@@ -225,7 +236,7 @@ static void get_txt_property(IOHIDDeviceRef device,char *buffer,u32 maxlen, CFSt
 {
     CFTypeRef ref;
     size_t  len;
-    
+
     ref = IOHIDDeviceGetProperty(device, key);
     if (ref) {
         if (CFGetTypeID(ref) == CFStringGetTypeID()) {
@@ -278,9 +289,9 @@ static IOHIDDeviceRef* getDevRef(OSX_HID_REF *hid, CFIndex *deviceCount)
 
     CFSetRef        deviceCFSetRef;
     IOHIDDeviceRef  *dev_refs=NULL;
-    
+
     *deviceCount = 0;
-    
+
     yEnterCriticalSection(&hid->hidMCS);
     deviceCFSetRef = IOHIDManagerCopyDevices(hid->manager);
     yLeaveCriticalSection(&hid->hidMCS);
@@ -301,7 +312,7 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
     int             deviceIndex;
     CFIndex         deviceCount;
     IOHIDDeviceRef  *dev_refs;
-    
+
     // get all device detected by the OSX
     dev_refs = getDevRef(&yContext->hid, &deviceCount);
     if(dev_refs == NULL) {
@@ -385,7 +396,7 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
     int i;
     CFIndex deviceCount;
     IOHIDDeviceRef *dev_refs;
-    
+
 
     if (yContext->osx_flags & YCTX_OSX_MULTIPLES_HID) {
         if (YISERR(setupHIDManager(yContext, &iface->hid,errmsg))) {
@@ -399,8 +410,8 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
     if(dev_refs == NULL) {
         return YERRMSG(YAPI_IO_ERROR,"Device disapear before yyySetup");
     }
-    
-    
+
+
     for(i=0 ; i < deviceCount ;i++){
         u16 vendorid;
         u16 deviceid;
@@ -428,11 +439,11 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
         YSPRINTF(str,32,"Unable to open device (0x%x)",ret);
         return YERRMSG(YAPI_IO_ERROR,str);
     }
-    
+
     yPktQueueInit(&iface->rxQueue);
 	yPktQueueInit(&iface->txQueue);
-    
-    
+
+
     /* Create the Run Loop Mode for this device. printing the reference seems to work. */
     sprintf(str, "yocto_%p", iface->devref);
     iface->run_loop_mode = CFStringCreateWithCString(NULL, str, kCFStringEncodingASCII);
@@ -443,7 +454,7 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
                                            USB_PKT_SIZE,               // number of bytes in the report (CFIndex)
                                            &Handle_IOHIDDeviceIOHIDReportCallback,   // the callback routine
                                            iface);                     // context passed to callback
-    
+
     // save setuped iface pointer in context in order
     // to retreive it durring unplugcallback
     for (i=0; i< SETUPED_IFACE_CACHE_SIZE ; i++) {
@@ -465,7 +476,7 @@ int yyySignalOutPkt(yInterfaceSt *iface)
 {
     int res =YAPI_SUCCESS;
     pktItem *pktitem;
-    
+
     yPktQueuePopH2D(iface, &pktitem);
     while (pktitem!=NULL){
         if(iface->devref==NULL){
@@ -491,7 +502,7 @@ int yyySignalOutPkt(yInterfaceSt *iface)
 void yyyPacketShutdown(yInterfaceSt  *iface)
 {
     int i;
-    
+
     // remove iface from setuped ifaces
     for (i=0; i< SETUPED_IFACE_CACHE_SIZE ; i++) {
         if(yContext->setupedIfaceCache[i]==iface){

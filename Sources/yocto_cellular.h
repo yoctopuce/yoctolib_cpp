@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.h 21485 2015-09-11 14:10:22Z seb $
+ * $Id: yocto_cellular.h 21495 2015-09-14 07:33:16Z mvuilleu $
  *
  * Declares yFindCellular(), the high-level API for Cellular functions
  *
@@ -491,6 +491,17 @@ public:
      *         automatically removed from the output.
      */
     virtual string      _AT(string cmd);
+
+    /**
+     * Returns the list detected cell operators in the neighborhood.
+     * This function will typically take between 30 seconds to 1 minute to
+     * return. Note that any SIM card can usually only connect to specific
+     * operators. All networks returned by this function might therefore
+     * not be available for connection.
+     *
+     * @return a list of string (cell operator names).
+     */
+    virtual vector<string> get_availableOperators(void);
 
     /**
      * Returns a list of nearby cellular antennas, as required for quick
