@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: makefile 19412 2015-02-19 11:06:34Z seb $
+#  $Id: makefile 21669 2015-10-01 13:08:37Z seb $
 #
 #  makefile for C++ library
 #  - - - - - - - - - License information: - - - - - - - - -
@@ -53,6 +53,13 @@ CC64 = "$(VCINSTALLDIR)bin\amd64\cl"
 LINKWITH64 =  /LIBPATH:"$(VCINSTALLDIR)lib\amd64" /LIBPATH:"$(VCINSTALLDIR)atlmfc\lib\amd64" /LIBPATH:"$(WINDOWS_SDK_64)\lib\x64"
 !ENDIF
 
+
+!IFDEF JAVA_HOME
+JNI_OPTION = /D YAPI_WITH_JNI /I"$(JAVA_HOME)\include" /I"$(JAVA_HOME)\include\win32"
+!ELSE
+JNI_OPTION =
+!ENDIF
+
 OUTDIR32 = windows
 
 OUTDIR64 = $(OUTDIR32)\amd64
@@ -90,7 +97,7 @@ YOCTO_API_OBJS_DLL64 = $(YOCTO_API_OBJS:arch_type=windows\amd64\obj_dir_dll)
 
 YAPI_DIR = $(YOCTO_API_DIR)\yapi
 
-YAPI_OBJS = $(OD)\yapi.obj $(OD)\ystream.obj $(OD)\yprog.obj $(OD)\ypkt_lin.obj $(OD)\ypkt_win.obj $(OD)\ypkt_osx.obj $(OD)\yfifo.obj $(OD)\ykey.obj $(OD)\yhash.obj $(OD)\yjson.obj $(OD)\ytcp.obj $(OD)\ymemory.obj $(OD)\ythread.obj
+YAPI_OBJS = $(OD)\yapi.obj $(OD)\ystream.obj $(OD)\yprog.obj  $(OD)\yjni.obj $(OD)\ypkt_lin.obj $(OD)\ypkt_win.obj $(OD)\ypkt_osx.obj $(OD)\yfifo.obj $(OD)\ykey.obj $(OD)\yhash.obj $(OD)\yjson.obj $(OD)\ytcp.obj $(OD)\ymemory.obj $(OD)\ythread.obj
 
 YAPI_OBJS32 = $(YAPI_OBJS:arch_type=windows\obj_dir)
 
@@ -117,7 +124,7 @@ CC32 = "$(VCINSTALLDIR)\bin\cl"
 	$(CC32) $(CPPFLAGS) /nologo /EHsc /Zl /Fo$@ /c $<
 
 {$(YAPI_DIR)\}.c{$(OBJDIR_DLL32)\}.obj:
-	$(CC32) $(CFLAGS) /D GENERATE_DLL /W3 /WX- /O2 /Oi /Oy- /Gy /GL /MT /nologo /Fo$@ /c $<
+	$(CC32) $(CFLAGS) /D GENERATE_DLL $(JNI_OPTION) /W3 /WX- /O2 /Oi /Oy- /Gy /GL /MT  /nologo /Fo$@ /c $<
 
 {$(YOCTO_API_DIR)\}.cpp{$(OBJDIR_DLL32)\}.obj:
 	$(CC32) $(CPPFLAGS) /D GENERATE_DLL /nologo /EHsc  /Fo$@ /c $<
@@ -129,7 +136,7 @@ CC32 = "$(VCINSTALLDIR)\bin\cl"
 	$(CC64) $(CPPFLAGS) /nologo /EHsc /Zl /Fo$@ /c $<
 
 {$(YAPI_DIR)\}.c{$(OBJDIR_DLL64)\}.obj:
-	$(CC64) $(CFLAGS) /D GENERATE_DLL /W3 /WX- /O2 /Oi /Oy- /Gy /GL /MT /nologo /Fo$@ /c $<
+	$(CC64) $(CFLAGS) /D GENERATE_DLL $(JNI_OPTION) /W3 /WX- /O2 /Oi /Oy- /Gy /GL /MT  /nologo /Fo$@ /c $<
 
 {$(YOCTO_API_DIR)\}.cpp{$(OBJDIR_DLL64)\}.obj:
 	$(CC64) $(CPPFLAGS) /D GENERATE_DLL /nologo /EHsc  /Fo$@ /c $<

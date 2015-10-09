@@ -1,4 +1,2 @@
-- Add Prog-NMEA example
-- Improve error message when another process is already locking the USB port.
-- Fix loadThermistorResponseTable()
-- Save thermistor response table during firmware update
+- Add clearCache() method to YFunctions object
+- Fix crash after registerValueCallback(NULL) (reported by customer)

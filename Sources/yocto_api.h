@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 21576 2015-09-21 13:17:28Z seb $
+ * $Id: yocto_api.h 21680 2015-10-02 13:42:44Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -1314,7 +1314,7 @@ private:
     // Device cache entries
     YDEV_DESCR          _devdescr;
     u64                 _cacheStamp; // used only by requestAPI method
-    string              _cacheJson;  // used only ba requestAPI method
+    string              _cacheJson;  // used only by requestAPI method
     vector<YFUN_DESCR>  _functions;
     char                _rootdevice[YOCTO_SERIAL_LEN];
     char                *_subpath;
@@ -1332,6 +1332,7 @@ public:
     YRETCODE    HTTPRequestAsync(const string& request, HTTPRequestCallback callback, void *context, string& errmsg);
     YRETCODE    HTTPRequest(const string& request, string& buffer, string& errmsg);
     YRETCODE    requestAPI(string& apires, string& errmsg);
+    void        clearCache();
     YRETCODE    getFunctions(vector<YFUN_DESCR> **functions, string& errmsg);
     string      getHubSerial(void);
 
@@ -1676,6 +1677,14 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     YRETCODE    load(int msValidity);
+
+    /**
+     * Invalidate the cache. Invalidate the cache of the function attributes. Force the
+     * next call to get_xxx() or loadxxx() to use value that come from the device..
+     *
+     * @noreturn
+     */
+    void    clearCache();
 
     /**
      * Gets the YModule object for the device on which the function is located.

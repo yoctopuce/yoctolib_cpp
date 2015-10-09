@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 21432 2015-09-08 15:39:19Z seb $
+#  $Id: GNUmakefile 21684 2015-10-05 09:57:15Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -110,7 +110,11 @@ CPP_OSX = g++
 OPTS_DBG = -g -Wall
 OPTS_PROD = -g -Wall
 OPTS_STAT =
-OPTS_DYN = -fPIC
+OPTS_DYN = -fPIC 
+
+ifdef JAVA_HOME
+OPTS_DYN = -fPIC -DYAPI_WITH_JNI -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux -I$(JAVA_HOME)/include/darwin
+endif
 
 # most compatible ARMEL options, using soft-float
 ifdef TOOLCHAIN_QARM
@@ -191,7 +195,7 @@ YOCTO_API_OBJS_DYN  = $(patsubst %.o, %_dyn.o,$(YOCTO_API_OBJS_STAT))
 
 YAPI_SOURCES_DIR    = $(SOURCES_DIR)yapi/
 
-YAPI_OBJS_STAT = yapi.o ystream.o yprog.o yfifo.o ykey.o yhash.o yjson.o ytcp.o ymemory.o ythread.o
+YAPI_OBJS_STAT = yapi.o ystream.o yprog.o yfifo.o ykey.o yhash.o yjson.o ytcp.o ymemory.o ythread.o yjni.o
 YAPI_OBJS_DYN   = $(patsubst %.o, %_dyn.o,$(YAPI_OBJS_STAT))
 
 
@@ -230,10 +234,7 @@ INC_PATH    = $(patsubst %,-I%,$(subst :, ,$(VPATH)))
 
 ALL_H       = $(wildcard $(patsubst %,%*.h,$(subst :, ,$(YAPI_SOURCES_DIR) $(SOURCES_DIR))))
 
-
-
 fwd: default
-
 
 #generic compilation rules
 $(OBJDIR_I386)%.o: %.c $(ALL_H)

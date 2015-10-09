@@ -56,7 +56,7 @@ JNIEXPORT jstring JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_getAPIVersion
 /*
  * Class:     com_yoctopuce_YoctoAPI_YJniWrapper
  * Method:    reserveUSBAccess
- * Signature: ()V;
+ * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_reserveUSBAccess
   (JNIEnv *, jclass);
@@ -80,7 +80,7 @@ JNIEXPORT jobject JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_getBootloaders
 /*
  * Class:     com_yoctopuce_YoctoAPI_YJniWrapper
  * Method:    updateDeviceList
- * Signature: (Ljava/util/ArrayList;Ljava/util/HashMap;)V
+ * Signature: (Ljava/util/ArrayList;Ljava/util/ArrayList;)V
  */
 JNIEXPORT void JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_updateDeviceList
   (JNIEnv *, jclass, jobject, jobject);
@@ -100,6 +100,30 @@ JNIEXPORT jbyteArray JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_devRequestS
  */
 JNIEXPORT void JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_devRequestAsync
   (JNIEnv *, jclass, jstring, jbyteArray, jobject, jobject);
+
+/*
+ * Class:     com_yoctopuce_YoctoAPI_YJniWrapper
+ * Method:    startNotifications
+ * Signature: (Lcom/yoctopuce/YoctoAPI/YUSBHub;)V
+ */
+JNIEXPORT void JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_startNotifications
+  (JNIEnv *, jclass, jobject);
+
+/*
+ * Class:     com_yoctopuce_YoctoAPI_YJniWrapper
+ * Method:    stopNotifications
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_stopNotifications
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     com_yoctopuce_YoctoAPI_YJniWrapper
+ * Method:    usbProcess
+ * Signature: (Lcom/yoctopuce/YoctoAPI/YUSBHub;)V
+ */
+JNIEXPORT void JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_usbProcess
+  (JNIEnv *, jclass, jobject);
 
 #ifdef __cplusplus
 }

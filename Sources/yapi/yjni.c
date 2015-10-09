@@ -122,6 +122,7 @@ JNIEXPORT jobject JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_getBootloaders
     res = yapiGetBootloaders(buffer, 1024, &fullsize, errmsg);
     if(YISERR(res)) {
         throwYAPI_Exception(env, errmsg);
+        return NULL;
     }
     if (res == fullsize) {
         return (*env)->NewStringUTF(env, buffer);
@@ -133,6 +134,7 @@ JNIEXPORT jobject JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_getBootloaders
     if(YISERR(res)) {
         yFree(p);
         throwYAPI_Exception(env, errmsg);
+        return NULL;
     }
     result = (*env)->NewStringUTF(env, buffer);
     yFree(p);
@@ -149,6 +151,8 @@ static jobject allocWPEntry(JNIEnv *env, yDeviceSt *infos)
     jint beacon;
     jstring serialNumber;
     jobject res;
+    jmethodID constructor;
+
 
     jclass cls = (*env)->FindClass(env, "com/yoctopuce/YoctoAPI/WPEntry");
     if (cls == 0) {
@@ -156,7 +160,7 @@ static jobject allocWPEntry(JNIEnv *env, yDeviceSt *infos)
         return NULL;
     }
 
-    jmethodID constructor = (*env)->GetMethodID(env, cls, "<init>", "(Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;ILjava/lang/String;)V");
+    constructor = (*env)->GetMethodID(env, cls, "<init>", "(Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;ILjava/lang/String;)V");
     if (constructor == 0) {
         throwYAPI_Exception(env, "Unable to find constructor for WPEntry");
         return NULL;
@@ -176,29 +180,58 @@ static jobject allocWPEntry(JNIEnv *env, yDeviceSt *infos)
 
 
 
+static jobject allocYPEntry(JNIEnv *env, const char *classname, const char *serial, const char *funcId, const char *logicalName, const char *advertisedValue, int baseType, int funIdx)
+{
+    jstring j_classname;
+    jstring j_serial;
+    jstring j_funcId;
+    jstring j_logicalName;
+    jstring j_advertisedValue;
+    jmethodID constructor;
+
+    jclass cls = (*env)->FindClass(env, "com/yoctopuce/YoctoAPI/YPEntry");
+    if (cls == 0) {
+        throwYAPI_Exception(env, "Unable to find class WPEntry");
+        return NULL;
+    }
+    constructor = (*env)->GetMethodID(env, cls, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;II)V");
+    if (constructor == 0) {
+        throwYAPI_Exception(env, "Unable to find constructor for YPEntry");
+        return NULL;
+    }
+    j_classname = (*env)->NewStringUTF(env, classname);
+    j_serial = (*env)->NewStringUTF(env, serial);
+    j_funcId = (*env)->NewStringUTF(env, funcId);
+    j_logicalName = (*env)->NewStringUTF(env, logicalName);
+    j_advertisedValue = (*env)->NewStringUTF(env, advertisedValue);
+    return (*env)->NewObject(env, cls, constructor, j_classname, j_serial, j_funcId, j_logicalName, j_advertisedValue, baseType, funIdx);
+}
+
+
+
+
 /*
  * Class:     com_yoctopuce_YoctoAPI_YJniWrapper
  * Method:    updateDeviceList
  * Signature: (Ljava/util/ArrayList;Ljava/util/HashMap;)V
  */
-JNIEXPORT void JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_updateDeviceList(JNIEnv *env, jclass thisObj, jobject wpArray, jobject ypMap)
+JNIEXPORT void JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_updateDeviceList(JNIEnv *env, jclass thisObj, jobject wpArray, jobject ypArray)
 {
     char    errmsg[YOCTO_ERRMSG_LEN];
-    YAPI_DEVICE *buffer,*p;
+    YAPI_DEVICE *buffer, *dev_ptr;
     int     nbdev, buffsize, i;
-    jobject wpEntry;
+    yBlkHdl categ;
+
+    jobject wpEntry, ypEntry;
     jclass arrayList_class;
     jmethodID arrayList_add;
-
-    printf("JNI: test\n");
-
 
     if (yapiUpdateDeviceList(1, errmsg) < 0) {
         throwYAPI_Exception(env, errmsg);
         return;
     }
 
-
+    // populate white pages
     if (yapiGetAllDevices(NULL, 0, &buffsize, errmsg) < 0) {
         throwYAPI_Exception(env, errmsg);
         return;
@@ -209,32 +242,59 @@ JNIEXPORT void JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_updateDeviceList(
     arrayList_class = (*env)->FindClass(env, "java/util/ArrayList");
     if (arrayList_class == 0) {
         throwYAPI_Exception(env, "Unable to find class ArrayList");
+        return;
     }
+
     arrayList_add = (*env)->GetMethodID(env, arrayList_class, "add", "(Ljava/lang/Object;)Z");
     if (arrayList_add == 0) {
         throwYAPI_Exception(env, "Unable to find add method of ArrayList");
         return;
     }
 
-    printf("JNI: %d devices detected\n", nbdev);
-
-    p = buffer;
-    for (i = 0 ; i < nbdev; i++, p++) {
-        yDeviceSt infos;
-        if (yapiGetDeviceInfo(*p, &infos, errmsg) < 0) {
+    dev_ptr = buffer;
+    for (i = 0 ; i < nbdev; i++, dev_ptr++) {
+        yDeviceSt dev_info;
+        if (yapiGetDeviceInfo(*dev_ptr, &dev_info, errmsg) < 0) {
             throwYAPI_Exception(env, errmsg);
             return;
         }
-        wpEntry = allocWPEntry(env, &infos);
-        dbglog("JNI: add it to wp (%X)\n", wpEntry);
+        wpEntry = allocWPEntry(env, &dev_info);
+        if (wpEntry ==NULL) {
+            return;
+        }
         (*env)->CallBooleanMethod(env, wpArray, arrayList_add, wpEntry);
-        dbglog("JNI: added (%X)\n", wpEntry);
-        //(*env)->DeleteLocalRef(env, wpEntry);
-
     }
-
     yFree(buffer);
 
+    // populate Yellow pages
+    categ = yYpListHead;
+    for (categ = yYpListHead; categ != INVALID_BLK_HDL; categ = yBlkListSeek(categ, 1)) {
+        char categname[YOCTO_FUNCTION_LEN];
+        yBlkHdl entry;
+
+        ypGetCategory(categ, categname, &entry);
+        if (YSTRCMP(categname,"Module")==0){
+            continue;
+        }
+
+        // add all Yellow pages
+        for (; entry != INVALID_BLK_HDL; entry = yBlkListSeek(entry, 1)) {
+            yStrRef serial, funcId, funcName;
+            Notification_funydx funcInfo;
+            int  yidx, baseType;
+            char pubRaw[YOCTO_PUBVAL_SIZE];
+            char pubDecoded[YOCTO_PUBVAL_LEN];
+            yidx =  ypGetAttributes(entry, &serial, &funcId, &funcName, &funcInfo, pubRaw);
+            baseType = ypGetType(entry);
+            decodePubVal(funcInfo, pubRaw, pubDecoded);
+            ypEntry = allocYPEntry(env, categname, yHashGetStrPtr(serial), yHashGetStrPtr(funcId), yHashGetStrPtr(funcName),
+                pubDecoded, baseType, yidx);
+            if (ypEntry == NULL) {
+                return;
+            }
+            (*env)->CallBooleanMethod(env, ypArray, arrayList_add, ypEntry);
+        }
+    }
 
 }
 
@@ -271,8 +331,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_devRequestS
     }
     length = (*env)->GetArrayLength(env, request_java);
 
-
-    if(YISERR(res=yapiHTTPRequestSyncStartEx(&iohdl, serial, request_bytes, length, &reply, &replysize, errmsg))) {
+    if(YISERR(res = yapiHTTPRequestSyncStartEx(&iohdl, serial, (const char *)request_bytes, length, &reply, &replysize, errmsg))) {
         throwYAPI_Exception(env, errmsg);
         goto exit;
     }
@@ -288,7 +347,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_devRequestS
     }
 
     if (replysize > 0) {
-        (*env)->SetByteArrayRegion(env, result, 0 , replysize, reply);  // copy
+        (*env)->SetByteArrayRegion(env, result, 0 , replysize, (jbyte*)reply); // copy
     }
 
     if(YISERR(res=yapiHTTPRequestSyncDone(&iohdl, errmsg))) {
@@ -336,10 +395,11 @@ JNIEXPORT void JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_devRequestAsync(J
     length = (*env)->GetArrayLength(env, request_java);
 
 
-    if(YISERR(res=yapiHTTPRequestAsyncEx(serial, request_bytes, length, NULL, NULL, errmsg))) {
+    if(YISERR(res=yapiHTTPRequestAsyncEx(serial, (const char *)request_bytes, length, NULL, NULL, errmsg))) {
         throwYAPI_Exception(env, errmsg);
         goto exit;
     }
+    //Todo: handle correctly callback
 
 exit:
     if (serial != NULL) {
@@ -352,6 +412,164 @@ exit:
 }
 
 
+static JavaVM *jvm;
+
+static jobject jObj;
+
+static JNIEnv* getThreadEnv()
+{
+    JNIEnv *env;
+    // double check it's all ok
+    int getEnvStat = (*jvm)->GetEnv(jvm, (void**)&env, JNI_VERSION_1_6);
+    if (getEnvStat == JNI_EDETACHED) {
+        dbglog("GetEnv: not attached\n");
+        if ((*jvm)->AttachCurrentThread(jvm, (void **) &env, NULL) != 0) {
+             dbglog("Failed to attach\n");
+             return NULL;
+        }
+    } else if (getEnvStat == JNI_OK) {
+        //dbglog("attached\n");
+    } else if (getEnvStat == JNI_EVERSION) {
+         dbglog("GetEnv: version not supported\n");
+         return NULL;
+    }
+    return env;
+}
+
+
+static void jFunctionUpdateCallbackFwd(YAPI_FUNCTION fundesc,const char *value)
+{
+    char serial[YOCTO_SERIAL_LEN];
+    char funcId[YOCTO_FUNCTION_LEN];
+    jstring j_serial;
+    jstring j_funcId;
+    jstring j_value;
+    jclass yUSBHub_class;
+    jmethodID yUSBHub_handleValueNotification;
+    JNIEnv *env;
+
+    if (value==NULL){
+        return;
+    }
+
+    env = getThreadEnv();
+    if (env == NULL){
+        return;
+    }
+
+    ypGetFunctionInfo(fundesc, serial, funcId, NULL, NULL);
+    j_serial = (*env)->NewStringUTF(env, serial);
+    j_funcId = (*env)->NewStringUTF(env, funcId);
+    j_value = (*env)->NewStringUTF(env, value);
+
+    yUSBHub_class = (*env)->FindClass(env, "com/yoctopuce/YoctoAPI/YUSBHub");
+    if (yUSBHub_class == 0) {
+        dbglog("Unable to find class YUSBHub\n");
+        return;
+    }
+
+
+    yUSBHub_handleValueNotification = (*env)->GetMethodID(env, yUSBHub_class, "handleValueNotification", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+    if (yUSBHub_handleValueNotification == 0) {
+        dbglog("Unable to find add method of handleValueNotification\n");
+        return;
+    }
+
+    (*env)->CallVoidMethod(env, jObj, yUSBHub_handleValueNotification, j_serial, j_funcId, j_value);
+}
+
+static void jFunctionTimedReportCallbackFwd(YAPI_FUNCTION fundesc, double timestamp, const u8 *bytes, u32 len)
+{
+    char serial[YOCTO_SERIAL_LEN];
+    char funcId[YOCTO_FUNCTION_LEN];
+    jstring j_serial;
+    jstring j_funcId;
+    jbyteArray  result = NULL;
+    jclass yUSBHub_class;
+    jmethodID YUSBHub_handleTimedNotification;
+    JNIEnv *env;
+
+    env = getThreadEnv();
+    if (env == NULL){
+        return;
+    }
+
+    ypGetFunctionInfo(fundesc, serial, funcId, NULL, NULL);
+    j_serial = (*env)->NewStringUTF(env, serial);
+    j_funcId = (*env)->NewStringUTF(env, funcId);
+
+    yUSBHub_class = (*env)->FindClass(env, "com/yoctopuce/YoctoAPI/YUSBHub");
+    if (yUSBHub_class == 0) {
+        dbglog("Unable to find class YUSBHub\n");
+        return;
+    }
+
+    YUSBHub_handleTimedNotification = (*env)->GetMethodID(env, yUSBHub_class, "handleTimedNotification", "(Ljava/lang/String;Ljava/lang/String;D[B)V");
+    if (YUSBHub_handleTimedNotification == 0) {
+        dbglog("Unable to find add method of handleTimedNotification\n");
+        return;
+    }
+
+
+   // compute return value
+   result = (*env)->NewByteArray(env, len);  // allocate
+   if (NULL == result) {
+        dbglog("Unable to allocate bytes array");
+        return;
+    }
+
+    (*env)->SetByteArrayRegion(env, result, 0 , len, (jbyte*) bytes);  // copy
+
+    (*env)->CallVoidMethod(env, jObj, YUSBHub_handleTimedNotification, j_serial, j_funcId, timestamp, result);
+}
+
+
+
+/*
+ * Class:     com_yoctopuce_YoctoAPI_YJniWrapper
+ * Method:    startNotifications
+ * Signature: (Lcom/yoctopuce/YoctoAPI/YUSBHub;)V
+ */
+JNIEXPORT void JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_startNotifications(JNIEnv * env, jclass thisObj, jobject yUSBHubRef)
+{
+
+    if ((*env)->GetJavaVM(env, &jvm) != 0) {
+        throwYAPI_Exception(env, "GetJavaVM: Unable to get VM");
+        return;
+    }
+    jObj = (*env)->NewGlobalRef(env, yUSBHubRef);
+    yapiRegisterFunctionUpdateCallback(jFunctionUpdateCallbackFwd);
+    yapiRegisterTimedReportCallback(jFunctionTimedReportCallbackFwd);
+}
+
+/*
+ * Class:     com_yoctopuce_YoctoAPI_YJniWrapper
+ * Method:    stopNotifications
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_stopNotifications(JNIEnv * env, jclass thisObj)
+{
+    yapiRegisterFunctionUpdateCallback(NULL);
+    yapiRegisterTimedReportCallback(NULL);
+    (*env)->DeleteGlobalRef(env, jObj);
+    jObj = NULL;
+    jvm = NULL;
+}
+
+/*
+ * Class:     com_yoctopuce_YoctoAPI_YJniWrapper
+ * Method:    usbProcess
+ * Signature: (Lcom/yoctopuce/YoctoAPI/YUSBHub;)V
+ */
+JNIEXPORT void JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_usbProcess(JNIEnv *env, jclass thisObj, jobject yUSBHubRef)
+{
+    char        errmsg[YOCTO_ERRMSG_LEN];
+    YRETCODE res;
+
+    if(YISERR(res=yapiHandleEvents(errmsg))) {
+        throwYAPI_Exception(env, errmsg);
+    }
+}
 
 
 

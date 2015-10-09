@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 21601 2015-09-23 08:22:34Z seb $
+ * $Id: yocto_api.cpp 21675 2015-10-01 16:59:42Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -2229,6 +2229,23 @@ YRETCODE YFunction::load(int msValidity)
     return YAPI_SUCCESS;
 }
 
+void YFunction::clearCache()
+{
+    YDevice     *dev;
+    string      errmsg, apires;
+    
+    // Resolve our reference to our device, load REST API
+    int res = _getDevice(dev, errmsg);
+    if (YISERR(res)) {
+        return;
+    }
+    dev->ClearCache();
+    if (_cacheExpiration){
+        _cacheExpiration = yapiGetTickCount();
+    }
+}
+
+
 YModule *YFunction::get_module(void)
 {
     YFUN_DESCR   fundescr;
@@ -2279,6 +2296,7 @@ void YFunction::_UpdateValueCallbackList(YFunction* func, bool add)
         for ( it=_FunctionCallbacks.begin() ; it < _FunctionCallbacks.end(); it++ ){
             if (*it == func) {
                  _FunctionCallbacks.erase(it);
+                 break;
             }
         }
     }
@@ -2300,6 +2318,7 @@ void YFunction::_UpdateTimedReportCallbackList(YFunction* func, bool add)
         for ( it=_TimedReportCallbackList.begin() ; it < _TimedReportCallbackList.end(); it++ ){
             if (*it == func) {
                  _TimedReportCallbackList.erase(it);
+                 break;
             }
         }
     }
@@ -2477,6 +2496,12 @@ YRETCODE YDevice::requestAPI(string& apires, string& errmsg)
     _cacheStamp = yapiGetTickCount() + YAPI::DefaultCacheValidity;
 
     return YAPI_SUCCESS;
+}
+
+void YDevice::clearCache()
+{
+    _cacheJson = "";
+    _cacheStamp = 0;
 }
 
 YRETCODE YDevice::getFunctions(vector<YFUN_DESCR> **functions, string& errmsg)
