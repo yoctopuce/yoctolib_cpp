@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h 21078 2015-08-12 09:22:35Z seb $
+ * $Id: yjni.h 21719 2015-10-09 14:44:06Z seb $
  *
  * Declaration of public entry points to the low-level API
  *
