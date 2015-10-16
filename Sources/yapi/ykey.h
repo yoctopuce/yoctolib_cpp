@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.h 19327 2015-02-17 17:30:01Z seb $
+ * $Id: ykey.h 21746 2015-10-13 09:46:59Z mvuilleu $
  *
  * Declaration of standard key computations
  *
@@ -66,6 +66,7 @@ void yDigestAuthorization(char *buf, int bufsize, const char *user, const char *
 //       It is not multithread-safe
 void yInitPsk(const char *pass, const char *ssid);
 int  yIterPsk(u8 *res, const char *ssid);
+u8   *ySHA1(const char *text);
 
 // MD5 hash structures
 #ifndef MICROCHIP_API

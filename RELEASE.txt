@@ -1,2 +1,2 @@
-- Add clearCache() method to YFunctions object
-- Fix crash after registerValueCallback(NULL) (reported by customer)
+- Add YQuadratureDecoder class
+- Fix compilation warnings with VisualStudio 2013 x64

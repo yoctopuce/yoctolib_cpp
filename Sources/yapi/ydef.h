@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 20375 2015-05-19 14:09:49Z seb $
+ * $Id: ydef.h 21746 2015-10-13 09:46:59Z mvuilleu $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -501,6 +501,7 @@ typedef union{
 #define YSTREAM_META        5
 #define YSTREAM_REPORT_V2   6
 #define YSTREAM_NOTICE_V2   7
+#define YSTREAM_TCP_NOTIF   8
 
 // Data in YSTREAM_NOTICE stream
 

@@ -340,6 +340,12 @@
         <Unit filename="..\..\..\Sources\yocto_pwmpowersource.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
+        <Unit filename="..\..\..\Sources\yocto_quadraturedecoder.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_quadraturedecoder.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
         <Unit filename="..\..\..\Sources\yocto_realtimeclock.h">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 21423 2015-09-08 09:54:29Z seb $
+ * $Id: ytcp.c 21762 2015-10-15 11:55:52Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -38,6 +38,8 @@
  *********************************************************************/
 
 #define __FILE_ID__  "ytcp"
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+
 #include "ydef.h"
 #if defined(WINDOWS_API) && !defined(_MSC_VER)
 #define _WIN32_WINNT 0x501
@@ -76,7 +78,7 @@ typedef int socklen_t;
 #endif
 
 
-#define DEBUG_SLOW_TCP
+//#define DEBUG_SLOW_TCP
 //#define TRACE_TCP_REQ
 
 //#define PERF_TCP_FUNCTIONS

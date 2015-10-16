@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.c 20277 2015-05-07 22:03:42Z mvuilleu $
+ * $Id: ykey.c 21775 2015-10-15 16:55:34Z seb $
  *
  * Implementation of standard key computations
  *
@@ -42,6 +42,7 @@
 #ifdef MICROCHIP_API
 #include "Yocto/yocto.h"
 #include "Yocto/yapi_ext.h"
+#define ntohl(dw) swapl(dw)
 #else
 #include <string.h>
 #include "yproto.h"
@@ -264,18 +265,23 @@ static WPA_CALC_STATE wpak = { -1 };
 
 const u32 sha1_init[5] = { 0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0 };
 
-static void initshaw(const char *s, u8 pad, u16 xinit)
+static void initshaw(const char *s, u16 ofs, u8 pad, u16 xinit)
 {
-    int i, j = -1, k = 0;
+    int ii, j = -1, k = 0;
     int n = (int)strlen(s);
-
-    for(i = 0; i < 64; i++) {
-        u8 c = 0;
+    
+    for(ii = 0; ii < 64; ii++) {
+        int i = ofs + ii;
+        u8  c = 0;
         if (i < n) {
             c = s[i];
         } else if (pad) {
-            if (i == n + 3) c = pad;
-            else if (i == n + 4) c = 0x80;
+            if (pad & 0x80) {
+                if (i == n) c = pad;
+            } else {
+                if (i == n + 3) c = pad;
+                else if (i == n + 4) c = 0x80;
+            }
         }
         if (k == 0) {
             j++;
@@ -286,7 +292,13 @@ static void initshaw(const char *s, u8 pad, u16 xinit)
         wpak.shaw[j] |= ((u32)c << k);
     }
     if(pad) {
-        wpak.shaw[15] = 8 * (64 + n + 4);
+        if(pad == 0x80) {
+            if(n <= ofs+55) {
+                wpak.shaw[15] = 8 * n;
+            }
+        } else {
+            wpak.shaw[15] = 8 * (n + 68);
+        }
     }
     if(xinit) {
         u32 xdw = ((u32)xinit << 16) | xinit;
@@ -349,14 +361,34 @@ static void itershaw(const u32 *s)
     wpak.shaw[4] = s[4] + e;
 }
 
+u8  *ySHA1(const char *text)
+{
+    int ofs = 0, n = (int)strlen(text);
+
+    memcpy((u8 *)wpak.shau, (u8 *)sha1_init, sizeof(wpak.shau));
+    do {
+        initshaw(text, ofs, 0x80, 0);
+        itershaw(wpak.shau);
+        memcpy((u8 *)wpak.shau, (u8 *)wpak.shaw, sizeof(wpak.shau));
+        ofs += 64;
+    } while(n > ofs-9);
+#ifndef CPU_BIG_ENDIAN
+    for(ofs = 0; ofs < 5; ofs++) {
+        wpak.shau[ofs] = ntohl(wpak.shau[ofs]);
+    }
+#endif
+    
+    return (u8 *)wpak.shau;
+}
+
 void yInitPsk(const char *pass, const char *ssid)
 {
     // precompute part of sha used in the loops
-    initshaw(pass, 0, 0x3636);
+    initshaw(pass, 0, 0, 0x3636);
     itershaw(sha1_init);
     memcpy(wpak.inner, wpak.shaw, sizeof(wpak.inner));
 
-    initshaw(pass, 0, 0x5c5c);
+    initshaw(pass, 0, 0, 0x5c5c);
     itershaw(sha1_init);
     memcpy(wpak.outer, wpak.shaw, sizeof(wpak.outer));
 
@@ -364,7 +396,7 @@ void yInitPsk(const char *pass, const char *ssid)
     wpak.pos = 0;
     wpak.iter = 0;
     memset(wpak.shau, 0, sizeof(wpak.shau));
-    initshaw(ssid, 1, 0);
+    initshaw(ssid, 0, 1, 0);
 }
 
 int yIterPsk(u8 *res, const char *ssid)
@@ -396,7 +428,7 @@ int yIterPsk(u8 *res, const char *ssid)
         }
         if(wpak.iter == 4096) {
             memset(wpak.shau, 0, sizeof(wpak.shau));
-            initshaw(ssid, 2, 0);
+            initshaw(ssid, 0,2, 0);
         } else {
             // done
             memcpy(res, wpak.res, 32);

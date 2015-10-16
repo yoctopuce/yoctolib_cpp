@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 19524 2015-02-27 17:41:18Z seb $
+ * $Id: yhash.c 21762 2015-10-15 11:55:52Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -315,7 +315,7 @@ yHash yHashPutBuf(const u8 *buf, u16 len)
 
 yHash yHashPutStr(const char *str)
 {
-    u16 len = YSTRLEN(str);
+    u16 len = (u16) YSTRLEN(str);
 
     if(len > HASH_BUF_SIZE) len = HASH_BUF_SIZE;
     HLOGF(("yHashPutStr('%s'):\n",str));
@@ -330,7 +330,7 @@ yHash yHashTestBuf(const u8 *buf, u16 len)
 
 yHash yHashTestStr(const char *str)
 {
-    u16 len = YSTRLEN(str);
+    u16 len = (u16) YSTRLEN(str);
 
     if(len > HASH_BUF_SIZE) len = HASH_BUF_SIZE;
     HLOGF(("yHashTestStr('%s'):\n",str));
@@ -392,7 +392,7 @@ u16 yHashGetStrLen(yHash yhash)
 #else
     YASSERT(yhash < nextHashEntry);
     YASSERT(yHashTable[yhash].next != 0); // 0 means unallocated
-    return YSTRLEN((char *)yHashTable[yhash].buff);
+    return (u16) YSTRLEN((char *)yHashTable[yhash].buff);
 #endif
 }
 
