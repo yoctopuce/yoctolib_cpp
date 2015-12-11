@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.c 21775 2015-10-15 16:55:34Z seb $
+ * $Id: ykey.c 22284 2015-12-09 09:31:10Z seb $
  *
  * Implementation of standard key computations
  *
@@ -71,18 +71,27 @@ void bin2str(char *to, const u8 *p, u16 len, u8 addnull)
 
 #if !defined(MICROCHIP_API) || defined(HTTP_ON_NET)
 
+//#define DEBUG_HTTP_AUTHENTICATION
+
 // compute the ha1 (in binary form)
-void ComputeAuthHA1(u8 *ha1, const char *user, const char *pass,  const char *realm)
+void ComputeAuthHA1(u8 *ha1, const char *user, const char *pass, const char *realm)
 {
     HASH_SUM ctx;
 
     MD5Initialize(&ctx);
-    MD5AddData(&ctx, (u8*)user,  YSTRLEN(user));
-    MD5AddData(&ctx, (u8*)":",  1);
+    MD5AddData(&ctx, (u8*)user, YSTRLEN(user));
+    MD5AddData(&ctx, (u8*)":", 1);
     MD5AddData(&ctx, (u8*)realm, YSTRLEN(realm));
-    MD5AddData(&ctx, (u8*)":",  1);
-    MD5AddData(&ctx, (u8*)pass,  YSTRLEN(pass));
+    MD5AddData(&ctx, (u8*)":", 1);
+    MD5AddData(&ctx, (u8*)pass, YSTRLEN(pass));
     MD5Calculate(&ctx, ha1);
+#ifdef DEBUG_HTTP_AUTHENTICATION
+    {
+        char     tmpha[HTTP_AUTH_MD5_STRLEN + 1];
+        bin2str(tmpha, ha1, HTTP_AUTH_MD5_SIZE, 1);        
+        ylogf("Compute HA1 u=%s r=%s p=%s -> %s\n", user, realm, pass, tmpha);
+    }
+#endif
 }
 
 // compute the ha2 (in binary form)
@@ -95,6 +104,13 @@ void ComputeAuthHA2(u8 *ha2, const char *method, const char *uri)
     MD5AddData(&ctx, (u8*)":",  1);
     MD5AddData(&ctx, (u8*)uri,    YSTRLEN(uri));
     MD5Calculate(&ctx, ha2);
+#ifdef DEBUG_HTTP_AUTHENTICATION
+    {
+        char     tmpha[HTTP_AUTH_MD5_STRLEN + 1];
+        bin2str(tmpha, ha2, HTTP_AUTH_MD5_SIZE, 1);
+        ylogf("Compute HA2 m=%s u=%s -> %s\n", method, uri, tmpha);
+    }
+#endif
 }
 
 
@@ -122,6 +138,19 @@ void ComputeAuthResponse(char *buf, const u8 *ha1, const char *nonce, const char
     MD5AddData(&ctx, (u8*)tmpha, HTTP_AUTH_MD5_STRLEN);
     MD5Calculate(&ctx,hash);
     bin2str(buf, hash, HTTP_AUTH_MD5_SIZE,1);
+#ifdef DEBUG_HTTP_AUTHENTICATION
+    {
+        char     tmpha1[HTTP_AUTH_MD5_STRLEN + 1];
+        bin2str(tmpha1, ha1, HTTP_AUTH_MD5_SIZE, 1);
+        if (nc && cnonce) {
+            ylogf("Auth Resp ha1=%s nonce=%s nc=%s cnouce=%s ha2%s -> %s\n",
+                tmpha, nonce, nc, cnonce, tmpha, buf);
+        } else {
+            ylogf("Auth Resp ha1=%s nonce=%s (no nc/cnounce) ha2%s -> %s\n",
+                tmpha, nonce, tmpha, buf);       
+        }
+    }
+#endif
 }
 
 // Parse a request header, return 0 if a valid WWW-Authenticate header and set args to corresponding fields

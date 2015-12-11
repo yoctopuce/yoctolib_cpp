@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 21533 2015-09-16 16:25:07Z seb $
+ * $Id: yproto.h 22142 2015-11-26 09:21:16Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -783,6 +783,7 @@ typedef struct{
 #if defined(WINDOWS_API)
     win_hid_api         hid;
     HANDLE              apiLock;
+    HANDLE              nameLock;
     yCRITICAL_SECTION   prevEnum_cs;
     int                 prevEnumCnt;
     yInterfaceSt        *prevEnum;

@@ -184,6 +184,12 @@
         <Unit filename="..\..\..\Sources\yocto_current.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
+        <Unit filename="..\..\..\Sources\yocto_currentloopoutput.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_currentloopoutput.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
         <Unit filename="..\..\..\Sources\yocto_compass.h">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>

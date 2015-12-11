@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_win.c 21565 2015-09-18 13:22:27Z seb $
+ * $Id: ypkt_win.c 22141 2015-11-26 09:20:50Z seb $
  *
  * OS-specific USB packet layer, Windows version
  *
@@ -247,11 +247,12 @@ static int yReserveGlobalAccess(yContextSt *ctx, char * errmsg)
     }
 
     ctx->apiLock = CreateMailslotA("\\\\.\\mailslot\\yoctopuce_yapi",8,0,NULL);
+    ctx->nameLock = CreateMailslotA("\\\\.\\mailslot\\yoctopuce_yapi_name",8,0,NULL);
     if (ctx->apiLock == INVALID_HANDLE_VALUE) {
         // unable to create lock -> another instance is already using the device
         retval = YAPI_DOUBLE_ACCES;
         YERRMSG(YAPI_DOUBLE_ACCES, "Another process is already using yAPI");
-        if (has_reg_key) {
+        if (has_reg_key && ctx->nameLock == INVALID_HANDLE_VALUE) {
             pid = -1;
             res = ctx->registry.yRegQueryValueEx(key, "process_id", NULL, NULL, buffer, &value_length);
             if (res == ERROR_SUCCESS){
@@ -265,7 +266,7 @@ static int yReserveGlobalAccess(yContextSt *ctx, char * errmsg)
                 if (YSTRCMP(process_name, current_name)){
                     YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Another process named %s (pid %"FMTs64") is already using yAPI", process_name, pid);
                 } else {
-                    YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Another instace of %s (pid %"FMTs64") is already using yAPI", process_name, pid);
+                    YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Another instance of %s (pid %"FMTs64") is already using yAPI", process_name, pid);
                 }
             }
         }
@@ -293,6 +294,8 @@ static void yReleaseGlobalAccess(yContextSt *ctx)
 {
     CloseHandle(ctx->apiLock);
     ctx->apiLock=INVALID_HANDLE_VALUE;
+    CloseHandle(ctx->nameLock);
+    ctx->nameLock=INVALID_HANDLE_VALUE;
 }
 
 
@@ -400,7 +403,7 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
                 yMemcpy(tmp,*ifaces, nbifaceAlloc * sizeof(yInterfaceSt) );
                 yFree(*ifaces);
                 *ifaces = tmp;
-                nbifaceAlloc    *=2;
+                nbifaceAlloc *= 2;
             }
             iface = *ifaces + *nbifaceDetect;
             iface->vendorid = (u16)vendorid;
@@ -419,26 +422,26 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
             }
             pDetailedInterfaceData->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA_A);
             SetupDiGetDeviceInterfaceDetailA(DeviceInfoTable, &InterfaceData, pDetailedInterfaceData, needsize, NULL, NULL);
-            YSTRNCPY(iface->devicePath,WIN_DEVICE_PATH_LEN,pDetailedInterfaceData->DevicePath,WIN_DEVICE_PATH_LEN);
+            YSTRNCPY(iface->devicePath, WIN_DEVICE_PATH_LEN, pDetailedInterfaceData->DevicePath, WIN_DEVICE_PATH_LEN);
             for(find = 0; find < yContext->prevEnumCnt; find++) {
-                if(YSTRCMP(iface->devicePath,yContext->prevEnum[find].devicePath)==0) break;
+                if(YSTRCMP(iface->devicePath, yContext->prevEnum[find].devicePath) == 0) break;
             }
             if(find < yContext->prevEnumCnt) {
-                yMemcpy(iface->serial, yContext->prevEnum[find].serial, YOCTO_SERIAL_LEN*2);
+                yMemcpy(iface->serial, yContext->prevEnum[find].serial, YOCTO_SERIAL_LEN * 2);
             } else {
                 HANDLE          control;
                 HALLOG("Get serial for %s\n",pDetailedInterfaceData->DevicePath);
                 control = CreateFileA(pDetailedInterfaceData->DevicePath, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, 0);
-                if(control==INVALID_HANDLE_VALUE){
+                if (control == INVALID_HANDLE_VALUE) {
                     dbglog("Unable to open device %s to get serial\n",pDetailedInterfaceData->DevicePath);
                     continue;
                 }
-                while(!yContext->hid.GetSerialNumberString(control,buffer,WIN_DEVICE_PATH_LEN) && --retry >= 0) {
-                    dbglog("Unable to get serial for %s (%d), retrying (%d)\n",pDetailedInterfaceData->DevicePath,GetLastError(),retry);
+                while (!yContext->hid.GetSerialNumberString(control, buffer, WIN_DEVICE_PATH_LEN) && --retry >= 0) {
+                    dbglog("Unable to get serial for %s (%d), retrying (%d)\n", pDetailedInterfaceData->DevicePath, GetLastError(), retry);
                     Sleep(17);
                 }
-                if(retry < 0) {
-                    dbglog("Unable to get serial for %s (%d), giving up\n",pDetailedInterfaceData->DevicePath, GetLastError());
+                if (retry < 0) {
+                    dbglog("Unable to get serial for %s (%d), giving up\n", pDetailedInterfaceData->DevicePath, GetLastError());
                     CloseHandle(control);
                     continue;
                 }
@@ -448,12 +451,12 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
                     wcstombs_s(&len, iface->serial, YOCTO_SERIAL_LEN * 2, (wchar_t*)buffer, _TRUNCATE);
                 }
 #else
-                wcstombs(iface->serial,(wchar_t*)buffer,YOCTO_SERIAL_LEN*2);
+                wcstombs(iface->serial, (wchar_t*) buffer, YOCTO_SERIAL_LEN * 2);
 #endif
                 CloseHandle(control);
             }
             (*nbifaceDetect)++;
-            if(deviceid>YOCTO_DEVID_BOOTLOADER){
+            if (deviceid > YOCTO_DEVID_BOOTLOADER) {
                 HALLOG("----Running Dev %x:%x:%d:%s ---\n",vendorid,deviceid,ifaceno,iface->serial);
 #ifdef LOG_DEVICE_PATH
                 HALLOG("----DevicePath %s ---\n",iface->devicePath);
@@ -643,15 +646,15 @@ static int yyyyRead(yInterfaceSt *iface,char *errmsg)
 {
     DWORD           readed;
     int             res;
-    int             retrycount=1;
+    int             retrycount = 1;
 retry:
-    if (iface->rdpending ==0){
+    if (iface->rdpending == 0){
         // no IO started -> start a new one
         res = StartReadIO(iface,errmsg);
-        if(YISERR(res)){
-            if(retrycount--){
+        if (YISERR(res)) {
+            if (retrycount--) {
                 CloseReadHandles(iface);
-                if(YISERR(OpenReadHandles(iface))) {
+                if (YISERR(OpenReadHandles(iface))) {
                     HALLOG("Open handles restared failed %s:%d\n",iface->serial,iface->ifaceno);
                     return res;
                 }
@@ -779,8 +782,11 @@ static void* yyyUsbIoThread(void* thread_void)
             yThreadSignalStart(thread);
             goto exitThread;
     }
+
+
     HALLOG("yyyReady I%x wr=%x rd=%x se=%s\n",iface->ifaceno,iface->wrHDL, iface->rdHDL,iface->serial);
     yThreadSignalStart(thread);
+    //CloseHandle(iface->EV[YWIN_EVENT_INTERRUPT]);
 
 
     if(yyyyRead(iface,errmsg) != YAPI_SUCCESS) {

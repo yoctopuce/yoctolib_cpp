@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 21680 2015-10-02 13:42:44Z seb $
+ * $Id: yocto_api.h 22194 2015-12-02 10:50:41Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -623,6 +623,7 @@ public:
     static  int         getFunctionsByDevice(YDEV_DESCR devdesc, YFUN_DESCR prevfundesc, vector<YFUN_DESCR>& buffer, int maxsize, string& errmsg);
     static  YDEV_DESCR  getDeviceByFunction(YFUN_DESCR fundesc, string& errmsg);
     static  YRETCODE    getFunctionInfo(YFUN_DESCR fundesc, YDEV_DESCR& devdescr, string& serial, string& funcId, string& funcName, string& funcVal, string& errmsg);
+    static  YRETCODE    getFunctionInfoEx(YFUN_DESCR fundesc, YDEV_DESCR& devdescr, string& serial, string& funcId, string& baseType, string& funcName, string& funcVal, string& errmsg);
     // pure yapi mapper
     static  YRETCODE    updateDeviceList(bool forceupdate, string& errmsg);
     static  YRETCODE    handleEvents(string& errmsg);
@@ -791,9 +792,9 @@ public:
 
     virtual int         _initFromDataSet(YDataSet* dataset,vector<int> encoded);
 
-    virtual int         parse(string sdata);
+    virtual int         _parseStream(string sdata);
 
-    virtual string      get_url(void);
+    virtual string      _get_url(void);
 
     virtual int         loadStream(void);
 
@@ -1114,16 +1115,15 @@ protected:
     vector<YMeasure> _measures;
     //--- (end of generated code: YDataSet attributes)
 
-    int _parse(const string& json);
-
 public:
     YDataSet(YFunction *parent, const string& functionId, const string& unit, s64 startTime, s64 endTime);
-    YDataSet(YFunction *parent, const string& json);
-
+    YDataSet(YFunction *parent);
+    int _parse(const string& json);
+    
     //--- (generated code: YDataSet accessors declaration)
 
 
-    virtual vector<int> get_calibration(void);
+    virtual vector<int> _get_calibration(void);
 
     virtual int         processMore(int progress,string data);
 
@@ -1504,6 +1504,10 @@ public:
     inline string       advertisedValue(void)
     { return this->get_advertisedValue(); }
 
+    int             set_advertisedValue(const string& newval);
+    inline int      setAdvertisedValue(const string& newval)
+    { return this->set_advertisedValue(newval); }
+
     /**
      * Retrieves a function for a given identifier.
      * The identifier can be specified using several formats:
@@ -1543,6 +1547,31 @@ public:
     virtual int         registerValueCallback(YFunctionValueCallback callback);
 
     virtual int         _invokeValueCallback(string value);
+
+    /**
+     * Disable the propagation of every new advertised value to the parent hub.
+     * You can use this function to save bandwidth and CPU on computers with limited
+     * resources, or to prevent unwanted invocations of the HTTP callback.
+     * Remember to call the saveToFlash() method of the module if the
+     * modification must be kept.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         muteValueCallbacks(void);
+
+    /**
+     * Re-enable the propagation of every new advertised value to the parent hub.
+     * This function reverts the effect of a previous call to muteValueCallbacks().
+     * Remember to call the saveToFlash() method of the module if the
+     * modification must be kept.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         unmuteValueCallbacks(void);
 
     virtual int         _parserHelper(void);
 
@@ -1679,8 +1708,8 @@ public:
     YRETCODE    load(int msValidity);
 
     /**
-     * Invalidate the cache. Invalidate the cache of the function attributes. Force the
-     * next call to get_xxx() or loadxxx() to use value that come from the device..
+     * Invalidates the cache. Invalidates the cache of the function attributes. Forces the
+     * next call to get_xxx() or loadxxx() to use values that come from the device.
      *
      * @noreturn
      */
@@ -1782,7 +1811,7 @@ protected:
     //--- (end of generated code: Module initialization)
 
     // Method used to retrieve details of the nth function of our device
-    YRETCODE        _getFunction(int idx, string& serial, string& funcId, string& funcName, string& funcVal, string& errMsg);
+    YRETCODE        _getFunction(int idx, string& serial, string& funcId, string& baseType, string& funcName, string& funcVal, string& errMsg);
 
 public:
     ~YModule();
@@ -1858,6 +1887,19 @@ public:
      * On failure, throws an exception or returns an empty string.
      */
     string          functionType(int functionIndex);
+
+
+    /**
+    * Retrieves the type of the <i>n</i>th function on the module.
+    *
+    * @param functionIndex : the index of the function for which the information is desired, starting at
+    * 0 for the first function.
+    *
+    * @return a the type of the function
+    *
+    * On failure, throws an exception or returns an empty string.
+    */
+    string          functionBaseType(int functionIndex);
 
 
     void            setImmutableAttributes(yDeviceSt *infos);

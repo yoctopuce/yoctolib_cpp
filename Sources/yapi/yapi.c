@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 21383 2015-09-02 11:55:24Z seb $
+ * $Id: yapi.c 21955 2015-11-06 15:22:11Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -2838,12 +2838,12 @@ static int  yapiGetFunctionsByDevice_internal(YAPI_DEVICE devdesc, YAPI_FUNCTION
 }
 
 
-static YRETCODE  yapiGetFunctionInfo_internal(YAPI_FUNCTION fundesc, YAPI_DEVICE *devdesc, char *serial, char *funcId, char *funcName, char *funcVal, char *errmsg)
+static YRETCODE  yapiGetFunctionInfoEx_internal(YAPI_FUNCTION fundesc, YAPI_DEVICE *devdesc, char *serial, char *funcId, char *baseType, char *funcName, char *funcVal, char *errmsg)
 {
     if(!yContext)
         return YERR(YAPI_NOT_INITIALIZED);
 
-    if(ypGetFunctionInfo(fundesc, serial, funcId, funcName, funcVal) < 0){
+    if(ypGetFunctionInfo(fundesc, serial, funcId, baseType, funcName, funcVal) < 0) {
         return YERR(YAPI_DEVICE_NOT_FOUND);
     }
     if(devdesc)
@@ -3740,6 +3740,7 @@ typedef enum
     trcGetFunctionsByClass,
     trcGetFunctionsByDevice,
     trcGetFunctionInfo,
+    trcGetFunctionInofEx,
     trcHTTPRequestSyncStartEx,
     trcHTTPRequestSyncStart,
     trcHTTPRequestSyncDone,
@@ -3792,6 +3793,7 @@ static const char * trc_funname[] =
     "GFunByClass",
     "GFunByDev",
     "GFunInfo",
+    "GFunInfoEx",
     "ReqSyncStartEx",
     "ReqSyncStart",
     "ReqSyncDone",
@@ -4117,10 +4119,21 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetFunctionInfo(YAPI_FUNCTION fundesc, YAPI_DE
 {
     YRETCODE res;
     YDLL_CALL_ENTER(trcGetFunctionInfo);
-    res = yapiGetFunctionInfo_internal(fundesc, devdesc, serial, funcId,funcName,funcVal, errmsg);
+    res = yapiGetFunctionInfoEx_internal(fundesc, devdesc, serial, funcId, NULL, funcName, funcVal, errmsg);
     YDLL_CALL_LEAVE(res);
     return res;
 }
+
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiGetFunctionInfoEx(YAPI_FUNCTION fundesc, YAPI_DEVICE *devdesc, char *serial, char *funcId, char *baseType, char *funcName, char *funcVal, char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcGetFunctionInfoEx);
+    res = yapiGetFunctionInfoEx_internal(fundesc, devdesc, serial, funcId, baseType, funcName, funcVal, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
 
 YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncStartEx(YIOHDL *iohdl, const char *device, const char *request, int requestsize, char **reply, int *replysize, char *errmsg)
 {

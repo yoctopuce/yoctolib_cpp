@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ymemory.c 19921 2015-04-07 10:57:04Z seb $
+ * $Id: ymemory.c 21883 2015-10-29 16:43:44Z seb $
  *
  * Basic memory check function to prevent memory leak
  *
@@ -104,7 +104,8 @@ static void  ymemdump(void)
 
 void ySafeMemoryInit(u32 nbentry)
 {
-    YASSERT(yMap==NULL && yMapSize==0);
+    YASSERT(yMap==NULL);
+    YASSERT(yMapSize==0);
     yInitializeCriticalSection(&yMapCS);
     yEnterCriticalSection(&yMapCS);
     yMap = malloc(nbentry *sizeof(YMEM_ENTRY));
@@ -236,6 +237,8 @@ void  ySafeMemoryDump(void *discard)
     }
     if(i< yMapUsed){
         ymemdump();
+    } else {
+        dbglog("No memory leak detected\n");
     }
     yLeaveCriticalSection(&yMapCS);
 }
@@ -249,11 +252,7 @@ void  ySafeMemoryStop(void)
     yMapSize = yMapUsed = 0;
 }
 
-
-
 #endif
-
-
 
 
 // return the min of strlen and maxlen

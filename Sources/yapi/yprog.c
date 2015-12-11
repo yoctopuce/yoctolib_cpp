@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 20894 2015-07-22 13:20:30Z seb $
+ * $Id: yprog.c 22016 2015-11-17 00:27:04Z mvuilleu $
  *
  * Implementation of firmware upgrade functions
  *
@@ -1343,7 +1343,7 @@ YPROG_RESULT uFlashDevice(void)
             uLogProgress("Device still in bootloader");
             fctx.zOfs--;
             uLogProgress("Device still in bootloader");
-            //fixme: add retry
+            // FIXME: could try to add a retry
             fctx.stepA = FLASH_DISCONNECT;
         }
         break;

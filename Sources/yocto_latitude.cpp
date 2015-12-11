@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_latitude.cpp 19606 2015-03-05 10:35:57Z seb $
+ * $Id: yocto_latitude.cpp 22191 2015-12-02 06:49:31Z mvuilleu $
  *
  * Implements yFindLatitude(), the high-level API for Latitude functions
  *

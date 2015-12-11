@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 21746 2015-10-13 09:46:59Z mvuilleu $
+ * $Id: ydef.h 22196 2015-12-02 11:32:51Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -47,12 +47,14 @@ extern "C" {
 #if defined(_WIN32)
 // Windows C compiler
 #define WINDOWS_API
+
 #ifdef _WIN64
 #define __64BITS__
 #define __WIN64__
 #else
 #define __32BITS__
 #endif
+
 #ifdef _MSC_VER
 typedef unsigned char           u8;
 typedef signed char             s8;
@@ -66,6 +68,7 @@ typedef signed long long        s64;
 #define FMTs64 "lld"
 #define FMTu64 "llu"
 #define FMTx64 "llx"
+
 #else
 
 #ifdef __BORLANDC__
@@ -87,9 +90,14 @@ typedef signed int              s32;
 typedef unsigned long long      u64;
 typedef signed long long        s64;
 #endif
-#define VARIABLE_SIZE           0
-#endif
 
+#define VARIABLE_SIZE           0
+#define FMTs64 "lld"
+#define FMTu64 "llu"
+#define FMTx64 "llx"
+
+#endif
+// end of WINDOWS_API
 
 
 #elif defined(__C30__)
@@ -109,9 +117,11 @@ typedef signed long long        s64;
 #define FMTs64 "lld"
 #define FMTu64 "llu"
 #define FMTx64 "llx"
+// end of MICROCHIP_API
 
 #elif defined(__APPLE__)
 #include <TargetConditionals.h>
+
 #if TARGET_IPHONE_SIMULATOR
 //#warning IOS simulatore platform
 #define IOS_API
@@ -120,6 +130,7 @@ typedef signed long long        s64;
 #define IOS_API
 #elif TARGET_OS_MAC
 #define OSX_API
+
 #if defined(__i386__)
 #define __32BITS__
 #elif defined(__x86_64__)
@@ -128,9 +139,11 @@ typedef signed long long        s64;
 #else
 #error Unsupported MAC OS X architecture
 #endif
+
 #else
 #error Unsupported Apple target
 #endif
+
 // Mac OS X C compiler
 typedef unsigned char           u8;
 typedef signed char             s8;
@@ -138,18 +151,26 @@ typedef unsigned short int      u16;
 typedef signed short int        s16;
 typedef unsigned int            u32;
 typedef signed int              s32;
+#ifdef __LP64__
 typedef unsigned long           u64;
 typedef signed long             s64;
+#else
+typedef unsigned long long      u64;
+typedef signed long long        s64;
+#endif
 #define VARIABLE_SIZE           0
 #define FMTs64 "ld"
 #define FMTu64 "lu"
 #define FMTx64 "lx"
 #include <pthread.h>
 #include <errno.h>
+// end of OSX_API OR IOS_API
+
 
 #elif defined(__linux__)
 // gcc compiler on linux
 #define LINUX_API
+
 #if defined(__i386__)
 #define __32BITS__
 #define FMTs64 "lld"
@@ -183,6 +204,8 @@ typedef int64_t                 s64;
 #else
 #warning UNSUPPORTED ARCHITECTURE, please edit yocto_def.h !
 #endif
+// end of LINUX_API
+
 
 typedef u32   yTime;            /* measured in milliseconds */
 typedef u32   u31;              /* shorter unsigned integers */
@@ -205,9 +228,9 @@ typedef s8              YTRNKIO;
 // prevent to mess up with user own code
 #if defined(WINDOWS_API)
 #if defined(__64BITS__)
-typedef u64 YSOCKET;
+typedef u64             YSOCKET;
 #else
-typedef u32 YSOCKET;
+typedef u32             YSOCKET;
 #endif
 #else
 typedef int             YSOCKET;
@@ -381,12 +404,16 @@ typedef enum {
 #define YOCTO_API_VERSION_BCD       0x0110
 #include "yversion.h"
 #define YOCTO_DEFAULT_PORT          4444
+#define YOCTO_VXI_PORT              4445
 #define YOCTO_VENDORID              0x24e0
 #define YOCTO_DEVID_FACTORYBOOT     1
 #define YOCTO_DEVID_BOOTLOADER      2
 #define YOCTO_DEVID_HIGHEST         0xfefe
 
 #define YOCTO_CALIB_TYPE_OFS        30
+
+// Other special ports
+#define PORTMAPPER_PORT             111
 
 // Known baseclases
 #define YOCTO_AKA_YFUNCTION         0

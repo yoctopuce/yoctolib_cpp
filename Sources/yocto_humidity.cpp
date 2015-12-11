@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_humidity.cpp 21211 2015-08-19 16:03:29Z seb $
+ * $Id: yocto_humidity.cpp 22191 2015-12-02 06:49:31Z mvuilleu $
  *
  * Implements yFindHumidity(), the high-level API for Humidity functions
  *

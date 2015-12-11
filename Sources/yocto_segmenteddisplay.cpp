@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_segmenteddisplay.cpp 19606 2015-03-05 10:35:57Z seb $
+ * $Id: yocto_segmenteddisplay.cpp 22191 2015-12-02 06:49:31Z mvuilleu $
  *
  * Implements yFindSegmentedDisplay(), the high-level API for SegmentedDisplay functions
  *

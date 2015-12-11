@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h 21078 2015-08-12 09:22:35Z seb $
+ * $Id: yapi.h 21955 2015-11-06 15:22:11Z seb $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -726,6 +726,33 @@ int YAPI_FUNCTION_EXPORT yapiGetFunctionsByDevice(YAPI_DEVICE devdesc, YAPI_FUNC
 
  ***************************************************************************/
 YRETCODE YAPI_FUNCTION_EXPORT yapiGetFunctionInfo(YAPI_FUNCTION fundesc,YAPI_DEVICE *devdesc,char *serial,char *funcId,char *funcName,char *funcVal,char *errmsg);
+
+/*****************************************************************************
+ Function:
+   YRETCODE yGetFunctionInfo(YAPI_FUNCTION fundesc,YAPI_DEVICE *devdesc,char *serial,char *funcId,char *funcName,char *funcVal,char *errmsg)
+
+ Description:
+   Get all yellow-page information about a single function given by its descriptor,
+   as returned by yGetFunction, yGetFunctionsByClass or yGetFunctionsByDevice.
+
+ Parameters:
+   fundesc : function descriptor returned by yGetFunction or yGetFunctionsByXXX
+   devdesc : a pointer to a device descriptor to be filled with the device hosting the function
+   serial  : a pointer to a buffer of YOCTO_SERIAL_LEN characters, or NULL
+   funcId  : a pointer to a buffer of YOCTO_FUNCTION_LEN characters, or NULL
+   baseType: a pointer to a buffer of YOCTO_FUNCTION_LEN characters, or NULL
+   funcName: a pointer to a buffer of YOCTO_LOGICAL_LEN characters, or NULL
+   funcVal : a pointer to a buffer of 7 characters, or NULL
+   errmsg  : a pointer to a buffer of YOCTO_ERRMSG_LEN bytes to store any error message
+
+ Returns:
+   on ERROR   : error code
+   on SUCCESS : YAPI_SUCCESS
+
+ Remarks:
+
+ ***************************************************************************/
+YRETCODE YAPI_FUNCTION_EXPORT yapiGetFunctionInfoEx(YAPI_FUNCTION fundesc, YAPI_DEVICE *devdesc, char *serial, char *funcId, char *baseType, char *funcName, char *funcVal, char *errmsg);
 
 
  /*****************************************************************************

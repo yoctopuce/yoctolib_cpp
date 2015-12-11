@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yjni.c 21719 2015-10-09 14:44:06Z seb $
+ * $Id: yjni.c 21960 2015-11-06 15:59:59Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -457,7 +457,7 @@ static void jFunctionUpdateCallbackFwd(YAPI_FUNCTION fundesc,const char *value)
         return;
     }
 
-    ypGetFunctionInfo(fundesc, serial, funcId, NULL, NULL);
+    ypGetFunctionInfo(fundesc, serial, funcId,NULL, NULL, NULL);
     j_serial = (*env)->NewStringUTF(env, serial);
     j_funcId = (*env)->NewStringUTF(env, funcId);
     j_value = (*env)->NewStringUTF(env, value);
@@ -494,7 +494,7 @@ static void jFunctionTimedReportCallbackFwd(YAPI_FUNCTION fundesc, double timest
         return;
     }
 
-    ypGetFunctionInfo(fundesc, serial, funcId, NULL, NULL);
+    ypGetFunctionInfo(fundesc, serial, funcId, NULL, NULL, NULL);
     j_serial = (*env)->NewStringUTF(env, serial);
     j_funcId = (*env)->NewStringUTF(env, funcId);
 

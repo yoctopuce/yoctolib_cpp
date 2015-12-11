@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 21762 2015-10-15 11:55:52Z seb $
+ * $Id: yhash.c 21955 2015-11-06 15:22:11Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -96,7 +96,7 @@ yBlkHdl yYpListHead = INVALID_BLK_HDL;
 
 yBlkHdl freeBlks = INVALID_BLK_HDL;
 
-yBlkHdl yBlkAlloc(void)
+static yBlkHdl yBlkAlloc(void)
 {
     yBlkHdl  res;
 
@@ -122,7 +122,7 @@ yBlkHdl yBlkAlloc(void)
     return res;
 }
 
-void yBlkFree(yBlkHdl hdl)
+static void yBlkFree(yBlkHdl hdl)
 {
     HLOGF(("Free blkHdl 0x%x\n",hdl));
     yEnterCriticalSection(&yFreeMutex);
@@ -234,16 +234,16 @@ void yHashInit(void)
     YC(yYpListHead).entries = INVALID_BLK_HDL;
 }
 
+#ifndef MICROCHIP_API
 void yHashFree(void)
 {
     HLOGF(("yHashFree\n"));
-#ifndef MICROCHIP_API
     yDeleteCriticalSection(&yHashMutex);
     yDeleteCriticalSection(&yFreeMutex);
     yDeleteCriticalSection(&yWpMutex);
     yDeleteCriticalSection(&yYpMutex);
-#endif
 }
+#endif
 
 static yHash yHashPut(const u8 *buf, u16 len, u8 testonly)
 {
@@ -1039,34 +1039,6 @@ int wpGetAllDevUsingHubUrl( yUrlRef hubUrl, yStrRef *buffer,int sizeInStrRef)
     return count;
 }
 
-#endif
-
-int wpGetDeviceInfo(YAPI_DEVICE devdesc, u16 *deviceid, char *productname, char *serial, char *logicalname, u8 *beacon)
-{
-    yBlkHdl  hdl;
-
-    yEnterCriticalSection(&yWpMutex);
-
-    hdl = yWpListHead;
-    while(hdl != INVALID_BLK_HDL) {
-        YASSERT(WP(hdl).blkId == YBLKID_WPENTRY);
-        if(WP(hdl).serial == (u16)devdesc) {
-            // entry found
-            if(deviceid)    *deviceid = WP(hdl).devid;
-            if(productname) yHashGetStr(WP(hdl).product, productname, YOCTO_PRODUCTNAME_LEN);
-            if(serial)      yHashGetStr(WP(hdl).serial, serial, YOCTO_SERIAL_LEN);
-            if(logicalname) yHashGetStr(WP(hdl).name, logicalname, YOCTO_LOGICAL_LEN);
-            if(beacon)      *beacon = (WP(hdl).flags & YWP_BEACON_ON ? 1 : 0);
-            break;
-        }
-        hdl = WP(hdl).nextPtr;
-    }
-
-    yLeaveCriticalSection(&yWpMutex);
-
-    return (hdl != INVALID_BLK_HDL ? 0 : -1);
-}
-
 
 yUrlRef wpGetDeviceUrlRef(YAPI_DEVICE devdesc)
 {
@@ -1183,6 +1155,36 @@ int wpGetDeviceUrl(YAPI_DEVICE devdesc, char *roothubserial, char *request, int 
 
     return 0;
 }
+
+#endif
+
+int wpGetDeviceInfo(YAPI_DEVICE devdesc, u16 *deviceid, char *productname, char *serial, char *logicalname, u8 *beacon)
+{
+    yBlkHdl  hdl;
+
+    yEnterCriticalSection(&yWpMutex);
+
+    hdl = yWpListHead;
+    while(hdl != INVALID_BLK_HDL) {
+        YASSERT(WP(hdl).blkId == YBLKID_WPENTRY);
+        if(WP(hdl).serial == (u16)devdesc) {
+            // entry found
+            if(deviceid)    *deviceid = WP(hdl).devid;
+            if(productname) yHashGetStr(WP(hdl).product, productname, YOCTO_PRODUCTNAME_LEN);
+            if(serial)      yHashGetStr(WP(hdl).serial, serial, YOCTO_SERIAL_LEN);
+            if(logicalname) yHashGetStr(WP(hdl).name, logicalname, YOCTO_LOGICAL_LEN);
+            if(beacon)      *beacon = (WP(hdl).flags & YWP_BEACON_ON ? 1 : 0);
+            break;
+        }
+        hdl = WP(hdl).nextPtr;
+    }
+
+    yLeaveCriticalSection(&yWpMutex);
+
+    return (hdl != INVALID_BLK_HDL ? 0 : -1);
+}
+
+
 
 // =======================================================================
 //   Yellow pages support
@@ -1475,6 +1477,8 @@ static void ypUnregister(yStrRef serial)
     yLeaveCriticalSection(&yYpMutex);
 }
 
+#ifndef MICROCHIP_API
+
 YAPI_FUNCTION ypSearch(const char *class_str, const char *func_or_name)
 {
     yStrRef     categref = INVALID_HASH_IDX;
@@ -1622,87 +1626,6 @@ YAPI_FUNCTION ypSearch(const char *class_str, const char *func_or_name)
     return res;
 }
 
-s16 ypFindBootloaders(yStrRef *serials, u16 maxSerials)
-{
-    yBlkHdl     cat_hdl, hdl;
-    s16         res = 0;
-
-    // first search for the category node
-    yEnterCriticalSection(&yYpMutex);
-    cat_hdl = yYpListHead;
-    while(cat_hdl != INVALID_BLK_HDL) {
-        if(YC(cat_hdl).name == YSTRREF_HUBPORT_STRING) break;
-        cat_hdl = YC(cat_hdl).nextPtr;
-    }
-    yLeaveCriticalSection(&yYpMutex);
-    if(cat_hdl == INVALID_BLK_HDL)
-        return -2; // no hubPort registered so far
-
-    yEnterCriticalSection(&yYpMutex);
-    hdl = YC(cat_hdl).entries;
-    while(hdl != INVALID_BLK_HDL) {
-        if(YP(hdl).funcValWords[0]==WORD_TEXT_PR && YP(hdl).funcValWords[1]==WORD_TEXT_OG) {
-            if(res++ < maxSerials) {
-                *serials++ = YP(hdl).funcName;
-            }
-        }
-        hdl = YP(hdl).nextPtr;
-    }
-    yLeaveCriticalSection(&yYpMutex);
-
-    return res;
-}
-
-#ifdef MICROCHIP_API
-int ypGetBootDevHdl(const char *serial)
-{
-    yBlkHdl cat_hdl, hdl;
-    yStrRef serialRef;
-    char    funcid[9];
-    s16     devYdx;
-
-    serialRef = yHashTestStr(serial);
-    if(serialRef == INVALID_HASH_IDX)
-        return -1; // unknown serial
-
-    // search for the category node
-    yEnterCriticalSection(&yYpMutex);
-    cat_hdl = yYpListHead;
-    while(cat_hdl != INVALID_BLK_HDL) {
-        if(YC(cat_hdl).name == YSTRREF_HUBPORT_STRING) break;
-        cat_hdl = YC(cat_hdl).nextPtr;
-    }
-    yLeaveCriticalSection(&yYpMutex);
-    if(cat_hdl == INVALID_BLK_HDL)
-        return -2; // no hubPort registered so far
-
-    yEnterCriticalSection(&yYpMutex);
-    hdl = YC(cat_hdl).entries;
-    while(hdl != INVALID_BLK_HDL) {
-        if(YP(hdl).funcName == serialRef &&
-           YP(hdl).funcValWords[0] == WORD_TEXT_PR &&
-           YP(hdl).funcValWords[1] == WORD_TEXT_OG) {
-            break;
-        }
-        hdl = YP(hdl).nextPtr;
-    }
-    yLeaveCriticalSection(&yYpMutex);
-    if(hdl == INVALID_BLK_HDL)
-        return -3; // serial not connected in PROG mode
-
-    yHashGetStr(YP(hdl).funcId, funcid, sizeof(funcid));
-    if(funcid[7] <'1' || funcid[7] > '4')
-        return -3; // invalid function id
-    devYdx = wpGetDevYdx(YP(hdl).serialNum);
-    if(devYdx == hubDevYdx) {
-        // The 3 root ports use devhdl 0-2
-        return funcid[7] - '1';
-    }
-
-    // ports on shield use hub devYdx+(1..4)
-    return devYdx + funcid[7] - '0';
-}
-#endif
 
 int ypGetFunctions(const char *class_str, YAPI_DEVICE devdesc, YAPI_FUNCTION prevfundesc,
                    YAPI_FUNCTION *buffer,int maxsize,int *neededsize)
@@ -1805,7 +1728,7 @@ static yBlkHdl functionSearch(YAPI_FUNCTION fundesc)
     return INVALID_BLK_HDL; // device not found, most probably unplugged
 }
 
-int ypGetFunctionInfo(YAPI_FUNCTION fundesc, char *serial, char *funcId, char *funcName, char *funcVal)
+int ypGetFunctionInfo(YAPI_FUNCTION fundesc, char *serial, char *funcId, char *baseType, char *funcName, char *funcVal)
 {
     yBlkHdl hdl;
     u16     i;
@@ -1816,6 +1739,17 @@ int ypGetFunctionInfo(YAPI_FUNCTION fundesc, char *serial, char *funcId, char *f
     if(hdl != INVALID_BLK_HDL) {
         if(serial)   yHashGetStr(YP(hdl).serialNum, serial, YOCTO_SERIAL_LEN);
         if(funcId)   yHashGetStr(YP(hdl).funcId, funcId, YOCTO_FUNCTION_LEN);
+        if (baseType) {
+            int type = YOCTO_AKA_YFUNCTION;
+            if (YP(hdl).blkId >= YBLKID_YPENTRY && YP(hdl).blkId <= YBLKID_YPENTRYEND) {
+                type = YP(hdl).blkId - YBLKID_YPENTRY;
+            }
+            if (type == YOCTO_AKA_YSENSOR) {
+                YSTRCPY(baseType, YOCTO_FUNCTION_LEN, "Sensor");
+            } else {
+                YSTRCPY(baseType, YOCTO_FUNCTION_LEN, "Function");
+            }
+        }
         if(funcName) yHashGetStr(YP(hdl).funcName, funcName, YOCTO_LOGICAL_LEN);
         if(funcVal != NULL) { // null-terminate
             for(i = 0; i < YOCTO_PUBVAL_SIZE/2; i++) {
@@ -1830,6 +1764,91 @@ int ypGetFunctionInfo(YAPI_FUNCTION fundesc, char *serial, char *funcId, char *f
 
     return (hdl == INVALID_BLK_HDL ? -1 : 0);
 }
+
+#endif
+
+s16 ypFindBootloaders(yStrRef *serials, u16 maxSerials)
+{
+    yBlkHdl     cat_hdl, hdl;
+    s16         res = 0;
+
+    // first search for the category node
+    yEnterCriticalSection(&yYpMutex);
+    cat_hdl = yYpListHead;
+    while(cat_hdl != INVALID_BLK_HDL) {
+        if(YC(cat_hdl).name == YSTRREF_HUBPORT_STRING) break;
+        cat_hdl = YC(cat_hdl).nextPtr;
+    }
+    yLeaveCriticalSection(&yYpMutex);
+    if(cat_hdl == INVALID_BLK_HDL)
+        return -2; // no hubPort registered so far
+
+    yEnterCriticalSection(&yYpMutex);
+    hdl = YC(cat_hdl).entries;
+    while(hdl != INVALID_BLK_HDL) {
+        if(YP(hdl).funcValWords[0]==WORD_TEXT_PR && YP(hdl).funcValWords[1]==WORD_TEXT_OG) {
+            if(res++ < maxSerials) {
+                *serials++ = YP(hdl).funcName;
+            }
+        }
+        hdl = YP(hdl).nextPtr;
+    }
+    yLeaveCriticalSection(&yYpMutex);
+
+    return res;
+}
+
+#ifdef MICROCHIP_API
+int ypGetBootDevHdl(const char *serial)
+{
+    yBlkHdl cat_hdl, hdl;
+    yStrRef serialRef;
+    char    funcid[9];
+    s16     devYdx;
+
+    serialRef = yHashTestStr(serial);
+    if(serialRef == INVALID_HASH_IDX)
+        return -1; // unknown serial
+
+    // search for the category node
+    yEnterCriticalSection(&yYpMutex);
+    cat_hdl = yYpListHead;
+    while(cat_hdl != INVALID_BLK_HDL) {
+        if(YC(cat_hdl).name == YSTRREF_HUBPORT_STRING) break;
+        cat_hdl = YC(cat_hdl).nextPtr;
+    }
+    yLeaveCriticalSection(&yYpMutex);
+    if(cat_hdl == INVALID_BLK_HDL)
+        return -2; // no hubPort registered so far
+
+    yEnterCriticalSection(&yYpMutex);
+    hdl = YC(cat_hdl).entries;
+    while(hdl != INVALID_BLK_HDL) {
+        if(YP(hdl).funcName == serialRef &&
+           YP(hdl).funcValWords[0] == WORD_TEXT_PR &&
+           YP(hdl).funcValWords[1] == WORD_TEXT_OG) {
+            break;
+        }
+        hdl = YP(hdl).nextPtr;
+    }
+    yLeaveCriticalSection(&yYpMutex);
+    if(hdl == INVALID_BLK_HDL)
+        return -3; // serial not connected in PROG mode
+
+    yHashGetStr(YP(hdl).funcId, funcid, sizeof(funcid));
+    if(funcid[7] <'1' || funcid[7] > '4')
+        return -3; // invalid function id
+    devYdx = wpGetDevYdx(YP(hdl).serialNum);
+    if(devYdx == hubDevYdx) {
+        // The 3 root ports use devhdl 0-2
+        return funcid[7] - '1';
+    }
+
+    // ports on shield use hub devYdx+(1..4)
+    return devYdx + funcid[7] - '0';
+}
+#endif
+
 
 // Network notification format: 7x7bit (mapped to 7 chars in range 32..159)
 //                              used to represent 1 flag (RAW6BYTES) + 6 bytes

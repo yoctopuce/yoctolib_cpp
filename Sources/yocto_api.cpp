@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 21675 2015-10-01 16:59:42Z seb $
+ * $Id: yocto_api.cpp 22191 2015-12-02 06:49:31Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -119,13 +119,12 @@ YDataSet::YDataSet(YFunction *parent, const string& functionId, const string& un
 }
 
 // YDataSet constructor for the new datalogger
-YDataSet::YDataSet(YFunction *parent, const string& json)
+YDataSet::YDataSet(YFunction *parent)
 {
     _parent    = parent;
     _startTime = 0;
     _endTime   = 0;
     _summary = YMeasure(0, 0, 0, 0, 0);
-    this->_parse(json);
 }
 
 // YDataSet parser for stream list
@@ -491,7 +490,7 @@ int YDataStream::_initFromDataSet(YDataSet* dataset,vector<int> encoded)
             i = i + 1;
         }
     }
-    iCalib = dataset->get_calibration();
+    iCalib = dataset->_get_calibration();
     _caltyp = iCalib[0];
     if (_caltyp != 0) {
         _calhdl = YAPI::_getCalibrationHandler(_caltyp);
@@ -565,7 +564,7 @@ int YDataStream::_initFromDataSet(YDataSet* dataset,vector<int> encoded)
     return 0;
 }
 
-int YDataStream::parse(string sdata)
+int YDataStream::_parseStream(string sdata)
 {
     int idx = 0;
     vector<int> udat;
@@ -616,7 +615,7 @@ int YDataStream::parse(string sdata)
     return YAPI_SUCCESS;
 }
 
-string YDataStream::get_url(void)
+string YDataStream::_get_url(void)
 {
     string url;
     url = YapiWrapper::ysprintf("logger.json?id=%s&run=%d&utc=%u",
@@ -626,7 +625,7 @@ string YDataStream::get_url(void)
 
 int YDataStream::loadStream(void)
 {
-    return this->parse(_parent->_download(this->get_url()));
+    return this->_parseStream(_parent->_download(this->_get_url()));
 }
 
 double YDataStream::_decodeVal(int w)
@@ -1000,7 +999,7 @@ time_t*   YMeasure::get_endTimeUTC_asTime_t(time_t *time)
 // static attributes
 
 
-vector<int> YDataSet::get_calibration(void)
+vector<int> YDataSet::_get_calibration(void)
 {
     return _calib;
 }
@@ -1029,7 +1028,7 @@ int YDataSet::processMore(int progress,string data)
         return this->_parse(strdata);
     }
     stream = _streams[_progress];
-    stream->parse(data);
+    stream->_parseStream(data);
     dataRows = stream->get_dataRows();
     _progress = _progress + 1;
     if ((int)dataRows.size() == 0) {
@@ -1188,7 +1187,7 @@ int YDataSet::loadMore(void)
             return 100;
         } else {
             stream = _streams[_progress];
-            url = stream->get_url();
+            url = stream->_get_url();
         }
     }
     return this->processMore(_progress, _parent->_download(url));
@@ -1466,6 +1465,13 @@ string YFunction::get_advertisedValue(void)
     return _advertisedValue;
 }
 
+int YFunction::set_advertisedValue(const string& newval)
+{
+    string rest_val;
+    rest_val = newval;
+    return _setAttr("advertisedValue", rest_val);
+}
+
 /**
  * Retrieves a function for a given identifier.
  * The identifier can be specified using several formats:
@@ -1537,6 +1543,37 @@ int YFunction::_invokeValueCallback(string value)
     } else {
     }
     return 0;
+}
+
+/**
+ * Disable the propagation of every new advertised value to the parent hub.
+ * You can use this function to save bandwidth and CPU on computers with limited
+ * resources, or to prevent unwanted invocations of the HTTP callback.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
+ *
+ * @return YAPI_SUCCESS when the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YFunction::muteValueCallbacks(void)
+{
+    return this->set_advertisedValue("SILENT");
+}
+
+/**
+ * Re-enable the propagation of every new advertised value to the parent hub.
+ * This function reverts the effect of a previous call to muteValueCallbacks().
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
+ *
+ * @return YAPI_SUCCESS when the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YFunction::unmuteValueCallbacks(void)
+{
+    return this->set_advertisedValue("");
 }
 
 int YFunction::_parserHelper(void)
@@ -2233,7 +2270,7 @@ void YFunction::clearCache()
 {
     YDevice     *dev;
     string      errmsg, apires;
-    
+
     // Resolve our reference to our device, load REST API
     int res = _getDevice(dev, errmsg);
     if (YISERR(res)) {
@@ -2822,9 +2859,9 @@ static const char* hexArray = "0123456789ABCDEF";
 string YAPI::_bin2HexStr(const string& data)
 {
     const u8 *ptr = (u8*) data.data();
-    unsigned long len = data.length();
+    size_t len = data.length();
     string res = string(len * 2, 0);
-    for (unsigned long j = 0; j < len; j++, ptr++) {
+    for (size_t j = 0; j < len; j++, ptr++) {
         u8 v = *ptr;
         res[j * 2] = hexArray[v >> 4];
         res[j * 2 + 1] = hexArray[v & 0x0F];
@@ -2835,10 +2872,10 @@ string YAPI::_bin2HexStr(const string& data)
 
 string YAPI::_hexStr2Bin(const string& hex_str)
 {
-    unsigned long len = hex_str.length() / 2;
+    size_t len = hex_str.length() / 2;
     const char *p  = hex_str.c_str();
     string res = string(len, 0);
-    for (unsigned long i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i++) {
         u8 b = 0;
         int j;
         for(j = 0; j < 2; j++) {
@@ -3620,12 +3657,35 @@ YRETCODE YapiWrapper::getFunctionInfo(YFUN_DESCR fundesc, YDEV_DESCR& devdescr, 
     char    fnam[YOCTO_LOGICAL_LEN];
     char    fval[YOCTO_PUBVAL_LEN];
 
-    YRETCODE res = yapiGetFunctionInfo(fundesc, &devdescr, snum, fnid, fnam, fval, errbuf);
+    YRETCODE res = yapiGetFunctionInfoEx(fundesc, &devdescr, snum, fnid, NULL, fnam, fval, errbuf);
+    if (YISERR(res)) {
+        errmsg = errbuf;
+    } else {
+        serial = snum;
+        funcId = fnid;
+        funcName = fnam;
+        funcVal = fval;
+    }
+
+    return res;
+}
+
+YRETCODE YapiWrapper::getFunctionInfoEx(YFUN_DESCR fundesc, YDEV_DESCR& devdescr, string& serial, string& funcId, string& baseType, string& funcName, string& funcVal, string& errmsg)
+{
+    char    errbuf[YOCTO_ERRMSG_LEN];
+    char    snum[YOCTO_SERIAL_LEN];
+    char    fnid[YOCTO_FUNCTION_LEN];
+    char    fbt[YOCTO_FUNCTION_LEN];
+    char    fnam[YOCTO_LOGICAL_LEN];
+    char    fval[YOCTO_PUBVAL_LEN];
+
+    YRETCODE res = yapiGetFunctionInfoEx(fundesc, &devdescr, snum, fnid, fbt, fnam, fval, errbuf);
     if(YISERR(res)) {
         errmsg = errbuf;
     } else {
         serial = snum;
         funcId = fnid;
+        baseType = fbt;
         funcName = fnam;
         funcVal = fval;
     }
@@ -4467,9 +4527,14 @@ vector<string> YModule::get_functionIds(string funType)
     count = this->functionCount();
     i = 0;
     while (i < count) {
-        ftype  = this->functionType(i);
+        ftype = this->functionType(i);
         if (ftype == funType) {
             res.push_back(this->functionId(i));
+        } else {
+            ftype = this->functionBaseType(i);
+            if (ftype == funType) {
+                res.push_back(this->functionId(i));
+            }
         }
         i = i + 1;
     }
@@ -5104,7 +5169,7 @@ void YModule::setImmutableAttributes(yDeviceSt *infos)
 
 
 // Return the properties of the nth function of our device
-YRETCODE YModule::_getFunction(int idx, string& serial, string& funcId, string& funcName, string& funcVal, string& errmsg)
+YRETCODE YModule::_getFunction(int idx, string& serial, string& funcId, string& baseType, string& funcName, string& funcVal, string& errmsg)
 {
     vector<YFUN_DESCR> *functions;
     YDevice     *dev;
@@ -5125,7 +5190,7 @@ YRETCODE YModule::_getFunction(int idx, string& serial, string& funcId, string& 
 
     // get latest function info from yellow pages
     fundescr = functions->at(idx);
-    res = YapiWrapper::getFunctionInfo(fundescr, devdescr, serial, funcId, funcName, funcVal, errmsg);
+    res = YapiWrapper::getFunctionInfoEx(fundescr, devdescr, serial, funcId, baseType, funcName, funcVal, errmsg);
     if(YISERR(res)) return (YRETCODE)res;
 
     return YAPI_SUCCESS;
@@ -5155,9 +5220,9 @@ int YModule::functionCount()
 // Retrieve the Id of the nth function (beside "module") in the device
 string YModule::functionId(int functionIndex)
 {
-    string      serial, funcId, funcName, funcVal, errmsg;
+    string      serial, funcId, funcName, basetype, funcVal, errmsg;
 
-    int res = _getFunction(functionIndex, serial, funcId, funcName, funcVal, errmsg);
+    int res = _getFunction(functionIndex, serial, funcId, basetype, funcName, funcVal, errmsg);
     if(YISERR(res)) {
         _throw((YRETCODE)res, errmsg);
         return YAPI_INVALID_STRING;
@@ -5169,9 +5234,9 @@ string YModule::functionId(int functionIndex)
 // Retrieve the logical name of the nth function (beside "module") in the device
 string YModule::functionName(int functionIndex)
 {
-    string      serial, funcId, funcName, funcVal, errmsg;
+    string      serial, funcId, basetype, funcName, funcVal, errmsg;
 
-    int res = _getFunction(functionIndex, serial, funcId, funcName, funcVal, errmsg);
+    int res = _getFunction(functionIndex, serial, funcId, basetype, funcName, funcVal, errmsg);
     if(YISERR(res)) {
         _throw((YRETCODE)res, errmsg);
         return YAPI_INVALID_STRING;
@@ -5183,9 +5248,9 @@ string YModule::functionName(int functionIndex)
 // Retrieve the advertised value of the nth function (beside "module") in the device
 string YModule::functionValue(int functionIndex)
 {
-    string      serial, funcId, funcName, funcVal, errmsg;
+    string      serial, funcId, basetype, funcName, funcVal, errmsg;
 
-    int res = _getFunction(functionIndex, serial, funcId, funcName, funcVal, errmsg);
+    int res = _getFunction(functionIndex, serial, funcId, basetype, funcName, funcVal, errmsg);
     if(YISERR(res)) {
         _throw((YRETCODE)res, errmsg);
         return YAPI_INVALID_STRING;
@@ -5198,11 +5263,11 @@ string YModule::functionValue(int functionIndex)
 // Retrieve the Id of the nth function (beside "module") in the device
 string YModule::functionType(int functionIndex)
 {
-    string      serial, funcId, funcName, funcVal, errmsg;
+    string      serial, funcId, basetype, funcName, funcVal, errmsg;
     char        buffer[YOCTO_FUNCTION_LEN], *d = buffer;
     const char *p;
 
-    int res = _getFunction(functionIndex, serial, funcId, funcName, funcVal, errmsg);
+    int res = _getFunction(functionIndex, serial, funcId, basetype, funcName, funcVal, errmsg);
     if (YISERR(res)) {
         _throw((YRETCODE)res, errmsg);
         return YAPI_INVALID_STRING;
@@ -5215,6 +5280,21 @@ string YModule::functionType(int functionIndex)
     *d = 0;
     return string(buffer);
 }
+
+// Retrieve the Id of the nth function (beside "module") in the device
+string YModule::functionBaseType(int functionIndex)
+{
+    string      serial, funcId, basetype, funcName, funcVal, errmsg;
+
+    int res = _getFunction(functionIndex, serial, funcId, basetype, funcName, funcVal, errmsg);
+    if (YISERR(res)) {
+        _throw((YRETCODE)res, errmsg);
+        return YAPI_INVALID_STRING;
+    }
+
+    return basetype;
+}
+
 
 /**
  * Registers a device log callback function. This callback will be called each time

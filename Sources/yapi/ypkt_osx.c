@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_osx.c 21565 2015-09-18 13:22:27Z seb $
+ * $Id: ypkt_osx.c 21936 2015-11-06 10:55:56Z seb $
  *
  * OS-specific USB packet layer, Mac OS X version
  *
@@ -534,18 +534,17 @@ void yyyPacketShutdown(yInterfaceSt  *iface)
 #ifdef IOS_API
 #include "yproto.h"
 
-
-int yUSB_init(yContextSt *ctx,char *errmsg)
+int yyyUSB_init(yContextSt *ctx,char *errmsg)
 {
     return YAPI_SUCCESS;
 }
 
-int yUSB_stop(yContextSt *ctx,char *errmsg)
+int yyyUSB_stop(yContextSt *ctx,char *errmsg)
 {
     return 0;
 }
 
-int yUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
+int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
 {
     *nbifaceDetect = 0;
     return 0;
@@ -561,24 +560,9 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
     return YERR(YAPI_NOT_SUPPORTED);
 }
 
-int yyyRead(yInterfaceSt *iface,char *errmsg)
+int  yyySignalOutPkt(yInterfaceSt *iface)
 {
-    return YERR(YAPI_NOT_SUPPORTED);
-}
-
-int yyyReadIdle(yInterfaceSt *iface,char *errmsg)
-{
-    return YERR(YAPI_NOT_SUPPORTED);
-}
-
-int yyyReadStop(yInterfaceSt *iface,char *errmsg)
-{
-    return YERR(YAPI_NOT_SUPPORTED);
-}
-
-int yyyWrite(yInterfaceSt *iface,USB_Packet *pkt,char *errmsg)
-{
-    return YERR(YAPI_NOT_SUPPORTED);
+    return -1;
 }
 
 void yyyPacketShutdown(yInterfaceSt  *iface)

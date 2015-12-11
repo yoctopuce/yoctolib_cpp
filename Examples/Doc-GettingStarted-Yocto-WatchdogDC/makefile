@@ -1,23 +1,23 @@
 # *********************************************************************
 #
 #  Windows Makefile for examples (use nmake)
-# 
+#
 # ********************************************************************
 .SILENT:
 
-YOCTO_API_SRC = ..\..\Sources\ 
+YOCTO_API_SRC = ..\..\Sources\
 
 YOCTO_API_LIB = ..\..\Binaries\windows\yocto-static.lib
 
 
 Binary_Windows\demo.exe: main.cpp $(YOCTO_API_LIB)
 	IF NOT EXIST Binary_Windows mkdir Binary_Windows
-	$(CPP) $(CPPFLAGS) /EHsc /nologo /I $(YOCTO_API_SRC) /Fe$@  main.cpp /link $(YOCTO_API_LIB) 
+	$(CPP) $(CPPFLAGS) /EHsc /nologo /I $(YOCTO_API_SRC) /Fe$@  main.cpp /link $(YOCTO_API_LIB)
 
 
 visual:
-	echo msbuild VisualStudio\VisualStudio.vcxproj
-	msbuild VisualStudio\VisualStudio.vcxproj
+	echo msbuild VisualStudio\demo.vcxproj
+	msbuild VisualStudio\demo.vcxproj
 
 
 visualstudioclean:

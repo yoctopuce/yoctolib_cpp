@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.h 19508 2015-02-26 08:16:37Z mvuilleu $
+ * $Id: yhash.h 21955 2015-11-06 15:22:11Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -197,7 +197,6 @@ typedef enum {
 } yAsbUrlType;
 
 void  yHashInit(void);
-void  yHashFree(void);
 yHash yHashPutBuf(const u8 *buf, u16 len);
 yHash yHashPutStr(const char *str);
 yHash yHashTestBuf(const u8 *buf, u16 len);
@@ -210,11 +209,10 @@ char  *yHashGetStrPtr(yHash yhash);
 yUrlRef yHashUrlFromRef(yUrlRef urlref, const char *rootUrl);
 yUrlRef yHashUrl(const char *host, const char *rootUrl, u8 testonly, char *errmsg);
 yAsbUrlType  yHashGetUrlPort(yUrlRef urlref, char *url,u16 *port);
+void  yHashFree(void);
 #endif
 yUrlRef yHashUrlUSB(yHash serial);
 yUrlRef yHashUrlAPI(void);
-yBlkHdl yBlkAlloc(void);
-void    yBlkFree(yBlkHdl hdl);
 u16     yBlkListLength(yBlkHdl hdl);
 yBlkHdl yBlkListSeek(yBlkHdl hdl, u16 pos);
 int     wpRegister(int devYdx, yStrRef serial, yStrRef logicalName, yStrRef productName, u16 productId, yUrlRef devUrl, s8 beacon);
@@ -233,29 +231,30 @@ void    wpAllowUnregisterEx(void);
 #define wpAllowUnregister()     wpAllowUnregisterEx()
 #endif
 int     wpMarkForUnregister(yStrRef serial);
-u16     wpEntryCount(void);
 int     wpGetDevYdx(yStrRef serial);
-YAPI_DEVICE wpSearchEx(yStrRef strref);
-YAPI_DEVICE wpSearch(const char *device_str);
 YAPI_DEVICE wpSearchByNameHash(yStrRef strref);
 #ifndef MICROCHIP_API
+u16     wpEntryCount(void);
+YAPI_DEVICE wpSearchEx(yStrRef strref);
+YAPI_DEVICE wpSearch(const char *device_str);
 YAPI_DEVICE wpSearchByUrl(const char *host, const char *rootUrl);
 int     wpGetAllDevUsingHubUrl( yUrlRef hubUrl, yStrRef *buffer,int sizeInStrRef);
-#endif
-int     wpGetDeviceInfo(YAPI_DEVICE devdesc, u16 *deviceid, char *productname, char *serial, char *logicalname, u8 *beacon);
+
 yUrlRef wpGetDeviceUrlRef(YAPI_DEVICE devdesc);
 int     wpGetDeviceUrl(YAPI_DEVICE devdesc, char *roothubserial, char *request, int requestsize, int *neededsize);
+YAPI_FUNCTION ypSearch(const char *class_str, const char *func_str);
+int     ypGetFunctions(const char *class_str, YAPI_DEVICE devdesc, YAPI_FUNCTION prevfundesc,
+                       YAPI_FUNCTION *buffer,int maxsize,int *neededsize);
+int     ypGetFunctionInfo(YAPI_FUNCTION fundesc, char *serial, char *funcId, char *baseType, char *funcName, char *funcVal);
+#endif
+int     wpGetDeviceInfo(YAPI_DEVICE devdesc, u16 *deviceid, char *productname, char *serial, char *logicalname, u8 *beacon);
 int     ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, int funClass, int funYdx, const char *funcVal);
 int     ypRegisterByYdx(u8 devYdx, Notification_funydx funInfo, const char *funcVal, YAPI_FUNCTION *fundesc);
 void    ypGetCategory(yBlkHdl hdl, char *name, yBlkHdl *entries);
 int     ypGetAttributes(yBlkHdl hdl, yStrRef *serial, yStrRef *funcId, yStrRef *funcName, Notification_funydx *funcInfo, char *funcVal);
 int     ypGetType(yBlkHdl hdl);
-YAPI_FUNCTION ypSearch(const char *class_str, const char *func_str);
 int     ypGetBootDevHdl(const char *serial);
 s16     ypFindBootloaders(yStrRef *serials, u16 maxSerials);
-int     ypGetFunctions(const char *class_str, YAPI_DEVICE devdesc, YAPI_FUNCTION prevfundesc,
-                       YAPI_FUNCTION *buffer,int maxsize,int *neededsize);
-int     ypGetFunctionInfo(YAPI_FUNCTION fundesc, char *serial, char *funcId, char *funcName, char *funcVal);
 int     decodeNetFuncValV2(const u8 *p, Notification_funydx *funInfo, char *funcVal);
 
 #ifdef  __cplusplus

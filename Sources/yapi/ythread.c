@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.c 19957 2015-04-08 14:40:57Z seb $
+ * $Id: ythread.c 22324 2015-12-11 10:14:09Z seb $
  *
  * OS-independent thread and synchronization library
  *
@@ -69,16 +69,16 @@ void yResetEvent(yEvent *ev)
 
 
 
-int    yWaitForEvent(yEvent *ev,int time)
+int    yWaitForEvent(yEvent *ev, int time)
 {
     DWORD usec;
     DWORD res;
-    if(time<=0){
-        usec=INFINITE;
-    }else{
-        usec=time;
+    if (time < 0) {
+        usec = INFINITE;
+    } else {
+        usec = time;
     }
-    res = WaitForSingleObject(*ev,usec);
+    res = WaitForSingleObject(*ev, usec);
     return res ==WAIT_OBJECT_0;
 }
 
@@ -191,29 +191,28 @@ void    yResetEvent(yEvent *ev)
 }
 
 
-int   yWaitForEvent(yEvent *ev,int time)
+int   yWaitForEvent(yEvent *ev, int time)
 {
     int retval;
     pthread_mutex_lock(&ev->mtx);
-    if(!ev->verif){
-        if(time>0){
+    if (!ev->verif) {
+        if (time >= 0) {
             struct timeval now;
             struct timespec later;
             gettimeofday(&now, NULL);
-            later.tv_sec=now.tv_sec+ time/1000;
-            later.tv_nsec=now.tv_usec*1000 +(time%1000)*1000000;
-            if(later.tv_nsec>=1000000000){
+            later.tv_sec = now.tv_sec + time / 1000;
+            later.tv_nsec = now.tv_usec * 1000 + (time % 1000) * 1000000;
+            if (later.tv_nsec >= 1000000000) {
                 later.tv_sec++;
-                later.tv_nsec-=1000000000;
+                later.tv_nsec -= 1000000000;
             }
             pthread_cond_timedwait(&ev->cond, &ev->mtx, &later);
-
-        }else{
+        } else {
             pthread_cond_wait(&ev->cond,&ev->mtx);
         }
     }
-    retval=ev->verif;
-    if(ev->autoreset)
+    retval = ev->verif;
+    if (ev->autoreset)
         ev->verif=0;
     pthread_mutex_unlock(&ev->mtx);
     return retval;

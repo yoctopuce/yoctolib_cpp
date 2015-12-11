@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_realtimeclock.cpp 19606 2015-03-05 10:35:57Z seb $
+ * $Id: yocto_realtimeclock.cpp 22191 2015-12-02 06:49:31Z mvuilleu $
  *
  * Implements yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *
@@ -115,7 +115,6 @@ s64 YRealTimeClock::get_unixTime(void)
 
 /**
  * Changes the current time. Time is specifid in Unix format (number of elapsed seconds since Jan 1st, 1970).
- * If current UTC time is known, utcOffset will be automatically adjusted for the new specified time.
  *
  * @param newval : an integer corresponding to the current time
  *
@@ -167,8 +166,6 @@ int YRealTimeClock::get_utcOffset(void)
 /**
  * Changes the number of seconds between current time and UTC time (time zone).
  * The timezone is automatically rounded to the nearest multiple of 15 minutes.
- * If current UTC time is known, the current time will automatically be updated according to the
- * selected time zone.
  *
  * @param newval : an integer corresponding to the number of seconds between current time and UTC time (time zone)
  *
