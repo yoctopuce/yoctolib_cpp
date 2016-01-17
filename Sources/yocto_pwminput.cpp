@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwminput.cpp 22191 2015-12-02 06:49:31Z mvuilleu $
+ * $Id: yocto_pwminput.cpp 22694 2016-01-12 23:13:27Z seb $
  *
  * Implements yFindPwmInput(), the high-level API for PwmInput functions
  *
@@ -356,10 +356,12 @@ int YPwmInput::_invokeValueCallback(string value)
  */
 int YPwmInput::registerTimedReportCallback(YPwmInputTimedReportCallback callback)
 {
+    YSensor* sensor = NULL;
+    sensor = this;
     if (callback != NULL) {
-        YFunction::_UpdateTimedReportCallbackList(this, true);
+        YFunction::_UpdateTimedReportCallbackList(sensor, true);
     } else {
-        YFunction::_UpdateTimedReportCallbackList(this, false);
+        YFunction::_UpdateTimedReportCallbackList(sensor, false);
     }
     _timedReportCallbackPwmInput = callback;
     return 0;

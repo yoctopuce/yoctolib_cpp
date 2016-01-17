@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h 21955 2015-11-06 15:22:11Z seb $
+ * $Id: yapi.h 22694 2016-01-12 23:13:27Z seb $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -625,6 +625,30 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetDeviceInfo(YAPI_DEVICE devdesc,yDeviceSt *i
 YRETCODE YAPI_FUNCTION_EXPORT yapiGetDevicePath(YAPI_DEVICE devdesc, char *rootdevice, char *path, int pathsize, int *neededsize, char *errmsg);
 
 
+/*****************************************************************************
+ Function:
+   YRETCODE yapiGetDevicePathEx(const char * serial, char *rootdevice, char *path, int pathsize, int *neededsize, char *errmsg);
+
+ Description:
+   return the rootdevice and the path to access a device.
+
+ Parameters:
+   serila      : the serial number of the devcie
+   rootdevice  : a pointer to a buffer of YOCTO_SERIAL_LEN characters for receiving the rootdevice
+   path        : a pointer to a buffer of for storing the base path to add to your HTTP request
+   pathtsize   : size of the path buffer
+   neededsize  : size of the path buffer needed to be complete (may be NULL)
+   errmsg      : a pointer to a buffer of YOCTO_ERRMSG_LEN bytes to store any error message
+
+ Returns:
+   on ERROR   : error code
+   on SUCCESS : YAPI_SUCCESS
+
+ Remarks:
+
+ ***************************************************************************/
+YRETCODE YAPI_FUNCTION_EXPORT yapiGetDevicePathEx(const char * serial, char *rootdevice, char *request, int requestsize, int *neededsize, char *errmsg);
+
 
 /*****************************************************************************
  Function:
@@ -943,6 +967,10 @@ void YAPI_FUNCTION_EXPORT yapiRegisterHubDiscoveryCallback(yapiHubDiscoveryCallb
 
  ***************************************************************************/
 YRETCODE YAPI_FUNCTION_EXPORT yapiTriggerHubDiscovery(char *errmsg);
+
+
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiGetSubdevices(const char *serial, char *buffer, int buffersize, int *fullsize, char *errmsg);
 
 /*****************************************************************************
   Flash API

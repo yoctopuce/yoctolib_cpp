@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.cpp 19606 2015-03-05 10:35:57Z seb $
+ * $Id: yocto_files.cpp 22694 2016-01-12 23:13:27Z seb $
  *
  * Implements yFindFiles(), the high-level API for Files functions
  *
@@ -305,6 +305,30 @@ vector<YFileRecord> YFiles::get_list(string pattern)
         res.push_back(YFileRecord(filelist[ii]));
     }
     return res;
+}
+
+/**
+ * Test if a file exist on the filesystem of the module.
+ *
+ * @param filename : the file name to test.
+ *
+ * @return a true if the file existe, false ortherwise.
+ *
+ * On failure, throws an exception.
+ */
+bool YFiles::fileExist(string filename)
+{
+    string json;
+    vector<string> filelist;
+    if ((int)(filename).length() == 0) {
+        return false;
+    }
+    json = this->sendCommand(YapiWrapper::ysprintf("dir&f=%s",filename.c_str()));
+    filelist = this->_json_get_array(json);
+    if ((int)filelist.size() > 0) {
+        return true;
+    }
+    return false;
 }
 
 /**

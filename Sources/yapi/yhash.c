@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 21955 2015-11-06 15:22:11Z seb $
+ * $Id: yhash.c 22561 2015-12-29 17:27:47Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -797,7 +797,7 @@ int wpRegister(int devYdx, yStrRef serial, yStrRef logicalName, yStrRef productN
         WP(hdl).flags &= ~YWP_MARK_FOR_UNREGISTER;
     }
 
-#ifdef  DEBUG_WP
+#ifdef DEBUG_WP
     {
         char host[YOCTO_HOSTNAME_NAME];
         u16  port;
@@ -1027,7 +1027,7 @@ int wpGetAllDevUsingHubUrl( yUrlRef hubUrl, yStrRef *buffer,int sizeInStrRef)
             absurl.byname.host == hubAbsUrl.byname.host &&
             absurl.byname.port == hubAbsUrl.byname.port ) {
             if(sizeInStrRef){
-                *buffer++ = WP(hdl).serial;;
+                *buffer++ = WP(hdl).serial;
                 sizeInStrRef--;
             }
             count++;

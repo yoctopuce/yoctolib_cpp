@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 22191 2015-12-02 06:49:31Z mvuilleu $
+ * $Id: yocto_api.cpp 22794 2016-01-15 17:31:53Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -313,7 +313,7 @@ vector<string> YFirmwareUpdate::GetAllBootLoaders(void)
         return bootladers;
     }
     if (fullsize <= 1024) {
-        bootloader_list = string(smallbuff, fullsize);
+        bootloader_list = string(smallbuff, yapi_res);
     } else {
         buffsize = fullsize;
         bigbuff = (char *)malloc(buffsize);
@@ -322,7 +322,7 @@ vector<string> YFirmwareUpdate::GetAllBootLoaders(void)
             free(bigbuff);
             return bootladers;
         } else {
-            bootloader_list = string(bigbuff, fullsize);
+            bootloader_list = string(bigbuff, yapi_res);
         }
         free(bigbuff);
     }
@@ -337,11 +337,11 @@ vector<string> YFirmwareUpdate::GetAllBootLoaders(void)
  * In this case this method return the path of the most recent appropriate byn file. This method will
  * ignore firmware that are older than mintrelase.
  *
- * @param serial  : the serial number of the module to update
- * @param path    : the path of a byn file or a directory that contain byn files
- * @param minrelease : an positif integer
+ * @param serial : the serial number of the module to update
+ * @param path : the path of a byn file or a directory that contains byn files
+ * @param minrelease : a positive integer
  *
- * @return : the path of the byn file to use or a empty string if no byn files match the requirement
+ * @return : the path of the byn file to use or an empty string if no byn files match the requirement
  *
  * On failure, returns a string that start with "error:".
  */
@@ -3919,7 +3919,7 @@ int YModule::get_productId(void)
  */
 int YModule::get_productRelease(void)
 {
-    if (_cacheExpiration == 0) {
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
         if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
             return YModule::PRODUCTRELEASE_INVALID;
         }
@@ -4265,7 +4265,7 @@ int YModule::triggerFirmwareUpdate(int secBeforeReboot)
  * older or equal to
  * the installed firmware.
  *
- * @param path    : the path of a byn file or a directory that contains byn files
+ * @param path : the path of a byn file or a directory that contains byn files
  * @param onlynew : returns only files that are strictly newer
  *
  * @return : the path of the byn file to use or a empty string if no byn files matches the requirement
@@ -4310,7 +4310,7 @@ YFirmwareUpdate YModule::updateFirmware(string path)
         this->_throw(YAPI_IO_ERROR, "Unable to get device settings");
         settings = "error:Unable to get device settings";
     }
-    return YFirmwareUpdate(serial,path,settings);
+    return YFirmwareUpdate(serial, path, settings);
 }
 
 /**
@@ -5110,6 +5110,101 @@ string YModule::get_lastLogs(void)
     return content;
 }
 
+/**
+ * Returns a list of all the modules that are plugged into the current module. This
+ * method is only useful on a YoctoHub/VirtualHub. This method return the serial number of all
+ * module connected to a YoctoHub. Calling this method on a standard device is not an
+ * error, and an empty array will be returned.
+ *
+ * @return an array of strings containing the sub modules.
+ */
+vector<string> YModule::get_subDevices(void)
+{
+    char errmsg[YOCTO_ERRMSG_LEN];
+    char smallbuff[1024];
+    char *bigbuff;
+    int buffsize = 0;
+    int fullsize = 0;
+    int yapi_res = 0;
+    string subdevice_list;
+    vector<string> subdevices;
+    string serial;
+    // may throw an exception
+    serial = this->get_serialNumber();
+    fullsize = 0;
+    yapi_res = yapiGetSubdevices(serial.c_str(), smallbuff, 1024, &fullsize, errmsg);
+    if (yapi_res < 0) {
+        return subdevices;
+    }
+    if (fullsize <= 1024) {
+        subdevice_list = string(smallbuff, yapi_res);
+    } else {
+        buffsize = fullsize;
+        bigbuff = (char *)malloc(buffsize);
+        yapi_res = yapiGetSubdevices(serial.c_str(), bigbuff, buffsize, &fullsize, errmsg);
+        if (yapi_res < 0) {
+            free(bigbuff);
+            return subdevices;
+        } else {
+            subdevice_list = string(bigbuff, yapi_res);
+        }
+        free(bigbuff);
+    }
+    if (!(subdevice_list == "")) {
+        subdevices = _strsplit(subdevice_list,',');
+    }
+    return subdevices;
+}
+
+/**
+ * Returns the serial number of the YoctoHub on which this module is connected.
+ * If the module is connected by USB or if the module is the root YoctoHub an
+ * empty string is returned.
+ *
+ * @return a string with the serial number of the YoctoHub or an empty string
+ */
+string YModule::get_parentHub(void)
+{
+    char errmsg[YOCTO_ERRMSG_LEN];
+    char hubserial[YOCTO_SERIAL_LEN];
+    int pathsize = 0;
+    int yapi_res = 0;
+    string serial;
+    // may throw an exception
+    serial = this->get_serialNumber();
+    // retrieve device object
+    pathsize = 0;
+    yapi_res = yapiGetDevicePathEx(serial.c_str(), hubserial, NULL, 0, &pathsize, errmsg);
+    if (yapi_res < 0) {
+        return "";
+    }
+    return string(hubserial);
+}
+
+/**
+ * Returns the URL used to access the module. If the module is connected by USB the
+ * string 'usb' is returned.
+ *
+ * @return a string with the URL of the module.
+ */
+string YModule::get_url(void)
+{
+    char errmsg[YOCTO_ERRMSG_LEN];
+    char path[1024];
+    int pathsize = 0;
+    int yapi_res = 0;
+    string serial;
+    // may throw an exception
+    serial = this->get_serialNumber();
+    // retrieve device object
+    pathsize = 0;
+    yapi_res = yapiGetDevicePathEx(serial.c_str(), NULL, path, 1024, &pathsize, errmsg);
+    if (yapi_res < 0) {
+        return "";
+    }
+    return string(path);
+}
+
 YModule *YModule::nextModule(void)
 {
     string  hwid;
@@ -5165,6 +5260,7 @@ void YModule::setImmutableAttributes(yDeviceSt *infos)
     _serialNumber = (string) infos->serial;
     _productName  = (string) infos->productname;
     _productId    =  infos->deviceid;
+    _cacheExpiration = YAPI::GetTickCount();
 }
 
 
@@ -6016,10 +6112,12 @@ YDataSet YSensor::get_recordedData(s64 startTime,s64 endTime)
  */
 int YSensor::registerTimedReportCallback(YSensorTimedReportCallback callback)
 {
+    YSensor* sensor = NULL;
+    sensor = this;
     if (callback != NULL) {
-        YFunction::_UpdateTimedReportCallbackList(this, true);
+        YFunction::_UpdateTimedReportCallbackList(sensor, true);
     } else {
-        YFunction::_UpdateTimedReportCallbackList(this, false);
+        YFunction::_UpdateTimedReportCallbackList(sensor, false);
     }
     _timedReportCallbackSensor = callback;
     return 0;

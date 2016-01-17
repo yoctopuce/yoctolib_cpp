@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_voltage.cpp 22191 2015-12-02 06:49:31Z mvuilleu $
+ * $Id: yocto_voltage.cpp 22694 2016-01-12 23:13:27Z seb $
  *
  * Implements yFindVoltage(), the high-level API for Voltage functions
  *
@@ -152,10 +152,12 @@ int YVoltage::_invokeValueCallback(string value)
  */
 int YVoltage::registerTimedReportCallback(YVoltageTimedReportCallback callback)
 {
+    YSensor* sensor = NULL;
+    sensor = this;
     if (callback != NULL) {
-        YFunction::_UpdateTimedReportCallbackList(this, true);
+        YFunction::_UpdateTimedReportCallbackList(sensor, true);
     } else {
-        YFunction::_UpdateTimedReportCallbackList(this, false);
+        YFunction::_UpdateTimedReportCallbackList(sensor, false);
     }
     _timedReportCallbackVoltage = callback;
     return 0;

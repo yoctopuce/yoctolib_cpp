@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.cpp 19704 2015-03-13 06:10:37Z mvuilleu $
+ * $Id: yocto_gyro.cpp 22694 2016-01-12 23:13:27Z seb $
  *
  * Implements yFindGyro(), the high-level API for Gyro functions
  *
@@ -154,10 +154,12 @@ int YQt::_invokeValueCallback(string value)
  */
 int YQt::registerTimedReportCallback(YQtTimedReportCallback callback)
 {
+    YSensor* sensor = NULL;
+    sensor = this;
     if (callback != NULL) {
-        YFunction::_UpdateTimedReportCallbackList(this, true);
+        YFunction::_UpdateTimedReportCallbackList(sensor, true);
     } else {
-        YFunction::_UpdateTimedReportCallbackList(this, false);
+        YFunction::_UpdateTimedReportCallbackList(sensor, false);
     }
     _timedReportCallbackQt = callback;
     return 0;
@@ -419,10 +421,12 @@ int YGyro::_invokeValueCallback(string value)
  */
 int YGyro::registerTimedReportCallback(YGyroTimedReportCallback callback)
 {
+    YSensor* sensor = NULL;
+    sensor = this;
     if (callback != NULL) {
-        YFunction::_UpdateTimedReportCallbackList(this, true);
+        YFunction::_UpdateTimedReportCallbackList(sensor, true);
     } else {
-        YFunction::_UpdateTimedReportCallbackList(this, false);
+        YFunction::_UpdateTimedReportCallbackList(sensor, false);
     }
     _timedReportCallbackGyro = callback;
     return 0;
@@ -442,7 +446,6 @@ int YGyro::_loadQuaternion(void)
 {
     int now_stamp = 0;
     int age_ms = 0;
-    
     now_stamp = (int) ((YAPI::GetTickCount()) & (0x7FFFFFFF));
     age_ms = (((now_stamp - _qt_stamp)) & (0x7FFFFFFF));
     if ((age_ms >= 10) || (_qt_stamp == 0)) {

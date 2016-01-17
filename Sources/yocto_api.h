@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 22194 2015-12-02 10:50:41Z mvuilleu $
+ * $Id: yocto_api.h 22694 2016-01-12 23:13:27Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -679,11 +679,11 @@ public:
      * In this case this method return the path of the most recent appropriate byn file. This method will
      * ignore firmware that are older than mintrelase.
      *
-     * @param serial  : the serial number of the module to update
-     * @param path    : the path of a byn file or a directory that contain byn files
-     * @param minrelease : an positif integer
+     * @param serial : the serial number of the module to update
+     * @param path : the path of a byn file or a directory that contains byn files
+     * @param minrelease : a positive integer
      *
-     * @return : the path of the byn file to use or a empty string if no byn files match the requirement
+     * @return : the path of the byn file to use or an empty string if no byn files match the requirement
      *
      * On failure, returns a string that start with "error:".
      */
@@ -2225,7 +2225,7 @@ public:
      * older or equal to
      * the installed firmware.
      *
-     * @param path    : the path of a byn file or a directory that contains byn files
+     * @param path : the path of a byn file or a directory that contains byn files
      * @param onlynew : returns only files that are strictly newer
      *
      * @return : the path of the byn file to use or a empty string if no byn files matches the requirement
@@ -2343,6 +2343,33 @@ public:
      *         On failure, throws an exception or returns  YAPI_INVALID_STRING.
      */
     virtual string      get_lastLogs(void);
+
+    /**
+     * Returns a list of all the modules that are plugged into the current module. This
+     * method is only useful on a YoctoHub/VirtualHub. This method return the serial number of all
+     * module connected to a YoctoHub. Calling this method on a standard device is not an
+     * error, and an empty array will be returned.
+     *
+     * @return an array of strings containing the sub modules.
+     */
+    virtual vector<string> get_subDevices(void);
+
+    /**
+     * Returns the serial number of the YoctoHub on which this module is connected.
+     * If the module is connected by USB or if the module is the root YoctoHub an
+     * empty string is returned.
+     *
+     * @return a string with the serial number of the YoctoHub or an empty string
+     */
+    virtual string      get_parentHub(void);
+
+    /**
+     * Returns the URL used to access the module. If the module is connected by USB the
+     * string 'usb' is returned.
+     *
+     * @return a string with the URL of the module.
+     */
+    virtual string      get_url(void);
 
 
     inline static YModule* Find(string func)

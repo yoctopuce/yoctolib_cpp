@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.h 19606 2015-03-05 10:35:57Z seb $
+ * $Id: yocto_files.h 22694 2016-01-12 23:13:27Z seb $
  *
  * Declares yFindFiles(), the high-level API for Files functions
  *
@@ -234,6 +234,17 @@ public:
      * On failure, throws an exception or returns an empty list.
      */
     virtual vector<YFileRecord> get_list(string pattern);
+
+    /**
+     * Test if a file exist on the filesystem of the module.
+     *
+     * @param filename : the file name to test.
+     *
+     * @return a true if the file existe, false ortherwise.
+     *
+     * On failure, throws an exception.
+     */
+    virtual bool        fileExist(string filename);
 
     /**
      * Downloads the requested file and returns a binary buffer with its content.

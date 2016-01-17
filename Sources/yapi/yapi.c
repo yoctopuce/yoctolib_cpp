@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 21955 2015-11-06 15:22:11Z seb $
+ * $Id: yapi.c 22735 2016-01-14 09:00:42Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -561,7 +561,7 @@ YRETCODE yapiPullDeviceLog(const char *serial)
 void wpSafeRegister( NetHubSt *hub, u8 devYdx, yStrRef serialref,yStrRef lnameref, yStrRef productref, u16 deviceid, yUrlRef devUrl,s8 beacon)
 {
 
-    yUrlRef     registeredUrl =wpGetDeviceUrlRef(serialref);
+    yUrlRef     registeredUrl = wpGetDeviceUrlRef(serialref);
 #ifdef DEBUG_WP
     {
         if (hub == NULL){
@@ -2551,7 +2551,7 @@ static YRETCODE  yapiSleep_internal(int ms_duration, char *errmsg)
         now =yapiGetTickCount();
         // FIXME: we may want to use a samller timeout
         if (now < timeout) {
-           if(yWaitForEvent(&yContext->exitSleepEvent,(int)(timeout-now)))
+           if (yWaitForEvent(&yContext->exitSleepEvent, (int) (timeout - now)))
                test_pkt++; //just for testing
            else
                test_tout++;
@@ -2785,6 +2785,51 @@ static YRETCODE  yapiGetDevicePath_internal(YAPI_DEVICE devdesc, char *rootdevic
     }
     return res;
 }
+
+
+static YRETCODE  yapiGetDevicePathEx_internal(const char *serial, char *rootdevice, char *request, int requestsize, int *neededsize, char *errmsg)
+{
+    YAPI_DEVICE devdescr;
+    yUrlRef url;
+    char host[YOCTO_HOSTNAME_NAME];
+    char buffer[512];
+    u16 port;
+
+    if (!yContext)
+        return YERR(YAPI_NOT_INITIALIZED);
+    if (rootdevice==NULL && request==NULL && neededsize==NULL) {
+        return YERR(YAPI_INVALID_ARGUMENT);
+    }
+    devdescr = wpSearch(serial);
+    if (YISERR(devdescr)) {
+        return YERR(YAPI_DEVICE_NOT_FOUND);
+    }
+    url = wpGetDeviceUrlRef(devdescr);
+    switch (yHashGetUrlPort(url, host, &port)) {
+    case USB_URL:
+        if (rootdevice) {
+            *rootdevice = 0;
+        }
+        if (request && requestsize > 4) {
+            YSTRCPY(request, requestsize, "usb");
+        }
+        if (*neededsize){
+            *neededsize = 4;
+        }
+        break;
+    default:
+        wpGetDeviceUrl(devdescr, rootdevice, buffer, 512, neededsize);
+        if (request) {
+            int len = YSPRINTF(request, requestsize, "http://%s:%d%s", host, port, buffer);
+            *neededsize = len + 1;
+        }
+        if (rootdevice && YSTRCMP(rootdevice, serial) == 0) {
+            *rootdevice = 0;
+        }
+    }
+    return YAPI_SUCCESS;
+}
+
 
 static YAPI_FUNCTION  yapiGetFunction_internal(const char *class_str, const char *function_str, char *errmsg)
 {
@@ -3316,7 +3361,62 @@ static YRETCODE  yapiGetBootloaders_internal(char *buffer, int buffersize, int *
     return (YRETCODE) size;
 
 }
+
 #ifndef YAPI_IN_YDEVICE
+
+static int  yapiGetSubdevices_internal(const char *serial, char *buffer, int buffersize, int *fullsize, char *errmsg)
+{
+    int             i;
+    char            *p = buffer;
+    int             size, total;
+
+    if(!yContext)
+        return YERR(YAPI_NOT_INITIALIZED);
+
+    if(buffer==NULL || buffersize<1)
+        return YERR(YAPI_INVALID_ARGUMENT);
+
+    buffersize--;// reserve space for \0
+    size = total = 0;
+    for (i = 0; i < NBMAX_NET_HUB; i++) {
+        char hubserial[YOCTO_SERIAL_LEN];
+
+        if (yContext->nethub[i].url == INVALID_HASH_IDX)
+            continue;
+
+        yHashGetStr(yContext->nethub[i].serial, hubserial, YOCTO_SERIAL_LEN);
+        if (YSTRCMP(serial, hubserial) == 0) {
+            yStrRef  knownDevices[128];
+            int j, nbKnownDevices;
+            nbKnownDevices = wpGetAllDevUsingHubUrl(yContext->nethub[i].url, knownDevices, 128);
+            total = nbKnownDevices * YOCTO_SERIAL_LEN + nbKnownDevices;
+            if (buffersize > total) {
+                int isfirst = 1;
+                for (j = 0; j < nbKnownDevices; j++) {
+                    if (knownDevices[j] == yContext->nethub[i].serial)
+                        continue;
+                    if (!isfirst)
+                        *p++ = ',';
+                    yHashGetStr(knownDevices[j], p, YOCTO_SERIAL_LEN);
+                    p += YSTRLEN(p);
+                    isfirst = 0;
+                }
+            }
+            break;
+        }
+    }
+
+    //ensure buffer is null terminated;
+    size = (int) (p - buffer);
+    *p++ = 0;
+    if (fullsize)
+        *fullsize = total;
+
+    return size;
+
+}
+
+
 static const char*  yapiJsonValueParseArray(yJsonStateMachine *j, const char *path, int *result, char *errmsg);
 
 
@@ -3736,6 +3836,7 @@ typedef enum
     trcGetAllDevices,
     trcGetDeviceInfo,
     trcGetDevicePath,
+    trcGetDevicePathEx,
     trcGetFunction,
     trcGetFunctionsByClass,
     trcGetFunctionsByDevice,
@@ -3756,7 +3857,8 @@ typedef enum
     trcCheckFirmware,
     trcUpdateFirmware,
     trcGetMem,
-    trcFreeMem
+    trcFreeMem,
+    trcGetSubDevcies
 } TRC_FUN;
 
 static const char * trc_funname[] =
@@ -3789,6 +3891,7 @@ static const char * trc_funname[] =
     "GAllDev",
     "GDevInfo",
     "GDevPath",
+    "GDevPathEx",
     "GFun",
     "GFunByClass",
     "GFunByDev",
@@ -3809,7 +3912,8 @@ static const char * trc_funname[] =
     "CkFw",
     "UpFw",
     "getmem",
-    "freemem"
+    "freemem",
+    "getsubdev"
 };
 
 static const char *dlltracefile = YDLL_TRACE_FILE;
@@ -4086,6 +4190,15 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetDevicePath(YAPI_DEVICE devdesc, char *rootd
     return res;
 }
 
+YRETCODE YAPI_FUNCTION_EXPORT yapiGetDevicePathEx(const char * serial, char *rootdevice, char *request, int requestsize, int *neededsize, char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcGetDevicePathEx);
+    res = yapiGetDevicePathEx_internal(serial, rootdevice, request, requestsize, neededsize, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
 YAPI_FUNCTION YAPI_FUNCTION_EXPORT yapiGetFunction(const char *class_str, const char *function_str,char *errmsg)
 {
     YAPI_FUNCTION res;
@@ -4297,6 +4410,16 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiUpdateFirmware(const char *serial, const char 
     YDLL_CALL_LEAVE(res);
     return res;
 }
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiGetSubdevices(const char *serial, char *buffer, int buffersize, int *fullsize, char *errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcGetSubdevices);
+    res = yapiGetSubdevices_internal(serial, buffer, buffersize, fullsize, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
 #endif
 
 /*****************************************************************************

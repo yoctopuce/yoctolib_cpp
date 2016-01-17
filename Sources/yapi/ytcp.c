@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 21762 2015-10-15 11:55:52Z seb $
+ * $Id: ytcp.c 22556 2015-12-29 09:42:30Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -1397,14 +1397,14 @@ static char  hexatochar(char hi_c, char lo_c)
     return (hi << 4) + lo;
 }
 
-static void uuidToSerial(const char * uuid, char *serial)
+static int uuidToSerial(const char * uuid, char *serial)
 {
     int i;
-    int len;
+    int len, padlen;
     char *s = serial;
     const char *u = uuid;
 
-    for (i = 0, u = uuid; i< 4; i++, u += 2){
+    for (i = 0, u = uuid; i < 4; i++, u += 2){
         *s++ = hexatochar(*u, *(u + 1));
     }
     u++;
@@ -1417,14 +1417,23 @@ static void uuidToSerial(const char * uuid, char *serial)
     }
     *s++ ='-';
     u = strstr(uuid, "-COFF-EE");
+    if (u == NULL) {
+        return -1;
+    }
     u += 8;
     while (*u == '0') u++;
     len = YSTRLEN(u);
-    for (i = len; i<5; i++){
+    if (YSTRNCMP(serial, "VIRTHUB0", YOCTO_BASE_SERIAL_LEN) == 0) {
+        padlen = YOCTO_SERIAL_SEED_SIZE - 1;
+    } else {
+        padlen = 5;
+    }
+    for (i = len; i < padlen; i++) {
         *s++ = '0';
     }
     *s = 0;
-    YSTRCAT(serial, YOCTO_SERIAL_LEN, u);
+    YSTRCAT(serial, YOCTO_SERIAL_LEN, u);    
+    return 0;
 }
 
 
@@ -1459,8 +1468,11 @@ static void ySSDPUpdateCache(SSDPInfos *SSDP, const char *uuid, const char * url
     }
     if (i < NB_SSDP_CACHE_ENTRY){
         SSDP_CACHE_ENTRY *p = (SSDP_CACHE_ENTRY*) yMalloc(sizeof(SSDP_CACHE_ENTRY));
-        YSTRCPY(p->uuid,SSDP_URL_LEN,uuid);
-        uuidToSerial(p->uuid, p->serial);
+        YSTRCPY(p->uuid, SSDP_URL_LEN, uuid);
+        if (uuidToSerial(p->uuid, p->serial) < 0) {
+            yFree(p);
+            return;
+        }
         YSTRCPY(p->url,SSDP_URL_LEN,url);
         p->detectedTime = yapiGetTickCount();
         p->maxAge = cacheValidity;

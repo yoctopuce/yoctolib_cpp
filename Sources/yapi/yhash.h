@@ -1,35 +1,35 @@
 /*********************************************************************
  *
- * $Id: yhash.h 21955 2015-11-06 15:22:11Z seb $
+ * $Id: yhash.h 22561 2015-12-29 17:27:47Z seb $
  *
  * Simple hash tables and device/function information store
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
  *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
  *  non-exclusive license to use, modify, copy and integrate this
- *  file into your software for the sole purpose of interfacing 
- *  with Yoctopuce products. 
+ *  file into your software for the sole purpose of interfacing
+ *  with Yoctopuce products.
  *
- *  You may reproduce and distribute copies of this file in 
+ *  You may reproduce and distribute copies of this file in
  *  source or object form, as long as the sole purpose of this
- *  code is to interface with Yoctopuce products. You must retain 
+ *  code is to interface with Yoctopuce products. You must retain
  *  this notice in the distributed source file.
  *
  *  You should refer to Yoctopuce General Terms and Conditions
- *  for additional information regarding your rights and 
+ *  for additional information regarding your rights and
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -43,7 +43,7 @@
 #ifdef  __cplusplus
 extern "C" {
 #endif
-    
+
 #include "ydef.h"
 
 //#define DEBUG_WP_LOCK
@@ -103,7 +103,7 @@ typedef struct {
 // WP entry flags
 #define YWP_MARK_FOR_UNREGISTER 0x02
 #define YWP_BEACON_ON           0x01
-    
+
 typedef struct {
     u8          posYdx;
     u8          blkId;
@@ -123,7 +123,7 @@ typedef struct {
 #else
         yStrRef funcId;
         yStrRef serialNum;
-#endif      
+#endif
       };
       YAPI_FUNCTION hwId;
     };
@@ -220,12 +220,12 @@ yStrRef wpGetAttribute(yBlkHdl hdl, yWPAttribute attridx);
 void    wpGetSerial(yBlkHdl hdl, char *serial);
 void    wpGetLogicalName(yBlkHdl hdl, char *logicalName);
 #ifdef DEBUG_WP_LOCK
-void    wpPreventUnregisterDbg(const char *file, u32 line);    
+void    wpPreventUnregisterDbg(const char *file, u32 line);
 void    wpAllowUnregisterDbg(const char *file, u32 line);
 #define wpPreventUnregister()   wpPreventUnregisterDbg(__FILE__,__LINE__)
 #define wpAllowUnregister()     wpAllowUnregisterDbg(__FILE__,__LINE__)
 #else
-void    wpPreventUnregisterEx(void);    
+void    wpPreventUnregisterEx(void);
 void    wpAllowUnregisterEx(void);
 #define wpPreventUnregister()   wpPreventUnregisterEx()
 #define wpAllowUnregister()     wpAllowUnregisterEx()

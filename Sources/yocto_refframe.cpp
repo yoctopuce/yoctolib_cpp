@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_refframe.cpp 22191 2015-12-02 06:49:31Z mvuilleu $
+ * $Id: yocto_refframe.cpp 22360 2015-12-15 13:31:40Z seb $
  *
  * Implements yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -340,7 +340,6 @@ int YRefFrame::_calibSort(int start,int stopidx)
     double b = 0.0;
     double xa = 0.0;
     double xb = 0.0;
-    
     // bubble sort is good since we will re-sort again after offset adjustment
     changed = 1;
     while (changed > 0) {
@@ -447,7 +446,6 @@ int YRefFrame::more3DCalibration(void)
     if (_calibProgress == 100) {
         return YAPI_SUCCESS;
     }
-    
     // make sure we leave at least 160ms between samples
     currTick =  (int) ((YAPI::GetTickCount()) & (0x7FFFFFFF));
     if (((currTick - _calibPrevTick) & (0x7FFFFFFF)) < 160) {
@@ -487,7 +485,6 @@ int YRefFrame::more3DCalibration(void)
         return YAPI_SUCCESS;
     }
     _calibPrevTick = currTick;
-    
     // Determine the device orientation index
     orient = 0;
     if (zSq > 0.5) {
@@ -511,7 +508,6 @@ int YRefFrame::more3DCalibration(void)
             orient = 5;
         }
     }
-    
     // Discard measures that are not in the proper orientation
     if (_calibStageProgress == 0) {
         idx = 0;
@@ -533,7 +529,6 @@ int YRefFrame::more3DCalibration(void)
             return YAPI_SUCCESS;
         }
     }
-    
     // Save measure
     _calibStageHint = "calibrating...";
     _calibDataAccX.push_back(xVal);
@@ -546,7 +541,6 @@ int YRefFrame::more3DCalibration(void)
         _calibStageProgress = 1 + ((99 * _calibInternalPos) / (_calibCount));
         return YAPI_SUCCESS;
     }
-    
     // Stage done, compute preliminary result
     intpos = (_calibStage - 1) * _calibCount;
     this->_calibSort(intpos, intpos + _calibCount);
@@ -554,7 +548,6 @@ int YRefFrame::more3DCalibration(void)
     _calibLogMsg = YapiWrapper::ysprintf("Stage %d: median is %d,%d,%d", _calibStage,
     (int) floor(1000*_calibDataAccX[intpos]+0.5),
     (int) floor(1000*_calibDataAccY[intpos]+0.5),(int) floor(1000*_calibDataAccZ[intpos]+0.5));
-    
     // move to next stage
     _calibStage = _calibStage + 1;
     if (_calibStage < 7) {
@@ -586,7 +579,6 @@ int YRefFrame::more3DCalibration(void)
     _calibAccXOfs = xVal / 2.0;
     _calibAccYOfs = yVal / 2.0;
     _calibAccZOfs = zVal / 2.0;
-    
     // Recompute all norms, taking into account the computed shift, and re-sort
     intpos = 0;
     while (intpos < (int)_calibDataAcc.size()) {
@@ -603,7 +595,6 @@ int YRefFrame::more3DCalibration(void)
         this->_calibSort(intpos, intpos + _calibCount);
         idx = idx + 1;
     }
-    
     // Compute the scaling factor for each axis
     xVal = 0;
     yVal = 0;
@@ -626,7 +617,6 @@ int YRefFrame::more3DCalibration(void)
     _calibAccXScale = xVal / 2.0;
     _calibAccYScale = yVal / 2.0;
     _calibAccZScale = zVal / 2.0;
-    
     // Report completion
     _calibProgress = 100;
     _calibStageHint = "Calibration data ready for saving";
@@ -713,7 +703,6 @@ int YRefFrame::save3DCalibration(void)
     if (_calibProgress != 100) {
         return YAPI_INVALID_ARGUMENT;
     }
-    
     // Compute integer values (correction unit is 732ug/count)
     shiftX = -(int) floor(_calibAccXOfs / 0.000732+0.5);
     if (shiftX < 0) {
@@ -759,7 +748,6 @@ int YRefFrame::save3DCalibration(void)
     }
     scaleLo = ((((scaleY) & (15))) << (12)) + ((scaleX) << (2)) + scaleExp;
     scaleHi = ((scaleZ) << (6)) + ((scaleY) >> (4));
-    
     // Save calibration parameters
     newcalib = YapiWrapper::ysprintf("5,%d,%d,%d,%d,%d", shiftX, shiftY, shiftZ, scaleLo,scaleHi);
     _calibStage = 0;

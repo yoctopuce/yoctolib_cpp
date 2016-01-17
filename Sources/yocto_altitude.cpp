@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_altitude.cpp 22191 2015-12-02 06:49:31Z mvuilleu $
+ * $Id: yocto_altitude.cpp 22694 2016-01-12 23:13:27Z seb $
  *
  * Implements yFindAltitude(), the high-level API for Altitude functions
  *
@@ -247,10 +247,12 @@ int YAltitude::_invokeValueCallback(string value)
  */
 int YAltitude::registerTimedReportCallback(YAltitudeTimedReportCallback callback)
 {
+    YSensor* sensor = NULL;
+    sensor = this;
     if (callback != NULL) {
-        YFunction::_UpdateTimedReportCallbackList(this, true);
+        YFunction::_UpdateTimedReportCallbackList(sensor, true);
     } else {
-        YFunction::_UpdateTimedReportCallbackList(this, false);
+        YFunction::_UpdateTimedReportCallbackList(sensor, false);
     }
     _timedReportCallbackAltitude = callback;
     return 0;

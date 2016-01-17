@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_voc.cpp 22191 2015-12-02 06:49:31Z mvuilleu $
+ * $Id: yocto_voc.cpp 22694 2016-01-12 23:13:27Z seb $
  *
  * Implements yFindVoc(), the high-level API for Voc functions
  *
@@ -152,10 +152,12 @@ int YVoc::_invokeValueCallback(string value)
  */
 int YVoc::registerTimedReportCallback(YVocTimedReportCallback callback)
 {
+    YSensor* sensor = NULL;
+    sensor = this;
     if (callback != NULL) {
-        YFunction::_UpdateTimedReportCallbackList(this, true);
+        YFunction::_UpdateTimedReportCallbackList(sensor, true);
     } else {
-        YFunction::_UpdateTimedReportCallbackList(this, false);
+        YFunction::_UpdateTimedReportCallbackList(sensor, false);
     }
     _timedReportCallbackVoc = callback;
     return 0;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 22196 2015-12-02 11:32:51Z seb $
+ * $Id: ydef.h 22556 2015-12-29 09:42:30Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -433,6 +433,7 @@ typedef enum {
 #define YOCTO_PUBVAL_SIZE            6 // Size of the data (can be non null terminated)
 #define YOCTO_PUBVAL_LEN            16 // Temporary storage, >= YOCTO_PUBVAL_SIZE+2
 #define YOCTO_REPORT_LEN             9 // Max size of a timed report, including isAvg flag
+#define YOCTO_SERIAL_SEED_SIZE       (YOCTO_SERIAL_LEN - YOCTO_BASE_SERIAL_LEN - 1)
 
 // firmware description
 typedef union {
