@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.c 22324 2015-12-11 10:14:09Z seb $
+ * $Id: ythread.c 22930 2016-01-27 16:30:59Z seb $
  *
  * OS-independent thread and synchronization library
  *
@@ -277,8 +277,6 @@ int    yThreadIndex(void)
 #endif
 
 
-
-
 int    yCreateDetachedThread(void* (*fun)(void *), void *arg)
 {
     osThread th_hdl;
@@ -288,9 +286,6 @@ int    yCreateDetachedThread(void* (*fun)(void *), void *arg)
     yReleaseDetachedThreadEx(&th_hdl);
     return 0;
 }
-
-
-
 
 
 int    yThreadCreate(yThread *yth,void* (*fun)(void *), void *arg)
@@ -304,7 +299,7 @@ int    yThreadCreate(yThread *yth,void* (*fun)(void *), void *arg)
             yCloseEvent(&yth->ev);
             return-1;
         }
-        yWaitForEvent(&yth->ev,0);
+        yWaitForEvent(&yth->ev, -1);
         yCloseEvent(&yth->ev);
         return 1;
     }

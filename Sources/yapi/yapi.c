@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 22735 2016-01-14 09:00:42Z seb $
+ * $Id: yapi.c 22932 2016-01-27 17:10:00Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -3549,7 +3549,7 @@ static const char*  yapiJsonValueParseArray(yJsonStateMachine *j, const char *pa
     array_type = j->st;
     if (j->st != YJSON_PARSE_STRUCT) {
 #ifdef DEBUG_JSON_PARSE
-        dbglog("fixme %s %s(%d):%s\n", j->token, yJsonStateStr[j->st], j->st, j->token);
+        dbglog("debug %s %s(%d):%s\n", j->token, yJsonStateStr[j->st], j->st, j->token);
 #endif
         *result = YERRMSG(YAPI_NOT_SUPPORTED, "Unsupported JSON array");
         return "";

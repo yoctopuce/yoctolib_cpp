@@ -51,7 +51,7 @@ void YoctoShield::removeSubDevice(string serial)
 void YoctoShield::describe()
 {
     cout << "  " << _serial << endl;
-    for (long i = 0; i < _subDevices.size(); i++) {
+    for (unsigned long i = 0; i < _subDevices.size(); i++) {
         cout << "    " << _subDevices[i] << endl;
     }
 }

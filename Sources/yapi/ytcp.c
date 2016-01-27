@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 22556 2015-12-29 09:42:30Z seb $
+ * $Id: ytcp.c 22932 2016-01-27 17:10:00Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -643,7 +643,7 @@ static void dumpTCPReq(const char *fileid, int lineno, struct _TcpReqSt *req)
     } else {
         dbglog("null\n");
     }
-    w = yWaitForEvent(&req->finished, 1);
+    w = yWaitForEvent(&req->finished, 0);
     dbglog("finished=%d\n", w);
 }
 #endif
@@ -1432,7 +1432,7 @@ static int uuidToSerial(const char * uuid, char *serial)
         *s++ = '0';
     }
     *s = 0;
-    YSTRCAT(serial, YOCTO_SERIAL_LEN, u);    
+    YSTRCAT(serial, YOCTO_SERIAL_LEN, u);
     return 0;
 }
 
