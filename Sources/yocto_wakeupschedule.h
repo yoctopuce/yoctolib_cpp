@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wakeupschedule.h 19606 2015-03-05 10:35:57Z seb $
+ * $Id: yocto_wakeupschedule.h 23246 2016-02-23 14:49:01Z seb $
  *
  * Declares yFindWakeUpSchedule(), the high-level API for WakeUpSchedule functions
  *
@@ -28,8 +28,8 @@
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
  *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -259,7 +259,7 @@ public:
     { return this->set_months(newval); }
 
     /**
-     * Returns the date/time (seconds) of the next wake up occurence
+     * Returns the date/time (seconds) of the next wake up occurence.
      *
      * @return an integer corresponding to the date/time (seconds) of the next wake up occurence
      *

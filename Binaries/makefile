@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: makefile 22074 2015-11-23 18:07:09Z seb $
+#  $Id: makefile 24083 2016-04-21 15:21:17Z seb $
 #
 #  makefile for C++ library
 #  - - - - - - - - - License information: - - - - - - - - -
@@ -86,7 +86,7 @@ YOCTO_API_OBJS =  $(OD)\yocto_api.obj $(OD)\yocto_anbutton.obj $(OD)\yocto_carbo
 	$(OD)\yocto_gyro.obj $(OD)\yocto_pwmoutput.obj $(OD)\yocto_pwmpowersource.obj $(OD)\yocto_altitude.obj $(OD)\yocto_motor.obj \
 	$(OD)\yocto_serialport.obj $(OD)\yocto_pwminput.obj $(OD)\yocto_segmenteddisplay.obj $(OD)\yocto_buzzer.obj $(OD)\yocto_gps.obj \
 	$(OD)\yocto_cellular.obj $(OD)\yocto_groundspeed.obj $(OD)\yocto_latitude.obj $(OD)\yocto_longitude.obj  $(OD)\yocto_poweroutput.obj \
-	$(OD)\yocto_quadraturedecoder.obj $(OD)\yocto_currentloopoutput.obj
+	$(OD)\yocto_quadraturedecoder.obj $(OD)\yocto_currentloopoutput.obj $(OD)\yocto_colorledcluster.obj $(OD)\yocto_spiport.obj
 
 YOCTO_API_OBJS32 = $(YOCTO_API_OBJS:arch_type=windows\obj_dir)
 
@@ -159,6 +159,8 @@ b32:   $(OBJDIR32) $(OBJDIR_DLL32) $(YAPIOUT32) $(OUTDIR32)\yocto-static.lib $(O
 b64:   $(OBJDIR64) $(OBJDIR_DLL64) $(YAPIOUT64) $(OUTDIR64)\yocto-static.lib $(OUTDIR64)\yocto.dll $(YAPIOUT64)\yapi-static.lib $(YAPIOUT64)\yapi.dll
 
 all:  b32 b64
+
+yapi:  $(OBJDIR32) $(OBJDIR_DLL32) $(YAPIOUT32) $(YAPIOUT32)\yapi.dll $(OBJDIR64) $(OBJDIR_DLL64) $(YAPIOUT64) $(YAPIOUT64)\yapi.dll
 
 release :  all clean_obj
 

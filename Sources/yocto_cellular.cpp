@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 21511 2015-09-14 16:25:19Z seb $
+ * $Id: yocto_cellular.cpp 23960 2016-04-15 21:30:18Z mvuilleu $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -100,13 +100,16 @@ YCellular::YCellular(const string& func): YFunction(func)
     ,_linkQuality(LINKQUALITY_INVALID)
     ,_cellOperator(CELLOPERATOR_INVALID)
     ,_cellIdentifier(CELLIDENTIFIER_INVALID)
+    ,_cellType(CELLTYPE_INVALID)
     ,_imsi(IMSI_INVALID)
     ,_message(MESSAGE_INVALID)
     ,_pin(PIN_INVALID)
     ,_lockedOperator(LOCKEDOPERATOR_INVALID)
+    ,_airplaneMode(AIRPLANEMODE_INVALID)
     ,_enableData(ENABLEDATA_INVALID)
     ,_apn(APN_INVALID)
     ,_apnSecret(APNSECRET_INVALID)
+    ,_pingInterval(PINGINTERVAL_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackCellular(NULL)
 //--- (end of generated code: Cellular initialization)
@@ -148,6 +151,11 @@ int YCellular::_parseAttr(yJsonStateMachine& j)
         _cellIdentifier =  _parseString(j);
         return 1;
     }
+    if(!strcmp(j.token, "cellType")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _cellType =  (Y_CELLTYPE_enum)atoi(j.token);
+        return 1;
+    }
     if(!strcmp(j.token, "imsi")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _imsi =  _parseString(j);
@@ -168,6 +176,11 @@ int YCellular::_parseAttr(yJsonStateMachine& j)
         _lockedOperator =  _parseString(j);
         return 1;
     }
+    if(!strcmp(j.token, "airplaneMode")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _airplaneMode =  (Y_AIRPLANEMODE_enum)atoi(j.token);
+        return 1;
+    }
     if(!strcmp(j.token, "enableData")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _enableData =  (Y_ENABLEDATA_enum)atoi(j.token);
@@ -181,6 +194,11 @@ int YCellular::_parseAttr(yJsonStateMachine& j)
     if(!strcmp(j.token, "apnSecret")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _apnSecret =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "pingInterval")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _pingInterval =  atoi(j.token);
         return 1;
     }
     if(!strcmp(j.token, "command")) {
@@ -243,6 +261,24 @@ string YCellular::get_cellIdentifier(void)
         }
     }
     return _cellIdentifier;
+}
+
+/**
+ * Active cellular connection type.
+ *
+ * @return a value among Y_CELLTYPE_GPRS, Y_CELLTYPE_EGPRS, Y_CELLTYPE_WCDMA, Y_CELLTYPE_HSDPA,
+ * Y_CELLTYPE_NONE and Y_CELLTYPE_CDMA
+ *
+ * On failure, throws an exception or returns Y_CELLTYPE_INVALID.
+ */
+Y_CELLTYPE_enum YCellular::get_cellType(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YCellular::CELLTYPE_INVALID;
+        }
+    }
+    return _cellType;
 }
 
 /**
@@ -370,6 +406,41 @@ int YCellular::set_lockedOperator(const string& newval)
 }
 
 /**
+ * Returns true if the airplane mode is active (radio turned off).
+ *
+ * @return either Y_AIRPLANEMODE_OFF or Y_AIRPLANEMODE_ON, according to true if the airplane mode is
+ * active (radio turned off)
+ *
+ * On failure, throws an exception or returns Y_AIRPLANEMODE_INVALID.
+ */
+Y_AIRPLANEMODE_enum YCellular::get_airplaneMode(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YCellular::AIRPLANEMODE_INVALID;
+        }
+    }
+    return _airplaneMode;
+}
+
+/**
+ * Changes the activation state of airplane mode (radio turned off).
+ *
+ * @param newval : either Y_AIRPLANEMODE_OFF or Y_AIRPLANEMODE_ON, according to the activation state
+ * of airplane mode (radio turned off)
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YCellular::set_airplaneMode(Y_AIRPLANEMODE_enum newval)
+{
+    string rest_val;
+    rest_val = (newval>0 ? "1" : "0");
+    return _setAttr("airplaneMode", rest_val);
+}
+
+/**
  * Returns the condition for enabling IP data services (GPRS).
  * When data services are disabled, SMS are the only mean of communication.
  *
@@ -470,6 +541,39 @@ int YCellular::set_apnSecret(const string& newval)
     string rest_val;
     rest_val = newval;
     return _setAttr("apnSecret", rest_val);
+}
+
+/**
+ * Returns the automated connectivity check interval, in seconds.
+ *
+ * @return an integer corresponding to the automated connectivity check interval, in seconds
+ *
+ * On failure, throws an exception or returns Y_PINGINTERVAL_INVALID.
+ */
+int YCellular::get_pingInterval(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YCellular::PINGINTERVAL_INVALID;
+        }
+    }
+    return _pingInterval;
+}
+
+/**
+ * Changes the automated connectivity check interval, in seconds.
+ *
+ * @param newval : an integer corresponding to the automated connectivity check interval, in seconds
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YCellular::set_pingInterval(int newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+    return _setAttr("pingInterval", rest_val);
 }
 
 string YCellular::get_command(void)

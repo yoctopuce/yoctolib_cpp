@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.h 20141 2015-04-24 09:38:55Z seb $
+ * $Id: yprog.h 23581 2016-03-23 14:01:56Z seb $
  *
  * Declaration of firmware upgrade functions
  *
@@ -201,12 +201,12 @@ int ypSendBootloaderCmd(BootloaderSt *dev, const USB_Packet *pkt,char *errmsg);
 int ypGetBootloaderReply(BootloaderSt *dev, USB_Packet *pkt,char *errmsg);
 // Power cycle the device
 int ypBootloaderShutdown(BootloaderSt *dev);
-int IsValidBynHead(const byn_head_multi *head, u32 size, char *errmsg);
+int IsValidBynHead(const byn_head_multi *head, u32 size, u16 flags, char *errmsg);
 
 #ifndef MICROCHIP_API
 const char* prog_GetCPUName(BootloaderSt *dev);
-int ValidateBynCompat(const byn_head_multi *head, u32 size, const char *serial, BootloaderSt *dev, char *errmsg);
-int IsValidBynFile(const byn_head_multi *head, u32 size, const char *serial, char *errmsg);
+int ValidateBynCompat(const byn_head_multi *head, u32 size, const char *serial, u16 flags, BootloaderSt *dev, char *errmsg);
+int IsValidBynFile(const byn_head_multi *head, u32 size, const char *serial, u16 flags, char *errmsg);
 int BlockingRead(BootloaderSt *dev, USB_Packet *pkt, int maxwait, char *errmsg);
 int SendDataPacket(BootloaderSt *dev, int program, u32 address, u8 *data, int nbinstr, char *errmsg);
 #endif
@@ -257,6 +257,8 @@ typedef enum {
 #define ZONE_VERIF_TIMEOUT        2000u
 #define FLASH_SUBDEV_TIMEOUT     59000u
 #define YPROG_BOOTLOADER_TIMEOUT 10000u
+#define YPROG_FORCE_FW_UPDATE    1u
+
 #ifdef MICROCHIP_API
 #define FLASH_ERRMSG_LEN        56
 #else
@@ -275,6 +277,7 @@ typedef struct {
         byn_head_multi  bynHead;
         u8              bynBuff[sizeof(byn_head_multi)];
     };
+    u16                 flags;
     u16                 currzone;
     s16                 progress;
     FLASH_DEVICE_STATE  stepA;
@@ -306,8 +309,8 @@ void hProgFree(void);
 #define uGetFirmware(ofs, dst, size) yGetFirmware(ofs, dst, size)
 void yProgInit(void);
 void yProgFree(void);
-YRETCODE yapiCheckFirmware_internal(const char *serial, const char *rev, const char *path, char *buffer, int buffersize, int *fullsize, char *errmsg);
-YRETCODE yapiUpdateFirmware_internal(const char *serial, const char *firmwarePath, const char *settings, int startUpdate, char *msg);
+YRETCODE yapiCheckFirmware_internal(const char *serial, const char *rev, u32 flags, const char *path, char *buffer, int buffersize, int *fullsize, char *errmsg);
+YRETCODE yapiUpdateFirmware_internal(const char *serial, const char *firmwarePath, const char *settings, int force, int startUpdate, char *msg);
 #endif
 
 

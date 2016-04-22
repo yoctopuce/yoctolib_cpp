@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_temperature.h 21211 2015-08-19 16:03:29Z seb $
+ * $Id: yocto_temperature.h 23527 2016-03-18 21:49:19Z mvuilleu $
  *
  * Declares yFindTemperature(), the high-level API for Temperature functions
  *
@@ -28,8 +28,8 @@
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
  *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -74,6 +74,8 @@ typedef enum {
     Y_SENSORTYPE_INVALID = -1,
 } Y_SENSORTYPE_enum;
 #endif
+#define Y_SIGNALVALUE_INVALID           (YAPI_INVALID_DOUBLE)
+#define Y_SIGNALUNIT_INVALID            (YAPI_INVALID_STRING)
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 //--- (end of YTemperature definitions)
 
@@ -96,6 +98,8 @@ protected:
     //--- (YTemperature attributes)
     // Attributes (function value cache)
     Y_SENSORTYPE_enum _sensorType;
+    double          _signalValue;
+    string          _signalUnit;
     string          _command;
     YTemperatureValueCallback _valueCallbackTemperature;
     YTemperatureTimedReportCallback _timedReportCallbackTemperature;
@@ -129,6 +133,8 @@ public:
     static const Y_SENSORTYPE_enum SENSORTYPE_RES_NTC = Y_SENSORTYPE_RES_NTC;
     static const Y_SENSORTYPE_enum SENSORTYPE_RES_LINEAR = Y_SENSORTYPE_RES_LINEAR;
     static const Y_SENSORTYPE_enum SENSORTYPE_INVALID = Y_SENSORTYPE_INVALID;
+    static const double SIGNALVALUE_INVALID;
+    static const string SIGNALUNIT_INVALID;
     static const string COMMAND_INVALID;
 
     /**
@@ -187,6 +193,31 @@ public:
     int             set_sensorType(Y_SENSORTYPE_enum newval);
     inline int      setSensorType(Y_SENSORTYPE_enum newval)
     { return this->set_sensorType(newval); }
+
+    /**
+     * Returns the current value of the electrical signal measured by the sensor.
+     *
+     * @return a floating point number corresponding to the current value of the electrical signal
+     * measured by the sensor
+     *
+     * On failure, throws an exception or returns Y_SIGNALVALUE_INVALID.
+     */
+    double              get_signalValue(void);
+
+    inline double       signalValue(void)
+    { return this->get_signalValue(); }
+
+    /**
+     * Returns the measuring unit of the electrical signal used by the sensor.
+     *
+     * @return a string corresponding to the measuring unit of the electrical signal used by the sensor
+     *
+     * On failure, throws an exception or returns Y_SIGNALUNIT_INVALID.
+     */
+    string              get_signalUnit(void);
+
+    inline string       signalUnit(void)
+    { return this->get_signalUnit(); }
 
     string              get_command(void);
 

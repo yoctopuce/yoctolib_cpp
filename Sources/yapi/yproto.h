@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 22142 2015-11-26 09:21:16Z seb $
+ * $Id: yproto.h 23737 2016-04-04 13:21:04Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -84,7 +84,7 @@ typedef BOOLEAN (__stdcall *PHidD_GetAttributes)(HANDLE, PHIDD_ATTRIBUTES);
 typedef BOOLEAN (__stdcall *PHidD_GetManufacturerString) (HANDLE,PVOID,ULONG);
 typedef BOOLEAN (__stdcall *PHidD_GetProductString) (HANDLE,PVOID,ULONG);
 typedef BOOLEAN (__stdcall *PHidD_GetSerialNumberString) (HANDLE,PVOID,ULONG);
-
+typedef BOOLEAN (__stdcall *PHidD_SetNumInputBuffers) (HANDLE, ULONG);
 
 typedef struct{
     HINSTANCE                   hHID;
@@ -93,13 +93,14 @@ typedef struct{
     PHidD_GetManufacturerString GetManufacturerString;
     PHidD_GetProductString      GetProductString;
     PHidD_GetSerialNumberString GetSerialNumberString;
+    PHidD_SetNumInputBuffers    SetNumInputBuffers;
 }win_hid_api;
 
 
 //Pointers to a registry function  used
 
 typedef LONG (__stdcall *PYRegCreateKeyEx)( HKEY hKey,
-                                            char *                lpSubKey,
+                                            const char *                lpSubKey,
                                             DWORD                 Reserved,
                                             LPTSTR                lpClass,
                                             DWORD                 dwOptions,
@@ -107,7 +108,7 @@ typedef LONG (__stdcall *PYRegCreateKeyEx)( HKEY hKey,
                                             LPSECURITY_ATTRIBUTES lpSecurityAttributes,
                                             PHKEY                 phkResult,
                                             LPDWORD               lpdwDisposition);
-
+typedef LONG (_stdcall *PYRegOpenKeyEx) (HKEY hKey, const char * lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult);
 typedef LONG (__stdcall *PYRegSetValueEx)(  HKEY    hKey,
                                             char *  lpValueName,
                                             DWORD   Reserved,
@@ -121,14 +122,19 @@ typedef LONG (__stdcall *PYRegQueryValueEx)(    HKEY    hKey,
                                                 LPDWORD lpType,
                                                 LPBYTE  lpData,
                                                 LPDWORD lpcbData);
+typedef LONG(__stdcall *PYRegDeleteValue)(HKEY hKey, char * lpValueName);
 typedef LONG (__stdcall *PYRegCloseKey)(HKEY hKey);
+typedef LONG (__stdcall *PYRegDeleteKeyEx)(HKEY hKey, char * lpSubKey, REGSAM samDesired, DWORD Reserved);
 
 typedef struct{
     HINSTANCE                  hREG;
     PYRegCreateKeyEx           yRegCreateKeyEx;
+    PYRegOpenKeyEx             yRegOpenKeyEx;
     PYRegSetValueEx            yRegSetValueEx;
     PYRegQueryValueEx          yRegQueryValueEx;
+    PYRegDeleteValue           yRegDeleteValue;
     PYRegCloseKey              yRegCloseKey;
+    PYRegDeleteKeyEx           yRegDeleteKeyEx;
 }win_reg_api;
 
 
@@ -159,6 +165,7 @@ typedef struct{
 #include <time.h>
 #include "yfifo.h"
 #include "ythread.h"
+#include "yhash.h"
 #include "ykey.h"
 
 /*****************************************************************************
@@ -242,6 +249,8 @@ int ymemfind(const u8 *haystack, u32 haystack_len, const u8 *needle, u32 needle_
 //#define TRACE_NET_HUB
 //#define DEBUG_TRACE_FILE "c:\\tmp\\tracefile.txt"
 //#define DEBUG_TCP
+//#define DEBUG_WEBSOCKET
+//#define TRACE_REQUESTS
 //#define DEBUG_MISSING_PACKET
 
 #define MSC_VS2003 1310
@@ -291,6 +300,22 @@ __forceinline void __TCPLOG(fmt,...){}
 #endif
 #endif
 
+#ifdef TRACE_REQUESTS
+#define REQLOG  dbglog
+#else
+#if defined(_MSC_VER)
+#if (_MSC_VER > MSC_VS2003)
+#define REQLOG(fmt,...)
+#else
+__forceinline void __REQLOG(fmt, ...) {}
+#define REQLOG __REQLOG
+#endif
+#else
+#define REQLOG(fmt,args...)
+#endif
+#endif
+
+
 #ifdef DEBUG_DEV_ENUM
 #define ENUMLOG  dbglog
 #else
@@ -320,6 +345,26 @@ __forceinline void __NETENUMLOG(fmt,...){}
 #define NETENUMLOG(fmt,args...)
 #endif
 #endif
+
+
+
+#ifdef DEBUG_WEBSOCKET
+#define WSLOG  dbglog
+#else
+#if defined(_MSC_VER)
+#if (_MSC_VER > MSC_VS2003)
+#define WSLOG(fmt,...)
+#else
+__forceinline void __WSLOG(fmt, ...) {}
+#define WSLOG __WSLOG
+#endif
+#else
+#define WSLOG(fmt,args...)
+#endif
+#endif
+
+
+
 
 int vdbglogf(const char *fileid,int line,const char *fmt,va_list args);
 int dbglogf(const char *fileid,int line,const char *fmt,...);
@@ -384,6 +429,7 @@ int YFOPEN(FILE** f, const char *filename, const char *mode);
 #define YERR(code)              ySetErr(code,errmsg,NULL,__FILE_ID__,__LINE__)
 #define YERRTO(code,buffer)     ySetErr(code,buffer,NULL,__FILE_ID__,__LINE__)
 #define YERRMSG(code,message)   ySetErr(code,errmsg,message,__FILE_ID__,__LINE__)
+#define YERRMSGSILENT(code,message)   ySetErr(code, errmsg, message, NULL, 0)
 #define YERRMSGTO(code,message,buffer)   ySetErr(code,buffer,message,__FILE_ID__,__LINE__)
 YRETCODE ySetErr(YRETCODE code, char *outmsg, const char *erreur, const char *file, u32 line);
 int FusionErrmsg(int code,char *errmsg, const char *generr, const char *detailerr);
@@ -554,6 +600,7 @@ typedef enum
 {
     YHTTP_CLOSED,
     YHTTP_OPENED,
+    YHTTP_INREQUEST,
     YHTTP_CLOSE_BY_DEV,
     YHTTP_CLOSE_BY_API
 } YHTTP_STATUS;
@@ -642,7 +689,6 @@ typedef enum {
     NET_HUB_DISCONNECTED=0,
     NET_HUB_TRYING,
     NET_HUB_ESTABLISHED,
-    NET_HUB_FAILED,
     NET_HUB_TOCLOSE,
     NET_HUB_CLOSED
 } NET_HUB_STATE;
@@ -651,53 +697,137 @@ typedef enum {
 #define MAX_YDX_PER_HUB 255
 #define ALLOC_YDX_PER_HUB 256
 // NetHubSt flags
-#define NETH_F_MANDATORY                1
-#define NETH_F_SEND_PING_NOTIFICATION   2
+//#define NETH_F_MANDATORY                1
+//#define NETH_F_SEND_PING_NOTIFICATION   2
 
 #define NET_HUB_NOT_CONNECTION_TIMEOUT   (6*1024)
 
-
-typedef struct _NetHubSt {
-    yUrlRef             url;            // hub base URL, or INVALID_HASH_IDX if unused
-    u32                 flags;
-    yStrRef             serial;
-    WakeUpSocket        wuce;
-    yThread             net_thread;
+typedef struct _HTTPNetHubSt {
     // the following fields are for the notification helper thread only
-    NET_HUB_STATE       state;
-    int                 retryCount;
-    struct _TcpReqSt    *notReq;
-    u32                 notifAbsPos;
-    u64                 lastAttempt;    // time of the last connection attempt (in ms)
-    u64                 attemptDelay;   // delay until next attemps (in ms)
-    yFifoBuf            fifo;           // notification fifo
-    u8                  buffer[1024];   // buffer for the fifo
-    // the following fields are used by hub net enum and notification helper thread
-    u64                 devListExpires;
-    u8                  devYdxMap[ALLOC_YDX_PER_HUB];   // maps hub's internal devYdx to our WP devYdx
-    int                 writeProtected; // admin password detected
+    struct _RequestSt    *notReq;
+                                        // the following fields are used by hub net enum and notification helper thread
     u64                 lastTraffic;    // time of the last data received on the notification socket (in ms)
-    // the following fields are used for authentication to the hub, and require mutex access
-    yCRITICAL_SECTION   authAccess;
-    char                *name;
-    char                *user;
-    char                *realm;
-    char                *pwd;
-    char                *nonce;
-    char                *opaque;
-    u8                  ha1[16];        // computed when realm is received if pwd is not NULL
+                                        // the following fields are used for authentication to the hub, and require mutex access
+    char                *s_user;
+    char                *s_realm;
+    char                *s_pwd;
+    char                *s_nonce;
+    char                *s_opaque;
+    u8                  s_ha1[16];        // computed when realm is received if pwd is not NULL
     u32                 nc;             // reset each time a new nonce is received
-} NetHubSt;
+} HTTPNetHub;
+
+
+
+enum WS_BASE_STATE
+{
+    WS_BASE_OFFLINE = 0,
+    WS_BASE_HEADER_SENT,
+    WS_BASE_SOCKET_UPGRADED,
+    WS_BASE_AUTHENTICATING,
+    WS_BASE_CONNECTED,
+};
+
+typedef struct _WSChanSt {
+    u32 lastUploadAckBytes;
+    u64 lastUploadAckTime;
+    u32 lastUploadRateBytes;
+    u64 lastUploadRateTime;
+    yCRITICAL_SECTION access;
+    struct _RequestSt* requests;
+}WSChanSt;
+
+typedef struct _WSNetHubSt {
+    enum WS_BASE_STATE base_state;
+    enum WS_BASE_STATE strym_state;
+    char serial[YOCTO_SERIAL_LEN];
+    char websocket_key[32];
+    int websocket_key_len;
+    int remoteVersion;
+    u32 remoteNounce;
+    u32 nounce;
+    yStrRef user;
+    yStrRef pass;
+    int s_next_async_id;
+    YSOCKET skt;
+    yFifoBuf mainfifo;
+    u64 bws_open_tm;
+    u64 bws_timeout_tm;
+    u64 bws_read_tm;
+    u64 next_transmit_tm;
+    u64 connectionTime;
+    u32 tcpRoundTripTime;
+    u32 tcpMaxWindowSize;
+    u32 uploadRate;
+    WSChanSt chan[MAX_ASYNC_TCPCHAN];
+    u8* fifo_buffer;
+    struct _RequestSt *openRequests;
+} WSNetHub;
+
+
+typedef struct _HubSt {
+    yUrlRef url;            // hub base URL, or INVALID_HASH_IDX if unused
+    // misc flag that are maped to int for efficency and thread safety
+    int rw_access;
+    int send_ping;
+    int mandatory;
+    int writeProtected; // admin password detected
+    yStrRef serial;
+    WakeUpSocket wuce;
+    yThread net_thread;
+    char *name;
+    yAsbUrlProto proto;
+    NET_HUB_STATE state;
+    yFifoBuf not_fifo; // notification fifo
+    u8 not_buffer[1024]; // buffer for the fifo
+    int retryCount;
+    u32 notifAbsPos;
+    u64 lastAttempt;    // time of the last connection attempt (in ms)
+    u64 attemptDelay;   // delay until next attemps (in ms)
+    u64 devListExpires;
+    u8 devYdxMap[ALLOC_YDX_PER_HUB];   // maps hub's internal devYdx to our WP devYdx //fixme:
+    int errcode;  // in case an error occured
+    char errmsg[YOCTO_ERRMSG_LEN];
+    yCRITICAL_SECTION access; // CS for field that need to be protected agains concurency (these filed start with cs_
+    // implementations specific struct
+    HTTPNetHub http;
+    WSNetHub ws;
+} HubSt;
 
 
 #define TCPREQ_KEEPALIVE       1
 #define TCPREQ_IN_USE          2
 
-typedef struct _TcpReqSt {
-    NetHubSt            *hub;           // pointer to the NetHubSt handling the device
+
+typedef struct _HTTPReqSt {
+    YSOCKET             skt;            // socket used to talk to the device
+    YSOCKET             reuseskt;       // socket to reuse for next query, when keepalive is true
+} HTTPReqSt;
+
+typedef struct _WSReqSt
+{
+    int channel;
+    int asyncId;
+    u32 iohdl;
+    struct _RequestSt *next;
+    u8* requestbuf; // Used to store the request to send
+    int requestsize; // the size of the request
+    int requestpos; // the pos of the request that need to be sent
+} WSReqSt;
+
+typedef enum
+{
+    REQ_CLOSED = 0, REQ_OPEN, REQ_CLOSED_BY_HUB, REQ_CLOSED_BY_API, REQ_ERROR
+} RequestState;
+
+typedef void(*RequestProgress)(void *context, u32 acked, u32 totalbytes);
+
+
+typedef struct _RequestSt {
+    HubSt               *hub;           // pointer to the NetHubSt handling the device
     yCRITICAL_SECTION   access;
     yEvent              finished;       // event seted when this request can be reused
-    YSOCKET             skt;            // socket used to talk to the device
+    RequestState        state;          // state of the request (fixme: currenty only use by WS)
     char                *headerbuf;     // Used to store all lines of the HTTP header (with the double \r\n)
     int                 headerbufsize;  // allocated size of requestbuf
     char                *bodybuf;       // Used to store the body of the POST request
@@ -712,13 +842,18 @@ typedef struct _TcpReqSt {
     char                errmsg[YOCTO_ERRMSG_LEN];
     u64                 open_tm;        // timestamp of the start of a connection used to detect timout of the device
                                         // (must be reset if we reuse the socket)
+    u64                 write_tm;       // timestamp of the last successfully write of the request
     u64                 read_tm;        // timestamp of the last received packet (must be reset if we reuse the socket)
     u64                 timeout_tm;     // the maximum time to live of this connection
     u32                 flags;          // flags for keepalive and no expiration
-    YSOCKET             reuseskt;       // socket to reuse for next query, when keepalive is true
+    yAsbUrlProto        proto;          // the type of protocol used for this request (same information as the one contained in the hub url)
     yapiRequestAsyncCallback callback;
     void                *context;
-} TcpReqSt;
+    RequestProgress     progressCb;
+    void                *progressCtx;
+    HTTPReqSt           http;
+    WSReqSt             ws;
+} RequestSt;
 
 #define SETUPED_IFACE_CACHE_SIZE 128
 
@@ -736,6 +871,18 @@ typedef struct {
 } FUpdateContext;
 
 
+typedef struct _YIOHDL_internal {
+    struct _YIOHDL_internal *next;
+    u64     ioid;
+    u8      type;
+    u8      pad8;
+    u16     pad16;
+    union {
+        u32     tcpreqidx;
+        YUSBIO  hdl;
+        RequestSt *ws;
+    };
+} YIOHDL_internal;
 
 
 #define YCTX_OSX_MULTIPLES_HID 1
@@ -756,10 +903,11 @@ typedef struct{
     int                 nbdevs;
     int                 devs_capacity;
     yCRITICAL_SECTION   io_cs;
+    YIOHDL_internal     *yiohdl_first;
     u32                 io_counter;
     // network discovery info
-    NetHubSt            nethub[NBMAX_NET_HUB];
-    TcpReqSt            tcpreq[ALLOC_YDX_PER_HUB];  // indexed by our own DevYdx
+    HubSt*              nethub[NBMAX_NET_HUB];
+    RequestSt*          tcpreq[ALLOC_YDX_PER_HUB];  // indexed by our own DevYdx
     yRawNotificationCb  rawNotificationCb;
     yRawReportCb        rawReportCb;
     yRawReportV2Cb      rawReportV2Cb;
@@ -809,7 +957,7 @@ extern yContextSt  *yContext;
 
 YRETCODE yapiPullDeviceLogEx(int devydx);
 YRETCODE yapiPullDeviceLog(const char *serial);
-YRETCODE yapiRequestOpen(YIOHDL *iohdl, const char *device, const char *request, int reqlen, yapiRequestAsyncCallback callback, void *context, char *errmsg);
+YRETCODE yapiRequestOpen(YIOHDL_internal *iohdl, int tpchan, const char *device, const char *request, int reqlen, yapiRequestAsyncCallback callback, void *context, yapiRequestProgressCallback progress_cb, void *progress_ctx, char *errmsg);
 
 /*****************************************************************
  * PLATFORM SPECIFIC USB code
@@ -833,8 +981,8 @@ void yyyPacketShutdown(yInterfaceSt *iface);
 ******************************************************************************/
 
 //some early declarations
-void wpSafeRegister( NetHubSt *hub, u8 devYdx, yStrRef serialref,yStrRef lnameref, yStrRef productref, u16 deviceid, yUrlRef devUrl,s8 beacon);
-void wpSafeUpdate( NetHubSt *hub, u8 devYdx, yStrRef serialref,yStrRef lnameref, yUrlRef devUrl, s8 beacon);
+void wpSafeRegister(HubSt *hub, u8 devYdx, yStrRef serialref,yStrRef lnameref, yStrRef productref, u16 deviceid, yUrlRef devUrl,s8 beacon);
+void wpSafeUpdate(HubSt *hub, u8 devYdx, yStrRef serialref,yStrRef lnameref, yUrlRef devUrl, s8 beacon);
 void wpSafeUnregister(yStrRef serialref);
 
 void ypUpdateUSB(const char *serial, const char *funcid, const char *funcname, int funclass, int funydx, const char *funcval);
@@ -858,7 +1006,7 @@ yPrivDeviceSt *findDev(const char *str,u32 flags);
 
 // return the YHANDLE from a matching string (serial or name)
 YUSBDEV findDevHdlFromStr(const char *str);
-yPrivDeviceSt *findDevFromIOHdl(YIOHDL *hdl);
+yPrivDeviceSt *findDevFromIOHdl(YIOHDL_internal *hdl);
 void devHdlInfo(YUSBDEV hdl,yDeviceSt *infos);
 
 YRETCODE yUSBUpdateDeviceList(char *errmsg);
@@ -874,21 +1022,23 @@ int  yUsbIdle(void);
 int  yUsbTrafficPending(void);
 yGenericDeviceSt* yUSBGetGenericInfo(yStrRef devdescr);
 
-int  yUsbOpenDevDescr(YIOHDL *ioghdl, yStrRef devdescr, char *errmsg);
-int  yUsbOpen(YIOHDL *ioghdl, const char *device, char *errmsg);
-int  yUsbSetIOAsync(YIOHDL *ioghdl, yapiRequestAsyncCallback callback, void *context, char *errmsg);
-int  yUsbWrite(YIOHDL *ioghdl, const char *buffer, int writelen,char *errmsg);
-int  yUsbReadNonBlock(YIOHDL *ioghdl, char *buffer, int len,char *errmsg);
-int  yUsbReadBlock(YIOHDL *ioghdl, char *buffer, int len,u64 blockUntil,char *errmsg);
-int  yUsbEOF(YIOHDL *ioghdl,char *errmsg);
-int  yUsbClose(YIOHDL *ioghdl,char *errmsg);
+int  yUsbOpenDevDescr(YIOHDL_internal *ioghdl, yStrRef devdescr, char *errmsg);
+int  yUsbOpen(YIOHDL_internal *ioghdl, const char *device, char *errmsg);
+int  yUsbSetIOAsync(YIOHDL_internal *ioghdl, yapiRequestAsyncCallback callback, void *context, char *errmsg);
+int  yUsbWrite(YIOHDL_internal *ioghdl, const char *buffer, int writelen,char *errmsg);
+int  yUsbReadNonBlock(YIOHDL_internal *ioghdl, char *buffer, int len,char *errmsg);
+int  yUsbReadBlock(YIOHDL_internal *ioghdl, char *buffer, int len,u64 blockUntil,char *errmsg);
+int  yUsbEOF(YIOHDL_internal *ioghdl,char *errmsg);
+int  yUsbClose(YIOHDL_internal *ioghdl,char *errmsg);
 
 int  yUSBGetBooloader(const char *serial, const char * name,  yInterfaceSt *iface,char *errmsg);
 
 // Misc helper
+int handleNetNotification(HubSt *hub);
 u32 yapiGetCNonce(u32 nc);
-YRETCODE  yapiHTTPRequestSyncStartEx_internal(YIOHDL *iohdl, const char *device, const char *request, int requestsize, char **reply, int *replysize, char *errmsg);
+YRETCODE  yapiHTTPRequestSyncStartEx_internal(YIOHDL *iohdl, int tcpchan, const char *device, const char *request, int requestsize, char **reply, int *replysize, yapiRequestProgressCallback progress_cb, void *progress_ctx, char *errmsg);
 YRETCODE  yapiHTTPRequestSyncDone_internal(YIOHDL *iohdl, char *errmsg);
 void yFunctionUpdate(YAPI_FUNCTION fundescr, const char *value);
 void yFunctionTimedUpdate(YAPI_FUNCTION fundescr, double deviceTime, const u8 *report, u32 len);
+int yapiJsonGetPath_internal(const char *path, const char *json_data, int json_size, const char **output, char *errmsg);
 #endif

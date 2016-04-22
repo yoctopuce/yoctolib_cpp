@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.h 22561 2015-12-29 17:27:47Z seb $
+ * $Id: yhash.h 23929 2016-04-15 09:00:28Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -63,6 +63,7 @@ extern "C" {
 #define YSTRREF_MODULE_STRING  0x0020 /* yStrRef value for the string 'Module' */
 #define YSTRREF_mODULE_STRING  0x00a3 /* yStrRef value for the string 'module' */
 #define YSTRREF_HUBPORT_STRING 0x00d6 /* yStrRef value for the string 'HubPort' */
+#define YSTRREF_SENSOR_STRING  0x0001 /* yStrRef value for the string 'Sensor' */
 
 #ifndef CPU_BIG_ENDIAN
 #define WORD_TEXT_PR           0x5250
@@ -166,8 +167,22 @@ extern yStrRef SerialRef;
 extern yBlkHdl yWpListHead;
 extern yBlkHdl yYpListHead;
 
-#define YMAX_HUB_URL_DEEP           11
+#define YMAX_HUB_URL_DEEP           8
 #define YOCTO_HOSTNAME_NAME         (HASH_BUF_SIZE*2+2)
+
+typedef enum {
+    USB_URL,
+    IP_URL,
+    NAME_URL
+} yAsbUrlType;
+
+typedef enum {
+    PROTO_AUTO = 0,
+    PROTO_HTTP,
+    PROTO_WEBSOCKET
+} yAsbUrlProto;
+
+
 
 typedef struct{
     union{
@@ -175,26 +190,23 @@ typedef struct{
             yStrRef   host;
             yStrRef   domaine;
             u16       port;
-        }byname;
+        } byname;
         struct{
             yStrRef   ip;
             yHash     invalid;
             u16       port;
-        }byip;
+        } byip;
         struct{
             yHash     invalid1;
             yHash     invalid2;
             yStrRef   serial;
-        }byusb;
+        } byusb;
     };
+    u16 proto;
+    yStrRef user;
+    yStrRef password;
     yStrRef path[YMAX_HUB_URL_DEEP];
 } yAbsUrl;
-
-typedef enum {
-    USB_URL,
-    IP_URL,
-    NAME_URL
-} yAsbUrlType;
 
 void  yHashInit(void);
 yHash yHashPutBuf(const u8 *buf, u16 len);
@@ -208,7 +220,8 @@ char  *yHashGetStrPtr(yHash yhash);
 #ifndef MICROCHIP_API
 yUrlRef yHashUrlFromRef(yUrlRef urlref, const char *rootUrl);
 yUrlRef yHashUrl(const char *host, const char *rootUrl, u8 testonly, char *errmsg);
-yAsbUrlType  yHashGetUrlPort(yUrlRef urlref, char *url,u16 *port);
+yAsbUrlType  yHashGetUrlPort(yUrlRef urlref, char *url, u16 *port, yAsbUrlProto *proto, yStrRef *user, yStrRef *password);
+int yHashSameHub(yUrlRef url_a, yUrlRef url_b);
 void  yHashFree(void);
 #endif
 yUrlRef yHashUrlUSB(yHash serial);
@@ -247,9 +260,13 @@ int     ypGetFunctions(const char *class_str, YAPI_DEVICE devdesc, YAPI_FUNCTION
                        YAPI_FUNCTION *buffer,int maxsize,int *neededsize);
 int     ypGetFunctionInfo(YAPI_FUNCTION fundesc, char *serial, char *funcId, char *baseType, char *funcName, char *funcVal);
 #endif
+int     ypGetFunctionsEx(yStrRef categref, YAPI_DEVICE devdesc, YAPI_FUNCTION prevfundesc, YAPI_FUNCTION *buffer, int maxsize, int *neededsize);
 int     wpGetDeviceInfo(YAPI_DEVICE devdesc, u16 *deviceid, char *productname, char *serial, char *logicalname, u8 *beacon);
 int     ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, int funClass, int funYdx, const char *funcVal);
+// WARNING: funcVal MUST BE WORD-ALIGNED
 int     ypRegisterByYdx(u8 devYdx, Notification_funydx funInfo, const char *funcVal, YAPI_FUNCTION *fundesc);
+// WARNING: funcVal MUST BE WORD-ALIGNED
+int     ypGetAttributesByYdx(u8 devYdx, u8 funYdx, yStrRef *serial, yStrRef *logicalName, yStrRef *funcId, yStrRef *funcName, Notification_funydx *funcInfo, char *funcVal);
 void    ypGetCategory(yBlkHdl hdl, char *name, yBlkHdl *entries);
 int     ypGetAttributes(yBlkHdl hdl, yStrRef *serial, yStrRef *funcId, yStrRef *funcName, Notification_funydx *funcInfo, char *funcVal);
 int     ypGetType(yBlkHdl hdl);

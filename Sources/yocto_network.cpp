@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.cpp 22194 2015-12-02 10:50:41Z mvuilleu $
+ * $Id: yocto_network.cpp 23930 2016-04-15 09:31:14Z seb $
  *
  * Implements yFindNetwork(), the high-level API for Network functions
  *
@@ -28,8 +28,8 @@
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
  *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -68,6 +68,7 @@ YNetwork::YNetwork(const string& func): YFunction(func)
     ,_callbackMethod(CALLBACKMETHOD_INVALID)
     ,_callbackEncoding(CALLBACKENCODING_INVALID)
     ,_callbackCredentials(CALLBACKCREDENTIALS_INVALID)
+    ,_callbackInitialDelay(CALLBACKINITIALDELAY_INVALID)
     ,_callbackMinDelay(CALLBACKMINDELAY_INVALID)
     ,_callbackMaxDelay(CALLBACKMAXDELAY_INVALID)
     ,_poeCurrent(POECURRENT_INVALID)
@@ -193,6 +194,11 @@ int YNetwork::_parseAttr(yJsonStateMachine& j)
     if(!strcmp(j.token, "callbackCredentials")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _callbackCredentials =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "callbackInitialDelay")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _callbackInitialDelay =  atoi(j.token);
         return 1;
     }
     if(!strcmp(j.token, "callbackMinDelay")) {
@@ -740,8 +746,9 @@ int YNetwork::set_callbackMethod(Y_CALLBACKMETHOD_enum newval)
  *
  * @return a value among Y_CALLBACKENCODING_FORM, Y_CALLBACKENCODING_JSON,
  * Y_CALLBACKENCODING_JSON_ARRAY, Y_CALLBACKENCODING_CSV, Y_CALLBACKENCODING_YOCTO_API,
- * Y_CALLBACKENCODING_JSON_NUM, Y_CALLBACKENCODING_EMONCMS, Y_CALLBACKENCODING_AZURE and
- * Y_CALLBACKENCODING_INFLUXDB corresponding to the encoding standard to use for representing notification values
+ * Y_CALLBACKENCODING_JSON_NUM, Y_CALLBACKENCODING_EMONCMS, Y_CALLBACKENCODING_AZURE,
+ * Y_CALLBACKENCODING_INFLUXDB and Y_CALLBACKENCODING_MQTT corresponding to the encoding standard to
+ * use for representing notification values
  *
  * On failure, throws an exception or returns Y_CALLBACKENCODING_INVALID.
  */
@@ -760,8 +767,9 @@ Y_CALLBACKENCODING_enum YNetwork::get_callbackEncoding(void)
  *
  * @param newval : a value among Y_CALLBACKENCODING_FORM, Y_CALLBACKENCODING_JSON,
  * Y_CALLBACKENCODING_JSON_ARRAY, Y_CALLBACKENCODING_CSV, Y_CALLBACKENCODING_YOCTO_API,
- * Y_CALLBACKENCODING_JSON_NUM, Y_CALLBACKENCODING_EMONCMS, Y_CALLBACKENCODING_AZURE and
- * Y_CALLBACKENCODING_INFLUXDB corresponding to the encoding standard to use for representing notification values
+ * Y_CALLBACKENCODING_JSON_NUM, Y_CALLBACKENCODING_EMONCMS, Y_CALLBACKENCODING_AZURE,
+ * Y_CALLBACKENCODING_INFLUXDB and Y_CALLBACKENCODING_MQTT corresponding to the encoding standard to
+ * use for representing notification values
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -835,6 +843,40 @@ int YNetwork::callbackLogin(string username,string password)
     string rest_val;
     rest_val = string(username)+string(":")+string(password);
     return _setAttr("callbackCredentials", rest_val);
+}
+
+/**
+ * Returns the initial waiting time before first callback notifications, in seconds.
+ *
+ * @return an integer corresponding to the initial waiting time before first callback notifications, in seconds
+ *
+ * On failure, throws an exception or returns Y_CALLBACKINITIALDELAY_INVALID.
+ */
+int YNetwork::get_callbackInitialDelay(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::CALLBACKINITIALDELAY_INVALID;
+        }
+    }
+    return _callbackInitialDelay;
+}
+
+/**
+ * Changes the initial waiting time before first callback notifications, in seconds.
+ *
+ * @param newval : an integer corresponding to the initial waiting time before first callback
+ * notifications, in seconds
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YNetwork::set_callbackInitialDelay(int newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+    return _setAttr("callbackInitialDelay", rest_val);
 }
 
 /**
@@ -1037,8 +1079,8 @@ int YNetwork::useStaticIP(string ipAddress,int subnetMaskLen,string router)
 }
 
 /**
- * Pings str_host to test the network connectivity. Sends four ICMP ECHO_REQUEST requests from the
- * module to the target str_host. This method returns a string with the result of the
+ * Pings host to test the network connectivity. Sends four ICMP ECHO_REQUEST requests from the
+ * module to the target host. This method returns a string with the result of the
  * 4 ICMP ECHO_REQUEST requests.
  *
  * @param host : the hostname or the IP address of the target
@@ -1051,6 +1093,21 @@ string YNetwork::ping(string host)
     // may throw an exception
     content = this->_download(YapiWrapper::ysprintf("ping.txt?host=%s",host.c_str()));
     return content;
+}
+
+/**
+ * Trigger an HTTP callback quickly. This function can even be called within
+ * an HTTP callback, in which case the next callback will be triggered 5 seconds
+ * after the end of the current callback, regardless if the minimum time between
+ * callbacks configured in the device.
+ *
+ * @return YAPI_SUCCESS when the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YNetwork::triggerCallback(void)
+{
+    return this->set_callbackMethod(this->get_callbackMethod());
 }
 
 YNetwork *YNetwork::nextNetwork(void)

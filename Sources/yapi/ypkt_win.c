@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_win.c 22141 2015-11-26 09:20:50Z seb $
+ * $Id: ypkt_win.c 24175 2016-04-22 14:56:57Z seb $
  *
  * OS-specific USB packet layer, Windows version
  *
@@ -228,6 +228,52 @@ static int getProcName(char *buffer, int buffer_size)
 }
 
 
+
+#define LEGACY_YOCTOPUCE_KEY "Software\\Yoctopuce\\"
+#define USB_LOCK_KEY "Software\\Yoctopuce\\usb_lock\\"
+#ifndef KEY_WOW64_32KEY
+// dirty hack to work with mingw32
+#define KEY_WOW64_32KEY 0
+#endif
+
+static int yConvertUSBLockKey(yContextSt *ctx, int deletekey)
+{
+    HKEY key;
+    LONG res;
+    res = ctx->registry.yRegOpenKeyEx(HKEY_LOCAL_MACHINE, LEGACY_YOCTOPUCE_KEY, 0, KEY_WRITE | KEY_READ | KEY_WOW64_32KEY, &key);
+    if (res == ERROR_SUCCESS) {
+        //save information
+        char process_name[512];
+        char buffer[32];
+        DWORD value_length = 32;
+        res = ctx->registry.yRegQueryValueEx(key, "process_id", NULL, NULL, (LPBYTE) buffer, &value_length);
+        value_length = 512;
+        res = ctx->registry.yRegQueryValueEx(key, "process_name", NULL, NULL, (LPBYTE) process_name, &value_length);
+        if (deletekey) {
+            // delete key
+            ctx->registry.yRegCloseKey(key);
+            res = ctx->registry.yRegDeleteKeyEx(HKEY_LOCAL_MACHINE, LEGACY_YOCTOPUCE_KEY, KEY_WOW64_32KEY, 0);
+        } else {
+            ctx->registry.yRegDeleteValue(key, "process_id");
+            ctx->registry.yRegDeleteValue(key, "process_name");
+            ctx->registry.yRegCloseKey(key);
+        }
+        // create new one
+        res = ctx->registry.yRegCreateKeyEx(HKEY_LOCAL_MACHINE, USB_LOCK_KEY, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE | KEY_READ | KEY_WOW64_32KEY, NULL, &key, NULL);
+        // save value in new key
+        if (ctx->registry.yRegSetValueEx(key, "process_id", 0, REG_SZ, (BYTE*)buffer, YSTRLEN(buffer)) != ERROR_SUCCESS) {
+            dbglog("Unable to set registry value yapi_process");
+        }
+        if (ctx->registry.yRegSetValueEx(key, "process_name", 0, REG_SZ, (BYTE*)process_name, YSTRLEN(process_name)) != ERROR_SUCCESS) {
+            dbglog("Unable to set registry value yapi_process");
+        }
+        ctx->registry.yRegCloseKey(key);
+        return 1;
+    } else {
+        return -1;
+    }
+}
+
 // return 1 if we can reserve access to the device 0 if the device
 // is already reserved
 static int yReserveGlobalAccess(yContextSt *ctx, char * errmsg)
@@ -235,14 +281,26 @@ static int yReserveGlobalAccess(yContextSt *ctx, char * errmsg)
     int has_reg_key = 1;
     char process_name[512];
     char buffer[32];
-    DWORD  value_length = 512;
+    DWORD value_length = 512;
     int retval;
     s64 pid;
     HKEY key;
     LONG res;
 
-    if (ctx->registry.hREG != NULL && ctx->registry.yRegCreateKeyEx(HKEY_LOCAL_MACHINE, "Software\\Yoctopuce\\", 0, NULL, REG_OPTION_VOLATILE,
-        KEY_WRITE | KEY_READ | KEY_WOW64_32KEY,NULL,&key,NULL) != ERROR_SUCCESS) {
+    if (ctx->registry.hREG != NULL) {
+        res = ctx->registry.yRegCreateKeyEx(HKEY_LOCAL_MACHINE, USB_LOCK_KEY, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE | KEY_READ | KEY_WOW64_32KEY, NULL, &key, NULL);
+        if (res == ERROR_CHILD_MUST_BE_VOLATILE) {
+            yConvertUSBLockKey(ctx, 1);
+            res = ctx->registry.yRegCreateKeyEx(HKEY_LOCAL_MACHINE, USB_LOCK_KEY, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE | KEY_READ | KEY_WOW64_32KEY, NULL, &key, NULL);
+            if (res != ERROR_SUCCESS) {
+                has_reg_key = 0;
+            }
+        } else if (res == ERROR_SUCCESS) {
+            yConvertUSBLockKey(ctx, 0);
+        } else {
+            has_reg_key = 0;
+        }
+    } else {
         has_reg_key = 0;
     }
 
@@ -254,12 +312,12 @@ static int yReserveGlobalAccess(yContextSt *ctx, char * errmsg)
         YERRMSG(YAPI_DOUBLE_ACCES, "Another process is already using yAPI");
         if (has_reg_key && ctx->nameLock == INVALID_HANDLE_VALUE) {
             pid = -1;
-            res = ctx->registry.yRegQueryValueEx(key, "process_id", NULL, NULL, buffer, &value_length);
+            res = ctx->registry.yRegQueryValueEx(key, "process_id", NULL, NULL, (LPBYTE) buffer, &value_length);
             if (res == ERROR_SUCCESS){
                 pid = atoi(buffer);
             }
             value_length = 512;
-            res = ctx->registry.yRegQueryValueEx(key, "process_name", NULL, NULL, process_name, &value_length);
+            res = ctx->registry.yRegQueryValueEx(key, "process_name", NULL, NULL, (LPBYTE) process_name, &value_length);
             if (res == ERROR_SUCCESS && pid >= 0) {
                 char current_name[512];
                 getProcName(current_name, 512);
@@ -275,10 +333,10 @@ static int yReserveGlobalAccess(yContextSt *ctx, char * errmsg)
         if (has_reg_key) {
             int pid = getProcName(process_name, 512);
             YSPRINTF(buffer, 32, "%d", pid);
-            if (ctx->registry.yRegSetValueEx(key, "process_id", 0, REG_SZ, buffer, YSTRLEN(buffer)) != ERROR_SUCCESS) {
+            if (ctx->registry.yRegSetValueEx(key, "process_id", 0, REG_SZ, (BYTE*)buffer, YSTRLEN(buffer)) != ERROR_SUCCESS) {
                 dbglog("Unable to set registry value yapi_process");
             }
-            if (ctx->registry.yRegSetValueEx(key, "process_name", 0, REG_SZ, process_name, YSTRLEN(process_name)) != ERROR_SUCCESS) {
+            if (ctx->registry.yRegSetValueEx(key, "process_name", 0, REG_SZ, (BYTE*)process_name, YSTRLEN(process_name)) != ERROR_SUCCESS) {
                 dbglog("Unable to set registry value yapi_process");
             }
         }
@@ -306,9 +364,12 @@ int yyyUSB_init(yContextSt *ctx,char *errmsg)
     if (ctx->registry.hREG != NULL){
         //Update the pointers:
         ctx->registry.yRegCreateKeyEx = (PYRegCreateKeyEx) GetProcAddress(ctx->registry.hREG, "RegCreateKeyExA");
+        ctx->registry.yRegOpenKeyEx = (PYRegOpenKeyEx)GetProcAddress(ctx->registry.hREG, "RegOpenKeyExA");
         ctx->registry.yRegSetValueEx = (PYRegSetValueEx) GetProcAddress(ctx->registry.hREG, "RegSetValueExA");
         ctx->registry.yRegQueryValueEx = (PYRegQueryValueEx) GetProcAddress(ctx->registry.hREG, "RegQueryValueExA");
+        ctx->registry.yRegDeleteValue = (PYRegDeleteValue) GetProcAddress(ctx->registry.hREG, "RegDeleteValueA");
         ctx->registry.yRegCloseKey = (PYRegCloseKey) GetProcAddress(ctx->registry.hREG, "RegCloseKey");
+        ctx->registry.yRegDeleteKeyEx = (PYRegDeleteKeyEx) GetProcAddress(ctx->registry.hREG, "RegDeleteKeyExA");
     }
 
 
@@ -318,11 +379,12 @@ int yyyUSB_init(yContextSt *ctx,char *errmsg)
           return yWinSetErr(NULL,errmsg);
     }
     //Update the pointers:
-    ctx->hid.GetHidGuid       = (PHidD_GetHidGuid)    GetProcAddress( ctx->hid.hHID, "HidD_GetHidGuid");
-    ctx->hid.GetAttributes    = (PHidD_GetAttributes) GetProcAddress( ctx->hid.hHID, "HidD_GetAttributes");
-    ctx->hid.GetManufacturerString    = (PHidD_GetManufacturerString)     GetProcAddress( ctx->hid.hHID, "HidD_GetManufacturerString");
-    ctx->hid.GetProductString         = (PHidD_GetProductString)          GetProcAddress( ctx->hid.hHID, "HidD_GetProductString");
-    ctx->hid.GetSerialNumberString    = (PHidD_GetSerialNumberString)     GetProcAddress( ctx->hid.hHID, "HidD_GetSerialNumberString");
+    ctx->hid.GetHidGuid       = (PHidD_GetHidGuid)    GetProcAddress(ctx->hid.hHID, "HidD_GetHidGuid");
+    ctx->hid.GetAttributes    = (PHidD_GetAttributes) GetProcAddress(ctx->hid.hHID, "HidD_GetAttributes");
+    ctx->hid.GetManufacturerString    = (PHidD_GetManufacturerString)     GetProcAddress(ctx->hid.hHID, "HidD_GetManufacturerString");
+    ctx->hid.GetProductString         = (PHidD_GetProductString)          GetProcAddress(ctx->hid.hHID, "HidD_GetProductString");
+    ctx->hid.GetSerialNumberString    = (PHidD_GetSerialNumberString)     GetProcAddress(ctx->hid.hHID, "HidD_GetSerialNumberString");
+    ctx->hid.SetNumInputBuffers       = (PHidD_SetNumInputBuffers)        GetProcAddress(ctx->hid.hHID, "HidD_SetNumInputBuffers");
     yInitializeCriticalSection(&ctx->prevEnum_cs);
 
     return YAPI_SUCCESS;
@@ -556,6 +618,7 @@ static int OpenReadHandles(yInterfaceSt    *iface)
 {
     char  errmsg[YOCTO_ERRMSG_LEN];
     int res;
+    BOOLEAN setbuffres;
     //open non blocking read handle
     iface->rdHDL =  CreateFileA(iface->devicePath, GENERIC_WRITE |GENERIC_READ,
                                 FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, 0);
@@ -563,6 +626,12 @@ static int OpenReadHandles(yInterfaceSt    *iface)
         res = yWinSetErr(iface,errmsg);
         HALLOG("OpenReadHandles of %s error %d of %s:%d (%s)\n",DP(iface->devicePath),res,iface->serial,iface->ifaceno,errmsg);
         return res;
+    }
+    // since Win Xp HID buffer sizw is 32 by default and can be up to 512
+    setbuffres = yContext->hid.SetNumInputBuffers(iface->rdHDL, 256);
+    if (!setbuffres) {
+        res = yWinSetErr(iface, errmsg);
+        dbglog("SetNumInputBuffers of %s error %d of %s:%d (%s)\n", DP(iface->devicePath), res, iface->serial, iface->ifaceno, errmsg);
     }
     // create Event for non blocking read
     iface->EV[YWIN_EVENT_READ] = CreateEvent(NULL, TRUE, TRUE, NULL);
@@ -794,6 +863,9 @@ static void* yyyUsbIoThread(void* thread_void)
         goto exitThread;
     }
 
+
+    HALLOG("----IoThread start of %s:%d (%s)  ---\n", iface->serial, iface->ifaceno, DP(iface->devicePath));
+
     while (!yThreadMustEnd(thread)) {
         pktItem *pktItem;
         yPktQueuePeekH2D(iface,&pktItem);
@@ -886,7 +958,7 @@ void yyyPacketShutdown(yInterfaceSt *iface)
         u64 timeout;
         yThreadRequestEnd(&iface->io_thread);
         timeout = yapiGetTickCount() + YIO_DEFAULT_USB_TIMEOUT;
-        while(yThreadIsRunning(&iface->io_thread) && (timeout - yapiGetTickCount()) > 0 ) {
+        while(yThreadIsRunning(&iface->io_thread) && timeout >= yapiGetTickCount()) {
             yApproximateSleep(10);
         }
         yThreadKill(&iface->io_thread);

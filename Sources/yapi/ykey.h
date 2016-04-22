@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.h 21746 2015-10-13 09:46:59Z mvuilleu $
+ * $Id: ykey.h 22965 2016-01-29 17:03:22Z seb $
  *
  * Declaration of standard key computations
  *
@@ -51,6 +51,7 @@ void bin2str(char *to, const u8 *p, u16 len,u8 addnull);
 void ComputeAuthHA1(u8 *buf, const char *user, const char *pass, const char *realm);
 void ComputeAuthHA2(u8 *buf, const char *method, const char *url) ;
 void ComputeAuthResponse(char *buf,  const u8 * ha1,  const char *nonce, const char *nc,  const char *cnonce,  const u8 *ha2);
+int  CheckWSAuth(u32 nonce, const u8 *ha1, const u8 *to_verify, u8 *out);
 
 // Parse a request header, return 0 if a valid WWW-Authenticate header and set args to corresponding fields
 // - Request is patched in place to null-terminate each field.

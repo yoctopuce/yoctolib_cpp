@@ -178,6 +178,12 @@
         <Unit filename="..\..\..\Sources\yocto_colorled.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
+        <Unit filename="..\..\..\Sources\yocto_colorledcluster.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_colorledcluster.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
         <Unit filename="..\..\..\Sources\yocto_current.h">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
@@ -383,6 +389,12 @@
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
         <Unit filename="..\..\..\Sources\yocto_servo.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_spiport.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_spiport.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
         <Unit filename="..\..\..\Sources\yocto_temperature.h">

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 22561 2015-12-29 17:27:47Z seb $
+ * $Id: yhash.c 24068 2016-04-21 07:33:01Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -188,7 +188,7 @@ static u16 fletcher16(const u8 *data, u16 len, u16 virtlen)
 
 void yHashInit(void)
 {
-    yStrRef empty, Module, module, HubPort;
+    yStrRef empty, Module, module, HubPort,Sensor;
     u16     i;
 
     HLOGF(("yHashInit\n"));
@@ -212,10 +212,12 @@ void yHashInit(void)
     Module = yHashPutStr("Module");
     module = yHashPutStr("module");
     HubPort = yHashPutStr("HubPort");
+    Sensor = yHashPutStr("Sensor");
     if(empty != YSTRREF_EMPTY_STRING ||
        Module != YSTRREF_MODULE_STRING ||
        module != YSTRREF_mODULE_STRING ||
-       HubPort != YSTRREF_HUBPORT_STRING) {
+       HubPort != YSTRREF_HUBPORT_STRING ||
+       Sensor != YSTRREF_SENSOR_STRING) {
         // This should never ever happen, something is really weird
         // No log is possible here (called within yapiInitAPI), so
         // the best we can do to help debugging is a tight loop.
@@ -421,50 +423,59 @@ char *yHashGetStrPtr(yHash yhash)
 
 #ifndef MICROCHIP_API
 
-static int  yComputeRelPath(yAbsUrl *absurl, const char *rootUrl, u8 testonly)
+/**
+* parse the rootUrl string and update the path field of the yAbsUrl structure passed
+in argument
+*/
+static int yComputeRelPath(yAbsUrl* absurl, const char* rootUrl, u8 testonly)
 {
-    int i,len;
-    while(*rootUrl == '/') rootUrl++;
-    for(i = 0; i < YMAX_HUB_URL_DEEP && *rootUrl;) {
-        for(len = 0; rootUrl[len] && rootUrl[len] != '/'; len++);
-        if((len != 8 || memcmp(rootUrl,"bySerial",8)!=0) &&
-           (len != 3 || memcmp(rootUrl,"api",3)!=0)) {
-            absurl->path[i] = yHashPut((const u8 *)rootUrl,len,testonly);
-            if(absurl->path[i] == INVALID_HASH_IDX) return -1;
+    int i, len;
+    while (*rootUrl == '/') rootUrl++;
+    for (i = 0; i < YMAX_HUB_URL_DEEP && *rootUrl;) {
+        for (len = 0; rootUrl[len] && rootUrl[len] != '/'; len++);
+        if ((len != 8 || memcmp(rootUrl, "bySerial", 8) != 0) &&
+            (len != 3 || memcmp(rootUrl, "api", 3) != 0)) {
+            absurl->path[i] = yHashPut((const u8 *)rootUrl, len, testonly);
+            if (absurl->path[i] == INVALID_HASH_IDX) return -1;
             i++;
         }
         rootUrl += len;
-        while(*rootUrl == '/') rootUrl++;
+        while (*rootUrl == '/') rootUrl++;
     }
-    if(*rootUrl && testonly) return -1;
+    if (*rootUrl && testonly) return -1;
     return 0;
-
 }
 
-yUrlRef yHashUrlFromRef(yUrlRef urlref, const char *rootUrl)
+/**
+* create and register a new url with the host form urlref and the path from
+rootUrl.
+return: the yUrlRef for the new created url
+*/
+yUrlRef yHashUrlFromRef(yUrlRef urlref, const char* rootUrl)
 {
     yAbsUrl huburl;
 
     // set all path as invalid
-    HLOGF(("yHashUrlFromRef('%s')\n",rootUrl));
+    HLOGF(("yHashUrlFromRef('%s')\n", rootUrl));
     yHashGetBuf(urlref, (u8 *)&huburl, sizeof(huburl));
     memset(huburl.path, 0xff, sizeof(huburl.path));
 
-    if(yComputeRelPath(&huburl, rootUrl, 0)<0){
+    if (yComputeRelPath(&huburl, rootUrl, 0) < 0) {
         return INVALID_HASH_IDX;
     }
     return yHashPut((const u8 *)&huburl, sizeof(huburl), 0);
 }
 
+
 /**
- * if testonly is non zero wi do not add the hash if the hash has not been already recorded
+ * if testonly is non zero it do not add the hash if the hash has not been already recorded
  * in this case we return INVALID_HASH_IDX
  */
-yUrlRef yHashUrl(const char *url, const char *rootUrl, u8 testonly,char *errmsg)
+yUrlRef yHashUrl(const char *url, const char *rootUrl, u8 testonly, char *errmsg)
 {
     yAbsUrl huburl;
     int len,hostlen, domlen,iptest=0;
-    const char *end;
+    const char *end, *p;
     const char *pos,*posplus;
     const char *host=NULL;
     char buffer[8];
@@ -472,10 +483,29 @@ yUrlRef yHashUrl(const char *url, const char *rootUrl, u8 testonly,char *errmsg)
     // set all hash as invalid
     HLOGF(("yHashUrl('%s','%s')\n",url,rootUrl));
     memset(&huburl, 0xff, sizeof(huburl));
-
+    huburl.proto = PROTO_AUTO;
     if(*url) {
-        if(YSTRNCMP(url,"http://",7)==0){
-            url+=7;
+        if (YSTRNCMP(url, "http://", 7) == 0) {
+            url += 7;
+            huburl.proto = PROTO_HTTP;
+        } else if (YSTRNCMP(url, "ws://", 5) == 0) {
+            url += 5;
+            huburl.proto = PROTO_WEBSOCKET;
+        }
+        // search for any authentication info
+        for (p = url; *p && *p != '@' && *p != '/'; p++);
+        if (*p == '@') {
+            for (p = url; *p != ':' && *p != '@'; p++);
+            if (*p != ':') {
+                return YERRMSG(YAPI_INVALID_ARGUMENT, "Missing authentication parameter");
+            }
+            len = (int)(p - url);
+            huburl.user = yHashPutBuf((const u8*)url, len);
+            url = ++p;
+            while (*p != '@') p++;
+            len = (int)(p - url);
+            huburl.password = yHashPutBuf((const u8*)url, len);
+            url = ++p;
         }
         end =strchr(url,'/');
         if(!end)
@@ -536,12 +566,15 @@ yUrlRef yHashUrl(const char *url, const char *rootUrl, u8 testonly,char *errmsg)
 }
 
 // return port , get hash of the url an a pointer to a buffer of YOCTO_HOSTNAME_NAME len
-yAsbUrlType  yHashGetUrlPort(yUrlRef urlref, char *url,u16 *port)
+yAsbUrlType  yHashGetUrlPort(yUrlRef urlref, char *url, u16 *port, yAsbUrlProto *proto, yStrRef *user, yStrRef *password)
 {
     yAbsUrl absurl;
 
     // set all path as invalid
     yHashGetBuf(urlref, (u8 *)&absurl, sizeof(absurl));
+    if (proto) *proto = absurl.proto;
+    if (user) *user = absurl.user;
+    if (password) *password = absurl.password;
 
     if(absurl.byusb.invalid1 ==INVALID_HASH_IDX && absurl.byusb.invalid2 == INVALID_HASH_IDX){
         // we have an USB address
@@ -555,7 +588,7 @@ yAsbUrlType  yHashGetUrlPort(yUrlRef urlref, char *url,u16 *port)
         if (url) {
             yHashGetStr(absurl.byip.ip,url,16);
         }
-        if(port) *port = absurl.byip.port;
+        if (port) *port = absurl.byip.port;
         return IP_URL;
     }else{
         char *p = url;
@@ -573,6 +606,20 @@ yAsbUrlType  yHashGetUrlPort(yUrlRef urlref, char *url,u16 *port)
     }
 }
 
+int yHashSameHub(yUrlRef url_a, yUrlRef url_b)
+{
+    yAbsUrl absurl_a;
+    yAbsUrl absurl_b;
+
+    // set all path as invalid
+    yHashGetBuf(url_a, (u8 *)&absurl_a, sizeof(absurl_a));
+    yHashGetBuf(url_b, (u8 *)&absurl_b, sizeof(absurl_b));
+    if (absurl_a.byname.domaine == absurl_b.byname.domaine &&
+        absurl_a.byname.host == absurl_b.byname.host &&
+        absurl_a.byname.port == absurl_b.byname.port)
+        return 1;
+    return 0;
+}
 
 #endif
 
@@ -582,6 +629,7 @@ yUrlRef yHashUrlUSB(yHash serial)
     yAbsUrl huburl;
     // set all hash as invalid
     memset(&huburl, 0xff, sizeof(huburl));
+    huburl.proto = PROTO_AUTO;
     // for USB we store only the serial number since
     // we access all devices directly
     huburl.byusb.serial = serial;
@@ -594,6 +642,7 @@ yUrlRef yHashUrlAPI(void)
     yAbsUrl huburl;
     // set all hash as invalid
     memset(&huburl, 0xff, sizeof(huburl));
+    huburl.proto = PROTO_AUTO;
     return yHashPut((const u8 *)&huburl, sizeof(huburl), 0);
 }
 
@@ -654,7 +703,7 @@ static void wpExecuteUnregisterUnsec(void)
             funYdxPtr[devYdx] = INVALID_BLK_HDL;
             devYdxPtr[devYdx] = INVALID_BLK_HDL;
 #ifndef MICROCHIP_API
-            if(nextDevYdx > devYdx) {
+            if((unsigned) nextDevYdx > devYdx) {
                 nextDevYdx = devYdx;
             }
             usedDevYdx[devYdx>>4] &= ~ (u16)(1 << (devYdx&15));
@@ -1332,6 +1381,7 @@ int ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, 
 }
 
 // return 1 on change 0 if value are the same as the cache
+// WARNING: funcVal MUST BE WORD-ALIGNED
 int ypRegisterByYdx(u8 devYdx, Notification_funydx funInfo, const char *funcVal, YAPI_FUNCTION *fundesc)
 {
     yBlkHdl  hdl;
@@ -1348,6 +1398,7 @@ int ypRegisterByYdx(u8 devYdx, Notification_funydx funInfo, const char *funcVal,
         while(hdl != INVALID_BLK_HDL && funYdx >= 6) {
 //          YASSERT(YA(hdl).blkId == YBLKID_YPARRAY);
             if(YA(hdl).blkId != YBLKID_YPARRAY) {
+                yLeaveCriticalSection(&yYpMutex);
                 return 0; // discard invalid block silently
             }
             hdl = YA(hdl).nextPtr;
@@ -1383,6 +1434,66 @@ int ypRegisterByYdx(u8 devYdx, Notification_funydx funInfo, const char *funcVal,
 
     return changed;
 }
+
+// return -1 on error
+// WARNING: funcVal MUST BE WORD-ALIGNED
+int     ypGetAttributesByYdx(u8 devYdx, u8 funYdx, yStrRef *serial, yStrRef *logicalName, yStrRef *funcId, yStrRef *funcName, Notification_funydx *funcInfo, char *funcVal)
+{
+    yBlkHdl  hdl;
+    u16      i;
+    int      res = -1;
+    u16      *funcValWords = (u16 *)funcVal;
+
+    yEnterCriticalSection(&yYpMutex);
+
+    // Ignore unknown devYdx
+    if (devYdxPtr[devYdx] != INVALID_BLK_HDL) {
+        if (logicalName) {
+            hdl = devYdxPtr[devYdx];
+            *logicalName = WP(hdl).name;
+        }
+        hdl = funYdxPtr[devYdx];
+        while (hdl != INVALID_BLK_HDL && funYdx >= 6) {
+            //          YASSERT(YA(hdl).blkId == YBLKID_YPARRAY);
+            if (YA(hdl).blkId != YBLKID_YPARRAY) {
+                yLeaveCriticalSection(&yYpMutex);
+                return -1; // discard invalid block silently
+            }
+            hdl = YA(hdl).nextPtr;
+            funYdx -= 6;
+        }
+        // Ignore unknown funYdx
+        if (hdl != INVALID_BLK_HDL) {
+            YASSERT(YA(hdl).blkId == YBLKID_YPARRAY);
+            hdl = YA(hdl).entries[funYdx];
+            if (hdl != INVALID_BLK_HDL) {
+                YASSERT(YP(hdl).blkId >= YBLKID_YPENTRY && YP(hdl).blkId <= YBLKID_YPENTRYEND);
+                if (serial) {
+                    *serial = YP(hdl).serialNum;
+                }
+                if (funcId) {
+                    *funcId = YP(hdl).funcId;
+                }
+                if (funcName) {
+                    *funcName = YP(hdl).funcName;
+                }
+                if (funcInfo) {
+                    funcInfo->raw = YP(hdl).funInfo.raw;
+                }
+                if (funcVal) {
+                    // apply value change
+                    for (i = 0; i < YOCTO_PUBVAL_SIZE / 2; i++) {
+                        funcValWords[i] = YP(hdl).funcValWords[i];
+                    }
+                }
+                res = 0;
+            }
+        }
+    }
+    yLeaveCriticalSection(&yYpMutex);
+    return res;
+}
+
 
 void ypGetCategory(yBlkHdl hdl, char *name, yBlkHdl *entries)
 {
@@ -1487,7 +1598,8 @@ YAPI_FUNCTION ypSearch(const char *class_str, const char *func_or_name)
     int         abstract = 0;
     const char  *dotpos = func_or_name;
     char        categname[HASH_BUF_SIZE];
-    YAPI_FUNCTION   res = -1;
+    YAPI_FUNCTION  res = -1;
+    YAPI_FUNCTION  best_name = -1;
     int         i;
 
     // first search for the category node
@@ -1596,9 +1708,12 @@ YAPI_FUNCTION ypSearch(const char *class_str, const char *func_or_name)
         hdl = YC(cat_hdl).entries;
         while(hdl != INVALID_BLK_HDL) {
             if(devref==INVALID_HASH_IDX || YP(hdl).serialNum == devref) {
-                if(YP(hdl).funcId == funcref || YP(hdl).funcName == funcref) {
+                if(YP(hdl).funcId == funcref) {
                     res = YP(hdl).serialNum + ((u32)(YP(hdl).funcId) << 16);
                     break;
+                }
+                if (best_name != -1 && YP(hdl).funcName == funcref) {
+                    best_name = YP(hdl).serialNum + ((u32)(YP(hdl).funcId) << 16);
                 }
             }
             hdl = YP(hdl).nextPtr;
@@ -1611,15 +1726,21 @@ YAPI_FUNCTION ypSearch(const char *class_str, const char *func_or_name)
             while(hdl != INVALID_BLK_HDL) {
                 // check functions matching abstract baseclass, skip others
                 if(YP(hdl).blkId == YBLKID_YPENTRY+abstract && (devref==INVALID_HASH_IDX || YP(hdl).serialNum == devref)) {
-                    if(YP(hdl).funcId == funcref || YP(hdl).funcName == funcref) {
+                    if(YP(hdl).funcId == funcref) {
                         res = YP(hdl).serialNum + ((u32)(YP(hdl).funcId) << 16);
                         break;
+                    }
+                    if (best_name != -1 && YP(hdl).funcName == funcref) {
+                        best_name = YP(hdl).serialNum + ((u32)(YP(hdl).funcId) << 16);
                     }
                 }
                 hdl = YP(hdl).nextPtr;
             }
             if(hdl != INVALID_BLK_HDL) break;
         }
+    }
+    if (res == -1 && best_name != -1) {
+        res = best_name;
     }
     yLeaveCriticalSection(&yYpMutex);
 
@@ -1766,6 +1887,65 @@ int ypGetFunctionInfo(YAPI_FUNCTION fundesc, char *serial, char *funcId, char *b
 }
 
 #endif
+
+
+int ypGetFunctionsEx(yStrRef categref, YAPI_DEVICE devdesc, YAPI_FUNCTION prevfundesc,
+    YAPI_FUNCTION *buffer, int maxsize, int *neededsize)
+{
+    yBlkHdl cat_hdl, hdl;
+    int     abstract = 0;
+    int     maxfun = 0, nbreturned = 0;
+    YAPI_FUNCTION fundescr = 0;
+    int     use = (prevfundesc == 0);// if prefuncdesc == 0  use any functions
+
+    if (categref == YSTRREF_SENSOR_STRING) {
+        abstract = YOCTO_AKA_YSENSOR;
+    }
+    yEnterCriticalSection(&yYpMutex);
+    for (cat_hdl = yYpListHead; cat_hdl != INVALID_BLK_HDL; cat_hdl = YC(cat_hdl).nextPtr) {
+        YASSERT(YC(cat_hdl).blkId == YBLKID_YPCATEG);
+        if (categref == INVALID_HASH_IDX) {
+            // search any type of function, but skip Module
+            if (YC(cat_hdl).name == YSTRREF_MODULE_STRING) continue;
+        } else {
+            // search for a specific function type
+            if (YC(cat_hdl).name != categref) continue;
+        }
+        hdl = YC(cat_hdl).entries;
+        while (hdl != INVALID_BLK_HDL) {
+            // if an abstract baseclass is specified, skip others
+            if (abstract && YP(hdl).blkId != YBLKID_YPENTRY + abstract) {
+                hdl = YP(hdl).nextPtr;
+                continue;
+            }
+            if (devdesc == -1 || YP(hdl).serialNum == (u16)devdesc) {
+                if (!use && prevfundesc == fundescr) {
+                    use = 1;
+                }
+                fundescr = YP(hdl).hwId;
+                if (use) {
+                    maxfun++;
+                    if (maxsize >= (int)sizeof(YAPI_FUNCTION)) {
+                        maxsize -= sizeof(YAPI_FUNCTION);
+                        if (buffer) {
+                            *buffer++ = fundescr;
+                            nbreturned++;
+                        }
+                    }
+                }
+            }
+            hdl = YP(hdl).nextPtr;
+        }
+        // if we were looking for a specific category, we found it
+        if (categref != INVALID_HASH_IDX) break;
+    }
+    yLeaveCriticalSection(&yYpMutex);
+
+    if (neededsize) *neededsize = sizeof(YAPI_FUNCTION) * maxfun;
+    return nbreturned;
+}
+
+
 
 s16 ypFindBootloaders(yStrRef *serials, u16 maxSerials)
 {

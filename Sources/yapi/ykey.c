@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.c 22284 2015-12-09 09:31:10Z seb $
+ * $Id: ykey.c 23803 2016-04-08 08:42:47Z seb $
  *
  * Implementation of standard key computations
  *
@@ -88,7 +88,7 @@ void ComputeAuthHA1(u8 *ha1, const char *user, const char *pass, const char *rea
 #ifdef DEBUG_HTTP_AUTHENTICATION
     {
         char     tmpha[HTTP_AUTH_MD5_STRLEN + 1];
-        bin2str(tmpha, ha1, HTTP_AUTH_MD5_SIZE, 1);        
+        bin2str(tmpha, ha1, HTTP_AUTH_MD5_SIZE, 1);
         ylogf("Compute HA1 u=%s r=%s p=%s -> %s\n", user, realm, pass, tmpha);
     }
 #endif
@@ -143,14 +143,43 @@ void ComputeAuthResponse(char *buf, const u8 *ha1, const char *nonce, const char
         char     tmpha1[HTTP_AUTH_MD5_STRLEN + 1];
         bin2str(tmpha1, ha1, HTTP_AUTH_MD5_SIZE, 1);
         if (nc && cnonce) {
-            ylogf("Auth Resp ha1=%s nonce=%s nc=%s cnouce=%s ha2%s -> %s\n",
-                tmpha, nonce, nc, cnonce, tmpha, buf);
+            ylogf("Auth Resp ha1=%s nonce=%s nc=%s cnouce=%s ha2=%s -> %s\n",
+                tmpha1, nonce, nc, cnonce, tmpha, buf);
         } else {
-            ylogf("Auth Resp ha1=%s nonce=%s (no nc/cnounce) ha2%s -> %s\n",
-                tmpha, nonce, tmpha, buf);       
+            ylogf("Auth Resp ha1=%s nonce=%s (no nc/cnounce) ha2=%s -> %s\n",
+                tmpha1, nonce, tmpha, buf);
         }
     }
 #endif
+}
+
+
+// Return stringified sha1 hash for the specified parameters
+int CheckWSAuth(u32 nonce, const u8 *ha1, const u8 *to_verify, u8 *out)
+{
+    char     tmpbuff[HTTP_AUTH_MD5_STRLEN + 8 + 1];
+    const u8 * sha1;
+    int res;
+
+    // convert ha1 into str before using it
+    bin2str(tmpbuff, ha1, HTTP_AUTH_MD5_SIZE, 1);
+#ifdef DEBUG_HTTP_AUTHENTICATION
+    ylogf("ha1=%s\n", tmpbuff);
+#endif
+    // convert ha1 into str before using it
+    bin2str(tmpbuff + HTTP_AUTH_MD5_STRLEN, (u8*) &nonce, 4, 1);
+#ifdef DEBUG_HTTP_AUTHENTICATION
+    ylogf("full=%s\n", tmpbuff);
+#endif
+    sha1 = ySHA1(tmpbuff);
+    if (out) {
+        memcpy(out, sha1, 20);
+    }
+    if (to_verify == NULL) {
+        return 0;
+    }
+    res = memcmp(sha1, to_verify, 20)==0;
+    return res;
 }
 
 // Parse a request header, return 0 if a valid WWW-Authenticate header and set args to corresponding fields
@@ -298,7 +327,7 @@ static void initshaw(const char *s, u16 ofs, u8 pad, u16 xinit)
 {
     int ii, j = -1, k = 0;
     int n = (int)strlen(s);
-    
+
     for(ii = 0; ii < 64; ii++) {
         int i = ofs + ii;
         u8  c = 0;
@@ -406,7 +435,7 @@ u8  *ySHA1(const char *text)
         wpak.shau[ofs] = ntohl(wpak.shau[ofs]);
     }
 #endif
-    
+
     return (u8 *)wpak.shau;
 }
 
@@ -481,7 +510,7 @@ int yIterPsk(u8 *res, const char *ssid)
  *   this stuff is worth it, you can buy me a beer in return.
  */
 
-#if defined(__BYTE_ORDER) && (__BYTE_ORDER == 1234)
+#ifndef CPU_BIG_ENDIAN
 #define byteReverse(buf, len) // Do nothing
 #else
 static void byteReverse(unsigned char *buf, unsigned longs) {

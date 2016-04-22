@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 22320 2015-12-11 09:13:02Z seb $
+ * $Id: ystream.c 23893 2016-04-13 07:32:10Z seb $
  *
  * USB multi-interface stream implementation
  *
@@ -96,7 +96,11 @@ YRETCODE ySetErr(YRETCODE code, char *outmsg, const char *erreur,const char *fil
     }else{
         msg=erreur;
     }
-    YSPRINTF(outmsg,YOCTO_ERRMSG_LEN,"%s (%s:%d)",msg,file,line);
+    if (file) {
+        YSPRINTF(outmsg, YOCTO_ERRMSG_LEN, "%s (%s:%d)", msg, file, line);
+    } else {
+        YSTRCPY(outmsg, YOCTO_ERRMSG_LEN, msg);
+    }
     return code;
 }
 
@@ -194,6 +198,11 @@ int vdbglogf(const char *fileid,int line,const char *fmt,va_list args)
 
     if(yContext && yContext->log)
         yContext->log(buffer,len);
+
+#if 0
+    buffer[len] = 0;
+    printf("%s", buffer);
+#endif
 
     if(ytracefile[0]){
         FILE *f;
@@ -387,13 +396,12 @@ static void devStartEnum(LOCATION yPrivDeviceSt *dev)
     //get access
     yEnterCriticalSection(&dev->acces_state);
 
-
     timeref = yapiGetTickCount();
     while((dev->rstatus == YRUN_IDLE || dev->rstatus == YRUN_BUSY ) && (u64)(yapiGetTickCount() - timeref) < 2000){
-            // if someone is doing IO release the mutex and give him 2 second to quit
-            yLeaveCriticalSection(&dev->acces_state);
-            yApproximateSleep(5);
-            yEnterCriticalSection(&dev->acces_state);
+        // if someone is doing IO release the mutex and give him 2 second to quit
+        yLeaveCriticalSection(&dev->acces_state);
+        yApproximateSleep(5);
+        yEnterCriticalSection(&dev->acces_state);
     }
     dev->rstatus = YRUN_STOPED;
     // keep the Mutex on purpose
@@ -523,7 +531,7 @@ static int devPauseIO(LOCATION yPrivDeviceSt *dev,char *errmsg)
 
 
 
-static int devCheckIO(LOCATION yPrivDeviceSt *dev, YIOHDL *iohdl,char *errmsg)
+static int devCheckIO(LOCATION yPrivDeviceSt *dev, YIOHDL_internal *iohdl,char *errmsg)
 {
     int res = YAPI_SUCCESS;
 
@@ -1410,7 +1418,7 @@ static int yPacketSetup(yPrivDeviceSt *dev,char *errmsg)
     for(i=0; i <dev->infos.nbinbterfaces ; i++){
         res=yyPacketSetup(dev,&dev->ifaces[i],i,errmsg);
         if(YISERR(res)){
-            toclose=i;
+            toclose = i;
             dbglog("yyPacketSetup error %d:\"%s\" for %s index=%d\n",res,errmsg,dev->infos.serial,i);
             goto error;
         }
@@ -1667,7 +1675,9 @@ static void yDispatchNotice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pkts
             smallnot->funInfo.v2.isSmall = 1;
             smallnot->devydx = wpGetDevYdx(yHashPutStr(dev->infos.serial));
         } else {
+#ifndef __BORLANDC__
             YASSERT(0);
+#endif
             // Assert added on 2015-02-25, remove code below when confirmed dead code
             memcpy(smallnot->pubval,notify->smallpubvalnot.pubval,pktsize - sizeof(Notification_small));
             smallnot->funInfo.raw = notify->smallpubvalnot.funInfo.raw;
@@ -1938,7 +1948,7 @@ static int yDispatchReceive(yPrivDeviceSt *dev, u64 blockUntilTime, char *errmsg
                 dbglog("%s\n",dump);
                 dbglog("---------------------------\n");
 #endif
-                if(dev->httpstate == YHTTP_OPENED) {
+                if(dev->httpstate == YHTTP_OPENED || dev->httpstate == YHTTP_INREQUEST) {
                     //handle new received packet
                     if(size != yPushFifo(&dev->http_fifo, data, size)){
                         return YERRMSG(YAPI_IO_ERROR,"FIFO overrun");
@@ -1957,7 +1967,7 @@ static int yDispatchReceive(yPrivDeviceSt *dev, u64 blockUntilTime, char *errmsg
                 dbglog("%s\n",dump);
                 dbglog("---------------------------\n");
 #endif
-                if (dev->httpstate == YHTTP_OPENED) {
+                if (dev->httpstate == YHTTP_OPENED || dev->httpstate == YHTTP_INREQUEST) {
                     //handle new received packet
                     if(size!=yPushFifo(&dev->http_fifo, data, size)){
                         return YERRMSG(YAPI_IO_ERROR,"FIFO overrun");
@@ -2016,7 +2026,7 @@ static void enuResetDStatus(void)
 
     while(p){
 #ifdef DEBUG_DEV_ENUM_VERBOSE
-        dbglog("Initial State of %s is %s\n",p->infos.serial,YDEV_STATUS_TXT[p->dstatus]);
+        dbglog("Initial State of %s is %s\n",p->infos.serial,YDEV_STATUS_TXT[p->dStatus]);
 #endif
         if( p->dStatus== YDEV_WORKING){
             p->enumAction=YENU_STOP;
@@ -2174,7 +2184,7 @@ static void enuUpdateDStatus(void)
                         p->dStatus = YDEV_NOTRESPONDING;
                         wpSafeUnregister(serialref);
                     }
-                }else{
+                } else {
 #ifdef DEBUG_DEV_ENUM
                     dbglog("ENU:start %s(%d)->YDEV_WORKING\n",p->infos.serial,p->infos.nbinbterfaces);
 #endif
@@ -2360,7 +2370,7 @@ YUSBDEV findDevHdlFromStr(const char *str)
 }
 
 
-yPrivDeviceSt *findDevFromIOHdl(YIOHDL *iohdl)
+yPrivDeviceSt *findDevFromIOHdl(YIOHDL_internal *iohdl)
 {
     yPrivDeviceSt *p;
     if(iohdl->type!=YIO_USB)
@@ -2603,7 +2613,7 @@ int yUsbTrafficPending(void)
 }
 
 
-int yUsbOpenDevDescr(YIOHDL *ioghdl, yStrRef devdescr, char *errmsg)
+int yUsbOpenDevDescr(YIOHDL_internal *ioghdl, yStrRef devdescr, char *errmsg)
 {
     char    serialBuf[YOCTO_SERIAL_LEN];
     int     res;
@@ -2616,7 +2626,7 @@ int yUsbOpenDevDescr(YIOHDL *ioghdl, yStrRef devdescr, char *errmsg)
     return res;
 }
 
-int yUsbOpen(YIOHDL *ioghdl, const char *device, char *errmsg)
+int yUsbOpen(YIOHDL_internal *ioghdl, const char *device, char *errmsg)
 {
     int           res;
     yPrivDeviceSt *p;
@@ -2628,7 +2638,7 @@ int yUsbOpen(YIOHDL *ioghdl, const char *device, char *errmsg)
         return YERR(YAPI_DEVICE_NOT_FOUND);
     }
 
-    memset(ioghdl,0,YIOHDL_SIZE);
+    memset(ioghdl, 0, sizeof(YIOHDL_internal));
     res = devStartIO(PUSH_LOCATION p,errmsg);
     if(YISERR(res)){
         YPERF_LEAVE(yUsbOpen);
@@ -2652,7 +2662,7 @@ int yUsbOpen(YIOHDL *ioghdl, const char *device, char *errmsg)
     return res;
 }
 
-int yUsbSetIOAsync(YIOHDL *ioghdl, yapiRequestAsyncCallback callback, void *context, char *errmsg)
+int yUsbSetIOAsync(YIOHDL_internal *ioghdl, yapiRequestAsyncCallback callback, void *context, char *errmsg)
 {
     int res =YAPI_SUCCESS;
     yPrivDeviceSt *p;
@@ -2678,7 +2688,7 @@ int yUsbSetIOAsync(YIOHDL *ioghdl, yapiRequestAsyncCallback callback, void *cont
 
 
 
-int  yUsbWrite(YIOHDL *ioghdl, const char *buffer, int writelen,char *errmsg)
+int  yUsbWrite(YIOHDL_internal *ioghdl, const char *buffer, int writelen,char *errmsg)
 {
     yPrivDeviceSt *p;
     int totalsend=0;
@@ -2699,12 +2709,12 @@ int  yUsbWrite(YIOHDL *ioghdl, const char *buffer, int writelen,char *errmsg)
         return res;
     }
 
-    if(p->httpstate != YHTTP_OPENED){
+    if(p->httpstate != YHTTP_OPENED && p->httpstate != YHTTP_INREQUEST) {
         devPauseIO(PUSH_LOCATION p,NULL);
         YPERF_LEAVE(yUsbWrite);
         return YERRMSG(YAPI_IO_ERROR,"Connection closed");
     }
-
+    p->httpstate = YHTTP_INREQUEST;
     while (writelen){
         while(writelen && yStreamGetTxBuff(p,&pktdata, &maxpktlen)==1) {
             u8 pktlen =(maxpktlen < writelen ? maxpktlen: writelen);
@@ -2734,7 +2744,7 @@ int  yUsbWrite(YIOHDL *ioghdl, const char *buffer, int writelen,char *errmsg)
 
 
 
-int  yUsbReadNonBlock(YIOHDL *ioghdl, char *buffer, int len,char *errmsg)
+int  yUsbReadNonBlock(YIOHDL_internal *ioghdl, char *buffer, int len,char *errmsg)
 {
     yPrivDeviceSt *p;
     u16 readed;
@@ -2778,7 +2788,7 @@ int  yUsbReadNonBlock(YIOHDL *ioghdl, char *buffer, int len,char *errmsg)
 
 
 
-int  yUsbReadBlock(YIOHDL *ioghdl, char *buffer, int len,u64 blockUntil,char *errmsg)
+int  yUsbReadBlock(YIOHDL_internal *ioghdl, char *buffer, int len,u64 blockUntil,char *errmsg)
 {
     yPrivDeviceSt *p;
     u16 readed, avail;
@@ -2821,7 +2831,7 @@ int  yUsbReadBlock(YIOHDL *ioghdl, char *buffer, int len,u64 blockUntil,char *er
 
 
 
-int  yUsbEOF(YIOHDL *ioghdl,char *errmsg)
+int  yUsbEOF(YIOHDL_internal *ioghdl,char *errmsg)
 {
     yPrivDeviceSt *p;
     int res;
@@ -2861,7 +2871,7 @@ int  yUsbEOF(YIOHDL *ioghdl,char *errmsg)
 
 
 
-int  yUsbClose(YIOHDL *ioghdl,char *errmsg)
+int  yUsbClose(YIOHDL_internal *ioghdl,char *errmsg)
 {
     yPrivDeviceSt *p;
     u8  *pktdata;
@@ -2871,8 +2881,8 @@ int  yUsbClose(YIOHDL *ioghdl,char *errmsg)
 
     YPERF_ENTER(yUsbClose);
 
-    p=findDevFromIOHdl(ioghdl);
-    if(p==NULL){
+    p = findDevFromIOHdl(ioghdl);
+    if (p == NULL) {
         YPERF_LEAVE(yUsbClose);
         return YERR(YAPI_DEVICE_NOT_FOUND);
     }
@@ -2901,7 +2911,7 @@ int  yUsbClose(YIOHDL *ioghdl,char *errmsg)
         }
         yStreamGetTxBuff(p,&pktdata, &maxpktlen);
     }
-    if(!deviceDead) {
+    if (!deviceDead && p->httpstate >= YHTTP_INREQUEST) {
         if(YISERR(yStreamTransmit(p,YSTREAM_TCP_CLOSE,0,errmsg))) {
             dbglog("Unable to send connection close");
             deviceDead = 1;
@@ -2910,13 +2920,13 @@ int  yUsbClose(YIOHDL *ioghdl,char *errmsg)
             deviceDead = 1;
         }
     }
-    if(p->httpstate == YHTTP_CLOSE_BY_DEV || deviceDead) {
+    if (p->httpstate == YHTTP_OPENED || p->httpstate == YHTTP_CLOSE_BY_DEV || deviceDead) {
         p->httpstate = YHTTP_CLOSED;
     } else {
         //wait for the device close packet
         u64 timeout = yapiGetTickCount() + 100;
         p->httpstate = YHTTP_CLOSE_BY_API;
-        while(!YISERR(yDispatchReceive(p,0,errmsg))){
+        while (!YISERR(yDispatchReceive(p, 5, errmsg))) {
             if(p->httpstate == YHTTP_CLOSED) {
                 // received close from device
                 break;
@@ -2927,9 +2937,8 @@ int  yUsbClose(YIOHDL *ioghdl,char *errmsg)
             }
         }
     }
-
     yFifoEmpty(&p->http_fifo);
-    memset(&p->pendingIO,0,YIOHDL_SIZE);
+    memset(&p->pendingIO, 0, sizeof(USB_HDL));
     ioghdl->type=YIO_INVALID;
     res =devStopIO(PUSH_LOCATION p,errmsg);
     yapiPullDeviceLog(p->infos.serial);

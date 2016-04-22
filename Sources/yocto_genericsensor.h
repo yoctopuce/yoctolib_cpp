@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_genericsensor.h 19606 2015-03-05 10:35:57Z seb $
+ * $Id: yocto_genericsensor.h 23527 2016-03-18 21:49:19Z mvuilleu $
  *
  * Declares yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -28,8 +28,8 @@
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
  *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -139,9 +139,10 @@ public:
     { return this->set_unit(newval); }
 
     /**
-     * Returns the measured value of the electrical signal used by the sensor.
+     * Returns the current value of the electrical signal measured by the sensor.
      *
-     * @return a floating point number corresponding to the measured value of the electrical signal used by the sensor
+     * @return a floating point number corresponding to the current value of the electrical signal
+     * measured by the sensor
      *
      * On failure, throws an exception or returns Y_SIGNALVALUE_INVALID.
      */

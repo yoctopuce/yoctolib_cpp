@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorled.cpp 22191 2015-12-02 06:49:31Z mvuilleu $
+ * $Id: yocto_colorled.cpp 23577 2016-03-22 22:59:53Z mvuilleu $
  *
  * Implements yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -28,8 +28,8 @@
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
  *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -154,9 +154,9 @@ int YColorLed::_parseAttr(yJsonStateMachine& j)
 
 
 /**
- * Returns the current RGB color of the led.
+ * Returns the current RGB color of the LED.
  *
- * @return an integer corresponding to the current RGB color of the led
+ * @return an integer corresponding to the current RGB color of the LED
  *
  * On failure, throws an exception or returns Y_RGBCOLOR_INVALID.
  */
@@ -171,9 +171,9 @@ int YColorLed::get_rgbColor(void)
 }
 
 /**
- * Changes the current color of the led, using a RGB color. Encoding is done as follows: 0xRRGGBB.
+ * Changes the current color of the LED, using a RGB color. Encoding is done as follows: 0xRRGGBB.
  *
- * @param newval : an integer corresponding to the current color of the led, using a RGB color
+ * @param newval : an integer corresponding to the current color of the LED, using a RGB color
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -187,9 +187,9 @@ int YColorLed::set_rgbColor(int newval)
 }
 
 /**
- * Returns the current HSL color of the led.
+ * Returns the current HSL color of the LED.
  *
- * @return an integer corresponding to the current HSL color of the led
+ * @return an integer corresponding to the current HSL color of the LED
  *
  * On failure, throws an exception or returns Y_HSLCOLOR_INVALID.
  */
@@ -204,9 +204,9 @@ int YColorLed::get_hslColor(void)
 }
 
 /**
- * Changes the current color of the led, using a color HSL. Encoding is done as follows: 0xHHSSLL.
+ * Changes the current color of the LED, using a color HSL. Encoding is done as follows: 0xHHSSLL.
  *
- * @param newval : an integer corresponding to the current color of the led, using a color HSL
+ * @param newval : an integer corresponding to the current color of the LED, using a color HSL
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -305,9 +305,9 @@ int YColorLed::get_rgbColorAtPowerOn(void)
 }
 
 /**
- * Changes the color that the led will display by default when the module is turned on.
+ * Changes the color that the LED will display by default when the module is turned on.
  *
- * @param newval : an integer corresponding to the color that the led will display by default when the
+ * @param newval : an integer corresponding to the color that the LED will display by default when the
  * module is turned on
  *
  * @return YAPI_SUCCESS if the call succeeds.
@@ -322,7 +322,7 @@ int YColorLed::set_rgbColorAtPowerOn(int newval)
 }
 
 /**
- * Returns the current length of the blinking sequence
+ * Returns the current length of the blinking sequence.
  *
  * @return an integer corresponding to the current length of the blinking sequence
  *
@@ -339,7 +339,7 @@ int YColorLed::get_blinkSeqSize(void)
 }
 
 /**
- * Returns the maximum length of the blinking sequence
+ * Returns the maximum length of the blinking sequence.
  *
  * @return an integer corresponding to the maximum length of the blinking sequence
  *

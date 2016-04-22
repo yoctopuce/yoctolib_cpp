@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_datalogger.cpp 22194 2015-12-02 10:50:41Z mvuilleu $
+ * $Id: yocto_datalogger.cpp 23552 2016-03-21 15:49:51Z seb $
  *
  * Implements yFindDataLogger(), the high-level API for DataLogger functions
  *
@@ -298,7 +298,7 @@ int YDataLogger::getData(unsigned runIdx, unsigned timeIdx, string &buffer, yJso
     } else {
         sprintf(query, "GET %s \r\n\r\n", this->dataLoggerURL.c_str());
     }
-    res = dev->HTTPRequest(query, buffer, errmsg);
+    res = dev->HTTPRequest(0, query, buffer, NULL, NULL, errmsg);
     if(YISERR(res)) {
         // Check if an update of the device list does not solve the issue
         res = YAPI::UpdateDeviceList(errmsg);
@@ -306,7 +306,7 @@ int YDataLogger::getData(unsigned runIdx, unsigned timeIdx, string &buffer, yJso
             _throw((YRETCODE)res, errmsg);
             return (YRETCODE)res;
         }
-        res = dev->HTTPRequest(query, buffer, errmsg);
+        res = dev->HTTPRequest(0, query, buffer, NULL, NULL, errmsg);
         if(YISERR(res)) {
             _throw((YRETCODE)res, errmsg);
             return (YRETCODE)res;

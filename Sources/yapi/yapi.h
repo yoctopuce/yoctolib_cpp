@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h 22694 2016-01-12 23:13:27Z seb $
+ * $Id: yapi.h 23552 2016-03-21 15:49:51Z seb $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -805,6 +805,35 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetFunctionInfoEx(YAPI_FUNCTION fundesc, YAPI_
  ***************************************************************************/
 YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncStartEx(YIOHDL *iohdl, const char *device, const char *request, int requestsize, char **reply, int *replysize, char *errmsg);
 
+/*****************************************************************************
+Function:
+int yapiHTTPRequestSyncStartOutOfBand(YIOHDL *iohdl, const char *device, const char *request, int requestsize, char **reply, int *replysize, yapiRequestProgressCallback progress_cb, void *progress_ctx, char *errmsg);
+
+Description:
+Open a HTTP request to a given device, send a query and receive the HTTP header and
+page content into the buffer. The buffer with result will be returned by reference,
+so that the caller can use it or copy it. Do not free reply buffer manually, but
+always call yapiHTTPRequestSyncDone when finished. 
+
+Parameters:
+iohdl        : the request handle that will be initialized
+channel      : channel to use for the request
+device       : a string that contain one of the flowing value: serial, logicalname, url
+request      : the HTTP request (HTTP header + body, in case of POST) of the page/file to retreive
+requestsize  : the length of the HTTP request
+reply        : a pointer to the reply buffer, returned by reference
+replysize    : the length of the reply buffer, returned by reference
+progress_cb  : a callback that is called to report progress
+progress_ctx : context passed to progress_cb 
+errmsg       : a pointer to a buffer of YOCTO_ERRMSG_LEN bytes to store any error message
+
+Returns:
+on SUCCESS : YAPI_SUCCESS
+on ERROR   : return the YRETCODE
+
+***************************************************************************/
+YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncStartOutOfBand(YIOHDL *iohdl, int channel, const char *device, const char *request, int requestsize, char **reply, int *replysize, yapiRequestProgressCallback progress_cb, void *progress_ctx, char *errmsg);
+
 
 /*****************************************************************************
  Function:
@@ -903,6 +932,35 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestAsyncEx(const char *device, const c
 
 
 /*****************************************************************************
+Function:
+YRETCODE yapiHTTPRequestAsync(const char *device, const char *request, yapiRequestAsyncCallback callback, void *context, char *errmsg);
+
+Description:
+Execute a HTTP request to a given device, and leave it to the API to complete the request.
+
+Parameters:
+channel    : channel to use for the request
+device     : a string that contain one of the flowing value: serial, logicalname, url
+request    : the HTTP request (HTTP header + body, in case of POST) of the page/file to retreive
+requestsize: the length of the HTTP request
+callback   : RESERVED FOR FUTURE USE
+context    : RESERVED FOR FUTURE USE
+errmsg     : a pointer to a buffer of YOCTO_ERRMSG_LEN bytes to store any error message
+
+Returns:
+on ERROR   : an error code
+on SUCCESS : YAPI_SUCCESS
+
+Remarks:
+we match the device string in this order: serial,logicalname,url
+
+***************************************************************************/
+YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestAsyncOutOfBand(int channel, const char *device, const char *request, int requestsize, yapiRequestAsyncCallback callback, void *context, char *errmsg);
+
+
+
+
+/*****************************************************************************
  Function:
    int yHTTPRequest(char *device,char *request, char* buffer,int buffsize,int *fullsize,char *errmsg)
 
@@ -980,7 +1038,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetAllJsonKeys(const char *jsonbuffer, char *o
 YRETCODE YAPI_FUNCTION_EXPORT yapiCheckFirmware(const char *serial, const char *rev, const char *path, char *buffer, int buffersize, int *fullsize, char *errmsg);
 YRETCODE YAPI_FUNCTION_EXPORT yapiGetBootloaders(char *buffer, int buffersize, int *fullsize, char *errmsg);
 YRETCODE YAPI_FUNCTION_EXPORT yapiUpdateFirmware(const char *serial, const char *firmwarePath, const char *settings, int startUpdate, char *errmsg);
-
+YRETCODE YAPI_FUNCTION_EXPORT yapiUpdateFirmwareEx(const char *serial, const char *firmwarePath, const char *settings, int force, int startUpdate, char *errmsg);
 
 int YAPI_FUNCTION_EXPORT yapiJsonDecodeString(const char *json_string, char *output);
 int YAPI_FUNCTION_EXPORT yapiJsonGetPath(const char *path, const char *json_data, int json_size, const char  **result, char *errmsg);

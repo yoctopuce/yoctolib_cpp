@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ymemory.c 21883 2015-10-29 16:43:44Z seb $
+ * $Id: ymemory.c 23545 2016-03-21 14:02:30Z seb $
  *
  * Basic memory check function to prevent memory leak
  *
@@ -78,13 +78,13 @@ static void  ymemdump(void)
     YMEM_ENTRY *entry;
     u32 total,count;
 
-    dbglog("ySafeMemoryDump: %d/%d entry\n\n",yMapUsed,yMapSize);
+    dbglog("ySafeMemoryDump: %d/%d entry\n\n", yMapUsed, yMapSize);
     dbglog("Malloc:\n");
     total=count=0;
     for(i=0, entry=yMap; i< yMapUsed ; i++,entry++){
         if(entry->state == YMEM_MALLOCED){
             ymemdumpentry(entry,"");
-            dbglog("%s : %d of %db (0x%x)\n",entry->malloc_file,entry->malloc_line,entry->malloc_size,entry->ptr);
+            dbglog("%s : %d of %db (0x%x)\n", entry->malloc_file, entry->malloc_line, entry->malloc_size, entry->ptr);
             total+= entry->malloc_size;
             count++;
         }

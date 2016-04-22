@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.h 19995 2015-04-10 14:52:06Z seb $
+ * $Id: ytcp.h 23545 2016-03-21 14:02:30Z seb $
  *
  *  Declaration of a client TCP stack
  *
@@ -79,7 +79,7 @@ extern "C" {
 #else
 #define SOCK_ERR    (errno)
 #endif
-#define REPORT_ERR(msg) if(errmsg){ YSPRINTF(errmsg,YOCTO_ERRMSG_LEN,"%s:errno=%d",(msg),SOCK_ERR);errmsg[YOCTO_ERRMSG_LEN-1]='\0';}
+#define REPORT_ERR(msg) if(errmsg){ YSPRINTF(errmsg,YOCTO_ERRMSG_LEN,"%s (%s:%d / errno=%d)",(msg), __FILE_ID__, __LINE__, SOCK_ERR);errmsg[YOCTO_ERRMSG_LEN-1]='\0';}
 
 #define yNetSetErr()  yNetSetErrEx(__LINE__,SOCK_ERR,errmsg)
 
@@ -87,8 +87,8 @@ int yNetSetErrEx(u32 line,unsigned err,char *errmsg);
 
 #define YTCP_REMOTE_CLOSE 1
 
-struct _NetHubSt;
-struct _TcpReqSt;
+struct _HubSt;
+struct _RequestSt;
 
 typedef struct {
     YSOCKET listensock;
@@ -104,17 +104,26 @@ void yFreeWakeUpSocket(WakeUpSocket *wuce);
 int yTcpDownload(const char *host, const char *url, u8 **out_buffer, u32 mstimeout, char *errmsg);
 
 int  yTcpInit(char *errmsg);
-u32  yResolveDNS(const char *name,char *errmsg);
-void yTcpInitReq(struct _TcpReqSt *tcpreq, struct _NetHubSt *hub);
-int  yTcpOpenReq(struct _TcpReqSt *tcpreq, const char *request, int reqlen, u64 mstimeout, yapiRequestAsyncCallback callback, void *context, char *errmsg);
-int  yTcpIsAsyncReq(struct _TcpReqSt *req);
-int  yTcpSelectReq(struct _TcpReqSt **tcpreq, int size, u64 ms, WakeUpSocket *wuce, char *errmsg);
-int  yTcpEofReq(struct _TcpReqSt *tcpreq, char *errmsg);
-int  yTcpGetReq(struct _TcpReqSt *tcpreq, u8 **buffer);
-int  yTcpReadReq(struct _TcpReqSt *rcoreq, u8 *buffer, int len);
-void yTcpCloseReq(struct _TcpReqSt *tcpreq);
-void yTcpFreeReq(struct _TcpReqSt *tcpreq);
 void yTcpShutdown(void);
+u32  yResolveDNS(const char *name,char *errmsg);
+
+
+
+struct _RequestSt * yReqAlloc( struct _HubSt *hub);
+int  yReqOpen(struct _RequestSt *tcpreq, int tcpchan, const char *request, int reqlen, u64 mstimeout, yapiRequestAsyncCallback callback, void *context, yapiRequestProgressCallback progress_cb, void *progress_ctx, char *errmsg);
+int  yReqIsAsync(struct _RequestSt *req);
+int  yReqSelect(struct _RequestSt *tcpreq, u64 ms, char *errmsg);
+int  yReqMultiSelect(struct _RequestSt **tcpreq, int size, u64 ms, WakeUpSocket *wuce, char *errmsg);
+int  yReqIsEof(struct _RequestSt *tcpreq, char *errmsg);
+int  yReqGet(struct _RequestSt *tcpreq, u8 **buffer);
+int  yReqRead(struct _RequestSt *rcoreq, u8 *buffer, int len);
+void yReqClose(struct _RequestSt *tcpreq);
+void yReqFree(struct _RequestSt *tcpreq);
+int  yReqHasPending(struct _HubSt *hub);
+
+
+void* ws_thread(void* ctx);
+
 
 #include "ythread.h"
 

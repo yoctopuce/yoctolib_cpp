@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 22016 2015-11-17 00:27:04Z mvuilleu $
+ * $Id: yprog.c 23723 2016-04-01 17:28:09Z seb $
  *
  * Implementation of firmware upgrade functions
  *
@@ -66,6 +66,11 @@ FIRMWARE_CONTEXT fctx;
 BootloaderSt            firm_dev;
 USB_Packet              firm_pkt;
 
+#ifdef __BORLANDC__
+#pragma warn - 8066
+#pragma warn - 8008
+#pragma warn - 8065
+#endif
 
 void yProgInit(void)
 {
@@ -185,7 +190,7 @@ static int  checkHardwareCompat(BootloaderSt *dev,const char *pictype)
 
 #ifdef MICROCHIP_API
 
-int IsValidBynHead(const byn_head_multi *head, u32 size, char *errmsg)
+int IsValidBynHead(const byn_head_multi *head, u32 size, u16 flags, char *errmsg)
 {
     if(head->h.sign != BYN_SIGN){
         return YERRMSG(YAPI_INVALID_ARGUMENT, "Not a firmware file");
@@ -209,15 +214,7 @@ int IsValidBynHead(const byn_head_multi *head, u32 size, char *errmsg)
             }
             return YAPI_SUCCESS;
         case BYN_REV_V5:
-#ifndef YBUILD_PATCH_WITH_BUILD
-            if(head->v5.prog_version[0]){
-                int byn = atoi(head->v5.prog_version);
-                int tools=atoi(YOCTO_API_BUILD_NO);
-                if(byn>tools){
-                    return YERRMSG(YAPI_VERSION_MISMATCH, "Please upgrade the hub device first");
-                }
-            }
-#endif
+            //we do not check prog_version on YoctoHubs on purpose
             if( head->v5.nbzones > MAX_ROM_ZONES_PER_FILES){
                 return YERRMSG(YAPI_INVALID_ARGUMENT,"Too many zones");
             }
@@ -226,15 +223,7 @@ int IsValidBynHead(const byn_head_multi *head, u32 size, char *errmsg)
             }
             return YAPI_SUCCESS;
         case BYN_REV_V6:
-#ifndef YBUILD_PATCH_WITH_BUILD
-            if(head->v6.prog_version[0]){
-                int byn = atoi(head->v6.prog_version);
-                int tools = atoi(YOCTO_API_BUILD_NO);
-                if (byn > tools) {
-                    return YERRMSG(YAPI_VERSION_MISMATCH, "Please upgrade the hub device first");
-                }
-            }
-#endif
+            //we do not check prog_version on YoctoHubs on purpose
             if( head->v6.ROM_nb_zone > MAX_ROM_ZONES_PER_FILES){
                 return YERRMSG(YAPI_INVALID_ARGUMENT,"Too many ROM zones");
             }
@@ -250,7 +239,7 @@ int IsValidBynHead(const byn_head_multi *head, u32 size, char *errmsg)
 
 #else
 
-int IsValidBynHead(const byn_head_multi *head, u32 size, char *errmsg)
+int IsValidBynHead(const byn_head_multi *head, u32 size, u16 flags, char *errmsg)
 {
     if(head->h.sign != BYN_SIGN){
         return YERRMSG(YAPI_INVALID_ARGUMENT, "Not a valid .byn file");
@@ -279,7 +268,7 @@ int IsValidBynHead(const byn_head_multi *head, u32 size, char *errmsg)
                 return YERRMSG(YAPI_INVALID_ARGUMENT, "Invalid programming tools revision or corrupt file");
             }
 #ifndef YBUILD_PATCH_WITH_BUILD
-            if(head->v5.prog_version[0]){
+            if((flags & YPROG_FORCE_FW_UPDATE) == 0 && head->v5.prog_version[0]){
                  int byn = atoi(head->v5.prog_version);
                  int tools=atoi(YOCTO_API_BUILD_NO);
                  if(byn>tools){
@@ -299,7 +288,7 @@ int IsValidBynHead(const byn_head_multi *head, u32 size, char *errmsg)
                 return YERRMSG(YAPI_INVALID_ARGUMENT, "Invalid programming tools revision or corrupt file");
             }
 #ifndef YBUILD_PATCH_WITH_BUILD
-            if(head->v6.prog_version[0]){
+            if ((flags & YPROG_FORCE_FW_UPDATE) == 0 && head->v6.prog_version[0]){
                 int byn = atoi(head->v6.prog_version);
                 int tools=atoi(YOCTO_API_BUILD_NO);
                 if(byn>tools){
@@ -321,9 +310,9 @@ int IsValidBynHead(const byn_head_multi *head, u32 size, char *errmsg)
 }
 #endif
 
-int ValidateBynCompat(const byn_head_multi *head, u32 size, const char *serial, BootloaderSt *dev, char *errmsg)
+int ValidateBynCompat(const byn_head_multi *head, u32 size, const char *serial, u16 flags, BootloaderSt *dev, char *errmsg)
 {
-    YPROPERR(IsValidBynHead(head,size, errmsg));
+    YPROPERR(IsValidBynHead(head, size, flags, errmsg));
     if(serial && YSTRNCMP(head->h.serial,serial,YOCTO_BASE_SERIAL_LEN)!=0){
         return YERRMSG(YAPI_INVALID_ARGUMENT, "This BYN file is not designed for your device");
     }
@@ -335,13 +324,13 @@ int ValidateBynCompat(const byn_head_multi *head, u32 size, const char *serial, 
 
 #ifndef MICROCHIP_API
 // user by yprogrammer
-int  IsValidBynFile(const byn_head_multi *head, u32 size, const char *serial, char *errmsg)
+int  IsValidBynFile(const byn_head_multi *head, u32 size, const char *serial, u16 flags, char *errmsg)
 {
     HASH_SUM ctx;
     u8       md5res[16];
     int      res;
 
-    res = ValidateBynCompat(head, size, serial, NULL, errmsg);
+    res = ValidateBynCompat(head, size, serial, flags, NULL, errmsg);
     if(res == YAPI_SUCCESS && head->h.rev == BYN_REV_V6) {
         // compute MD5
         MD5Initialize(&ctx);
@@ -711,7 +700,6 @@ static int uGetDeviceInfo(void)
             return -1;
         }
         return 1;
-        break;
 #ifdef DEBUG_FIRMWARE
     default:
         ulog("invalid step in uGetDeviceInfo\n");
@@ -959,7 +947,7 @@ static int uFlashFlash()
         fctx.stepB += datasize;
 
         // verify each time we finish a page or a zone
-        if((addr & (firm_dev.ext_page_size-1)) + datasize >= firm_dev.ext_page_size || fctx.stepB >= fctx.bz.len) {
+        if ((u16)((addr & (firm_dev.ext_page_size-1)) + datasize) >= firm_dev.ext_page_size || fctx.stepB >= fctx.bz.len) {
             fctx.zOfs -= fctx.stepB; // rewind to check
             fctx.zst = FLASH_ZONE_READ;
         }
@@ -1064,6 +1052,7 @@ YPROG_RESULT uFlashDevice(void)
         if(ypIsSendBootloaderBusy(&firm_dev)) {
             return YPROG_WAITING;
         }
+        // ReSharper disable once CppUnreachableCode
         if(!Flash_ready()) {
             return YPROG_WAITING;
         }
@@ -1127,7 +1116,7 @@ YPROG_RESULT uFlashDevice(void)
         ulog(" detected\n");
 #endif
         uGetFirmwareBynHead(&head);
-        if(ValidateBynCompat(&head,fctx.len,fctx.bynHead.h.serial,&firm_dev,fctx.errmsg)<0){
+        if (ValidateBynCompat(&head, fctx.len, fctx.bynHead.h.serial, fctx.flags, &firm_dev, fctx.errmsg) < 0) {
 #ifdef DEBUG_FIRMWARE
             ulog("ValidateBynCompat failed:");
             ulog(fctx.errmsg);
@@ -1423,45 +1412,6 @@ static int getTCPBootloaders(void *ctx, const char* buffer, u32 len, char *errms
     return res;
 }
 
-static int processs_tcp_req(const char *hubserial, const char *request, int requestlen, yprogTcpReqCb callback, void *ctx, char *errmsg)
-{
-    int res = -1;
-    YIOHDL  iohdl;
-    u8      *reply = NULL;
-    int     replysize = 0;
-    u64      timeout;
-    TcpReqSt *tcpreq;
-
-    memset(&iohdl, 0, YIOHDL_SIZE);
-    if (YISERR(res = yapiRequestOpen(&iohdl, hubserial, request, requestlen, NULL, NULL, errmsg))) {
-        return res;
-    }
-    tcpreq = &yContext->tcpreq[iohdl.tcpreqidx];
-    timeout = yapiGetTickCount() + FLASH_SUBDEV_TIMEOUT * 2;
-    res = yTcpEofReq(tcpreq, errmsg);
-    while (res == 0) {
-        if (yapiGetTickCount() > timeout) {
-            yTcpCloseReq(tcpreq);
-            return YERRMSG(YAPI_TIMEOUT, "Timeout during device request");
-        }
-        res = yTcpSelectReq(&tcpreq, 1, 1000, NULL, errmsg);
-        if (YISERR(res)){
-            yTcpCloseReq(tcpreq);
-            return res;
-        }
-        res = (YRETCODE)yTcpEofReq(tcpreq, errmsg);
-    }
-    if (YISERR(res) && res != YAPI_NO_MORE_DATA) {
-        yTcpCloseReq(tcpreq);
-        return res;
-    }
-
-    replysize = yTcpGetReq(tcpreq, &reply);
-    res = callback(ctx, (char*)reply, replysize, errmsg);
-    yTcpCloseReq(tcpreq);
-    return res;
-}
-
 
 // return the list of bootladers in a specific hub
 // buffer must be an pointer to a buffer of min 4 * YOCTO_SERIAL_LEN
@@ -1469,7 +1419,19 @@ static int processs_tcp_req(const char *hubserial, const char *request, int requ
 int yNetHubGetBootloaders(const char *hubserial, char *buffer, char *errmsg)
 {
     const char * req = "GET /flash.json?a=list \r\n\r\n";
-    return processs_tcp_req(hubserial, req, YSTRLEN(req), getTCPBootloaders, buffer, errmsg);
+    YIOHDL  iohdl;
+    YRETCODE res, subres;
+    int replysize;
+    char *reply;
+
+    res = yapiHTTPRequestSyncStartEx_internal(&iohdl, 0, hubserial, req, YSTRLEN(req), &reply, &replysize, NULL, NULL, errmsg);
+    if (YISERR(res)) {
+        return res;
+    }
+    res = getTCPBootloaders(buffer, reply, replysize, errmsg);
+    subres = yapiHTTPRequestSyncDone_internal(&iohdl, NULL);
+    YASSERT(!YISERR(subres));
+    return res;
 }
 
 
@@ -1502,12 +1464,12 @@ static int  getBootloaderInfos(const char *devserial, char *out_hubserial, char 
 
 
     for (i = 0; i < NBMAX_NET_HUB; i++){
-        if (yContext->nethub[i].url != INVALID_HASH_IDX){
+        if (yContext->nethub[i]){
             char bootloaders[4 * YOCTO_SERIAL_LEN];
             char hubserial[YOCTO_SERIAL_LEN];
-            int res, j;
+            int j;
             char *serial;
-            yHashGetStr(yContext->nethub[i].serial, hubserial, YOCTO_SERIAL_LEN);
+            yHashGetStr(yContext->nethub[i]->serial, hubserial, YOCTO_SERIAL_LEN);
             res = yNetHubGetBootloaders(hubserial, bootloaders, errmsg);
             if (YISERR(res)) {
                 return res;
@@ -1685,7 +1647,8 @@ static int upload(const char *hubserial, const char *subpath, const char *filena
     YSTRCAT(p, buffer_size, boundary);
     YSTRCAT(p, buffer_size, "--\r\n");
     buffer_size = (int)(p - buffer) + YSTRLEN(p);
-    res = yapiHTTPRequestSyncStartEx_internal(&iohdl, hubserial, buffer, buffer_size, &reply, &replysize, errmsg);
+    //todo: chose wisely callback and tpchan
+    res = yapiHTTPRequestSyncStartEx_internal(&iohdl, 0, hubserial, buffer, buffer_size, &reply, &replysize, NULL, NULL,errmsg);
     if (res >= 0) {
         res = checkHTTPHeader(NULL, reply, replysize, errmsg);
         yapiHTTPRequestSyncDone_internal(&iohdl, errmsg);
@@ -1709,6 +1672,10 @@ static int sendHubFlashCmd(const char *hubserial, const char *subpath, const cha
     const char *cmd_str;
     ckReqHeadCtx ctx;
     int res;
+    YIOHDL  iohdl;
+    YRETCODE subres;
+    int replysize;
+    char *reply;
 
     switch (cmd){
     case FLASH_HUB_AVAIL:
@@ -1724,7 +1691,13 @@ static int sendHubFlashCmd(const char *hubserial, const char *subpath, const cha
     YSPRINTF(buffer, 512, "GET %sflash.json?a=%s%s \r\n\r\n", subpath, cmd_str, args);
     ctx.cmd = cmd;
     ctx.devserial = devserial;
-    res = processs_tcp_req(hubserial, buffer, YSTRLEN(buffer), checkRequestHeader, &ctx, errmsg);
+    res = yapiHTTPRequestSyncStartEx_internal(&iohdl, 0, hubserial, buffer, YSTRLEN(buffer), &reply, &replysize, NULL, NULL, errmsg);
+    if (YISERR(res)) {
+        return res;
+    }
+    res = checkRequestHeader(&ctx, reply, replysize, errmsg);
+    subres = yapiHTTPRequestSyncDone_internal(&iohdl, NULL);
+    YASSERT(!YISERR(subres));
     return res;
 }
 
@@ -1825,14 +1798,14 @@ static void* yFirmwareUpdate_thread(void* ctx)
     YSTRCPY(fctx.bynHead.h.serial, YOCTO_SERIAL_LEN, yContext->fuCtx.serial);
 
 
-    res = IsValidBynFile((const byn_head_multi *)fctx.firmware, fctx.len, yContext->fuCtx.serial, errmsg);
+    res = IsValidBynFile((const byn_head_multi *)fctx.firmware, fctx.len, yContext->fuCtx.serial, fctx.flags, errmsg);
     if (YISERR(res)) {
         setOsGlobalProgress(res, errmsg);
         goto exit_and_free;
     }
 
     //5% -> 10%
-    setOsGlobalProgress(5, "Enter in update mode");
+    setOsGlobalProgress(5, "Enter firmware update mode");
     dev = wpSearch(yContext->fuCtx.serial);
     if (dev != -1) {
         yUrlRef url;
@@ -1842,7 +1815,7 @@ static void* yFirmwareUpdate_thread(void* ctx)
             goto exit_and_free;
         }
         url = wpGetDeviceUrlRef(dev);
-        if (yHashGetUrlPort(url, NULL, NULL) == USB_URL) {
+        if (yHashGetUrlPort(url, NULL, NULL, NULL, NULL, NULL) == USB_URL) {
             // USB connected device -> reboot it in bootloader
             type = FLASH_USB;
             YSPRINTF(buffer, sizeof(buffer), reboot_req, subpath);
@@ -1885,7 +1858,7 @@ static void* yFirmwareUpdate_thread(void* ctx)
                     }
 
                     // ...must reboot in programtion
-                    setOsGlobalProgress(8, "Reboot to update mode");
+                    setOsGlobalProgress(8, "Reboot to firmware update mode");
                     YSPRINTF(buffer, sizeof(buffer), reboot_req, subpath);
                     res = yapiHTTPRequest(hubserial, buffer, replybuf, sizeof(replybuf), NULL, errmsg);
                     if (res < 0) {
@@ -1893,7 +1866,7 @@ static void* yFirmwareUpdate_thread(void* ctx)
                         goto exit_and_free;
                     }
                     if (replybuf[0] != 'O' || replybuf[1] != 'K') {
-                        dbglog("reboot to update mode response:\n%s\n", replybuf);
+                        dbglog("Reboot to firmware update mode:\n%s\n", replybuf);
                     }
                 }
                 type = FLASH_NET_SUBDEV;
@@ -1920,7 +1893,7 @@ static void* yFirmwareUpdate_thread(void* ctx)
     }
 
     //10% -> 40%
-    setOsGlobalProgress(10, "Send firmware to update mode");
+    setOsGlobalProgress(10, "Transmit new firmware");
     if (type != FLASH_USB){
         // IP connected device -> upload the firmware to the Hub
         res = upload(hubserial, type == FLASH_NET_SELF ? subpath : "/", "firmware", fctx.firmware, fctx.len, errmsg);
@@ -1936,15 +1909,29 @@ static void* yFirmwareUpdate_thread(void* ctx)
         }
 
         if (type == FLASH_NET_SELF) {
+            const char *settingsOnly, *services;
+            u8 *startupconf_data;
+            int settings_len = yapiJsonGetPath_internal("api", (char*) yContext->fuCtx.settings, yContext->fuCtx.settings_len, &settingsOnly, errmsg);
+            int service_len = yapiJsonGetPath_internal("services", settingsOnly, settings_len, &services, errmsg);
+            int first_len = (services - settingsOnly) & 0xffffffff;
+            int sec_len = ((settingsOnly + settings_len) - (services + service_len)) & 0xffffffff;
+            startupconf_data = yMalloc(settings_len - service_len + 2);
+            memcpy(startupconf_data, settingsOnly, first_len);
+            startupconf_data[first_len] = '{';
+            startupconf_data[first_len+1] = '}';
+            memcpy(startupconf_data + first_len + 2, services + service_len, sec_len);
+
             setOsGlobalProgress(20,"Save startupConf.json");
             // save settings
-            res = upload(hubserial, subpath, "startupConf.json", yContext->fuCtx.settings, yContext->fuCtx.settings_len, errmsg);
+            res = upload(hubserial, subpath, "startupConf.json", startupconf_data, first_len + sec_len, errmsg);
             if (res < 0) {
+                yFree(startupconf_data);
                 setOsGlobalProgress(res, errmsg);
                 goto exit_and_free;
             }
             setOsGlobalProgress(30,"Save firmwareConf");
-            res = upload(hubserial, subpath, "firmwareConf", yContext->fuCtx.settings, yContext->fuCtx.settings_len, errmsg);
+            res = upload(hubserial, subpath, "firmwareConf", startupconf_data, first_len + sec_len, errmsg);
+            yFree(startupconf_data);
             if (res < 0) {
                 setOsGlobalProgress(res, errmsg);
                 goto exit_and_free;
@@ -2011,7 +1998,7 @@ static void* yFirmwareUpdate_thread(void* ctx)
             goto exit_and_free;
         }
         //start flash
-        setOsGlobalProgress(50, "flash firmware");
+        setOsGlobalProgress(50, "Flash firmware");
         YSPRINTF(buffer, sizeof(buffer), "&s=%s", yContext->fuCtx.serial);
         res = sendHubFlashCmd(hubserial, "/", yContext->fuCtx.serial,  FLASH_HUB_FLASH, buffer, errmsg);
         if (res < 0) {
@@ -2022,9 +2009,9 @@ static void* yFirmwareUpdate_thread(void* ctx)
     }
 
     //90%-> 98%
-    setOsGlobalProgress(90, "wait to the device restart");
+    setOsGlobalProgress(90, "Wait for the device to restart");
     online = 0;
-    timeout = yapiGetTickCount() + 20000;
+    timeout = yapiGetTickCount() + 60000;
     do {
         YIOHDL  iohdl;
         char tmp_errmsg[YOCTO_ERRMSG_LEN];
@@ -2037,7 +2024,8 @@ static void* yFirmwareUpdate_thread(void* ctx)
         if (dev != -1) {
             wpGetDeviceUrl(dev, hubserial, subpath, 256, NULL);
             YSPRINTF(buffer, sizeof(buffer), get_api_fmt, subpath);
-            res = yapiHTTPRequestSyncStartEx_internal(&iohdl, hubserial, buffer, YSTRLEN(buffer), &reply, &replysize, tmp_errmsg);
+            //todo: choose wisely
+            res = yapiHTTPRequestSyncStartEx_internal(&iohdl, 0, hubserial, buffer, YSTRLEN(buffer), &reply, &replysize, NULL, NULL, tmp_errmsg);
             if (res >= 0) {
                 if (checkHTTPHeader(NULL, reply, replysize, tmp_errmsg) >= 0){
                     online = 1;
@@ -2053,7 +2041,7 @@ static void* yFirmwareUpdate_thread(void* ctx)
 
     //&& timeout > yapiGetTickCount());
     if (online){
-        setOsGlobalProgress(100, "firmware updated");
+        setOsGlobalProgress(100, "Firmware updated");
     } else {
         setOsGlobalProgress(-1, "Device did not reboot correctly");
     }
@@ -2071,7 +2059,7 @@ exitthread:
 }
 
 
-static int yStartFirmwareUpdate(const char *serial, const char *firmwarePath, const char *settings, char *msg)
+static int yStartFirmwareUpdate(const char *serial, const char *firmwarePath, const char *settings, u16 flags, char *msg)
 {
 
     if (yContext->fuCtx.serial)
@@ -2086,6 +2074,7 @@ static int yStartFirmwareUpdate(const char *serial, const char *firmwarePath, co
     yContext->fuCtx.settings_len = YSTRLEN(settings);
     fctx.firmware = NULL;
     fctx.len = 0;
+    fctx.flags = flags;
     fctx.stepA = FLASH_FIND_DEV;
     YSTRNCPY(fctx.bynHead.h.serial, YOCTO_SERIAL_LEN, serial, YOCTO_SERIAL_LEN - 1);
     yContext->fuCtx.global_progress = 0;
@@ -2103,7 +2092,7 @@ static int yStartFirmwareUpdate(const char *serial, const char *firmwarePath, co
 
 
 
-static YRETCODE yapiCheckFirmwareFile(const char *serial, int current_rev, const char *path, char *buffer, int buffersize, int *fullsize, char *errmsg)
+static YRETCODE yapiCheckFirmwareFile(const char *serial, int current_rev, u16 flags, const char *path, char *buffer, int buffersize, int *fullsize, char *errmsg)
 {
     byn_head_multi *head;
     int size, res, file_rev;
@@ -2114,7 +2103,7 @@ static YRETCODE yapiCheckFirmwareFile(const char *serial, int current_rev, const
         return YAPI_IO_ERROR;
     }
     head = (byn_head_multi*) p;
-    res = IsValidBynFile(head, size, serial, errmsg);
+    res = IsValidBynFile(head, size, serial, flags, errmsg);
     if (YISERR(res)) {
         yFree(p);
         return res;
@@ -2141,14 +2130,14 @@ static YRETCODE yapiCheckFirmwareFile(const char *serial, int current_rev, const
  * new firmware upgrade API
  **************************************************************************/
 
-static YRETCODE yapiCheckFirmware_r(const char *serial, int current_rev, const char *path, char *buffer, int buffersize, int *fullsize, char *errmsg)
+static YRETCODE yapiCheckFirmware_r(const char *serial, int current_rev, u16 flags, const char *path, char *buffer, int buffersize, int *fullsize, char *errmsg)
 {
     int best_rev = current_rev;
     int pathlen = YSTRLEN(path);
     char abspath[1024];
 #ifdef WINDOWS_API
     WIN32_FIND_DATAA ffd;
-    HANDLE hFind = INVALID_HANDLE_VALUE;
+    HANDLE hFind;
 #else
     struct dirent *pDirent;
     DIR *pDir;
@@ -2159,7 +2148,7 @@ static YRETCODE yapiCheckFirmware_r(const char *serial, int current_rev, const c
 
     pDir = opendir(path);
     if (pDir == NULL) {
-        return yapiCheckFirmwareFile(serial, current_rev, path, buffer, buffersize, fullsize, errmsg);
+        return yapiCheckFirmwareFile(serial, current_rev, flags, path, buffer, buffersize, fullsize, errmsg);
     }
 #endif
 
@@ -2183,7 +2172,7 @@ static YRETCODE yapiCheckFirmware_r(const char *serial, int current_rev, const c
     YSTRCAT(abspath, 1024, "*");
     hFind = FindFirstFileA(abspath, &ffd);
     if (INVALID_HANDLE_VALUE == hFind) {
-        return yapiCheckFirmwareFile(serial, current_rev, path, buffer, buffersize, fullsize, errmsg);
+        return yapiCheckFirmwareFile(serial, current_rev, flags, path, buffer, buffersize, fullsize, errmsg);
     }
     do {
         char *name = ffd.cFileName;
@@ -2207,11 +2196,11 @@ static YRETCODE yapiCheckFirmware_r(const char *serial, int current_rev, const c
 #endif
         if (isdir)
         {
-            frev = yapiCheckFirmware_r(serial, best_rev, abspath, buffer, buffersize, fullsize, errmsg);
+            frev = yapiCheckFirmware_r(serial, best_rev, flags, abspath, buffer, buffersize, fullsize, errmsg);
         } else {
             int len = YSTRLEN(name);
             if (len < 32 && 'b' == name[len - 3] && 'y' == name[len - 2] && 'n' == name[len - 1]) {
-                frev = yapiCheckFirmwareFile(serial, best_rev, abspath, buffer, buffersize, fullsize, errmsg);
+                frev = yapiCheckFirmwareFile(serial, best_rev, flags, abspath, buffer, buffersize, fullsize, errmsg);
             }
         }
         if (frev > 0){
@@ -2232,7 +2221,7 @@ static int checkFirmwareFromWeb(const char * serial, char * out_url, int url_max
 {
     char request[256];
     u8 *buffer;
-    int res = 0, len;
+    int res, len;
     yJsonStateMachine j;
 
     YSPRINTF(request, 256,"/FR/common/getLastFirmwareLink.php?serial=%s" , serial);
@@ -2293,10 +2282,10 @@ static int checkFirmwareFromWeb(const char * serial, char * out_url, int url_max
     return res;
 }
 
-YRETCODE yapiCheckFirmware_internal(const char *serial, const char *rev, const char *path, char *buffer, int buffersize, int *fullsize, char *errmsg)
+YRETCODE yapiCheckFirmware_internal(const char *serial, const char *rev, u32 flags, const char *path, char *buffer, int buffersize, int *fullsize, char *errmsg)
 {
     int current_rev = 0;
-    int best_rev = 0;
+    int best_rev;
 
     *buffer = 0;
     if (fullsize)
@@ -2307,7 +2296,7 @@ YRETCODE yapiCheckFirmware_internal(const char *serial, const char *rev, const c
     if (isWebPath(path)>=0) {
         best_rev = checkFirmwareFromWeb(serial, buffer, buffersize, fullsize, errmsg);
     } else{
-        best_rev = yapiCheckFirmware_r(serial, current_rev, path, buffer, buffersize, fullsize, errmsg);
+        best_rev = yapiCheckFirmware_r(serial, current_rev, (u16)flags, path, buffer, buffersize, fullsize, errmsg);
     }
     if (best_rev < 0){
         return best_rev;
@@ -2322,15 +2311,15 @@ YRETCODE yapiCheckFirmware_internal(const char *serial, const char *rev, const c
     return best_rev;
 }
 
-YRETCODE yapiUpdateFirmware_internal(const char *serial, const char *firmwarePath, const char *settings, int startUpdate, char *msg)
+YRETCODE yapiUpdateFirmware_internal(const char *serial, const char *firmwarePath, const char *settings, int force, int startUpdate, char *msg)
 {
     YRETCODE res;
     yEnterCriticalSection(&fctx.cs);
     if (startUpdate) {
         if (yContext->fuCtx.serial == NULL || yContext->fuCtx.firmwarePath == NULL) {
-            res = yStartFirmwareUpdate(serial, firmwarePath, settings, msg);
+            res = yStartFirmwareUpdate(serial, firmwarePath, settings, force ? YPROG_FORCE_FW_UPDATE : 0, msg);
         }else if (yContext->fuCtx.global_progress < 0 || yContext->fuCtx.global_progress >= 100) {
-            res = yStartFirmwareUpdate(serial, firmwarePath, settings, msg);
+            res = yStartFirmwareUpdate(serial, firmwarePath, settings, force ? YPROG_FORCE_FW_UPDATE : 0, msg);
         } else {
             YSTRCPY(msg, FLASH_ERRMSG_LEN, "Last firmware update is not finished");
             res = 0;

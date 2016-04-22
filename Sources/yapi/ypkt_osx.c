@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_osx.c 21936 2015-11-06 10:55:56Z seb $
+ * $Id: ypkt_osx.c 23281 2016-02-24 18:08:58Z mvuilleu $
  *
  * OS-specific USB packet layer, Mac OS X version
  *
@@ -175,12 +175,16 @@ int yyyUSB_init(yContextSt *ctx,char *errmsg)
     YPROPERR(yReserveGlobalAccess(ctx, errmsg));
 
     if (sysctlbyname("kern.osrelease", str, &size, NULL, 0) ==0){
+        int numver;
+        //15.x.x  OS X 10.11.x El Capitan
+        //14.x.x  OS X 10.10.x Yosemite
         //13.x.x  OS X 10.9.x Mavericks
         //12.x.x  OS X 10.8.x Mountain Lion
         //11.x.x  OS X 10.7.x Lion
         //10.x.x  OS X 10.6.x Snow Leopard
         str[2]=0;
-        if (atoi(str)>=13){
+        numver = atoi(str);
+        if (numver >= 13 && numver < 15){
             ctx->osx_flags |= YCTX_OSX_MULTIPLES_HID;
         }
     }

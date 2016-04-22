@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 22794 2016-01-15 17:31:53Z seb $
+ * $Id: yocto_api.cpp 23882 2016-04-12 08:38:50Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -61,7 +61,6 @@
 static  yCRITICAL_SECTION   _updateDeviceList_CS;
 static  yCRITICAL_SECTION   _handleEvent_CS;
 
-static  std::vector<YFunction*>     _FunctionCache;
 static  std::vector<YFunction*>     _FunctionCallbacks;
 static  std::vector<YFunction*>     _TimedReportCallbackList;
 
@@ -104,6 +103,15 @@ YDataStream::YDataStream(YFunction *parent, YDataSet& dataset, const vector<int>
 {
     _parent   = parent;
     this->_initFromDataSet(&dataset, encoded);
+}
+
+YDataStream::~YDataStream()
+{
+    _columnNames.clear();
+    _calpar.clear();
+    _calraw.clear();
+    _calref.clear();
+    _values.clear();
 }
 
 // YDataSet constructor, when instantiated directly by a function
@@ -245,11 +253,17 @@ int YFirmwareUpdate::_processMore(int newupdate)
     string firmwarepath;
     string settings;
     string prod_prefix;
+    int force = 0;
     if (_progress_c < 100) {
         serial = _serial;
         firmwarepath = _firmwarepath;
         settings = _settings;
-        res = yapiUpdateFirmware(serial.c_str(), firmwarepath.c_str(), settings.c_str(), newupdate, errmsg);
+        if (_force) {
+            force = 1;
+        } else {
+            force = 0;
+        }
+        res = yapiUpdateFirmwareEx(serial.c_str(), firmwarepath.c_str(), settings.c_str(), force, newupdate, errmsg);
         if (res < 0) {
             _progress = res;
             _progress_msg = string(errmsg);
@@ -291,11 +305,11 @@ int YFirmwareUpdate::_processMore(int newupdate)
 }
 
 /**
- * Retruns a list of all the modules in "update" mode. Only USB connected
- * devices are listed. For modules connected to a YoctoHub, you must
- * connect yourself to the YoctoHub web interface.
+ * Returns a list of all the modules in "firmware update" mode. Only devices
+ * connected over USB are listed. For devices connected to a YoctoHub, you
+ * must connect yourself to the YoctoHub web interface.
  *
- * @return an array of strings containing the serial list of module in "update" mode.
+ * @return an array of strings containing the serial numbers of devices in "firmware update" mode.
  */
 vector<string> YFirmwareUpdate::GetAllBootLoaders(void)
 {
@@ -333,17 +347,17 @@ vector<string> YFirmwareUpdate::GetAllBootLoaders(void)
 }
 
 /**
- * Test if the byn file is valid for this module. It's possible to pass an directory instead of a file.
- * In this case this method return the path of the most recent appropriate byn file. This method will
- * ignore firmware that are older than mintrelase.
+ * Test if the byn file is valid for this module. It is possible to pass a directory instead of a file.
+ * In that case, this method returns the path of the most recent appropriate byn file. This method will
+ * ignore any firmware older than minrelease.
  *
  * @param serial : the serial number of the module to update
  * @param path : the path of a byn file or a directory that contains byn files
  * @param minrelease : a positive integer
  *
- * @return : the path of the byn file to use or an empty string if no byn files match the requirement
+ * @return : the path of the byn file to use, or an empty string if no byn files matches the requirement
  *
- * On failure, returns a string that start with "error:".
+ * On failure, returns a string that starts with "error:".
  */
 string YFirmwareUpdate::CheckFirmware(string serial,string path,int minrelease)
 {
@@ -1351,14 +1365,13 @@ YFunction::YFunction(const string& func):
     ,_valueCallbackFunction(NULL)
     ,_cacheExpiration(0)
 //--- (end of generated code: Function initialization)
-{
-     _FunctionCache.push_back(this);
-}
+{}
 
 YFunction::~YFunction()
 {
 //--- (generated code: Function cleanup)
 //--- (end of generated code: Function cleanup)
+    _clearDataStreamCache();
 }
 
 
@@ -1382,6 +1395,7 @@ void YFunction::_ClearCache()
         delete cache_iterator->second;
     }
     _cache.clear();
+    _cache = std::map<string, YFunction*>();
 }
 
 
@@ -1817,6 +1831,9 @@ string YFunction::_get_json_path(const string& json, const string& path)
     res = yapiJsonGetPath(path.c_str(), json_data, len, &p, errbuff);
     if (res >= 0) {
         string result = string(p, res);
+        if (res > 0) {
+            yapiFreeMem((void*)p);
+        }
         return result;
     }
     return "";
@@ -1949,7 +1966,7 @@ YRETCODE YFunction::_setAttr(string attrname, string newvalue)
         return (YRETCODE)res;
     }
 
-    res = dev->HTTPRequestAsync(request,NULL,NULL,errmsg);
+    res = dev->HTTPRequestAsync(0, request, NULL, NULL, errmsg);
     if(YISERR(res)) {
         // Check if an update of the device list does not solve the issue
         res = YapiWrapper::updateDeviceList(true,errmsg);
@@ -1957,7 +1974,7 @@ YRETCODE YFunction::_setAttr(string attrname, string newvalue)
             _throw((YRETCODE)res, errmsg);
             return (YRETCODE)res;
         }
-        res = dev->HTTPRequestAsync(request,NULL,NULL,errmsg);
+        res = dev->HTTPRequestAsync(0, request, NULL, NULL, errmsg);
         if(YISERR(res)) {
             _throw((YRETCODE)res, errmsg);
             return (YRETCODE)res;
@@ -1972,7 +1989,7 @@ YRETCODE YFunction::_setAttr(string attrname, string newvalue)
 
 
 // Method used to send http request to the device (not the function)
-string      YFunction::_request(const string& request)
+string      YFunction::_requestEx(int channel, const string& request, yapiRequestProgressCallback callback, void *context)
 {
     YDevice     *dev;
     string      errmsg, buffer;
@@ -1981,31 +1998,36 @@ string      YFunction::_request(const string& request)
 
     // Resolve our reference to our device, load REST API
     res = _getDevice(dev, errmsg);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         _throw((YRETCODE)res, errmsg);
         return YAPI_INVALID_STRING;
     }
-    res = dev->HTTPRequest(request, buffer, errmsg);
-    if(YISERR(res)) {
+    res = dev->HTTPRequest(channel, request, buffer, callback, context, errmsg);
+    if (YISERR(res)) {
         // Check if an update of the device list does notb solve the issue
-        res = YapiWrapper::updateDeviceList(true,errmsg);
-        if(YISERR(res)) {
-            this->_throw((YRETCODE)res,errmsg);
+        res = YapiWrapper::updateDeviceList(true, errmsg);
+        if (YISERR(res)) {
+            this->_throw((YRETCODE)res, errmsg);
             return YAPI_INVALID_STRING;
         }
-        res = dev->HTTPRequest(request, buffer, errmsg);
-        if(YISERR(res)) {
-            this->_throw((YRETCODE)res,errmsg);
+        res = dev->HTTPRequest(channel, request, buffer, callback, context, errmsg);
+        if (YISERR(res)) {
+            this->_throw((YRETCODE)res, errmsg);
             return YAPI_INVALID_STRING;
         }
     }
-    if(0 != buffer.find("OK\r\n")){
-        if(0 != buffer.find("HTTP/1.1 200 OK\r\n")){
-            this->_throw(YAPI_IO_ERROR,"http request failed");
+    if (0 != buffer.find("OK\r\n")) {
+        if (0 != buffer.find("HTTP/1.1 200 OK\r\n")) {
+            this->_throw(YAPI_IO_ERROR, "http request failed");
             return YAPI_INVALID_STRING;
         }
     }
     return buffer;
+}
+
+string      YFunction::_request(const string& request)
+{
+    return _requestEx(0, request, NULL, NULL);
 }
 
 
@@ -2028,29 +2050,36 @@ string      YFunction::_download(const string& url)
 
 
 // Method used to upload a file to the device
-YRETCODE    YFunction::_upload(const string& path, const string& content)
+YRETCODE    YFunction::_uploadWithProgress(const string& path, const string& content, yapiRequestProgressCallback callback, void *context)
 {
 
-    string      request,buffer;
+    string      request, buffer;
     string      boundary;
-	size_t      found;
+    size_t      found;
 
     request = "POST /upload.html HTTP/1.1\r\n";
-    string body =   "Content-Disposition: form-data; name=\""+path+"\"; filename=\"api\"\r\n"+
-                    "Content-Type: application/octet-stream\r\n"+
-                    "Content-Transfer-Encoding: binary\r\n\r\n"+content;
+    string body = "Content-Disposition: form-data; name=\"" + path + "\"; filename=\"api\"\r\n" +
+        "Content-Type: application/octet-stream\r\n" +
+        "Content-Transfer-Encoding: binary\r\n\r\n" + content;
     do {
         boundary = YapiWrapper::ysprintf("Zz%06xzZ", rand() & 0xffffff);
-    } while(body.find(boundary) !=string::npos);
-    request += "Content-Type: multipart/form-data; boundary="+boundary+"\r\n";
-    request += "\r\n--"+boundary+"\r\n"+body+"\r\n--"+boundary+"--\r\n";
-    buffer = this->_request(request);
+    } while (body.find(boundary) != string::npos);
+    request += "Content-Type: multipart/form-data; boundary=" + boundary + "\r\n";
+    request += "\r\n--" + boundary + "\r\n" + body + "\r\n--" + boundary + "--\r\n";
+    buffer = this->_requestEx(0, request, callback, context);
     found = buffer.find("\r\n\r\n");
-    if(string::npos == found){
-        this->_throw(YAPI_IO_ERROR,"http request failed");
+    if (string::npos == found) {
+        this->_throw(YAPI_IO_ERROR, "http request failed");
         return YAPI_IO_ERROR;
     }
     return YAPI_SUCCESS;
+}
+
+
+// Method used to upload a file to the device
+YRETCODE    YFunction::_upload(const string& path, const string& content)
+{
+    return this->_uploadWithProgress(path, content, NULL, NULL);
 }
 
 
@@ -2069,6 +2098,12 @@ YDataStream *YFunction::_findDataStream(YDataSet& dataset, const string& def)
 // Method used to clear cache of DataStream object (undocumented)
 void YFunction::_clearDataStreamCache()
 {
+    std::map<string, YDataStream*>::iterator it;
+    for (it = _dataStreams.begin(); it != _dataStreams.end(); ++it) {
+        YDataStream *ds = it->second;
+       
+        delete(ds);
+    }
     _dataStreams.clear();
 }
 
@@ -2380,6 +2415,7 @@ void YDevice::ClearCache()
         delete _devCache[idx];
     }
     _devCache.clear();
+    _devCache = vector<YDevice*>();
 }
 
 void YDevice::PlugDevice(YDEV_DESCR devdescr)
@@ -2430,7 +2466,7 @@ YRETCODE    YDevice::HTTPRequestPrepare(const string& request, string& fullreque
     return YAPI_SUCCESS;
 }
 
-YRETCODE    YDevice::HTTPRequestAsync(const string& request, HTTPRequestCallback callback, void *context, string& errmsg)
+YRETCODE    YDevice::HTTPRequestAsync(int channel, const string& request, HTTPRequestCallback callback, void *context, string& errmsg)
 {
     char        errbuff[YOCTO_ERRMSG_LEN]="";
     YRETCODE    res;
@@ -2438,14 +2474,15 @@ YRETCODE    YDevice::HTTPRequestAsync(const string& request, HTTPRequestCallback
 
     _cacheStamp     = YAPI::GetTickCount(); //invalidate cache
     if(YISERR(res=HTTPRequestPrepare(request, fullrequest, errbuff)) ||
-       YISERR(res=yapiHTTPRequestAsync(_rootdevice, fullrequest.c_str(), NULL, NULL, errbuff))){
+       YISERR(res=yapiHTTPRequestAsyncOutOfBand(channel, _rootdevice, fullrequest.c_str(), (int)fullrequest.length(), NULL, NULL, errbuff))){
         errmsg = (string)errbuff;
         return res;
     }
     return YAPI_SUCCESS;
 }
 
-YRETCODE    YDevice::HTTPRequest(const string& request, string& buffer, string& errmsg)
+
+YRETCODE    YDevice::HTTPRequest(int channel, const string& request, string& buffer, yapiRequestProgressCallback callback, void *context, string& errmsg)
 {
     char        errbuff[YOCTO_ERRMSG_LEN]="";
     YRETCODE    res;
@@ -2458,7 +2495,7 @@ YRETCODE    YDevice::HTTPRequest(const string& request, string& buffer, string& 
         errmsg = (string)errbuff;
         return res;
     }
-    if(YISERR(res=yapiHTTPRequestSyncStartEx(&iohdl, _rootdevice, fullrequest.data(), (int)fullrequest.size(), &reply, &replysize, errbuff))) {
+    if (YISERR(res = yapiHTTPRequestSyncStartOutOfBand(&iohdl, channel, _rootdevice, fullrequest.data(), (int)fullrequest.size(), &reply, &replysize, callback, context, errbuff))) {
         errmsg = (string)errbuff;
         return res;
     }
@@ -2490,7 +2527,7 @@ YRETCODE YDevice::requestAPI(string& apires, string& errmsg)
     }
 
     // send request, without HTTP/1.1 suffix to get light headers
-    res = this->HTTPRequest(request, buffer, errmsg);
+    res = this->HTTPRequest(0, request, buffer, NULL, NULL, errmsg);
     if(YISERR(res)) {
         // Check if an update of the device list does not solve the issue
         res = YapiWrapper::updateDeviceList(true,errmsg);
@@ -2498,7 +2535,7 @@ YRETCODE YDevice::requestAPI(string& apires, string& errmsg)
             return (YRETCODE)res;
         }
         // send request, without HTTP/1.1 suffix to get light headers
-        res = this->HTTPRequest(request, buffer, errmsg);
+        res = this->HTTPRequest(0, request, buffer, NULL, NULL, errmsg);
         if(YISERR(res)) {
             return (YRETCODE)res;
         }
@@ -4261,14 +4298,13 @@ int YModule::triggerFirmwareUpdate(int secBeforeReboot)
  * needs to be updated.
  * It is possible to pass a directory as argument instead of a file. In this case, this method returns
  * the path of the most recent
- * appropriate byn file. If the parameter onlynew is true, the function discards firmware that are
- * older or equal to
- * the installed firmware.
+ * appropriate .byn file. If the parameter onlynew is true, the function discards firmwares that are older or
+ * equal to the installed firmware.
  *
  * @param path : the path of a byn file or a directory that contains byn files
  * @param onlynew : returns only files that are strictly newer
  *
- * @return : the path of the byn file to use or a empty string if no byn files matches the requirement
+ * @return the path of the byn file to use or a empty string if no byn files matches the requirement
  *
  * On failure, throws an exception or returns a string that start with "error:".
  */
@@ -4295,11 +4331,12 @@ string YModule::checkFirmware(string path,bool onlynew)
  * Prepares a firmware update of the module. This method returns a YFirmwareUpdate object which
  * handles the firmware update process.
  *
- * @param path : the path of the byn file to use.
+ * @param path : the path of the .byn file to use.
+ * @param force : true to force the firmware update even if some prerequisites appear not to be met
  *
- * @return : A YFirmwareUpdate object or NULL on error.
+ * @return a YFirmwareUpdate object or NULL on error.
  */
-YFirmwareUpdate YModule::updateFirmware(string path)
+YFirmwareUpdate YModule::updateFirmwareEx(string path,bool force)
 {
     string serial;
     string settings;
@@ -4310,13 +4347,25 @@ YFirmwareUpdate YModule::updateFirmware(string path)
         this->_throw(YAPI_IO_ERROR, "Unable to get device settings");
         settings = "error:Unable to get device settings";
     }
-    return YFirmwareUpdate(serial, path, settings);
+    return YFirmwareUpdate(serial, path, settings, force);
 }
 
 /**
- * Returns all the settings and uploaded files of the module. Useful to backup all the logical names,
- * calibrations parameters,
- * and uploaded files of a connected module.
+ * Prepares a firmware update of the module. This method returns a YFirmwareUpdate object which
+ * handles the firmware update process.
+ *
+ * @param path : the path of the .byn file to use.
+ *
+ * @return a YFirmwareUpdate object or NULL on error.
+ */
+YFirmwareUpdate YModule::updateFirmware(string path)
+{
+    return this->updateFirmwareEx(path, false);
+}
+
+/**
+ * Returns all the settings and uploaded files of the module. Useful to backup all the
+ * logical names, calibrations parameters, and uploaded files of a device.
  *
  * @return a binary buffer with all the settings.
  *
@@ -4363,7 +4412,7 @@ string YModule::get_allSettings(void)
             }
         }
     }
-    ext_settings =  ext_settings + "],\n\"files\":[";
+    ext_settings = ext_settings + "],\n\"files\":[";
     if (this->hasFunction("files")) {
         json = this->_download("files.json?a=dir&f=");
         if ((int)(json).size() == 0) {
@@ -4373,18 +4422,16 @@ string YModule::get_allSettings(void)
         sep = "";
         for (unsigned ii = 0; ii <  filelist.size(); ii++) {
             name = this->_json_get_key( filelist[ii], "name");
-            if ((int)(name).length() == 0) {
-                return name;
+            if (((int)(name).length() > 0) && !(name == "startupConf.json")) {
+                file_data_bin = this->_download(this->_escapeAttr(name));
+                file_data = YAPI::_bin2HexStr(file_data_bin);
+                item = YapiWrapper::ysprintf("%s{\"name\":\"%s\", \"data\":\"%s\"}\n", sep.c_str(), name.c_str(),file_data.c_str());
+                ext_settings = ext_settings + item;
+                sep = ",";
             }
-            file_data_bin = this->_download(this->_escapeAttr(name));
-            file_data = YAPI::_bin2HexStr(file_data_bin);
-            item = YapiWrapper::ysprintf("%s{\"name\":\"%s\", \"data\":\"%s\"}\n", sep.c_str(), name.c_str(),file_data.c_str());
-            ext_settings = ext_settings + item;
-            sep = ",";;
         }
     }
-    ext_settings = ext_settings + "]}";
-    res = "{ \"api\":" + settings + ext_settings;
+    res = "{ \"api\":" + settings + ext_settings + "]}";
     return res;
 }
 
@@ -4431,9 +4478,10 @@ int YModule::set_extraSettings(string jsonExtra)
 }
 
 /**
- * Restores all the settings and uploaded files of the module. Useful to restore all the logical names
- * and calibrations parameters, uploaded
- * files etc.. of a module from a backup.Remember to call the saveToFlash() method of the module if the
+ * Restores all the settings and uploaded files to the module.
+ * This method is useful to restore all the logical names and calibrations parameters,
+ * uploaded files etc. of a device from a backup.
+ * Remember to call the saveToFlash() method of the module if the
  * modifications must be kept.
  *
  * @param settings : a binary buffer with all the settings.
@@ -4485,12 +4533,12 @@ int YModule::set_allSettingsAndFiles(string settings)
 }
 
 /**
- * Test if the device has a specific function. This method took an function identifier
- * and return a boolean.
+ * Tests if the device includes a specific function. This method takes a function identifier
+ * and returns a boolean.
  *
  * @param funcId : the requested function identifier
  *
- * @return : true if the device has the function identifier
+ * @return true if the device has the function identifier
  */
 bool YModule::hasFunction(string funcId)
 {
@@ -4515,7 +4563,7 @@ bool YModule::hasFunction(string funcId)
  *
  * @param funType : The type of function (Relay, LightSensor, Voltage,...)
  *
- * @return : A array of string.
+ * @return an array of strings.
  */
 vector<string> YModule::get_functionIds(string funType)
 {
@@ -4788,7 +4836,7 @@ string YModule::calibConvert(string param,string currentFuncValue,string unit_na
 }
 
 /**
- * Restores all the settings of the module. Useful to restore all the logical names and calibrations parameters
+ * Restores all the settings of the device. Useful to restore all the logical names and calibrations parameters
  * of a module from a backup.Remember to call the saveToFlash() method of the module if the
  * modifications must be kept.
  *
@@ -5111,10 +5159,25 @@ string YModule::get_lastLogs(void)
 }
 
 /**
- * Returns a list of all the modules that are plugged into the current module. This
- * method is only useful on a YoctoHub/VirtualHub. This method return the serial number of all
- * module connected to a YoctoHub. Calling this method on a standard device is not an
- * error, and an empty array will be returned.
+ * Adds a text message to the device logs. This function is useful in
+ * particular to trace the execution of HTTP callbacks. If a newline
+ * is desired after the message, it must be included in the string.
+ *
+ * @param text : the string to append to the logs.
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YModule::log(string text)
+{
+    return this->_upload("logs.txt", text);
+}
+
+/**
+ * Returns a list of all the modules that are plugged into the current module.
+ * This method only makes sense when called for a YoctoHub/VirtualHub.
+ * Otherwise, an empty array will be returned.
  *
  * @return an array of strings containing the sub modules.
  */
@@ -5158,7 +5221,7 @@ vector<string> YModule::get_subDevices(void)
 
 /**
  * Returns the serial number of the YoctoHub on which this module is connected.
- * If the module is connected by USB or if the module is the root YoctoHub an
+ * If the module is connected by USB, or if the module is the root YoctoHub, an
  * empty string is returned.
  *
  * @return a string with the serial number of the YoctoHub or an empty string
@@ -5182,7 +5245,7 @@ string YModule::get_parentHub(void)
 }
 
 /**
- * Returns the URL used to access the module. If the module is connected by USB the
+ * Returns the URL used to access the module. If the module is connected by USB, the
  * string 'usb' is returned.
  *
  * @return a string with the URL of the module.
@@ -5403,7 +5466,7 @@ string YModule::functionBaseType(int functionIndex)
 void YModule::registerLogCallback(YModuleLogCallback callback)
 {
     _logCallback = callback;
-    yapiStartStopDeviceLogCallback(_serial.c_str(), _logCallback!=NULL);
+    yapiStartStopDeviceLogCallback(_serialNumber.c_str(), _logCallback!=NULL);
 }
 
 YModuleLogCallback YModule::get_logCallback()

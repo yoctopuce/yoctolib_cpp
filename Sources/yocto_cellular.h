@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.h 21495 2015-09-14 07:33:16Z mvuilleu $
+ * $Id: yocto_cellular.h 23960 2016-04-15 21:30:18Z mvuilleu $
  *
  * Declares yFindCellular(), the high-level API for Cellular functions
  *
@@ -52,6 +52,26 @@
 class YCellular; // forward declaration
 
 typedef void (*YCellularValueCallback)(YCellular *func, const string& functionValue);
+#ifndef _Y_CELLTYPE_ENUM
+#define _Y_CELLTYPE_ENUM
+typedef enum {
+    Y_CELLTYPE_GPRS = 0,
+    Y_CELLTYPE_EGPRS = 1,
+    Y_CELLTYPE_WCDMA = 2,
+    Y_CELLTYPE_HSDPA = 3,
+    Y_CELLTYPE_NONE = 4,
+    Y_CELLTYPE_CDMA = 5,
+    Y_CELLTYPE_INVALID = -1,
+} Y_CELLTYPE_enum;
+#endif
+#ifndef _Y_AIRPLANEMODE_ENUM
+#define _Y_AIRPLANEMODE_ENUM
+typedef enum {
+    Y_AIRPLANEMODE_OFF = 0,
+    Y_AIRPLANEMODE_ON = 1,
+    Y_AIRPLANEMODE_INVALID = -1,
+} Y_AIRPLANEMODE_enum;
+#endif
 #ifndef _Y_ENABLEDATA_ENUM
 #define _Y_ENABLEDATA_ENUM
 typedef enum {
@@ -70,6 +90,7 @@ typedef enum {
 #define Y_LOCKEDOPERATOR_INVALID        (YAPI_INVALID_STRING)
 #define Y_APN_INVALID                   (YAPI_INVALID_STRING)
 #define Y_APNSECRET_INVALID             (YAPI_INVALID_STRING)
+#define Y_PINGINTERVAL_INVALID          (YAPI_INVALID_UINT)
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 //--- (end of generated code: YCellular definitions)
 
@@ -147,13 +168,16 @@ protected:
     int             _linkQuality;
     string          _cellOperator;
     string          _cellIdentifier;
+    Y_CELLTYPE_enum _cellType;
     string          _imsi;
     string          _message;
     string          _pin;
     string          _lockedOperator;
+    Y_AIRPLANEMODE_enum _airplaneMode;
     Y_ENABLEDATA_enum _enableData;
     string          _apn;
     string          _apnSecret;
+    int             _pingInterval;
     string          _command;
     YCellularValueCallback _valueCallbackCellular;
 
@@ -174,16 +198,27 @@ public:
     static const int LINKQUALITY_INVALID = YAPI_INVALID_UINT;
     static const string CELLOPERATOR_INVALID;
     static const string CELLIDENTIFIER_INVALID;
+    static const Y_CELLTYPE_enum CELLTYPE_GPRS = Y_CELLTYPE_GPRS;
+    static const Y_CELLTYPE_enum CELLTYPE_EGPRS = Y_CELLTYPE_EGPRS;
+    static const Y_CELLTYPE_enum CELLTYPE_WCDMA = Y_CELLTYPE_WCDMA;
+    static const Y_CELLTYPE_enum CELLTYPE_HSDPA = Y_CELLTYPE_HSDPA;
+    static const Y_CELLTYPE_enum CELLTYPE_NONE = Y_CELLTYPE_NONE;
+    static const Y_CELLTYPE_enum CELLTYPE_CDMA = Y_CELLTYPE_CDMA;
+    static const Y_CELLTYPE_enum CELLTYPE_INVALID = Y_CELLTYPE_INVALID;
     static const string IMSI_INVALID;
     static const string MESSAGE_INVALID;
     static const string PIN_INVALID;
     static const string LOCKEDOPERATOR_INVALID;
+    static const Y_AIRPLANEMODE_enum AIRPLANEMODE_OFF = Y_AIRPLANEMODE_OFF;
+    static const Y_AIRPLANEMODE_enum AIRPLANEMODE_ON = Y_AIRPLANEMODE_ON;
+    static const Y_AIRPLANEMODE_enum AIRPLANEMODE_INVALID = Y_AIRPLANEMODE_INVALID;
     static const Y_ENABLEDATA_enum ENABLEDATA_HOMENETWORK = Y_ENABLEDATA_HOMENETWORK;
     static const Y_ENABLEDATA_enum ENABLEDATA_ROAMING = Y_ENABLEDATA_ROAMING;
     static const Y_ENABLEDATA_enum ENABLEDATA_NEVER = Y_ENABLEDATA_NEVER;
     static const Y_ENABLEDATA_enum ENABLEDATA_INVALID = Y_ENABLEDATA_INVALID;
     static const string APN_INVALID;
     static const string APNSECRET_INVALID;
+    static const int PINGINTERVAL_INVALID = YAPI_INVALID_UINT;
     static const string COMMAND_INVALID;
 
     /**
@@ -222,6 +257,19 @@ public:
 
     inline string       cellIdentifier(void)
     { return this->get_cellIdentifier(); }
+
+    /**
+     * Active cellular connection type.
+     *
+     * @return a value among Y_CELLTYPE_GPRS, Y_CELLTYPE_EGPRS, Y_CELLTYPE_WCDMA, Y_CELLTYPE_HSDPA,
+     * Y_CELLTYPE_NONE and Y_CELLTYPE_CDMA
+     *
+     * On failure, throws an exception or returns Y_CELLTYPE_INVALID.
+     */
+    Y_CELLTYPE_enum     get_cellType(void);
+
+    inline Y_CELLTYPE_enum cellType(void)
+    { return this->get_cellType(); }
 
     /**
      * Returns an opaque string if a PIN code has been configured in the device to access
@@ -322,6 +370,33 @@ public:
     { return this->set_lockedOperator(newval); }
 
     /**
+     * Returns true if the airplane mode is active (radio turned off).
+     *
+     * @return either Y_AIRPLANEMODE_OFF or Y_AIRPLANEMODE_ON, according to true if the airplane mode is
+     * active (radio turned off)
+     *
+     * On failure, throws an exception or returns Y_AIRPLANEMODE_INVALID.
+     */
+    Y_AIRPLANEMODE_enum get_airplaneMode(void);
+
+    inline Y_AIRPLANEMODE_enum airplaneMode(void)
+    { return this->get_airplaneMode(); }
+
+    /**
+     * Changes the activation state of airplane mode (radio turned off).
+     *
+     * @param newval : either Y_AIRPLANEMODE_OFF or Y_AIRPLANEMODE_ON, according to the activation state
+     * of airplane mode (radio turned off)
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_airplaneMode(Y_AIRPLANEMODE_enum newval);
+    inline int      setAirplaneMode(Y_AIRPLANEMODE_enum newval)
+    { return this->set_airplaneMode(newval); }
+
+    /**
      * Returns the condition for enabling IP data services (GPRS).
      * When data services are disabled, SMS are the only mean of communication.
      *
@@ -399,6 +474,31 @@ public:
     int             set_apnSecret(const string& newval);
     inline int      setApnSecret(const string& newval)
     { return this->set_apnSecret(newval); }
+
+    /**
+     * Returns the automated connectivity check interval, in seconds.
+     *
+     * @return an integer corresponding to the automated connectivity check interval, in seconds
+     *
+     * On failure, throws an exception or returns Y_PINGINTERVAL_INVALID.
+     */
+    int                 get_pingInterval(void);
+
+    inline int          pingInterval(void)
+    { return this->get_pingInterval(); }
+
+    /**
+     * Changes the automated connectivity check interval, in seconds.
+     *
+     * @param newval : an integer corresponding to the automated connectivity check interval, in seconds
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_pingInterval(int newval);
+    inline int      setPingInterval(int newval)
+    { return this->set_pingInterval(newval); }
 
     string              get_command(void);
 

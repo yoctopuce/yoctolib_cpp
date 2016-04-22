@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorled.h 19606 2015-03-05 10:35:57Z seb $
+ * $Id: yocto_colorled.h 23577 2016-03-22 22:59:53Z mvuilleu $
  *
  * Declares yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -28,8 +28,8 @@
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
  *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -83,9 +83,9 @@ public:
  * YColorLed Class: ColorLed function interface
  *
  * The Yoctopuce application programming interface
- * allows you to drive a color led using RGB coordinates as well as HSL coordinates.
+ * allows you to drive a color LED using RGB coordinates as well as HSL coordinates.
  * The module performs all conversions form RGB to HSL automatically. It is then
- * self-evident to turn on a led with a given hue and to progressively vary its
+ * self-evident to turn on a LED with a given hue and to progressively vary its
  * saturation or lightness. If needed, you can find more information on the
  * difference between RGB and HSL in the section following this one.
  */
@@ -133,9 +133,9 @@ public:
     static const string COMMAND_INVALID;
 
     /**
-     * Returns the current RGB color of the led.
+     * Returns the current RGB color of the LED.
      *
-     * @return an integer corresponding to the current RGB color of the led
+     * @return an integer corresponding to the current RGB color of the LED
      *
      * On failure, throws an exception or returns Y_RGBCOLOR_INVALID.
      */
@@ -145,9 +145,9 @@ public:
     { return this->get_rgbColor(); }
 
     /**
-     * Changes the current color of the led, using a RGB color. Encoding is done as follows: 0xRRGGBB.
+     * Changes the current color of the LED, using a RGB color. Encoding is done as follows: 0xRRGGBB.
      *
-     * @param newval : an integer corresponding to the current color of the led, using a RGB color
+     * @param newval : an integer corresponding to the current color of the LED, using a RGB color
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
@@ -158,9 +158,9 @@ public:
     { return this->set_rgbColor(newval); }
 
     /**
-     * Returns the current HSL color of the led.
+     * Returns the current HSL color of the LED.
      *
-     * @return an integer corresponding to the current HSL color of the led
+     * @return an integer corresponding to the current HSL color of the LED
      *
      * On failure, throws an exception or returns Y_HSLCOLOR_INVALID.
      */
@@ -170,9 +170,9 @@ public:
     { return this->get_hslColor(); }
 
     /**
-     * Changes the current color of the led, using a color HSL. Encoding is done as follows: 0xHHSSLL.
+     * Changes the current color of the LED, using a color HSL. Encoding is done as follows: 0xHHSSLL.
      *
-     * @param newval : an integer corresponding to the current color of the led, using a color HSL
+     * @param newval : an integer corresponding to the current color of the LED, using a color HSL
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
@@ -237,9 +237,9 @@ public:
     { return this->get_rgbColorAtPowerOn(); }
 
     /**
-     * Changes the color that the led will display by default when the module is turned on.
+     * Changes the color that the LED will display by default when the module is turned on.
      *
-     * @param newval : an integer corresponding to the color that the led will display by default when the
+     * @param newval : an integer corresponding to the color that the LED will display by default when the
      * module is turned on
      *
      * @return YAPI_SUCCESS if the call succeeds.
@@ -251,7 +251,7 @@ public:
     { return this->set_rgbColorAtPowerOn(newval); }
 
     /**
-     * Returns the current length of the blinking sequence
+     * Returns the current length of the blinking sequence.
      *
      * @return an integer corresponding to the current length of the blinking sequence
      *
@@ -263,7 +263,7 @@ public:
     { return this->get_blinkSeqSize(); }
 
     /**
-     * Returns the maximum length of the blinking sequence
+     * Returns the maximum length of the blinking sequence.
      *
      * @return an integer corresponding to the maximum length of the blinking sequence
      *
@@ -299,7 +299,7 @@ public:
     { return this->set_command(newval); }
 
     /**
-     * Retrieves an RGB led for a given identifier.
+     * Retrieves an RGB LED for a given identifier.
      * The identifier can be specified using several formats:
      * <ul>
      * <li>FunctionLogicalName</li>
@@ -309,17 +309,17 @@ public:
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
      *
-     * This function does not require that the RGB led is online at the time
+     * This function does not require that the RGB LED is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YColorLed.isOnline() to test if the RGB led is
+     * Use the method YColorLed.isOnline() to test if the RGB LED is
      * indeed online at a given time. In case of ambiguity when looking for
-     * an RGB led by logical name, no error is notified: the first instance
+     * an RGB LED by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
      *
-     * @param func : a string that uniquely characterizes the RGB led
+     * @param func : a string that uniquely characterizes the RGB LED
      *
-     * @return a YColorLed object allowing you to drive the RGB led.
+     * @return a YColorLed object allowing you to drive the RGB LED.
      */
     static YColorLed*   FindColorLed(string func);
 
@@ -396,23 +396,23 @@ public:
     { return YColorLed::FindColorLed(func); }
 
     /**
-     * Continues the enumeration of RGB leds started using yFirstColorLed().
+     * Continues the enumeration of RGB LEDs started using yFirstColorLed().
      *
      * @return a pointer to a YColorLed object, corresponding to
-     *         an RGB led currently online, or a null pointer
-     *         if there are no more RGB leds to enumerate.
+     *         an RGB LED currently online, or a null pointer
+     *         if there are no more RGB LEDs to enumerate.
      */
            YColorLed       *nextColorLed(void);
     inline YColorLed       *next(void)
     { return this->nextColorLed();}
 
     /**
-     * Starts the enumeration of RGB leds currently accessible.
+     * Starts the enumeration of RGB LEDs currently accessible.
      * Use the method YColorLed.nextColorLed() to iterate on
-     * next RGB leds.
+     * next RGB LEDs.
      *
      * @return a pointer to a YColorLed object, corresponding to
-     *         the first RGB led currently online, or a null pointer
+     *         the first RGB LED currently online, or a null pointer
      *         if there are none.
      */
            static YColorLed* FirstColorLed(void);
@@ -427,7 +427,7 @@ public:
 //--- (ColorLed functions declaration)
 
 /**
- * Retrieves an RGB led for a given identifier.
+ * Retrieves an RGB LED for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -437,27 +437,27 @@ public:
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that the RGB led is online at the time
+ * This function does not require that the RGB LED is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YColorLed.isOnline() to test if the RGB led is
+ * Use the method YColorLed.isOnline() to test if the RGB LED is
  * indeed online at a given time. In case of ambiguity when looking for
- * an RGB led by logical name, no error is notified: the first instance
+ * an RGB LED by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
- * @param func : a string that uniquely characterizes the RGB led
+ * @param func : a string that uniquely characterizes the RGB LED
  *
- * @return a YColorLed object allowing you to drive the RGB led.
+ * @return a YColorLed object allowing you to drive the RGB LED.
  */
 inline YColorLed* yFindColorLed(const string& func)
 { return YColorLed::FindColorLed(func);}
 /**
- * Starts the enumeration of RGB leds currently accessible.
+ * Starts the enumeration of RGB LEDs currently accessible.
  * Use the method YColorLed.nextColorLed() to iterate on
- * next RGB leds.
+ * next RGB LEDs.
  *
  * @return a pointer to a YColorLed object, corresponding to
- *         the first RGB led currently online, or a null pointer
+ *         the first RGB LED currently online, or a null pointer
  *         if there are none.
  */
 inline YColorLed* yFirstColorLed(void)

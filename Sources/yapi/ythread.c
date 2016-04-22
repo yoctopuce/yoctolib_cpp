@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.c 22930 2016-01-27 16:30:59Z seb $
+ * $Id: ythread.c 23643 2016-03-30 12:25:08Z seb $
  *
  * OS-independent thread and synchronization library
  *
@@ -343,7 +343,7 @@ void yThreadKill(yThread *yth)
     if (yThreadIsRunning(yth)) {
 #ifdef WINDOWS_API
         //means thread still running lets give it some time
-        if (!yWaitForEvent(&yth->th, 10000)) {
+        if (!yWaitForEvent(&yth->th, 1000)) {
            yKillThread(&yth->th);
         }
 #else

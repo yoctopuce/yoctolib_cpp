@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 22556 2015-12-29 09:42:30Z seb $
+ * $Id: ydef.h 23689 2016-03-31 23:11:54Z mvuilleu $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -244,6 +244,7 @@ typedef s32             YUSBDEV;
 #define YIO_TCP          2
 #define YIO_YSB          3
 #define YIO_TRUNK        4
+#define YIO_WS           5
 
 #define YIO_DEFAULT_USB_TIMEOUT      2000u
 #define YIO_DEFAULT_TCP_TIMEOUT     20000u
@@ -256,15 +257,7 @@ typedef s32             YUSBDEV;
 typedef s16 YIOHDL;
 #else
 // make sure this union is no more than 8 bytes, YIOHDL is allocated used in all foreign APIs
-typedef struct{
-    u8      type;
-    u8      pad8;
-    u16     pad16;
-    union {
-        u32     tcpreqidx;
-        YUSBIO  hdl;
-    };
-} YIOHDL;
+typedef void *YIOHDL;
 #endif
 
 #define YIOHDL_SIZE (sizeof(YIOHDL))
@@ -435,6 +428,11 @@ typedef enum {
 #define YOCTO_REPORT_LEN             9 // Max size of a timed report, including isAvg flag
 #define YOCTO_SERIAL_SEED_SIZE       (YOCTO_SERIAL_LEN - YOCTO_BASE_SERIAL_LEN - 1)
 
+// websocket key from specification v13
+#define YOCTO_WEBSOCKET_MAGIC             "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+#define YOCTO_WEBSOCKET_MAGIC_LEN         36
+
+
 // firmware description
 typedef union {
     u8      asBytes[YOCTO_FIRMWARE_LEN];
@@ -521,15 +519,16 @@ typedef union{
 // YPKT_STREAM packets can encompass multiple streams
 //
 
-#define YSTREAM_EMPTY       0
-#define YSTREAM_TCP         1
-#define YSTREAM_TCP_CLOSE   2
-#define YSTREAM_NOTICE      3
-#define YSTREAM_REPORT      4
-#define YSTREAM_META        5
-#define YSTREAM_REPORT_V2   6
-#define YSTREAM_NOTICE_V2   7
-#define YSTREAM_TCP_NOTIF   8
+#define YSTREAM_EMPTY          0
+#define YSTREAM_TCP            1
+#define YSTREAM_TCP_CLOSE      2
+#define YSTREAM_NOTICE         3
+#define YSTREAM_REPORT         4
+#define YSTREAM_META           5
+#define YSTREAM_REPORT_V2      6
+#define YSTREAM_NOTICE_V2      7
+#define YSTREAM_TCP_NOTIF      8
+#define YSTREAM_TCP_ASYNCCLOSE 9
 
 // Data in YSTREAM_NOTICE stream
 
@@ -766,11 +765,33 @@ typedef struct {
 // data format in USB_Report_Pkt_V2:
 //
 
+
+#define MAX_ASYNC_TCPCHAN 4
+
+
 // Data in YSTREAM_META stream
 
-#define USB_META_UTCTIME        1
-#define USB_META_DLFLUSH        2
-#define USB_META_ACK_D2H_PACKET 3
+#define USB_META_UTCTIME                1
+#define USB_META_DLFLUSH                2
+#define USB_META_ACK_D2H_PACKET         3
+#define USB_META_WS_ANNOUNCE            4
+#define USB_META_WS_AUTHENTICATION      5
+#define USB_META_WS_ERROR               6
+#define USB_META_ACK_UPLOAD             7
+
+#define USB_META_UTCTIME_SIZE           5u
+#define USB_META_DLFLUSH_SIZE           1u
+#define USB_META_ACK_D2H_PACKET_SIZE    2u
+#define USB_META_WS_ANNOUNCE_SIZE       (8 + YOCTO_SERIAL_LEN)
+#define USB_META_WS_AUTHENTICATION_SIZE 28u
+#define USB_META_WS_ERROR_SIZE          4u
+#define USB_META_ACK_UPLOAD_SIZE        6u
+
+#define USB_META_WS_PROTO_V1            1 // adding authentication support
+#define USB_META_WS_PROTO_V2            2 // adding API packets throttling
+
+#define USB_META_WS_AUTH_FLAGS_VALID    1 // set it if the sha1 and nonce are pertinent
+#define USB_META_WS_AUTH_FLAGS_RW       2 // set it if RW acces are granted
 
 typedef union {
     struct {
@@ -784,7 +805,49 @@ typedef union {
         u8  metaType;      // =USB_META_ACK_D2H_PACKET (ack last device to host packet)
         u8  pktno;         // = last pktno that the host has received
     } pktAck;
+    struct {
+        u8  metaType;      // =USB_META_WS_ANNOUNCE (ack last device to host packet)
+        u8  version;       // the version of the authentication
+        u16 maxtcpws;      // maximum TCP window size, in multiples of 16 bytes
+        u32 nonce;         // nonce append to password (in capital hex)
+        char serial[YOCTO_SERIAL_LEN];
+    } announce;
+    struct {
+        u8  metaType;      // =USB_META_WS_AUTHENTICATION (authenticate trafic)
+        u8  version;       // the version of the authentication
+        u16 flags;         // reserved bits
+        u32 nonce;         // nonce append to password (in capital hex)
+        u8  sha1[20];      // sha1 signature
+    } auth;
+    struct {
+        u8  metaType;      // =USB_META_WS_ANNOUNCE (ack last device to host packet)
+        u8  reserved;      // reserved (must be 0)
+        u16 htmlcode;      // HTML error code
+    } error;
+    struct {
+        u8  metaType;      // =USB_META_ACK_UPLOAD (ack upload progress every KB)
+        u8  tcpchan;       // TCP channel index (as of proto v2, only available on tcpchan 0)
+        u8 totalBytes[4];  // actually a DWORD in little-endian format, number of bytes received so far
+    } uploadAck;
 } USB_Meta_Pkt;
+
+
+
+typedef union {
+     struct {
+#ifdef CPU_BIG_ENDIAN
+        u8      stream : 5;           // Encapsulated protocol
+        u8      tcpchan : 3;          // Encapsulated TCP subchannel
+#else
+        u8      tcpchan : 3;          // Encapsulated TCP subchannel
+        u8      stream : 5;           // Encapsulated protocol
+#endif
+    };
+    u8 encaps;
+} WSStreamHead;
+
+
+
 
 //
 // SSDP global definitions for hubs
@@ -797,6 +860,9 @@ typedef union {
 
 // prototype of the async request completion callback
 typedef void (*yapiRequestAsyncCallback)(void *context, const u8 *result, u32 resultlen, int retcode, const char *errmsg);
+// prototype of the request progress callback
+typedef void (*yapiRequestProgressCallback)(void *context, u32 acked, u32 totalbytes);
+
 
 
 //
@@ -909,6 +975,9 @@ typedef union {
 #define GET_PROG_POS_PAGENO(PKT_EXT, PAGENO, POS)  {\
                                 POS = (PKT_EXT).dwordpos_lo + ((u32)(PKT_EXT).dwordpos_hi <<8);\
                                 PAGENO = (PKT_EXT).pageno;}
+
+#define INTEL_U16(NUM)  (NUM)
+#define INTEL_U32(NUM) (NUM)
 #else
 #define SET_PROG_POS_PAGENO(PKT_EXT, PAGENO, POS)  {\
                                 (PKT_EXT).dwordpos_lo = (POS) & 0xff;\
@@ -917,6 +986,9 @@ typedef union {
 #define GET_PROG_POS_PAGENO(PKT_EXT, PAGENO, POS)  {\
                                 POS = (PKT_EXT).dwordpos_lo + (((u16)(PKT_EXT).misc_hi << 2) & 0x300);\
                                 PAGENO = (PKT_EXT).pageno_lo + (((u16)(PKT_EXT).misc_hi & 0x3f) << 8);}
+#define INTEL_U16(NUM) ((((NUM) & 0xff00) >> 8) | (((NUM)&0xff) << 8))
+#define INTEL_U32(NUM) ((((NUM) >> 24) & 0xff) | (((NUM) << 8) & 0xff0000) | (((NUM) >> 8) & 0xff00) | (((NUM) << 24) & 0xff000000 ))
+
 #endif
 
 

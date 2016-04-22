@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 22694 2016-01-12 23:13:27Z seb $
+ * $Id: yocto_api.h 23788 2016-04-07 15:48:25Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -654,11 +654,16 @@ protected:
     int             _progress_c;
     int             _progress;
     int             _restore_step;
+    bool            _force;
     //--- (end of generated code: YFirmwareUpdate attributes)
 
 
 public:
-    YFirmwareUpdate(string serialNumber, string path, string settings) : _serial(serialNumber), _settings(settings), _firmwarepath(path) {};
+    YFirmwareUpdate(string serialNumber, string path, string settings) : _serial(serialNumber), _settings(settings), _firmwarepath(path), _force(false) {};
+    YFirmwareUpdate(string serialNumber, string path, string settings, bool force) : _serial(serialNumber), _settings(settings), _firmwarepath(path), _force(force) {};
+    YFirmwareUpdate(){}
+
+
 
     //--- (generated code: YFirmwareUpdate accessors declaration)
 
@@ -666,26 +671,26 @@ public:
     virtual int         _processMore(int newupdate);
 
     /**
-     * Retruns a list of all the modules in "update" mode. Only USB connected
-     * devices are listed. For modules connected to a YoctoHub, you must
-     * connect yourself to the YoctoHub web interface.
+     * Returns a list of all the modules in "firmware update" mode. Only devices
+     * connected over USB are listed. For devices connected to a YoctoHub, you
+     * must connect yourself to the YoctoHub web interface.
      *
-     * @return an array of strings containing the serial list of module in "update" mode.
+     * @return an array of strings containing the serial numbers of devices in "firmware update" mode.
      */
     static vector<string> GetAllBootLoaders(void);
 
     /**
-     * Test if the byn file is valid for this module. It's possible to pass an directory instead of a file.
-     * In this case this method return the path of the most recent appropriate byn file. This method will
-     * ignore firmware that are older than mintrelase.
+     * Test if the byn file is valid for this module. It is possible to pass a directory instead of a file.
+     * In that case, this method returns the path of the most recent appropriate byn file. This method will
+     * ignore any firmware older than minrelease.
      *
      * @param serial : the serial number of the module to update
      * @param path : the path of a byn file or a directory that contains byn files
      * @param minrelease : a positive integer
      *
-     * @return : the path of the byn file to use or an empty string if no byn files match the requirement
+     * @return : the path of the byn file to use, or an empty string if no byn files matches the requirement
      *
-     * On failure, returns a string that start with "error:".
+     * On failure, returns a string that starts with "error:".
      */
     static string       CheckFirmware(string serial,string path,int minrelease);
 
@@ -783,6 +788,8 @@ protected:
 public:
     YDataStream(YFunction *parent): _parent(parent) {};
     YDataStream(YFunction *parent, YDataSet &dataset, const vector<int>& encoded);
+
+    virtual ~YDataStream();
 
     static const double DATA_INVALID;
     static const int    DURATION_INVALID = -1;
@@ -1329,8 +1336,8 @@ public:
     static void ClearCache();
     static void PlugDevice(YDEV_DESCR devdescr);
     static YDevice *getDevice(YDEV_DESCR devdescr);
-    YRETCODE    HTTPRequestAsync(const string& request, HTTPRequestCallback callback, void *context, string& errmsg);
-    YRETCODE    HTTPRequest(const string& request, string& buffer, string& errmsg);
+    YRETCODE    HTTPRequestAsync(int channel, const string& request, HTTPRequestCallback callback, void *context, string& errmsg);
+    YRETCODE    HTTPRequest(int channel, const string& request, string& buffer, yapiRequestProgressCallback progress_cb, void *progress_ctx, string& errmsg);
     YRETCODE    requestAPI(string& apires, string& errmsg);
     void        clearCache();
     YRETCODE    getFunctions(vector<YFUN_DESCR> **functions, string& errmsg);
@@ -1426,9 +1433,11 @@ public:
 
     // Method used to send http request to the device (not the function)
     string      _request(const string& request);
+    string      _requestEx(int tcpchan, const string& request, yapiRequestProgressCallback callback, void *context);
     string      _download(const string& url);
 
     // Method used to upload a file to the device
+    YRETCODE    _uploadWithProgress(const string& path, const string& content, yapiRequestProgressCallback callback, void *context);
     YRETCODE    _upload(const string& path, const string& content);
 
     // Method used to parse a string in JSON data (low-level)
@@ -2221,14 +2230,13 @@ public:
      * needs to be updated.
      * It is possible to pass a directory as argument instead of a file. In this case, this method returns
      * the path of the most recent
-     * appropriate byn file. If the parameter onlynew is true, the function discards firmware that are
-     * older or equal to
-     * the installed firmware.
+     * appropriate .byn file. If the parameter onlynew is true, the function discards firmwares that are older or
+     * equal to the installed firmware.
      *
      * @param path : the path of a byn file or a directory that contains byn files
      * @param onlynew : returns only files that are strictly newer
      *
-     * @return : the path of the byn file to use or a empty string if no byn files matches the requirement
+     * @return the path of the byn file to use or a empty string if no byn files matches the requirement
      *
      * On failure, throws an exception or returns a string that start with "error:".
      */
@@ -2238,16 +2246,26 @@ public:
      * Prepares a firmware update of the module. This method returns a YFirmwareUpdate object which
      * handles the firmware update process.
      *
-     * @param path : the path of the byn file to use.
+     * @param path : the path of the .byn file to use.
+     * @param force : true to force the firmware update even if some prerequisites appear not to be met
      *
-     * @return : A YFirmwareUpdate object or NULL on error.
+     * @return a YFirmwareUpdate object or NULL on error.
+     */
+    virtual YFirmwareUpdate updateFirmwareEx(string path,bool force);
+
+    /**
+     * Prepares a firmware update of the module. This method returns a YFirmwareUpdate object which
+     * handles the firmware update process.
+     *
+     * @param path : the path of the .byn file to use.
+     *
+     * @return a YFirmwareUpdate object or NULL on error.
      */
     virtual YFirmwareUpdate updateFirmware(string path);
 
     /**
-     * Returns all the settings and uploaded files of the module. Useful to backup all the logical names,
-     * calibrations parameters,
-     * and uploaded files of a connected module.
+     * Returns all the settings and uploaded files of the module. Useful to backup all the
+     * logical names, calibrations parameters, and uploaded files of a device.
      *
      * @return a binary buffer with all the settings.
      *
@@ -2260,9 +2278,10 @@ public:
     virtual int         set_extraSettings(string jsonExtra);
 
     /**
-     * Restores all the settings and uploaded files of the module. Useful to restore all the logical names
-     * and calibrations parameters, uploaded
-     * files etc.. of a module from a backup.Remember to call the saveToFlash() method of the module if the
+     * Restores all the settings and uploaded files to the module.
+     * This method is useful to restore all the logical names and calibrations parameters,
+     * uploaded files etc. of a device from a backup.
+     * Remember to call the saveToFlash() method of the module if the
      * modifications must be kept.
      *
      * @param settings : a binary buffer with all the settings.
@@ -2274,12 +2293,12 @@ public:
     virtual int         set_allSettingsAndFiles(string settings);
 
     /**
-     * Test if the device has a specific function. This method took an function identifier
-     * and return a boolean.
+     * Tests if the device includes a specific function. This method takes a function identifier
+     * and returns a boolean.
      *
      * @param funcId : the requested function identifier
      *
-     * @return : true if the device has the function identifier
+     * @return true if the device has the function identifier
      */
     virtual bool        hasFunction(string funcId);
 
@@ -2288,7 +2307,7 @@ public:
      *
      * @param funType : The type of function (Relay, LightSensor, Voltage,...)
      *
-     * @return : A array of string.
+     * @return an array of strings.
      */
     virtual vector<string> get_functionIds(string funType);
 
@@ -2303,7 +2322,7 @@ public:
     virtual string      calibConvert(string param,string currentFuncValue,string unit_name,string sensorType);
 
     /**
-     * Restores all the settings of the module. Useful to restore all the logical names and calibrations parameters
+     * Restores all the settings of the device. Useful to restore all the logical names and calibrations parameters
      * of a module from a backup.Remember to call the saveToFlash() method of the module if the
      * modifications must be kept.
      *
@@ -2345,10 +2364,22 @@ public:
     virtual string      get_lastLogs(void);
 
     /**
-     * Returns a list of all the modules that are plugged into the current module. This
-     * method is only useful on a YoctoHub/VirtualHub. This method return the serial number of all
-     * module connected to a YoctoHub. Calling this method on a standard device is not an
-     * error, and an empty array will be returned.
+     * Adds a text message to the device logs. This function is useful in
+     * particular to trace the execution of HTTP callbacks. If a newline
+     * is desired after the message, it must be included in the string.
+     *
+     * @param text : the string to append to the logs.
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         log(string text);
+
+    /**
+     * Returns a list of all the modules that are plugged into the current module.
+     * This method only makes sense when called for a YoctoHub/VirtualHub.
+     * Otherwise, an empty array will be returned.
      *
      * @return an array of strings containing the sub modules.
      */
@@ -2356,7 +2387,7 @@ public:
 
     /**
      * Returns the serial number of the YoctoHub on which this module is connected.
-     * If the module is connected by USB or if the module is the root YoctoHub an
+     * If the module is connected by USB, or if the module is the root YoctoHub, an
      * empty string is returned.
      *
      * @return a string with the serial number of the YoctoHub or an empty string
@@ -2364,7 +2395,7 @@ public:
     virtual string      get_parentHub(void);
 
     /**
-     * Returns the URL used to access the module. If the module is connected by USB the
+     * Returns the URL used to access the module. If the module is connected by USB, the
      * string 'usb' is returned.
      *
      * @return a string with the URL of the module.

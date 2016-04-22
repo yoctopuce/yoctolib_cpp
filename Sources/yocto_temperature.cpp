@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_temperature.cpp 22694 2016-01-12 23:13:27Z seb $
+ * $Id: yocto_temperature.cpp 23527 2016-03-18 21:49:19Z mvuilleu $
  *
  * Implements yFindTemperature(), the high-level API for Temperature functions
  *
@@ -28,8 +28,8 @@
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
  *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -50,6 +50,8 @@
 YTemperature::YTemperature(const string& func): YSensor(func)
 //--- (Temperature initialization)
     ,_sensorType(SENSORTYPE_INVALID)
+    ,_signalValue(SIGNALVALUE_INVALID)
+    ,_signalUnit(SIGNALUNIT_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackTemperature(NULL)
     ,_timedReportCallbackTemperature(NULL)
@@ -65,6 +67,8 @@ YTemperature::~YTemperature()
 }
 //--- (YTemperature implementation)
 // static attributes
+const double YTemperature::SIGNALVALUE_INVALID = YAPI_INVALID_DOUBLE;
+const string YTemperature::SIGNALUNIT_INVALID = YAPI_INVALID_STRING;
 const string YTemperature::COMMAND_INVALID = YAPI_INVALID_STRING;
 
 int YTemperature::_parseAttr(yJsonStateMachine& j)
@@ -72,6 +76,16 @@ int YTemperature::_parseAttr(yJsonStateMachine& j)
     if(!strcmp(j.token, "sensorType")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _sensorType =  (Y_SENSORTYPE_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "signalValue")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _signalValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        return 1;
+    }
+    if(!strcmp(j.token, "signalUnit")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _signalUnit =  _parseString(j);
         return 1;
     }
     if(!strcmp(j.token, "command")) {
@@ -150,6 +164,41 @@ int YTemperature::set_sensorType(Y_SENSORTYPE_enum newval)
     string rest_val;
     char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
     return _setAttr("sensorType", rest_val);
+}
+
+/**
+ * Returns the current value of the electrical signal measured by the sensor.
+ *
+ * @return a floating point number corresponding to the current value of the electrical signal
+ * measured by the sensor
+ *
+ * On failure, throws an exception or returns Y_SIGNALVALUE_INVALID.
+ */
+double YTemperature::get_signalValue(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YTemperature::SIGNALVALUE_INVALID;
+        }
+    }
+    return floor(_signalValue * 1000+0.5) / 1000;
+}
+
+/**
+ * Returns the measuring unit of the electrical signal used by the sensor.
+ *
+ * @return a string corresponding to the measuring unit of the electrical signal used by the sensor
+ *
+ * On failure, throws an exception or returns Y_SIGNALUNIT_INVALID.
+ */
+string YTemperature::get_signalUnit(void)
+{
+    if (_cacheExpiration == 0) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YTemperature::SIGNALUNIT_INVALID;
+        }
+    }
+    return _signalUnit;
 }
 
 string YTemperature::get_command(void)

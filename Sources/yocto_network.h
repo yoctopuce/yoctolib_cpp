@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.h 22194 2015-12-02 10:50:41Z mvuilleu $
+ * $Id: yocto_network.h 23930 2016-04-15 09:31:14Z seb $
  *
  * Declares yFindNetwork(), the high-level API for Network functions
  *
@@ -28,8 +28,8 @@
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
  *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -92,6 +92,7 @@ typedef enum {
     Y_CALLBACKENCODING_EMONCMS = 6,
     Y_CALLBACKENCODING_AZURE = 7,
     Y_CALLBACKENCODING_INFLUXDB = 8,
+    Y_CALLBACKENCODING_MQTT = 9,
     Y_CALLBACKENCODING_INVALID = -1,
 } Y_CALLBACKENCODING_enum;
 #endif
@@ -110,6 +111,7 @@ typedef enum {
 #define Y_WWWWATCHDOGDELAY_INVALID      (YAPI_INVALID_UINT)
 #define Y_CALLBACKURL_INVALID           (YAPI_INVALID_STRING)
 #define Y_CALLBACKCREDENTIALS_INVALID   (YAPI_INVALID_STRING)
+#define Y_CALLBACKINITIALDELAY_INVALID  (YAPI_INVALID_UINT)
 #define Y_CALLBACKMINDELAY_INVALID      (YAPI_INVALID_UINT)
 #define Y_CALLBACKMAXDELAY_INVALID      (YAPI_INVALID_UINT)
 #define Y_POECURRENT_INVALID            (YAPI_INVALID_UINT)
@@ -149,6 +151,7 @@ protected:
     Y_CALLBACKMETHOD_enum _callbackMethod;
     Y_CALLBACKENCODING_enum _callbackEncoding;
     string          _callbackCredentials;
+    int             _callbackInitialDelay;
     int             _callbackMinDelay;
     int             _callbackMaxDelay;
     int             _poeCurrent;
@@ -204,8 +207,10 @@ public:
     static const Y_CALLBACKENCODING_enum CALLBACKENCODING_EMONCMS = Y_CALLBACKENCODING_EMONCMS;
     static const Y_CALLBACKENCODING_enum CALLBACKENCODING_AZURE = Y_CALLBACKENCODING_AZURE;
     static const Y_CALLBACKENCODING_enum CALLBACKENCODING_INFLUXDB = Y_CALLBACKENCODING_INFLUXDB;
+    static const Y_CALLBACKENCODING_enum CALLBACKENCODING_MQTT = Y_CALLBACKENCODING_MQTT;
     static const Y_CALLBACKENCODING_enum CALLBACKENCODING_INVALID = Y_CALLBACKENCODING_INVALID;
     static const string CALLBACKCREDENTIALS_INVALID;
+    static const int CALLBACKINITIALDELAY_INVALID = YAPI_INVALID_UINT;
     static const int CALLBACKMINDELAY_INVALID = YAPI_INVALID_UINT;
     static const int CALLBACKMAXDELAY_INVALID = YAPI_INVALID_UINT;
     static const int POECURRENT_INVALID = YAPI_INVALID_UINT;
@@ -614,8 +619,9 @@ public:
      *
      * @return a value among Y_CALLBACKENCODING_FORM, Y_CALLBACKENCODING_JSON,
      * Y_CALLBACKENCODING_JSON_ARRAY, Y_CALLBACKENCODING_CSV, Y_CALLBACKENCODING_YOCTO_API,
-     * Y_CALLBACKENCODING_JSON_NUM, Y_CALLBACKENCODING_EMONCMS, Y_CALLBACKENCODING_AZURE and
-     * Y_CALLBACKENCODING_INFLUXDB corresponding to the encoding standard to use for representing notification values
+     * Y_CALLBACKENCODING_JSON_NUM, Y_CALLBACKENCODING_EMONCMS, Y_CALLBACKENCODING_AZURE,
+     * Y_CALLBACKENCODING_INFLUXDB and Y_CALLBACKENCODING_MQTT corresponding to the encoding standard to
+     * use for representing notification values
      *
      * On failure, throws an exception or returns Y_CALLBACKENCODING_INVALID.
      */
@@ -629,8 +635,9 @@ public:
      *
      * @param newval : a value among Y_CALLBACKENCODING_FORM, Y_CALLBACKENCODING_JSON,
      * Y_CALLBACKENCODING_JSON_ARRAY, Y_CALLBACKENCODING_CSV, Y_CALLBACKENCODING_YOCTO_API,
-     * Y_CALLBACKENCODING_JSON_NUM, Y_CALLBACKENCODING_EMONCMS, Y_CALLBACKENCODING_AZURE and
-     * Y_CALLBACKENCODING_INFLUXDB corresponding to the encoding standard to use for representing notification values
+     * Y_CALLBACKENCODING_JSON_NUM, Y_CALLBACKENCODING_EMONCMS, Y_CALLBACKENCODING_AZURE,
+     * Y_CALLBACKENCODING_INFLUXDB and Y_CALLBACKENCODING_MQTT corresponding to the encoding standard to
+     * use for representing notification values
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
@@ -689,6 +696,32 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     int             callbackLogin(string username,string password);
+
+    /**
+     * Returns the initial waiting time before first callback notifications, in seconds.
+     *
+     * @return an integer corresponding to the initial waiting time before first callback notifications, in seconds
+     *
+     * On failure, throws an exception or returns Y_CALLBACKINITIALDELAY_INVALID.
+     */
+    int                 get_callbackInitialDelay(void);
+
+    inline int          callbackInitialDelay(void)
+    { return this->get_callbackInitialDelay(); }
+
+    /**
+     * Changes the initial waiting time before first callback notifications, in seconds.
+     *
+     * @param newval : an integer corresponding to the initial waiting time before first callback
+     * notifications, in seconds
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_callbackInitialDelay(int newval);
+    inline int      setCallbackInitialDelay(int newval)
+    { return this->set_callbackInitialDelay(newval); }
 
     /**
      * Returns the minimum waiting time between two callback notifications, in seconds.
@@ -830,8 +863,8 @@ public:
     virtual int         useStaticIP(string ipAddress,int subnetMaskLen,string router);
 
     /**
-     * Pings str_host to test the network connectivity. Sends four ICMP ECHO_REQUEST requests from the
-     * module to the target str_host. This method returns a string with the result of the
+     * Pings host to test the network connectivity. Sends four ICMP ECHO_REQUEST requests from the
+     * module to the target host. This method returns a string with the result of the
      * 4 ICMP ECHO_REQUEST requests.
      *
      * @param host : the hostname or the IP address of the target
@@ -839,6 +872,18 @@ public:
      * @return a string with the result of the ping.
      */
     virtual string      ping(string host);
+
+    /**
+     * Trigger an HTTP callback quickly. This function can even be called within
+     * an HTTP callback, in which case the next callback will be triggered 5 seconds
+     * after the end of the current callback, regardless if the minimum time between
+     * callbacks configured in the device.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         triggerCallback(void);
 
 
     inline static YNetwork* Find(string func)
