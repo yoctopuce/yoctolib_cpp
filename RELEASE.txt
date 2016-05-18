@@ -1,14 +1,8 @@
-- Add WebSocket Support
-- Add YSpiPort class
-- Add YModule.updateFirmwareEx method
-- Add Doc-GettingStarted example for Yocto-SPI
-- Add Doc-GettingStarted example for Yocto-Thermistor-C
-- Add Doc-GettingStarted example for Yocto-MaxiThermistor
-- Improve USB communication reliability on Windows
-- Fix upload to USB device
-- Fix YModule.registerLogCallback() that was not working if it was used from a callback
-- Fix memory leak when using YDatalogger
-- Fix compilation error with mingw32
-- Fix occasional deadlock during error recovery on Windows
-- Fix settings that where not restored correctly on YoctoHub-Wireless
-- Minor fixes
+- Report invalid admin password directly in YAPI.RegisterHub()
+- Improve network performance of WebSocket protocol
+- Add missing methods in YColorledCluster
+- Add mipsel binary
+- Fix YCellular.sendPUK() method
+- Fix authentication that was not working on MIPS
+- Fix occasional lag in request
+- Fix socket leak with HTTP connection

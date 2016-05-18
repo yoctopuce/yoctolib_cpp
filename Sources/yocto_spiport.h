@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_spiport.h 24086 2016-04-21 15:43:42Z seb $
+ * $Id: yocto_spiport.h 24252 2016-04-26 13:39:30Z seb $
  *
  * Declares yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -96,12 +96,12 @@ typedef enum {
 
 //--- (YSpiPort declaration)
 /**
- * YSpiPort Class: SerialPort function interface
+ * YSpiPort Class: SPI Port function interface
  *
- * The SerialPort function interface allows you to fully drive a Yoctopuce
- * serial port, to send and receive data, and to configure communication
+ * The SpiPort function interface allows you to fully drive a Yoctopuce
+ * SPI port, to send and receive data, and to configure communication
  * parameters (baud rate, bit count, parity, flow control and protocol).
- * Note that Yoctopuce serial ports are not exposed as virtual COM ports.
+ * Note that Yoctopuce SPI ports are not exposed as virtual COM ports.
  * They are meant to be used in the same way as all Yoctopuce devices.
  */
 class YOCTO_CLASS_EXPORT YSpiPort: public YFunction {
@@ -373,11 +373,11 @@ public:
     { return this->set_protocol(newval); }
 
     /**
-     * Returns the serial port communication parameters, as a string such as
+     * Returns the SPI port communication parameters, as a string such as
      * "125000,0,msb". The string includes the baud rate, the SPI mode (between
      * 0 and 3) and the bit order.
      *
-     * @return a string corresponding to the serial port communication parameters, as a string such as
+     * @return a string corresponding to the SPI port communication parameters, as a string such as
      *         "125000,0,msb"
      *
      * On failure, throws an exception or returns Y_SPIMODE_INVALID.
@@ -388,11 +388,11 @@ public:
     { return this->get_spiMode(); }
 
     /**
-     * Changes the serial port communication parameters, with a string such as
+     * Changes the SPI port communication parameters, with a string such as
      * "125000,0,msb". The string includes the baud rate, the SPI mode (between
      * 0 and 3) and the bit order.
      *
-     * @param newval : a string corresponding to the serial port communication parameters, with a string such as
+     * @param newval : a string corresponding to the SPI port communication parameters, with a string such as
      *         "125000,0,msb"
      *
      * @return YAPI_SUCCESS if the call succeeds.
@@ -429,10 +429,10 @@ public:
     { return this->set_ssPolarity(newval); }
 
     /**
-     * Returns true when SDI line phase is shifted with regards to SDO line.
+     * Returns true when the SDI line phase is shifted with regards to the SDO line.
      *
-     * @return either Y_SHITFTSAMPLING_OFF or Y_SHITFTSAMPLING_ON, according to true when SDI line phase
-     * is shifted with regards to SDO line
+     * @return either Y_SHITFTSAMPLING_OFF or Y_SHITFTSAMPLING_ON, according to true when the SDI line
+     * phase is shifted with regards to the SDO line
      *
      * On failure, throws an exception or returns Y_SHITFTSAMPLING_INVALID.
      */

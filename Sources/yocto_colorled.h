@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorled.h 23577 2016-03-22 22:59:53Z mvuilleu $
+ * $Id: yocto_colorled.h 24475 2016-05-12 14:03:35Z mvuilleu $
  *
  * Declares yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -145,9 +145,9 @@ public:
     { return this->get_rgbColor(); }
 
     /**
-     * Changes the current color of the LED, using a RGB color. Encoding is done as follows: 0xRRGGBB.
+     * Changes the current color of the LED, using an RGB color. Encoding is done as follows: 0xRRGGBB.
      *
-     * @param newval : an integer corresponding to the current color of the LED, using a RGB color
+     * @param newval : an integer corresponding to the current color of the LED, using an RGB color
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
@@ -354,8 +354,8 @@ public:
     virtual int         addHslMoveToBlinkSeq(int HSLcolor,int msDelay);
 
     /**
-     * Add a new transition to the blinking sequence, the move will
-     * be performed in the RGB space.
+     * Adds a new transition to the blinking sequence, the move is
+     * performed in the RGB space.
      *
      * @param RGBcolor : desired RGB color when the transition is completed
      * @param msDelay : duration of the color transition, in milliseconds.
@@ -366,8 +366,8 @@ public:
     virtual int         addRgbMoveToBlinkSeq(int RGBcolor,int msDelay);
 
     /**
-     * Starts the preprogrammed blinking sequence. The sequence will
-     * run in loop until it is stopped by stopBlinkSeq or an explicit
+     * Starts the preprogrammed blinking sequence. The sequence is
+     * run in a loop until it is stopped by stopBlinkSeq or an explicit
      * change.
      *
      * @return YAPI_SUCCESS if the call succeeds.

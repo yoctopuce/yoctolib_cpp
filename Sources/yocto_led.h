@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_led.h 23577 2016-03-22 22:59:53Z mvuilleu $
+ * $Id: yocto_led.h 24475 2016-05-12 14:03:35Z mvuilleu $
  *
  * Declares yFindLed(), the high-level API for Led functions
  *
@@ -79,7 +79,7 @@ typedef enum {
 /**
  * YLed Class: Led function interface
  *
- * Yoctopuce application programming interface
+ * The Yoctopuce application programming interface
  * allows you not only to drive the intensity of the LED, but also to
  * have it blink at various preset frequencies.
  */

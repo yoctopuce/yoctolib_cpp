@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.c 23803 2016-04-08 08:42:47Z seb $
+ * $Id: ykey.c 24249 2016-04-26 13:03:58Z seb $
  *
  * Implementation of standard key computations
  *
@@ -36,7 +36,7 @@
  *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
-
+#define __FILE_ID__  "ydef"
 #include "ykey.h"
 
 #ifdef MICROCHIP_API
@@ -89,7 +89,7 @@ void ComputeAuthHA1(u8 *ha1, const char *user, const char *pass, const char *rea
     {
         char     tmpha[HTTP_AUTH_MD5_STRLEN + 1];
         bin2str(tmpha, ha1, HTTP_AUTH_MD5_SIZE, 1);
-        ylogf("Compute HA1 u=%s r=%s p=%s -> %s\n", user, realm, pass, tmpha);
+        dbglog("Compute HA1 u=%s r=%s p=%s -> %s\n", user, realm, pass, tmpha);
     }
 #endif
 }
@@ -108,7 +108,7 @@ void ComputeAuthHA2(u8 *ha2, const char *method, const char *uri)
     {
         char     tmpha[HTTP_AUTH_MD5_STRLEN + 1];
         bin2str(tmpha, ha2, HTTP_AUTH_MD5_SIZE, 1);
-        ylogf("Compute HA2 m=%s u=%s -> %s\n", method, uri, tmpha);
+        dbglog("Compute HA2 m=%s u=%s -> %s\n", method, uri, tmpha);
     }
 #endif
 }
@@ -143,10 +143,10 @@ void ComputeAuthResponse(char *buf, const u8 *ha1, const char *nonce, const char
         char     tmpha1[HTTP_AUTH_MD5_STRLEN + 1];
         bin2str(tmpha1, ha1, HTTP_AUTH_MD5_SIZE, 1);
         if (nc && cnonce) {
-            ylogf("Auth Resp ha1=%s nonce=%s nc=%s cnouce=%s ha2=%s -> %s\n",
+            dbglog("Auth Resp ha1=%s nonce=%s nc=%s cnouce=%s ha2=%s -> %s\n",
                 tmpha1, nonce, nc, cnonce, tmpha, buf);
         } else {
-            ylogf("Auth Resp ha1=%s nonce=%s (no nc/cnounce) ha2=%s -> %s\n",
+            dbglog("Auth Resp ha1=%s nonce=%s (no nc/cnounce) ha2=%s -> %s\n",
                 tmpha1, nonce, tmpha, buf);
         }
     }
@@ -164,12 +164,15 @@ int CheckWSAuth(u32 nonce, const u8 *ha1, const u8 *to_verify, u8 *out)
     // convert ha1 into str before using it
     bin2str(tmpbuff, ha1, HTTP_AUTH_MD5_SIZE, 1);
 #ifdef DEBUG_HTTP_AUTHENTICATION
-    ylogf("ha1=%s\n", tmpbuff);
+    dbglog("ha1=%s\n", tmpbuff);
 #endif
     // convert ha1 into str before using it
+#ifdef CPU_BIG_ENDIAN
+    nonce = INTEL_U32(nonce);
+#endif
     bin2str(tmpbuff + HTTP_AUTH_MD5_STRLEN, (u8*) &nonce, 4, 1);
 #ifdef DEBUG_HTTP_AUTHENTICATION
-    ylogf("full=%s\n", tmpbuff);
+    dbglog("full=%s\n", tmpbuff);
 #endif
     sha1 = ySHA1(tmpbuff);
     if (out) {

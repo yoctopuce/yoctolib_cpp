@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 23960 2016-04-15 21:30:18Z mvuilleu $
+ * $Id: yocto_cellular.cpp 24465 2016-05-12 07:30:46Z mvuilleu $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -685,7 +685,7 @@ int YCellular::sendPUK(string puk,string newPin)
 {
     string gsmMsg;
     gsmMsg = this->get_message();
-    if (!(gsmMsg == "Enter SIM PUK")) {
+    if (!((gsmMsg).substr(0, 13) == "Enter SIM PUK")) {
         _throw(YAPI_INVALID_ARGUMENT,"PUK not expected at this time");
         return YAPI_INVALID_ARGUMENT;
     }

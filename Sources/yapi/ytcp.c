@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 24084 2016-04-21 15:22:47Z seb $
+ * $Id: ytcp.c 24423 2016-05-10 08:19:16Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -172,6 +172,47 @@ static int yNetLogErrEx(u32 line,unsigned err)
 }
 #endif
 
+#ifdef DEBUG_SOCKET_USAGE
+
+#define yclosesocket(skt) yclosesocket_ex(__FILE_ID__, __LINE__, skt)
+void yclosesocket_ex(const char *file, int line, YSOCKET skt)
+{
+    dbglogf(file, line, "close socket %x\n", skt);
+    closesocket(skt);
+}
+
+
+#define ysocket(domain, type, protocol) ysocket_ex(__FILE_ID__, __LINE__, domain, type, protocol)
+YSOCKET ysocket_ex(const char *file, int line, int domain, int type, int protocol)
+{
+    YSOCKET skt = socket(domain, type, protocol);
+    dbglogf(file, line, "open socket %x (%x,%x,%x)\n", skt, domain, type, protocol);
+    return skt;
+}
+
+#define ysend(skt, buf, len, flags) ysend_ex(__FILE_ID__, __LINE__, skt, buf, len, flags)
+int ysend_ex(const char * file, int line, YSOCKET skt, const char* buffer, int tosend, int  flags)
+{
+    int res = (int)send(skt, buffer, tosend, flags);
+    //dbglogf(file, line, "send socket %x (%d,%x -> %d)\n", skt, tosend, flags, res);
+    return  res;
+}
+
+#define yrecv(skt, buf, len, flags) yrecv_ex(__FILE_ID__, __LINE__, skt, buf, len, flags)
+int yrecv_ex(const char * file, int line, YSOCKET skt, char *buf, int len, int flags)
+{
+    int res = recv(skt, buf, len, flags);
+    //dbglogf(file, line, "read socket %x (%d,%x -> %d)\n", skt, len, flags, res);
+    return  res;
+}
+
+#else
+#define yclosesocket(skt) closesocket(skt)
+#define ysocket(domain, type, protocol) socket(domain, type, protocol)
+#define ysend(skt, buf, len, flags) send(skt, buf, len, flags)
+#define yrecv(skt, buf, len, flags) recv(skt, buf, len, flags)
+#endif
+
 void yInitWakeUpSocket(WakeUpSocket *wuce)
 {
     wuce->listensock = INVALID_SOCKET;
@@ -189,7 +230,7 @@ int yStartWakeUpSocket(WakeUpSocket *wuce, char *errmsg)
         return YERRMSG(YAPI_INVALID_ARGUMENT,"WakeUpSocket allready Started");
     }
     //create socket
-    wuce->listensock = socket(PF_INET,SOCK_DGRAM,IPPROTO_UDP);
+    wuce->listensock = ysocket(PF_INET,SOCK_DGRAM,IPPROTO_UDP);
     if (wuce->listensock == INVALID_SOCKET) {
         return yNetSetErr();
     }
@@ -207,7 +248,7 @@ int yStartWakeUpSocket(WakeUpSocket *wuce, char *errmsg)
     if (getsockname(wuce->listensock,(struct sockaddr *)&localh,&localh_size)<0) {
         return yNetSetErr();
     }
-    wuce->signalsock = socket(PF_INET,SOCK_DGRAM,IPPROTO_UDP);
+    wuce->signalsock = ysocket(PF_INET,SOCK_DGRAM,IPPROTO_UDP);
     if (wuce->signalsock == INVALID_SOCKET) {
         return yNetSetErr();
     }
@@ -219,7 +260,7 @@ int yStartWakeUpSocket(WakeUpSocket *wuce, char *errmsg)
 
 int yDringWakeUpSocket(WakeUpSocket *wuce, u8 signal, char *errmsg)
 {
-    if(send(wuce->signalsock,(char*)&signal,1,SEND_NOSIGPIPE) < 0) {
+    if(ysend(wuce->signalsock,(char*)&signal,1,SEND_NOSIGPIPE) < 0) {
         return yNetSetErr();
     }
     return YAPI_SUCCESS;
@@ -229,7 +270,7 @@ int yConsumeWakeUpSocket(WakeUpSocket *wuce, char *errmsg)
 {
     u8 signal = 0;
 
-    if(recv(wuce->listensock,(char*)&signal,1,0) < 0) {
+    if(yrecv(wuce->listensock,(char*)&signal,1,0) < 0) {
         return yNetSetErr();
     }
     return signal;
@@ -238,11 +279,11 @@ int yConsumeWakeUpSocket(WakeUpSocket *wuce, char *errmsg)
 void yFreeWakeUpSocket(WakeUpSocket *wuce)
 {
     if ( wuce->listensock != INVALID_SOCKET) {
-        closesocket(wuce->listensock);
+        yclosesocket(wuce->listensock);
         wuce->listensock = INVALID_SOCKET;
     }
     if ( wuce->signalsock != INVALID_SOCKET) {
-        closesocket(wuce->signalsock);
+        yclosesocket(wuce->signalsock);
         wuce->signalsock = INVALID_SOCKET;
     }
 }
@@ -376,7 +417,7 @@ static int yTcpOpen(YSOCKET *newskt, u32 ip, u16 port, u64 mstimeout, char *errm
 
     YPERF_TCP_ENTER(TCPOpen_socket);
     *newskt = INVALID_SOCKET;
-    skt = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    skt = ysocket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     YPERF_TCP_LEAVE(TCPOpen_socket);
     if (skt == INVALID_SOCKET) {
         REPORT_ERR("Error at socket()");
@@ -427,21 +468,21 @@ static int yTcpOpen(YSOCKET *newskt, u32 ip, u16 port, u64 mstimeout, char *errm
     iResult = select((int)skt + 1, &readfds, &writefds, &exceptfds, &timeout);
     if (iResult < 0) {
         REPORT_ERR("Unable to connect to server");
-        closesocket(skt);
+        yclosesocket(skt);
         return YAPI_IO_ERROR;
     }
     if (FD_ISSET(skt, &exceptfds)) {
-        closesocket(skt);
+        yclosesocket(skt);
         return YERRMSG(YAPI_IO_ERROR, "Unable to connect to server");
     }
     if (!FD_ISSET(skt, &writefds)) {
-        closesocket(skt);
+        yclosesocket(skt);
         return YERRMSG(YAPI_IO_ERROR, "Unable to connect to server");
     }
     YPERF_TCP_LEAVE(TCPOpen_connect);
     if ( iResult == SOCKET_ERROR) {
         REPORT_ERR("Unable to connect to server");
-        closesocket (skt);
+        yclosesocket(skt);
         return YAPI_IO_ERROR;
     }
     YPERF_TCP_ENTER(TCPOpen_setsockopt_nodelay);
@@ -517,7 +558,7 @@ static int yTcpOpen(YSOCKET *newskt, u32 ip, u16 port, u64 mstimeout, char *errm
 static void yTcpClose(YSOCKET skt)
 {
     // cleanup
-    closesocket(skt);
+    yclosesocket(skt);
 }
 
 
@@ -564,7 +605,7 @@ retry:
 
     if (FD_ISSET(skt,&readfds)) {
         char buffer[128];
-        iResult = (int)recv(skt, buffer, sizeof(buffer), 0);
+        iResult = (int)yrecv(skt, buffer, sizeof(buffer), 0);
         if (iResult == 0) {
             yTcpClose(skt);
             return YERR(YAPI_NO_MORE_DATA);
@@ -587,7 +628,7 @@ static int yTcpWrite(YSOCKET skt, const char *buffer, int len,char *errmsg)
     const char * p = buffer;
 
     while (tosend>0) {
-        res = (int) send(skt, p, tosend, SEND_NOSIGPIPE);
+        res = (int) ysend(skt, p, tosend, SEND_NOSIGPIPE);
         if (res == SOCKET_ERROR) {
 #ifdef WINDOWS_API
             if(SOCK_ERR != WSAEWOULDBLOCK)
@@ -635,7 +676,7 @@ static int yTcpWrite(YSOCKET skt, const char *buffer, int len,char *errmsg)
 
 static int yTcpRead(YSOCKET skt, u8 *buffer, int len,char *errmsg)
 {
-    int iResult = (int)recv(skt, (char*)buffer, len, 0);
+    int iResult = (int)yrecv(skt, (char*)buffer, len, 0);
 
     if (iResult == 0){
         return YERR(YAPI_NO_MORE_DATA);
@@ -905,7 +946,11 @@ static int yHTTPOpenReqEx(struct _RequestSt *req, u64 mstimout, char *errmsg)
     }
     req->write_tm = yapiGetTickCount();
 
-    return YAPI_SUCCESS;
+    if (req->hub->wuce.listensock != INVALID_SOCKET) {
+        return yDringWakeUpSocket(&req->hub->wuce, 1, errmsg);
+    } else {
+        return YAPI_SUCCESS;
+    }
 }
 
 
@@ -1147,6 +1192,7 @@ static int yWSOpenReqEx(struct _RequestSt *req, int tcpchan, u64 mstimeout, char
         hub->ws.chan[tcpchan].requests = req;
     }
     yLeaveCriticalSection(&hub->ws.chan[tcpchan].access);
+    req->write_tm = yapiGetTickCount();
     return yDringWakeUpSocket(&hub->wuce, 1, errmsg);
 }
 
@@ -1205,10 +1251,12 @@ static void yWSCloseReqEx(struct _RequestSt *req, int takeCS)
 
     }
     YASSERT(r);
-    if (p == NULL) {
-        hub->ws.chan[tcpchan].requests = r->ws.next;
-    } else {
-        p->ws.next = r->ws.next;
+    if (r) {
+        if (p == NULL) {
+            hub->ws.chan[tcpchan].requests = r->ws.next;
+        } else {
+            p->ws.next = r->ws.next;
+        }
     }
     if (takeCS) {
         yLeaveCriticalSection(&hub->ws.chan[tcpchan].access);
@@ -1386,7 +1434,7 @@ int  yReqSelect(struct _RequestSt *tcpreq, u64 ms, char *errmsg)
 int  yReqMultiSelect(struct _RequestSt **tcpreq, int size, u64 ms, WakeUpSocket *wuce, char *errmsg)
 {
     // multi select make no sense in Websocket since all data comme from the same socket
-    return yHTTPMultiSelectReq(tcpreq, size, ms, NULL, errmsg);
+    return yHTTPMultiSelectReq(tcpreq, size, ms, wuce, errmsg);
 }
 
 
@@ -1468,13 +1516,34 @@ int yReqRead(struct _RequestSt *req, u8 *buffer, int len)
 void yReqClose(struct _RequestSt *req)
 {
     TCPLOG("yTcpCloseReq %p\n", req);
-    yEnterCriticalSection(&req->access);
-    if (req->proto == PROTO_AUTO || req->proto == PROTO_HTTP) {
-        yHTTPCloseReqEx(req, 0);
-    } else {
-        yWSCloseReqEx(req, 1);
+#if 0
+    {
+        u64 now = yapiGetTickCount();
+        u64 duration = now - req->open_tm;
+        u64 last_wr = req->write_tm - req->open_tm;
+        u64 last_rd = req->read_tm - req->open_tm;
+
+        dbglog("request %p  total=%"FMTu64"ms (read=%"FMTu64"ms write=%"FMTu64")\n",
+            req, duration, last_rd, last_wr);
     }
-    req->flags &= ~TCPREQ_IN_USE;
+#endif
+    yEnterCriticalSection(&req->access);
+    if (req->flags &TCPREQ_IN_USE) {
+
+        if (req->proto == PROTO_AUTO || req->proto == PROTO_HTTP) {
+            yHTTPCloseReqEx(req, 0);
+        } else {
+#if 0
+            u64 last = req->ws.last_write_tm - req->open_tm;
+            u64 first = req->ws.first_write_tm - req->open_tm;
+
+            dbglog("request.ws %p first_write=%"FMTu64"ms last_write=%"FMTu64")\n",
+                req, first, last);
+#endif
+            yWSCloseReqEx(req, 1);
+        }
+        req->flags &= ~TCPREQ_IN_USE;
+    }
     yLeaveCriticalSection(&req->access);
 }
 
@@ -1799,7 +1868,7 @@ static int ws_sendAuthenticationMeta(HubSt *hub, char *errmsg)
         const char * user = yHashGetStrPtr(hub->ws.user);
         const char * pass = yHashGetStrPtr(hub->ws.pass);
         meta_out.auth.flags = USB_META_WS_AUTH_FLAGS_VALID;
-        meta_out.auth.nonce = hub->ws.nounce;
+        meta_out.auth.nonce = INTEL_U32(hub->ws.nounce);
         ComputeAuthHA1(ha1, user, pass, hub->ws.serial);
         CheckWSAuth(hub->ws.remoteNounce, ha1, NULL, meta_out.auth.sha1);
     }
@@ -1921,13 +1990,13 @@ static int ws_parseIncommingFrame(HubSt *hub, u8 *buffer, int pktlen, char *errm
                 return YAPI_SUCCESS;
             }
             hub->ws.remoteVersion = meta->announce.version;
-            hub->ws.remoteNounce = meta->announce.nonce;
-            maxtcpws = meta->announce.maxtcpws;
+            hub->ws.remoteNounce = INTEL_U32(meta->announce.nonce);
+            maxtcpws = INTEL_U16(meta->announce.maxtcpws);
             if (maxtcpws > 0) {
                 hub->ws.tcpMaxWindowSize = maxtcpws;
             }
             YSTRCPY(hub->ws.serial, YOCTO_SERIAL_LEN, meta->announce.serial);
-            WSLOG("hub(%s) Announce: %s (v%d)\n", hub->name, meta->announce.serial, meta->announce.version);
+            WSLOG("hub(%s) Announce: %s (v%d / %x)\n", hub->name, meta->announce.serial, meta->announce.version, hub->ws.remoteNounce);
             hub->ws.nounce = YRand32();
             hub->ws.base_state = WS_BASE_AUTHENTICATING;
             hub->ws.connectionTime = yapiGetTickCount();
@@ -1990,10 +2059,10 @@ static int ws_parseIncommingFrame(HubSt *hub, u8 *buffer, int pktlen, char *errm
             }
             break;
         case USB_META_WS_ERROR:
-            if (meta->error.htmlcode == 401) {
+            if (INTEL_U16(meta->error.htmlcode) == 401) {
                 return YERR(YAPI_UNAUTHORIZED);
             } else {
-                YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Remote hub closed connection with error %d", meta->error.htmlcode);
+                YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Remote hub closed connection with error %d", INTEL_U16(meta->error.htmlcode));
                 return YAPI_IO_ERROR;
             }
         case USB_META_ACK_UPLOAD:
@@ -2103,108 +2172,118 @@ static int ws_processRequests(HubSt* hub, char *errmsg)
         yEnterCriticalSection(&hub->ws.chan[tcpchan].access);
         if (hub->ws.chan[tcpchan].requests) {
             RequestSt *req = hub->ws.chan[tcpchan].requests;
-            while (req && req->ws.requestsize == req->ws.requestpos && req->state == REQ_CLOSED) {
-                req = req->ws.next;
-            }
-            if (req) {
-                int throttle_start = req->ws.requestpos;
-                int throttle_end = req->ws.requestsize;
-                if (throttle_end > 2108 && hub->ws.remoteVersion >= USB_META_WS_PROTO_V2 && tcpchan == 0) {
-                    // Perform throttling on large uploads
-                    if (req->ws.requestpos == 0) {
-                        // First chunk is always first multiple of full window (124 bytes) above 2KB
-                        throttle_end = 2108;
-                        // Prepare to compute effective transfer rate
-                        hub->ws.chan[tcpchan].lastUploadAckBytes = 0;
-                        hub->ws.chan[tcpchan].lastUploadAckTime = 0;
-                        // Start with initial RTT based estimate
-                        hub->ws.uploadRate = hub->ws.tcpMaxWindowSize * 1000 / hub->ws.tcpRoundTripTime;
-                    } else if (hub->ws.chan[tcpchan].lastUploadAckTime == 0) {
-                        // first block not yet acked, wait more
-                        WSLOG("wait for first ack\n");
-                        throttle_end = 0;
-                    } else {
-                        // adapt window frame to available bandwidth
-                        int bytesOnTheAir = req->ws.requestpos - hub->ws.chan[tcpchan].lastUploadAckBytes;
-                        u32 uploadRate = hub->ws.uploadRate;
-                        u64 timeOnTheAir = (yapiGetTickCount() - hub->ws.chan[tcpchan].lastUploadAckTime);
-                        u64 toBeSent = 2 * uploadRate + 1024 - bytesOnTheAir + (uploadRate * timeOnTheAir / 1000);
-                        if(toBeSent + bytesOnTheAir > DEFAULT_TCP_MAX_WINDOW_SIZE) {
-                            toBeSent = DEFAULT_TCP_MAX_WINDOW_SIZE - bytesOnTheAir;
+            while (req) {
+                while (req && req->ws.requestsize == req->ws.requestpos && (req->state == REQ_CLOSED || req->state == REQ_CLOSED_BY_API)) {
+                    req = req->ws.next;
+                }
+                if (req) {
+                    int throttle_start = req->ws.requestpos;
+                    int throttle_end = req->ws.requestsize;
+                    if (throttle_end > 2108 && hub->ws.remoteVersion >= USB_META_WS_PROTO_V2 && tcpchan == 0) {
+                        // Perform throttling on large uploads
+                        if (req->ws.requestpos == 0) {
+                            // First chunk is always first multiple of full window (124 bytes) above 2KB
+                            throttle_end = 2108;
+                            // Prepare to compute effective transfer rate
+                            hub->ws.chan[tcpchan].lastUploadAckBytes = 0;
+                            hub->ws.chan[tcpchan].lastUploadAckTime = 0;
+                            // Start with initial RTT based estimate
+                            hub->ws.uploadRate = hub->ws.tcpMaxWindowSize * 1000 / hub->ws.tcpRoundTripTime;
+                        } else if (hub->ws.chan[tcpchan].lastUploadAckTime == 0) {
+                            // first block not yet acked, wait more
+                            //WSLOG("wait for first ack");
+                            throttle_end = 0;
+                        } else {
+                            // adapt window frame to available bandwidth
+                            int bytesOnTheAir = req->ws.requestpos - hub->ws.chan[tcpchan].lastUploadAckBytes;
+                            u32 uploadRate = hub->ws.uploadRate;
+                            u64 timeOnTheAir = (yapiGetTickCount() - hub->ws.chan[tcpchan].lastUploadAckTime);
+                            u64 toBeSent = 2 * uploadRate + 1024 - bytesOnTheAir + (uploadRate * timeOnTheAir / 1000);
+                            if (toBeSent + bytesOnTheAir > DEFAULT_TCP_MAX_WINDOW_SIZE) {
+                                toBeSent = DEFAULT_TCP_MAX_WINDOW_SIZE - bytesOnTheAir;
+                            }
+                            WSLOG("throttling: %d bytes/s (%"FMTu64" + %d = %"FMTu64")\n", hub->ws.uploadRate, toBeSent, bytesOnTheAir, bytesOnTheAir + toBeSent);
+                            if (toBeSent < 64) {
+                                u64 waitTime = 1000 * (128 - toBeSent) / hub->ws.uploadRate;
+                                if (waitTime < 2) waitTime = 2;
+                                hub->ws.next_transmit_tm = yapiGetTickCount() + waitTime;
+                                WSLOG("WS: %d sent %"FMTu64"ms ago, waiting %"FMTu64"ms...\n", bytesOnTheAir, timeOnTheAir, waitTime);
+                                throttle_end = 0;
+                            }
+                            if (throttle_end > req->ws.requestpos + toBeSent) {
+                                // when sending partial content, round up to full frames
+                                if (toBeSent > 124) {
+                                    toBeSent = (toBeSent / 124) * 124;
+                                }
+                                throttle_end = req->ws.requestpos + (u32)toBeSent;
+                            }
                         }
-                        WSLOG("throttling: %d bytes/s (%"FMTu64" + %d = %"FMTu64")\n", hub->ws.uploadRate, toBeSent, bytesOnTheAir , bytesOnTheAir + toBeSent);
-                        if (toBeSent < 64) {
-                            u64 waitTime = 1000 * (128 - toBeSent) / hub->ws.uploadRate;
+                    }
+                    while (req->ws.requestpos < throttle_end) {
+                        int stream = YSTREAM_TCP;
+                        int datalen = throttle_end - req->ws.requestpos;
+                        if (datalen > WS_MAX_DATA_LEN) {
+                            datalen = WS_MAX_DATA_LEN;
+                        }
+                        if (req->ws.requestpos == 0) {
+                            req->ws.first_write_tm = yapiGetTickCount();
+                        }
+
+                        if (req->ws.asyncId && (req->ws.requestpos + datalen == req->ws.requestsize)) {
+                            // last frame of an async request
+                            u8 tmp_data[128];
+
+                            if (datalen == WS_MAX_DATA_LEN) {
+                                // last frame is already full we must send the async close in another one
+                                res = ws_sendFrame(hub, stream, tcpchan, req->ws.requestbuf + req->ws.requestpos, datalen, errmsg);
+                                if (YISERR(res)) {
+                                    req->errcode = res;
+                                    YSTRCPY(req->errmsg, YOCTO_ERRMSG_LEN, errmsg);
+                                    yLeaveCriticalSection(&hub->ws.chan[tcpchan].access);
+                                    ySetEvent(&req->finished);
+                                    return res;
+                                }
+                                WSLOG("ws_req:%p: send %d bytes on chan%d (%d/%d)\n", req, datalen, tcpchan, req->ws.requestpos, req->ws.requestsize);
+                                req->ws.requestpos += datalen;
+                                datalen = 0;
+                            }
+                            stream = YSTREAM_TCP_ASYNCCLOSE;
+                            if (datalen) {
+                                memcpy(tmp_data, req->ws.requestbuf + req->ws.requestpos, datalen);
+                            }
+                            tmp_data[datalen] = req->ws.asyncId;
+                            res = ws_sendFrame(hub, stream, tcpchan, tmp_data, datalen + 1, errmsg);
+                            WSLOG("req(%s:%p) sent async close %d\n", req->hub->name, req, req->ws.asyncId);
+                            req->ws.last_write_tm = yapiGetTickCount();
+                        } else {
+                            res = ws_sendFrame(hub, stream, tcpchan, req->ws.requestbuf + req->ws.requestpos, datalen, errmsg);
+                            req->ws.last_write_tm = yapiGetTickCount();
+                            //WSLOG("ws_req:%p: sent %d bytes on chan%d (%d/%d)\n", req, datalen, tcpchan, req->ws.requestpos, req->ws.requestsize);
+                        }
+                        if (YISERR(res)) {
+                            req->errcode = res;
+                            YSTRCPY(req->errmsg, YOCTO_ERRMSG_LEN, errmsg);
+                            yLeaveCriticalSection(&hub->ws.chan[tcpchan].access);
+                            ySetEvent(&req->finished);
+                            return res;
+                        }
+                        req->ws.requestpos += datalen;
+                    }
+                    if (req->ws.requestpos < req->ws.requestsize) {
+                        int sent = req->ws.requestpos - throttle_start;
+                        // not completely sent, cannot do more for now
+                        if (sent && hub->ws.uploadRate > 0) {
+                            u64 waitTime = 1000 * sent / hub->ws.uploadRate;
                             if (waitTime < 2) waitTime = 2;
                             hub->ws.next_transmit_tm = yapiGetTickCount() + waitTime;
-                            WSLOG("WS: %d sent %"FMTu64"ms ago, waiting %"FMTu64"ms...\n", bytesOnTheAir, timeOnTheAir, waitTime);
-                            throttle_end = 0;
+                            WSLOG("Sent %dbytes, waiting %"FMTu64"ms...\n", sent, waitTime);
+                        } else {
+                            hub->ws.next_transmit_tm = yapiGetTickCount() + 100;
                         }
-                        if (throttle_end > req->ws.requestpos + toBeSent) {
-                            // when sending partial content, round up to full frames
-                            if (toBeSent > 124) {
-                                toBeSent = (toBeSent / 124) * 124;
-                            }
-                            throttle_end = req->ws.requestpos + (u32)toBeSent;
-                        }
-                    }
-                }
-                while (req->ws.requestpos < throttle_end) {
-                    int stream = YSTREAM_TCP;
-                    int datalen = throttle_end - req->ws.requestpos;
-                    if (datalen > WS_MAX_DATA_LEN) {
-                        datalen = WS_MAX_DATA_LEN;
-                    }
-                    if (req->ws.asyncId && (req->ws.requestpos + datalen == req->ws.requestsize)) {
-                        // last frame of an async request
-                        u8 tmp_data[128];
-
-                        if (datalen == WS_MAX_DATA_LEN) {
-                            // last frame is already full we must send the async close in another one
-                            res = ws_sendFrame(hub, stream, tcpchan, req->ws.requestbuf + req->ws.requestpos, datalen, errmsg);
-                            if (YISERR(res)) {
-                                req->errcode = res;
-                                YSTRCPY(req->errmsg, YOCTO_ERRMSG_LEN, errmsg);
-                                yLeaveCriticalSection(&hub->ws.chan[tcpchan].access);
-                                ySetEvent(&req->finished);
-                                return res;
-                            }
-                            WSLOG("ws_req:%p: send %d bytes on chan%d (%d/%d)\n", req, datalen, tcpchan, req->ws.requestpos, req->ws.requestsize);
-                            req->ws.requestpos += datalen;
-                            datalen = 0;
-                        }
-                        stream = YSTREAM_TCP_ASYNCCLOSE;
-                        if (datalen) {
-                            memcpy(tmp_data, req->ws.requestbuf + req->ws.requestpos, datalen);
-                        }
-                        tmp_data[datalen] = req->ws.asyncId;
-                        res = ws_sendFrame(hub, stream, tcpchan, tmp_data, datalen + 1, errmsg);
-                        WSLOG("req(%s:%p) sent async close %d\n", req->hub->name, req, req->ws.asyncId);
-                        req->write_tm = yapiGetTickCount();
+                        req = NULL;
                     } else {
-                        res = ws_sendFrame(hub, stream, tcpchan, req->ws.requestbuf + req->ws.requestpos, datalen, errmsg);
-                        req->write_tm = yapiGetTickCount();
-                        //WSLOG("ws_req:%p: sent %d bytes on chan%d (%d/%d)\n", req, datalen, tcpchan, req->ws.requestpos, req->ws.requestsize);
-                    }
-                    if (YISERR(res)) {
-                        req->errcode = res;
-                        YSTRCPY(req->errmsg, YOCTO_ERRMSG_LEN, errmsg);
-                        yLeaveCriticalSection(&hub->ws.chan[tcpchan].access);
-                        ySetEvent(&req->finished);
-                        return res;
-                    }
-                    req->ws.requestpos += datalen;
-                }
-                if (req->ws.requestpos < req->ws.requestsize) {
-                    int sent = req->ws.requestpos - throttle_start;
-                    // not completely sent, cannot do more for now
-                    if (sent && hub->ws.uploadRate > 0) {
-                        u64 waitTime = 1000 * sent / hub->ws.uploadRate;
-                        if (waitTime < 2) waitTime = 2;
-                        hub->ws.next_transmit_tm = yapiGetTickCount() + waitTime;
-                        WSLOG("Sent %dbytes, waiting %"FMTu64"ms...\n", sent, waitTime);
-                    } else {
-                        hub->ws.next_transmit_tm = yapiGetTickCount() + 100;
+                        // end of request get ne following one
+                        req = req->ws.next;
                     }
                 }
             }
@@ -2364,6 +2443,7 @@ static int ws_thread_select(struct _WSNetHubSt *base_req, u64 ms, WakeUpSocket *
     if (res != 0) {
         if (wuce && FD_ISSET(wuce->listensock, &fds)) {
             int signal = yConsumeWakeUpSocket(wuce, errmsg);
+            //dbglog("exit from sleep with WUCE (%d)\n", signal);
             YPROPERR(signal);
         }
         if (FD_ISSET(base_req->skt, &fds)) {
@@ -2377,9 +2457,6 @@ static int ws_thread_select(struct _WSNetHubSt *base_req, u64 ms, WakeUpSocket *
                 readed = yTcpRead(base_req->skt, buffer, avail, errmsg);
                 if (readed > 0) {
                     yPushFifo(&base_req->mainfifo, buffer, readed);
-                }
-                if (readed <0) {
-                    printf("readed = %d\n", readed);
                 }
             }
             return readed;
@@ -2436,7 +2513,7 @@ void* ws_thread(void* ctx)
         if (hub->state == NET_HUB_TOCLOSE) {
             break;
         }
-        WSLOG("hub(%s try to open WS connection at %d\n", hub->name, hub->notifAbsPos);
+        WSLOG("hub(%s) try to open WS connection at %d\n", hub->name, hub->notifAbsPos);
         if (first_notification_connection) {
             YSPRINTF(request, 256, "GET /not.byn");
         } else {
@@ -3080,14 +3157,14 @@ static void* ySSDP_thread(void* ctx)
         if (res != 0) {
             for (i = 0; i < nbDetectedIfaces; i++) {
                 if (FD_ISSET(SSDP->request_sock[i], &fds)) {
-                    received = (int)recv(SSDP->request_sock[i], (char*)buffer, sizeof(buffer)-1, 0);
+                    received = (int)yrecv(SSDP->request_sock[i], (char*)buffer, sizeof(buffer)-1, 0);
                     if (received>0) {
                         buffer[received] = 0;
                         ySSDP_parseSSPDMessage(SSDP, (char*)buffer, received);
                     }
                 }
                 if (FD_ISSET(SSDP->notify_sock[i], &fds)) {
-                    received = (int)recv(SSDP->notify_sock[i], (char *)buffer, sizeof(buffer)-1, 0);
+                    received = (int)yrecv(SSDP->notify_sock[i], (char *)buffer, sizeof(buffer)-1, 0);
                     if (received > 0) {
                         buffer[received] = 0;
                         ySSDP_parseSSPDMessage(SSDP, (char*)buffer, received);
@@ -3139,7 +3216,7 @@ int ySSDPStart(SSDPInfos *SSDP, ssdpHubDiscoveryCallback callback, char *errmsg)
 
     for (i = 0; i < nbDetectedIfaces; i++) {
         //create M-search socker
-        SSDP->request_sock[i] = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        SSDP->request_sock[i] = ysocket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
         if (SSDP->request_sock[i] == INVALID_SOCKET) {
             return yNetSetErr();
         }
@@ -3159,7 +3236,7 @@ int ySSDPStart(SSDPInfos *SSDP, ssdpHubDiscoveryCallback callback, char *errmsg)
             return yNetSetErr();
         }
         //create NOTIFY socker
-        SSDP->notify_sock[i] = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        SSDP->notify_sock[i] = ysocket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
         if (SSDP->notify_sock[i] == INVALID_SOCKET) {
             return yNetSetErr();
         }
@@ -3185,7 +3262,7 @@ int ySSDPStart(SSDPInfos *SSDP, ssdpHubDiscoveryCallback callback, char *errmsg)
         if (setsockopt(SSDP->notify_sock[i], IPPROTO_IP, IP_ADD_MEMBERSHIP, (void*)&mcast_membership, sizeof(mcast_membership)) < 0){
             dbglog("Unable to add multicat membership for SSDP");
             yNetLogErr();
-            closesocket(SSDP->notify_sock[i]);
+            yclosesocket(SSDP->notify_sock[i]);
             SSDP->notify_sock[i] = INVALID_SOCKET;
         }
     }
@@ -3230,11 +3307,11 @@ void  ySSDPStop(SSDPInfos *SSDP)
     for (i = 0; i < nbDetectedIfaces; i++) {
 
         if (SSDP->request_sock[i] != INVALID_SOCKET) {
-            closesocket(SSDP->request_sock[i]);
+            yclosesocket(SSDP->request_sock[i]);
             SSDP->request_sock[i] = INVALID_SOCKET;
         }
         if (SSDP->notify_sock[i] != INVALID_SOCKET) {
-            closesocket(SSDP->notify_sock[i]);
+            yclosesocket(SSDP->notify_sock[i]);
             SSDP->notify_sock[i] = INVALID_SOCKET;
         }
     }

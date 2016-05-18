@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 23723 2016-04-01 17:28:09Z seb $
+ * $Id: yprog.c 24345 2016-05-03 09:38:44Z seb $
  *
  * Implementation of firmware upgrade functions
  *
@@ -1011,7 +1011,7 @@ static int uFlashFlash()
             return 0;
         }
         fctx.zOfs += fctx.stepB;
-        fctx.progress = (u16)(12 + 84*fctx.zOfs / (BYN_HEAD_SIZE_V6 + fctx.bynHead.v6.ROM_total_size + fctx.bynHead.v6.FLA_total_size));
+        fctx.progress = (u16)(20 + 76*fctx.zOfs / (BYN_HEAD_SIZE_V6 + fctx.bynHead.v6.ROM_total_size + fctx.bynHead.v6.FLA_total_size));
         fctx.bz.addr_page += fctx.stepB;
         fctx.bz.len -= fctx.stepB;
         if(fctx.bz.len > 0 && fctx.currzone < fctx.bynHead.v6.ROM_nb_zone &&
@@ -1225,7 +1225,7 @@ YPROG_RESULT uFlashDevice(void)
                     ulogU16((u16)(ytime() - fctx.stepB));
                     ulog("\n");
 #endif
-                    fctx.progress = 3+(8*fctx.flashPage/firm_dev.ext_total_pages);
+                    fctx.progress = 3+(18*fctx.flashPage/firm_dev.ext_total_pages);
                     uLogProgress("Erasing flash");
                     if(fctx.flashPage < firm_dev.ext_total_pages) {
                         fctx.stepA = FLASH_ERASE;
@@ -1488,8 +1488,9 @@ static int  getBootloaderInfos(const char *devserial, char *out_hubserial, char 
 typedef enum
 {
     FLASH_HUB_AVAIL = 0u,
-    FLASH_HUB_STATE,
+    FLASH_HUB_STATE, 
     FLASH_HUB_FLASH,
+    FLASH_HUB_NOT_BUSY, // CHECK there is on pending fwupdate (cmd=state-> !uploading && !flashing)
     FLASH_HUB_NONE
 } FLASH_HUB_CMD;
 
@@ -1549,6 +1550,23 @@ static int checkRequestHeader(void *ctx_ptr, const char* buffer, u32 len, char *
                     return YERRMSG(YAPI_IO_ERROR, "Unexpected JSON reply format");
                 }
                 YSTRCPY(lastmsg, YOCTO_ERRMSG_LEN, j.token);
+            } else {
+                yJsonSkip(&j, 1);
+            }
+            break;
+        case FLASH_HUB_NOT_BUSY:
+            if (!strcmp(j.token, "state")) {
+                if (yJsonParse(&j) != YJSON_PARSE_AVAIL) {
+                    return YERRMSG(YAPI_IO_ERROR, "Unexpected JSON reply format");
+                }
+                if (YSTRCMP(j.token, "uploading") == 0 || YSTRCMP(j.token, "flashing")==0) {
+                    YSTRCPY(lastmsg, YOCTO_ERRMSG_LEN, "Cannot start firmware update: busy (");
+                    YSTRCAT(lastmsg, YOCTO_ERRMSG_LEN, j.token);
+                    YSTRCAT(lastmsg, YOCTO_ERRMSG_LEN, ")");
+                    return_code = YAPI_IO_ERROR;
+                } else {
+                    count++;
+                }
             } else {
                 yJsonSkip(&j, 1);
             }
@@ -1680,6 +1698,7 @@ static int sendHubFlashCmd(const char *hubserial, const char *subpath, const cha
     switch (cmd){
     case FLASH_HUB_AVAIL:
     case FLASH_HUB_STATE:
+    case FLASH_HUB_NOT_BUSY:
         cmd_str = "state";
         break;
     case FLASH_HUB_FLASH:
@@ -1893,8 +1912,15 @@ static void* yFirmwareUpdate_thread(void* ctx)
     }
 
     //10% -> 40%
-    setOsGlobalProgress(10, "Transmit new firmware");
+    setOsGlobalProgress(10, "Send new firmware");
     if (type != FLASH_USB){
+        // ensure flash engine is not busy
+        res = sendHubFlashCmd(hubserial, type == FLASH_NET_SELF ? subpath : "/", yContext->fuCtx.serial, FLASH_HUB_NOT_BUSY, "", errmsg);
+        if (res < 1) {
+            setOsGlobalProgress(res, errmsg);
+            goto exit_and_free;
+        }
+        // start firmware upload
         // IP connected device -> upload the firmware to the Hub
         res = upload(hubserial, type == FLASH_NET_SELF ? subpath : "/", "firmware", fctx.firmware, fctx.len, errmsg);
         if (res < 0) {

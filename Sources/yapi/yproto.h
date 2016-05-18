@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 23737 2016-04-04 13:21:04Z seb $
+ * $Id: yproto.h 24352 2016-05-03 13:59:10Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -813,6 +813,8 @@ typedef struct _WSReqSt
     u8* requestbuf; // Used to store the request to send
     int requestsize; // the size of the request
     int requestpos; // the pos of the request that need to be sent
+    u64 first_write_tm; 
+    u64 last_write_tm; 
 } WSReqSt;
 
 typedef enum

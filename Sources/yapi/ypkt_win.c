@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_win.c 24175 2016-04-22 14:56:57Z seb $
+ * $Id: ypkt_win.c 24394 2016-05-06 12:49:58Z seb $
  *
  * OS-specific USB packet layer, Windows version
  *
@@ -247,8 +247,14 @@ static int yConvertUSBLockKey(yContextSt *ctx, int deletekey)
         char buffer[32];
         DWORD value_length = 32;
         res = ctx->registry.yRegQueryValueEx(key, "process_id", NULL, NULL, (LPBYTE) buffer, &value_length);
+        if (res!= ERROR_SUCCESS) {
+            return -1;
+        }
         value_length = 512;
         res = ctx->registry.yRegQueryValueEx(key, "process_name", NULL, NULL, (LPBYTE) process_name, &value_length);
+        if (res != ERROR_SUCCESS) {
+            return -1;
+        }
         if (deletekey) {
             // delete key
             ctx->registry.yRegCloseKey(key);
@@ -324,11 +330,11 @@ static int yReserveGlobalAccess(yContextSt *ctx, char * errmsg)
                 if (YSTRCMP(process_name, current_name)){
                     YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Another process named %s (pid %"FMTs64") is already using yAPI", process_name, pid);
                 } else {
-                    YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Another instance of %s (pid %"FMTs64") is already using yAPI", process_name, pid);
+                    YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Another %s (pid %"FMTs64") is already using yAPI", process_name, pid);
                 }
             }
         }
-    }else {
+    } else {
         retval = YAPI_SUCCESS;
         if (has_reg_key) {
             int pid = getProcName(process_name, 512);

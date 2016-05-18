@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 23875 2016-04-11 21:26:06Z seb $
+ * $Id: yapi.c 24490 2016-05-18 07:10:21Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -2039,7 +2039,7 @@ static void* yhelper_thread(void* ctx)
 
 
     yThreadSignalStart(thread);
-    while(!yThreadMustEnd(thread)){
+    while (!yThreadMustEnd(thread)) {
         // Handle async connections as well in this thread
         for (i = 0; i < ALLOC_YDX_PER_HUB; i++) {
             int devydx = hub->devYdxMap[i];
@@ -2048,11 +2048,11 @@ static void* yhelper_thread(void* ctx)
             }
         }
         towatch=0;
-        if(hub->state == NET_HUB_ESTABLISHED || hub->state == NET_HUB_TRYING){
+        if (hub->state == NET_HUB_ESTABLISHED || hub->state == NET_HUB_TRYING) {
             selectlist[towatch] = hub->http.notReq;
             towatch++;
-
-        }else if(hub->state == NET_HUB_TOCLOSE){
+        } else if(hub->state == NET_HUB_TOCLOSE) {
+            yReqClose(hub->http.notReq);
             hub->state = NET_HUB_CLOSED;
         } else if (hub->state == NET_HUB_DISCONNECTED) {
             u64 now;
@@ -2204,6 +2204,11 @@ static void* yhelper_thread(void* ctx)
                 }
             }
         }
+    }
+
+    if (hub->state == NET_HUB_TOCLOSE) {
+        yReqClose(hub->http.notReq);
+        hub->state = NET_HUB_CLOSED;
     }
 
     yThreadSignalEnd(thread);
@@ -2359,7 +2364,23 @@ static YRETCODE yapiRegisterHubEx(const char* url, int checkacces, char* errmsg)
             yLeaveCriticalSection(&yContext->updateDev_cs);
             if (YISERR(res)) {
                 yapiUnregisterHub_internal(url);
+            } else if (hubst->proto != PROTO_WEBSOCKET) {
+                // for HTTP test admin pass if the hub require it
+                if (hubst->writeProtected && hubst->http.s_user && strcmp(hubst->http.s_user, "admin") == 0) {
+                    YIOHDL  iohdl;
+                    const char* request = "GET /api/module/serial?serial=&. ";
+                    char    *reply = NULL;
+                    int     replysize = 0;
+                    int tmpres = yapiHTTPRequestSyncStartEx_internal(&iohdl, 0, yHashGetStrPtr(hubst->serial) , request, YSTRLEN(request), &reply, &replysize, NULL, NULL, errmsg);
+                    if (tmpres == YAPI_UNAUTHORIZED) {
+                        return tmpres;
+                    }
+                    if (tmpres == YAPI_SUCCESS) {
+                        yapiHTTPRequestSyncDone_internal(&iohdl, errmsg);
+                    }
+                }
             }
+
             return res;
         }
 
@@ -2575,7 +2596,7 @@ static YRETCODE  yapiUpdateDeviceList_internal(u32 forceupdate, char *errmsg)
     for(i = 0; i < NBMAX_NET_HUB; i++){
        if(yContext->nethub[i]){
             int subres;
-            if(YISERR(subres = yNetHubEnum(yContext->nethub[i], forceupdate, suberr)) && err==YAPI_SUCCESS){
+            if (YISERR(subres = yNetHubEnum(yContext->nethub[i], forceupdate, suberr)) && err == YAPI_SUCCESS) {
                 //keep first generated error
                 char buffer[YOCTO_HOSTNAME_NAME]="";
                 u16  port;
@@ -3144,6 +3165,8 @@ YRETCODE yapiRequestOpen(YIOHDL_internal *iohdl, int tcpchan, const char *device
         if (ymemfind((u8*)request + 4, len, (u8*)"/testcb.txt", 11) >= 0) {
             mstimeout = YIO_1_MINUTE_TCP_TIMEOUT;
         } else if (ymemfind((u8*)request + 4, len, (u8*)"/rxmsg.json", 11) >= 0) {
+            mstimeout = YIO_1_MINUTE_TCP_TIMEOUT;
+        } else if (ymemfind((u8*)request + 4, len, (u8*)"/files.json", 11) >= 0) {
             mstimeout = YIO_1_MINUTE_TCP_TIMEOUT;
         } else if (ymemfind((u8*)request + 4, len, (u8*)"/flash.json", 11) >= 0) {
             mstimeout = YIO_10_MINUTES_TCP_TIMEOUT;
