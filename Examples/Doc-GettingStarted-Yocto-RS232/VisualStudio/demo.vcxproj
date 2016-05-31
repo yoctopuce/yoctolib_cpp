@@ -118,6 +118,7 @@
     <ClCompile Include="..\..\..\Sources\yocto_lightsensor.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_longitude.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_magnetometer.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_messagebox.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_motor.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_network.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_oscontrol.cpp" />
@@ -186,6 +187,7 @@
     <ClInclude Include="..\..\..\Sources\yocto_lightsensor.h" />
     <ClInclude Include="..\..\..\Sources\yocto_longitude.h" />
     <ClInclude Include="..\..\..\Sources\yocto_magnetometer.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_messagebox.h" />
     <ClInclude Include="..\..\..\Sources\yocto_motor.h" />
     <ClInclude Include="..\..\..\Sources\yocto_network.h" />
     <ClInclude Include="..\..\..\Sources\yocto_oscontrol.h" />

@@ -298,6 +298,12 @@
         <Unit filename="..\..\..\Sources\yocto_magnetometer.cpp">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
+        <Unit filename="..\..\..\Sources\yocto_messagebox.h">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
+        <Unit filename="..\..\..\Sources\yocto_messagebox.cpp">
+            <Option virtualFolder="YoctoLibrary\" />
+        </Unit>
         <Unit filename="..\..\..\Sources\yocto_motor.h">
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>

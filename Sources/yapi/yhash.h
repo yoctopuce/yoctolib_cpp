@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.h 23929 2016-04-15 09:00:28Z seb $
+ * $Id: yhash.h 24575 2016-05-26 06:28:03Z seb $
  *
  * Simple hash tables and device/function information store
  *

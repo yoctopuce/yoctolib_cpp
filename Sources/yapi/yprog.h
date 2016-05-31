@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.h 23581 2016-03-23 14:01:56Z seb $
+ * $Id: yprog.h 24559 2016-05-24 17:23:54Z mvuilleu $
  *
  * Declaration of firmware upgrade functions
  *
@@ -252,9 +252,9 @@ typedef enum {
 } FLASH_ZONE_STATE;
 
 
-#define BLOCK_FLASH_TIMEOUT       2000u
-#define PROG_GET_INFO_TIMEOUT     5000u
-#define ZONE_VERIF_TIMEOUT        2000u
+#define BLOCK_FLASH_TIMEOUT       4000u
+#define PROG_GET_INFO_TIMEOUT    10000u
+#define ZONE_VERIF_TIMEOUT        4000u
 #define FLASH_SUBDEV_TIMEOUT     59000u
 #define YPROG_BOOTLOADER_TIMEOUT 10000u
 #define YPROG_FORCE_FW_UPDATE    1u

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.h 23960 2016-04-15 21:30:18Z mvuilleu $
+ * $Id: yocto_cellular.h 24587 2016-05-26 12:45:04Z seb $
  *
  * Declares yFindCellular(), the high-level API for Cellular functions
  *
@@ -91,6 +91,8 @@ typedef enum {
 #define Y_APN_INVALID                   (YAPI_INVALID_STRING)
 #define Y_APNSECRET_INVALID             (YAPI_INVALID_STRING)
 #define Y_PINGINTERVAL_INVALID          (YAPI_INVALID_UINT)
+#define Y_DATASENT_INVALID              (YAPI_INVALID_UINT)
+#define Y_DATARECEIVED_INVALID          (YAPI_INVALID_UINT)
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 //--- (end of generated code: YCellular definitions)
 
@@ -178,6 +180,8 @@ protected:
     string          _apn;
     string          _apnSecret;
     int             _pingInterval;
+    int             _dataSent;
+    int             _dataReceived;
     string          _command;
     YCellularValueCallback _valueCallbackCellular;
 
@@ -219,6 +223,8 @@ public:
     static const string APN_INVALID;
     static const string APNSECRET_INVALID;
     static const int PINGINTERVAL_INVALID = YAPI_INVALID_UINT;
+    static const int DATASENT_INVALID = YAPI_INVALID_UINT;
+    static const int DATARECEIVED_INVALID = YAPI_INVALID_UINT;
     static const string COMMAND_INVALID;
 
     /**
@@ -500,6 +506,56 @@ public:
     inline int      setPingInterval(int newval)
     { return this->set_pingInterval(newval); }
 
+    /**
+     * Returns the number of bytes sent so far.
+     *
+     * @return an integer corresponding to the number of bytes sent so far
+     *
+     * On failure, throws an exception or returns Y_DATASENT_INVALID.
+     */
+    int                 get_dataSent(void);
+
+    inline int          dataSent(void)
+    { return this->get_dataSent(); }
+
+    /**
+     * Changes the value of the outgoing data counter.
+     *
+     * @param newval : an integer corresponding to the value of the outgoing data counter
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_dataSent(int newval);
+    inline int      setDataSent(int newval)
+    { return this->set_dataSent(newval); }
+
+    /**
+     * Returns the number of bytes received so far.
+     *
+     * @return an integer corresponding to the number of bytes received so far
+     *
+     * On failure, throws an exception or returns Y_DATARECEIVED_INVALID.
+     */
+    int                 get_dataReceived(void);
+
+    inline int          dataReceived(void)
+    { return this->get_dataReceived(); }
+
+    /**
+     * Changes the value of the incoming data counter.
+     *
+     * @param newval : an integer corresponding to the value of the incoming data counter
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_dataReceived(int newval);
+    inline int      setDataReceived(int newval)
+    { return this->set_dataReceived(newval); }
+
     string              get_command(void);
 
     inline string       command(void)
@@ -578,6 +634,15 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         set_apnAuth(string username,string password);
+
+    /**
+     * Clear the transmitted data counters.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         clearDataCounters(void);
 
     /**
      * Sends an AT command to the GSM module and returns the command output.

@@ -70,6 +70,7 @@
 		B8DB383018C0D5FB00CD54ED /* yocto_tilt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8DB382918C0D5FB00CD54ED /* yocto_tilt.cpp */; };
 		B8DCC69C1CC93C8F00553725 /* yocto_colorledcluster.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8DCC69A1CC93C8F00553725 /* yocto_colorledcluster.cpp */; };
 		B8DCC69F1CC93CA000553725 /* yocto_spiport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8DCC69D1CC93CA000553725 /* yocto_spiport.cpp */; };
+		B8EB055F1CF7437400343BD3 /* yocto_messagebox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8EB055D1CF7437400343BD3 /* yocto_messagebox.cpp */; };
 		B8EB8B441A94D64800D022A3 /* yocto_cellular.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8EB8B3A1A94D64800D022A3 /* yocto_cellular.cpp */; };
 		B8EB8B451A94D64800D022A3 /* yocto_gps.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8EB8B3C1A94D64800D022A3 /* yocto_gps.cpp */; };
 		B8EB8B461A94D64800D022A3 /* yocto_groundspeed.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8EB8B3E1A94D64800D022A3 /* yocto_groundspeed.cpp */; };
@@ -215,6 +216,8 @@
 		B8DCC69B1CC93C8F00553725 /* yocto_colorledcluster.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_colorledcluster.h; path = ../../../Sources/yocto_colorledcluster.h; sourceTree = "<group>"; };
 		B8DCC69D1CC93CA000553725 /* yocto_spiport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_spiport.cpp; path = ../../../Sources/yocto_spiport.cpp; sourceTree = "<group>"; };
 		B8DCC69E1CC93CA000553725 /* yocto_spiport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_spiport.h; path = ../../../Sources/yocto_spiport.h; sourceTree = "<group>"; };
+		B8EB055D1CF7437400343BD3 /* yocto_messagebox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_messagebox.cpp; path = ../../../Sources/yocto_messagebox.cpp; sourceTree = "<group>"; };
+		B8EB055E1CF7437400343BD3 /* yocto_messagebox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_messagebox.h; path = ../../../Sources/yocto_messagebox.h; sourceTree = "<group>"; };
 		B8EB8B3A1A94D64800D022A3 /* yocto_cellular.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_cellular.cpp; path = ../../../Sources/yocto_cellular.cpp; sourceTree = "<group>"; };
 		B8EB8B3B1A94D64800D022A3 /* yocto_cellular.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_cellular.h; path = ../../../Sources/yocto_cellular.h; sourceTree = "<group>"; };
 		B8EB8B3C1A94D64800D022A3 /* yocto_gps.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_gps.cpp; path = ../../../Sources/yocto_gps.cpp; sourceTree = "<group>"; };
@@ -303,6 +306,8 @@
 				B8EB8B431A94D64800D022A3 /* yocto_longitude.h */,
 				B8DB382518C0D5FB00CD54ED /* yocto_magnetometer.cpp */,
 				B8DB382618C0D5FB00CD54ED /* yocto_magnetometer.h */,
+				B8EB055D1CF7437400343BD3 /* yocto_messagebox.cpp */,
+				B8EB055E1CF7437400343BD3 /* yocto_messagebox.h */,
 				B8989EB4191BEB0900E2585B /* yocto_motor.cpp */,
 				B8989EB5191BEB0900E2585B /* yocto_motor.h */,
 				B8A727C617E0CD3A005705C0 /* yocto_network.cpp */,
@@ -502,6 +507,7 @@
 				B8A7280617E0CD3A005705C0 /* yocto_voc.cpp in Sources */,
 				B8A7280717E0CD3A005705C0 /* yocto_voltage.cpp in Sources */,
 				B8A7280817E0CD3A005705C0 /* yocto_wakeupmonitor.cpp in Sources */,
+				B8EB055F1CF7437400343BD3 /* yocto_messagebox.cpp in Sources */,
 				B8A7280917E0CD3A005705C0 /* yocto_wakeupschedule.cpp in Sources */,
 				B8A7280A17E0CD3A005705C0 /* yocto_watchdog.cpp in Sources */,
 				B8A7280B17E0CD3A005705C0 /* yocto_wireless.cpp in Sources */,

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 23780 2016-04-06 10:27:21Z seb $
+ * $Id: yocto_serialport.cpp 24628 2016-05-27 15:01:14Z mvuilleu $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -649,7 +649,7 @@ int YSerialPort::writeArray(vector<int> byteList)
     idx = 0;
     while (idx < bufflen) {
         hexb = byteList[idx];
-        buff[idx] = hexb;
+        buff[idx] = (char)(hexb);
         idx = idx + 1;
     }
     // may throw an exception
@@ -682,7 +682,7 @@ int YSerialPort::writeHex(string hexString)
     idx = 0;
     while (idx < bufflen) {
         hexb = (int)strtoul((hexString).substr( 2 * idx, 2).c_str(), NULL, 16);
-        buff[idx] = hexb;
+        buff[idx] = (char)(hexb);
         idx = idx + 1;
     }
     // may throw an exception
@@ -832,7 +832,7 @@ string YSerialPort::readBin(int nChars)
     res = string(bufflen, (char)0);
     idx = 0;
     while (idx < bufflen) {
-        res[idx] = ((u8)buff[idx]);
+        res[idx] = (char)(((u8)buff[idx]));
         idx = idx + 1;
     }
     return res;

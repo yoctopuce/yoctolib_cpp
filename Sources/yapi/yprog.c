@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 24345 2016-05-03 09:38:44Z seb $
+ * $Id: yprog.c 24573 2016-05-25 16:33:14Z seb $
  *
  * Implementation of firmware upgrade functions
  *
@@ -1937,26 +1937,33 @@ static void* yFirmwareUpdate_thread(void* ctx)
         if (type == FLASH_NET_SELF) {
             const char *settingsOnly, *services;
             u8 *startupconf_data;
-            int settings_len = yapiJsonGetPath_internal("api", (char*) yContext->fuCtx.settings, yContext->fuCtx.settings_len, &settingsOnly, errmsg);
+            int settings_len = yapiJsonGetPath_internal("api", (char*)yContext->fuCtx.settings, yContext->fuCtx.settings_len, &settingsOnly, errmsg);
             int service_len = yapiJsonGetPath_internal("services", settingsOnly, settings_len, &services, errmsg);
-            int first_len = (services - settingsOnly) & 0xffffffff;
-            int sec_len = ((settingsOnly + settings_len) - (services + service_len)) & 0xffffffff;
-            startupconf_data = yMalloc(settings_len - service_len + 2);
-            memcpy(startupconf_data, settingsOnly, first_len);
-            startupconf_data[first_len] = '{';
-            startupconf_data[first_len+1] = '}';
-            memcpy(startupconf_data + first_len + 2, services + service_len, sec_len);
-
+            int startupconf_data_len;
+            if (service_len > 0) {
+                int first_len = (services - settingsOnly) & 0xffffffff;
+                int sec_len = ((settingsOnly + settings_len) - (services + service_len)) & 0xffffffff;
+                startupconf_data = yMalloc(settings_len - service_len + 2);
+                memcpy(startupconf_data, settingsOnly, first_len);
+                startupconf_data[first_len] = '{';
+                startupconf_data[first_len + 1] = '}';
+                memcpy(startupconf_data + first_len + 2, services + service_len, sec_len);
+                startupconf_data_len = first_len + sec_len;
+            } else {
+                startupconf_data_len = settings_len;
+                startupconf_data = yMalloc(settings_len);
+                memcpy(startupconf_data, settingsOnly, settings_len);
+            }
             setOsGlobalProgress(20,"Save startupConf.json");
             // save settings
-            res = upload(hubserial, subpath, "startupConf.json", startupconf_data, first_len + sec_len, errmsg);
+            res = upload(hubserial, subpath, "startupConf.json", startupconf_data, startupconf_data_len, errmsg);
             if (res < 0) {
                 yFree(startupconf_data);
                 setOsGlobalProgress(res, errmsg);
                 goto exit_and_free;
             }
             setOsGlobalProgress(30,"Save firmwareConf");
-            res = upload(hubserial, subpath, "firmwareConf", startupconf_data, first_len + sec_len, errmsg);
+            res = upload(hubserial, subpath, "firmwareConf", startupconf_data, startupconf_data_len, errmsg);
             yFree(startupconf_data);
             if (res < 0) {
                 setOsGlobalProgress(res, errmsg);
@@ -2050,7 +2057,6 @@ static void* yFirmwareUpdate_thread(void* ctx)
         if (dev != -1) {
             wpGetDeviceUrl(dev, hubserial, subpath, 256, NULL);
             YSPRINTF(buffer, sizeof(buffer), get_api_fmt, subpath);
-            //todo: choose wisely
             res = yapiHTTPRequestSyncStartEx_internal(&iohdl, 0, hubserial, buffer, YSTRLEN(buffer), &reply, &replysize, NULL, NULL, tmp_errmsg);
             if (res >= 0) {
                 if (checkHTTPHeader(NULL, reply, replysize, tmp_errmsg) >= 0){
@@ -2064,8 +2070,7 @@ static void* yFirmwareUpdate_thread(void* ctx)
         // idle a bit
         yApproximateSleep(100);
     } while (!online && yapiGetTickCount()< timeout);
-
-    //&& timeout > yapiGetTickCount());
+ 
     if (online){
         setOsGlobalProgress(100, "Firmware updated");
     } else {

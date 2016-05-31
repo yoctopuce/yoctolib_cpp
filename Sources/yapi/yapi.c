@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 24490 2016-05-18 07:10:21Z seb $
+ * $Id: yapi.c 24575 2016-05-26 06:28:03Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -2078,7 +2078,7 @@ static void* yhelper_thread(void* ctx)
                     hub->attemptDelay = 500 << hub->retryCount;
                     if(hub->attemptDelay > 8000)
                         hub->attemptDelay = 8000;
-                    hub->lastAttempt =  yapiGetTickCount();
+                    hub->lastAttempt = yapiGetTickCount();
                     hub->retryCount++;
                     yEnterCriticalSection(&hub->access);
                     hub->errcode = ySetErr(res, hub->errmsg, errmsg, NULL, 0);
@@ -2099,6 +2099,8 @@ static void* yhelper_thread(void* ctx)
                     hub->state = NET_HUB_TRYING;
                     hub->retryCount=0;
                     hub->attemptDelay = 500;
+                    hub->http.lastTraffic = yapiGetTickCount();
+                    hub->send_ping = 0;
                     selectlist[towatch++] = hub->http.notReq;
                     first_notification_connection = 0;
                 }
@@ -2161,7 +2163,7 @@ static void* yhelper_thread(void* ctx)
                             if (hub->send_ping && ( (u64)(yapiGetTickCount() - hub->http.lastTraffic)) > NET_HUB_NOT_CONNECTION_TIMEOUT){
 #ifdef TRACE_NET_HUB
 
-                                dbglog("network hub %s(%x) didn't respond for too long\n", hub->name, hub->url);
+                                dbglog("network hub %s(%x) didn't respond for too long (%d)\n", hub->name, hub->url, res);
 #endif
                                 yReqClose(req);
                                 hub->state = NET_HUB_DISCONNECTED;
@@ -2645,7 +2647,7 @@ static YRETCODE  yapiSleep_internal(int ms_duration, char *errmsg)
             err = yapiHandleEvents_internal(errmsg);
         }
         now =yapiGetTickCount();
-        // FIXME: we may want to use a samller timeout
+        // todo: we may want to use a samller timeout
         if (now < timeout) {
            if (yWaitForEvent(&yContext->exitSleepEvent, (int) (timeout - now)))
                test_pkt++; //just for testing

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorledcluster.cpp 24475 2016-05-12 14:03:35Z mvuilleu $
+ * $Id: yocto_colorledcluster.cpp 24628 2016-05-27 15:01:14Z mvuilleu $
  *
  * Implements yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -576,9 +576,9 @@ int YColorLedCluster::set_rgbArray(vector<int> rgbList)
     idx = 0;
     while (idx < listlen) {
         rgb = rgbList[idx];
-        buff[3*idx] = ((((rgb) >> (16))) & (255));
-        buff[3*idx+1] = ((((rgb) >> (8))) & (255));
-        buff[3*idx+2] = ((rgb) & (255));
+        buff[3*idx] = (char)(((((rgb) >> (16))) & (255)));
+        buff[3*idx+1] = (char)(((((rgb) >> (8))) & (255)));
+        buff[3*idx+2] = (char)(((rgb) & (255)));
         idx = idx + 1;
     }
     // may throw an exception
@@ -609,9 +609,9 @@ int YColorLedCluster::rgbArray_move(vector<int> rgbList,int delay)
     idx = 0;
     while (idx < listlen) {
         rgb = rgbList[idx];
-        buff[3*idx] = ((((rgb) >> (16))) & (255));
-        buff[3*idx+1] = ((((rgb) >> (8))) & (255));
-        buff[3*idx+2] = ((rgb) & (255));
+        buff[3*idx] = (char)(((((rgb) >> (16))) & (255)));
+        buff[3*idx+1] = (char)(((((rgb) >> (8))) & (255)));
+        buff[3*idx+2] = (char)(((rgb) & (255)));
         idx = idx + 1;
     }
     // may throw an exception
@@ -656,9 +656,9 @@ int YColorLedCluster::set_hslArray(vector<int> hslList)
     idx = 0;
     while (idx < listlen) {
         hsl = hslList[idx];
-        buff[3*idx] = ((((hsl) >> (16))) & (255));
-        buff[3*idx+1] = ((((hsl) >> (8))) & (255));
-        buff[3*idx+2] = ((hsl) & (255));
+        buff[3*idx] = (char)(((((hsl) >> (16))) & (255)));
+        buff[3*idx+1] = (char)(((((hsl) >> (8))) & (255)));
+        buff[3*idx+2] = (char)(((hsl) & (255)));
         idx = idx + 1;
     }
     // may throw an exception
@@ -689,9 +689,9 @@ int YColorLedCluster::hslArray_move(vector<int> hslList,int delay)
     idx = 0;
     while (idx < listlen) {
         hsl = hslList[idx];
-        buff[3*idx] = ((((hsl) >> (16))) & (255));
-        buff[3*idx+1] = ((((hsl) >> (8))) & (255));
-        buff[3*idx+2] = ((hsl) & (255));
+        buff[3*idx] = (char)(((((hsl) >> (16))) & (255)));
+        buff[3*idx+1] = (char)(((((hsl) >> (8))) & (255)));
+        buff[3*idx+2] = (char)(((hsl) & (255)));
         idx = idx + 1;
     }
     // may throw an exception

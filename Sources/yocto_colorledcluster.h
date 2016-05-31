@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorledcluster.h 24475 2016-05-12 14:03:35Z mvuilleu $
+ * $Id: yocto_colorledcluster.h 24582 2016-05-26 10:09:56Z seb $
  *
  * Declares yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -64,7 +64,9 @@ typedef void (*YColorLedClusterValueCallback)(YColorLedCluster *func, const stri
  * YColorLedCluster Class: ColorLedCluster function interface
  *
  * The Yoctopuce application programming interface
- * allows you to drive a color LED cluster  using RGB coordinates as well as HSL coordinates.
+ * allows you to drive a color LED cluster. Unlike the ColorLed class, the ColorLedCluster
+ * allows to handle several LEDs at one. Color changes can be done   using RGB coordinates as well as
+ * HSL coordinates.
  * The module performs all conversions form RGB to HSL automatically. It is then
  * self-evident to turn on a LED with a given hue and to progressively vary its
  * saturation or lightness. If needed, you can find more information on the

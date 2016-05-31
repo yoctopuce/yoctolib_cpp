@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yjson.h 21066 2015-08-10 16:27:20Z seb $
+ * $Id: yjson.h 24575 2016-05-26 06:28:03Z seb $
  *
  * Simple JSON parser (actually a slightly enhanced lexer)
  *

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 23689 2016-03-31 23:11:54Z mvuilleu $
+ * $Id: ydef.h 24575 2016-05-26 06:28:03Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *

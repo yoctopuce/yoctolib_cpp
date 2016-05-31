@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_spiport.cpp 24252 2016-04-26 13:39:30Z seb $
+ * $Id: yocto_spiport.cpp 24628 2016-05-27 15:01:14Z mvuilleu $
  *
  * Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -720,7 +720,7 @@ int YSpiPort::writeArray(vector<int> byteList)
     idx = 0;
     while (idx < bufflen) {
         hexb = byteList[idx];
-        buff[idx] = hexb;
+        buff[idx] = (char)(hexb);
         idx = idx + 1;
     }
     // may throw an exception
@@ -753,7 +753,7 @@ int YSpiPort::writeHex(string hexString)
     idx = 0;
     while (idx < bufflen) {
         hexb = (int)strtoul((hexString).substr( 2 * idx, 2).c_str(), NULL, 16);
-        buff[idx] = hexb;
+        buff[idx] = (char)(hexb);
         idx = idx + 1;
     }
     // may throw an exception
@@ -903,7 +903,7 @@ string YSpiPort::readBin(int nChars)
     res = string(bufflen, (char)0);
     idx = 0;
     while (idx < bufflen) {
-        res[idx] = ((u8)buff[idx]);
+        res[idx] = (char)(((u8)buff[idx]));
         idx = idx + 1;
     }
     return res;

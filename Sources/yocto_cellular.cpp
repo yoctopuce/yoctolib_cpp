@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 24465 2016-05-12 07:30:46Z mvuilleu $
+ * $Id: yocto_cellular.cpp 24622 2016-05-27 12:51:52Z mvuilleu $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -110,6 +110,8 @@ YCellular::YCellular(const string& func): YFunction(func)
     ,_apn(APN_INVALID)
     ,_apnSecret(APNSECRET_INVALID)
     ,_pingInterval(PINGINTERVAL_INVALID)
+    ,_dataSent(DATASENT_INVALID)
+    ,_dataReceived(DATARECEIVED_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackCellular(NULL)
 //--- (end of generated code: Cellular initialization)
@@ -199,6 +201,16 @@ int YCellular::_parseAttr(yJsonStateMachine& j)
     if(!strcmp(j.token, "pingInterval")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _pingInterval =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "dataSent")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _dataSent =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "dataReceived")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _dataReceived =  atoi(j.token);
         return 1;
     }
     if(!strcmp(j.token, "command")) {
@@ -576,6 +588,72 @@ int YCellular::set_pingInterval(int newval)
     return _setAttr("pingInterval", rest_val);
 }
 
+/**
+ * Returns the number of bytes sent so far.
+ *
+ * @return an integer corresponding to the number of bytes sent so far
+ *
+ * On failure, throws an exception or returns Y_DATASENT_INVALID.
+ */
+int YCellular::get_dataSent(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YCellular::DATASENT_INVALID;
+        }
+    }
+    return _dataSent;
+}
+
+/**
+ * Changes the value of the outgoing data counter.
+ *
+ * @param newval : an integer corresponding to the value of the outgoing data counter
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YCellular::set_dataSent(int newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+    return _setAttr("dataSent", rest_val);
+}
+
+/**
+ * Returns the number of bytes received so far.
+ *
+ * @return an integer corresponding to the number of bytes received so far
+ *
+ * On failure, throws an exception or returns Y_DATARECEIVED_INVALID.
+ */
+int YCellular::get_dataReceived(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YCellular::DATARECEIVED_INVALID;
+        }
+    }
+    return _dataReceived;
+}
+
+/**
+ * Changes the value of the incoming data counter.
+ *
+ * @param newval : an integer corresponding to the value of the incoming data counter
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YCellular::set_dataReceived(int newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+    return _setAttr("dataReceived", rest_val);
+}
+
 string YCellular::get_command(void)
 {
     if (_cacheExpiration <= YAPI::GetTickCount()) {
@@ -685,7 +763,7 @@ int YCellular::sendPUK(string puk,string newPin)
 {
     string gsmMsg;
     gsmMsg = this->get_message();
-    if (!((gsmMsg).substr(0, 13) == "Enter SIM PUK")) {
+    if (!(!((gsmMsg).substr(0, 13) == "Enter SIM PUK"))) {
         _throw(YAPI_INVALID_ARGUMENT,"PUK not expected at this time");
         return YAPI_INVALID_ARGUMENT;
     }
@@ -709,6 +787,25 @@ int YCellular::sendPUK(string puk,string newPin)
 int YCellular::set_apnAuth(string username,string password)
 {
     return this->set_apnSecret(YapiWrapper::ysprintf("%s,%s",username.c_str(),password.c_str()));
+}
+
+/**
+ * Clear the transmitted data counters.
+ *
+ * @return YAPI_SUCCESS when the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YCellular::clearDataCounters(void)
+{
+    int retcode = 0;
+    // may throw an exception
+    retcode = this->set_dataReceived(0);
+    if (retcode != YAPI_SUCCESS) {
+        return retcode;
+    }
+    retcode = this->set_dataSent(0);
+    return retcode;
 }
 
 /**
