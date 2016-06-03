@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorledcluster.h 24582 2016-05-26 10:09:56Z seb $
+ * $Id: yocto_colorledcluster.h 24717 2016-06-03 16:09:53Z seb $
  *
  * Declares yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -145,7 +145,7 @@ public:
     { return this->get_maxLedCount(); }
 
     /**
-     * Returns the maximum number of sequences that the device can handle
+     * Returns the maximum number of sequences that the device can handle.
      *
      * @return an integer corresponding to the maximum number of sequences that the device can handle
      *
@@ -221,24 +221,32 @@ public:
     virtual int         sendCommand(string command);
 
     /**
-     * Changes the current color of consecutve LEDs in the cluster , using a RGB color. Encoding is done
-     * as follows: 0xRRGGBB.
+     * Changes the current color of consecutve LEDs in the cluster, using a RGB color. Encoding is done as
+     * follows: 0xRRGGBB.
      *
      * @param ledIndex :  index of the first affected LED.
      * @param count    :  affected LED count.
      * @param rgbValue :  new color.
-     *         On failure, throws an exception or returns a negative error code.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
     virtual int         set_rgbColor(int ledIndex,int count,int rgbValue);
 
     /**
-     * Changes the  color at device startup of consecutve LEDs in the cluster , using a RGB color.
-     * Encoding is done as follows: 0xRRGGBB.
+     * Changes the  color at device startup of consecutve LEDs in the cluster, using a RGB color. Encoding
+     * is done as follows: 0xRRGGBB.
+     * Don't forget to call saveLedsConfigAtPowerOn() to make sure the modification is saved in the device
+     * flash memory.
      *
      * @param ledIndex :  index of the first affected LED.
      * @param count    :  affected LED count.
      * @param rgbValue :  new color.
-     *         On failure, throws an exception or returns a negative error code.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
     virtual int         set_rgbColorAtPowerOn(int ledIndex,int count,int rgbValue);
 
@@ -249,7 +257,10 @@ public:
      * @param ledIndex :  index of the first affected LED.
      * @param count    :  affected LED count.
      * @param hslValue :  new color.
-     *         On failure, throws an exception or returns a negative error code.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
     virtual int         set_hslColor(int ledIndex,int count,int hslValue);
 
@@ -261,7 +272,10 @@ public:
      * @param count    :  affected LED count.
      * @param rgbValue :  new color (0xRRGGBB).
      * @param delay    :  transition duration in ms
-     *         On failure, throws an exception or returns a negative error code.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
     virtual int         rgb_move(int ledIndex,int count,int rgbValue,int delay);
 
@@ -277,31 +291,40 @@ public:
      * @param count    :  affected LED count.
      * @param hslValue :  new color (0xHHSSLL).
      * @param delay    :  transition duration in ms
-     *         On failure, throws an exception or returns a negative error code.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
     virtual int         hsl_move(int ledIndex,int count,int hslValue,int delay);
 
     /**
      * Adds an RGB transition to a sequence. A sequence is a transition list, which can
      * be executed in loop by a group of LEDs.  Sequences are persistent and are saved
-     * in the device flash memory as soon as the module saveToFlash() method is called.
+     * in the device flash memory as soon as the saveBlinkSeq() method is called.
      *
      * @param seqIndex :  sequence index.
      * @param rgbValue :  target color (0xRRGGBB)
      * @param delay    :  transition duration in ms
-     *         On failure, throws an exception or returns a negative error code.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
     virtual int         addRgbMoveToBlinkSeq(int seqIndex,int rgbValue,int delay);
 
     /**
      * Adds an HSL transition to a sequence. A sequence is a transition list, which can
      * be executed in loop by an group of LEDs.  Sequences are persistant and are saved
-     * in the device flash memory as soon as the module saveToFlash() method is called.
+     * in the device flash memory as soon as the saveBlinkSeq() method is called.
      *
      * @param seqIndex : sequence index.
      * @param hslValue : target color (0xHHSSLL)
      * @param delay    : transition duration in ms
-     *         On failure, throws an exception or returns a negative error code.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
     virtual int         addHslMoveToBlinkSeq(int seqIndex,int hslValue,int delay);
 
@@ -313,7 +336,10 @@ public:
      * the initial direction.
      *
      * @param seqIndex : sequence index.
-     *         On failure, throws an exception or returns a negative error code.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
     virtual int         addMirrorToBlinkSeq(int seqIndex);
 
@@ -327,13 +353,16 @@ public:
      * @param count    :  affected LED count.
      * @param seqIndex :  sequence index.
      * @param offset   :  execution offset in ms.
-     *         On failure, throws an exception or returns a negative error code.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
     virtual int         linkLedToBlinkSeq(int ledIndex,int count,int seqIndex,int offset);
 
     /**
      * Links adjacent LEDs to a specific sequence at device poweron. Don't forget to configure
-     * the sequence auto start flag as well and call saveLedsState. It is possible to add an offset
+     * the sequence auto start flag as well and call saveLedsConfigAtPowerOn(). It is possible to add an offset
      * in the execution: that way we  can have several groups of LEDs executing the same
      * sequence, with a  temporal offset. A LED cannot be linked to more than one sequence.
      *
@@ -341,7 +370,10 @@ public:
      * @param count    :  affected LED count.
      * @param seqIndex :  sequence index.
      * @param offset   :  execution offset in ms.
-     *         On failure, throws an exception or returns a negative error code.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
     virtual int         linkLedToBlinkSeqAtPowerOn(int ledIndex,int count,int seqIndex,int offset);
 
@@ -355,7 +387,10 @@ public:
      * @param count    :  affected LED count.
      * @param seqIndex :  sequence index.
      * @param periods  :  number of periods to show on LEDs.
-     *         On failure, throws an exception or returns a negative error code.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
     virtual int         linkLedToPeriodicBlinkSeq(int ledIndex,int count,int seqIndex,int periods);
 
@@ -364,7 +399,10 @@ public:
      *
      * @param ledIndex  :  index of the first affected LED.
      * @param count     :  affected LED count.
-     *         On failure, throws an exception or returns a negative error code.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
     virtual int         unlinkLedFromBlinkSeq(int ledIndex,int count);
 
@@ -373,7 +411,10 @@ public:
      * run it in a loop.
      *
      * @param seqIndex :  index of the sequence to start.
-     *         On failure, throws an exception or returns a negative error code.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
     virtual int         startBlinkSeq(int seqIndex);
 
@@ -382,7 +423,10 @@ public:
      * restarts from the beginning.
      *
      * @param seqIndex :  index of the sequence to stop.
-     *         On failure, throws an exception or returns a negative error code.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
     virtual int         stopBlinkSeq(int seqIndex);
 
@@ -391,20 +435,26 @@ public:
      * sequence are not automatically updated anymore.
      *
      * @param seqIndex :  index of the sequence to reset
-     *         On failure, throws an exception or returns a negative error code.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
     virtual int         resetBlinkSeq(int seqIndex);
 
     /**
      * Configures a sequence to make it start automatically at device
-     * startup. Don't forget to call  saveLedsState() to make sure the
+     * startup. Don't forget to call saveBlinkSeq() to make sure the
      * modification is saved in the device flash memory.
      *
-     * @param seqIndex :  index of the sequence to reset
-     * @param autostart :  boolean telling if the sequence must start automatically or not.
-     *         On failure, throws an exception or returns a negative error code.
+     * @param seqIndex :  index of the sequence to reset.
+     * @param autostart : 0 to keep the sequence turned off and 1 to start it automatically.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
-    virtual int         set_blinkSeqAutoStart(int seqIndex,bool autostart);
+    virtual int         set_blinkSeqStateAtPowerOn(int seqIndex,int autostart);
 
     /**
      * Changes the execution speed of a sequence. The natural execution speed is 1000 per
@@ -413,77 +463,106 @@ public:
      *
      * @param seqIndex :  index of the sequence to start.
      * @param speed :     sequence running speed (-1000...1000).
-     *         On failure, throws an exception or returns a negative error code.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
     virtual int         set_blinkSeqSpeed(int seqIndex,int speed);
 
     /**
-     * Saves the cluster power-on configuration, this includes
-     * LED start-up colors, sequence steps and sequence auto-start flags.
+     * Saves the LEDs power-on configuration. This includes the start-up color or
+     * sequence binding for all LEDs. Warning: if some LEDs are linked to a sequence, the
+     * method saveBlinkSeq() must also be called to save the sequence definition.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
      * On failure, throws an exception or returns a negative error code.
      */
-    virtual int         saveLedsState(void);
+    virtual int         saveLedsConfigAtPowerOn(void);
+
+    /**
+     * Saves the definition of a sequence. Warning: only sequence steps and flags are saved.
+     * to save the LEDs startup bindings, the method saveLedsConfigAtPowerOn()
+     * must be called.
+     *
+     * @param seqIndex :  index of the sequence to start.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         saveBlinkSeq(int seqIndex);
 
     /**
      * Sends a binary buffer to the LED RGB buffer, as is.
-     * First three bytes are RGB components for first LED, the
-     * next three bytes for the second LED, etc.
+     * First three bytes are RGB components for LED specified as parameter, the
+     * next three bytes for the next LED, etc.
      *
+     * @param ledIndex : index of the first LED which should be updated
      * @param buff : the binary buffer to send
      *
      * @return YAPI_SUCCESS if the call succeeds.
-     *         On failure, throws an exception or returns a negative error code.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
-    virtual int         set_rgbBuffer(string buff);
+    virtual int         set_rgbColorBuffer(int ledIndex,string buff);
 
     /**
      * Sends 24bit RGB colors (provided as a list of integers) to the LED RGB buffer, as is.
-     * The first number represents the RGB value of the first LED, the second number represents
-     * the RGB value of the second LED, etc.
+     * The first number represents the RGB value of the LED specified as parameter, the second
+     * number represents the RGB value of the next LED, etc.
      *
+     * @param ledIndex : index of the first LED which should be updated
      * @param rgbList : a list of 24bit RGB codes, in the form 0xRRGGBB
      *
      * @return YAPI_SUCCESS if the call succeeds.
-     *         On failure, throws an exception or returns a negative error code.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
-    virtual int         set_rgbArray(vector<int> rgbList);
+    virtual int         set_rgbColorArray(int ledIndex,vector<int> rgbList);
 
     /**
      * Sets up a smooth RGB color transition to the specified pixel-by-pixel list of RGB
      * color codes. The first color code represents the target RGB value of the first LED,
-     * the second color code represents the target value of the second LED, etc.
+     * the next color code represents the target value of the next LED, etc.
      *
      * @param rgbList : a list of target 24bit RGB codes, in the form 0xRRGGBB
      * @param delay   : transition duration in ms
      *
      * @return YAPI_SUCCESS if the call succeeds.
-     *         On failure, throws an exception or returns a negative error code.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
     virtual int         rgbArray_move(vector<int> rgbList,int delay);
 
     /**
      * Sends a binary buffer to the LED HSL buffer, as is.
-     * First three bytes are HSL components for first LED, the
+     * First three bytes are HSL components for the LED specified as parameter, the
      * next three bytes for the second LED, etc.
      *
+     * @param ledIndex : index of the first LED which should be updated
      * @param buff : the binary buffer to send
      *
      * @return YAPI_SUCCESS if the call succeeds.
-     *         On failure, throws an exception or returns a negative error code.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
-    virtual int         set_hslBuffer(string buff);
+    virtual int         set_hslColorBuffer(int ledIndex,string buff);
 
     /**
      * Sends 24bit HSL colors (provided as a list of integers) to the LED HSL buffer, as is.
-     * The first number represents the HSL value of the first LED, the second number represents
+     * The first number represents the HSL value of the LED specified as parameter, the second number represents
      * the HSL value of the second LED, etc.
      *
+     * @param ledIndex : index of the first LED which should be updated
      * @param hslList : a list of 24bit HSL codes, in the form 0xHHSSLL
      *
      * @return YAPI_SUCCESS if the call succeeds.
-     *         On failure, throws an exception or returns a negative error code.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
-    virtual int         set_hslArray(vector<int> hslList);
+    virtual int         set_hslColorArray(int ledIndex,vector<int> hslList);
 
     /**
      * Sets up a smooth HSL color transition to the specified pixel-by-pixel list of HSL
@@ -494,7 +573,8 @@ public:
      * @param delay   : transition duration in ms
      *
      * @return YAPI_SUCCESS if the call succeeds.
-     *         On failure, throws an exception or returns a negative error code.
+     *
+     * On failure, throws an exception or returns a negative error code.
      */
     virtual int         hslArray_move(vector<int> hslList,int delay);
 
@@ -507,7 +587,8 @@ public:
      * @param count    : number of LEDs which should be returned
      *
      * @return a binary buffer with RGB components of selected LEDs.
-     *         On failure, throws an exception or returns an empty binary buffer.
+     *
+     * On failure, throws an exception or returns an empty binary buffer.
      */
     virtual string      get_rgbColorBuffer(int ledIndex,int count);
 
@@ -520,7 +601,8 @@ public:
      * @param count    : number of LEDs which should be returned
      *
      * @return a list of 24bit color codes with RGB components of selected LEDs, as 0xRRGGBB.
-     *         On failure, throws an exception or returns an empty array.
+     *
+     * On failure, throws an exception or returns an empty array.
      */
     virtual vector<int> get_rgbColorArray(int ledIndex,int count);
 
@@ -533,7 +615,8 @@ public:
      * @param count    : number of LEDs which should be returned
      *
      * @return a list of 24bit color codes with RGB components of selected LEDs, as 0xRRGGBB.
-     *         On failure, throws an exception or returns an empty array.
+     *
+     * On failure, throws an exception or returns an empty array.
      */
     virtual vector<int> get_rgbColorArrayAtPowerOn(int ledIndex,int count);
 
@@ -546,7 +629,8 @@ public:
      * @param count    : number of LEDs which should be returned
      *
      * @return a list of integers with sequence index
-     *         On failure, throws an exception or returns an empty array.
+     *
+     * On failure, throws an exception or returns an empty array.
      */
     virtual vector<int> get_linkedSeqArray(int ledIndex,int count);
 
@@ -559,7 +643,8 @@ public:
      * @param count    : number of blinking sequences which should be returned
      *
      * @return a list of 32 bit integer signatures
-     *         On failure, throws an exception or returns an empty array.
+     *
+     * On failure, throws an exception or returns an empty array.
      */
     virtual vector<int> get_blinkSeqSignatures(int seqIndex,int count);
 
@@ -570,7 +655,8 @@ public:
      * @param count    : number of sequence speeds which should be returned
      *
      * @return a list of integers, 0 for sequences turned off and 1 for sequences running
-     *         On failure, throws an exception or returns an empty array.
+     *
+     * On failure, throws an exception or returns an empty array.
      */
     virtual vector<int> get_blinkSeqStateSpeed(int seqIndex,int count);
 
@@ -581,7 +667,8 @@ public:
      * @param count    : number of blinking sequences which should be returned
      *
      * @return a list of integers, 0 for sequences turned off and 1 for sequences running
-     *         On failure, throws an exception or returns an empty array.
+     *
+     * On failure, throws an exception or returns an empty array.
      */
     virtual vector<int> get_blinkSeqStateAtPowerOn(int seqIndex,int count);
 
@@ -592,7 +679,8 @@ public:
      * @param count    : number of blinking sequences which should be returned
      *
      * @return a list of integers, 0 for sequences turned off and 1 for sequences running
-     *         On failure, throws an exception or returns an empty array.
+     *
+     * On failure, throws an exception or returns an empty array.
      */
     virtual vector<int> get_blinkSeqState(int seqIndex,int count);
 
