@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.cpp 22694 2016-01-12 23:13:27Z seb $
+ * $Id: yocto_gyro.cpp 24948 2016-07-01 20:57:28Z mvuilleu $
  *
  * Implements yFindGyro(), the high-level API for Gyro functions
  *
@@ -222,6 +222,7 @@ static void yInternalGyroCallback(YQt *obj, const string& value)
 
 YGyro::YGyro(const string& func): YSensor(func)
 //--- (generated code: Gyro initialization)
+    ,_bandwidth(BANDWIDTH_INVALID)
     ,_xValue(XVALUE_INVALID)
     ,_yValue(YVALUE_INVALID)
     ,_zValue(ZVALUE_INVALID)
@@ -260,6 +261,11 @@ const double YGyro::ZVALUE_INVALID = YAPI_INVALID_DOUBLE;
 
 int YGyro::_parseAttr(yJsonStateMachine& j)
 {
+    if(!strcmp(j.token, "bandwidth")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _bandwidth =  atoi(j.token);
+        return 1;
+    }
     if(!strcmp(j.token, "xValue")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _xValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
@@ -279,6 +285,40 @@ int YGyro::_parseAttr(yJsonStateMachine& j)
     return YSensor::_parseAttr(j);
 }
 
+
+/**
+ * Returns the measure update frequency, measured in Hz (Yocto-3D-V2 only).
+ *
+ * @return an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
+ *
+ * On failure, throws an exception or returns Y_BANDWIDTH_INVALID.
+ */
+int YGyro::get_bandwidth(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YGyro::BANDWIDTH_INVALID;
+        }
+    }
+    return _bandwidth;
+}
+
+/**
+ * Changes the measure update frequency, measured in Hz (Yocto-3D-V2 only). When the
+ * frequency is lower, the device performs averaging.
+ *
+ * @param newval : an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YGyro::set_bandwidth(int newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+    return _setAttr("bandwidth", rest_val);
+}
 
 /**
  * Returns the angular velocity around the X axis of the device, as a floating point number.
@@ -500,11 +540,11 @@ int YGyro::_loadAngles(void)
         delta = _y * _w - _x * _z;
         if (delta > 0.499 * norm) {
             _pitch = 90.0;
-            _head  = floor(2.0 * 1800.0/3.141592653589793238463 * atan2(_x,_w)+0.5) / 10.0;
+            _head  = floor(2.0 * 1800.0/3.141592653589793238463 * atan2(_x,-_w)+0.5) / 10.0;
         } else {
             if (delta < -0.499 * norm) {
                 _pitch = -90.0;
-                _head  = floor(-2.0 * 1800.0/3.141592653589793238463 * atan2(_x,_w)+0.5) / 10.0;
+                _head  = floor(-2.0 * 1800.0/3.141592653589793238463 * atan2(_x,-_w)+0.5) / 10.0;
             } else {
                 _roll  = floor(1800.0/3.141592653589793238463 * atan2(2.0 * (_w * _x + _y * _z),sqw - sqx - sqy + sqz)+0.5) / 10.0;
                 _pitch = floor(1800.0/3.141592653589793238463 * asin(2.0 * delta / norm)+0.5) / 10.0;

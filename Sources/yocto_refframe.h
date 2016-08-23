@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_refframe.h 23246 2016-02-23 14:49:01Z seb $
+ * $Id: yocto_refframe.h 24925 2016-06-29 15:26:26Z mvuilleu $
  *
  * Declares yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -101,6 +101,7 @@ protected:
     double          _bearing;
     string          _calibrationParam;
     YRefFrameValueCallback _valueCallbackRefFrame;
+    bool            _calibV2;
     int             _calibStage;
     string          _calibStageHint;
     int             _calibStageProgress;
@@ -308,6 +309,37 @@ public:
      */
     virtual int         set_mountPosition(Y_MOUNTPOSITION position,Y_MOUNTORIENTATION orientation);
 
+    /**
+     * Returns the 3D sensor calibration state (Yocto-3D-V2 only). This function returns
+     * an integer representing the calibration state of the 3 inertial sensors of
+     * the BNO055 chip, found in the Yocto-3D-V2. Hundredths show the calibration state
+     * of the accelerometer, tenths show the calibration state of the magnetometer while
+     * units show the calibration state of the gyroscope. For each sensor, the value 0
+     * means no calibration and the value 3 means full calibration.
+     *
+     * @return an integer representing the calibration state of Yocto-3D-V2:
+     *         333 when fully calibrated, 0 when not calibrated at all.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     * For the Yocto-3D (V1), this function always return -3 (unsupported function).
+     */
+    virtual int         get_calibrationState(void);
+
+    /**
+     * Returns estimated quality of the orientation (Yocto-3D-V2 only). This function returns
+     * an integer between 0 and 3 representing the degree of confidence of the position
+     * estimate. When the value is 3, the estimation is reliable. Below 3, one should
+     * expect sudden corrections, in particular for heading (compass function).
+     * The most frequent causes for values below 3 are magnetic interferences, and
+     * accelerations or rotations beyond the sensor range.
+     *
+     * @return an integer between 0 and 3 (3 when the measure is reliable)
+     *
+     * On failure, throws an exception or returns a negative error code.
+     * For the Yocto-3D (V1), this function always return -3 (unsupported function).
+     */
+    virtual int         get_measureQuality(void);
+
     virtual int         _calibSort(int start,int stopidx);
 
     /**
@@ -339,6 +371,10 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         more3DCalibration(void);
+
+    virtual int         more3DCalibrationV1(void);
+
+    virtual int         more3DCalibrationV2(void);
 
     /**
      * Returns instructions to proceed to the tridimensional calibration initiated with
@@ -388,6 +424,10 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         save3DCalibration(void);
+
+    virtual int         save3DCalibrationV1(void);
+
+    virtual int         save3DCalibrationV2(void);
 
     /**
      * Aborts the sensors tridimensional calibration process et restores normal settings.

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.h 23780 2016-04-06 10:27:21Z seb $
+ * $Id: yocto_serialport.h 25085 2016-07-26 16:38:36Z mvuilleu $
  *
  * Declares yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -110,6 +110,8 @@ protected:
     string          _serialMode;
     YSerialPortValueCallback _valueCallbackSerialPort;
     int             _rxptr;
+    string          _rxbuff;
+    int             _rxbuffptr;
 
     friend YSerialPort *yFindSerialPort(const string& func);
     friend YSerialPort *yFirstSerialPort(void);

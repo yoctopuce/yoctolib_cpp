@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 24622 2016-05-27 12:51:52Z mvuilleu $
+ * $Id: yocto_cellular.cpp 24921 2016-06-29 13:15:24Z mvuilleu $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -456,8 +456,8 @@ int YCellular::set_airplaneMode(Y_AIRPLANEMODE_enum newval)
  * Returns the condition for enabling IP data services (GPRS).
  * When data services are disabled, SMS are the only mean of communication.
  *
- * @return a value among Y_ENABLEDATA_HOMENETWORK, Y_ENABLEDATA_ROAMING and Y_ENABLEDATA_NEVER
- * corresponding to the condition for enabling IP data services (GPRS)
+ * @return a value among Y_ENABLEDATA_HOMENETWORK, Y_ENABLEDATA_ROAMING, Y_ENABLEDATA_NEVER and
+ * Y_ENABLEDATA_NEUTRALITY corresponding to the condition for enabling IP data services (GPRS)
  *
  * On failure, throws an exception or returns Y_ENABLEDATA_INVALID.
  */
@@ -479,8 +479,8 @@ Y_ENABLEDATA_enum YCellular::get_enableData(void)
  *
  * When data services are disabled, SMS are the only mean of communication.
  *
- * @param newval : a value among Y_ENABLEDATA_HOMENETWORK, Y_ENABLEDATA_ROAMING and Y_ENABLEDATA_NEVER
- * corresponding to the condition for enabling IP data services (GPRS)
+ * @param newval : a value among Y_ENABLEDATA_HOMENETWORK, Y_ENABLEDATA_ROAMING, Y_ENABLEDATA_NEVER
+ * and Y_ENABLEDATA_NEUTRALITY corresponding to the condition for enabling IP data services (GPRS)
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *

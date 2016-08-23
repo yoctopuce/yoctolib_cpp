@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yfifo.h 24575 2016-05-26 06:28:03Z seb $
+ * $Id: yfifo.h 24872 2016-06-20 13:29:48Z seb $
  *
   * Declaration of a generic fifo queue
  *
@@ -84,7 +84,9 @@ void 	yFifoInitEx(yFifoBuf *buf, u8 *buffer, u16 bufflen);
 #define yFifoInit(fifo,buffer,len)  yFifoInitEx(fifo,buffer,len);
 #endif
 
-#ifndef MICROCHIP_API
+#ifdef MICROCHIP_API
+#define yFifoCleanup(fifo) memset(fifo, 0, sizeof(yFifoBuf))
+#else
 void yFifoCleanup(yFifoBuf *buf);
 #endif
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_refframe.cpp 23246 2016-02-23 14:49:01Z seb $
+ * $Id: yocto_refframe.cpp 24942 2016-07-01 12:36:04Z seb $
  *
  * Implements yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -332,6 +332,67 @@ int YRefFrame::set_mountPosition(Y_MOUNTPOSITION position,Y_MOUNTORIENTATION ori
     return this->set_mountPos(mixedPos);
 }
 
+/**
+ * Returns the 3D sensor calibration state (Yocto-3D-V2 only). This function returns
+ * an integer representing the calibration state of the 3 inertial sensors of
+ * the BNO055 chip, found in the Yocto-3D-V2. Hundredths show the calibration state
+ * of the accelerometer, tenths show the calibration state of the magnetometer while
+ * units show the calibration state of the gyroscope. For each sensor, the value 0
+ * means no calibration and the value 3 means full calibration.
+ *
+ * @return an integer representing the calibration state of Yocto-3D-V2:
+ *         333 when fully calibrated, 0 when not calibrated at all.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ * For the Yocto-3D (V1), this function always return -3 (unsupported function).
+ */
+int YRefFrame::get_calibrationState(void)
+{
+    string calibParam;
+    vector<int> iCalib;
+    int caltyp = 0;
+    int res = 0;
+    // may throw an exception
+    calibParam = this->get_calibrationParam();
+    iCalib = YAPI::_decodeFloats(calibParam);
+    caltyp = ((iCalib[0]) / (1000));
+    if (caltyp != 33) {
+        return YAPI_NOT_SUPPORTED;
+    }
+    res = ((iCalib[1]) / (1000));
+    return res;
+}
+
+/**
+ * Returns estimated quality of the orientation (Yocto-3D-V2 only). This function returns
+ * an integer between 0 and 3 representing the degree of confidence of the position
+ * estimate. When the value is 3, the estimation is reliable. Below 3, one should
+ * expect sudden corrections, in particular for heading (compass function).
+ * The most frequent causes for values below 3 are magnetic interferences, and
+ * accelerations or rotations beyond the sensor range.
+ *
+ * @return an integer between 0 and 3 (3 when the measure is reliable)
+ *
+ * On failure, throws an exception or returns a negative error code.
+ * For the Yocto-3D (V1), this function always return -3 (unsupported function).
+ */
+int YRefFrame::get_measureQuality(void)
+{
+    string calibParam;
+    vector<int> iCalib;
+    int caltyp = 0;
+    int res = 0;
+    // may throw an exception
+    calibParam = this->get_calibrationParam();
+    iCalib = YAPI::_decodeFloats(calibParam);
+    caltyp = ((iCalib[0]) / (1000));
+    if (caltyp != 33) {
+        return YAPI_NOT_SUPPORTED;
+    }
+    res = ((iCalib[2]) / (1000));
+    return res;
+}
+
 int YRefFrame::_calibSort(int start,int stopidx)
 {
     int idx = 0;
@@ -398,6 +459,7 @@ int YRefFrame::start3DCalibration(void)
         this->cancel3DCalibration();
     }
     _calibSavedParams = this->get_calibrationParam();
+    _calibV2 = (atoi((_calibSavedParams).c_str()) == 33);
     this->set_calibrationParam("0");
     _calibCount = 50;
     _calibStage = 1;
@@ -425,6 +487,14 @@ int YRefFrame::start3DCalibration(void)
  * On failure, throws an exception or returns a negative error code.
  */
 int YRefFrame::more3DCalibration(void)
+{
+    if (_calibV2) {
+        return this->more3DCalibrationV2();
+    }
+    return this->more3DCalibrationV1();
+}
+
+int YRefFrame::more3DCalibrationV1(void)
 {
     int currTick = 0;
     string jsonData;
@@ -623,6 +693,65 @@ int YRefFrame::more3DCalibration(void)
     return YAPI_SUCCESS;
 }
 
+int YRefFrame::more3DCalibrationV2(void)
+{
+    int currTick = 0;
+    string calibParam;
+    vector<int> iCalib;
+    int cal3 = 0;
+    int calAcc = 0;
+    int calMag = 0;
+    int calGyr = 0;
+    // make sure calibration has been started
+    if (_calibStage == 0) {
+        return YAPI_INVALID_ARGUMENT;
+    }
+    if (_calibProgress == 100) {
+        return YAPI_SUCCESS;
+    }
+    // make sure we don't start before previous calibration is cleared
+    if (_calibStage == 1) {
+        currTick = (int) ((YAPI::GetTickCount()) & (0x7FFFFFFF));
+        currTick = ((currTick - _calibPrevTick) & (0x7FFFFFFF));
+        if (currTick < 1600) {
+            _calibStageHint = "Set down the device on a steady horizontal surface";
+            _calibStageProgress = ((currTick) / (40));
+            _calibProgress = 1;
+            return YAPI_SUCCESS;
+        }
+    }
+    // may throw an exception
+    calibParam = this->_download("api/refFrame/calibrationParam.txt");
+    iCalib = YAPI::_decodeFloats(calibParam);
+    cal3 = ((iCalib[1]) / (1000));
+    calAcc = ((cal3) / (100));
+    calMag = ((cal3) / (10)) - 10*calAcc;
+    calGyr = ((cal3) % (10));
+    if (calGyr < 3) {
+        _calibStageHint = "Set down the device on a steady horizontal surface";
+        _calibStageProgress = 40 + calGyr*20;
+        _calibProgress = 4 + calGyr*2;
+    } else {
+        _calibStage = 2;
+        if (calMag < 3) {
+            _calibStageHint = "Slowly draw '8' shapes along the 3 axis";
+            _calibStageProgress = 1 + calMag*33;
+            _calibProgress = 10 + calMag*5;
+        } else {
+            _calibStage = 3;
+            if (calAcc < 3) {
+                _calibStageHint = "Slowly turn the device, stopping at each 90 degrees";
+                _calibStageProgress = 1 + calAcc*33;
+                _calibProgress = 25 + calAcc*25;
+            } else {
+                _calibStageProgress = 99;
+                _calibProgress = 100;
+            }
+        }
+    }
+    return YAPI_SUCCESS;
+}
+
 /**
  * Returns instructions to proceed to the tridimensional calibration initiated with
  * method start3DCalibration.
@@ -690,6 +819,14 @@ string YRefFrame::get_3DCalibrationLogMsg(void)
  */
 int YRefFrame::save3DCalibration(void)
 {
+    if (_calibV2) {
+        return this->save3DCalibrationV2();
+    }
+    return this->save3DCalibrationV1();
+}
+
+int YRefFrame::save3DCalibrationV1(void)
+{
     int shiftX = 0;
     int shiftY = 0;
     int shiftZ = 0;
@@ -752,6 +889,11 @@ int YRefFrame::save3DCalibration(void)
     newcalib = YapiWrapper::ysprintf("5,%d,%d,%d,%d,%d", shiftX, shiftY, shiftZ, scaleLo,scaleHi);
     _calibStage = 0;
     return this->set_calibrationParam(newcalib);
+}
+
+int YRefFrame::save3DCalibrationV2(void)
+{
+    return this->set_calibrationParam("5,5,5,5,5,5");
 }
 
 /**

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_anbutton.cpp 23246 2016-02-23 14:49:01Z seb $
+ * $Id: yocto_anbutton.cpp 24825 2016-06-16 09:48:45Z seb $
  *
  * Implements yFindAnButton(), the high-level API for AnButton functions
  *
@@ -379,7 +379,9 @@ s64 YAnButton::get_lastTimeReleased(void)
 }
 
 /**
- * Returns the pulse counter value.
+ * Returns the pulse counter value. The value is a 32 bit integer. In case
+ * of overflow (>=2^32), the counter will wrap. To reset the counter, just
+ * call the resetCounter() method.
  *
  * @return an integer corresponding to the pulse counter value
  *

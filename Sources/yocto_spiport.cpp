@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_spiport.cpp 24628 2016-05-27 15:01:14Z mvuilleu $
+ * $Id: yocto_spiport.cpp 25085 2016-07-26 16:38:36Z mvuilleu $
  *
  * Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -65,6 +65,7 @@ YSpiPort::YSpiPort(const string& func): YFunction(func)
     ,_shitftSampling(SHITFTSAMPLING_INVALID)
     ,_valueCallbackSpiPort(NULL)
     ,_rxptr(0)
+    ,_rxbuffptr(0)
 //--- (end of SpiPort initialization)
 {
     _className="SpiPort";
@@ -631,6 +632,8 @@ int YSpiPort::sendCommand(string text)
 int YSpiPort::reset(void)
 {
     _rxptr = 0;
+    _rxbuffptr = 0;
+    _rxbuff = string(0, (char)0);
     // may throw an exception
     return this->sendCommand("Z");
 }
@@ -808,11 +811,49 @@ int YSpiPort::writeLine(string text)
  */
 int YSpiPort::readByte(void)
 {
+    int currpos = 0;
+    int reqlen = 0;
     string buff;
     int bufflen = 0;
     int mult = 0;
     int endpos = 0;
     int res = 0;
+    
+    // first check if we have the requested character in the look-ahead buffer
+    bufflen = (int)(_rxbuff).size();
+    if ((_rxptr >= _rxbuffptr) && (_rxptr < _rxbuffptr+bufflen)) {
+        res = ((u8)_rxbuff[_rxptr-_rxbuffptr]);
+        _rxptr = _rxptr + 1;
+        return res;
+    }
+    
+    // try to preload more than one byte to speed-up byte-per-byte access
+    currpos = _rxptr;
+    reqlen = 1024;
+    buff = this->readBin(reqlen);
+    bufflen = (int)(buff).size();
+    if (_rxptr == currpos+bufflen) {
+        res = ((u8)buff[0]);
+        _rxptr = currpos+1;
+        _rxbuffptr = currpos;
+        _rxbuff = buff;
+        return res;
+    }
+    // mixed bidirectional data, retry with a smaller block
+    _rxptr = currpos;
+    reqlen = 16;
+    buff = this->readBin(reqlen);
+    bufflen = (int)(buff).size();
+    if (_rxptr == currpos+bufflen) {
+        res = ((u8)buff[0]);
+        _rxptr = currpos+1;
+        _rxbuffptr = currpos;
+        _rxbuff = buff;
+        return res;
+    }
+    // still mixed, need to process character by character
+    _rxptr = currpos;
+    
     // may throw an exception
     buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=1",_rxptr));
     bufflen = (int)(buff).size() - 1;

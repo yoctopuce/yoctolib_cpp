@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_spiport.h 24252 2016-04-26 13:39:30Z seb $
+ * $Id: yocto_spiport.h 25085 2016-07-26 16:38:36Z mvuilleu $
  *
  * Declares yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -128,6 +128,8 @@ protected:
     Y_SHITFTSAMPLING_enum _shitftSampling;
     YSpiPortValueCallback _valueCallbackSpiPort;
     int             _rxptr;
+    string          _rxbuff;
+    int             _rxbuffptr;
 
     friend YSpiPort *yFindSpiPort(const string& func);
     friend YSpiPort *yFirstSpiPort(void);

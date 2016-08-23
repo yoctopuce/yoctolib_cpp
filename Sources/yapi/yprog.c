@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 24573 2016-05-25 16:33:14Z seb $
+ * $Id: yprog.c 24731 2016-06-06 09:09:06Z seb $
  *
  * Implementation of firmware upgrade functions
  *
@@ -54,6 +54,7 @@
 #include "yhash.h"
 #include "yjson.h"
 #include "yprog.h"
+#include <stdio.h>
 //#define DEBUG_FIRMWARE
 
 #ifndef YAPI_IN_YDEVICE

@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{6C7B0CCA-1BD8-485B-9DB3-E10E40B9FE94}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>demo</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>..\..\..\Sources;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>..\..\..\Sources;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\Sources\yapi\yapi.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\yfifo.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\yhash.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\yjson.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\ymemory.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\ypkt_lin.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\ypkt_osx.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\ypkt_win.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\yprog.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\ystream.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\ytcp.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\ythread.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\ykey.c" />
+    <ClCompile Include="..\..\..\Sources\yocto_api.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_accelerometer.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_altitude.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_anbutton.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_buzzer.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_carbondioxide.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_cellular.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_colorled.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_colorledcluster.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_current.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_currentloopoutput.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_compass.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_datalogger.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_digitalio.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_display.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_dualpower.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_files.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_genericsensor.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_gps.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_groundspeed.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_gyro.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_hubport.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_humidity.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_led.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_latitude.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_lightsensor.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_longitude.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_magnetometer.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_messagebox.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_motor.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_network.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_oscontrol.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_power.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_poweroutput.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_pressure.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_pwminput.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_pwmoutput.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_pwmpowersource.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_quadraturedecoder.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_realtimeclock.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_refframe.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_relay.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_segmenteddisplay.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_serialport.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_servo.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_spiport.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_temperature.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_tilt.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_voc.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_voltage.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_wakeupmonitor.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_wakeupschedule.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_watchdog.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_wireless.cpp" />
+    <ClCompile Include="..\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\Sources\yapi\yapi.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\ydef.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\yfifo.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\yhash.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\yjson.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\ymemory.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\yprog.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\yproto.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\ytcp.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\ythread.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\yversion.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\ykey.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_api.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_accelerometer.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_altitude.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_anbutton.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_buzzer.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_carbondioxide.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_cellular.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_colorled.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_colorledcluster.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_current.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_currentloopoutput.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_compass.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_datalogger.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_digitalio.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_display.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_dualpower.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_files.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_genericsensor.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_gps.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_groundspeed.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_gyro.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_hubport.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_humidity.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_led.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_latitude.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_lightsensor.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_longitude.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_magnetometer.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_messagebox.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_motor.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_network.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_oscontrol.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_power.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_poweroutput.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_pressure.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_pwminput.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_pwmoutput.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_pwmpowersource.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_quadraturedecoder.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_realtimeclock.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_refframe.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_relay.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_segmenteddisplay.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_serialport.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_servo.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_spiport.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_temperature.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_tilt.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_voc.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_voltage.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_wakeupmonitor.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_wakeupschedule.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_watchdog.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_wireless.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

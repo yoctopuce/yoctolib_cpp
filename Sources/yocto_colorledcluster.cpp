@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorledcluster.cpp 24717 2016-06-03 16:09:53Z seb $
+ * $Id: yocto_colorledcluster.cpp 24934 2016-06-30 22:32:01Z mvuilleu $
  *
  * Implements yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -592,6 +592,11 @@ int YColorLedCluster::set_blinkSeqSpeed(int seqIndex,int speed)
  * On failure, throws an exception or returns a negative error code.
  */
 int YColorLedCluster::saveLedsConfigAtPowerOn(void)
+{
+    return this->sendCommand("WL");
+}
+
+int YColorLedCluster::saveLedsState(void)
 {
     return this->sendCommand("WL");
 }

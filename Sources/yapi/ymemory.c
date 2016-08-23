@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ymemory.c 23545 2016-03-21 14:02:30Z seb $
+ * $Id: ymemory.c 24731 2016-06-06 09:09:06Z seb $
  *
  * Basic memory check function to prevent memory leak
  *
@@ -42,6 +42,17 @@
 #define _CRT_SECURE_NO_DEPRECATE
 #define YMEMORY_ALLOW_MALLOC
 #include "yproto.h"
+
+#include <stdlib.h>
+#include <stdarg.h>
+#include <stdio.h>
+#ifdef WINDOWS_API
+#include <time.h>
+#else
+#include <sys/time.h>
+#endif
+
+
 #ifdef YSAFE_MEMORY
 typedef  enum{
     YMEM_NOT_USED=0,

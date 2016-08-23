@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.h 24587 2016-05-26 12:45:04Z seb $
+ * $Id: yocto_cellular.h 24921 2016-06-29 13:15:24Z mvuilleu $
  *
  * Declares yFindCellular(), the high-level API for Cellular functions
  *
@@ -78,6 +78,7 @@ typedef enum {
     Y_ENABLEDATA_HOMENETWORK = 0,
     Y_ENABLEDATA_ROAMING = 1,
     Y_ENABLEDATA_NEVER = 2,
+    Y_ENABLEDATA_NEUTRALITY = 3,
     Y_ENABLEDATA_INVALID = -1,
 } Y_ENABLEDATA_enum;
 #endif
@@ -219,6 +220,7 @@ public:
     static const Y_ENABLEDATA_enum ENABLEDATA_HOMENETWORK = Y_ENABLEDATA_HOMENETWORK;
     static const Y_ENABLEDATA_enum ENABLEDATA_ROAMING = Y_ENABLEDATA_ROAMING;
     static const Y_ENABLEDATA_enum ENABLEDATA_NEVER = Y_ENABLEDATA_NEVER;
+    static const Y_ENABLEDATA_enum ENABLEDATA_NEUTRALITY = Y_ENABLEDATA_NEUTRALITY;
     static const Y_ENABLEDATA_enum ENABLEDATA_INVALID = Y_ENABLEDATA_INVALID;
     static const string APN_INVALID;
     static const string APNSECRET_INVALID;
@@ -406,8 +408,8 @@ public:
      * Returns the condition for enabling IP data services (GPRS).
      * When data services are disabled, SMS are the only mean of communication.
      *
-     * @return a value among Y_ENABLEDATA_HOMENETWORK, Y_ENABLEDATA_ROAMING and Y_ENABLEDATA_NEVER
-     * corresponding to the condition for enabling IP data services (GPRS)
+     * @return a value among Y_ENABLEDATA_HOMENETWORK, Y_ENABLEDATA_ROAMING, Y_ENABLEDATA_NEVER and
+     * Y_ENABLEDATA_NEUTRALITY corresponding to the condition for enabling IP data services (GPRS)
      *
      * On failure, throws an exception or returns Y_ENABLEDATA_INVALID.
      */
@@ -424,8 +426,8 @@ public:
      *
      * When data services are disabled, SMS are the only mean of communication.
      *
-     * @param newval : a value among Y_ENABLEDATA_HOMENETWORK, Y_ENABLEDATA_ROAMING and Y_ENABLEDATA_NEVER
-     * corresponding to the condition for enabling IP data services (GPRS)
+     * @param newval : a value among Y_ENABLEDATA_HOMENETWORK, Y_ENABLEDATA_ROAMING, Y_ENABLEDATA_NEVER
+     * and Y_ENABLEDATA_NEUTRALITY corresponding to the condition for enabling IP data services (GPRS)
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *

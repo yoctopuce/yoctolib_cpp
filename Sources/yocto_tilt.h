@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_tilt.h 23246 2016-02-23 14:49:01Z seb $
+ * $Id: yocto_tilt.h 24934 2016-06-30 22:32:01Z mvuilleu $
  *
  * Declares yFindTilt(), the high-level API for Tilt functions
  *
@@ -63,6 +63,7 @@ typedef enum {
     Y_AXIS_INVALID = -1,
 } Y_AXIS_enum;
 #endif
+#define Y_BANDWIDTH_INVALID             (YAPI_INVALID_INT)
 //--- (end of YTilt definitions)
 
 //--- (YTilt declaration)
@@ -87,6 +88,7 @@ class YOCTO_CLASS_EXPORT YTilt: public YSensor {
 protected:
     //--- (YTilt attributes)
     // Attributes (function value cache)
+    int             _bandwidth;
     Y_AXIS_enum     _axis;
     YTiltValueCallback _valueCallbackTilt;
     YTiltTimedReportCallback _timedReportCallbackTilt;
@@ -105,10 +107,37 @@ public:
     ~YTilt();
     //--- (YTilt accessors declaration)
 
+    static const int BANDWIDTH_INVALID = YAPI_INVALID_INT;
     static const Y_AXIS_enum AXIS_X = Y_AXIS_X;
     static const Y_AXIS_enum AXIS_Y = Y_AXIS_Y;
     static const Y_AXIS_enum AXIS_Z = Y_AXIS_Z;
     static const Y_AXIS_enum AXIS_INVALID = Y_AXIS_INVALID;
+
+    /**
+     * Returns the measure update frequency, measured in Hz (Yocto-3D-V2 only).
+     *
+     * @return an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
+     *
+     * On failure, throws an exception or returns Y_BANDWIDTH_INVALID.
+     */
+    int                 get_bandwidth(void);
+
+    inline int          bandwidth(void)
+    { return this->get_bandwidth(); }
+
+    /**
+     * Changes the measure update frequency, measured in Hz (Yocto-3D-V2 only). When the
+     * frequency is lower, the device performs averaging.
+     *
+     * @param newval : an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_bandwidth(int newval);
+    inline int      setBandwidth(int newval)
+    { return this->set_bandwidth(newval); }
 
     Y_AXIS_enum         get_axis(void);
 

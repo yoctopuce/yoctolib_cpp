@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 24575 2016-05-26 06:28:03Z seb $
+ * $Id: yapi.c 24731 2016-06-06 09:09:06Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -43,7 +43,9 @@
 #include "yjson.h"
 #include "yprog.h"
 
-#ifndef WINDOWS_API
+#ifdef WINDOWS_API
+#include <time.h>
+#else
 #include <sys/time.h>
 #endif
 

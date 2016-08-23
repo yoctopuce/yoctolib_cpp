@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_accelerometer.cpp 23246 2016-02-23 14:49:01Z seb $
+ * $Id: yocto_accelerometer.cpp 24934 2016-06-30 22:32:01Z mvuilleu $
  *
  * Implements yFindAccelerometer(), the high-level API for Accelerometer functions
  *
@@ -49,6 +49,7 @@
 
 YAccelerometer::YAccelerometer(const string& func): YSensor(func)
 //--- (Accelerometer initialization)
+    ,_bandwidth(BANDWIDTH_INVALID)
     ,_xValue(XVALUE_INVALID)
     ,_yValue(YVALUE_INVALID)
     ,_zValue(ZVALUE_INVALID)
@@ -73,6 +74,11 @@ const double YAccelerometer::ZVALUE_INVALID = YAPI_INVALID_DOUBLE;
 
 int YAccelerometer::_parseAttr(yJsonStateMachine& j)
 {
+    if(!strcmp(j.token, "bandwidth")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _bandwidth =  atoi(j.token);
+        return 1;
+    }
     if(!strcmp(j.token, "xValue")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _xValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
@@ -97,6 +103,40 @@ int YAccelerometer::_parseAttr(yJsonStateMachine& j)
     return YSensor::_parseAttr(j);
 }
 
+
+/**
+ * Returns the measure update frequency, measured in Hz (Yocto-3D-V2 only).
+ *
+ * @return an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
+ *
+ * On failure, throws an exception or returns Y_BANDWIDTH_INVALID.
+ */
+int YAccelerometer::get_bandwidth(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YAccelerometer::BANDWIDTH_INVALID;
+        }
+    }
+    return _bandwidth;
+}
+
+/**
+ * Changes the measure update frequency, measured in Hz (Yocto-3D-V2 only). When the
+ * frequency is lower, the device performs averaging.
+ *
+ * @param newval : an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YAccelerometer::set_bandwidth(int newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+    return _setAttr("bandwidth", rest_val);
+}
 
 /**
  * Returns the X component of the acceleration, as a floating point number.

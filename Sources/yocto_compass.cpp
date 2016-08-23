@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_compass.cpp 23246 2016-02-23 14:49:01Z seb $
+ * $Id: yocto_compass.cpp 24934 2016-06-30 22:32:01Z mvuilleu $
  *
  * Implements yFindCompass(), the high-level API for Compass functions
  *
@@ -49,6 +49,7 @@
 
 YCompass::YCompass(const string& func): YSensor(func)
 //--- (Compass initialization)
+    ,_bandwidth(BANDWIDTH_INVALID)
     ,_axis(AXIS_INVALID)
     ,_magneticHeading(MAGNETICHEADING_INVALID)
     ,_valueCallbackCompass(NULL)
@@ -69,6 +70,11 @@ const double YCompass::MAGNETICHEADING_INVALID = YAPI_INVALID_DOUBLE;
 
 int YCompass::_parseAttr(yJsonStateMachine& j)
 {
+    if(!strcmp(j.token, "bandwidth")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _bandwidth =  atoi(j.token);
+        return 1;
+    }
     if(!strcmp(j.token, "axis")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _axis =  (Y_AXIS_enum) atoi(j.token);
@@ -83,6 +89,40 @@ int YCompass::_parseAttr(yJsonStateMachine& j)
     return YSensor::_parseAttr(j);
 }
 
+
+/**
+ * Returns the measure update frequency, measured in Hz (Yocto-3D-V2 only).
+ *
+ * @return an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
+ *
+ * On failure, throws an exception or returns Y_BANDWIDTH_INVALID.
+ */
+int YCompass::get_bandwidth(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YCompass::BANDWIDTH_INVALID;
+        }
+    }
+    return _bandwidth;
+}
+
+/**
+ * Changes the measure update frequency, measured in Hz (Yocto-3D-V2 only). When the
+ * frequency is lower, the device performs averaging.
+ *
+ * @param newval : an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YCompass::set_bandwidth(int newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+    return _setAttr("bandwidth", rest_val);
+}
 
 Y_AXIS_enum YCompass::get_axis(void)
 {

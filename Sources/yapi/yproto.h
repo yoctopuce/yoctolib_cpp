@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 24575 2016-05-26 06:28:03Z seb $
+ * $Id: yproto.h 24749 2016-06-07 14:30:35Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -59,6 +59,17 @@
 #else
 #include <windows.h>
 #endif
+#ifndef WINAPI_PARTITION_DESKTOP
+#define WINDOWS_WIN32_API
+#else
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#define WINDOWS_WIN32_API
+#else 
+#define WINDOWS_UWP_API
+#endif
+#endif
+
+#ifdef WINDOWS_WIN32_API
 #include <dbt.h>
 
 #include <SetupAPI.h>
@@ -95,7 +106,9 @@ typedef struct{
     PHidD_GetSerialNumberString GetSerialNumberString;
     PHidD_SetNumInputBuffers    SetNumInputBuffers;
 }win_hid_api;
+#endif
 
+#ifdef  WINDOWS_WIN32_API
 
 //Pointers to a registry function  used
 
@@ -137,7 +150,7 @@ typedef struct{
     PYRegDeleteKeyEx           yRegDeleteKeyEx;
 }win_reg_api;
 
-
+#endif
 
 #elif defined(OSX_API)
 /*****************************************************************************
@@ -157,16 +170,13 @@ typedef struct{
   MISC GLOBAL INCLUDES:
  ****************************************************************************/
 
-#include <stdlib.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <time.h>
 #include "yfifo.h"
-#include "ythread.h"
 #include "yhash.h"
 #include "ykey.h"
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
+#include <ctype.h>
 
 /*****************************************************************************
   MEMORY MANAGEMENT FUNCTION:
@@ -410,6 +420,7 @@ void dumpAnyPacket(char *prefix,int ifaceno,USB_Packet *pkt);
 #if defined(_MSC_VER) &&  (_MSC_VER > MSC_VS2003)
 #define YFOPEN(f,filename,mode) fopen_s(f,filename,mode)
 #else
+#include <stdio.h>
 int YFOPEN(FILE** f, const char *filename, const char *mode);
 #endif
 
@@ -431,7 +442,7 @@ int YFOPEN(FILE** f, const char *filename, const char *mode);
 #define YERRMSG(code,message)   ySetErr(code,errmsg,message,__FILE_ID__,__LINE__)
 #define YERRMSGSILENT(code,message)   ySetErr(code, errmsg, message, NULL, 0)
 #define YERRMSGTO(code,message,buffer)   ySetErr(code,buffer,message,__FILE_ID__,__LINE__)
-YRETCODE ySetErr(YRETCODE code, char *outmsg, const char *erreur, const char *file, u32 line);
+int ySetErr(int code, char *outmsg, const char *erreur, const char *file, u32 line);
 int FusionErrmsg(int code,char *errmsg, const char *generr, const char *detailerr);
 
 
@@ -514,6 +525,14 @@ typedef struct {
 
 #endif
 
+#ifdef WINDOWS_UWP_API
+typedef struct _uwp_enum_item {
+    u16 vendorid;
+    u16 devicid;
+    //String ^serial;
+    //String ^id;
+} uwp_enum_item;
+#endif
 
 #define NBMAX_NET_HUB               32
 #define NBMAX_USB_DEVICE_CONNECTED  256
@@ -536,6 +555,9 @@ typedef struct _yInterfaceSt {
     pktQueue        rxQueue;
     pktQueue        txQueue;
 #if defined(WINDOWS_API)
+#ifdef WINDOWS_UWP_API
+    uwp_enum_item    uwp;
+#else
     char            devicePath[WIN_DEVICE_PATH_LEN];
     yThread         io_thread;
     HANDLE          wrHDL;
@@ -545,6 +567,7 @@ typedef struct _yInterfaceSt {
     u32             rdpending;
     OS_USB_Packet   tmpd2hpkt;
     OS_USB_Packet   tmph2dpkt;
+#endif
 #elif defined(OSX_API)
     OSX_HID_REF         hid;
     CFStringRef         run_loop_mode;
@@ -931,13 +954,15 @@ typedef struct{
     // OS specifics variables
     yInterfaceSt*       setupedIfaceCache[SETUPED_IFACE_CACHE_SIZE];
 #if defined(WINDOWS_API)
-    win_hid_api         hid;
     HANDLE              apiLock;
     HANDLE              nameLock;
     yCRITICAL_SECTION   prevEnum_cs;
     int                 prevEnumCnt;
     yInterfaceSt        *prevEnum;
+#ifdef WINDOWS_WIN32_API
+    win_hid_api         hid;
     win_reg_api         registry;
+#endif
 #elif defined(OSX_API)
     u32                 osx_flags;
     OSX_HID_REF         hid;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_accelerometer.h 23246 2016-02-23 14:49:01Z seb $
+ * $Id: yocto_accelerometer.h 24934 2016-06-30 22:32:01Z mvuilleu $
  *
  * Declares yFindAccelerometer(), the high-level API for Accelerometer functions
  *
@@ -62,6 +62,7 @@ typedef enum {
     Y_GRAVITYCANCELLATION_INVALID = -1,
 } Y_GRAVITYCANCELLATION_enum;
 #endif
+#define Y_BANDWIDTH_INVALID             (YAPI_INVALID_INT)
 #define Y_XVALUE_INVALID                (YAPI_INVALID_DOUBLE)
 #define Y_YVALUE_INVALID                (YAPI_INVALID_DOUBLE)
 #define Y_ZVALUE_INVALID                (YAPI_INVALID_DOUBLE)
@@ -89,6 +90,7 @@ class YOCTO_CLASS_EXPORT YAccelerometer: public YSensor {
 protected:
     //--- (YAccelerometer attributes)
     // Attributes (function value cache)
+    int             _bandwidth;
     double          _xValue;
     double          _yValue;
     double          _zValue;
@@ -110,12 +112,39 @@ public:
     ~YAccelerometer();
     //--- (YAccelerometer accessors declaration)
 
+    static const int BANDWIDTH_INVALID = YAPI_INVALID_INT;
     static const double XVALUE_INVALID;
     static const double YVALUE_INVALID;
     static const double ZVALUE_INVALID;
     static const Y_GRAVITYCANCELLATION_enum GRAVITYCANCELLATION_OFF = Y_GRAVITYCANCELLATION_OFF;
     static const Y_GRAVITYCANCELLATION_enum GRAVITYCANCELLATION_ON = Y_GRAVITYCANCELLATION_ON;
     static const Y_GRAVITYCANCELLATION_enum GRAVITYCANCELLATION_INVALID = Y_GRAVITYCANCELLATION_INVALID;
+
+    /**
+     * Returns the measure update frequency, measured in Hz (Yocto-3D-V2 only).
+     *
+     * @return an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
+     *
+     * On failure, throws an exception or returns Y_BANDWIDTH_INVALID.
+     */
+    int                 get_bandwidth(void);
+
+    inline int          bandwidth(void)
+    { return this->get_bandwidth(); }
+
+    /**
+     * Changes the measure update frequency, measured in Hz (Yocto-3D-V2 only). When the
+     * frequency is lower, the device performs averaging.
+     *
+     * @param newval : an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_bandwidth(int newval);
+    inline int      setBandwidth(int newval)
+    { return this->set_bandwidth(newval); }
 
     /**
      * Returns the X component of the acceleration, as a floating point number.

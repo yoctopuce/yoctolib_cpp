@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 23893 2016-04-13 07:32:10Z seb $
+ * $Id: ystream.c 24749 2016-06-07 14:30:35Z seb $
  *
  * USB multi-interface stream implementation
  *
@@ -41,11 +41,14 @@
 #include "yproto.h"
 #include "yhash.h"
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
 #include <stdarg.h>
-#ifndef WINDOWS_API
+#ifdef WINDOWS_API
+#include <time.h>
+#else
 #include <sys/time.h>
 #endif
 
@@ -66,7 +69,7 @@ char  ytracefile[512]="";
  ***************************************************************************/
 
 
-YRETCODE ySetErr(YRETCODE code, char *outmsg, const char *erreur,const char *file,u32 line)
+int ySetErr(int code, char *outmsg, const char *erreur,const char *file,u32 line)
 {
     const char *msg;
     if(outmsg==NULL){

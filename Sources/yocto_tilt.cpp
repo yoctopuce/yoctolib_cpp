@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_tilt.cpp 23246 2016-02-23 14:49:01Z seb $
+ * $Id: yocto_tilt.cpp 24934 2016-06-30 22:32:01Z mvuilleu $
  *
  * Implements yFindTilt(), the high-level API for Tilt functions
  *
@@ -49,6 +49,7 @@
 
 YTilt::YTilt(const string& func): YSensor(func)
 //--- (Tilt initialization)
+    ,_bandwidth(BANDWIDTH_INVALID)
     ,_axis(AXIS_INVALID)
     ,_valueCallbackTilt(NULL)
     ,_timedReportCallbackTilt(NULL)
@@ -67,6 +68,11 @@ YTilt::~YTilt()
 
 int YTilt::_parseAttr(yJsonStateMachine& j)
 {
+    if(!strcmp(j.token, "bandwidth")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _bandwidth =  atoi(j.token);
+        return 1;
+    }
     if(!strcmp(j.token, "axis")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _axis =  (Y_AXIS_enum) atoi(j.token);
@@ -76,6 +82,40 @@ int YTilt::_parseAttr(yJsonStateMachine& j)
     return YSensor::_parseAttr(j);
 }
 
+
+/**
+ * Returns the measure update frequency, measured in Hz (Yocto-3D-V2 only).
+ *
+ * @return an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
+ *
+ * On failure, throws an exception or returns Y_BANDWIDTH_INVALID.
+ */
+int YTilt::get_bandwidth(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YTilt::BANDWIDTH_INVALID;
+        }
+    }
+    return _bandwidth;
+}
+
+/**
+ * Changes the measure update frequency, measured in Hz (Yocto-3D-V2 only). When the
+ * frequency is lower, the device performs averaging.
+ *
+ * @param newval : an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YTilt::set_bandwidth(int newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+    return _setAttr("bandwidth", rest_val);
+}
 
 Y_AXIS_enum YTilt::get_axis(void)
 {

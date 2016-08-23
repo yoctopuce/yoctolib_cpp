@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 24423 2016-05-10 08:19:16Z seb $
+ * $Id: ytcp.c 24759 2016-06-08 16:03:13Z mvuilleu $
  *
  * Implementation of a client TCP stack
  *
@@ -2008,6 +2008,10 @@ static int ws_parseIncommingFrame(HubSt *hub, u8 *buffer, int pktlen, char *errm
                 return YAPI_SUCCESS;
             }
             hub->ws.tcpRoundTripTime = (u32)(yapiGetTickCount() - hub->ws.connectionTime + 1);
+            if(hub->ws.tcpMaxWindowSize < 2048 && hub->ws.tcpRoundTripTime < 7) {
+                // Fix overly optimistic round-trip on YoctoHubs
+                hub->ws.tcpRoundTripTime = 7;
+            }
 #ifdef DEBUG_WEBSOCKET
             int uploadRate = hub->ws.tcpMaxWindowSize * 1000 / hub->ws.tcpRoundTripTime;
             dbglog("RTT=%dms, WS=%d, uploadRate=%f KB/s\n", hub->ws.tcpRoundTripTime, hub->ws.tcpMaxWindowSize, uploadRate/1000.0);

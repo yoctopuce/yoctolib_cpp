@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorledcluster.h 24717 2016-06-03 16:09:53Z seb $
+ * $Id: yocto_colorledcluster.h 24934 2016-06-30 22:32:01Z mvuilleu $
  *
  * Declares yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -480,6 +480,8 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         saveLedsConfigAtPowerOn(void);
+
+    virtual int         saveLedsState(void);
 
     /**
      * Saves the definition of a sequence. Warning: only sequence steps and flags are saved.
