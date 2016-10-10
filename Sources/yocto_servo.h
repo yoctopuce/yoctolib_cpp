@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_servo.h 23246 2016-02-23 14:49:01Z seb $
+ * $Id: yocto_servo.h 25275 2016-08-24 13:42:24Z mvuilleu $
  *
  * Declares yFindServo(), the high-level API for Servo functions
  *
@@ -358,9 +358,9 @@ public:
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
      *
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
      * @noreturn
@@ -378,7 +378,7 @@ public:
      * Continues the enumeration of servos started using yFirstServo().
      *
      * @return a pointer to a YServo object, corresponding to
-     *         a servo currently online, or a null pointer
+     *         a servo currently online, or a NULL pointer
      *         if there are no more servos to enumerate.
      */
            YServo          *nextServo(void);
@@ -391,7 +391,7 @@ public:
      * next servos.
      *
      * @return a pointer to a YServo object, corresponding to
-     *         the first servo currently online, or a null pointer
+     *         the first servo currently online, or a NULL pointer
      *         if there are none.
      */
            static YServo* FirstServo(void);
@@ -436,7 +436,7 @@ inline YServo* yFindServo(const string& func)
  * next servos.
  *
  * @return a pointer to a YServo object, corresponding to
- *         the first servo currently online, or a null pointer
+ *         the first servo currently online, or a NULL pointer
  *         if there are none.
  */
 inline YServo* yFirstServo(void)

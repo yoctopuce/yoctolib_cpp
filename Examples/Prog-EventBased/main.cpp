@@ -22,14 +22,14 @@ static void sensorTimedReportCallBack(YSensor *fct, YMeasure measure)
 
 static void deviceLog(YModule *module, const string& logline)
 {
-	cout <<"log:"<< module->get_hardwareId() << ":"<<logline<<endl;
+    cout << "log:" << module->get_hardwareId() << ":" << logline << endl;
 }
 
 static void deviceArrival(YModule *m)
 {
     string serial = m->get_serialNumber();
     cout << "Device arrival : " << serial << endl;
-	m->registerLogCallback(deviceLog);
+    m->registerLogCallback(deviceLog);
     string hardwareId;
 
     // First solution: look for a specific type of function (eg. anButton)
@@ -42,7 +42,7 @@ static void deviceArrival(YModule *m)
             bt->registerValueCallback(anButtonValueChangeCallBack);
         }
     }
-    
+
     // Alternate solution: register any kind of sensor on the device
     YSensor *sensor = YSensor::FirstSensor();
     while(sensor) {
@@ -58,7 +58,7 @@ static void deviceArrival(YModule *m)
 
 static void deviceRemoval(YModule *m)
 {
-  cout << "Device removal : " << m->get_serialNumber()<<endl;
+    cout << "Device removal : " << m->get_serialNumber() << endl;
 }
 
 static void log(const string& val)
@@ -69,14 +69,14 @@ static void log(const string& val)
 int main(int argc, const char * argv[])
 {
     string errmsg;
-    
+
     YAPI::RegisterLogFunction(log);
     YAPI::RegisterDeviceArrivalCallback(deviceArrival);
     YAPI::RegisterDeviceRemovalCallback(deviceRemoval);
     YAPI::DisableExceptions();
-    
+
     if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
-        cerr << "RegisterHub error : " << errmsg<<endl;
+        cerr << "RegisterHub error : " << errmsg << endl;
         return 1;
     }
 
@@ -85,5 +85,5 @@ int main(int argc, const char * argv[])
     while (true) {
         YAPI::UpdateDeviceList(errmsg); // traps plug/unplug events
         YAPI::Sleep(500, errmsg);   // traps others events
-    } 
+    }
 }

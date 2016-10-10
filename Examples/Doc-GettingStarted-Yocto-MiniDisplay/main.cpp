@@ -27,37 +27,30 @@ int main(int argc, const char * argv[])
     YDisplayLayer *l0, *l1;
     int w, h, x, y, vx, vy;
 
-    if (argc < 2)
-    {
+    if (argc < 2) {
         usage();
     }
 
     // Setup the API to use local USB devices
-    if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS)
-    {
+    if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
         cerr << "RegisterHub error: " << errmsg << endl;
         usage();
         return 1;
     }
 
     target = (string) argv[1];
-    if (target == "any")
-    {
+    if (target == "any") {
         disp = yFirstDisplay();
-        if (disp == NULL)
-        {
+        if (disp == NULL) {
             cout << "No module connected (check USB cable)" << endl;
             usage();
             return 1;
         }
-    }
-    else
-    {
+    } else {
         disp = yFindDisplay(target + ".display");
     }
 
-    if (!disp->isOnline())
-    {
+    if (!disp->isOnline()) {
         cout << "Module is offline (check USB cable)" << endl;
         usage();
         return 1;
@@ -99,8 +92,7 @@ int main(int argc, const char * argv[])
     y = 0;
     vx = 1;
     vy = 1;
-    while (true)
-    {
+    while (disp->isOnline()) {
         x += vx;
         y += vy;
         if ((x < 0) || (x > w - (h / 4)))
@@ -110,5 +102,6 @@ int main(int argc, const char * argv[])
         l1->setLayerPosition(x, y, 0);
         YAPI::Sleep(5, errmsg);
     }
+    yFreeAPI();
     return 0;
 }

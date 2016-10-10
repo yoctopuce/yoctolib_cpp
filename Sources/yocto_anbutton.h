@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_anbutton.h 24825 2016-06-16 09:48:45Z seb $
+ * $Id: yocto_anbutton.h 25275 2016-08-24 13:42:24Z mvuilleu $
  *
  * Declares yFindAnButton(), the high-level API for AnButton functions
  *
@@ -385,9 +385,9 @@ public:
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
      *
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
      * @noreturn
@@ -414,7 +414,7 @@ public:
      * Continues the enumeration of analog inputs started using yFirstAnButton().
      *
      * @return a pointer to a YAnButton object, corresponding to
-     *         an analog input currently online, or a null pointer
+     *         an analog input currently online, or a NULL pointer
      *         if there are no more analog inputs to enumerate.
      */
            YAnButton       *nextAnButton(void);
@@ -427,7 +427,7 @@ public:
      * next analog inputs.
      *
      * @return a pointer to a YAnButton object, corresponding to
-     *         the first analog input currently online, or a null pointer
+     *         the first analog input currently online, or a NULL pointer
      *         if there are none.
      */
            static YAnButton* FirstAnButton(void);
@@ -472,7 +472,7 @@ inline YAnButton* yFindAnButton(const string& func)
  * next analog inputs.
  *
  * @return a pointer to a YAnButton object, corresponding to
- *         the first analog input currently online, or a null pointer
+ *         the first analog input currently online, or a NULL pointer
  *         if there are none.
  */
 inline YAnButton* yFirstAnButton(void)

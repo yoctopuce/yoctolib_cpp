@@ -6,15 +6,15 @@ using namespace std;
 
 
 static std::set<string> KnownHubs;
- 
+
 static void HubDiscovered(const string& serial, const string& url)
 {
     // The call-back can be called several times for the same hub
     // (the discovery technique is based on a periodic broadcast)
-    // So we use a dictionnary to avoid duplicates    
+    // So we use a dictionnary to avoid duplicates
     if (KnownHubs.find(serial) != KnownHubs.end()) return;
 
-	cout << "hub found: " << serial << " (" << url << ")" << endl;
+    cout << "hub found: " << serial << " (" << url << ")" << endl;
 
     // connect to the hub
     string msg;
@@ -28,7 +28,7 @@ static void HubDiscovered(const string& serial, const string& url)
     for (int i = 0; i < fctCount; i++) {
         // retreive the hardware name of the ith function
         string fctHwdName = hub->functionId(i);
-        if (fctHwdName.length() > 7 && fctHwdName.substr(0,7) == "hubPort") {
+        if (fctHwdName.length() > 7 && fctHwdName.substr(0, 7) == "hubPort") {
             // The port logical name is always the serial#
             // of the connected device
             string deviceid =  hub->functionName(i);
@@ -54,7 +54,7 @@ int main(int argc, const char * argv[])
     YAPI::RegisterHubDiscoveryCallback(HubDiscovered);
 
     // wait for 30 seconds, doing nothing.
-    for (int i=0 ;i< 30;i++) {
+    for (int i = 0 ; i < 30; i++) {
         YAPI::UpdateDeviceList(errmsg);
         YAPI::Sleep(1000, errmsg);
     }

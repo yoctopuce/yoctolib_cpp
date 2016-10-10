@@ -27,7 +27,7 @@ string YoctoShield::getSerial()
 
 bool YoctoShield::addSubdevice(string serial)
 {
-    char buffer[2]="1";
+    char buffer[2] = "1";
     for (int i = 1; i <= 4; i++, (*buffer)++) {
         YHubPort *p = YHubPort::FindHubPort(_serial + ".hubPort" + string(buffer));
         if (p->get_logicalName() == serial) {
@@ -191,7 +191,7 @@ int main(int argc, const char * argv[])
     string errmsg;
 
     if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
-        cerr << "RegisterHub error : " << errmsg<<endl;
+        cerr << "RegisterHub error : " << errmsg << endl;
         return 1;
     }
     if (YAPI::RegisterHub("net", errmsg) != YAPI::SUCCESS) {
@@ -206,7 +206,7 @@ int main(int argc, const char * argv[])
     // arrivalCallback will be called.
     YAPI::RegisterDeviceRemovalCallback(deviceRemoval);
 
-    cout << "Waiting for hubs to signal themselves..."<< endl;
+    cout << "Waiting for hubs to signal themselves..." << endl;
     // wait for 5 seconds, doing nothing.
     //noinspection InfiniteLoopStatement
     while (true) {

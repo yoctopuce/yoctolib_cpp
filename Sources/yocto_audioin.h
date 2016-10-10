@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_audioin.h 23246 2016-02-23 14:49:01Z seb $
+ * $Id: yocto_audioin.h 25275 2016-08-24 13:42:24Z mvuilleu $
  *
  * Declares yFindAudioIn(), the high-level API for AudioIn functions
  *
@@ -228,9 +228,9 @@ public:
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
      *
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
      * @noreturn
@@ -248,7 +248,7 @@ public:
      * Continues the enumeration of audio inputs started using yFirstAudioIn().
      *
      * @return a pointer to a YAudioIn object, corresponding to
-     *         an audio input currently online, or a null pointer
+     *         an audio input currently online, or a NULL pointer
      *         if there are no more audio inputs to enumerate.
      */
            YAudioIn        *nextAudioIn(void);
@@ -261,7 +261,7 @@ public:
      * next audio inputs.
      *
      * @return a pointer to a YAudioIn object, corresponding to
-     *         the first audio input currently online, or a null pointer
+     *         the first audio input currently online, or a NULL pointer
      *         if there are none.
      */
            static YAudioIn* FirstAudioIn(void);
@@ -306,7 +306,7 @@ inline YAudioIn* yFindAudioIn(const string& func)
  * next audio inputs.
  *
  * @return a pointer to a YAudioIn object, corresponding to
- *         the first audio input currently online, or a null pointer
+ *         the first audio input currently online, or a NULL pointer
  *         if there are none.
  */
 inline YAudioIn* yFirstAudioIn(void)

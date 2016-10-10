@@ -5,8 +5,8 @@
 #include "yocto_accelerometer.h"
 #include <iostream>
 #include <stdlib.h>
-#include <iostream>   
-#include <iomanip>    
+#include <iostream>
+#include <iomanip>
 
 using namespace std;
 
@@ -15,8 +15,8 @@ static void usage(void)
     cout << "usage: demo <serial_number> " << endl;
     cout << "       demo <logical_name>" << endl;
     cout << "       demo any                 (use any discovered device)" << endl;
-    u64 now = yGetTickCount(); 
-    while (yGetTickCount()-now<3000) {
+    u64 now = yGetTickCount();
+    while (yGetTickCount() - now < 3000) {
         // wait 3 sec to show the message
     }
     exit(1);
@@ -24,17 +24,17 @@ static void usage(void)
 
 int main(int argc, const char * argv[])
 {
-    string errmsg,target;
-    YTilt *anytilt,*tilt1, *tilt2;
+    string errmsg, target;
+    YTilt *anytilt, *tilt1, *tilt2;
     YCompass *compass;
     YAccelerometer *accelerometer;
-    YGyro *gyro;     
+    YGyro *gyro;
 
     if(argc < 2) {
         usage();
     }
     target = (string) argv[1];
-    
+
     // Setup the API to use local USB devices
     if(YAPI::RegisterHub("usb", errmsg) != YAPI_SUCCESS) {
         cerr << "RegisterHub error: " << errmsg << endl;
@@ -42,9 +42,9 @@ int main(int argc, const char * argv[])
     }
 
     // try to find a valid serial number
-    if(target == "any"){
+    if(target == "any") {
         anytilt = YTilt::FirstTilt();
-        if (anytilt==NULL) {
+        if (anytilt == NULL) {
             cout << "No module connected (check USB cable)" << endl;
             return 1;
         }
@@ -57,11 +57,11 @@ int main(int argc, const char * argv[])
     }
     string serial = anytilt->get_module()->get_serialNumber();
 
-    // retrieve all sensors on the device matching the serial 
+    // retrieve all sensors on the device matching the serial
     tilt1 = YTilt::FindTilt(serial + ".tilt1");
     tilt2 = YTilt::FindTilt(serial + ".tilt2");
     compass = YCompass::FindCompass(serial + ".compass");
-    accelerometer = YAccelerometer::FindAccelerometer(serial+".accelerometer");
+    accelerometer = YAccelerometer::FindAccelerometer(serial + ".accelerometer");
     gyro = YGyro::FindGyro(serial + ".gyro");
     int count = 0;
 
@@ -69,18 +69,18 @@ int main(int argc, const char * argv[])
         if(!tilt1->isOnline()) {
             cout << "device disconnected";
             break;
-        }        
-        if ((count % 10) == 0) {
-            cout <<"tilt1\ntilt2\ncompass\tacc\tgyro"<<endl;
         }
-        cout <<  std::setprecision(2) <<std::setw(8) << tilt1->get_currentValue() <<"\t"
-            << tilt2->get_currentValue() <<"\t"
-            << compass->get_currentValue() <<"\t"
-            << accelerometer->get_currentValue() <<"\t"
-            << gyro->get_currentValue() <<endl;
-        count++;       
-        YAPI::Sleep(250,errmsg);
+        if ((count % 10) == 0) {
+            cout << "tilt1\ntilt2\ncompass\tacc\tgyro" << endl;
+        }
+        cout <<  std::setprecision(2) << std::setw(8) << tilt1->get_currentValue() << "\t"
+             << tilt2->get_currentValue() << "\t"
+             << compass->get_currentValue() << "\t"
+             << accelerometer->get_currentValue() << "\t"
+             << gyro->get_currentValue() << endl;
+        count++;
+        YAPI::Sleep(250, errmsg);
     }
-        
+    yFreeAPI();
     return 0;
 }

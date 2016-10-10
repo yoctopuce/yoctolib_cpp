@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_realtimeclock.h 23246 2016-02-23 14:49:01Z seb $
+ * $Id: yocto_realtimeclock.h 25275 2016-08-24 13:42:24Z mvuilleu $
  *
  * Declares yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *
@@ -215,9 +215,9 @@ public:
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
      *
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
      * @noreturn
@@ -235,7 +235,7 @@ public:
      * Continues the enumeration of clocks started using yFirstRealTimeClock().
      *
      * @return a pointer to a YRealTimeClock object, corresponding to
-     *         a clock currently online, or a null pointer
+     *         a clock currently online, or a NULL pointer
      *         if there are no more clocks to enumerate.
      */
            YRealTimeClock  *nextRealTimeClock(void);
@@ -248,7 +248,7 @@ public:
      * next clocks.
      *
      * @return a pointer to a YRealTimeClock object, corresponding to
-     *         the first clock currently online, or a null pointer
+     *         the first clock currently online, or a NULL pointer
      *         if there are none.
      */
            static YRealTimeClock* FirstRealTimeClock(void);
@@ -293,7 +293,7 @@ inline YRealTimeClock* yFindRealTimeClock(const string& func)
  * next clocks.
  *
  * @return a pointer to a YRealTimeClock object, corresponding to
- *         the first clock currently online, or a null pointer
+ *         the first clock currently online, or a NULL pointer
  *         if there are none.
  */
 inline YRealTimeClock* yFirstRealTimeClock(void)

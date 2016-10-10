@@ -32,14 +32,14 @@ int main(int argc, const char * argv[])
         cerr << "RegisterHub error: " << errmsg << endl;
         return 1;
     }
-    
+
     if (target == "any") {
         watchdog = yFirstWatchdog();
-        if (watchdog==NULL) {
+        if (watchdog == NULL) {
             cout << "No module connected (check USB cable)" << endl;
             return 1;
         }
-    }else{
+    } else {
         watchdog =  yFindWatchdog(target + ".watchdog1");
     }
 
@@ -50,6 +50,7 @@ int main(int argc, const char * argv[])
     } else {
         cout << "Module not connected (check identification and USB cable)" << endl;
     }
-        
+    yFreeAPI();
+
     return 0;
 }

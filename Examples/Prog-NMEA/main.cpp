@@ -62,9 +62,9 @@ void InstallService(int install, const char *args);
 typedef struct {
     unsigned    portno;
     const char  *freq;
-    unsigned    runAsDaemon:1;
-    unsigned    runMore:1;
-    unsigned    encodeNMEA:1;
+    unsigned    runAsDaemon: 1;
+    unsigned    runMore: 1;
+    unsigned    encodeNMEA: 1;
 } global_parameter;
 global_parameter Globalp;
 
@@ -96,61 +96,61 @@ static int ParseArguments(int argc, char *argv[])
 {
     int         i;
 #ifdef WINDOWS_API
-    int         install=0;
+    int         install = 0;
 #endif
 
-    memset(&Globalp,0,sizeof(Globalp));
+    memset(&Globalp, 0, sizeof(Globalp));
     Globalp.runMore = 1;
     Globalp.portno = DEFAULT_PORTNO;
     Globalp.freq = DEFAULT_FREQ;
 
-    for (i=1;i<argc;i++) {
-        if (argv[i][0] != '-' || strlen(argv[i])>2) {
-            fprintf(stderr, "%s: unknown option %s\n",argv[0],argv[i]);
-            Usage(argc,argv);
+    for (i = 1; i < argc; i++) {
+        if (argv[i][0] != '-' || strlen(argv[i]) > 2) {
+            fprintf(stderr, "%s: unknown option %s\n", argv[0], argv[i]);
+            Usage(argc, argv);
         }
         switch(argv[i][1]) {
-            case 'f':
-                i++;
-                if (i < argc){
-                    Globalp.freq = strdup(argv[i]);
-                } else{
-                    fprintf(stderr, "%s: -f option requires an argument (frequency)\n",argv[0]);
-                    Usage(argc,argv);
-                }
-                break;
-            case 'p':
-                i++;
-                if (i < argc){
-                    Globalp.portno = atoi(argv[i]);
-                } else{
-                    fprintf(stderr, "%s: -p option requires an argument (port number)\n",argv[0]);
-                    Usage(argc,argv);
-                }
-                break;
-            case 'd':
-                Globalp.runAsDaemon = 1;
-                break;
-            case 'n':
-                Globalp.encodeNMEA = 1;
-                break;
+        case 'f':
+            i++;
+            if (i < argc) {
+                Globalp.freq = strdup(argv[i]);
+            } else {
+                fprintf(stderr, "%s: -f option requires an argument (frequency)\n", argv[0]);
+                Usage(argc, argv);
+            }
+            break;
+        case 'p':
+            i++;
+            if (i < argc) {
+                Globalp.portno = atoi(argv[i]);
+            } else {
+                fprintf(stderr, "%s: -p option requires an argument (port number)\n", argv[0]);
+                Usage(argc, argv);
+            }
+            break;
+        case 'd':
+            Globalp.runAsDaemon = 1;
+            break;
+        case 'n':
+            Globalp.encodeNMEA = 1;
+            break;
 #ifdef WINDOWS_API
-            case 'i':
-                install=1;
-                break;
-            case 'u':
-                InstallService(0,"");
-                exit(0);
+        case 'i':
+            install = 1;
+            break;
+        case 'u':
+            InstallService(0, "");
+            exit(0);
 #endif
-            default:
-                fprintf(stderr, "%s: unknown option %s\n",argv[0],argv[i]);
-                Usage(argc,argv);
+        default:
+            fprintf(stderr, "%s: unknown option %s\n", argv[0], argv[i]);
+            Usage(argc, argv);
         }
     }
 
 #ifdef WINDOWS_API
-    if(install){
-		char allargs[1024];
+    if(install) {
+        char allargs[1024];
         char *p = allargs;
 
         sprintf(allargs, " -d -p %d -f %s", Globalp.portno, Globalp.freq);
@@ -192,53 +192,53 @@ void  WinError(const char *msg, DWORD err)
                   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                   (LPTSTR) &lpMsgBuf,
                   0, NULL );
-    fprintf(stderr, "%s (%d:%s)",msg,err,lpMsgBuf);
+    fprintf(stderr, "%s (%d:%s)", msg, err, lpMsgBuf);
 }
 
 void InstallService(int install, const char *args)
 {
-    SC_HANDLE           SCman,service;
+    SC_HANDLE           SCman, service;
     TCHAR               path[2048];
 
-    if(!GetModuleFileNameA(NULL, path, sizeof(path))){
+    if(!GetModuleFileNameA(NULL, path, sizeof(path))) {
         WinError("Cannot install service", GetLastError());
         return;
     }
-    strcat_s(path,sizeof(path),args);
-    SCman=OpenSCManager(NULL,NULL,SC_MANAGER_CREATE_SERVICE);
+    strcat_s(path, sizeof(path), args);
+    SCman = OpenSCManager(NULL, NULL, SC_MANAGER_CREATE_SERVICE);
     if(!SCman) {
         WinError("OpenSCManager failed", GetLastError());
         return;
     }
-	service = OpenService(SCman, SERVICE_NAME, SERVICE_ALL_ACCESS);
-    if(!service){
-        if(!install){
+    service = OpenService(SCman, SERVICE_NAME, SERVICE_ALL_ACCESS);
+    if(!service) {
+        if(!install) {
             WinError("unable to open service", GetLastError());
             CloseServiceHandle(SCman);
             return;
         }
-		service = CreateService(SCman, SERVICE_NAME, "Yoctopuce Sensor server",
-                              SERVICE_ALL_ACCESS, SERVICE_WIN32_OWN_PROCESS,
-                              SERVICE_AUTO_START, SERVICE_ERROR_NORMAL,
-                              path, NULL,NULL,NULL,NULL,NULL);
+        service = CreateService(SCman, SERVICE_NAME, "Yoctopuce Sensor server",
+                                SERVICE_ALL_ACCESS, SERVICE_WIN32_OWN_PROCESS,
+                                SERVICE_AUTO_START, SERVICE_ERROR_NORMAL,
+                                path, NULL, NULL, NULL, NULL, NULL);
         if (!service) {
             WinError("CreateService failed", GetLastError());
             CloseServiceHandle(SCman);
             return;
         }
         fprintf(stderr, "Service successfully installed\n");
-    } else{
-        if(!install){
+    } else {
+        if(!install) {
             SERVICE_STATUS dummy;
-            ControlService(service,SERVICE_CONTROL_STOP,&dummy);
-            if(DeleteService(service)){
+            ControlService(service, SERVICE_CONTROL_STOP, &dummy);
+            if(DeleteService(service)) {
                 fprintf(stderr, "Service successfully uninstalled\n");
             }
             return;
         }
         fprintf(stderr, "Service already installed\n");
     }
-    StartService(service,0,0);
+    StartService(service, 0, 0);
     CloseServiceHandle(service);
     CloseServiceHandle(SCman);
 }
@@ -261,7 +261,7 @@ void ReportServiceStatus( u32 CurrentState, u32 Win32ExitCode, u32 WaitHint)
     else
         ServiceStatus.dwCheckPoint = dwCheckPoint++;
 
-    SetServiceStatus(ServiceStatusHandle,&ServiceStatus);
+    SetServiceStatus(ServiceStatusHandle, &ServiceStatus);
 }
 
 //   Handle service control functions
@@ -269,12 +269,12 @@ void ReportServiceStatus( u32 CurrentState, u32 Win32ExitCode, u32 WaitHint)
 void  ServiceControlhandler(DWORD ctrl, DWORD eventType, LPVOID eventData, LPVOID contex)
 {
     switch(ctrl) {
-        case SERVICE_CONTROL_STOP:
-            ReportServiceStatus(SERVICE_STOP_PENDING, NO_ERROR, 0);
-            Globalp.runMore = 0;
-            break;
-        default:
-            break;
+    case SERVICE_CONTROL_STOP:
+        ReportServiceStatus(SERVICE_STOP_PENDING, NO_ERROR, 0);
+        Globalp.runMore = 0;
+        break;
+    default:
+        break;
     }
     ReportServiceStatus(ServiceStatus.dwCurrentState, NO_ERROR, 0);
 }
@@ -284,47 +284,47 @@ int winmain(int argc, char *argv[])
     WSADATA wsaData;
     int     iResult;
 
-    iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
-    if (iResult != 0){
+    iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (iResult != 0) {
         WinError("Unable to start Winsock2", iResult);
         return -1;
     }
-	return ServerMain();
+    return ServerMain();
 }
 
 void WINAPI SvcMain(DWORD dwArgc, LPTSTR *lpszArgv)
 {
-	ServiceStatusHandle = RegisterServiceCtrlHandlerEx(SERVICE_NAME, (LPHANDLER_FUNCTION_EX)ServiceControlhandler, 0);
-    if(!ServiceStatusHandle){
+    ServiceStatusHandle = RegisterServiceCtrlHandlerEx(SERVICE_NAME, (LPHANDLER_FUNCTION_EX)ServiceControlhandler, 0);
+    if(!ServiceStatusHandle) {
         WinError("Unable to register Service handler", GetLastError());
         return;
     }
     ServiceStatus.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
     ServiceStatus.dwServiceSpecificExitCode = 0;
-	ReportServiceStatus(SERVICE_START_PENDING, NO_ERROR, 3000);
-	ReportServiceStatus(SERVICE_RUNNING, NO_ERROR, 0);
+    ReportServiceStatus(SERVICE_START_PENDING, NO_ERROR, 3000);
+    ReportServiceStatus(SERVICE_RUNNING, NO_ERROR, 0);
     winmain(dwArgc, lpszArgv);
-	ReportServiceStatus(SERVICE_STOPPED, NO_ERROR, 0);
+    ReportServiceStatus(SERVICE_STOPPED, NO_ERROR, 0);
     return;
 }
 
 int main (int argc, char *argv[])
 {
-	SERVICE_TABLE_ENTRY DispatchTable[] = {
-		{ SERVICE_NAME, (LPSERVICE_MAIN_FUNCTION)SvcMain },
-		{ NULL, NULL }
-	};
-	ParseArguments(argc, argv);
-	if (Globalp.runAsDaemon) {
-		// Service Mode
-		if (!StartServiceCtrlDispatcher(DispatchTable)){
-			u32 error = GetLastError();
-			WinError("Unable to Start the service", error);
-			return 1;
-		}
-	} else {
-		return winmain(argc, argv);
-	}
+    SERVICE_TABLE_ENTRY DispatchTable[] = {
+        { SERVICE_NAME, (LPSERVICE_MAIN_FUNCTION)SvcMain },
+        { NULL, NULL }
+    };
+    ParseArguments(argc, argv);
+    if (Globalp.runAsDaemon) {
+        // Service Mode
+        if (!StartServiceCtrlDispatcher(DispatchTable)) {
+            u32 error = GetLastError();
+            WinError("Unable to Start the service", error);
+            return 1;
+        }
+    } else {
+        return winmain(argc, argv);
+    }
 }
 
 #else
@@ -338,7 +338,7 @@ int main (int argc, char *argv[])
     ParseArguments(argc, argv);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-	if (Globalp.runAsDaemon) {
+    if (Globalp.runAsDaemon) {
         if (daemon(0, 0) < 0) {
             exit(1);
         }
@@ -371,16 +371,16 @@ static SOCKET newTCPListener(unsigned portNo)
     struct  sockaddr_in srvaddr;
     SOCKET  srvsock;
 
-    srvsock = socket(PF_INET,SOCK_STREAM,IPPROTO_TCP);
+    srvsock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (srvsock == INVALID_SOCKET) {
         return INVALID_SOCKET;
     }
     optval = 1;
-    setsockopt(srvsock,SOL_SOCKET,SO_REUSEADDR,(char *)&optval,sizeof(optval));
+    setsockopt(srvsock, SOL_SOCKET, SO_REUSEADDR, (char *)&optval, sizeof(optval));
     srvaddr.sin_family = AF_INET;
     srvaddr.sin_port   = htons(portNo);
     srvaddr.sin_addr.s_addr = INADDR_ANY;
-    if (bind(srvsock,(struct sockaddr *)&srvaddr,sizeof(srvaddr))<0) {
+    if (bind(srvsock, (struct sockaddr *)&srvaddr, sizeof(srvaddr)) < 0) {
         return INVALID_SOCKET;
     }
     if (listen(srvsock, 5) < 0) {
@@ -403,15 +403,15 @@ static void TCPAccept(SOCKET srvsock)
 
     struct sockaddr_in remote;
     struct timeval     timeout;
-    memset(&timeout,0,sizeof(timeout));
+    memset(&timeout, 0, sizeof(timeout));
     timeout.tv_sec = 0;
     timeout.tv_usec = 1000;
     FD_ZERO(&fds);
-    FD_SET(srvsock,&fds);
-    if(select((int)srvsock+1,&fds,NULL,NULL,&timeout) <= 0) {
+    FD_SET(srvsock, &fds);
+    if(select((int)srvsock + 1, &fds, NULL, NULL, &timeout) <= 0) {
         return;
     }
-    if(FD_ISSET(srvsock,&fds)){
+    if(FD_ISSET(srvsock, &fds)) {
         addrlen = sizeof(remote);
         sock = accept(srvsock, (struct sockaddr *)&remote, &addrlen);
         if (sock == INVALID_SOCKET) {
@@ -472,7 +472,7 @@ static void sensorTimedReportCallBack(YSensor *fct, YMeasure measure)
         for(i = 1; i < len; i++) {
             chksum ^= (unsigned char)buf[i];
         }
-        snprintf(buf+len, sizeof(buf)-len, "*%02X\r\n", chksum);
+        snprintf(buf + len, sizeof(buf) - len, "*%02X\r\n", chksum);
     } else {
         // raw format, just append CR-LF
         strcat(buf, "\r\n");
@@ -507,7 +507,7 @@ static void deviceArrival(YModule *m)
 
 static void deviceRemoval(YModule *m)
 {
-    cout << "Device removal : " << m->get_serialNumber()<<endl;
+    cout << "Device removal : " << m->get_serialNumber() << endl;
 }
 
 static void log(const string& val)
@@ -521,22 +521,22 @@ int ServerMain(void)
     SOCKET  srvsock;
 
     // Detect devices connected on USB (handle hot-plug)
-	YAPI::RegisterLogFunction(log);
+    YAPI::RegisterLogFunction(log);
     YAPI::RegisterDeviceArrivalCallback(deviceArrival);
     YAPI::RegisterDeviceRemovalCallback(deviceRemoval);
     YAPI::DisableExceptions();
-	if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
-		cerr << "RegisterHub error : " << errmsg << endl;
+    if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
+        cerr << "RegisterHub error : " << errmsg << endl;
         return 1;
     }
 
     // Create TCP/IP server socket
     srvsock = newTCPListener(Globalp.portno);
     if(srvsock == INVALID_SOCKET) {
-		cerr << "Cannot listen on TCP port " << Globalp.portno << endl;
+        cerr << "Cannot listen on TCP port " << Globalp.portno << endl;
         return 1;
     }
-	cerr << "Listening on TCP port " << Globalp.portno << endl;
+    cerr << "Listening on TCP port " << Globalp.portno << endl;
 
     // Run indefinitely
     while (Globalp.runMore) {
@@ -544,5 +544,5 @@ int ServerMain(void)
         YAPI::UpdateDeviceList(errmsg); // traps plug/unplug events
         YAPI::Sleep(300, errmsg);       // traps others events
     }
-	return 0;
+    return 0;
 }

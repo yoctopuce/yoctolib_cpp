@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 24068 2016-04-21 07:33:01Z seb $
+ * $Id: yhash.c 25346 2016-09-15 12:45:51Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -1603,7 +1603,9 @@ YAPI_FUNCTION ypSearch(const char *class_str, const char *func_or_name)
     int         i;
 
     // first search for the category node
-    if(!strcmp(class_str, "Sensor")) {
+    if (!strcmp(class_str, "Function")) {
+        cat_hdl = INVALID_BLK_HDL;
+    }else if (!strcmp(class_str, "Sensor")) {
         abstract = YOCTO_AKA_YSENSOR;
         cat_hdl = INVALID_BLK_HDL;
     } else {
@@ -1646,9 +1648,9 @@ YAPI_FUNCTION ypSearch(const char *class_str, const char *func_or_name)
             for(cat_hdl = yYpListHead; cat_hdl != INVALID_BLK_HDL; cat_hdl = YC(cat_hdl).nextPtr) {
                 YASSERT(YC(cat_hdl).blkId == YBLKID_YPCATEG);
                 hdl = YC(cat_hdl).entries;
-                while(hdl != INVALID_BLK_HDL) {
+                while (hdl != INVALID_BLK_HDL) {
                     // check functions matching abstract baseclass, skip others
-                    if(YP(hdl).blkId == YBLKID_YPENTRY+abstract && YP(hdl).funcName == funcref) {
+                    if ((abstract == YOCTO_AKA_YFUNCTION || YP(hdl).blkId == YBLKID_YPENTRY + abstract) && YP(hdl).funcName == funcref) {
                         res = YP(hdl).serialNum + ((u32)(YP(hdl).funcId) << 16);
                         break;
                     }
@@ -1725,8 +1727,8 @@ YAPI_FUNCTION ypSearch(const char *class_str, const char *func_or_name)
             hdl = YC(cat_hdl).entries;
             while(hdl != INVALID_BLK_HDL) {
                 // check functions matching abstract baseclass, skip others
-                if(YP(hdl).blkId == YBLKID_YPENTRY+abstract && (devref==INVALID_HASH_IDX || YP(hdl).serialNum == devref)) {
-                    if(YP(hdl).funcId == funcref) {
+                if ((abstract == YOCTO_AKA_YFUNCTION || YP(hdl).blkId == YBLKID_YPENTRY + abstract) && (devref == INVALID_HASH_IDX || YP(hdl).serialNum == devref)) {
+                    if (YP(hdl).funcId == funcref) {
                         res = YP(hdl).serialNum + ((u32)(YP(hdl).funcId) << 16);
                         break;
                     }
@@ -1759,7 +1761,9 @@ int ypGetFunctions(const char *class_str, YAPI_DEVICE devdesc, YAPI_FUNCTION pre
     int     use = (prevfundesc==0);// if prefuncdesc == 0  use any functions
 
     if(class_str) {
-        if(!strcmp(class_str, "Sensor")) {
+        if (!strcmp(class_str, "Function")) {
+            abstract = YOCTO_AKA_YFUNCTION;
+        } else if (!strcmp(class_str, "Sensor")) {
             abstract = YOCTO_AKA_YSENSOR;
         } else {
             categref = yHashTestStr(class_str);

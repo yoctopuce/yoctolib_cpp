@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.h 24934 2016-06-30 22:32:01Z mvuilleu $
+ * $Id: yocto_gyro.h 25275 2016-08-24 13:42:24Z mvuilleu $
  *
  * Declares yFindGyro(), the high-level API for Gyro functions
  *
@@ -116,9 +116,9 @@ public:
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
      *
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
      * @noreturn
@@ -132,9 +132,9 @@ public:
      * Registers the callback function that is invoked on every periodic timed notification.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
      *
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and an YMeasure object describing
      *         the new advertised value.
      * @noreturn
@@ -152,7 +152,7 @@ public:
      * Continues the enumeration of quaternion components started using yFirstQt().
      *
      * @return a pointer to a YQt object, corresponding to
-     *         a quaternion component currently online, or a null pointer
+     *         a quaternion component currently online, or a NULL pointer
      *         if there are no more quaternion components to enumerate.
      */
            YQt             *nextQt(void);
@@ -165,7 +165,7 @@ public:
      * next quaternion components.
      *
      * @return a pointer to a YQt object, corresponding to
-     *         the first quaternion component currently online, or a null pointer
+     *         the first quaternion component currently online, or a NULL pointer
      *         if there are none.
      */
            static YQt* FirstQt(void);
@@ -210,7 +210,7 @@ inline YQt* yFindQt(const string& func)
  * next quaternion components.
  *
  * @return a pointer to a YQt object, corresponding to
- *         the first quaternion component currently online, or a null pointer
+ *         the first quaternion component currently online, or a NULL pointer
  *         if there are none.
  */
 inline YQt* yFirstQt(void)
@@ -394,9 +394,9 @@ public:
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
      *
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
      * @noreturn
@@ -410,9 +410,9 @@ public:
      * Registers the callback function that is invoked on every periodic timed notification.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
      *
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and an YMeasure object describing
      *         the new advertised value.
      * @noreturn
@@ -518,9 +518,9 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered.
      * For good responsiveness, remember to call one of these two functions periodically.
-     * To unregister a callback, pass a null pointer as argument.
+     * To unregister a callback, pass a NULL pointer as argument.
      *
-     * @param callback : the callback function to invoke, or a null pointer.
+     * @param callback : the callback function to invoke, or a NULL pointer.
      *         The callback function should take five arguments:
      *         the YGyro object of the turning device, and the floating
      *         point values of the four components w, x, y and z
@@ -535,9 +535,9 @@ public:
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered.
      * For good responsiveness, remember to call one of these two functions periodically.
-     * To unregister a callback, pass a null pointer as argument.
+     * To unregister a callback, pass a NULL pointer as argument.
      *
-     * @param callback : the callback function to invoke, or a null pointer.
+     * @param callback : the callback function to invoke, or a NULL pointer.
      *         The callback function should take four arguments:
      *         the YGyro object of the turning device, and the floating
      *         point values of the three angles roll, pitch and heading
@@ -556,7 +556,7 @@ public:
      * Continues the enumeration of gyroscopes started using yFirstGyro().
      *
      * @return a pointer to a YGyro object, corresponding to
-     *         a gyroscope currently online, or a null pointer
+     *         a gyroscope currently online, or a NULL pointer
      *         if there are no more gyroscopes to enumerate.
      */
            YGyro           *nextGyro(void);
@@ -569,7 +569,7 @@ public:
      * next gyroscopes.
      *
      * @return a pointer to a YGyro object, corresponding to
-     *         the first gyro currently online, or a null pointer
+     *         the first gyro currently online, or a NULL pointer
      *         if there are none.
      */
            static YGyro* FirstGyro(void);
@@ -614,7 +614,7 @@ inline YGyro* yFindGyro(const string& func)
  * next gyroscopes.
  *
  * @return a pointer to a YGyro object, corresponding to
- *         the first gyro currently online, or a null pointer
+ *         the first gyro currently online, or a NULL pointer
  *         if there are none.
  */
 inline YGyro* yFirstGyro(void)

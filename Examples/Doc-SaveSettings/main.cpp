@@ -25,11 +25,11 @@ int main(int argc, const char * argv[])
         usage(argv[0]);
 
     YModule *module = yFindModule(argv[1]);  // use serial or logical name
-  
+
     if (module->isOnline()) {
-        if (argc >= 3){
+        if (argc >= 3) {
             string newname =  argv[2];
-            if (!yCheckLogicalName(newname)){
+            if (!yCheckLogicalName(newname)) {
                 cerr << "Invalid name (" << newname << ")" << endl;
                 usage(argv[0]);
             }
@@ -38,7 +38,7 @@ int main(int argc, const char * argv[])
         }
         cout << "Current name: " << module->get_logicalName() << endl;
     } else {
-        cout << argv[1] << " not connected (check identification and USB cable)" 
+        cout << argv[1] << " not connected (check identification and USB cable)"
              << endl;
     }
     return 0;

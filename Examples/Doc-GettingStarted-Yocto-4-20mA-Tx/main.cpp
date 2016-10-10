@@ -68,6 +68,6 @@ int main(int argc, const char * argv[])
     } else {
         cout << "Module not connected (check identification and USB cable)" << endl;
     }
-
+    yFreeAPI();
     return 0;
 }

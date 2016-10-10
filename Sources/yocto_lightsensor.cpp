@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_lightsensor.cpp 23246 2016-02-23 14:49:01Z seb $
+ * $Id: yocto_lightsensor.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
  *
  * Implements yFindLightSensor(), the high-level API for LightSensor functions
  *
@@ -144,7 +144,7 @@ int YLightSensor::set_measureType(Y_MEASURETYPE_enum newval)
 }
 
 /**
- * Retrieves $AFUNCTION$ for a given identifier.
+ * Retrieves a light sensor for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -154,17 +154,17 @@ int YLightSensor::set_measureType(Y_MEASURETYPE_enum newval)
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that $THEFUNCTION$ is online at the time
+ * This function does not require that the light sensor is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YLightSensor.isOnline() to test if $THEFUNCTION$ is
+ * Use the method YLightSensor.isOnline() to test if the light sensor is
  * indeed online at a given time. In case of ambiguity when looking for
- * $AFUNCTION$ by logical name, no error is notified: the first instance
+ * a light sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
- * @param func : a string that uniquely characterizes $THEFUNCTION$
+ * @param func : a string that uniquely characterizes the light sensor
  *
- * @return a YLightSensor object allowing you to drive $THEFUNCTION$.
+ * @return a YLightSensor object allowing you to drive the light sensor.
  */
 YLightSensor* YLightSensor::FindLightSensor(string func)
 {
@@ -181,9 +181,9 @@ YLightSensor* YLightSensor::FindLightSensor(string func)
  * Registers the callback function that is invoked on every change of advertised value.
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
- * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
  *
- * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and the character string describing
  *         the new advertised value.
  * @noreturn
@@ -221,9 +221,9 @@ int YLightSensor::_invokeValueCallback(string value)
  * Registers the callback function that is invoked on every periodic timed notification.
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
- * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
  *
- * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and an YMeasure object describing
  *         the new advertised value.
  * @noreturn

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_temperature.h 23527 2016-03-18 21:49:19Z mvuilleu $
+ * $Id: yocto_temperature.h 25275 2016-08-24 13:42:24Z mvuilleu $
  *
  * Declares yFindTemperature(), the high-level API for Temperature functions
  *
@@ -257,9 +257,9 @@ public:
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
      *
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
      * @noreturn
@@ -273,9 +273,9 @@ public:
      * Registers the callback function that is invoked on every periodic timed notification.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
      *
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and an YMeasure object describing
      *         the new advertised value.
      * @noreturn
@@ -344,7 +344,7 @@ public:
      * Continues the enumeration of temperature sensors started using yFirstTemperature().
      *
      * @return a pointer to a YTemperature object, corresponding to
-     *         a temperature sensor currently online, or a null pointer
+     *         a temperature sensor currently online, or a NULL pointer
      *         if there are no more temperature sensors to enumerate.
      */
            YTemperature    *nextTemperature(void);
@@ -357,7 +357,7 @@ public:
      * next temperature sensors.
      *
      * @return a pointer to a YTemperature object, corresponding to
-     *         the first temperature sensor currently online, or a null pointer
+     *         the first temperature sensor currently online, or a NULL pointer
      *         if there are none.
      */
            static YTemperature* FirstTemperature(void);
@@ -402,7 +402,7 @@ inline YTemperature* yFindTemperature(const string& func)
  * next temperature sensors.
  *
  * @return a pointer to a YTemperature object, corresponding to
- *         the first temperature sensor currently online, or a null pointer
+ *         the first temperature sensor currently online, or a NULL pointer
  *         if there are none.
  */
 inline YTemperature* yFirstTemperature(void)

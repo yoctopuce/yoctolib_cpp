@@ -13,7 +13,7 @@ static void usage(void)
     cout << "       demo <logical_name>" << endl;
     cout << "       demo any (use any discovered device)" << endl;
     u64 now = yGetTickCount();
-	while (yGetTickCount()-now<3000) {
+    while (yGetTickCount() - now < 3000) {
         // wait 3 sec to show the message
     }
     exit(1);
@@ -24,13 +24,10 @@ static void usage(void)
 static void recursiveLine(YDisplayLayer *layer, double x0, double y0, double x1, double y1, int deep)
 {
     double dx, dy, mx, my;
-    if (deep <= 0)
-    {
+    if (deep <= 0) {
         layer->moveTo((int) (x0 + 0.5), (int) (y0 + 0.5));
         layer->lineTo((int) (x1 + 0.5), (int) (y1 + 0.5));
-    }
-    else
-    {
+    } else {
         dx = (x1 - x0) / 3;
         dy = (y1 - y0) / 3;
         mx = ((x0 + x1) / 2) + (0.87 * (y1 - y0) / 3);
@@ -52,31 +49,25 @@ int main(int argc, const char * argv[])
     if (argc < 2) usage();
 
     // Setup the API to use local USB devices
-    if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS)
-    {
+    if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
         cerr << "RegisterHub error: " << errmsg << endl;
         usage();
         return 1;
     }
 
     target = (string) argv[1];
-    if (target == "any")
-    {
+    if (target == "any") {
         disp = yFirstDisplay();
-        if (disp == NULL)
-        {
+        if (disp == NULL) {
             cout << "No module connected (check USB cable)" << endl;
             usage();
             return 1;
         }
-    }
-    else
-    {
+    } else {
         disp = yFindDisplay(target + ".display");
     }
 
-    if (!disp->isOnline())
-    {
+    if (!disp->isOnline()) {
         cout << "Module is offline (check USB cable)" << endl;
         usage();
         return 1;
@@ -93,15 +84,14 @@ int main(int argc, const char * argv[])
     double radius = disp->get_displayHeight() / 2;
     double a = 0;
 
-    while (true)
-    {
+    while (true) {
         // we draw in the hidden layer
         l1->clear();
         for (int i = 0; i < 3; i++)
             recursiveLine(l1, centerX + radius * cos(a + i * 2.094),
-                centerY + radius * sin(a + i * 2.094),
-                centerX + radius * cos(a + (i + 1)*2.094),
-                centerY + radius * sin(a + (i + 1)*2.094), 2);
+                          centerY + radius * sin(a + i * 2.094),
+                          centerX + radius * cos(a + (i + 1) * 2.094),
+                          centerY + radius * sin(a + (i + 1) * 2.094), 2);
         // then we swap contents with the visible layer
 
         disp->swapLayerContent(1, 2);

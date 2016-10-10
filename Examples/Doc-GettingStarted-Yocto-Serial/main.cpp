@@ -23,16 +23,16 @@ int main(int argc, const char * argv[])
     } else {
         serialPort = yFirstSerialPort();
         if (serialPort == NULL) {
-            cerr <<"No module connected (check USB cable)"<<endl;
+            cerr << "No module connected (check USB cable)" << endl;
             return 1;
         }
     }
 
     cout << "****************************" << endl;
-    cout << "* make sure voltage levels *" << endl; 
+    cout << "* make sure voltage levels *" << endl;
     cout << "* are properly configured  *" << endl;
     cout << "****************************" << endl;
-    
+
     serialPort->set_serialMode("9600,8N1");
     serialPort->set_protocol("Line");
     serialPort->reset();

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 23788 2016-04-07 15:48:25Z seb $
+ * $Id: yocto_api.h 25275 2016-08-24 13:42:24Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -387,7 +387,7 @@ public:
      * Registers a log callback function. This callback will be called each time
      * the API have something to say. Quite useful to debug the API.
      *
-     * @param logfun : a procedure taking a string parameter, or null
+     * @param logfun : a procedure taking a string parameter, or NULL
      *         to unregister a previously registered  callback.
      */
     static  void        RegisterLogFunction(yLogFunction logfun);
@@ -397,7 +397,7 @@ public:
      * a device is plugged. This callback will be invoked while yUpdateDeviceList
      * is running. You will have to call this function on a regular basis.
      *
-     * @param arrivalCallback : a procedure taking a YModule parameter, or null
+     * @param arrivalCallback : a procedure taking a YModule parameter, or NULL
      *         to unregister a previously registered  callback.
      */
     static  void        RegisterDeviceArrivalCallback(yDeviceUpdateCallback arrivalCallback);
@@ -407,7 +407,7 @@ public:
      * a device is unplugged. This callback will be invoked while yUpdateDeviceList
      * is running. You will have to call this function on a regular basis.
      *
-     * @param removalCallback : a procedure taking a YModule parameter, or null
+     * @param removalCallback : a procedure taking a YModule parameter, or NULL
      *         to unregister a previously registered  callback.
      */
     static  void        RegisterDeviceRemovalCallback(yDeviceUpdateCallback removalCallback);
@@ -419,7 +419,7 @@ public:
      * network hub (this URL can be passed to RegisterHub). This callback will be invoked
      * while yUpdateDeviceList is running. You will have to call this function on a regular basis.
      *
-     * @param hubDiscoveryCallback : a procedure taking two string parameter, or null
+     * @param hubDiscoveryCallback : a procedure taking two string parameter, or NULL
      *         to unregister a previously registered  callback.
      */
     static  void        RegisterHubDiscoveryCallback(YHubDiscoveryCallback hubDiscoveryCallback);
@@ -1546,9 +1546,9 @@ public:
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
      *
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
      * @noreturn
@@ -1917,7 +1917,7 @@ public:
      * Registers a device log callback function. This callback will be called each time
      * that a module sends a new log message. Mostly useful to debug a Yoctopuce module.
      *
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the module object that emitted the log message, and the character string containing the log.
      * @noreturn
      */
@@ -2170,9 +2170,9 @@ public:
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
      *
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
      * @noreturn
@@ -2410,7 +2410,7 @@ public:
      * Continues the module enumeration started using yFirstModule().
      *
      * @return a pointer to a YModule object, corresponding to
-     *         the next module found, or a null pointer
+     *         the next module found, or a NULL pointer
      *         if there are no more modules to enumerate.
      */
            YModule         *nextModule(void);
@@ -2423,7 +2423,7 @@ public:
      * next modules.
      *
      * @return a pointer to a YModule object, corresponding to
-     *         the first module currently online, or a null pointer
+     *         the first module currently online, or a NULL pointer
      *         if there are none.
      */
            static YModule* FirstModule(void);
@@ -2746,9 +2746,9 @@ public:
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
      *
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
      * @noreturn
@@ -2818,9 +2818,9 @@ public:
      * Registers the callback function that is invoked on every periodic timed notification.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
      *
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and an YMeasure object describing
      *         the new advertised value.
      * @noreturn
@@ -2885,7 +2885,7 @@ public:
      * Continues the enumeration of sensors started using yFirstSensor().
      *
      * @return a pointer to a YSensor object, corresponding to
-     *         a sensor currently online, or a null pointer
+     *         a sensor currently online, or a NULL pointer
      *         if there are no more sensors to enumerate.
      */
            YSensor         *nextSensor(void);
@@ -2898,7 +2898,7 @@ public:
      * next sensors.
      *
      * @return a pointer to a YSensor object, corresponding to
-     *         the first sensor currently online, or a null pointer
+     *         the first sensor currently online, or a NULL pointer
      *         if there are none.
      */
            static YSensor* FirstSensor(void);
@@ -2943,7 +2943,7 @@ inline YSensor* yFindSensor(const string& func)
  * next sensors.
  *
  * @return a pointer to a YSensor object, corresponding to
- *         the first sensor currently online, or a null pointer
+ *         the first sensor currently online, or a NULL pointer
  *         if there are none.
  */
 inline YSensor* yFirstSensor(void)
@@ -3014,7 +3014,7 @@ inline void yEnableExceptions(void)
  * Registers a log callback function. This callback will be called each time
  * the API have something to say. Quite useful to debug the API.
  *
- * @param logfun : a procedure taking a string parameter, or null
+ * @param logfun : a procedure taking a string parameter, or NULL
  *         to unregister a previously registered  callback.
  */
 inline void yRegisterLogFunction(yLogFunction logfun)
@@ -3025,7 +3025,7 @@ inline void yRegisterLogFunction(yLogFunction logfun)
  * a device is plugged. This callback will be invoked while yUpdateDeviceList
  * is running. You will have to call this function on a regular basis.
  *
- * @param arrivalCallback : a procedure taking a YModule parameter, or null
+ * @param arrivalCallback : a procedure taking a YModule parameter, or NULL
  *         to unregister a previously registered  callback.
  */
 inline void yRegisterDeviceArrivalCallback(yDeviceUpdateCallback arrivalCallback)
@@ -3036,7 +3036,7 @@ inline void yRegisterDeviceArrivalCallback(yDeviceUpdateCallback arrivalCallback
  * a device is unplugged. This callback will be invoked while yUpdateDeviceList
  * is running. You will have to call this function on a regular basis.
  *
- * @param removalCallback : a procedure taking a YModule parameter, or null
+ * @param removalCallback : a procedure taking a YModule parameter, or NULL
  *         to unregister a previously registered  callback.
  */
 inline void yRegisterDeviceRemovalCallback(yDeviceUpdateCallback removalCallback)
@@ -3053,7 +3053,7 @@ inline void yRegisterDeviceChangeCallback(yDeviceUpdateCallback removalCallback)
  * network hub (this URL can be passed to RegisterHub). This callback will be invoked
  * while yUpdateDeviceList is running. You will have to call this function on a regular basis.
  *
- * @param hubDiscoveryCallback : a procedure taking two string parameter, or null
+ * @param hubDiscoveryCallback : a procedure taking two string parameter, or NULL
  *         to unregister a previously registered  callback.
  */
 inline void yRegisterHubDiscoveryCallback(YHubDiscoveryCallback hubDiscoveryCallback)
@@ -3285,7 +3285,7 @@ inline YModule* yFindModule(const string& func)
  * next modules.
  *
  * @return a pointer to a YModule object, corresponding to
- *         the first module currently online, or a null pointer
+ *         the first module currently online, or a NULL pointer
  *         if there are none.
  */
 inline YModule* yFirstModule(void)

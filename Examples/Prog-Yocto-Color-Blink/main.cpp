@@ -17,21 +17,21 @@ int main(int argc, const char * argv[])
 
     // No exception please
     YAPI::DisableExceptions();
-    
+
     if(YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
         cerr << "yInitAPI failed: " << errmsg << endl;
         return -1;
     }
 
-  
+
     led = YColorLed::FirstColorLed();
-	if (!led)
-		{ cerr << "no color led found (check USB cable)"<<endl;
-          return 1;
-        }
-  
+    if (!led) {
+        cerr << "no color led found (check USB cable)" << endl;
+        return 1;
+    }
+
     led->resetBlinkSeq();                       // cleans the sequence
-    led->addRgbMoveToBlinkSeq(0x00FF00,500);     // move to green in 500 ms
+    led->addRgbMoveToBlinkSeq(0x00FF00, 500);    // move to green in 500 ms
     led->addRgbMoveToBlinkSeq(0x000000,   0);    // switch to black instantaneously
     led->addRgbMoveToBlinkSeq(0x000000,  250);   // stays black for 250ms
     led->addRgbMoveToBlinkSeq(0x0000FF,    0);   // switch to blue instantaneously
@@ -42,11 +42,11 @@ int main(int argc, const char * argv[])
     led->addRgbMoveToBlinkSeq(0xFF0000,  100);   // stays red for 100ms
     led->addRgbMoveToBlinkSeq(0x000000,    0);   // switch to black instantaneously
     led->addRgbMoveToBlinkSeq(0x000000, 1000);   // stays black for 1s
-    led->startBlinkSeq();                       // starts sequence 
-    
-	
-	cout << "done." << endl;
-    
+    led->startBlinkSeq();                       // starts sequence
+
+
+    cout << "done." << endl;
+
     return 0;
 }
 

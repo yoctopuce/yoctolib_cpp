@@ -20,7 +20,7 @@ int main(int argc, const char * argv[])
     while (module != NULL) {
         cout << module->get_serialNumber() << " ";
         cout << module->get_productName()  << endl;
-        module = module->nextModule(); 
+        module = module->nextModule();
     }
     return 0;
 }

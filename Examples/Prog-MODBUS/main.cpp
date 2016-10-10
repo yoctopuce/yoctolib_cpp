@@ -11,7 +11,7 @@ int main(int argc, const char * argv[])
     string errmsg;
 
     if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
-        cerr << "RegisterHub error : " << errmsg<<endl;
+        cerr << "RegisterHub error : " << errmsg << endl;
         return 1;
     }
 
@@ -21,11 +21,11 @@ int main(int argc, const char * argv[])
     } else {
         serialPort = YSerialPort::FirstSerialPort();
         if (serialPort == NULL) {
-            cerr <<"No module connected (check USB cable)"<<endl;
+            cerr << "No module connected (check USB cable)" << endl;
             return 1;
         }
     }
-    
+
     int slave, reg, val;
     string cmd;
     do {
@@ -41,11 +41,11 @@ int main(int argc, const char * argv[])
     } while(reg < 1 || reg >= 50000 || (reg % 10000) == 0);
     while(true) {
         if(reg >= 40001) {
-            val = serialPort->modbusReadInputRegisters(slave, reg-40001, 1)[0];
+            val = serialPort->modbusReadInputRegisters(slave, reg - 40001, 1)[0];
         } else if(reg >= 30001) {
-            val = serialPort->modbusReadRegisters(slave, reg-30001, 1)[0];
+            val = serialPort->modbusReadRegisters(slave, reg - 30001, 1)[0];
         } else if(reg >= 10001) {
-            val = serialPort->modbusReadInputBits(slave, reg-10001, 1)[0];
+            val = serialPort->modbusReadInputBits(slave, reg - 10001, 1)[0];
         } else {
             val = serialPort->modbusReadBits(slave, reg - 1, 1)[0];
         }

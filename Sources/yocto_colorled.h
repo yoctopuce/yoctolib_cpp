@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorled.h 24475 2016-05-12 14:03:35Z mvuilleu $
+ * $Id: yocto_colorled.h 25275 2016-08-24 13:42:24Z mvuilleu $
  *
  * Declares yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -327,9 +327,9 @@ public:
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
      *
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
      * @noreturn
@@ -399,7 +399,7 @@ public:
      * Continues the enumeration of RGB LEDs started using yFirstColorLed().
      *
      * @return a pointer to a YColorLed object, corresponding to
-     *         an RGB LED currently online, or a null pointer
+     *         an RGB LED currently online, or a NULL pointer
      *         if there are no more RGB LEDs to enumerate.
      */
            YColorLed       *nextColorLed(void);
@@ -412,7 +412,7 @@ public:
      * next RGB LEDs.
      *
      * @return a pointer to a YColorLed object, corresponding to
-     *         the first RGB LED currently online, or a null pointer
+     *         the first RGB LED currently online, or a NULL pointer
      *         if there are none.
      */
            static YColorLed* FirstColorLed(void);
@@ -457,7 +457,7 @@ inline YColorLed* yFindColorLed(const string& func)
  * next RGB LEDs.
  *
  * @return a pointer to a YColorLed object, corresponding to
- *         the first RGB LED currently online, or a null pointer
+ *         the first RGB LED currently online, or a NULL pointer
  *         if there are none.
  */
 inline YColorLed* yFirstColorLed(void)

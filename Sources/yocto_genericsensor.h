@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_genericsensor.h 23527 2016-03-18 21:49:19Z mvuilleu $
+ * $Id: yocto_genericsensor.h 25275 2016-08-24 13:42:24Z mvuilleu $
  *
  * Declares yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -311,9 +311,9 @@ public:
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
      *
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
      * @noreturn
@@ -327,9 +327,9 @@ public:
      * Registers the callback function that is invoked on every periodic timed notification.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
      *
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and an YMeasure object describing
      *         the new advertised value.
      * @noreturn
@@ -357,7 +357,7 @@ public:
      * Continues the enumeration of generic sensors started using yFirstGenericSensor().
      *
      * @return a pointer to a YGenericSensor object, corresponding to
-     *         a generic sensor currently online, or a null pointer
+     *         a generic sensor currently online, or a NULL pointer
      *         if there are no more generic sensors to enumerate.
      */
            YGenericSensor  *nextGenericSensor(void);
@@ -370,7 +370,7 @@ public:
      * next generic sensors.
      *
      * @return a pointer to a YGenericSensor object, corresponding to
-     *         the first generic sensor currently online, or a null pointer
+     *         the first generic sensor currently online, or a NULL pointer
      *         if there are none.
      */
            static YGenericSensor* FirstGenericSensor(void);
@@ -415,7 +415,7 @@ inline YGenericSensor* yFindGenericSensor(const string& func)
  * next generic sensors.
  *
  * @return a pointer to a YGenericSensor object, corresponding to
- *         the first generic sensor currently online, or a null pointer
+ *         the first generic sensor currently online, or a NULL pointer
  *         if there are none.
  */
 inline YGenericSensor* yFirstGenericSensor(void)

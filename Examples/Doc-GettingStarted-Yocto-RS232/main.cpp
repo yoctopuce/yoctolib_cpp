@@ -23,7 +23,7 @@ int main(int argc, const char * argv[])
     } else {
         serialPort = yFirstSerialPort();
         if (serialPort == NULL) {
-            cerr <<"No module connected (check USB cable)"<<endl;
+            cerr << "No module connected (check USB cable)" << endl;
             return 1;
         }
     }

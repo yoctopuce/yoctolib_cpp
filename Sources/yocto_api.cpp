@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 23882 2016-04-12 08:38:50Z seb $
+ * $Id: yocto_api.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -1524,9 +1524,9 @@ YFunction* YFunction::FindFunction(string func)
  * Registers the callback function that is invoked on every change of advertised value.
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
- * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
  *
- * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and the character string describing
  *         the new advertised value.
  * @noreturn
@@ -3061,7 +3061,7 @@ void YAPI::EnableExceptions(void)
  * Registers a log callback function. This callback will be called each time
  * the API have something to say. Quite useful to debug the API.
  *
- * @param logfun : a procedure taking a string parameter, or null
+ * @param logfun : a procedure taking a string parameter, or NULL
  *         to unregister a previously registered  callback.
  */
 void YAPI::RegisterLogFunction(yLogFunction logfun)
@@ -3074,7 +3074,7 @@ void YAPI::RegisterLogFunction(yLogFunction logfun)
  * a device is plugged. This callback will be invoked while yUpdateDeviceList
  * is running. You will have to call this function on a regular basis.
  *
- * @param arrivalCallback : a procedure taking a YModule parameter, or null
+ * @param arrivalCallback : a procedure taking a YModule parameter, or NULL
  *         to unregister a previously registered  callback.
  */
 void YAPI::RegisterDeviceArrivalCallback(yDeviceUpdateCallback arrivalCallback)
@@ -3098,7 +3098,7 @@ void YAPI::RegisterDeviceArrivalCallback(yDeviceUpdateCallback arrivalCallback)
  * a device is unplugged. This callback will be invoked while yUpdateDeviceList
  * is running. You will have to call this function on a regular basis.
  *
- * @param removalCallback : a procedure taking a YModule parameter, or null
+ * @param removalCallback : a procedure taking a YModule parameter, or NULL
  *         to unregister a previously registered  callback.
  */
 void YAPI::RegisterDeviceRemovalCallback(yDeviceUpdateCallback removalCallback)
@@ -3118,7 +3118,7 @@ void YAPI::RegisterDeviceChangeCallback(yDeviceUpdateCallback changeCallback)
  * network hub (this URL can be passed to RegisterHub). This callback will be invoked
  * while yUpdateDeviceList is running. You will have to call this function on a regular basis.
  *
- * @param hubDiscoveryCallback : a procedure taking two string parameter, or null
+ * @param hubDiscoveryCallback : a procedure taking two string parameter, or NULL
  *         to unregister a previously registered  callback.
  */
 void YAPI::RegisterHubDiscoveryCallback(YHubDiscoveryCallback hubDiscoveryCallback)
@@ -4202,9 +4202,9 @@ YModule* YModule::FindModule(string func)
  * Registers the callback function that is invoked on every change of advertised value.
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
- * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
  *
- * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and the character string describing
  *         the new advertised value.
  * @noreturn
@@ -5459,7 +5459,7 @@ string YModule::functionBaseType(int functionIndex)
  * Registers a device log callback function. This callback will be called each time
  * that a module sends a new log message. Mostly useful to debug a Yoctopuce module.
  *
- * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
  *         arguments: the module object that emitted the log message, and the character string containing the log.
  * @noreturn
  */
@@ -5902,9 +5902,9 @@ YSensor* YSensor::FindSensor(string func)
  * Registers the callback function that is invoked on every change of advertised value.
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
- * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
  *
- * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and the character string describing
  *         the new advertised value.
  * @noreturn
@@ -6166,9 +6166,9 @@ YDataSet YSensor::get_recordedData(s64 startTime,s64 endTime)
  * Registers the callback function that is invoked on every periodic timed notification.
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
- * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
  *
- * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and an YMeasure object describing
  *         the new advertised value.
  * @noreturn

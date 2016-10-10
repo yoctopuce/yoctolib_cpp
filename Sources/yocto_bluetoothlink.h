@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_bluetoothlink.h 23246 2016-02-23 14:49:01Z seb $
+ * $Id: yocto_bluetoothlink.h 25275 2016-08-24 13:42:24Z mvuilleu $
  *
  * Declares yFindBluetoothLink(), the high-level API for BluetoothLink functions
  *
@@ -363,9 +363,9 @@ public:
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
      *
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
      * @noreturn
@@ -401,7 +401,7 @@ public:
      * Continues the enumeration of cellular interfaces started using yFirstBluetoothLink().
      *
      * @return a pointer to a YBluetoothLink object, corresponding to
-     *         a cellular interface currently online, or a null pointer
+     *         a cellular interface currently online, or a NULL pointer
      *         if there are no more cellular interfaces to enumerate.
      */
            YBluetoothLink  *nextBluetoothLink(void);
@@ -414,7 +414,7 @@ public:
      * next cellular interfaces.
      *
      * @return a pointer to a YBluetoothLink object, corresponding to
-     *         the first cellular interface currently online, or a null pointer
+     *         the first cellular interface currently online, or a NULL pointer
      *         if there are none.
      */
            static YBluetoothLink* FirstBluetoothLink(void);
@@ -459,7 +459,7 @@ inline YBluetoothLink* yFindBluetoothLink(const string& func)
  * next cellular interfaces.
  *
  * @return a pointer to a YBluetoothLink object, corresponding to
- *         the first cellular interface currently online, or a null pointer
+ *         the first cellular interface currently online, or a NULL pointer
  *         if there are none.
  */
 inline YBluetoothLink* yFirstBluetoothLink(void)

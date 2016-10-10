@@ -13,7 +13,7 @@ static void usage(void)
     cout << "       <frequency>: integer between 1Hz and 1000000Hz" << endl;
     cout << "       <dutyCycle>: floating point number between 0.0 and 100.0" << endl;
     u64 now = yGetTickCount();
-	while (yGetTickCount()-now<3000) {
+    while (yGetTickCount() - now < 3000) {
         // wait 3 sec to show the message
     }
     exit(1);
@@ -34,7 +34,7 @@ int main(int argc, const char * argv[])
     target = (string) argv[1];
     frequency = (int) atol(argv[2]);
     dutyCycle = atof(argv[3]);
-    
+
     // Setup the API to use local USB devices
     if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
         cerr << "RegisterHub error: " << errmsg << endl;
@@ -43,12 +43,12 @@ int main(int argc, const char * argv[])
 
     if (target == "any") {
         YPwmOutput *pwmoutput = yFirstPwmOutput();
-        if (pwmoutput==NULL) {
+        if (pwmoutput == NULL) {
             cout << "No module connected (check USB cable)" << endl;
             return 1;
         }
         target = pwmoutput->module()->get_serialNumber();
-    }   
+    }
     pwmoutput1 =  yFindPwmOutput(target + ".pwmOutput1");
     pwmoutput2 =  yFindPwmOutput(target + ".pwmOutput2");
 
@@ -60,10 +60,11 @@ int main(int argc, const char * argv[])
         // output 2 : smooth change
         pwmoutput2->set_frequency(frequency);
         pwmoutput2->set_enabled(Y_ENABLED_TRUE);
-        pwmoutput2->dutyCycleMove(dutyCycle,3000);
+        pwmoutput2->dutyCycleMove(dutyCycle, 3000);
     } else {
         cout << "Module not connected (check identification and USB cable)" << endl;
     }
-        
+    yFreeAPI();
+
     return 0;
 }

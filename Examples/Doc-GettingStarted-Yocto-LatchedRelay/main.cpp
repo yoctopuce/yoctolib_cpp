@@ -12,7 +12,7 @@ static void usage(void)
     cout << "       demo <logical_name> [ A | B ]" << endl;
     cout << "       demo any [ A | B ]                (use any discovered device)" << endl;
     u64 now = yGetTickCount();
-	while (yGetTickCount()-now<3000) {
+    while (yGetTickCount() - now < 3000) {
         // wait 3 sec to show the message
     }
     exit(1);
@@ -36,14 +36,14 @@ int main(int argc, const char * argv[])
         cerr << "RegisterHub error: " << errmsg << endl;
         return 1;
     }
-    
+
     if (target == "any") {
         relay = yFirstRelay();
-        if (relay==NULL) {
+        if (relay == NULL) {
             cout << "No module connected (check USB cable)" << endl;
             return 1;
         }
-    }else{
+    } else {
         relay =  yFindRelay(target + ".relay1");
     }
 
@@ -52,6 +52,7 @@ int main(int argc, const char * argv[])
     } else {
         cout << "Module not connected (check identification and USB cable)" << endl;
     }
-        
+    yFreeAPI();
+
     return 0;
 }

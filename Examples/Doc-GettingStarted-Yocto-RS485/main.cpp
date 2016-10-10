@@ -18,19 +18,23 @@ int main(int argc, const char * argv[])
     string errmsg;
 
     if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
-        cerr << "RegisterHub error : " << errmsg<<endl;
+        cerr << "RegisterHub error : " << errmsg << endl;
         return 1;
     }
 
     YSerialPort *serialPort;
-    if (argc > 1) {
+    if (argc > 1 && string(argv[1]) != "any") {
         serialPort = YSerialPort::FindSerialPort(string(argv[1]));
     } else {
         serialPort = YSerialPort::FirstSerialPort();
         if (serialPort == NULL) {
-            cerr <<"No module connected (check USB cable)"<<endl;
+            cerr << "No module connected (check USB cable)" << endl;
             return 1;
         }
+    }
+    if (!serialPort->isOnline()) {
+        cout << "Module not connected (check identification and USB cable)" << endl;
+        return 1;
     }
 
     int slave, reg, val;
@@ -42,17 +46,17 @@ int main(int argc, const char * argv[])
     } while(slave < 1 || slave > 255);
     do {
         cout << "Please select a Coil No (>=1), Input Bit No (>=10001+)," << endl;
-        cout << "       Register No (>=30001) or Input Register No (>=40001)" << endl;
+        cout << "       Input Register No (>=30001) or Register No (>=40001)" << endl;
         cout << "No: " ;
         cin >> reg;
     } while(reg < 1 || reg >= 50000 || (reg % 10000) == 0);
-    while(true) {
+    while(serialPort->isOnline()) {
         if(reg >= 40001) {
-            val = serialPort->modbusReadInputRegisters(slave, reg-40001, 1)[0];
+            val = serialPort->modbusReadRegisters(slave, reg - 40001, 1)[0];
         } else if(reg >= 30001) {
-            val = serialPort->modbusReadRegisters(slave, reg-30001, 1)[0];
+            val = serialPort->modbusReadInputRegisters(slave, reg - 30001, 1)[0];
         } else if(reg >= 10001) {
-            val = serialPort->modbusReadInputBits(slave, reg-10001, 1)[0];
+            val = serialPort->modbusReadInputBits(slave, reg - 10001, 1)[0];
         } else {
             val = serialPort->modbusReadBits(slave, reg - 1, 1)[0];
         }

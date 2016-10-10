@@ -11,7 +11,7 @@ static void usage(void)
     cout << "       demo <logical_name> [ on | off ]" << endl;
     cout << "       demo any [ on | off ]                (use any discovered device)" << endl;
     u64 now = yGetTickCount();
-	while (yGetTickCount()-now<3000) {
+    while (yGetTickCount() - now < 3000) {
         // wait 3 sec to show the message
     }
     exit(1);
@@ -36,9 +36,9 @@ int main(int argc, const char * argv[])
         return 1;
     }
 
-    if(target == "any"){
+    if(target == "any") {
         led =  yFirstLed();
-    }else{
+    } else {
         led =  yFindLed(target + ".led");
     }
     if (led && led->isOnline()) {
@@ -46,6 +46,7 @@ int main(int argc, const char * argv[])
     } else {
         cout << "Module not connected (check identification and USB cable)" << endl;
     }
-        
+    yFreeAPI();
+
     return 0;
 }

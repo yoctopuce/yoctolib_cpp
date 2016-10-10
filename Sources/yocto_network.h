@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.h 23930 2016-04-15 09:31:14Z seb $
+ * $Id: yocto_network.h 25275 2016-08-24 13:42:24Z mvuilleu $
  *
  * Declares yFindNetwork(), the high-level API for Network functions
  *
@@ -819,9 +819,9 @@ public:
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
      *
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
      * @noreturn
@@ -893,7 +893,7 @@ public:
      * Continues the enumeration of network interfaces started using yFirstNetwork().
      *
      * @return a pointer to a YNetwork object, corresponding to
-     *         a network interface currently online, or a null pointer
+     *         a network interface currently online, or a NULL pointer
      *         if there are no more network interfaces to enumerate.
      */
            YNetwork        *nextNetwork(void);
@@ -906,7 +906,7 @@ public:
      * next network interfaces.
      *
      * @return a pointer to a YNetwork object, corresponding to
-     *         the first network interface currently online, or a null pointer
+     *         the first network interface currently online, or a NULL pointer
      *         if there are none.
      */
            static YNetwork* FirstNetwork(void);
@@ -951,7 +951,7 @@ inline YNetwork* yFindNetwork(const string& func)
  * next network interfaces.
  *
  * @return a pointer to a YNetwork object, corresponding to
- *         the first network interface currently online, or a null pointer
+ *         the first network interface currently online, or a NULL pointer
  *         if there are none.
  */
 inline YNetwork* yFirstNetwork(void)

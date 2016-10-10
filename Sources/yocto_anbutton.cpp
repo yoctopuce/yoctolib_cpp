@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_anbutton.cpp 24825 2016-06-16 09:48:45Z seb $
+ * $Id: yocto_anbutton.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
  *
  * Implements yFindAnButton(), the high-level API for AnButton functions
  *
@@ -422,7 +422,7 @@ s64 YAnButton::get_pulseTimer(void)
 }
 
 /**
- * Retrieves $AFUNCTION$ for a given identifier.
+ * Retrieves an analog input for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -432,17 +432,17 @@ s64 YAnButton::get_pulseTimer(void)
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that $THEFUNCTION$ is online at the time
+ * This function does not require that the analog input is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YAnButton.isOnline() to test if $THEFUNCTION$ is
+ * Use the method YAnButton.isOnline() to test if the analog input is
  * indeed online at a given time. In case of ambiguity when looking for
- * $AFUNCTION$ by logical name, no error is notified: the first instance
+ * an analog input by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
- * @param func : a string that uniquely characterizes $THEFUNCTION$
+ * @param func : a string that uniquely characterizes the analog input
  *
- * @return a YAnButton object allowing you to drive $THEFUNCTION$.
+ * @return a YAnButton object allowing you to drive the analog input.
  */
 YAnButton* YAnButton::FindAnButton(string func)
 {
@@ -459,9 +459,9 @@ YAnButton* YAnButton::FindAnButton(string func)
  * Registers the callback function that is invoked on every change of advertised value.
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
- * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
  *
- * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and the character string describing
  *         the new advertised value.
  * @noreturn

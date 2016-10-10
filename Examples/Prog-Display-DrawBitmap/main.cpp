@@ -13,7 +13,7 @@ static void usage(void)
     cout << "       demo <logical_name>" << endl;
     cout << "       demo any (use any discovered device)" << endl;
     u64 now = yGetTickCount();
-	while (yGetTickCount()-now<3000) {
+    while (yGetTickCount() - now < 3000) {
         // wait 3 sec to show the message
     }
     exit(1);
@@ -27,37 +27,30 @@ int main(int argc, const char * argv[])
     YDisplayLayer *l0;
     int w, h;
 
-    if (argc < 2)
-    {
+    if (argc < 2) {
         usage();
     }
 
     // Setup the API to use local USB devices
-    if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS)
-    {
+    if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
         cerr << "RegisterHub error: " << errmsg << endl;
         usage();
         return 1;
     }
 
     target = (string) argv[1];
-    if (target == "any")
-    {
+    if (target == "any") {
         disp = yFirstDisplay();
-        if (disp == NULL)
-        {
+        if (disp == NULL) {
             cout << "No module connected (check USB cable)" << endl;
             usage();
             return 1;
         }
-    }
-    else
-    {
+    } else {
         disp = yFindDisplay(target + ".display");
     }
 
-    if (!disp->isOnline())
-    {
+    if (!disp->isOnline()) {
         cout << "Module is offline (check USB cable)" << endl;
         usage();
         return 1;
@@ -86,8 +79,7 @@ int main(int argc, const char * argv[])
     long double zoom = 1;
     long double distance = 1;
 
-    while (1)
-    {
+    while (1) {
         for (int i = 0; i < (int) data.size(); i++) data[i] = 0;
         distance = distance * 0.95;
         centerX = targetX * (1 - distance);
@@ -95,8 +87,7 @@ int main(int argc, const char * argv[])
         max_iteration = (int) floor(0.5 + max_iteration + sqrt(zoom));
         if (max_iteration > 1500) max_iteration = 1500;
         for (int j = 0; j < h; j++)
-            for (int i = 0; i < w; i++)
-            {
+            for (int i = 0; i < w; i++) {
                 x0 = (((i - w / 2.0) / (w / 8)) / zoom) - centerX;
                 y0 = (((j - h / 2.0) / (w / 8)) / zoom) - centerY;
 
@@ -105,8 +96,7 @@ int main(int argc, const char * argv[])
 
                 iteration = 0;
 
-                while ((x * x + y * y < 4) && (iteration < max_iteration))
-                {
+                while ((x * x + y * y < 4) && (iteration < max_iteration)) {
                     xtemp = x * x - y * y + x0;
                     y = 2 * x * y + y0;
                     x = xtemp;

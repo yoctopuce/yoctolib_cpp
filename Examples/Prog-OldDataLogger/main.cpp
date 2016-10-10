@@ -18,7 +18,7 @@ int main(int argc, const char * argv[])
 
     // No exception please
     yDisableExceptions();
-    
+
     if(yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
         cerr << "yInitAPI failed: " << errmsg << endl;
         return -1;
@@ -45,7 +45,7 @@ int main(int argc, const char * argv[])
     for(i = 0; i < dataStreams.size(); i++) {
         YDataStream *s = dataStreams[i];
         unsigned         nrows, r, c;
-        
+
         cout << "Data stream " << i << ":" << endl;
         cout << "- Run #" << s->get_runIndex();
         cout << ", time=" << s->get_startTime();
@@ -59,13 +59,13 @@ int main(int argc, const char * argv[])
         if(nrows > 0) {
             cout << "- " << nrows << " samples, taken every ";
             cout << s->get_dataSamplesIntervalMs() << " [ms]" << endl;
-            
+
             vector<string> names = s->get_columnNames();
             for(c = 0; c < names.size(); c++) {
                 cout << names[c] << "\t";
-            }            
+            }
             cout << endl << fixed << setprecision(1);
-            
+
             vector< vector<double> > table = s->get_dataRows();
             for(r = 0; r < table.size(); r++) {
                 vector<double> row = table[r];
@@ -74,11 +74,11 @@ int main(int argc, const char * argv[])
                 }
                 cout << endl;
             }
-        }        
+        }
     }
-    
+
     cout << "done." << endl;
-    
+
     return 0;
 }
 

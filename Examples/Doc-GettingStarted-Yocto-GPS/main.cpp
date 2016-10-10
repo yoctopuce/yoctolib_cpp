@@ -11,7 +11,7 @@ static void usage(void)
     cout << "       demo <logical_name>" << endl;
     cout << "       demo any                 (use any discovered device)" << endl;
     u64 now = yGetTickCount();
-	while (yGetTickCount()-now<3000) {
+    while (yGetTickCount() - now < 3000) {
         // wait 3 sec to show the message
     }
     exit(1);
@@ -19,7 +19,7 @@ static void usage(void)
 
 int main(int argc, const char * argv[])
 {
-    string errmsg,target;
+    string errmsg, target;
     YGps *gps;
 
     if (argc < 2) {
@@ -35,7 +35,7 @@ int main(int argc, const char * argv[])
 
     if (target == "any") {
         gps = yFirstGps();
-        if (gps==NULL) {
+        if (gps == NULL) {
             cout << "No module connected (check USB cable)" << endl;
             return 1;
         }
@@ -48,13 +48,14 @@ int main(int argc, const char * argv[])
             cout << "Module not connected (check identification and USB cable)";
             break;
         }
-		if (!gps->get_isFixed()) {
-		   cout << "Fixing.."<<endl;
+        if (!gps->get_isFixed()) {
+            cout << "Fixing.." << endl;
         } else {
-          cout << gps->get_latitude() <<"  " << gps->get_longitude()    <<endl;
+            cout << gps->get_latitude() << "  " << gps->get_longitude()    << endl;
         }
-		cout << "  (press Ctrl-C to exit)" << endl;
-        ySleep(1000,errmsg);
+        cout << "  (press Ctrl-C to exit)" << endl;
+        ySleep(1000, errmsg);
     }
+    yFreeAPI();
     return 0;
 }

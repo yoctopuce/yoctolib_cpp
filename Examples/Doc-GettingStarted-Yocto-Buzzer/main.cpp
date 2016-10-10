@@ -13,7 +13,7 @@ static void usage(void)
     cout << "usage: demo <serial_number> " << endl;
     cout << "       demo any  (use any discovered device)" << endl;
     u64 now = yGetTickCount();
-    while (yGetTickCount()-now<3000) {
+    while (yGetTickCount() - now < 3000) {
         // wait 3 sec to show the message
     }
     exit(1);
@@ -22,9 +22,9 @@ static void usage(void)
 int main(int argc, const char * argv[])
 {
     string  errmsg;
-    string  target,serial;
+    string  target, serial;
     YBuzzer  *buz;
-    YLed    *led1, *led2 ,*led;
+    YLed    *led1, *led2 , *led;
     YAnButton *button1, *button2;
     int    i;
     int frequency;
@@ -84,7 +84,8 @@ int main(int argc, const char * argv[])
             }
             buz->set_frequency(0);
             led->set_power(YLed::POWER_OFF);
-       }
+        }
     }
+    yFreeAPI();
 }
 

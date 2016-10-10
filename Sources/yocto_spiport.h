@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_spiport.h 25085 2016-07-26 16:38:36Z mvuilleu $
+ * $Id: yocto_spiport.h 25275 2016-08-24 13:42:24Z mvuilleu $
  *
  * Declares yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -487,9 +487,9 @@ public:
      * Registers the callback function that is invoked on every change of advertised value.
      * The callback is invoked only during the execution of ySleep or yHandleEvents.
      * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
      *
-     * @param callback : the callback function to call, or a null pointer. The callback function should take two
+     * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
      *         the new advertised value.
      * @noreturn
@@ -763,7 +763,7 @@ public:
      * Continues the enumeration of SPI ports started using yFirstSpiPort().
      *
      * @return a pointer to a YSpiPort object, corresponding to
-     *         a SPI port currently online, or a null pointer
+     *         a SPI port currently online, or a NULL pointer
      *         if there are no more SPI ports to enumerate.
      */
            YSpiPort        *nextSpiPort(void);
@@ -776,7 +776,7 @@ public:
      * next SPI ports.
      *
      * @return a pointer to a YSpiPort object, corresponding to
-     *         the first SPI port currently online, or a null pointer
+     *         the first SPI port currently online, or a NULL pointer
      *         if there are none.
      */
            static YSpiPort* FirstSpiPort(void);
@@ -821,7 +821,7 @@ inline YSpiPort* yFindSpiPort(const string& func)
  * next SPI ports.
  *
  * @return a pointer to a YSpiPort object, corresponding to
- *         the first SPI port currently online, or a null pointer
+ *         the first SPI port currently online, or a NULL pointer
  *         if there are none.
  */
 inline YSpiPort* yFirstSpiPort(void)

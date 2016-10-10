@@ -11,7 +11,7 @@ static void usage(void)
     cout << "       demo <logical_name> [ -1000 | ... | 1000 ]" << endl;
     cout << "       demo any  [ -1000 | ... | 1000 ]                (use any discovered device)" << endl;
     u64 now = yGetTickCount();
-	while (yGetTickCount()-now<3000) {
+    while (yGetTickCount() - now < 3000) {
         // wait 3 sec to show the message
     }
     exit(1);
@@ -30,7 +30,7 @@ int main(int argc, const char * argv[])
     }
     target = (string) argv[1];
     pos = (int) atol(argv[2]);
-    
+
     // Setup the API to use local USB devices
     if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
         cerr << "RegisterHub error: " << errmsg << endl;
@@ -39,21 +39,22 @@ int main(int argc, const char * argv[])
 
     if (target == "any") {
         YServo *servo = yFirstServo();
-        if (servo==NULL) {
+        if (servo == NULL) {
             cout << "No module connected (check USB cable)" << endl;
             return 1;
         }
         target = servo->module()->get_serialNumber();
-    }   
+    }
     servo1 =  yFindServo(target + ".servo1");
     servo5 =  yFindServo(target + ".servo5");
-    
+
     if (servo1->isOnline()) {
         servo1->set_position(pos);  // immediate switch
-        servo5->move(pos,3000);     // smooth transition  
+        servo5->move(pos, 3000);    // smooth transition
     } else {
         cout << "Module not connected (check identification and USB cable)" << endl;
     }
-        
+    yFreeAPI();
+
     return 0;
 }

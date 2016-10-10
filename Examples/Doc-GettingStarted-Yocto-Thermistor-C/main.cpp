@@ -11,7 +11,7 @@ static void usage(void)
     cout << "       demo <logical_name>" << endl;
     cout << "       demo any                 (use any discovered device)" << endl;
     u64 now = yGetTickCount();
-	while (yGetTickCount()-now<3000) {
+    while (yGetTickCount() - now < 3000) {
         // wait 3 sec to show the message
     }
     exit(1);
@@ -19,23 +19,23 @@ static void usage(void)
 
 int main(int argc, const char * argv[])
 {
-    string errmsg,target;
+    string errmsg, target;
     YTemperature *tsensor;
 
     if (argc < 2) {
         usage();
     }
     target = (string) argv[1];
-    
+
     // Setup the API to use local USB devices
     if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
         cerr << "RegisterHub error: " << errmsg << endl;
         return 1;
     }
- 
+
     if (target == "any") {
         tsensor = yFirstTemperature();
-        if (tsensor==NULL) {
+        if (tsensor == NULL) {
             cout << "No module connected (check USB cable)" << endl;
             return 1;
         }
@@ -43,13 +43,13 @@ int main(int argc, const char * argv[])
         tsensor = yFindTemperature(target + ".temperature1");
     }
 
-	YTemperature *t1 = yFindTemperature(tsensor->get_module()->get_serialNumber() + ".temperature1");
-	YTemperature *t2 = yFindTemperature(tsensor->get_module()->get_serialNumber() + ".temperature2");
+    YTemperature *t1 = yFindTemperature(tsensor->get_module()->get_serialNumber() + ".temperature1");
+    YTemperature *t2 = yFindTemperature(tsensor->get_module()->get_serialNumber() + ".temperature2");
     YTemperature *t3 = yFindTemperature(tsensor->get_module()->get_serialNumber() + ".temperature3");
     YTemperature *t4 = yFindTemperature(tsensor->get_module()->get_serialNumber() + ".temperature4");
     YTemperature *t5 = yFindTemperature(tsensor->get_module()->get_serialNumber() + ".temperature5");
     YTemperature *t6 = yFindTemperature(tsensor->get_module()->get_serialNumber() + ".temperature6");
-	
+
 
 
     while (1) {
@@ -57,18 +57,19 @@ int main(int argc, const char * argv[])
             cout << "Module not connected (check identification and USB cable)";
             break;
         }
-    
+
         cout << " | 1: " << t1->get_currentValue();
         cout << " | 2: " << t2->get_currentValue();
         cout << " | 3: " << t3->get_currentValue();
         cout << " | 4: " << t4->get_currentValue();
         cout << " | 5: " << t5->get_currentValue();
         cout << " | 6: " << t6->get_currentValue();
-        
-        cout <<  " |  deg C |"<<endl;
-       
-        ySleep(1000,errmsg);
+
+        cout <<  " |  deg C |" << endl;
+
+        ySleep(1000, errmsg);
     };
-        
+    yFreeAPI();
+
     return 0;
 }

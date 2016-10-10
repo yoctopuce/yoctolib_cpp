@@ -11,7 +11,7 @@ static void usage(void)
     cout << "       demo <logical_name>" << endl;
     cout << "       demo any                 (use any discovered device)" << endl;
     u64 now = yGetTickCount();
-	while (yGetTickCount() - now < 3000) {
+    while (yGetTickCount() - now < 3000) {
         // wait 3 sec to show the message
     }
     exit(1);
@@ -47,7 +47,7 @@ int main(int argc, const char * argv[])
             exit(1);
         }
     } else {
-		// retreive the first pwm input from the device given on command line
+        // retreive the first pwm input from the device given on command line
         pwm = YPwmInput::FindPwmInput(target + ".pwmInput1");
     }
 
@@ -57,14 +57,14 @@ int main(int argc, const char * argv[])
         pwm1 = YPwmInput::FindPwmInput(m->get_serialNumber() + ".pwmInput1");
         pwm2 = YPwmInput::FindPwmInput(m->get_serialNumber() + ".pwmInput2");
     } else {
-            cerr << "No module connected (Check cable)" << endl;
-            exit(1);
+        cerr << "No module connected (Check cable)" << endl;
+        exit(1);
     }
     while (pwm1->isOnline()) {
-	    cout << "PWM1 : " << pwm1->get_frequency() << " Hz " << pwm1->get_dutyCycle()
-			<< " %  " << pwm1->get_pulseCounter() << "pulses edges" << endl;
-		cout << "PWM2 : " << pwm2->get_frequency() << "  Hz " << pwm2->get_dutyCycle()
-			  << " %  " << pwm2->get_pulseCounter() << " pulses edges" << endl;
+        cout << "PWM1 : " << pwm1->get_frequency() << " Hz " << pwm1->get_dutyCycle()
+             << " %  " << pwm1->get_pulseCounter() << "pulses edges" << endl;
+        cout << "PWM2 : " << pwm2->get_frequency() << "  Hz " << pwm2->get_dutyCycle()
+             << " %  " << pwm2->get_pulseCounter() << " pulses edges" << endl;
 
         cout << "  (press Ctrl-C to exit)" << endl;
         YAPI::Sleep(1000, errmsg);

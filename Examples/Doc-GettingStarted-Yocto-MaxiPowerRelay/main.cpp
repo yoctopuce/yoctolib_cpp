@@ -7,13 +7,13 @@
 using namespace std;
 
 static void usage(const char* execname)
-{   
+{
     cout  << "usage:" << endl;
     cout  << execname << " serial_number> <channel>  [ ON | OFF ]" << endl;
     cout  << execname << " <logical_name> <channel>[ ON | OFF ]" << endl;
     cout  << execname << " any <channel> [ ON | OFF ]  (use any discovered device)" << endl;
     cout  << "Example"   << endl;
-    cout  << execname << " any 2 ON" << endl;     
+    cout  << execname << " any 2 ON" << endl;
     exit(1);
 }
 
@@ -26,7 +26,7 @@ int main(int argc, const char * argv[])
     string  state;
 
     if (argc < 3) usage(argv[0]);
-    
+
     target  = (string) argv[1];
     channel = (string) argv[2];
     state   = (string) argv[3];
@@ -36,26 +36,25 @@ int main(int argc, const char * argv[])
         cerr << "RegisterHub error: " << errmsg << endl;
         return 1;
     }
-    
+
     if (target == "any") {
-        relay =  yFirstRelay();        
-        if (relay==NULL) {
+        relay =  yFirstRelay();
+        if (relay == NULL) {
             cout << "No module connected (check USB cable)" << endl;
             return 1;
         }
-         target = relay->get_module()->get_serialNumber(); 
+        target = relay->get_module()->get_serialNumber();
     }
-      
-    cout << "Using " << target << endl;       
+
+    cout << "Using " << target << endl;
     relay =  yFindRelay((string)target + ".relay" + channel);
-    
 
     if (relay->isOnline()) {
-        
         relay->set_state(state == "ON" ? Y_STATE_B : Y_STATE_A);
     } else {
         cout << "Module not connected (check identification and USB cable)" << endl;
     }
-        
+    yFreeAPI();
+
     return 0;
 }

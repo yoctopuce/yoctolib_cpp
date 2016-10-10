@@ -21,20 +21,20 @@ static void deviceArrival(YModule *m)
 {
     string serial = m->get_serialNumber();
     cout << "Device arrival : " << serial << endl;
-    m->registerLogCallback(logfun); 
+    m->registerLogCallback(logfun);
 }
 
 
 int main(int argc, const char * argv[])
-{   
+{
     string errmsg;
 
     YAPI::RegisterLogFunction(log);
-    YAPI::RegisterDeviceArrivalCallback(deviceArrival);   
+    YAPI::RegisterDeviceArrivalCallback(deviceArrival);
     YAPI::DisableExceptions();
-    
+
     if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
-        cerr << "RegisterHub error : " << errmsg<<endl;
+        cerr << "RegisterHub error : " << errmsg << endl;
         return 1;
     }
     cout << "Hit Ctrl-C to Stop " << endl;

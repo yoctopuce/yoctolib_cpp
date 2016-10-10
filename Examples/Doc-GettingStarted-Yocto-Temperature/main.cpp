@@ -11,7 +11,7 @@ static void usage(void)
     cout << "       demo <logical_name>" << endl;
     cout << "       demo any                 (use any discovered device)" << endl;
     u64 now = yGetTickCount();
-	while (yGetTickCount()-now<3000) {
+    while (yGetTickCount() - now < 3000) {
         // wait 3 sec to show the message
     }
     exit(1);
@@ -19,14 +19,14 @@ static void usage(void)
 
 int main(int argc, const char * argv[])
 {
-    string errmsg,target;
+    string errmsg, target;
     YTemperature *tsensor;
 
     if (argc < 2) {
         usage();
     }
     target = (string) argv[1];
-    
+
     // Setup the API to use local USB devices
     if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
         cerr << "RegisterHub error: " << errmsg << endl;
@@ -35,7 +35,7 @@ int main(int argc, const char * argv[])
 
     if (target == "any") {
         tsensor = yFirstTemperature();
-        if (tsensor==NULL) {
+        if (tsensor == NULL) {
             cout << "No module connected (check USB cable)" << endl;
             return 1;
         }
@@ -48,10 +48,11 @@ int main(int argc, const char * argv[])
             cout << "Module not connected (check identification and USB cable)";
             break;
         }
-        cout << "Current temperature: " << tsensor->get_currentValue() << " °C"<<endl;
+        cout << "Current temperature: " << tsensor->get_currentValue() << " °C" << endl;
         cout << "  (press Ctrl-C to exit)" << endl;
-        ySleep(1000,errmsg);
+        ySleep(1000, errmsg);
     };
-        
+    yFreeAPI();
+
     return 0;
 }

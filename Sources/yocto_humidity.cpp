@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_humidity.cpp 23246 2016-02-23 14:49:01Z seb $
+ * $Id: yocto_humidity.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
  *
  * Implements yFindHumidity(), the high-level API for Humidity functions
  *
@@ -142,7 +142,7 @@ double YHumidity::get_absHum(void)
 }
 
 /**
- * Retrieves $AFUNCTION$ for a given identifier.
+ * Retrieves a humidity sensor for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -152,17 +152,17 @@ double YHumidity::get_absHum(void)
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that $THEFUNCTION$ is online at the time
+ * This function does not require that the humidity sensor is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YHumidity.isOnline() to test if $THEFUNCTION$ is
+ * Use the method YHumidity.isOnline() to test if the humidity sensor is
  * indeed online at a given time. In case of ambiguity when looking for
- * $AFUNCTION$ by logical name, no error is notified: the first instance
+ * a humidity sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
- * @param func : a string that uniquely characterizes $THEFUNCTION$
+ * @param func : a string that uniquely characterizes the humidity sensor
  *
- * @return a YHumidity object allowing you to drive $THEFUNCTION$.
+ * @return a YHumidity object allowing you to drive the humidity sensor.
  */
 YHumidity* YHumidity::FindHumidity(string func)
 {
@@ -179,9 +179,9 @@ YHumidity* YHumidity::FindHumidity(string func)
  * Registers the callback function that is invoked on every change of advertised value.
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
- * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
  *
- * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and the character string describing
  *         the new advertised value.
  * @noreturn
@@ -219,9 +219,9 @@ int YHumidity::_invokeValueCallback(string value)
  * Registers the callback function that is invoked on every periodic timed notification.
  * The callback is invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
- * one of these two functions periodically. To unregister a callback, pass a null pointer as argument.
+ * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
  *
- * @param callback : the callback function to call, or a null pointer. The callback function should take two
+ * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and an YMeasure object describing
  *         the new advertised value.
  * @noreturn

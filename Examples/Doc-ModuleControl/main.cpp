@@ -26,27 +26,27 @@ int main(int argc, const char * argv[])
         usage(argv[0]);
 
     YModule *module = yFindModule(argv[1]);  // use serial or logical name
-  
+
     if (module->isOnline()) {
         if (argc > 2) {
-            if (string(argv[2]) == "ON") 
+            if (string(argv[2]) == "ON")
                 module->set_beacon(Y_BEACON_ON);
-            else  
+            else
                 module->set_beacon(Y_BEACON_OFF);
-        }          
+        }
         cout << "serial:       " << module->get_serialNumber() << endl;
         cout << "logical name: " << module->get_logicalName() << endl;
         cout << "luminosity:   " << module->get_luminosity() << endl;
         cout << "beacon:       ";
-        if (module->get_beacon()==Y_BEACON_ON)  
-           cout << "ON" << endl;
-        else   
-           cout << "OFF" << endl;
-        cout << "upTime:       " << module->get_upTime()/1000 << " sec" << endl;
+        if (module->get_beacon() == Y_BEACON_ON)
+            cout << "ON" << endl;
+        else
+            cout << "OFF" << endl;
+        cout << "upTime:       " << module->get_upTime() / 1000 << " sec" << endl;
         cout << "USB current:  " << module->get_usbCurrent() << " mA" << endl;
-        cout << "Logs:"<< endl << module->get_lastLogs() << endl;
+        cout << "Logs:" << endl << module->get_lastLogs() << endl;
     } else {
-        cout << argv[1] << " not connected (check identification and USB cable)" 
+        cout << argv[1] << " not connected (check identification and USB cable)"
              << endl;
     }
     return 0;

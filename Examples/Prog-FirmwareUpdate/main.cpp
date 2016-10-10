@@ -19,7 +19,7 @@ static int upgradeSerialList(vector<string> allserials)
         // check if a new firmare is available on yoctopuce.com
         string newfirm = module->checkFirmware("www.yoctopuce.com", true);
         if (newfirm == "") {
-            cout << product << " " << serial << "(rev=" << current << ") is up to date"<< endl;
+            cout << product << " " << serial << "(rev=" << current << ") is up to date" << endl;
         } else {
             cout << product << " " << serial << "(rev=" << current << ") need be updated with firmare : " << endl;
             cout << "    " << newfirm << endl;
@@ -30,14 +30,14 @@ static int upgradeSerialList(vector<string> allserials)
                 int newstatus = update.get_progress();
                 if (newstatus != status)
                     cout << newstatus << "% " << update.get_progressMessage() << endl;
-                YAPI::Sleep(500,errmsg);
+                YAPI::Sleep(500, errmsg);
                 status = newstatus;
             } while (status < 100 && status >= 0);
-            if (status < 0){
+            if (status < 0) {
                 cout << "Firmware Update failed: " << update.get_progressMessage() << endl;
                 exit(1);
-            } else{
-                if (module->isOnline()){
+            } else {
+                if (module->isOnline()) {
                     cout << status << "% Firmware Updated Successfully!" << endl;
                 } else {
                     cout << status << " Firmware Update failed: module " << serial << " is not online" << endl;
@@ -72,15 +72,14 @@ int main(int argc, const char * argv[])
     }
     //first step construct the list of all hub /shield and devices connected
     YModule *module = YModule::FirstModule();
-    while (module){
+    while (module) {
         string product = module->get_productName();
         string serial  = module->get_serialNumber();
         if (product == "YoctoHub-Shield") {
             shield.push_back(serial);
-        } else if (product.substr(0,9) == "YoctoHub-")
-        {
+        } else if (product.substr(0, 9) == "YoctoHub-") {
             hubs.push_back(serial);
-        } else if (product != "VirtualHub"){
+        } else if (product != "VirtualHub") {
             devices.push_back(serial);
         }
         module = module->nextModule();

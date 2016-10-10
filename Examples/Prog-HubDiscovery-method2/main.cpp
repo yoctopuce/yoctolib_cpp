@@ -32,11 +32,11 @@ static void arrivalCallback(YModule *dev)
 int main(int argc, const char * argv[])
 {
     string errmsg;
-    
+
     cout << "Waiting for hubs to signal themselves..." << endl;
 
     if (YAPI::RegisterHub("net", errmsg) != YAPI::SUCCESS) {
-        cerr << "RegisterHub error : " << errmsg<<endl;
+        cerr << "RegisterHub error : " << errmsg << endl;
         return 1;
     }
 
@@ -48,5 +48,5 @@ int main(int argc, const char * argv[])
     for (int i = 0; i < 30; i++) {
         YAPI::UpdateDeviceList(errmsg); // traps plug/unplug events
         YAPI::Sleep(1000, errmsg);   // traps others events
-    } 
+    }
 }
