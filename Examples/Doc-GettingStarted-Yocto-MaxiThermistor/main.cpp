@@ -19,7 +19,7 @@ static void usage(void)
 
 int main(int argc, const char * argv[])
 {
-    string errmsg, target;
+    string errmsg, target, serial;
     YTemperature *tsensor;
 
     if (argc < 2) {
@@ -43,12 +43,13 @@ int main(int argc, const char * argv[])
         tsensor = yFindTemperature(target + ".temperature1");
     }
 
-    YTemperature *t1 = yFindTemperature(tsensor->get_module()->get_serialNumber() + ".temperature1");
-    YTemperature *t2 = yFindTemperature(tsensor->get_module()->get_serialNumber() + ".temperature2");
-    YTemperature *t3 = yFindTemperature(tsensor->get_module()->get_serialNumber() + ".temperature3");
-    YTemperature *t4 = yFindTemperature(tsensor->get_module()->get_serialNumber() + ".temperature4");
-    YTemperature *t5 = yFindTemperature(tsensor->get_module()->get_serialNumber() + ".temperature5");
-    YTemperature *t6 = yFindTemperature(tsensor->get_module()->get_serialNumber() + ".temperature6");
+    serial = tsensor->get_module()->get_serialNumber();
+    YTemperature *t1 = yFindTemperature(serial + ".temperature1");
+    YTemperature *t2 = yFindTemperature(serial + ".temperature2");
+    YTemperature *t3 = yFindTemperature(serial + ".temperature3");
+    YTemperature *t4 = yFindTemperature(serial + ".temperature4");
+    YTemperature *t5 = yFindTemperature(serial + ".temperature5");
+    YTemperature *t6 = yFindTemperature(serial + ".temperature6");
 
     while (1) {
         if (!t1->isOnline() || !t2->isOnline()) {

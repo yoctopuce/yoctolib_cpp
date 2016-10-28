@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_api.cpp 25651 2016-10-20 13:36:46Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -656,7 +656,9 @@ double YDataStream::_decodeVal(int w)
         }
     }
     if (_caltyp != 0) {
-        val = _calhdl(val, _caltyp, _calpar, _calraw, _calref);
+        if (_calhdl != NULL) {
+            val = _calhdl(val, _caltyp, _calpar, _calraw, _calref);
+        }
     }
     return val;
 }
@@ -675,7 +677,9 @@ double YDataStream::_decodeAvg(int dw,int count)
         }
     }
     if (_caltyp != 0) {
-        val = _calhdl(val, _caltyp, _calpar, _calraw, _calref);
+        if (_calhdl != NULL) {
+            val = _calhdl(val, _caltyp, _calpar, _calraw, _calref);
+        }
     }
     return val;
 }
@@ -2101,7 +2105,7 @@ void YFunction::_clearDataStreamCache()
     std::map<string, YDataStream*>::iterator it;
     for (it = _dataStreams.begin(); it != _dataStreams.end(); ++it) {
         YDataStream *ds = it->second;
-       
+
         delete(ds);
     }
     _dataStreams.clear();

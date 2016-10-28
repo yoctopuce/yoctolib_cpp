@@ -49,5 +49,6 @@ int main(int argc, const char * argv[])
         cout << argv[1] << " not connected (check identification and USB cable)"
              << endl;
     }
+    yFreeAPI();
     return 0;
 }

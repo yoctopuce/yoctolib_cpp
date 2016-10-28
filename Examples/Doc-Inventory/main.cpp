@@ -22,5 +22,6 @@ int main(int argc, const char * argv[])
         cout << module->get_productName()  << endl;
         module = module->nextModule();
     }
+    yFreeAPI();
     return 0;
 }

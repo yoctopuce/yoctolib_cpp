@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.h 24559 2016-05-24 17:23:54Z mvuilleu $
+ * $Id: yprog.h 25587 2016-10-18 14:38:13Z seb $
  *
  * Declaration of firmware upgrade functions
  *
@@ -256,7 +256,7 @@ typedef enum {
 #define PROG_GET_INFO_TIMEOUT    10000u
 #define ZONE_VERIF_TIMEOUT        4000u
 #define FLASH_SUBDEV_TIMEOUT     59000u
-#define YPROG_BOOTLOADER_TIMEOUT 10000u
+#define YPROG_BOOTLOADER_TIMEOUT 20000u
 #define YPROG_FORCE_FW_UPDATE    1u
 
 #ifdef MICROCHIP_API
