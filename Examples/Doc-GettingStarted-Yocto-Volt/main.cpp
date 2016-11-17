@@ -7,69 +7,69 @@ using namespace std;
 
 static void usage(void)
 {
-    cout << "usage: demo <serial_number> " << endl;
-    cout << "       demo <logical_name>" << endl;
-    cout << "       demo any                 (use any discovered device)" << endl;
-    u64 now = yGetTickCount();
-    while (yGetTickCount() - now < 3000) {
-        // wait 3 sec to show the message
-    }
-    exit(1);
+  cout << "usage: demo <serial_number> " << endl;
+  cout << "       demo <logical_name>" << endl;
+  cout << "       demo any                 (use any discovered device)" << endl;
+  u64 now = yGetTickCount();
+  while (yGetTickCount() - now < 3000) {
+    // wait 3 sec to show the message
+  }
+  exit(1);
 }
 
 int main(int argc, const char * argv[])
 {
-    string       errmsg;
-    string       target;
-    YVoltage    *sensor;
-    YVoltage    *sensorAC;
-    YVoltage    *sensorDC;
-    YModule     *m;
+  string       errmsg;
+  string       target;
+  YVoltage    *sensor;
+  YVoltage    *sensorAC;
+  YVoltage    *sensorDC;
+  YModule     *m;
 
-    if (argc < 2) {
-        usage();
+  if (argc < 2) {
+    usage();
+  }
+  target = (string) argv[1];
+
+  YAPI::DisableExceptions();
+
+  // Setup the API to use local USB devices
+  if (YAPI::RegisterHub("usb", errmsg) != YAPI_SUCCESS) {
+    cerr << "RegisterHub error: " << errmsg << endl;
+    return 1;
+  }
+
+  if (target == "any") {
+    // retreive any voltage sensor (can be AC or DC)
+    sensor = YVoltage::FirstVoltage();
+    if (sensor == NULL) {
+      cerr << "No module connected (Check cable)" << endl;
+      exit(1);
     }
-    target = (string) argv[1];
+  } else {
+    sensor = YVoltage::FindVoltage(target + ".voltage1");
+  }
 
-    YAPI::DisableExceptions();
-
-    // Setup the API to use local USB devices
-    if (YAPI::RegisterHub("usb", errmsg) != YAPI_SUCCESS) {
-        cerr << "RegisterHub error: " << errmsg << endl;
-        return 1;
+  // we need to retreive both DC and AC voltage from the device.
+  if (sensor->isOnline())  {
+    m = sensor->get_module();
+    sensorDC = YVoltage::FindVoltage(m->get_serialNumber() + ".voltage1");
+    sensorAC = YVoltage::FindVoltage(m->get_serialNumber() + ".voltage2");
+  } else {
+    cerr << "No module connected (Check cable)" << endl;
+    exit(1);
+  }
+  while(1) {
+    if (!sensorDC->isOnline())  {
+      cout << "Module disconnected" << endl;
+      break;
     }
+    cout << "Voltage,  DC : " << sensorDC->get_currentValue() << " v";
+    cout << "   AC : " << sensorAC->get_currentValue() << " v";
+    cout << "  (press Ctrl-C to exit)" << endl;
+    YAPI::Sleep(1000, errmsg);
+  };
+  yFreeAPI();
 
-    if (target == "any") {
-        // retreive any voltage sensor (can be AC or DC)
-        sensor = YVoltage::FirstVoltage();
-        if (sensor == NULL) {
-            cerr << "No module connected (Check cable)" << endl;
-            exit(1);
-        }
-    } else {
-        sensor = YVoltage::FindVoltage(target + ".voltage1");
-    }
-
-    // we need to retreive both DC and AC voltage from the device.
-    if (sensor->isOnline())  {
-        m = sensor->get_module();
-        sensorDC = YVoltage::FindVoltage(m->get_serialNumber() + ".voltage1");
-        sensorAC = YVoltage::FindVoltage(m->get_serialNumber() + ".voltage2");
-    } else {
-        cerr << "No module connected (Check cable)" << endl;
-        exit(1);
-    }
-    while(1) {
-        if (!sensorDC->isOnline())  {
-            cout << "Module disconnected" << endl;
-            break;
-        }
-        cout << "Voltage,  DC : " << sensorDC->get_currentValue() << " v";
-        cout << "   AC : " << sensorAC->get_currentValue() << " v";
-        cout << "  (press Ctrl-C to exit)" << endl;
-        YAPI::Sleep(1000, errmsg);
-    };
-    yFreeAPI();
-
-    return 0;
+  return 0;
 }

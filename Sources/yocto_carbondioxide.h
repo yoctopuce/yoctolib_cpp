@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_carbondioxide.h 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_carbondioxide.h 25831 2016-11-08 11:12:15Z seb $
  *
  * Declares yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *
@@ -207,6 +207,8 @@ public:
      *
      * On failure, throws an exception or returns a negative error code.
      */
+    virtual int         triggerBaselineCalibration(void);
+
     virtual int         triggetBaselineCalibration(void);
 
     /**
@@ -225,6 +227,8 @@ public:
      *
      * On failure, throws an exception or returns a negative error code.
      */
+    virtual int         triggerZeroCalibration(void);
+
     virtual int         triggetZeroCalibration(void);
 
 

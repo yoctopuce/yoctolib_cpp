@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_carbondioxide.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_carbondioxide.cpp 25831 2016-11-08 11:12:15Z seb $
  *
  * Implements yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *
@@ -261,9 +261,14 @@ int YCarbonDioxide::_invokeTimedReportCallback(YMeasure value)
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YCarbonDioxide::triggetBaselineCalibration(void)
+int YCarbonDioxide::triggerBaselineCalibration(void)
 {
     return this->set_command("BC");
+}
+
+int YCarbonDioxide::triggetBaselineCalibration(void)
+{
+    return this->triggerBaselineCalibration();
 }
 
 /**
@@ -282,9 +287,14 @@ int YCarbonDioxide::triggetBaselineCalibration(void)
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YCarbonDioxide::triggetZeroCalibration(void)
+int YCarbonDioxide::triggerZeroCalibration(void)
 {
     return this->set_command("ZC");
+}
+
+int YCarbonDioxide::triggetZeroCalibration(void)
+{
+    return this->triggerZeroCalibration();
 }
 
 YCarbonDioxide *YCarbonDioxide::nextCarbonDioxide(void)

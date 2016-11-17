@@ -34,24 +34,78 @@ WARRANTY, OR OTHERWISE.
 
 ## Content of this package
 
- * build.bat                      Automated build script for Windows
- * build.sh                       Automated build script for UNIX platforms
- * FILES.txt                      List of files contained in this archive
- * RELEASE.txt                    Release notes
- * Binaries/GNUmakefile           Makefile for UNIX platforms
- * Binaries/makefile              Makefile for Windows (nmake)
- * Binaries/make.bat              Batch to start nmake on Windows with right paths
- * Binaries/windows/              Directory that contains Windows executables
- * Binaries/osx/                  Directory that contains Max OS X executables
- * Binaries/linux/32bits/         Directory that contains Linux 32bit executables
- * Binaries/linux/64bits/         Directory that contains Linux 64bit executables
- * Binaries/linux/armel/          Directory that contains Linux ARM soft float executables
- * Binaries/linux/armhf/          Directory that contains Linux ARM hard float executables
- * Documentation/                 API Reference, in HTML and PDF format
- * Examples/                      Directory with sample programs in C++
- * Sources/                       Source code of the high-level library (in C++)
- * Sources/yapi/                  Source code of the low-level library (in C)
- * udev_conf/                     Udev rules for linux (see Linux Release Notes)
+ * build.bat
+
+ 		Automated build script for Windows
+
+ * build.sh
+
+ 		Automated build script for UNIX platforms
+
+ * FILES.txt
+
+ 		List of files contained in this archive
+
+ * RELEASE.txt
+
+ 		Release notes
+
+ * Binaries/GNUmakefile
+
+ 		Makefile for UNIX platforms
+
+ * Binaries/makefile
+
+ 		Makefile for Windows (nmake)
+
+ * Binaries/make.bat
+
+ 		Batch to start nmake on Windows with right paths
+
+ * Binaries/windows/
+
+ 		Directory that contains Windows executables
+
+ * Binaries/osx/
+
+ 		Directory that contains Max OS X executables
+
+ * Binaries/linux/32bits/
+
+ 		Directory that contains Linux 32bit executables
+
+ * Binaries/linux/64bits/
+
+ 		Directory that contains Linux 64bit executables
+
+ * Binaries/linux/armel/
+
+ 		Directory that contains Linux ARM soft float executables
+
+ * Binaries/linux/armhf/
+
+ 		Directory that contains Linux ARM hard float executables
+
+ * Documentation/
+
+ 		API Reference, in HTML and PDF format
+
+ * Examples/
+
+ 		Directory with sample programs in C++
+
+ * Sources/
+
+ 		Source code of the high-level library (in C++)
+
+ * Sources/yapi/
+
+ 		Source code of the low-level library (in C)
+
+ * udev_conf/
+
+ 		Udev rules for linux (see Linux Release Notes)
+
 
 ## Installation
 
