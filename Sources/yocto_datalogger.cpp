@@ -381,7 +381,8 @@ int YDataLogger::get_dataStreams(vector<YDataStream *>& v)
             }
             if(i < 4) break;
             // skip any extra item in array
-            while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.token[0] != ']');
+            while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.token[0] != ']')
+				;
 			// instantiate a data stream
 			ods = new YOldDataStream(this,arr[0],arr[1],arr[2],arr[3]);
 			v.push_back(ods);
