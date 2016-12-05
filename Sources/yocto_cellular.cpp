@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 25609 2016-10-19 12:37:17Z seb $
+ * $Id: yocto_cellular.cpp 26132 2016-12-01 17:02:38Z seb $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -987,7 +987,6 @@ vector<YCellRecord> YCellular::quickCellSurvey(void)
                 }
             }
         }
-        ;;
     }
     return res;
 }

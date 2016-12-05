@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 24749 2016-06-07 14:30:35Z seb $
+ * $Id: ystream.c 26101 2016-11-29 15:33:48Z seb $
  *
  * USB multi-interface stream implementation
  *
@@ -1199,7 +1199,10 @@ YRETCODE yyySendPacket(yInterfaceSt *iface, const USB_Packet *pkt, char *errmsg)
     if (YISERR(res)) {
         return (YRETCODE) res;
     }
-    yyySignalOutPkt(iface);
+    res = yyySignalOutPkt(iface);
+    if (YISERR(res)) {
+        return (YRETCODE) res;
+    }
     res= yPktQueueWaitEmptyH2D(iface,1000,errmsg);
     if (YISERR(res)) {
         return (YRETCODE) res;

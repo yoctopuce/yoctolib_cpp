@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_datalogger.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_datalogger.cpp 26132 2016-12-01 17:02:38Z seb $
  *
  * Implements yFindDataLogger(), the high-level API for DataLogger functions
  *
@@ -10,26 +10,26 @@
  *
  *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
  *  non-exclusive license to use, modify, copy and integrate this
- *  file into your software for the sole purpose of interfacing 
- *  with Yoctopuce products. 
+ *  file into your software for the sole purpose of interfacing
+ *  with Yoctopuce products.
  *
- *  You may reproduce and distribute copies of this file in 
+ *  You may reproduce and distribute copies of this file in
  *  source or object form, as long as the sole purpose of this
- *  code is to interface with Yoctopuce products. You must retain 
+ *  code is to interface with Yoctopuce products. You must retain
  *  this notice in the distributed source file.
  *
  *  You should refer to Yoctopuce General Terms and Conditions
- *  for additional information regarding your rights and 
+ *  for additional information regarding your rights and
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -47,7 +47,7 @@
 #include <stdlib.h>
 
 
-YOldDataStream::YOldDataStream(YDataLogger *parent, unsigned run, 
+YOldDataStream::YOldDataStream(YDataLogger *parent, unsigned run,
                                unsigned stamp, unsigned utc, unsigned itv)
 : YDataStream(parent)
 {
@@ -79,10 +79,10 @@ int YOldDataStream::loadStream(void)
     vector<intArr>      calpar;
     vector<floatArr>    calraw;
     vector<floatArr>    calref;
-    
+
     vector<int>         udat;
     vector<double>      dat;
-    
+
     _values.clear();
     if((res = _dataLogger->getData(_runNo, _timeStamp, buffer, j)) != YAPI_SUCCESS) {
         return res;
@@ -97,16 +97,16 @@ int YOldDataStream::loadStream(void)
     while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
         if(!strcmp(j.token, "time")) {
             if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto fail;
-            _timeStamp = atoi(j.token); 
+            _timeStamp = atoi(j.token);
         } else if(!strcmp(j.token, "UTC")) {
             if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto fail;
-            _utcStamp = atoi(j.token); 
+            _utcStamp = atoi(j.token);
         } else if(!strcmp(j.token, "interval")) {
             if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto fail;
-            _interval = atoi(j.token); 
+            _interval = atoi(j.token);
         } else if(!strcmp(j.token, "nRows")) {
             if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto fail;
-            _nRows = atoi(j.token); 
+            _nRows = atoi(j.token);
         } else if(!strcmp(j.token, "keys")) {
             if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_ARRAY) break;
             while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_STRING) {
@@ -116,7 +116,7 @@ int YOldDataStream::loadStream(void)
             if(_nCols == 0) {
                 _nCols = (int)_columnNames.size();
             } else if(_nCols != (int)_columnNames.size()) {
-                _nCols = 0; 
+                _nCols = 0;
                 goto fail;
             }
         } else if(!strcmp(j.token, "div")) {
@@ -128,7 +128,7 @@ int YOldDataStream::loadStream(void)
             if(_nCols == 0) {
                 _nCols = (int)coldiv.size();
             } else if(_nCols != (int)coldiv.size()) {
-                _nCols = 0; 
+                _nCols = 0;
                 goto fail;
             }
         } else if(!strcmp(j.token, "type")) {
@@ -140,7 +140,7 @@ int YOldDataStream::loadStream(void)
             if(_nCols == 0) {
                 _nCols = (int)coltyp.size();
             } else if(_nCols != (int)coltyp.size()) {
-                _nCols = 0; 
+                _nCols = 0;
                 goto fail;
             }
         } else if(!strcmp(j.token, "scal")) {
@@ -154,7 +154,7 @@ int YOldDataStream::loadStream(void)
             if(_nCols == 0) {
                 _nCols = (int)colscl.size();
             } else if(_nCols != (int)colscl.size()) {
-                _nCols = 0; 
+                _nCols = 0;
                 goto fail;
             }
         } else if(!strcmp(j.token, "cal")) {
@@ -216,7 +216,7 @@ int YOldDataStream::loadStream(void)
                 } else {
                     val = YAPI::_decimalToDouble((int)udat[p]-32767);
                 }
-                if(caltyp[c] > 0 && calhdl.size() >= c && calhdl[c]) {                    
+                if(caltyp[c] > 0 && calhdl.size() >= c && calhdl[c]) {
                     if(caltyp[c] <= 10) {
                         // linear calibration using unscaled value
                         val = calhdl[c]((udat[p] + colofs[c]) / coldiv[c], caltyp[c], calpar[c], calraw[c], calref[c]);
@@ -231,7 +231,7 @@ int YOldDataStream::loadStream(void)
                     _values.push_back(dat);
                     dat.clear();
                     c = 0;
-                }                
+                }
             }
             if(dat.size() > 0) goto fail;
         } else {
@@ -239,17 +239,17 @@ int YOldDataStream::loadStream(void)
             yJsonSkip(&j, 1);
         }
     }
-    
+
     return YAPI_SUCCESS;
 }
 
 /**
  * Returns the start time of the data stream, relative to the beginning
  * of the run. If you need an absolute time, use get_startTimeUTC().
- * 
+ *
  * This method does not cause any access to the device, as the value
  * is preloaded in the object at instantiation time.
- * 
+ *
  * @return an unsigned number corresponding to the number of seconds
  *         between the start of the run and the beginning of this data
  *         stream.
@@ -264,10 +264,10 @@ int YOldDataStream::get_startTime(void)
  * rows of this data stream. By default, the data logger records one row
  * per second, but there might be alternative streams at lower resolution
  * created by summarizing the original stream for archiving purposes.
- * 
+ *
  * This method does not cause any access to the device, as the value
  * is preloaded in the object at instantiation time.
- * 
+ *
  * @return an unsigned number corresponding to a number of seconds.
  */
 double YOldDataStream::get_dataSamplesInterval(void)
@@ -285,7 +285,7 @@ int YDataLogger::getData(unsigned runIdx, unsigned timeIdx, string &buffer, yJso
     int         res;
 
     if(this->dataLoggerURL == "") this->dataLoggerURL = "/logger.json";
-    
+
     // Resolve our reference to our device, load REST API
     res = _getDevice(dev, errmsg);
     if(YISERR(res)) {
@@ -312,7 +312,7 @@ int YDataLogger::getData(unsigned runIdx, unsigned timeIdx, string &buffer, yJso
             return (YRETCODE)res;
         }
     }
-    
+
     // Parse HTTP header
     j.src = buffer.data();
     j.end = j.src + buffer.size();
@@ -334,7 +334,7 @@ int YDataLogger::getData(unsigned runIdx, unsigned timeIdx, string &buffer, yJso
         _throw(YAPI_IO_ERROR, "Unexpected HTTP header format");
         return YAPI_IO_ERROR;
     }
-    
+
     return YAPI_SUCCESS;
 }
 
@@ -360,9 +360,9 @@ int YDataLogger::get_dataStreams(vector<YDataStream *>& v)
     string              buffer;
     yJsonStateMachine   j;
     int                 res;
-	unsigned            i, si, arr[4];
-	YOldDataStream      *ods;
-    
+    unsigned            i, si, arr[4];
+    YOldDataStream      *ods;
+
     v.clear();
     if((res = getData(0, 0, buffer, j)) != YAPI_SUCCESS) {
         return res;
@@ -381,27 +381,28 @@ int YDataLogger::get_dataStreams(vector<YDataStream *>& v)
             }
             if(i < 4) break;
             // skip any extra item in array
-            while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.token[0] != ']');
-			// instantiate a data stream
-			ods = new YOldDataStream(this,arr[0],arr[1],arr[2],arr[3]);
-			v.push_back(ods);
+            while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.token[0] != ']')
+                ;
+            // instantiate a data stream
+            ods = new YOldDataStream(this,arr[0],arr[1],arr[2],arr[3]);
+            v.push_back(ods);
         } else if(j.token[0] == '{') {
             // new datalogger format: {"id":"...","unit":"...","streams":["...",...]}
             size_t pos = buffer.find("\r\n\r\n", 0);
             buffer = buffer.substr(pos+4);
             vector<YDataSet> sets = this->parse_dataSets(buffer);
-            for (i=0; i < sets.size(); i++) { 
+            for (i=0; i < sets.size(); i++) {
                 vector<YDataStream*> ds = sets[i].get_privateDataStreams();
-                for (si=0; si < ds.size(); si++) { 
-					// return a user-owned copy
+                for (si=0; si < ds.size(); si++) {
+                    // return a user-owned copy
 
-					v.push_back(new YDataStream(*ds[si]));
+                    v.push_back(new YDataStream(*ds[si]));
                 }
             }
             break;
         } else break;
     }
-    
+
     return YAPI_SUCCESS;
 }
 
@@ -760,7 +761,7 @@ vector<YDataSet> YDataLogger::parse_dataSets(string json)
     for (unsigned ii = 0; ii < dslist.size(); ii++) {
         dataset = new YDataSet(this);
         dataset->_parse(dslist[ii]);
-        res.push_back(*dataset);;
+        res.push_back(*dataset);
     }
     return res;
 }

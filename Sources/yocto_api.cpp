@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 25651 2016-10-20 13:36:46Z seb $
+ * $Id: yocto_api.cpp 26132 2016-12-01 17:02:38Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -1077,8 +1077,8 @@ int YDataSet::processMore(int progress,string data)
             dataRows[ii][avgCol],dataRows[ii][maxCol]));
         }
         tim = tim + itv;
+        tim = floor(tim * 1000+0.5) / 1000.0;
     }
-    
     return this->get_progress();
 }
 
@@ -1285,7 +1285,6 @@ vector<YMeasure> YDataSet::get_measuresAt(YMeasure measure)
         if (_streams[ii]->get_startTimeUTC() == startUtc) {
             stream = _streams[ii];
         }
-        ;;
     }
     if (stream == NULL) {
         return measures;
@@ -1318,7 +1317,7 @@ vector<YMeasure> YDataSet::get_measuresAt(YMeasure measure)
             dataRows[ii][minCol],
             dataRows[ii][avgCol],dataRows[ii][maxCol]));
         }
-        tim = tim + itv;;
+        tim = tim + itv;
     }
     return measures;
 }
@@ -4530,7 +4529,7 @@ int YModule::set_allSettingsAndFiles(string settings)
             name = this->_decode_json_string(name);
             data = this->_get_json_path( files[ii], "data");
             data = this->_decode_json_string(data);
-            this->_upload(name, YAPI::_hexStr2Bin(data));;
+            this->_upload(name, YAPI::_hexStr2Bin(data));
         }
     }
     return YAPI_SUCCESS;
@@ -4906,7 +4905,7 @@ int YModule::set_allSettings(string settings)
         value = (each_str).substr( eqpos, leng - eqpos);
         old_jpath.push_back(jpath);
         old_jpath_len.push_back((int)(jpath).length());
-        old_val_arr.push_back(value);;
+        old_val_arr.push_back(value);
     }
     // may throw an exception
     actualSettings = this->_download("api.json");
@@ -4925,7 +4924,7 @@ int YModule::set_allSettings(string settings)
         value = (each_str).substr( eqpos, leng - eqpos);
         new_jpath.push_back(jpath);
         new_jpath_len.push_back((int)(jpath).length());
-        new_val_arr.push_back(value);;
+        new_val_arr.push_back(value);
     }
     i = 0;
     while (i < (int)new_jpath.size()) {
@@ -5116,7 +5115,7 @@ int YModule::set_allSettings(string settings)
         i = i + 1;
     }
     for (unsigned ii = 0; ii < restoreLast.size(); ii++) {
-        this->_download(restoreLast[ii]);;
+        this->_download(restoreLast[ii]);
     }
     return YAPI_SUCCESS;
 }

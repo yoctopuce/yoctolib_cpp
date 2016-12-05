@@ -1,11 +1,11 @@
 #ifndef YOCTO_API_BUILD_NO
-#define YOCTO_API_BUILD_NO          "25913"
+#define YOCTO_API_BUILD_NO          "26144"
 #endif
-#define YBUILD_25913
+#define YBUILD_26144
 
 #ifndef YOCTO_API_BUILD_DATE
 #ifndef RC_INVOKED
-#define YOCTO_API_BUILD_DATE          ""__DATE__" "__TIME__""
+#define YOCTO_API_BUILD_DATE          "" __DATE__ " " __TIME__ ""
 #else
 #define YOCTO_API_BUILD_DATE          "PATCH_WITH_DATE"
 #endif

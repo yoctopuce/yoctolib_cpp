@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_lin.c 21565 2015-09-18 13:22:27Z seb $
+ * $Id: ypkt_lin.c 26119 2016-12-01 09:24:04Z seb $
  *
  * OS-specific USB packet layer, Linux version
  *
@@ -601,16 +601,25 @@ int yyySignalOutPkt(yInterfaceSt *iface)
     yPktQueuePopH2D(iface, &pktitem);
     while (pktitem!=NULL){
         int transfered,res;
+        int tries=0;
+        retry:
         res = libusb_interrupt_transfer(iface->hdl,
                                     iface->wrendp,
                                     (u8*)&pktitem->pkt,
                                     sizeof(USB_Packet),
                                     &transfered,
                                     5000/*5 sec*/);
-        yFree(pktitem);
-        if(res<0){
+        tries++;
+        if(res < 0 || sizeof(USB_Packet) != transfered){
+            if (tries < 3){
+                //dbglog("USB pkt transmit error %d (transmitted %d / %d) retrying...\n", res, transfered, sizeof(USB_Packet));
+                goto retry;
+            } else {
+                dbglog("USB pkt transmit error %d (transmitted %d / %d)\n", res, transfered, sizeof(USB_Packet));
+            }
             return YAPI_IO_ERROR;
         }
+        yFree(pktitem);
         yPktQueuePopH2D(iface, &pktitem);
     }
 
