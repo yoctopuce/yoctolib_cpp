@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_current.h 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_current.h 26183 2016-12-15 00:14:02Z mvuilleu $
  *
  * Declares yFindCurrent(), the high-level API for Current functions
  *
@@ -54,6 +54,14 @@ class YCurrent; // forward declaration
 typedef void (*YCurrentValueCallback)(YCurrent *func, const string& functionValue);
 class YMeasure; // forward declaration
 typedef void (*YCurrentTimedReportCallback)(YCurrent *func, YMeasure measure);
+#ifndef _Y_ENABLED_ENUM
+#define _Y_ENABLED_ENUM
+typedef enum {
+    Y_ENABLED_FALSE = 0,
+    Y_ENABLED_TRUE = 1,
+    Y_ENABLED_INVALID = -1,
+} Y_ENABLED_enum;
+#endif
 //--- (end of YCurrent definitions)
 
 //--- (YCurrent declaration)
@@ -72,11 +80,15 @@ class YOCTO_CLASS_EXPORT YCurrent: public YSensor {
 protected:
     //--- (YCurrent attributes)
     // Attributes (function value cache)
+    Y_ENABLED_enum  _enabled;
     YCurrentValueCallback _valueCallbackCurrent;
     YCurrentTimedReportCallback _timedReportCallbackCurrent;
 
     friend YCurrent *yFindCurrent(const string& func);
     friend YCurrent *yFirstCurrent(void);
+
+    // Function-specific method for parsing of JSON output and caching result
+    virtual int     _parseAttr(yJsonStateMachine& j);
 
     // Constructor is protected, use yFindCurrent factory function to instantiate
     YCurrent(const string& func);
@@ -86,6 +98,18 @@ public:
     ~YCurrent();
     //--- (YCurrent accessors declaration)
 
+    static const Y_ENABLED_enum ENABLED_FALSE = Y_ENABLED_FALSE;
+    static const Y_ENABLED_enum ENABLED_TRUE = Y_ENABLED_TRUE;
+    static const Y_ENABLED_enum ENABLED_INVALID = Y_ENABLED_INVALID;
+
+    Y_ENABLED_enum      get_enabled(void);
+
+    inline Y_ENABLED_enum enabled(void)
+    { return this->get_enabled(); }
+
+    int             set_enabled(Y_ENABLED_enum newval);
+    inline int      setEnabled(Y_ENABLED_enum newval)
+    { return this->set_enabled(newval); }
 
     /**
      * Retrieves a current sensor for a given identifier.

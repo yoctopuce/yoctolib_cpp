@@ -124,6 +124,7 @@
 <ClCompile Include="..\..\..\Sources\yocto_magnetometer.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_messagebox.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_motor.cpp" />
+<ClCompile Include="..\..\..\Sources\yocto_multiaxiscontroller.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_network.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_oscontrol.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_power.cpp" />
@@ -134,6 +135,7 @@
 <ClCompile Include="..\..\..\Sources\yocto_pwmoutput.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_pwmpowersource.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_quadraturedecoder.cpp" />
+<ClCompile Include="..\..\..\Sources\yocto_rangefinder.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_realtimeclock.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_refframe.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_relay.cpp" />
@@ -200,6 +202,7 @@
 <ClInclude Include="..\..\..\Sources\yocto_magnetometer.h" />
 <ClInclude Include="..\..\..\Sources\yocto_messagebox.h" />
 <ClInclude Include="..\..\..\Sources\yocto_motor.h" />
+<ClInclude Include="..\..\..\Sources\yocto_multiaxiscontroller.h" />
 <ClInclude Include="..\..\..\Sources\yocto_network.h" />
 <ClInclude Include="..\..\..\Sources\yocto_oscontrol.h" />
 <ClInclude Include="..\..\..\Sources\yocto_power.h" />
@@ -210,6 +213,7 @@
 <ClInclude Include="..\..\..\Sources\yocto_pwmoutput.h" />
 <ClInclude Include="..\..\..\Sources\yocto_pwmpowersource.h" />
 <ClInclude Include="..\..\..\Sources\yocto_quadraturedecoder.h" />
+<ClInclude Include="..\..\..\Sources\yocto_rangefinder.h" />
 <ClInclude Include="..\..\..\Sources\yocto_realtimeclock.h" />
 <ClInclude Include="..\..\..\Sources\yocto_refframe.h" />
 <ClInclude Include="..\..\..\Sources\yocto_relay.h" />

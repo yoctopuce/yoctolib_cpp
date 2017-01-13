@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_voltage.h 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_voltage.h 26183 2016-12-15 00:14:02Z mvuilleu $
  *
  * Declares yFindVoltage(), the high-level API for Voltage functions
  *
@@ -54,6 +54,14 @@ class YVoltage; // forward declaration
 typedef void (*YVoltageValueCallback)(YVoltage *func, const string& functionValue);
 class YMeasure; // forward declaration
 typedef void (*YVoltageTimedReportCallback)(YVoltage *func, YMeasure measure);
+#ifndef _Y_ENABLED_ENUM
+#define _Y_ENABLED_ENUM
+typedef enum {
+    Y_ENABLED_FALSE = 0,
+    Y_ENABLED_TRUE = 1,
+    Y_ENABLED_INVALID = -1,
+} Y_ENABLED_enum;
+#endif
 //--- (end of YVoltage definitions)
 
 //--- (YVoltage declaration)
@@ -72,11 +80,15 @@ class YOCTO_CLASS_EXPORT YVoltage: public YSensor {
 protected:
     //--- (YVoltage attributes)
     // Attributes (function value cache)
+    Y_ENABLED_enum  _enabled;
     YVoltageValueCallback _valueCallbackVoltage;
     YVoltageTimedReportCallback _timedReportCallbackVoltage;
 
     friend YVoltage *yFindVoltage(const string& func);
     friend YVoltage *yFirstVoltage(void);
+
+    // Function-specific method for parsing of JSON output and caching result
+    virtual int     _parseAttr(yJsonStateMachine& j);
 
     // Constructor is protected, use yFindVoltage factory function to instantiate
     YVoltage(const string& func);
@@ -86,6 +98,18 @@ public:
     ~YVoltage();
     //--- (YVoltage accessors declaration)
 
+    static const Y_ENABLED_enum ENABLED_FALSE = Y_ENABLED_FALSE;
+    static const Y_ENABLED_enum ENABLED_TRUE = Y_ENABLED_TRUE;
+    static const Y_ENABLED_enum ENABLED_INVALID = Y_ENABLED_INVALID;
+
+    Y_ENABLED_enum      get_enabled(void);
+
+    inline Y_ENABLED_enum enabled(void)
+    { return this->get_enabled(); }
+
+    int             set_enabled(Y_ENABLED_enum newval);
+    inline int      setEnabled(Y_ENABLED_enum newval)
+    { return this->set_enabled(newval); }
 
     /**
      * Retrieves a voltage sensor for a given identifier.

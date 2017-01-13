@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_api.h 26322 2017-01-11 08:49:28Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -1581,6 +1581,18 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         unmuteValueCallbacks(void);
+
+    /**
+     * Returns the current value of a single function attribute, as a text string, as quickly as
+     * possible but without using the cached value.
+     *
+     * @param attrName : le nom de l'attribut désiré
+     *
+     * @return une chaîne de caractères représentant la valeur actuelle de l'attribut.
+     *
+     * On failure, throws an exception or returns an empty string.
+     */
+    virtual string      loadAttribute(string attrName);
 
     virtual int         _parserHelper(void);
 

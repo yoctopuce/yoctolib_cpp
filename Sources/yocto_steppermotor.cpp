@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: pic24config.php 25964 2016-11-21 15:30:59Z mvuilleu $
+ * $Id: yocto_steppermotor.cpp 26277 2017-01-04 15:35:59Z seb $
  *
  * Implements yFindStepperMotor(), the high-level API for StepperMotor functions
  *
@@ -57,11 +57,12 @@ YStepperMotor::YStepperMotor(const string& func): YFunction(func)
     ,_maxAccel(MAXACCEL_INVALID)
     ,_maxSpeed(MAXSPEED_INVALID)
     ,_stepping(STEPPING_INVALID)
-    ,_ustepMaxSpeed(USTEPMAXSPEED_INVALID)
     ,_overcurrent(OVERCURRENT_INVALID)
     ,_tCurrStop(TCURRSTOP_INVALID)
     ,_tCurrRun(TCURRRUN_INVALID)
     ,_alertMode(ALERTMODE_INVALID)
+    ,_auxMode(AUXMODE_INVALID)
+    ,_auxSignal(AUXSIGNAL_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackStepperMotor(NULL)
 //--- (end of StepperMotor initialization)
@@ -81,8 +82,8 @@ const double YStepperMotor::SPEED_INVALID = YAPI_INVALID_DOUBLE;
 const double YStepperMotor::PULLINSPEED_INVALID = YAPI_INVALID_DOUBLE;
 const double YStepperMotor::MAXACCEL_INVALID = YAPI_INVALID_DOUBLE;
 const double YStepperMotor::MAXSPEED_INVALID = YAPI_INVALID_DOUBLE;
-const double YStepperMotor::USTEPMAXSPEED_INVALID = YAPI_INVALID_DOUBLE;
 const string YStepperMotor::ALERTMODE_INVALID = YAPI_INVALID_STRING;
+const string YStepperMotor::AUXMODE_INVALID = YAPI_INVALID_STRING;
 const string YStepperMotor::COMMAND_INVALID = YAPI_INVALID_STRING;
 
 int YStepperMotor::_parseAttr(yJsonStateMachine& j)
@@ -127,11 +128,6 @@ int YStepperMotor::_parseAttr(yJsonStateMachine& j)
         _stepping =  (Y_STEPPING_enum)atoi(j.token);
         return 1;
     }
-    if(!strcmp(j.token, "ustepMaxSpeed")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _ustepMaxSpeed =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
-    }
     if(!strcmp(j.token, "overcurrent")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _overcurrent =  atoi(j.token);
@@ -150,6 +146,16 @@ int YStepperMotor::_parseAttr(yJsonStateMachine& j)
     if(!strcmp(j.token, "alertMode")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _alertMode =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "auxMode")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _auxMode =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "auxSignal")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _auxSignal =  atoi(j.token);
         return 1;
     }
     if(!strcmp(j.token, "command")) {
@@ -392,41 +398,6 @@ int YStepperMotor::set_stepping(Y_STEPPING_enum newval)
 }
 
 /**
- * Changes the maximal motor speed for micro-stepping, measured in steps per second.
- *
- * @param newval : a floating point number corresponding to the maximal motor speed for
- * micro-stepping, measured in steps per second
- *
- * @return YAPI_SUCCESS if the call succeeds.
- *
- * On failure, throws an exception or returns a negative error code.
- */
-int YStepperMotor::set_ustepMaxSpeed(double newval)
-{
-    string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
-    return _setAttr("ustepMaxSpeed", rest_val);
-}
-
-/**
- * Returns the maximal motor speed for micro-stepping, measured in steps per second.
- *
- * @return a floating point number corresponding to the maximal motor speed for micro-stepping,
- * measured in steps per second
- *
- * On failure, throws an exception or returns Y_USTEPMAXSPEED_INVALID.
- */
-double YStepperMotor::get_ustepMaxSpeed(void)
-{
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YStepperMotor::USTEPMAXSPEED_INVALID;
-        }
-    }
-    return _ustepMaxSpeed;
-}
-
-/**
  * Returns the overcurrent alert and emergency stop threshold, measured in mA.
  *
  * @return an integer corresponding to the overcurrent alert and emergency stop threshold, measured in mA
@@ -542,6 +513,57 @@ int YStepperMotor::set_alertMode(const string& newval)
     string rest_val;
     rest_val = newval;
     return _setAttr("alertMode", rest_val);
+}
+
+string YStepperMotor::get_auxMode(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YStepperMotor::AUXMODE_INVALID;
+        }
+    }
+    return _auxMode;
+}
+
+int YStepperMotor::set_auxMode(const string& newval)
+{
+    string rest_val;
+    rest_val = newval;
+    return _setAttr("auxMode", rest_val);
+}
+
+/**
+ * Returns the current value of the signal generated on the auxiliary output.
+ *
+ * @return an integer corresponding to the current value of the signal generated on the auxiliary output
+ *
+ * On failure, throws an exception or returns Y_AUXSIGNAL_INVALID.
+ */
+int YStepperMotor::get_auxSignal(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YStepperMotor::AUXSIGNAL_INVALID;
+        }
+    }
+    return _auxSignal;
+}
+
+/**
+ * Changes the value of the signal generated on the auxiliary output.
+ * Acceptable values depend on the auxiliary output signal type configured.
+ *
+ * @param newval : an integer corresponding to the value of the signal generated on the auxiliary output
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YStepperMotor::set_auxSignal(int newval)
+{
+    string rest_val;
+    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+    return _setAttr("auxSignal", rest_val);
 }
 
 string YStepperMotor::get_command(void)
@@ -661,7 +683,7 @@ int YStepperMotor::reset(void)
  */
 int YStepperMotor::findHomePosition(double speed)
 {
-    return this->sendCommand("H");
+    return this->sendCommand(YapiWrapper::ysprintf("H%d",(int) floor(1000*speed+0.5)));
 }
 
 /**
@@ -676,7 +698,7 @@ int YStepperMotor::findHomePosition(double speed)
  */
 int YStepperMotor::changeSpeed(double speed)
 {
-    return this->sendCommand(YapiWrapper::ysprintf("R%d",floor(1000*speed+0.5)));
+    return this->sendCommand(YapiWrapper::ysprintf("R%d",(int) floor(1000*speed+0.5)));
 }
 
 /**
@@ -691,23 +713,35 @@ int YStepperMotor::changeSpeed(double speed)
  */
 int YStepperMotor::moveTo(double absPos)
 {
-    return this->sendCommand(YapiWrapper::ysprintf("M%d",floor(16*absPos+0.5)));
+    return this->sendCommand(YapiWrapper::ysprintf("M%d",(int) floor(16*absPos+0.5)));
 }
 
 /**
- * Starts the motor to reach a given absolute position. The time needed to reach the requested
+ * Starts the motor to reach a given relative position. The time needed to reach the requested
  * position will depend on the acceleration and max speed parameters configured for
  * the motor.
  *
  * @param relPos : relative position, measured in steps from the current position.
  *
  * @return YAPI_SUCCESS if the call succeeds.
- *
- * On failure, throws an exception or returns a negative error code.
+ *         On failure, throws an exception or returns a negative error code.
  */
 int YStepperMotor::moveRel(double relPos)
 {
-    return this->sendCommand(YapiWrapper::ysprintf("m%d",floor(16*relPos+0.5)));
+    return this->sendCommand(YapiWrapper::ysprintf("m%d",(int) floor(16*relPos+0.5)));
+}
+
+/**
+ * Keep the motor in the same state for the specified amount of time, before processing next command.
+ *
+ * @param waitMs : wait time, specified in milliseconds.
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *         On failure, throws an exception or returns a negative error code.
+ */
+int YStepperMotor::pause(int waitMs)
+{
+    return this->sendCommand(YapiWrapper::ysprintf("_%d",waitMs));
 }
 
 /**

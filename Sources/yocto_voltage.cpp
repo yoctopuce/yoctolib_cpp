@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_voltage.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_voltage.cpp 26183 2016-12-15 00:14:02Z mvuilleu $
  *
  * Implements yFindVoltage(), the high-level API for Voltage functions
  *
@@ -49,6 +49,7 @@
 
 YVoltage::YVoltage(const string& func): YSensor(func)
 //--- (Voltage initialization)
+    ,_enabled(ENABLED_INVALID)
     ,_valueCallbackVoltage(NULL)
     ,_timedReportCallbackVoltage(NULL)
 //--- (end of Voltage initialization)
@@ -64,6 +65,34 @@ YVoltage::~YVoltage()
 //--- (YVoltage implementation)
 // static attributes
 
+int YVoltage::_parseAttr(yJsonStateMachine& j)
+{
+    if(!strcmp(j.token, "enabled")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _enabled =  (Y_ENABLED_enum)atoi(j.token);
+        return 1;
+    }
+    failed:
+    return YSensor::_parseAttr(j);
+}
+
+
+Y_ENABLED_enum YVoltage::get_enabled(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YVoltage::ENABLED_INVALID;
+        }
+    }
+    return _enabled;
+}
+
+int YVoltage::set_enabled(Y_ENABLED_enum newval)
+{
+    string rest_val;
+    rest_val = (newval>0 ? "1" : "0");
+    return _setAttr("enabled", rest_val);
+}
 
 /**
  * Retrieves a voltage sensor for a given identifier.

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.c 23643 2016-03-30 12:25:08Z seb $
+ * $Id: ythread.c 26378 2017-01-13 10:32:29Z seb $
  *
  * OS-independent thread and synchronization library
  *
@@ -124,20 +124,22 @@ static void yKillThread(osThread *th)
 
 int    yThreadIndex(void)
 {
-    DWORD res;
+    u8*  tls_ptr;
 
     if(yTlsBucket == TLS_OUT_OF_INDEXES) {
         // Only happens the very first time, from main thread
         yTlsBucket = TlsAlloc();
     }
-    res = (DWORD)TlsGetValue(yTlsBucket);
-    if(res == 0) {
+    tls_ptr =  TlsGetValue(yTlsBucket);
+    if(tls_ptr == 0) {
         // tiny risk of race condition, but thread idx is only
         // used for debug log purposes and is not sensitive
-        res = yNextThreadIdx++;
-        TlsSetValue(yTlsBucket, (void *)res);
+        DWORD res = yNextThreadIdx++;
+        TlsSetValue(yTlsBucket, ((u8*)NULL) + res);
+        return res;
+    } else {
+        return  (int) (tls_ptr - ((u8*)NULL));
     }
-    return res;
 }
 
 #else

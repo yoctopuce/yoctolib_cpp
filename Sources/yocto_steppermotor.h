@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: pic24config.php 25964 2016-11-21 15:30:59Z mvuilleu $
+ * $Id: yocto_steppermotor.h 26253 2017-01-03 17:41:07Z seb $
  *
  * Declares yFindStepperMotor(), the high-level API for StepperMotor functions
  *
@@ -81,11 +81,12 @@ typedef enum {
 #define Y_PULLINSPEED_INVALID           (YAPI_INVALID_DOUBLE)
 #define Y_MAXACCEL_INVALID              (YAPI_INVALID_DOUBLE)
 #define Y_MAXSPEED_INVALID              (YAPI_INVALID_DOUBLE)
-#define Y_USTEPMAXSPEED_INVALID         (YAPI_INVALID_DOUBLE)
 #define Y_OVERCURRENT_INVALID           (YAPI_INVALID_UINT)
 #define Y_TCURRSTOP_INVALID             (YAPI_INVALID_UINT)
 #define Y_TCURRRUN_INVALID              (YAPI_INVALID_UINT)
 #define Y_ALERTMODE_INVALID             (YAPI_INVALID_STRING)
+#define Y_AUXMODE_INVALID               (YAPI_INVALID_STRING)
+#define Y_AUXSIGNAL_INVALID             (YAPI_INVALID_INT)
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 //--- (end of YStepperMotor definitions)
 
@@ -111,11 +112,12 @@ protected:
     double          _maxAccel;
     double          _maxSpeed;
     Y_STEPPING_enum _stepping;
-    double          _ustepMaxSpeed;
     int             _overcurrent;
     int             _tCurrStop;
     int             _tCurrRun;
     string          _alertMode;
+    string          _auxMode;
+    int             _auxSignal;
     string          _command;
     YStepperMotorValueCallback _valueCallbackStepperMotor;
 
@@ -152,11 +154,12 @@ public:
     static const Y_STEPPING_enum STEPPING_HALFSTEP = Y_STEPPING_HALFSTEP;
     static const Y_STEPPING_enum STEPPING_FULLSTEP = Y_STEPPING_FULLSTEP;
     static const Y_STEPPING_enum STEPPING_INVALID = Y_STEPPING_INVALID;
-    static const double USTEPMAXSPEED_INVALID;
     static const int OVERCURRENT_INVALID = YAPI_INVALID_UINT;
     static const int TCURRSTOP_INVALID = YAPI_INVALID_UINT;
     static const int TCURRRUN_INVALID = YAPI_INVALID_UINT;
     static const string ALERTMODE_INVALID;
+    static const string AUXMODE_INVALID;
+    static const int AUXSIGNAL_INVALID = YAPI_INVALID_INT;
     static const string COMMAND_INVALID;
 
     /**
@@ -334,33 +337,6 @@ public:
     { return this->set_stepping(newval); }
 
     /**
-     * Changes the maximal motor speed for micro-stepping, measured in steps per second.
-     *
-     * @param newval : a floating point number corresponding to the maximal motor speed for
-     * micro-stepping, measured in steps per second
-     *
-     * @return YAPI_SUCCESS if the call succeeds.
-     *
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_ustepMaxSpeed(double newval);
-    inline int      setUstepMaxSpeed(double newval)
-    { return this->set_ustepMaxSpeed(newval); }
-
-    /**
-     * Returns the maximal motor speed for micro-stepping, measured in steps per second.
-     *
-     * @return a floating point number corresponding to the maximal motor speed for micro-stepping,
-     * measured in steps per second
-     *
-     * On failure, throws an exception or returns Y_USTEPMAXSPEED_INVALID.
-     */
-    double              get_ustepMaxSpeed(void);
-
-    inline double       ustepMaxSpeed(void)
-    { return this->get_ustepMaxSpeed(); }
-
-    /**
      * Returns the overcurrent alert and emergency stop threshold, measured in mA.
      *
      * @return an integer corresponding to the overcurrent alert and emergency stop threshold, measured in mA
@@ -445,6 +421,41 @@ public:
     int             set_alertMode(const string& newval);
     inline int      setAlertMode(const string& newval)
     { return this->set_alertMode(newval); }
+
+    string              get_auxMode(void);
+
+    inline string       auxMode(void)
+    { return this->get_auxMode(); }
+
+    int             set_auxMode(const string& newval);
+    inline int      setAuxMode(const string& newval)
+    { return this->set_auxMode(newval); }
+
+    /**
+     * Returns the current value of the signal generated on the auxiliary output.
+     *
+     * @return an integer corresponding to the current value of the signal generated on the auxiliary output
+     *
+     * On failure, throws an exception or returns Y_AUXSIGNAL_INVALID.
+     */
+    int                 get_auxSignal(void);
+
+    inline int          auxSignal(void)
+    { return this->get_auxSignal(); }
+
+    /**
+     * Changes the value of the signal generated on the auxiliary output.
+     * Acceptable values depend on the auxiliary output signal type configured.
+     *
+     * @param newval : an integer corresponding to the value of the signal generated on the auxiliary output
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_auxSignal(int newval);
+    inline int      setAuxSignal(int newval)
+    { return this->set_auxSignal(newval); }
 
     string              get_command(void);
 
@@ -541,17 +552,26 @@ public:
     virtual int         moveTo(double absPos);
 
     /**
-     * Starts the motor to reach a given absolute position. The time needed to reach the requested
+     * Starts the motor to reach a given relative position. The time needed to reach the requested
      * position will depend on the acceleration and max speed parameters configured for
      * the motor.
      *
      * @param relPos : relative position, measured in steps from the current position.
      *
      * @return YAPI_SUCCESS if the call succeeds.
-     *
-     * On failure, throws an exception or returns a negative error code.
+     *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         moveRel(double relPos);
+
+    /**
+     * Keep the motor in the same state for the specified amount of time, before processing next command.
+     *
+     * @param waitMs : wait time, specified in milliseconds.
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *         On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         pause(int waitMs);
 
     /**
      * Stops the motor with an emergency alert, without taking any additional precaution.
