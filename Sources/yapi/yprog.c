@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 24731 2016-06-06 09:09:06Z seb $
+ * $Id: yprog.c 26607 2017-02-09 13:13:07Z seb $
  *
  * Implementation of firmware upgrade functions
  *
@@ -1489,7 +1489,7 @@ static int  getBootloaderInfos(const char *devserial, char *out_hubserial, char 
 typedef enum
 {
     FLASH_HUB_AVAIL = 0u,
-    FLASH_HUB_STATE, 
+    FLASH_HUB_STATE,
     FLASH_HUB_FLASH,
     FLASH_HUB_NOT_BUSY, // CHECK there is on pending fwupdate (cmd=state-> !uploading && !flashing)
     FLASH_HUB_NONE
@@ -2071,7 +2071,7 @@ static void* yFirmwareUpdate_thread(void* ctx)
         // idle a bit
         yApproximateSleep(100);
     } while (!online && yapiGetTickCount()< timeout);
- 
+
     if (online){
         setOsGlobalProgress(100, "Firmware updated");
     } else {

@@ -1,3 +1,2 @@
-- Add loadAttribute method
-- Add Yocto-Proximity example
-- Fix compilation warnings with Visual Studio 2015
+- Fix small handle leak on linux  (reported and fixed by Blue Pillar, Inc)
+- Remove some dead code (support for devices with multiples USB interfaces)

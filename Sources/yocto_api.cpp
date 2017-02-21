@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 26329 2017-01-11 14:04:39Z mvuilleu $
+ * $Id: yocto_api.cpp 26611 2017-02-09 14:08:58Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -1597,9 +1597,9 @@ int YFunction::unmuteValueCallbacks(void)
  * Returns the current value of a single function attribute, as a text string, as quickly as
  * possible but without using the cached value.
  *
- * @param attrName : le nom de l'attribut désiré
+ * @param attrName : the name of the requested attribute
  *
- * @return une chaîne de caractères représentant la valeur actuelle de l'attribut.
+ * @return a string with the value of the the attribute
  *
  * On failure, throws an exception or returns an empty string.
  */

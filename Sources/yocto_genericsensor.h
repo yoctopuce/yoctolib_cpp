@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_genericsensor.h 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_genericsensor.h 26611 2017-02-09 14:08:58Z seb $
  *
  * Declares yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -176,7 +176,7 @@ public:
     { return this->get_signalRange(); }
 
     /**
-     * Changes the electric signal range used by the sensor.
+     * Changes the electric signal range used by the sensor. Default value is "-999999.999...999999.999".
      *
      * @param newval : a string corresponding to the electric signal range used by the sensor
      *
@@ -202,7 +202,7 @@ public:
 
     /**
      * Changes the physical value range measured by the sensor. As a side effect, the range modification may
-     * automatically modify the display resolution.
+     * automatically modify the display resolution. Default value is "-999999.999...999999.999".
      *
      * @param newval : a string corresponding to the physical value range measured by the sensor
      *

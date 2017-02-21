@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 24749 2016-06-07 14:30:35Z seb $
+ * $Id: yproto.h 26607 2017-02-09 13:13:07Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -64,7 +64,7 @@
 #else
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 #define WINDOWS_WIN32_API
-#else 
+#else
 #define WINDOWS_UWP_API
 #endif
 #endif
@@ -582,14 +582,13 @@ typedef struct _yInterfaceSt {
 #endif
 } yInterfaceSt;
 
-
 YRETCODE    yPktQueuePushD2H(yInterfaceSt *iface,const USB_Packet *pkt, char * errmsg);
 YRETCODE    yPktQueueWaitAndPopD2H(yInterfaceSt *iface,pktItem **pkt,int ms,char * errmsg);
 YRETCODE    yPktQueuePushH2D(yInterfaceSt *iface,const USB_Packet *pkt, char * errmsg);
 YRETCODE    yPktQueuePeekH2D(yInterfaceSt *iface,pktItem **pkt);
 YRETCODE    yPktQueuePopH2D(yInterfaceSt *iface,pktItem **pkt);
 
-#define NBMAX_INTERFACE_PER_DEV     2
+#define NBMAX_INTERFACE_PER_DEV     1
 typedef enum
 {
     YDEV_UNPLUGGED=0,           // device has been plugged by the past but is no more
@@ -682,8 +681,6 @@ typedef struct  _yPrivDeviceSt{
     pktItem             tmptxpkt;
     u8                  lastpktno;
     int                 pktAckDelay;
-    int                 currentIfaceNo;
-    u8                  ifacesMap[NBMAX_INTERFACE_PER_DEV];
     yInterfaceSt        ifaces[NBMAX_INTERFACE_PER_DEV];
     char                *replybuf;      // Used to buffer request result
     int                 replybufsize;   // allocated size of replybuf
@@ -836,8 +833,8 @@ typedef struct _WSReqSt
     u8* requestbuf; // Used to store the request to send
     int requestsize; // the size of the request
     int requestpos; // the pos of the request that need to be sent
-    u64 first_write_tm; 
-    u64 last_write_tm; 
+    u64 first_write_tm;
+    u64 last_write_tm;
 } WSReqSt;
 
 typedef enum

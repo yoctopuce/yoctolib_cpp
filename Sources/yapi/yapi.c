@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 24731 2016-06-06 09:09:06Z seb $
+ * $Id: yapi.c 26477 2017-01-26 17:51:01Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -2858,7 +2858,7 @@ static YRETCODE  yapiGetDeviceInfo_internal(YAPI_DEVICE devdesc, yDeviceSt *info
         // not a local device, get available information from white pages
         infos->vendorid = 0x24e0;
         infos->devrelease = 0;
-        infos->nbinbterfaces = 0;
+        infos->nbinbterfaces = 1;
         memcpy((u8 *)infos->manufacturer, (u8 *)"Yoctopuce", 10);
         memset(infos->firmware, 0, YOCTO_FIRMWARE_LEN);
         if(wpGetDeviceInfo(devdesc, &infos->deviceid, infos->productname, infos->serial, infos->logicalname, &infos->beacon) < 0){

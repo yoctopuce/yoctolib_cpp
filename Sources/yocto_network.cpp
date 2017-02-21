@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_network.cpp 26551 2017-02-03 15:18:17Z seb $
  *
  * Implements yFindNetwork(), the high-level API for Network functions
  *
@@ -69,6 +69,7 @@ YNetwork::YNetwork(const string& func): YFunction(func)
     ,_callbackEncoding(CALLBACKENCODING_INVALID)
     ,_callbackCredentials(CALLBACKCREDENTIALS_INVALID)
     ,_callbackInitialDelay(CALLBACKINITIALDELAY_INVALID)
+    ,_callbackSchedule(CALLBACKSCHEDULE_INVALID)
     ,_callbackMinDelay(CALLBACKMINDELAY_INVALID)
     ,_callbackMaxDelay(CALLBACKMAXDELAY_INVALID)
     ,_poeCurrent(POECURRENT_INVALID)
@@ -98,6 +99,7 @@ const string YNetwork::ADMINPASSWORD_INVALID = YAPI_INVALID_STRING;
 const string YNetwork::DEFAULTPAGE_INVALID = YAPI_INVALID_STRING;
 const string YNetwork::CALLBACKURL_INVALID = YAPI_INVALID_STRING;
 const string YNetwork::CALLBACKCREDENTIALS_INVALID = YAPI_INVALID_STRING;
+const string YNetwork::CALLBACKSCHEDULE_INVALID = YAPI_INVALID_STRING;
 
 int YNetwork::_parseAttr(yJsonStateMachine& j)
 {
@@ -199,6 +201,11 @@ int YNetwork::_parseAttr(yJsonStateMachine& j)
     if(!strcmp(j.token, "callbackInitialDelay")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _callbackInitialDelay =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "callbackSchedule")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _callbackSchedule =  _parseString(j);
         return 1;
     }
     if(!strcmp(j.token, "callbackMinDelay")) {
@@ -880,9 +887,42 @@ int YNetwork::set_callbackInitialDelay(int newval)
 }
 
 /**
- * Returns the minimum waiting time between two callback notifications, in seconds.
+ * Returns the HTTP callback schedule strategy, as a text string.
  *
- * @return an integer corresponding to the minimum waiting time between two callback notifications, in seconds
+ * @return a string corresponding to the HTTP callback schedule strategy, as a text string
+ *
+ * On failure, throws an exception or returns Y_CALLBACKSCHEDULE_INVALID.
+ */
+string YNetwork::get_callbackSchedule(void)
+{
+    if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            return YNetwork::CALLBACKSCHEDULE_INVALID;
+        }
+    }
+    return _callbackSchedule;
+}
+
+/**
+ * Changes the HTTP callback schedule strategy, as a text string.
+ *
+ * @param newval : a string corresponding to the HTTP callback schedule strategy, as a text string
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YNetwork::set_callbackSchedule(const string& newval)
+{
+    string rest_val;
+    rest_val = newval;
+    return _setAttr("callbackSchedule", rest_val);
+}
+
+/**
+ * Returns the minimum waiting time between two HTTP callbacks, in seconds.
+ *
+ * @return an integer corresponding to the minimum waiting time between two HTTP callbacks, in seconds
  *
  * On failure, throws an exception or returns Y_CALLBACKMINDELAY_INVALID.
  */
@@ -897,10 +937,9 @@ int YNetwork::get_callbackMinDelay(void)
 }
 
 /**
- * Changes the minimum waiting time between two callback notifications, in seconds.
+ * Changes the minimum waiting time between two HTTP callbacks, in seconds.
  *
- * @param newval : an integer corresponding to the minimum waiting time between two callback
- * notifications, in seconds
+ * @param newval : an integer corresponding to the minimum waiting time between two HTTP callbacks, in seconds
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -914,9 +953,9 @@ int YNetwork::set_callbackMinDelay(int newval)
 }
 
 /**
- * Returns the maximum waiting time between two callback notifications, in seconds.
+ * Returns the waiting time between two HTTP callbacks when there is nothing new.
  *
- * @return an integer corresponding to the maximum waiting time between two callback notifications, in seconds
+ * @return an integer corresponding to the waiting time between two HTTP callbacks when there is nothing new
  *
  * On failure, throws an exception or returns Y_CALLBACKMAXDELAY_INVALID.
  */
@@ -931,10 +970,10 @@ int YNetwork::get_callbackMaxDelay(void)
 }
 
 /**
- * Changes the maximum waiting time between two callback notifications, in seconds.
+ * Changes the waiting time between two HTTP callbacks when there is nothing new.
  *
- * @param newval : an integer corresponding to the maximum waiting time between two callback
- * notifications, in seconds
+ * @param newval : an integer corresponding to the waiting time between two HTTP callbacks when there
+ * is nothing new
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *

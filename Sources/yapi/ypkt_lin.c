@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_lin.c 26119 2016-12-01 09:24:04Z seb $
+ * $Id: ypkt_lin.c 26607 2017-02-09 13:13:07Z seb $
  *
  * OS-specific USB packet layer, Linux version
  *
@@ -88,6 +88,9 @@ static int yLinSetErrEx(u32 line,char *intro, int err,char *errmsg)
 
 #define YOCTO_LOCK_PIPE "/tmp/.yoctolock"
 
+int pid_lock_fd = -1;
+
+
 // return 1 if we can reserve access to the device 0 if the device
 // is already reserved
 static int yReserveGlobalAccess(yContextSt *ctx, char *errmsg)
@@ -95,7 +98,7 @@ static int yReserveGlobalAccess(yContextSt *ctx, char *errmsg)
     int fd;
     int chk_val, mypid, usedpid = 0;
     size_t res;
-    mode_t mode=0666;
+    mode_t mode = 0666;
     mode_t oldmode = umask(0000);
     char msg[YOCTO_ERRMSG_LEN];
 
@@ -130,17 +133,21 @@ static int yReserveGlobalAccess(yContextSt *ctx, char *errmsg)
     res = write(fd, &chk_val, sizeof(chk_val));
     if(res != sizeof(chk_val)) {
         YSPRINTF(msg, YOCTO_ERRMSG_LEN, "Write to lock fifo failed (%d)", res);
+        close(fd);
         return YERRMSG(YAPI_DOUBLE_ACCES, msg);
     }
     if (usedpid != 0) {
         if (usedpid == 1) {
+            close(fd);
             // locked by api that not store the pid
             return YERRMSG(YAPI_DOUBLE_ACCES, "Another process is already using yAPI");
         } else {
             YSPRINTF(msg, YOCTO_ERRMSG_LEN, "Another process (pid %d) is already using yAPI", (u32) usedpid);
+            close(fd);
             return YERRMSG(YAPI_DOUBLE_ACCES, msg);
         }
     }
+    pid_lock_fd = fd;
     return YAPI_SUCCESS;
 }
 
@@ -150,9 +157,10 @@ size_t dropwarning;
 static void yReleaseGlobalAccess(yContextSt *ctx)
 {
     int chk_val;
-    int fd = open(YOCTO_LOCK_PIPE,O_RDWR|O_NONBLOCK);
-    if(fd>=0){
-        dropwarning = read(fd,&chk_val,sizeof(chk_val));
+    if(pid_lock_fd >=0){
+        dropwarning = read(pid_lock_fd,&chk_val,sizeof(chk_val));
+        close(pid_lock_fd);
+        pid_lock_fd = -1;
       }
 }
 
@@ -212,7 +220,10 @@ static int getUsbStringASCII(libusb_device_handle *hdl, libusb_device *dev, u8 d
     res=libusb_control_transfer(hdl, LIBUSB_ENDPOINT_IN,
         LIBUSB_REQUEST_GET_DESCRIPTOR, (LIBUSB_DT_STRING << 8) | desc_index,
         0, buffer, 512, 10000);
-    if(res<0) return res;
+    if(res<0) {
+        yLeaveCriticalSection(&yContext->string_cache_cs);
+        return res;
+    }
 
     len=(buffer[0]-2)/2;
     if (len >= length) {
@@ -334,82 +345,64 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
     libusb_device   **list;
     ssize_t         nbdev;
     int             returnval=YAPI_SUCCESS;
-    int             i,j;
-    int             nbifaceAlloc;
+    int             i;
+    int             alloc_size;
     yInterfaceSt    *iface;
 
-    nbdev=libusb_get_device_list(yContext->libusb,&list);
-    if(nbdev<0)
-        return yLinSetErr("Unable to get device list",nbdev,errmsg);
+    nbdev = libusb_get_device_list(yContext->libusb,&list);
+    if (nbdev < 0)
+        return yLinSetErr("Unable to get device list", nbdev, errmsg);
     HALLOG("%d devices found\n",nbdev);
 
      // allocate buffer for detected interfaces
     *nbifaceDetect = 0;
-    nbifaceAlloc  = nbdev*2;
-    *ifaces = (yInterfaceSt*) yMalloc(nbifaceAlloc * sizeof(yInterfaceSt));
-    memset(*ifaces,0,nbifaceAlloc * sizeof(yInterfaceSt));
+    alloc_size = (nbdev + 1) * sizeof(yInterfaceSt);
+    *ifaces = (yInterfaceSt*) yMalloc(alloc_size);
+    memset(*ifaces, 0, alloc_size);
 
-
-    for(i=0; i < nbdev; i++){
+    for (i = 0; i < nbdev; i++) {
         int  res;
         struct libusb_device_descriptor desc;
         struct libusb_config_descriptor *config;
         libusb_device_handle *hdl;
 
-        libusb_device  *dev=list[i];
-        if((res=libusb_get_device_descriptor(dev,&desc))!=0){
+        libusb_device  *dev = list[i];
+        if ((res = libusb_get_device_descriptor(dev,&desc)) != 0){
             returnval = yLinSetErr("Unable to get device descriptor",res,errmsg);
             goto exit;
         }
-        if(desc.idVendor!=YOCTO_VENDORID ){
+        if (desc.idVendor != YOCTO_VENDORID) {
             continue;
         }
-        HALLOG("open device %x:%x\n",desc.idVendor,desc.idProduct);
+        HALLOG("open device %x:%x\n", desc.idVendor, desc.idProduct);
 
-
-        if(getDevConfig(dev,&config)<0)
+        if(getDevConfig(dev, &config) < 0) {
             continue;
-
-        for(j=0 ; j < config->bNumInterfaces; j++){
-            //ensure the buffer of detected interface is big enough
-            if(*nbifaceDetect == nbifaceAlloc){
-                yInterfaceSt    *tmp;
-                u32 newsize = nbifaceAlloc*2 * sizeof(yInterfaceSt);
-                tmp = (yInterfaceSt*) yMalloc(newsize);
-                memset(tmp,0,newsize);
-                yMemcpy(tmp,*ifaces, nbifaceAlloc * sizeof(yInterfaceSt) );
-                yFree(*ifaces);
-                *ifaces = tmp;
-                nbifaceAlloc    *=2;
-            }
-            iface = *ifaces + *nbifaceDetect;
-            iface->vendorid = (u16)desc.idVendor;
-            iface->deviceid = (u16)desc.idProduct;
-            iface->ifaceno  = (u16)j;
-            iface->devref   = libusb_ref_device(dev);
-
-            res = libusb_open(dev,&hdl);
-            if(res==LIBUSB_ERROR_ACCESS){
-                returnval =YERRMSG(YAPI_IO_ERROR,"the user has insufficient permissions to access USB devices");
-                goto exit;
-            }
-            if(res!=0){
-                HALLOG("unable to access device %x:%x\n",desc.idVendor,desc.idProduct);
-                continue;
-            }
-            HALLOG("try to get serial for %x:%x:%x (%p)\n",desc.idVendor,desc.idProduct,desc.iSerialNumber,dev);
-
-            res = getUsbStringASCII(hdl, dev, desc.iSerialNumber, iface->serial, YOCTO_SERIAL_LEN);
-            if(res<0){
-                HALLOG("unable to get serial for device %x:%x\n",desc.idVendor,desc.idProduct);
-            }
-            libusb_close(hdl);
-            (*nbifaceDetect)++;
-            HALLOG("----Running Dev %x:%x:%d:%s ---\n",iface->vendorid,iface->deviceid,iface->ifaceno,iface->serial);
         }
+        iface = (*ifaces) + (*nbifaceDetect);
+        iface->vendorid = (u16)desc.idVendor;
+        iface->deviceid = (u16)desc.idProduct;
+        iface->ifaceno  = 0;
+        iface->devref   = libusb_ref_device(dev);
+        res = libusb_open(dev, &hdl);
+        if (res == LIBUSB_ERROR_ACCESS) {
+            returnval = YERRMSG(YAPI_IO_ERROR, "the user has insufficient permissions to access USB devices");
+            goto exit;
+        }
+        if (res != 0){
+            HALLOG("unable to access device %x:%x\n", desc.idVendor, desc.idProduct);
+            continue;
+        }
+        HALLOG("try to get serial for %x:%x:%x (%p)\n", desc.idVendor, desc.idProduct, desc.iSerialNumber, dev);
+        res = getUsbStringASCII(hdl, dev, desc.iSerialNumber, iface->serial, YOCTO_SERIAL_LEN);
+        if (res < 0) {
+            HALLOG("unable to get serial for device %x:%x\n", desc.idVendor, desc.idProduct);
+        }
+        libusb_close(hdl);
+        (*nbifaceDetect)++;
+        HALLOG("----Running Dev %x:%x:%d:%s ---\n", iface->vendorid, iface->deviceid, iface->ifaceno, iface->serial);
         libusb_free_config_descriptor(config);
     }
-
 
 exit:
     libusb_free_device_list(list,1);
@@ -644,13 +637,6 @@ void yyyPacketShutdown(yInterfaceSt  *iface)
         }
     }
 
-    for(j=0;j< NB_LINUX_USB_TR ; j++){
-        if (iface->rdTr[j].tr){
-            HALLOG("%s:%d libusb_TR free %d\n",iface->serial,iface->ifaceno,j);
-            libusb_free_transfer(iface->rdTr[j].tr);
-            iface->rdTr[j].tr=NULL;
-        }
-    }
     HALLOG("%s:%d libusb relase iface\n",iface->serial,iface->ifaceno);
     res = libusb_release_interface(iface->hdl,iface->ifaceno);
     if(res != 0 && res!=LIBUSB_ERROR_NOT_FOUND && res!=LIBUSB_ERROR_NO_DEVICE){
@@ -662,6 +648,15 @@ void yyyPacketShutdown(yInterfaceSt  *iface)
         HALLOG("%s:%d libusb_attach_kernel_driver error\n",iface->serial,iface->ifaceno);
     }
     libusb_close(iface->hdl);
+
+    for (j = 0; j< NB_LINUX_USB_TR; j++) {
+        if (iface->rdTr[j].tr) {
+            HALLOG("%s:%d libusb_TR free %d\n", iface->serial, iface->ifaceno, j);
+            libusb_free_transfer(iface->rdTr[j].tr);
+            iface->rdTr[j].tr = NULL;
+        }
+    }
+
     yPktQueueFree(&iface->rxQueue);
     yPktQueueFree(&iface->txQueue);
 }

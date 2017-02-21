@@ -1,8 +1,8 @@
 /*********************************************************************
  *
- * $Id: ystream.c 26101 2016-11-29 15:33:48Z seb $
+ * $Id: ystream.c 26488 2017-01-30 09:33:25Z seb $
  *
- * USB multi-interface stream implementation
+ * USB stream implementation
  *
  * - - - - - - - - - License information: - - - - - - - - -
  *
@@ -702,12 +702,6 @@ static void devReportError(LOCATION yPrivDeviceSt *dev, char *error_to_set)
   Dump functions
  ***************************************************************************/
 
-static yInterfaceSt* Ino2Idx(yPrivDeviceSt *dev,u8 ifaceno)
-{
-    u8 idx= dev->ifacesMap[ifaceno];
-    YASSERT(ifaceno<2);
-    return  &dev->ifaces[idx];
-}
 
 
 #ifdef DEBUG_DUMP_PKT
@@ -1314,94 +1308,21 @@ static int CheckVersionCompatibility(u16 version,const char *serial, char *errms
 }
 
 
-static int yyResetIface( yInterfaceSt  *iface, u16 *ifaceno, u16 *nbifaces,char *errmsg)
-{
-    pktItem qpkt,*rpkt=NULL;
-
-    int res;
-    //first try to send a connection reset
-    //get interface no and API check
-    if(ifaceno) *ifaceno   = 0;
-    if(nbifaces) *nbifaces = 0;
-    yyFormatConfPkt(&qpkt,USB_CONF_RESET);
-    qpkt.pkt.confpkt.conf.reset.ok = 1;
-    TO_SAFE_U16(qpkt.pkt.confpkt.conf.reset.api, YPKT_USB_VERSION_BCD);
-    YPROPERR( yyySendPacket(iface,&qpkt.pkt,errmsg));
-
-    if(YISERR(yyWaitOnlyConfPkt(iface,USB_CONF_RESET,&rpkt,5,errmsg)) || rpkt==NULL){
-        return YERRMSG(YAPI_VERSION_MISMATCH,"Device does not respond to reset");
-    }
-    FROM_SAFE_U16(rpkt->pkt.confpkt.conf.reset.api,iface->pkt_version);
-    if (CheckVersionCompatibility(iface->pkt_version,iface->serial, errmsg)<0) {
-        res= YAPI_VERSION_MISMATCH;
-        yFree(rpkt);
-        return res;
-    }
-    YASSERT(rpkt->pkt.confpkt.conf.reset.ifaceno < NBMAX_INTERFACE_PER_DEV);
-    iface->ifaceno = rpkt->pkt.confpkt.conf.reset.ifaceno;
-    if(ifaceno) *ifaceno   = rpkt->pkt.confpkt.conf.reset.ifaceno;
-    if(nbifaces) *nbifaces = rpkt->pkt.confpkt.conf.reset.nbifaces;
-    yFree(rpkt);
-    return YAPI_SUCCESS;
-}
-
-static int yyPacketSetup(yPrivDeviceSt *dev, yInterfaceSt  *iface,int idx,char *errmsg)
-{
-    u16 ifaceno,nbifaces;
-    int res;
-
-    YPROPERR(yyySetup(iface,errmsg));
-    res =yyResetIface(iface,&ifaceno,&nbifaces,errmsg);
-    if(YISERR(res)){
-        goto error;
-    }
-    dev->ifacesMap[ifaceno] = idx;
-    if(dev->infos.nbinbterfaces !=nbifaces){
-        dbglog("Missing interface during OS enumeration(%d vs %d)\n",dev->infos.nbinbterfaces, nbifaces);
-        res = YERRMSG(YAPI_VERSION_MISMATCH,"Missing interface during OS enumeration");
-        goto error;
-    }
-    return YAPI_SUCCESS;
-
-error:
-    yyyPacketShutdown(iface);
-    return res;
-}
-
-
-static void yyPacketShutdown(yInterfaceSt  *iface)
-{
-#if 0
-    pktItem qpkt;
-    // send a connection reset so that the device
-    // will stop sending notification to the OS
-    yyFormatConfPkt(&qpkt,USB_CONF_RESET);
-    qpkt.pkt.confpkt.conf.reset.ok = 1;
-    TO_SAFE_U16(qpkt.pkt.confpkt.conf.reset.api,YPKT_USB_VERSION_BCD);
-    yySendPacket(iface,&qpkt,NULL);//discard all error message
-#endif
-    yyyPacketShutdown(iface);
-}
-
-/*****************************************************************
- * yPacket API with cycling logic across all interfaces
-*****************************************************************/
-
 static int ySendStart(yPrivDeviceSt *dev,char *errmsg)
 {
     int nextiface;
     pktItem  qpkt,*rpkt;
 
     yyFormatConfPkt(&qpkt,USB_CONF_START);
-    if (yContext->detecttype & Y_RESEND_MISSING_PKT && Ino2Idx(dev, 0)->pkt_version >= YPKT_USB_VERSION_BCD) {
+    if (yContext->detecttype & Y_RESEND_MISSING_PKT && dev->ifaces[0].pkt_version >= YPKT_USB_VERSION_BCD) {
         dev->pktAckDelay = Y_DEFAULT_PKT_RESEND_DELAY;
     } else{
         dev->pktAckDelay = 0;
     }
-    qpkt.pkt.confpkt.conf.start.nbifaces = (u8)dev->infos.nbinbterfaces;
+    qpkt.pkt.confpkt.conf.start.nbifaces = 1;
     qpkt.pkt.confpkt.conf.start.ack_delay = dev->pktAckDelay;
-    YPROPERR(yyySendPacket(Ino2Idx(dev,0), &qpkt.pkt, errmsg));
-    YPROPERR(yyWaitOnlyConfPkt(Ino2Idx(dev,0), USB_CONF_START, &rpkt, 5, errmsg));
+    YPROPERR(yyySendPacket(&dev->ifaces[0], &qpkt.pkt, errmsg));
+    YPROPERR(yyWaitOnlyConfPkt(&dev->ifaces[0], USB_CONF_START, &rpkt, 5, errmsg));
     nextiface = rpkt->pkt.confpkt.conf.start.nbifaces;
     if (dev->pktAckDelay) {
         // update ack delay with the one from the device (in case device does not implement pkt ack)
@@ -1419,32 +1340,52 @@ static int ySendStart(yPrivDeviceSt *dev,char *errmsg)
 
 static int yPacketSetup(yPrivDeviceSt *dev,char *errmsg)
 {
-    int i,j,res,toclose=0;
+    pktItem qpkt, *rpkt = NULL;
+    int res;
 
-    for(i=0; i <dev->infos.nbinbterfaces ; i++){
-        res=yyPacketSetup(dev,&dev->ifaces[i],i,errmsg);
-        if(YISERR(res)){
-            toclose = i;
-            dbglog("yyPacketSetup error %d:\"%s\" for %s index=%d\n",res,errmsg,dev->infos.serial,i);
-            goto error;
-        }
+    YPROPERR(yyySetup(&dev->ifaces[0], errmsg));
+
+    //first try to send a connection reset
+    yyFormatConfPkt(&qpkt, USB_CONF_RESET);
+    qpkt.pkt.confpkt.conf.reset.ok = 1;
+    TO_SAFE_U16(qpkt.pkt.confpkt.conf.reset.api, YPKT_USB_VERSION_BCD);
+    YPROPERR(yyySendPacket(&dev->ifaces[0], &qpkt.pkt, errmsg));
+
+    if (YISERR(yyWaitOnlyConfPkt(&dev->ifaces[0], USB_CONF_RESET, &rpkt, 5, errmsg)) || rpkt == NULL) {
+        res = YERRMSG(YAPI_VERSION_MISMATCH, "Device does not respond to reset");
+        goto error;
     }
-     if(!YISERR(res=ySendStart(dev,errmsg))){
+    FROM_SAFE_U16(rpkt->pkt.confpkt.conf.reset.api, dev->ifaces[0].pkt_version);
+    if (CheckVersionCompatibility(dev->ifaces[0].pkt_version, dev->ifaces[0].serial, errmsg)<0) {
+        res = YAPI_VERSION_MISMATCH;
+        goto error;
+    }
+    YASSERT(rpkt->pkt.confpkt.conf.reset.ifaceno < NBMAX_INTERFACE_PER_DEV);
+    if (rpkt->pkt.confpkt.conf.reset.nbifaces != 1) {
+        res = YERRMSG(YAPI_VERSION_MISMATCH, "Multiples USB interface are no more supported");
+        goto error;
+    }
+    dev->ifaces[0].ifaceno = 0;
+    yFree(rpkt);
+    rpkt = NULL;
+      
+    if(!YISERR(res=ySendStart(dev,errmsg))){
         return YAPI_SUCCESS;
      }
 error:
-    //shutdown all previously started interfaces;
-    for(j=0; j <toclose ; j++){
-        dbglog("Closing partially opened device %s index=%d\n",dev->infos.serial,j);
-        yyPacketShutdown(&dev->ifaces[j]);
+    if (rpkt) {
+        yFree(rpkt);
     }
+    //shutdown all previously started interfaces;
+    dbglog("Closing partially opened device %s\n",dev->infos.serial);
+    yyyPacketShutdown(&dev->ifaces[0]);
     return res;
 }
 
 // Trigger a non blocking read
 static int yGetNextPktEx(yPrivDeviceSt *dev, pktItem **pkt_out, u64 blockUntilTime, char *errmsg)
 {
-    int             nextiface,dropcount=0;
+    int             dropcount=0;
     u8              nextpktno;
     YRETCODE        res;
     pktItem         *item;
@@ -1453,7 +1394,7 @@ static int yGetNextPktEx(yPrivDeviceSt *dev, pktItem **pkt_out, u64 blockUntilTi
      yInterfaceSt   *iface;
 
     *pkt_out=NULL;
-    iface = Ino2Idx(dev,dev->currentIfaceNo);
+    iface = &dev->ifaces[0];
 again:
     now = yapiGetTickCount();
     if (blockUntilTime > now)
@@ -1465,7 +1406,6 @@ again:
     if (YISERR(res))
         return res;
     nextpktno = NEXT_YPKT_NO(dev->lastpktno);
-    nextiface = NEXT_IFACE_NO(dev->currentIfaceNo,dev->infos.nbinbterfaces);
     if (item != NULL) {
         if (dev->pktAckDelay > 0) {
             res = yAckPkt(iface, item->pkt.first_stream.pktno, errmsg);
@@ -1496,7 +1436,6 @@ again:
         if(item->pkt.first_stream.pktno == nextpktno){
             *pkt_out = item;
             dev->lastpktno = nextpktno;
-            dev->currentIfaceNo = nextiface;
 #ifdef DEBUG_DUMP_PKT
             dumpAnyPacket("POP Pkt",iface->ifaceno,&item->pkt);
 #endif
@@ -1509,23 +1448,6 @@ again:
     }
     return YAPI_SUCCESS;
 }
-// force to flush stream
-static int ySendPacket(yPrivDeviceSt *dev,pktItem *pkt,char *errmsg)
-{
-    yInterfaceSt *iface = Ino2Idx(dev,0);
-    return yyySendPacket(iface,&pkt->pkt,errmsg);
-}
-
-
-static void yPacketShutdown(yPrivDeviceSt *dev)
-{
-    int i;
-    for(i=0; i <dev->infos.nbinbterfaces ; i++){
-        //YASSERT(dev->rstatus==YRUN_AVAIL);
-        yyPacketShutdown(&dev->ifaces[i]);
-    }
-}
-
 
 
 /*****************************************************************
@@ -1534,7 +1456,6 @@ static void yPacketShutdown(yPrivDeviceSt *dev)
 
 static int yStreamSetup(yPrivDeviceSt *dev,char *errmsg)
 {
-    //dbglog("yStreamSetup %x:%x (%d)\n",dev->infos.vendorid,dev->infos.deviceid,dev->infos.nbinbterfaces);
     YPROPERR(yPacketSetup(dev,errmsg));
     // now we have all setup packet sent and received
     dev->currxpkt=NULL;
@@ -1618,8 +1539,7 @@ static int yStreamFlush(yPrivDeviceSt *dev,char *errmsg)
         yshead->size   = avail - sizeof(YSTREAM_Head);
         dev->curtxofs  += sizeof(YSTREAM_Head)+yshead->size;
     }
-
-    YPROPERR( ySendPacket(dev,dev->curtxpkt,errmsg));
+    YPROPERR( yyySendPacket(&dev->ifaces[0],&dev->curtxpkt->pkt, errmsg));
     dev->curtxofs =0;
     return YAPI_SUCCESS;
 }
@@ -1655,7 +1575,7 @@ static void yStreamShutdown(yPrivDeviceSt *dev)
         yFree(dev->devYdxMap);
         dev->devYdxMap = NULL;
     }
-    yPacketShutdown(dev);
+    yyyPacketShutdown(&dev->ifaces[0]);
 }
 
 
@@ -2286,18 +2206,14 @@ YRETCODE yUSBUpdateDeviceList(char *errmsg)
                 ENUMLOG("%s replug of a previously detected device\n",dev->infos.serial);
                 dev->enumAction =  YENU_START;
                 // to be safe we update infos with fresh data form last enumeration
-                dev->infos.nbinbterfaces = rundevs[j].nbifaces;
-                for(i = 0 ; i < rundevs[j].nbifaces; i++){
-                    memcpy(&dev->ifaces[i],rundevs[j].ifaces[i],sizeof(yInterfaceSt));
-                }
+                dev->infos.nbinbterfaces = 1;
+                memcpy(&dev->ifaces[0], rundevs[j].ifaces[0], sizeof(yInterfaceSt));
             } else if(dev->dStatus == YDEV_NOTRESPONDING && !yyyOShdlCompare(dev,&rundevs[j]) ){
                 ENUMLOG("%s replug of a previously detected device that was not responding\n",dev->infos.serial);
                 dev->enumAction =  YENU_START;
                 // to be safe we update infos with fresh data form last enumeration
-                dev->infos.nbinbterfaces = rundevs[j].nbifaces;
-                for(i = 0 ; i < rundevs[j].nbifaces; i++){
-                    memcpy(&dev->ifaces[i],rundevs[j].ifaces[i],sizeof(yInterfaceSt));
-                }
+                dev->infos.nbinbterfaces = 1;
+                memcpy(&dev->ifaces[0], rundevs[j].ifaces[0], sizeof(yInterfaceSt));
             }
         }else{
             ENUMLOG("%s newly plugged device \n",rundevs[j].ifaces[0]->serial);
@@ -2309,10 +2225,8 @@ YRETCODE yUSBUpdateDeviceList(char *errmsg)
             dev->infos.vendorid = rundevs[j].ifaces[0]->vendorid;
             dev->infos.deviceid = rundevs[j].ifaces[0]->deviceid;
             YSTRNCPY(dev->infos.serial,YOCTO_SERIAL_LEN,rundevs[j].ifaces[0]->serial,YOCTO_SERIAL_LEN-1);
-            dev->infos.nbinbterfaces = rundevs[j].nbifaces;
-            for(i = 0 ; i < rundevs[j].nbifaces; i++){
-                memcpy(&dev->ifaces[i],rundevs[j].ifaces[i],sizeof(yInterfaceSt));
-            }
+            dev->infos.nbinbterfaces = 1;
+            memcpy(&dev->ifaces[0], rundevs[j].ifaces[0], sizeof(yInterfaceSt));
             dev->next = yContext->devs;
             yContext->devs=dev;
         }

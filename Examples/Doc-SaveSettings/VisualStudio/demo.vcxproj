@@ -106,6 +106,7 @@
 <ClCompile Include="..\..\..\Sources\yocto_compass.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_current.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_currentloopoutput.cpp" />
+<ClCompile Include="..\..\..\Sources\yocto_daisychain.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_datalogger.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_digitalio.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_display.cpp" />
@@ -184,6 +185,7 @@
 <ClInclude Include="..\..\..\Sources\yocto_compass.h" />
 <ClInclude Include="..\..\..\Sources\yocto_current.h" />
 <ClInclude Include="..\..\..\Sources\yocto_currentloopoutput.h" />
+<ClInclude Include="..\..\..\Sources\yocto_daisychain.h" />
 <ClInclude Include="..\..\..\Sources\yocto_datalogger.h" />
 <ClInclude Include="..\..\..\Sources\yocto_digitalio.h" />
 <ClInclude Include="..\..\..\Sources\yocto_display.h" />

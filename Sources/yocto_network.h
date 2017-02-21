@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.h 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_network.h 26551 2017-02-03 15:18:17Z seb $
  *
  * Declares yFindNetwork(), the high-level API for Network functions
  *
@@ -112,6 +112,7 @@ typedef enum {
 #define Y_CALLBACKURL_INVALID           (YAPI_INVALID_STRING)
 #define Y_CALLBACKCREDENTIALS_INVALID   (YAPI_INVALID_STRING)
 #define Y_CALLBACKINITIALDELAY_INVALID  (YAPI_INVALID_UINT)
+#define Y_CALLBACKSCHEDULE_INVALID      (YAPI_INVALID_STRING)
 #define Y_CALLBACKMINDELAY_INVALID      (YAPI_INVALID_UINT)
 #define Y_CALLBACKMAXDELAY_INVALID      (YAPI_INVALID_UINT)
 #define Y_POECURRENT_INVALID            (YAPI_INVALID_UINT)
@@ -152,6 +153,7 @@ protected:
     Y_CALLBACKENCODING_enum _callbackEncoding;
     string          _callbackCredentials;
     int             _callbackInitialDelay;
+    string          _callbackSchedule;
     int             _callbackMinDelay;
     int             _callbackMaxDelay;
     int             _poeCurrent;
@@ -211,6 +213,7 @@ public:
     static const Y_CALLBACKENCODING_enum CALLBACKENCODING_INVALID = Y_CALLBACKENCODING_INVALID;
     static const string CALLBACKCREDENTIALS_INVALID;
     static const int CALLBACKINITIALDELAY_INVALID = YAPI_INVALID_UINT;
+    static const string CALLBACKSCHEDULE_INVALID;
     static const int CALLBACKMINDELAY_INVALID = YAPI_INVALID_UINT;
     static const int CALLBACKMAXDELAY_INVALID = YAPI_INVALID_UINT;
     static const int POECURRENT_INVALID = YAPI_INVALID_UINT;
@@ -724,9 +727,34 @@ public:
     { return this->set_callbackInitialDelay(newval); }
 
     /**
-     * Returns the minimum waiting time between two callback notifications, in seconds.
+     * Returns the HTTP callback schedule strategy, as a text string.
      *
-     * @return an integer corresponding to the minimum waiting time between two callback notifications, in seconds
+     * @return a string corresponding to the HTTP callback schedule strategy, as a text string
+     *
+     * On failure, throws an exception or returns Y_CALLBACKSCHEDULE_INVALID.
+     */
+    string              get_callbackSchedule(void);
+
+    inline string       callbackSchedule(void)
+    { return this->get_callbackSchedule(); }
+
+    /**
+     * Changes the HTTP callback schedule strategy, as a text string.
+     *
+     * @param newval : a string corresponding to the HTTP callback schedule strategy, as a text string
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_callbackSchedule(const string& newval);
+    inline int      setCallbackSchedule(const string& newval)
+    { return this->set_callbackSchedule(newval); }
+
+    /**
+     * Returns the minimum waiting time between two HTTP callbacks, in seconds.
+     *
+     * @return an integer corresponding to the minimum waiting time between two HTTP callbacks, in seconds
      *
      * On failure, throws an exception or returns Y_CALLBACKMINDELAY_INVALID.
      */
@@ -736,10 +764,9 @@ public:
     { return this->get_callbackMinDelay(); }
 
     /**
-     * Changes the minimum waiting time between two callback notifications, in seconds.
+     * Changes the minimum waiting time between two HTTP callbacks, in seconds.
      *
-     * @param newval : an integer corresponding to the minimum waiting time between two callback
-     * notifications, in seconds
+     * @param newval : an integer corresponding to the minimum waiting time between two HTTP callbacks, in seconds
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
@@ -750,9 +777,9 @@ public:
     { return this->set_callbackMinDelay(newval); }
 
     /**
-     * Returns the maximum waiting time between two callback notifications, in seconds.
+     * Returns the waiting time between two HTTP callbacks when there is nothing new.
      *
-     * @return an integer corresponding to the maximum waiting time between two callback notifications, in seconds
+     * @return an integer corresponding to the waiting time between two HTTP callbacks when there is nothing new
      *
      * On failure, throws an exception or returns Y_CALLBACKMAXDELAY_INVALID.
      */
@@ -762,10 +789,10 @@ public:
     { return this->get_callbackMaxDelay(); }
 
     /**
-     * Changes the maximum waiting time between two callback notifications, in seconds.
+     * Changes the waiting time between two HTTP callbacks when there is nothing new.
      *
-     * @param newval : an integer corresponding to the maximum waiting time between two callback
-     * notifications, in seconds
+     * @param newval : an integer corresponding to the waiting time between two HTTP callbacks when there
+     * is nothing new
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 24759 2016-06-08 16:03:13Z mvuilleu $
+ * $Id: ytcp.c 26607 2017-02-09 13:13:07Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -803,7 +803,7 @@ static int yTcpCheckReqTimeout(struct _RequestSt *req, char *errmsg)
             u64 last_wr = now - req->write_tm;
             u64 last_rd = now - req->read_tm;
 
-            dbglog("Long Idle TCP request %p = %"FMTu64"ms total = %"FMTu64"ms (read=%"FMTu64"ms write=%"FMTu64")\n", 
+            dbglog("Long Idle TCP request %p = %"FMTu64"ms total = %"FMTu64"ms (read=%"FMTu64"ms write=%"FMTu64")\n",
                 req, idle_durration, duration, last_rd, last_wr);
         }
 #endif
@@ -2013,8 +2013,10 @@ static int ws_parseIncommingFrame(HubSt *hub, u8 *buffer, int pktlen, char *errm
                 hub->ws.tcpRoundTripTime = 7;
             }
 #ifdef DEBUG_WEBSOCKET
-            int uploadRate = hub->ws.tcpMaxWindowSize * 1000 / hub->ws.tcpRoundTripTime;
-            dbglog("RTT=%dms, WS=%d, uploadRate=%f KB/s\n", hub->ws.tcpRoundTripTime, hub->ws.tcpMaxWindowSize, uploadRate/1000.0);
+            {
+                int uploadRate = hub->ws.tcpMaxWindowSize * 1000 / hub->ws.tcpRoundTripTime;
+                dbglog("RTT=%dms, WS=%d, uploadRate=%f KB/s\n", hub->ws.tcpRoundTripTime, hub->ws.tcpMaxWindowSize, uploadRate/1000.0);
+            }
 #endif
 
             flags = meta->auth.flags;
