@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_messagebox.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -46,6 +46,8 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "messagebox"
+
 
 YSms::YSms(void) { }
 YSms::YSms(YMessageBox *mbox) :_mbox(mbox) { }
@@ -1300,12 +1302,24 @@ int YMessageBox::_parseAttr(yJsonStateMachine& j)
  */
 int YMessageBox::get_slotsInUse(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YMessageBox::SLOTSINUSE_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YMessageBox::SLOTSINUSE_INVALID;
+                }
+            }
         }
+        res = _slotsInUse;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _slotsInUse;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -1317,22 +1331,46 @@ int YMessageBox::get_slotsInUse(void)
  */
 int YMessageBox::get_slotsCount(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YMessageBox::SLOTSCOUNT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YMessageBox::SLOTSCOUNT_INVALID;
+                }
+            }
         }
+        res = _slotsCount;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _slotsCount;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 string YMessageBox::get_slotsBitmap(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YMessageBox::SLOTSBITMAP_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YMessageBox::SLOTSBITMAP_INVALID;
+                }
+            }
         }
+        res = _slotsBitmap;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _slotsBitmap;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -1344,12 +1382,24 @@ string YMessageBox::get_slotsBitmap(void)
  */
 int YMessageBox::get_pduSent(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YMessageBox::PDUSENT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YMessageBox::PDUSENT_INVALID;
+                }
+            }
         }
+        res = _pduSent;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _pduSent;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -1364,8 +1414,17 @@ int YMessageBox::get_pduSent(void)
 int YMessageBox::set_pduSent(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("pduSent", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("pduSent", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -1377,12 +1436,24 @@ int YMessageBox::set_pduSent(int newval)
  */
 int YMessageBox::get_pduReceived(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YMessageBox::PDURECEIVED_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YMessageBox::PDURECEIVED_INVALID;
+                }
+            }
         }
+        res = _pduReceived;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _pduReceived;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -1397,25 +1468,55 @@ int YMessageBox::get_pduReceived(void)
 int YMessageBox::set_pduReceived(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("pduReceived", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("pduReceived", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 string YMessageBox::get_command(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YMessageBox::COMMAND_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YMessageBox::COMMAND_INVALID;
+                }
+            }
         }
+        res = _command;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _command;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YMessageBox::set_command(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("command", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("command", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -1444,11 +1545,21 @@ int YMessageBox::set_command(const string& newval)
 YMessageBox* YMessageBox::FindMessageBox(string func)
 {
     YMessageBox* obj = NULL;
-    obj = (YMessageBox*) YFunction::_FindFromCache("MessageBox", func);
-    if (obj == NULL) {
-        obj = new YMessageBox(func);
-        YFunction::_AddToCache("MessageBox", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YMessageBox*) YFunction::_FindFromCache("MessageBox", func);
+        if (obj == NULL) {
+            obj = new YMessageBox(func);
+            YFunction::_AddToCache("MessageBox", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

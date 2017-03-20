@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_serialport.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "serialport"
 
 YSerialPort::YSerialPort(const string& func): YFunction(func)
 //--- (SerialPort initialization)
@@ -159,12 +160,24 @@ int YSerialPort::_parseAttr(yJsonStateMachine& j)
  */
 int YSerialPort::get_rxCount(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSerialPort::RXCOUNT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSerialPort::RXCOUNT_INVALID;
+                }
+            }
         }
+        res = _rxCount;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _rxCount;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -176,12 +189,24 @@ int YSerialPort::get_rxCount(void)
  */
 int YSerialPort::get_txCount(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSerialPort::TXCOUNT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSerialPort::TXCOUNT_INVALID;
+                }
+            }
         }
+        res = _txCount;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _txCount;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -193,12 +218,24 @@ int YSerialPort::get_txCount(void)
  */
 int YSerialPort::get_errCount(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSerialPort::ERRCOUNT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSerialPort::ERRCOUNT_INVALID;
+                }
+            }
         }
+        res = _errCount;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _errCount;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -210,12 +247,24 @@ int YSerialPort::get_errCount(void)
  */
 int YSerialPort::get_rxMsgCount(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSerialPort::RXMSGCOUNT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSerialPort::RXMSGCOUNT_INVALID;
+                }
+            }
         }
+        res = _rxMsgCount;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _rxMsgCount;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -227,12 +276,24 @@ int YSerialPort::get_rxMsgCount(void)
  */
 int YSerialPort::get_txMsgCount(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSerialPort::TXMSGCOUNT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSerialPort::TXMSGCOUNT_INVALID;
+                }
+            }
         }
+        res = _txMsgCount;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _txMsgCount;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -244,12 +305,24 @@ int YSerialPort::get_txMsgCount(void)
  */
 string YSerialPort::get_lastMsg(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSerialPort::LASTMSG_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSerialPort::LASTMSG_INVALID;
+                }
+            }
         }
+        res = _lastMsg;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _lastMsg;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -261,12 +334,24 @@ string YSerialPort::get_lastMsg(void)
  */
 string YSerialPort::get_currentJob(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSerialPort::CURRENTJOB_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSerialPort::CURRENTJOB_INVALID;
+                }
+            }
         }
+        res = _currentJob;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _currentJob;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -283,8 +368,17 @@ string YSerialPort::get_currentJob(void)
 int YSerialPort::set_currentJob(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("currentJob", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("currentJob", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -296,12 +390,24 @@ int YSerialPort::set_currentJob(const string& newval)
  */
 string YSerialPort::get_startupJob(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSerialPort::STARTUPJOB_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSerialPort::STARTUPJOB_INVALID;
+                }
+            }
         }
+        res = _startupJob;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _startupJob;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -318,25 +424,55 @@ string YSerialPort::get_startupJob(void)
 int YSerialPort::set_startupJob(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("startupJob", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("startupJob", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 string YSerialPort::get_command(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSerialPort::COMMAND_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSerialPort::COMMAND_INVALID;
+                }
+            }
         }
+        res = _command;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _command;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YSerialPort::set_command(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("command", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("command", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -350,12 +486,24 @@ int YSerialPort::set_command(const string& newval)
  */
 Y_VOLTAGELEVEL_enum YSerialPort::get_voltageLevel(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSerialPort::VOLTAGELEVEL_INVALID;
+    Y_VOLTAGELEVEL_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSerialPort::VOLTAGELEVEL_INVALID;
+                }
+            }
         }
+        res = _voltageLevel;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _voltageLevel;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -376,8 +524,17 @@ Y_VOLTAGELEVEL_enum YSerialPort::get_voltageLevel(void)
 int YSerialPort::set_voltageLevel(Y_VOLTAGELEVEL_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("voltageLevel", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("voltageLevel", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -395,12 +552,24 @@ int YSerialPort::set_voltageLevel(Y_VOLTAGELEVEL_enum newval)
  */
 string YSerialPort::get_protocol(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSerialPort::PROTOCOL_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSerialPort::PROTOCOL_INVALID;
+                }
+            }
         }
+        res = _protocol;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _protocol;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -423,8 +592,17 @@ string YSerialPort::get_protocol(void)
 int YSerialPort::set_protocol(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("protocol", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("protocol", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -442,12 +620,24 @@ int YSerialPort::set_protocol(const string& newval)
  */
 string YSerialPort::get_serialMode(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSerialPort::SERIALMODE_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSerialPort::SERIALMODE_INVALID;
+                }
+            }
         }
+        res = _serialMode;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _serialMode;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -468,8 +658,17 @@ string YSerialPort::get_serialMode(void)
 int YSerialPort::set_serialMode(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("serialMode", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("serialMode", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -498,11 +697,21 @@ int YSerialPort::set_serialMode(const string& newval)
 YSerialPort* YSerialPort::FindSerialPort(string func)
 {
     YSerialPort* obj = NULL;
-    obj = (YSerialPort*) YFunction::_FindFromCache("SerialPort", func);
-    if (obj == NULL) {
-        obj = new YSerialPort(func);
-        YFunction::_AddToCache("SerialPort", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YSerialPort*) YFunction::_FindFromCache("SerialPort", func);
+        if (obj == NULL) {
+            obj = new YSerialPort(func);
+            YFunction::_AddToCache("SerialPort", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

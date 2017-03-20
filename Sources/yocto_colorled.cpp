@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorled.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_colorled.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "colorled"
 
 YColorLed::YColorLed(const string& func): YFunction(func)
 //--- (ColorLed initialization)
@@ -162,12 +163,24 @@ int YColorLed::_parseAttr(yJsonStateMachine& j)
  */
 int YColorLed::get_rgbColor(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YColorLed::RGBCOLOR_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YColorLed::RGBCOLOR_INVALID;
+                }
+            }
         }
+        res = _rgbColor;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _rgbColor;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -182,8 +195,17 @@ int YColorLed::get_rgbColor(void)
 int YColorLed::set_rgbColor(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"0x%06x",newval); rest_val = string(buf);
-    return _setAttr("rgbColor", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf,"0x%06x",newval); rest_val = string(buf);
+        res = _setAttr("rgbColor", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -195,12 +217,24 @@ int YColorLed::set_rgbColor(int newval)
  */
 int YColorLed::get_hslColor(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YColorLed::HSLCOLOR_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YColorLed::HSLCOLOR_INVALID;
+                }
+            }
         }
+        res = _hslColor;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _hslColor;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -215,25 +249,55 @@ int YColorLed::get_hslColor(void)
 int YColorLed::set_hslColor(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"0x%06x",newval); rest_val = string(buf);
-    return _setAttr("hslColor", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf,"0x%06x",newval); rest_val = string(buf);
+        res = _setAttr("hslColor", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 YMove YColorLed::get_rgbMove(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YColorLed::RGBMOVE_INVALID;
+    YMove res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YColorLed::RGBMOVE_INVALID;
+                }
+            }
         }
+        res = _rgbMove;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _rgbMove;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YColorLed::set_rgbMove(YMove newval)
 {
     string rest_val;
-    char buff[64]; sprintf(buff,"%d:%d",newval.target,newval.ms); rest_val = string(buff);
-    return _setAttr("rgbMove", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buff[64]; sprintf(buff,"%d:%d",newval.target,newval.ms); rest_val = string(buff);
+        res = _setAttr("rgbMove", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -255,19 +319,40 @@ int YColorLed::rgbMove(int rgb_target,int ms_duration)
 
 YMove YColorLed::get_hslMove(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YColorLed::HSLMOVE_INVALID;
+    YMove res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YColorLed::HSLMOVE_INVALID;
+                }
+            }
         }
+        res = _hslMove;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _hslMove;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YColorLed::set_hslMove(YMove newval)
 {
     string rest_val;
-    char buff[64]; sprintf(buff,"%d:%d",newval.target,newval.ms); rest_val = string(buff);
-    return _setAttr("hslMove", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buff[64]; sprintf(buff,"%d:%d",newval.target,newval.ms); rest_val = string(buff);
+        res = _setAttr("hslMove", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -296,12 +381,24 @@ int YColorLed::hslMove(int hsl_target,int ms_duration)
  */
 int YColorLed::get_rgbColorAtPowerOn(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YColorLed::RGBCOLORATPOWERON_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YColorLed::RGBCOLORATPOWERON_INVALID;
+                }
+            }
         }
+        res = _rgbColorAtPowerOn;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _rgbColorAtPowerOn;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -317,8 +414,17 @@ int YColorLed::get_rgbColorAtPowerOn(void)
 int YColorLed::set_rgbColorAtPowerOn(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"0x%06x",newval); rest_val = string(buf);
-    return _setAttr("rgbColorAtPowerOn", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf,"0x%06x",newval); rest_val = string(buf);
+        res = _setAttr("rgbColorAtPowerOn", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -330,12 +436,24 @@ int YColorLed::set_rgbColorAtPowerOn(int newval)
  */
 int YColorLed::get_blinkSeqSize(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YColorLed::BLINKSEQSIZE_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YColorLed::BLINKSEQSIZE_INVALID;
+                }
+            }
         }
+        res = _blinkSeqSize;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _blinkSeqSize;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -347,12 +465,24 @@ int YColorLed::get_blinkSeqSize(void)
  */
 int YColorLed::get_blinkSeqMaxSize(void)
 {
-    if (_cacheExpiration == 0) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YColorLed::BLINKSEQMAXSIZE_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration == 0) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YColorLed::BLINKSEQMAXSIZE_INVALID;
+                }
+            }
         }
+        res = _blinkSeqMaxSize;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _blinkSeqMaxSize;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -367,29 +497,62 @@ int YColorLed::get_blinkSeqMaxSize(void)
  */
 int YColorLed::get_blinkSeqSignature(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YColorLed::BLINKSEQSIGNATURE_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YColorLed::BLINKSEQSIGNATURE_INVALID;
+                }
+            }
         }
+        res = _blinkSeqSignature;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _blinkSeqSignature;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 string YColorLed::get_command(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YColorLed::COMMAND_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YColorLed::COMMAND_INVALID;
+                }
+            }
         }
+        res = _command;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _command;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YColorLed::set_command(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("command", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("command", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -418,11 +581,21 @@ int YColorLed::set_command(const string& newval)
 YColorLed* YColorLed::FindColorLed(string func)
 {
     YColorLed* obj = NULL;
-    obj = (YColorLed*) YFunction::_FindFromCache("ColorLed", func);
-    if (obj == NULL) {
-        obj = new YColorLed(func);
-        YFunction::_AddToCache("ColorLed", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YColorLed*) YFunction::_FindFromCache("ColorLed", func);
+        if (obj == NULL) {
+            obj = new YColorLed(func);
+            YFunction::_AddToCache("ColorLed", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 26477 2017-01-26 17:51:01Z seb $
+ * $Id: yapi.c 26758 2017-03-15 13:59:31Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -53,6 +53,7 @@ static YRETCODE  yapiUpdateDeviceList_internal(u32 forceupdate, char *errmsg);
 static void  yapiUnregisterHub_internal(const char *url);
 static YRETCODE  yapiPreregisterHub_internal(const char *url, char *errmsg);
 static YRETCODE  yapiHandleEvents_internal(char *errmsg);
+static YRETCODE  yapiHTTPRequestAsyncEx_internal(int tcpchan, const char *device, const char *request, int len, yapiRequestAsyncCallback callback, void *context, char *errmsg);
 
 //#define DEBUG_YAPI_REQ
 
@@ -402,6 +403,10 @@ static void logResult(void *context, const u8 *result, u32 resultlen, int retcod
     if (yContext == NULL || yContext->logDeviceCallback == NULL)
         return;
 
+    if (resultlen < 4) {
+        return; //invalid packet
+    }
+
     if (result==NULL || start[0] != 'O' || start[1] != 'K'){
         return; // invalid response
     }
@@ -414,9 +419,6 @@ static void logResult(void *context, const u8 *result, u32 resultlen, int retcod
         }
         p++;
         resultlen--;
-    }
-    if (resultlen < 4){
-        return; //invalid packet
     }
     start = p;
     //look of '@pos'
@@ -463,6 +465,9 @@ static void logResult(void *context, const u8 *result, u32 resultlen, int retcod
     yLeaveCriticalSection(&yContext->generic_cs);
 }
 
+static int yapiRequestOpenWS(YIOHDL_internal *iohdl, HubSt *hub, YAPI_DEVICE dev, int tcpchan, const char *request, int reqlen, u64 mstimeout, yapiRequestAsyncCallback callback, void *context, RequestProgress progress_cb, void *progress_ctx, char *errmsg);
+static int yapiRequestOpenHTTP(YIOHDL_internal *iohdl, HubSt *hub, YAPI_DEVICE dev, const char *request, int reqlen, int wait_for_start, u64 mstimeout, yapiRequestAsyncCallback callback, void *context, char *errmsg);
+static int yapiRequestOpenUSB(YIOHDL_internal *iohdl, HubSt *hub, YAPI_DEVICE dev, const char *request, int reqlen, u64 unused_timeout, yapiRequestAsyncCallback callback, void *context, char *errmsg);
 
 
 YRETCODE yapiPullDeviceLogEx(int devydx)
@@ -471,6 +476,7 @@ YRETCODE yapiPullDeviceLogEx(int devydx)
     int     used;
     char    rootdevice[YOCTO_SERIAL_LEN];
     char    request[512];
+    int reqlen;
     char    errmsg[YOCTO_ERRMSG_LEN];
     char    *p;
     YAPI_DEVICE dev;
@@ -478,7 +484,11 @@ YRETCODE yapiPullDeviceLogEx(int devydx)
     int     doPull=0;
     yGenericDeviceSt *gen;
     yStrRef serialref;
-
+    YIOHDL_internal iohdl;
+    yUrlRef     url;
+    yAsbUrlProto proto;
+    int i;
+    HubSt *hub = NULL;
 
     yEnterCriticalSection(&yContext->generic_cs);
     gen = yContext->generic_infos + devydx;
@@ -509,11 +519,36 @@ YRETCODE yapiPullDeviceLogEx(int devydx)
     }
     used = YSTRLEN(request);
     p = request + used;
-    YSPRINTF(p, 512 - used, "logs.txt?pos=%d\r\n\r\n", logPos);
-    res = yapiHTTPRequestAsync(rootdevice, request, logResult, (void*)gen, errmsg);
-    if(YISERR(res))  {
-        dbglog(errmsg);
-        if (res != YAPI_DEVICE_NOT_FOUND) {
+    reqlen = YSPRINTF(p, 512 - used, "logs.txt?pos=%d\r\n\r\n", logPos);
+        memset(&iohdl, 0, sizeof(YIOHDL_internal));
+    // compute request timeout
+    // dispatch request on correct hub (or pseudo usb HUB)
+    url = wpGetDeviceUrlRef(dev);
+
+    switch (yHashGetUrlPort(url, NULL, NULL, &proto, NULL, NULL)) {
+    case USB_URL:
+        res = yapiRequestOpenUSB(&iohdl, NULL, dev, request, reqlen, YIO_10_MINUTES_TCP_TIMEOUT, logResult, (void*)gen, errmsg);
+        break;
+    default:
+        for (i = 0; i < NBMAX_NET_HUB; i++) {
+            if (yContext->nethub[i] && yHashSameHub(yContext->nethub[i]->url, url)) {
+                hub = yContext->nethub[i];
+                break;
+            }
+        }
+        if (hub == NULL) {
+            res = YERR(YAPI_DEVICE_NOT_FOUND);
+        } else {
+            if (proto == PROTO_WEBSOCKET) {
+                res = yapiRequestOpenWS(&iohdl, hub, dev, 0, request, reqlen, YIO_10_MINUTES_TCP_TIMEOUT, logResult, (void*)gen, NULL, NULL, errmsg);
+            } else {
+               res = yapiRequestOpenHTTP(&iohdl, hub, dev, request, reqlen, 0, YIO_10_MINUTES_TCP_TIMEOUT, logResult, (void*)gen, errmsg);
+            }
+        }
+    }
+
+    if (YISERR(res)) {
+        if (res != YAPI_DEVICE_NOT_FOUND && res!= YAPI_DEVICE_BUSY) {
             yEnterCriticalSection(&yContext->generic_cs);
             gen->flags &= ~DEVGEN_LOG_PULLING;
             yLeaveCriticalSection(&yContext->generic_cs);
@@ -979,7 +1014,7 @@ static int yNetHubEnumEx(HubSt *hub, ENU_CONTEXT *enus, char *errmsg)
     u64 start_tm = yapiGetTickCount();
 #endif
     req = yReqAlloc(hub);
-    if (YISERR((res = yReqOpen(req, 0, request, YSTRLEN(request), YIO_DEFAULT_TCP_TIMEOUT, NULL, NULL, NULL, NULL, errmsg)))) {
+    if (YISERR((res = yReqOpen(req, 2 * YIO_DEFAULT_TCP_TIMEOUT, 0, request, YSTRLEN(request), YIO_DEFAULT_TCP_TIMEOUT, NULL, NULL, NULL, NULL, errmsg)))) {
         yReqFree(req);
         return res;
     }
@@ -1347,6 +1382,9 @@ static YRETCODE yapiInitAPI_internal(int detect_type,char *errmsg)
 
     //init safe malloc
     ySafeMemoryInit(64*1024);
+#ifdef DEBUG_CRITICAL_SECTION
+    yInitDebugCS();
+#endif
 
     ctx=(yContextSt*)yMalloc(sizeof(yContextSt));
     yMemset(ctx,0,sizeof(yContextSt));
@@ -1447,6 +1485,10 @@ static void yapiFreeAPI_internal(void)
     ySafeMemoryDump(yContext);
     yFree(yContext);
     ySafeMemoryStop();
+#ifdef DEBUG_CRITICAL_SECTION
+    yFreeDebugCS();
+#endif
+
     yContext=NULL;
 }
 
@@ -2075,7 +2117,7 @@ static void* yhelper_thread(void* ctx)
                 } else {
                     YSPRINTF(request, 256, "GET /not.byn?abs=%u HTTP/1.1\r\n\r\n", hub->notifAbsPos);
                 }
-                res = yReqOpen(hub->http.notReq, 0, request, YSTRLEN(request), 0, NULL, NULL, NULL, NULL, errmsg);
+                res = yReqOpen(hub->http.notReq, 2 * YIO_DEFAULT_TCP_TIMEOUT, 0, request, YSTRLEN(request), 0, NULL, NULL, NULL, NULL, errmsg);
                 if (YISERR(res)) {
                     hub->attemptDelay = 500 << hub->retryCount;
                     if(hub->attemptDelay > 8000)
@@ -2405,7 +2447,7 @@ static int pingURLOnhub(HubSt *hubst, const char *request, int mstimeout, char *
     globalTimeout = yapiGetTickCount() + mstimeout;
 
     req = yReqAlloc(hubst);
-    if (YISERR((res = yReqOpen(req, 0, request, YSTRLEN(request), mstimeout, NULL, NULL, NULL, NULL, errmsg)))) {
+    if (YISERR((res = yReqOpen(req, 2 * YIO_DEFAULT_TCP_TIMEOUT, 0, request, YSTRLEN(request), mstimeout, NULL, NULL, NULL, NULL, errmsg)))) {
         yReqFree(req);
         return res;
     }
@@ -3046,7 +3088,7 @@ static int yapiRequestOpenUSB(YIOHDL_internal *iohdl, HubSt *hub, YAPI_DEVICE de
 }
 
 
-static int yapiRequestOpenHTTP(YIOHDL_internal *iohdl, HubSt *hub, YAPI_DEVICE dev, const char *request, int reqlen, u64 mstimeout, yapiRequestAsyncCallback callback, void *context, char *errmsg)
+static int yapiRequestOpenHTTP(YIOHDL_internal *iohdl, HubSt *hub, YAPI_DEVICE dev, const char *request, int reqlen, int wait_for_start, u64 mstimeout, yapiRequestAsyncCallback callback, void *context, char *errmsg)
 {
     YRETCODE    res;
     int         devydx;
@@ -3056,12 +3098,13 @@ static int yapiRequestOpenHTTP(YIOHDL_internal *iohdl, HubSt *hub, YAPI_DEVICE d
     if (devydx < 0) {
         return YERR(YAPI_DEVICE_NOT_FOUND);
     }
-    //todo: we may have some race condition here
+    yEnterCriticalSection(&yContext->io_cs);
     tcpreq = yContext->tcpreq[devydx];
     if (tcpreq == NULL) {
         tcpreq = yReqAlloc(hub);
         yContext->tcpreq[devydx] = tcpreq;
     }
+    yLeaveCriticalSection(&yContext->io_cs);
     if (callback) {
         if (tcpreq->hub->writeProtected) {
             // no need to take the critical section tcpreq->hub->http.authAccess since we only read user an pass
@@ -3077,7 +3120,7 @@ static int yapiRequestOpenHTTP(YIOHDL_internal *iohdl, HubSt *hub, YAPI_DEVICE d
         return YAPI_IO_ERROR;
     }
 
-    res = (YRETCODE)yReqOpen(tcpreq, 0, request, reqlen, mstimeout, callback, context, NULL, NULL, errmsg);
+    res = (YRETCODE)yReqOpen(tcpreq, wait_for_start, 0, request, reqlen, mstimeout, callback, context, NULL, NULL, errmsg);
     if (res != YAPI_SUCCESS) {
         return res;
     }
@@ -3131,7 +3174,7 @@ static int yapiRequestOpenWS(YIOHDL_internal *iohdl, HubSt *hub, YAPI_DEVICE dev
         return YERRMSG(YAPI_TIMEOUT, "hub is not ready");
     }
 
-    res = (YRETCODE)yReqOpen(req, tcpchan, request, reqlen, mstimeout, callback, context, progress_cb, progress_ctx, errmsg);
+    res = (YRETCODE)yReqOpen(req, 2 * YIO_DEFAULT_TCP_TIMEOUT, tcpchan, request, reqlen, mstimeout, callback, context, progress_cb, progress_ctx, errmsg);
     if (res != YAPI_SUCCESS) {
         return res;
     }
@@ -3177,7 +3220,7 @@ YRETCODE yapiRequestOpen(YIOHDL_internal *iohdl, int tcpchan, const char *device
         }
     } else {
         if (ymemfind((u8*)request + 4, len, (u8*)"/upload.html", 12) >= 0) {
-//fixme: use 1 minute timeout for WS
+            //fixme: use 1 minute timeout for WS
             mstimeout = YIO_10_MINUTES_TCP_TIMEOUT;
         }
     }
@@ -3200,7 +3243,7 @@ YRETCODE yapiRequestOpen(YIOHDL_internal *iohdl, int tcpchan, const char *device
         if (proto == PROTO_WEBSOCKET) {
             return yapiRequestOpenWS(iohdl, hub, dev, tcpchan, request, reqlen, mstimeout, callback, context, progress_cb, progress_ctx, errmsg);
         }  else {
-            return yapiRequestOpenHTTP(iohdl, hub, dev, request, reqlen, mstimeout, callback, context, errmsg);
+            return yapiRequestOpenHTTP(iohdl, hub, dev, request, reqlen, 2 * YIO_DEFAULT_TCP_TIMEOUT, mstimeout, callback, context, errmsg);
         }
     }
 }

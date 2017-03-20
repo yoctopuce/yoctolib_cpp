@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.cpp 26551 2017-02-03 15:18:17Z seb $
+ * $Id: yocto_network.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindNetwork(), the high-level API for Network functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "network"
 
 YNetwork::YNetwork(const string& func): YFunction(func)
 //--- (Network initialization)
@@ -251,12 +252,24 @@ int YNetwork::_parseAttr(yJsonStateMachine& j)
  */
 Y_READINESS_enum YNetwork::get_readiness(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::READINESS_INVALID;
+    Y_READINESS_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::READINESS_INVALID;
+                }
+            }
         }
+        res = _readiness;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _readiness;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -269,12 +282,24 @@ Y_READINESS_enum YNetwork::get_readiness(void)
  */
 string YNetwork::get_macAddress(void)
 {
-    if (_cacheExpiration == 0) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::MACADDRESS_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration == 0) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::MACADDRESS_INVALID;
+                }
+            }
         }
+        res = _macAddress;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _macAddress;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -287,12 +312,24 @@ string YNetwork::get_macAddress(void)
  */
 string YNetwork::get_ipAddress(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::IPADDRESS_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::IPADDRESS_INVALID;
+                }
+            }
         }
+        res = _ipAddress;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _ipAddress;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -304,12 +341,24 @@ string YNetwork::get_ipAddress(void)
  */
 string YNetwork::get_subnetMask(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::SUBNETMASK_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::SUBNETMASK_INVALID;
+                }
+            }
         }
+        res = _subnetMask;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _subnetMask;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -321,29 +370,81 @@ string YNetwork::get_subnetMask(void)
  */
 string YNetwork::get_router(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::ROUTER_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::ROUTER_INVALID;
+                }
+            }
         }
+        res = _router;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _router;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
+/**
+ * Returns the IP configuration of the network interface.
+ *
+ * If the network interface is setup to use a static IP address, the string starts with "STATIC:" and
+ * is followed by three
+ * parameters, separated by "/". The first is the device IP address, followed by the subnet mask
+ * length, and finally the
+ * router IP address (default gateway). For instance: "STATIC:192.168.1.14/16/192.168.1.1"
+ *
+ * If the network interface is configured to receive its IP from a DHCP server, the string start with
+ * "DHCP:" and is followed by
+ * three parameters separated by "/". The first is the fallback IP address, then the fallback subnet
+ * mask length and finally the
+ * fallback router IP address. These three parameters are used when no DHCP reply is received.
+ *
+ * @return a string corresponding to the IP configuration of the network interface
+ *
+ * On failure, throws an exception or returns Y_IPCONFIG_INVALID.
+ */
 string YNetwork::get_ipConfig(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::IPCONFIG_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::IPCONFIG_INVALID;
+                }
+            }
         }
+        res = _ipConfig;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _ipConfig;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YNetwork::set_ipConfig(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("ipConfig", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("ipConfig", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -355,12 +456,24 @@ int YNetwork::set_ipConfig(const string& newval)
  */
 string YNetwork::get_primaryDNS(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::PRIMARYDNS_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::PRIMARYDNS_INVALID;
+                }
+            }
         }
+        res = _primaryDNS;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _primaryDNS;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -377,8 +490,17 @@ string YNetwork::get_primaryDNS(void)
 int YNetwork::set_primaryDNS(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("primaryDNS", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("primaryDNS", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -390,12 +512,24 @@ int YNetwork::set_primaryDNS(const string& newval)
  */
 string YNetwork::get_secondaryDNS(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::SECONDARYDNS_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::SECONDARYDNS_INVALID;
+                }
+            }
         }
+        res = _secondaryDNS;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _secondaryDNS;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -412,8 +546,17 @@ string YNetwork::get_secondaryDNS(void)
 int YNetwork::set_secondaryDNS(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("secondaryDNS", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("secondaryDNS", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -425,12 +568,24 @@ int YNetwork::set_secondaryDNS(const string& newval)
  */
 string YNetwork::get_ntpServer(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::NTPSERVER_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::NTPSERVER_INVALID;
+                }
+            }
         }
+        res = _ntpServer;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _ntpServer;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -446,8 +601,17 @@ string YNetwork::get_ntpServer(void)
 int YNetwork::set_ntpServer(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("ntpServer", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("ntpServer", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -461,12 +625,24 @@ int YNetwork::set_ntpServer(const string& newval)
  */
 string YNetwork::get_userPassword(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::USERPASSWORD_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::USERPASSWORD_INVALID;
+                }
+            }
         }
+        res = _userPassword;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _userPassword;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -485,8 +661,17 @@ string YNetwork::get_userPassword(void)
 int YNetwork::set_userPassword(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("userPassword", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("userPassword", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -500,12 +685,24 @@ int YNetwork::set_userPassword(const string& newval)
  */
 string YNetwork::get_adminPassword(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::ADMINPASSWORD_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::ADMINPASSWORD_INVALID;
+                }
+            }
         }
+        res = _adminPassword;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _adminPassword;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -524,8 +721,17 @@ string YNetwork::get_adminPassword(void)
 int YNetwork::set_adminPassword(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("adminPassword", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("adminPassword", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -537,12 +743,24 @@ int YNetwork::set_adminPassword(const string& newval)
  */
 int YNetwork::get_httpPort(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::HTTPPORT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::HTTPPORT_INVALID;
+                }
+            }
         }
+        res = _httpPort;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _httpPort;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -559,8 +777,17 @@ int YNetwork::get_httpPort(void)
 int YNetwork::set_httpPort(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("httpPort", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("httpPort", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -572,12 +799,24 @@ int YNetwork::set_httpPort(int newval)
  */
 string YNetwork::get_defaultPage(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::DEFAULTPAGE_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::DEFAULTPAGE_INVALID;
+                }
+            }
         }
+        res = _defaultPage;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _defaultPage;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -594,8 +833,17 @@ string YNetwork::get_defaultPage(void)
 int YNetwork::set_defaultPage(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("defaultPage", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("defaultPage", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -610,12 +858,24 @@ int YNetwork::set_defaultPage(const string& newval)
  */
 Y_DISCOVERABLE_enum YNetwork::get_discoverable(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::DISCOVERABLE_INVALID;
+    Y_DISCOVERABLE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::DISCOVERABLE_INVALID;
+                }
+            }
         }
+        res = _discoverable;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _discoverable;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -633,8 +893,17 @@ Y_DISCOVERABLE_enum YNetwork::get_discoverable(void)
 int YNetwork::set_discoverable(Y_DISCOVERABLE_enum newval)
 {
     string rest_val;
-    rest_val = (newval>0 ? "1" : "0");
-    return _setAttr("discoverable", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("discoverable", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -650,12 +919,24 @@ int YNetwork::set_discoverable(Y_DISCOVERABLE_enum newval)
  */
 int YNetwork::get_wwwWatchdogDelay(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::WWWWATCHDOGDELAY_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::WWWWATCHDOGDELAY_INVALID;
+                }
+            }
         }
+        res = _wwwWatchdogDelay;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _wwwWatchdogDelay;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -675,8 +956,17 @@ int YNetwork::get_wwwWatchdogDelay(void)
 int YNetwork::set_wwwWatchdogDelay(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("wwwWatchdogDelay", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("wwwWatchdogDelay", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -688,12 +978,24 @@ int YNetwork::set_wwwWatchdogDelay(int newval)
  */
 string YNetwork::get_callbackUrl(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::CALLBACKURL_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::CALLBACKURL_INVALID;
+                }
+            }
         }
+        res = _callbackUrl;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _callbackUrl;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -709,8 +1011,17 @@ string YNetwork::get_callbackUrl(void)
 int YNetwork::set_callbackUrl(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("callbackUrl", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("callbackUrl", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -723,12 +1034,24 @@ int YNetwork::set_callbackUrl(const string& newval)
  */
 Y_CALLBACKMETHOD_enum YNetwork::get_callbackMethod(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::CALLBACKMETHOD_INVALID;
+    Y_CALLBACKMETHOD_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::CALLBACKMETHOD_INVALID;
+                }
+            }
         }
+        res = _callbackMethod;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _callbackMethod;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -744,8 +1067,17 @@ Y_CALLBACKMETHOD_enum YNetwork::get_callbackMethod(void)
 int YNetwork::set_callbackMethod(Y_CALLBACKMETHOD_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("callbackMethod", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("callbackMethod", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -761,12 +1093,24 @@ int YNetwork::set_callbackMethod(Y_CALLBACKMETHOD_enum newval)
  */
 Y_CALLBACKENCODING_enum YNetwork::get_callbackEncoding(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::CALLBACKENCODING_INVALID;
+    Y_CALLBACKENCODING_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::CALLBACKENCODING_INVALID;
+                }
+            }
         }
+        res = _callbackEncoding;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _callbackEncoding;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -785,8 +1129,17 @@ Y_CALLBACKENCODING_enum YNetwork::get_callbackEncoding(void)
 int YNetwork::set_callbackEncoding(Y_CALLBACKENCODING_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("callbackEncoding", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("callbackEncoding", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -800,12 +1153,24 @@ int YNetwork::set_callbackEncoding(Y_CALLBACKENCODING_enum newval)
  */
 string YNetwork::get_callbackCredentials(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::CALLBACKCREDENTIALS_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::CALLBACKCREDENTIALS_INVALID;
+                }
+            }
         }
+        res = _callbackCredentials;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _callbackCredentials;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -828,8 +1193,17 @@ string YNetwork::get_callbackCredentials(void)
 int YNetwork::set_callbackCredentials(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("callbackCredentials", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("callbackCredentials", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -861,12 +1235,24 @@ int YNetwork::callbackLogin(string username,string password)
  */
 int YNetwork::get_callbackInitialDelay(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::CALLBACKINITIALDELAY_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::CALLBACKINITIALDELAY_INVALID;
+                }
+            }
         }
+        res = _callbackInitialDelay;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _callbackInitialDelay;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -882,8 +1268,17 @@ int YNetwork::get_callbackInitialDelay(void)
 int YNetwork::set_callbackInitialDelay(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("callbackInitialDelay", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("callbackInitialDelay", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -895,12 +1290,24 @@ int YNetwork::set_callbackInitialDelay(int newval)
  */
 string YNetwork::get_callbackSchedule(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::CALLBACKSCHEDULE_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::CALLBACKSCHEDULE_INVALID;
+                }
+            }
         }
+        res = _callbackSchedule;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _callbackSchedule;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -915,8 +1322,17 @@ string YNetwork::get_callbackSchedule(void)
 int YNetwork::set_callbackSchedule(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("callbackSchedule", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("callbackSchedule", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -928,12 +1344,24 @@ int YNetwork::set_callbackSchedule(const string& newval)
  */
 int YNetwork::get_callbackMinDelay(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::CALLBACKMINDELAY_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::CALLBACKMINDELAY_INVALID;
+                }
+            }
         }
+        res = _callbackMinDelay;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _callbackMinDelay;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -948,8 +1376,17 @@ int YNetwork::get_callbackMinDelay(void)
 int YNetwork::set_callbackMinDelay(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("callbackMinDelay", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("callbackMinDelay", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -961,12 +1398,24 @@ int YNetwork::set_callbackMinDelay(int newval)
  */
 int YNetwork::get_callbackMaxDelay(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::CALLBACKMAXDELAY_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::CALLBACKMAXDELAY_INVALID;
+                }
+            }
         }
+        res = _callbackMaxDelay;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _callbackMaxDelay;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -982,8 +1431,17 @@ int YNetwork::get_callbackMaxDelay(void)
 int YNetwork::set_callbackMaxDelay(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("callbackMaxDelay", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("callbackMaxDelay", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -998,12 +1456,24 @@ int YNetwork::set_callbackMaxDelay(int newval)
  */
 int YNetwork::get_poeCurrent(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YNetwork::POECURRENT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::POECURRENT_INVALID;
+                }
+            }
         }
+        res = _poeCurrent;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _poeCurrent;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -1032,11 +1502,21 @@ int YNetwork::get_poeCurrent(void)
 YNetwork* YNetwork::FindNetwork(string func)
 {
     YNetwork* obj = NULL;
-    obj = (YNetwork*) YFunction::_FindFromCache("Network", func);
-    if (obj == NULL) {
-        obj = new YNetwork(func);
-        YFunction::_AddToCache("Network", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YNetwork*) YFunction::_FindFromCache("Network", func);
+        if (obj == NULL) {
+            obj = new YNetwork(func);
+            YFunction::_AddToCache("Network", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

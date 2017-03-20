@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_steppermotor.cpp 26277 2017-01-04 15:35:59Z seb $
+ * $Id: yocto_steppermotor.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindStepperMotor(), the high-level API for StepperMotor functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "steppermotor"
 
 YStepperMotor::YStepperMotor(const string& func): YFunction(func)
 //--- (StepperMotor initialization)
@@ -178,12 +179,24 @@ int YStepperMotor::_parseAttr(yJsonStateMachine& j)
  */
 Y_MOTORSTATE_enum YStepperMotor::get_motorState(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YStepperMotor::MOTORSTATE_INVALID;
+    Y_MOTORSTATE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YStepperMotor::MOTORSTATE_INVALID;
+                }
+            }
         }
+        res = _motorState;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _motorState;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -195,12 +208,24 @@ Y_MOTORSTATE_enum YStepperMotor::get_motorState(void)
  */
 int YStepperMotor::get_diags(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YStepperMotor::DIAGS_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YStepperMotor::DIAGS_INVALID;
+                }
+            }
         }
+        res = _diags;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _diags;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -220,8 +245,17 @@ int YStepperMotor::get_diags(void)
 int YStepperMotor::set_stepPos(double newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%.2f", floor(newval * 100.0)/100.0); rest_val = string(buf);
-    return _setAttr("stepPos", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf,"%.2f", floor(newval * 100.0)/100.0); rest_val = string(buf);
+        res = _setAttr("stepPos", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -234,12 +268,24 @@ int YStepperMotor::set_stepPos(double newval)
  */
 double YStepperMotor::get_stepPos(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YStepperMotor::STEPPOS_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YStepperMotor::STEPPOS_INVALID;
+                }
+            }
         }
+        res = _stepPos;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _stepPos;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -252,12 +298,24 @@ double YStepperMotor::get_stepPos(void)
  */
 double YStepperMotor::get_speed(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YStepperMotor::SPEED_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YStepperMotor::SPEED_INVALID;
+                }
+            }
         }
+        res = _speed;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _speed;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -273,8 +331,17 @@ double YStepperMotor::get_speed(void)
 int YStepperMotor::set_pullinSpeed(double newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
-    return _setAttr("pullinSpeed", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        res = _setAttr("pullinSpeed", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -287,12 +354,24 @@ int YStepperMotor::set_pullinSpeed(double newval)
  */
 double YStepperMotor::get_pullinSpeed(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YStepperMotor::PULLINSPEED_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YStepperMotor::PULLINSPEED_INVALID;
+                }
+            }
         }
+        res = _pullinSpeed;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _pullinSpeed;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -308,8 +387,17 @@ double YStepperMotor::get_pullinSpeed(void)
 int YStepperMotor::set_maxAccel(double newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
-    return _setAttr("maxAccel", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        res = _setAttr("maxAccel", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -321,12 +409,24 @@ int YStepperMotor::set_maxAccel(double newval)
  */
 double YStepperMotor::get_maxAccel(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YStepperMotor::MAXACCEL_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YStepperMotor::MAXACCEL_INVALID;
+                }
+            }
         }
+        res = _maxAccel;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _maxAccel;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -341,8 +441,17 @@ double YStepperMotor::get_maxAccel(void)
 int YStepperMotor::set_maxSpeed(double newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
-    return _setAttr("maxSpeed", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        res = _setAttr("maxSpeed", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -354,12 +463,24 @@ int YStepperMotor::set_maxSpeed(double newval)
  */
 double YStepperMotor::get_maxSpeed(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YStepperMotor::MAXSPEED_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YStepperMotor::MAXSPEED_INVALID;
+                }
+            }
         }
+        res = _maxSpeed;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _maxSpeed;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -372,12 +493,24 @@ double YStepperMotor::get_maxSpeed(void)
  */
 Y_STEPPING_enum YStepperMotor::get_stepping(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YStepperMotor::STEPPING_INVALID;
+    Y_STEPPING_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YStepperMotor::STEPPING_INVALID;
+                }
+            }
         }
+        res = _stepping;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _stepping;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -393,8 +526,17 @@ Y_STEPPING_enum YStepperMotor::get_stepping(void)
 int YStepperMotor::set_stepping(Y_STEPPING_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("stepping", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("stepping", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -406,12 +548,24 @@ int YStepperMotor::set_stepping(Y_STEPPING_enum newval)
  */
 int YStepperMotor::get_overcurrent(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YStepperMotor::OVERCURRENT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YStepperMotor::OVERCURRENT_INVALID;
+                }
+            }
         }
+        res = _overcurrent;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _overcurrent;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -426,8 +580,17 @@ int YStepperMotor::get_overcurrent(void)
 int YStepperMotor::set_overcurrent(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("overcurrent", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("overcurrent", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -439,12 +602,24 @@ int YStepperMotor::set_overcurrent(int newval)
  */
 int YStepperMotor::get_tCurrStop(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YStepperMotor::TCURRSTOP_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YStepperMotor::TCURRSTOP_INVALID;
+                }
+            }
         }
+        res = _tCurrStop;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _tCurrStop;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -460,8 +635,17 @@ int YStepperMotor::get_tCurrStop(void)
 int YStepperMotor::set_tCurrStop(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("tCurrStop", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("tCurrStop", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -473,12 +657,24 @@ int YStepperMotor::set_tCurrStop(int newval)
  */
 int YStepperMotor::get_tCurrRun(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YStepperMotor::TCURRRUN_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YStepperMotor::TCURRRUN_INVALID;
+                }
+            }
         }
+        res = _tCurrRun;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _tCurrRun;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -494,42 +690,93 @@ int YStepperMotor::get_tCurrRun(void)
 int YStepperMotor::set_tCurrRun(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("tCurrRun", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("tCurrRun", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 string YStepperMotor::get_alertMode(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YStepperMotor::ALERTMODE_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YStepperMotor::ALERTMODE_INVALID;
+                }
+            }
         }
+        res = _alertMode;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _alertMode;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YStepperMotor::set_alertMode(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("alertMode", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("alertMode", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 string YStepperMotor::get_auxMode(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YStepperMotor::AUXMODE_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YStepperMotor::AUXMODE_INVALID;
+                }
+            }
         }
+        res = _auxMode;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _auxMode;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YStepperMotor::set_auxMode(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("auxMode", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("auxMode", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -541,12 +788,24 @@ int YStepperMotor::set_auxMode(const string& newval)
  */
 int YStepperMotor::get_auxSignal(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YStepperMotor::AUXSIGNAL_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YStepperMotor::AUXSIGNAL_INVALID;
+                }
+            }
         }
+        res = _auxSignal;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _auxSignal;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -562,25 +821,55 @@ int YStepperMotor::get_auxSignal(void)
 int YStepperMotor::set_auxSignal(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("auxSignal", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("auxSignal", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 string YStepperMotor::get_command(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YStepperMotor::COMMAND_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YStepperMotor::COMMAND_INVALID;
+                }
+            }
         }
+        res = _command;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _command;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YStepperMotor::set_command(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("command", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("command", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -609,11 +898,21 @@ int YStepperMotor::set_command(const string& newval)
 YStepperMotor* YStepperMotor::FindStepperMotor(string func)
 {
     YStepperMotor* obj = NULL;
-    obj = (YStepperMotor*) YFunction::_FindFromCache("StepperMotor", func);
-    if (obj == NULL) {
-        obj = new YStepperMotor(func);
-        YFunction::_AddToCache("StepperMotor", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YStepperMotor*) YFunction::_FindFromCache("StepperMotor", func);
+        if (obj == NULL) {
+            obj = new YStepperMotor(func);
+            YFunction::_AddToCache("StepperMotor", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

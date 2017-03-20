@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_segmenteddisplay.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_segmenteddisplay.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindSegmentedDisplay(), the high-level API for SegmentedDisplay functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "segmenteddisplay"
 
 YSegmentedDisplay::YSegmentedDisplay(const string& func): YFunction(func)
 //--- (SegmentedDisplay initialization)
@@ -92,12 +93,24 @@ int YSegmentedDisplay::_parseAttr(yJsonStateMachine& j)
  */
 string YSegmentedDisplay::get_displayedText(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSegmentedDisplay::DISPLAYEDTEXT_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSegmentedDisplay::DISPLAYEDTEXT_INVALID;
+                }
+            }
         }
+        res = _displayedText;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _displayedText;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -112,25 +125,55 @@ string YSegmentedDisplay::get_displayedText(void)
 int YSegmentedDisplay::set_displayedText(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("displayedText", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("displayedText", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 Y_DISPLAYMODE_enum YSegmentedDisplay::get_displayMode(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSegmentedDisplay::DISPLAYMODE_INVALID;
+    Y_DISPLAYMODE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSegmentedDisplay::DISPLAYMODE_INVALID;
+                }
+            }
         }
+        res = _displayMode;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _displayMode;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YSegmentedDisplay::set_displayMode(Y_DISPLAYMODE_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("displayMode", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("displayMode", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -159,11 +202,21 @@ int YSegmentedDisplay::set_displayMode(Y_DISPLAYMODE_enum newval)
 YSegmentedDisplay* YSegmentedDisplay::FindSegmentedDisplay(string func)
 {
     YSegmentedDisplay* obj = NULL;
-    obj = (YSegmentedDisplay*) YFunction::_FindFromCache("SegmentedDisplay", func);
-    if (obj == NULL) {
-        obj = new YSegmentedDisplay(func);
-        YFunction::_AddToCache("SegmentedDisplay", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YSegmentedDisplay*) YFunction::_FindFromCache("SegmentedDisplay", func);
+        if (obj == NULL) {
+            obj = new YSegmentedDisplay(func);
+            YFunction::_AddToCache("SegmentedDisplay", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

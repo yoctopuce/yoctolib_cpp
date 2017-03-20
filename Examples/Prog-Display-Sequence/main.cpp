@@ -84,7 +84,8 @@ int main(int argc, const char * argv[])
   // build one loop for recording
   for (int i = 0; i < framesCount; i++) {
     l0->selectColorPen(0);
-    l0->drawBar(coord[(i + framesCount - 1) % framesCount], h - 1, coord[(i + framesCount - 1) % framesCount] + ledwidth, h - 4);
+    l0->drawBar(coord[(i + framesCount - 1) % framesCount], h - 1,
+                coord[(i + framesCount - 1) % framesCount] + ledwidth, h - 4);
     l0->selectColorPen(0xffffff);
     l0->drawBar(coord[i], h - 1, coord[i] + ledwidth, h - 4);
     disp->pauseSequence(50); // records a 50ms pause.

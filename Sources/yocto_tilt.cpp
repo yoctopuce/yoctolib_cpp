@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_tilt.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_tilt.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindTilt(), the high-level API for Tilt functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "tilt"
 
 YTilt::YTilt(const string& func): YSensor(func)
 //--- (Tilt initialization)
@@ -92,12 +93,24 @@ int YTilt::_parseAttr(yJsonStateMachine& j)
  */
 int YTilt::get_bandwidth(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YTilt::BANDWIDTH_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YTilt::BANDWIDTH_INVALID;
+                }
+            }
         }
+        res = _bandwidth;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _bandwidth;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -113,18 +126,39 @@ int YTilt::get_bandwidth(void)
 int YTilt::set_bandwidth(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("bandwidth", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("bandwidth", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 Y_AXIS_enum YTilt::get_axis(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YTilt::AXIS_INVALID;
+    Y_AXIS_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YTilt::AXIS_INVALID;
+                }
+            }
         }
+        res = _axis;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _axis;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -153,11 +187,21 @@ Y_AXIS_enum YTilt::get_axis(void)
 YTilt* YTilt::FindTilt(string func)
 {
     YTilt* obj = NULL;
-    obj = (YTilt*) YFunction::_FindFromCache("Tilt", func);
-    if (obj == NULL) {
-        obj = new YTilt(func);
-        YFunction::_AddToCache("Tilt", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YTilt*) YFunction::_FindFromCache("Tilt", func);
+        if (obj == NULL) {
+            obj = new YTilt(func);
+            YFunction::_AddToCache("Tilt", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

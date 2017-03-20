@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.h 19327 2015-02-17 17:30:01Z seb $
+ * $Id: ythread.h 26732 2017-03-09 17:12:22Z mvuilleu $
  *
  * OS-independent thread and synchronization library
  *
@@ -84,8 +84,6 @@ typedef HANDLE      osThread;
 typedef pthread_t   osThread;
 #endif
 
-int yCreateDetachedThread(void* (*fun)(void *), void *arg);
-
 typedef enum {
     YTHREAD_NOT_STARTED=0,
     YTHREAD_RUNNING,
@@ -101,6 +99,12 @@ typedef struct {
 	osThread   		th;
 } yThread;
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+    
+int    yCreateDetachedThread(void* (*fun)(void *), void *arg);
+    
 int    yThreadCreate(yThread *yth,void* (*fun)(void *), void *arg);
 int    yThreadIsRunning(yThread *yth);
 void   yThreadSignalStart(yThread *yth);
@@ -110,6 +114,10 @@ int    yThreadMustEnd(yThread *yth);
 void   yThreadKill(yThread *yth);
 int    yThreadIndex(void);
 
+#ifdef  __cplusplus
+}
+#endif
+    
 #endif
 
 

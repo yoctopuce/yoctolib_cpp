@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_power.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_power.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindPower(), the high-level API for Power functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "power"
 
 YPower::YPower(const string& func): YSensor(func)
 //--- (Power initialization)
@@ -102,19 +103,40 @@ int YPower::_parseAttr(yJsonStateMachine& j)
  */
 double YPower::get_cosPhi(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YPower::COSPHI_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YPower::COSPHI_INVALID;
+                }
+            }
         }
+        res = _cosPhi;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _cosPhi;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YPower::set_meter(double newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
-    return _setAttr("meter", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        res = _setAttr("meter", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -128,12 +150,24 @@ int YPower::set_meter(double newval)
  */
 double YPower::get_meter(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YPower::METER_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YPower::METER_INVALID;
+                }
+            }
         }
+        res = _meter;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _meter;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -145,12 +179,24 @@ double YPower::get_meter(void)
  */
 int YPower::get_meterTimer(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YPower::METERTIMER_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YPower::METERTIMER_INVALID;
+                }
+            }
         }
+        res = _meterTimer;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _meterTimer;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -179,11 +225,21 @@ int YPower::get_meterTimer(void)
 YPower* YPower::FindPower(string func)
 {
     YPower* obj = NULL;
-    obj = (YPower*) YFunction::_FindFromCache("Power", func);
-    if (obj == NULL) {
-        obj = new YPower(func);
-        YFunction::_AddToCache("Power", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YPower*) YFunction::_FindFromCache("Power", func);
+        if (obj == NULL) {
+            obj = new YPower(func);
+            YFunction::_AddToCache("Power", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.h 24575 2016-05-26 06:28:03Z seb $
+ * $Id: ytcp.h 26742 2017-03-13 13:54:50Z seb $
  *
  *  Declaration of a client TCP stack
  *
@@ -110,7 +110,7 @@ u32  yResolveDNS(const char *name,char *errmsg);
 
 
 struct _RequestSt * yReqAlloc( struct _HubSt *hub);
-int  yReqOpen(struct _RequestSt *tcpreq, int tcpchan, const char *request, int reqlen, u64 mstimeout, yapiRequestAsyncCallback callback, void *context, yapiRequestProgressCallback progress_cb, void *progress_ctx, char *errmsg);
+int  yReqOpen(struct _RequestSt *tcpreq, int wait_for_start, int tcpchan, const char *request, int reqlen, u64 mstimeout, yapiRequestAsyncCallback callback, void *context, yapiRequestProgressCallback progress_cb, void *progress_ctx, char *errmsg);
 int  yReqIsAsync(struct _RequestSt *req);
 int  yReqSelect(struct _RequestSt *tcpreq, u64 ms, char *errmsg);
 int  yReqMultiSelect(struct _RequestSt **tcpreq, int size, u64 ms, WakeUpSocket *wuce, char *errmsg);

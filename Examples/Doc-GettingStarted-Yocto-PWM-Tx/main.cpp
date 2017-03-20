@@ -9,7 +9,8 @@ static void usage(void)
 {
   cout << "usage: demo <serial_number>  <frequency> <dutyCycle>" << endl;
   cout << "       demo <logical_name> <frequency> <dutyCycle>" << endl;
-  cout << "       demo any  <frequency> <dutyCycle>   (use any discovered device)" << endl;
+  cout << "       demo any  <frequency> <dutyCycle>   (use any discovered device)"
+       << endl;
   cout << "       <frequency>: integer between 1Hz and 1000000Hz" << endl;
   cout << "       <dutyCycle>: floating point number between 0.0 and 100.0" << endl;
   u64 now = yGetTickCount();

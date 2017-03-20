@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: pic24config.php 26169 2016-12-12 01:36:34Z mvuilleu $
+ * $Id: pic24config.php 26780 2017-03-16 14:02:09Z mvuilleu $
  *
  * Implements yFindProximity(), the high-level API for Proximity functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "proximity"
 
 YProximity::YProximity(const string& func): YSensor(func)
 //--- (Proximity initialization)
@@ -129,12 +130,24 @@ int YProximity::_parseAttr(yJsonStateMachine& j)
  */
 double YProximity::get_signalValue(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YProximity::SIGNALVALUE_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YProximity::SIGNALVALUE_INVALID;
+                }
+            }
         }
+        res = floor(_signalValue * 1000+0.5) / 1000;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return floor(_signalValue * 1000+0.5) / 1000;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -149,12 +162,24 @@ double YProximity::get_signalValue(void)
  */
 int YProximity::get_detectionThreshold(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YProximity::DETECTIONTHRESHOLD_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YProximity::DETECTIONTHRESHOLD_INVALID;
+                }
+            }
         }
+        res = _detectionThreshold;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _detectionThreshold;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -172,8 +197,17 @@ int YProximity::get_detectionThreshold(void)
 int YProximity::set_detectionThreshold(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("detectionThreshold", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("detectionThreshold", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -187,12 +221,24 @@ int YProximity::set_detectionThreshold(int newval)
  */
 Y_ISPRESENT_enum YProximity::get_isPresent(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YProximity::ISPRESENT_INVALID;
+    Y_ISPRESENT_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YProximity::ISPRESENT_INVALID;
+                }
+            }
         }
+        res = _isPresent;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _isPresent;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -207,12 +253,24 @@ Y_ISPRESENT_enum YProximity::get_isPresent(void)
  */
 s64 YProximity::get_lastTimeApproached(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YProximity::LASTTIMEAPPROACHED_INVALID;
+    s64 res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YProximity::LASTTIMEAPPROACHED_INVALID;
+                }
+            }
         }
+        res = _lastTimeApproached;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _lastTimeApproached;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -227,12 +285,24 @@ s64 YProximity::get_lastTimeApproached(void)
  */
 s64 YProximity::get_lastTimeRemoved(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YProximity::LASTTIMEREMOVED_INVALID;
+    s64 res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YProximity::LASTTIMEREMOVED_INVALID;
+                }
+            }
         }
+        res = _lastTimeRemoved;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _lastTimeRemoved;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -246,19 +316,40 @@ s64 YProximity::get_lastTimeRemoved(void)
  */
 s64 YProximity::get_pulseCounter(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YProximity::PULSECOUNTER_INVALID;
+    s64 res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YProximity::PULSECOUNTER_INVALID;
+                }
+            }
         }
+        res = _pulseCounter;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _pulseCounter;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YProximity::set_pulseCounter(s64 newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
-    return _setAttr("pulseCounter", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
+        res = _setAttr("pulseCounter", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -270,12 +361,24 @@ int YProximity::set_pulseCounter(s64 newval)
  */
 s64 YProximity::get_pulseTimer(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YProximity::PULSETIMER_INVALID;
+    s64 res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YProximity::PULSETIMER_INVALID;
+                }
+            }
         }
+        res = _pulseTimer;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _pulseTimer;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -290,12 +393,24 @@ s64 YProximity::get_pulseTimer(void)
  */
 Y_PROXIMITYREPORTMODE_enum YProximity::get_proximityReportMode(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YProximity::PROXIMITYREPORTMODE_INVALID;
+    Y_PROXIMITYREPORTMODE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YProximity::PROXIMITYREPORTMODE_INVALID;
+                }
+            }
         }
+        res = _proximityReportMode;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _proximityReportMode;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -314,8 +429,17 @@ Y_PROXIMITYREPORTMODE_enum YProximity::get_proximityReportMode(void)
 int YProximity::set_proximityReportMode(Y_PROXIMITYREPORTMODE_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("proximityReportMode", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("proximityReportMode", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -344,11 +468,21 @@ int YProximity::set_proximityReportMode(Y_PROXIMITYREPORTMODE_enum newval)
 YProximity* YProximity::FindProximity(string func)
 {
     YProximity* obj = NULL;
-    obj = (YProximity*) YFunction::_FindFromCache("Proximity", func);
-    if (obj == NULL) {
-        obj = new YProximity(func);
-        YFunction::_AddToCache("Proximity", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YProximity*) YFunction::_FindFromCache("Proximity", func);
+        if (obj == NULL) {
+            obj = new YProximity(func);
+            YFunction::_AddToCache("Proximity", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

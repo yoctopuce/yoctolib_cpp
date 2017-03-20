@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_current.h 26183 2016-12-15 00:14:02Z mvuilleu $
+ * $Id: yocto_current.h 26826 2017-03-17 11:20:57Z mvuilleu $
  *
  * Declares yFindCurrent(), the high-level API for Current functions
  *
@@ -70,7 +70,7 @@ typedef enum {
  *
  * The Yoctopuce class YCurrent allows you to read and configure Yoctopuce current
  * sensors. It inherits from YSensor class the core functions to read measurements,
- * register callback functions, access to the autonomous datalogger.
+ * to register callback functions, to access the autonomous datalogger.
  */
 class YOCTO_CLASS_EXPORT YCurrent: public YSensor {
 #ifdef __BORLANDC__

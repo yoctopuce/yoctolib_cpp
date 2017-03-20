@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_humidity.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_humidity.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindHumidity(), the high-level API for Humidity functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "humidity"
 
 YHumidity::YHumidity(const string& func): YSensor(func)
 //--- (Humidity initialization)
@@ -103,8 +104,17 @@ int YHumidity::_parseAttr(yJsonStateMachine& j)
 int YHumidity::set_unit(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("unit", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("unit", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -116,12 +126,24 @@ int YHumidity::set_unit(const string& newval)
  */
 double YHumidity::get_relHum(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YHumidity::RELHUM_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YHumidity::RELHUM_INVALID;
+                }
+            }
         }
+        res = _relHum;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _relHum;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -133,12 +155,24 @@ double YHumidity::get_relHum(void)
  */
 double YHumidity::get_absHum(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YHumidity::ABSHUM_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YHumidity::ABSHUM_INVALID;
+                }
+            }
         }
+        res = _absHum;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _absHum;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -167,11 +201,21 @@ double YHumidity::get_absHum(void)
 YHumidity* YHumidity::FindHumidity(string func)
 {
     YHumidity* obj = NULL;
-    obj = (YHumidity*) YFunction::_FindFromCache("Humidity", func);
-    if (obj == NULL) {
-        obj = new YHumidity(func);
-        YFunction::_AddToCache("Humidity", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YHumidity*) YFunction::_FindFromCache("Humidity", func);
+        if (obj == NULL) {
+            obj = new YHumidity(func);
+            YFunction::_AddToCache("Humidity", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

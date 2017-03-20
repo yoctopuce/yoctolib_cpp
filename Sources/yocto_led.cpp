@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_led.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_led.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindLed(), the high-level API for Led functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "led"
 
 YLed::YLed(const string& func): YFunction(func)
 //--- (Led initialization)
@@ -97,12 +98,24 @@ int YLed::_parseAttr(yJsonStateMachine& j)
  */
 Y_POWER_enum YLed::get_power(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YLed::POWER_INVALID;
+    Y_POWER_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YLed::POWER_INVALID;
+                }
+            }
         }
+        res = _power;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _power;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -117,8 +130,17 @@ Y_POWER_enum YLed::get_power(void)
 int YLed::set_power(Y_POWER_enum newval)
 {
     string rest_val;
-    rest_val = (newval>0 ? "1" : "0");
-    return _setAttr("power", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("power", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -130,12 +152,24 @@ int YLed::set_power(Y_POWER_enum newval)
  */
 int YLed::get_luminosity(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YLed::LUMINOSITY_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YLed::LUMINOSITY_INVALID;
+                }
+            }
         }
+        res = _luminosity;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _luminosity;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -150,8 +184,17 @@ int YLed::get_luminosity(void)
 int YLed::set_luminosity(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("luminosity", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("luminosity", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -164,12 +207,24 @@ int YLed::set_luminosity(int newval)
  */
 Y_BLINKING_enum YLed::get_blinking(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YLed::BLINKING_INVALID;
+    Y_BLINKING_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YLed::BLINKING_INVALID;
+                }
+            }
         }
+        res = _blinking;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _blinking;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -185,8 +240,17 @@ Y_BLINKING_enum YLed::get_blinking(void)
 int YLed::set_blinking(Y_BLINKING_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("blinking", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("blinking", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -215,11 +279,21 @@ int YLed::set_blinking(Y_BLINKING_enum newval)
 YLed* YLed::FindLed(string func)
 {
     YLed* obj = NULL;
-    obj = (YLed*) YFunction::_FindFromCache("Led", func);
-    if (obj == NULL) {
-        obj = new YLed(func);
-        YFunction::_AddToCache("Led", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YLed*) YFunction::_FindFromCache("Led", func);
+        if (obj == NULL) {
+            obj = new YLed(func);
+            YFunction::_AddToCache("Led", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

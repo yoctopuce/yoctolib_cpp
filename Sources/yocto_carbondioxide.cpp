@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_carbondioxide.cpp 25831 2016-11-08 11:12:15Z seb $
+ * $Id: yocto_carbondioxide.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "carbondioxide"
 
 YCarbonDioxide::YCarbonDioxide(const string& func): YSensor(func)
 //--- (CarbonDioxide initialization)
@@ -94,12 +95,24 @@ int YCarbonDioxide::_parseAttr(yJsonStateMachine& j)
  */
 int YCarbonDioxide::get_abcPeriod(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCarbonDioxide::ABCPERIOD_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCarbonDioxide::ABCPERIOD_INVALID;
+                }
+            }
         }
+        res = _abcPeriod;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _abcPeriod;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -118,25 +131,55 @@ int YCarbonDioxide::get_abcPeriod(void)
 int YCarbonDioxide::set_abcPeriod(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("abcPeriod", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("abcPeriod", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 string YCarbonDioxide::get_command(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCarbonDioxide::COMMAND_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCarbonDioxide::COMMAND_INVALID;
+                }
+            }
         }
+        res = _command;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _command;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YCarbonDioxide::set_command(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("command", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("command", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -165,11 +208,21 @@ int YCarbonDioxide::set_command(const string& newval)
 YCarbonDioxide* YCarbonDioxide::FindCarbonDioxide(string func)
 {
     YCarbonDioxide* obj = NULL;
-    obj = (YCarbonDioxide*) YFunction::_FindFromCache("CarbonDioxide", func);
-    if (obj == NULL) {
-        obj = new YCarbonDioxide(func);
-        YFunction::_AddToCache("CarbonDioxide", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YCarbonDioxide*) YFunction::_FindFromCache("CarbonDioxide", func);
+        if (obj == NULL) {
+            obj = new YCarbonDioxide(func);
+            YFunction::_AddToCache("CarbonDioxide", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

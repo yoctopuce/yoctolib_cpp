@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwminput.h 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_pwminput.h 26826 2017-03-17 11:20:57Z mvuilleu $
  *
  * Declares yFindPwmInput(), the high-level API for PwmInput functions
  *
@@ -78,7 +78,7 @@ typedef enum {
  *
  * The Yoctopuce class YPwmInput allows you to read and configure Yoctopuce PWM
  * sensors. It inherits from YSensor class the core functions to read measurements,
- * register callback functions, access to the autonomous datalogger.
+ * to register callback functions, to access the autonomous datalogger.
  * This class adds the ability to configure the signal parameter used to transmit
  * information: the duty cycle, the frequency or the pulse width.
  */

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_spiport.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_spiport.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "spiport"
 
 YSpiPort::YSpiPort(const string& func): YFunction(func)
 //--- (SpiPort initialization)
@@ -171,12 +172,24 @@ int YSpiPort::_parseAttr(yJsonStateMachine& j)
  */
 int YSpiPort::get_rxCount(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSpiPort::RXCOUNT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSpiPort::RXCOUNT_INVALID;
+                }
+            }
         }
+        res = _rxCount;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _rxCount;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -188,12 +201,24 @@ int YSpiPort::get_rxCount(void)
  */
 int YSpiPort::get_txCount(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSpiPort::TXCOUNT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSpiPort::TXCOUNT_INVALID;
+                }
+            }
         }
+        res = _txCount;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _txCount;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -205,12 +230,24 @@ int YSpiPort::get_txCount(void)
  */
 int YSpiPort::get_errCount(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSpiPort::ERRCOUNT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSpiPort::ERRCOUNT_INVALID;
+                }
+            }
         }
+        res = _errCount;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _errCount;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -222,12 +259,24 @@ int YSpiPort::get_errCount(void)
  */
 int YSpiPort::get_rxMsgCount(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSpiPort::RXMSGCOUNT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSpiPort::RXMSGCOUNT_INVALID;
+                }
+            }
         }
+        res = _rxMsgCount;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _rxMsgCount;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -239,12 +288,24 @@ int YSpiPort::get_rxMsgCount(void)
  */
 int YSpiPort::get_txMsgCount(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSpiPort::TXMSGCOUNT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSpiPort::TXMSGCOUNT_INVALID;
+                }
+            }
         }
+        res = _txMsgCount;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _txMsgCount;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -256,12 +317,24 @@ int YSpiPort::get_txMsgCount(void)
  */
 string YSpiPort::get_lastMsg(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSpiPort::LASTMSG_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSpiPort::LASTMSG_INVALID;
+                }
+            }
         }
+        res = _lastMsg;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _lastMsg;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -273,12 +346,24 @@ string YSpiPort::get_lastMsg(void)
  */
 string YSpiPort::get_currentJob(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSpiPort::CURRENTJOB_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSpiPort::CURRENTJOB_INVALID;
+                }
+            }
         }
+        res = _currentJob;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _currentJob;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -295,8 +380,17 @@ string YSpiPort::get_currentJob(void)
 int YSpiPort::set_currentJob(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("currentJob", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("currentJob", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -308,12 +402,24 @@ int YSpiPort::set_currentJob(const string& newval)
  */
 string YSpiPort::get_startupJob(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSpiPort::STARTUPJOB_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSpiPort::STARTUPJOB_INVALID;
+                }
+            }
         }
+        res = _startupJob;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _startupJob;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -330,25 +436,55 @@ string YSpiPort::get_startupJob(void)
 int YSpiPort::set_startupJob(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("startupJob", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("startupJob", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 string YSpiPort::get_command(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSpiPort::COMMAND_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSpiPort::COMMAND_INVALID;
+                }
+            }
         }
+        res = _command;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _command;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YSpiPort::set_command(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("command", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("command", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -362,12 +498,24 @@ int YSpiPort::set_command(const string& newval)
  */
 Y_VOLTAGELEVEL_enum YSpiPort::get_voltageLevel(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSpiPort::VOLTAGELEVEL_INVALID;
+    Y_VOLTAGELEVEL_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSpiPort::VOLTAGELEVEL_INVALID;
+                }
+            }
         }
+        res = _voltageLevel;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _voltageLevel;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -388,8 +536,17 @@ Y_VOLTAGELEVEL_enum YSpiPort::get_voltageLevel(void)
 int YSpiPort::set_voltageLevel(Y_VOLTAGELEVEL_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("voltageLevel", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("voltageLevel", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -405,12 +562,24 @@ int YSpiPort::set_voltageLevel(Y_VOLTAGELEVEL_enum newval)
  */
 string YSpiPort::get_protocol(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSpiPort::PROTOCOL_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSpiPort::PROTOCOL_INVALID;
+                }
+            }
         }
+        res = _protocol;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _protocol;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -431,8 +600,17 @@ string YSpiPort::get_protocol(void)
 int YSpiPort::set_protocol(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("protocol", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("protocol", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -447,12 +625,24 @@ int YSpiPort::set_protocol(const string& newval)
  */
 string YSpiPort::get_spiMode(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSpiPort::SPIMODE_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSpiPort::SPIMODE_INVALID;
+                }
+            }
         }
+        res = _spiMode;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _spiMode;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -470,8 +660,17 @@ string YSpiPort::get_spiMode(void)
 int YSpiPort::set_spiMode(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("spiMode", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("spiMode", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -483,12 +682,24 @@ int YSpiPort::set_spiMode(const string& newval)
  */
 Y_SSPOLARITY_enum YSpiPort::get_ssPolarity(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSpiPort::SSPOLARITY_INVALID;
+    Y_SSPOLARITY_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSpiPort::SSPOLARITY_INVALID;
+                }
+            }
         }
+        res = _ssPolarity;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _ssPolarity;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -503,8 +714,17 @@ Y_SSPOLARITY_enum YSpiPort::get_ssPolarity(void)
 int YSpiPort::set_ssPolarity(Y_SSPOLARITY_enum newval)
 {
     string rest_val;
-    rest_val = (newval>0 ? "1" : "0");
-    return _setAttr("ssPolarity", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("ssPolarity", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -517,12 +737,24 @@ int YSpiPort::set_ssPolarity(Y_SSPOLARITY_enum newval)
  */
 Y_SHITFTSAMPLING_enum YSpiPort::get_shitftSampling(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSpiPort::SHITFTSAMPLING_INVALID;
+    Y_SHITFTSAMPLING_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSpiPort::SHITFTSAMPLING_INVALID;
+                }
+            }
         }
+        res = _shitftSampling;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _shitftSampling;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -539,8 +771,17 @@ Y_SHITFTSAMPLING_enum YSpiPort::get_shitftSampling(void)
 int YSpiPort::set_shitftSampling(Y_SHITFTSAMPLING_enum newval)
 {
     string rest_val;
-    rest_val = (newval>0 ? "1" : "0");
-    return _setAttr("shitftSampling", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("shitftSampling", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -569,11 +810,21 @@ int YSpiPort::set_shitftSampling(Y_SHITFTSAMPLING_enum newval)
 YSpiPort* YSpiPort::FindSpiPort(string func)
 {
     YSpiPort* obj = NULL;
-    obj = (YSpiPort*) YFunction::_FindFromCache("SpiPort", func);
-    if (obj == NULL) {
-        obj = new YSpiPort(func);
-        YFunction::_AddToCache("SpiPort", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YSpiPort*) YFunction::_FindFromCache("SpiPort", func);
+        if (obj == NULL) {
+            obj = new YSpiPort(func);
+            YFunction::_AddToCache("SpiPort", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

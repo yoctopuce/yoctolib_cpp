@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_dualpower.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_dualpower.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindDualPower(), the high-level API for DualPower functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "dualpower"
 
 YDualPower::YDualPower(const string& func): YFunction(func)
 //--- (DualPower initialization)
@@ -98,12 +99,24 @@ int YDualPower::_parseAttr(yJsonStateMachine& j)
  */
 Y_POWERSTATE_enum YDualPower::get_powerState(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDualPower::POWERSTATE_INVALID;
+    Y_POWERSTATE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDualPower::POWERSTATE_INVALID;
+                }
+            }
         }
+        res = _powerState;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _powerState;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -116,12 +129,24 @@ Y_POWERSTATE_enum YDualPower::get_powerState(void)
  */
 Y_POWERCONTROL_enum YDualPower::get_powerControl(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDualPower::POWERCONTROL_INVALID;
+    Y_POWERCONTROL_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDualPower::POWERCONTROL_INVALID;
+                }
+            }
         }
+        res = _powerControl;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _powerControl;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -138,8 +163,17 @@ Y_POWERCONTROL_enum YDualPower::get_powerControl(void)
 int YDualPower::set_powerControl(Y_POWERCONTROL_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("powerControl", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("powerControl", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -151,12 +185,24 @@ int YDualPower::set_powerControl(Y_POWERCONTROL_enum newval)
  */
 int YDualPower::get_extVoltage(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDualPower::EXTVOLTAGE_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDualPower::EXTVOLTAGE_INVALID;
+                }
+            }
         }
+        res = _extVoltage;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _extVoltage;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -185,11 +231,21 @@ int YDualPower::get_extVoltage(void)
 YDualPower* YDualPower::FindDualPower(string func)
 {
     YDualPower* obj = NULL;
-    obj = (YDualPower*) YFunction::_FindFromCache("DualPower", func);
-    if (obj == NULL) {
-        obj = new YDualPower(func);
-        YFunction::_AddToCache("DualPower", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YDualPower*) YFunction::_FindFromCache("DualPower", func);
+        if (obj == NULL) {
+            obj = new YDualPower(func);
+            YFunction::_AddToCache("DualPower", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

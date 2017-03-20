@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_voltage.cpp 26183 2016-12-15 00:14:02Z mvuilleu $
+ * $Id: yocto_voltage.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindVoltage(), the high-level API for Voltage functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "voltage"
 
 YVoltage::YVoltage(const string& func): YSensor(func)
 //--- (Voltage initialization)
@@ -79,19 +80,40 @@ int YVoltage::_parseAttr(yJsonStateMachine& j)
 
 Y_ENABLED_enum YVoltage::get_enabled(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YVoltage::ENABLED_INVALID;
+    Y_ENABLED_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YVoltage::ENABLED_INVALID;
+                }
+            }
         }
+        res = _enabled;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _enabled;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YVoltage::set_enabled(Y_ENABLED_enum newval)
 {
     string rest_val;
-    rest_val = (newval>0 ? "1" : "0");
-    return _setAttr("enabled", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("enabled", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -120,11 +142,21 @@ int YVoltage::set_enabled(Y_ENABLED_enum newval)
 YVoltage* YVoltage::FindVoltage(string func)
 {
     YVoltage* obj = NULL;
-    obj = (YVoltage*) YFunction::_FindFromCache("Voltage", func);
-    if (obj == NULL) {
-        obj = new YVoltage(func);
-        YFunction::_AddToCache("Voltage", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YVoltage*) YFunction::_FindFromCache("Voltage", func);
+        if (obj == NULL) {
+            obj = new YVoltage(func);
+            YFunction::_AddToCache("Voltage", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

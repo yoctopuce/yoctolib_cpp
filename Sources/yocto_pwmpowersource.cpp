@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwmpowersource.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_pwmpowersource.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindPwmPowerSource(), the high-level API for PwmPowerSource functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "pwmpowersource"
 
 YPwmPowerSource::YPwmPowerSource(const string& func): YFunction(func)
 //--- (PwmPowerSource initialization)
@@ -86,12 +87,24 @@ int YPwmPowerSource::_parseAttr(yJsonStateMachine& j)
  */
 Y_POWERMODE_enum YPwmPowerSource::get_powerMode(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YPwmPowerSource::POWERMODE_INVALID;
+    Y_POWERMODE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YPwmPowerSource::POWERMODE_INVALID;
+                }
+            }
         }
+        res = _powerMode;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _powerMode;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -113,8 +126,17 @@ Y_POWERMODE_enum YPwmPowerSource::get_powerMode(void)
 int YPwmPowerSource::set_powerMode(Y_POWERMODE_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("powerMode", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("powerMode", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -143,11 +165,21 @@ int YPwmPowerSource::set_powerMode(Y_POWERMODE_enum newval)
 YPwmPowerSource* YPwmPowerSource::FindPwmPowerSource(string func)
 {
     YPwmPowerSource* obj = NULL;
-    obj = (YPwmPowerSource*) YFunction::_FindFromCache("PwmPowerSource", func);
-    if (obj == NULL) {
-        obj = new YPwmPowerSource(func);
-        YFunction::_AddToCache("PwmPowerSource", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YPwmPowerSource*) YFunction::_FindFromCache("PwmPowerSource", func);
+        if (obj == NULL) {
+            obj = new YPwmPowerSource(func);
+            YFunction::_AddToCache("PwmPowerSource", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

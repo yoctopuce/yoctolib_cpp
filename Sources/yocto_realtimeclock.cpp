@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_realtimeclock.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_realtimeclock.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "realtimeclock"
 
 YRealTimeClock::YRealTimeClock(const string& func): YFunction(func)
 //--- (RealTimeClock initialization)
@@ -105,12 +106,24 @@ int YRealTimeClock::_parseAttr(yJsonStateMachine& j)
  */
 s64 YRealTimeClock::get_unixTime(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YRealTimeClock::UNIXTIME_INVALID;
+    s64 res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRealTimeClock::UNIXTIME_INVALID;
+                }
+            }
         }
+        res = _unixTime;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _unixTime;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -125,8 +138,17 @@ s64 YRealTimeClock::get_unixTime(void)
 int YRealTimeClock::set_unixTime(s64 newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
-    return _setAttr("unixTime", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
+        res = _setAttr("unixTime", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -138,12 +160,24 @@ int YRealTimeClock::set_unixTime(s64 newval)
  */
 string YRealTimeClock::get_dateTime(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YRealTimeClock::DATETIME_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRealTimeClock::DATETIME_INVALID;
+                }
+            }
         }
+        res = _dateTime;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _dateTime;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -155,12 +189,24 @@ string YRealTimeClock::get_dateTime(void)
  */
 int YRealTimeClock::get_utcOffset(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YRealTimeClock::UTCOFFSET_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRealTimeClock::UTCOFFSET_INVALID;
+                }
+            }
         }
+        res = _utcOffset;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _utcOffset;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -176,8 +222,17 @@ int YRealTimeClock::get_utcOffset(void)
 int YRealTimeClock::set_utcOffset(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("utcOffset", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("utcOffset", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -190,12 +245,24 @@ int YRealTimeClock::set_utcOffset(int newval)
  */
 Y_TIMESET_enum YRealTimeClock::get_timeSet(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YRealTimeClock::TIMESET_INVALID;
+    Y_TIMESET_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRealTimeClock::TIMESET_INVALID;
+                }
+            }
         }
+        res = _timeSet;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _timeSet;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -224,11 +291,21 @@ Y_TIMESET_enum YRealTimeClock::get_timeSet(void)
 YRealTimeClock* YRealTimeClock::FindRealTimeClock(string func)
 {
     YRealTimeClock* obj = NULL;
-    obj = (YRealTimeClock*) YFunction::_FindFromCache("RealTimeClock", func);
-    if (obj == NULL) {
-        obj = new YRealTimeClock(func);
-        YFunction::_AddToCache("RealTimeClock", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YRealTimeClock*) YFunction::_FindFromCache("RealTimeClock", func);
+        if (obj == NULL) {
+            obj = new YRealTimeClock(func);
+            YFunction::_AddToCache("RealTimeClock", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

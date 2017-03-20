@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gps.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_gps.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindGps(), the high-level API for Gps functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "gps"
 
 YGps::YGps(const string& func): YFunction(func)
 //--- (Gps initialization)
@@ -166,12 +167,24 @@ int YGps::_parseAttr(yJsonStateMachine& j)
  */
 Y_ISFIXED_enum YGps::get_isFixed(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YGps::ISFIXED_INVALID;
+    Y_ISFIXED_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YGps::ISFIXED_INVALID;
+                }
+            }
         }
+        res = _isFixed;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _isFixed;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -183,12 +196,24 @@ Y_ISFIXED_enum YGps::get_isFixed(void)
  */
 s64 YGps::get_satCount(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YGps::SATCOUNT_INVALID;
+    s64 res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YGps::SATCOUNT_INVALID;
+                }
+            }
         }
+        res = _satCount;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _satCount;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -201,12 +226,24 @@ s64 YGps::get_satCount(void)
  */
 Y_COORDSYSTEM_enum YGps::get_coordSystem(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YGps::COORDSYSTEM_INVALID;
+    Y_COORDSYSTEM_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YGps::COORDSYSTEM_INVALID;
+                }
+            }
         }
+        res = _coordSystem;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _coordSystem;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -222,8 +259,17 @@ Y_COORDSYSTEM_enum YGps::get_coordSystem(void)
 int YGps::set_coordSystem(Y_COORDSYSTEM_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("coordSystem", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("coordSystem", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -235,12 +281,24 @@ int YGps::set_coordSystem(Y_COORDSYSTEM_enum newval)
  */
 string YGps::get_latitude(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YGps::LATITUDE_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YGps::LATITUDE_INVALID;
+                }
+            }
         }
+        res = _latitude;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _latitude;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -252,12 +310,24 @@ string YGps::get_latitude(void)
  */
 string YGps::get_longitude(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YGps::LONGITUDE_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YGps::LONGITUDE_INVALID;
+                }
+            }
         }
+        res = _longitude;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _longitude;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -271,12 +341,24 @@ string YGps::get_longitude(void)
  */
 double YGps::get_dilution(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YGps::DILUTION_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YGps::DILUTION_INVALID;
+                }
+            }
         }
+        res = _dilution;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _dilution;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -289,12 +371,24 @@ double YGps::get_dilution(void)
  */
 double YGps::get_altitude(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YGps::ALTITUDE_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YGps::ALTITUDE_INVALID;
+                }
+            }
         }
+        res = _altitude;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _altitude;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -306,12 +400,24 @@ double YGps::get_altitude(void)
  */
 double YGps::get_groundSpeed(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YGps::GROUNDSPEED_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YGps::GROUNDSPEED_INVALID;
+                }
+            }
         }
+        res = _groundSpeed;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _groundSpeed;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -325,12 +431,24 @@ double YGps::get_groundSpeed(void)
  */
 double YGps::get_direction(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YGps::DIRECTION_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YGps::DIRECTION_INVALID;
+                }
+            }
         }
+        res = _direction;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _direction;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -344,12 +462,24 @@ double YGps::get_direction(void)
  */
 s64 YGps::get_unixTime(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YGps::UNIXTIME_INVALID;
+    s64 res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YGps::UNIXTIME_INVALID;
+                }
+            }
         }
+        res = _unixTime;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _unixTime;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -361,12 +491,24 @@ s64 YGps::get_unixTime(void)
  */
 string YGps::get_dateTime(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YGps::DATETIME_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YGps::DATETIME_INVALID;
+                }
+            }
         }
+        res = _dateTime;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _dateTime;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -378,12 +520,24 @@ string YGps::get_dateTime(void)
  */
 int YGps::get_utcOffset(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YGps::UTCOFFSET_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YGps::UTCOFFSET_INVALID;
+                }
+            }
         }
+        res = _utcOffset;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _utcOffset;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -400,25 +554,55 @@ int YGps::get_utcOffset(void)
 int YGps::set_utcOffset(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("utcOffset", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("utcOffset", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 string YGps::get_command(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YGps::COMMAND_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YGps::COMMAND_INVALID;
+                }
+            }
         }
+        res = _command;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _command;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YGps::set_command(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("command", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("command", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -447,11 +631,21 @@ int YGps::set_command(const string& newval)
 YGps* YGps::FindGps(string func)
 {
     YGps* obj = NULL;
-    obj = (YGps*) YFunction::_FindFromCache("Gps", func);
-    if (obj == NULL) {
-        obj = new YGps(func);
-        YFunction::_AddToCache("Gps", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YGps*) YFunction::_FindFromCache("Gps", func);
+        if (obj == NULL) {
+            obj = new YGps(func);
+            YFunction::_AddToCache("Gps", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

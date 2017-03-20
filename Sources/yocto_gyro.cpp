@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_gyro.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindGyro(), the high-level API for Gyro functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "gyro"
 
 
 
@@ -93,11 +94,21 @@ YQt::~YQt()
 YQt* YQt::FindQt(string func)
 {
     YQt* obj = NULL;
-    obj = (YQt*) YFunction::_FindFromCache("Qt", func);
-    if (obj == NULL) {
-        obj = new YQt(func);
-        YFunction::_AddToCache("Qt", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YQt*) YFunction::_FindFromCache("Qt", func);
+        if (obj == NULL) {
+            obj = new YQt(func);
+            YFunction::_AddToCache("Qt", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 
@@ -295,12 +306,24 @@ int YGyro::_parseAttr(yJsonStateMachine& j)
  */
 int YGyro::get_bandwidth(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YGyro::BANDWIDTH_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YGyro::BANDWIDTH_INVALID;
+                }
+            }
         }
+        res = _bandwidth;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _bandwidth;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -316,8 +339,17 @@ int YGyro::get_bandwidth(void)
 int YGyro::set_bandwidth(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("bandwidth", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("bandwidth", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -330,12 +362,24 @@ int YGyro::set_bandwidth(int newval)
  */
 double YGyro::get_xValue(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YGyro::XVALUE_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YGyro::XVALUE_INVALID;
+                }
+            }
         }
+        res = _xValue;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _xValue;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -348,12 +392,24 @@ double YGyro::get_xValue(void)
  */
 double YGyro::get_yValue(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YGyro::YVALUE_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YGyro::YVALUE_INVALID;
+                }
+            }
         }
+        res = _yValue;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _yValue;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -366,12 +422,24 @@ double YGyro::get_yValue(void)
  */
 double YGyro::get_zValue(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YGyro::ZVALUE_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YGyro::ZVALUE_INVALID;
+                }
+            }
         }
+        res = _zValue;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _zValue;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -400,11 +468,21 @@ double YGyro::get_zValue(void)
 YGyro* YGyro::FindGyro(string func)
 {
     YGyro* obj = NULL;
-    obj = (YGyro*) YFunction::_FindFromCache("Gyro", func);
-    if (obj == NULL) {
-        obj = new YGyro(func);
-        YFunction::_AddToCache("Gyro", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YGyro*) YFunction::_FindFromCache("Gyro", func);
+        if (obj == NULL) {
+            obj = new YGyro(func);
+            YFunction::_AddToCache("Gyro", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

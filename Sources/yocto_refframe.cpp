@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_refframe.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_refframe.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "refframe"
 
 YRefFrame::YRefFrame(const string& func): YFunction(func)
 //--- (RefFrame initialization)
@@ -104,19 +105,40 @@ int YRefFrame::_parseAttr(yJsonStateMachine& j)
 
 int YRefFrame::get_mountPos(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YRefFrame::MOUNTPOS_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRefFrame::MOUNTPOS_INVALID;
+                }
+            }
         }
+        res = _mountPos;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _mountPos;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YRefFrame::set_mountPos(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("mountPos", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("mountPos", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -144,8 +166,17 @@ int YRefFrame::set_mountPos(int newval)
 int YRefFrame::set_bearing(double newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
-    return _setAttr("bearing", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        res = _setAttr("bearing", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -159,29 +190,62 @@ int YRefFrame::set_bearing(double newval)
  */
 double YRefFrame::get_bearing(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YRefFrame::BEARING_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRefFrame::BEARING_INVALID;
+                }
+            }
         }
+        res = _bearing;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _bearing;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 string YRefFrame::get_calibrationParam(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YRefFrame::CALIBRATIONPARAM_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRefFrame::CALIBRATIONPARAM_INVALID;
+                }
+            }
         }
+        res = _calibrationParam;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _calibrationParam;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YRefFrame::set_calibrationParam(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("calibrationParam", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("calibrationParam", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -210,11 +274,21 @@ int YRefFrame::set_calibrationParam(const string& newval)
 YRefFrame* YRefFrame::FindRefFrame(string func)
 {
     YRefFrame* obj = NULL;
-    obj = (YRefFrame*) YFunction::_FindFromCache("RefFrame", func);
-    if (obj == NULL) {
-        obj = new YRefFrame(func);
-        YFunction::_AddToCache("RefFrame", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YRefFrame*) YFunction::_FindFromCache("RefFrame", func);
+        if (obj == NULL) {
+            obj = new YRefFrame(func);
+            YFunction::_AddToCache("RefFrame", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

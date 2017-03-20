@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_oscontrol.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_oscontrol.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindOsControl(), the high-level API for OsControl functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "oscontrol"
 
 YOsControl::YOsControl(const string& func): YFunction(func)
 //--- (OsControl initialization)
@@ -87,19 +88,40 @@ int YOsControl::_parseAttr(yJsonStateMachine& j)
  */
 int YOsControl::get_shutdownCountdown(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YOsControl::SHUTDOWNCOUNTDOWN_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YOsControl::SHUTDOWNCOUNTDOWN_INVALID;
+                }
+            }
         }
+        res = _shutdownCountdown;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _shutdownCountdown;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YOsControl::set_shutdownCountdown(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("shutdownCountdown", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("shutdownCountdown", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -128,11 +150,21 @@ int YOsControl::set_shutdownCountdown(int newval)
 YOsControl* YOsControl::FindOsControl(string func)
 {
     YOsControl* obj = NULL;
-    obj = (YOsControl*) YFunction::_FindFromCache("OsControl", func);
-    if (obj == NULL) {
-        obj = new YOsControl(func);
-        YFunction::_AddToCache("OsControl", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YOsControl*) YFunction::_FindFromCache("OsControl", func);
+        if (obj == NULL) {
+            obj = new YOsControl(func);
+            YFunction::_AddToCache("OsControl", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

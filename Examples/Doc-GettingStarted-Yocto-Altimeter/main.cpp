@@ -51,15 +51,14 @@ int main(int argc, const char * argv[])
     psensor = yFindPressure(target + ".pressure");
   }
 
-
-
   while(1) {
     if(!asensor->isOnline()) {
       cout << "Module not connected (check identification and USB cable)";
       break;
     }
 
-    cout << "Current altitude: "    << asensor->get_currentValue() << " m (QNH= " << asensor->get_qnh() << " hPa)" << endl;
+    cout << "Current altitude: "    << asensor->get_currentValue() << " m (QNH= " <<
+         asensor->get_qnh() << " hPa)" << endl;
     cout << "Current temperature: " << tsensor->get_currentValue() << " °C" << endl;
     cout << "Current pressure: "    << psensor->get_currentValue() << " hPa" << endl;
 

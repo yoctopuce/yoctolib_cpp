@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_genericsensor.h 26611 2017-02-09 14:08:58Z seb $
+ * $Id: yocto_genericsensor.h 26826 2017-03-17 11:20:57Z mvuilleu $
  *
  * Declares yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -77,7 +77,7 @@ typedef enum {
  *
  * The YGenericSensor class allows you to read and configure Yoctopuce signal
  * transducers. It inherits from YSensor class the core functions to read measurements,
- * register callback functions, access to the autonomous datalogger.
+ * to register callback functions, to access the autonomous datalogger.
  * This class adds the ability to configure the automatic conversion between the
  * measured signal and the corresponding engineering unit.
  */

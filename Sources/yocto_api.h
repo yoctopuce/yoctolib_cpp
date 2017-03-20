@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 26611 2017-02-09 14:08:58Z seb $
+ * $Id: yocto_api.h 26826 2017-03-17 11:20:57Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -254,7 +254,7 @@ private:
     static  queue<yapiDataEvent>    _data_events;
     static  YHubDiscoveryCallback   _HubDiscoveryCallback;
     static  u64                 _nextEnum;
-    static  bool                _apiInitialized;
+
     static  map<int,yCalibrationHandler> _calibHandlers;
     static  void        _yapiLogFunctionFwd(const char *log, u32 loglen);
     static  void        _yapiDeviceArrivalCallbackFwd(YDEV_DESCR devdesc);
@@ -283,6 +283,8 @@ public:
     static  const int         INVALID_UINT = YAPI_INVALID_UINT;
     static  const double      INVALID_DOUBLE;
     static  const s64         INVALID_LONG = YAPI_INVALID_LONG;
+    static  bool                _apiInitialized;
+    static  yCRITICAL_SECTION   _global_cs;
 
     // Callback functions
     static  yLogFunction            LogFunction;
@@ -1325,21 +1327,20 @@ private:
     vector<YFUN_DESCR>  _functions;
     char                _rootdevice[YOCTO_SERIAL_LEN];
     char                *_subpath;
-
-
+    yCRITICAL_SECTION   _lock;
     // Constructor is private, use getDevice factory method
     YDevice(YDEV_DESCR devdesc);
     ~YDevice();
     YRETCODE   HTTPRequestPrepare(const string& request, string& fullrequest, char *errbuff);
+    YRETCODE   HTTPRequest_unsafe(int channel, const string& request, string& buffer, yapiRequestProgressCallback progress_cb, void *progress_ctx, string& errmsg);
 
 public:
     static void ClearCache();
-    static void PlugDevice(YDEV_DESCR devdescr);
     static YDevice *getDevice(YDEV_DESCR devdescr);
     YRETCODE    HTTPRequestAsync(int channel, const string& request, HTTPRequestCallback callback, void *context, string& errmsg);
     YRETCODE    HTTPRequest(int channel, const string& request, string& buffer, yapiRequestProgressCallback progress_cb, void *progress_ctx, string& errmsg);
     YRETCODE    requestAPI(string& apires, string& errmsg);
-    void        clearCache();
+    void        clearCache(bool clearSubpath);
     YRETCODE    getFunctions(vector<YFUN_DESCR> **functions, string& errmsg);
     string      getHubSerial(void);
 
@@ -1374,6 +1375,7 @@ protected:
     YRETCODE    _lastErrorType;
     string      _lastErrorMsg;
     YFUN_DESCR  _fundescr;
+    yCRITICAL_SECTION _this_cs;
     std::map<string,YDataStream*> _dataStreams;
     void*                   _userData;
     //--- (generated code: YFunction attributes)
@@ -1558,7 +1560,7 @@ public:
     virtual int         _invokeValueCallback(string value);
 
     /**
-     * Disable the propagation of every new advertised value to the parent hub.
+     * Disables the propagation of every new advertised value to the parent hub.
      * You can use this function to save bandwidth and CPU on computers with limited
      * resources, or to prevent unwanted invocations of the HTTP callback.
      * Remember to call the saveToFlash() method of the module if the
@@ -1571,7 +1573,7 @@ public:
     virtual int         muteValueCallbacks(void);
 
     /**
-     * Re-enable the propagation of every new advertised value to the parent hub.
+     * Re-enables the propagation of every new advertised value to the parent hub.
      * This function reverts the effect of a previous call to muteValueCallbacks().
      * Remember to call the saveToFlash() method of the module if the
      * modification must be kept.

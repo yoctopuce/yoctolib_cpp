@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_temperature.h 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_temperature.h 26826 2017-03-17 11:20:57Z mvuilleu $
  *
  * Declares yFindTemperature(), the high-level API for Temperature functions
  *
@@ -84,8 +84,8 @@ typedef enum {
  * YTemperature Class: Temperature function interface
  *
  * The Yoctopuce class YTemperature allows you to read and configure Yoctopuce temperature
- * sensors. It inherits from YSensor class the core functions to read measurements,
- * register callback functions, access to the autonomous datalogger.
+ * sensors. It inherits from YSensor class the core functions to read measurements, to
+ * register callback functions, to access the autonomous datalogger.
  * This class adds the ability to configure some specific parameters for some
  * sensors (connection type, temperature mapping table).
  */
@@ -286,7 +286,7 @@ public:
     virtual int         _invokeTimedReportCallback(YMeasure value);
 
     /**
-     * Configure NTC thermistor parameters in order to properly compute the temperature from
+     * Configures NTC thermistor parameters in order to properly compute the temperature from
      * the measured resistance. For increased precision, you can enter a complete mapping
      * table using set_thermistorResponseTable. This function can only be used with a
      * temperature sensor based on thermistors.

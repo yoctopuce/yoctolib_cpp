@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 26611 2017-02-09 14:08:58Z seb $
+ * $Id: yocto_api.cpp 26826 2017-03-17 11:20:57Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -1368,13 +1368,16 @@ YFunction::YFunction(const string& func):
     ,_valueCallbackFunction(NULL)
     ,_cacheExpiration(0)
 //--- (end of generated code: Function initialization)
-{}
+{
+    yInitializeCriticalSection(&_this_cs);
+}
 
 YFunction::~YFunction()
 {
 //--- (generated code: Function cleanup)
 //--- (end of generated code: Function cleanup)
     _clearDataStreamCache();
+    yDeleteCriticalSection(&_this_cs);
 }
 
 
@@ -1434,12 +1437,24 @@ int YFunction::_parseAttr(yJsonStateMachine& j)
  */
 string YFunction::get_logicalName(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YFunction::LOGICALNAME_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YFunction::LOGICALNAME_INVALID;
+                }
+            }
         }
+        res = _logicalName;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _logicalName;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -1457,12 +1472,21 @@ string YFunction::get_logicalName(void)
 int YFunction::set_logicalName(const string& newval)
 {
     string rest_val;
+    int res;
     if (!YAPI::CheckLogicalName(newval)) {
         _throw(YAPI_INVALID_ARGUMENT, "Invalid name :" + newval);
         return YAPI_INVALID_ARGUMENT;
     }
-    rest_val = newval;
-    return _setAttr("logicalName", rest_val);
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("logicalName", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -1474,19 +1498,40 @@ int YFunction::set_logicalName(const string& newval)
  */
 string YFunction::get_advertisedValue(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YFunction::ADVERTISEDVALUE_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YFunction::ADVERTISEDVALUE_INVALID;
+                }
+            }
         }
+        res = _advertisedValue;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _advertisedValue;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YFunction::set_advertisedValue(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("advertisedValue", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("advertisedValue", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -1515,11 +1560,21 @@ int YFunction::set_advertisedValue(const string& newval)
 YFunction* YFunction::FindFunction(string func)
 {
     YFunction* obj = NULL;
-    obj = (YFunction*) YFunction::_FindFromCache("Function", func);
-    if (obj == NULL) {
-        obj = new YFunction(func);
-        YFunction::_AddToCache("Function", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YFunction*) YFunction::_FindFromCache("Function", func);
+        if (obj == NULL) {
+            obj = new YFunction(func);
+            YFunction::_AddToCache("Function", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 
@@ -1563,7 +1618,7 @@ int YFunction::_invokeValueCallback(string value)
 }
 
 /**
- * Disable the propagation of every new advertised value to the parent hub.
+ * Disables the propagation of every new advertised value to the parent hub.
  * You can use this function to save bandwidth and CPU on computers with limited
  * resources, or to prevent unwanted invocations of the HTTP callback.
  * Remember to call the saveToFlash() method of the module if the
@@ -1579,7 +1634,7 @@ int YFunction::muteValueCallbacks(void)
 }
 
 /**
- * Re-enable the propagation of every new advertised value to the parent hub.
+ * Re-enables the propagation of every new advertised value to the parent hub.
  * This function reverts the effect of a previous call to muteValueCallbacks().
  * Remember to call the saveToFlash() method of the module if the
  * modification must be kept.
@@ -2138,12 +2193,17 @@ string YFunction::describe(void)
     YDEV_DESCR  devdescr;
     string      errmsg, serial, funcId, funcName, funcValue;
     string      descr =  _func;
+    string res;
 
+    yEnterCriticalSection(&_this_cs);
     fundescr = YapiWrapper::getFunction(_className, _func, errmsg);
     if(!YISERR(fundescr) && !YISERR(YapiWrapper::getFunctionInfo(fundescr, devdescr, serial, funcId, funcName, funcValue, errmsg))) {
-            return _className +"("+_func+")="+serial+"."+funcId;
+        res = _className + "(" + _func + ")=" + serial + "." + funcId;
+    } else {
+        res = _className + "(" + _func + ")=unresolved";
     }
-    return _className +"("+_func+")=unresolved";
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 // Return a string that describes the function (class and logical name or hardware id)
@@ -2155,6 +2215,7 @@ string YFunction::get_friendlyName(void)
     string       errmsg, serial, funcId, funcName, funcValue;
     string       mod_serial, mod_funcId,mod_funcname;
 
+    yEnterCriticalSection(&_this_cs);
     // Resolve the function name
     retcode = _getDescriptor(fundescr, errmsg);
     if(!YISERR(retcode) && !YISERR(YapiWrapper::getFunctionInfo(fundescr, devdescr, serial, funcId, funcName, funcValue, errmsg))) {
@@ -2165,11 +2226,14 @@ string YFunction::get_friendlyName(void)
         moddescr = YapiWrapper::getFunction("Module", serial, errmsg);
         if(!YISERR(moddescr) && !YISERR(YapiWrapper::getFunctionInfo(moddescr, devdescr, mod_serial, mod_funcId, mod_funcname, funcValue, errmsg))) {
             if(mod_funcname!="") {
+                yLeaveCriticalSection(&_this_cs);
                 return mod_funcname+"."+funcId;
             }
         }
+        yLeaveCriticalSection(&_this_cs);
         return serial+"."+funcId;
     }
+    yLeaveCriticalSection(&_this_cs);
     _throw((YRETCODE)YAPI::DEVICE_NOT_FOUND, errmsg);
     return Y_FRIENDLYNAME_INVALID;
 }
@@ -2187,19 +2251,21 @@ string YFunction::get_hardwareId(void)
     char        funcid[YOCTO_FUNCTION_LEN];
     char        errbuff[YOCTO_ERRMSG_LEN];
 
-
+    yEnterCriticalSection(&_this_cs);
     // Resolve the function name
     retcode = _getDescriptor(fundesc, errmsg);
     if(YISERR(retcode)) {
+        yLeaveCriticalSection(&_this_cs);
         _throw(retcode, errmsg);
         return HARDWAREID_INVALID;
     }
     if(YISERR(retcode=yapiGetFunctionInfo(fundesc, NULL, snum, funcid, NULL, NULL,errbuff))){
         errmsg = errbuff;
+        yLeaveCriticalSection(&_this_cs);
         _throw(retcode, errmsg);
         return HARDWAREID_INVALID;
     }
-
+    yLeaveCriticalSection(&_this_cs);
     return string(snum)+string(".")+string(funcid);
 }
 
@@ -2212,19 +2278,21 @@ string YFunction::get_functionId(void)
     char        funcid[YOCTO_FUNCTION_LEN];
     char        errbuff[YOCTO_ERRMSG_LEN];
 
-
+    yEnterCriticalSection(&_this_cs);
     // Resolve the function name
     retcode = _getDescriptor(fundesc, errmsg);
     if(YISERR(retcode)) {
+        yLeaveCriticalSection(&_this_cs);
         _throw(retcode, errmsg);
         return HARDWAREID_INVALID;
     }
     if(YISERR(retcode=yapiGetFunctionInfo(fundesc, NULL, NULL, funcid, NULL, NULL,errbuff))){
         errmsg = errbuff;
+        yLeaveCriticalSection(&_this_cs);
         _throw(retcode, errmsg);
         return HARDWAREID_INVALID;
     }
-
+    yLeaveCriticalSection(&_this_cs);
     return string(funcid);
 }
 
@@ -2248,20 +2316,33 @@ bool YFunction::isOnline(void)
     YDevice     *dev;
     string      errmsg, apires;
 
+    yEnterCriticalSection(&_this_cs);
+    try {
     // A valid value in cache means that the device is online
-    if(_cacheExpiration > yapiGetTickCount()) return true;
+    if (_cacheExpiration > yapiGetTickCount()) {
+        yLeaveCriticalSection(&_this_cs);
+        return true;
+    }
 
     // Check that the function is available, without throwing exceptions
-    if(YISERR(_getDevice(dev, errmsg))) return false;
+    if (YISERR(_getDevice(dev, errmsg))) {
+        yLeaveCriticalSection(&_this_cs);
+        return false;
+    }
 
     // Try to execute a function request to be positively sure that the device is ready
     if(YISERR(dev->requestAPI(apires, errmsg))) {
-		return false;
+        yLeaveCriticalSection(&_this_cs);
+        return false;
 	}
 
     // Preload the function data, since we have it in device cache
     this->load(YAPI::DefaultCacheValidity);
-
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        return false;
+    }
+    yLeaveCriticalSection(&_this_cs);
     return true;
 }
 
@@ -2302,8 +2383,8 @@ YRETCODE YFunction::load(int msValidity)
     _cacheExpiration = yapiGetTickCount() + msValidity;
     _serial = serial;
     _funId = funcId;
-    _hwId = _serial + '.' + _funId;
-
+    string tmp = _serial + '.' + _funId;
+    _hwId = tmp;
     // Parse JSON data for the device and locate our function in it
     j.src = apires.data();
     j.end = j.src + apires.size();
@@ -2328,31 +2409,38 @@ void YFunction::clearCache()
     YDevice     *dev;
     string      errmsg, apires;
 
+
+    yEnterCriticalSection(&_this_cs);
     // Resolve our reference to our device, load REST API
     int res = _getDevice(dev, errmsg);
     if (YISERR(res)) {
+        yLeaveCriticalSection(&_this_cs);
         return;
     }
-    dev->ClearCache();
+    dev->clearCache(false);
     if (_cacheExpiration){
         _cacheExpiration = yapiGetTickCount();
     }
+    yLeaveCriticalSection(&_this_cs);
 }
 
 
 YModule *YFunction::get_module(void)
 {
-    YFUN_DESCR   fundescr;
-    YDEV_DESCR     devdescr;
-    string      errmsg, serial, funcId, funcName, funcValue;
+    YFUN_DESCR fundescr;
+    YDEV_DESCR devdescr;
+    string  errmsg, serial, funcId, funcName, funcValue;
 
+    yEnterCriticalSection(&_this_cs);
     fundescr = YapiWrapper::getFunction(_className, _func, errmsg);
     if(!YISERR(fundescr)) {
         if(!YISERR(YapiWrapper::getFunctionInfo(fundescr, devdescr, serial, funcId, funcName, funcValue, errmsg))) {
+            yLeaveCriticalSection(&_this_cs);
             return yFindModule(serial+".module");
         }
     }
     // return a true YModule object even if it is not a module valid for communicating
+    yLeaveCriticalSection(&_this_cs);
     return yFindModule(string("module_of_")+_className+"_"+_func);
 }
 
@@ -2360,19 +2448,26 @@ YModule *YFunction::get_module(void)
 
 void     *YFunction::get_userData(void)
 {
-    return _userData;
+    void *res;
+    yEnterCriticalSection(&_this_cs);
+    res = _userData;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 
 void      YFunction::set_userData(void* data)
 {
+    yEnterCriticalSection(&_this_cs);
     _userData = data;
+    yLeaveCriticalSection(&_this_cs);
 }
 
 
 YFUN_DESCR YFunction::get_functionDescriptor(void)
 {
-    return _fundescr;
+    // do not take CS un purpose
+	return _fundescr;
 }
 
 void YFunction::_UpdateValueCallbackList(YFunction* func, bool add)
@@ -2422,13 +2517,16 @@ void YFunction::_UpdateTimedReportCallbackList(YFunction* func, bool add)
 // This is the internal device cache object
 vector<YDevice*> YDevice::_devCache;
 
-YDevice::YDevice(YDEV_DESCR devdesc): _devdescr(devdesc), _cacheStamp(0), _subpath(NULL){ };
+YDevice::YDevice(YDEV_DESCR devdesc): _devdescr(devdesc), _cacheStamp(0), _subpath(NULL) {
+    yInitializeCriticalSection(&_lock);
+};
 
 
 YDevice::~YDevice() // destructor
 {
     if(_subpath != NULL)
         delete _subpath;
+    yDeleteCriticalSection(&_lock);
 }
 
 void YDevice::ClearCache()
@@ -2440,23 +2538,14 @@ void YDevice::ClearCache()
     _devCache = vector<YDevice*>();
 }
 
-void YDevice::PlugDevice(YDEV_DESCR devdescr)
-{
-    for(unsigned int idx = 0; idx < YDevice::_devCache.size(); idx++) {
-        YDevice *dev = YDevice::_devCache[idx];
-        if(dev->_devdescr == devdescr) {
-            dev->_cacheStamp = 0;
-            dev->_subpath = NULL;
-            break;
-        }
-    }
-}
 
 YDevice *YDevice::getDevice(YDEV_DESCR devdescr)
 {
     // Search in cache
+    yEnterCriticalSection(&YAPI::_global_cs);
     for(unsigned int idx = 0; idx < YDevice::_devCache.size(); idx++) {
         if(YDevice::_devCache[idx]->_devdescr == devdescr) {
+            yLeaveCriticalSection(&YAPI::_global_cs);
             return YDevice::_devCache[idx];
         }
     }
@@ -2464,6 +2553,7 @@ YDevice *YDevice::getDevice(YDEV_DESCR devdescr)
     // Not found, add new entry
     YDevice *dev = new YDevice(devdescr);
     YDevice::_devCache.push_back(dev);
+    yLeaveCriticalSection(&YAPI::_global_cs);
 
     return dev;
 }
@@ -2473,7 +2563,7 @@ YRETCODE    YDevice::HTTPRequestPrepare(const string& request, string& fullreque
 {
     YRETCODE    res;
     size_t      pos;
-
+     // mutex allready taken by caller
     if(_subpath==NULL){
         int neededsize;
         res = yapiGetDevicePath(_devdescr, _rootdevice, NULL, 0, &neededsize, errbuff);
@@ -2488,32 +2578,18 @@ YRETCODE    YDevice::HTTPRequestPrepare(const string& request, string& fullreque
     return YAPI_SUCCESS;
 }
 
-YRETCODE    YDevice::HTTPRequestAsync(int channel, const string& request, HTTPRequestCallback callback, void *context, string& errmsg)
+
+
+YRETCODE    YDevice::HTTPRequest_unsafe(int channel, const string& request, string& buffer, yapiRequestProgressCallback callback, void *context, string& errmsg)
 {
-    char        errbuff[YOCTO_ERRMSG_LEN]="";
-    YRETCODE    res;
-    string      fullrequest;
-
-    _cacheStamp     = YAPI::GetTickCount(); //invalidate cache
-    if(YISERR(res=HTTPRequestPrepare(request, fullrequest, errbuff)) ||
-       YISERR(res=yapiHTTPRequestAsyncOutOfBand(channel, _rootdevice, fullrequest.c_str(), (int)fullrequest.length(), NULL, NULL, errbuff))){
-        errmsg = (string)errbuff;
-        return res;
-    }
-    return YAPI_SUCCESS;
-}
-
-
-YRETCODE    YDevice::HTTPRequest(int channel, const string& request, string& buffer, yapiRequestProgressCallback callback, void *context, string& errmsg)
-{
-    char        errbuff[YOCTO_ERRMSG_LEN]="";
+    char        errbuff[YOCTO_ERRMSG_LEN] = "";
     YRETCODE    res;
     YIOHDL      iohdl;
     string      fullrequest;
     char        *reply;
     int         replysize = 0;
 
-    if(YISERR(res=HTTPRequestPrepare(request, fullrequest, errbuff))) {
+    if (YISERR(res = HTTPRequestPrepare(request, fullrequest, errbuff))) {
         errmsg = (string)errbuff;
         return res;
     }
@@ -2522,16 +2598,42 @@ YRETCODE    YDevice::HTTPRequest(int channel, const string& request, string& buf
         return res;
     }
     if (replysize > 0 && reply != NULL) {
-       buffer = string(reply, replysize);
+        buffer = string(reply, replysize);
     } else {
         buffer = "";
     }
-    if(YISERR(res=yapiHTTPRequestSyncDone(&iohdl, errbuff))) {
+    if (YISERR(res = yapiHTTPRequestSyncDone(&iohdl, errbuff))) {
         errmsg = (string)errbuff;
         return res;
     }
 
     return YAPI_SUCCESS;
+}
+
+
+YRETCODE    YDevice::HTTPRequestAsync(int channel, const string& request, HTTPRequestCallback callback, void *context, string& errmsg)
+{
+    char        errbuff[YOCTO_ERRMSG_LEN]="";
+    YRETCODE    res = YAPI_SUCCESS;
+    string      fullrequest;
+    yEnterCriticalSection(&_lock);
+    _cacheStamp     = YAPI::GetTickCount(); //invalidate cache
+    if(YISERR(res=HTTPRequestPrepare(request, fullrequest, errbuff)) ||
+       YISERR(res=yapiHTTPRequestAsyncOutOfBand(channel, _rootdevice, fullrequest.c_str(), (int)fullrequest.length(), NULL, NULL, errbuff))){
+        errmsg = (string)errbuff;
+    }
+    yLeaveCriticalSection(&_lock);
+    return res;
+}
+
+
+YRETCODE    YDevice::HTTPRequest(int channel, const string& request, string& buffer, yapiRequestProgressCallback callback, void *context, string& errmsg)
+{
+    YRETCODE    res;
+    yEnterCriticalSection(&_lock);
+    res =HTTPRequest_unsafe(channel, request, buffer, callback, context, errmsg);
+    yLeaveCriticalSection(&_lock);
+    return res;
 }
 
 
@@ -2542,23 +2644,28 @@ YRETCODE YDevice::requestAPI(string& apires, string& errmsg)
     string          request = "GET /api.json \r\n\r\n";
     int             res;
 
+    yEnterCriticalSection(&_lock);
+
     // Check if we have a valid cache value
     if(_cacheStamp > YAPI::GetTickCount()) {
         apires = _cacheJson;
+        yLeaveCriticalSection(&_lock);
         return YAPI_SUCCESS;
     }
 
     // send request, without HTTP/1.1 suffix to get light headers
-    res = this->HTTPRequest(0, request, buffer, NULL, NULL, errmsg);
+    res = this->HTTPRequest_unsafe(0, request, buffer, NULL, NULL, errmsg);
     if(YISERR(res)) {
         // Check if an update of the device list does not solve the issue
         res = YapiWrapper::updateDeviceList(true,errmsg);
         if(YISERR(res)) {
+            yLeaveCriticalSection(&_lock);
             return (YRETCODE)res;
         }
         // send request, without HTTP/1.1 suffix to get light headers
-        res = this->HTTPRequest(0, request, buffer, NULL, NULL, errmsg);
+        res = this->HTTPRequest_unsafe(0, request, buffer, NULL, NULL, errmsg);
         if(YISERR(res)) {
+            yLeaveCriticalSection(&_lock);
             return (YRETCODE)res;
         }
     }
@@ -2569,18 +2676,22 @@ YRETCODE YDevice::requestAPI(string& apires, string& errmsg)
     j.st = YJSON_HTTP_START;
     if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_HTTP_READ_CODE) {
         errmsg = "Failed to parse HTTP header";
+        yLeaveCriticalSection(&_lock);
         return YAPI_IO_ERROR;
     }
     if(string(j.token) != "200") {
         errmsg = string("Unexpected HTTP return code: ")+j.token;
+        yLeaveCriticalSection(&_lock);
         return YAPI_IO_ERROR;
     }
     if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_HTTP_READ_MSG) {
         errmsg = "Unexpected HTTP header format";
+        yLeaveCriticalSection(&_lock);
         return YAPI_IO_ERROR;
     }
     if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
         errmsg = "Unexpected JSON reply format";
+        yLeaveCriticalSection(&_lock);
         return YAPI_IO_ERROR;
     }
     // we know for sure that the last character parsed was a '{'
@@ -2590,23 +2701,30 @@ YRETCODE YDevice::requestAPI(string& apires, string& errmsg)
     // store result in cache
     _cacheJson = string(j.src);
     _cacheStamp = yapiGetTickCount() + YAPI::DefaultCacheValidity;
+    yLeaveCriticalSection(&_lock);
 
     return YAPI_SUCCESS;
 }
 
-void YDevice::clearCache()
+void YDevice::clearCache(bool clearSubpath)
 {
+    yEnterCriticalSection(&_lock);
     _cacheJson = "";
     _cacheStamp = 0;
+    if (clearSubpath)
+        _subpath = NULL;
+    yLeaveCriticalSection(&_lock);
 }
 
 YRETCODE YDevice::getFunctions(vector<YFUN_DESCR> **functions, string& errmsg)
 {
+    yEnterCriticalSection(&_lock);
     if(_functions.size() == 0) {
         int res = YapiWrapper::getFunctionsByDevice(_devdescr, 0, _functions, 64, errmsg);
         if(YISERR(res)) return (YRETCODE)res;
     }
     *functions = &_functions;
+    yLeaveCriticalSection(&_lock);
 
     return YAPI_SUCCESS;
 }
@@ -2630,6 +2748,8 @@ int YAPI::DefaultCacheValidity = 5;
 // with languages without exception support like pure C
 bool YAPI::ExceptionsDisabled = false;
 
+yCRITICAL_SECTION   YAPI::_global_cs;
+
 // standard error objects
 const string YAPI::INVALID_STRING = YAPI_INVALID_STRING;
 const double YAPI::INVALID_DOUBLE = (-DBL_MAX);
@@ -2640,7 +2760,7 @@ yDeviceUpdateCallback   YAPI::DeviceArrivalCallback  = NULL;
 yDeviceUpdateCallback   YAPI::DeviceRemovalCallback  = NULL;
 yDeviceUpdateCallback   YAPI::DeviceChangeCallback   = NULL;
 
-void YAPI::_yapiLogFunctionFwd(const char *log, u32 loglen)
+void YAPI::_yapiLogFunctionFwd(const char *log, u32 loglen) 
 {
     if(YAPI::LogFunction)
         YAPI::LogFunction(string(log));
@@ -2671,7 +2791,8 @@ void YAPI::_yapiDeviceArrivalCallbackFwd(YDEV_DESCR devdesc)
     string       errmsg;
     vector<YFunction*>::iterator it;
 
-    YDevice::PlugDevice(devdesc);
+    YDevice *dev = YDevice::getDevice(devdesc);
+    dev->clearCache(true);
 	dataEv.type = YAPI_FUN_REFRESH;
     for ( it=_FunctionCallbacks.begin() ; it < _FunctionCallbacks.end(); it++ ){
         if ((*it)->functionDescriptor() == Y_FUNCTIONDESCRIPTOR_INVALID){
@@ -3023,6 +3144,7 @@ YRETCODE YAPI::InitAPI(int mode, string& errmsg)
 
     yInitializeCriticalSection(&_updateDeviceList_CS);
     yInitializeCriticalSection(&_handleEvent_CS);
+    yInitializeCriticalSection(&_global_cs);
     for(i = 0; i <= 20; i++) {
         YAPI::RegisterCalibrationHandler(i, YAPI::LinearCalibrationHandler);
     }
@@ -3047,6 +3169,7 @@ void YAPI::FreeAPI(void)
         YAPI::_apiInitialized = false;
         yDeleteCriticalSection(&_updateDeviceList_CS);
         yDeleteCriticalSection(&_handleEvent_CS);
+        yDeleteCriticalSection(&_global_cs);
         YDevice::ClearCache();
         YFunction::_ClearCache();
         while (!_plug_events.empty()) {
@@ -3056,7 +3179,6 @@ void YAPI::FreeAPI(void)
             _data_events.pop();
         }
         _calibHandlers.clear();
-
     }
 }
 
@@ -3927,12 +4049,24 @@ int YModule::_parseAttr(yJsonStateMachine& j)
  */
 string YModule::get_productName(void)
 {
-    if (_cacheExpiration == 0) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YModule::PRODUCTNAME_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration == 0) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YModule::PRODUCTNAME_INVALID;
+                }
+            }
         }
+        res = _productName;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _productName;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -3944,12 +4078,24 @@ string YModule::get_productName(void)
  */
 string YModule::get_serialNumber(void)
 {
-    if (_cacheExpiration == 0) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YModule::SERIALNUMBER_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration == 0) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YModule::SERIALNUMBER_INVALID;
+                }
+            }
         }
+        res = _serialNumber;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _serialNumber;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -3961,12 +4107,24 @@ string YModule::get_serialNumber(void)
  */
 int YModule::get_productId(void)
 {
-    if (_cacheExpiration == 0) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YModule::PRODUCTID_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration == 0) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YModule::PRODUCTID_INVALID;
+                }
+            }
         }
+        res = _productId;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _productId;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -3978,12 +4136,24 @@ int YModule::get_productId(void)
  */
 int YModule::get_productRelease(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YModule::PRODUCTRELEASE_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YModule::PRODUCTRELEASE_INVALID;
+                }
+            }
         }
+        res = _productRelease;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _productRelease;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -3995,12 +4165,24 @@ int YModule::get_productRelease(void)
  */
 string YModule::get_firmwareRelease(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YModule::FIRMWARERELEASE_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YModule::FIRMWARERELEASE_INVALID;
+                }
+            }
         }
+        res = _firmwareRelease;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _firmwareRelease;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -4013,19 +4195,40 @@ string YModule::get_firmwareRelease(void)
  */
 Y_PERSISTENTSETTINGS_enum YModule::get_persistentSettings(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YModule::PERSISTENTSETTINGS_INVALID;
+    Y_PERSISTENTSETTINGS_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YModule::PERSISTENTSETTINGS_INVALID;
+                }
+            }
         }
+        res = _persistentSettings;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _persistentSettings;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YModule::set_persistentSettings(Y_PERSISTENTSETTINGS_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("persistentSettings", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("persistentSettings", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -4037,12 +4240,24 @@ int YModule::set_persistentSettings(Y_PERSISTENTSETTINGS_enum newval)
  */
 int YModule::get_luminosity(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YModule::LUMINOSITY_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YModule::LUMINOSITY_INVALID;
+                }
+            }
         }
+        res = _luminosity;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _luminosity;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -4060,8 +4275,17 @@ int YModule::get_luminosity(void)
 int YModule::set_luminosity(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("luminosity", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("luminosity", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -4073,12 +4297,24 @@ int YModule::set_luminosity(int newval)
  */
 Y_BEACON_enum YModule::get_beacon(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YModule::BEACON_INVALID;
+    Y_BEACON_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YModule::BEACON_INVALID;
+                }
+            }
         }
+        res = _beacon;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _beacon;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -4093,8 +4329,17 @@ Y_BEACON_enum YModule::get_beacon(void)
 int YModule::set_beacon(Y_BEACON_enum newval)
 {
     string rest_val;
-    rest_val = (newval>0 ? "1" : "0");
-    return _setAttr("beacon", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("beacon", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -4106,12 +4351,24 @@ int YModule::set_beacon(Y_BEACON_enum newval)
  */
 s64 YModule::get_upTime(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YModule::UPTIME_INVALID;
+    s64 res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YModule::UPTIME_INVALID;
+                }
+            }
         }
+        res = _upTime;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _upTime;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -4123,12 +4380,24 @@ s64 YModule::get_upTime(void)
  */
 int YModule::get_usbCurrent(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YModule::USBCURRENT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YModule::USBCURRENT_INVALID;
+                }
+            }
         }
+        res = _usbCurrent;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _usbCurrent;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -4142,19 +4411,40 @@ int YModule::get_usbCurrent(void)
  */
 int YModule::get_rebootCountdown(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YModule::REBOOTCOUNTDOWN_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YModule::REBOOTCOUNTDOWN_INVALID;
+                }
+            }
         }
+        res = _rebootCountdown;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _rebootCountdown;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YModule::set_rebootCountdown(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("rebootCountdown", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("rebootCountdown", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -4167,12 +4457,24 @@ int YModule::set_rebootCountdown(int newval)
  */
 int YModule::get_userVar(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YModule::USERVAR_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YModule::USERVAR_INVALID;
+                }
+            }
         }
+        res = _userVar;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _userVar;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -4188,8 +4490,17 @@ int YModule::get_userVar(void)
 int YModule::set_userVar(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("userVar", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("userVar", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -4212,11 +4523,21 @@ int YModule::set_userVar(int newval)
 YModule* YModule::FindModule(string func)
 {
     YModule* obj = NULL;
-    obj = (YModule*) YFunction::_FindFromCache("Module", func);
-    if (obj == NULL) {
-        obj = new YModule(func);
-        YFunction::_AddToCache("Module", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YModule*) YFunction::_FindFromCache("Module", func);
+        if (obj == NULL) {
+            obj = new YModule(func);
+            YFunction::_AddToCache("Module", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 
@@ -5324,16 +5645,20 @@ string YModule::get_friendlyName(void)
     string       errmsg, serial, funcId, funcName, funcValue;
     string       mod_serial, mod_funcId,mod_funcname;
 
+    yEnterCriticalSection(&_this_cs);
     fundescr = YapiWrapper::getFunction(_className, _func, errmsg);
     if(!YISERR(fundescr) && !YISERR(YapiWrapper::getFunctionInfo(fundescr, devdescr, serial, funcId, funcName, funcValue, errmsg))) {
         moddescr = YapiWrapper::getFunction("Module", serial, errmsg);
         if(!YISERR(moddescr) && !YISERR(YapiWrapper::getFunctionInfo(moddescr, devdescr, mod_serial, mod_funcId, mod_funcname, funcValue, errmsg))) {
             if(mod_funcname!="") {
+                yLeaveCriticalSection(&_this_cs);
                 return mod_funcname;
             }
         }
+        yLeaveCriticalSection(&_this_cs);
         return serial;
     }
+    yLeaveCriticalSection(&_this_cs);
     return Y_FRIENDLYNAME_INVALID;
 }
 
@@ -5385,16 +5710,20 @@ int YModule::functionCount()
     string      errmsg;
     int         res;
 
+    yEnterCriticalSection(&_this_cs);
     res = _getDevice(dev, errmsg);
     if(YISERR(res)) {
+        yLeaveCriticalSection(&_this_cs);
         _throw((YRETCODE)res, errmsg);
         return (YRETCODE)res;
     }
     res = dev->getFunctions(&functions, errmsg);
     if(YISERR(res)) {
+        yLeaveCriticalSection(&_this_cs);
         _throw((YRETCODE)res, errmsg);
         return (YRETCODE)res;
     }
+    yLeaveCriticalSection(&_this_cs);
     return (int)functions->size();
 }
 
@@ -5402,13 +5731,20 @@ int YModule::functionCount()
 string YModule::functionId(int functionIndex)
 {
     string      serial, funcId, funcName, basetype, funcVal, errmsg;
+    int res;
 
-    int res = _getFunction(functionIndex, serial, funcId, basetype, funcName, funcVal, errmsg);
+    yEnterCriticalSection(&_this_cs);
+    try {
+        res = _getFunction(functionIndex, serial, funcId, basetype, funcName, funcVal, errmsg);
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
     if(YISERR(res)) {
         _throw((YRETCODE)res, errmsg);
         return YAPI_INVALID_STRING;
     }
-
     return funcId;
 }
 
@@ -5613,12 +5949,24 @@ int YSensor::_parseAttr(yJsonStateMachine& j)
  */
 string YSensor::get_unit(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSensor::UNIT_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSensor::UNIT_INVALID;
+                }
+            }
         }
+        res = _unit;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _unit;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -5632,17 +5980,28 @@ string YSensor::get_unit(void)
 double YSensor::get_currentValue(void)
 {
     double res = 0.0;
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSensor::CURRENTVALUE_INVALID;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSensor::CURRENTVALUE_INVALID;
+                }
+            }
         }
+        res = this->_applyCalibration(_currentRawValue);
+        if (res == YSensor::CURRENTVALUE_INVALID) {
+            res = _currentValue;
+        }
+        res = res * _iresol;
+        res = floor(res+0.5) / _iresol;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    res = this->_applyCalibration(_currentRawValue);
-    if (res == YSensor::CURRENTVALUE_INVALID) {
-        res = _currentValue;
-    }
-    res = res * _iresol;
-    return floor(res+0.5) / _iresol;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -5657,8 +6016,17 @@ double YSensor::get_currentValue(void)
 int YSensor::set_lowestValue(double newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
-    return _setAttr("lowestValue", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        res = _setAttr("lowestValue", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -5672,13 +6040,24 @@ int YSensor::set_lowestValue(double newval)
 double YSensor::get_lowestValue(void)
 {
     double res = 0.0;
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSensor::LOWESTVALUE_INVALID;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSensor::LOWESTVALUE_INVALID;
+                }
+            }
         }
+        res = _lowestValue * _iresol;
+        res = floor(res+0.5) / _iresol;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    res = _lowestValue * _iresol;
-    return floor(res+0.5) / _iresol;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -5693,8 +6072,17 @@ double YSensor::get_lowestValue(void)
 int YSensor::set_highestValue(double newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
-    return _setAttr("highestValue", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        res = _setAttr("highestValue", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -5708,13 +6096,24 @@ int YSensor::set_highestValue(double newval)
 double YSensor::get_highestValue(void)
 {
     double res = 0.0;
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSensor::HIGHESTVALUE_INVALID;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSensor::HIGHESTVALUE_INVALID;
+                }
+            }
         }
+        res = _highestValue * _iresol;
+        res = floor(res+0.5) / _iresol;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    res = _highestValue * _iresol;
-    return floor(res+0.5) / _iresol;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -5728,12 +6127,24 @@ double YSensor::get_highestValue(void)
  */
 double YSensor::get_currentRawValue(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSensor::CURRENTRAWVALUE_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSensor::CURRENTRAWVALUE_INVALID;
+                }
+            }
         }
+        res = _currentRawValue;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _currentRawValue;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -5747,12 +6158,24 @@ double YSensor::get_currentRawValue(void)
  */
 string YSensor::get_logFrequency(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSensor::LOGFREQUENCY_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSensor::LOGFREQUENCY_INVALID;
+                }
+            }
         }
+        res = _logFrequency;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _logFrequency;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -5771,8 +6194,17 @@ string YSensor::get_logFrequency(void)
 int YSensor::set_logFrequency(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("logFrequency", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("logFrequency", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -5786,12 +6218,24 @@ int YSensor::set_logFrequency(const string& newval)
  */
 string YSensor::get_reportFrequency(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSensor::REPORTFREQUENCY_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSensor::REPORTFREQUENCY_INVALID;
+                }
+            }
         }
+        res = _reportFrequency;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _reportFrequency;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -5810,25 +6254,55 @@ string YSensor::get_reportFrequency(void)
 int YSensor::set_reportFrequency(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("reportFrequency", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("reportFrequency", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 string YSensor::get_calibrationParam(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSensor::CALIBRATIONPARAM_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSensor::CALIBRATIONPARAM_INVALID;
+                }
+            }
         }
+        res = _calibrationParam;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _calibrationParam;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YSensor::set_calibrationParam(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("calibrationParam", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("calibrationParam", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -5844,8 +6318,17 @@ int YSensor::set_calibrationParam(const string& newval)
 int YSensor::set_resolution(double newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
-    return _setAttr("resolution", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        res = _setAttr("resolution", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -5858,12 +6341,24 @@ int YSensor::set_resolution(double newval)
  */
 double YSensor::get_resolution(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSensor::RESOLUTION_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSensor::RESOLUTION_INVALID;
+                }
+            }
         }
+        res = _resolution;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _resolution;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -5878,12 +6373,24 @@ double YSensor::get_resolution(void)
  */
 int YSensor::get_sensorState(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YSensor::SENSORSTATE_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSensor::SENSORSTATE_INVALID;
+                }
+            }
         }
+        res = _sensorState;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _sensorState;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -5912,11 +6419,21 @@ int YSensor::get_sensorState(void)
 YSensor* YSensor::FindSensor(string func)
 {
     YSensor* obj = NULL;
-    obj = (YSensor*) YFunction::_FindFromCache("Sensor", func);
-    if (obj == NULL) {
-        obj = new YSensor(func);
-        YFunction::_AddToCache("Sensor", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YSensor*) YFunction::_FindFromCache("Sensor", func);
+        if (obj == NULL) {
+            obj = new YSensor(func);
+            YFunction::_AddToCache("Sensor", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

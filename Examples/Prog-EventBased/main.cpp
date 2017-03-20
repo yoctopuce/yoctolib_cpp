@@ -12,12 +12,14 @@ static void anButtonValueChangeCallBack(YAnButton *fct, const string& value)
 
 static void sensorValueChangeCallBack(YSensor *fct, const string& value)
 {
-  cout << fct->get_hardwareId() << " : " << value << " " << fct->get_unit() << " (new value)" << endl;
+  cout << fct->get_hardwareId() << " : " << value << " " << fct->get_unit() <<
+       " (new value)" << endl;
 }
 
 static void sensorTimedReportCallBack(YSensor *fct, YMeasure measure)
 {
-  cout << fct->get_hardwareId() << " : " << measure.get_averageValue() << " " << fct->get_unit() << " (timed report)" << endl;
+  cout << fct->get_hardwareId() << " : " << measure.get_averageValue() << " " <<
+       fct->get_unit() << " (timed report)" << endl;
 }
 
 static void deviceLog(YModule *module, const string& logline)

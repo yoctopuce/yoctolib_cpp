@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_accelerometer.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_accelerometer.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindAccelerometer(), the high-level API for Accelerometer functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "accelerometer"
 
 YAccelerometer::YAccelerometer(const string& func): YSensor(func)
 //--- (Accelerometer initialization)
@@ -113,12 +114,24 @@ int YAccelerometer::_parseAttr(yJsonStateMachine& j)
  */
 int YAccelerometer::get_bandwidth(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAccelerometer::BANDWIDTH_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YAccelerometer::BANDWIDTH_INVALID;
+                }
+            }
         }
+        res = _bandwidth;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _bandwidth;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -134,8 +147,17 @@ int YAccelerometer::get_bandwidth(void)
 int YAccelerometer::set_bandwidth(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("bandwidth", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("bandwidth", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -147,12 +169,24 @@ int YAccelerometer::set_bandwidth(int newval)
  */
 double YAccelerometer::get_xValue(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAccelerometer::XVALUE_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YAccelerometer::XVALUE_INVALID;
+                }
+            }
         }
+        res = _xValue;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _xValue;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -164,12 +198,24 @@ double YAccelerometer::get_xValue(void)
  */
 double YAccelerometer::get_yValue(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAccelerometer::YVALUE_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YAccelerometer::YVALUE_INVALID;
+                }
+            }
         }
+        res = _yValue;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _yValue;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -181,29 +227,62 @@ double YAccelerometer::get_yValue(void)
  */
 double YAccelerometer::get_zValue(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAccelerometer::ZVALUE_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YAccelerometer::ZVALUE_INVALID;
+                }
+            }
         }
+        res = _zValue;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _zValue;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 Y_GRAVITYCANCELLATION_enum YAccelerometer::get_gravityCancellation(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAccelerometer::GRAVITYCANCELLATION_INVALID;
+    Y_GRAVITYCANCELLATION_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YAccelerometer::GRAVITYCANCELLATION_INVALID;
+                }
+            }
         }
+        res = _gravityCancellation;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _gravityCancellation;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YAccelerometer::set_gravityCancellation(Y_GRAVITYCANCELLATION_enum newval)
 {
     string rest_val;
-    rest_val = (newval>0 ? "1" : "0");
-    return _setAttr("gravityCancellation", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("gravityCancellation", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -232,11 +311,21 @@ int YAccelerometer::set_gravityCancellation(Y_GRAVITYCANCELLATION_enum newval)
 YAccelerometer* YAccelerometer::FindAccelerometer(string func)
 {
     YAccelerometer* obj = NULL;
-    obj = (YAccelerometer*) YFunction::_FindFromCache("Accelerometer", func);
-    if (obj == NULL) {
-        obj = new YAccelerometer(func);
-        YFunction::_AddToCache("Accelerometer", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YAccelerometer*) YFunction::_FindFromCache("Accelerometer", func);
+        if (obj == NULL) {
+            obj = new YAccelerometer(func);
+            YFunction::_AddToCache("Accelerometer", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

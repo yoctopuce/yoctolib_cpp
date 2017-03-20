@@ -23,11 +23,10 @@
 		B8A727EC17E0CD3A005705C0 /* ystream.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A217E0CD3A005705C0 /* ystream.c */; };
 		B8A727ED17E0CD3A005705C0 /* ytcp.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A317E0CD3A005705C0 /* ytcp.c */; };
 		B8A727EE17E0CD3A005705C0 /* ythread.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A517E0CD3A005705C0 /* ythread.c */; };
-		B8A727EF17E0CD3A005705C0 /* yocto_anbutton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005705C0 /* yocto_anbutton.cpp */; };
 		B8A727F017E0CD3A005705C0 /* yocto_api.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727AA17E0CD3A005705C0 /* yocto_api.cpp */; };
 
-		B8A727A817E0CD3A0057016d /* yocto_dualpower.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057016b /* yocto_dualpower.cpp */; };
-		B8A727A817E0CD3A00570170 /* yocto_servo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057016e /* yocto_servo.cpp */; };
+		B8A727A817E0CD3A00578594bc7d /* yocto_dualpower.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00571a5b1698 /* yocto_dualpower.cpp */; };
+		B8A727A817E0CD3A00576df8d92d /* yocto_servo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005775b2a2d /* yocto_servo.cpp */; };
 
 /* End PBXBuildFile section */
 
@@ -77,10 +76,10 @@
 		B8A727AA17E0CD3A005705C0 /* yocto_api.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_api.cpp; path = ../../../Sources/yocto_api.cpp; sourceTree = "<group>"; };
 		B8A727AB17E0CD3A005705C0 /* yocto_api.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_api.h; path = ../../../Sources/yocto_api.h; sourceTree = "<group>"; };
 
-		B8A727A817E0CD3A0057016b /* yocto_dualpower.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_dualpower.cpp; path = ../../../Sources/yocto_dualpower.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057016c /* yocto_dualpower.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_dualpower.h; path = ../../../Sources/yocto_dualpower.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057016e /* yocto_servo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_servo.cpp; path = ../../../Sources/yocto_servo.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057016f /* yocto_servo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_servo.h; path = ../../../Sources/yocto_servo.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00571a5b1698 /* yocto_dualpower.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_dualpower.cpp; path = ../../../Sources/yocto_dualpower.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00578ec21243 /* yocto_dualpower.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_dualpower.h; path = ../../../Sources/yocto_dualpower.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005775b2a2d /* yocto_servo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_servo.cpp; path = ../../../Sources/yocto_servo.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00571f4f393d /* yocto_servo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_servo.h; path = ../../../Sources/yocto_servo.h; sourceTree = "<group>"; };
 
 		B8FE65001472686800FD11A2 /* project */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = project; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -105,10 +104,10 @@
 				B8A727AA17E0CD3A005705C0 /* yocto_api.cpp */,
 				B8A727AB17E0CD3A005705C0 /* yocto_api.h */,
 
-				B8A727A817E0CD3A0057016b /* yocto_dualpower.cpp */,
-				B8A727A817E0CD3A0057016c /* yocto_dualpower.h */,
-				B8A727A817E0CD3A0057016e /* yocto_servo.cpp */,
-				B8A727A817E0CD3A0057016f /* yocto_servo.h */,
+				B8A727A817E0CD3A00571a5b1698 /* yocto_dualpower.cpp */,
+				B8A727A817E0CD3A00578ec21243 /* yocto_dualpower.h */,
+				B8A727A817E0CD3A005775b2a2d /* yocto_servo.cpp */,
+				B8A727A817E0CD3A00571f4f393d /* yocto_servo.h */,
 
 			);
 			name = Yoctopuce;
@@ -235,8 +234,8 @@
 				B8A727EE17E0CD3A005705C0 /* ythread.c in Sources */,
 				B8A727F017E0CD3A005705C0 /* yocto_api.cpp in Sources */,
 
-				B8A727A817E0CD3A0057016d /* yocto_dualpower.cpp in Sources */,
-				B8A727A817E0CD3A00570170 /* yocto_servo.cpp in Sources */,
+				B8A727A817E0CD3A00578594bc7d /* yocto_dualpower.cpp in Sources */,
+				B8A727A817E0CD3A00576df8d92d /* yocto_servo.cpp in Sources */,
 
 			);
 			runOnlyForDeploymentPostprocessing = 0;

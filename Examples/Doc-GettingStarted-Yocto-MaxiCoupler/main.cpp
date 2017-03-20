@@ -49,7 +49,6 @@ int main(int argc, const char * argv[])
   cout << "Using " << target << endl;
   relay =  yFindRelay((string)target + ".relay" + channel);
 
-
   if (relay->isOnline()) {
     relay->set_output(state == "ON" ? Y_OUTPUT_ON : Y_OUTPUT_OFF);
   } else {

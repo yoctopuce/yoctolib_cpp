@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pressure.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_pressure.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindPressure(), the high-level API for Pressure functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "pressure"
 
 YPressure::YPressure(const string& func): YSensor(func)
 //--- (Pressure initialization)
@@ -91,11 +92,21 @@ YPressure::~YPressure()
 YPressure* YPressure::FindPressure(string func)
 {
     YPressure* obj = NULL;
-    obj = (YPressure*) YFunction::_FindFromCache("Pressure", func);
-    if (obj == NULL) {
-        obj = new YPressure(func);
-        YFunction::_AddToCache("Pressure", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YPressure*) YFunction::_FindFromCache("Pressure", func);
+        if (obj == NULL) {
+            obj = new YPressure(func);
+            YFunction::_AddToCache("Pressure", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

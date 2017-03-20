@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_lightsensor.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_lightsensor.cpp 26826 2017-03-17 11:20:57Z mvuilleu $
  *
  * Implements yFindLightSensor(), the high-level API for LightSensor functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "lightsensor"
 
 YLightSensor::YLightSensor(const string& func): YSensor(func)
 //--- (LightSensor initialization)
@@ -80,8 +81,17 @@ int YLightSensor::_parseAttr(yJsonStateMachine& j)
 int YLightSensor::set_currentValue(double newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
-    return _setAttr("currentValue", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        res = _setAttr("currentValue", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -114,16 +124,28 @@ int YLightSensor::calibrate(double calibratedVal)
  */
 Y_MEASURETYPE_enum YLightSensor::get_measureType(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YLightSensor::MEASURETYPE_INVALID;
+    Y_MEASURETYPE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YLightSensor::MEASURETYPE_INVALID;
+                }
+            }
         }
+        res = _measureType;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _measureType;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
- * Modify the light sensor type used in the device. The measure can either
+ * Modifies the light sensor type used in the device. The measure can either
  * approximate the response of the human eye, focus on a specific light
  * spectrum, depending on the capabilities of the light-sensitive cell.
  * Remember to call the saveToFlash() method of the module if the
@@ -139,8 +161,17 @@ Y_MEASURETYPE_enum YLightSensor::get_measureType(void)
 int YLightSensor::set_measureType(Y_MEASURETYPE_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("measureType", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("measureType", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -169,11 +200,21 @@ int YLightSensor::set_measureType(Y_MEASURETYPE_enum newval)
 YLightSensor* YLightSensor::FindLightSensor(string func)
 {
     YLightSensor* obj = NULL;
-    obj = (YLightSensor*) YFunction::_FindFromCache("LightSensor", func);
-    if (obj == NULL) {
-        obj = new YLightSensor(func);
-        YFunction::_AddToCache("LightSensor", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YLightSensor*) YFunction::_FindFromCache("LightSensor", func);
+        if (obj == NULL) {
+            obj = new YLightSensor(func);
+            YFunction::_AddToCache("LightSensor", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

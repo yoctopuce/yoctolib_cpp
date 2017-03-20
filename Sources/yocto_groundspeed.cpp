@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_groundspeed.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_groundspeed.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindGroundSpeed(), the high-level API for GroundSpeed functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "groundspeed"
 
 YGroundSpeed::YGroundSpeed(const string& func): YSensor(func)
 //--- (GroundSpeed initialization)
@@ -91,11 +92,21 @@ YGroundSpeed::~YGroundSpeed()
 YGroundSpeed* YGroundSpeed::FindGroundSpeed(string func)
 {
     YGroundSpeed* obj = NULL;
-    obj = (YGroundSpeed*) YFunction::_FindFromCache("GroundSpeed", func);
-    if (obj == NULL) {
-        obj = new YGroundSpeed(func);
-        YFunction::_AddToCache("GroundSpeed", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YGroundSpeed*) YFunction::_FindFromCache("GroundSpeed", func);
+        if (obj == NULL) {
+            obj = new YGroundSpeed(func);
+            YFunction::_AddToCache("GroundSpeed", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

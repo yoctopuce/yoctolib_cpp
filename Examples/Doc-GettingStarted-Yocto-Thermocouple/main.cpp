@@ -43,10 +43,10 @@ int main(int argc, const char * argv[])
     tsensor = yFindTemperature(target + ".temperature1");
   }
 
-  YTemperature *t1 = yFindTemperature(tsensor->get_module()->get_serialNumber() + ".temperature1");
-  YTemperature *t2 = yFindTemperature(tsensor->get_module()->get_serialNumber() + ".temperature2");
-
-
+  YTemperature *t1 = yFindTemperature(tsensor->get_module()->get_serialNumber() +
+                                      ".temperature1");
+  YTemperature *t2 = yFindTemperature(tsensor->get_module()->get_serialNumber() +
+                                      ".temperature2");
 
   while (1) {
     if (!t1->isOnline() || !t2->isOnline()) {

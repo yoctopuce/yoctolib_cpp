@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_display.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -45,6 +45,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "display"
 
 
 
@@ -709,12 +710,24 @@ int YDisplay::_parseAttr(yJsonStateMachine& j)
  */
 Y_ENABLED_enum YDisplay::get_enabled(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDisplay::ENABLED_INVALID;
+    Y_ENABLED_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDisplay::ENABLED_INVALID;
+                }
+            }
         }
+        res = _enabled;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _enabled;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -729,8 +742,17 @@ Y_ENABLED_enum YDisplay::get_enabled(void)
 int YDisplay::set_enabled(Y_ENABLED_enum newval)
 {
     string rest_val;
-    rest_val = (newval>0 ? "1" : "0");
-    return _setAttr("enabled", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("enabled", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -742,12 +764,24 @@ int YDisplay::set_enabled(Y_ENABLED_enum newval)
  */
 string YDisplay::get_startupSeq(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDisplay::STARTUPSEQ_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDisplay::STARTUPSEQ_INVALID;
+                }
+            }
         }
+        res = _startupSeq;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _startupSeq;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -764,8 +798,17 @@ string YDisplay::get_startupSeq(void)
 int YDisplay::set_startupSeq(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("startupSeq", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("startupSeq", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -777,12 +820,24 @@ int YDisplay::set_startupSeq(const string& newval)
  */
 int YDisplay::get_brightness(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDisplay::BRIGHTNESS_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDisplay::BRIGHTNESS_INVALID;
+                }
+            }
         }
+        res = _brightness;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _brightness;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -799,8 +854,17 @@ int YDisplay::get_brightness(void)
 int YDisplay::set_brightness(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("brightness", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("brightness", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -813,12 +877,24 @@ int YDisplay::set_brightness(int newval)
  */
 Y_ORIENTATION_enum YDisplay::get_orientation(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDisplay::ORIENTATION_INVALID;
+    Y_ORIENTATION_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDisplay::ORIENTATION_INVALID;
+                }
+            }
         }
+        res = _orientation;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _orientation;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -835,8 +911,17 @@ Y_ORIENTATION_enum YDisplay::get_orientation(void)
 int YDisplay::set_orientation(Y_ORIENTATION_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("orientation", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("orientation", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -848,12 +933,24 @@ int YDisplay::set_orientation(Y_ORIENTATION_enum newval)
  */
 int YDisplay::get_displayWidth(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDisplay::DISPLAYWIDTH_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDisplay::DISPLAYWIDTH_INVALID;
+                }
+            }
         }
+        res = _displayWidth;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _displayWidth;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -865,12 +962,24 @@ int YDisplay::get_displayWidth(void)
  */
 int YDisplay::get_displayHeight(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDisplay::DISPLAYHEIGHT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDisplay::DISPLAYHEIGHT_INVALID;
+                }
+            }
         }
+        res = _displayHeight;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _displayHeight;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -883,12 +992,24 @@ int YDisplay::get_displayHeight(void)
  */
 Y_DISPLAYTYPE_enum YDisplay::get_displayType(void)
 {
-    if (_cacheExpiration == 0) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDisplay::DISPLAYTYPE_INVALID;
+    Y_DISPLAYTYPE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration == 0) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDisplay::DISPLAYTYPE_INVALID;
+                }
+            }
         }
+        res = _displayType;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _displayType;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -900,12 +1021,24 @@ Y_DISPLAYTYPE_enum YDisplay::get_displayType(void)
  */
 int YDisplay::get_layerWidth(void)
 {
-    if (_cacheExpiration == 0) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDisplay::LAYERWIDTH_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration == 0) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDisplay::LAYERWIDTH_INVALID;
+                }
+            }
         }
+        res = _layerWidth;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _layerWidth;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -917,12 +1050,24 @@ int YDisplay::get_layerWidth(void)
  */
 int YDisplay::get_layerHeight(void)
 {
-    if (_cacheExpiration == 0) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDisplay::LAYERHEIGHT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration == 0) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDisplay::LAYERHEIGHT_INVALID;
+                }
+            }
         }
+        res = _layerHeight;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _layerHeight;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -934,29 +1079,62 @@ int YDisplay::get_layerHeight(void)
  */
 int YDisplay::get_layerCount(void)
 {
-    if (_cacheExpiration == 0) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDisplay::LAYERCOUNT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration == 0) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDisplay::LAYERCOUNT_INVALID;
+                }
+            }
         }
+        res = _layerCount;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _layerCount;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 string YDisplay::get_command(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDisplay::COMMAND_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDisplay::COMMAND_INVALID;
+                }
+            }
         }
+        res = _command;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _command;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YDisplay::set_command(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("command", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("command", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -985,11 +1163,21 @@ int YDisplay::set_command(const string& newval)
 YDisplay* YDisplay::FindDisplay(string func)
 {
     YDisplay* obj = NULL;
-    obj = (YDisplay*) YFunction::_FindFromCache("Display", func);
-    if (obj == NULL) {
-        obj = new YDisplay(func);
-        YFunction::_AddToCache("Display", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YDisplay*) YFunction::_FindFromCache("Display", func);
+        if (obj == NULL) {
+            obj = new YDisplay(func);
+            YFunction::_AddToCache("Display", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

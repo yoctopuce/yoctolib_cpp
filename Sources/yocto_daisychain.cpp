@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_daisychain.cpp 26552 2017-02-03 15:32:18Z seb $
+ * $Id: yocto_daisychain.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindDaisyChain(), the high-level API for DaisyChain functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "daisychain"
 
 YDaisyChain::YDaisyChain(const string& func): YFunction(func)
 //--- (DaisyChain initialization)
@@ -99,12 +100,24 @@ int YDaisyChain::_parseAttr(yJsonStateMachine& j)
  */
 Y_DAISYSTATE_enum YDaisyChain::get_daisyState(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDaisyChain::DAISYSTATE_INVALID;
+    Y_DAISYSTATE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDaisyChain::DAISYSTATE_INVALID;
+                }
+            }
         }
+        res = _daisyState;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _daisyState;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -116,12 +129,24 @@ Y_DAISYSTATE_enum YDaisyChain::get_daisyState(void)
  */
 int YDaisyChain::get_childCount(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDaisyChain::CHILDCOUNT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDaisyChain::CHILDCOUNT_INVALID;
+                }
+            }
         }
+        res = _childCount;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _childCount;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -133,12 +158,24 @@ int YDaisyChain::get_childCount(void)
  */
 int YDaisyChain::get_requiredChildCount(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDaisyChain::REQUIREDCHILDCOUNT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDaisyChain::REQUIREDCHILDCOUNT_INVALID;
+                }
+            }
         }
+        res = _requiredChildCount;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _requiredChildCount;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -156,8 +193,17 @@ int YDaisyChain::get_requiredChildCount(void)
 int YDaisyChain::set_requiredChildCount(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("requiredChildCount", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("requiredChildCount", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -186,11 +232,21 @@ int YDaisyChain::set_requiredChildCount(int newval)
 YDaisyChain* YDaisyChain::FindDaisyChain(string func)
 {
     YDaisyChain* obj = NULL;
-    obj = (YDaisyChain*) YFunction::_FindFromCache("DaisyChain", func);
-    if (obj == NULL) {
-        obj = new YDaisyChain(func);
-        YFunction::_AddToCache("DaisyChain", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YDaisyChain*) YFunction::_FindFromCache("DaisyChain", func);
+        if (obj == NULL) {
+            obj = new YDaisyChain(func);
+            YFunction::_AddToCache("DaisyChain", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

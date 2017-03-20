@@ -23,70 +23,69 @@
 		B8A727EC17E0CD3A005705C0 /* ystream.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A217E0CD3A005705C0 /* ystream.c */; };
 		B8A727ED17E0CD3A005705C0 /* ytcp.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A317E0CD3A005705C0 /* ytcp.c */; };
 		B8A727EE17E0CD3A005705C0 /* ythread.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A517E0CD3A005705C0 /* ythread.c */; };
-		B8A727EF17E0CD3A005705C0 /* yocto_anbutton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005705C0 /* yocto_anbutton.cpp */; };
 		B8A727F017E0CD3A005705C0 /* yocto_api.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727AA17E0CD3A005705C0 /* yocto_api.cpp */; };
 
-		B8A727A817E0CD3A00570002 /* yocto_accelerometer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570000 /* yocto_accelerometer.cpp */; };
-		B8A727A817E0CD3A00570005 /* yocto_altitude.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570003 /* yocto_altitude.cpp */; };
-		B8A727A817E0CD3A00570008 /* yocto_anbutton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570006 /* yocto_anbutton.cpp */; };
-		B8A727A817E0CD3A0057000b /* yocto_audioin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570009 /* yocto_audioin.cpp */; };
-		B8A727A817E0CD3A0057000e /* yocto_audioout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057000c /* yocto_audioout.cpp */; };
-		B8A727A817E0CD3A00570011 /* yocto_bluetoothlink.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057000f /* yocto_bluetoothlink.cpp */; };
-		B8A727A817E0CD3A00570014 /* yocto_buzzer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570012 /* yocto_buzzer.cpp */; };
-		B8A727A817E0CD3A00570017 /* yocto_carbondioxide.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570015 /* yocto_carbondioxide.cpp */; };
-		B8A727A817E0CD3A0057001a /* yocto_cellular.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570018 /* yocto_cellular.cpp */; };
-		B8A727A817E0CD3A0057001d /* yocto_colorled.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057001b /* yocto_colorled.cpp */; };
-		B8A727A817E0CD3A00570020 /* yocto_colorledcluster.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057001e /* yocto_colorledcluster.cpp */; };
-		B8A727A817E0CD3A00570023 /* yocto_compass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570021 /* yocto_compass.cpp */; };
-		B8A727A817E0CD3A00570026 /* yocto_current.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570024 /* yocto_current.cpp */; };
-		B8A727A817E0CD3A00570029 /* yocto_currentloopoutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570027 /* yocto_currentloopoutput.cpp */; };
-		B8A727A817E0CD3A0057002c /* yocto_daisychain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057002a /* yocto_daisychain.cpp */; };
-		B8A727A817E0CD3A0057002f /* yocto_datalogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057002d /* yocto_datalogger.cpp */; };
-		B8A727A817E0CD3A00570032 /* yocto_digitalio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570030 /* yocto_digitalio.cpp */; };
-		B8A727A817E0CD3A00570035 /* yocto_display.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570033 /* yocto_display.cpp */; };
-		B8A727A817E0CD3A00570038 /* yocto_dualpower.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570036 /* yocto_dualpower.cpp */; };
-		B8A727A817E0CD3A0057003b /* yocto_files.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570039 /* yocto_files.cpp */; };
-		B8A727A817E0CD3A0057003e /* yocto_genericsensor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057003c /* yocto_genericsensor.cpp */; };
-		B8A727A817E0CD3A00570041 /* yocto_gps.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057003f /* yocto_gps.cpp */; };
-		B8A727A817E0CD3A00570044 /* yocto_groundspeed.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570042 /* yocto_groundspeed.cpp */; };
-		B8A727A817E0CD3A00570047 /* yocto_gyro.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570045 /* yocto_gyro.cpp */; };
-		B8A727A817E0CD3A0057004a /* yocto_hubport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570048 /* yocto_hubport.cpp */; };
-		B8A727A817E0CD3A0057004d /* yocto_humidity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057004b /* yocto_humidity.cpp */; };
-		B8A727A817E0CD3A00570050 /* yocto_latitude.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057004e /* yocto_latitude.cpp */; };
-		B8A727A817E0CD3A00570053 /* yocto_led.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570051 /* yocto_led.cpp */; };
-		B8A727A817E0CD3A00570056 /* yocto_lightsensor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570054 /* yocto_lightsensor.cpp */; };
-		B8A727A817E0CD3A00570059 /* yocto_longitude.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570057 /* yocto_longitude.cpp */; };
-		B8A727A817E0CD3A0057005c /* yocto_magnetometer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057005a /* yocto_magnetometer.cpp */; };
-		B8A727A817E0CD3A0057005f /* yocto_messagebox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057005d /* yocto_messagebox.cpp */; };
-		B8A727A817E0CD3A00570062 /* yocto_motor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570060 /* yocto_motor.cpp */; };
-		B8A727A817E0CD3A00570065 /* yocto_multiaxiscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570063 /* yocto_multiaxiscontroller.cpp */; };
-		B8A727A817E0CD3A00570068 /* yocto_network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570066 /* yocto_network.cpp */; };
-		B8A727A817E0CD3A0057006b /* yocto_oscontrol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570069 /* yocto_oscontrol.cpp */; };
-		B8A727A817E0CD3A0057006e /* yocto_power.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057006c /* yocto_power.cpp */; };
-		B8A727A817E0CD3A00570071 /* yocto_poweroutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057006f /* yocto_poweroutput.cpp */; };
-		B8A727A817E0CD3A00570074 /* yocto_pressure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570072 /* yocto_pressure.cpp */; };
-		B8A727A817E0CD3A00570077 /* yocto_proximity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570075 /* yocto_proximity.cpp */; };
-		B8A727A817E0CD3A0057007a /* yocto_pwminput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570078 /* yocto_pwminput.cpp */; };
-		B8A727A817E0CD3A0057007d /* yocto_pwmoutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057007b /* yocto_pwmoutput.cpp */; };
-		B8A727A817E0CD3A00570080 /* yocto_pwmpowersource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057007e /* yocto_pwmpowersource.cpp */; };
-		B8A727A817E0CD3A00570083 /* yocto_quadraturedecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570081 /* yocto_quadraturedecoder.cpp */; };
-		B8A727A817E0CD3A00570086 /* yocto_rangefinder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570084 /* yocto_rangefinder.cpp */; };
-		B8A727A817E0CD3A00570089 /* yocto_realtimeclock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570087 /* yocto_realtimeclock.cpp */; };
-		B8A727A817E0CD3A0057008c /* yocto_refframe.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057008a /* yocto_refframe.cpp */; };
-		B8A727A817E0CD3A0057008f /* yocto_relay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057008d /* yocto_relay.cpp */; };
-		B8A727A817E0CD3A00570092 /* yocto_segmenteddisplay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570090 /* yocto_segmenteddisplay.cpp */; };
-		B8A727A817E0CD3A00570095 /* yocto_serialport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570093 /* yocto_serialport.cpp */; };
-		B8A727A817E0CD3A00570098 /* yocto_servo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570096 /* yocto_servo.cpp */; };
-		B8A727A817E0CD3A0057009b /* yocto_spiport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00570099 /* yocto_spiport.cpp */; };
-		B8A727A817E0CD3A0057009e /* yocto_steppermotor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057009c /* yocto_steppermotor.cpp */; };
-		B8A727A817E0CD3A005700a1 /* yocto_temperature.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057009f /* yocto_temperature.cpp */; };
-		B8A727A817E0CD3A005700a4 /* yocto_tilt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005700a2 /* yocto_tilt.cpp */; };
-		B8A727A817E0CD3A005700a7 /* yocto_voc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005700a5 /* yocto_voc.cpp */; };
-		B8A727A817E0CD3A005700aa /* yocto_voltage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005700a8 /* yocto_voltage.cpp */; };
-		B8A727A817E0CD3A005700ad /* yocto_wakeupmonitor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005700ab /* yocto_wakeupmonitor.cpp */; };
-		B8A727A817E0CD3A005700b0 /* yocto_wakeupschedule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005700ae /* yocto_wakeupschedule.cpp */; };
-		B8A727A817E0CD3A005700b3 /* yocto_watchdog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005700b1 /* yocto_watchdog.cpp */; };
-		B8A727A817E0CD3A005700b6 /* yocto_wireless.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005700b4 /* yocto_wireless.cpp */; };
+		B8A727A817E0CD3A0057e0f732d9 /* yocto_accelerometer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057f96b1e31 /* yocto_accelerometer.cpp */; };
+		B8A727A817E0CD3A0057623e05ed /* yocto_altitude.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057127045ab /* yocto_altitude.cpp */; };
+		B8A727A817E0CD3A0057e1763680 /* yocto_anbutton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057913876c6 /* yocto_anbutton.cpp */; };
+		B8A727A817E0CD3A005795cc3811 /* yocto_audioin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057b178f114 /* yocto_audioin.cpp */; };
+		B8A727A817E0CD3A0057e75effba /* yocto_audioout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00579710bffc /* yocto_audioout.cpp */; };
+		B8A727A817E0CD3A0057b1e68d85 /* yocto_bluetoothlink.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057a87aa16d /* yocto_bluetoothlink.cpp */; };
+		B8A727A817E0CD3A00579c3a7f1e /* yocto_buzzer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00579c50dced /* yocto_buzzer.cpp */; };
+		B8A727A817E0CD3A00577ae7b650 /* yocto_carbondioxide.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057637b9ab8 /* yocto_carbondioxide.cpp */; };
+		B8A727A817E0CD3A005737472206 /* yocto_cellular.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005747096240 /* yocto_cellular.cpp */; };
+		B8A727A817E0CD3A005792916f6a /* yocto_colorled.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057e2df2f2c /* yocto_colorled.cpp */; };
+		B8A727A817E0CD3A00572ea267dc /* yocto_colorledcluster.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00578add6b47 /* yocto_colorledcluster.cpp */; };
+		B8A727A817E0CD3A005758790539 /* yocto_compass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00577ccdcc3c /* yocto_compass.cpp */; };
+		B8A727A817E0CD3A0057a08e7783 /* yocto_current.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057843abe86 /* yocto_current.cpp */; };
+		B8A727A817E0CD3A005743d02121 /* yocto_currentloopoutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057d8d39aa4 /* yocto_currentloopoutput.cpp */; };
+		B8A727A817E0CD3A0057ee8365a1 /* yocto_daisychain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00573e7cbcfc /* yocto_daisychain.cpp */; };
+		B8A727A817E0CD3A0057c53fd06f /* yocto_datalogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005715c00932 /* yocto_datalogger.cpp */; };
+		B8A727A817E0CD3A005740170545 /* yocto_digitalio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057dfd8afa0 /* yocto_digitalio.cpp */; };
+		B8A727A817E0CD3A00577d2723ef /* yocto_display.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00575993eaea /* yocto_display.cpp */; };
+		B8A727A817E0CD3A00578594bc7d /* yocto_dualpower.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00571a5b1698 /* yocto_dualpower.cpp */; };
+		B8A727A817E0CD3A0057cbb32679 /* yocto_files.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057a110d579 /* yocto_files.cpp */; };
+		B8A727A817E0CD3A005773d3a019 /* yocto_genericsensor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00576a4f8cf1 /* yocto_genericsensor.cpp */; };
+		B8A727A817E0CD3A00576d384ac5 /* yocto_gps.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057d2520ddd /* yocto_gps.cpp */; };
+		B8A727A817E0CD3A005754e1e7e7 /* yocto_groundspeed.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005741eb3577 /* yocto_groundspeed.cpp */; };
+		B8A727A817E0CD3A0057252dea82 /* yocto_gyro.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005736fe1893 /* yocto_gyro.cpp */; };
+		B8A727A817E0CD3A0057bd2e2865 /* yocto_hubport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057999ae160 /* yocto_hubport.cpp */; };
+		B8A727A817E0CD3A00578b94d099 /* yocto_humidity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057fbda90df /* yocto_humidity.cpp */; };
+		B8A727A817E0CD3A005737054904 /* yocto_latitude.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057474b0942 /* yocto_latitude.cpp */; };
+		B8A727A817E0CD3A0057eee4c685 /* yocto_led.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057518e819d /* yocto_led.cpp */; };
+		B8A727A817E0CD3A00571ede8f6b /* yocto_lightsensor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057bd45dfb /* yocto_lightsensor.cpp */; };
+		B8A727A817E0CD3A0057fd1135f5 /* yocto_longitude.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005762de9f10 /* yocto_longitude.cpp */; };
+		B8A727A817E0CD3A005742771f81 /* yocto_magnetometer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057b26d8617 /* yocto_magnetometer.cpp */; };
+		B8A727A817E0CD3A00579cc2eb89 /* yocto_messagebox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00574c3d32d4 /* yocto_messagebox.cpp */; };
+		B8A727A817E0CD3A00574743695c /* yocto_motor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00572de09a5c /* yocto_motor.cpp */; };
+		B8A727A817E0CD3A005750a88c68 /* yocto_multiaxiscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00574aef1161 /* yocto_multiaxiscontroller.cpp */; };
+		B8A727A817E0CD3A0057459a517f /* yocto_network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057612e987a /* yocto_network.cpp */; };
+		B8A727A817E0CD3A0057579b3540 /* yocto_oscontrol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057c8549fa5 /* yocto_oscontrol.cpp */; };
+		B8A727A817E0CD3A00578abff581 /* yocto_power.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057e01c0681 /* yocto_power.cpp */; };
+		B8A727A817E0CD3A0057455a5f35 /* yocto_poweroutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005750508da5 /* yocto_poweroutput.cpp */; };
+		B8A727A817E0CD3A005727cb8115 /* yocto_pressure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00575785c153 /* yocto_pressure.cpp */; };
+		B8A727A817E0CD3A0057337c67c1 /* yocto_proximity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057acb3cd24 /* yocto_proximity.cpp */; };
+		B8A727A817E0CD3A005789a6209b /* yocto_pwminput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057f9e860dd /* yocto_pwminput.cpp */; };
+		B8A727A817E0CD3A0057de4b66ed /* yocto_pwmoutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00574184cc08 /* yocto_pwmoutput.cpp */; };
+		B8A727A817E0CD3A005768d28796 /* yocto_pwmpowersource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057c61a71f0 /* yocto_pwmpowersource.cpp */; };
+		B8A727A817E0CD3A0057fceb7e8b /* yocto_quadraturedecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005767e8c50e /* yocto_quadraturedecoder.cpp */; };
+		B8A727A817E0CD3A00573abea06b /* yocto_rangefinder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00572fb472fb /* yocto_rangefinder.cpp */; };
+		B8A727A817E0CD3A005739a25184 /* yocto_realtimeclock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057203e7d6c /* yocto_realtimeclock.cpp */; };
+		B8A727A817E0CD3A0057ece67af2 /* yocto_refframe.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00579ca83ab4 /* yocto_refframe.cpp */; };
+		B8A727A817E0CD3A0057bc117afc /* yocto_relay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057d6b289fc /* yocto_relay.cpp */; };
+		B8A727A817E0CD3A0057b6735e96 /* yocto_segmenteddisplay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057d10a6b56 /* yocto_segmenteddisplay.cpp */; };
+		B8A727A817E0CD3A00574b766e53 /* yocto_serialport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00579b89b70e /* yocto_serialport.cpp */; };
+		B8A727A817E0CD3A00576df8d92d /* yocto_servo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005775b2a2d /* yocto_servo.cpp */; };
+		B8A727A817E0CD3A005754853e73 /* yocto_spiport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00577031f776 /* yocto_spiport.cpp */; };
+		B8A727A817E0CD3A005745702ca6 /* yocto_steppermotor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057b56ab530 /* yocto_steppermotor.cpp */; };
+		B8A727A817E0CD3A0057b1fed39d /* yocto_temperature.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057a4f4010d /* yocto_temperature.cpp */; };
+		B8A727A817E0CD3A00579e2b85fc /* yocto_tilt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00578df877ed /* yocto_tilt.cpp */; };
+		B8A727A817E0CD3A00573ef1fa73 /* yocto_voc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057819bbd6b /* yocto_voc.cpp */; };
+		B8A727A817E0CD3A0057630e55a6 /* yocto_voltage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005747ba9ca3 /* yocto_voltage.cpp */; };
+		B8A727A817E0CD3A00574d25f977 /* yocto_wakeupmonitor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005754b9d59f /* yocto_wakeupmonitor.cpp */; };
+		B8A727A817E0CD3A005796c61570 /* yocto_wakeupschedule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057380ee316 /* yocto_wakeupschedule.cpp */; };
+		B8A727A817E0CD3A0057251b9ad5 /* yocto_watchdog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00575555da93 /* yocto_watchdog.cpp */; };
+		B8A727A817E0CD3A0057229584b1 /* yocto_wireless.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005752dbc4f7 /* yocto_wireless.cpp */; };
 
 /* End PBXBuildFile section */
 
@@ -136,128 +135,128 @@
 		B8A727AA17E0CD3A005705C0 /* yocto_api.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_api.cpp; path = ../../../Sources/yocto_api.cpp; sourceTree = "<group>"; };
 		B8A727AB17E0CD3A005705C0 /* yocto_api.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_api.h; path = ../../../Sources/yocto_api.h; sourceTree = "<group>"; };
 
-		B8A727A817E0CD3A00570000 /* yocto_accelerometer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_accelerometer.cpp; path = ../../../Sources/yocto_accelerometer.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570001 /* yocto_accelerometer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_accelerometer.h; path = ../../../Sources/yocto_accelerometer.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570003 /* yocto_altitude.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_altitude.cpp; path = ../../../Sources/yocto_altitude.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570004 /* yocto_altitude.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_altitude.h; path = ../../../Sources/yocto_altitude.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570006 /* yocto_anbutton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_anbutton.cpp; path = ../../../Sources/yocto_anbutton.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570007 /* yocto_anbutton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_anbutton.h; path = ../../../Sources/yocto_anbutton.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570009 /* yocto_audioin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_audioin.cpp; path = ../../../Sources/yocto_audioin.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057000a /* yocto_audioin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_audioin.h; path = ../../../Sources/yocto_audioin.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057000c /* yocto_audioout.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_audioout.cpp; path = ../../../Sources/yocto_audioout.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057000d /* yocto_audioout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_audioout.h; path = ../../../Sources/yocto_audioout.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057000f /* yocto_bluetoothlink.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_bluetoothlink.cpp; path = ../../../Sources/yocto_bluetoothlink.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570010 /* yocto_bluetoothlink.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_bluetoothlink.h; path = ../../../Sources/yocto_bluetoothlink.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570012 /* yocto_buzzer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_buzzer.cpp; path = ../../../Sources/yocto_buzzer.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570013 /* yocto_buzzer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_buzzer.h; path = ../../../Sources/yocto_buzzer.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570015 /* yocto_carbondioxide.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_carbondioxide.cpp; path = ../../../Sources/yocto_carbondioxide.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570016 /* yocto_carbondioxide.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_carbondioxide.h; path = ../../../Sources/yocto_carbondioxide.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570018 /* yocto_cellular.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_cellular.cpp; path = ../../../Sources/yocto_cellular.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570019 /* yocto_cellular.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_cellular.h; path = ../../../Sources/yocto_cellular.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057001b /* yocto_colorled.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_colorled.cpp; path = ../../../Sources/yocto_colorled.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057001c /* yocto_colorled.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_colorled.h; path = ../../../Sources/yocto_colorled.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057001e /* yocto_colorledcluster.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_colorledcluster.cpp; path = ../../../Sources/yocto_colorledcluster.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057001f /* yocto_colorledcluster.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_colorledcluster.h; path = ../../../Sources/yocto_colorledcluster.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570021 /* yocto_compass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_compass.cpp; path = ../../../Sources/yocto_compass.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570022 /* yocto_compass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_compass.h; path = ../../../Sources/yocto_compass.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570024 /* yocto_current.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_current.cpp; path = ../../../Sources/yocto_current.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570025 /* yocto_current.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_current.h; path = ../../../Sources/yocto_current.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570027 /* yocto_currentloopoutput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_currentloopoutput.cpp; path = ../../../Sources/yocto_currentloopoutput.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570028 /* yocto_currentloopoutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_currentloopoutput.h; path = ../../../Sources/yocto_currentloopoutput.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057002a /* yocto_daisychain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_daisychain.cpp; path = ../../../Sources/yocto_daisychain.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057002b /* yocto_daisychain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_daisychain.h; path = ../../../Sources/yocto_daisychain.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057002d /* yocto_datalogger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_datalogger.cpp; path = ../../../Sources/yocto_datalogger.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057002e /* yocto_datalogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_datalogger.h; path = ../../../Sources/yocto_datalogger.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570030 /* yocto_digitalio.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_digitalio.cpp; path = ../../../Sources/yocto_digitalio.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570031 /* yocto_digitalio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_digitalio.h; path = ../../../Sources/yocto_digitalio.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570033 /* yocto_display.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_display.cpp; path = ../../../Sources/yocto_display.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570034 /* yocto_display.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_display.h; path = ../../../Sources/yocto_display.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570036 /* yocto_dualpower.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_dualpower.cpp; path = ../../../Sources/yocto_dualpower.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570037 /* yocto_dualpower.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_dualpower.h; path = ../../../Sources/yocto_dualpower.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570039 /* yocto_files.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_files.cpp; path = ../../../Sources/yocto_files.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057003a /* yocto_files.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_files.h; path = ../../../Sources/yocto_files.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057003c /* yocto_genericsensor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_genericsensor.cpp; path = ../../../Sources/yocto_genericsensor.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057003d /* yocto_genericsensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_genericsensor.h; path = ../../../Sources/yocto_genericsensor.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057003f /* yocto_gps.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_gps.cpp; path = ../../../Sources/yocto_gps.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570040 /* yocto_gps.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_gps.h; path = ../../../Sources/yocto_gps.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570042 /* yocto_groundspeed.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_groundspeed.cpp; path = ../../../Sources/yocto_groundspeed.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570043 /* yocto_groundspeed.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_groundspeed.h; path = ../../../Sources/yocto_groundspeed.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570045 /* yocto_gyro.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_gyro.cpp; path = ../../../Sources/yocto_gyro.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570046 /* yocto_gyro.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_gyro.h; path = ../../../Sources/yocto_gyro.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570048 /* yocto_hubport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_hubport.cpp; path = ../../../Sources/yocto_hubport.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570049 /* yocto_hubport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_hubport.h; path = ../../../Sources/yocto_hubport.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057004b /* yocto_humidity.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_humidity.cpp; path = ../../../Sources/yocto_humidity.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057004c /* yocto_humidity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_humidity.h; path = ../../../Sources/yocto_humidity.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057004e /* yocto_latitude.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_latitude.cpp; path = ../../../Sources/yocto_latitude.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057004f /* yocto_latitude.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_latitude.h; path = ../../../Sources/yocto_latitude.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570051 /* yocto_led.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_led.cpp; path = ../../../Sources/yocto_led.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570052 /* yocto_led.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_led.h; path = ../../../Sources/yocto_led.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570054 /* yocto_lightsensor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_lightsensor.cpp; path = ../../../Sources/yocto_lightsensor.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570055 /* yocto_lightsensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_lightsensor.h; path = ../../../Sources/yocto_lightsensor.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570057 /* yocto_longitude.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_longitude.cpp; path = ../../../Sources/yocto_longitude.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570058 /* yocto_longitude.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_longitude.h; path = ../../../Sources/yocto_longitude.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057005a /* yocto_magnetometer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_magnetometer.cpp; path = ../../../Sources/yocto_magnetometer.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057005b /* yocto_magnetometer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_magnetometer.h; path = ../../../Sources/yocto_magnetometer.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057005d /* yocto_messagebox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_messagebox.cpp; path = ../../../Sources/yocto_messagebox.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057005e /* yocto_messagebox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_messagebox.h; path = ../../../Sources/yocto_messagebox.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570060 /* yocto_motor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_motor.cpp; path = ../../../Sources/yocto_motor.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570061 /* yocto_motor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_motor.h; path = ../../../Sources/yocto_motor.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570063 /* yocto_multiaxiscontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_multiaxiscontroller.cpp; path = ../../../Sources/yocto_multiaxiscontroller.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570064 /* yocto_multiaxiscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_multiaxiscontroller.h; path = ../../../Sources/yocto_multiaxiscontroller.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570066 /* yocto_network.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_network.cpp; path = ../../../Sources/yocto_network.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570067 /* yocto_network.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_network.h; path = ../../../Sources/yocto_network.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570069 /* yocto_oscontrol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_oscontrol.cpp; path = ../../../Sources/yocto_oscontrol.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057006a /* yocto_oscontrol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_oscontrol.h; path = ../../../Sources/yocto_oscontrol.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057006c /* yocto_power.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_power.cpp; path = ../../../Sources/yocto_power.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057006d /* yocto_power.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_power.h; path = ../../../Sources/yocto_power.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057006f /* yocto_poweroutput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_poweroutput.cpp; path = ../../../Sources/yocto_poweroutput.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570070 /* yocto_poweroutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_poweroutput.h; path = ../../../Sources/yocto_poweroutput.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570072 /* yocto_pressure.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_pressure.cpp; path = ../../../Sources/yocto_pressure.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570073 /* yocto_pressure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_pressure.h; path = ../../../Sources/yocto_pressure.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570075 /* yocto_proximity.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_proximity.cpp; path = ../../../Sources/yocto_proximity.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570076 /* yocto_proximity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_proximity.h; path = ../../../Sources/yocto_proximity.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570078 /* yocto_pwminput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_pwminput.cpp; path = ../../../Sources/yocto_pwminput.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570079 /* yocto_pwminput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_pwminput.h; path = ../../../Sources/yocto_pwminput.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057007b /* yocto_pwmoutput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_pwmoutput.cpp; path = ../../../Sources/yocto_pwmoutput.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057007c /* yocto_pwmoutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_pwmoutput.h; path = ../../../Sources/yocto_pwmoutput.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057007e /* yocto_pwmpowersource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_pwmpowersource.cpp; path = ../../../Sources/yocto_pwmpowersource.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057007f /* yocto_pwmpowersource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_pwmpowersource.h; path = ../../../Sources/yocto_pwmpowersource.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570081 /* yocto_quadraturedecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_quadraturedecoder.cpp; path = ../../../Sources/yocto_quadraturedecoder.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570082 /* yocto_quadraturedecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_quadraturedecoder.h; path = ../../../Sources/yocto_quadraturedecoder.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570084 /* yocto_rangefinder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_rangefinder.cpp; path = ../../../Sources/yocto_rangefinder.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570085 /* yocto_rangefinder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_rangefinder.h; path = ../../../Sources/yocto_rangefinder.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570087 /* yocto_realtimeclock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_realtimeclock.cpp; path = ../../../Sources/yocto_realtimeclock.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570088 /* yocto_realtimeclock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_realtimeclock.h; path = ../../../Sources/yocto_realtimeclock.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057008a /* yocto_refframe.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_refframe.cpp; path = ../../../Sources/yocto_refframe.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057008b /* yocto_refframe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_refframe.h; path = ../../../Sources/yocto_refframe.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057008d /* yocto_relay.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_relay.cpp; path = ../../../Sources/yocto_relay.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057008e /* yocto_relay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_relay.h; path = ../../../Sources/yocto_relay.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570090 /* yocto_segmenteddisplay.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_segmenteddisplay.cpp; path = ../../../Sources/yocto_segmenteddisplay.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570091 /* yocto_segmenteddisplay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_segmenteddisplay.h; path = ../../../Sources/yocto_segmenteddisplay.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570093 /* yocto_serialport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_serialport.cpp; path = ../../../Sources/yocto_serialport.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570094 /* yocto_serialport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_serialport.h; path = ../../../Sources/yocto_serialport.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570096 /* yocto_servo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_servo.cpp; path = ../../../Sources/yocto_servo.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570097 /* yocto_servo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_servo.h; path = ../../../Sources/yocto_servo.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A00570099 /* yocto_spiport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_spiport.cpp; path = ../../../Sources/yocto_spiport.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057009a /* yocto_spiport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_spiport.h; path = ../../../Sources/yocto_spiport.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057009c /* yocto_steppermotor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_steppermotor.cpp; path = ../../../Sources/yocto_steppermotor.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057009d /* yocto_steppermotor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_steppermotor.h; path = ../../../Sources/yocto_steppermotor.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057009f /* yocto_temperature.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_temperature.cpp; path = ../../../Sources/yocto_temperature.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A005700a0 /* yocto_temperature.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_temperature.h; path = ../../../Sources/yocto_temperature.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A005700a2 /* yocto_tilt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_tilt.cpp; path = ../../../Sources/yocto_tilt.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A005700a3 /* yocto_tilt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_tilt.h; path = ../../../Sources/yocto_tilt.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A005700a5 /* yocto_voc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_voc.cpp; path = ../../../Sources/yocto_voc.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A005700a6 /* yocto_voc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_voc.h; path = ../../../Sources/yocto_voc.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A005700a8 /* yocto_voltage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_voltage.cpp; path = ../../../Sources/yocto_voltage.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A005700a9 /* yocto_voltage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_voltage.h; path = ../../../Sources/yocto_voltage.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A005700ab /* yocto_wakeupmonitor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_wakeupmonitor.cpp; path = ../../../Sources/yocto_wakeupmonitor.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A005700ac /* yocto_wakeupmonitor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_wakeupmonitor.h; path = ../../../Sources/yocto_wakeupmonitor.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A005700ae /* yocto_wakeupschedule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_wakeupschedule.cpp; path = ../../../Sources/yocto_wakeupschedule.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A005700af /* yocto_wakeupschedule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_wakeupschedule.h; path = ../../../Sources/yocto_wakeupschedule.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A005700b1 /* yocto_watchdog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_watchdog.cpp; path = ../../../Sources/yocto_watchdog.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A005700b2 /* yocto_watchdog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_watchdog.h; path = ../../../Sources/yocto_watchdog.h; sourceTree = "<group>"; };
-		B8A727A817E0CD3A005700b4 /* yocto_wireless.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_wireless.cpp; path = ../../../Sources/yocto_wireless.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A005700b5 /* yocto_wireless.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_wireless.h; path = ../../../Sources/yocto_wireless.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057f96b1e31 /* yocto_accelerometer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_accelerometer.cpp; path = ../../../Sources/yocto_accelerometer.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00573eeaaab1 /* yocto_accelerometer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_accelerometer.h; path = ../../../Sources/yocto_accelerometer.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057127045ab /* yocto_altitude.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_altitude.cpp; path = ../../../Sources/yocto_altitude.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057896226ec /* yocto_altitude.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_altitude.h; path = ../../../Sources/yocto_altitude.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057913876c6 /* yocto_anbutton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_anbutton.cpp; path = ../../../Sources/yocto_anbutton.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00575b0a812c /* yocto_anbutton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_anbutton.h; path = ../../../Sources/yocto_anbutton.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057b178f114 /* yocto_audioin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_audioin.cpp; path = ../../../Sources/yocto_audioin.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005736177310 /* yocto_audioin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_audioin.h; path = ../../../Sources/yocto_audioin.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00579710bffc /* yocto_audioout.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_audioout.cpp; path = ../../../Sources/yocto_audioout.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005743ba672b /* yocto_audioout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_audioout.h; path = ../../../Sources/yocto_audioout.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057a87aa16d /* yocto_bluetoothlink.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_bluetoothlink.cpp; path = ../../../Sources/yocto_bluetoothlink.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00573b190287 /* yocto_bluetoothlink.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_bluetoothlink.h; path = ../../../Sources/yocto_bluetoothlink.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00579c50dced /* yocto_buzzer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_buzzer.cpp; path = ../../../Sources/yocto_buzzer.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00579b4818eb /* yocto_buzzer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_buzzer.h; path = ../../../Sources/yocto_buzzer.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057637b9ab8 /* yocto_carbondioxide.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_carbondioxide.cpp; path = ../../../Sources/yocto_carbondioxide.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00573ce6718 /* yocto_carbondioxide.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_carbondioxide.h; path = ../../../Sources/yocto_carbondioxide.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005747096240 /* yocto_cellular.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_cellular.cpp; path = ../../../Sources/yocto_cellular.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005754492622 /* yocto_cellular.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_cellular.h; path = ../../../Sources/yocto_cellular.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057e2df2f2c /* yocto_colorled.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_colorled.cpp; path = ../../../Sources/yocto_colorled.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00577a43ce0c /* yocto_colorled.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_colorled.h; path = ../../../Sources/yocto_colorled.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00578add6b47 /* yocto_colorledcluster.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_colorledcluster.cpp; path = ../../../Sources/yocto_colorledcluster.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057ed3fdfa0 /* yocto_colorledcluster.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_colorledcluster.h; path = ../../../Sources/yocto_colorledcluster.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00577ccdcc3c /* yocto_compass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_compass.cpp; path = ../../../Sources/yocto_compass.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057d0b1594c /* yocto_compass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_compass.h; path = ../../../Sources/yocto_compass.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057843abe86 /* yocto_current.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_current.cpp; path = ../../../Sources/yocto_current.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057b3280684 /* yocto_current.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_current.h; path = ../../../Sources/yocto_current.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057d8d39aa4 /* yocto_currentloopoutput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_currentloopoutput.cpp; path = ../../../Sources/yocto_currentloopoutput.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057f8d1a67a /* yocto_currentloopoutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_currentloopoutput.h; path = ../../../Sources/yocto_currentloopoutput.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00573e7cbcfc /* yocto_daisychain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_daisychain.cpp; path = ../../../Sources/yocto_daisychain.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00578eff7cce /* yocto_daisychain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_daisychain.h; path = ../../../Sources/yocto_daisychain.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005715c00932 /* yocto_datalogger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_datalogger.cpp; path = ../../../Sources/yocto_datalogger.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057c9eeb83 /* yocto_datalogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_datalogger.h; path = ../../../Sources/yocto_datalogger.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057dfd8afa0 /* yocto_digitalio.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_digitalio.cpp; path = ../../../Sources/yocto_digitalio.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057ff768a0 /* yocto_digitalio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_digitalio.h; path = ../../../Sources/yocto_digitalio.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00575993eaea /* yocto_display.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_display.cpp; path = ../../../Sources/yocto_display.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00574a4904e2 /* yocto_display.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_display.h; path = ../../../Sources/yocto_display.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00571a5b1698 /* yocto_dualpower.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_dualpower.cpp; path = ../../../Sources/yocto_dualpower.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00578ec21243 /* yocto_dualpower.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_dualpower.h; path = ../../../Sources/yocto_dualpower.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057a110d579 /* yocto_files.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_files.cpp; path = ../../../Sources/yocto_files.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057d52bc1a9 /* yocto_files.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_files.h; path = ../../../Sources/yocto_files.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00576a4f8cf1 /* yocto_genericsensor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_genericsensor.cpp; path = ../../../Sources/yocto_genericsensor.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00575158aa4e /* yocto_genericsensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_genericsensor.h; path = ../../../Sources/yocto_genericsensor.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057d2520ddd /* yocto_gps.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_gps.cpp; path = ../../../Sources/yocto_gps.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00577f99e5ae /* yocto_gps.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_gps.h; path = ../../../Sources/yocto_gps.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005741eb3577 /* yocto_groundspeed.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_groundspeed.cpp; path = ../../../Sources/yocto_groundspeed.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005768364ad4 /* yocto_groundspeed.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_groundspeed.h; path = ../../../Sources/yocto_groundspeed.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005736fe1893 /* yocto_gyro.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_gyro.cpp; path = ../../../Sources/yocto_gyro.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057c2ad1b8d /* yocto_gyro.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_gyro.h; path = ../../../Sources/yocto_gyro.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057999ae160 /* yocto_hubport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_hubport.cpp; path = ../../../Sources/yocto_hubport.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00574b14551a /* yocto_hubport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_hubport.h; path = ../../../Sources/yocto_hubport.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057fbda90df /* yocto_humidity.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_humidity.cpp; path = ../../../Sources/yocto_humidity.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057f503a69f /* yocto_humidity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_humidity.h; path = ../../../Sources/yocto_humidity.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057474b0942 /* yocto_latitude.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_latitude.cpp; path = ../../../Sources/yocto_latitude.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00578dd34a0b /* yocto_latitude.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_latitude.h; path = ../../../Sources/yocto_latitude.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057518e819d /* yocto_led.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_led.cpp; path = ../../../Sources/yocto_led.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005776e7c6e7 /* yocto_led.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_led.h; path = ../../../Sources/yocto_led.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057bd45dfb /* yocto_lightsensor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_lightsensor.cpp; path = ../../../Sources/yocto_lightsensor.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057701230de /* yocto_lightsensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_lightsensor.h; path = ../../../Sources/yocto_lightsensor.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005762de9f10 /* yocto_longitude.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_longitude.cpp; path = ../../../Sources/yocto_longitude.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057c61c9b15 /* yocto_longitude.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_longitude.h; path = ../../../Sources/yocto_longitude.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057b26d8617 /* yocto_magnetometer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_magnetometer.cpp; path = ../../../Sources/yocto_magnetometer.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00571f188572 /* yocto_magnetometer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_magnetometer.h; path = ../../../Sources/yocto_magnetometer.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00574c3d32d4 /* yocto_messagebox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_messagebox.cpp; path = ../../../Sources/yocto_messagebox.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057eecc361 /* yocto_messagebox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_messagebox.h; path = ../../../Sources/yocto_messagebox.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00572de09a5c /* yocto_motor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_motor.cpp; path = ../../../Sources/yocto_motor.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00573f9a205e /* yocto_motor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_motor.h; path = ../../../Sources/yocto_motor.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00574aef1161 /* yocto_multiaxiscontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_multiaxiscontroller.cpp; path = ../../../Sources/yocto_multiaxiscontroller.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057f3ee4678 /* yocto_multiaxiscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_multiaxiscontroller.h; path = ../../../Sources/yocto_multiaxiscontroller.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057612e987a /* yocto_network.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_network.cpp; path = ../../../Sources/yocto_network.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00574ac460ba /* yocto_network.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_network.h; path = ../../../Sources/yocto_network.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057c8549fa5 /* yocto_oscontrol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_oscontrol.cpp; path = ../../../Sources/yocto_oscontrol.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057ef913e80 /* yocto_oscontrol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_oscontrol.h; path = ../../../Sources/yocto_oscontrol.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057e01c0681 /* yocto_power.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_power.cpp; path = ../../../Sources/yocto_power.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057118e47e4 /* yocto_power.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_power.h; path = ../../../Sources/yocto_power.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005750508da5 /* yocto_poweroutput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_poweroutput.cpp; path = ../../../Sources/yocto_poweroutput.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057b8e9420 /* yocto_poweroutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_poweroutput.h; path = ../../../Sources/yocto_poweroutput.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00575785c153 /* yocto_pressure.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_pressure.cpp; path = ../../../Sources/yocto_pressure.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00573ec49f17 /* yocto_pressure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_pressure.h; path = ../../../Sources/yocto_pressure.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057acb3cd24 /* yocto_proximity.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_proximity.cpp; path = ../../../Sources/yocto_proximity.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057c6acd4de /* yocto_proximity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_proximity.h; path = ../../../Sources/yocto_proximity.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057f9e860dd /* yocto_pwminput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_pwminput.cpp; path = ../../../Sources/yocto_pwminput.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005793836da6 /* yocto_pwminput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_pwminput.h; path = ../../../Sources/yocto_pwminput.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00574184cc08 /* yocto_pwmoutput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_pwmoutput.cpp; path = ../../../Sources/yocto_pwmoutput.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057213eab02 /* yocto_pwmoutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_pwmoutput.h; path = ../../../Sources/yocto_pwmoutput.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057c61a71f0 /* yocto_pwmpowersource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_pwmpowersource.cpp; path = ../../../Sources/yocto_pwmpowersource.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005736bcb448 /* yocto_pwmpowersource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_pwmpowersource.h; path = ../../../Sources/yocto_pwmpowersource.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005767e8c50e /* yocto_quadraturedecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_quadraturedecoder.cpp; path = ../../../Sources/yocto_quadraturedecoder.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057c85baabf /* yocto_quadraturedecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_quadraturedecoder.h; path = ../../../Sources/yocto_quadraturedecoder.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00572fb472fb /* yocto_rangefinder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_rangefinder.cpp; path = ../../../Sources/yocto_rangefinder.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057478421bd /* yocto_rangefinder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_rangefinder.h; path = ../../../Sources/yocto_rangefinder.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057203e7d6c /* yocto_realtimeclock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_realtimeclock.cpp; path = ../../../Sources/yocto_realtimeclock.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057d4ee84a6 /* yocto_realtimeclock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_realtimeclock.h; path = ../../../Sources/yocto_realtimeclock.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00579ca83ab4 /* yocto_refframe.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_refframe.cpp; path = ../../../Sources/yocto_refframe.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00571fbf7136 /* yocto_refframe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_refframe.h; path = ../../../Sources/yocto_refframe.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057d6b289fc /* yocto_relay.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_relay.cpp; path = ../../../Sources/yocto_relay.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057b38dab8e /* yocto_relay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_relay.h; path = ../../../Sources/yocto_relay.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057d10a6b56 /* yocto_segmenteddisplay.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_segmenteddisplay.cpp; path = ../../../Sources/yocto_segmenteddisplay.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057f57f4bac /* yocto_segmenteddisplay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_segmenteddisplay.h; path = ../../../Sources/yocto_segmenteddisplay.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00579b89b70e /* yocto_serialport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_serialport.cpp; path = ../../../Sources/yocto_serialport.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00573f0c2b17 /* yocto_serialport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_serialport.h; path = ../../../Sources/yocto_serialport.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005775b2a2d /* yocto_servo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_servo.cpp; path = ../../../Sources/yocto_servo.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00571f4f393d /* yocto_servo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_servo.h; path = ../../../Sources/yocto_servo.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00577031f776 /* yocto_spiport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_spiport.cpp; path = ../../../Sources/yocto_spiport.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00572f66d328 /* yocto_spiport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_spiport.h; path = ../../../Sources/yocto_spiport.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057b56ab530 /* yocto_steppermotor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_steppermotor.cpp; path = ../../../Sources/yocto_steppermotor.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005758067363 /* yocto_steppermotor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_steppermotor.h; path = ../../../Sources/yocto_steppermotor.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057a4f4010d /* yocto_temperature.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_temperature.cpp; path = ../../../Sources/yocto_temperature.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005758830d25 /* yocto_temperature.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_temperature.h; path = ../../../Sources/yocto_temperature.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00578df877ed /* yocto_tilt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_tilt.cpp; path = ../../../Sources/yocto_tilt.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005787ba9007 /* yocto_tilt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_tilt.h; path = ../../../Sources/yocto_tilt.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057819bbd6b /* yocto_voc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_voc.cpp; path = ../../../Sources/yocto_voc.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00573645bf25 /* yocto_voc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_voc.h; path = ../../../Sources/yocto_voc.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005747ba9ca3 /* yocto_voltage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_voltage.cpp; path = ../../../Sources/yocto_voltage.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057ccd008da /* yocto_voltage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_voltage.h; path = ../../../Sources/yocto_voltage.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005754b9d59f /* yocto_wakeupmonitor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_wakeupmonitor.cpp; path = ../../../Sources/yocto_wakeupmonitor.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057adcdf10c /* yocto_wakeupmonitor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_wakeupmonitor.h; path = ../../../Sources/yocto_wakeupmonitor.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057380ee316 /* yocto_wakeupschedule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_wakeupschedule.cpp; path = ../../../Sources/yocto_wakeupschedule.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00575408137 /* yocto_wakeupschedule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_wakeupschedule.h; path = ../../../Sources/yocto_wakeupschedule.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00575555da93 /* yocto_watchdog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_watchdog.cpp; path = ../../../Sources/yocto_watchdog.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057bfc40e7 /* yocto_watchdog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_watchdog.h; path = ../../../Sources/yocto_watchdog.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005752dbc4f7 /* yocto_wireless.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_wireless.cpp; path = ../../../Sources/yocto_wireless.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057b28a566f /* yocto_wireless.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_wireless.h; path = ../../../Sources/yocto_wireless.h; sourceTree = "<group>"; };
 
 		B8FE65001472686800FD11A2 /* project */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = project; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -282,128 +281,128 @@
 				B8A727AA17E0CD3A005705C0 /* yocto_api.cpp */,
 				B8A727AB17E0CD3A005705C0 /* yocto_api.h */,
 
-				B8A727A817E0CD3A00570000 /* yocto_accelerometer.cpp */,
-				B8A727A817E0CD3A00570001 /* yocto_accelerometer.h */,
-				B8A727A817E0CD3A00570003 /* yocto_altitude.cpp */,
-				B8A727A817E0CD3A00570004 /* yocto_altitude.h */,
-				B8A727A817E0CD3A00570006 /* yocto_anbutton.cpp */,
-				B8A727A817E0CD3A00570007 /* yocto_anbutton.h */,
-				B8A727A817E0CD3A00570009 /* yocto_audioin.cpp */,
-				B8A727A817E0CD3A0057000a /* yocto_audioin.h */,
-				B8A727A817E0CD3A0057000c /* yocto_audioout.cpp */,
-				B8A727A817E0CD3A0057000d /* yocto_audioout.h */,
-				B8A727A817E0CD3A0057000f /* yocto_bluetoothlink.cpp */,
-				B8A727A817E0CD3A00570010 /* yocto_bluetoothlink.h */,
-				B8A727A817E0CD3A00570012 /* yocto_buzzer.cpp */,
-				B8A727A817E0CD3A00570013 /* yocto_buzzer.h */,
-				B8A727A817E0CD3A00570015 /* yocto_carbondioxide.cpp */,
-				B8A727A817E0CD3A00570016 /* yocto_carbondioxide.h */,
-				B8A727A817E0CD3A00570018 /* yocto_cellular.cpp */,
-				B8A727A817E0CD3A00570019 /* yocto_cellular.h */,
-				B8A727A817E0CD3A0057001b /* yocto_colorled.cpp */,
-				B8A727A817E0CD3A0057001c /* yocto_colorled.h */,
-				B8A727A817E0CD3A0057001e /* yocto_colorledcluster.cpp */,
-				B8A727A817E0CD3A0057001f /* yocto_colorledcluster.h */,
-				B8A727A817E0CD3A00570021 /* yocto_compass.cpp */,
-				B8A727A817E0CD3A00570022 /* yocto_compass.h */,
-				B8A727A817E0CD3A00570024 /* yocto_current.cpp */,
-				B8A727A817E0CD3A00570025 /* yocto_current.h */,
-				B8A727A817E0CD3A00570027 /* yocto_currentloopoutput.cpp */,
-				B8A727A817E0CD3A00570028 /* yocto_currentloopoutput.h */,
-				B8A727A817E0CD3A0057002a /* yocto_daisychain.cpp */,
-				B8A727A817E0CD3A0057002b /* yocto_daisychain.h */,
-				B8A727A817E0CD3A0057002d /* yocto_datalogger.cpp */,
-				B8A727A817E0CD3A0057002e /* yocto_datalogger.h */,
-				B8A727A817E0CD3A00570030 /* yocto_digitalio.cpp */,
-				B8A727A817E0CD3A00570031 /* yocto_digitalio.h */,
-				B8A727A817E0CD3A00570033 /* yocto_display.cpp */,
-				B8A727A817E0CD3A00570034 /* yocto_display.h */,
-				B8A727A817E0CD3A00570036 /* yocto_dualpower.cpp */,
-				B8A727A817E0CD3A00570037 /* yocto_dualpower.h */,
-				B8A727A817E0CD3A00570039 /* yocto_files.cpp */,
-				B8A727A817E0CD3A0057003a /* yocto_files.h */,
-				B8A727A817E0CD3A0057003c /* yocto_genericsensor.cpp */,
-				B8A727A817E0CD3A0057003d /* yocto_genericsensor.h */,
-				B8A727A817E0CD3A0057003f /* yocto_gps.cpp */,
-				B8A727A817E0CD3A00570040 /* yocto_gps.h */,
-				B8A727A817E0CD3A00570042 /* yocto_groundspeed.cpp */,
-				B8A727A817E0CD3A00570043 /* yocto_groundspeed.h */,
-				B8A727A817E0CD3A00570045 /* yocto_gyro.cpp */,
-				B8A727A817E0CD3A00570046 /* yocto_gyro.h */,
-				B8A727A817E0CD3A00570048 /* yocto_hubport.cpp */,
-				B8A727A817E0CD3A00570049 /* yocto_hubport.h */,
-				B8A727A817E0CD3A0057004b /* yocto_humidity.cpp */,
-				B8A727A817E0CD3A0057004c /* yocto_humidity.h */,
-				B8A727A817E0CD3A0057004e /* yocto_latitude.cpp */,
-				B8A727A817E0CD3A0057004f /* yocto_latitude.h */,
-				B8A727A817E0CD3A00570051 /* yocto_led.cpp */,
-				B8A727A817E0CD3A00570052 /* yocto_led.h */,
-				B8A727A817E0CD3A00570054 /* yocto_lightsensor.cpp */,
-				B8A727A817E0CD3A00570055 /* yocto_lightsensor.h */,
-				B8A727A817E0CD3A00570057 /* yocto_longitude.cpp */,
-				B8A727A817E0CD3A00570058 /* yocto_longitude.h */,
-				B8A727A817E0CD3A0057005a /* yocto_magnetometer.cpp */,
-				B8A727A817E0CD3A0057005b /* yocto_magnetometer.h */,
-				B8A727A817E0CD3A0057005d /* yocto_messagebox.cpp */,
-				B8A727A817E0CD3A0057005e /* yocto_messagebox.h */,
-				B8A727A817E0CD3A00570060 /* yocto_motor.cpp */,
-				B8A727A817E0CD3A00570061 /* yocto_motor.h */,
-				B8A727A817E0CD3A00570063 /* yocto_multiaxiscontroller.cpp */,
-				B8A727A817E0CD3A00570064 /* yocto_multiaxiscontroller.h */,
-				B8A727A817E0CD3A00570066 /* yocto_network.cpp */,
-				B8A727A817E0CD3A00570067 /* yocto_network.h */,
-				B8A727A817E0CD3A00570069 /* yocto_oscontrol.cpp */,
-				B8A727A817E0CD3A0057006a /* yocto_oscontrol.h */,
-				B8A727A817E0CD3A0057006c /* yocto_power.cpp */,
-				B8A727A817E0CD3A0057006d /* yocto_power.h */,
-				B8A727A817E0CD3A0057006f /* yocto_poweroutput.cpp */,
-				B8A727A817E0CD3A00570070 /* yocto_poweroutput.h */,
-				B8A727A817E0CD3A00570072 /* yocto_pressure.cpp */,
-				B8A727A817E0CD3A00570073 /* yocto_pressure.h */,
-				B8A727A817E0CD3A00570075 /* yocto_proximity.cpp */,
-				B8A727A817E0CD3A00570076 /* yocto_proximity.h */,
-				B8A727A817E0CD3A00570078 /* yocto_pwminput.cpp */,
-				B8A727A817E0CD3A00570079 /* yocto_pwminput.h */,
-				B8A727A817E0CD3A0057007b /* yocto_pwmoutput.cpp */,
-				B8A727A817E0CD3A0057007c /* yocto_pwmoutput.h */,
-				B8A727A817E0CD3A0057007e /* yocto_pwmpowersource.cpp */,
-				B8A727A817E0CD3A0057007f /* yocto_pwmpowersource.h */,
-				B8A727A817E0CD3A00570081 /* yocto_quadraturedecoder.cpp */,
-				B8A727A817E0CD3A00570082 /* yocto_quadraturedecoder.h */,
-				B8A727A817E0CD3A00570084 /* yocto_rangefinder.cpp */,
-				B8A727A817E0CD3A00570085 /* yocto_rangefinder.h */,
-				B8A727A817E0CD3A00570087 /* yocto_realtimeclock.cpp */,
-				B8A727A817E0CD3A00570088 /* yocto_realtimeclock.h */,
-				B8A727A817E0CD3A0057008a /* yocto_refframe.cpp */,
-				B8A727A817E0CD3A0057008b /* yocto_refframe.h */,
-				B8A727A817E0CD3A0057008d /* yocto_relay.cpp */,
-				B8A727A817E0CD3A0057008e /* yocto_relay.h */,
-				B8A727A817E0CD3A00570090 /* yocto_segmenteddisplay.cpp */,
-				B8A727A817E0CD3A00570091 /* yocto_segmenteddisplay.h */,
-				B8A727A817E0CD3A00570093 /* yocto_serialport.cpp */,
-				B8A727A817E0CD3A00570094 /* yocto_serialport.h */,
-				B8A727A817E0CD3A00570096 /* yocto_servo.cpp */,
-				B8A727A817E0CD3A00570097 /* yocto_servo.h */,
-				B8A727A817E0CD3A00570099 /* yocto_spiport.cpp */,
-				B8A727A817E0CD3A0057009a /* yocto_spiport.h */,
-				B8A727A817E0CD3A0057009c /* yocto_steppermotor.cpp */,
-				B8A727A817E0CD3A0057009d /* yocto_steppermotor.h */,
-				B8A727A817E0CD3A0057009f /* yocto_temperature.cpp */,
-				B8A727A817E0CD3A005700a0 /* yocto_temperature.h */,
-				B8A727A817E0CD3A005700a2 /* yocto_tilt.cpp */,
-				B8A727A817E0CD3A005700a3 /* yocto_tilt.h */,
-				B8A727A817E0CD3A005700a5 /* yocto_voc.cpp */,
-				B8A727A817E0CD3A005700a6 /* yocto_voc.h */,
-				B8A727A817E0CD3A005700a8 /* yocto_voltage.cpp */,
-				B8A727A817E0CD3A005700a9 /* yocto_voltage.h */,
-				B8A727A817E0CD3A005700ab /* yocto_wakeupmonitor.cpp */,
-				B8A727A817E0CD3A005700ac /* yocto_wakeupmonitor.h */,
-				B8A727A817E0CD3A005700ae /* yocto_wakeupschedule.cpp */,
-				B8A727A817E0CD3A005700af /* yocto_wakeupschedule.h */,
-				B8A727A817E0CD3A005700b1 /* yocto_watchdog.cpp */,
-				B8A727A817E0CD3A005700b2 /* yocto_watchdog.h */,
-				B8A727A817E0CD3A005700b4 /* yocto_wireless.cpp */,
-				B8A727A817E0CD3A005700b5 /* yocto_wireless.h */,
+				B8A727A817E0CD3A0057f96b1e31 /* yocto_accelerometer.cpp */,
+				B8A727A817E0CD3A00573eeaaab1 /* yocto_accelerometer.h */,
+				B8A727A817E0CD3A0057127045ab /* yocto_altitude.cpp */,
+				B8A727A817E0CD3A0057896226ec /* yocto_altitude.h */,
+				B8A727A817E0CD3A0057913876c6 /* yocto_anbutton.cpp */,
+				B8A727A817E0CD3A00575b0a812c /* yocto_anbutton.h */,
+				B8A727A817E0CD3A0057b178f114 /* yocto_audioin.cpp */,
+				B8A727A817E0CD3A005736177310 /* yocto_audioin.h */,
+				B8A727A817E0CD3A00579710bffc /* yocto_audioout.cpp */,
+				B8A727A817E0CD3A005743ba672b /* yocto_audioout.h */,
+				B8A727A817E0CD3A0057a87aa16d /* yocto_bluetoothlink.cpp */,
+				B8A727A817E0CD3A00573b190287 /* yocto_bluetoothlink.h */,
+				B8A727A817E0CD3A00579c50dced /* yocto_buzzer.cpp */,
+				B8A727A817E0CD3A00579b4818eb /* yocto_buzzer.h */,
+				B8A727A817E0CD3A0057637b9ab8 /* yocto_carbondioxide.cpp */,
+				B8A727A817E0CD3A00573ce6718 /* yocto_carbondioxide.h */,
+				B8A727A817E0CD3A005747096240 /* yocto_cellular.cpp */,
+				B8A727A817E0CD3A005754492622 /* yocto_cellular.h */,
+				B8A727A817E0CD3A0057e2df2f2c /* yocto_colorled.cpp */,
+				B8A727A817E0CD3A00577a43ce0c /* yocto_colorled.h */,
+				B8A727A817E0CD3A00578add6b47 /* yocto_colorledcluster.cpp */,
+				B8A727A817E0CD3A0057ed3fdfa0 /* yocto_colorledcluster.h */,
+				B8A727A817E0CD3A00577ccdcc3c /* yocto_compass.cpp */,
+				B8A727A817E0CD3A0057d0b1594c /* yocto_compass.h */,
+				B8A727A817E0CD3A0057843abe86 /* yocto_current.cpp */,
+				B8A727A817E0CD3A0057b3280684 /* yocto_current.h */,
+				B8A727A817E0CD3A0057d8d39aa4 /* yocto_currentloopoutput.cpp */,
+				B8A727A817E0CD3A0057f8d1a67a /* yocto_currentloopoutput.h */,
+				B8A727A817E0CD3A00573e7cbcfc /* yocto_daisychain.cpp */,
+				B8A727A817E0CD3A00578eff7cce /* yocto_daisychain.h */,
+				B8A727A817E0CD3A005715c00932 /* yocto_datalogger.cpp */,
+				B8A727A817E0CD3A0057c9eeb83 /* yocto_datalogger.h */,
+				B8A727A817E0CD3A0057dfd8afa0 /* yocto_digitalio.cpp */,
+				B8A727A817E0CD3A0057ff768a0 /* yocto_digitalio.h */,
+				B8A727A817E0CD3A00575993eaea /* yocto_display.cpp */,
+				B8A727A817E0CD3A00574a4904e2 /* yocto_display.h */,
+				B8A727A817E0CD3A00571a5b1698 /* yocto_dualpower.cpp */,
+				B8A727A817E0CD3A00578ec21243 /* yocto_dualpower.h */,
+				B8A727A817E0CD3A0057a110d579 /* yocto_files.cpp */,
+				B8A727A817E0CD3A0057d52bc1a9 /* yocto_files.h */,
+				B8A727A817E0CD3A00576a4f8cf1 /* yocto_genericsensor.cpp */,
+				B8A727A817E0CD3A00575158aa4e /* yocto_genericsensor.h */,
+				B8A727A817E0CD3A0057d2520ddd /* yocto_gps.cpp */,
+				B8A727A817E0CD3A00577f99e5ae /* yocto_gps.h */,
+				B8A727A817E0CD3A005741eb3577 /* yocto_groundspeed.cpp */,
+				B8A727A817E0CD3A005768364ad4 /* yocto_groundspeed.h */,
+				B8A727A817E0CD3A005736fe1893 /* yocto_gyro.cpp */,
+				B8A727A817E0CD3A0057c2ad1b8d /* yocto_gyro.h */,
+				B8A727A817E0CD3A0057999ae160 /* yocto_hubport.cpp */,
+				B8A727A817E0CD3A00574b14551a /* yocto_hubport.h */,
+				B8A727A817E0CD3A0057fbda90df /* yocto_humidity.cpp */,
+				B8A727A817E0CD3A0057f503a69f /* yocto_humidity.h */,
+				B8A727A817E0CD3A0057474b0942 /* yocto_latitude.cpp */,
+				B8A727A817E0CD3A00578dd34a0b /* yocto_latitude.h */,
+				B8A727A817E0CD3A0057518e819d /* yocto_led.cpp */,
+				B8A727A817E0CD3A005776e7c6e7 /* yocto_led.h */,
+				B8A727A817E0CD3A0057bd45dfb /* yocto_lightsensor.cpp */,
+				B8A727A817E0CD3A0057701230de /* yocto_lightsensor.h */,
+				B8A727A817E0CD3A005762de9f10 /* yocto_longitude.cpp */,
+				B8A727A817E0CD3A0057c61c9b15 /* yocto_longitude.h */,
+				B8A727A817E0CD3A0057b26d8617 /* yocto_magnetometer.cpp */,
+				B8A727A817E0CD3A00571f188572 /* yocto_magnetometer.h */,
+				B8A727A817E0CD3A00574c3d32d4 /* yocto_messagebox.cpp */,
+				B8A727A817E0CD3A0057eecc361 /* yocto_messagebox.h */,
+				B8A727A817E0CD3A00572de09a5c /* yocto_motor.cpp */,
+				B8A727A817E0CD3A00573f9a205e /* yocto_motor.h */,
+				B8A727A817E0CD3A00574aef1161 /* yocto_multiaxiscontroller.cpp */,
+				B8A727A817E0CD3A0057f3ee4678 /* yocto_multiaxiscontroller.h */,
+				B8A727A817E0CD3A0057612e987a /* yocto_network.cpp */,
+				B8A727A817E0CD3A00574ac460ba /* yocto_network.h */,
+				B8A727A817E0CD3A0057c8549fa5 /* yocto_oscontrol.cpp */,
+				B8A727A817E0CD3A0057ef913e80 /* yocto_oscontrol.h */,
+				B8A727A817E0CD3A0057e01c0681 /* yocto_power.cpp */,
+				B8A727A817E0CD3A0057118e47e4 /* yocto_power.h */,
+				B8A727A817E0CD3A005750508da5 /* yocto_poweroutput.cpp */,
+				B8A727A817E0CD3A0057b8e9420 /* yocto_poweroutput.h */,
+				B8A727A817E0CD3A00575785c153 /* yocto_pressure.cpp */,
+				B8A727A817E0CD3A00573ec49f17 /* yocto_pressure.h */,
+				B8A727A817E0CD3A0057acb3cd24 /* yocto_proximity.cpp */,
+				B8A727A817E0CD3A0057c6acd4de /* yocto_proximity.h */,
+				B8A727A817E0CD3A0057f9e860dd /* yocto_pwminput.cpp */,
+				B8A727A817E0CD3A005793836da6 /* yocto_pwminput.h */,
+				B8A727A817E0CD3A00574184cc08 /* yocto_pwmoutput.cpp */,
+				B8A727A817E0CD3A0057213eab02 /* yocto_pwmoutput.h */,
+				B8A727A817E0CD3A0057c61a71f0 /* yocto_pwmpowersource.cpp */,
+				B8A727A817E0CD3A005736bcb448 /* yocto_pwmpowersource.h */,
+				B8A727A817E0CD3A005767e8c50e /* yocto_quadraturedecoder.cpp */,
+				B8A727A817E0CD3A0057c85baabf /* yocto_quadraturedecoder.h */,
+				B8A727A817E0CD3A00572fb472fb /* yocto_rangefinder.cpp */,
+				B8A727A817E0CD3A0057478421bd /* yocto_rangefinder.h */,
+				B8A727A817E0CD3A0057203e7d6c /* yocto_realtimeclock.cpp */,
+				B8A727A817E0CD3A0057d4ee84a6 /* yocto_realtimeclock.h */,
+				B8A727A817E0CD3A00579ca83ab4 /* yocto_refframe.cpp */,
+				B8A727A817E0CD3A00571fbf7136 /* yocto_refframe.h */,
+				B8A727A817E0CD3A0057d6b289fc /* yocto_relay.cpp */,
+				B8A727A817E0CD3A0057b38dab8e /* yocto_relay.h */,
+				B8A727A817E0CD3A0057d10a6b56 /* yocto_segmenteddisplay.cpp */,
+				B8A727A817E0CD3A0057f57f4bac /* yocto_segmenteddisplay.h */,
+				B8A727A817E0CD3A00579b89b70e /* yocto_serialport.cpp */,
+				B8A727A817E0CD3A00573f0c2b17 /* yocto_serialport.h */,
+				B8A727A817E0CD3A005775b2a2d /* yocto_servo.cpp */,
+				B8A727A817E0CD3A00571f4f393d /* yocto_servo.h */,
+				B8A727A817E0CD3A00577031f776 /* yocto_spiport.cpp */,
+				B8A727A817E0CD3A00572f66d328 /* yocto_spiport.h */,
+				B8A727A817E0CD3A0057b56ab530 /* yocto_steppermotor.cpp */,
+				B8A727A817E0CD3A005758067363 /* yocto_steppermotor.h */,
+				B8A727A817E0CD3A0057a4f4010d /* yocto_temperature.cpp */,
+				B8A727A817E0CD3A005758830d25 /* yocto_temperature.h */,
+				B8A727A817E0CD3A00578df877ed /* yocto_tilt.cpp */,
+				B8A727A817E0CD3A005787ba9007 /* yocto_tilt.h */,
+				B8A727A817E0CD3A0057819bbd6b /* yocto_voc.cpp */,
+				B8A727A817E0CD3A00573645bf25 /* yocto_voc.h */,
+				B8A727A817E0CD3A005747ba9ca3 /* yocto_voltage.cpp */,
+				B8A727A817E0CD3A0057ccd008da /* yocto_voltage.h */,
+				B8A727A817E0CD3A005754b9d59f /* yocto_wakeupmonitor.cpp */,
+				B8A727A817E0CD3A0057adcdf10c /* yocto_wakeupmonitor.h */,
+				B8A727A817E0CD3A0057380ee316 /* yocto_wakeupschedule.cpp */,
+				B8A727A817E0CD3A00575408137 /* yocto_wakeupschedule.h */,
+				B8A727A817E0CD3A00575555da93 /* yocto_watchdog.cpp */,
+				B8A727A817E0CD3A0057bfc40e7 /* yocto_watchdog.h */,
+				B8A727A817E0CD3A005752dbc4f7 /* yocto_wireless.cpp */,
+				B8A727A817E0CD3A0057b28a566f /* yocto_wireless.h */,
 
 			);
 			name = Yoctopuce;
@@ -530,67 +529,67 @@
 				B8A727EE17E0CD3A005705C0 /* ythread.c in Sources */,
 				B8A727F017E0CD3A005705C0 /* yocto_api.cpp in Sources */,
 
-				B8A727A817E0CD3A00570002 /* yocto_accelerometer.cpp in Sources */,
-				B8A727A817E0CD3A00570005 /* yocto_altitude.cpp in Sources */,
-				B8A727A817E0CD3A00570008 /* yocto_anbutton.cpp in Sources */,
-				B8A727A817E0CD3A0057000b /* yocto_audioin.cpp in Sources */,
-				B8A727A817E0CD3A0057000e /* yocto_audioout.cpp in Sources */,
-				B8A727A817E0CD3A00570011 /* yocto_bluetoothlink.cpp in Sources */,
-				B8A727A817E0CD3A00570014 /* yocto_buzzer.cpp in Sources */,
-				B8A727A817E0CD3A00570017 /* yocto_carbondioxide.cpp in Sources */,
-				B8A727A817E0CD3A0057001a /* yocto_cellular.cpp in Sources */,
-				B8A727A817E0CD3A0057001d /* yocto_colorled.cpp in Sources */,
-				B8A727A817E0CD3A00570020 /* yocto_colorledcluster.cpp in Sources */,
-				B8A727A817E0CD3A00570023 /* yocto_compass.cpp in Sources */,
-				B8A727A817E0CD3A00570026 /* yocto_current.cpp in Sources */,
-				B8A727A817E0CD3A00570029 /* yocto_currentloopoutput.cpp in Sources */,
-				B8A727A817E0CD3A0057002c /* yocto_daisychain.cpp in Sources */,
-				B8A727A817E0CD3A0057002f /* yocto_datalogger.cpp in Sources */,
-				B8A727A817E0CD3A00570032 /* yocto_digitalio.cpp in Sources */,
-				B8A727A817E0CD3A00570035 /* yocto_display.cpp in Sources */,
-				B8A727A817E0CD3A00570038 /* yocto_dualpower.cpp in Sources */,
-				B8A727A817E0CD3A0057003b /* yocto_files.cpp in Sources */,
-				B8A727A817E0CD3A0057003e /* yocto_genericsensor.cpp in Sources */,
-				B8A727A817E0CD3A00570041 /* yocto_gps.cpp in Sources */,
-				B8A727A817E0CD3A00570044 /* yocto_groundspeed.cpp in Sources */,
-				B8A727A817E0CD3A00570047 /* yocto_gyro.cpp in Sources */,
-				B8A727A817E0CD3A0057004a /* yocto_hubport.cpp in Sources */,
-				B8A727A817E0CD3A0057004d /* yocto_humidity.cpp in Sources */,
-				B8A727A817E0CD3A00570050 /* yocto_latitude.cpp in Sources */,
-				B8A727A817E0CD3A00570053 /* yocto_led.cpp in Sources */,
-				B8A727A817E0CD3A00570056 /* yocto_lightsensor.cpp in Sources */,
-				B8A727A817E0CD3A00570059 /* yocto_longitude.cpp in Sources */,
-				B8A727A817E0CD3A0057005c /* yocto_magnetometer.cpp in Sources */,
-				B8A727A817E0CD3A0057005f /* yocto_messagebox.cpp in Sources */,
-				B8A727A817E0CD3A00570062 /* yocto_motor.cpp in Sources */,
-				B8A727A817E0CD3A00570065 /* yocto_multiaxiscontroller.cpp in Sources */,
-				B8A727A817E0CD3A00570068 /* yocto_network.cpp in Sources */,
-				B8A727A817E0CD3A0057006b /* yocto_oscontrol.cpp in Sources */,
-				B8A727A817E0CD3A0057006e /* yocto_power.cpp in Sources */,
-				B8A727A817E0CD3A00570071 /* yocto_poweroutput.cpp in Sources */,
-				B8A727A817E0CD3A00570074 /* yocto_pressure.cpp in Sources */,
-				B8A727A817E0CD3A00570077 /* yocto_proximity.cpp in Sources */,
-				B8A727A817E0CD3A0057007a /* yocto_pwminput.cpp in Sources */,
-				B8A727A817E0CD3A0057007d /* yocto_pwmoutput.cpp in Sources */,
-				B8A727A817E0CD3A00570080 /* yocto_pwmpowersource.cpp in Sources */,
-				B8A727A817E0CD3A00570083 /* yocto_quadraturedecoder.cpp in Sources */,
-				B8A727A817E0CD3A00570086 /* yocto_rangefinder.cpp in Sources */,
-				B8A727A817E0CD3A00570089 /* yocto_realtimeclock.cpp in Sources */,
-				B8A727A817E0CD3A0057008c /* yocto_refframe.cpp in Sources */,
-				B8A727A817E0CD3A0057008f /* yocto_relay.cpp in Sources */,
-				B8A727A817E0CD3A00570092 /* yocto_segmenteddisplay.cpp in Sources */,
-				B8A727A817E0CD3A00570095 /* yocto_serialport.cpp in Sources */,
-				B8A727A817E0CD3A00570098 /* yocto_servo.cpp in Sources */,
-				B8A727A817E0CD3A0057009b /* yocto_spiport.cpp in Sources */,
-				B8A727A817E0CD3A0057009e /* yocto_steppermotor.cpp in Sources */,
-				B8A727A817E0CD3A005700a1 /* yocto_temperature.cpp in Sources */,
-				B8A727A817E0CD3A005700a4 /* yocto_tilt.cpp in Sources */,
-				B8A727A817E0CD3A005700a7 /* yocto_voc.cpp in Sources */,
-				B8A727A817E0CD3A005700aa /* yocto_voltage.cpp in Sources */,
-				B8A727A817E0CD3A005700ad /* yocto_wakeupmonitor.cpp in Sources */,
-				B8A727A817E0CD3A005700b0 /* yocto_wakeupschedule.cpp in Sources */,
-				B8A727A817E0CD3A005700b3 /* yocto_watchdog.cpp in Sources */,
-				B8A727A817E0CD3A005700b6 /* yocto_wireless.cpp in Sources */,
+				B8A727A817E0CD3A0057e0f732d9 /* yocto_accelerometer.cpp in Sources */,
+				B8A727A817E0CD3A0057623e05ed /* yocto_altitude.cpp in Sources */,
+				B8A727A817E0CD3A0057e1763680 /* yocto_anbutton.cpp in Sources */,
+				B8A727A817E0CD3A005795cc3811 /* yocto_audioin.cpp in Sources */,
+				B8A727A817E0CD3A0057e75effba /* yocto_audioout.cpp in Sources */,
+				B8A727A817E0CD3A0057b1e68d85 /* yocto_bluetoothlink.cpp in Sources */,
+				B8A727A817E0CD3A00579c3a7f1e /* yocto_buzzer.cpp in Sources */,
+				B8A727A817E0CD3A00577ae7b650 /* yocto_carbondioxide.cpp in Sources */,
+				B8A727A817E0CD3A005737472206 /* yocto_cellular.cpp in Sources */,
+				B8A727A817E0CD3A005792916f6a /* yocto_colorled.cpp in Sources */,
+				B8A727A817E0CD3A00572ea267dc /* yocto_colorledcluster.cpp in Sources */,
+				B8A727A817E0CD3A005758790539 /* yocto_compass.cpp in Sources */,
+				B8A727A817E0CD3A0057a08e7783 /* yocto_current.cpp in Sources */,
+				B8A727A817E0CD3A005743d02121 /* yocto_currentloopoutput.cpp in Sources */,
+				B8A727A817E0CD3A0057ee8365a1 /* yocto_daisychain.cpp in Sources */,
+				B8A727A817E0CD3A0057c53fd06f /* yocto_datalogger.cpp in Sources */,
+				B8A727A817E0CD3A005740170545 /* yocto_digitalio.cpp in Sources */,
+				B8A727A817E0CD3A00577d2723ef /* yocto_display.cpp in Sources */,
+				B8A727A817E0CD3A00578594bc7d /* yocto_dualpower.cpp in Sources */,
+				B8A727A817E0CD3A0057cbb32679 /* yocto_files.cpp in Sources */,
+				B8A727A817E0CD3A005773d3a019 /* yocto_genericsensor.cpp in Sources */,
+				B8A727A817E0CD3A00576d384ac5 /* yocto_gps.cpp in Sources */,
+				B8A727A817E0CD3A005754e1e7e7 /* yocto_groundspeed.cpp in Sources */,
+				B8A727A817E0CD3A0057252dea82 /* yocto_gyro.cpp in Sources */,
+				B8A727A817E0CD3A0057bd2e2865 /* yocto_hubport.cpp in Sources */,
+				B8A727A817E0CD3A00578b94d099 /* yocto_humidity.cpp in Sources */,
+				B8A727A817E0CD3A005737054904 /* yocto_latitude.cpp in Sources */,
+				B8A727A817E0CD3A0057eee4c685 /* yocto_led.cpp in Sources */,
+				B8A727A817E0CD3A00571ede8f6b /* yocto_lightsensor.cpp in Sources */,
+				B8A727A817E0CD3A0057fd1135f5 /* yocto_longitude.cpp in Sources */,
+				B8A727A817E0CD3A005742771f81 /* yocto_magnetometer.cpp in Sources */,
+				B8A727A817E0CD3A00579cc2eb89 /* yocto_messagebox.cpp in Sources */,
+				B8A727A817E0CD3A00574743695c /* yocto_motor.cpp in Sources */,
+				B8A727A817E0CD3A005750a88c68 /* yocto_multiaxiscontroller.cpp in Sources */,
+				B8A727A817E0CD3A0057459a517f /* yocto_network.cpp in Sources */,
+				B8A727A817E0CD3A0057579b3540 /* yocto_oscontrol.cpp in Sources */,
+				B8A727A817E0CD3A00578abff581 /* yocto_power.cpp in Sources */,
+				B8A727A817E0CD3A0057455a5f35 /* yocto_poweroutput.cpp in Sources */,
+				B8A727A817E0CD3A005727cb8115 /* yocto_pressure.cpp in Sources */,
+				B8A727A817E0CD3A0057337c67c1 /* yocto_proximity.cpp in Sources */,
+				B8A727A817E0CD3A005789a6209b /* yocto_pwminput.cpp in Sources */,
+				B8A727A817E0CD3A0057de4b66ed /* yocto_pwmoutput.cpp in Sources */,
+				B8A727A817E0CD3A005768d28796 /* yocto_pwmpowersource.cpp in Sources */,
+				B8A727A817E0CD3A0057fceb7e8b /* yocto_quadraturedecoder.cpp in Sources */,
+				B8A727A817E0CD3A00573abea06b /* yocto_rangefinder.cpp in Sources */,
+				B8A727A817E0CD3A005739a25184 /* yocto_realtimeclock.cpp in Sources */,
+				B8A727A817E0CD3A0057ece67af2 /* yocto_refframe.cpp in Sources */,
+				B8A727A817E0CD3A0057bc117afc /* yocto_relay.cpp in Sources */,
+				B8A727A817E0CD3A0057b6735e96 /* yocto_segmenteddisplay.cpp in Sources */,
+				B8A727A817E0CD3A00574b766e53 /* yocto_serialport.cpp in Sources */,
+				B8A727A817E0CD3A00576df8d92d /* yocto_servo.cpp in Sources */,
+				B8A727A817E0CD3A005754853e73 /* yocto_spiport.cpp in Sources */,
+				B8A727A817E0CD3A005745702ca6 /* yocto_steppermotor.cpp in Sources */,
+				B8A727A817E0CD3A0057b1fed39d /* yocto_temperature.cpp in Sources */,
+				B8A727A817E0CD3A00579e2b85fc /* yocto_tilt.cpp in Sources */,
+				B8A727A817E0CD3A00573ef1fa73 /* yocto_voc.cpp in Sources */,
+				B8A727A817E0CD3A0057630e55a6 /* yocto_voltage.cpp in Sources */,
+				B8A727A817E0CD3A00574d25f977 /* yocto_wakeupmonitor.cpp in Sources */,
+				B8A727A817E0CD3A005796c61570 /* yocto_wakeupschedule.cpp in Sources */,
+				B8A727A817E0CD3A0057251b9ad5 /* yocto_watchdog.cpp in Sources */,
+				B8A727A817E0CD3A0057229584b1 /* yocto_wireless.cpp in Sources */,
 
 			);
 			runOnlyForDeploymentPostprocessing = 0;

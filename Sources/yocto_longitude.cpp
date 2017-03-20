@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_longitude.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_longitude.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindLongitude(), the high-level API for Longitude functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "longitude"
 
 YLongitude::YLongitude(const string& func): YSensor(func)
 //--- (Longitude initialization)
@@ -91,11 +92,21 @@ YLongitude::~YLongitude()
 YLongitude* YLongitude::FindLongitude(string func)
 {
     YLongitude* obj = NULL;
-    obj = (YLongitude*) YFunction::_FindFromCache("Longitude", func);
-    if (obj == NULL) {
-        obj = new YLongitude(func);
-        YFunction::_AddToCache("Longitude", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YLongitude*) YFunction::_FindFromCache("Longitude", func);
+        if (obj == NULL) {
+            obj = new YLongitude(func);
+            YFunction::_AddToCache("Longitude", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

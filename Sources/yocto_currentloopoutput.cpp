@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_currentloopoutput.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_currentloopoutput.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindCurrentLoopOutput(), the high-level API for CurrentLoopOutput functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "currentloopoutput"
 
 YCurrentLoopOutput::YCurrentLoopOutput(const string& func): YFunction(func)
 //--- (CurrentLoopOutput initialization)
@@ -111,8 +112,17 @@ int YCurrentLoopOutput::_parseAttr(yJsonStateMachine& j)
 int YCurrentLoopOutput::set_current(double newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
-    return _setAttr("current", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        res = _setAttr("current", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -124,29 +134,62 @@ int YCurrentLoopOutput::set_current(double newval)
  */
 double YCurrentLoopOutput::get_current(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCurrentLoopOutput::CURRENT_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCurrentLoopOutput::CURRENT_INVALID;
+                }
+            }
         }
+        res = _current;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _current;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 string YCurrentLoopOutput::get_currentTransition(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCurrentLoopOutput::CURRENTTRANSITION_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCurrentLoopOutput::CURRENTTRANSITION_INVALID;
+                }
+            }
         }
+        res = _currentTransition;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _currentTransition;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YCurrentLoopOutput::set_currentTransition(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("currentTransition", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("currentTransition", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -162,8 +205,17 @@ int YCurrentLoopOutput::set_currentTransition(const string& newval)
 int YCurrentLoopOutput::set_currentAtStartUp(double newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
-    return _setAttr("currentAtStartUp", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        res = _setAttr("currentAtStartUp", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -175,12 +227,24 @@ int YCurrentLoopOutput::set_currentAtStartUp(double newval)
  */
 double YCurrentLoopOutput::get_currentAtStartUp(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCurrentLoopOutput::CURRENTATSTARTUP_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCurrentLoopOutput::CURRENTATSTARTUP_INVALID;
+                }
+            }
         }
+        res = _currentAtStartUp;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _currentAtStartUp;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -195,12 +259,24 @@ double YCurrentLoopOutput::get_currentAtStartUp(void)
  */
 Y_LOOPPOWER_enum YCurrentLoopOutput::get_loopPower(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCurrentLoopOutput::LOOPPOWER_INVALID;
+    Y_LOOPPOWER_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCurrentLoopOutput::LOOPPOWER_INVALID;
+                }
+            }
         }
+        res = _loopPower;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _loopPower;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -229,11 +305,21 @@ Y_LOOPPOWER_enum YCurrentLoopOutput::get_loopPower(void)
 YCurrentLoopOutput* YCurrentLoopOutput::FindCurrentLoopOutput(string func)
 {
     YCurrentLoopOutput* obj = NULL;
-    obj = (YCurrentLoopOutput*) YFunction::_FindFromCache("CurrentLoopOutput", func);
-    if (obj == NULL) {
-        obj = new YCurrentLoopOutput(func);
-        YFunction::_AddToCache("CurrentLoopOutput", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YCurrentLoopOutput*) YFunction::_FindFromCache("CurrentLoopOutput", func);
+        if (obj == NULL) {
+            obj = new YCurrentLoopOutput(func);
+            YFunction::_AddToCache("CurrentLoopOutput", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

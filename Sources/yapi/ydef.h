@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 24575 2016-05-26 06:28:03Z seb $
+ * $Id: ydef.h 26757 2017-03-15 13:59:12Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -339,7 +339,8 @@ typedef struct {
 
 typedef yCRITICAL_SECTION_ST* yCRITICAL_SECTION;
 
-
+void yInitDebugCS();
+void yFreeDebugCS();
 void yDbgInitializeCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION *cs);
 void yDbgEnterCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION *cs);
 int yDbgTryEnterCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION *cs);

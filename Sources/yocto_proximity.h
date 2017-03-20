@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: pic24config.php 26169 2016-12-12 01:36:34Z mvuilleu $
+ * $Id: pic24config.php 26780 2017-03-16 14:02:09Z mvuilleu $
  *
  * Declares yFindProximity(), the high-level API for Proximity functions
  *
@@ -85,7 +85,7 @@ typedef enum {
  *
  * The Yoctopuce class YProximity allows you to use and configure Yoctopuce proximity
  * sensors. It inherits from the YSensor class the core functions to read measurements,
- * register callback functions, access to the autonomous datalogger.
+ * to register callback functions, to access the autonomous datalogger.
  * This class adds the ability to easily perform a one-point linear calibration
  * to compensate the effect of a glass or filter placed in front of the sensor.
  */

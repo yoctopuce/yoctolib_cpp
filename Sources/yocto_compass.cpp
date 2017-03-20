@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_compass.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_compass.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindCompass(), the high-level API for Compass functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "compass"
 
 YCompass::YCompass(const string& func): YSensor(func)
 //--- (Compass initialization)
@@ -99,12 +100,24 @@ int YCompass::_parseAttr(yJsonStateMachine& j)
  */
 int YCompass::get_bandwidth(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCompass::BANDWIDTH_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCompass::BANDWIDTH_INVALID;
+                }
+            }
         }
+        res = _bandwidth;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _bandwidth;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -120,18 +133,39 @@ int YCompass::get_bandwidth(void)
 int YCompass::set_bandwidth(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("bandwidth", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("bandwidth", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 Y_AXIS_enum YCompass::get_axis(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCompass::AXIS_INVALID;
+    Y_AXIS_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCompass::AXIS_INVALID;
+                }
+            }
         }
+        res = _axis;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _axis;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -143,12 +177,24 @@ Y_AXIS_enum YCompass::get_axis(void)
  */
 double YCompass::get_magneticHeading(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCompass::MAGNETICHEADING_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCompass::MAGNETICHEADING_INVALID;
+                }
+            }
         }
+        res = _magneticHeading;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _magneticHeading;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -177,11 +223,21 @@ double YCompass::get_magneticHeading(void)
 YCompass* YCompass::FindCompass(string func)
 {
     YCompass* obj = NULL;
-    obj = (YCompass*) YFunction::_FindFromCache("Compass", func);
-    if (obj == NULL) {
-        obj = new YCompass(func);
-        YFunction::_AddToCache("Compass", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YCompass*) YFunction::_FindFromCache("Compass", func);
+        if (obj == NULL) {
+            obj = new YCompass(func);
+            YFunction::_AddToCache("Compass", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

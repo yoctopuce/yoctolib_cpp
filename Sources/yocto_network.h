@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.h 26551 2017-02-03 15:18:17Z seb $
+ * $Id: yocto_network.h 26663 2017-02-28 09:49:36Z seb $
  *
  * Declares yFindNetwork(), the high-level API for Network functions
  *
@@ -294,6 +294,25 @@ public:
     inline string       router(void)
     { return this->get_router(); }
 
+    /**
+     * Returns the IP configuration of the network interface.
+     *
+     * If the network interface is setup to use a static IP address, the string starts with "STATIC:" and
+     * is followed by three
+     * parameters, separated by "/". The first is the device IP address, followed by the subnet mask
+     * length, and finally the
+     * router IP address (default gateway). For instance: "STATIC:192.168.1.14/16/192.168.1.1"
+     *
+     * If the network interface is configured to receive its IP from a DHCP server, the string start with
+     * "DHCP:" and is followed by
+     * three parameters separated by "/". The first is the fallback IP address, then the fallback subnet
+     * mask length and finally the
+     * fallback router IP address. These three parameters are used when no DHCP reply is received.
+     *
+     * @return a string corresponding to the IP configuration of the network interface
+     *
+     * On failure, throws an exception or returns Y_IPCONFIG_INVALID.
+     */
     string              get_ipConfig(void);
 
     inline string       ipConfig(void)

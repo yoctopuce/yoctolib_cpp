@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_voc.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_voc.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindVoc(), the high-level API for Voc functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "voc"
 
 YVoc::YVoc(const string& func): YSensor(func)
 //--- (Voc initialization)
@@ -91,11 +92,21 @@ YVoc::~YVoc()
 YVoc* YVoc::FindVoc(string func)
 {
     YVoc* obj = NULL;
-    obj = (YVoc*) YFunction::_FindFromCache("Voc", func);
-    if (obj == NULL) {
-        obj = new YVoc(func);
-        YFunction::_AddToCache("Voc", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YVoc*) YFunction::_FindFromCache("Voc", func);
+        if (obj == NULL) {
+            obj = new YVoc(func);
+            YFunction::_AddToCache("Voc", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

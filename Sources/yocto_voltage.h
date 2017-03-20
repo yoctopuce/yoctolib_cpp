@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_voltage.h 26183 2016-12-15 00:14:02Z mvuilleu $
+ * $Id: yocto_voltage.h 26826 2017-03-17 11:20:57Z mvuilleu $
  *
  * Declares yFindVoltage(), the high-level API for Voltage functions
  *
@@ -70,7 +70,7 @@ typedef enum {
  *
  * The Yoctopuce class YVoltage allows you to read and configure Yoctopuce voltage
  * sensors. It inherits from YSensor class the core functions to read measurements,
- * register callback functions, access to the autonomous datalogger.
+ * to register callback functions, to access the autonomous datalogger.
  */
 class YOCTO_CLASS_EXPORT YVoltage: public YSensor {
 #ifdef __BORLANDC__

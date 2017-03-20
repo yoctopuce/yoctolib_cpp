@@ -10,7 +10,8 @@ static void usage(void)
 {
   cout << "usage: demo <serial_number>  [ color | rgb ]" << endl;
   cout << "       demo <logical_name> [ color | rgb ]" << endl;
-  cout << "       demo any  [ color | rgb ]                (use any discovered device)" << endl;
+  cout << "       demo any  [ color | rgb ]                (use any discovered device)" <<
+       endl;
   cout << "Eg." << endl;
   cout << "   demo any FF1493 " << endl;
   cout << "   demo YRGBLED1-123456 red" << endl;

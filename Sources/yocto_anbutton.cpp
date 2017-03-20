@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_anbutton.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_anbutton.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindAnButton(), the high-level API for AnButton functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "anbutton"
 
 YAnButton::YAnButton(const string& func): YFunction(func)
 //--- (AnButton initialization)
@@ -145,12 +146,24 @@ int YAnButton::_parseAttr(yJsonStateMachine& j)
  */
 int YAnButton::get_calibratedValue(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAnButton::CALIBRATEDVALUE_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YAnButton::CALIBRATEDVALUE_INVALID;
+                }
+            }
         }
+        res = _calibratedValue;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _calibratedValue;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -162,12 +175,24 @@ int YAnButton::get_calibratedValue(void)
  */
 int YAnButton::get_rawValue(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAnButton::RAWVALUE_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YAnButton::RAWVALUE_INVALID;
+                }
+            }
         }
+        res = _rawValue;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _rawValue;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -179,12 +204,24 @@ int YAnButton::get_rawValue(void)
  */
 Y_ANALOGCALIBRATION_enum YAnButton::get_analogCalibration(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAnButton::ANALOGCALIBRATION_INVALID;
+    Y_ANALOGCALIBRATION_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YAnButton::ANALOGCALIBRATION_INVALID;
+                }
+            }
         }
+        res = _analogCalibration;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _analogCalibration;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -200,8 +237,17 @@ Y_ANALOGCALIBRATION_enum YAnButton::get_analogCalibration(void)
 int YAnButton::set_analogCalibration(Y_ANALOGCALIBRATION_enum newval)
 {
     string rest_val;
-    rest_val = (newval>0 ? "1" : "0");
-    return _setAttr("analogCalibration", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("analogCalibration", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -214,12 +260,24 @@ int YAnButton::set_analogCalibration(Y_ANALOGCALIBRATION_enum newval)
  */
 int YAnButton::get_calibrationMax(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAnButton::CALIBRATIONMAX_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YAnButton::CALIBRATIONMAX_INVALID;
+                }
+            }
         }
+        res = _calibrationMax;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _calibrationMax;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -238,8 +296,17 @@ int YAnButton::get_calibrationMax(void)
 int YAnButton::set_calibrationMax(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("calibrationMax", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("calibrationMax", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -252,12 +319,24 @@ int YAnButton::set_calibrationMax(int newval)
  */
 int YAnButton::get_calibrationMin(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAnButton::CALIBRATIONMIN_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YAnButton::CALIBRATIONMIN_INVALID;
+                }
+            }
         }
+        res = _calibrationMin;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _calibrationMin;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -276,8 +355,17 @@ int YAnButton::get_calibrationMin(void)
 int YAnButton::set_calibrationMin(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("calibrationMin", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("calibrationMin", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -290,12 +378,24 @@ int YAnButton::set_calibrationMin(int newval)
  */
 int YAnButton::get_sensitivity(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAnButton::SENSITIVITY_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YAnButton::SENSITIVITY_INVALID;
+                }
+            }
         }
+        res = _sensitivity;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _sensitivity;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -316,8 +416,17 @@ int YAnButton::get_sensitivity(void)
 int YAnButton::set_sensitivity(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("sensitivity", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("sensitivity", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -330,12 +439,24 @@ int YAnButton::set_sensitivity(int newval)
  */
 Y_ISPRESSED_enum YAnButton::get_isPressed(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAnButton::ISPRESSED_INVALID;
+    Y_ISPRESSED_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YAnButton::ISPRESSED_INVALID;
+                }
+            }
         }
+        res = _isPressed;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _isPressed;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -350,12 +471,24 @@ Y_ISPRESSED_enum YAnButton::get_isPressed(void)
  */
 s64 YAnButton::get_lastTimePressed(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAnButton::LASTTIMEPRESSED_INVALID;
+    s64 res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YAnButton::LASTTIMEPRESSED_INVALID;
+                }
+            }
         }
+        res = _lastTimePressed;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _lastTimePressed;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -370,12 +503,24 @@ s64 YAnButton::get_lastTimePressed(void)
  */
 s64 YAnButton::get_lastTimeReleased(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAnButton::LASTTIMERELEASED_INVALID;
+    s64 res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YAnButton::LASTTIMERELEASED_INVALID;
+                }
+            }
         }
+        res = _lastTimeReleased;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _lastTimeReleased;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -389,19 +534,40 @@ s64 YAnButton::get_lastTimeReleased(void)
  */
 s64 YAnButton::get_pulseCounter(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAnButton::PULSECOUNTER_INVALID;
+    s64 res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YAnButton::PULSECOUNTER_INVALID;
+                }
+            }
         }
+        res = _pulseCounter;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _pulseCounter;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YAnButton::set_pulseCounter(s64 newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
-    return _setAttr("pulseCounter", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
+        res = _setAttr("pulseCounter", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -413,12 +579,24 @@ int YAnButton::set_pulseCounter(s64 newval)
  */
 s64 YAnButton::get_pulseTimer(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAnButton::PULSETIMER_INVALID;
+    s64 res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YAnButton::PULSETIMER_INVALID;
+                }
+            }
         }
+        res = _pulseTimer;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _pulseTimer;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -447,11 +625,21 @@ s64 YAnButton::get_pulseTimer(void)
 YAnButton* YAnButton::FindAnButton(string func)
 {
     YAnButton* obj = NULL;
-    obj = (YAnButton*) YFunction::_FindFromCache("AnButton", func);
-    if (obj == NULL) {
-        obj = new YAnButton(func);
-        YFunction::_AddToCache("AnButton", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YAnButton*) YFunction::_FindFromCache("AnButton", func);
+        if (obj == NULL) {
+            obj = new YAnButton(func);
+            YFunction::_AddToCache("AnButton", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

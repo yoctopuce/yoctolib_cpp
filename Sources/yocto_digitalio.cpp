@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_digitalio.cpp 25871 2016-11-15 14:32:56Z seb $
+ * $Id: yocto_digitalio.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "digitalio"
 
 YDigitalIO::YDigitalIO(const string& func): YFunction(func)
 //--- (DigitalIO initialization)
@@ -122,12 +123,24 @@ int YDigitalIO::_parseAttr(yJsonStateMachine& j)
  */
 int YDigitalIO::get_portState(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDigitalIO::PORTSTATE_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDigitalIO::PORTSTATE_INVALID;
+                }
+            }
         }
+        res = _portState;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _portState;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -143,8 +156,17 @@ int YDigitalIO::get_portState(void)
 int YDigitalIO::set_portState(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("portState", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("portState", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -157,12 +179,24 @@ int YDigitalIO::set_portState(int newval)
  */
 int YDigitalIO::get_portDirection(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDigitalIO::PORTDIRECTION_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDigitalIO::PORTDIRECTION_INVALID;
+                }
+            }
         }
+        res = _portDirection;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _portDirection;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -179,8 +213,17 @@ int YDigitalIO::get_portDirection(void)
 int YDigitalIO::set_portDirection(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("portDirection", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("portDirection", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -194,12 +237,24 @@ int YDigitalIO::set_portDirection(int newval)
  */
 int YDigitalIO::get_portOpenDrain(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDigitalIO::PORTOPENDRAIN_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDigitalIO::PORTOPENDRAIN_INVALID;
+                }
+            }
         }
+        res = _portOpenDrain;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _portOpenDrain;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -216,8 +271,17 @@ int YDigitalIO::get_portOpenDrain(void)
 int YDigitalIO::set_portOpenDrain(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("portOpenDrain", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("portOpenDrain", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -230,12 +294,24 @@ int YDigitalIO::set_portOpenDrain(int newval)
  */
 int YDigitalIO::get_portPolarity(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDigitalIO::PORTPOLARITY_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDigitalIO::PORTPOLARITY_INVALID;
+                }
+            }
         }
+        res = _portPolarity;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _portPolarity;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -254,8 +330,17 @@ int YDigitalIO::get_portPolarity(void)
 int YDigitalIO::set_portPolarity(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("portPolarity", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("portPolarity", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -267,12 +352,24 @@ int YDigitalIO::set_portPolarity(int newval)
  */
 int YDigitalIO::get_portSize(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDigitalIO::PORTSIZE_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDigitalIO::PORTSIZE_INVALID;
+                }
+            }
         }
+        res = _portSize;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _portSize;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -285,12 +382,24 @@ int YDigitalIO::get_portSize(void)
  */
 Y_OUTPUTVOLTAGE_enum YDigitalIO::get_outputVoltage(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDigitalIO::OUTPUTVOLTAGE_INVALID;
+    Y_OUTPUTVOLTAGE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDigitalIO::OUTPUTVOLTAGE_INVALID;
+                }
+            }
         }
+        res = _outputVoltage;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _outputVoltage;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -307,25 +416,55 @@ Y_OUTPUTVOLTAGE_enum YDigitalIO::get_outputVoltage(void)
 int YDigitalIO::set_outputVoltage(Y_OUTPUTVOLTAGE_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("outputVoltage", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("outputVoltage", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 string YDigitalIO::get_command(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDigitalIO::COMMAND_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDigitalIO::COMMAND_INVALID;
+                }
+            }
         }
+        res = _command;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _command;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YDigitalIO::set_command(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("command", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("command", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -354,11 +493,21 @@ int YDigitalIO::set_command(const string& newval)
 YDigitalIO* YDigitalIO::FindDigitalIO(string func)
 {
     YDigitalIO* obj = NULL;
-    obj = (YDigitalIO*) YFunction::_FindFromCache("DigitalIO", func);
-    if (obj == NULL) {
-        obj = new YDigitalIO(func);
-        YFunction::_AddToCache("DigitalIO", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YDigitalIO*) YFunction::_FindFromCache("DigitalIO", func);
+        if (obj == NULL) {
+            obj = new YDigitalIO(func);
+            YFunction::_AddToCache("DigitalIO", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

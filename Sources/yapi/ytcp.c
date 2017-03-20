@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 26607 2017-02-09 13:13:07Z seb $
+ * $Id: ytcp.c 26755 2017-03-15 13:57:55Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -144,6 +144,8 @@ int yNetSetErrEx(u32 line,unsigned err,char *errmsg)
     if(errmsg==NULL)
         return YAPI_IO_ERROR;
     YSPRINTF(errmsg,YOCTO_ERRMSG_LEN,"%s:%d:tcp(%d):",__FILE_ID__,line,err);
+    dbglog("yNetSetErrEx -> %s:%d:tcp(%d)\n",__FILE_ID__,line,err);
+
 #if defined(WINDOWS_API) && !defined(WINCE)
     len=(int)strlen(errmsg);
     FormatMessageA (
@@ -954,12 +956,11 @@ static int yHTTPOpenReqEx(struct _RequestSt *req, u64 mstimout, char *errmsg)
 }
 
 
-// mutex already taken by caller
-
 static void yHTTPCloseReqEx(struct _RequestSt *req, int canReuseSocket)
 {
     TCPLOG("yHTTPCloseReqEx %p[%d]\n",req, canReuseSocket);
 
+    // mutex already taken by caller
     req->flags &= ~TCPREQ_KEEPALIVE;
     if (req->callback) {
         u32 len = req->replysize - req->replypos;
@@ -1273,8 +1274,11 @@ static void yWSCloseReqEx(struct _RequestSt *req, int takeCS)
 
 static void dumpTCPReq(const char *fileid, int lineno, struct _RequestSt *req)
 {
-
     int w;
+    int has_cs  =yTryEnterCriticalSection(&req->access);
+    const char *proto;
+    const char *state;
+
     dbglog("dump TCPReq %p from %s:%d\n", req, fileid, lineno);
     if (req->hub){
         dbglog("Hub: %s\n", req->hub->name);
@@ -1282,8 +1286,36 @@ static void dumpTCPReq(const char *fileid, int lineno, struct _RequestSt *req)
         dbglog("Hub: null\n");
     }
 
-    dbglog("state retcode=%d (retrycount=%d) errmsg=%s\n", req->errcode, req->retryCount, req->errmsg);
-    dbglog("socket=%x (reuse=%x) flags=%x\n", req->http.skt, req->http.reuseskt, req->flags);
+
+    switch (req->state) {
+        case REQ_CLOSED:
+            state ="state=REQ_CLOSED";
+            break;
+        case REQ_OPEN:
+            state ="state=REQ_OPEN";
+            break;
+        case REQ_CLOSED_BY_HUB:
+            state ="state=REQ_CLOSED_BY_HUB";
+            break;
+        case REQ_CLOSED_BY_API:
+            state ="state=REQ_CLOSED_BY_API";
+            break;
+        case REQ_ERROR:
+            state ="state=REQ_ERROR";
+            break;
+        default:
+            state ="state=??";
+            break;
+    }
+
+    dbglog("%s retcode=%d (retrycount=%d) errmsg=%s\n", state, req->errcode, req->retryCount, req->errmsg);
+    switch(req->proto){
+        case PROTO_AUTO: proto ="PROTO_AUTO"; break;
+        case PROTO_HTTP: proto ="PROTO_HTTP"; break;
+        case PROTO_WEBSOCKET: proto ="PROTO_WEBSOCKET"; break;
+        default: proto ="unk"; break;
+    }
+    dbglog("proto=%s socket=%x (reuse=%x) flags=%x\n", proto, req->http.skt, req->http.reuseskt, req->flags);
     dbglog("time open=%"FMTx64" last read=%"FMTx64" last write=%"FMTx64"  timeout=%"FMTx64"\n", req->open_tm, req->read_tm, req->write_tm, req->timeout_tm);
     dbglog("readed=%d (readpos=%d)\n", req->replysize, req->replysize);
     dbglog("callback=%p context=%p\n", req->callback, req->context);
@@ -1294,6 +1326,10 @@ static void dumpTCPReq(const char *fileid, int lineno, struct _RequestSt *req)
     }
     w = yWaitForEvent(&req->finished, 0);
     dbglog("finished=%d\n", w);
+    if (has_cs) {
+        yLeaveCriticalSection(&req->access);
+    }
+
 }
 #endif
 
@@ -1323,30 +1359,39 @@ struct _RequestSt* yReqAlloc(struct _HubSt *hub)
 
 
 
-int  yReqOpen(struct _RequestSt *req, int tcpchan, const char *request, int reqlen, u64 mstimeout, yapiRequestAsyncCallback callback, void *context, RequestProgress progress_cb, void *progress_ctx, char *errmsg)
+int  yReqOpen(struct _RequestSt *req, int wait_for_start, int tcpchan, const char *request, int reqlen, u64 mstimeout,yapiRequestAsyncCallback callback, void *context, RequestProgress progress_cb, void *progress_ctx, char *errmsg)
 {
     int  minlen, i, res;
     u64  startwait;
 
-    YPERF_TCP_ENTER(TCPOpenReq_wait);
     YPERF_TCP_ENTER(TCPOpenReq);
-    yWaitForEvent(&req->finished, 100);
-    yEnterCriticalSection(&req->access);
-    startwait = yapiGetTickCount();
-    while (req->flags & TCPREQ_IN_USE) {
-        // There is an ongoing request to be finished
-        yLeaveCriticalSection(&req->access);
-        yWaitForEvent(&req->finished, 100);
-        if ((yapiGetTickCount() - startwait) > 2 * YIO_DEFAULT_TCP_TIMEOUT) {
-#ifdef TRACE_TCP_REQ
-            dumpTCPReq(__FILE_ID__, __LINE__, req);
-#endif
-            return YERRMSG(YAPI_TIMEOUT, "last TCP request is not finished");
-        }
+    if (wait_for_start <= 0) {
         yEnterCriticalSection(&req->access);
+        if (req->flags & TCPREQ_IN_USE) {
+            yLeaveCriticalSection(&req->access);
+            return YERR(YAPI_DEVICE_BUSY);
+        }
+    } else {
+        YPERF_TCP_ENTER(TCPOpenReq_wait);
+        yEnterCriticalSection(&req->access);
+        startwait = yapiGetTickCount();
+        while (req->flags & TCPREQ_IN_USE) {
+            u64 duration;
+            // There is an ongoing request to be finished
+            yLeaveCriticalSection(&req->access);
+            duration = yapiGetTickCount() - startwait;
+            if (duration > wait_for_start) {
+                dbglog("Last request in not finished after %"FMTu64" ms\n", duration);
+#ifdef TRACE_TCP_REQ
+                dumpTCPReq(__FILE_ID__, __LINE__, req);
+#endif
+                return YERRMSG(YAPI_TIMEOUT, "last TCP request is not finished");
+            }
+            yWaitForEvent(&req->finished, 100);
+            yEnterCriticalSection(&req->access);
+        }
+        YPERF_TCP_LEAVE(TCPOpenReq_wait);
     }
-    YPERF_TCP_LEAVE(TCPOpenReq_wait);
-
 
 
     req->flags = 0;

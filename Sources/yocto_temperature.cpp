@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_temperature.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_temperature.cpp 26826 2017-03-17 11:20:57Z mvuilleu $
  *
  * Implements yFindTemperature(), the high-level API for Temperature functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "temperature"
 
 YTemperature::YTemperature(const string& func): YSensor(func)
 //--- (Temperature initialization)
@@ -118,8 +119,17 @@ int YTemperature::_parseAttr(yJsonStateMachine& j)
 int YTemperature::set_unit(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("unit", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("unit", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -135,12 +145,24 @@ int YTemperature::set_unit(const string& newval)
  */
 Y_SENSORTYPE_enum YTemperature::get_sensorType(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YTemperature::SENSORTYPE_INVALID;
+    Y_SENSORTYPE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YTemperature::SENSORTYPE_INVALID;
+                }
+            }
         }
+        res = _sensorType;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _sensorType;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -162,8 +184,17 @@ Y_SENSORTYPE_enum YTemperature::get_sensorType(void)
 int YTemperature::set_sensorType(Y_SENSORTYPE_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("sensorType", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("sensorType", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -176,12 +207,24 @@ int YTemperature::set_sensorType(Y_SENSORTYPE_enum newval)
  */
 double YTemperature::get_signalValue(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YTemperature::SIGNALVALUE_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YTemperature::SIGNALVALUE_INVALID;
+                }
+            }
         }
+        res = floor(_signalValue * 1000+0.5) / 1000;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return floor(_signalValue * 1000+0.5) / 1000;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -193,29 +236,62 @@ double YTemperature::get_signalValue(void)
  */
 string YTemperature::get_signalUnit(void)
 {
-    if (_cacheExpiration == 0) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YTemperature::SIGNALUNIT_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration == 0) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YTemperature::SIGNALUNIT_INVALID;
+                }
+            }
         }
+        res = _signalUnit;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _signalUnit;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 string YTemperature::get_command(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YTemperature::COMMAND_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YTemperature::COMMAND_INVALID;
+                }
+            }
         }
+        res = _command;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _command;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YTemperature::set_command(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("command", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("command", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -244,11 +320,21 @@ int YTemperature::set_command(const string& newval)
 YTemperature* YTemperature::FindTemperature(string func)
 {
     YTemperature* obj = NULL;
-    obj = (YTemperature*) YFunction::_FindFromCache("Temperature", func);
-    if (obj == NULL) {
-        obj = new YTemperature(func);
-        YFunction::_AddToCache("Temperature", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YTemperature*) YFunction::_FindFromCache("Temperature", func);
+        if (obj == NULL) {
+            obj = new YTemperature(func);
+            YFunction::_AddToCache("Temperature", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 
@@ -327,7 +413,7 @@ int YTemperature::_invokeTimedReportCallback(YMeasure value)
 }
 
 /**
- * Configure NTC thermistor parameters in order to properly compute the temperature from
+ * Configures NTC thermistor parameters in order to properly compute the temperature from
  * the measured resistance. For increased precision, you can enter a complete mapping
  * table using set_thermistorResponseTable. This function can only be used with a
  * temperature sensor based on thermistors.

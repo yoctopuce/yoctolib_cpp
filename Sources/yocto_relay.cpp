@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_relay.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_relay.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindRelay(), the high-level API for Relay functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "relay"
 
 YRelay::YRelay(const string& func): YFunction(func)
 //--- (Relay initialization)
@@ -142,12 +143,24 @@ int YRelay::_parseAttr(yJsonStateMachine& j)
  */
 Y_STATE_enum YRelay::get_state(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YRelay::STATE_INVALID;
+    Y_STATE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRelay::STATE_INVALID;
+                }
+            }
         }
+        res = _state;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _state;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -163,8 +176,17 @@ Y_STATE_enum YRelay::get_state(void)
 int YRelay::set_state(Y_STATE_enum newval)
 {
     string rest_val;
-    rest_val = (newval>0 ? "1" : "0");
-    return _setAttr("state", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("state", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -179,12 +201,24 @@ int YRelay::set_state(Y_STATE_enum newval)
  */
 Y_STATEATPOWERON_enum YRelay::get_stateAtPowerOn(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YRelay::STATEATPOWERON_INVALID;
+    Y_STATEATPOWERON_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRelay::STATEATPOWERON_INVALID;
+                }
+            }
         }
+        res = _stateAtPowerOn;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _stateAtPowerOn;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -201,8 +235,17 @@ Y_STATEATPOWERON_enum YRelay::get_stateAtPowerOn(void)
 int YRelay::set_stateAtPowerOn(Y_STATEATPOWERON_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("stateAtPowerOn", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("stateAtPowerOn", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -215,12 +258,24 @@ int YRelay::set_stateAtPowerOn(Y_STATEATPOWERON_enum newval)
  */
 s64 YRelay::get_maxTimeOnStateA(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YRelay::MAXTIMEONSTATEA_INVALID;
+    s64 res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRelay::MAXTIMEONSTATEA_INVALID;
+                }
+            }
         }
+        res = _maxTimeOnStateA;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _maxTimeOnStateA;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -236,8 +291,17 @@ s64 YRelay::get_maxTimeOnStateA(void)
 int YRelay::set_maxTimeOnStateA(s64 newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
-    return _setAttr("maxTimeOnStateA", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
+        res = _setAttr("maxTimeOnStateA", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -250,12 +314,24 @@ int YRelay::set_maxTimeOnStateA(s64 newval)
  */
 s64 YRelay::get_maxTimeOnStateB(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YRelay::MAXTIMEONSTATEB_INVALID;
+    s64 res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRelay::MAXTIMEONSTATEB_INVALID;
+                }
+            }
         }
+        res = _maxTimeOnStateB;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _maxTimeOnStateB;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -271,8 +347,17 @@ s64 YRelay::get_maxTimeOnStateB(void)
 int YRelay::set_maxTimeOnStateB(s64 newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
-    return _setAttr("maxTimeOnStateB", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
+        res = _setAttr("maxTimeOnStateB", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -285,12 +370,24 @@ int YRelay::set_maxTimeOnStateB(s64 newval)
  */
 Y_OUTPUT_enum YRelay::get_output(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YRelay::OUTPUT_INVALID;
+    Y_OUTPUT_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRelay::OUTPUT_INVALID;
+                }
+            }
         }
+        res = _output;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _output;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -306,8 +403,17 @@ Y_OUTPUT_enum YRelay::get_output(void)
 int YRelay::set_output(Y_OUTPUT_enum newval)
 {
     string rest_val;
-    rest_val = (newval>0 ? "1" : "0");
-    return _setAttr("output", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("output", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -322,19 +428,40 @@ int YRelay::set_output(Y_OUTPUT_enum newval)
  */
 s64 YRelay::get_pulseTimer(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YRelay::PULSETIMER_INVALID;
+    s64 res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRelay::PULSETIMER_INVALID;
+                }
+            }
         }
+        res = _pulseTimer;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _pulseTimer;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YRelay::set_pulseTimer(s64 newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
-    return _setAttr("pulseTimer", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
+        res = _setAttr("pulseTimer", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -356,19 +483,40 @@ int YRelay::pulse(int ms_duration)
 
 YDelayedPulse YRelay::get_delayedPulseTimer(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YRelay::DELAYEDPULSETIMER_INVALID;
+    YDelayedPulse res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRelay::DELAYEDPULSETIMER_INVALID;
+                }
+            }
         }
+        res = _delayedPulseTimer;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _delayedPulseTimer;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YRelay::set_delayedPulseTimer(YDelayedPulse newval)
 {
     string rest_val;
-    char buff[64]; sprintf(buff,"%d:%d",newval.target,newval.ms); rest_val = string(buff);
-    return _setAttr("delayedPulseTimer", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buff[64]; sprintf(buff,"%d:%d",newval.target,newval.ms); rest_val = string(buff);
+        res = _setAttr("delayedPulseTimer", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -399,12 +547,24 @@ int YRelay::delayedPulse(int ms_delay,int ms_duration)
  */
 s64 YRelay::get_countdown(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YRelay::COUNTDOWN_INVALID;
+    s64 res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRelay::COUNTDOWN_INVALID;
+                }
+            }
         }
+        res = _countdown;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _countdown;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -433,11 +593,21 @@ s64 YRelay::get_countdown(void)
 YRelay* YRelay::FindRelay(string func)
 {
     YRelay* obj = NULL;
-    obj = (YRelay*) YFunction::_FindFromCache("Relay", func);
-    if (obj == NULL) {
-        obj = new YRelay(func);
-        YFunction::_AddToCache("Relay", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YRelay*) YFunction::_FindFromCache("Relay", func);
+        if (obj == NULL) {
+            obj = new YRelay(func);
+            YFunction::_AddToCache("Relay", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

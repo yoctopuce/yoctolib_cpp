@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_altitude.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_altitude.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindAltitude(), the high-level API for Altitude functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "altitude"
 
 YAltitude::YAltitude(const string& func): YSensor(func)
 //--- (Altitude initialization)
@@ -98,8 +99,17 @@ int YAltitude::_parseAttr(yJsonStateMachine& j)
 int YAltitude::set_currentValue(double newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
-    return _setAttr("currentValue", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        res = _setAttr("currentValue", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -118,8 +128,17 @@ int YAltitude::set_currentValue(double newval)
 int YAltitude::set_qnh(double newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
-    return _setAttr("qnh", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        res = _setAttr("qnh", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -133,12 +152,24 @@ int YAltitude::set_qnh(double newval)
  */
 double YAltitude::get_qnh(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAltitude::QNH_INVALID;
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YAltitude::QNH_INVALID;
+                }
+            }
         }
+        res = _qnh;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _qnh;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -152,12 +183,24 @@ double YAltitude::get_qnh(void)
  */
 string YAltitude::get_technology(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAltitude::TECHNOLOGY_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YAltitude::TECHNOLOGY_INVALID;
+                }
+            }
         }
+        res = _technology;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _technology;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -186,11 +229,21 @@ string YAltitude::get_technology(void)
 YAltitude* YAltitude::FindAltitude(string func)
 {
     YAltitude* obj = NULL;
-    obj = (YAltitude*) YFunction::_FindFromCache("Altitude", func);
-    if (obj == NULL) {
-        obj = new YAltitude(func);
-        YFunction::_AddToCache("Altitude", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YAltitude*) YFunction::_FindFromCache("Altitude", func);
+        if (obj == NULL) {
+            obj = new YAltitude(func);
+            YFunction::_AddToCache("Altitude", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

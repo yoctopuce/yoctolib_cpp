@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_altitude.h 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_altitude.h 26826 2017-03-17 11:20:57Z mvuilleu $
  *
  * Declares yFindAltitude(), the high-level API for Altitude functions
  *
@@ -64,7 +64,7 @@ typedef void (*YAltitudeTimedReportCallback)(YAltitude *func, YMeasure measure);
  *
  * The Yoctopuce class YAltitude allows you to read and configure Yoctopuce altitude
  * sensors. It inherits from the YSensor class the core functions to read measurements,
- * register callback functions, access to the autonomous datalogger.
+ * to register callback functions, to access the autonomous datalogger.
  * This class adds the ability to configure the barometric pressure adjusted to
  * sea level (QNH) for barometric sensors.
  */

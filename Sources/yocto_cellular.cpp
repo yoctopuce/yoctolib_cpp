@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 26132 2016-12-01 17:02:38Z seb $
+ * $Id: yocto_cellular.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -46,6 +46,8 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "cellular"
+
 
 
 YCellRecord::YCellRecord(int mcc,int mnc,int lac,int cellId,int dbm,int tad,const string &oper):
@@ -232,12 +234,24 @@ int YCellular::_parseAttr(yJsonStateMachine& j)
  */
 int YCellular::get_linkQuality(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCellular::LINKQUALITY_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCellular::LINKQUALITY_INVALID;
+                }
+            }
         }
+        res = _linkQuality;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _linkQuality;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -249,12 +263,24 @@ int YCellular::get_linkQuality(void)
  */
 string YCellular::get_cellOperator(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCellular::CELLOPERATOR_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCellular::CELLOPERATOR_INVALID;
+                }
+            }
         }
+        res = _cellOperator;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _cellOperator;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -267,12 +293,24 @@ string YCellular::get_cellOperator(void)
  */
 string YCellular::get_cellIdentifier(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCellular::CELLIDENTIFIER_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCellular::CELLIDENTIFIER_INVALID;
+                }
+            }
         }
+        res = _cellIdentifier;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _cellIdentifier;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -285,12 +323,24 @@ string YCellular::get_cellIdentifier(void)
  */
 Y_CELLTYPE_enum YCellular::get_cellType(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCellular::CELLTYPE_INVALID;
+    Y_CELLTYPE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCellular::CELLTYPE_INVALID;
+                }
+            }
         }
+        res = _cellType;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _cellType;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -306,12 +356,24 @@ Y_CELLTYPE_enum YCellular::get_cellType(void)
  */
 string YCellular::get_imsi(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCellular::IMSI_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCellular::IMSI_INVALID;
+                }
+            }
         }
+        res = _imsi;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _imsi;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -323,12 +385,24 @@ string YCellular::get_imsi(void)
  */
 string YCellular::get_message(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCellular::MESSAGE_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCellular::MESSAGE_INVALID;
+                }
+            }
         }
+        res = _message;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _message;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -344,12 +418,24 @@ string YCellular::get_message(void)
  */
 string YCellular::get_pin(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCellular::PIN_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCellular::PIN_INVALID;
+                }
+            }
         }
+        res = _pin;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _pin;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -374,8 +460,17 @@ string YCellular::get_pin(void)
 int YCellular::set_pin(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("pin", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("pin", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -391,12 +486,24 @@ int YCellular::set_pin(const string& newval)
  */
 string YCellular::get_lockedOperator(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCellular::LOCKEDOPERATOR_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCellular::LOCKEDOPERATOR_INVALID;
+                }
+            }
         }
+        res = _lockedOperator;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _lockedOperator;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -413,8 +520,17 @@ string YCellular::get_lockedOperator(void)
 int YCellular::set_lockedOperator(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("lockedOperator", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("lockedOperator", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -427,12 +543,24 @@ int YCellular::set_lockedOperator(const string& newval)
  */
 Y_AIRPLANEMODE_enum YCellular::get_airplaneMode(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCellular::AIRPLANEMODE_INVALID;
+    Y_AIRPLANEMODE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCellular::AIRPLANEMODE_INVALID;
+                }
+            }
         }
+        res = _airplaneMode;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _airplaneMode;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -448,8 +576,17 @@ Y_AIRPLANEMODE_enum YCellular::get_airplaneMode(void)
 int YCellular::set_airplaneMode(Y_AIRPLANEMODE_enum newval)
 {
     string rest_val;
-    rest_val = (newval>0 ? "1" : "0");
-    return _setAttr("airplaneMode", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("airplaneMode", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -463,12 +600,24 @@ int YCellular::set_airplaneMode(Y_AIRPLANEMODE_enum newval)
  */
 Y_ENABLEDATA_enum YCellular::get_enableData(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCellular::ENABLEDATA_INVALID;
+    Y_ENABLEDATA_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCellular::ENABLEDATA_INVALID;
+                }
+            }
         }
+        res = _enableData;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _enableData;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -489,8 +638,17 @@ Y_ENABLEDATA_enum YCellular::get_enableData(void)
 int YCellular::set_enableData(Y_ENABLEDATA_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("enableData", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("enableData", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -503,12 +661,24 @@ int YCellular::set_enableData(Y_ENABLEDATA_enum newval)
  */
 string YCellular::get_apn(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCellular::APN_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCellular::APN_INVALID;
+                }
+            }
         }
+        res = _apn;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _apn;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -524,8 +694,17 @@ string YCellular::get_apn(void)
 int YCellular::set_apn(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("apn", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("apn", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -540,19 +719,40 @@ int YCellular::set_apn(const string& newval)
  */
 string YCellular::get_apnSecret(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCellular::APNSECRET_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCellular::APNSECRET_INVALID;
+                }
+            }
         }
+        res = _apnSecret;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _apnSecret;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YCellular::set_apnSecret(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("apnSecret", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("apnSecret", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -564,12 +764,24 @@ int YCellular::set_apnSecret(const string& newval)
  */
 int YCellular::get_pingInterval(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCellular::PINGINTERVAL_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCellular::PINGINTERVAL_INVALID;
+                }
+            }
         }
+        res = _pingInterval;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _pingInterval;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -584,8 +796,17 @@ int YCellular::get_pingInterval(void)
 int YCellular::set_pingInterval(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("pingInterval", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("pingInterval", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -597,12 +818,24 @@ int YCellular::set_pingInterval(int newval)
  */
 int YCellular::get_dataSent(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCellular::DATASENT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCellular::DATASENT_INVALID;
+                }
+            }
         }
+        res = _dataSent;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _dataSent;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -617,8 +850,17 @@ int YCellular::get_dataSent(void)
 int YCellular::set_dataSent(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("dataSent", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("dataSent", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -630,12 +872,24 @@ int YCellular::set_dataSent(int newval)
  */
 int YCellular::get_dataReceived(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCellular::DATARECEIVED_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCellular::DATARECEIVED_INVALID;
+                }
+            }
         }
+        res = _dataReceived;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _dataReceived;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -650,25 +904,55 @@ int YCellular::get_dataReceived(void)
 int YCellular::set_dataReceived(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("dataReceived", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("dataReceived", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 string YCellular::get_command(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YCellular::COMMAND_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCellular::COMMAND_INVALID;
+                }
+            }
         }
+        res = _command;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _command;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YCellular::set_command(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("command", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("command", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -697,11 +981,21 @@ int YCellular::set_command(const string& newval)
 YCellular* YCellular::FindCellular(string func)
 {
     YCellular* obj = NULL;
-    obj = (YCellular*) YFunction::_FindFromCache("Cellular", func);
-    if (obj == NULL) {
-        obj = new YCellular(func);
-        YFunction::_AddToCache("Cellular", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YCellular*) YFunction::_FindFromCache("Cellular", func);
+        if (obj == NULL) {
+            obj = new YCellular(func);
+            YFunction::_AddToCache("Cellular", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

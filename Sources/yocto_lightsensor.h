@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_lightsensor.h 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_lightsensor.h 26826 2017-03-17 11:20:57Z mvuilleu $
  *
  * Declares yFindLightSensor(), the high-level API for LightSensor functions
  *
@@ -73,7 +73,7 @@ typedef enum {
  *
  * The Yoctopuce class YLightSensor allows you to read and configure Yoctopuce light
  * sensors. It inherits from YSensor class the core functions to read measurements,
- * register callback functions, access to the autonomous datalogger.
+ * to register callback functions, to access the autonomous datalogger.
  * This class adds the ability to easily perform a one-point linear calibration
  * to compensate the effect of a glass or filter placed in front of the sensor.
  * For some light sensors with several working modes, this class can select the
@@ -145,7 +145,7 @@ public:
     { return this->get_measureType(); }
 
     /**
-     * Modify the light sensor type used in the device. The measure can either
+     * Modifies the light sensor type used in the device. The measure can either
      * approximate the response of the human eye, focus on a specific light
      * spectrum, depending on the capabilities of the light-sensitive cell.
      * Remember to call the saveToFlash() method of the module if the

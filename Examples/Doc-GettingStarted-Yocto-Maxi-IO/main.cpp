@@ -46,7 +46,6 @@ int main(int argc, const char * argv[])
     io =  yFindDigitalIO(target + ".digitalIO");
   }
 
-
   // make sure the device is here
   if (!io->isOnline()) {
     cout << "Module not connected (check identification and USB cable)" << endl;

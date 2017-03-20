@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_hubport.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_hubport.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindHubPort(), the high-level API for HubPort functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "hubport"
 
 YHubPort::YHubPort(const string& func): YFunction(func)
 //--- (HubPort initialization)
@@ -98,12 +99,24 @@ int YHubPort::_parseAttr(yJsonStateMachine& j)
  */
 Y_ENABLED_enum YHubPort::get_enabled(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YHubPort::ENABLED_INVALID;
+    Y_ENABLED_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YHubPort::ENABLED_INVALID;
+                }
+            }
         }
+        res = _enabled;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _enabled;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -119,8 +132,17 @@ Y_ENABLED_enum YHubPort::get_enabled(void)
 int YHubPort::set_enabled(Y_ENABLED_enum newval)
 {
     string rest_val;
-    rest_val = (newval>0 ? "1" : "0");
-    return _setAttr("enabled", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("enabled", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -133,12 +155,24 @@ int YHubPort::set_enabled(Y_ENABLED_enum newval)
  */
 Y_PORTSTATE_enum YHubPort::get_portState(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YHubPort::PORTSTATE_INVALID;
+    Y_PORTSTATE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YHubPort::PORTSTATE_INVALID;
+                }
+            }
         }
+        res = _portState;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _portState;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -152,12 +186,24 @@ Y_PORTSTATE_enum YHubPort::get_portState(void)
  */
 int YHubPort::get_baudRate(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YHubPort::BAUDRATE_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YHubPort::BAUDRATE_INVALID;
+                }
+            }
         }
+        res = _baudRate;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _baudRate;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -186,11 +232,21 @@ int YHubPort::get_baudRate(void)
 YHubPort* YHubPort::FindHubPort(string func)
 {
     YHubPort* obj = NULL;
-    obj = (YHubPort*) YFunction::_FindFromCache("HubPort", func);
-    if (obj == NULL) {
-        obj = new YHubPort(func);
-        YFunction::_AddToCache("HubPort", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YHubPort*) YFunction::_FindFromCache("HubPort", func);
+        if (obj == NULL) {
+            obj = new YHubPort(func);
+            YFunction::_AddToCache("HubPort", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

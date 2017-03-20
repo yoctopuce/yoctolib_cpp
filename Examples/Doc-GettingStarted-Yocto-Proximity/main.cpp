@@ -50,7 +50,6 @@ int main(int argc, const char * argv[])
   al = yFindLightSensor(target + ".lightSensor1");
   ir = yFindLightSensor(target + ".lightSensor2");
 
-
   while(1) {
     if (!p->isOnline()) {
       cout << "Module not connected (check identification and USB cable)";

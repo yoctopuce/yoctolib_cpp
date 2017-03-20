@@ -43,8 +43,10 @@ int main(int argc, const char * argv[])
     sensor = yFindGenericSensor(target + ".temperature1");
   }
 
-  YGenericSensor *s1 = yFindGenericSensor(sensor->get_module()->get_serialNumber() + ".genericSensor1");
-  YGenericSensor *s2 = yFindGenericSensor(sensor->get_module()->get_serialNumber() + ".genericSensor2");
+  YGenericSensor *s1 = yFindGenericSensor(sensor->get_module()->get_serialNumber() +
+                                          ".genericSensor1");
+  YGenericSensor *s2 = yFindGenericSensor(sensor->get_module()->get_serialNumber() +
+                                          ".genericSensor2");
 
   string unitSensor1, unitSensor2;
 

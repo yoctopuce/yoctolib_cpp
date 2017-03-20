@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_latitude.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_latitude.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindLatitude(), the high-level API for Latitude functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "latitude"
 
 YLatitude::YLatitude(const string& func): YSensor(func)
 //--- (Latitude initialization)
@@ -91,11 +92,21 @@ YLatitude::~YLatitude()
 YLatitude* YLatitude::FindLatitude(string func)
 {
     YLatitude* obj = NULL;
-    obj = (YLatitude*) YFunction::_FindFromCache("Latitude", func);
-    if (obj == NULL) {
-        obj = new YLatitude(func);
-        YFunction::_AddToCache("Latitude", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YLatitude*) YFunction::_FindFromCache("Latitude", func);
+        if (obj == NULL) {
+            obj = new YLatitude(func);
+            YFunction::_AddToCache("Latitude", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

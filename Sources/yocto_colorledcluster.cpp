@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorledcluster.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_colorledcluster.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "colorledcluster"
 
 YColorLedCluster::YColorLedCluster(const string& func): YFunction(func)
 //--- (ColorLedCluster initialization)
@@ -110,12 +111,24 @@ int YColorLedCluster::_parseAttr(yJsonStateMachine& j)
  */
 int YColorLedCluster::get_activeLedCount(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YColorLedCluster::ACTIVELEDCOUNT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YColorLedCluster::ACTIVELEDCOUNT_INVALID;
+                }
+            }
         }
+        res = _activeLedCount;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _activeLedCount;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -130,8 +143,17 @@ int YColorLedCluster::get_activeLedCount(void)
 int YColorLedCluster::set_activeLedCount(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("activeLedCount", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("activeLedCount", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -143,12 +165,24 @@ int YColorLedCluster::set_activeLedCount(int newval)
  */
 int YColorLedCluster::get_maxLedCount(void)
 {
-    if (_cacheExpiration == 0) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YColorLedCluster::MAXLEDCOUNT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration == 0) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YColorLedCluster::MAXLEDCOUNT_INVALID;
+                }
+            }
         }
+        res = _maxLedCount;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _maxLedCount;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -160,12 +194,24 @@ int YColorLedCluster::get_maxLedCount(void)
  */
 int YColorLedCluster::get_blinkSeqMaxCount(void)
 {
-    if (_cacheExpiration == 0) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YColorLedCluster::BLINKSEQMAXCOUNT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration == 0) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YColorLedCluster::BLINKSEQMAXCOUNT_INVALID;
+                }
+            }
         }
+        res = _blinkSeqMaxCount;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _blinkSeqMaxCount;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -177,29 +223,62 @@ int YColorLedCluster::get_blinkSeqMaxCount(void)
  */
 int YColorLedCluster::get_blinkSeqMaxSize(void)
 {
-    if (_cacheExpiration == 0) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YColorLedCluster::BLINKSEQMAXSIZE_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration == 0) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YColorLedCluster::BLINKSEQMAXSIZE_INVALID;
+                }
+            }
         }
+        res = _blinkSeqMaxSize;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _blinkSeqMaxSize;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 string YColorLedCluster::get_command(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YColorLedCluster::COMMAND_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YColorLedCluster::COMMAND_INVALID;
+                }
+            }
         }
+        res = _command;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _command;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YColorLedCluster::set_command(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("command", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("command", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -228,11 +307,21 @@ int YColorLedCluster::set_command(const string& newval)
 YColorLedCluster* YColorLedCluster::FindColorLedCluster(string func)
 {
     YColorLedCluster* obj = NULL;
-    obj = (YColorLedCluster*) YFunction::_FindFromCache("ColorLedCluster", func);
-    if (obj == NULL) {
-        obj = new YColorLedCluster(func);
-        YFunction::_AddToCache("ColorLedCluster", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YColorLedCluster*) YFunction::_FindFromCache("ColorLedCluster", func);
+        if (obj == NULL) {
+            obj = new YColorLedCluster(func);
+            YFunction::_AddToCache("ColorLedCluster", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

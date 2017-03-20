@@ -73,7 +73,8 @@ int main(int argc, const char * argv[])
   } else {
     sensor = YSensor::FindSensor(string(argv[1]));
     if (!sensor->isOnline()) {
-      cerr << "Sensor " << sensor->get_hardwareId() << " is not connected (check USB cable)" << endl;
+      cerr << "Sensor " << sensor->get_hardwareId() << " is not connected (check USB cable)" <<
+           endl;
       return 1;
     }
   }

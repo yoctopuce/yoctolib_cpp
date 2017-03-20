@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_datalogger.cpp 26132 2016-12-01 17:02:38Z seb $
+ * $Id: yocto_datalogger.cpp 26826 2017-03-17 11:20:57Z mvuilleu $
  *
  * Implements yFindDataLogger(), the high-level API for DataLogger functions
  *
@@ -45,6 +45,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "datalogger"
 
 
 YOldDataStream::YOldDataStream(YDataLogger *parent, unsigned run,
@@ -480,12 +481,24 @@ int YDataLogger::_parseAttr(yJsonStateMachine& j)
  */
 int YDataLogger::get_currentRunIndex(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDataLogger::CURRENTRUNINDEX_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDataLogger::CURRENTRUNINDEX_INVALID;
+                }
+            }
         }
+        res = _currentRunIndex;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _currentRunIndex;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -497,12 +510,24 @@ int YDataLogger::get_currentRunIndex(void)
  */
 s64 YDataLogger::get_timeUTC(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDataLogger::TIMEUTC_INVALID;
+    s64 res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDataLogger::TIMEUTC_INVALID;
+                }
+            }
         }
+        res = _timeUTC;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _timeUTC;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -517,8 +542,17 @@ s64 YDataLogger::get_timeUTC(void)
 int YDataLogger::set_timeUTC(s64 newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
-    return _setAttr("timeUTC", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
+        res = _setAttr("timeUTC", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -531,12 +565,24 @@ int YDataLogger::set_timeUTC(s64 newval)
  */
 Y_RECORDING_enum YDataLogger::get_recording(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDataLogger::RECORDING_INVALID;
+    Y_RECORDING_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDataLogger::RECORDING_INVALID;
+                }
+            }
         }
+        res = _recording;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _recording;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -552,8 +598,17 @@ Y_RECORDING_enum YDataLogger::get_recording(void)
 int YDataLogger::set_recording(Y_RECORDING_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("recording", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("recording", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -566,12 +621,24 @@ int YDataLogger::set_recording(Y_RECORDING_enum newval)
  */
 Y_AUTOSTART_enum YDataLogger::get_autoStart(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDataLogger::AUTOSTART_INVALID;
+    Y_AUTOSTART_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDataLogger::AUTOSTART_INVALID;
+                }
+            }
         }
+        res = _autoStart;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _autoStart;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -589,25 +656,47 @@ Y_AUTOSTART_enum YDataLogger::get_autoStart(void)
 int YDataLogger::set_autoStart(Y_AUTOSTART_enum newval)
 {
     string rest_val;
-    rest_val = (newval>0 ? "1" : "0");
-    return _setAttr("autoStart", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("autoStart", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
- * Return true if the data logger is synchronised with the localization beacon.
+ * Returns true if the data logger is synchronised with the localization beacon.
  *
- * @return either Y_BEACONDRIVEN_OFF or Y_BEACONDRIVEN_ON
+ * @return either Y_BEACONDRIVEN_OFF or Y_BEACONDRIVEN_ON, according to true if the data logger is
+ * synchronised with the localization beacon
  *
  * On failure, throws an exception or returns Y_BEACONDRIVEN_INVALID.
  */
 Y_BEACONDRIVEN_enum YDataLogger::get_beaconDriven(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDataLogger::BEACONDRIVEN_INVALID;
+    Y_BEACONDRIVEN_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDataLogger::BEACONDRIVEN_INVALID;
+                }
+            }
         }
+        res = _beaconDriven;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _beaconDriven;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -625,25 +714,55 @@ Y_BEACONDRIVEN_enum YDataLogger::get_beaconDriven(void)
 int YDataLogger::set_beaconDriven(Y_BEACONDRIVEN_enum newval)
 {
     string rest_val;
-    rest_val = (newval>0 ? "1" : "0");
-    return _setAttr("beaconDriven", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("beaconDriven", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 Y_CLEARHISTORY_enum YDataLogger::get_clearHistory(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YDataLogger::CLEARHISTORY_INVALID;
+    Y_CLEARHISTORY_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDataLogger::CLEARHISTORY_INVALID;
+                }
+            }
         }
+        res = _clearHistory;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _clearHistory;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YDataLogger::set_clearHistory(Y_CLEARHISTORY_enum newval)
 {
     string rest_val;
-    rest_val = (newval>0 ? "1" : "0");
-    return _setAttr("clearHistory", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("clearHistory", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -672,11 +791,21 @@ int YDataLogger::set_clearHistory(Y_CLEARHISTORY_enum newval)
 YDataLogger* YDataLogger::FindDataLogger(string func)
 {
     YDataLogger* obj = NULL;
-    obj = (YDataLogger*) YFunction::_FindFromCache("DataLogger", func);
-    if (obj == NULL) {
-        obj = new YDataLogger(func);
-        YFunction::_AddToCache("DataLogger", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YDataLogger*) YFunction::_FindFromCache("DataLogger", func);
+        if (obj == NULL) {
+            obj = new YDataLogger(func);
+            YFunction::_AddToCache("DataLogger", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

@@ -10,7 +10,8 @@ static int upgradeSerialList(vector<string> allserials)
   string      errmsg;
 
 
-  for (std::vector<string>::iterator it = allserials.begin() ; it != allserials.end(); ++it) {
+  for (std::vector<string>::iterator it = allserials.begin() ; it != allserials.end();
+       ++it) {
     string serial = *it;
     YModule *module = YModule::FindModule(serial);
     string product = module->get_productName();
@@ -21,7 +22,8 @@ static int upgradeSerialList(vector<string> allserials)
     if (newfirm == "") {
       cout << product << " " << serial << "(rev=" << current << ") is up to date" << endl;
     } else {
-      cout << product << " " << serial << "(rev=" << current << ") need be updated with firmare : " << endl;
+      cout << product << " " << serial << "(rev=" << current <<
+           ") need be updated with firmare : " << endl;
       cout << "    " << newfirm << endl;
       // execute the firmware upgrade
       YFirmwareUpdate update = module->updateFirmware(newfirm);
@@ -40,7 +42,8 @@ static int upgradeSerialList(vector<string> allserials)
         if (module->isOnline()) {
           cout << status << "% Firmware Updated Successfully!" << endl;
         } else {
-          cout << status << " Firmware Update failed: module " << serial << " is not online" << endl;
+          cout << status << " Firmware Update failed: module " << serial << " is not online" <<
+               endl;
           exit(1);
         }
       }

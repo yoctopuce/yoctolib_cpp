@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_rangefinder.cpp 26329 2017-01-11 14:04:39Z mvuilleu $
+ * $Id: yocto_rangefinder.cpp 26826 2017-03-17 11:20:57Z mvuilleu $
  *
  * Implements yFindRangeFinder(), the high-level API for RangeFinder functions
  *
@@ -46,10 +46,13 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "rangefinder"
 
 YRangeFinder::YRangeFinder(const string& func): YSensor(func)
 //--- (RangeFinder initialization)
     ,_rangeFinderMode(RANGEFINDERMODE_INVALID)
+    ,_hardwareCalibration(HARDWARECALIBRATION_INVALID)
+    ,_currentTemperature(CURRENTTEMPERATURE_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackRangeFinder(NULL)
     ,_timedReportCallbackRangeFinder(NULL)
@@ -65,6 +68,8 @@ YRangeFinder::~YRangeFinder()
 }
 //--- (YRangeFinder implementation)
 // static attributes
+const string YRangeFinder::HARDWARECALIBRATION_INVALID = YAPI_INVALID_STRING;
+const double YRangeFinder::CURRENTTEMPERATURE_INVALID = YAPI_INVALID_DOUBLE;
 const string YRangeFinder::COMMAND_INVALID = YAPI_INVALID_STRING;
 
 int YRangeFinder::_parseAttr(yJsonStateMachine& j)
@@ -72,6 +77,16 @@ int YRangeFinder::_parseAttr(yJsonStateMachine& j)
     if(!strcmp(j.token, "rangeFinderMode")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _rangeFinderMode =  (Y_RANGEFINDERMODE_enum)atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "hardwareCalibration")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _hardwareCalibration =  _parseString(j);
+        return 1;
+    }
+    if(!strcmp(j.token, "currentTemperature")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _currentTemperature =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
         return 1;
     }
     if(!strcmp(j.token, "command")) {
@@ -85,13 +100,13 @@ int YRangeFinder::_parseAttr(yJsonStateMachine& j)
 
 
 /**
- * Changes the measuring unit for the measured temperature. That unit is a string.
- * String value can be " or mm. Any other value will be ignored.
+ * Changes the measuring unit for the measured range. That unit is a string.
+ * String value can be " or mm. Any other value is ignored.
  * Remember to call the saveToFlash() method of the module if the modification must be kept.
  * WARNING: if a specific calibration is defined for the rangeFinder function, a
  * unit system change will probably break it.
  *
- * @param newval : a string corresponding to the measuring unit for the measured temperature
+ * @param newval : a string corresponding to the measuring unit for the measured range
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -100,36 +115,57 @@ int YRangeFinder::_parseAttr(yJsonStateMachine& j)
 int YRangeFinder::set_unit(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("unit", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("unit", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
- * Returns the rangefinder running mode. The rangefinder running mode
- * allows to put priority on precision, speed or maximum range.
+ * Returns the range finder running mode. The rangefinder running mode
+ * allows you to put priority on precision, speed or maximum range.
  *
  * @return a value among Y_RANGEFINDERMODE_DEFAULT, Y_RANGEFINDERMODE_LONG_RANGE,
- * Y_RANGEFINDERMODE_HIGH_ACCURACY and Y_RANGEFINDERMODE_HIGH_SPEED corresponding to the rangefinder running mode
+ * Y_RANGEFINDERMODE_HIGH_ACCURACY and Y_RANGEFINDERMODE_HIGH_SPEED corresponding to the range finder running mode
  *
  * On failure, throws an exception or returns Y_RANGEFINDERMODE_INVALID.
  */
 Y_RANGEFINDERMODE_enum YRangeFinder::get_rangeFinderMode(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YRangeFinder::RANGEFINDERMODE_INVALID;
+    Y_RANGEFINDERMODE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRangeFinder::RANGEFINDERMODE_INVALID;
+                }
+            }
         }
+        res = _rangeFinderMode;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _rangeFinderMode;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
- * Changes the rangefinder running mode, allowing to put priority on
+ * Changes the rangefinder running mode, allowing you to put priority on
  * precision, speed or maximum range.
  *
  * @param newval : a value among Y_RANGEFINDERMODE_DEFAULT, Y_RANGEFINDERMODE_LONG_RANGE,
  * Y_RANGEFINDERMODE_HIGH_ACCURACY and Y_RANGEFINDERMODE_HIGH_SPEED corresponding to the rangefinder
- * running mode, allowing to put priority on
+ * running mode, allowing you to put priority on
  *         precision, speed or maximum range
  *
  * @return YAPI_SUCCESS if the call succeeds.
@@ -139,25 +175,122 @@ Y_RANGEFINDERMODE_enum YRangeFinder::get_rangeFinderMode(void)
 int YRangeFinder::set_rangeFinderMode(Y_RANGEFINDERMODE_enum newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("rangeFinderMode", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("rangeFinderMode", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+string YRangeFinder::get_hardwareCalibration(void)
+{
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRangeFinder::HARDWARECALIBRATION_INVALID;
+                }
+            }
+        }
+        res = _hardwareCalibration;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+int YRangeFinder::set_hardwareCalibration(const string& newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("hardwareCalibration", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the current sensor temperature, as a floating point number.
+ *
+ * @return a floating point number corresponding to the current sensor temperature, as a floating point number
+ *
+ * On failure, throws an exception or returns Y_CURRENTTEMPERATURE_INVALID.
+ */
+double YRangeFinder::get_currentTemperature(void)
+{
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRangeFinder::CURRENTTEMPERATURE_INVALID;
+                }
+            }
+        }
+        res = _currentTemperature;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 string YRangeFinder::get_command(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YRangeFinder::COMMAND_INVALID;
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRangeFinder::COMMAND_INVALID;
+                }
+            }
         }
+        res = _command;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _command;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YRangeFinder::set_command(const string& newval)
 {
     string rest_val;
-    rest_val = newval;
-    return _setAttr("command", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("command", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -186,11 +319,21 @@ int YRangeFinder::set_command(const string& newval)
 YRangeFinder* YRangeFinder::FindRangeFinder(string func)
 {
     YRangeFinder* obj = NULL;
-    obj = (YRangeFinder*) YFunction::_FindFromCache("RangeFinder", func);
-    if (obj == NULL) {
-        obj = new YRangeFinder(func);
-        YFunction::_AddToCache("RangeFinder", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YRangeFinder*) YFunction::_FindFromCache("RangeFinder", func);
+        if (obj == NULL) {
+            obj = new YRangeFinder(func);
+            YFunction::_AddToCache("RangeFinder", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 
@@ -269,17 +412,111 @@ int YRangeFinder::_invokeTimedReportCallback(YMeasure value)
 }
 
 /**
+ * Returns the temperature at the time when the latest calibration was performed.
+ * This function can be used to determine if a new calibration for ambient temperature
+ * is required.
+ *
+ * @return a temperature, as a floating point number.
+ *         On failure, throws an exception or return YAPI_INVALID_DOUBLE.
+ */
+double YRangeFinder::get_hardwareCalibrationTemperature(void)
+{
+    string hwcal;
+    
+    hwcal = this->get_hardwareCalibration();
+    if (!((hwcal).substr(0, 1) == "@")) {
+        return YAPI_INVALID_DOUBLE;
+    }
+    return atoi(((hwcal).substr(1, (int)(hwcal).length())).c_str());
+}
+
+/**
  * Triggers a sensor calibration according to the current ambient temperature. That
  * calibration process needs no physical interaction with the sensor. It is performed
  * automatically at device startup, but it is recommended to start it again when the
- * temperature delta since last calibration exceeds 8°C.
+ * temperature delta since the latest calibration exceeds 8°C.
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *         On failure, throws an exception or returns a negative error code.
  */
-int YRangeFinder::triggerTempCalibration(void)
+int YRangeFinder::triggerTemperatureCalibration(void)
 {
     return this->set_command("T");
+}
+
+/**
+ * Triggers the photon detector hardware calibration.
+ * This function is part of the calibration procedure to compensate for the the effect
+ * of a cover glass. Make sure to read the chapter about hardware calibration for details
+ * on the calibration procedure for proper results.
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *         On failure, throws an exception or returns a negative error code.
+ */
+int YRangeFinder::triggerSpadCalibration(void)
+{
+    return this->set_command("S");
+}
+
+/**
+ * Triggers the hardware offset calibration of the distance sensor.
+ * This function is part of the calibration procedure to compensate for the the effect
+ * of a cover glass. Make sure to read the chapter about hardware calibration for details
+ * on the calibration procedure for proper results.
+ *
+ * @param targetDist : true distance of the calibration target, in mm or inches, depending
+ *         on the unit selected in the device
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *         On failure, throws an exception or returns a negative error code.
+ */
+int YRangeFinder::triggerOffsetCalibration(double targetDist)
+{
+    int distmm = 0;
+    
+    if (this->get_unit() == "\"") {
+        distmm = (int) floor(targetDist * 25.4+0.5);
+    } else {
+        distmm = (int) floor(targetDist+0.5);
+    }
+    return this->set_command(YapiWrapper::ysprintf("O%d",distmm));
+}
+
+/**
+ * Triggers the hardware cross-talk calibration of the distance sensor.
+ * This function is part of the calibration procedure to compensate for the the effect
+ * of a cover glass. Make sure to read the chapter about hardware calibration for details
+ * on the calibration procedure for proper results.
+ *
+ * @param targetDist : true distance of the calibration target, in mm or inches, depending
+ *         on the unit selected in the device
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *         On failure, throws an exception or returns a negative error code.
+ */
+int YRangeFinder::triggerXTalkCalibration(double targetDist)
+{
+    int distmm = 0;
+    
+    if (this->get_unit() == "\"") {
+        distmm = (int) floor(targetDist * 25.4+0.5);
+    } else {
+        distmm = (int) floor(targetDist+0.5);
+    }
+    return this->set_command(YapiWrapper::ysprintf("X%d",distmm));
+}
+
+/**
+ * Cancels the effect of previous hardware calibration procedures to compensate
+ * for cover glass, and restores factory settings.
+ * Remember to call the saveToFlash() method of the module if the modification must be kept.
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *         On failure, throws an exception or returns a negative error code.
+ */
+int YRangeFinder::cancelCoverGlassCalibrations(void)
+{
+    return this->set_hardwareCalibration("");
 }
 
 YRangeFinder *YRangeFinder::nextRangeFinder(void)

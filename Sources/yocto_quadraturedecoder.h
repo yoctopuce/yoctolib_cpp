@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_quadraturedecoder.h 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_quadraturedecoder.h 26826 2017-03-17 11:20:57Z mvuilleu $
  *
  * Declares yFindQuadratureDecoder(), the high-level API for QuadratureDecoder functions
  *
@@ -71,7 +71,7 @@ typedef enum {
  *
  * The class YQuadratureDecoder allows you to decode a two-wire signal produced by a
  * quadrature encoder. It inherits from YSensor class the core functions to read measurements,
- * register callback functions, access to the autonomous datalogger.
+ * to register callback functions, to access the autonomous datalogger.
  */
 class YOCTO_CLASS_EXPORT YQuadratureDecoder: public YSensor {
 #ifdef __BORLANDC__

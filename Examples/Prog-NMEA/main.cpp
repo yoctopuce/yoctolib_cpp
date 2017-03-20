@@ -294,7 +294,8 @@ int winmain(int argc, char *argv[])
 
 void WINAPI SvcMain(DWORD dwArgc, LPTSTR *lpszArgv)
 {
-  ServiceStatusHandle = RegisterServiceCtrlHandlerEx(SERVICE_NAME, (LPHANDLER_FUNCTION_EX)ServiceControlhandler, 0);
+  ServiceStatusHandle = RegisterServiceCtrlHandlerEx(SERVICE_NAME,
+                        (LPHANDLER_FUNCTION_EX)ServiceControlhandler, 0);
   if(!ServiceStatusHandle) {
     WinError("Unable to register Service handler", GetLastError());
     return;

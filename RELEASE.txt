@@ -1,2 +1,2 @@
-- Fix small handle leak on linux  (reported and fixed by Blue Pillar, Inc)
-- Remove some dead code (support for devices with multiples USB interfaces)
+- Add YRangeFinder class
+- Fix race condition that can lead to a crash (very rare)

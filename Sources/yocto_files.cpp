@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_files.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindFiles(), the high-level API for Files functions
  *
@@ -45,6 +45,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "files"
 
 
 YFileRecord::YFileRecord(const string& json)
@@ -152,12 +153,24 @@ int YFiles::_parseAttr(yJsonStateMachine& j)
  */
 int YFiles::get_filesCount(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YFiles::FILESCOUNT_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YFiles::FILESCOUNT_INVALID;
+                }
+            }
         }
+        res = _filesCount;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _filesCount;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -169,12 +182,24 @@ int YFiles::get_filesCount(void)
  */
 int YFiles::get_freeSpace(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YFiles::FREESPACE_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YFiles::FREESPACE_INVALID;
+                }
+            }
         }
+        res = _freeSpace;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _freeSpace;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -203,11 +228,21 @@ int YFiles::get_freeSpace(void)
 YFiles* YFiles::FindFiles(string func)
 {
     YFiles* obj = NULL;
-    obj = (YFiles*) YFunction::_FindFromCache("Files", func);
-    if (obj == NULL) {
-        obj = new YFiles(func);
-        YFunction::_AddToCache("Files", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YFiles*) YFunction::_FindFromCache("Files", func);
+        if (obj == NULL) {
+            obj = new YFiles(func);
+            YFunction::_AddToCache("Files", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

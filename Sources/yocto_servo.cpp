@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_servo.cpp 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_servo.cpp 26762 2017-03-16 09:08:58Z seb $
  *
  * Implements yFindServo(), the high-level API for Servo functions
  *
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#define  __FILE_ID__  "servo"
 
 YServo::YServo(const string& func): YFunction(func)
 //--- (Servo initialization)
@@ -135,12 +136,24 @@ int YServo::_parseAttr(yJsonStateMachine& j)
  */
 int YServo::get_position(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YServo::POSITION_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YServo::POSITION_INVALID;
+                }
+            }
         }
+        res = _position;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _position;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -155,8 +168,17 @@ int YServo::get_position(void)
 int YServo::set_position(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("position", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("position", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -168,12 +190,24 @@ int YServo::set_position(int newval)
  */
 Y_ENABLED_enum YServo::get_enabled(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YServo::ENABLED_INVALID;
+    Y_ENABLED_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YServo::ENABLED_INVALID;
+                }
+            }
         }
+        res = _enabled;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _enabled;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -188,8 +222,17 @@ Y_ENABLED_enum YServo::get_enabled(void)
 int YServo::set_enabled(Y_ENABLED_enum newval)
 {
     string rest_val;
-    rest_val = (newval>0 ? "1" : "0");
-    return _setAttr("enabled", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("enabled", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -201,12 +244,24 @@ int YServo::set_enabled(Y_ENABLED_enum newval)
  */
 int YServo::get_range(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YServo::RANGE_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YServo::RANGE_INVALID;
+                }
+            }
         }
+        res = _range;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _range;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -227,8 +282,17 @@ int YServo::get_range(void)
 int YServo::set_range(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("range", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("range", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -240,12 +304,24 @@ int YServo::set_range(int newval)
  */
 int YServo::get_neutral(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YServo::NEUTRAL_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YServo::NEUTRAL_INVALID;
+                }
+            }
         }
+        res = _neutral;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _neutral;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -266,25 +342,55 @@ int YServo::get_neutral(void)
 int YServo::set_neutral(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("neutral", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("neutral", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 YMove YServo::get_move(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YServo::MOVE_INVALID;
+    YMove res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YServo::MOVE_INVALID;
+                }
+            }
         }
+        res = _move;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _move;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 int YServo::set_move(YMove newval)
 {
     string rest_val;
-    char buff[64]; sprintf(buff,"%d:%d",newval.target,newval.ms); rest_val = string(buff);
-    return _setAttr("move", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buff[64]; sprintf(buff,"%d:%d",newval.target,newval.ms); rest_val = string(buff);
+        res = _setAttr("move", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -313,12 +419,24 @@ int YServo::move(int target,int ms_duration)
  */
 int YServo::get_positionAtPowerOn(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YServo::POSITIONATPOWERON_INVALID;
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YServo::POSITIONATPOWERON_INVALID;
+                }
+            }
         }
+        res = _positionAtPowerOn;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _positionAtPowerOn;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -334,8 +452,17 @@ int YServo::get_positionAtPowerOn(void)
 int YServo::set_positionAtPowerOn(int newval)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-    return _setAttr("positionAtPowerOn", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("positionAtPowerOn", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -348,12 +475,24 @@ int YServo::set_positionAtPowerOn(int newval)
  */
 Y_ENABLEDATPOWERON_enum YServo::get_enabledAtPowerOn(void)
 {
-    if (_cacheExpiration <= YAPI::GetTickCount()) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YServo::ENABLEDATPOWERON_INVALID;
+    Y_ENABLEDATPOWERON_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YServo::ENABLEDATPOWERON_INVALID;
+                }
+            }
         }
+        res = _enabledAtPowerOn;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    return _enabledAtPowerOn;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -369,8 +508,17 @@ Y_ENABLEDATPOWERON_enum YServo::get_enabledAtPowerOn(void)
 int YServo::set_enabledAtPowerOn(Y_ENABLEDATPOWERON_enum newval)
 {
     string rest_val;
-    rest_val = (newval>0 ? "1" : "0");
-    return _setAttr("enabledAtPowerOn", rest_val);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("enabledAtPowerOn", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -399,11 +547,21 @@ int YServo::set_enabledAtPowerOn(Y_ENABLEDATPOWERON_enum newval)
 YServo* YServo::FindServo(string func)
 {
     YServo* obj = NULL;
-    obj = (YServo*) YFunction::_FindFromCache("Servo", func);
-    if (obj == NULL) {
-        obj = new YServo(func);
-        YFunction::_AddToCache("Servo", func, obj);
+    int taken = 0;
+    if (YAPI::_apiInitialized) {
+        yEnterCriticalSection(&YAPI::_global_cs);
+        taken = 1;
+    }try {
+        obj = (YServo*) YFunction::_FindFromCache("Servo", func);
+        if (obj == NULL) {
+            obj = new YServo(func);
+            YFunction::_AddToCache("Servo", func, obj);
+        }
+    } catch (std::exception) {
+        if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
+        throw;
     }
+    if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
 

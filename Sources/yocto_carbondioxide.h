@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_carbondioxide.h 25831 2016-11-08 11:12:15Z seb $
+ * $Id: yocto_carbondioxide.h 26826 2017-03-17 11:20:57Z mvuilleu $
  *
  * Declares yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *
@@ -64,7 +64,7 @@ typedef void (*YCarbonDioxideTimedReportCallback)(YCarbonDioxide *func, YMeasure
  *
  * The Yoctopuce class YCarbonDioxide allows you to read and configure Yoctopuce CO2
  * sensors. It inherits from YSensor class the core functions to read measurements,
- * register callback functions, access to the autonomous datalogger.
+ * to register callback functions,  to access the autonomous datalogger.
  * This class adds the ability to perform manual calibration if reuired.
  */
 class YOCTO_CLASS_EXPORT YCarbonDioxide: public YSensor {
