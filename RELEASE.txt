@@ -1,2 +1,1 @@
-- Add YRangeFinder class
-- Fix race condition that can lead to a crash (very rare)
+- fix race condition

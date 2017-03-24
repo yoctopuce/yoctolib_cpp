@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_lin.c 26607 2017-02-09 13:13:07Z seb $
+ * $Id: ypkt_lin.c 26885 2017-03-24 13:50:49Z seb $
  *
  * OS-specific USB packet layer, Linux version
  *
@@ -414,26 +414,14 @@ exit:
 
 // return 1 if OS hdl are identicals
 //        0 if any of the interface has changed
-int yyyOShdlCompare( yPrivDeviceSt *dev, DevEnum *newdev)
+int yyyOShdlCompare( yPrivDeviceSt *dev, yInterfaceSt *newiface)
 {
-    int i,j, nbifaces;
-    if(dev->infos.nbinbterfaces != newdev->nbifaces){
-        HALLOG("bad number of inteface for %s (%d:%d)\n",dev->infos.serial,dev->infos.nbinbterfaces, newdev->nbifaces);
+    if(dev->infos.nbinbterfaces != 1){
+        HALLOG("bad number of inteface for %s (%d)\n",dev->infos.serial,dev->infos.nbinbterfaces);
         return 0;
     }
-    nbifaces=newdev->nbifaces;
-
-    for (i =0 ; i < nbifaces ;i++) {
-        for (j =0 ; j < nbifaces ;j++) {
-            if(dev->ifaces[i].devref == newdev->ifaces[j]->devref){
-                break;
-            }
-        }
-        if(j==nbifaces)
-            break;
-    }
-    if( i < nbifaces ) {
-        HALLOG("devref %d has changed for %s (%X)\n",i,dev->infos.serial,dev->ifaces[i].devref);
+    if(dev->iface.devref != newiface->devref){
+        HALLOG("devref has changed for %s (%X)\n",dev->infos.serial,dev->iface.devref);
         return 0;
     }
 

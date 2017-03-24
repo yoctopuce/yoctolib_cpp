@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_osx.c 23281 2016-02-24 18:08:58Z mvuilleu $
+ * $Id: ypkt_osx.c 26871 2017-03-23 10:03:37Z seb $
  *
  * OS-specific USB packet layer, Mac OS X version
  *
@@ -367,10 +367,10 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
 
 // return 1 if OS hdl are identicals
 //        0 if any of the interface has changed
-int yyyOShdlCompare( yPrivDeviceSt *dev, DevEnum *newdev)
+int yyyOShdlCompare( yPrivDeviceSt *dev, yInterfaceSt *newdev)
 {
-    if(dev->infos.nbinbterfaces != newdev->nbifaces){
-        HALLOG("bad number of inteface for %s (%d:%d)\n",dev->infos.serial,dev->infos.nbinbterfaces, newdev->nbifaces);
+    if(dev->infos.nbinbterfaces != 1){
+        HALLOG("bad number of inteface for %s (%d)\n",dev->infos.serial,dev->infos.nbinbterfaces);
         return 0;
     }
     return 1;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 26607 2017-02-09 13:13:07Z seb $
+ * $Id: yproto.h 26883 2017-03-24 11:22:53Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -555,9 +555,6 @@ typedef struct _yInterfaceSt {
     pktQueue        rxQueue;
     pktQueue        txQueue;
 #if defined(WINDOWS_API)
-#ifdef WINDOWS_UWP_API
-    uwp_enum_item    uwp;
-#else
     char            devicePath[WIN_DEVICE_PATH_LEN];
     yThread         io_thread;
     HANDLE          wrHDL;
@@ -567,7 +564,6 @@ typedef struct _yInterfaceSt {
     u32             rdpending;
     OS_USB_Packet   tmpd2hpkt;
     OS_USB_Packet   tmph2dpkt;
-#endif
 #elif defined(OSX_API)
     OSX_HID_REF         hid;
     CFStringRef         run_loop_mode;
@@ -681,7 +677,7 @@ typedef struct  _yPrivDeviceSt{
     pktItem             tmptxpkt;
     u8                  lastpktno;
     int                 pktAckDelay;
-    yInterfaceSt        ifaces[NBMAX_INTERFACE_PER_DEV];
+    yInterfaceSt        iface;
     char                *replybuf;      // Used to buffer request result
     int                 replybufsize;   // allocated size of replybuf
     yFifoBuf            http_fifo;
@@ -690,10 +686,6 @@ typedef struct  _yPrivDeviceSt{
     struct              _yPrivDeviceSt   *next;
 } yPrivDeviceSt;
 
-typedef struct  _DevEnum{
-    int             nbifaces;
-    yInterfaceSt    *ifaces[NBMAX_INTERFACE_PER_DEV];
-} DevEnum;
 
 typedef void (*yDevInfoCallback)(const yDeviceSt *infos);
 typedef void (*yNotificCallback)(const char *serial, const char *funcid, const char *funcname, const char *funcval);
@@ -992,7 +984,7 @@ YRETCODE yapiRequestOpen(YIOHDL_internal *iohdl, int tpchan, const char *device,
 int  yyyUSB_init(yContextSt *ctx,char *errmsg);
 int  yyyUSB_stop(yContextSt *ctx,char *errmsg);
 int  yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg);
-int  yyyOShdlCompare( yPrivDeviceSt *dev, DevEnum *newdev);
+int  yyyOShdlCompare( yPrivDeviceSt *dev, yInterfaceSt *newiface);
 int  yyySetup(yInterfaceSt *iface,char *errmsg);
 YRETCODE  yyySendPacket( yInterfaceSt *iface,const USB_Packet *pkt,char *errmsg);
 int  yyySignalOutPkt(yInterfaceSt *iface);
