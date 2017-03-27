@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 26826 2017-03-17 11:20:57Z mvuilleu $
+ * $Id: yocto_api.cpp 26911 2017-03-27 08:18:17Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -2656,12 +2656,13 @@ YRETCODE YDevice::requestAPI(string& apires, string& errmsg)
     // send request, without HTTP/1.1 suffix to get light headers
     res = this->HTTPRequest_unsafe(0, request, buffer, NULL, NULL, errmsg);
     if(YISERR(res)) {
+        yLeaveCriticalSection(&_lock);
         // Check if an update of the device list does not solve the issue
         res = YapiWrapper::updateDeviceList(true,errmsg);
         if(YISERR(res)) {
-            yLeaveCriticalSection(&_lock);
             return (YRETCODE)res;
         }
+        yEnterCriticalSection(&_lock);
         // send request, without HTTP/1.1 suffix to get light headers
         res = this->HTTPRequest_unsafe(0, request, buffer, NULL, NULL, errmsg);
         if(YISERR(res)) {
@@ -2760,7 +2761,7 @@ yDeviceUpdateCallback   YAPI::DeviceArrivalCallback  = NULL;
 yDeviceUpdateCallback   YAPI::DeviceRemovalCallback  = NULL;
 yDeviceUpdateCallback   YAPI::DeviceChangeCallback   = NULL;
 
-void YAPI::_yapiLogFunctionFwd(const char *log, u32 loglen) 
+void YAPI::_yapiLogFunctionFwd(const char *log, u32 loglen)
 {
     if(YAPI::LogFunction)
         YAPI::LogFunction(string(log));
@@ -5667,6 +5668,7 @@ string YModule::get_friendlyName(void)
 
 void YModule::setImmutableAttributes(yDeviceSt *infos)
 {
+    // do not take CS on purpose (called for update device list)
     _serialNumber = (string) infos->serial;
     _productName  = (string) infos->productname;
     _productId    =  infos->deviceid;
