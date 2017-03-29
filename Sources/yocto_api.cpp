@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 26911 2017-03-27 08:18:17Z seb $
+ * $Id: yocto_api.cpp 26948 2017-03-28 12:06:11Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -2241,7 +2241,15 @@ string YFunction::get_friendlyName(void)
 
 
 
-// Returns the unique hardware ID of the function
+/**
+ * Returns the unique hardware identifier of the function in the form SERIAL.FUNCTIONID.
+ * The unique hardware identifier is composed of the device serial
+ * number and of the hardware identifier of the function (for example RELAYLO1-123456.relay1).
+ *
+ * @return a string that uniquely identifies the function (ex: RELAYLO1-123456.relay1)
+ *
+ * On failure, throws an exception or returns  Y_HARDWAREID_INVALID.
+ */
 string YFunction::get_hardwareId(void)
 {
     YRETCODE    retcode;
@@ -2269,7 +2277,14 @@ string YFunction::get_hardwareId(void)
     return string(snum)+string(".")+string(funcid);
 }
 
-// Returns the unique function ID of the function
+/**
+ * Returns the hardware identifier of the function, without reference to the module. For example
+ * relay1
+ *
+ * @return a string that identifies the function (ex: relay1)
+ *
+ * On failure, throws an exception or returns  Y_FUNCTIONID_INVALID.
+ */
 string YFunction::get_functionId(void)
 {
     YRETCODE    retcode;
@@ -2297,20 +2312,41 @@ string YFunction::get_functionId(void)
 }
 
 
-// Return the numerical error type of the last error with this function
+/**
+ * Returns the numerical error code of the latest error with the function.
+ * This method is mostly useful when using the Yoctopuce library with
+ * exceptions disabled.
+ *
+ * @return a number corresponding to the code of the latest error that occurred while
+ *         using the function object
+ */
 YRETCODE YFunction::get_errorType(void)
 {
     return _lastErrorType;
 }
 
-// Return the human-readable explanation about the last error with this function
+/**
+ * Returns the error message of the latest error with the function.
+ * This method is mostly useful when using the Yoctopuce library with
+ * exceptions disabled.
+ *
+ * @return a string corresponding to the latest error message that occured while
+ *         using the function object
+ */
 string YFunction::get_errorMessage(void)
 {
     return _lastErrorMsg;
 }
 
-// Return true if the function can be reached, and false otherwise. No exception will be raised.
-// If there is a valid value in cache, the device is considered reachable.
+/**
+ * Checks if the function is currently reachable, without raising any error.
+ * If there is a cached value for the function in cache, that has not yet
+ * expired, the device is considered reachable.
+ * No exception is raised if there is an error while trying to contact the
+ * device hosting the function.
+ *
+ * @return true if the function can be reached, and false otherwise
+ */
 bool YFunction::isOnline(void)
 {
     YDevice     *dev;
@@ -2346,6 +2382,20 @@ bool YFunction::isOnline(void)
     return true;
 }
 
+/**
+ * Preloads the function cache with a specified validity duration.
+ * By default, whenever accessing a device, all function attributes
+ * are kept in cache for the standard duration (5 ms). This method can be
+ * used to temporarily mark the cache as valid for a longer period, in order
+ * to reduce network traffic for instance.
+ *
+ * @param msValidity : an integer corresponding to the validity attributed to the
+ *         loaded function parameters, in milliseconds
+ *
+ * @return YAPI_SUCCESS when the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
 YRETCODE YFunction::load(int msValidity)
 {
     yJsonStateMachine j;
@@ -2404,6 +2454,12 @@ YRETCODE YFunction::load(int msValidity)
     return YAPI_SUCCESS;
 }
 
+/**
+ * Invalidates the cache. Invalidates the cache of the function attributes. Forces the
+ * next call to get_xxx() or loadxxx() to use values that come from the device.
+ *
+ * @noreturn
+ */
 void YFunction::clearCache()
 {
     YDevice     *dev;
@@ -2425,6 +2481,13 @@ void YFunction::clearCache()
 }
 
 
+/**
+ * Gets the YModule object for the device on which the function is located.
+ * If the function cannot be located on any module, the returned instance of
+ * YModule is not shown as on-line.
+ *
+ * @return an instance of YModule
+ */
 YModule *YFunction::get_module(void)
 {
     YFUN_DESCR fundescr;
@@ -2446,6 +2509,14 @@ YModule *YFunction::get_module(void)
 
 
 
+/**
+ * Returns the value of the userData attribute, as previously stored using method
+ * set_userData.
+ * This attribute is never touched directly by the API, and is at disposal of the caller to
+ * store a context.
+ *
+ * @return the object stored previously by the caller.
+ */
 void     *YFunction::get_userData(void)
 {
     void *res;
@@ -2456,6 +2527,13 @@ void     *YFunction::get_userData(void)
 }
 
 
+/**
+ * Stores a user context provided as argument in the userData attribute of the function.
+ * This attribute is never touched by the API, and is at disposal of the caller to store a context.
+ *
+ * @param data : any kind of object to be stored
+ * @noreturn
+ */
 void      YFunction::set_userData(void* data)
 {
     yEnterCriticalSection(&_this_cs);
@@ -2464,6 +2542,15 @@ void      YFunction::set_userData(void* data)
 }
 
 
+/**
+ * Returns a unique identifier of type YFUN_DESCR corresponding to the function.
+ * This identifier can be used to test if two instances of YFunction reference the same
+ * physical function on the same physical device.
+ *
+ * @return an identifier of type YFUN_DESCR.
+ *
+ * If the function has never been contacted, the returned value is Y_FUNCTIONDESCRIPTOR_INVALID.
+ */
 YFUN_DESCR YFunction::get_functionDescriptor(void)
 {
     // do not take CS un purpose
@@ -5754,8 +5841,15 @@ string YModule::functionId(int functionIndex)
 string YModule::functionName(int functionIndex)
 {
     string      serial, funcId, basetype, funcName, funcVal, errmsg;
-
-    int res = _getFunction(functionIndex, serial, funcId, basetype, funcName, funcVal, errmsg);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        res = _getFunction(functionIndex, serial, funcId, basetype, funcName, funcVal, errmsg);
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
     if(YISERR(res)) {
         _throw((YRETCODE)res, errmsg);
         return YAPI_INVALID_STRING;
@@ -5768,8 +5862,15 @@ string YModule::functionName(int functionIndex)
 string YModule::functionValue(int functionIndex)
 {
     string      serial, funcId, basetype, funcName, funcVal, errmsg;
-
-    int res = _getFunction(functionIndex, serial, funcId, basetype, funcName, funcVal, errmsg);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        res = _getFunction(functionIndex, serial, funcId, basetype, funcName, funcVal, errmsg);
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
     if(YISERR(res)) {
         _throw((YRETCODE)res, errmsg);
         return YAPI_INVALID_STRING;
@@ -5785,8 +5886,15 @@ string YModule::functionType(int functionIndex)
     string      serial, funcId, basetype, funcName, funcVal, errmsg;
     char        buffer[YOCTO_FUNCTION_LEN], *d = buffer;
     const char *p;
-
-    int res = _getFunction(functionIndex, serial, funcId, basetype, funcName, funcVal, errmsg);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        res = _getFunction(functionIndex, serial, funcId, basetype, funcName, funcVal, errmsg);
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
     if (YISERR(res)) {
         _throw((YRETCODE)res, errmsg);
         return YAPI_INVALID_STRING;
@@ -5804,8 +5912,15 @@ string YModule::functionType(int functionIndex)
 string YModule::functionBaseType(int functionIndex)
 {
     string      serial, funcId, basetype, funcName, funcVal, errmsg;
-
-    int res = _getFunction(functionIndex, serial, funcId, basetype, funcName, funcVal, errmsg);
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        res = _getFunction(functionIndex, serial, funcId, basetype, funcName, funcVal, errmsg);
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
     if (YISERR(res)) {
         _throw((YRETCODE)res, errmsg);
         return YAPI_INVALID_STRING;
@@ -5825,13 +5940,19 @@ string YModule::functionBaseType(int functionIndex)
  */
 void YModule::registerLogCallback(YModuleLogCallback callback)
 {
+    yEnterCriticalSection(&_this_cs);
     _logCallback = callback;
     yapiStartStopDeviceLogCallback(_serialNumber.c_str(), _logCallback!=NULL);
+    yLeaveCriticalSection(&_this_cs);
 }
 
 YModuleLogCallback YModule::get_logCallback()
 {
-    return _logCallback;
+    YModuleLogCallback res;
+    yEnterCriticalSection(&_this_cs);
+    res = _logCallback;
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_digitalio.cpp 26762 2017-03-16 09:08:58Z seb $
+ * $Id: yocto_digitalio.cpp 26949 2017-03-28 15:36:15Z mvuilleu $
  *
  * Implements yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -54,6 +54,7 @@ YDigitalIO::YDigitalIO(const string& func): YFunction(func)
     ,_portDirection(PORTDIRECTION_INVALID)
     ,_portOpenDrain(PORTOPENDRAIN_INVALID)
     ,_portPolarity(PORTPOLARITY_INVALID)
+    ,_portDiags(PORTDIAGS_INVALID)
     ,_portSize(PORTSIZE_INVALID)
     ,_outputVoltage(OUTPUTVOLTAGE_INVALID)
     ,_command(COMMAND_INVALID)
@@ -92,6 +93,11 @@ int YDigitalIO::_parseAttr(yJsonStateMachine& j)
     if(!strcmp(j.token, "portPolarity")) {
         if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
         _portPolarity =  atoi(j.token);
+        return 1;
+    }
+    if(!strcmp(j.token, "portDiags")) {
+        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
+        _portDiags =  atoi(j.token);
         return 1;
     }
     if(!strcmp(j.token, "portSize")) {
@@ -338,6 +344,37 @@ int YDigitalIO::set_portPolarity(int newval)
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
          throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the port state diagnostics (Yocto-IO and Yocto-MaxiIO-V2 only). Bit 0 indicates a shortcut on
+ * output 0, etc. Bit 8 indicates a power failure, and bit 9 signals overheating (overcurrent).
+ * During normal use, all diagnostic bits should stay clear.
+ *
+ * @return an integer corresponding to the port state diagnostics (Yocto-IO and Yocto-MaxiIO-V2 only)
+ *
+ * On failure, throws an exception or returns Y_PORTDIAGS_INVALID.
+ */
+int YDigitalIO::get_portDiags(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDigitalIO::PORTDIAGS_INVALID;
+                }
+            }
+        }
+        res = _portDiags;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
     yLeaveCriticalSection(&_this_cs);
     return res;

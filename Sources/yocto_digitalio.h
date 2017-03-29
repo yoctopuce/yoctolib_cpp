@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_digitalio.h 25871 2016-11-15 14:32:56Z seb $
+ * $Id: yocto_digitalio.h 26949 2017-03-28 15:36:15Z mvuilleu $
  *
  * Declares yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -65,6 +65,7 @@ typedef enum {
 #define Y_PORTDIRECTION_INVALID         (YAPI_INVALID_UINT)
 #define Y_PORTOPENDRAIN_INVALID         (YAPI_INVALID_UINT)
 #define Y_PORTPOLARITY_INVALID          (YAPI_INVALID_UINT)
+#define Y_PORTDIAGS_INVALID             (YAPI_INVALID_UINT)
 #define Y_PORTSIZE_INVALID              (YAPI_INVALID_UINT)
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 //--- (end of YDigitalIO definitions)
@@ -90,6 +91,7 @@ protected:
     int             _portDirection;
     int             _portOpenDrain;
     int             _portPolarity;
+    int             _portDiags;
     int             _portSize;
     Y_OUTPUTVOLTAGE_enum _outputVoltage;
     string          _command;
@@ -113,6 +115,7 @@ public:
     static const int PORTDIRECTION_INVALID = YAPI_INVALID_UINT;
     static const int PORTOPENDRAIN_INVALID = YAPI_INVALID_UINT;
     static const int PORTPOLARITY_INVALID = YAPI_INVALID_UINT;
+    static const int PORTDIAGS_INVALID = YAPI_INVALID_UINT;
     static const int PORTSIZE_INVALID = YAPI_INVALID_UINT;
     static const Y_OUTPUTVOLTAGE_enum OUTPUTVOLTAGE_USB_5V = Y_OUTPUTVOLTAGE_USB_5V;
     static const Y_OUTPUTVOLTAGE_enum OUTPUTVOLTAGE_USB_3V = Y_OUTPUTVOLTAGE_USB_3V;
@@ -232,6 +235,20 @@ public:
     int             set_portPolarity(int newval);
     inline int      setPortPolarity(int newval)
     { return this->set_portPolarity(newval); }
+
+    /**
+     * Returns the port state diagnostics (Yocto-IO and Yocto-MaxiIO-V2 only). Bit 0 indicates a shortcut on
+     * output 0, etc. Bit 8 indicates a power failure, and bit 9 signals overheating (overcurrent).
+     * During normal use, all diagnostic bits should stay clear.
+     *
+     * @return an integer corresponding to the port state diagnostics (Yocto-IO and Yocto-MaxiIO-V2 only)
+     *
+     * On failure, throws an exception or returns Y_PORTDIAGS_INVALID.
+     */
+    int                 get_portDiags(void);
+
+    inline int          portDiags(void)
+    { return this->get_portDiags(); }
 
     /**
      * Returns the number of bits implemented in the I/O port.

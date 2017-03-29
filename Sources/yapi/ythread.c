@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.c 26761 2017-03-16 09:05:28Z seb $
+ * $Id: ythread.c 26964 2017-03-29 08:57:59Z seb $
  *
  * OS-independent thread and synchronization library
  *
@@ -428,7 +428,7 @@ static void dump_YCS(yCRITICAL_SECTION *csptr)
         state_str= YCS_STATE_STR[ycs->state];
     } else {
         state_str = "INVALID";
-    }    
+    }
     printf("%p:%02x: state=%s lock=%d\n", ycs, ycs->no, state_str, ycs->lock);
     for (i = 0; i < YCS_NB_TRACE; i++) {
         u32 action = ycs->last_actions[i].action;
@@ -634,7 +634,12 @@ void yInitializeCriticalSection(yCRITICAL_SECTION *cs)
 #if defined(WINDOWS_API)
     InitializeCriticalSection(&(ycsptr->cs));
 #else
-    pthread_mutex_init(&(ycsptr->cs), NULL);
+    {
+        pthread_mutexattr_t attr;
+        pthread_mutexattr_init(&attr);
+        pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+        pthread_mutex_init(&(ycsptr->cs), &attr);
+    }
 #endif
     *cs = ycsptr;
 }

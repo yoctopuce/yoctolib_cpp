@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 26313 2017-01-10 16:43:05Z seb $
+#  $Id: GNUmakefile 26976 2017-03-29 19:24:46Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -126,7 +126,7 @@ endif
 ifdef TOOLCHAIN_QARM
 OPTS_ARMEL = -I$(STAGING_QARM)/usr/include/ -O2 -mfloat-abi=soft -march=armv5 -marm -DBUILD_ARMEL
 else
-OPTS_ARMEL = -mfloat-abi=soft -march=armv5 -DBUILD_ARMEL
+OPTS_ARMEL = -mfloat-abi=soft -march=armv5 -DBUILD_ARMEL -D_XOPEN_SOURCE=500 -D_BSD_SOURCE
 endif
 ifdef TOOLCHAIN_ARMHF
 # reduced ARMHF options to run properly on raspian-thing, but still be compatible with hard-floats VFP
@@ -137,8 +137,8 @@ endif
 OPTS_MIPS = -DCPU_BIG_ENDIAN -I$(MIPS_TARGET_ROOT)/usr/include/
 OPTS_MIPSEL = -I$(MIPSEL_TARGET_ROOT)/usr/include/
 
-OPTS_X64 = -m64
-OPTS_I386 = -m32 -march=i586
+OPTS_X64 = -m64 -D_GNU_SOURCE
+OPTS_I386 = -m32 -D_GNU_SOURCE -march=i586
 #osx specific flags
 OPTS_OSX =
 

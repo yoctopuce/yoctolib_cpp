@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 26885 2017-03-24 13:50:49Z seb $
+ * $Id: ystream.c 26965 2017-03-29 09:12:26Z seb $
  *
  * USB stream implementation
  *
@@ -2040,7 +2040,7 @@ static int StartDevice(yPrivDeviceSt *dev,char *errmsg)
 static int StopDevice(yPrivDeviceSt *dev,char *errmsg)
 
 {
-    dev->rstatus=YRUN_STOPED;    
+    dev->rstatus=YRUN_STOPED;
     yStreamShutdown(dev);
     return YAPI_SUCCESS;
 }
@@ -2050,7 +2050,11 @@ static void enuUpdateDStatus(void)
 {
     yPrivDeviceSt *p=yContext->devs;
     char errmsg[YOCTO_ERRMSG_LEN];
-    int res;
+    int res, updateWP;
+    yStrRef lnameref, prodref;
+    yUrlRef usb;
+    u8 beacon;
+    u16 deviceid;
 
     while(p){
         yStrRef serialref = yHashPutStr(p->infos.serial);
@@ -2065,8 +2069,8 @@ static void enuUpdateDStatus(void)
                 dbglog("Unable to stop the device %s correctly:(%s)\n",p->infos.serial,errmsg);
             }
             dbglog("Device %s unplugged\n",p->infos.serial);
-            wpSafeUnregister(serialref);
             devStopEnum(p);
+            wpSafeUnregister(serialref);
             break;
 
         case YENU_RESTART:
@@ -2083,35 +2087,41 @@ static void enuUpdateDStatus(void)
 #endif
 
                 p->dStatus = YDEV_UNPLUGGED;
-                wpSafeUnregister(serialref);
             }else{
 #ifdef DEBUG_DEV_ENUM
                 dbglog("ENU:restart %s(%d)->YDEV_WORKING(restart)\n",p->infos.serial,p->infos.nbinbterfaces);
 #endif
             }
             devStopEnum(p);
+            if (YISERR(res)) {
+                wpSafeUnregister(serialref);
+            }
             break;
-
         case YENU_START:
-            devStartEnum(p);
             if( p->next_startup_attempt <= yapiGetTickCount()) {
+                devStartEnum(p);
+                updateWP = 0;
                 p->dStatus = YDEV_WORKING; //we need to put the device in working to start device (safe because we alread have the mutex)
                 res = StartDevice(p, errmsg);
                 if(YISERR(res)){
                     if (res !=YAPI_TIMEOUT && p->nb_startup_retry < NB_MAX_STARTUP_RETRY) {
-                        dbglog("Unable to start the device %s correctly (%s). retry later\n",p->infos.serial,errmsg);
+                        dbglog("Unable to start the device %s correctly (%s). retry later\n", p->infos.serial, errmsg);
 #ifdef DEBUG_DEV_ENUM
-                        dbglog("ENU:start %s(%d)->YDEV_UNPLUGED\n",p->infos.serial,p->infos.nbinbterfaces);
+                        dbglog("ENU:start %s(%d)->YDEV_UNPLUGED\n", p->infos.serial, p->infos.nbinbterfaces);
 #endif
                         p->dStatus = YDEV_UNPLUGGED;
-                        p->next_startup_attempt = yapiGetTickCount()+1000;
+                        p->next_startup_attempt = yapiGetTickCount() + 1000;
                         p->nb_startup_retry++;
                     } else {
 #ifdef DEBUG_DEV_ENUM
-                        dbglog("ENU:start %s(%d)->YDEV_NOTRESPONDING\n",p->infos.serial,p->infos.nbinbterfaces);
+                        dbglog("ENU:start %s(%d)->YDEV_NOTRESPONDING\n", p->infos.serial, p->infos.nbinbterfaces);
 #endif
                         dbglog("Disable device %s (reason:%s)\n",p->infos.serial,errmsg);
                         p->dStatus = YDEV_NOTRESPONDING;
+                        updateWP = 1;
+                    }
+                    devStopEnum(p);
+                    if (updateWP) {
                         wpSafeUnregister(serialref);
                     }
                 } else {
@@ -2120,19 +2130,19 @@ static void enuUpdateDStatus(void)
 #endif
                     p->yhdl    = yContext->devhdlcount++;
                     dbglog("Device %s plugged\n",p->infos.serial);
-                    {
-
-                        yStrRef lnameref = yHashPutStr(p->infos.logicalname);
-                        yUrlRef usb = yHashUrlUSB(serialref);
-                        wpSafeRegister(NULL, MAX_YDX_PER_HUB,serialref, lnameref ,  yHashPutStr(p->infos.productname),p->infos.deviceid, usb, p->infos.beacon);
-                    }
+                    lnameref = yHashPutStr(p->infos.logicalname);
+                    prodref = yHashPutStr(p->infos.productname);
+                    beacon = p->infos.beacon;
+                    deviceid = p->infos.deviceid;
+                    usb = yHashUrlUSB(serialref);
+                    devStopEnum(p);
+                    wpSafeRegister(NULL, MAX_YDX_PER_HUB, serialref, lnameref, prodref, deviceid, usb, beacon);
                 }
             } else {
 #ifdef DEBUG_DEV_ENUM_VERBOSE
                 dbglog("enum : %s (%d ifaces) waiting for next attempt\n",p->infos.serial,p->infos.nbinbterfaces);
 #endif
             }
-            devStopEnum(p);
             break;
         case YENU_NONE:
             break;
@@ -2163,8 +2173,11 @@ YRETCODE yUSBUpdateDeviceList(char *errmsg)
     enuResetDStatus();
 
     for (j = 0, iface = runifaces; j < nbifaces; j++, iface++){
+        yPrivDeviceSt *dev;
+        if (iface->deviceid <= YOCTO_DEVID_BOOTLOADER)
+            continue;
 
-        yPrivDeviceSt *dev =enuFindDevSlot(iface);
+        dev =enuFindDevSlot(iface);
         if(dev){
             //device already allocated
             if(dev->dStatus == YDEV_WORKING ){

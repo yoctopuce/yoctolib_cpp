@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_lin.c 26885 2017-03-24 13:50:49Z seb $
+ * $Id: ypkt_lin.c 26969 2017-03-29 13:10:46Z seb $
  *
  * OS-specific USB packet layer, Linux version
  *
@@ -435,22 +435,29 @@ static void read_callback(struct libusb_transfer *transfer)
     int res;
     linRdTr      *lintr = (linRdTr*)transfer->user_data;
     yInterfaceSt *iface = lintr->iface;
+    if (iface == NULL){
+        HALLOG("drop invalid ypkt read_callback (iface is null)\n");
+        return;
+    }
+
     switch(transfer->status){
     case LIBUSB_TRANSFER_COMPLETED:
         //HALLOG("%s:%d pkt_arrived (len=%d)\n",iface->serial,iface->ifaceno,transfer->actual_length);
         yPktQueuePushD2H(iface,&lintr->tmppkt,NULL);
         if (iface->flags.yyySetupDone) {
             res=libusb_submit_transfer(lintr->tr);
-            if(res<0){
+            if(res<0) {
                 HALLOG("%s:%d libusb_submit_transfer errror %X\n",iface->serial,iface->ifaceno,res);
             }
         }
         return;
     case LIBUSB_TRANSFER_ERROR:
         HALLOG("%s:%d pkt error\n",iface->serial,iface->ifaceno);
-        res=libusb_submit_transfer(lintr->tr);
-        if(res<0){
-            HALLOG("%s:%d libusb_submit_transfer errror %X\n",iface->serial,iface->ifaceno,res);
+        if (iface->flags.yyySetupDone) {
+            res = libusb_submit_transfer(lintr->tr);
+            if (res < 0) {
+                HALLOG("%s:%d libusb_submit_transfer errror %X\n", iface->serial, iface->ifaceno, res);
+            }
         }
         break;
     case LIBUSB_TRANSFER_TIMED_OUT :
@@ -458,15 +465,17 @@ static void read_callback(struct libusb_transfer *transfer)
         break;
     case LIBUSB_TRANSFER_CANCELLED:
         HALLOG("%s:%d pkt_cancelled (len=%d) \n",iface->serial,iface->ifaceno,transfer->actual_length);
-        if(transfer->actual_length==64){
-            yPktQueuePushD2H(iface,&lintr->tmppkt,NULL);
+        if (iface->flags.yyySetupDone && transfer->actual_length == 64) {
+            yPktQueuePushD2H(iface, &lintr->tmppkt, NULL);
         }
         break;
     case LIBUSB_TRANSFER_STALL:
         HALLOG("%s:%d pkt stall\n",iface->serial,iface->ifaceno);
-        res=libusb_submit_transfer(lintr->tr);
-        if(res<0){
-            HALLOG("%s:%d libusb_submit_transfer errror %X\n",iface->serial,iface->ifaceno,res);
+        if (iface->flags.yyySetupDone) {
+            res = libusb_submit_transfer(lintr->tr);
+            if (res < 0) {
+                HALLOG("%s:%d libusb_submit_transfer errror %X\n", iface->serial, iface->ifaceno, res);
+            }
         }
         break;
     case LIBUSB_TRANSFER_NO_DEVICE:
