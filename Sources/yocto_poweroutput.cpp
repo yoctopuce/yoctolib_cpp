@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_poweroutput.cpp 26762 2017-03-16 09:08:58Z seb $
+ * $Id: yocto_poweroutput.cpp 26991 2017-03-30 14:58:03Z seb $
  *
  * Implements yFindPowerOutput(), the high-level API for PowerOutput functions
  *
@@ -93,7 +93,7 @@ Y_VOLTAGE_enum YPowerOutput::get_voltage(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YPowerOutput::VOLTAGE_INVALID;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_lightsensor.cpp 26826 2017-03-17 11:20:57Z mvuilleu $
+ * $Id: yocto_lightsensor.cpp 26991 2017-03-30 14:58:03Z seb $
  *
  * Implements yFindLightSensor(), the high-level API for LightSensor functions
  *
@@ -128,7 +128,7 @@ Y_MEASURETYPE_enum YLightSensor::get_measureType(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YLightSensor::MEASURETYPE_INVALID;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_current.cpp 26762 2017-03-16 09:08:58Z seb $
+ * $Id: yocto_current.cpp 26991 2017-03-30 14:58:03Z seb $
  *
  * Implements yFindCurrent(), the high-level API for Current functions
  *
@@ -84,7 +84,7 @@ Y_ENABLED_enum YCurrent::get_enabled(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YCurrent::ENABLED_INVALID;

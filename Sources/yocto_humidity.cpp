@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_humidity.cpp 26762 2017-03-16 09:08:58Z seb $
+ * $Id: yocto_humidity.cpp 26991 2017-03-30 14:58:03Z seb $
  *
  * Implements yFindHumidity(), the high-level API for Humidity functions
  *
@@ -130,7 +130,7 @@ double YHumidity::get_relHum(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YHumidity::RELHUM_INVALID;
@@ -159,7 +159,7 @@ double YHumidity::get_absHum(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YHumidity::ABSHUM_INVALID;

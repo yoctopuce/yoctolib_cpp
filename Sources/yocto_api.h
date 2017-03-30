@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 26826 2017-03-17 11:20:57Z mvuilleu $
+ * $Id: yocto_api.h 26991 2017-03-30 14:58:03Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -1128,7 +1128,7 @@ public:
     YDataSet(YFunction *parent, const string& functionId, const string& unit, s64 startTime, s64 endTime);
     YDataSet(YFunction *parent);
     int _parse(const string& json);
-    
+
     //--- (generated code: YDataSet accessors declaration)
 
 
@@ -1416,6 +1416,7 @@ protected:
 
     // Method used to change attributes
     YRETCODE    _setAttr(string attrname, string newvalue);
+    YRETCODE    _load_unsafe(int msValidity);
 
     static void _UpdateValueCallbackList(YFunction* func, bool add);
     static void _UpdateTimedReportCallbackList(YFunction* func, bool add);

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_power.cpp 26762 2017-03-16 09:08:58Z seb $
+ * $Id: yocto_power.cpp 26991 2017-03-30 14:58:03Z seb $
  *
  * Implements yFindPower(), the high-level API for Power functions
  *
@@ -107,7 +107,7 @@ double YPower::get_cosPhi(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YPower::COSPHI_INVALID;
@@ -154,7 +154,7 @@ double YPower::get_meter(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YPower::METER_INVALID;
@@ -183,7 +183,7 @@ int YPower::get_meterTimer(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YPower::METERTIMER_INVALID;

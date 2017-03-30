@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_rangefinder.cpp 26826 2017-03-17 11:20:57Z mvuilleu $
+ * $Id: yocto_rangefinder.cpp 26991 2017-03-30 14:58:03Z seb $
  *
  * Implements yFindRangeFinder(), the high-level API for RangeFinder functions
  *
@@ -143,7 +143,7 @@ Y_RANGEFINDERMODE_enum YRangeFinder::get_rangeFinderMode(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YRangeFinder::RANGEFINDERMODE_INVALID;
@@ -194,7 +194,7 @@ string YRangeFinder::get_hardwareCalibration(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YRangeFinder::HARDWARECALIBRATION_INVALID;
@@ -239,7 +239,7 @@ double YRangeFinder::get_currentTemperature(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YRangeFinder::CURRENTTEMPERATURE_INVALID;
@@ -261,7 +261,7 @@ string YRangeFinder::get_command(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YRangeFinder::COMMAND_INVALID;
@@ -422,7 +422,6 @@ int YRangeFinder::_invokeTimedReportCallback(YMeasure value)
 double YRangeFinder::get_hardwareCalibrationTemperature(void)
 {
     string hwcal;
-    
     hwcal = this->get_hardwareCalibration();
     if (!((hwcal).substr(0, 1) == "@")) {
         return YAPI_INVALID_DOUBLE;
@@ -473,7 +472,6 @@ int YRangeFinder::triggerSpadCalibration(void)
 int YRangeFinder::triggerOffsetCalibration(double targetDist)
 {
     int distmm = 0;
-    
     if (this->get_unit() == "\"") {
         distmm = (int) floor(targetDist * 25.4+0.5);
     } else {
@@ -497,7 +495,6 @@ int YRangeFinder::triggerOffsetCalibration(double targetDist)
 int YRangeFinder::triggerXTalkCalibration(double targetDist)
 {
     int distmm = 0;
-    
     if (this->get_unit() == "\"") {
         distmm = (int) floor(targetDist * 25.4+0.5);
     } else {

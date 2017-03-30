@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_led.cpp 26762 2017-03-16 09:08:58Z seb $
+ * $Id: yocto_led.cpp 26991 2017-03-30 14:58:03Z seb $
  *
  * Implements yFindLed(), the high-level API for Led functions
  *
@@ -102,7 +102,7 @@ Y_POWER_enum YLed::get_power(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YLed::POWER_INVALID;
@@ -156,7 +156,7 @@ int YLed::get_luminosity(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YLed::LUMINOSITY_INVALID;
@@ -211,7 +211,7 @@ Y_BLINKING_enum YLed::get_blinking(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YLed::BLINKING_INVALID;

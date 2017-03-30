@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.cpp 26762 2017-03-16 09:08:58Z seb $
+ * $Id: yocto_gyro.cpp 26991 2017-03-30 14:58:03Z seb $
  *
  * Implements yFindGyro(), the high-level API for Gyro functions
  *
@@ -310,7 +310,7 @@ int YGyro::get_bandwidth(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YGyro::BANDWIDTH_INVALID;
@@ -366,7 +366,7 @@ double YGyro::get_xValue(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YGyro::XVALUE_INVALID;
@@ -396,7 +396,7 @@ double YGyro::get_yValue(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YGyro::YVALUE_INVALID;
@@ -426,7 +426,7 @@ double YGyro::get_zValue(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YGyro::ZVALUE_INVALID;
@@ -567,7 +567,7 @@ int YGyro::_loadQuaternion(void)
     now_stamp = (int) ((YAPI::GetTickCount()) & (0x7FFFFFFF));
     age_ms = (((now_stamp - _qt_stamp)) & (0x7FFFFFFF));
     if ((age_ms >= 10) || (_qt_stamp == 0)) {
-        if (this->load(10) != YAPI_SUCCESS) {
+        if (this->_load_unsafe(10) != YAPI_SUCCESS) {
             return YAPI_DEVICE_NOT_FOUND;
         }
         if (_qt_stamp == 0) {

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 26948 2017-03-28 12:06:11Z mvuilleu $
+ * $Id: yocto_api.cpp 26999 2017-03-30 16:42:45Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -1441,7 +1441,7 @@ string YFunction::get_logicalName(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YFunction::LOGICALNAME_INVALID;
@@ -1502,7 +1502,7 @@ string YFunction::get_advertisedValue(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YFunction::ADVERTISEDVALUE_INVALID;
@@ -2373,7 +2373,7 @@ bool YFunction::isOnline(void)
 	}
 
     // Preload the function data, since we have it in device cache
-    this->load(YAPI::DefaultCacheValidity);
+    this->_load_unsafe(YAPI::DefaultCacheValidity);
     } catch (std::exception) {
         yLeaveCriticalSection(&_this_cs);
         return false;
@@ -2382,21 +2382,7 @@ bool YFunction::isOnline(void)
     return true;
 }
 
-/**
- * Preloads the function cache with a specified validity duration.
- * By default, whenever accessing a device, all function attributes
- * are kept in cache for the standard duration (5 ms). This method can be
- * used to temporarily mark the cache as valid for a longer period, in order
- * to reduce network traffic for instance.
- *
- * @param msValidity : an integer corresponding to the validity attributed to the
- *         loaded function parameters, in milliseconds
- *
- * @return YAPI_SUCCESS when the call succeeds.
- *
- * On failure, throws an exception or returns a negative error code.
- */
-YRETCODE YFunction::load(int msValidity)
+YRETCODE YFunction::_load_unsafe(int msValidity)
 {
     yJsonStateMachine j;
     YDevice     *dev;
@@ -2453,6 +2439,36 @@ YRETCODE YFunction::load(int msValidity)
 
     return YAPI_SUCCESS;
 }
+
+
+/**
+ * Preloads the function cache with a specified validity duration.
+ * By default, whenever accessing a device, all function attributes
+ * are kept in cache for the standard duration (5 ms). This method can be
+ * used to temporarily mark the cache as valid for a longer period, in order
+ * to reduce network traffic for instance.
+ *
+ * @param msValidity : an integer corresponding to the validity attributed to the
+ *         loaded function parameters, in milliseconds
+ *
+ * @return YAPI_SUCCESS when the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+YRETCODE YFunction::load(int msValidity)
+{
+    YRETCODE res;
+    yEnterCriticalSection(&_this_cs);
+    try{
+       res = this->_load_unsafe(msValidity);
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
 
 /**
  * Invalidates the cache. Invalidates the cache of the function attributes. Forces the
@@ -4141,7 +4157,7 @@ string YModule::get_productName(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration == 0) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YModule::PRODUCTNAME_INVALID;
@@ -4170,7 +4186,7 @@ string YModule::get_serialNumber(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration == 0) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YModule::SERIALNUMBER_INVALID;
@@ -4199,7 +4215,7 @@ int YModule::get_productId(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration == 0) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YModule::PRODUCTID_INVALID;
@@ -4228,7 +4244,7 @@ int YModule::get_productRelease(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YModule::PRODUCTRELEASE_INVALID;
@@ -4257,7 +4273,7 @@ string YModule::get_firmwareRelease(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YModule::FIRMWARERELEASE_INVALID;
@@ -4287,7 +4303,7 @@ Y_PERSISTENTSETTINGS_enum YModule::get_persistentSettings(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YModule::PERSISTENTSETTINGS_INVALID;
@@ -4332,7 +4348,7 @@ int YModule::get_luminosity(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YModule::LUMINOSITY_INVALID;
@@ -4389,7 +4405,7 @@ Y_BEACON_enum YModule::get_beacon(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YModule::BEACON_INVALID;
@@ -4443,7 +4459,7 @@ s64 YModule::get_upTime(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YModule::UPTIME_INVALID;
@@ -4472,7 +4488,7 @@ int YModule::get_usbCurrent(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YModule::USBCURRENT_INVALID;
@@ -4503,7 +4519,7 @@ int YModule::get_rebootCountdown(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YModule::REBOOTCOUNTDOWN_INVALID;
@@ -4549,7 +4565,7 @@ int YModule::get_userVar(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YModule::USERVAR_INVALID;
@@ -6076,7 +6092,7 @@ string YSensor::get_unit(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YSensor::UNIT_INVALID;
@@ -6106,7 +6122,7 @@ double YSensor::get_currentValue(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YSensor::CURRENTVALUE_INVALID;
@@ -6166,7 +6182,7 @@ double YSensor::get_lowestValue(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YSensor::LOWESTVALUE_INVALID;
@@ -6222,7 +6238,7 @@ double YSensor::get_highestValue(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YSensor::HIGHESTVALUE_INVALID;
@@ -6254,7 +6270,7 @@ double YSensor::get_currentRawValue(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YSensor::CURRENTRAWVALUE_INVALID;
@@ -6285,7 +6301,7 @@ string YSensor::get_logFrequency(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YSensor::LOGFREQUENCY_INVALID;
@@ -6345,7 +6361,7 @@ string YSensor::get_reportFrequency(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YSensor::REPORTFREQUENCY_INVALID;
@@ -6396,7 +6412,7 @@ string YSensor::get_calibrationParam(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YSensor::CALIBRATIONPARAM_INVALID;
@@ -6468,7 +6484,7 @@ double YSensor::get_resolution(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YSensor::RESOLUTION_INVALID;
@@ -6500,7 +6516,7 @@ int YSensor::get_sensorState(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YSensor::SENSORSTATE_INVALID;
@@ -6881,9 +6897,18 @@ int YSensor::_invokeTimedReportCallback(YMeasure value)
 int YSensor::calibrateFromPoints(vector<double> rawValues,vector<double> refValues)
 {
     string rest_val;
+    int res = 0;
     // may throw an exception
-    rest_val = this->_encodeCalibrationPoints(rawValues, refValues);
-    return this->_setAttr("calibrationParam", rest_val);
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = this->_encodeCalibrationPoints(rawValues, refValues);
+        res = this->_setAttr("calibrationParam", rest_val);
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
 }
 
 /**
@@ -6904,23 +6929,36 @@ int YSensor::loadCalibrationPoints(vector<double>& rawValues,vector<double>& ref
     rawValues.clear();
     refValues.clear();
     // Load function parameters if not yet loaded
-    if (_scale == 0) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
-            return YAPI_DEVICE_NOT_FOUND;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_scale == 0) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YAPI_DEVICE_NOT_FOUND;
+                }
+            }
         }
+        if (_caltyp < 0) {
+            this->_throw(YAPI_NOT_SUPPORTED, "Calibration parameters format mismatch. Please upgrade your library or firmware.");
+            {
+                yLeaveCriticalSection(&_this_cs);
+                return YAPI_NOT_SUPPORTED;
+            }
+        }
+        rawValues.clear();
+        refValues.clear();
+        for (unsigned ii = 0; ii < _calraw.size(); ii++) {
+            rawValues.push_back(_calraw[ii]);
+        }
+        for (unsigned ii = 0; ii < _calref.size(); ii++) {
+            refValues.push_back(_calref[ii]);
+        }
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
-    if (_caltyp < 0) {
-        this->_throw(YAPI_NOT_SUPPORTED, "Calibration parameters format mismatch. Please upgrade your library or firmware.");
-        return YAPI_NOT_SUPPORTED;
-    }
-    rawValues.clear();
-    refValues.clear();
-    for (unsigned ii = 0; ii < _calraw.size(); ii++) {
-        rawValues.push_back(_calraw[ii]);
-    }
-    for (unsigned ii = 0; ii < _calref.size(); ii++) {
-        refValues.push_back(_calref[ii]);
-    }
+    yLeaveCriticalSection(&_this_cs);
     return YAPI_SUCCESS;
 }
 
@@ -6942,7 +6980,7 @@ string YSensor::_encodeCalibrationPoints(vector<double> rawValues,vector<double>
     }
     // Load function parameters if not yet loaded
     if (_scale == 0) {
-        if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+        if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
             return YAPI_INVALID_STRING;
         }
     }

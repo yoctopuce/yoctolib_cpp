@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_compass.cpp 26762 2017-03-16 09:08:58Z seb $
+ * $Id: yocto_compass.cpp 26991 2017-03-30 14:58:03Z seb $
  *
  * Implements yFindCompass(), the high-level API for Compass functions
  *
@@ -104,7 +104,7 @@ int YCompass::get_bandwidth(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YCompass::BANDWIDTH_INVALID;
@@ -152,7 +152,7 @@ Y_AXIS_enum YCompass::get_axis(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YCompass::AXIS_INVALID;
@@ -181,7 +181,7 @@ double YCompass::get_magneticHeading(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YCompass::MAGNETICHEADING_INVALID;

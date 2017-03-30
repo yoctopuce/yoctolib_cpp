@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwmpowersource.cpp 26762 2017-03-16 09:08:58Z seb $
+ * $Id: yocto_pwmpowersource.cpp 26991 2017-03-30 14:58:03Z seb $
  *
  * Implements yFindPwmPowerSource(), the high-level API for PwmPowerSource functions
  *
@@ -91,7 +91,7 @@ Y_POWERMODE_enum YPwmPowerSource::get_powerMode(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->load(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YPwmPowerSource::POWERMODE_INVALID;
