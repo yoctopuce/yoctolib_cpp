@@ -98,6 +98,7 @@
 <ClCompile Include="..\..\..\Sources\yocto_audioin.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_audioout.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_bluetoothlink.cpp" />
+<ClCompile Include="..\..\..\Sources\yocto_bridgecontrol.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_buzzer.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_carbondioxide.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_cellular.cpp" />
@@ -177,6 +178,7 @@
 <ClInclude Include="..\..\..\Sources\yocto_audioin.h" />
 <ClInclude Include="..\..\..\Sources\yocto_audioout.h" />
 <ClInclude Include="..\..\..\Sources\yocto_bluetoothlink.h" />
+<ClInclude Include="..\..\..\Sources\yocto_bridgecontrol.h" />
 <ClInclude Include="..\..\..\Sources\yocto_buzzer.h" />
 <ClInclude Include="..\..\..\Sources\yocto_carbondioxide.h" />
 <ClInclude Include="..\..\..\Sources\yocto_cellular.h" />

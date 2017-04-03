@@ -1,1 +1,1 @@
-- Update library to be thread safe
+- Fix USB device enumeration on Windows

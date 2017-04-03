@@ -31,6 +31,7 @@
 		B8A727A817E0CD3A005795cc3811 /* yocto_audioin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057b178f114 /* yocto_audioin.cpp */; };
 		B8A727A817E0CD3A0057e75effba /* yocto_audioout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00579710bffc /* yocto_audioout.cpp */; };
 		B8A727A817E0CD3A0057b1e68d85 /* yocto_bluetoothlink.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057a87aa16d /* yocto_bluetoothlink.cpp */; };
+		B8A727A817E0CD3A00571d94cc55 /* yocto_bridgecontrol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057408e0bd /* yocto_bridgecontrol.cpp */; };
 		B8A727A817E0CD3A00579c3a7f1e /* yocto_buzzer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00579c50dced /* yocto_buzzer.cpp */; };
 		B8A727A817E0CD3A00577ae7b650 /* yocto_carbondioxide.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057637b9ab8 /* yocto_carbondioxide.cpp */; };
 		B8A727A817E0CD3A005737472206 /* yocto_cellular.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005747096240 /* yocto_cellular.cpp */; };
@@ -147,6 +148,8 @@
 		B8A727A817E0CD3A005743ba672b /* yocto_audioout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_audioout.h; path = ../../../Sources/yocto_audioout.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057a87aa16d /* yocto_bluetoothlink.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_bluetoothlink.cpp; path = ../../../Sources/yocto_bluetoothlink.cpp; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00573b190287 /* yocto_bluetoothlink.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_bluetoothlink.h; path = ../../../Sources/yocto_bluetoothlink.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057408e0bd /* yocto_bridgecontrol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_bridgecontrol.cpp; path = ../../../Sources/yocto_bridgecontrol.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057e26db6f0 /* yocto_bridgecontrol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_bridgecontrol.h; path = ../../../Sources/yocto_bridgecontrol.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00579c50dced /* yocto_buzzer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_buzzer.cpp; path = ../../../Sources/yocto_buzzer.cpp; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00579b4818eb /* yocto_buzzer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_buzzer.h; path = ../../../Sources/yocto_buzzer.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057637b9ab8 /* yocto_carbondioxide.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_carbondioxide.cpp; path = ../../../Sources/yocto_carbondioxide.cpp; sourceTree = "<group>"; };
@@ -293,6 +296,8 @@
 				B8A727A817E0CD3A005743ba672b /* yocto_audioout.h */,
 				B8A727A817E0CD3A0057a87aa16d /* yocto_bluetoothlink.cpp */,
 				B8A727A817E0CD3A00573b190287 /* yocto_bluetoothlink.h */,
+				B8A727A817E0CD3A0057408e0bd /* yocto_bridgecontrol.cpp */,
+				B8A727A817E0CD3A0057e26db6f0 /* yocto_bridgecontrol.h */,
 				B8A727A817E0CD3A00579c50dced /* yocto_buzzer.cpp */,
 				B8A727A817E0CD3A00579b4818eb /* yocto_buzzer.h */,
 				B8A727A817E0CD3A0057637b9ab8 /* yocto_carbondioxide.cpp */,
@@ -535,6 +540,7 @@
 				B8A727A817E0CD3A005795cc3811 /* yocto_audioin.cpp in Sources */,
 				B8A727A817E0CD3A0057e75effba /* yocto_audioout.cpp in Sources */,
 				B8A727A817E0CD3A0057b1e68d85 /* yocto_bluetoothlink.cpp in Sources */,
+				B8A727A817E0CD3A00571d94cc55 /* yocto_bridgecontrol.cpp in Sources */,
 				B8A727A817E0CD3A00579c3a7f1e /* yocto_buzzer.cpp in Sources */,
 				B8A727A817E0CD3A00577ae7b650 /* yocto_carbondioxide.cpp in Sources */,
 				B8A727A817E0CD3A005737472206 /* yocto_cellular.cpp in Sources */,

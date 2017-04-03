@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_win.c 26871 2017-03-23 10:03:37Z seb $
+ * $Id: ypkt_win.c 27032 2017-04-03 07:28:34Z seb $
  *
  * OS-specific USB packet layer, Windows version
  *
@@ -561,7 +561,7 @@ int yyyOShdlCompare(yPrivDeviceSt *dev, yInterfaceSt *newiface)
         HALLOG("bad number of inteface for %s (%d)\n", dev->infos.serial, dev->infos.nbinbterfaces);
         return 0;
     }
-    if (YSTRCMP(dev->iface.devicePath, newiface->devicePath) == 0) {
+    if (YSTRCMP(dev->iface.devicePath, newiface->devicePath) != 0) {
         HALLOG("devref %d has changed for %s (%s)\n", i, dev->infos.serial, DP(dev->ifaces[i].devicePath));
         return 0;
     }
