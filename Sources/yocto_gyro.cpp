@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_gyro.cpp 27109 2017-04-06 22:18:46Z seb $
  *
  * Implements yFindGyro(), the high-level API for Gyro functions
  *
@@ -605,7 +605,7 @@ int YGyro::_loadAngles(void)
     double sqz = 0.0;
     double norm = 0.0;
     double delta = 0.0;
-    // may throw an exception
+    
     if (this->_loadQuaternion() != YAPI_SUCCESS) {
         return YAPI_DEVICE_NOT_FOUND;
     }
@@ -617,10 +617,12 @@ int YGyro::_loadAngles(void)
         norm = sqx + sqy + sqz + sqw;
         delta = _y * _w - _x * _z;
         if (delta > 0.499 * norm) {
+            // singularity at north pole
             _pitch = 90.0;
             _head  = floor(2.0 * 1800.0/3.141592653589793238463 * atan2(_x,-_w)+0.5) / 10.0;
         } else {
             if (delta < -0.499 * norm) {
+                // singularity at south pole
                 _pitch = -90.0;
                 _head  = floor(-2.0 * 1800.0/3.141592653589793238463 * atan2(_x,-_w)+0.5) / 10.0;
             } else {

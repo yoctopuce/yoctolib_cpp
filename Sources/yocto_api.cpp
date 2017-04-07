@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 26999 2017-03-30 16:42:45Z seb $
+ * $Id: yocto_api.cpp 27109 2017-04-06 22:18:46Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -587,7 +587,7 @@ int YDataStream::_parseStream(string sdata)
         _nRows = 0;
         return YAPI_SUCCESS;
     }
-    // may throw an exception
+    
     udat = YAPI::_decodeWords(_parent->_json_get_string(sdata));
     _values.clear();
     idx = 0;
@@ -1033,7 +1033,7 @@ int YDataSet::processMore(int progress,string data)
     int minCol = 0;
     int avgCol = 0;
     int maxCol = 0;
-    // may throw an exception
+    
     if (progress != _progress) {
         return _progress;
     }
@@ -1278,7 +1278,7 @@ vector<YMeasure> YDataSet::get_measuresAt(YMeasure measure)
     int minCol = 0;
     int avgCol = 0;
     int maxCol = 0;
-    // may throw an exception
+    
     startUtc = (s64) floor(measure.get_startTimeUTC()+0.5);
     stream = NULL;
     for (unsigned ii = 0; ii < _streams.size(); ii++) {
@@ -4787,7 +4787,7 @@ YFirmwareUpdate YModule::updateFirmwareEx(string path,bool force)
 {
     string serial;
     string settings;
-    // may throw an exception
+    
     serial = this->get_serialNumber();
     settings = this->get_allSettings();
     if ((int)(settings).size() == 0) {
@@ -4835,7 +4835,7 @@ string YModule::get_allSettings(void)
     string ext_settings;
     vector<string> filelist;
     vector<string> templist;
-    // may throw an exception
+    
     settings = this->_download("api.json");
     if ((int)(settings).size() == 0) {
         return settings;
@@ -4891,7 +4891,7 @@ int YModule::loadThermistorExtra(string funcId,string jsonExtra)
     int ofs = 0;
     int size = 0;
     url = "api/" + funcId + ".json?command=Z";
-    // may throw an exception
+    
     this->_download(url);
     // add records in growing resistance value
     values = this->_json_get_array(jsonExtra);
@@ -4992,7 +4992,7 @@ bool YModule::hasFunction(string funcId)
     int count = 0;
     int i = 0;
     string fid;
-    // may throw an exception
+    
     count  = this->functionCount();
     i = 0;
     while (i < count) {
@@ -5018,7 +5018,7 @@ vector<string> YModule::get_functionIds(string funType)
     int i = 0;
     string ftype;
     vector<string> res;
-    // may throw an exception
+    
     count = this->functionCount();
     i = 0;
     while (i < count) {
@@ -5149,9 +5149,11 @@ string YModule::calibConvert(string param,string currentFuncValue,string unit_na
     paramScale = funScale;
     paramOffset = funOffset;
     if (funVer < 3) {
+        // Read the effective device scale if available
         if (funVer == 2) {
             words = YAPI::_decodeWords(currentFuncValue);
             if ((words[0] == 1366) && (words[1] == 12500)) {
+                // Yocto-3D RefFrame used a special encoding
                 funScale = 1;
                 funOffset = 0;
             } else {
@@ -5169,9 +5171,11 @@ string YModule::calibConvert(string param,string currentFuncValue,string unit_na
     calibData.clear();
     calibType = 0;
     if (paramVer < 3) {
+        // Handle old 16 bit parameters formats
         if (paramVer == 2) {
             words = YAPI::_decodeWords(param);
             if ((words[0] == 1366) && (words[1] == 12500)) {
+                // Yocto-3D RefFrame used a special encoding
                 paramScale = 1;
                 paramOffset = 0;
             } else {
@@ -5224,13 +5228,16 @@ string YModule::calibConvert(string param,string currentFuncValue,string unit_na
         i = 0;
         while (i < (int)calibData.size()) {
             if (paramScale > 0) {
+                // scalar decoding
                 calibData[i] = (calibData[i] - paramOffset) / paramScale;
             } else {
+                // floating-point decoding
                 calibData[i] = YAPI::_decimalToDouble((int) floor(calibData[i]+0.5));
             }
             i = i + 1;
         }
     } else {
+        // Handle latest 32bit parameter format
         iCalib = YAPI::_decodeFloats(param);
         calibType = (int) floor(iCalib[0] / 1000.0+0.5);
         if (calibType >= 30) {
@@ -5243,6 +5250,7 @@ string YModule::calibConvert(string param,string currentFuncValue,string unit_na
         }
     }
     if (funVer >= 3) {
+        // Encode parameters in new format
         if ((int)calibData.size() == 0) {
             param = "0,";
         } else {
@@ -5261,6 +5269,7 @@ string YModule::calibConvert(string param,string currentFuncValue,string unit_na
         }
     } else {
         if (funVer >= 1) {
+            // Encode parameters for older devices
             nPoints = (((int)calibData.size()) / (2));
             param = YapiWrapper::ysprintf("%d",nPoints);
             i = 0;
@@ -5274,6 +5283,7 @@ string YModule::calibConvert(string param,string currentFuncValue,string unit_na
                 i = i + 1;
             }
         } else {
+            // Initial V0 encoding used for old Yocto-Light
             if ((int)calibData.size() == 4) {
                 param = YapiWrapper::ysprintf("%f",floor(1000 * (calibData[3] - calibData[1]) / calibData[2] - calibData[0]+0.5));
             }
@@ -5338,6 +5348,7 @@ int YModule::set_allSettings(string settings)
     old_dslist = this->_json_get_array(old_json_flat);
     for (unsigned ii = 0; ii < old_dslist.size(); ii++) {
         each_str = this->_json_get_string(old_dslist[ii]);
+        // split json path and attr
         leng = (int)(each_str).length();
         eqpos = _ystrpos(each_str, "=");
         if ((eqpos < 0) || (leng == 0)) {
@@ -5351,12 +5362,14 @@ int YModule::set_allSettings(string settings)
         old_jpath_len.push_back((int)(jpath).length());
         old_val_arr.push_back(value);
     }
-    // may throw an exception
+    
     actualSettings = this->_download("api.json");
     actualSettings = this->_flattenJsonStruct(actualSettings);
     new_dslist = this->_json_get_array(actualSettings);
     for (unsigned ii = 0; ii < new_dslist.size(); ii++) {
+        // remove quotes
         each_str = this->_json_get_string(new_dslist[ii]);
+        // split json path and attr
         leng = (int)(each_str).length();
         eqpos = _ystrpos(each_str, "=");
         if ((eqpos < 0) || (leng == 0)) {
@@ -5600,7 +5613,7 @@ string YModule::get_icon2d(void)
 string YModule::get_lastLogs(void)
 {
     string content;
-    // may throw an exception
+    
     content = this->_download("logs.txt");
     return content;
 }
@@ -5639,7 +5652,7 @@ vector<string> YModule::get_subDevices(void)
     string subdevice_list;
     vector<string> subdevices;
     string serial;
-    // may throw an exception
+    
     serial = this->get_serialNumber();
     fullsize = 0;
     yapi_res = yapiGetSubdevices(serial.c_str(), smallbuff, 1024, &fullsize, errmsg);
@@ -5680,7 +5693,7 @@ string YModule::get_parentHub(void)
     int pathsize = 0;
     int yapi_res = 0;
     string serial;
-    // may throw an exception
+    
     serial = this->get_serialNumber();
     // retrieve device object
     pathsize = 0;
@@ -5704,7 +5717,7 @@ string YModule::get_url(void)
     int pathsize = 0;
     int yapi_res = 0;
     string serial;
-    // may throw an exception
+    
     serial = this->get_serialNumber();
     // retrieve device object
     pathsize = 0;
@@ -6644,19 +6657,23 @@ int YSensor::_parserHelper(void)
         return 0;
     }
     if (_ystrpos(_calibrationParam, ",") >= 0) {
+        // Plain text format
         iCalib = YAPI::_decodeFloats(_calibrationParam);
         _caltyp = ((iCalib[0]) / (1000));
         if (_caltyp > 0) {
             if (_caltyp < YOCTO_CALIB_TYPE_OFS) {
+                // Unknown calibration type: calibrated value will be provided by the device
                 _caltyp = -1;
                 return 0;
             }
             _calhdl = YAPI::_getCalibrationHandler(_caltyp);
             if (!(_calhdl != NULL)) {
+                // Unknown calibration type: calibrated value will be provided by the device
                 _caltyp = -1;
                 return 0;
             }
         }
+        // New 32bit text format
         _isScal = true;
         _isScal32 = true;
         _offset = 0;
@@ -6681,11 +6698,14 @@ int YSensor::_parserHelper(void)
             position = position + 2;
         }
     } else {
+        // Recorder-encoded format, including encoding
         iCalib = YAPI::_decodeWords(_calibrationParam);
+        // In case of unknown format, calibrated value will be provided by the device
         if ((int)iCalib.size() < 2) {
             _caltyp = -1;
             return 0;
         }
+        // Save variable format (scale for scalar, or decimal exponent)
         _isScal = (iCalib[1] > 0);
         if (_isScal) {
             _offset = iCalib[0];
@@ -6704,12 +6724,14 @@ int YSensor::_parserHelper(void)
                 position = position - 1;
             }
         }
+        // Shortcut when there is no calibration parameter
         if ((int)iCalib.size() == 2) {
             _caltyp = 0;
             return 0;
         }
         _caltyp = iCalib[2];
         _calhdl = YAPI::_getCalibrationHandler(_caltyp);
+        // parse calibration points
         if (_caltyp <= 10) {
             maxpos = _caltyp;
         } else {
@@ -6778,7 +6800,7 @@ bool YSensor::isSensorReady(void)
 int YSensor::startDataLogger(void)
 {
     string res;
-    // may throw an exception
+    
     res = this->_download("api/dataLogger/recording?recording=1");
     if (!((int)(res).size()>0)) {
         _throw(YAPI_IO_ERROR,"unable to start datalogger");
@@ -6795,7 +6817,7 @@ int YSensor::startDataLogger(void)
 int YSensor::stopDataLogger(void)
 {
     string res;
-    // may throw an exception
+    
     res = this->_download("api/dataLogger/recording?recording=0");
     if (!((int)(res).size()>0)) {
         _throw(YAPI_IO_ERROR,"unable to stop datalogger");
@@ -6834,7 +6856,7 @@ YDataSet YSensor::get_recordedData(s64 startTime,s64 endTime)
 {
     string funcid;
     string funit;
-    // may throw an exception
+    
     funcid = this->get_functionId();
     funit = this->get_unit();
     return YDataSet(this,funcid,funit,startTime,endTime);
@@ -6898,7 +6920,7 @@ int YSensor::calibrateFromPoints(vector<double> rawValues,vector<double> refValu
 {
     string rest_val;
     int res = 0;
-    // may throw an exception
+    
     yEnterCriticalSection(&_this_cs);
     try {
         rest_val = this->_encodeCalibrationPoints(rawValues, refValues);
@@ -6990,6 +7012,7 @@ string YSensor::_encodeCalibrationPoints(vector<double> rawValues,vector<double>
         return "0";
     }
     if (_isScal32) {
+        // 32-bit fixed-point encoding
         res = YapiWrapper::ysprintf("%d",YOCTO_CALIB_TYPE_OFS);
         idx = 0;
         while (idx < npt) {
@@ -6998,6 +7021,7 @@ string YSensor::_encodeCalibrationPoints(vector<double> rawValues,vector<double>
         }
     } else {
         if (_isScal) {
+            // 16-bit fixed-point encoding
             res = YapiWrapper::ysprintf("%d",npt);
             idx = 0;
             while (idx < npt) {
@@ -7007,6 +7031,7 @@ string YSensor::_encodeCalibrationPoints(vector<double> rawValues,vector<double>
                 idx = idx + 1;
             }
         } else {
+            // 16-bit floating-point decimal encoding
             res = YapiWrapper::ysprintf("%d",10 + npt);
             idx = 0;
             while (idx < npt) {
@@ -7059,7 +7084,9 @@ YMeasure YSensor::_decodeTimedReport(double timestamp,vector<int> report)
         startTime = endTime;
     }
     if (report[0] == 2) {
+        // 32bit timed report format
         if ((int)report.size() <= 5) {
+            // sub-second report, 1-4 bytes
             poww = 1;
             avgRaw = 0;
             byteVal = 0;
@@ -7082,6 +7109,7 @@ YMeasure YSensor::_decodeTimedReport(double timestamp,vector<int> report)
             minVal = avgVal;
             maxVal = avgVal;
         } else {
+            // averaged report: avg,avg-min,max-avg
             sublen = 1 + ((report[1]) & (3));
             poww = 1;
             avgRaw = 0;
@@ -7131,7 +7159,9 @@ YMeasure YSensor::_decodeTimedReport(double timestamp,vector<int> report)
             }
         }
     } else {
+        // 16bit timed report format
         if (report[0] == 0) {
+            // sub-second report, 1-4 bytes
             poww = 1;
             avgRaw = 0;
             byteVal = 0;
@@ -7153,6 +7183,7 @@ YMeasure YSensor::_decodeTimedReport(double timestamp,vector<int> report)
             minVal = avgVal;
             maxVal = avgVal;
         } else {
+            // averaged report 2+4+2 bytes
             minRaw = report[1] + 0x100 * report[2];
             maxRaw = report[3] + 0x100 * report[4];
             avgRaw = report[5] + 0x100 * report[6] + 0x10000 * report[7];

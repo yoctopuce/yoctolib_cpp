@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_cellular.cpp 27109 2017-04-06 22:18:46Z seb $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -1093,7 +1093,7 @@ int YCellular::set_apnAuth(string username,string password)
 int YCellular::clearDataCounters(void)
 {
     int retcode = 0;
-    // may throw an exception
+    
     retcode = this->set_dataReceived(0);
     if (retcode != YAPI_SUCCESS) {
         return retcode;
@@ -1159,11 +1159,13 @@ string YCellular::_AT(string cmd)
             idx = idx - 1;
         }
         if (((u8)buff[idx]) == 64) {
+            // continuation detected
             suffixlen = bufflen - idx;
             cmd = YapiWrapper::ysprintf("at.txt?cmd=%s",(buffstr).substr( buffstrlen - suffixlen, suffixlen).c_str());
             buffstr = (buffstr).substr( 0, buffstrlen - suffixlen);
             waitMore = waitMore - 1;
         } else {
+            // request complete
             waitMore = 0;
         }
         res = YapiWrapper::ysprintf("%s%s", res.c_str(),buffstr.c_str());
@@ -1186,7 +1188,7 @@ vector<string> YCellular::get_availableOperators(void)
     int idx = 0;
     int slen = 0;
     vector<string> res;
-    // may throw an exception
+    
     cops = this->_AT("+COPS=?");
     slen = (int)(cops).length();
     res.clear();
@@ -1233,7 +1235,7 @@ vector<YCellRecord> YCellular::quickCellSurvey(void)
     int tad = 0;
     string oper;
     vector<YCellRecord> res;
-    // may throw an exception
+    
     moni = this->_AT("+CCED=0;#MONI=7;#MONI");
     mccs = (moni).substr(7, 3);
     if ((mccs).substr(0, 1) == "0") {

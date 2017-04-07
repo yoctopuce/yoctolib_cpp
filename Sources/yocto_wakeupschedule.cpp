@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wakeupschedule.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_wakeupschedule.cpp 27109 2017-04-06 22:18:46Z seb $
  *
  * Implements yFindWakeUpSchedule(), the high-level API for WakeUpSchedule functions
  *
@@ -556,7 +556,7 @@ int YWakeUpSchedule::_invokeValueCallback(string value)
 s64 YWakeUpSchedule::get_minutes(void)
 {
     s64 res = 0;
-    // may throw an exception
+    
     res = this->get_minutesB();
     res = ((res) << (30));
     res = res + this->get_minutesA();

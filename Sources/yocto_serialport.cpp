@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_serialport.cpp 27109 2017-04-06 22:18:46Z seb $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -772,7 +772,7 @@ int YSerialPort::reset(void)
     _rxptr = 0;
     _rxbuffptr = 0;
     _rxbuff = string(0, (char)0);
-    // may throw an exception
+    
     return this->sendCommand("Z");
 }
 
@@ -808,6 +808,7 @@ int YSerialPort::writeStr(string text)
     buff = text;
     bufflen = (int)(buff).size();
     if (bufflen < 100) {
+        // if string is pure text, we can send it as a simple command (faster)
         ch = 0x20;
         idx = 0;
         while ((idx < bufflen) && (ch != 0)) {
@@ -864,7 +865,7 @@ int YSerialPort::writeArray(vector<int> byteList)
         buff[idx] = (char)(hexb);
         idx = idx + 1;
     }
-    // may throw an exception
+    
     res = this->_upload("txdata", buff);
     return res;
 }
@@ -897,7 +898,7 @@ int YSerialPort::writeHex(string hexString)
         buff[idx] = (char)(hexb);
         idx = idx + 1;
     }
-    // may throw an exception
+    
     res = this->_upload("txdata", buff);
     return res;
 }
@@ -920,6 +921,7 @@ int YSerialPort::writeLine(string text)
     buff = YapiWrapper::ysprintf("%s\r\n",text.c_str());
     bufflen = (int)(buff).size()-2;
     if (bufflen < 100) {
+        // if string is pure text, we can send it as a simple command (faster)
         ch = 0x20;
         idx = 0;
         while ((idx < bufflen) && (ch != 0)) {
@@ -992,7 +994,7 @@ int YSerialPort::readByte(void)
     // still mixed, need to process character by character
     _rxptr = currpos;
     
-    // may throw an exception
+    
     buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=1",_rxptr));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
@@ -1031,7 +1033,7 @@ string YSerialPort::readStr(int nChars)
     if (nChars > 65535) {
         nChars = 65535;
     }
-    // may throw an exception
+    
     buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d", _rxptr,nChars));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
@@ -1068,7 +1070,7 @@ string YSerialPort::readBin(int nChars)
     if (nChars > 65535) {
         nChars = 65535;
     }
-    // may throw an exception
+    
     buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d", _rxptr,nChars));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
@@ -1111,7 +1113,7 @@ vector<int> YSerialPort::readArray(int nChars)
     if (nChars > 65535) {
         nChars = 65535;
     }
-    // may throw an exception
+    
     buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d", _rxptr,nChars));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
@@ -1154,7 +1156,7 @@ string YSerialPort::readHex(int nBytes)
     if (nBytes > 65535) {
         nBytes = 65535;
     }
-    // may throw an exception
+    
     buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d", _rxptr,nBytes));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
@@ -1198,7 +1200,7 @@ string YSerialPort::readLine(void)
     vector<string> msgarr;
     int msglen = 0;
     string res;
-    // may throw an exception
+    
     url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&len=1&maxw=1",_rxptr);
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);
@@ -1245,7 +1247,7 @@ vector<string> YSerialPort::readMessages(string pattern,int maxWait)
     int msglen = 0;
     vector<string> res;
     int idx = 0;
-    // may throw an exception
+    
     url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&pat=%s", _rxptr, maxWait,pattern.c_str());
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);
@@ -1300,7 +1302,7 @@ int YSerialPort::read_avail(void)
     string buff;
     int bufflen = 0;
     int res = 0;
-    // may throw an exception
+    
     buff = this->_download(YapiWrapper::ysprintf("rxcnt.bin?pos=%d",_rxptr));
     bufflen = (int)(buff).size() - 1;
     while ((bufflen > 0) && (((u8)buff[bufflen]) != 64)) {
@@ -1329,7 +1331,7 @@ string YSerialPort::queryLine(string query,int maxWait)
     vector<string> msgarr;
     int msglen = 0;
     string res;
-    // may throw an exception
+    
     url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=!%s", maxWait,query.c_str());
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);
@@ -1407,7 +1409,7 @@ int YSerialPort::get_CTS(void)
 {
     string buff;
     int res = 0;
-    // may throw an exception
+    
     buff = this->_download("cts.txt");
     if (!((int)(buff).size() == 1)) {
         _throw(YAPI_IO_ERROR,"invalid CTS reply");
@@ -1468,7 +1470,7 @@ vector<int> YSerialPort::queryMODBUS(int slaveNo,vector<int> pduBytes)
         cmd = YapiWrapper::ysprintf("%s%02x", cmd.c_str(),((pduBytes[i]) & (0xff)));
         i = i + 1;
     }
-    // may throw an exception
+    
     url = YapiWrapper::ysprintf("rxmsg.json?cmd=:%s&pat=:%s", cmd.c_str(),pat.c_str());
     msgs = this->_download(url);
     reps = this->_json_get_array(msgs);
@@ -1534,7 +1536,7 @@ vector<int> YSerialPort::modbusReadBits(int slaveNo,int pduAddr,int nBits)
     pdu.push_back(((pduAddr) & (0xff)));
     pdu.push_back(((nBits) >> (8)));
     pdu.push_back(((nBits) & (0xff)));
-    // may throw an exception
+    
     reply = this->queryMODBUS(slaveNo, pdu);
     if ((int)reply.size() == 0) {
         return res;
@@ -1590,7 +1592,7 @@ vector<int> YSerialPort::modbusReadInputBits(int slaveNo,int pduAddr,int nBits)
     pdu.push_back(((pduAddr) & (0xff)));
     pdu.push_back(((nBits) >> (8)));
     pdu.push_back(((nBits) & (0xff)));
-    // may throw an exception
+    
     reply = this->queryMODBUS(slaveNo, pdu);
     if ((int)reply.size() == 0) {
         return res;
@@ -1645,7 +1647,7 @@ vector<int> YSerialPort::modbusReadRegisters(int slaveNo,int pduAddr,int nWords)
     pdu.push_back(((pduAddr) & (0xff)));
     pdu.push_back(((nWords) >> (8)));
     pdu.push_back(((nWords) & (0xff)));
-    // may throw an exception
+    
     reply = this->queryMODBUS(slaveNo, pdu);
     if ((int)reply.size() == 0) {
         return res;
@@ -1691,7 +1693,7 @@ vector<int> YSerialPort::modbusReadInputRegisters(int slaveNo,int pduAddr,int nW
     pdu.push_back(((pduAddr) & (0xff)));
     pdu.push_back(((nWords) >> (8)));
     pdu.push_back(((nWords) & (0xff)));
-    // may throw an exception
+    
     reply = this->queryMODBUS(slaveNo, pdu);
     if ((int)reply.size() == 0) {
         return res;
@@ -1738,7 +1740,7 @@ int YSerialPort::modbusWriteBit(int slaveNo,int pduAddr,int value)
     pdu.push_back(((pduAddr) & (0xff)));
     pdu.push_back(value);
     pdu.push_back(0x00);
-    // may throw an exception
+    
     reply = this->queryMODBUS(slaveNo, pdu);
     if ((int)reply.size() == 0) {
         return res;
@@ -1800,7 +1802,7 @@ int YSerialPort::modbusWriteBits(int slaveNo,int pduAddr,vector<int> bits)
     if (mask != 1) {
         pdu.push_back(val);
     }
-    // may throw an exception
+    
     reply = this->queryMODBUS(slaveNo, pdu);
     if ((int)reply.size() == 0) {
         return res;
@@ -1836,7 +1838,7 @@ int YSerialPort::modbusWriteRegister(int slaveNo,int pduAddr,int value)
     pdu.push_back(((pduAddr) & (0xff)));
     pdu.push_back(((value) >> (8)));
     pdu.push_back(((value) & (0xff)));
-    // may throw an exception
+    
     reply = this->queryMODBUS(slaveNo, pdu);
     if ((int)reply.size() == 0) {
         return res;
@@ -1885,7 +1887,7 @@ int YSerialPort::modbusWriteRegisters(int slaveNo,int pduAddr,vector<int> values
         pdu.push_back(((val) & (0xff)));
         regpos = regpos + 1;
     }
-    // may throw an exception
+    
     reply = this->queryMODBUS(slaveNo, pdu);
     if ((int)reply.size() == 0) {
         return res;
@@ -1942,7 +1944,7 @@ vector<int> YSerialPort::modbusWriteAndReadRegisters(int slaveNo,int pduWriteAdd
         pdu.push_back(((val) & (0xff)));
         regpos = regpos + 1;
     }
-    // may throw an exception
+    
     reply = this->queryMODBUS(slaveNo, pdu);
     if ((int)reply.size() == 0) {
         return res;

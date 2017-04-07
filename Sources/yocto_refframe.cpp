@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_refframe.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_refframe.cpp 27109 2017-04-06 22:18:46Z seb $
  *
  * Implements yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -432,7 +432,7 @@ int YRefFrame::get_calibrationState(void)
     vector<int> iCalib;
     int caltyp = 0;
     int res = 0;
-    // may throw an exception
+    
     calibParam = this->get_calibrationParam();
     iCalib = YAPI::_decodeFloats(calibParam);
     caltyp = ((iCalib[0]) / (1000));
@@ -462,7 +462,7 @@ int YRefFrame::get_measureQuality(void)
     vector<int> iCalib;
     int caltyp = 0;
     int res = 0;
-    // may throw an exception
+    
     calibParam = this->get_calibrationParam();
     iCalib = YAPI::_decodeFloats(calibParam);
     caltyp = ((iCalib[0]) / (1000));
@@ -660,6 +660,7 @@ int YRefFrame::more3DCalibrationV1(void)
     }
     // Discard measures that are not in the proper orientation
     if (_calibStageProgress == 0) {
+        // New stage, check that this orientation is not yet done
         idx = 0;
         err = 0;
         while (idx + 1 < _calibStage) {
@@ -674,6 +675,7 @@ int YRefFrame::more3DCalibrationV1(void)
         }
         _calibOrient.push_back(orient);
     } else {
+        // Make sure device is not turned before stage is completed
         if (orient != _calibOrient[_calibStage-1]) {
             _calibStageHint = "Not yet done, please move back to the previous face";
             return YAPI_SUCCESS;
@@ -800,7 +802,7 @@ int YRefFrame::more3DCalibrationV2(void)
             return YAPI_SUCCESS;
         }
     }
-    // may throw an exception
+    
     calibParam = this->_download("api/refFrame/calibrationParam.txt");
     iCalib = YAPI::_decodeFloats(calibParam);
     cal3 = ((iCalib[1]) / (1000));
@@ -986,7 +988,7 @@ int YRefFrame::cancel3DCalibration(void)
     if (_calibStage == 0) {
         return YAPI_SUCCESS;
     }
-    // may throw an exception
+    
     _calibStage = 0;
     return this->set_calibrationParam(_calibSavedParams);
 }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_spiport.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_spiport.cpp 27109 2017-04-06 22:18:46Z seb $
  *
  * Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -885,7 +885,7 @@ int YSpiPort::reset(void)
     _rxptr = 0;
     _rxbuffptr = 0;
     _rxbuff = string(0, (char)0);
-    // may throw an exception
+    
     return this->sendCommand("Z");
 }
 
@@ -921,6 +921,7 @@ int YSpiPort::writeStr(string text)
     buff = text;
     bufflen = (int)(buff).size();
     if (bufflen < 100) {
+        // if string is pure text, we can send it as a simple command (faster)
         ch = 0x20;
         idx = 0;
         while ((idx < bufflen) && (ch != 0)) {
@@ -977,7 +978,7 @@ int YSpiPort::writeArray(vector<int> byteList)
         buff[idx] = (char)(hexb);
         idx = idx + 1;
     }
-    // may throw an exception
+    
     res = this->_upload("txdata", buff);
     return res;
 }
@@ -1010,7 +1011,7 @@ int YSpiPort::writeHex(string hexString)
         buff[idx] = (char)(hexb);
         idx = idx + 1;
     }
-    // may throw an exception
+    
     res = this->_upload("txdata", buff);
     return res;
 }
@@ -1033,6 +1034,7 @@ int YSpiPort::writeLine(string text)
     buff = YapiWrapper::ysprintf("%s\r\n",text.c_str());
     bufflen = (int)(buff).size()-2;
     if (bufflen < 100) {
+        // if string is pure text, we can send it as a simple command (faster)
         ch = 0x20;
         idx = 0;
         while ((idx < bufflen) && (ch != 0)) {
@@ -1105,7 +1107,7 @@ int YSpiPort::readByte(void)
     // still mixed, need to process character by character
     _rxptr = currpos;
     
-    // may throw an exception
+    
     buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=1",_rxptr));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
@@ -1144,7 +1146,7 @@ string YSpiPort::readStr(int nChars)
     if (nChars > 65535) {
         nChars = 65535;
     }
-    // may throw an exception
+    
     buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d", _rxptr,nChars));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
@@ -1181,7 +1183,7 @@ string YSpiPort::readBin(int nChars)
     if (nChars > 65535) {
         nChars = 65535;
     }
-    // may throw an exception
+    
     buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d", _rxptr,nChars));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
@@ -1224,7 +1226,7 @@ vector<int> YSpiPort::readArray(int nChars)
     if (nChars > 65535) {
         nChars = 65535;
     }
-    // may throw an exception
+    
     buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d", _rxptr,nChars));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
@@ -1267,7 +1269,7 @@ string YSpiPort::readHex(int nBytes)
     if (nBytes > 65535) {
         nBytes = 65535;
     }
-    // may throw an exception
+    
     buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d", _rxptr,nBytes));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
@@ -1311,7 +1313,7 @@ string YSpiPort::readLine(void)
     vector<string> msgarr;
     int msglen = 0;
     string res;
-    // may throw an exception
+    
     url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&len=1&maxw=1",_rxptr);
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);
@@ -1358,7 +1360,7 @@ vector<string> YSpiPort::readMessages(string pattern,int maxWait)
     int msglen = 0;
     vector<string> res;
     int idx = 0;
-    // may throw an exception
+    
     url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&pat=%s", _rxptr, maxWait,pattern.c_str());
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);
@@ -1413,7 +1415,7 @@ int YSpiPort::read_avail(void)
     string buff;
     int bufflen = 0;
     int res = 0;
-    // may throw an exception
+    
     buff = this->_download(YapiWrapper::ysprintf("rxcnt.bin?pos=%d",_rxptr));
     bufflen = (int)(buff).size() - 1;
     while ((bufflen > 0) && (((u8)buff[bufflen]) != 64)) {
@@ -1442,7 +1444,7 @@ string YSpiPort::queryLine(string query,int maxWait)
     vector<string> msgarr;
     int msglen = 0;
     string res;
-    // may throw an exception
+    
     url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=!%s", maxWait,query.c_str());
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);

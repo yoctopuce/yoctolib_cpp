@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_display.cpp 27086 2017-04-06 20:51:19Z seb $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -194,7 +194,7 @@ int YDisplayLayer::selectEraser(void)
  * but you can disable it if you prefer. This setting has no effect
  * on monochrome displays.
  *
- * @param mode : <t>true</t> to enable antialiasing, <t>false</t> to
+ * @param mode : true to enable antialiasing, false to
  *         disable it.
  *
  * @return YAPI_SUCCESS if the call succeeds.
