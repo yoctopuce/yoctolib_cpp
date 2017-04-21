@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_win.c 27032 2017-04-03 07:28:34Z seb $
+ * $Id: ypkt_win.c 27225 2017-04-21 13:34:58Z seb $
  *
  * OS-specific USB packet layer, Windows version
  *
@@ -523,12 +523,12 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces, int *nbifaceDetect, char *errmsg)
             }
             (*nbifaceDetect)++;
             if (deviceid > YOCTO_DEVID_BOOTLOADER) {
-                HALLOG("----Running Dev %x:%x:%d:%s ---\n", vendorid, deviceid, ifaceno, iface->serial);
+                HALENUMLOG("----Running Dev %x:%x:%d:%s ---\n", vendorid, deviceid, ifaceno, iface->serial);
 #ifdef LOG_DEVICE_PATH
-                HALLOG("----DevicePath %s ---\n", iface->devicePath);
+                HALENUMLOG("----DevicePath %s ---\n", iface->devicePath);
 #endif
             } else {
-                HALLOG("----Running Firm %x:%x:%d:%s ---\n", vendorid, deviceid, ifaceno, iface->serial);
+                HALENUMLOG("----Running Firm %x:%x:%d:%s ---\n", vendorid, deviceid, ifaceno, iface->serial);
             }
         } else {
             //HALLOG("Drop device vendorid=%x inst_state=%x\n", vendorid, inst_state);

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 27213 2017-04-21 09:59:41Z seb $
+ * $Id: yocto_api.cpp 27228 2017-04-21 14:06:43Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -130,6 +130,16 @@ YJSONContent::YJSONContent(YJSONType type)
     _data = "";//todo: check not null
 }
 
+YJSONContent::YJSONContent(YJSONContent *ref)
+{
+    _data = ref->_data;
+    _data_start = ref->_data_start;
+    _data_boundary = ref->_data_boundary;
+    _data_len = ref->_data_len;
+    _type = ref->_type;
+}
+
+
 YJSONContent::~YJSONContent()
 {
     _data = "";
@@ -174,6 +184,12 @@ YJSONArray::YJSONArray(const string& data, int start, int stop) : YJSONContent(d
 
 YJSONArray::YJSONArray() : YJSONContent(ARRAY)
 { }
+
+YJSONArray::YJSONArray(YJSONArray *ref) : YJSONContent(ref)
+{
+    _arrayValue = ref->_arrayValue;
+}
+
 
 YJSONArray::~YJSONArray()
 {
@@ -340,6 +356,11 @@ YJSONString::YJSONString(const string& data, int start, int stop) : YJSONContent
 YJSONString::YJSONString() : YJSONContent(STRING)
 { }
 
+YJSONString::YJSONString(YJSONString *ref) : YJSONContent(ref)
+{
+    _stringValue = ref->_stringValue;
+}
+
 int YJSONString::parse()
 {
     string value = "";
@@ -439,9 +460,16 @@ string YJSONString::toJSON()
 
 
 
-    YJSONNumber::YJSONNumber(const string& data, int start, int stop) : YJSONContent(data, start, stop, NUMBER),
-    _intValue(0),_doubleValue(0),_isFloat(false)
+YJSONNumber::YJSONNumber(const string& data, int start, int stop) : YJSONContent(data, start, stop, NUMBER), _intValue(0),_doubleValue(0),_isFloat(false)
 { }
+
+YJSONNumber::YJSONNumber(YJSONNumber *ref) : YJSONContent(ref)
+{
+    _intValue = ref->_intValue;
+    _doubleValue = ref->_doubleValue;
+    _isFloat = ref->_isFloat;
+}
+
 
 int YJSONNumber::parse()
 {
@@ -530,6 +558,12 @@ YJSONObject::YJSONObject(const string& data) : YJSONContent(data, 0, (int)data.l
 
 YJSONObject::YJSONObject(const string& data, int start, int len) : YJSONContent(data, start, len, OBJECT)
 { }
+
+YJSONObject::YJSONObject(YJSONObject *ref) : YJSONContent(ref)
+{
+    _parsed = ref->_parsed;
+    _keys = ref->_keys;
+}
 
 YJSONObject::~YJSONObject()
 {
@@ -767,6 +801,7 @@ void YJSONObject::parseWithRef(YJSONObject* reference)
             YJSONArray* yzon = new YJSONArray(_data, _data_start, _data_boundary);
             yzon->parse();
             convert(reference, yzon);
+            delete yzon;
             return;
         } catch (std::exception) {
 
@@ -780,15 +815,28 @@ void YJSONObject::convert(YJSONObject* reference, YJSONArray* newArray)
     int length = newArray->length();
     for (int i = 0; i < length; i++) {
         string key = reference->getKeyFromIdx(i);
-        YJSONContent* new_item = newArray->get(i);
+        YJSONContent* item = newArray->get(i);
         YJSONContent* reference_item = reference->get(key);
-
-        if (new_item->getJSONType() == reference_item->getJSONType()) {
-            _parsed[key]= new_item;
+        YJSONType type = item->getJSONType();
+        if (type == reference_item->getJSONType()) {
+            switch (type) {
+            case ARRAY:
+                _parsed[key] = new YJSONArray((YJSONArray*)item);
+                break;
+            case NUMBER:
+                _parsed[key] = new YJSONNumber((YJSONNumber*)item);
+                break;
+            case STRING:
+                _parsed[key] = new YJSONString((YJSONString*)item);
+                break;
+            case OBJECT:
+                _parsed[key] = new YJSONObject((YJSONObject*)item);
+                break;
+            }            
             _keys.push_back(key);
-        } else if (new_item->getJSONType() == ARRAY && reference_item->getJSONType() == OBJECT) {
-            YJSONObject* jobj = new YJSONObject(new_item->_data, new_item->_data_start, reference_item->_data_boundary);
-            jobj->convert((YJSONObject*) reference_item, (YJSONArray*) new_item);
+        } else if (type == ARRAY && reference_item->getJSONType() == OBJECT) {
+            YJSONObject* jobj = new YJSONObject(item->_data, item->_data_start, reference_item->_data_boundary);
+            jobj->convert((YJSONObject*) reference_item, (YJSONArray*) item);
             _parsed[key] =jobj;
             _keys.push_back(key);
         } else {
@@ -1296,7 +1344,7 @@ int YDataStream::_parseStream(string sdata)
         _nRows = 0;
         return YAPI_SUCCESS;
     }
-
+    
     udat = YAPI::_decodeWords(_parent->_json_get_string(sdata));
     _values.clear();
     idx = 0;
@@ -1333,7 +1381,7 @@ int YDataStream::_parseStream(string sdata)
             }
         }
     }
-
+    
     _nRows = (int)_values.size();
     return YAPI_SUCCESS;
 }
@@ -1742,7 +1790,7 @@ int YDataSet::processMore(int progress,string data)
     int minCol = 0;
     int avgCol = 0;
     int maxCol = 0;
-
+    
     if (progress != _progress) {
         return _progress;
     }
@@ -1778,7 +1826,7 @@ int YDataSet::processMore(int progress,string data)
     } else {
         maxCol = 0;
     }
-
+    
     for (unsigned ii = 0; ii < dataRows.size(); ii++) {
         if ((tim >= _startTime) && ((_endTime == 0) || (tim <= _endTime))) {
             _measures.push_back(YMeasure(tim - itv, tim,
@@ -1987,7 +2035,7 @@ vector<YMeasure> YDataSet::get_measuresAt(YMeasure measure)
     int minCol = 0;
     int avgCol = 0;
     int maxCol = 0;
-
+    
     startUtc = (s64) floor(measure.get_startTimeUTC()+0.5);
     stream = NULL;
     for (unsigned ii = 0; ii < _streams.size(); ii++) {
@@ -2019,7 +2067,7 @@ vector<YMeasure> YDataSet::get_measuresAt(YMeasure measure)
     } else {
         maxCol = 0;
     }
-
+    
     for (unsigned ii = 0; ii < dataRows.size(); ii++) {
         if ((tim >= _startTime) && ((_endTime == 0) || (tim <= _endTime))) {
             measures.push_back(YMeasure(tim - itv, tim,
@@ -5476,7 +5524,7 @@ YFirmwareUpdate YModule::updateFirmwareEx(string path,bool force)
 {
     string serial;
     string settings;
-
+    
     serial = this->get_serialNumber();
     settings = this->get_allSettings();
     if ((int)(settings).size() == 0) {
@@ -5524,7 +5572,7 @@ string YModule::get_allSettings(void)
     string ext_settings;
     vector<string> filelist;
     vector<string> templist;
-
+    
     settings = this->_download("api.json");
     if ((int)(settings).size() == 0) {
         return settings;
@@ -5580,7 +5628,7 @@ int YModule::loadThermistorExtra(string funcId,string jsonExtra)
     int ofs = 0;
     int size = 0;
     url = "api/" + funcId + ".json?command=Z";
-
+    
     this->_download(url);
     // add records in growing resistance value
     values = this->_json_get_array(jsonExtra);
@@ -5681,7 +5729,7 @@ bool YModule::hasFunction(string funcId)
     int count = 0;
     int i = 0;
     string fid;
-
+    
     count  = this->functionCount();
     i = 0;
     while (i < count) {
@@ -5707,7 +5755,7 @@ vector<string> YModule::get_functionIds(string funType)
     int i = 0;
     string ftype;
     vector<string> res;
-
+    
     count = this->functionCount();
     i = 0;
     while (i < count) {
@@ -6051,7 +6099,7 @@ int YModule::set_allSettings(string settings)
         old_jpath_len.push_back((int)(jpath).length());
         old_val_arr.push_back(value);
     }
-
+    
     actualSettings = this->_download("api.json");
     actualSettings = this->_flattenJsonStruct(actualSettings);
     new_dslist = this->_json_get_array(actualSettings);
@@ -6302,7 +6350,7 @@ string YModule::get_icon2d(void)
 string YModule::get_lastLogs(void)
 {
     string content;
-
+    
     content = this->_download("logs.txt");
     return content;
 }
@@ -6341,7 +6389,7 @@ vector<string> YModule::get_subDevices(void)
     string subdevice_list;
     vector<string> subdevices;
     string serial;
-
+    
     serial = this->get_serialNumber();
     fullsize = 0;
     yapi_res = yapiGetSubdevices(serial.c_str(), smallbuff, 1024, &fullsize, errmsg);
@@ -6382,7 +6430,7 @@ string YModule::get_parentHub(void)
     int pathsize = 0;
     int yapi_res = 0;
     string serial;
-
+    
     serial = this->get_serialNumber();
     // retrieve device object
     pathsize = 0;
@@ -6406,7 +6454,7 @@ string YModule::get_url(void)
     int pathsize = 0;
     int yapi_res = 0;
     string serial;
-
+    
     serial = this->get_serialNumber();
     // retrieve device object
     pathsize = 0;
@@ -7468,7 +7516,7 @@ bool YSensor::isSensorReady(void)
 int YSensor::startDataLogger(void)
 {
     string res;
-
+    
     res = this->_download("api/dataLogger/recording?recording=1");
     if (!((int)(res).size()>0)) {
         _throw(YAPI_IO_ERROR,"unable to start datalogger");
@@ -7485,7 +7533,7 @@ int YSensor::startDataLogger(void)
 int YSensor::stopDataLogger(void)
 {
     string res;
-
+    
     res = this->_download("api/dataLogger/recording?recording=0");
     if (!((int)(res).size()>0)) {
         _throw(YAPI_IO_ERROR,"unable to stop datalogger");
@@ -7524,7 +7572,7 @@ YDataSet YSensor::get_recordedData(s64 startTime,s64 endTime)
 {
     string funcid;
     string funit;
-
+    
     funcid = this->get_functionId();
     funit = this->get_unit();
     return YDataSet(this,funcid,funit,startTime,endTime);
@@ -7588,7 +7636,7 @@ int YSensor::calibrateFromPoints(vector<double> rawValues,vector<double> refValu
 {
     string rest_val;
     int res = 0;
-
+    
     yEnterCriticalSection(&_this_cs);
     try {
         rest_val = this->_encodeCalibrationPoints(rawValues, refValues);

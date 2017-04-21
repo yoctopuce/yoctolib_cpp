@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_osx.c 26871 2017-03-23 10:03:37Z seb $
+ * $Id: ypkt_osx.c 27225 2017-04-21 13:34:58Z seb $
  *
  * OS-specific USB packet layer, Mac OS X version
  *
@@ -350,7 +350,7 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
         iface->vendorid = vendorid;
         iface->deviceid = deviceid;
         get_txt_property(dev,iface->serial,YOCTO_SERIAL_LEN*2, CFSTR(kIOHIDSerialNumberKey));
-        HALLOG("work on interface %d (%x:%x:%s)\n",deviceIndex,vendorid,deviceid,iface->serial);
+        HALENUMLOG("work on interface %d (%x:%x:%s)\n",deviceIndex,vendorid,deviceid,iface->serial);
         (*nbifaceDetect)++;
     }
     yFree(dev_refs);

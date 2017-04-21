@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_lin.c 26992 2017-03-30 15:51:01Z seb $
+ * $Id: ypkt_lin.c 27225 2017-04-21 13:34:58Z seb $
  *
  * OS-specific USB packet layer, Linux version
  *
@@ -198,7 +198,7 @@ static int getUsbStringASCII(libusb_device_handle *hdl, libusb_device *dev, u8 d
                         len = length-1;
                     memcpy(data, c->string,  len);
                     data[len] = 0;
-                    HALLOG("return string from cache (%p:%d->%s)\n",dev,desc_index,c->string);
+                    HALENUMLOG("return string from cache (%p:%d->%s)\n",dev,desc_index,c->string);
                     yLeaveCriticalSection(&yContext->string_cache_cs);
                     return c->len;
                 } else {
@@ -242,7 +242,7 @@ static int getUsbStringASCII(libusb_device_handle *hdl, libusb_device *dev, u8 d
         memcpy(f->string, data, len+1);
         f->len  = len;
         f->expiration = yapiGetTickCount() + STRING_CACHE_EXPIRATION;
-        HALLOG("add string to cache (%p:%d->%s)\n",dev,desc_index,f->string);
+        HALENUMLOG("add string to cache (%p:%d->%s)\n",dev,desc_index,f->string);
     }
     yLeaveCriticalSection(&yContext->string_cache_cs);
 
@@ -352,7 +352,7 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
     nbdev = libusb_get_device_list(yContext->libusb,&list);
     if (nbdev < 0)
         return yLinSetErr("Unable to get device list", nbdev, errmsg);
-    HALLOG("%d devices found\n",nbdev);
+    HALENUMLOG("%d devices found\n",nbdev);
 
      // allocate buffer for detected interfaces
     *nbifaceDetect = 0;
@@ -390,17 +390,17 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
             goto exit;
         }
         if (res != 0){
-            HALLOG("unable to access device %x:%x\n", desc.idVendor, desc.idProduct);
+            HALENUMLOG("unable to access device %x:%x\n", desc.idVendor, desc.idProduct);
             continue;
         }
-        HALLOG("try to get serial for %x:%x:%x (%p)\n", desc.idVendor, desc.idProduct, desc.iSerialNumber, dev);
+        HALENUMLOG("try to get serial for %x:%x:%x (%p)\n", desc.idVendor, desc.idProduct, desc.iSerialNumber, dev);
         res = getUsbStringASCII(hdl, dev, desc.iSerialNumber, iface->serial, YOCTO_SERIAL_LEN);
         if (res < 0) {
-            HALLOG("unable to get serial for device %x:%x\n", desc.idVendor, desc.idProduct);
+            HALENUMLOG("unable to get serial for device %x:%x\n", desc.idVendor, desc.idProduct);
         }
         libusb_close(hdl);
         (*nbifaceDetect)++;
-        HALLOG("----Running Dev %x:%x:%d:%s ---\n", iface->vendorid, iface->deviceid, iface->ifaceno, iface->serial);
+        HALENUMLOG("----Running Dev %x:%x:%d:%s ---\n", iface->vendorid, iface->deviceid, iface->ifaceno, iface->serial);
         libusb_free_config_descriptor(config);
     }
 

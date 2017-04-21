@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 26883 2017-03-24 11:22:53Z seb $
+ * $Id: yproto.h 27225 2017-04-21 13:34:58Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -249,6 +249,7 @@ int ymemfind(const u8 *haystack, u32 haystack_len, const u8 *needle, u32 needle_
 
 //#define DEBUG_YAPI_REQ
 //#define DEBUG_HAL
+//#define DEBUG_HAL_ENUM
 //#define DEBUG_DEV_ENUM
 //#define DEBUG_DEV_ENUM_VERBOSE
 //#define DEBUG_NET_ENUM
@@ -292,6 +293,21 @@ __forceinline void __HALLOG(fmt,...){}
 #endif
 #else
 #define HALLOG(fmt,args...)
+#endif
+#endif
+
+#ifdef DEBUG_HAL_ENUM
+#define HALENUMLOG  dbglog
+#else
+#if defined(_MSC_VER)
+#if (_MSC_VER > MSC_VS2003)
+#define HALENUMLOG(fmt,...)
+#else
+__forceinline void HALENUMLOG(fmt,...){}
+#define HALENUMLOG __HALLOG
+#endif
+#else
+#define HALENUMLOG(fmt,args...)
 #endif
 #endif
 

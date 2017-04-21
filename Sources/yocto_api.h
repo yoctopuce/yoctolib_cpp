@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 27193 2017-04-20 17:26:49Z seb $
+ * $Id: yocto_api.h 27224 2017-04-21 13:34:00Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -275,6 +275,7 @@ class YJSONContent
         YJSONType _type;
         static YJSONContent* ParseJson(const string& data, int start, int stop);
         YJSONContent(const string& data, int start, int stop, YJSONType type);
+        YJSONContent(YJSONContent *ref);
         YJSONContent(YJSONType type);
         virtual ~YJSONContent();
         YJSONType getJSONType();
@@ -291,6 +292,7 @@ class YJSONArray : public YJSONContent
     public:
         YJSONArray(const string& data, int start, int stop);
         YJSONArray(const string& data);
+        YJSONArray(YJSONArray *ref);
         YJSONArray();
         virtual ~YJSONArray();
         int length();
@@ -311,6 +313,7 @@ class YJSONString : public YJSONContent
         string _stringValue;
     public:
         YJSONString(const string& data, int start, int stop);
+        YJSONString(YJSONString *ref);
         YJSONString();
 
         virtual ~YJSONString() { }
@@ -330,6 +333,7 @@ class YJSONNumber : public YJSONContent
         bool _isFloat;
     public:
         YJSONNumber(const string& data, int start, int stop);
+        YJSONNumber(YJSONNumber *ref);
 
         virtual ~YJSONNumber()    { }
 
@@ -350,6 +354,7 @@ class YJSONObject : public YJSONContent
 public:
     YJSONObject(const string& data);
     YJSONObject(const string& data, int start, int len);
+    YJSONObject(YJSONObject *ref);
     virtual ~YJSONObject();
 
     virtual int parse();
