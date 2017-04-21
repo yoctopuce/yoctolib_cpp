@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 27109 2017-04-06 22:18:46Z seb $
+ * $Id: yocto_cellular.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -138,90 +138,57 @@ const string YCellular::APN_INVALID = YAPI_INVALID_STRING;
 const string YCellular::APNSECRET_INVALID = YAPI_INVALID_STRING;
 const string YCellular::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YCellular::_parseAttr(yJsonStateMachine& j)
+int YCellular::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "linkQuality")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _linkQuality =  atoi(j.token);
-        return 1;
+    if(json_val->has("linkQuality")) {
+        _linkQuality =  json_val->getInt("linkQuality");
     }
-    if(!strcmp(j.token, "cellOperator")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _cellOperator =  _parseString(j);
-        return 1;
+    if(json_val->has("cellOperator")) {
+        _cellOperator =  json_val->getString("cellOperator");
     }
-    if(!strcmp(j.token, "cellIdentifier")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _cellIdentifier =  _parseString(j);
-        return 1;
+    if(json_val->has("cellIdentifier")) {
+        _cellIdentifier =  json_val->getString("cellIdentifier");
     }
-    if(!strcmp(j.token, "cellType")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _cellType =  (Y_CELLTYPE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("cellType")) {
+        _cellType =  (Y_CELLTYPE_enum)json_val->getInt("cellType");
     }
-    if(!strcmp(j.token, "imsi")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _imsi =  _parseString(j);
-        return 1;
+    if(json_val->has("imsi")) {
+        _imsi =  json_val->getString("imsi");
     }
-    if(!strcmp(j.token, "message")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _message =  _parseString(j);
-        return 1;
+    if(json_val->has("message")) {
+        _message =  json_val->getString("message");
     }
-    if(!strcmp(j.token, "pin")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _pin =  _parseString(j);
-        return 1;
+    if(json_val->has("pin")) {
+        _pin =  json_val->getString("pin");
     }
-    if(!strcmp(j.token, "lockedOperator")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _lockedOperator =  _parseString(j);
-        return 1;
+    if(json_val->has("lockedOperator")) {
+        _lockedOperator =  json_val->getString("lockedOperator");
     }
-    if(!strcmp(j.token, "airplaneMode")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _airplaneMode =  (Y_AIRPLANEMODE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("airplaneMode")) {
+        _airplaneMode =  (Y_AIRPLANEMODE_enum)json_val->getInt("airplaneMode");
     }
-    if(!strcmp(j.token, "enableData")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _enableData =  (Y_ENABLEDATA_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("enableData")) {
+        _enableData =  (Y_ENABLEDATA_enum)json_val->getInt("enableData");
     }
-    if(!strcmp(j.token, "apn")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _apn =  _parseString(j);
-        return 1;
+    if(json_val->has("apn")) {
+        _apn =  json_val->getString("apn");
     }
-    if(!strcmp(j.token, "apnSecret")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _apnSecret =  _parseString(j);
-        return 1;
+    if(json_val->has("apnSecret")) {
+        _apnSecret =  json_val->getString("apnSecret");
     }
-    if(!strcmp(j.token, "pingInterval")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _pingInterval =  atoi(j.token);
-        return 1;
+    if(json_val->has("pingInterval")) {
+        _pingInterval =  json_val->getInt("pingInterval");
     }
-    if(!strcmp(j.token, "dataSent")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _dataSent =  atoi(j.token);
-        return 1;
+    if(json_val->has("dataSent")) {
+        _dataSent =  json_val->getInt("dataSent");
     }
-    if(!strcmp(j.token, "dataReceived")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _dataReceived =  atoi(j.token);
-        return 1;
+    if(json_val->has("dataReceived")) {
+        _dataReceived =  json_val->getInt("dataReceived");
     }
-    if(!strcmp(j.token, "command")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _command =  _parseString(j);
-        return 1;
+    if(json_val->has("command")) {
+        _command =  json_val->getString("command");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_hubport.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_hubport.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindHubPort(), the high-level API for HubPort functions
  *
@@ -67,25 +67,18 @@ YHubPort::~YHubPort()
 //--- (YHubPort implementation)
 // static attributes
 
-int YHubPort::_parseAttr(yJsonStateMachine& j)
+int YHubPort::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "enabled")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _enabled =  (Y_ENABLED_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("enabled")) {
+        _enabled =  (Y_ENABLED_enum)json_val->getInt("enabled");
     }
-    if(!strcmp(j.token, "portState")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _portState =  (Y_PORTSTATE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("portState")) {
+        _portState =  (Y_PORTSTATE_enum)json_val->getInt("portState");
     }
-    if(!strcmp(j.token, "baudRate")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _baudRate =  atoi(j.token);
-        return 1;
+    if(json_val->has("baudRate")) {
+        _baudRate =  json_val->getInt("baudRate");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_poweroutput.h 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_poweroutput.h 27180 2017-04-20 13:46:43Z seb $
  *
  * Declares yFindPowerOutput(), the high-level API for PowerOutput functions
  *
@@ -85,7 +85,7 @@ protected:
     friend YPowerOutput *yFirstPowerOutput(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(yJsonStateMachine& j);
+    virtual int     _parseAttr(YJSONObject* json_val);
 
     // Constructor is protected, use yFindPowerOutput factory function to instantiate
     YPowerOutput(const string& func);

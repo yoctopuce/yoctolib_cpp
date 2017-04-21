@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwminput.h 26826 2017-03-17 11:20:57Z mvuilleu $
+ * $Id: yocto_pwminput.h 27180 2017-04-20 13:46:43Z seb $
  *
  * Declares yFindPwmInput(), the high-level API for PwmInput functions
  *
@@ -104,7 +104,7 @@ protected:
     friend YPwmInput *yFirstPwmInput(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(yJsonStateMachine& j);
+    virtual int     _parseAttr(YJSONObject* json_val);
 
     // Constructor is protected, use yFindPwmInput factory function to instantiate
     YPwmInput(const string& func);

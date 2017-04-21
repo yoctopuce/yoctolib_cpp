@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.cpp 27109 2017-04-06 22:18:46Z seb $
+ * $Id: yocto_network.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindNetwork(), the high-level API for Network functions
  *
@@ -102,130 +102,81 @@ const string YNetwork::CALLBACKURL_INVALID = YAPI_INVALID_STRING;
 const string YNetwork::CALLBACKCREDENTIALS_INVALID = YAPI_INVALID_STRING;
 const string YNetwork::CALLBACKSCHEDULE_INVALID = YAPI_INVALID_STRING;
 
-int YNetwork::_parseAttr(yJsonStateMachine& j)
+int YNetwork::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "readiness")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _readiness =  (Y_READINESS_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("readiness")) {
+        _readiness =  (Y_READINESS_enum)json_val->getInt("readiness");
     }
-    if(!strcmp(j.token, "macAddress")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _macAddress =  _parseString(j);
-        return 1;
+    if(json_val->has("macAddress")) {
+        _macAddress =  json_val->getString("macAddress");
     }
-    if(!strcmp(j.token, "ipAddress")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _ipAddress =  _parseString(j);
-        return 1;
+    if(json_val->has("ipAddress")) {
+        _ipAddress =  json_val->getString("ipAddress");
     }
-    if(!strcmp(j.token, "subnetMask")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _subnetMask =  _parseString(j);
-        return 1;
+    if(json_val->has("subnetMask")) {
+        _subnetMask =  json_val->getString("subnetMask");
     }
-    if(!strcmp(j.token, "router")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _router =  _parseString(j);
-        return 1;
+    if(json_val->has("router")) {
+        _router =  json_val->getString("router");
     }
-    if(!strcmp(j.token, "ipConfig")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _ipConfig =  _parseString(j);
-        return 1;
+    if(json_val->has("ipConfig")) {
+        _ipConfig =  json_val->getString("ipConfig");
     }
-    if(!strcmp(j.token, "primaryDNS")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _primaryDNS =  _parseString(j);
-        return 1;
+    if(json_val->has("primaryDNS")) {
+        _primaryDNS =  json_val->getString("primaryDNS");
     }
-    if(!strcmp(j.token, "secondaryDNS")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _secondaryDNS =  _parseString(j);
-        return 1;
+    if(json_val->has("secondaryDNS")) {
+        _secondaryDNS =  json_val->getString("secondaryDNS");
     }
-    if(!strcmp(j.token, "ntpServer")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _ntpServer =  _parseString(j);
-        return 1;
+    if(json_val->has("ntpServer")) {
+        _ntpServer =  json_val->getString("ntpServer");
     }
-    if(!strcmp(j.token, "userPassword")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _userPassword =  _parseString(j);
-        return 1;
+    if(json_val->has("userPassword")) {
+        _userPassword =  json_val->getString("userPassword");
     }
-    if(!strcmp(j.token, "adminPassword")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _adminPassword =  _parseString(j);
-        return 1;
+    if(json_val->has("adminPassword")) {
+        _adminPassword =  json_val->getString("adminPassword");
     }
-    if(!strcmp(j.token, "httpPort")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _httpPort =  atoi(j.token);
-        return 1;
+    if(json_val->has("httpPort")) {
+        _httpPort =  json_val->getInt("httpPort");
     }
-    if(!strcmp(j.token, "defaultPage")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _defaultPage =  _parseString(j);
-        return 1;
+    if(json_val->has("defaultPage")) {
+        _defaultPage =  json_val->getString("defaultPage");
     }
-    if(!strcmp(j.token, "discoverable")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _discoverable =  (Y_DISCOVERABLE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("discoverable")) {
+        _discoverable =  (Y_DISCOVERABLE_enum)json_val->getInt("discoverable");
     }
-    if(!strcmp(j.token, "wwwWatchdogDelay")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _wwwWatchdogDelay =  atoi(j.token);
-        return 1;
+    if(json_val->has("wwwWatchdogDelay")) {
+        _wwwWatchdogDelay =  json_val->getInt("wwwWatchdogDelay");
     }
-    if(!strcmp(j.token, "callbackUrl")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _callbackUrl =  _parseString(j);
-        return 1;
+    if(json_val->has("callbackUrl")) {
+        _callbackUrl =  json_val->getString("callbackUrl");
     }
-    if(!strcmp(j.token, "callbackMethod")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _callbackMethod =  (Y_CALLBACKMETHOD_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("callbackMethod")) {
+        _callbackMethod =  (Y_CALLBACKMETHOD_enum)json_val->getInt("callbackMethod");
     }
-    if(!strcmp(j.token, "callbackEncoding")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _callbackEncoding =  (Y_CALLBACKENCODING_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("callbackEncoding")) {
+        _callbackEncoding =  (Y_CALLBACKENCODING_enum)json_val->getInt("callbackEncoding");
     }
-    if(!strcmp(j.token, "callbackCredentials")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _callbackCredentials =  _parseString(j);
-        return 1;
+    if(json_val->has("callbackCredentials")) {
+        _callbackCredentials =  json_val->getString("callbackCredentials");
     }
-    if(!strcmp(j.token, "callbackInitialDelay")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _callbackInitialDelay =  atoi(j.token);
-        return 1;
+    if(json_val->has("callbackInitialDelay")) {
+        _callbackInitialDelay =  json_val->getInt("callbackInitialDelay");
     }
-    if(!strcmp(j.token, "callbackSchedule")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _callbackSchedule =  _parseString(j);
-        return 1;
+    if(json_val->has("callbackSchedule")) {
+        _callbackSchedule =  json_val->getString("callbackSchedule");
     }
-    if(!strcmp(j.token, "callbackMinDelay")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _callbackMinDelay =  atoi(j.token);
-        return 1;
+    if(json_val->has("callbackMinDelay")) {
+        _callbackMinDelay =  json_val->getInt("callbackMinDelay");
     }
-    if(!strcmp(j.token, "callbackMaxDelay")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _callbackMaxDelay =  atoi(j.token);
-        return 1;
+    if(json_val->has("callbackMaxDelay")) {
+        _callbackMaxDelay =  json_val->getInt("callbackMaxDelay");
     }
-    if(!strcmp(j.token, "poeCurrent")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _poeCurrent =  atoi(j.token);
-        return 1;
+    if(json_val->has("poeCurrent")) {
+        _poeCurrent =  json_val->getInt("poeCurrent");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

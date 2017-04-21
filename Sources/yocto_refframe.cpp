@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_refframe.cpp 27109 2017-04-06 22:18:46Z seb $
+ * $Id: yocto_refframe.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -81,25 +81,18 @@ YRefFrame::~YRefFrame()
 const double YRefFrame::BEARING_INVALID = YAPI_INVALID_DOUBLE;
 const string YRefFrame::CALIBRATIONPARAM_INVALID = YAPI_INVALID_STRING;
 
-int YRefFrame::_parseAttr(yJsonStateMachine& j)
+int YRefFrame::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "mountPos")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _mountPos =  atoi(j.token);
-        return 1;
+    if(json_val->has("mountPos")) {
+        _mountPos =  json_val->getInt("mountPos");
     }
-    if(!strcmp(j.token, "bearing")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _bearing =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("bearing")) {
+        _bearing =  floor(json_val->getDouble("bearing") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "calibrationParam")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _calibrationParam =  _parseString(j);
-        return 1;
+    if(json_val->has("calibrationParam")) {
+        _calibrationParam =  json_val->getString("calibrationParam");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

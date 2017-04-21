@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_buzzer.cpp 27086 2017-04-06 20:51:19Z seb $
+ * $Id: yocto_buzzer.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindBuzzer(), the high-level API for Buzzer functions
  *
@@ -72,40 +72,27 @@ YBuzzer::~YBuzzer()
 const double YBuzzer::FREQUENCY_INVALID = YAPI_INVALID_DOUBLE;
 const string YBuzzer::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YBuzzer::_parseAttr(yJsonStateMachine& j)
+int YBuzzer::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "frequency")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _frequency =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("frequency")) {
+        _frequency =  floor(json_val->getDouble("frequency") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "volume")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _volume =  atoi(j.token);
-        return 1;
+    if(json_val->has("volume")) {
+        _volume =  json_val->getInt("volume");
     }
-    if(!strcmp(j.token, "playSeqSize")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _playSeqSize =  atoi(j.token);
-        return 1;
+    if(json_val->has("playSeqSize")) {
+        _playSeqSize =  json_val->getInt("playSeqSize");
     }
-    if(!strcmp(j.token, "playSeqMaxSize")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _playSeqMaxSize =  atoi(j.token);
-        return 1;
+    if(json_val->has("playSeqMaxSize")) {
+        _playSeqMaxSize =  json_val->getInt("playSeqMaxSize");
     }
-    if(!strcmp(j.token, "playSeqSignature")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _playSeqSignature =  atoi(j.token);
-        return 1;
+    if(json_val->has("playSeqSignature")) {
+        _playSeqSignature =  json_val->getInt("playSeqSignature");
     }
-    if(!strcmp(j.token, "command")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _command =  _parseString(j);
-        return 1;
+    if(json_val->has("command")) {
+        _command =  json_val->getString("command");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 27109 2017-04-06 22:18:46Z seb $
+ * $Id: yocto_serialport.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -84,70 +84,45 @@ const string YSerialPort::COMMAND_INVALID = YAPI_INVALID_STRING;
 const string YSerialPort::PROTOCOL_INVALID = YAPI_INVALID_STRING;
 const string YSerialPort::SERIALMODE_INVALID = YAPI_INVALID_STRING;
 
-int YSerialPort::_parseAttr(yJsonStateMachine& j)
+int YSerialPort::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "rxCount")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _rxCount =  atoi(j.token);
-        return 1;
+    if(json_val->has("rxCount")) {
+        _rxCount =  json_val->getInt("rxCount");
     }
-    if(!strcmp(j.token, "txCount")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _txCount =  atoi(j.token);
-        return 1;
+    if(json_val->has("txCount")) {
+        _txCount =  json_val->getInt("txCount");
     }
-    if(!strcmp(j.token, "errCount")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _errCount =  atoi(j.token);
-        return 1;
+    if(json_val->has("errCount")) {
+        _errCount =  json_val->getInt("errCount");
     }
-    if(!strcmp(j.token, "rxMsgCount")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _rxMsgCount =  atoi(j.token);
-        return 1;
+    if(json_val->has("rxMsgCount")) {
+        _rxMsgCount =  json_val->getInt("rxMsgCount");
     }
-    if(!strcmp(j.token, "txMsgCount")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _txMsgCount =  atoi(j.token);
-        return 1;
+    if(json_val->has("txMsgCount")) {
+        _txMsgCount =  json_val->getInt("txMsgCount");
     }
-    if(!strcmp(j.token, "lastMsg")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _lastMsg =  _parseString(j);
-        return 1;
+    if(json_val->has("lastMsg")) {
+        _lastMsg =  json_val->getString("lastMsg");
     }
-    if(!strcmp(j.token, "currentJob")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _currentJob =  _parseString(j);
-        return 1;
+    if(json_val->has("currentJob")) {
+        _currentJob =  json_val->getString("currentJob");
     }
-    if(!strcmp(j.token, "startupJob")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _startupJob =  _parseString(j);
-        return 1;
+    if(json_val->has("startupJob")) {
+        _startupJob =  json_val->getString("startupJob");
     }
-    if(!strcmp(j.token, "command")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _command =  _parseString(j);
-        return 1;
+    if(json_val->has("command")) {
+        _command =  json_val->getString("command");
     }
-    if(!strcmp(j.token, "voltageLevel")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _voltageLevel =  (Y_VOLTAGELEVEL_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("voltageLevel")) {
+        _voltageLevel =  (Y_VOLTAGELEVEL_enum)json_val->getInt("voltageLevel");
     }
-    if(!strcmp(j.token, "protocol")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _protocol =  _parseString(j);
-        return 1;
+    if(json_val->has("protocol")) {
+        _protocol =  json_val->getString("protocol");
     }
-    if(!strcmp(j.token, "serialMode")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _serialMode =  _parseString(j);
-        return 1;
+    if(json_val->has("serialMode")) {
+        _serialMode =  json_val->getString("serialMode");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

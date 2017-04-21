@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_rangefinder.h 26826 2017-03-17 11:20:57Z mvuilleu $
+ * $Id: yocto_rangefinder.h 27180 2017-04-20 13:46:43Z seb $
  *
  * Declares yFindRangeFinder(), the high-level API for RangeFinder functions
  *
@@ -98,7 +98,7 @@ protected:
     friend YRangeFinder *yFirstRangeFinder(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(yJsonStateMachine& j);
+    virtual int     _parseAttr(YJSONObject* json_val);
 
     // Constructor is protected, use yFindRangeFinder factory function to instantiate
     YRangeFinder(const string& func);

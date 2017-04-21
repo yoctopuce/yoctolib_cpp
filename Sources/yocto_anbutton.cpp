@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_anbutton.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_anbutton.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindAnButton(), the high-level API for AnButton functions
  *
@@ -75,65 +75,42 @@ YAnButton::~YAnButton()
 //--- (YAnButton implementation)
 // static attributes
 
-int YAnButton::_parseAttr(yJsonStateMachine& j)
+int YAnButton::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "calibratedValue")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _calibratedValue =  atoi(j.token);
-        return 1;
+    if(json_val->has("calibratedValue")) {
+        _calibratedValue =  json_val->getInt("calibratedValue");
     }
-    if(!strcmp(j.token, "rawValue")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _rawValue =  atoi(j.token);
-        return 1;
+    if(json_val->has("rawValue")) {
+        _rawValue =  json_val->getInt("rawValue");
     }
-    if(!strcmp(j.token, "analogCalibration")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _analogCalibration =  (Y_ANALOGCALIBRATION_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("analogCalibration")) {
+        _analogCalibration =  (Y_ANALOGCALIBRATION_enum)json_val->getInt("analogCalibration");
     }
-    if(!strcmp(j.token, "calibrationMax")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _calibrationMax =  atoi(j.token);
-        return 1;
+    if(json_val->has("calibrationMax")) {
+        _calibrationMax =  json_val->getInt("calibrationMax");
     }
-    if(!strcmp(j.token, "calibrationMin")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _calibrationMin =  atoi(j.token);
-        return 1;
+    if(json_val->has("calibrationMin")) {
+        _calibrationMin =  json_val->getInt("calibrationMin");
     }
-    if(!strcmp(j.token, "sensitivity")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _sensitivity =  atoi(j.token);
-        return 1;
+    if(json_val->has("sensitivity")) {
+        _sensitivity =  json_val->getInt("sensitivity");
     }
-    if(!strcmp(j.token, "isPressed")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _isPressed =  (Y_ISPRESSED_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("isPressed")) {
+        _isPressed =  (Y_ISPRESSED_enum)json_val->getInt("isPressed");
     }
-    if(!strcmp(j.token, "lastTimePressed")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _lastTimePressed =  atol(j.token);
-        return 1;
+    if(json_val->has("lastTimePressed")) {
+        _lastTimePressed =  json_val->getLong("lastTimePressed");
     }
-    if(!strcmp(j.token, "lastTimeReleased")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _lastTimeReleased =  atol(j.token);
-        return 1;
+    if(json_val->has("lastTimeReleased")) {
+        _lastTimeReleased =  json_val->getLong("lastTimeReleased");
     }
-    if(!strcmp(j.token, "pulseCounter")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _pulseCounter =  atol(j.token);
-        return 1;
+    if(json_val->has("pulseCounter")) {
+        _pulseCounter =  json_val->getLong("pulseCounter");
     }
-    if(!strcmp(j.token, "pulseTimer")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _pulseTimer =  atol(j.token);
-        return 1;
+    if(json_val->has("pulseTimer")) {
+        _pulseTimer =  json_val->getLong("pulseTimer");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

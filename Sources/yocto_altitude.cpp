@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_altitude.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_altitude.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindAltitude(), the high-level API for Altitude functions
  *
@@ -69,20 +69,15 @@ YAltitude::~YAltitude()
 const double YAltitude::QNH_INVALID = YAPI_INVALID_DOUBLE;
 const string YAltitude::TECHNOLOGY_INVALID = YAPI_INVALID_STRING;
 
-int YAltitude::_parseAttr(yJsonStateMachine& j)
+int YAltitude::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "qnh")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _qnh =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("qnh")) {
+        _qnh =  floor(json_val->getDouble("qnh") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "technology")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _technology =  _parseString(j);
-        return 1;
+    if(json_val->has("technology")) {
+        _technology =  json_val->getString("technology");
     }
-    failed:
-    return YSensor::_parseAttr(j);
+    return YSensor::_parseAttr(json_val);
 }
 
 

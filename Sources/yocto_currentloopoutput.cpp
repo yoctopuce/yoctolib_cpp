@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_currentloopoutput.cpp 27109 2017-04-06 22:18:46Z seb $
+ * $Id: yocto_currentloopoutput.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindCurrentLoopOutput(), the high-level API for CurrentLoopOutput functions
  *
@@ -71,30 +71,21 @@ const double YCurrentLoopOutput::CURRENT_INVALID = YAPI_INVALID_DOUBLE;
 const string YCurrentLoopOutput::CURRENTTRANSITION_INVALID = YAPI_INVALID_STRING;
 const double YCurrentLoopOutput::CURRENTATSTARTUP_INVALID = YAPI_INVALID_DOUBLE;
 
-int YCurrentLoopOutput::_parseAttr(yJsonStateMachine& j)
+int YCurrentLoopOutput::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "current")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _current =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("current")) {
+        _current =  floor(json_val->getDouble("current") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "currentTransition")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _currentTransition =  _parseString(j);
-        return 1;
+    if(json_val->has("currentTransition")) {
+        _currentTransition =  json_val->getString("currentTransition");
     }
-    if(!strcmp(j.token, "currentAtStartUp")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _currentAtStartUp =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("currentAtStartUp")) {
+        _currentAtStartUp =  floor(json_val->getDouble("currentAtStartUp") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "loopPower")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _loopPower =  (Y_LOOPPOWER_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("loopPower")) {
+        _loopPower =  (Y_LOOPPOWER_enum)json_val->getInt("loopPower");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

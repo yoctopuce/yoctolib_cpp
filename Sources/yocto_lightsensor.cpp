@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_lightsensor.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_lightsensor.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindLightSensor(), the high-level API for LightSensor functions
  *
@@ -66,15 +66,12 @@ YLightSensor::~YLightSensor()
 //--- (YLightSensor implementation)
 // static attributes
 
-int YLightSensor::_parseAttr(yJsonStateMachine& j)
+int YLightSensor::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "measureType")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _measureType =  (Y_MEASURETYPE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("measureType")) {
+        _measureType =  (Y_MEASURETYPE_enum)json_val->getInt("measureType");
     }
-    failed:
-    return YSensor::_parseAttr(j);
+    return YSensor::_parseAttr(json_val);
 }
 
 

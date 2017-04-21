@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_audioin.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_audioin.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindAudioIn(), the high-level API for AudioIn functions
  *
@@ -70,35 +70,24 @@ YAudioIn::~YAudioIn()
 // static attributes
 const string YAudioIn::VOLUMERANGE_INVALID = YAPI_INVALID_STRING;
 
-int YAudioIn::_parseAttr(yJsonStateMachine& j)
+int YAudioIn::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "volume")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _volume =  atoi(j.token);
-        return 1;
+    if(json_val->has("volume")) {
+        _volume =  json_val->getInt("volume");
     }
-    if(!strcmp(j.token, "mute")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _mute =  (Y_MUTE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("mute")) {
+        _mute =  (Y_MUTE_enum)json_val->getInt("mute");
     }
-    if(!strcmp(j.token, "volumeRange")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _volumeRange =  _parseString(j);
-        return 1;
+    if(json_val->has("volumeRange")) {
+        _volumeRange =  json_val->getString("volumeRange");
     }
-    if(!strcmp(j.token, "signal")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _signal =  atoi(j.token);
-        return 1;
+    if(json_val->has("signal")) {
+        _signal =  json_val->getInt("signal");
     }
-    if(!strcmp(j.token, "noSignalFor")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _noSignalFor =  atoi(j.token);
-        return 1;
+    if(json_val->has("noSignalFor")) {
+        _noSignalFor =  json_val->getInt("noSignalFor");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

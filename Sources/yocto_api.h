@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_api.h 27193 2017-04-20 17:26:49Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -241,6 +241,136 @@ typedef struct{
 // internal helper function
 int _ystrpos(const string& haystack, const string& needle);
 vector<string> _strsplit(const string& str, char delimiter);
+
+typedef enum {
+    STRING,
+    NUMBER,
+    ARRAY,
+    OBJECT
+} YJSONType;
+
+typedef enum {
+    JSTART,
+    JWAITFORNAME,
+    JWAITFORENDOFNAME,
+    JWAITFORCOLON,
+    JWAITFORDATA,
+    JWAITFORNEXTSTRUCTMEMBER,
+    JWAITFORNEXTARRAYITEM,
+    JWAITFORSTRINGVALUE,
+    JWAITFORSTRINGVALUE_ESC,
+    JWAITFORINTVALUE,
+    JWAITFORBOOLVALUE
+} Tjstate;
+
+class YJSONObject;
+
+class YJSONContent
+{
+    public:
+        string _data;
+        int _data_start;
+        int _data_len;
+        int _data_boundary;
+        YJSONType _type;
+        static YJSONContent* ParseJson(const string& data, int start, int stop);
+        YJSONContent(const string& data, int start, int stop, YJSONType type);
+        YJSONContent(YJSONType type);
+        virtual ~YJSONContent();
+        YJSONType getJSONType();
+        virtual int parse()=0;
+        static int SkipGarbage(const string& data, int start, int stop);
+        string FormatError(const string& errmsg, int cur_pos);
+        virtual string toJSON()=0;
+        virtual string toString()=0;
+};
+
+class YJSONArray : public YJSONContent
+{
+        vector<YJSONContent*> _arrayValue;
+    public:
+        YJSONArray(const string& data, int start, int stop);
+        YJSONArray(const string& data);
+        YJSONArray();
+        virtual ~YJSONArray();
+        int length();
+        virtual int parse();
+        YJSONObject* getYJSONObject(int i);
+        string getString(int i);
+        YJSONContent* get(int i);
+        YJSONArray* getYJSONArray(int i);
+        int getInt(int i);
+        long getLong(int i);
+        void put(const string& flatAttr);
+        virtual string toJSON();
+        virtual string toString();
+};
+
+class YJSONString : public YJSONContent
+{
+        string _stringValue;
+    public:
+        YJSONString(const string& data, int start, int stop);
+        YJSONString();
+
+        virtual ~YJSONString() { }
+
+    virtual int parse();
+        virtual string toJSON();
+        string getString();
+        virtual string toString();
+        void setContent(const string& value);
+};
+
+
+class YJSONNumber : public YJSONContent
+{
+        long _intValue;
+        double _doubleValue;
+        bool _isFloat;
+    public:
+        YJSONNumber(const string& data, int start, int stop);
+
+        virtual ~YJSONNumber()    { }
+
+    virtual int parse();
+        virtual string toJSON();
+        long getLong();
+        int getInt();
+        double getDouble();
+        virtual string toString();
+};
+
+
+class YJSONObject : public YJSONContent
+{
+    map<string, YJSONContent*> _parsed;
+    vector<string> _keys;
+    void convert(YJSONObject* reference, YJSONArray* newArray);
+public:
+    YJSONObject(const string& data);
+    YJSONObject(const string& data, int start, int len);
+    virtual ~YJSONObject();
+
+    virtual int parse();
+    bool has(const string& key);
+    YJSONObject* getYJSONObject(const string& key);
+    YJSONString* getYJSONString(const string& key);
+    YJSONArray* getYJSONArray(const string& key);
+    vector<string> keys();
+    YJSONNumber* getYJSONNumber(const string& key);
+    string getString(const string& key);
+    int getInt(const string& key);
+    YJSONContent* get(const string& key);
+    long getLong(const string& key);
+    double getDouble(const string& key);
+    virtual string toJSON();
+    virtual string toString();
+    void parseWithRef(YJSONObject* reference);
+    string getKeyFromIdx(int i);
+};
+
+
 
 //
 // YAPI Context
@@ -1323,7 +1453,7 @@ private:
     // Device cache entries
     YDEV_DESCR          _devdescr;
     u64                 _cacheStamp; // used only by requestAPI method
-    string              _cacheJson;  // used only by requestAPI method
+    YJSONObject*        _cacheJson;  // used only by requestAPI method
     vector<YFUN_DESCR>  _functions;
     char                _rootdevice[YOCTO_SERIAL_LEN];
     char                *_subpath;
@@ -1339,7 +1469,7 @@ public:
     static YDevice *getDevice(YDEV_DESCR devdescr);
     YRETCODE    HTTPRequestAsync(int channel, const string& request, HTTPRequestCallback callback, void *context, string& errmsg);
     YRETCODE    HTTPRequest(int channel, const string& request, string& buffer, yapiRequestProgressCallback progress_cb, void *progress_ctx, string& errmsg);
-    YRETCODE    requestAPI(string& apires, string& errmsg);
+    YRETCODE    requestAPI(YJSONObject*& apires, string& errmsg);
     void        clearCache(bool clearSubpath);
     YRETCODE    getFunctions(vector<YFUN_DESCR> **functions, string& errmsg);
     string      getHubSerial(void);
@@ -1392,7 +1522,7 @@ protected:
     friend YFunction *yFirstFunction(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(yJsonStateMachine& j);
+    virtual int     _parseAttr(YJSONObject* json_val);
 
     // Constructor is protected, use yFindFunction factory function to instantiate
     YFunction(const string& func);
@@ -1409,7 +1539,7 @@ protected:
     // Method used to find the next instance of our function
     YRETCODE    _nextFunction(string &hwId);
 
-    int         _parse(yJsonStateMachine& j);
+    int         _parse(YJSONObject* j);
 
     string      _escapeAttr(const string& changeval);
     YRETCODE    _buildSetRequest(const string& changeattr, const string  *changeval, string& request, string& errmsg);
@@ -1826,7 +1956,7 @@ protected:
     friend YModule *yFirstModule(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(yJsonStateMachine& j);
+    virtual int     _parseAttr(YJSONObject* json_val);
 
     // Constructor is protected, use yFindModule factory function to instantiate
     YModule(const string& func);
@@ -2504,7 +2634,7 @@ protected:
     friend YSensor *yFirstSensor(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(yJsonStateMachine& j);
+    virtual int     _parseAttr(YJSONObject* json_val);
 
     // Constructor is protected, use yFindSensor factory function to instantiate
     YSensor(const string& func);

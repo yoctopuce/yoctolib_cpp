@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_dualpower.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_dualpower.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindDualPower(), the high-level API for DualPower functions
  *
@@ -67,25 +67,18 @@ YDualPower::~YDualPower()
 //--- (YDualPower implementation)
 // static attributes
 
-int YDualPower::_parseAttr(yJsonStateMachine& j)
+int YDualPower::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "powerState")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _powerState =  (Y_POWERSTATE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("powerState")) {
+        _powerState =  (Y_POWERSTATE_enum)json_val->getInt("powerState");
     }
-    if(!strcmp(j.token, "powerControl")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _powerControl =  (Y_POWERCONTROL_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("powerControl")) {
+        _powerControl =  (Y_POWERCONTROL_enum)json_val->getInt("powerControl");
     }
-    if(!strcmp(j.token, "extVoltage")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _extVoltage =  atoi(j.token);
-        return 1;
+    if(json_val->has("extVoltage")) {
+        _extVoltage =  json_val->getInt("extVoltage");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

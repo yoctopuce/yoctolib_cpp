@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_multiaxiscontroller.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_multiaxiscontroller.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindMultiAxisController(), the high-level API for MultiAxisController functions
  *
@@ -68,25 +68,18 @@ YMultiAxisController::~YMultiAxisController()
 // static attributes
 const string YMultiAxisController::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YMultiAxisController::_parseAttr(yJsonStateMachine& j)
+int YMultiAxisController::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "nAxis")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _nAxis =  atoi(j.token);
-        return 1;
+    if(json_val->has("nAxis")) {
+        _nAxis =  json_val->getInt("nAxis");
     }
-    if(!strcmp(j.token, "globalState")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _globalState =  (Y_GLOBALSTATE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("globalState")) {
+        _globalState =  (Y_GLOBALSTATE_enum)json_val->getInt("globalState");
     }
-    if(!strcmp(j.token, "command")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _command =  _parseString(j);
-        return 1;
+    if(json_val->has("command")) {
+        _command =  json_val->getString("command");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 
@@ -329,7 +322,7 @@ int YMultiAxisController::findHomePosition(vector<double> speed)
     ndim = (int)speed.size();
     cmd = YapiWrapper::ysprintf("H%d",(int) floor(1000*speed[0]+0.5));
     i = 1;
-    while (i + 1 < ndim) {
+    while (i < ndim) {
         cmd = YapiWrapper::ysprintf("%s,%d", cmd.c_str(),(int) floor(1000*speed[i]+0.5));
         i = i + 1;
     }
@@ -355,7 +348,7 @@ int YMultiAxisController::moveTo(vector<double> absPos)
     ndim = (int)absPos.size();
     cmd = YapiWrapper::ysprintf("M%d",(int) floor(16*absPos[0]+0.5));
     i = 1;
-    while (i + 1 < ndim) {
+    while (i < ndim) {
         cmd = YapiWrapper::ysprintf("%s,%d", cmd.c_str(),(int) floor(16*absPos[i]+0.5));
         i = i + 1;
     }
@@ -381,7 +374,7 @@ int YMultiAxisController::moveRel(vector<double> relPos)
     ndim = (int)relPos.size();
     cmd = YapiWrapper::ysprintf("m%d",(int) floor(16*relPos[0]+0.5));
     i = 1;
-    while (i + 1 < ndim) {
+    while (i < ndim) {
         cmd = YapiWrapper::ysprintf("%s,%d", cmd.c_str(),(int) floor(16*relPos[i]+0.5));
         i = i + 1;
     }

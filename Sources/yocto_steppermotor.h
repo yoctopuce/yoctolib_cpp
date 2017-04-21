@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_steppermotor.h 26253 2017-01-03 17:41:07Z seb $
+ * $Id: yocto_steppermotor.h 27180 2017-04-20 13:46:43Z seb $
  *
  * Declares yFindStepperMotor(), the high-level API for StepperMotor functions
  *
@@ -125,7 +125,7 @@ protected:
     friend YStepperMotor *yFirstStepperMotor(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(yJsonStateMachine& j);
+    virtual int     _parseAttr(YJSONObject* json_val);
 
     // Constructor is protected, use yFindStepperMotor factory function to instantiate
     YStepperMotor(const string& func);

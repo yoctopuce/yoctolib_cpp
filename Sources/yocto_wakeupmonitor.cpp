@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wakeupmonitor.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_wakeupmonitor.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindWakeUpMonitor(), the high-level API for WakeUpMonitor functions
  *
@@ -71,40 +71,27 @@ YWakeUpMonitor::~YWakeUpMonitor()
 //--- (YWakeUpMonitor implementation)
 // static attributes
 
-int YWakeUpMonitor::_parseAttr(yJsonStateMachine& j)
+int YWakeUpMonitor::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "powerDuration")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _powerDuration =  atoi(j.token);
-        return 1;
+    if(json_val->has("powerDuration")) {
+        _powerDuration =  json_val->getInt("powerDuration");
     }
-    if(!strcmp(j.token, "sleepCountdown")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _sleepCountdown =  atoi(j.token);
-        return 1;
+    if(json_val->has("sleepCountdown")) {
+        _sleepCountdown =  json_val->getInt("sleepCountdown");
     }
-    if(!strcmp(j.token, "nextWakeUp")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _nextWakeUp =  atol(j.token);
-        return 1;
+    if(json_val->has("nextWakeUp")) {
+        _nextWakeUp =  json_val->getLong("nextWakeUp");
     }
-    if(!strcmp(j.token, "wakeUpReason")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _wakeUpReason =  (Y_WAKEUPREASON_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("wakeUpReason")) {
+        _wakeUpReason =  (Y_WAKEUPREASON_enum)json_val->getInt("wakeUpReason");
     }
-    if(!strcmp(j.token, "wakeUpState")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _wakeUpState =  (Y_WAKEUPSTATE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("wakeUpState")) {
+        _wakeUpState =  (Y_WAKEUPSTATE_enum)json_val->getInt("wakeUpState");
     }
-    if(!strcmp(j.token, "rtcTime")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _rtcTime =  atol(j.token);
-        return 1;
+    if(json_val->has("rtcTime")) {
+        _rtcTime =  json_val->getLong("rtcTime");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

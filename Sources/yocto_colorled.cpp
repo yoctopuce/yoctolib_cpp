@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorled.cpp 27118 2017-04-06 22:38:36Z seb $
+ * $Id: yocto_colorled.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -76,81 +76,54 @@ const YMove YColorLed::RGBMOVE_INVALID = YMove();
 const YMove YColorLed::HSLMOVE_INVALID = YMove();
 const string YColorLed::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YColorLed::_parseAttr(yJsonStateMachine& j)
+int YColorLed::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "rgbColor")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _rgbColor =  atoi(j.token);
-        return 1;
+    if(json_val->has("rgbColor")) {
+        _rgbColor =  json_val->getInt("rgbColor");
     }
-    if(!strcmp(j.token, "hslColor")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _hslColor =  atoi(j.token);
-        return 1;
+    if(json_val->has("hslColor")) {
+        _hslColor =  json_val->getInt("hslColor");
     }
-    if(!strcmp(j.token, "rgbMove")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        if(j.st != YJSON_PARSE_STRUCT) goto failed;
-        while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-            if(!strcmp(j.token, "moving")) {
-                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                _rgbMove.moving = atoi(j.token);
-            } else if(!strcmp(j.token, "target")) {
-                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                _rgbMove.target = atoi(j.token);
-            } else if(!strcmp(j.token, "ms")) {
-                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                _rgbMove.ms = atoi(j.token);
-            }
+    if(json_val->has("rgbMove")) {
+        YJSONObject* subjson = json_val->getYJSONObject("rgbMove");
+        if (subjson->has("moving")) {
+            _rgbMove.moving = subjson->getInt("moving");
         }
-        if(j.st != YJSON_PARSE_STRUCT) goto failed;
-        return 1;
-    }
-    if(!strcmp(j.token, "hslMove")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        if(j.st != YJSON_PARSE_STRUCT) goto failed;
-        while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-            if(!strcmp(j.token, "moving")) {
-                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                _hslMove.moving = atoi(j.token);
-            } else if(!strcmp(j.token, "target")) {
-                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                _hslMove.target = atoi(j.token);
-            } else if(!strcmp(j.token, "ms")) {
-                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                _hslMove.ms = atoi(j.token);
-            }
+        if (subjson->has("target")) {
+            _rgbMove.target = subjson->getInt("target");
         }
-        if(j.st != YJSON_PARSE_STRUCT) goto failed;
-        return 1;
+        if (subjson->has("ms")) {
+            _rgbMove.ms = subjson->getInt("ms");
+        }
     }
-    if(!strcmp(j.token, "rgbColorAtPowerOn")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _rgbColorAtPowerOn =  atoi(j.token);
-        return 1;
+    if(json_val->has("hslMove")) {
+        YJSONObject* subjson = json_val->getYJSONObject("hslMove");
+        if (subjson->has("moving")) {
+            _hslMove.moving = subjson->getInt("moving");
+        }
+        if (subjson->has("target")) {
+            _hslMove.target = subjson->getInt("target");
+        }
+        if (subjson->has("ms")) {
+            _hslMove.ms = subjson->getInt("ms");
+        }
     }
-    if(!strcmp(j.token, "blinkSeqSize")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _blinkSeqSize =  atoi(j.token);
-        return 1;
+    if(json_val->has("rgbColorAtPowerOn")) {
+        _rgbColorAtPowerOn =  json_val->getInt("rgbColorAtPowerOn");
     }
-    if(!strcmp(j.token, "blinkSeqMaxSize")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _blinkSeqMaxSize =  atoi(j.token);
-        return 1;
+    if(json_val->has("blinkSeqSize")) {
+        _blinkSeqSize =  json_val->getInt("blinkSeqSize");
     }
-    if(!strcmp(j.token, "blinkSeqSignature")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _blinkSeqSignature =  atoi(j.token);
-        return 1;
+    if(json_val->has("blinkSeqMaxSize")) {
+        _blinkSeqMaxSize =  json_val->getInt("blinkSeqMaxSize");
     }
-    if(!strcmp(j.token, "command")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _command =  _parseString(j);
-        return 1;
+    if(json_val->has("blinkSeqSignature")) {
+        _blinkSeqSignature =  json_val->getInt("blinkSeqSignature");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    if(json_val->has("command")) {
+        _command =  json_val->getString("command");
+    }
+    return YFunction::_parseAttr(json_val);
 }
 
 

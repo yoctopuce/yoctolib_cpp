@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_magnetometer.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_magnetometer.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindMagnetometer(), the high-level API for Magnetometer functions
  *
@@ -72,30 +72,21 @@ const double YMagnetometer::XVALUE_INVALID = YAPI_INVALID_DOUBLE;
 const double YMagnetometer::YVALUE_INVALID = YAPI_INVALID_DOUBLE;
 const double YMagnetometer::ZVALUE_INVALID = YAPI_INVALID_DOUBLE;
 
-int YMagnetometer::_parseAttr(yJsonStateMachine& j)
+int YMagnetometer::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "bandwidth")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _bandwidth =  atoi(j.token);
-        return 1;
+    if(json_val->has("bandwidth")) {
+        _bandwidth =  json_val->getInt("bandwidth");
     }
-    if(!strcmp(j.token, "xValue")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _xValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("xValue")) {
+        _xValue =  floor(json_val->getDouble("xValue") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "yValue")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _yValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("yValue")) {
+        _yValue =  floor(json_val->getDouble("yValue") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "zValue")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _zValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("zValue")) {
+        _zValue =  floor(json_val->getDouble("zValue") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    failed:
-    return YSensor::_parseAttr(j);
+    return YSensor::_parseAttr(json_val);
 }
 
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_realtimeclock.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_realtimeclock.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *
@@ -69,30 +69,21 @@ YRealTimeClock::~YRealTimeClock()
 // static attributes
 const string YRealTimeClock::DATETIME_INVALID = YAPI_INVALID_STRING;
 
-int YRealTimeClock::_parseAttr(yJsonStateMachine& j)
+int YRealTimeClock::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "unixTime")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _unixTime =  atol(j.token);
-        return 1;
+    if(json_val->has("unixTime")) {
+        _unixTime =  json_val->getLong("unixTime");
     }
-    if(!strcmp(j.token, "dateTime")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _dateTime =  _parseString(j);
-        return 1;
+    if(json_val->has("dateTime")) {
+        _dateTime =  json_val->getString("dateTime");
     }
-    if(!strcmp(j.token, "utcOffset")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _utcOffset =  atoi(j.token);
-        return 1;
+    if(json_val->has("utcOffset")) {
+        _utcOffset =  json_val->getInt("utcOffset");
     }
-    if(!strcmp(j.token, "timeSet")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _timeSet =  (Y_TIMESET_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("timeSet")) {
+        _timeSet =  (Y_TIMESET_enum)json_val->getInt("timeSet");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

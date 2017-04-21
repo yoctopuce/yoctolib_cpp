@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wakeupschedule.cpp 27109 2017-04-06 22:18:46Z seb $
+ * $Id: yocto_wakeupschedule.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindWakeUpSchedule(), the high-level API for WakeUpSchedule functions
  *
@@ -71,45 +71,30 @@ YWakeUpSchedule::~YWakeUpSchedule()
 //--- (YWakeUpSchedule implementation)
 // static attributes
 
-int YWakeUpSchedule::_parseAttr(yJsonStateMachine& j)
+int YWakeUpSchedule::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "minutesA")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _minutesA =  atoi(j.token);
-        return 1;
+    if(json_val->has("minutesA")) {
+        _minutesA =  json_val->getInt("minutesA");
     }
-    if(!strcmp(j.token, "minutesB")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _minutesB =  atoi(j.token);
-        return 1;
+    if(json_val->has("minutesB")) {
+        _minutesB =  json_val->getInt("minutesB");
     }
-    if(!strcmp(j.token, "hours")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _hours =  atoi(j.token);
-        return 1;
+    if(json_val->has("hours")) {
+        _hours =  json_val->getInt("hours");
     }
-    if(!strcmp(j.token, "weekDays")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _weekDays =  atoi(j.token);
-        return 1;
+    if(json_val->has("weekDays")) {
+        _weekDays =  json_val->getInt("weekDays");
     }
-    if(!strcmp(j.token, "monthDays")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _monthDays =  atoi(j.token);
-        return 1;
+    if(json_val->has("monthDays")) {
+        _monthDays =  json_val->getInt("monthDays");
     }
-    if(!strcmp(j.token, "months")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _months =  atoi(j.token);
-        return 1;
+    if(json_val->has("months")) {
+        _months =  json_val->getInt("months");
     }
-    if(!strcmp(j.token, "nextOccurence")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _nextOccurence =  atol(j.token);
-        return 1;
+    if(json_val->has("nextOccurence")) {
+        _nextOccurence =  json_val->getLong("nextOccurence");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

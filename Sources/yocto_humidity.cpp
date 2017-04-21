@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_humidity.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_humidity.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindHumidity(), the high-level API for Humidity functions
  *
@@ -69,20 +69,15 @@ YHumidity::~YHumidity()
 const double YHumidity::RELHUM_INVALID = YAPI_INVALID_DOUBLE;
 const double YHumidity::ABSHUM_INVALID = YAPI_INVALID_DOUBLE;
 
-int YHumidity::_parseAttr(yJsonStateMachine& j)
+int YHumidity::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "relHum")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _relHum =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("relHum")) {
+        _relHum =  floor(json_val->getDouble("relHum") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "absHum")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _absHum =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("absHum")) {
+        _absHum =  floor(json_val->getDouble("absHum") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    failed:
-    return YSensor::_parseAttr(j);
+    return YSensor::_parseAttr(json_val);
 }
 
 

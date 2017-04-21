@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.cpp 27109 2017-04-06 22:18:46Z seb $
+ * $Id: yocto_wireless.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindWireless(), the high-level API for Wireless functions
  *
@@ -144,40 +144,27 @@ const string YWireless::SSID_INVALID = YAPI_INVALID_STRING;
 const string YWireless::MESSAGE_INVALID = YAPI_INVALID_STRING;
 const string YWireless::WLANCONFIG_INVALID = YAPI_INVALID_STRING;
 
-int YWireless::_parseAttr(yJsonStateMachine& j)
+int YWireless::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "linkQuality")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _linkQuality =  atoi(j.token);
-        return 1;
+    if(json_val->has("linkQuality")) {
+        _linkQuality =  json_val->getInt("linkQuality");
     }
-    if(!strcmp(j.token, "ssid")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _ssid =  _parseString(j);
-        return 1;
+    if(json_val->has("ssid")) {
+        _ssid =  json_val->getString("ssid");
     }
-    if(!strcmp(j.token, "channel")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _channel =  atoi(j.token);
-        return 1;
+    if(json_val->has("channel")) {
+        _channel =  json_val->getInt("channel");
     }
-    if(!strcmp(j.token, "security")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _security =  (Y_SECURITY_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("security")) {
+        _security =  (Y_SECURITY_enum)json_val->getInt("security");
     }
-    if(!strcmp(j.token, "message")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _message =  _parseString(j);
-        return 1;
+    if(json_val->has("message")) {
+        _message =  json_val->getString("message");
     }
-    if(!strcmp(j.token, "wlanConfig")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _wlanConfig =  _parseString(j);
-        return 1;
+    if(json_val->has("wlanConfig")) {
+        _wlanConfig =  json_val->getString("wlanConfig");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

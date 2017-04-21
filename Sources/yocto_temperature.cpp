@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_temperature.cpp 27109 2017-04-06 22:18:46Z seb $
+ * $Id: yocto_temperature.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindTemperature(), the high-level API for Temperature functions
  *
@@ -72,30 +72,21 @@ const double YTemperature::SIGNALVALUE_INVALID = YAPI_INVALID_DOUBLE;
 const string YTemperature::SIGNALUNIT_INVALID = YAPI_INVALID_STRING;
 const string YTemperature::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YTemperature::_parseAttr(yJsonStateMachine& j)
+int YTemperature::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "sensorType")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _sensorType =  (Y_SENSORTYPE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("sensorType")) {
+        _sensorType =  (Y_SENSORTYPE_enum)json_val->getInt("sensorType");
     }
-    if(!strcmp(j.token, "signalValue")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _signalValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("signalValue")) {
+        _signalValue =  floor(json_val->getDouble("signalValue") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "signalUnit")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _signalUnit =  _parseString(j);
-        return 1;
+    if(json_val->has("signalUnit")) {
+        _signalUnit =  json_val->getString("signalUnit");
     }
-    if(!strcmp(j.token, "command")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _command =  _parseString(j);
-        return 1;
+    if(json_val->has("command")) {
+        _command =  json_val->getString("command");
     }
-    failed:
-    return YSensor::_parseAttr(j);
+    return YSensor::_parseAttr(json_val);
 }
 
 

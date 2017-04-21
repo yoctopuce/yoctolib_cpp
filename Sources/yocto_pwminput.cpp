@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwminput.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_pwminput.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindPwmInput(), the high-level API for PwmInput functions
  *
@@ -76,45 +76,30 @@ const double YPwmInput::PULSEDURATION_INVALID = YAPI_INVALID_DOUBLE;
 const double YPwmInput::FREQUENCY_INVALID = YAPI_INVALID_DOUBLE;
 const double YPwmInput::PERIOD_INVALID = YAPI_INVALID_DOUBLE;
 
-int YPwmInput::_parseAttr(yJsonStateMachine& j)
+int YPwmInput::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "dutyCycle")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _dutyCycle =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("dutyCycle")) {
+        _dutyCycle =  floor(json_val->getDouble("dutyCycle") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "pulseDuration")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _pulseDuration =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("pulseDuration")) {
+        _pulseDuration =  floor(json_val->getDouble("pulseDuration") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "frequency")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _frequency =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("frequency")) {
+        _frequency =  floor(json_val->getDouble("frequency") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "period")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _period =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("period")) {
+        _period =  floor(json_val->getDouble("period") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "pulseCounter")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _pulseCounter =  atol(j.token);
-        return 1;
+    if(json_val->has("pulseCounter")) {
+        _pulseCounter =  json_val->getLong("pulseCounter");
     }
-    if(!strcmp(j.token, "pulseTimer")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _pulseTimer =  atol(j.token);
-        return 1;
+    if(json_val->has("pulseTimer")) {
+        _pulseTimer =  json_val->getLong("pulseTimer");
     }
-    if(!strcmp(j.token, "pwmReportMode")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _pwmReportMode =  (Y_PWMREPORTMODE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("pwmReportMode")) {
+        _pwmReportMode =  (Y_PWMREPORTMODE_enum)json_val->getInt("pwmReportMode");
     }
-    failed:
-    return YSensor::_parseAttr(j);
+    return YSensor::_parseAttr(json_val);
 }
 
 

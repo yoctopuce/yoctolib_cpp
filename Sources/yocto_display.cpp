@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 27086 2017-04-06 20:51:19Z seb $
+ * $Id: yocto_display.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -639,65 +639,42 @@ YDisplay::~YDisplay()
 const string YDisplay::STARTUPSEQ_INVALID = YAPI_INVALID_STRING;
 const string YDisplay::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YDisplay::_parseAttr(yJsonStateMachine& j)
+int YDisplay::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "enabled")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _enabled =  (Y_ENABLED_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("enabled")) {
+        _enabled =  (Y_ENABLED_enum)json_val->getInt("enabled");
     }
-    if(!strcmp(j.token, "startupSeq")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _startupSeq =  _parseString(j);
-        return 1;
+    if(json_val->has("startupSeq")) {
+        _startupSeq =  json_val->getString("startupSeq");
     }
-    if(!strcmp(j.token, "brightness")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _brightness =  atoi(j.token);
-        return 1;
+    if(json_val->has("brightness")) {
+        _brightness =  json_val->getInt("brightness");
     }
-    if(!strcmp(j.token, "orientation")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _orientation =  (Y_ORIENTATION_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("orientation")) {
+        _orientation =  (Y_ORIENTATION_enum)json_val->getInt("orientation");
     }
-    if(!strcmp(j.token, "displayWidth")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _displayWidth =  atoi(j.token);
-        return 1;
+    if(json_val->has("displayWidth")) {
+        _displayWidth =  json_val->getInt("displayWidth");
     }
-    if(!strcmp(j.token, "displayHeight")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _displayHeight =  atoi(j.token);
-        return 1;
+    if(json_val->has("displayHeight")) {
+        _displayHeight =  json_val->getInt("displayHeight");
     }
-    if(!strcmp(j.token, "displayType")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _displayType =  (Y_DISPLAYTYPE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("displayType")) {
+        _displayType =  (Y_DISPLAYTYPE_enum)json_val->getInt("displayType");
     }
-    if(!strcmp(j.token, "layerWidth")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _layerWidth =  atoi(j.token);
-        return 1;
+    if(json_val->has("layerWidth")) {
+        _layerWidth =  json_val->getInt("layerWidth");
     }
-    if(!strcmp(j.token, "layerHeight")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _layerHeight =  atoi(j.token);
-        return 1;
+    if(json_val->has("layerHeight")) {
+        _layerHeight =  json_val->getInt("layerHeight");
     }
-    if(!strcmp(j.token, "layerCount")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _layerCount =  atoi(j.token);
-        return 1;
+    if(json_val->has("layerCount")) {
+        _layerCount =  json_val->getInt("layerCount");
     }
-    if(!strcmp(j.token, "command")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _command =  _parseString(j);
-        return 1;
+    if(json_val->has("command")) {
+        _command =  json_val->getString("command");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

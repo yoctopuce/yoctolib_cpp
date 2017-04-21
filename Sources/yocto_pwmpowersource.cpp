@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwmpowersource.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_pwmpowersource.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindPwmPowerSource(), the high-level API for PwmPowerSource functions
  *
@@ -65,15 +65,12 @@ YPwmPowerSource::~YPwmPowerSource()
 //--- (YPwmPowerSource implementation)
 // static attributes
 
-int YPwmPowerSource::_parseAttr(yJsonStateMachine& j)
+int YPwmPowerSource::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "powerMode")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _powerMode =  (Y_POWERMODE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("powerMode")) {
+        _powerMode =  (Y_POWERMODE_enum)json_val->getInt("powerMode");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

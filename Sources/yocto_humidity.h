@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_humidity.h 26826 2017-03-17 11:20:57Z mvuilleu $
+ * $Id: yocto_humidity.h 27180 2017-04-20 13:46:43Z seb $
  *
  * Declares yFindHumidity(), the high-level API for Humidity functions
  *
@@ -83,7 +83,7 @@ protected:
     friend YHumidity *yFirstHumidity(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(yJsonStateMachine& j);
+    virtual int     _parseAttr(YJSONObject* json_val);
 
     // Constructor is protected, use yFindHumidity factory function to instantiate
     YHumidity(const string& func);

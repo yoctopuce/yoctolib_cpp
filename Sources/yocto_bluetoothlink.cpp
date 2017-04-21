@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_bluetoothlink.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_bluetoothlink.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindBluetoothLink(), the high-level API for BluetoothLink functions
  *
@@ -79,60 +79,39 @@ const string YBluetoothLink::REMOTEADDRESS_INVALID = YAPI_INVALID_STRING;
 const string YBluetoothLink::REMOTENAME_INVALID = YAPI_INVALID_STRING;
 const string YBluetoothLink::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YBluetoothLink::_parseAttr(yJsonStateMachine& j)
+int YBluetoothLink::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "ownAddress")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _ownAddress =  _parseString(j);
-        return 1;
+    if(json_val->has("ownAddress")) {
+        _ownAddress =  json_val->getString("ownAddress");
     }
-    if(!strcmp(j.token, "pairingPin")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _pairingPin =  _parseString(j);
-        return 1;
+    if(json_val->has("pairingPin")) {
+        _pairingPin =  json_val->getString("pairingPin");
     }
-    if(!strcmp(j.token, "remoteAddress")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _remoteAddress =  _parseString(j);
-        return 1;
+    if(json_val->has("remoteAddress")) {
+        _remoteAddress =  json_val->getString("remoteAddress");
     }
-    if(!strcmp(j.token, "remoteName")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _remoteName =  _parseString(j);
-        return 1;
+    if(json_val->has("remoteName")) {
+        _remoteName =  json_val->getString("remoteName");
     }
-    if(!strcmp(j.token, "mute")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _mute =  (Y_MUTE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("mute")) {
+        _mute =  (Y_MUTE_enum)json_val->getInt("mute");
     }
-    if(!strcmp(j.token, "preAmplifier")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _preAmplifier =  atoi(j.token);
-        return 1;
+    if(json_val->has("preAmplifier")) {
+        _preAmplifier =  json_val->getInt("preAmplifier");
     }
-    if(!strcmp(j.token, "volume")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _volume =  atoi(j.token);
-        return 1;
+    if(json_val->has("volume")) {
+        _volume =  json_val->getInt("volume");
     }
-    if(!strcmp(j.token, "linkState")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _linkState =  (Y_LINKSTATE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("linkState")) {
+        _linkState =  (Y_LINKSTATE_enum)json_val->getInt("linkState");
     }
-    if(!strcmp(j.token, "linkQuality")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _linkQuality =  atoi(j.token);
-        return 1;
+    if(json_val->has("linkQuality")) {
+        _linkQuality =  json_val->getInt("linkQuality");
     }
-    if(!strcmp(j.token, "command")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _command =  _parseString(j);
-        return 1;
+    if(json_val->has("command")) {
+        _command =  json_val->getString("command");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

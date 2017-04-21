@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.cpp 27109 2017-04-06 22:18:46Z seb $
+ * $Id: yocto_files.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindFiles(), the high-level API for Files functions
  *
@@ -127,20 +127,15 @@ YFiles::~YFiles()
 //--- (generated code: YFiles implementation)
 // static attributes
 
-int YFiles::_parseAttr(yJsonStateMachine& j)
+int YFiles::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "filesCount")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _filesCount =  atoi(j.token);
-        return 1;
+    if(json_val->has("filesCount")) {
+        _filesCount =  json_val->getInt("filesCount");
     }
-    if(!strcmp(j.token, "freeSpace")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _freeSpace =  atoi(j.token);
-        return 1;
+    if(json_val->has("freeSpace")) {
+        _freeSpace =  json_val->getInt("freeSpace");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

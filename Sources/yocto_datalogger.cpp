@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_datalogger.cpp 27109 2017-04-06 22:18:46Z seb $
+ * $Id: yocto_datalogger.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindDataLogger(), the high-level API for DataLogger functions
  *
@@ -433,40 +433,27 @@ YDataLogger::~YDataLogger()
 //--- (generated code: YDataLogger implementation)
 // static attributes
 
-int YDataLogger::_parseAttr(yJsonStateMachine& j)
+int YDataLogger::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "currentRunIndex")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _currentRunIndex =  atoi(j.token);
-        return 1;
+    if(json_val->has("currentRunIndex")) {
+        _currentRunIndex =  json_val->getInt("currentRunIndex");
     }
-    if(!strcmp(j.token, "timeUTC")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _timeUTC =  atol(j.token);
-        return 1;
+    if(json_val->has("timeUTC")) {
+        _timeUTC =  json_val->getLong("timeUTC");
     }
-    if(!strcmp(j.token, "recording")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _recording =  (Y_RECORDING_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("recording")) {
+        _recording =  (Y_RECORDING_enum)json_val->getInt("recording");
     }
-    if(!strcmp(j.token, "autoStart")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _autoStart =  (Y_AUTOSTART_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("autoStart")) {
+        _autoStart =  (Y_AUTOSTART_enum)json_val->getInt("autoStart");
     }
-    if(!strcmp(j.token, "beaconDriven")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _beaconDriven =  (Y_BEACONDRIVEN_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("beaconDriven")) {
+        _beaconDriven =  (Y_BEACONDRIVEN_enum)json_val->getInt("beaconDriven");
     }
-    if(!strcmp(j.token, "clearHistory")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _clearHistory =  (Y_CLEARHISTORY_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("clearHistory")) {
+        _clearHistory =  (Y_CLEARHISTORY_enum)json_val->getInt("clearHistory");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

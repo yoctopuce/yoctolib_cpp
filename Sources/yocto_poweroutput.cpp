@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_poweroutput.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_poweroutput.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindPowerOutput(), the high-level API for PowerOutput functions
  *
@@ -65,15 +65,12 @@ YPowerOutput::~YPowerOutput()
 //--- (YPowerOutput implementation)
 // static attributes
 
-int YPowerOutput::_parseAttr(yJsonStateMachine& j)
+int YPowerOutput::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "voltage")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _voltage =  (Y_VOLTAGE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("voltage")) {
+        _voltage =  (Y_VOLTAGE_enum)json_val->getInt("voltage");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

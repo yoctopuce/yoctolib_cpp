@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_audioin.h 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_audioin.h 27180 2017-04-20 13:46:43Z seb $
  *
  * Declares yFindAudioIn(), the high-level API for AudioIn functions
  *
@@ -91,7 +91,7 @@ protected:
     friend YAudioIn *yFirstAudioIn(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(yJsonStateMachine& j);
+    virtual int     _parseAttr(YJSONObject* json_val);
 
     // Constructor is protected, use yFindAudioIn factory function to instantiate
     YAudioIn(const string& func);

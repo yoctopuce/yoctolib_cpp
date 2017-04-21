@@ -112,7 +112,7 @@ protected:
     friend YProximity *yFirstProximity(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(yJsonStateMachine& j);
+    virtual int     _parseAttr(YJSONObject* json_val);
 
     // Constructor is protected, use yFindProximity factory function to instantiate
     YProximity(const string& func);

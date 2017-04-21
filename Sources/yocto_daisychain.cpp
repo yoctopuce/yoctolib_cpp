@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_daisychain.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_daisychain.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindDaisyChain(), the high-level API for DaisyChain functions
  *
@@ -67,25 +67,18 @@ YDaisyChain::~YDaisyChain()
 //--- (YDaisyChain implementation)
 // static attributes
 
-int YDaisyChain::_parseAttr(yJsonStateMachine& j)
+int YDaisyChain::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "daisyState")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _daisyState =  (Y_DAISYSTATE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("daisyState")) {
+        _daisyState =  (Y_DAISYSTATE_enum)json_val->getInt("daisyState");
     }
-    if(!strcmp(j.token, "childCount")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _childCount =  atoi(j.token);
-        return 1;
+    if(json_val->has("childCount")) {
+        _childCount =  json_val->getInt("childCount");
     }
-    if(!strcmp(j.token, "requiredChildCount")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _requiredChildCount =  atoi(j.token);
-        return 1;
+    if(json_val->has("requiredChildCount")) {
+        _requiredChildCount =  json_val->getInt("requiredChildCount");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

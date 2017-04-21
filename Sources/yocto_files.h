@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.h 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_files.h 27180 2017-04-20 13:46:43Z seb $
  *
  * Declares yFindFiles(), the high-level API for Files functions
  *
@@ -127,7 +127,7 @@ class YOCTO_CLASS_EXPORT YFiles: public YFunction {
     friend YFiles *yFirstFiles(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(yJsonStateMachine& j);
+    virtual int     _parseAttr(YJSONObject* json_val);
 
     // Constructor is protected, use yFindFiles factory function to instantiate
     YFiles(const string& func);

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_compass.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_compass.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindCompass(), the high-level API for Compass functions
  *
@@ -69,25 +69,18 @@ YCompass::~YCompass()
 // static attributes
 const double YCompass::MAGNETICHEADING_INVALID = YAPI_INVALID_DOUBLE;
 
-int YCompass::_parseAttr(yJsonStateMachine& j)
+int YCompass::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "bandwidth")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _bandwidth =  atoi(j.token);
-        return 1;
+    if(json_val->has("bandwidth")) {
+        _bandwidth =  json_val->getInt("bandwidth");
     }
-    if(!strcmp(j.token, "axis")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _axis =  (Y_AXIS_enum) atoi(j.token);
-        return 1;
+    if(json_val->has("axis")) {
+        _axis =  (Y_AXIS_enum) json_val->getInt("axis");
     }
-    if(!strcmp(j.token, "magneticHeading")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _magneticHeading =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("magneticHeading")) {
+        _magneticHeading =  floor(json_val->getDouble("magneticHeading") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    failed:
-    return YSensor::_parseAttr(j);
+    return YSensor::_parseAttr(json_val);
 }
 
 

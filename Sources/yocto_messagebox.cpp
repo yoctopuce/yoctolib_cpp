@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.cpp 27109 2017-04-06 22:18:46Z seb $
+ * $Id: yocto_messagebox.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -1281,40 +1281,27 @@ YMessageBox::~YMessageBox()
 const string YMessageBox::SLOTSBITMAP_INVALID = YAPI_INVALID_STRING;
 const string YMessageBox::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YMessageBox::_parseAttr(yJsonStateMachine& j)
+int YMessageBox::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "slotsInUse")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _slotsInUse =  atoi(j.token);
-        return 1;
+    if(json_val->has("slotsInUse")) {
+        _slotsInUse =  json_val->getInt("slotsInUse");
     }
-    if(!strcmp(j.token, "slotsCount")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _slotsCount =  atoi(j.token);
-        return 1;
+    if(json_val->has("slotsCount")) {
+        _slotsCount =  json_val->getInt("slotsCount");
     }
-    if(!strcmp(j.token, "slotsBitmap")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _slotsBitmap =  _parseString(j);
-        return 1;
+    if(json_val->has("slotsBitmap")) {
+        _slotsBitmap =  json_val->getString("slotsBitmap");
     }
-    if(!strcmp(j.token, "pduSent")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _pduSent =  atoi(j.token);
-        return 1;
+    if(json_val->has("pduSent")) {
+        _pduSent =  json_val->getInt("pduSent");
     }
-    if(!strcmp(j.token, "pduReceived")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _pduReceived =  atoi(j.token);
-        return 1;
+    if(json_val->has("pduReceived")) {
+        _pduReceived =  json_val->getInt("pduReceived");
     }
-    if(!strcmp(j.token, "command")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _command =  _parseString(j);
-        return 1;
+    if(json_val->has("command")) {
+        _command =  json_val->getString("command");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

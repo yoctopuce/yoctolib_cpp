@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_carbondioxide.h 26826 2017-03-17 11:20:57Z mvuilleu $
+ * $Id: yocto_carbondioxide.h 27180 2017-04-20 13:46:43Z seb $
  *
  * Declares yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *
@@ -84,7 +84,7 @@ protected:
     friend YCarbonDioxide *yFirstCarbonDioxide(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(yJsonStateMachine& j);
+    virtual int     _parseAttr(YJSONObject* json_val);
 
     // Constructor is protected, use yFindCarbonDioxide factory function to instantiate
     YCarbonDioxide(const string& func);

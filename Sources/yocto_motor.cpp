@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_motor.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_motor.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindMotor(), the high-level API for Motor functions
  *
@@ -78,55 +78,36 @@ const double YMotor::CUTOFFVOLTAGE_INVALID = YAPI_INVALID_DOUBLE;
 const double YMotor::FREQUENCY_INVALID = YAPI_INVALID_DOUBLE;
 const string YMotor::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YMotor::_parseAttr(yJsonStateMachine& j)
+int YMotor::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "motorStatus")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _motorStatus =  (Y_MOTORSTATUS_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("motorStatus")) {
+        _motorStatus =  (Y_MOTORSTATUS_enum)json_val->getInt("motorStatus");
     }
-    if(!strcmp(j.token, "drivingForce")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _drivingForce =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("drivingForce")) {
+        _drivingForce =  floor(json_val->getDouble("drivingForce") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "brakingForce")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _brakingForce =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("brakingForce")) {
+        _brakingForce =  floor(json_val->getDouble("brakingForce") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "cutOffVoltage")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _cutOffVoltage =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("cutOffVoltage")) {
+        _cutOffVoltage =  floor(json_val->getDouble("cutOffVoltage") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "overCurrentLimit")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _overCurrentLimit =  atoi(j.token);
-        return 1;
+    if(json_val->has("overCurrentLimit")) {
+        _overCurrentLimit =  json_val->getInt("overCurrentLimit");
     }
-    if(!strcmp(j.token, "frequency")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _frequency =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("frequency")) {
+        _frequency =  floor(json_val->getDouble("frequency") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "starterTime")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _starterTime =  atoi(j.token);
-        return 1;
+    if(json_val->has("starterTime")) {
+        _starterTime =  json_val->getInt("starterTime");
     }
-    if(!strcmp(j.token, "failSafeTimeout")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _failSafeTimeout =  atoi(j.token);
-        return 1;
+    if(json_val->has("failSafeTimeout")) {
+        _failSafeTimeout =  json_val->getInt("failSafeTimeout");
     }
-    if(!strcmp(j.token, "command")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _command =  _parseString(j);
-        return 1;
+    if(json_val->has("command")) {
+        _command =  json_val->getString("command");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

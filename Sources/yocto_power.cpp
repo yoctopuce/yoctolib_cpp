@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_power.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_power.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindPower(), the high-level API for Power functions
  *
@@ -70,25 +70,18 @@ YPower::~YPower()
 const double YPower::COSPHI_INVALID = YAPI_INVALID_DOUBLE;
 const double YPower::METER_INVALID = YAPI_INVALID_DOUBLE;
 
-int YPower::_parseAttr(yJsonStateMachine& j)
+int YPower::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "cosPhi")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _cosPhi =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("cosPhi")) {
+        _cosPhi =  floor(json_val->getDouble("cosPhi") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "meter")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _meter =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("meter")) {
+        _meter =  floor(json_val->getDouble("meter") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "meterTimer")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _meterTimer =  atoi(j.token);
-        return 1;
+    if(json_val->has("meterTimer")) {
+        _meterTimer =  json_val->getInt("meterTimer");
     }
-    failed:
-    return YSensor::_parseAttr(j);
+    return YSensor::_parseAttr(json_val);
 }
 
 

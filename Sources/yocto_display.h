@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.h 27086 2017-04-06 20:51:19Z seb $
+ * $Id: yocto_display.h 27180 2017-04-20 13:46:43Z seb $
  *
  * Declares yFindDisplay(), the high-level API for Display functions
  *
@@ -608,7 +608,7 @@ class YOCTO_CLASS_EXPORT YDisplay: public YFunction {
     friend YDisplay *yFirstDisplay(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(yJsonStateMachine& j);
+    virtual int     _parseAttr(YJSONObject* json_val);
 
     // Constructor is protected, use yFindDisplay factory function to instantiate
     YDisplay(const string& func);

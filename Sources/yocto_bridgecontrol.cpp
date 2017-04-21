@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_bridgecontrol.cpp 27017 2017-03-31 14:47:59Z seb $
+ * $Id: yocto_bridgecontrol.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindBridgeControl(), the high-level API for BridgeControl functions
  *
@@ -68,30 +68,21 @@ YBridgeControl::~YBridgeControl()
 //--- (YBridgeControl implementation)
 // static attributes
 
-int YBridgeControl::_parseAttr(yJsonStateMachine& j)
+int YBridgeControl::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "excitationMode")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _excitationMode =  (Y_EXCITATIONMODE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("excitationMode")) {
+        _excitationMode =  (Y_EXCITATIONMODE_enum)json_val->getInt("excitationMode");
     }
-    if(!strcmp(j.token, "bridgeLatency")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _bridgeLatency =  atoi(j.token);
-        return 1;
+    if(json_val->has("bridgeLatency")) {
+        _bridgeLatency =  json_val->getInt("bridgeLatency");
     }
-    if(!strcmp(j.token, "adValue")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _adValue =  atoi(j.token);
-        return 1;
+    if(json_val->has("adValue")) {
+        _adValue =  json_val->getInt("adValue");
     }
-    if(!strcmp(j.token, "adGain")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _adGain =  atoi(j.token);
-        return 1;
+    if(json_val->has("adGain")) {
+        _adGain =  json_val->getInt("adGain");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_oscontrol.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_oscontrol.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindOsControl(), the high-level API for OsControl functions
  *
@@ -65,15 +65,12 @@ YOsControl::~YOsControl()
 //--- (YOsControl implementation)
 // static attributes
 
-int YOsControl::_parseAttr(yJsonStateMachine& j)
+int YOsControl::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "shutdownCountdown")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _shutdownCountdown =  atoi(j.token);
-        return 1;
+    if(json_val->has("shutdownCountdown")) {
+        _shutdownCountdown =  json_val->getInt("shutdownCountdown");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_tilt.h 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_tilt.h 27180 2017-04-20 13:46:43Z seb $
  *
  * Declares yFindTilt(), the high-level API for Tilt functions
  *
@@ -97,7 +97,7 @@ protected:
     friend YTilt *yFirstTilt(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(yJsonStateMachine& j);
+    virtual int     _parseAttr(YJSONObject* json_val);
 
     // Constructor is protected, use yFindTilt factory function to instantiate
     YTilt(const string& func);

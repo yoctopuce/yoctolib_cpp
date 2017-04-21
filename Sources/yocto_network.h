@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.h 26663 2017-02-28 09:49:36Z seb $
+ * $Id: yocto_network.h 27180 2017-04-20 13:46:43Z seb $
  *
  * Declares yFindNetwork(), the high-level API for Network functions
  *
@@ -163,7 +163,7 @@ protected:
     friend YNetwork *yFirstNetwork(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(yJsonStateMachine& j);
+    virtual int     _parseAttr(YJSONObject* json_val);
 
     // Constructor is protected, use yFindNetwork factory function to instantiate
     YNetwork(const string& func);

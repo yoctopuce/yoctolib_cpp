@@ -74,50 +74,33 @@ YProximity::~YProximity()
 // static attributes
 const double YProximity::SIGNALVALUE_INVALID = YAPI_INVALID_DOUBLE;
 
-int YProximity::_parseAttr(yJsonStateMachine& j)
+int YProximity::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "signalValue")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _signalValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("signalValue")) {
+        _signalValue =  floor(json_val->getDouble("signalValue") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "detectionThreshold")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _detectionThreshold =  atoi(j.token);
-        return 1;
+    if(json_val->has("detectionThreshold")) {
+        _detectionThreshold =  json_val->getInt("detectionThreshold");
     }
-    if(!strcmp(j.token, "isPresent")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _isPresent =  (Y_ISPRESENT_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("isPresent")) {
+        _isPresent =  (Y_ISPRESENT_enum)json_val->getInt("isPresent");
     }
-    if(!strcmp(j.token, "lastTimeApproached")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _lastTimeApproached =  atol(j.token);
-        return 1;
+    if(json_val->has("lastTimeApproached")) {
+        _lastTimeApproached =  json_val->getLong("lastTimeApproached");
     }
-    if(!strcmp(j.token, "lastTimeRemoved")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _lastTimeRemoved =  atol(j.token);
-        return 1;
+    if(json_val->has("lastTimeRemoved")) {
+        _lastTimeRemoved =  json_val->getLong("lastTimeRemoved");
     }
-    if(!strcmp(j.token, "pulseCounter")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _pulseCounter =  atol(j.token);
-        return 1;
+    if(json_val->has("pulseCounter")) {
+        _pulseCounter =  json_val->getLong("pulseCounter");
     }
-    if(!strcmp(j.token, "pulseTimer")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _pulseTimer =  atol(j.token);
-        return 1;
+    if(json_val->has("pulseTimer")) {
+        _pulseTimer =  json_val->getLong("pulseTimer");
     }
-    if(!strcmp(j.token, "proximityReportMode")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _proximityReportMode =  (Y_PROXIMITYREPORTMODE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("proximityReportMode")) {
+        _proximityReportMode =  (Y_PROXIMITYREPORTMODE_enum)json_val->getInt("proximityReportMode");
     }
-    failed:
-    return YSensor::_parseAttr(j);
+    return YSensor::_parseAttr(json_val);
 }
 
 

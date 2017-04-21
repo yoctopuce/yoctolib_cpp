@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_led.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_led.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindLed(), the high-level API for Led functions
  *
@@ -67,25 +67,18 @@ YLed::~YLed()
 //--- (YLed implementation)
 // static attributes
 
-int YLed::_parseAttr(yJsonStateMachine& j)
+int YLed::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "power")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _power =  (Y_POWER_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("power")) {
+        _power =  (Y_POWER_enum)json_val->getInt("power");
     }
-    if(!strcmp(j.token, "luminosity")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _luminosity =  atoi(j.token);
-        return 1;
+    if(json_val->has("luminosity")) {
+        _luminosity =  json_val->getInt("luminosity");
     }
-    if(!strcmp(j.token, "blinking")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _blinking =  (Y_BLINKING_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("blinking")) {
+        _blinking =  (Y_BLINKING_enum)json_val->getInt("blinking");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

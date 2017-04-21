@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 27109 2017-04-06 22:18:46Z seb $
+ * $Id: yocto_api.cpp 27213 2017-04-21 09:59:41Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -97,6 +97,715 @@ vector<string> _strsplit(const string& str, char delimiter)
     res.push_back(str.substr(pos));
     return res;
 }
+
+
+
+YJSONContent* YJSONContent::ParseJson(const string& data, int start, int stop)
+{
+    int cur_pos = YJSONContent::SkipGarbage(data, start, stop);
+    YJSONContent* res;
+    if (data[cur_pos] == '[') {
+        res = new YJSONArray(data, start, stop);
+    } else if (data[cur_pos] == '{') {
+        res = new YJSONObject(data, start, stop);
+    } else if (data[cur_pos] == '"') {
+        res = new YJSONString(data, start, stop);
+    } else {
+        res = new YJSONNumber(data, start, stop);
+    }
+    res->parse();
+    return res;
+}
+
+YJSONContent::YJSONContent(const string& data, int start, int stop, YJSONType type)
+{
+    _data = data;
+    _data_start = start;
+    _data_boundary = stop;
+    _type = type;
+}
+
+YJSONContent::YJSONContent(YJSONType type)
+{
+    _data = "";//todo: check not null
+}
+
+YJSONContent::~YJSONContent()
+{
+    _data = "";
+}
+
+YJSONType YJSONContent::getJSONType()
+{
+    return _type;
+}
+
+int YJSONContent::SkipGarbage(const string& data, int start, int stop)
+{
+    if (data.length() <= (unsigned) start) {
+        return start;
+    }
+    char sti = data[start];
+    while (start < stop && (sti == '\n' || sti == '\r' || sti == ' ')) {
+        start++;
+    }
+    return start;
+}
+
+string YJSONContent::FormatError(const string& errmsg, int cur_pos)
+{
+    int ststart = cur_pos - 10;
+    int stend = cur_pos + 10;
+    if (ststart < 0)
+        ststart = 0;
+    if (stend > _data_boundary)
+        stend = _data_boundary;
+    if (_data == "") {//todo: check not null
+        return errmsg;
+    }
+    return errmsg + " near " + _data.substr(ststart, cur_pos - ststart) + _data.substr(cur_pos, stend - cur_pos);
+}
+
+
+
+YJSONArray::YJSONArray(const string& data, int start, int stop) : YJSONContent(data, start, stop, ARRAY)
+{ }
+
+
+YJSONArray::YJSONArray() : YJSONContent(ARRAY)
+{ }
+
+YJSONArray::~YJSONArray()
+{
+    for (unsigned i = 0; i < _arrayValue.size(); i++) {
+        delete _arrayValue[i];
+    }
+    _arrayValue.clear();
+}
+
+int YJSONArray::length()
+{
+    return (int) _arrayValue.size();
+}
+
+int YJSONArray::parse()
+{
+    int cur_pos = SkipGarbage(_data, _data_start, _data_boundary);
+
+    if (_data[cur_pos] != '[') {
+        throw YAPI_Exception(YAPI_IO_ERROR, FormatError("Opening braces was expected", cur_pos));
+    }
+    cur_pos++;
+    Tjstate state = JWAITFORDATA;
+
+    while (cur_pos < _data_boundary) {
+        char sti = _data[cur_pos];
+        switch (state) {
+            case JWAITFORDATA:
+                if (sti == '{') {
+                    YJSONObject* jobj = new YJSONObject(_data, cur_pos, _data_boundary);
+                    int len = jobj->parse();
+                    cur_pos += len;
+                    _arrayValue.push_back(jobj);
+                    state = JWAITFORNEXTARRAYITEM;
+                    //cur_pos is already incremented
+                    continue;
+                } else if (sti == '[') {
+                    YJSONArray* jobj = new YJSONArray(_data, cur_pos, _data_boundary);
+                    int len = jobj->parse();
+                    cur_pos += len;
+                    _arrayValue.push_back(jobj);
+                    state = JWAITFORNEXTARRAYITEM;
+                    //cur_pos is already incremented
+                    continue;
+                } else if (sti == '"') {
+                    YJSONString* jobj = new YJSONString(_data, cur_pos, _data_boundary);
+                    int len = jobj->parse();
+                    cur_pos += len;
+                    _arrayValue.push_back(jobj);
+                    state = JWAITFORNEXTARRAYITEM;
+                    //cur_pos is already incremented
+                    continue;
+                } else if (sti == '-' || (sti >= '0' && sti <= '9')) {
+                    YJSONNumber* jobj = new YJSONNumber(_data, cur_pos, _data_boundary);
+                    int len = jobj->parse();
+                    cur_pos += len;
+                    _arrayValue.push_back(jobj);
+                    state = JWAITFORNEXTARRAYITEM;
+                    //cur_pos is already incremented
+                    continue;
+                } else if (sti == ']') {
+                    _data_len = cur_pos + 1 - _data_start;
+                    return _data_len;
+                } else if (sti != ' ' && sti != '\n' && sti != '\r') {
+                    throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid char: was expecting  \",0..9,t or f", cur_pos));
+                }
+                break;
+            case JWAITFORNEXTARRAYITEM:
+                if (sti == ',') {
+                    state = JWAITFORDATA;
+                } else if (sti == ']') {
+                    _data_len = cur_pos + 1 - _data_start;
+                    return _data_len;
+                } else {
+                    if (sti != ' ' && sti != '\n' && sti != '\r') {
+                        throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid char: was expecting ,", cur_pos));
+                    }
+                }
+                break;
+            default:
+                throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid state for YJSONObject", cur_pos));
+        }
+        cur_pos++;
+    }
+    throw YAPI_Exception(YAPI_IO_ERROR, FormatError("unexpected end of data", cur_pos));
+}
+
+YJSONObject* YJSONArray::getYJSONObject(int i)
+{
+    return (YJSONObject*)_arrayValue[i];
+}
+
+string YJSONArray::getString(int i)
+{
+    YJSONString* ystr = (YJSONString*)_arrayValue[i];
+    return ystr->getString();
+}
+
+YJSONContent* YJSONArray::get(int i)
+{
+    return _arrayValue[i];
+}
+
+YJSONArray* YJSONArray::getYJSONArray(int i)
+{
+    return (YJSONArray*)_arrayValue[i];
+}
+
+int YJSONArray::getInt(int i)
+{
+    YJSONNumber* ystr = (YJSONNumber*)_arrayValue[i];
+    return ystr->getInt();
+}
+long YJSONArray::getLong(int i)
+{
+    YJSONNumber* ystr = (YJSONNumber*)_arrayValue[i];
+    return ystr->getLong();
+}
+
+ void YJSONArray::put(const string& flatAttr)
+{
+    YJSONString* strobj = new YJSONString();
+    strobj->setContent(flatAttr);
+    _arrayValue.push_back(strobj);
+}
+
+string YJSONArray::toJSON()
+{
+    string res ="[";
+    string sep = "";
+    unsigned int i;
+    for (i = 0; i < _arrayValue.size(); i++){
+        YJSONContent* yjsonContent = _arrayValue[i];
+        string subres = yjsonContent->toJSON();
+        res += sep;
+        res += subres;
+        sep = ",";
+    }
+    res += ']';
+    return res;
+}
+
+string YJSONArray::toString()
+{
+    string res ="[";
+    string sep = "";
+    unsigned int i;
+    for (i = 0; i < _arrayValue.size(); i++){
+        YJSONContent* yjsonContent = _arrayValue[i];
+        string subres = yjsonContent->toString();
+        res += sep;
+        res += subres;
+        sep = ",";
+    }
+    res += ']';
+    return res;
+}
+
+
+
+YJSONString::YJSONString(const string& data, int start, int stop) : YJSONContent(data, start, stop, STRING)
+{ }
+
+YJSONString::YJSONString() : YJSONContent(STRING)
+{ }
+
+int YJSONString::parse()
+{
+    string value = "";
+    int cur_pos = SkipGarbage(_data, _data_start, _data_boundary);
+
+    if (_data[cur_pos] != '"') {
+        throw YAPI_Exception(YAPI_IO_ERROR, FormatError("double quote was expected", cur_pos));
+    }
+    cur_pos++;
+    int str_start = cur_pos;
+    Tjstate state = JWAITFORSTRINGVALUE;
+
+    while (cur_pos < _data_boundary) {
+        unsigned char sti = _data[cur_pos];
+        switch (state) {
+        case JWAITFORSTRINGVALUE:
+            if (sti == '\\') {
+                value += _data.substr(str_start, cur_pos - str_start);
+                str_start = cur_pos;
+                state = JWAITFORSTRINGVALUE_ESC;
+            } else if (sti == '"') {
+                value += _data.substr(str_start, cur_pos - str_start);
+                _stringValue = value;
+                _data_len = (cur_pos + 1) - _data_start;
+                return _data_len;
+            } else if (sti < 32) {
+                throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid char: was expecting string value", cur_pos));
+            }
+            break;
+        case JWAITFORSTRINGVALUE_ESC:
+            value += sti;
+            state = JWAITFORSTRINGVALUE;
+            str_start = cur_pos + 1;
+            break;
+        default:
+            throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid state for YJSONObject", cur_pos));
+        }
+        cur_pos++;
+    }
+    throw YAPI_Exception(YAPI_IO_ERROR, FormatError("unexpected end of data", cur_pos));
+}
+
+string YJSONString::toJSON()
+{
+    string res = "\"";
+    const char* c =_stringValue.c_str();
+    while(*c) {
+        switch (*c) {
+        case '"':
+            res += "\\\"";
+            break;
+        case '\\':
+            res += "\\\\";
+            break;
+        case '/':
+            res += "\\/";
+            break;
+        case '\b':
+            res += "\\b";
+            break;
+        case '\f':
+            res += "\\f";
+            break;
+        case '\n':
+            res += "\\n";
+            break;
+        case '\r':
+            res += "\\r";
+            break;
+        case '\t':
+            res += "\\t";
+            break;
+        default:
+            res += *c;
+            break;
+        }
+        c++;
+    }
+    res += '"';
+    return res;
+}
+
+    string YJSONString::getString()
+{
+    return _stringValue;
+}
+
+    string YJSONString::toString()
+{
+    return _stringValue;
+}
+
+    void YJSONString::setContent(const string& value)
+{
+    _stringValue = value;
+}
+
+
+
+    YJSONNumber::YJSONNumber(const string& data, int start, int stop) : YJSONContent(data, start, stop, NUMBER),
+    _intValue(0),_doubleValue(0),_isFloat(false)
+{ }
+
+int YJSONNumber::parse()
+{
+
+    bool neg = false;
+    int start;
+    char sti;
+    int cur_pos = SkipGarbage(_data, _data_start, _data_boundary);
+    sti = _data[cur_pos];
+    if (sti == '-') {
+        neg = true;
+        cur_pos++;
+    }
+    start = cur_pos;
+    while (cur_pos < _data_boundary) {
+        sti = _data[cur_pos];
+        if (sti == '.' && _isFloat == false) {
+            string int_part = _data.substr(start, cur_pos - start);
+            _intValue = atoi((int_part).c_str());
+            _isFloat = true;
+        } else if (sti < '0' || sti > '9') {
+            string numberpart = _data.substr(start, cur_pos - start);
+            if (_isFloat) {
+                _doubleValue = atof((numberpart).c_str());
+            } else {
+                _intValue = atoi((numberpart).c_str());
+            }
+            if (neg) {
+                _doubleValue = 0 - _doubleValue;
+                _intValue = 0 - _intValue;
+            }
+            return cur_pos - _data_start;
+        }
+        cur_pos++;
+    }
+    throw YAPI_Exception(YAPI_IO_ERROR, FormatError("unexpected end of data", cur_pos));
+}
+
+string YJSONNumber::toJSON()
+{
+    if (_isFloat)
+        return YapiWrapper::ysprintf("%f", _doubleValue);
+    else
+        return YapiWrapper::ysprintf("%d", _intValue);
+}
+
+long YJSONNumber::getLong()
+{
+    if (_isFloat)
+        return (long)_doubleValue;
+    else
+        return _intValue;
+}
+
+int YJSONNumber::getInt()
+{
+    if (_isFloat)
+        return (int)_doubleValue;
+    else
+        return (int)_intValue;
+}
+
+double YJSONNumber::getDouble()
+{
+    if (_isFloat)
+        return _doubleValue;
+    else
+        return _intValue;
+}
+
+string YJSONNumber::toString()
+{
+    if (_isFloat)
+        return YapiWrapper::ysprintf("%f", _doubleValue);
+    else
+        return YapiWrapper::ysprintf("%d", _intValue);
+}
+
+
+
+
+
+
+YJSONObject::YJSONObject(const string& data) : YJSONContent(data, 0, (int)data.length(), OBJECT)
+{ }
+
+YJSONObject::YJSONObject(const string& data, int start, int len) : YJSONContent(data, start, len, OBJECT)
+{ }
+
+YJSONObject::~YJSONObject()
+{
+    //printf("relase YJSONObject\n");
+    for (unsigned i = 0; i < _keys.size(); i++) {
+        delete _parsed[_keys[i]];
+    }
+    _parsed.clear();
+    _keys.clear();
+}
+
+int YJSONObject::parse()
+{
+    string current_name = "";
+    int name_start = _data_start;
+    int cur_pos = SkipGarbage(_data, _data_start, _data_boundary);
+
+    if (_data.length() <= (unsigned)cur_pos || _data[cur_pos] != '{') {
+        throw YAPI_Exception(YAPI_IO_ERROR, FormatError("Opening braces was expected", cur_pos));
+    }
+    cur_pos++;
+    Tjstate state = JWAITFORNAME;
+
+    while (cur_pos < _data_boundary) {
+        char sti = _data[cur_pos];
+        switch (state) {
+            case JWAITFORNAME:
+                if (sti == '"') {
+                    state = JWAITFORENDOFNAME;
+                    name_start = cur_pos + 1;
+                } else if (sti == '}') {
+                    _data_len = cur_pos + 1 - _data_start;
+                    return _data_len;
+                } else {
+                    if (sti != ' ' && sti != '\n' && sti != '\r') {
+                        throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid char: was expecting \"", cur_pos));
+                    }
+                }
+                break;
+            case JWAITFORENDOFNAME:
+                if (sti == '"') {
+                    current_name = _data.substr(name_start, cur_pos - name_start);
+                    state = JWAITFORCOLON;
+
+                } else {
+                    if (sti < 32) {
+                        throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid char: was expecting an identifier compliant char", cur_pos));
+                    }
+                }
+                break;
+            case JWAITFORCOLON:
+                if (sti == ':') {
+                    state = JWAITFORDATA;
+                } else {
+                    if (sti != ' ' && sti != '\n' && sti != '\r') {
+                        throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid char: was expecting \"", cur_pos));
+                    }
+                }
+                break;
+            case JWAITFORDATA:
+                if (sti == '{') {
+                    YJSONObject* jobj = new YJSONObject(_data, cur_pos, _data_boundary);
+                    int len = jobj->parse();
+                    cur_pos += len;
+                    _parsed[current_name] = jobj;
+                    _keys.push_back(current_name);
+                    state = JWAITFORNEXTSTRUCTMEMBER;
+                    //cur_pos is already incremented
+                    continue;
+                } else if (sti == '[') {
+                    YJSONArray* jobj = new YJSONArray(_data, cur_pos, _data_boundary);
+                    int len = jobj->parse();
+                    cur_pos += len;
+                    _parsed[current_name] = jobj;
+                    _keys.push_back(current_name);
+                    state = JWAITFORNEXTSTRUCTMEMBER;
+                    //cur_pos is already incremented
+                    continue;
+                } else if (sti == '"') {
+                    YJSONString* jobj = new YJSONString(_data, cur_pos, _data_boundary);
+                    int len = jobj->parse();
+                    cur_pos += len;
+                    _parsed[current_name] = jobj;
+                    _keys.push_back(current_name);
+                    state = JWAITFORNEXTSTRUCTMEMBER;
+                    //cur_pos is already incremented
+                    continue;
+                } else if (sti == '-' || (sti >= '0' && sti <= '9')) {
+                    YJSONNumber* jobj = new YJSONNumber(_data, cur_pos, _data_boundary);
+                    int len = jobj->parse();
+                    cur_pos += len;
+                    _parsed[current_name] = jobj;
+                    _keys.push_back(current_name);
+                    state = JWAITFORNEXTSTRUCTMEMBER;
+                    //cur_pos is already incremented
+                    continue;
+                } else if (sti != ' ' && sti != '\n' && sti != '\r') {
+                    throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid char: was expecting  \",0..9,t or f", cur_pos));
+                }
+                break;
+            case JWAITFORNEXTSTRUCTMEMBER:
+                if (sti == ',') {
+                    state = JWAITFORNAME;
+                    name_start = cur_pos + 1;
+                } else if (sti == '}') {
+                    _data_len = cur_pos + 1 - _data_start;
+                    return _data_len;
+                } else {
+                    if (sti != ' ' && sti != '\n' && sti != '\r') {
+                        throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid char: was expecting ,", cur_pos));
+                    }
+                }
+                break;
+            default:
+                throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid state for YJSONObject", cur_pos));
+        }
+        cur_pos++;
+    }
+    throw YAPI_Exception(YAPI_IO_ERROR, FormatError("unexpected end of data", cur_pos));
+}
+
+bool YJSONObject::has(const string& key)
+{
+    if (_parsed.find(key) == _parsed.end()) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+YJSONObject* YJSONObject::getYJSONObject(const string& key)
+{
+    return (YJSONObject*)_parsed[key];
+}
+
+YJSONString* YJSONObject::getYJSONString(const string& key)
+{
+    return (YJSONString*)_parsed[key];
+}
+
+YJSONArray* YJSONObject::getYJSONArray(const string& key)
+{
+    return (YJSONArray*)_parsed[key];
+}
+
+vector<string> YJSONObject::keys()
+{
+    vector<string> v;
+    for (map<string, YJSONContent*>::iterator it = _parsed.begin(); it != _parsed.end(); ++it) {
+        v.push_back(it->first);
+    }
+    return v;
+}
+
+YJSONNumber* YJSONObject::getYJSONNumber(const string& key)
+{
+    return (YJSONNumber*)_parsed[key];
+}
+
+string YJSONObject::getString(const string& key)
+{
+    YJSONString* ystr = (YJSONString*)_parsed[key];
+    return ystr->getString();
+}
+
+int YJSONObject::getInt(const string& key)
+{
+    YJSONNumber* yint = (YJSONNumber*)_parsed[key];
+    return yint->getInt();
+}
+
+YJSONContent* YJSONObject::get(const string& key)
+{
+    return _parsed[key];
+}
+
+long YJSONObject::getLong(const string& key)
+{
+    YJSONNumber* yint = (YJSONNumber*)_parsed[key];
+    return yint->getLong();
+}
+
+double YJSONObject::getDouble(const string& key)
+{
+    YJSONNumber* yint = (YJSONNumber*)_parsed[key];
+    return yint->getDouble();
+}
+
+string YJSONObject::toJSON()
+{
+    string res = "{";
+    string sep = "";
+    unsigned int i;
+    for (i = 0; i < _keys.size(); i++) {
+        string key = _keys[i];
+        YJSONContent* subContent = _parsed[key];
+        string subres = subContent->toJSON();
+        res += sep;
+        res += '"';
+        res += key;
+        res += "\":";
+        res += subres;
+        sep = ",";
+    }
+    res += '}';
+    return res;
+}
+
+string YJSONObject::toString()
+{
+    string res = "{";
+    string sep = "";
+    unsigned int i;
+    for (i = 0; i < _keys.size(); i++) {
+        string key = _keys[i];
+        YJSONContent* subContent = _parsed[key];
+        string subres = subContent->toString();
+        res += sep;
+        res += '"';
+        res += key;
+        res += "\":";
+        res += subres;
+        sep = ",";
+    }
+    res += '}';
+    return res;
+}
+
+
+
+void YJSONObject::parseWithRef(YJSONObject* reference)
+{
+    if (reference != NULL) {
+        try {
+            YJSONArray* yzon = new YJSONArray(_data, _data_start, _data_boundary);
+            yzon->parse();
+            convert(reference, yzon);
+            return;
+        } catch (std::exception) {
+
+        }
+    }
+    this->parse();
+}
+
+void YJSONObject::convert(YJSONObject* reference, YJSONArray* newArray)
+{
+    int length = newArray->length();
+    for (int i = 0; i < length; i++) {
+        string key = reference->getKeyFromIdx(i);
+        YJSONContent* new_item = newArray->get(i);
+        YJSONContent* reference_item = reference->get(key);
+
+        if (new_item->getJSONType() == reference_item->getJSONType()) {
+            _parsed[key]= new_item;
+            _keys.push_back(key);
+        } else if (new_item->getJSONType() == ARRAY && reference_item->getJSONType() == OBJECT) {
+            YJSONObject* jobj = new YJSONObject(new_item->_data, new_item->_data_start, reference_item->_data_boundary);
+            jobj->convert((YJSONObject*) reference_item, (YJSONArray*) new_item);
+            _parsed[key] =jobj;
+            _keys.push_back(key);
+        } else {
+            throw YAPI_Exception(YAPI_IO_ERROR,"Unable to convert yzon struct");
+
+        }
+    }
+}
+
+string YJSONObject::getKeyFromIdx(int i)
+{
+    return _keys[i];
+}
+
+
+
+
 
 // YDataStream constructor for the new datalogger
 YDataStream::YDataStream(YFunction *parent, YDataSet& dataset, const vector<int>& encoded)
@@ -587,7 +1296,7 @@ int YDataStream::_parseStream(string sdata)
         _nRows = 0;
         return YAPI_SUCCESS;
     }
-    
+
     udat = YAPI::_decodeWords(_parent->_json_get_string(sdata));
     _values.clear();
     idx = 0;
@@ -624,7 +1333,7 @@ int YDataStream::_parseStream(string sdata)
             }
         }
     }
-    
+
     _nRows = (int)_values.size();
     return YAPI_SUCCESS;
 }
@@ -1033,7 +1742,7 @@ int YDataSet::processMore(int progress,string data)
     int minCol = 0;
     int avgCol = 0;
     int maxCol = 0;
-    
+
     if (progress != _progress) {
         return _progress;
     }
@@ -1069,7 +1778,7 @@ int YDataSet::processMore(int progress,string data)
     } else {
         maxCol = 0;
     }
-    
+
     for (unsigned ii = 0; ii < dataRows.size(); ii++) {
         if ((tim >= _startTime) && ((_endTime == 0) || (tim <= _endTime))) {
             _measures.push_back(YMeasure(tim - itv, tim,
@@ -1278,7 +1987,7 @@ vector<YMeasure> YDataSet::get_measuresAt(YMeasure measure)
     int minCol = 0;
     int avgCol = 0;
     int maxCol = 0;
-    
+
     startUtc = (s64) floor(measure.get_startTimeUTC()+0.5);
     stream = NULL;
     for (unsigned ii = 0; ii < _streams.size(); ii++) {
@@ -1310,7 +2019,7 @@ vector<YMeasure> YDataSet::get_measuresAt(YMeasure measure)
     } else {
         maxCol = 0;
     }
-    
+
     for (unsigned ii = 0; ii < dataRows.size(); ii++) {
         if ((tim >= _startTime) && ((_endTime == 0) || (tim <= _endTime))) {
             measures.push_back(YMeasure(tim - itv, tim,
@@ -1362,6 +2071,7 @@ YFunction::YFunction(const string& func):
     _className("Function"),_func(func),
     _lastErrorType(YAPI_SUCCESS),_lastErrorMsg(""),
     _fundescr(Y_FUNCTIONDESCRIPTOR_INVALID), _userData(NULL)
+
 //--- (generated code: Function initialization)
     ,_logicalName(LOGICALNAME_INVALID)
     ,_advertisedValue(ADVERTISEDVALUE_INVALID)
@@ -1411,19 +2121,14 @@ void YFunction::_ClearCache()
 const string YFunction::LOGICALNAME_INVALID = YAPI_INVALID_STRING;
 const string YFunction::ADVERTISEDVALUE_INVALID = YAPI_INVALID_STRING;
 
-int YFunction::_parseAttr(yJsonStateMachine& j)
+int YFunction::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "logicalName")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _logicalName =  _parseString(j);
-        return 1;
+    if(json_val->has("logicalName")) {
+        _logicalName =  json_val->getString("logicalName");
     }
-    if(!strcmp(j.token, "advertisedValue")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _advertisedValue =  _parseString(j);
-        return 1;
+    if(json_val->has("advertisedValue")) {
+        _advertisedValue =  json_val->getString("advertisedValue");
     }
-    failed:
     return 0;
 }
 
@@ -2005,21 +2710,10 @@ YRETCODE  YFunction::_buildSetRequest( const string& changeattr, const string  *
 
 
 
-int YFunction::_parse(yJsonStateMachine& j)
+int YFunction::_parse(YJSONObject *j)
 {
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
-        return -1;
-    }
-    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-        if (!_parseAttr(j)) {
-            // ignore unknown field
-            yJsonSkip(&j, 1);
-        }
-    }
-    if(j.st != YJSON_PARSE_STRUCT)
-        return -1;
+    this->_parseAttr(j);
     this->_parserHelper();
-
     return 0;
 }
 
@@ -2350,7 +3044,8 @@ string YFunction::get_errorMessage(void)
 bool YFunction::isOnline(void)
 {
     YDevice     *dev;
-    string      errmsg, apires;
+    string      errmsg;
+    YJSONObject *apires;
 
     yEnterCriticalSection(&_this_cs);
     try {
@@ -2384,9 +3079,9 @@ bool YFunction::isOnline(void)
 
 YRETCODE YFunction::_load_unsafe(int msValidity)
 {
-    yJsonStateMachine j;
+    YJSONObject *j,*node;
     YDevice     *dev;
-    string      errmsg, apires;
+    string      errmsg;
     YFUN_DESCR   fundescr;
     int         res;
     char        errbuf[YOCTO_ERRMSG_LEN];
@@ -2399,7 +3094,7 @@ YRETCODE YFunction::_load_unsafe(int msValidity)
         _throw((YRETCODE)res, errmsg);
         return (YRETCODE)res;
     }
-    res = dev->requestAPI(apires, errmsg);
+    res = dev->requestAPI(j, errmsg);
     if(YISERR(res)) {
         _throw((YRETCODE)res, errmsg);
         return (YRETCODE)res;
@@ -2419,24 +3114,15 @@ YRETCODE YFunction::_load_unsafe(int msValidity)
     _cacheExpiration = yapiGetTickCount() + msValidity;
     _serial = serial;
     _funId = funcId;
-    string tmp = _serial + '.' + _funId;
-    _hwId = tmp;
-    // Parse JSON data for the device and locate our function in it
-    j.src = apires.data();
-    j.end = j.src + apires.size();
-    j.st = YJSON_START;
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
-        _throw(YAPI_IO_ERROR, "JSON structure expected");
+    _hwId = _serial + '.' + _funId;
+
+    try {
+        node = j->getYJSONObject(funcId);
+    } catch (std::exception ex) {
+        _throw(YAPI_IO_ERROR, "unexpected JSON structure: missing function " + _funId);
         return YAPI_IO_ERROR;
     }
-    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-        if(!strcmp(j.token, funcId)) {
-            _parse(j);
-            break;
-        }
-        yJsonSkip(&j, 1);
-    }
-
+    _parse(node);
     return YAPI_SUCCESS;
 }
 
@@ -2620,15 +3306,14 @@ void YFunction::_UpdateTimedReportCallbackList(YFunction* func, bool add)
 // This is the internal device cache object
 vector<YDevice*> YDevice::_devCache;
 
-YDevice::YDevice(YDEV_DESCR devdesc): _devdescr(devdesc), _cacheStamp(0), _subpath(NULL) {
+YDevice::YDevice(YDEV_DESCR devdesc): _devdescr(devdesc), _cacheStamp(0), _cacheJson(NULL), _subpath(NULL) {
     yInitializeCriticalSection(&_lock);
 };
 
 
 YDevice::~YDevice() // destructor
 {
-    if(_subpath != NULL)
-        delete _subpath;
+    clearCache(true);
     yDeleteCriticalSection(&_lock);
 }
 
@@ -2740,11 +3425,12 @@ YRETCODE    YDevice::HTTPRequest(int channel, const string& request, string& buf
 }
 
 
-YRETCODE YDevice::requestAPI(string& apires, string& errmsg)
+YRETCODE YDevice::requestAPI(YJSONObject*& apires, string& errmsg)
 {
     yJsonStateMachine j;
     string          rootdev,  buffer;
     string          request = "GET /api.json \r\n\r\n";
+    string          json_str;
     int             res;
 
     yEnterCriticalSection(&_lock);
@@ -2755,7 +3441,11 @@ YRETCODE YDevice::requestAPI(string& apires, string& errmsg)
         yLeaveCriticalSection(&_lock);
         return YAPI_SUCCESS;
     }
-
+    if (_cacheJson == NULL) {
+        request = "GET /api.json \r\n\r\n";
+    } else {
+        request = "GET /api.json?fw="+_cacheJson->getYJSONObject("module")->getString("firmwareRelease")+" \r\n\r\n";
+    }
     // send request, without HTTP/1.1 suffix to get light headers
     res = this->HTTPRequest_unsafe(0, request, buffer, NULL, NULL, errmsg);
     if(YISERR(res)) {
@@ -2793,30 +3483,54 @@ YRETCODE YDevice::requestAPI(string& apires, string& errmsg)
         yLeaveCriticalSection(&_lock);
         return YAPI_IO_ERROR;
     }
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
+    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || (j.st != YJSON_PARSE_STRUCT && j.st != YJSON_PARSE_ARRAY)) {
         errmsg = "Unexpected JSON reply format";
         yLeaveCriticalSection(&_lock);
         return YAPI_IO_ERROR;
     }
-    // we know for sure that the last character parsed was a '{'
-    do j.src--; while(j.src[0] != '{');
-    apires = string(j.src);
-
+    // we know for sure that the last character parsed was a '{' or '['
+    do j.src--; while(j.src[0] != '{' && j.src[0] != '[');
+    json_str = string(j.src);
+    try {
+        apires = new YJSONObject(json_str, 0, (int)json_str.length());
+        apires->parseWithRef(_cacheJson);
+    } catch (std::exception ex) {
+        errmsg = "unexpected JSON structure: " + string(ex.what());
+        if (_cacheJson) {
+            delete _cacheJson;
+            _cacheJson = NULL;
+        }
+        yLeaveCriticalSection(&_lock);
+        return YAPI_IO_ERROR;
+    }
     // store result in cache
-    _cacheJson = string(j.src);
+    if (_cacheJson) {
+        delete _cacheJson;
+    }
+    _cacheJson = apires;
     _cacheStamp = yapiGetTickCount() + YAPI::DefaultCacheValidity;
     yLeaveCriticalSection(&_lock);
 
     return YAPI_SUCCESS;
 }
 
+
+
+
+
 void YDevice::clearCache(bool clearSubpath)
 {
     yEnterCriticalSection(&_lock);
-    _cacheJson = "";
     _cacheStamp = 0;
     if (clearSubpath)
-        _subpath = NULL;
+        if (_cacheJson) {
+            delete _cacheJson;
+            _cacheJson = NULL;
+        }
+        if (_subpath) {
+            delete _subpath;
+            _subpath = NULL;
+        }
     yLeaveCriticalSection(&_lock);
 }
 
@@ -4077,70 +4791,45 @@ const string YModule::PRODUCTNAME_INVALID = YAPI_INVALID_STRING;
 const string YModule::SERIALNUMBER_INVALID = YAPI_INVALID_STRING;
 const string YModule::FIRMWARERELEASE_INVALID = YAPI_INVALID_STRING;
 
-int YModule::_parseAttr(yJsonStateMachine& j)
+int YModule::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "productName")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _productName =  _parseString(j);
-        return 1;
+    if(json_val->has("productName")) {
+        _productName =  json_val->getString("productName");
     }
-    if(!strcmp(j.token, "serialNumber")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _serialNumber =  _parseString(j);
-        return 1;
+    if(json_val->has("serialNumber")) {
+        _serialNumber =  json_val->getString("serialNumber");
     }
-    if(!strcmp(j.token, "productId")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _productId =  atoi(j.token);
-        return 1;
+    if(json_val->has("productId")) {
+        _productId =  json_val->getInt("productId");
     }
-    if(!strcmp(j.token, "productRelease")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _productRelease =  atoi(j.token);
-        return 1;
+    if(json_val->has("productRelease")) {
+        _productRelease =  json_val->getInt("productRelease");
     }
-    if(!strcmp(j.token, "firmwareRelease")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _firmwareRelease =  _parseString(j);
-        return 1;
+    if(json_val->has("firmwareRelease")) {
+        _firmwareRelease =  json_val->getString("firmwareRelease");
     }
-    if(!strcmp(j.token, "persistentSettings")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _persistentSettings =  (Y_PERSISTENTSETTINGS_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("persistentSettings")) {
+        _persistentSettings =  (Y_PERSISTENTSETTINGS_enum)json_val->getInt("persistentSettings");
     }
-    if(!strcmp(j.token, "luminosity")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _luminosity =  atoi(j.token);
-        return 1;
+    if(json_val->has("luminosity")) {
+        _luminosity =  json_val->getInt("luminosity");
     }
-    if(!strcmp(j.token, "beacon")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _beacon =  (Y_BEACON_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("beacon")) {
+        _beacon =  (Y_BEACON_enum)json_val->getInt("beacon");
     }
-    if(!strcmp(j.token, "upTime")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _upTime =  atol(j.token);
-        return 1;
+    if(json_val->has("upTime")) {
+        _upTime =  json_val->getLong("upTime");
     }
-    if(!strcmp(j.token, "usbCurrent")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _usbCurrent =  atoi(j.token);
-        return 1;
+    if(json_val->has("usbCurrent")) {
+        _usbCurrent =  json_val->getInt("usbCurrent");
     }
-    if(!strcmp(j.token, "rebootCountdown")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _rebootCountdown =  atoi(j.token);
-        return 1;
+    if(json_val->has("rebootCountdown")) {
+        _rebootCountdown =  json_val->getInt("rebootCountdown");
     }
-    if(!strcmp(j.token, "userVar")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _userVar =  atoi(j.token);
-        return 1;
+    if(json_val->has("userVar")) {
+        _userVar =  json_val->getInt("userVar");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 
@@ -4787,7 +5476,7 @@ YFirmwareUpdate YModule::updateFirmwareEx(string path,bool force)
 {
     string serial;
     string settings;
-    
+
     serial = this->get_serialNumber();
     settings = this->get_allSettings();
     if ((int)(settings).size() == 0) {
@@ -4835,7 +5524,7 @@ string YModule::get_allSettings(void)
     string ext_settings;
     vector<string> filelist;
     vector<string> templist;
-    
+
     settings = this->_download("api.json");
     if ((int)(settings).size() == 0) {
         return settings;
@@ -4891,7 +5580,7 @@ int YModule::loadThermistorExtra(string funcId,string jsonExtra)
     int ofs = 0;
     int size = 0;
     url = "api/" + funcId + ".json?command=Z";
-    
+
     this->_download(url);
     // add records in growing resistance value
     values = this->_json_get_array(jsonExtra);
@@ -4992,7 +5681,7 @@ bool YModule::hasFunction(string funcId)
     int count = 0;
     int i = 0;
     string fid;
-    
+
     count  = this->functionCount();
     i = 0;
     while (i < count) {
@@ -5018,7 +5707,7 @@ vector<string> YModule::get_functionIds(string funType)
     int i = 0;
     string ftype;
     vector<string> res;
-    
+
     count = this->functionCount();
     i = 0;
     while (i < count) {
@@ -5362,7 +6051,7 @@ int YModule::set_allSettings(string settings)
         old_jpath_len.push_back((int)(jpath).length());
         old_val_arr.push_back(value);
     }
-    
+
     actualSettings = this->_download("api.json");
     actualSettings = this->_flattenJsonStruct(actualSettings);
     new_dslist = this->_json_get_array(actualSettings);
@@ -5613,7 +6302,7 @@ string YModule::get_icon2d(void)
 string YModule::get_lastLogs(void)
 {
     string content;
-    
+
     content = this->_download("logs.txt");
     return content;
 }
@@ -5652,7 +6341,7 @@ vector<string> YModule::get_subDevices(void)
     string subdevice_list;
     vector<string> subdevices;
     string serial;
-    
+
     serial = this->get_serialNumber();
     fullsize = 0;
     yapi_res = yapiGetSubdevices(serial.c_str(), smallbuff, 1024, &fullsize, errmsg);
@@ -5693,7 +6382,7 @@ string YModule::get_parentHub(void)
     int pathsize = 0;
     int yapi_res = 0;
     string serial;
-    
+
     serial = this->get_serialNumber();
     // retrieve device object
     pathsize = 0;
@@ -5717,7 +6406,7 @@ string YModule::get_url(void)
     int pathsize = 0;
     int yapi_res = 0;
     string serial;
-    
+
     serial = this->get_serialNumber();
     // retrieve device object
     pathsize = 0;
@@ -6035,60 +6724,39 @@ const string YSensor::REPORTFREQUENCY_INVALID = YAPI_INVALID_STRING;
 const string YSensor::CALIBRATIONPARAM_INVALID = YAPI_INVALID_STRING;
 const double YSensor::RESOLUTION_INVALID = YAPI_INVALID_DOUBLE;
 
-int YSensor::_parseAttr(yJsonStateMachine& j)
+int YSensor::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "unit")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _unit =  _parseString(j);
-        return 1;
+    if(json_val->has("unit")) {
+        _unit =  json_val->getString("unit");
     }
-    if(!strcmp(j.token, "currentValue")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _currentValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("currentValue")) {
+        _currentValue =  floor(json_val->getDouble("currentValue") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "lowestValue")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _lowestValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("lowestValue")) {
+        _lowestValue =  floor(json_val->getDouble("lowestValue") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "highestValue")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _highestValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("highestValue")) {
+        _highestValue =  floor(json_val->getDouble("highestValue") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "currentRawValue")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _currentRawValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("currentRawValue")) {
+        _currentRawValue =  floor(json_val->getDouble("currentRawValue") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "logFrequency")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _logFrequency =  _parseString(j);
-        return 1;
+    if(json_val->has("logFrequency")) {
+        _logFrequency =  json_val->getString("logFrequency");
     }
-    if(!strcmp(j.token, "reportFrequency")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _reportFrequency =  _parseString(j);
-        return 1;
+    if(json_val->has("reportFrequency")) {
+        _reportFrequency =  json_val->getString("reportFrequency");
     }
-    if(!strcmp(j.token, "calibrationParam")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _calibrationParam =  _parseString(j);
-        return 1;
+    if(json_val->has("calibrationParam")) {
+        _calibrationParam =  json_val->getString("calibrationParam");
     }
-    if(!strcmp(j.token, "resolution")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _resolution =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("resolution")) {
+        _resolution =  floor(json_val->getDouble("resolution") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "sensorState")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _sensorState =  atoi(j.token);
-        return 1;
+    if(json_val->has("sensorState")) {
+        _sensorState =  json_val->getInt("sensorState");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 
@@ -6800,7 +7468,7 @@ bool YSensor::isSensorReady(void)
 int YSensor::startDataLogger(void)
 {
     string res;
-    
+
     res = this->_download("api/dataLogger/recording?recording=1");
     if (!((int)(res).size()>0)) {
         _throw(YAPI_IO_ERROR,"unable to start datalogger");
@@ -6817,7 +7485,7 @@ int YSensor::startDataLogger(void)
 int YSensor::stopDataLogger(void)
 {
     string res;
-    
+
     res = this->_download("api/dataLogger/recording?recording=0");
     if (!((int)(res).size()>0)) {
         _throw(YAPI_IO_ERROR,"unable to stop datalogger");
@@ -6856,7 +7524,7 @@ YDataSet YSensor::get_recordedData(s64 startTime,s64 endTime)
 {
     string funcid;
     string funit;
-    
+
     funcid = this->get_functionId();
     funit = this->get_unit();
     return YDataSet(this,funcid,funit,startTime,endTime);
@@ -6920,7 +7588,7 @@ int YSensor::calibrateFromPoints(vector<double> rawValues,vector<double> refValu
 {
     string rest_val;
     int res = 0;
-    
+
     yEnterCriticalSection(&_this_cs);
     try {
         rest_val = this->_encodeCalibrationPoints(rawValues, refValues);

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_servo.cpp 27118 2017-04-06 22:38:36Z seb $
+ * $Id: yocto_servo.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindServo(), the high-level API for Servo functions
  *
@@ -72,58 +72,39 @@ YServo::~YServo()
 // static attributes
 const YMove YServo::MOVE_INVALID = YMove();
 
-int YServo::_parseAttr(yJsonStateMachine& j)
+int YServo::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "position")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _position =  atoi(j.token);
-        return 1;
+    if(json_val->has("position")) {
+        _position =  json_val->getInt("position");
     }
-    if(!strcmp(j.token, "enabled")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _enabled =  (Y_ENABLED_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("enabled")) {
+        _enabled =  (Y_ENABLED_enum)json_val->getInt("enabled");
     }
-    if(!strcmp(j.token, "range")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _range =  atoi(j.token);
-        return 1;
+    if(json_val->has("range")) {
+        _range =  json_val->getInt("range");
     }
-    if(!strcmp(j.token, "neutral")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _neutral =  atoi(j.token);
-        return 1;
+    if(json_val->has("neutral")) {
+        _neutral =  json_val->getInt("neutral");
     }
-    if(!strcmp(j.token, "move")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        if(j.st != YJSON_PARSE_STRUCT) goto failed;
-        while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-            if(!strcmp(j.token, "moving")) {
-                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                _move.moving = atoi(j.token);
-            } else if(!strcmp(j.token, "target")) {
-                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                _move.target = atoi(j.token);
-            } else if(!strcmp(j.token, "ms")) {
-                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                _move.ms = atoi(j.token);
-            }
+    if(json_val->has("move")) {
+        YJSONObject* subjson = json_val->getYJSONObject("move");
+        if (subjson->has("moving")) {
+            _move.moving = subjson->getInt("moving");
         }
-        if(j.st != YJSON_PARSE_STRUCT) goto failed;
-        return 1;
+        if (subjson->has("target")) {
+            _move.target = subjson->getInt("target");
+        }
+        if (subjson->has("ms")) {
+            _move.ms = subjson->getInt("ms");
+        }
     }
-    if(!strcmp(j.token, "positionAtPowerOn")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _positionAtPowerOn =  atoi(j.token);
-        return 1;
+    if(json_val->has("positionAtPowerOn")) {
+        _positionAtPowerOn =  json_val->getInt("positionAtPowerOn");
     }
-    if(!strcmp(j.token, "enabledAtPowerOn")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _enabledAtPowerOn =  (Y_ENABLEDATPOWERON_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("enabledAtPowerOn")) {
+        _enabledAtPowerOn =  (Y_ENABLEDATPOWERON_enum)json_val->getInt("enabledAtPowerOn");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

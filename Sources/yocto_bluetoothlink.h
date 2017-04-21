@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_bluetoothlink.h 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_bluetoothlink.h 27180 2017-04-20 13:46:43Z seb $
  *
  * Declares yFindBluetoothLink(), the high-level API for BluetoothLink functions
  *
@@ -113,7 +113,7 @@ protected:
     friend YBluetoothLink *yFirstBluetoothLink(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(yJsonStateMachine& j);
+    virtual int     _parseAttr(YJSONObject* json_val);
 
     // Constructor is protected, use yFindBluetoothLink factory function to instantiate
     YBluetoothLink(const string& func);

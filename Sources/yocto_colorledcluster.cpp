@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorledcluster.cpp 27109 2017-04-06 22:18:46Z seb $
+ * $Id: yocto_colorledcluster.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -70,35 +70,24 @@ YColorLedCluster::~YColorLedCluster()
 // static attributes
 const string YColorLedCluster::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YColorLedCluster::_parseAttr(yJsonStateMachine& j)
+int YColorLedCluster::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "activeLedCount")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _activeLedCount =  atoi(j.token);
-        return 1;
+    if(json_val->has("activeLedCount")) {
+        _activeLedCount =  json_val->getInt("activeLedCount");
     }
-    if(!strcmp(j.token, "maxLedCount")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _maxLedCount =  atoi(j.token);
-        return 1;
+    if(json_val->has("maxLedCount")) {
+        _maxLedCount =  json_val->getInt("maxLedCount");
     }
-    if(!strcmp(j.token, "blinkSeqMaxCount")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _blinkSeqMaxCount =  atoi(j.token);
-        return 1;
+    if(json_val->has("blinkSeqMaxCount")) {
+        _blinkSeqMaxCount =  json_val->getInt("blinkSeqMaxCount");
     }
-    if(!strcmp(j.token, "blinkSeqMaxSize")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _blinkSeqMaxSize =  atoi(j.token);
-        return 1;
+    if(json_val->has("blinkSeqMaxSize")) {
+        _blinkSeqMaxSize =  json_val->getInt("blinkSeqMaxSize");
     }
-    if(!strcmp(j.token, "command")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _command =  _parseString(j);
-        return 1;
+    if(json_val->has("command")) {
+        _command =  json_val->getString("command");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

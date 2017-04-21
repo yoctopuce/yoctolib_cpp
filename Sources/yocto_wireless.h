@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.h 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_wireless.h 27180 2017-04-20 13:46:43Z seb $
  *
  * Declares yFindWireless(), the high-level API for Wireless functions
  *
@@ -143,7 +143,7 @@ class YOCTO_CLASS_EXPORT YWireless: public YFunction {
     friend YWireless *yFirstWireless(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(yJsonStateMachine& j);
+    virtual int     _parseAttr(YJSONObject* json_val);
 
     // Constructor is protected, use yFindWireless factory function to instantiate
     YWireless(const string& func);

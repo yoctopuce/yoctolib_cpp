@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_segmenteddisplay.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_segmenteddisplay.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindSegmentedDisplay(), the high-level API for SegmentedDisplay functions
  *
@@ -67,20 +67,15 @@ YSegmentedDisplay::~YSegmentedDisplay()
 // static attributes
 const string YSegmentedDisplay::DISPLAYEDTEXT_INVALID = YAPI_INVALID_STRING;
 
-int YSegmentedDisplay::_parseAttr(yJsonStateMachine& j)
+int YSegmentedDisplay::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "displayedText")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _displayedText =  _parseString(j);
-        return 1;
+    if(json_val->has("displayedText")) {
+        _displayedText =  json_val->getString("displayedText");
     }
-    if(!strcmp(j.token, "displayMode")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _displayMode =  (Y_DISPLAYMODE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("displayMode")) {
+        _displayMode =  (Y_DISPLAYMODE_enum)json_val->getInt("displayMode");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

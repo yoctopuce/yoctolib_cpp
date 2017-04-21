@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gps.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_gps.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindGps(), the high-level API for Gps functions
  *
@@ -85,75 +85,48 @@ const double YGps::DIRECTION_INVALID = YAPI_INVALID_DOUBLE;
 const string YGps::DATETIME_INVALID = YAPI_INVALID_STRING;
 const string YGps::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YGps::_parseAttr(yJsonStateMachine& j)
+int YGps::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "isFixed")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _isFixed =  (Y_ISFIXED_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("isFixed")) {
+        _isFixed =  (Y_ISFIXED_enum)json_val->getInt("isFixed");
     }
-    if(!strcmp(j.token, "satCount")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _satCount =  atol(j.token);
-        return 1;
+    if(json_val->has("satCount")) {
+        _satCount =  json_val->getLong("satCount");
     }
-    if(!strcmp(j.token, "coordSystem")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _coordSystem =  (Y_COORDSYSTEM_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("coordSystem")) {
+        _coordSystem =  (Y_COORDSYSTEM_enum)json_val->getInt("coordSystem");
     }
-    if(!strcmp(j.token, "latitude")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _latitude =  _parseString(j);
-        return 1;
+    if(json_val->has("latitude")) {
+        _latitude =  json_val->getString("latitude");
     }
-    if(!strcmp(j.token, "longitude")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _longitude =  _parseString(j);
-        return 1;
+    if(json_val->has("longitude")) {
+        _longitude =  json_val->getString("longitude");
     }
-    if(!strcmp(j.token, "dilution")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _dilution =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("dilution")) {
+        _dilution =  floor(json_val->getDouble("dilution") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "altitude")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _altitude =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("altitude")) {
+        _altitude =  floor(json_val->getDouble("altitude") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "groundSpeed")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _groundSpeed =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("groundSpeed")) {
+        _groundSpeed =  floor(json_val->getDouble("groundSpeed") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "direction")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _direction =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("direction")) {
+        _direction =  floor(json_val->getDouble("direction") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "unixTime")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _unixTime =  atol(j.token);
-        return 1;
+    if(json_val->has("unixTime")) {
+        _unixTime =  json_val->getLong("unixTime");
     }
-    if(!strcmp(j.token, "dateTime")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _dateTime =  _parseString(j);
-        return 1;
+    if(json_val->has("dateTime")) {
+        _dateTime =  json_val->getString("dateTime");
     }
-    if(!strcmp(j.token, "utcOffset")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _utcOffset =  atoi(j.token);
-        return 1;
+    if(json_val->has("utcOffset")) {
+        _utcOffset =  json_val->getInt("utcOffset");
     }
-    if(!strcmp(j.token, "command")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _command =  _parseString(j);
-        return 1;
+    if(json_val->has("command")) {
+        _command =  json_val->getString("command");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

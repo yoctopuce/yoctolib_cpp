@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_tilt.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_tilt.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindTilt(), the high-level API for Tilt functions
  *
@@ -67,20 +67,15 @@ YTilt::~YTilt()
 //--- (YTilt implementation)
 // static attributes
 
-int YTilt::_parseAttr(yJsonStateMachine& j)
+int YTilt::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "bandwidth")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _bandwidth =  atoi(j.token);
-        return 1;
+    if(json_val->has("bandwidth")) {
+        _bandwidth =  json_val->getInt("bandwidth");
     }
-    if(!strcmp(j.token, "axis")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _axis =  (Y_AXIS_enum) atoi(j.token);
-        return 1;
+    if(json_val->has("axis")) {
+        _axis =  (Y_AXIS_enum) json_val->getInt("axis");
     }
-    failed:
-    return YSensor::_parseAttr(j);
+    return YSensor::_parseAttr(json_val);
 }
 
 

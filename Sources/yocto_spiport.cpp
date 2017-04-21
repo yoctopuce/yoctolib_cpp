@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_spiport.cpp 27109 2017-04-06 22:18:46Z seb $
+ * $Id: yocto_spiport.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -86,80 +86,51 @@ const string YSpiPort::COMMAND_INVALID = YAPI_INVALID_STRING;
 const string YSpiPort::PROTOCOL_INVALID = YAPI_INVALID_STRING;
 const string YSpiPort::SPIMODE_INVALID = YAPI_INVALID_STRING;
 
-int YSpiPort::_parseAttr(yJsonStateMachine& j)
+int YSpiPort::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "rxCount")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _rxCount =  atoi(j.token);
-        return 1;
+    if(json_val->has("rxCount")) {
+        _rxCount =  json_val->getInt("rxCount");
     }
-    if(!strcmp(j.token, "txCount")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _txCount =  atoi(j.token);
-        return 1;
+    if(json_val->has("txCount")) {
+        _txCount =  json_val->getInt("txCount");
     }
-    if(!strcmp(j.token, "errCount")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _errCount =  atoi(j.token);
-        return 1;
+    if(json_val->has("errCount")) {
+        _errCount =  json_val->getInt("errCount");
     }
-    if(!strcmp(j.token, "rxMsgCount")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _rxMsgCount =  atoi(j.token);
-        return 1;
+    if(json_val->has("rxMsgCount")) {
+        _rxMsgCount =  json_val->getInt("rxMsgCount");
     }
-    if(!strcmp(j.token, "txMsgCount")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _txMsgCount =  atoi(j.token);
-        return 1;
+    if(json_val->has("txMsgCount")) {
+        _txMsgCount =  json_val->getInt("txMsgCount");
     }
-    if(!strcmp(j.token, "lastMsg")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _lastMsg =  _parseString(j);
-        return 1;
+    if(json_val->has("lastMsg")) {
+        _lastMsg =  json_val->getString("lastMsg");
     }
-    if(!strcmp(j.token, "currentJob")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _currentJob =  _parseString(j);
-        return 1;
+    if(json_val->has("currentJob")) {
+        _currentJob =  json_val->getString("currentJob");
     }
-    if(!strcmp(j.token, "startupJob")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _startupJob =  _parseString(j);
-        return 1;
+    if(json_val->has("startupJob")) {
+        _startupJob =  json_val->getString("startupJob");
     }
-    if(!strcmp(j.token, "command")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _command =  _parseString(j);
-        return 1;
+    if(json_val->has("command")) {
+        _command =  json_val->getString("command");
     }
-    if(!strcmp(j.token, "voltageLevel")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _voltageLevel =  (Y_VOLTAGELEVEL_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("voltageLevel")) {
+        _voltageLevel =  (Y_VOLTAGELEVEL_enum)json_val->getInt("voltageLevel");
     }
-    if(!strcmp(j.token, "protocol")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _protocol =  _parseString(j);
-        return 1;
+    if(json_val->has("protocol")) {
+        _protocol =  json_val->getString("protocol");
     }
-    if(!strcmp(j.token, "spiMode")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _spiMode =  _parseString(j);
-        return 1;
+    if(json_val->has("spiMode")) {
+        _spiMode =  json_val->getString("spiMode");
     }
-    if(!strcmp(j.token, "ssPolarity")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _ssPolarity =  (Y_SSPOLARITY_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("ssPolarity")) {
+        _ssPolarity =  (Y_SSPOLARITY_enum)json_val->getInt("ssPolarity");
     }
-    if(!strcmp(j.token, "shitftSampling")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _shitftSampling =  (Y_SHITFTSAMPLING_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("shitftSampling")) {
+        _shitftSampling =  (Y_SHITFTSAMPLING_enum)json_val->getInt("shitftSampling");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

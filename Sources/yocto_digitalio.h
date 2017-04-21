@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_digitalio.h 26949 2017-03-28 15:36:15Z mvuilleu $
+ * $Id: yocto_digitalio.h 27180 2017-04-20 13:46:43Z seb $
  *
  * Declares yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -101,7 +101,7 @@ protected:
     friend YDigitalIO *yFirstDigitalIO(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(yJsonStateMachine& j);
+    virtual int     _parseAttr(YJSONObject* json_val);
 
     // Constructor is protected, use yFindDigitalIO factory function to instantiate
     YDigitalIO(const string& func);

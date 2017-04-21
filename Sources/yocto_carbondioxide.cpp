@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_carbondioxide.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_carbondioxide.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *
@@ -68,20 +68,15 @@ YCarbonDioxide::~YCarbonDioxide()
 // static attributes
 const string YCarbonDioxide::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YCarbonDioxide::_parseAttr(yJsonStateMachine& j)
+int YCarbonDioxide::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "abcPeriod")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _abcPeriod =  atoi(j.token);
-        return 1;
+    if(json_val->has("abcPeriod")) {
+        _abcPeriod =  json_val->getInt("abcPeriod");
     }
-    if(!strcmp(j.token, "command")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _command =  _parseString(j);
-        return 1;
+    if(json_val->has("command")) {
+        _command =  json_val->getString("command");
     }
-    failed:
-    return YSensor::_parseAttr(j);
+    return YSensor::_parseAttr(json_val);
 }
 
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_relay.cpp 27118 2017-04-06 22:38:36Z seb $
+ * $Id: yocto_relay.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindRelay(), the high-level API for Relay functions
  *
@@ -73,63 +73,42 @@ YRelay::~YRelay()
 // static attributes
 const YDelayedPulse YRelay::DELAYEDPULSETIMER_INVALID = YDelayedPulse();
 
-int YRelay::_parseAttr(yJsonStateMachine& j)
+int YRelay::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "state")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _state =  (Y_STATE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("state")) {
+        _state =  (Y_STATE_enum)json_val->getInt("state");
     }
-    if(!strcmp(j.token, "stateAtPowerOn")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _stateAtPowerOn =  (Y_STATEATPOWERON_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("stateAtPowerOn")) {
+        _stateAtPowerOn =  (Y_STATEATPOWERON_enum)json_val->getInt("stateAtPowerOn");
     }
-    if(!strcmp(j.token, "maxTimeOnStateA")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _maxTimeOnStateA =  atol(j.token);
-        return 1;
+    if(json_val->has("maxTimeOnStateA")) {
+        _maxTimeOnStateA =  json_val->getLong("maxTimeOnStateA");
     }
-    if(!strcmp(j.token, "maxTimeOnStateB")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _maxTimeOnStateB =  atol(j.token);
-        return 1;
+    if(json_val->has("maxTimeOnStateB")) {
+        _maxTimeOnStateB =  json_val->getLong("maxTimeOnStateB");
     }
-    if(!strcmp(j.token, "output")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _output =  (Y_OUTPUT_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("output")) {
+        _output =  (Y_OUTPUT_enum)json_val->getInt("output");
     }
-    if(!strcmp(j.token, "pulseTimer")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _pulseTimer =  atol(j.token);
-        return 1;
+    if(json_val->has("pulseTimer")) {
+        _pulseTimer =  json_val->getLong("pulseTimer");
     }
-    if(!strcmp(j.token, "delayedPulseTimer")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        if(j.st != YJSON_PARSE_STRUCT) goto failed;
-        while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-            if(!strcmp(j.token, "moving")) {
-                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                _delayedPulseTimer.moving = atoi(j.token);
-            } else if(!strcmp(j.token, "target")) {
-                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                _delayedPulseTimer.target = atoi(j.token);
-            } else if(!strcmp(j.token, "ms")) {
-                if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-                _delayedPulseTimer.ms = atoi(j.token);
-            }
+    if(json_val->has("delayedPulseTimer")) {
+        YJSONObject* subjson = json_val->getYJSONObject("delayedPulseTimer");
+        if (subjson->has("moving")) {
+            _delayedPulseTimer.moving = subjson->getInt("moving");
         }
-        if(j.st != YJSON_PARSE_STRUCT) goto failed;
-        return 1;
+        if (subjson->has("target")) {
+            _delayedPulseTimer.target = subjson->getInt("target");
+        }
+        if (subjson->has("ms")) {
+            _delayedPulseTimer.ms = subjson->getInt("ms");
+        }
     }
-    if(!strcmp(j.token, "countdown")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _countdown =  atol(j.token);
-        return 1;
+    if(json_val->has("countdown")) {
+        _countdown =  json_val->getLong("countdown");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

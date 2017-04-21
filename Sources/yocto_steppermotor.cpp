@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_steppermotor.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_steppermotor.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindStepperMotor(), the high-level API for StepperMotor functions
  *
@@ -87,85 +87,54 @@ const string YStepperMotor::ALERTMODE_INVALID = YAPI_INVALID_STRING;
 const string YStepperMotor::AUXMODE_INVALID = YAPI_INVALID_STRING;
 const string YStepperMotor::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YStepperMotor::_parseAttr(yJsonStateMachine& j)
+int YStepperMotor::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "motorState")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _motorState =  (Y_MOTORSTATE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("motorState")) {
+        _motorState =  (Y_MOTORSTATE_enum)json_val->getInt("motorState");
     }
-    if(!strcmp(j.token, "diags")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _diags =  atoi(j.token);
-        return 1;
+    if(json_val->has("diags")) {
+        _diags =  json_val->getInt("diags");
     }
-    if(!strcmp(j.token, "stepPos")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _stepPos =  atof(j.token) / 16.0;
-        return 1;
+    if(json_val->has("stepPos")) {
+        _stepPos =  json_val->getDouble("stepPos") / 16.0;
     }
-    if(!strcmp(j.token, "speed")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _speed =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("speed")) {
+        _speed =  floor(json_val->getDouble("speed") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "pullinSpeed")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _pullinSpeed =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("pullinSpeed")) {
+        _pullinSpeed =  floor(json_val->getDouble("pullinSpeed") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "maxAccel")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _maxAccel =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("maxAccel")) {
+        _maxAccel =  floor(json_val->getDouble("maxAccel") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "maxSpeed")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _maxSpeed =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("maxSpeed")) {
+        _maxSpeed =  floor(json_val->getDouble("maxSpeed") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "stepping")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _stepping =  (Y_STEPPING_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("stepping")) {
+        _stepping =  (Y_STEPPING_enum)json_val->getInt("stepping");
     }
-    if(!strcmp(j.token, "overcurrent")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _overcurrent =  atoi(j.token);
-        return 1;
+    if(json_val->has("overcurrent")) {
+        _overcurrent =  json_val->getInt("overcurrent");
     }
-    if(!strcmp(j.token, "tCurrStop")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _tCurrStop =  atoi(j.token);
-        return 1;
+    if(json_val->has("tCurrStop")) {
+        _tCurrStop =  json_val->getInt("tCurrStop");
     }
-    if(!strcmp(j.token, "tCurrRun")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _tCurrRun =  atoi(j.token);
-        return 1;
+    if(json_val->has("tCurrRun")) {
+        _tCurrRun =  json_val->getInt("tCurrRun");
     }
-    if(!strcmp(j.token, "alertMode")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _alertMode =  _parseString(j);
-        return 1;
+    if(json_val->has("alertMode")) {
+        _alertMode =  json_val->getString("alertMode");
     }
-    if(!strcmp(j.token, "auxMode")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _auxMode =  _parseString(j);
-        return 1;
+    if(json_val->has("auxMode")) {
+        _auxMode =  json_val->getString("auxMode");
     }
-    if(!strcmp(j.token, "auxSignal")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _auxSignal =  atoi(j.token);
-        return 1;
+    if(json_val->has("auxSignal")) {
+        _auxSignal =  json_val->getInt("auxSignal");
     }
-    if(!strcmp(j.token, "command")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _command =  _parseString(j);
-        return 1;
+    if(json_val->has("command")) {
+        _command =  json_val->getString("command");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 

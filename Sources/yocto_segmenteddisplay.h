@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_segmenteddisplay.h 25275 2016-08-24 13:42:24Z mvuilleu $
+ * $Id: yocto_segmenteddisplay.h 27180 2017-04-20 13:46:43Z seb $
  *
  * Declares yFindSegmentedDisplay(), the high-level API for SegmentedDisplay functions
  *
@@ -87,7 +87,7 @@ protected:
     friend YSegmentedDisplay *yFirstSegmentedDisplay(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(yJsonStateMachine& j);
+    virtual int     _parseAttr(YJSONObject* json_val);
 
     // Constructor is protected, use yFindSegmentedDisplay factory function to instantiate
     YSegmentedDisplay(const string& func);

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yjson.h 24575 2016-05-26 06:28:03Z seb $
+ * $Id: yjson.h 27182 2017-04-20 16:25:41Z seb $
  *
  * Simple JSON parser (actually a slightly enhanced lexer)
  *
@@ -108,6 +108,34 @@ yJsonRetCode yJsonParse(yJsonStateMachine *j);
 
 // Mark next n JSON items in stream to be skipped (including content, in case items are containers)
 void         yJsonSkip(yJsonStateMachine *j, int nitems);
+
+#if 0
+
+    typedef enum {
+        JZON_PARSE_SYNCRO = 0,
+        JZON_PARSE_ONLY_REF,
+        JZON_PARSE_ONLY_YZON
+    } yJzonSyncroState;
+
+    typedef struct {
+        int         depth;                  // state stack depth
+        yJzonSyncroState sst;
+        yJzonSyncroState sst_stack[YJSON_MAX_DEPTH];
+        yJsonState  st;                     // current state (initialized by caller)
+        yJsonState  next;                   // next state (when returning with parse_avail)
+        char        token[62];              // parse buffer, also used to return tokens
+        yJsonStateMachine  jzon;       // reference state machine (initialized by caller)
+        yJsonStateMachine  ref;       // reference state machine (initialized by caller)
+    } yJsonStateMachineEx;
+
+    void yJsonInitEx(yJsonStateMachineEx *j, const char *jzon, int jzon_len, const char *ref, int ref_len);
+
+    // Parse JSON input stream until more data is needed or a token is returned
+    yJsonRetCode yJsonParseEx(yJsonStateMachineEx *j);
+
+    // Mark next n JSON items in stream to be skipped (including content, in case items are containers)
+    void         yJsonSkipEx(yJsonStateMachineEx *j, int nitems);
+#endif
 
 #ifdef  __cplusplus
 }

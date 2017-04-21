@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_genericsensor.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_genericsensor.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -76,40 +76,27 @@ const string YGenericSensor::SIGNALRANGE_INVALID = YAPI_INVALID_STRING;
 const string YGenericSensor::VALUERANGE_INVALID = YAPI_INVALID_STRING;
 const double YGenericSensor::SIGNALBIAS_INVALID = YAPI_INVALID_DOUBLE;
 
-int YGenericSensor::_parseAttr(yJsonStateMachine& j)
+int YGenericSensor::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "signalValue")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _signalValue =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("signalValue")) {
+        _signalValue =  floor(json_val->getDouble("signalValue") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "signalUnit")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _signalUnit =  _parseString(j);
-        return 1;
+    if(json_val->has("signalUnit")) {
+        _signalUnit =  json_val->getString("signalUnit");
     }
-    if(!strcmp(j.token, "signalRange")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _signalRange =  _parseString(j);
-        return 1;
+    if(json_val->has("signalRange")) {
+        _signalRange =  json_val->getString("signalRange");
     }
-    if(!strcmp(j.token, "valueRange")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _valueRange =  _parseString(j);
-        return 1;
+    if(json_val->has("valueRange")) {
+        _valueRange =  json_val->getString("valueRange");
     }
-    if(!strcmp(j.token, "signalBias")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _signalBias =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("signalBias")) {
+        _signalBias =  floor(json_val->getDouble("signalBias") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "signalSampling")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _signalSampling =  (Y_SIGNALSAMPLING_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("signalSampling")) {
+        _signalSampling =  (Y_SIGNALSAMPLING_enum)json_val->getInt("signalSampling");
     }
-    failed:
-    return YSensor::_parseAttr(j);
+    return YSensor::_parseAttr(json_val);
 }
 
 

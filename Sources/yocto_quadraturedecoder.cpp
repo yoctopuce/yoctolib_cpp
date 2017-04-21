@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_quadraturedecoder.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_quadraturedecoder.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindQuadratureDecoder(), the high-level API for QuadratureDecoder functions
  *
@@ -68,20 +68,15 @@ YQuadratureDecoder::~YQuadratureDecoder()
 // static attributes
 const double YQuadratureDecoder::SPEED_INVALID = YAPI_INVALID_DOUBLE;
 
-int YQuadratureDecoder::_parseAttr(yJsonStateMachine& j)
+int YQuadratureDecoder::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "speed")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _speed =  floor(atof(j.token) * 1000.0 / 65536.0 + 0.5) / 1000.0;
-        return 1;
+    if(json_val->has("speed")) {
+        _speed =  floor(json_val->getDouble("speed") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(!strcmp(j.token, "decoding")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _decoding =  (Y_DECODING_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("decoding")) {
+        _decoding =  (Y_DECODING_enum)json_val->getInt("decoding");
     }
-    failed:
-    return YSensor::_parseAttr(j);
+    return YSensor::_parseAttr(json_val);
 }
 
 

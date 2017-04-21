@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_daisychain.h 26552 2017-02-03 15:32:18Z seb $
+ * $Id: yocto_daisychain.h 27180 2017-04-20 13:46:43Z seb $
  *
  * Declares yFindDaisyChain(), the high-level API for DaisyChain functions
  *
@@ -92,7 +92,7 @@ protected:
     friend YDaisyChain *yFirstDaisyChain(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(yJsonStateMachine& j);
+    virtual int     _parseAttr(YJSONObject* json_val);
 
     // Constructor is protected, use yFindDaisyChain factory function to instantiate
     YDaisyChain(const string& func);

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_bridgecontrol.h 27017 2017-03-31 14:47:59Z seb $
+ * $Id: yocto_bridgecontrol.h 27180 2017-04-20 13:46:43Z seb $
  *
  * Declares yFindBridgeControl(), the high-level API for BridgeControl functions
  *
@@ -93,7 +93,7 @@ protected:
     friend YBridgeControl *yFirstBridgeControl(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(yJsonStateMachine& j);
+    virtual int     _parseAttr(YJSONObject* json_val);
 
     // Constructor is protected, use yFindBridgeControl factory function to instantiate
     YBridgeControl(const string& func);

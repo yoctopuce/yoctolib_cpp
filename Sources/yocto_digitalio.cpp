@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_digitalio.cpp 26991 2017-03-30 14:58:03Z seb $
+ * $Id: yocto_digitalio.cpp 27180 2017-04-20 13:46:43Z seb $
  *
  * Implements yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -73,50 +73,33 @@ YDigitalIO::~YDigitalIO()
 // static attributes
 const string YDigitalIO::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YDigitalIO::_parseAttr(yJsonStateMachine& j)
+int YDigitalIO::_parseAttr(YJSONObject* json_val)
 {
-    if(!strcmp(j.token, "portState")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _portState =  atoi(j.token);
-        return 1;
+    if(json_val->has("portState")) {
+        _portState =  json_val->getInt("portState");
     }
-    if(!strcmp(j.token, "portDirection")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _portDirection =  atoi(j.token);
-        return 1;
+    if(json_val->has("portDirection")) {
+        _portDirection =  json_val->getInt("portDirection");
     }
-    if(!strcmp(j.token, "portOpenDrain")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _portOpenDrain =  atoi(j.token);
-        return 1;
+    if(json_val->has("portOpenDrain")) {
+        _portOpenDrain =  json_val->getInt("portOpenDrain");
     }
-    if(!strcmp(j.token, "portPolarity")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _portPolarity =  atoi(j.token);
-        return 1;
+    if(json_val->has("portPolarity")) {
+        _portPolarity =  json_val->getInt("portPolarity");
     }
-    if(!strcmp(j.token, "portDiags")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _portDiags =  atoi(j.token);
-        return 1;
+    if(json_val->has("portDiags")) {
+        _portDiags =  json_val->getInt("portDiags");
     }
-    if(!strcmp(j.token, "portSize")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _portSize =  atoi(j.token);
-        return 1;
+    if(json_val->has("portSize")) {
+        _portSize =  json_val->getInt("portSize");
     }
-    if(!strcmp(j.token, "outputVoltage")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _outputVoltage =  (Y_OUTPUTVOLTAGE_enum)atoi(j.token);
-        return 1;
+    if(json_val->has("outputVoltage")) {
+        _outputVoltage =  (Y_OUTPUTVOLTAGE_enum)json_val->getInt("outputVoltage");
     }
-    if(!strcmp(j.token, "command")) {
-        if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto failed;
-        _command =  _parseString(j);
-        return 1;
+    if(json_val->has("command")) {
+        _command =  json_val->getString("command");
     }
-    failed:
-    return YFunction::_parseAttr(j);
+    return YFunction::_parseAttr(json_val);
 }
 
 
