@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_datalogger.cpp 27180 2017-04-20 13:46:43Z seb $
+ * $Id: yocto_datalogger.cpp 27275 2017-04-25 15:40:21Z seb $
  *
  * Implements yFindDataLogger(), the high-level API for DataLogger functions
  *
@@ -871,7 +871,7 @@ vector<YDataSet> YDataLogger::parse_dataSets(string json)
     vector<string> dslist;
     YDataSet* dataset = NULL;
     vector<YDataSet> res;
-    
+
     dslist = this->_json_get_array(json);
     res.clear();
     for (unsigned ii = 0; ii < dslist.size(); ii++) {

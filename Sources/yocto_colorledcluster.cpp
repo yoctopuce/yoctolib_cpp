@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorledcluster.cpp 27180 2017-04-20 13:46:43Z seb $
+ * $Id: yocto_colorledcluster.cpp 27275 2017-04-25 15:40:21Z seb $
  *
  * Implements yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -741,7 +741,7 @@ int YColorLedCluster::set_rgbColorArray(int ledIndex,vector<int> rgbList)
         buff[3*idx+2] = (char)(((rgb) & (255)));
         idx = idx + 1;
     }
-    
+
     res = this->_upload(YapiWrapper::ysprintf("rgb:0:%d",ledIndex), buff);
     return res;
 }
@@ -775,7 +775,7 @@ int YColorLedCluster::rgbArray_move(vector<int> rgbList,int delay)
         buff[3*idx+2] = (char)(((rgb) & (255)));
         idx = idx + 1;
     }
-    
+
     res = this->_upload(YapiWrapper::ysprintf("rgb:%d",delay), buff);
     return res;
 }
@@ -826,7 +826,7 @@ int YColorLedCluster::set_hslColorArray(int ledIndex,vector<int> hslList)
         buff[3*idx+2] = (char)(((hsl) & (255)));
         idx = idx + 1;
     }
-    
+
     res = this->_upload(YapiWrapper::ysprintf("hsl:0:%d",ledIndex), buff);
     return res;
 }
@@ -860,7 +860,7 @@ int YColorLedCluster::hslArray_move(vector<int> hslList,int delay)
         buff[3*idx+2] = (char)(((hsl) & (255)));
         idx = idx + 1;
     }
-    
+
     res = this->_upload(YapiWrapper::ysprintf("hsl:%d",delay), buff);
     return res;
 }
@@ -902,7 +902,7 @@ vector<int> YColorLedCluster::get_rgbColorArray(int ledIndex,int count)
     int r = 0;
     int g = 0;
     int b = 0;
-    
+
     buff = this->_download(YapiWrapper::ysprintf("rgb.bin?typ=0&pos=%d&len=%d",3*ledIndex,3*count));
     res.clear();
     idx = 0;
@@ -936,7 +936,7 @@ vector<int> YColorLedCluster::get_rgbColorArrayAtPowerOn(int ledIndex,int count)
     int r = 0;
     int g = 0;
     int b = 0;
-    
+
     buff = this->_download(YapiWrapper::ysprintf("rgb.bin?typ=4&pos=%d&len=%d",3*ledIndex,3*count));
     res.clear();
     idx = 0;
@@ -968,7 +968,7 @@ vector<int> YColorLedCluster::get_linkedSeqArray(int ledIndex,int count)
     vector<int> res;
     int idx = 0;
     int seq = 0;
-    
+
     buff = this->_download(YapiWrapper::ysprintf("rgb.bin?typ=1&pos=%d&len=%d",ledIndex,count));
     res.clear();
     idx = 0;
@@ -1001,7 +1001,7 @@ vector<int> YColorLedCluster::get_blinkSeqSignatures(int seqIndex,int count)
     int hl = 0;
     int lh = 0;
     int ll = 0;
-    
+
     buff = this->_download(YapiWrapper::ysprintf("rgb.bin?typ=2&pos=%d&len=%d",4*seqIndex,4*count));
     res.clear();
     idx = 0;
@@ -1033,7 +1033,7 @@ vector<int> YColorLedCluster::get_blinkSeqStateSpeed(int seqIndex,int count)
     int idx = 0;
     int lh = 0;
     int ll = 0;
-    
+
     buff = this->_download(YapiWrapper::ysprintf("rgb.bin?typ=6&pos=%d&len=%d",seqIndex,count));
     res.clear();
     idx = 0;
@@ -1062,7 +1062,7 @@ vector<int> YColorLedCluster::get_blinkSeqStateAtPowerOn(int seqIndex,int count)
     vector<int> res;
     int idx = 0;
     int started = 0;
-    
+
     buff = this->_download(YapiWrapper::ysprintf("rgb.bin?typ=5&pos=%d&len=%d",seqIndex,count));
     res.clear();
     idx = 0;
@@ -1090,7 +1090,7 @@ vector<int> YColorLedCluster::get_blinkSeqState(int seqIndex,int count)
     vector<int> res;
     int idx = 0;
     int started = 0;
-    
+
     buff = this->_download(YapiWrapper::ysprintf("rgb.bin?typ=3&pos=%d&len=%d",seqIndex,count));
     res.clear();
     idx = 0;

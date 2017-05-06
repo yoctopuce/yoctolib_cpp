@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_spiport.cpp 27180 2017-04-20 13:46:43Z seb $
+ * $Id: yocto_spiport.cpp 27275 2017-04-25 15:40:21Z seb $
  *
  * Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -856,7 +856,7 @@ int YSpiPort::reset(void)
     _rxptr = 0;
     _rxbuffptr = 0;
     _rxbuff = string(0, (char)0);
-    
+
     return this->sendCommand("Z");
 }
 
@@ -949,7 +949,7 @@ int YSpiPort::writeArray(vector<int> byteList)
         buff[idx] = (char)(hexb);
         idx = idx + 1;
     }
-    
+
     res = this->_upload("txdata", buff);
     return res;
 }
@@ -982,7 +982,7 @@ int YSpiPort::writeHex(string hexString)
         buff[idx] = (char)(hexb);
         idx = idx + 1;
     }
-    
+
     res = this->_upload("txdata", buff);
     return res;
 }
@@ -1042,7 +1042,7 @@ int YSpiPort::readByte(void)
     int mult = 0;
     int endpos = 0;
     int res = 0;
-    
+
     // first check if we have the requested character in the look-ahead buffer
     bufflen = (int)(_rxbuff).size();
     if ((_rxptr >= _rxbuffptr) && (_rxptr < _rxbuffptr+bufflen)) {
@@ -1050,7 +1050,7 @@ int YSpiPort::readByte(void)
         _rxptr = _rxptr + 1;
         return res;
     }
-    
+
     // try to preload more than one byte to speed-up byte-per-byte access
     currpos = _rxptr;
     reqlen = 1024;
@@ -1077,8 +1077,8 @@ int YSpiPort::readByte(void)
     }
     // still mixed, need to process character by character
     _rxptr = currpos;
-    
-    
+
+
     buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=1",_rxptr));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
@@ -1117,7 +1117,7 @@ string YSpiPort::readStr(int nChars)
     if (nChars > 65535) {
         nChars = 65535;
     }
-    
+
     buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d", _rxptr,nChars));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
@@ -1154,7 +1154,7 @@ string YSpiPort::readBin(int nChars)
     if (nChars > 65535) {
         nChars = 65535;
     }
-    
+
     buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d", _rxptr,nChars));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
@@ -1197,7 +1197,7 @@ vector<int> YSpiPort::readArray(int nChars)
     if (nChars > 65535) {
         nChars = 65535;
     }
-    
+
     buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d", _rxptr,nChars));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
@@ -1240,7 +1240,7 @@ string YSpiPort::readHex(int nBytes)
     if (nBytes > 65535) {
         nBytes = 65535;
     }
-    
+
     buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d", _rxptr,nBytes));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
@@ -1284,7 +1284,7 @@ string YSpiPort::readLine(void)
     vector<string> msgarr;
     int msglen = 0;
     string res;
-    
+
     url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&len=1&maxw=1",_rxptr);
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);
@@ -1331,7 +1331,7 @@ vector<string> YSpiPort::readMessages(string pattern,int maxWait)
     int msglen = 0;
     vector<string> res;
     int idx = 0;
-    
+
     url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&pat=%s", _rxptr, maxWait,pattern.c_str());
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);
@@ -1386,7 +1386,7 @@ int YSpiPort::read_avail(void)
     string buff;
     int bufflen = 0;
     int res = 0;
-    
+
     buff = this->_download(YapiWrapper::ysprintf("rxcnt.bin?pos=%d",_rxptr));
     bufflen = (int)(buff).size() - 1;
     while ((bufflen > 0) && (((u8)buff[bufflen]) != 64)) {
@@ -1415,7 +1415,7 @@ string YSpiPort::queryLine(string query,int maxWait)
     vector<string> msgarr;
     int msglen = 0;
     string res;
-    
+
     url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=!%s", maxWait,query.c_str());
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);

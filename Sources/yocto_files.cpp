@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.cpp 27180 2017-04-20 13:46:43Z seb $
+ * $Id: yocto_files.cpp 27275 2017-04-25 15:40:21Z seb $
  *
  * Implements yFindFiles(), the high-level API for Files functions
  *
@@ -285,7 +285,7 @@ string YFiles::sendCommand(string command)
 {
     string url;
     url = YapiWrapper::ysprintf("files.json?a=%s",command.c_str());
-    
+
     return this->_download(url);
 }
 

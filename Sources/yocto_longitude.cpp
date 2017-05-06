@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_longitude.cpp 26762 2017-03-16 09:08:58Z seb $
+ * $Id: yocto_longitude.cpp 27275 2017-04-25 15:40:21Z seb $
  *
  * Implements yFindLongitude(), the high-level API for Longitude functions
  *

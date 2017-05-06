@@ -1,1 +1,1 @@
-- Add support for new JZON protocol (improve overall performance)
+- Fix segmentation fault during YAPI:FreeAPI

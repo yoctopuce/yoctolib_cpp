@@ -6,7 +6,7 @@
 <style type="text/css">
 /*********************************************************************
  *
- * $Id: yoctolib-cpp-FR.html 27127 2017-04-07 08:25:19Z seb $
+ * $Id: yoctolib-cpp-FR.html 27275 2017-04-25 15:40:21Z seb $
  *
  * Searchable documentation browser for Yoctopuce Library
  *
@@ -257,7 +257,7 @@ var minusimage="data:image/gif;base64,R0lGODlhEAAQAIAAAEJCQv///yH5BAAAAP8ALAAAAA
 
 var marginSize=250;
 var resizeCallBacks= new Array();
-var SVN_Id = '$Id: yoctolib-cpp-FR.html 27127 2017-04-07 08:25:19Z seb $';
+var SVN_Id = '$Id: yoctolib-cpp-FR.html 27275 2017-04-25 15:40:21Z seb $';
 var Version = (SVN_Id.split(' '))[3];
 var doc = new Array();
 
@@ -317,6 +317,7 @@ doc['Module']['checkFirmware']={syn:'Teste si le fichier byn est valide pour le 
 doc['Module']['clearCache']={syn:'Invalide le cache.',lib:'module&rarr;clearCache()',pro:'void clearCache()',cmt:'<p>Invalide le cache. Invalide le cache des valeurs courantes du module. Force le prochain appel \xE0 une m\xE9thode get_xxx() ou loadxxx() pour charger les les donn\xE9es depuis le module.</p>'};
 doc['Module']['describe']={syn:'Retourne un court texte d\xE9crivant le module.',lib:'module&rarr;describe()',pro:'string describe()',cmt:'<p>Retourne un court texte d\xE9crivant le module. Ce texte peut contenir soit le nom logique du module, soit son num\xE9ro de s\xE9rie.</p>',ret:'une cha\xEEne de caract\xE8res d\xE9crivant le module'};
 doc['Module']['download']={syn:'T\xE9l\xE9charge le fichier choisi du module et retourne son contenu.',lib:'module&rarr;download()',pro:'string download(string <span id=pn>pathname</span>)',cmt:'<p>T\xE9l\xE9charge le fichier choisi du module et retourne son contenu.</p>',par:{pathname:'nom complet du fichier'},ret:'le contenu du fichier charg\xE9',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>YAPI_INVALID_STRING</tt>.'};
+doc['Module']['functionBaseType']={syn:'Retourne le type de base de la <i>n</i>i\xE8me fonction du module.',lib:'module&rarr;functionBaseType()',pro:'string functionBaseType(int <span id=pn>functionIndex</span>)',cmt:'<p>Retourne le type de base de la <i>n</i>i\xE8me fonction du module. Par exemple, le type de base de toutes les fonctions de mesure est \x22Sensor\x22.</p>',par:{functionIndex:'l\x27index de la fonction pour laquelle l\x27information est d\xE9sir\xE9e, en commen\xE7ant \xE0 0 pour la premi\xE8re fonction.'},ret:'une cha\xEEne de caract\xE8res correspondant au type de base de la fonction',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne un cha\xEEne vide.'};
 doc['Module']['functionCount']={syn:'Retourne le nombre de fonctions (sans compter l\x27interface \x22module\x22) existant sur le module.',lib:'module&rarr;functionCount()',pro:'int functionCount()',cmt:'<p>Retourne le nombre de fonctions (sans compter l\x27interface \x22module\x22) existant sur le module.</p>',ret:'le nombre de fonctions sur le module',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne un code d\x27erreur n\xE9gatif.'};
 doc['Module']['functionId']={syn:'Retourne l\x27identifiant mat\xE9riel de la <i>n</i>i\xE8me fonction du module.',lib:'module&rarr;functionId()',pro:'string functionId(int <span id=pn>functionIndex</span>)',cmt:'<p>Retourne l\x27identifiant mat\xE9riel de la <i>n</i>i\xE8me fonction du module.</p>',par:{functionIndex:'l\x27index de la fonction pour laquelle l\x27information est d\xE9sir\xE9e, en commen\xE7ant \xE0 0 pour la premi\xE8re fonction.'},ret:'une cha\xEEne de caract\xE8res correspondant \xE0 l\x27identifiant mat\xE9riel unique de la fonction d\xE9sir\xE9e',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne un cha\xEEne vide.'};
 doc['Module']['functionName']={syn:'Retourne le nom logique de la <i>n</i>i\xE8me fonction du module.',lib:'module&rarr;functionName()',pro:'string functionName(int <span id=pn>functionIndex</span>)',cmt:'<p>Retourne le nom logique de la <i>n</i>i\xE8me fonction du module.</p>',par:{functionIndex:'l\x27index de la fonction pour laquelle l\x27information est d\xE9sir\xE9e, en commen\xE7ant \xE0 0 pour la premi\xE8re fonction.'},ret:'une cha\xEEne de caract\xE8res correspondant au nom logique de la fonction d\xE9sir\xE9e',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne un cha\xEEne vide.'};

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_current.cpp 27180 2017-04-20 13:46:43Z seb $
+ * $Id: yocto_current.cpp 27275 2017-04-25 15:40:21Z seb $
  *
  * Implements yFindCurrent(), the high-level API for Current functions
  *

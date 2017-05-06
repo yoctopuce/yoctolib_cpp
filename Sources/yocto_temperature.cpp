@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_temperature.cpp 27180 2017-04-20 13:46:43Z seb $
+ * $Id: yocto_temperature.cpp 27275 2017-04-25 15:40:21Z seb $
  *
  * Implements yFindTemperature(), the high-level API for Temperature functions
  *
@@ -470,7 +470,7 @@ int YTemperature::set_thermistorResponseTable(vector<double> tempValues,vector<d
         _throw(YAPI_INVALID_ARGUMENT,"table sizes mismatch");
         return YAPI_INVALID_ARGUMENT;
     }
-    
+
     res = this->set_command("Z");
     if (!(res==YAPI_SUCCESS)) {
         _throw(YAPI_IO_ERROR,"unable to reset thermistor parameters");
@@ -536,7 +536,7 @@ int YTemperature::loadThermistorResponseTable(vector<double>& tempValues,vector<
     double currRes = 0.0;
     tempValues.clear();
     resValues.clear();
-    
+
     id = this->get_functionId();
     id = (id).substr( 11, (int)(id).length() - 11);
     bin_json = this->_download(YapiWrapper::ysprintf("extra.json?page=%s",id.c_str()));

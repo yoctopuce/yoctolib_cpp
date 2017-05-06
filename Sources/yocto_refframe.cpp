@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_refframe.cpp 27180 2017-04-20 13:46:43Z seb $
+ * $Id: yocto_refframe.cpp 27275 2017-04-25 15:40:21Z seb $
  *
  * Implements yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -425,7 +425,7 @@ int YRefFrame::get_calibrationState(void)
     vector<int> iCalib;
     int caltyp = 0;
     int res = 0;
-    
+
     calibParam = this->get_calibrationParam();
     iCalib = YAPI::_decodeFloats(calibParam);
     caltyp = ((iCalib[0]) / (1000));
@@ -455,7 +455,7 @@ int YRefFrame::get_measureQuality(void)
     vector<int> iCalib;
     int caltyp = 0;
     int res = 0;
-    
+
     calibParam = this->get_calibrationParam();
     iCalib = YAPI::_decodeFloats(calibParam);
     caltyp = ((iCalib[0]) / (1000));
@@ -795,7 +795,7 @@ int YRefFrame::more3DCalibrationV2(void)
             return YAPI_SUCCESS;
         }
     }
-    
+
     calibParam = this->_download("api/refFrame/calibrationParam.txt");
     iCalib = YAPI::_decodeFloats(calibParam);
     cal3 = ((iCalib[1]) / (1000));
@@ -981,7 +981,7 @@ int YRefFrame::cancel3DCalibration(void)
     if (_calibStage == 0) {
         return YAPI_SUCCESS;
     }
-    
+
     _calibStage = 0;
     return this->set_calibrationParam(_calibSavedParams);
 }

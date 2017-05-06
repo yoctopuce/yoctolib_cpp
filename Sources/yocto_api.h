@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 27224 2017-04-21 13:34:00Z seb $
+ * $Id: yocto_api.h 27275 2017-04-25 15:40:21Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -2041,7 +2041,7 @@ public:
      * @param functionIndex : the index of the function for which the information is desired, starting at
      * 0 for the first function.
      *
-     * @return a the type of the function
+     * @return a string corresponding to the type of the function
      *
      * On failure, throws an exception or returns an empty string.
      */
@@ -2049,15 +2049,16 @@ public:
 
 
     /**
-    * Retrieves the type of the <i>n</i>th function on the module.
-    *
-    * @param functionIndex : the index of the function for which the information is desired, starting at
-    * 0 for the first function.
-    *
-    * @return a the type of the function
-    *
-    * On failure, throws an exception or returns an empty string.
-    */
+     * Retrieves the base type of the <i>n</i>th function on the module.
+     * For instance, the base type of all measuring functions is "Sensor".
+     *
+     * @param functionIndex : the index of the function for which the information is desired, starting at
+     * 0 for the first function.
+     *
+     * @return a string corresponding to the base type of the function
+     *
+     * On failure, throws an exception or returns an empty string.
+     */
     string          functionBaseType(int functionIndex);
 
 

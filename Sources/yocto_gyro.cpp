@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.cpp 27180 2017-04-20 13:46:43Z seb $
+ * $Id: yocto_gyro.cpp 27275 2017-04-25 15:40:21Z seb $
  *
  * Implements yFindGyro(), the high-level API for Gyro functions
  *
@@ -596,7 +596,7 @@ int YGyro::_loadAngles(void)
     double sqz = 0.0;
     double norm = 0.0;
     double delta = 0.0;
-    
+
     if (this->_loadQuaternion() != YAPI_SUCCESS) {
         return YAPI_DEVICE_NOT_FOUND;
     }

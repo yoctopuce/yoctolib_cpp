@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_lin.c 27225 2017-04-21 13:34:58Z seb $
+ * $Id: ypkt_lin.c 27347 2017-05-04 15:49:06Z seb $
  *
  * OS-specific USB packet layer, Linux version
  *
@@ -178,7 +178,7 @@ static stringCacheSt stringCache[STRING_CACHE_SIZE];
 
 
 // on success data point to a null terminated string of max length-1 characters
-static int getUsbStringASCII(libusb_device_handle *hdl, libusb_device *dev, u8 desc_index, char *data, u32 length)
+static int getUsbStringASCII(yContextSt *ctx, libusb_device_handle *hdl, libusb_device *dev, u8 desc_index, char *data, u32 length)
 {
     u8  buffer[512];
     u32 l,len;
@@ -187,7 +187,7 @@ static int getUsbStringASCII(libusb_device_handle *hdl, libusb_device *dev, u8 d
     stringCacheSt *f = NULL;
     u64 now = yapiGetTickCount();
 
-    yEnterCriticalSection(&yContext->string_cache_cs);
+    yEnterCriticalSection(&ctx->string_cache_cs);
 
     for (i = 0; i < STRING_CACHE_SIZE; i++, c++) {
         if (c->expiration > now) {
@@ -199,7 +199,7 @@ static int getUsbStringASCII(libusb_device_handle *hdl, libusb_device *dev, u8 d
                     memcpy(data, c->string,  len);
                     data[len] = 0;
                     HALENUMLOG("return string from cache (%p:%d->%s)\n",dev,desc_index,c->string);
-                    yLeaveCriticalSection(&yContext->string_cache_cs);
+                    yLeaveCriticalSection(&ctx->string_cache_cs);
                     return c->len;
                 } else {
                     f = c;
@@ -221,7 +221,7 @@ static int getUsbStringASCII(libusb_device_handle *hdl, libusb_device *dev, u8 d
         LIBUSB_REQUEST_GET_DESCRIPTOR, (LIBUSB_DT_STRING << 8) | desc_index,
         0, buffer, 512, 10000);
     if(res<0) {
-        yLeaveCriticalSection(&yContext->string_cache_cs);
+        yLeaveCriticalSection(&ctx->string_cache_cs);
         return res;
     }
 
@@ -244,7 +244,7 @@ static int getUsbStringASCII(libusb_device_handle *hdl, libusb_device *dev, u8 d
         f->expiration = yapiGetTickCount() + STRING_CACHE_EXPIRATION;
         HALENUMLOG("add string to cache (%p:%d->%s)\n",dev,desc_index,f->string);
     }
-    yLeaveCriticalSection(&yContext->string_cache_cs);
+    yLeaveCriticalSection(&ctx->string_cache_cs);
 
     return len;
 }
@@ -285,7 +285,13 @@ int yyyUSB_init(yContextSt *ctx,char *errmsg)
     if(res !=0){
         return yLinSetErr("Unable to start lib USB", res,errmsg);
     }
-
+#if 0
+    {
+        const struct libusb_version *libusb_v;
+        libusb_v = libusb_get_version();
+        dbglog("Use libUSB v%d.%d.%d.%d\n", libusb_v->major, libusb_v->minor, libusb_v->micro, libusb_v->nano);
+    }
+#endif
     ctx->usb_thread_state = USB_THREAD_NOT_STARTED;
     pthread_create(&ctx->usb_thread, NULL, event_thread, ctx);
     //wait thead start
@@ -374,7 +380,7 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
         if (desc.idVendor != YOCTO_VENDORID) {
             continue;
         }
-        HALLOG("open device %x:%x\n", desc.idVendor, desc.idProduct);
+        HALENUMLOG("open device %x:%x\n", desc.idVendor, desc.idProduct);
 
         if(getDevConfig(dev, &config) < 0) {
             continue;
@@ -394,7 +400,7 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
             continue;
         }
         HALENUMLOG("try to get serial for %x:%x:%x (%p)\n", desc.idVendor, desc.idProduct, desc.iSerialNumber, dev);
-        res = getUsbStringASCII(hdl, dev, desc.iSerialNumber, iface->serial, YOCTO_SERIAL_LEN);
+        res = getUsbStringASCII(yContext, hdl, dev, desc.iSerialNumber, iface->serial, YOCTO_SERIAL_LEN);
         if (res < 0) {
             HALENUMLOG("unable to get serial for device %x:%x\n", desc.idVendor, desc.idProduct);
         }
@@ -435,8 +441,12 @@ static void read_callback(struct libusb_transfer *transfer)
     int res;
     linRdTr      *lintr = (linRdTr*)transfer->user_data;
     yInterfaceSt *iface = lintr->iface;
+    if (lintr == NULL){
+        HALLOG("CBrd:drop invalid ypkt rd_callback (lintr is null)\n");
+        return;
+    }
     if (iface == NULL){
-        HALLOG("drop invalid ypkt read_callback (iface is null)\n");
+        HALLOG("CBrd:drop invalid ypkt rd_callback (iface is null)\n");
         return;
     }
 
@@ -447,7 +457,7 @@ static void read_callback(struct libusb_transfer *transfer)
         if (iface->flags.yyySetupDone) {
             res=libusb_submit_transfer(lintr->tr);
             if(res<0) {
-                HALLOG("%s:%d libusb_submit_transfer errror %X\n",iface->serial,iface->ifaceno,res);
+                HALLOG("CBrd:%s libusb_submit_transfer errror %X\n",iface->serial, res);
             }
         }
         return;
@@ -456,36 +466,40 @@ static void read_callback(struct libusb_transfer *transfer)
         if (iface->flags.yyySetupDone) {
             res = libusb_submit_transfer(lintr->tr);
             if (res < 0) {
-                HALLOG("%s:%d libusb_submit_transfer errror %X\n", iface->serial, iface->ifaceno, res);
+                HALLOG("CBrd:%s libusb_submit_transfer errror %X\n", iface->serial, res);
             }
         }
         break;
     case LIBUSB_TRANSFER_TIMED_OUT :
-        HALLOG("%s:%d pkt timeout\n",iface->serial,iface->ifaceno);
+        HALLOG("CBrd:%s pkt timeout\n",iface->serial);
         break;
     case LIBUSB_TRANSFER_CANCELLED:
-        HALLOG("%s:%d pkt_cancelled (len=%d) \n",iface->serial,iface->ifaceno,transfer->actual_length);
+        HALLOG("CBrd:%s pkt_cancelled (len=%d) \n",iface->serial, transfer->actual_length);
         if (iface->flags.yyySetupDone && transfer->actual_length == 64) {
             yPktQueuePushD2H(iface, &lintr->tmppkt, NULL);
         }
         break;
     case LIBUSB_TRANSFER_STALL:
-        HALLOG("%s:%d pkt stall\n",iface->serial,iface->ifaceno);
+        HALLOG("CBrd:%s pkt stall\n",iface->serial );
+        res = libusb_cancel_transfer(lintr->tr);
+        HALLOG("CBrd:%s libusb_cancel_transfer returned %d\n",iface->serial, res);
+        res = libusb_clear_halt(iface->hdl, iface->rdendp);
+        HALLOG("CBrd:%s libusb_clear_hal returned %d\n",iface->serial, res);
         if (iface->flags.yyySetupDone) {
             res = libusb_submit_transfer(lintr->tr);
             if (res < 0) {
-                HALLOG("%s:%d libusb_submit_transfer errror %X\n", iface->serial, iface->ifaceno, res);
+                HALLOG("CBrd:%s libusb_submit_transfer errror %X\n", iface->serial, res);
             }
         }
         break;
     case LIBUSB_TRANSFER_NO_DEVICE:
-        HALLOG("%s:%d pkt_cancelled (len=%d)\n",iface->serial,iface->ifaceno,transfer->actual_length);
+        HALLOG("CBrd:%s pkt_cancelled (len=%d)\n",iface->serial, transfer->actual_length);
         return;
     case LIBUSB_TRANSFER_OVERFLOW:
-        HALLOG("%s:%d pkt_overflow (len=%d)\n",iface->serial,iface->ifaceno,transfer->actual_length);
+        HALLOG("CBrd:%s pkt_overflow (len=%d)\n",iface->serial, transfer->actual_length);
         break;
     default:
-        HALLOG("%s:%d unknown state %X\n",iface->serial,iface->ifaceno,transfer->status);
+        HALLOG("CBrd:%s unknown state %X\n",iface->serial, transfer->status);
         break;
     }
 }
@@ -501,7 +515,7 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
 
 
 
-    HALLOG("%s:%d yyySetup %X:%X\n",iface->serial,iface->ifaceno,iface->vendorid,iface->deviceid);
+    HALLOG("%s yyySetup %X:%X\n",iface->serial,iface->vendorid,iface->deviceid);
     if(iface->devref==NULL){
         return YERR(YAPI_DEVICE_NOT_FOUND);
     }
@@ -526,14 +540,14 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
         goto error;
     }
     if(res){
-        HALLOG("%s:%d need to detach kernel driver\n",iface->serial,iface->ifaceno);
+        HALLOG("%s need to detach kernel driver\n",iface->serial);
         if((res = libusb_detach_kernel_driver(iface->hdl,iface->ifaceno))<0){
             error= yLinSetErr("libusb_detach_kernel_driver",res,errmsg);
             goto error;
         }
     }
 
-    HALLOG("%s:%d Claim interface\n",iface->serial,iface->ifaceno);
+    HALLOG("%s Claim interface\n",iface->serial);
     if((res = libusb_claim_interface(iface->hdl,iface->ifaceno))<0){
         error= yLinSetErr("libusb_claim_interface", res,errmsg);
         goto error;
@@ -586,7 +600,7 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
             return yLinSetErr("libusb_submit_transfer",res,errmsg);
         }
     }
-    HALLOG("%s:%d yyySetup done\n",iface->serial,iface->ifaceno);
+    HALLOG("%s yyySetup done\n",iface->serial);
 
     return YAPI_SUCCESS;
 error:

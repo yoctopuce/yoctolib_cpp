@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.cpp 27180 2017-04-20 13:46:43Z seb $
+ * $Id: yocto_network.cpp 27275 2017-04-25 15:40:21Z seb $
  *
  * Implements yFindNetwork(), the high-level API for Network functions
  *
@@ -1560,7 +1560,7 @@ int YNetwork::useStaticIP(string ipAddress,int subnetMaskLen,string router)
 string YNetwork::ping(string host)
 {
     string content;
-    
+
     content = this->_download(YapiWrapper::ysprintf("ping.txt?host=%s",host.c_str()));
     return content;
 }

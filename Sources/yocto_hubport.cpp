@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_hubport.cpp 27180 2017-04-20 13:46:43Z seb $
+ * $Id: yocto_hubport.cpp 27275 2017-04-25 15:40:21Z seb $
  *
  * Implements yFindHubPort(), the high-level API for HubPort functions
  *
