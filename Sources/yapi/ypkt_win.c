@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_win.c 27225 2017-04-21 13:34:58Z seb $
+ * $Id: ypkt_win.c 27402 2017-05-09 11:12:04Z seb $
  *
  * OS-specific USB packet layer, Windows version
  *
@@ -562,7 +562,7 @@ int yyyOShdlCompare(yPrivDeviceSt *dev, yInterfaceSt *newiface)
         return 0;
     }
     if (YSTRCMP(dev->iface.devicePath, newiface->devicePath) != 0) {
-        HALLOG("devref %d has changed for %s (%s)\n", i, dev->infos.serial, DP(dev->ifaces[i].devicePath));
+        HALLOG("devref has changed for %s (%s)\n", dev->infos.serial, DP(dev->iface.devicePath));
         return 0;
     }
     return 1;
@@ -936,7 +936,7 @@ int yyySetup(yInterfaceSt *iface, char *errmsg)
     return YAPI_SUCCESS;
 }
 
-int yyySignalOutPkt(yInterfaceSt *iface)
+int yyySignalOutPkt(yInterfaceSt *iface, char *errmsg)
 {
     ySetEvent(&iface->EV[YWIN_EVENT_INTERRUPT]);
     return YAPI_SUCCESS;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 27374 2017-05-06 12:27:34Z seb $
+ * $Id: yocto_api.cpp 27389 2017-05-08 13:03:10Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -57,6 +57,7 @@
 #include <time.h>
 #include <stdarg.h>
 #include <math.h>
+#include "yapi/yproto.h"
 
 static  yCRITICAL_SECTION   _updateDeviceList_CS;
 static  yCRITICAL_SECTION   _handleEvent_CS;
@@ -3512,8 +3513,19 @@ YRETCODE    YDevice::HTTPRequestAsync(int channel, const string& request, HTTPRe
 YRETCODE    YDevice::HTTPRequest(int channel, const string& request, string& buffer, yapiRequestProgressCallback callback, void *context, string& errmsg)
 {
     YRETCODE    res;
-    yEnterCriticalSection(&_lock);
-    res =HTTPRequest_unsafe(channel, request, buffer, callback, context, errmsg);
+    int         locked = 0;
+    int         i;
+
+    for (i = 0; !locked && i < 5 ; i++) {
+        locked = yTryEnterCriticalSection(&_lock);
+        if (!locked) {
+            yApproximateSleep(50);
+        }
+    }
+    if (!locked) {
+        yEnterCriticalSection(&_lock);
+    }
+    res = HTTPRequest_unsafe(channel, request, buffer, callback, context, errmsg);
     yLeaveCriticalSection(&_lock);
     return res;
 }

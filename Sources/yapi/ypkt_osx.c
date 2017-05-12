@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_osx.c 27225 2017-04-21 13:34:58Z seb $
+ * $Id: ypkt_osx.c 27393 2017-05-09 07:48:21Z seb $
  *
  * OS-specific USB packet layer, Mac OS X version
  *
@@ -476,7 +476,7 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
 
 
 
-int yyySignalOutPkt(yInterfaceSt *iface)
+int yyySignalOutPkt(yInterfaceSt *iface, char *errmsg)
 {
     int res =YAPI_SUCCESS;
     pktItem *pktitem;
@@ -485,7 +485,7 @@ int yyySignalOutPkt(yInterfaceSt *iface)
     while (pktitem!=NULL){
         if(iface->devref==NULL){
             yFree(pktitem);
-            return YAPI_IO_ERROR;//YERR(YAPI_DEVICE_NOT_FOUND);
+            return YERR(YAPI_IO_ERROR);
         }
         res = IOHIDDeviceSetReport(iface->devref,
                                    kIOHIDReportTypeOutput,
@@ -494,7 +494,7 @@ int yyySignalOutPkt(yInterfaceSt *iface)
         yFree(pktitem);
         if (res != kIOReturnSuccess) {
             dbglog("IOHIDDeviceSetReport failed with 0x%x\n", res);
-            return YAPI_IO_ERROR;
+            return YERRMSG(YAPI_IO_ERROR,"IOHIDDeviceSetReport failed");;
         }
         yPktQueuePopH2D(iface, &pktitem);
     }

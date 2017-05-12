@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.cpp 27275 2017-04-25 15:40:21Z seb $
+ * $Id: yocto_network.cpp 27418 2017-05-11 09:59:50Z seb $
  *
  * Implements yFindNetwork(), the high-level API for Network functions
  *
@@ -1529,6 +1529,21 @@ int YNetwork::_invokeValueCallback(string value)
 int YNetwork::useDHCP(string fallbackIpAddr,int fallbackSubnetMaskLen,string fallbackRouter)
 {
     return this->set_ipConfig(YapiWrapper::ysprintf("DHCP:%s/%d/%s", fallbackIpAddr.c_str(), fallbackSubnetMaskLen,fallbackRouter.c_str()));
+}
+
+/**
+ * Changes the configuration of the network interface to enable the use of an
+ * IP address received from a DHCP server. Until an address is received from a DHCP
+ * server, the module uses an IP of the network 169.254.0.0/16 (APIPA).
+ * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
+ *
+ * @return YAPI_SUCCESS when the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YNetwork::useDHCPauto(void)
+{
+    return this->set_ipConfig("DHCP:");
 }
 
 /**

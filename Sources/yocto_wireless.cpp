@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.cpp 27275 2017-04-25 15:40:21Z seb $
+ * $Id: yocto_wireless.cpp 27437 2017-05-12 13:13:55Z seb $
  *
  * Implements yFindWireless(), the high-level API for Wireless functions
  *
@@ -127,6 +127,7 @@ YWireless::YWireless(const string& func): YFunction(func)
     ,_security(SECURITY_INVALID)
     ,_message(MESSAGE_INVALID)
     ,_wlanConfig(WLANCONFIG_INVALID)
+    ,_wlanState(WLANSTATE_INVALID)
     ,_valueCallbackWireless(NULL)
 //--- (end of generated code: Wireless initialization)
 {
@@ -163,6 +164,9 @@ int YWireless::_parseAttr(YJSONObject* json_val)
     }
     if(json_val->has("wlanConfig")) {
         _wlanConfig =  json_val->getString("wlanConfig");
+    }
+    if(json_val->has("wlanState")) {
+        _wlanState =  (Y_WLANSTATE_enum)json_val->getInt("wlanState");
     }
     return YFunction::_parseAttr(json_val);
 }
@@ -354,6 +358,49 @@ int YWireless::set_wlanConfig(const string& newval)
 }
 
 /**
+ * Returns the current state of the wireless interface. The state Y_WLANSTATE_DOWN means that the
+ * network interface is
+ * not connected to a network. The state Y_WLANSTATE_SCANNING means that the network interface is
+ * scanning available
+ * frequencies. During this stage, the device is not reachable, and the network settings are not yet
+ * applied. The state
+ * Y_WLANSTATE_CONNECTED means that the network settings have been successfully applied ant that the
+ * device is reachable
+ * from the wireless network. If the device is configured to use ad-hoc or Soft AP mode, it means that
+ * the wireless network
+ * is up and that other devices can join the network. The state Y_WLANSTATE_REJECTED means that the
+ * network interface has
+ * not been able to join the requested network. The description of the error can be obtain with the
+ * get_message() method.
+ *
+ * @return a value among Y_WLANSTATE_DOWN, Y_WLANSTATE_SCANNING, Y_WLANSTATE_CONNECTED and
+ * Y_WLANSTATE_REJECTED corresponding to the current state of the wireless interface
+ *
+ * On failure, throws an exception or returns Y_WLANSTATE_INVALID.
+ */
+Y_WLANSTATE_enum YWireless::get_wlanState(void)
+{
+    Y_WLANSTATE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YWireless::WLANSTATE_INVALID;
+                }
+            }
+        }
+        res = _wlanState;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
  * Retrieves a wireless lan interface for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
@@ -438,6 +485,24 @@ int YWireless::_invokeValueCallback(string value)
 }
 
 /**
+ * Triggers a scan of the wireless frequency and builds the list of available networks.
+ * The scan forces a disconnection from the current network. At then end of the process, the
+ * the network interface attempts to reconnect to the previous network. During the scan, the wlanState
+ * switches to Y_WLANSTATE_DOWN, then to Y_WLANSTATE_SCANNING. When the scan is completed,
+ * get_wlanState() returns either Y_WLANSTATE_DOWN or Y_WLANSTATE_SCANNING. At this
+ * point, the list of detected network can be retrieved with the get_detectedWlans() method.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YWireless::startWlanScan(void)
+{
+    string config;
+    config = this->get_wlanConfig();
+    // a full scan is triggered when a config is applied
+    return this->set_wlanConfig(config);
+}
+
+/**
  * Changes the configuration of the wireless lan interface to connect to an existing
  * access point (infrastructure mode).
  * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
@@ -505,8 +570,8 @@ int YWireless::softAPNetwork(string ssid,string securityKey)
 /**
  * Returns a list of YWlanRecord objects that describe detected Wireless networks.
  * This list is not updated when the module is already connected to an acces point (infrastructure mode).
- * To force an update of this list, adhocNetwork() must be called to disconnect
- * the module from the current network. The returned list must be unallocated by the caller.
+ * To force an update of this list, startWlanScan() must be called.
+ * Note that an languages without garbage collections, the returned list must be freed by the caller.
  *
  * @return a list of YWlanRecord objects, containing the SSID, channel,
  *         link quality and the type of security of the wireless network.

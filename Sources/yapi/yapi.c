@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 26758 2017-03-15 13:59:31Z seb $
+ * $Id: yapi.c 27418 2017-05-11 09:59:50Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -2594,7 +2594,7 @@ static void  yapiUnregisterHub_internal(const char *url)
     if(!yContext) {
         return;
     }
-    if(YSTRICMP(url,"usb")==0){
+    if (YSTRICMP(url,"usb")==0) {
         if(yContext->detecttype & Y_DETECT_USB) {
             yUSBReleaseAllDevices();
             yUsbFree(yContext,NULL);

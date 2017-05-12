@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.cpp 27275 2017-04-25 15:40:21Z seb $
+ * $Id: yocto_messagebox.cpp 27418 2017-05-11 09:59:50Z seb $
  *
  * Implements yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -129,7 +129,6 @@ string YSms::get_textData(void)
     string isolatin;
     int isosize = 0;
     int i = 0;
-
     if (_alphab == 0) {
         // using GSM standard 7-bit alphabet
         return _mbox->gsm2str(_udata);
@@ -145,7 +144,6 @@ string YSms::get_textData(void)
         }
         return isolatin;
     }
-
     // default: convert 8 bit to string as-is
     return _udata;
 }
@@ -156,7 +154,6 @@ vector<int> YSms::get_unicodeData(void)
     int unisize = 0;
     int unival = 0;
     int i = 0;
-
     if (_alphab == 0) {
         // using GSM standard 7-bit alphabet
         return _mbox->gsm2unicode(_udata);
@@ -333,7 +330,6 @@ int YSms::convertToUnicode(void)
     int udatalen = 0;
     int i = 0;
     int uni = 0;
-
     if (_alphab == 2) {
         return YAPI_SUCCESS;
     }
@@ -352,7 +348,6 @@ int YSms::convertToUnicode(void)
     _alphab = 2;
     _udata = string(0, (char)0);
     this->addUnicodeData(ucs2);
-
     return YAPI_SUCCESS;
 }
 
@@ -363,11 +358,9 @@ int YSms::addText(string val)
     string newdata;
     int newdatalen = 0;
     int i = 0;
-
     if ((int)(val).length() == 0) {
         return YAPI_SUCCESS;
     }
-
     if (_alphab == 0) {
         // Try to append using GSM 7-bit alphabet
         newdata = _mbox->str2gsm(val);
@@ -412,7 +405,6 @@ int YSms::addText(string val)
             i = i + 1;
         }
     }
-
     return this->set_userData(udata);
 }
 
@@ -425,7 +417,6 @@ int YSms::addUnicodeData(vector<int> val)
     string udata;
     int udatalen = 0;
     int surrogate = 0;
-
     if (_alphab != 2) {
         this->convertToUnicode();
     }
@@ -464,7 +455,6 @@ int YSms::addUnicodeData(vector<int> val)
         udatalen = udatalen + 2;
         i = i + 1;
     }
-
     return this->set_userData(udata);
 }
 
@@ -490,7 +480,6 @@ int YSms::set_parts(vector<YSms> parts)
     if (_npdu == 0) {
         return YAPI_INVALID_ARGUMENT;
     }
-
     sorted.clear();
     partno = 0;
     while (partno < _npdu) {
@@ -1057,7 +1046,6 @@ int YSms::parseUserDataHeader(void)
     int iei = 0;
     int ielen = 0;
     string sig;
-
     _aggSig = "";
     _aggIdx = 0;
     _aggCnt = 0;
@@ -1104,10 +1092,8 @@ int YSms::parsePdu(string pdu)
     int carry = 0;
     int nbits = 0;
     int thisb = 0;
-
     _pdu = pdu;
     _npdu = 1;
-
     // parse meta-data
     _smsc = this->decodeAddress(pdu, 1, 2*(((u8)pdu[0])-1));
     rpos = 1+((u8)pdu[0]);
@@ -1146,7 +1132,6 @@ int YSms::parsePdu(string pdu)
     _mclass = ((dcs) & (16+3));
     _stamp = this->decodeTimeStamp(pdu, rpos, tslen);
     rpos = rpos + tslen;
-
     // parse user data (including udh)
     nbits = 0;
     carry = 0;
@@ -1209,7 +1194,6 @@ int YSms::parsePdu(string pdu)
         }
     }
     this->parseUserDataHeader();
-
     return YAPI_SUCCESS;
 }
 
@@ -1634,7 +1618,6 @@ YSms YMessageBox::fetchPdu(int slot)
     string hexPdu;
     YSms sms;
 
-
     binPdu = this->_download(YapiWrapper::ysprintf("sms.json?pos=%d&len=1",slot));
     arrPdu = this->_json_get_array(binPdu);
     hexPdu = this->_decode_json_string(arrPdu[0]);
@@ -1648,7 +1631,6 @@ int YMessageBox::initGsm2Unicode(void)
 {
     int i = 0;
     int uni = 0;
-
     _gsm2unicode.clear();
     // 00-07
     _gsm2unicode.push_back(64);
@@ -1726,7 +1708,6 @@ int YMessageBox::initGsm2Unicode(void)
     }
     // Done
     _gsm2unicodeReady = true;
-
     return YAPI_SUCCESS;
 }
 
@@ -1737,7 +1718,6 @@ vector<int> YMessageBox::gsm2unicode(string gsm)
     int reslen = 0;
     vector<int> res;
     int uni = 0;
-
     if (!(_gsm2unicodeReady)) {
         this->initGsm2Unicode();
     }
@@ -1823,7 +1803,6 @@ string YMessageBox::gsm2str(string gsm)
     string resbin;
     string resstr;
     int uni = 0;
-
     if (!(_gsm2unicodeReady)) {
         this->initGsm2Unicode();
     }
@@ -1917,7 +1896,6 @@ string YMessageBox::str2gsm(string msg)
     int extra = 0;
     string res;
     int wpos = 0;
-
     if (!(_gsm2unicodeReady)) {
         this->initGsm2Unicode();
     }
@@ -2004,7 +1982,6 @@ int YMessageBox::checkNewMessages(void)
     vector<YSms> newAgg;
     vector<string> signatures;
     YSms sms;
-
 
     bitmapStr = this->get_slotsBitmap();
     if (bitmapStr == _prevBitmapStr) {
@@ -2109,7 +2086,6 @@ int YMessageBox::checkNewMessages(void)
         i = i + 1;
     }
     _messages = newMsg;
-
     return YAPI_SUCCESS;
 }
 
@@ -2219,7 +2195,6 @@ YSms YMessageBox::newMessage(string recipient)
 vector<YSms> YMessageBox::get_messages(void)
 {
     this->checkNewMessages();
-
     return _messages;
 }
 

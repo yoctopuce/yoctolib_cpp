@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 27225 2017-04-21 13:34:58Z seb $
+ * $Id: yproto.h 27394 2017-05-09 08:00:14Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -590,7 +590,9 @@ typedef struct _yInterfaceSt {
     libusb_device_handle    *hdl;
     u8                      rdendp;
     u8                      wrendp;
-    linRdTr                 rdTr[NB_LINUX_USB_TR];
+    linRdTr                 *rdTr;
+    linRdTr                 *wrTr;
+    int                     ioError;
 #endif
 } yInterfaceSt;
 
@@ -997,13 +999,13 @@ YRETCODE yapiRequestOpen(YIOHDL_internal *iohdl, int tpchan, const char *device,
 
 
 // for devices detection
-int  yyyUSB_init(yContextSt *ctx,char *errmsg);
-int  yyyUSB_stop(yContextSt *ctx,char *errmsg);
+int  yyyUSB_init(yContextSt *ctx, char *errmsg);
+int  yyyUSB_stop(yContextSt *ctx, char *errmsg);
 int  yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg);
-int  yyyOShdlCompare( yPrivDeviceSt *dev, yInterfaceSt *newiface);
+int  yyyOShdlCompare(yPrivDeviceSt *dev, yInterfaceSt *newiface);
 int  yyySetup(yInterfaceSt *iface,char *errmsg);
 YRETCODE  yyySendPacket( yInterfaceSt *iface,const USB_Packet *pkt,char *errmsg);
-int  yyySignalOutPkt(yInterfaceSt *iface);
+int  yyySignalOutPkt(yInterfaceSt *iface, char *errmsg);
 // close all stuff of setup
 void yyyPacketShutdown(yInterfaceSt *iface);
 
