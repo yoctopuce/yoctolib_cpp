@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_realtimeclock.h 27180 2017-04-20 13:46:43Z seb $
+ * $Id: yocto_realtimeclock.h 27704 2017-06-01 12:32:11Z seb $
  *
  * Declares yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *
@@ -205,6 +205,10 @@ public:
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
      *
+     * If a call to this object's is_online() method returns FALSE although
+     * you are certain that the matching device is plugged, make sure that you did
+     * call registerHub() at application initialization time.
+     *
      * @param func : a string that uniquely characterizes the clock
      *
      * @return a YRealTimeClock object allowing you to drive the clock.
@@ -280,6 +284,10 @@ public:
  * a clock by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
+ *
+ * If a call to this object's is_online() method returns FALSE although
+ * you are certain that the matching device is plugged, make sure that you did
+ * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the clock
  *

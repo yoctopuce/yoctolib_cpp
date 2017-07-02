@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 27275 2017-04-25 15:40:21Z seb $
+ * $Id: yocto_api.h 27704 2017-06-01 12:32:11Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -1674,6 +1674,10 @@ public:
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
      *
+     * If a call to this object's is_online() method returns FALSE although
+     * you are certain that the matching device is plugged, make sure that you did
+     * call registerHub() at application initialization time.
+     *
      * @param func : a string that uniquely characterizes the function
      *
      * @return a YFunction object allowing you to drive the function.
@@ -2285,7 +2289,8 @@ public:
     { return this->get_userVar(); }
 
     /**
-     * Returns the value previously stored in this attribute.
+     * Stores a 32 bit value in the device RAM. This attribute is at programmer disposal,
+     * should he need to store a state variable.
      * On startup and after a device reboot, the value is always reset to zero.
      *
      * @param newval : an integer
@@ -2308,6 +2313,10 @@ public:
      * a module by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
+     *
+     * If a call to this object's is_online() method returns FALSE although
+     * you are certain that the device is plugged, make sure that you did
+     * call registerHub() at application initialization time.
      *
      * @param func : a string containing either the serial number or
      *         the logical name of the desired module
@@ -2887,6 +2896,10 @@ public:
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
      *
+     * If a call to this object's is_online() method returns FALSE although
+     * you are certain that the matching device is plugged, make sure that you did
+     * call registerHub() at application initialization time.
+     *
      * @param func : a string that uniquely characterizes the sensor
      *
      * @return a YSensor object allowing you to drive the sensor.
@@ -3081,6 +3094,10 @@ public:
  * a sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
+ *
+ * If a call to this object's is_online() method returns FALSE although
+ * you are certain that the matching device is plugged, make sure that you did
+ * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the sensor
  *
@@ -3421,6 +3438,10 @@ inline bool yCheckLogicalName(const string& name)
  * a module by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
+ *
+ * If a call to this object's is_online() method returns FALSE although
+ * you are certain that the device is plugged, make sure that you did
+ * call registerHub() at application initialization time.
  *
  * @param func : a string containing either the serial number or
  *         the logical name of the desired module

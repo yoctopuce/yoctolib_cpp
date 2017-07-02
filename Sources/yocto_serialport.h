@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.h 27180 2017-04-20 13:46:43Z seb $
+ * $Id: yocto_serialport.h 27948 2017-06-30 14:46:55Z mvuilleu $
  *
  * Declares yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -321,6 +321,8 @@ public:
      * "Frame:[timeout]ms" for binary messages separated by a delay time,
      * "Modbus-ASCII" for MODBUS messages in ASCII mode,
      * "Modbus-RTU" for MODBUS messages in RTU mode,
+     * "Wiegand-ASCII" for Wiegand messages in ASCII mode,
+     * "Wiegand-26","Wiegand-34", etc for Wiegand messages in byte mode,
      * "Char" for a continuous ASCII stream or
      * "Byte" for a continuous binary stream.
      *
@@ -339,6 +341,8 @@ public:
      * "Frame:[timeout]ms" for binary messages separated by a delay time,
      * "Modbus-ASCII" for MODBUS messages in ASCII mode,
      * "Modbus-RTU" for MODBUS messages in RTU mode,
+     * "Wiegand-ASCII" for Wiegand messages in ASCII mode,
+     * "Wiegand-26","Wiegand-34", etc for Wiegand messages in byte mode,
      * "Char" for a continuous ASCII stream or
      * "Byte" for a continuous binary stream.
      * The suffix "/[wait]ms" can be added to reduce the transmit rate so that there
@@ -409,6 +413,10 @@ public:
      * a serial port by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
+     *
+     * If a call to this object's is_online() method returns FALSE although
+     * you are certain that the matching device is plugged, make sure that you did
+     * call registerHub() at application initialization time.
      *
      * @param func : a string that uniquely characterizes the serial port
      *
@@ -907,6 +915,10 @@ public:
  * a serial port by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
+ *
+ * If a call to this object's is_online() method returns FALSE although
+ * you are certain that the matching device is plugged, make sure that you did
+ * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the serial port
  *

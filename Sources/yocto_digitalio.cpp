@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_digitalio.cpp 27275 2017-04-25 15:40:21Z seb $
+ * $Id: yocto_digitalio.cpp 27704 2017-06-01 12:32:11Z seb $
  *
  * Implements yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -505,6 +505,10 @@ int YDigitalIO::set_command(const string& newval)
  * a digital IO port by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
+ *
+ * If a call to this object's is_online() method returns FALSE although
+ * you are certain that the matching device is plugged, make sure that you did
+ * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the digital IO port
  *

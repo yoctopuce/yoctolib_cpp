@@ -1,7 +1,7 @@
 #ifndef YOCTO_API_BUILD_NO
-#define YOCTO_API_BUILD_NO          "27439"
+#define YOCTO_API_BUILD_NO          "27961"
 #endif
-#define YBUILD_27439
+#define YBUILD_27961
 
 #ifndef YOCTO_API_BUILD_DATE
 #ifndef RC_INVOKED

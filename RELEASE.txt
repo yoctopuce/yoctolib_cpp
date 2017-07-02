@@ -1,2 +1,1 @@
-- Add YNetwork.useDHCPauto(), YWireless.startWlanScan() and YWireless.get_wlanState() methods
-- Improve responsiveness of the library when used by lots of concurrent threads.
+- Fix some functions documentation.

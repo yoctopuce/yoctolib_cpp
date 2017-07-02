@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 27393 2017-05-09 07:48:21Z seb $
+ * $Id: ystream.c 27704 2017-06-01 12:32:11Z seb $
  *
  * USB stream implementation
  *
@@ -1457,9 +1457,13 @@ again:
 /*****************************************************************
  * yStream API with cycling logic of the inside of the packet
 *****************************************************************/
+static int yStreamGetTxBuff(yPrivDeviceSt *dev, u8 **data, u8 *maxsize);
+static int yStreamTransmit(yPrivDeviceSt *dev, u8 proto, u8 size, char *errmsg);
+static int yStreamFlush(yPrivDeviceSt *dev, char *errmsg);
 
 static int yStreamSetup(yPrivDeviceSt *dev,char *errmsg)
 {
+    u32 currUtcTime;
     YPROPERR(yPacketSetup(dev,errmsg));
     // now we have all setup packet sent and received
     dev->currxpkt=NULL;
@@ -1469,7 +1473,23 @@ static int yStreamSetup(yPrivDeviceSt *dev,char *errmsg)
     dev->curtxofs=0;
     dev->devYdxMap=NULL;
     dev->lastUtcUpdate=0;
-
+    // send UTC time to the device
+    currUtcTime = (u32)time(NULL);
+    if (currUtcTime > (u32)0x51f151f1){ // timestamp appears to be valid
+        u8  *pktdata;
+        u8  maxpktlen;
+        // send updated UTC timestamp to keep datalogger on time
+        if (yStreamGetTxBuff(dev, &pktdata, &maxpktlen) && maxpktlen >= 5) {
+            dev->lastUtcUpdate = currUtcTime;
+            pktdata[0] = USB_META_UTCTIME;
+            pktdata[1] = currUtcTime & 0xff;
+            pktdata[2] = (currUtcTime >> 8) & 0xff;
+            pktdata[3] = (currUtcTime >> 16) & 0xff;
+            pktdata[4] = (currUtcTime >> 24) & 0xff;
+            YPROPERR(yStreamTransmit(dev, YSTREAM_META, 5, errmsg));
+            YPROPERR(yStreamFlush(dev, errmsg));
+        }
+    }
     return YAPI_SUCCESS;
 }
 
@@ -2004,36 +2024,35 @@ static void FreeDevice(yPrivDeviceSt *dev)
 
 
 // Start an interface
-static int StartDevice(yPrivDeviceSt *dev,char *errmsg)
+static int StartDevice(yPrivDeviceSt *dev, char *errmsg)
 {
-    int res;
-    unsigned delay=10;
+    unsigned delay = 10;
     int nb_try;
+    int res = YERRMSG(YAPI_IO_ERROR, "Negotiation failed");
 
-    for (nb_try = 0; nb_try < 4 ; nb_try++, delay *= 4, dbglog("retrying StartDevice...\n")) {
+    for (nb_try = 0; nb_try < 4; nb_try++, delay *= 4, dbglog("retrying StartDevice (%s)\n", errmsg)) {
         u64 timeout;
-        int streamres = yStreamSetup(dev, errmsg);
-        if (YISERR(streamres)) {
+        int res = yStreamSetup(dev, errmsg);
+        if (YISERR(res)) {
             continue;
         }
         timeout = yapiGetTickCount() + 10000;
         do {
             res = yDispatchReceive(dev, timeout, errmsg);
-            if(dev->iface.pkt_version == YPKT_VERSION_ORIGINAL_RELEASE &&  !dev->infos.productname[0]){
+            if (dev->iface.pkt_version == YPKT_VERSION_ORIGINAL_RELEASE && !dev->infos.productname[0]) {
                 dev->rstatus = YRUN_AVAIL;
             }
             if (yapiGetTickCount() >= timeout) {
                 yStreamShutdown(dev);
                 return YERRMSG(YAPI_TIMEOUT, "Negotiation failed (device did not respond for 10 secs");
             }
-        } while(res == YAPI_SUCCESS && dev->rstatus != YRUN_AVAIL);
-        if(res==YAPI_SUCCESS && dev->rstatus ==YRUN_AVAIL){
+        } while (res == YAPI_SUCCESS && dev->rstatus != YRUN_AVAIL);
+        if (res == YAPI_SUCCESS && dev->rstatus == YRUN_AVAIL) {
             return YAPI_SUCCESS;
-        } else{
-            yStreamShutdown(dev);
         }
+        yStreamShutdown(dev);
     }
-    return YERRMSG(YAPI_IO_ERROR, "Negotiation failed");
+    return res;
 }
 
 
