@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_osx.c 27393 2017-05-09 07:48:21Z seb $
+ * $Id: ypkt_osx.c 28024 2017-07-10 08:50:02Z mvuilleu $
  *
  * OS-specific USB packet layer, Mac OS X version
  *
@@ -554,7 +554,7 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
     return 0;
 }
 
-int yyyOShdlCompare( yPrivDeviceSt *dev, DevEnum *newdev)
+int yyyOShdlCompare( yPrivDeviceSt *dev, yInterfaceSt *newdev)
 {
     return 1;
 }
@@ -564,7 +564,7 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
     return YERR(YAPI_NOT_SUPPORTED);
 }
 
-int  yyySignalOutPkt(yInterfaceSt *iface)
+int yyySignalOutPkt(yInterfaceSt *iface, char *errmsg)
 {
     return -1;
 }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.cpp 27726 2017-06-02 13:18:52Z mvuilleu $
+ * $Id: yocto_network.cpp 28015 2017-07-07 16:27:06Z mvuilleu $
  *
  * Implements yFindNetwork(), the high-level API for Network functions
  *
@@ -1597,6 +1597,24 @@ string YNetwork::ping(string host)
 int YNetwork::triggerCallback(void)
 {
     return this->set_callbackMethod(this->get_callbackMethod());
+}
+
+/**
+ * Setup periodic HTTP callbacks (simplifed function).
+ *
+ * @param interval : a string representing the callback periodicity, expressed in
+ *         seconds, minutes or hours, eg. "60s", "5m", "1h", "48h".
+ * @param offset : an integer representing the time offset relative to the period
+ *         when the callback should occur. For instance, if the periodicity is
+ *         24h, an offset of 7 will make the callback occur each day at 7AM.
+ *
+ * @return YAPI_SUCCESS when the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YNetwork::set_periodicCallbackSchedule(string interval,int offset)
+{
+    return this->set_callbackSchedule(YapiWrapper::ysprintf("every %s+%d",interval.c_str(),offset));
 }
 
 YNetwork *YNetwork::nextNetwork(void)

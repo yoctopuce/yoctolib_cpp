@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_api.h 28015 2017-07-07 16:27:06Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -556,13 +556,13 @@ public:
      * network hub (this URL can be passed to RegisterHub). This callback will be invoked
      * while yUpdateDeviceList is running. You will have to call this function on a regular basis.
      *
-     * @param hubDiscoveryCallback : a procedure taking two string parameter, or NULL
-     *         to unregister a previously registered  callback.
+     * @param hubDiscoveryCallback : a procedure taking two string parameter, the serial
+     *         number and the hub URL. Use NULL to unregister a previously registered  callback.
      */
     static  void        RegisterHubDiscoveryCallback(YHubDiscoveryCallback hubDiscoveryCallback);
 
     /**
-     * Force a hub discovery, if a callback as been registered with yRegisterDeviceRemovalCallback it
+     * Force a hub discovery, if a callback as been registered with yRegisterHubDiscoveryCallback it
      * will be called for each net work hub that will respond to the discovery.
      *
      * @param errmsg : a string passed by reference to receive any error message.
@@ -3221,8 +3221,8 @@ inline void yRegisterDeviceChangeCallback(yDeviceUpdateCallback removalCallback)
  * network hub (this URL can be passed to RegisterHub). This callback will be invoked
  * while yUpdateDeviceList is running. You will have to call this function on a regular basis.
  *
- * @param hubDiscoveryCallback : a procedure taking two string parameter, or NULL
- *         to unregister a previously registered  callback.
+ * @param hubDiscoveryCallback : a procedure taking two string parameter, the serial
+ *         number and the hub URL. Use NULL to unregister a previously registered  callback.
  */
 inline void yRegisterHubDiscoveryCallback(YHubDiscoveryCallback hubDiscoveryCallback)
 {
@@ -3230,7 +3230,7 @@ inline void yRegisterHubDiscoveryCallback(YHubDiscoveryCallback hubDiscoveryCall
 }
 
 /**
- * Force a hub discovery, if a callback as been registered with yRegisterDeviceRemovalCallback it
+ * Force a hub discovery, if a callback as been registered with yRegisterHubDiscoveryCallback it
  * will be called for each net work hub that will respond to the discovery.
  *
  * @param errmsg : a string passed by reference to receive any error message.

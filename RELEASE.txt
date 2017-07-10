@@ -1,1 +1,1 @@
-- Fix some functions documentation.
+- Improve datalogger summary load performance when using limited time range

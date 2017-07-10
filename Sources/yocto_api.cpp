@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_api.cpp 28024 2017-07-10 08:50:02Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -2004,6 +2004,12 @@ int YDataSet::loadMore(void)
     YDataStream* stream = NULL;
     if (_progress < 0) {
         url = YapiWrapper::ysprintf("logger.json?id=%s",_functionId.c_str());
+        if (_startTime != 0) {
+            url = YapiWrapper::ysprintf("%s&from=%u",url.c_str(),_startTime);
+        }
+        if (_endTime != 0) {
+            url = YapiWrapper::ysprintf("%s&to=%u",url.c_str(),_endTime);
+        }
     } else {
         if (_progress >= (int)_streams.size()) {
             return 100;
@@ -4190,8 +4196,8 @@ void YAPI::RegisterDeviceChangeCallback(yDeviceUpdateCallback changeCallback)
  * network hub (this URL can be passed to RegisterHub). This callback will be invoked
  * while yUpdateDeviceList is running. You will have to call this function on a regular basis.
  *
- * @param hubDiscoveryCallback : a procedure taking two string parameter, or NULL
- *         to unregister a previously registered  callback.
+ * @param hubDiscoveryCallback : a procedure taking two string parameter, the serial
+ *         number and the hub URL. Use NULL to unregister a previously registered  callback.
  */
 void YAPI::RegisterHubDiscoveryCallback(YHubDiscoveryCallback hubDiscoveryCallback)
 {
@@ -4201,7 +4207,7 @@ void YAPI::RegisterHubDiscoveryCallback(YHubDiscoveryCallback hubDiscoveryCallba
 }
 
 /**
- * Force a hub discovery, if a callback as been registered with yRegisterDeviceRemovalCallback it
+ * Force a hub discovery, if a callback as been registered with yRegisterHubDiscoveryCallback it
  * will be called for each net work hub that will respond to the discovery.
  *
  * @param errmsg : a string passed by reference to receive any error message.

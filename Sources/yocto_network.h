@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.h 27726 2017-06-02 13:18:52Z mvuilleu $
+ * $Id: yocto_network.h 28015 2017-07-07 16:27:06Z mvuilleu $
  *
  * Declares yFindNetwork(), the high-level API for Network functions
  *
@@ -948,6 +948,21 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         triggerCallback(void);
+
+    /**
+     * Setup periodic HTTP callbacks (simplifed function).
+     *
+     * @param interval : a string representing the callback periodicity, expressed in
+     *         seconds, minutes or hours, eg. "60s", "5m", "1h", "48h".
+     * @param offset : an integer representing the time offset relative to the period
+     *         when the callback should occur. For instance, if the periodicity is
+     *         24h, an offset of 7 will make the callback occur each day at 7AM.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         set_periodicCallbackSchedule(string interval,int offset);
 
 
     inline static YNetwork* Find(string func)
