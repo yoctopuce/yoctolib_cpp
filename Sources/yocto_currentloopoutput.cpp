@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_currentloopoutput.cpp 27926 2017-06-27 13:25:52Z seb $
+ * $Id: yocto_currentloopoutput.cpp 28293 2017-08-03 09:01:57Z mvuilleu $
  *
  * Implements yFindCurrentLoopOutput(), the high-level API for CurrentLoopOutput functions
  *
@@ -377,7 +377,7 @@ int YCurrentLoopOutput::currentMove(double mA_target,int ms_duration)
     if (mA_target > 21.0) {
         mA_target = 21.0;
     }
-    newval = YapiWrapper::ysprintf("%d:%d", (int) floor(mA_target*1000+0.5),ms_duration);
+    newval = YapiWrapper::ysprintf("%d:%d", (int) floor(mA_target*65536+0.5),ms_duration);
 
     return this->set_currentTransition(newval);
 }

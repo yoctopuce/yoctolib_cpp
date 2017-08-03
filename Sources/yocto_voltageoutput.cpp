@@ -339,7 +339,7 @@ int YVoltageOutput::voltageMove(double V_target,int ms_duration)
     if (V_target > 10.0) {
         V_target = 10.0;
     }
-    newval = YapiWrapper::ysprintf("%d:%d", (int) floor(V_target*1000+0.5),ms_duration);
+    newval = YapiWrapper::ysprintf("%d:%d", (int) floor(V_target*65536+0.5),ms_duration);
 
     return this->set_voltageTransition(newval);
 }
