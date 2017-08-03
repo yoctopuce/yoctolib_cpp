@@ -25,9 +25,9 @@
 		B8A727EE17E0CD3A005705C0 /* ythread.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A517E0CD3A005705C0 /* ythread.c */; };
 		B8A727F017E0CD3A005705C0 /* yocto_api.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727AA17E0CD3A005705C0 /* yocto_api.cpp */; };
 
-		B8A727A817E0CD3A0057c53fd06f /* yocto_datalogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005715c00932 /* yocto_datalogger.cpp */; };
 		B8A727A817E0CD3A005789a6209b /* yocto_pwminput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057f9e860dd /* yocto_pwminput.cpp */; };
 		B8A727A817E0CD3A0057fceb7e8b /* yocto_quadraturedecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005767e8c50e /* yocto_quadraturedecoder.cpp */; };
+		B8A727A817E0CD3A0057c53fd06f /* yocto_datalogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005715c00932 /* yocto_datalogger.cpp */; };
 
 /* End PBXBuildFile section */
 
@@ -77,12 +77,12 @@
 		B8A727AA17E0CD3A005705C0 /* yocto_api.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_api.cpp; path = ../../../Sources/yocto_api.cpp; sourceTree = "<group>"; };
 		B8A727AB17E0CD3A005705C0 /* yocto_api.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_api.h; path = ../../../Sources/yocto_api.h; sourceTree = "<group>"; };
 
-		B8A727A817E0CD3A005715c00932 /* yocto_datalogger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_datalogger.cpp; path = ../../../Sources/yocto_datalogger.cpp; sourceTree = "<group>"; };
-		B8A727A817E0CD3A0057c9eeb83 /* yocto_datalogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_datalogger.h; path = ../../../Sources/yocto_datalogger.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057f9e860dd /* yocto_pwminput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_pwminput.cpp; path = ../../../Sources/yocto_pwminput.cpp; sourceTree = "<group>"; };
 		B8A727A817E0CD3A005793836da6 /* yocto_pwminput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_pwminput.h; path = ../../../Sources/yocto_pwminput.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A005767e8c50e /* yocto_quadraturedecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_quadraturedecoder.cpp; path = ../../../Sources/yocto_quadraturedecoder.cpp; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057c85baabf /* yocto_quadraturedecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_quadraturedecoder.h; path = ../../../Sources/yocto_quadraturedecoder.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005715c00932 /* yocto_datalogger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_datalogger.cpp; path = ../../../Sources/yocto_datalogger.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057c9eeb83 /* yocto_datalogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_datalogger.h; path = ../../../Sources/yocto_datalogger.h; sourceTree = "<group>"; };
 
 		B8FE65001472686800FD11A2 /* project */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = project; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -107,12 +107,12 @@
 				B8A727AA17E0CD3A005705C0 /* yocto_api.cpp */,
 				B8A727AB17E0CD3A005705C0 /* yocto_api.h */,
 
-				B8A727A817E0CD3A005715c00932 /* yocto_datalogger.cpp */,
-				B8A727A817E0CD3A0057c9eeb83 /* yocto_datalogger.h */,
 				B8A727A817E0CD3A0057f9e860dd /* yocto_pwminput.cpp */,
 				B8A727A817E0CD3A005793836da6 /* yocto_pwminput.h */,
 				B8A727A817E0CD3A005767e8c50e /* yocto_quadraturedecoder.cpp */,
 				B8A727A817E0CD3A0057c85baabf /* yocto_quadraturedecoder.h */,
+				B8A727A817E0CD3A005715c00932 /* yocto_datalogger.cpp */,
+				B8A727A817E0CD3A0057c9eeb83 /* yocto_datalogger.h */,
 
 			);
 			name = Yoctopuce;
@@ -239,9 +239,9 @@
 				B8A727EE17E0CD3A005705C0 /* ythread.c in Sources */,
 				B8A727F017E0CD3A005705C0 /* yocto_api.cpp in Sources */,
 
-				B8A727A817E0CD3A0057c53fd06f /* yocto_datalogger.cpp in Sources */,
 				B8A727A817E0CD3A005789a6209b /* yocto_pwminput.cpp in Sources */,
 				B8A727A817E0CD3A0057fceb7e8b /* yocto_quadraturedecoder.cpp in Sources */,
+				B8A727A817E0CD3A0057c53fd06f /* yocto_datalogger.cpp in Sources */,
 
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -92,10 +92,10 @@
     <ClCompile Include="..\..\..\Sources\yapi\ykey.c" />
     <ClCompile Include="..\..\..\Sources\yocto_api.cpp" />
     
-<ClCompile Include="..\..\..\Sources\yocto_datalogger.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_lightsensor.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_rangefinder.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_temperature.cpp" />
+<ClCompile Include="..\..\..\Sources\yocto_datalogger.cpp" />
 
     <ClCompile Include="..\main.cpp" />
   </ItemGroup>
@@ -114,10 +114,10 @@
     <ClInclude Include="..\..\..\Sources\yapi\ykey.h" />
     <ClInclude Include="..\..\..\Sources\yocto_api.h" />
     
-<ClInclude Include="..\..\..\Sources\yocto_datalogger.h" />
 <ClInclude Include="..\..\..\Sources\yocto_lightsensor.h" />
 <ClInclude Include="..\..\..\Sources\yocto_rangefinder.h" />
 <ClInclude Include="..\..\..\Sources\yocto_temperature.h" />
+<ClInclude Include="..\..\..\Sources\yocto_datalogger.h" />
 
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

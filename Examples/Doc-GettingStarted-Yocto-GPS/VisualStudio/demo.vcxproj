@@ -93,11 +93,11 @@
     <ClCompile Include="..\..\..\Sources\yocto_api.cpp" />
     
 <ClCompile Include="..\..\..\Sources\yocto_altitude.cpp" />
-<ClCompile Include="..\..\..\Sources\yocto_datalogger.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_gps.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_groundspeed.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_latitude.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_longitude.cpp" />
+<ClCompile Include="..\..\..\Sources\yocto_datalogger.cpp" />
 
     <ClCompile Include="..\main.cpp" />
   </ItemGroup>
@@ -117,11 +117,11 @@
     <ClInclude Include="..\..\..\Sources\yocto_api.h" />
     
 <ClInclude Include="..\..\..\Sources\yocto_altitude.h" />
-<ClInclude Include="..\..\..\Sources\yocto_datalogger.h" />
 <ClInclude Include="..\..\..\Sources\yocto_gps.h" />
 <ClInclude Include="..\..\..\Sources\yocto_groundspeed.h" />
 <ClInclude Include="..\..\..\Sources\yocto_latitude.h" />
 <ClInclude Include="..\..\..\Sources\yocto_longitude.h" />
+<ClInclude Include="..\..\..\Sources\yocto_datalogger.h" />
 
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

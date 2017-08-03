@@ -94,11 +94,11 @@
     
 <ClCompile Include="..\..\..\Sources\yocto_accelerometer.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_compass.cpp" />
-<ClCompile Include="..\..\..\Sources\yocto_datalogger.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_gyro.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_magnetometer.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_refframe.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_tilt.cpp" />
+<ClCompile Include="..\..\..\Sources\yocto_datalogger.cpp" />
 
     <ClCompile Include="..\main.cpp" />
   </ItemGroup>
@@ -119,11 +119,11 @@
     
 <ClInclude Include="..\..\..\Sources\yocto_accelerometer.h" />
 <ClInclude Include="..\..\..\Sources\yocto_compass.h" />
-<ClInclude Include="..\..\..\Sources\yocto_datalogger.h" />
 <ClInclude Include="..\..\..\Sources\yocto_gyro.h" />
 <ClInclude Include="..\..\..\Sources\yocto_magnetometer.h" />
 <ClInclude Include="..\..\..\Sources\yocto_refframe.h" />
 <ClInclude Include="..\..\..\Sources\yocto_tilt.h" />
+<ClInclude Include="..\..\..\Sources\yocto_datalogger.h" />
 
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

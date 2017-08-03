@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_quadraturedecoder.h 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_quadraturedecoder.h 28159 2017-07-27 09:37:52Z seb $
  *
  * Declares yFindQuadratureDecoder(), the high-level API for QuadratureDecoder functions
  *
@@ -120,9 +120,9 @@ public:
     { return this->set_currentValue(newval); }
 
     /**
-     * Returns the PWM frequency in Hz.
+     * Returns the increments frequency, in Hz.
      *
-     * @return a floating point number corresponding to the PWM frequency in Hz
+     * @return a floating point number corresponding to the increments frequency, in Hz
      *
      * On failure, throws an exception or returns Y_SPEED_INVALID.
      */

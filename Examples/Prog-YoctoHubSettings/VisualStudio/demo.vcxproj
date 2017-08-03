@@ -98,7 +98,6 @@
 <ClCompile Include="..\..\..\Sources\yocto_audioin.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_audioout.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_bluetoothlink.cpp" />
-<ClCompile Include="..\..\..\Sources\yocto_bridgecontrol.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_buzzer.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_carbondioxide.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_cellular.cpp" />
@@ -108,7 +107,6 @@
 <ClCompile Include="..\..\..\Sources\yocto_current.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_currentloopoutput.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_daisychain.cpp" />
-<ClCompile Include="..\..\..\Sources\yocto_datalogger.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_digitalio.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_display.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_dualpower.cpp" />
@@ -150,9 +148,11 @@
 <ClCompile Include="..\..\..\Sources\yocto_tilt.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_voc.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_voltage.cpp" />
+<ClCompile Include="..\..\..\Sources\yocto_voltageoutput.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_wakeupmonitor.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_wakeupschedule.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_watchdog.cpp" />
+<ClCompile Include="..\..\..\Sources\yocto_weighscale.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_wireless.cpp" />
 
     <ClCompile Include="..\main.cpp" />
@@ -178,7 +178,6 @@
 <ClInclude Include="..\..\..\Sources\yocto_audioin.h" />
 <ClInclude Include="..\..\..\Sources\yocto_audioout.h" />
 <ClInclude Include="..\..\..\Sources\yocto_bluetoothlink.h" />
-<ClInclude Include="..\..\..\Sources\yocto_bridgecontrol.h" />
 <ClInclude Include="..\..\..\Sources\yocto_buzzer.h" />
 <ClInclude Include="..\..\..\Sources\yocto_carbondioxide.h" />
 <ClInclude Include="..\..\..\Sources\yocto_cellular.h" />
@@ -188,7 +187,6 @@
 <ClInclude Include="..\..\..\Sources\yocto_current.h" />
 <ClInclude Include="..\..\..\Sources\yocto_currentloopoutput.h" />
 <ClInclude Include="..\..\..\Sources\yocto_daisychain.h" />
-<ClInclude Include="..\..\..\Sources\yocto_datalogger.h" />
 <ClInclude Include="..\..\..\Sources\yocto_digitalio.h" />
 <ClInclude Include="..\..\..\Sources\yocto_display.h" />
 <ClInclude Include="..\..\..\Sources\yocto_dualpower.h" />
@@ -230,9 +228,11 @@
 <ClInclude Include="..\..\..\Sources\yocto_tilt.h" />
 <ClInclude Include="..\..\..\Sources\yocto_voc.h" />
 <ClInclude Include="..\..\..\Sources\yocto_voltage.h" />
+<ClInclude Include="..\..\..\Sources\yocto_voltageoutput.h" />
 <ClInclude Include="..\..\..\Sources\yocto_wakeupmonitor.h" />
 <ClInclude Include="..\..\..\Sources\yocto_wakeupschedule.h" />
 <ClInclude Include="..\..\..\Sources\yocto_watchdog.h" />
+<ClInclude Include="..\..\..\Sources\yocto_weighscale.h" />
 <ClInclude Include="..\..\..\Sources\yocto_wireless.h" />
 
   </ItemGroup>

@@ -93,9 +93,9 @@
     <ClCompile Include="..\..\..\Sources\yocto_api.cpp" />
     
 <ClCompile Include="..\..\..\Sources\yocto_current.cpp" />
-<ClCompile Include="..\..\..\Sources\yocto_datalogger.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_power.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_voltage.cpp" />
+<ClCompile Include="..\..\..\Sources\yocto_datalogger.cpp" />
 
     <ClCompile Include="..\main.cpp" />
   </ItemGroup>
@@ -115,9 +115,9 @@
     <ClInclude Include="..\..\..\Sources\yocto_api.h" />
     
 <ClInclude Include="..\..\..\Sources\yocto_current.h" />
-<ClInclude Include="..\..\..\Sources\yocto_datalogger.h" />
 <ClInclude Include="..\..\..\Sources\yocto_power.h" />
 <ClInclude Include="..\..\..\Sources\yocto_voltage.h" />
+<ClInclude Include="..\..\..\Sources\yocto_datalogger.h" />
 
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

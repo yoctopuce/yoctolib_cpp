@@ -143,7 +143,6 @@
 <Unit filename="..\..\..\Sources\yocto_audioin.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_audioout.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_bluetoothlink.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
-<Unit filename="..\..\..\Sources\yocto_bridgecontrol.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_buzzer.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_carbondioxide.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_cellular.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
@@ -153,7 +152,6 @@
 <Unit filename="..\..\..\Sources\yocto_current.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_currentloopoutput.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_daisychain.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
-<Unit filename="..\..\..\Sources\yocto_datalogger.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_digitalio.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_display.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_dualpower.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
@@ -195,10 +193,13 @@
 <Unit filename="..\..\..\Sources\yocto_tilt.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_voc.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_voltage.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_voltageoutput.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_wakeupmonitor.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_wakeupschedule.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_watchdog.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_weighscale.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_wireless.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_datalogger.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 g="UTF-8" standalone="yes" ?>
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
@@ -346,7 +347,6 @@ g="UTF-8" standalone="yes" ?>
 <Unit filename="..\..\..\Sources\yocto_audioin.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_audioout.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_bluetoothlink.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
-<Unit filename="..\..\..\Sources\yocto_bridgecontrol.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_buzzer.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_carbondioxide.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_cellular.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
@@ -356,7 +356,6 @@ g="UTF-8" standalone="yes" ?>
 <Unit filename="..\..\..\Sources\yocto_current.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_currentloopoutput.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_daisychain.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
-<Unit filename="..\..\..\Sources\yocto_datalogger.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_digitalio.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_display.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_dualpower.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
@@ -398,10 +397,13 @@ g="UTF-8" standalone="yes" ?>
 <Unit filename="..\..\..\Sources\yocto_tilt.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_voc.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_voltage.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_voltageoutput.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_wakeupmonitor.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_wakeupschedule.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_watchdog.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_weighscale.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_wireless.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_datalogger.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 
         <Extensions>
             <code_completion />
