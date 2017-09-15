@@ -1,3 +1,2 @@
-- Add get_dataLogger() method to YSensor class
-- Add support for Yocto-0-10V-Tx and Yocto-Bridge
-- Fix voltage/current transitions for Yocto-4-20mA-Tx and Yocto-0-10V-Tx
+- Add support for jumps and stops in ColorLedCluster sequences
+- Improve error reporting during firmware update

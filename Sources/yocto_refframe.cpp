@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_refframe.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_refframe.cpp 28457 2017-09-06 08:34:21Z mvuilleu $
  *
  * Implements yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -53,6 +53,7 @@ YRefFrame::YRefFrame(const string& func): YFunction(func)
     ,_mountPos(MOUNTPOS_INVALID)
     ,_bearing(BEARING_INVALID)
     ,_calibrationParam(CALIBRATIONPARAM_INVALID)
+    ,_fusionMode(FUSIONMODE_INVALID)
     ,_valueCallbackRefFrame(NULL)
     ,_calibStage(0)
     ,_calibStageProgress(0)
@@ -91,6 +92,9 @@ int YRefFrame::_parseAttr(YJSONObject* json_val)
     }
     if(json_val->has("calibrationParam")) {
         _calibrationParam =  json_val->getString("calibrationParam");
+    }
+    if(json_val->has("fusionMode")) {
+        _fusionMode =  (Y_FUSIONMODE_enum)json_val->getInt("fusionMode");
     }
     return YFunction::_parseAttr(json_val);
 }
@@ -233,6 +237,44 @@ int YRefFrame::set_calibrationParam(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("calibrationParam", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+Y_FUSIONMODE_enum YRefFrame::get_fusionMode(void)
+{
+    Y_FUSIONMODE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRefFrame::FUSIONMODE_INVALID;
+                }
+            }
+        }
+        res = _fusionMode;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+int YRefFrame::set_fusionMode(Y_FUSIONMODE_enum newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("fusionMode", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
          throw;

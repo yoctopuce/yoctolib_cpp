@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 26757 2017-03-15 13:59:12Z seb $
+ * $Id: ydef.h 28438 2017-09-01 05:49:08Z mvuilleu $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -551,6 +551,7 @@ typedef union{
 #define NOTIFY_V2_6RAWBYTES    1       // largest type: data is always 6 bytes
 #define NOTIFY_V2_TYPEDDATA    2       // other types: first data byte holds the decoding format
 #define NOTIFY_V2_FLUSHGROUP   3       // no data associated
+// Higher values not allowed (Notification_funydx.raw must stay <= 63)
 
 // New types of generic notifications
 #define PUBVAL_LEGACY                       0   // 0-6 ASCII characters (normally sent as YSTREAM_NOTICE)
@@ -580,7 +581,7 @@ typedef union {
     struct {
 #ifndef CPU_BIG_ENDIAN
         u8      funydx:4;
-        u8      typeV2:3;
+        u8      typeV2:3;               // note: high bit MUST stay zero to ensure raw value <= 63 for tiny notifications
         u8      isSmall:1;
 #else
         u8      isSmall:1;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorledcluster.h 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_colorledcluster.h 28443 2017-09-01 14:45:46Z mvuilleu $
  *
  * Declares yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -346,6 +346,33 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         addMirrorToBlinkSeq(int seqIndex);
+
+    /**
+     * Adds to a sequence a jump to another sequence. When a pixel will reach this jump,
+     * it will be automatically relinked to the new sequence, and will run it starting
+     * from the beginning.
+     *
+     * @param seqIndex : sequence index.
+     * @param linkSeqIndex : index of the sequence to chain.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         addJumpToBlinkSeq(int seqIndex,int linkSeqIndex);
+
+    /**
+     * Adds a to a sequence a hard stop code. When a pixel will reach this stop code,
+     * instead of restarting the sequence in a loop it will automatically be unlinked
+     * from the sequence.
+     *
+     * @param seqIndex : sequence index.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         addUnlinkToBlinkSeq(int seqIndex);
 
     /**
      * Links adjacent LEDs to a specific sequence. These LEDs start to execute

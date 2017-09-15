@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_carbondioxide.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_carbondioxide.cpp 28556 2017-09-15 15:00:00Z seb $
  *
  * Implements yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *
@@ -111,13 +111,13 @@ int YCarbonDioxide::get_abcPeriod(void)
 }
 
 /**
- * Modifies Automatic Baseline Calibration period, in hours. If you need
+ * Changes Automatic Baseline Calibration period, in hours. If you need
  * to disable automatic baseline calibration (for instance when using the
  * sensor in an environment that is constantly above 400ppm CO2), set the
  * period to -1. Remember to call the saveToFlash() method of the
  * module if the modification must be kept.
  *
- * @param newval : an integer
+ * @param newval : an integer corresponding to Automatic Baseline Calibration period, in hours
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 26607 2017-02-09 13:13:07Z seb $
+ * $Id: yprog.c 28495 2017-09-13 13:36:02Z seb $
  *
  * Implementation of firmware upgrade functions
  *
@@ -1938,8 +1938,8 @@ static void* yFirmwareUpdate_thread(void* ctx)
         if (type == FLASH_NET_SELF) {
             const char *settingsOnly, *services;
             u8 *startupconf_data;
-            int settings_len = yapiJsonGetPath_internal("api", (char*)yContext->fuCtx.settings, yContext->fuCtx.settings_len, &settingsOnly, errmsg);
-            int service_len = yapiJsonGetPath_internal("services", settingsOnly, settings_len, &services, errmsg);
+            int settings_len = yapiJsonGetPath_internal("api", (char*)yContext->fuCtx.settings, yContext->fuCtx.settings_len, 0, &settingsOnly, errmsg);
+            int service_len = yapiJsonGetPath_internal("services", settingsOnly, settings_len, 0, &services, errmsg);
             int startupconf_data_len;
             if (service_len > 0) {
                 int first_len = (services - settingsOnly) & 0xffffffff;
@@ -2060,8 +2060,20 @@ static void* yFirmwareUpdate_thread(void* ctx)
             YSPRINTF(buffer, sizeof(buffer), get_api_fmt, subpath);
             res = yapiHTTPRequestSyncStartEx_internal(&iohdl, 0, hubserial, buffer, YSTRLEN(buffer), &reply, &replysize, NULL, NULL, tmp_errmsg);
             if (res >= 0) {
-                if (checkHTTPHeader(NULL, reply, replysize, tmp_errmsg) >= 0){
+                if (checkHTTPHeader(NULL, reply, replysize, tmp_errmsg) >= 0) {
+                    const char * real_fw;
+                    int fw_len;
+                    fw_len = yapiJsonGetPath_internal("module|firmwareRelease", (char*)reply, replysize, 1, &real_fw, errmsg);
                     online = 1;
+                    if (fw_len > 2) {
+                        const char *p = ((const byn_head_multi *)fctx.firmware)->h.firmware;
+                        //remove quote
+                        real_fw++;
+                        fw_len -= 2;
+                        if (YSTRNCMP(real_fw,p, fw_len)==0) {
+                            online = 2;
+                        }
+                    }
                     yapiHTTPRequestSyncDone_internal(&iohdl, tmp_errmsg);
                     break;
                 }
@@ -2073,9 +2085,13 @@ static void* yFirmwareUpdate_thread(void* ctx)
     } while (!online && yapiGetTickCount()< timeout);
 
     if (online){
-        setOsGlobalProgress(100, "Firmware updated");
+        if (online == 2) {
+            setOsGlobalProgress(100, "Firmware updated");
+        }else {
+            setOsGlobalProgress(YAPI_VERSION_MISMATCH, "Unable to update firmware");
+        }
     } else {
-        setOsGlobalProgress(-1, "Device did not reboot correctly");
+        setOsGlobalProgress(YAPI_DEVICE_NOT_FOUND, "Device did not reboot correctly");
     }
 
 exit_and_free:

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_lightsensor.h 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_lightsensor.h 28556 2017-09-15 15:00:00Z seb $
  *
  * Declares yFindLightSensor(), the high-level API for LightSensor functions
  *
@@ -145,14 +145,15 @@ public:
     { return this->get_measureType(); }
 
     /**
-     * Modifies the light sensor type used in the device. The measure can either
+     * Changes the light sensor type used in the device. The measure can either
      * approximate the response of the human eye, focus on a specific light
      * spectrum, depending on the capabilities of the light-sensitive cell.
      * Remember to call the saveToFlash() method of the module if the
      * modification must be kept.
      *
      * @param newval : a value among Y_MEASURETYPE_HUMAN_EYE, Y_MEASURETYPE_WIDE_SPECTRUM,
-     * Y_MEASURETYPE_INFRARED, Y_MEASURETYPE_HIGH_RATE and Y_MEASURETYPE_HIGH_ENERGY
+     * Y_MEASURETYPE_INFRARED, Y_MEASURETYPE_HIGH_RATE and Y_MEASURETYPE_HIGH_ENERGY corresponding to the
+     * light sensor type used in the device
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *

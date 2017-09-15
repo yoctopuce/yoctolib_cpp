@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: pic24config.php 28204 2017-07-28 13:25:31Z mvuilleu $
+ * $Id: yocto_voltageoutput.h 28491 2017-09-12 13:25:28Z seb $
  *
  * Declares yFindVoltageOutput(), the high-level API for VoltageOutput functions
  *
@@ -95,9 +95,9 @@ public:
     static const double VOLTAGEATSTARTUP_INVALID;
 
     /**
-     * Changes the output voltage. Valid range is from 0 to 10V.
+     * Changes the output voltage, in V. Valid range is from 0 to 10V.
      *
-     * @param newval : a floating point number corresponding to the output voltage
+     * @param newval : a floating point number corresponding to the output voltage, in V
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
@@ -108,9 +108,9 @@ public:
     { return this->set_currentVoltage(newval); }
 
     /**
-     * Returns the loop current set point in mA.
+     * Returns the output voltage set point, in V.
      *
-     * @return a floating point number corresponding to the loop current set point in mA
+     * @return a floating point number corresponding to the output voltage set point, in V
      *
      * On failure, throws an exception or returns Y_CURRENTVOLTAGE_INVALID.
      */

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_temperature.h 28142 2017-07-25 20:24:23Z mvuilleu $
+ * $Id: yocto_temperature.h 28556 2017-09-15 15:00:00Z seb $
  *
  * Declares yFindTemperature(), the high-level API for Temperature functions
  *
@@ -177,7 +177,7 @@ public:
     { return this->get_sensorType(); }
 
     /**
-     * Modifies the temperature sensor type.  This function is used
+     * Changes the temperature sensor type.  This function is used
      * to define the type of thermocouple (K,E...) used with the device.
      * It has no effect if module is using a digital sensor or a thermistor.
      * Remember to call the saveToFlash() method of the module if the
@@ -187,7 +187,7 @@ public:
      * Y_SENSORTYPE_TYPE_J, Y_SENSORTYPE_TYPE_N, Y_SENSORTYPE_TYPE_R, Y_SENSORTYPE_TYPE_S,
      * Y_SENSORTYPE_TYPE_T, Y_SENSORTYPE_PT100_4WIRES, Y_SENSORTYPE_PT100_3WIRES,
      * Y_SENSORTYPE_PT100_2WIRES, Y_SENSORTYPE_RES_OHM, Y_SENSORTYPE_RES_NTC, Y_SENSORTYPE_RES_LINEAR and
-     * Y_SENSORTYPE_RES_INTERNAL
+     * Y_SENSORTYPE_RES_INTERNAL corresponding to the temperature sensor type
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *

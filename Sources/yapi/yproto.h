@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 27394 2017-05-09 08:00:14Z seb $
+ * $Id: yproto.h 28489 2017-09-12 13:19:37Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -1074,5 +1074,5 @@ YRETCODE  yapiHTTPRequestSyncStartEx_internal(YIOHDL *iohdl, int tcpchan, const 
 YRETCODE  yapiHTTPRequestSyncDone_internal(YIOHDL *iohdl, char *errmsg);
 void yFunctionUpdate(YAPI_FUNCTION fundescr, const char *value);
 void yFunctionTimedUpdate(YAPI_FUNCTION fundescr, double deviceTime, const u8 *report, u32 len);
-int yapiJsonGetPath_internal(const char *path, const char *json_data, int json_size, const char **output, char *errmsg);
+int yapiJsonGetPath_internal(const char *path, const char *json_data, int json_size, int withHTTPheader, const char **output, char *errmsg);
 #endif

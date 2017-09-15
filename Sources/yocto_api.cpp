@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 28159 2017-07-27 09:37:52Z seb $
+ * $Id: yocto_api.cpp 28556 2017-09-15 15:00:00Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -1058,7 +1058,7 @@ int YFirmwareUpdate::_processMore(int newupdate)
     string settings;
     string prod_prefix;
     int force = 0;
-    if (_progress_c < 100) {
+    if (_progress_c < 100 && _progress_c != YAPI_VERSION_MISMATCH) {
         serial = _serial;
         firmwarepath = _firmwarepath;
         settings = _settings;
@@ -1068,6 +1068,11 @@ int YFirmwareUpdate::_processMore(int newupdate)
             force = 0;
         }
         res = yapiUpdateFirmwareEx(serial.c_str(), firmwarepath.c_str(), settings.c_str(), force, newupdate, errmsg);
+        if (res == YAPI_VERSION_MISMATCH && ((int)(_settings).size() != 0)) {
+            _progress_c = res;
+            _progress_msg = string(errmsg);
+            return _progress;
+        }
         if (res < 0) {
             _progress = res;
             _progress_msg = string(errmsg);
@@ -1097,8 +1102,13 @@ int YFirmwareUpdate::_processMore(int newupdate)
                 m->set_allSettingsAndFiles(_settings);
                 m->saveToFlash();
                 _settings = string(0, (char)0);
-                _progress = 100;
-                _progress_msg = "success";
+                if (_progress_c == YAPI_VERSION_MISMATCH) {
+                    _progress = YAPI_IO_ERROR;
+                    _progress_msg = "Unable to update firmware";
+                } else {
+                    _progress =  100;
+                    _progress_msg = "success";
+                }
             }
         } else {
             _progress =  100;
@@ -6810,6 +6820,7 @@ YSensor::YSensor(const string& func): YFunction(func)
     ,_currentRawValue(CURRENTRAWVALUE_INVALID)
     ,_logFrequency(LOGFREQUENCY_INVALID)
     ,_reportFrequency(REPORTFREQUENCY_INVALID)
+    ,_advMode(ADVMODE_INVALID)
     ,_calibrationParam(CALIBRATIONPARAM_INVALID)
     ,_resolution(RESOLUTION_INVALID)
     ,_sensorState(SENSORSTATE_INVALID)
@@ -6867,6 +6878,9 @@ int YSensor::_parseAttr(YJSONObject* json_val)
     }
     if(json_val->has("reportFrequency")) {
         _reportFrequency =  json_val->getString("reportFrequency");
+    }
+    if(json_val->has("advMode")) {
+        _advMode =  (Y_ADVMODE_enum)json_val->getInt("advMode");
     }
     if(json_val->has("calibrationParam")) {
         _calibrationParam =  json_val->getString("calibrationParam");
@@ -7200,6 +7214,62 @@ int YSensor::set_reportFrequency(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("reportFrequency", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the measuring mode used for the advertised value pushed to the parent hub.
+ *
+ * @return a value among Y_ADVMODE_IMMEDIATE, Y_ADVMODE_PERIOD_AVG, Y_ADVMODE_PERIOD_MIN and
+ * Y_ADVMODE_PERIOD_MAX corresponding to the measuring mode used for the advertised value pushed to the parent hub
+ *
+ * On failure, throws an exception or returns Y_ADVMODE_INVALID.
+ */
+Y_ADVMODE_enum YSensor::get_advMode(void)
+{
+    Y_ADVMODE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSensor::ADVMODE_INVALID;
+                }
+            }
+        }
+        res = _advMode;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the measuring mode used for the advertised value pushed to the parent hub.
+ *
+ * @param newval : a value among Y_ADVMODE_IMMEDIATE, Y_ADVMODE_PERIOD_AVG, Y_ADVMODE_PERIOD_MIN and
+ * Y_ADVMODE_PERIOD_MAX corresponding to the measuring mode used for the advertised value pushed to the parent hub
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YSensor::set_advMode(Y_ADVMODE_enum newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("advMode", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
          throw;

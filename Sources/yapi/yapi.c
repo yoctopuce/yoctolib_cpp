@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 27418 2017-05-11 09:59:50Z seb $
+ * $Id: yapi.c 28489 2017-09-12 13:19:37Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -3908,21 +3908,33 @@ static int  yapiJsonDecodeString_internal(const char *json_string, char *output)
 
 
 
-int yapiJsonGetPath_internal(const char *path, const char *json_data, int json_size, const char **output, char *errmsg)
+int yapiJsonGetPath_internal(const char *path, const char *json_data, int json_size, int withHTTPheader, const char **output, char *errmsg)
 {
     yJsonStateMachine j;
     int result;
 
     j.src = json_data;
     j.end = j.src + json_size;
-    j.st = YJSON_START;
-
+    if (withHTTPheader) {
+        j.st = YJSON_HTTP_START;
+        if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_HTTP_READ_CODE) {
+            return YERRMSG(YAPI_IO_ERROR, "Failed to parse HTTP header");
+        }
+        if (YSTRCMP(j.token, "200")) {
+            return YERRMSG(YAPI_IO_ERROR, "Unexpected HTTP return code");
+        }
+        if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_HTTP_READ_MSG) {
+            return YERRMSG(YAPI_IO_ERROR, "Unexpected JSON reply format");
+        }
+    }else {
+        j.st = YJSON_START;
+    }
     if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
         *output = "";
         return YERRMSG(YAPI_INVALID_ARGUMENT, "Not a JSON struct");
     }
 
-    *output = yapiJsonValueParseStruct(&j, path, &result, errmsg);
+     *output = yapiJsonValueParseStruct(&j, path, &result, errmsg);
     return result;
 }
 
@@ -4680,7 +4692,7 @@ int YAPI_FUNCTION_EXPORT yapiJsonGetPath(const char *path, const char *json_data
     int res;
     char *tmp;
     YDLL_CALL_ENTER(trcJsonGetPath);
-    res = yapiJsonGetPath_internal(path, json_data, json_size, result, errmsg);
+    res = yapiJsonGetPath_internal(path, json_data, json_size, 0, result, errmsg);
     YDLL_CALL_LEAVE(res);
     if (res > 0) {
         tmp = yMalloc(res);

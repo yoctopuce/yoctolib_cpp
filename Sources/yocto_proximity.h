@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_proximity.h 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_proximity.h 28556 2017-09-15 15:00:00Z seb $
  *
  * Declares yFindProximity(), the high-level API for Proximity functions
  *
@@ -269,13 +269,14 @@ public:
     { return this->get_proximityReportMode(); }
 
     /**
-     * Modifies the  parameter  type (sensor value, presence or pulse count) returned by the
+     * Changes the  parameter  type (sensor value, presence or pulse count) returned by the
      * get_currentValue function and callbacks.
      * The edge count value is limited to the 6 lowest digits. For values greater than one million, use
      * get_pulseCounter().
      *
      * @param newval : a value among Y_PROXIMITYREPORTMODE_NUMERIC, Y_PROXIMITYREPORTMODE_PRESENCE and
-     * Y_PROXIMITYREPORTMODE_PULSECOUNT
+     * Y_PROXIMITYREPORTMODE_PULSECOUNT corresponding to the  parameter  type (sensor value, presence or
+     * pulse count) returned by the get_currentValue function and callbacks
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *

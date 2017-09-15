@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 28159 2017-07-27 09:37:52Z seb $
+ * $Id: yocto_api.h 28556 2017-09-15 15:00:00Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -123,6 +123,16 @@ class YSensor; // forward declaration
 typedef void (*YSensorValueCallback)(YSensor *func, const string& functionValue);
 class YMeasure; // forward declaration
 typedef void (*YSensorTimedReportCallback)(YSensor *func, YMeasure measure);
+#ifndef _Y_ADVMODE_ENUM
+#define _Y_ADVMODE_ENUM
+typedef enum {
+    Y_ADVMODE_IMMEDIATE = 0,
+    Y_ADVMODE_PERIOD_AVG = 1,
+    Y_ADVMODE_PERIOD_MIN = 2,
+    Y_ADVMODE_PERIOD_MAX = 3,
+    Y_ADVMODE_INVALID = -1,
+} Y_ADVMODE_enum;
+#endif
 #define Y_UNIT_INVALID                  (YAPI_INVALID_STRING)
 #define Y_CURRENTVALUE_INVALID          (YAPI_INVALID_DOUBLE)
 #define Y_LOWESTVALUE_INVALID           (YAPI_INVALID_DOUBLE)
@@ -2670,6 +2680,7 @@ protected:
     double          _currentRawValue;
     string          _logFrequency;
     string          _reportFrequency;
+    Y_ADVMODE_enum  _advMode;
     string          _calibrationParam;
     double          _resolution;
     int             _sensorState;
@@ -2712,6 +2723,11 @@ public:
     static const double CURRENTRAWVALUE_INVALID;
     static const string LOGFREQUENCY_INVALID;
     static const string REPORTFREQUENCY_INVALID;
+    static const Y_ADVMODE_enum ADVMODE_IMMEDIATE = Y_ADVMODE_IMMEDIATE;
+    static const Y_ADVMODE_enum ADVMODE_PERIOD_AVG = Y_ADVMODE_PERIOD_AVG;
+    static const Y_ADVMODE_enum ADVMODE_PERIOD_MIN = Y_ADVMODE_PERIOD_MIN;
+    static const Y_ADVMODE_enum ADVMODE_PERIOD_MAX = Y_ADVMODE_PERIOD_MAX;
+    static const Y_ADVMODE_enum ADVMODE_INVALID = Y_ADVMODE_INVALID;
     static const string CALIBRATIONPARAM_INVALID;
     static const double RESOLUTION_INVALID;
     static const int SENSORSTATE_INVALID = YAPI_INVALID_INT;
@@ -2868,6 +2884,33 @@ public:
     int             set_reportFrequency(const string& newval);
     inline int      setReportFrequency(const string& newval)
     { return this->set_reportFrequency(newval); }
+
+    /**
+     * Returns the measuring mode used for the advertised value pushed to the parent hub.
+     *
+     * @return a value among Y_ADVMODE_IMMEDIATE, Y_ADVMODE_PERIOD_AVG, Y_ADVMODE_PERIOD_MIN and
+     * Y_ADVMODE_PERIOD_MAX corresponding to the measuring mode used for the advertised value pushed to the parent hub
+     *
+     * On failure, throws an exception or returns Y_ADVMODE_INVALID.
+     */
+    Y_ADVMODE_enum      get_advMode(void);
+
+    inline Y_ADVMODE_enum advMode(void)
+    { return this->get_advMode(); }
+
+    /**
+     * Changes the measuring mode used for the advertised value pushed to the parent hub.
+     *
+     * @param newval : a value among Y_ADVMODE_IMMEDIATE, Y_ADVMODE_PERIOD_AVG, Y_ADVMODE_PERIOD_MIN and
+     * Y_ADVMODE_PERIOD_MAX corresponding to the measuring mode used for the advertised value pushed to the parent hub
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_advMode(Y_ADVMODE_enum newval);
+    inline int      setAdvMode(Y_ADVMODE_enum newval)
+    { return this->set_advMode(newval); }
 
     string              get_calibrationParam(void);
 

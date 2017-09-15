@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_refframe.h 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_refframe.h 28457 2017-09-06 08:34:21Z mvuilleu $
  *
  * Declares yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -52,6 +52,17 @@
 class YRefFrame; // forward declaration
 
 typedef void (*YRefFrameValueCallback)(YRefFrame *func, const string& functionValue);
+#ifndef _Y_FUSIONMODE_ENUM
+#define _Y_FUSIONMODE_ENUM
+typedef enum {
+    Y_FUSIONMODE_NDOF = 0,
+    Y_FUSIONMODE_NDOF_FMC_OFF = 1,
+    Y_FUSIONMODE_M4G = 2,
+    Y_FUSIONMODE_COMPASS = 3,
+    Y_FUSIONMODE_IMU = 4,
+    Y_FUSIONMODE_INVALID = -1,
+} Y_FUSIONMODE_enum;
+#endif
     #ifndef _Y_MOUNTPOSITION
     #define _Y_MOUNTPOSITION
     typedef enum {
@@ -102,6 +113,7 @@ protected:
     int             _mountPos;
     double          _bearing;
     string          _calibrationParam;
+    Y_FUSIONMODE_enum _fusionMode;
     YRefFrameValueCallback _valueCallbackRefFrame;
     bool            _calibV2;
     int             _calibStage;
@@ -142,6 +154,12 @@ public:
     static const int MOUNTPOS_INVALID = YAPI_INVALID_UINT;
     static const double BEARING_INVALID;
     static const string CALIBRATIONPARAM_INVALID;
+    static const Y_FUSIONMODE_enum FUSIONMODE_NDOF = Y_FUSIONMODE_NDOF;
+    static const Y_FUSIONMODE_enum FUSIONMODE_NDOF_FMC_OFF = Y_FUSIONMODE_NDOF_FMC_OFF;
+    static const Y_FUSIONMODE_enum FUSIONMODE_M4G = Y_FUSIONMODE_M4G;
+    static const Y_FUSIONMODE_enum FUSIONMODE_COMPASS = Y_FUSIONMODE_COMPASS;
+    static const Y_FUSIONMODE_enum FUSIONMODE_IMU = Y_FUSIONMODE_IMU;
+    static const Y_FUSIONMODE_enum FUSIONMODE_INVALID = Y_FUSIONMODE_INVALID;
     static const Y_MOUNTPOSITION MOUNTPOSITION_BOTTOM = Y_MOUNTPOSITION_BOTTOM;
     static const Y_MOUNTPOSITION MOUNTPOSITION_TOP = Y_MOUNTPOSITION_TOP;
     static const Y_MOUNTPOSITION MOUNTPOSITION_FRONT = Y_MOUNTPOSITION_FRONT;
@@ -212,6 +230,15 @@ public:
     int             set_calibrationParam(const string& newval);
     inline int      setCalibrationParam(const string& newval)
     { return this->set_calibrationParam(newval); }
+
+    Y_FUSIONMODE_enum   get_fusionMode(void);
+
+    inline Y_FUSIONMODE_enum fusionMode(void)
+    { return this->get_fusionMode(); }
+
+    int             set_fusionMode(Y_FUSIONMODE_enum newval);
+    inline int      setFusionMode(Y_FUSIONMODE_enum newval)
+    { return this->set_fusionMode(newval); }
 
     /**
      * Retrieves a reference frame for a given identifier.
