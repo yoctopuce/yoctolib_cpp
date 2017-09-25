@@ -129,6 +129,7 @@
 <ClCompile Include="..\..\..\Sources\yocto_oscontrol.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_power.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_poweroutput.cpp" />
+<ClCompile Include="..\..\..\Sources\yocto_powersupply.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_pressure.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_proximity.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_pwminput.cpp" />
@@ -210,6 +211,7 @@
 <ClInclude Include="..\..\..\Sources\yocto_oscontrol.h" />
 <ClInclude Include="..\..\..\Sources\yocto_power.h" />
 <ClInclude Include="..\..\..\Sources\yocto_poweroutput.h" />
+<ClInclude Include="..\..\..\Sources\yocto_powersupply.h" />
 <ClInclude Include="..\..\..\Sources\yocto_pressure.h" />
 <ClInclude Include="..\..\..\Sources\yocto_proximity.h" />
 <ClInclude Include="..\..\..\Sources\yocto_pwminput.h" />
