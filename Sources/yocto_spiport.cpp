@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_spiport.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_spiport.cpp 28655 2017-09-26 15:55:10Z seb $
  *
  * Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -1046,7 +1046,6 @@ int YSpiPort::readByte(void)
     int mult = 0;
     int endpos = 0;
     int res = 0;
-
     // first check if we have the requested character in the look-ahead buffer
     bufflen = (int)(_rxbuff).size();
     if ((_rxptr >= _rxbuffptr) && (_rxptr < _rxbuffptr+bufflen)) {
@@ -1054,7 +1053,6 @@ int YSpiPort::readByte(void)
         _rxptr = _rxptr + 1;
         return res;
     }
-
     // try to preload more than one byte to speed-up byte-per-byte access
     currpos = _rxptr;
     reqlen = 1024;
@@ -1081,7 +1079,6 @@ int YSpiPort::readByte(void)
     }
     // still mixed, need to process character by character
     _rxptr = currpos;
-
 
     buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=1",_rxptr));
     bufflen = (int)(buff).size() - 1;

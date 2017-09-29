@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.h 27948 2017-06-30 14:46:55Z mvuilleu $
+ * $Id: yocto_serialport.h 28656 2017-09-26 16:13:04Z seb $
  *
  * Declares yFindSerialPort(), the high-level API for SerialPort functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -46,9 +46,9 @@
 #include <cmath>
 #include <map>
 
-//--- (YSerialPort return codes)
-//--- (end of YSerialPort return codes)
-//--- (YSerialPort definitions)
+//--- (generated code: YSerialPort return codes)
+//--- (end of generated code: YSerialPort return codes)
+//--- (generated code: YSerialPort definitions)
 class YSerialPort; // forward declaration
 
 typedef void (*YSerialPortValueCallback)(YSerialPort *func, const string& functionValue);
@@ -76,9 +76,57 @@ typedef enum {
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 #define Y_PROTOCOL_INVALID              (YAPI_INVALID_STRING)
 #define Y_SERIALMODE_INVALID            (YAPI_INVALID_STRING)
-//--- (end of YSerialPort definitions)
+//--- (end of generated code: YSerialPort definitions)
 
-//--- (YSerialPort declaration)
+
+//--- (generated code: YSnoopingRecord definitions)
+//--- (end of generated code: YSnoopingRecord definitions)
+
+//--- (generated code: YSnoopingRecord declaration)
+/**
+ * YSnoopingRecord Class: Description of a message intercepted
+ *
+ *
+ */
+class YOCTO_CLASS_EXPORT YSnoopingRecord {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
+//--- (end of generated code: YSnoopingRecord declaration)
+    //--- (generated code: YSnoopingRecord attributes)
+    // Attributes (function value cache)
+    int             _tim;
+    int             _dir;
+    string          _msg;
+    //--- (end of generated code: YSnoopingRecord attributes)
+    //--- (generated code: YSnoopingRecord constructor)
+
+    //--- (end of generated code: YSnoopingRecord constructor)
+    //--- (generated code: SnoopingRecord initialization)
+    //--- (end of generated code: SnoopingRecord initialization)
+
+public:
+    YSnoopingRecord(const string& json);
+    //--- (generated code: YSnoopingRecord accessors declaration)
+
+
+    virtual int         get_time(void);
+
+    virtual int         get_direction(void);
+
+    virtual string      get_message(void);
+
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
+    //--- (end of generated code: YSnoopingRecord accessors declaration)
+};
+
+
+
+
+
+//--- (generated code: YSerialPort declaration)
 /**
  * YSerialPort Class: SerialPort function interface
  *
@@ -92,9 +140,9 @@ class YOCTO_CLASS_EXPORT YSerialPort: public YFunction {
 #ifdef __BORLANDC__
 #pragma option push -w-8022
 #endif
-//--- (end of YSerialPort declaration)
+//--- (end of generated code: YSerialPort declaration)
 protected:
-    //--- (YSerialPort attributes)
+    //--- (generated code: YSerialPort attributes)
     // Attributes (function value cache)
     int             _rxCount;
     int             _txCount;
@@ -121,11 +169,11 @@ protected:
 
     // Constructor is protected, use yFindSerialPort factory function to instantiate
     YSerialPort(const string& func);
-    //--- (end of YSerialPort attributes)
+    //--- (end of generated code: YSerialPort attributes)
 
 public:
     ~YSerialPort();
-    //--- (YSerialPort accessors declaration)
+    //--- (generated code: YSerialPort accessors declaration)
 
     static const int RXCOUNT_INVALID = YAPI_INVALID_UINT;
     static const int TXCOUNT_INVALID = YAPI_INVALID_UINT;
@@ -707,6 +755,24 @@ public:
     virtual int         get_CTS(void);
 
     /**
+     * Retrieves messages (both direction) in the serial port buffer, starting at current position.
+     * This function will only compare and return printable characters in the message strings.
+     * Binary protocols are handled as hexadecimal strings.
+     *
+     * If no message is found, the search waits for one up to the specified maximum timeout
+     * (in milliseconds).
+     *
+     * @param maxWait : the maximum number of milliseconds to wait for a message if none is found
+     *         in the receive buffer.
+     *
+     * @return an array of YSnoopingRecord objects containing the messages found, if any.
+     *         Binary messages are converted to hexadecimal representation.
+     *
+     * On failure, throws an exception or returns an empty array.
+     */
+    virtual vector<YSnoopingRecord> snoopMessages(int maxWait);
+
+    /**
      * Sends a MODBUS message (provided as a hexadecimal string) to the serial port.
      * The message must start with the slave address. The MODBUS CRC/LRC is
      * automatically added by the function. This function does not wait for a reply.
@@ -892,10 +958,10 @@ public:
 #ifdef __BORLANDC__
 #pragma option pop
 #endif
-    //--- (end of YSerialPort accessors declaration)
+    //--- (end of generated code: YSerialPort accessors declaration)
 };
 
-//--- (SerialPort functions declaration)
+//--- (generated code: SerialPort functions declaration)
 
 /**
  * Retrieves a serial port for a given identifier.
@@ -938,6 +1004,6 @@ inline YSerialPort* yFindSerialPort(const string& func)
 inline YSerialPort* yFirstSerialPort(void)
 { return YSerialPort::FirstSerialPort();}
 
-//--- (end of SerialPort functions declaration)
+//--- (end of generated code: SerialPort functions declaration)
 
 #endif

@@ -1,1 +1,2 @@
-- test
+- Add YSnoopingRecord class
+- Add aarch64 target in GNUMakefile for Nvidia processors

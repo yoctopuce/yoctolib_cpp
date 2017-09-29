@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 27948 2017-06-30 14:46:55Z mvuilleu $
+ * $Id: yocto_serialport.cpp 28658 2017-09-26 16:30:25Z seb $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -48,8 +48,63 @@
 #include <stdlib.h>
 #define  __FILE_ID__  "serialport"
 
+
+YSnoopingRecord::YSnoopingRecord(const string& json):_tim(0),_dir(0),_msg("")
+{
+    yJsonStateMachine j;
+    // Parse JSON data
+    j.src = json.c_str();
+    j.end = j.src + strlen(j.src);
+    j.st = YJSON_START;
+    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
+        return ;
+    }
+    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
+        if (!strcmp(j.token, "m")) {
+            string tmp;
+            if (yJsonParse(&j) != YJSON_PARSE_AVAIL) {
+                return ;
+            }
+            tmp = (string)j.token;
+            while(j.next == YJSON_PARSE_STRINGCONT && yJsonParse(&j) == YJSON_PARSE_AVAIL) {
+                tmp +=(string)j.token;
+            }
+            _dir = (tmp[0] == '<' ? 1 : 0);
+            _msg = tmp.substr(1);
+        } else if(!strcmp(j.token, "t")) {
+            if (yJsonParse(&j) != YJSON_PARSE_AVAIL) {
+                return;
+            }
+            _tim = atoi(j.token);;
+        } else {
+            yJsonSkip(&j, 1);
+        }
+    }
+}
+
+//--- (generated code: YSnoopingRecord implementation)
+// static attributes
+
+
+int YSnoopingRecord::get_time(void)
+{
+    return _tim;
+}
+
+int YSnoopingRecord::get_direction(void)
+{
+    return _dir;
+}
+
+string YSnoopingRecord::get_message(void)
+{
+    return _msg;
+}
+//--- (end of generated code: YSnoopingRecord implementation)
+
+
 YSerialPort::YSerialPort(const string& func): YFunction(func)
-//--- (SerialPort initialization)
+//--- (generated code: SerialPort initialization)
     ,_rxCount(RXCOUNT_INVALID)
     ,_txCount(TXCOUNT_INVALID)
     ,_errCount(ERRCOUNT_INVALID)
@@ -65,17 +120,17 @@ YSerialPort::YSerialPort(const string& func): YFunction(func)
     ,_valueCallbackSerialPort(NULL)
     ,_rxptr(0)
     ,_rxbuffptr(0)
-//--- (end of SerialPort initialization)
+//--- (end of generated code: SerialPort initialization)
 {
     _className="SerialPort";
 }
 
 YSerialPort::~YSerialPort()
 {
-//--- (YSerialPort cleanup)
-//--- (end of YSerialPort cleanup)
+//--- (generated code: YSerialPort cleanup)
+//--- (end of generated code: YSerialPort cleanup)
 }
-//--- (YSerialPort implementation)
+//--- (generated code: YSerialPort implementation)
 // static attributes
 const string YSerialPort::LASTMSG_INVALID = YAPI_INVALID_STRING;
 const string YSerialPort::CURRENTJOB_INVALID = YAPI_INVALID_STRING;
@@ -941,7 +996,6 @@ int YSerialPort::readByte(void)
     int mult = 0;
     int endpos = 0;
     int res = 0;
-
     // first check if we have the requested character in the look-ahead buffer
     bufflen = (int)(_rxbuff).size();
     if ((_rxptr >= _rxbuffptr) && (_rxptr < _rxbuffptr+bufflen)) {
@@ -949,7 +1003,6 @@ int YSerialPort::readByte(void)
         _rxptr = _rxptr + 1;
         return res;
     }
-
     // try to preload more than one byte to speed-up byte-per-byte access
     currpos = _rxptr;
     reqlen = 1024;
@@ -976,7 +1029,6 @@ int YSerialPort::readByte(void)
     }
     // still mixed, need to process character by character
     _rxptr = currpos;
-
 
     buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=1",_rxptr));
     bufflen = (int)(buff).size() - 1;
@@ -1399,6 +1451,49 @@ int YSerialPort::get_CTS(void)
         return YAPI_IO_ERROR;
     }
     res = ((u8)buff[0]) - 48;
+    return res;
+}
+
+/**
+ * Retrieves messages (both direction) in the serial port buffer, starting at current position.
+ * This function will only compare and return printable characters in the message strings.
+ * Binary protocols are handled as hexadecimal strings.
+ *
+ * If no message is found, the search waits for one up to the specified maximum timeout
+ * (in milliseconds).
+ *
+ * @param maxWait : the maximum number of milliseconds to wait for a message if none is found
+ *         in the receive buffer.
+ *
+ * @return an array of YSnoopingRecord objects containing the messages found, if any.
+ *         Binary messages are converted to hexadecimal representation.
+ *
+ * On failure, throws an exception or returns an empty array.
+ */
+vector<YSnoopingRecord> YSerialPort::snoopMessages(int maxWait)
+{
+    string url;
+    string msgbin;
+    vector<string> msgarr;
+    int msglen = 0;
+    vector<YSnoopingRecord> res;
+    int idx = 0;
+
+    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&t=0", _rxptr,maxWait);
+    msgbin = this->_download(url);
+    msgarr = this->_json_get_array(msgbin);
+    msglen = (int)msgarr.size();
+    if (msglen == 0) {
+        return res;
+    }
+    // last element of array is the new position
+    msglen = msglen - 1;
+    _rxptr = atoi((msgarr[msglen]).c_str());
+    idx = 0;
+    while (idx < msglen) {
+        res.push_back(YSnoopingRecord(msgarr[idx]));
+        idx = idx + 1;
+    }
     return res;
 }
 
@@ -1972,7 +2067,7 @@ YSerialPort* YSerialPort::FirstSerialPort(void)
     return YSerialPort::FindSerialPort(serial+"."+funcId);
 }
 
-//--- (end of YSerialPort implementation)
+//--- (end of generated code: YSerialPort implementation)
 
-//--- (SerialPort functions)
-//--- (end of SerialPort functions)
+//--- (generated code: SerialPort functions)
+//--- (end of generated code: SerialPort functions)
