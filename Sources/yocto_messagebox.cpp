@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_messagebox.cpp 28753 2017-10-03 11:23:38Z seb $
  *
  * Implements yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -46,11 +46,41 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include <iostream>
 #define  __FILE_ID__  "messagebox"
 
 
-YSms::YSms(void) { }
-YSms::YSms(YMessageBox *mbox) :_mbox(mbox) { }
+YSms::YSms(void):
+//--- (generated code: YSms initialization)
+    _mbox(NULL)
+    ,_slot(0)
+    ,_deliv(0)
+    ,_mref(0)
+    ,_pid(0)
+    ,_alphab(0)
+    ,_mclass(0)
+    ,_npdu(0)
+    ,_aggIdx(0)
+    ,_aggCnt(0)
+//--- (end of generated code: YSms initialization)
+{ }
+
+YSms::YSms(YMessageBox *mbox) :
+//--- (generated code: YSms initialization)
+    _mbox(NULL)
+    ,_slot(0)
+    ,_deliv(0)
+    ,_mref(0)
+    ,_pid(0)
+    ,_alphab(0)
+    ,_mclass(0)
+    ,_npdu(0)
+    ,_aggIdx(0)
+    ,_aggCnt(0)
+//--- (end of generated code: YSms initialization)
+{
+    _mbox = mbox;
+}
 
 //--- (generated code: YSms implementation)
 // static attributes
@@ -826,7 +856,7 @@ string YSms::encodeUserData(void)
     int wpos = 0;
     int carry = 0;
     int nbits = 0;
-    int thisb = 0;
+    int thi_b = 0;
     // nbits = number of bits in carry
     udsize = this->udataSize();
     udhsize = (int)(_udh).size();
@@ -868,11 +898,11 @@ string YSms::encodeUserData(void)
                 carry = ((u8)_udata[i]);
                 nbits = 7;
             } else {
-                thisb = ((u8)_udata[i]);
-                res[wpos] = (char)(((carry) | ((((((thisb) << (nbits)))) & (255)))));
+                thi_b = ((u8)_udata[i]);
+                res[wpos] = (char)(((carry) | ((((((thi_b) << (nbits)))) & (255)))));
                 wpos = wpos + 1;
                 nbits = nbits - 1;
-                carry = ((thisb) >> ((7 - nbits)));
+                carry = ((thi_b) >> ((7 - nbits)));
             }
             i = i + 1;
         }
@@ -1091,7 +1121,7 @@ int YSms::parsePdu(string pdu)
     int i = 0;
     int carry = 0;
     int nbits = 0;
-    int thisb = 0;
+    int thi_b = 0;
     _pdu = pdu;
     _npdu = 1;
     // parse meta-data
@@ -1152,9 +1182,9 @@ int YSms::parsePdu(string pdu)
             udhlen = (((8 + 8*udhsize + 6)) / (7));
             nbits = 7*udhlen - 8 - 8*udhsize;
             if (nbits > 0) {
-                thisb = ((u8)pdu[rpos]);
+                thi_b = ((u8)pdu[rpos]);
                 rpos = rpos + 1;
-                carry = ((thisb) >> (nbits));
+                carry = ((thi_b) >> (nbits));
                 nbits = 8 - nbits;
             }
         } else {
@@ -1176,10 +1206,10 @@ int YSms::parsePdu(string pdu)
                 carry = 0;
                 nbits = 0;
             } else {
-                thisb = ((u8)pdu[rpos]);
+                thi_b = ((u8)pdu[rpos]);
                 rpos = rpos + 1;
-                _udata[i] = (char)(((carry) | ((((((thisb) << (nbits)))) & (127)))));
-                carry = ((thisb) >> ((7 - nbits)));
+                _udata[i] = (char)(((carry) | ((((((thi_b) << (nbits)))) & (127)))));
+                carry = ((thi_b) >> ((7 - nbits)));
                 nbits = nbits + 1;
             }
             i = i + 1;
@@ -1241,7 +1271,7 @@ int YSms::deleteFromSIM(void)
 
 
 YMessageBox::YMessageBox(const string& func): YFunction(func)
-//--- (generated code: MessageBox initialization)
+//--- (generated code: YMessageBox initialization)
     ,_slotsInUse(SLOTSINUSE_INVALID)
     ,_slotsCount(SLOTSCOUNT_INVALID)
     ,_slotsBitmap(SLOTSBITMAP_INVALID)
@@ -1250,7 +1280,8 @@ YMessageBox::YMessageBox(const string& func): YFunction(func)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackMessageBox(NULL)
     ,_nextMsgRef(0)
-//--- (end of generated code: MessageBox initialization)
+    ,_gsm2unicodeReady(0)
+//--- (end of generated code: YMessageBox initialization)
 {
     _className="MessageBox";
 }
@@ -2228,5 +2259,5 @@ YMessageBox* YMessageBox::FirstMessageBox(void)
 
 //--- (end of generated code: YMessageBox implementation)
 
-//--- (generated code: MessageBox functions)
-//--- (end of generated code: MessageBox functions)
+//--- (generated code: YMessageBox functions)
+//--- (end of generated code: YMessageBox functions)

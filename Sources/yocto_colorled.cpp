@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_colorled.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_colorled.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindColorLed(), the high-level API for ColorLed functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,7 +49,7 @@
 #define  __FILE_ID__  "colorled"
 
 YColorLed::YColorLed(const string& func): YFunction(func)
-//--- (ColorLed initialization)
+//--- (YColorLed initialization)
     ,_rgbColor(RGBCOLOR_INVALID)
     ,_hslColor(HSLCOLOR_INVALID)
     ,_rgbMove(RGBMOVE_INVALID)
@@ -60,7 +60,7 @@ YColorLed::YColorLed(const string& func): YFunction(func)
     ,_blinkSeqSignature(BLINKSEQSIGNATURE_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackColorLed(NULL)
-//--- (end of ColorLed initialization)
+//--- (end of YColorLed initialization)
 {
     _className="ColorLed";
 }
@@ -712,5 +712,5 @@ YColorLed* YColorLed::FirstColorLed(void)
 
 //--- (end of YColorLed implementation)
 
-//--- (ColorLed functions)
-//--- (end of ColorLed functions)
+//--- (YColorLed functions)
+//--- (end of YColorLed functions)

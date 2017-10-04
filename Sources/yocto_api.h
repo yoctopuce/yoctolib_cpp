@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 28556 2017-09-15 15:00:00Z seb $
+ * $Id: yocto_api.h 28762 2017-10-03 14:01:54Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -849,11 +849,9 @@ protected:
 
 
 public:
-    YFirmwareUpdate(string serialNumber, string path, string settings) : _serial(serialNumber), _settings(settings), _firmwarepath(path), _force(false) {};
-    YFirmwareUpdate(string serialNumber, string path, string settings, bool force) : _serial(serialNumber), _settings(settings), _firmwarepath(path), _force(force) {};
-    YFirmwareUpdate(){}
-
-
+    YFirmwareUpdate(string serialNumber, string path, string settings);
+    YFirmwareUpdate(string serialNumber, string path, string settings, bool force);
+    YFirmwareUpdate();
 
     //--- (generated code: YFirmwareUpdate accessors declaration)
 
@@ -976,7 +974,7 @@ protected:
     yCalibrationHandler _calhdl;
 
 public:
-    YDataStream(YFunction *parent): _parent(parent) {};
+    YDataStream(YFunction *parent);
     YDataStream(YFunction *parent, YDataSet &dataset, const vector<int>& encoded);
 
     virtual ~YDataStream();
@@ -1207,10 +1205,8 @@ protected:
     time_t              _startTime_t;
     time_t              _stopTime_t;
 public:
-    YMeasure(double start, double end, double minVal, double avgVal, double maxVal):
-        _start(start), _end(end), _minVal(minVal), _avgVal(avgVal), _maxVal(maxVal),_startTime_t((time_t)(start+0.5)),_stopTime_t((time_t)(end+0.5)) {};
-
-    YMeasure(): _start(0), _end(0), _minVal(0), _avgVal(0), _maxVal(0),_startTime_t(0),_stopTime_t(0) {};
+    YMeasure(double start, double end, double minVal, double avgVal, double maxVal);
+    YMeasure();
 
     time_t*        get_startTimeUTC_asTime_t(time_t *time);
     time_t*        get_endTimeUTC_asTime_t(time_t *time);
@@ -2023,8 +2019,8 @@ protected:
     // Constructor is protected, use yFindModule factory function to instantiate
     YModule(const string& func);
     //--- (end of generated code: YModule attributes)
-    //--- (generated code: Module initialization)
-    //--- (end of generated code: Module initialization)
+    //--- (generated code: YModule initialization)
+    //--- (end of generated code: YModule initialization)
 
     // Method used to retrieve details of the nth function of our device
     YRETCODE        _getFunction(int idx, string& serial, string& funcId, string& baseType, string& funcName, string& funcVal, string& errMsg);
@@ -2709,8 +2705,8 @@ protected:
     YSensor(const string& func);
     //--- (end of generated code: YSensor attributes)
 
-    //--- (generated code: Sensor initialization)
-    //--- (end of generated code: Sensor initialization)
+    //--- (generated code: YSensor initialization)
+    //--- (end of generated code: YSensor initialization)
 
 public:
     ~YSensor();
@@ -3169,7 +3165,7 @@ public:
     //--- (end of generated code: YSensor accessors declaration)
 };
 
-//--- (generated code: Sensor functions declaration)
+//--- (generated code: YSensor functions declaration)
 
 /**
  * Retrieves a sensor for a given identifier.
@@ -3212,7 +3208,7 @@ inline YSensor* yFindSensor(const string& func)
 inline YSensor* yFirstSensor(void)
 { return YSensor::FirstSensor();}
 
-//--- (end of generated code: Sensor functions declaration)
+//--- (end of generated code: YSensor functions declaration)
 
 
 inline string yGetAPIVersion()
@@ -3521,7 +3517,7 @@ inline u64 yGetTickCount(void)
 inline bool yCheckLogicalName(const string& name)
 { return YAPI::CheckLogicalName(name); }
 
-//--- (generated code: Module functions declaration)
+//--- (generated code: YModule functions declaration)
 
 /**
  * Allows you to find a module from its serial number or from its logical name.
@@ -3558,7 +3554,7 @@ inline YModule* yFindModule(const string& func)
 inline YModule* yFirstModule(void)
 { return YModule::FirstModule();}
 
-//--- (end of generated code: Module functions declaration)
+//--- (end of generated code: YModule functions declaration)
 
 
 
@@ -3653,8 +3649,8 @@ class YOCTO_CLASS_EXPORT YDataLogger: public YFunction {
     // Constructor is protected, use yFindDataLogger factory function to instantiate
     YDataLogger(const string& func);
     //--- (end of generated code: YDataLogger attributes)
-    //--- (generated code: DataLogger initialization)
-    //--- (end of generated code: DataLogger initialization)
+    //--- (generated code: YDataLogger initialization)
+    //--- (end of generated code: YDataLogger initialization)
 
     // device-specific URL to access the datalogger
     string          dataLoggerURL;
@@ -3946,7 +3942,7 @@ public:
 };
 
 
-//--- (generated code: DataLogger functions declaration)
+//--- (generated code: YDataLogger functions declaration)
 
 /**
  * Retrieves a data logger for a given identifier.
@@ -3989,7 +3985,7 @@ inline YDataLogger* yFindDataLogger(const string& func)
 inline YDataLogger* yFirstDataLogger(void)
 { return YDataLogger::FirstDataLogger();}
 
-//--- (end of generated code: DataLogger functions declaration)
+//--- (end of generated code: YDataLogger functions declaration)
 
 
 #endif

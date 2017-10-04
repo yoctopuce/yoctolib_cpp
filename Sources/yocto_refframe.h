@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_refframe.h 28457 2017-09-06 08:34:21Z mvuilleu $
+ * $Id: yocto_refframe.h 28748 2017-10-03 08:23:39Z seb $
  *
  * Declares yFindRefFrame(), the high-level API for RefFrame functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -504,7 +504,7 @@ public:
     //--- (end of YRefFrame accessors declaration)
 };
 
-//--- (RefFrame functions declaration)
+//--- (YRefFrame functions declaration)
 
 /**
  * Retrieves a reference frame for a given identifier.
@@ -547,6 +547,6 @@ inline YRefFrame* yFindRefFrame(const string& func)
 inline YRefFrame* yFirstRefFrame(void)
 { return YRefFrame::FirstRefFrame();}
 
-//--- (end of RefFrame functions declaration)
+//--- (end of YRefFrame functions declaration)
 
 #endif

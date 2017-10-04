@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_temperature.cpp 28556 2017-09-15 15:00:00Z seb $
+ * $Id: yocto_temperature.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindTemperature(), the high-level API for Temperature functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,14 +49,14 @@
 #define  __FILE_ID__  "temperature"
 
 YTemperature::YTemperature(const string& func): YSensor(func)
-//--- (Temperature initialization)
+//--- (YTemperature initialization)
     ,_sensorType(SENSORTYPE_INVALID)
     ,_signalValue(SIGNALVALUE_INVALID)
     ,_signalUnit(SIGNALUNIT_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackTemperature(NULL)
     ,_timedReportCallbackTemperature(NULL)
-//--- (end of Temperature initialization)
+//--- (end of YTemperature initialization)
 {
     _className="Temperature";
 }
@@ -609,5 +609,5 @@ YTemperature* YTemperature::FirstTemperature(void)
 
 //--- (end of YTemperature implementation)
 
-//--- (Temperature functions)
-//--- (end of Temperature functions)
+//--- (YTemperature functions)
+//--- (end of YTemperature functions)

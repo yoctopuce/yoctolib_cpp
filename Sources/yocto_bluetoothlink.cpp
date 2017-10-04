@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_bluetoothlink.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_bluetoothlink.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindBluetoothLink(), the high-level API for BluetoothLink functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,7 +49,7 @@
 #define  __FILE_ID__  "bluetoothlink"
 
 YBluetoothLink::YBluetoothLink(const string& func): YFunction(func)
-//--- (BluetoothLink initialization)
+//--- (YBluetoothLink initialization)
     ,_ownAddress(OWNADDRESS_INVALID)
     ,_pairingPin(PAIRINGPIN_INVALID)
     ,_remoteAddress(REMOTEADDRESS_INVALID)
@@ -61,7 +61,7 @@ YBluetoothLink::YBluetoothLink(const string& func): YFunction(func)
     ,_linkQuality(LINKQUALITY_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackBluetoothLink(NULL)
-//--- (end of BluetoothLink initialization)
+//--- (end of YBluetoothLink initialization)
 {
     _className="BluetoothLink";
 }
@@ -687,5 +687,5 @@ YBluetoothLink* YBluetoothLink::FirstBluetoothLink(void)
 
 //--- (end of YBluetoothLink implementation)
 
-//--- (BluetoothLink functions)
-//--- (end of BluetoothLink functions)
+//--- (YBluetoothLink functions)
+//--- (end of YBluetoothLink functions)

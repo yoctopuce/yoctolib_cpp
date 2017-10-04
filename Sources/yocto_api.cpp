@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 28556 2017-09-15 15:00:00Z seb $
+ * $Id: yocto_api.cpp 28762 2017-10-03 14:01:54Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -899,15 +899,62 @@ string YJSONObject::getKeyFromIdx(int i)
 }
 
 
+YDataStream::YDataStream(YFunction *parent):
+//--- (generated code: YDataStream initialization)
+    _parent(NULL)
+    ,_runNo(0)
+    ,_utcStamp(0)
+    ,_nCols(0)
+    ,_nRows(0)
+    ,_duration(0)
+    ,_isClosed(0)
+    ,_isAvg(0)
+    ,_isScal(0)
+    ,_isScal32(0)
+    ,_decimals(0)
+    ,_offset(0.0)
+    ,_scale(0.0)
+    ,_samplesPerHour(0)
+    ,_minVal(0.0)
+    ,_avgVal(0.0)
+    ,_maxVal(0.0)
+    ,_decexp(0.0)
+    ,_caltyp(0)
+//--- (end of generated code: YDataStream initialization)
+{
+    _parent   = parent;
+}
 
 
 
 // YDataStream constructor for the new datalogger
-YDataStream::YDataStream(YFunction *parent, YDataSet& dataset, const vector<int>& encoded)
+YDataStream::YDataStream(YFunction *parent, YDataSet& dataset, const vector<int>& encoded):
+//--- (generated code: YDataStream initialization)
+    _parent(NULL)
+    ,_runNo(0)
+    ,_utcStamp(0)
+    ,_nCols(0)
+    ,_nRows(0)
+    ,_duration(0)
+    ,_isClosed(0)
+    ,_isAvg(0)
+    ,_isScal(0)
+    ,_isScal32(0)
+    ,_decimals(0)
+    ,_offset(0.0)
+    ,_scale(0.0)
+    ,_samplesPerHour(0)
+    ,_minVal(0.0)
+    ,_avgVal(0.0)
+    ,_maxVal(0.0)
+    ,_decexp(0.0)
+    ,_caltyp(0)
+//--- (end of generated code: YDataStream initialization)
 {
     _parent   = parent;
     this->_initFromDataSet(&dataset, encoded);
 }
+
 
 YDataStream::~YDataStream()
 {
@@ -919,7 +966,13 @@ YDataStream::~YDataStream()
 }
 
 // YDataSet constructor, when instantiated directly by a function
-YDataSet::YDataSet(YFunction *parent, const string& functionId, const string& unit, s64 startTime, s64 endTime)
+YDataSet::YDataSet(YFunction *parent, const string& functionId, const string& unit, s64 startTime, s64 endTime):
+//--- (generated code: YDataSet initialization)
+    _parent(NULL)
+    ,_startTime(0)
+    ,_endTime(0)
+    ,_progress(0)
+//--- (end of generated code: YDataSet initialization)
 {
     _parent     = parent;
     _functionId = functionId;
@@ -931,7 +984,13 @@ YDataSet::YDataSet(YFunction *parent, const string& functionId, const string& un
 }
 
 // YDataSet constructor for the new datalogger
-YDataSet::YDataSet(YFunction *parent)
+YDataSet::YDataSet(YFunction *parent):
+//--- (generated code: YDataSet initialization)
+    _parent(NULL)
+    ,_startTime(0)
+    ,_endTime(0)
+    ,_progress(0)
+//--- (end of generated code: YDataSet initialization)
 {
     _parent    = parent;
     _startTime = 0;
@@ -1042,6 +1101,43 @@ int YDataSet::_parse(const string& json)
     _progress = 0;
     return this->get_progress();
 }
+
+
+YFirmwareUpdate::YFirmwareUpdate(string serialNumber, string path, string settings) :
+//--- (generated code: YFirmwareUpdate initialization)
+    _progress_c(0)
+    ,_progress(0)
+    ,_restore_step(0)
+    ,_force(0)
+//--- (end of generated code: YFirmwareUpdate initialization)
+{
+    _serial = serialNumber;
+    _settings = settings;
+    _firmwarepath = path;
+}
+YFirmwareUpdate::YFirmwareUpdate(string serialNumber, string path, string settings, bool force) :
+//--- (generated code: YFirmwareUpdate initialization)
+    _progress_c(0)
+    ,_progress(0)
+    ,_restore_step(0)
+    ,_force(0)
+//--- (end of generated code: YFirmwareUpdate initialization)
+{
+    _serial = serialNumber;
+    _settings = settings;
+    _firmwarepath = path;
+    _force = force;
+}
+
+YFirmwareUpdate::YFirmwareUpdate() :
+    //--- (generated code: YFirmwareUpdate initialization)
+    _progress_c(0)
+    ,_progress(0)
+    ,_restore_step(0)
+    ,_force(0)
+//--- (end of generated code: YFirmwareUpdate initialization)
+{}
+
 
 
 //--- (generated code: YFirmwareUpdate implementation)
@@ -1746,6 +1842,42 @@ double YDataStream::get_data(int row,int col)
 }
 //--- (end of generated code: YDataStream implementation)
 
+YMeasure::YMeasure(double start, double end, double minVal, double avgVal, double maxVal):
+//--- (generated code: YMeasure initialization)
+    _start(0.0)
+    ,_end(0.0)
+    ,_minVal(0.0)
+    ,_avgVal(0.0)
+    ,_maxVal(0.0)
+//--- (end of generated code: YMeasure initialization)
+{
+    _start = start;
+    _end = end;
+    _minVal = minVal;
+    _avgVal = avgVal;
+    _maxVal = maxVal;
+    _startTime_t = (time_t)(start+0.5);
+    _stopTime_t = (time_t)(end+0.5);
+
+}
+
+YMeasure::YMeasure():
+//--- (generated code: YMeasure initialization)
+    _start(0.0)
+    ,_end(0.0)
+    ,_minVal(0.0)
+    ,_avgVal(0.0)
+    ,_maxVal(0.0)
+//--- (end of generated code: YMeasure initialization)
+{
+    _start = 0;
+    _end = 0;
+    _minVal = 0;
+    _avgVal = 0;
+    _maxVal = 0;
+    _startTime_t = 0;
+    _stopTime_t = 0;
+}
 
 //--- (generated code: YMeasure implementation)
 // static attributes
@@ -2183,20 +2315,20 @@ YFunction::YFunction(const string& func):
     _lastErrorType(YAPI_SUCCESS),_lastErrorMsg(""),
     _fundescr(Y_FUNCTIONDESCRIPTOR_INVALID), _userData(NULL)
 
-//--- (generated code: Function initialization)
+//--- (generated code: YFunction initialization)
     ,_logicalName(LOGICALNAME_INVALID)
     ,_advertisedValue(ADVERTISEDVALUE_INVALID)
     ,_valueCallbackFunction(NULL)
     ,_cacheExpiration(0)
-//--- (end of generated code: Function initialization)
+//--- (end of generated code: YFunction initialization)
 {
     yInitializeCriticalSection(&_this_cs);
 }
 
 YFunction::~YFunction()
 {
-//--- (generated code: Function cleanup)
-//--- (end of generated code: Function cleanup)
+//--- (generated code: YFunction cleanup)
+//--- (end of generated code: YFunction cleanup)
     _clearDataStreamCache();
     yDeleteCriticalSection(&_this_cs);
 }
@@ -2518,8 +2650,8 @@ YFunction* YFunction::FirstFunction(void)
 
 //--- (end of generated code: YFunction implementation)
 
-//--- (generated code: Function functions)
-//--- (end of generated code: Function functions)
+//--- (generated code: YFunction functions)
+//--- (end of generated code: YFunction functions)
 
 void YFunction::_throw(YRETCODE errType, string errMsg)
 {
@@ -4882,7 +5014,7 @@ string  YapiWrapper::ysprintf(const char *fmt, ...)
 //--- (generated code: YModule constructor)
 YModule::YModule(const string& func): YFunction(func)
 //--- (end of generated code: YModule constructor)
-//--- (generated code: Module initialization)
+//--- (generated code: YModule initialization)
     ,_productName(PRODUCTNAME_INVALID)
     ,_serialNumber(SERIALNUMBER_INVALID)
     ,_productId(PRODUCTID_INVALID)
@@ -4897,7 +5029,7 @@ YModule::YModule(const string& func): YFunction(func)
     ,_userVar(USERVAR_INVALID)
     ,_valueCallbackModule(NULL)
     ,_logCallback(NULL)
-//--- (end of generated code: Module initialization)
+//--- (end of generated code: YModule initialization)
 {
     _className = "Module";
 }
@@ -6155,8 +6287,8 @@ int YModule::set_allSettings(string settings)
     string oldval;
     string old_calib;
     string each_str;
-    bool do_update;
-    bool found;
+    bool do_update = 0;
+    bool found = 0;
     tmp = settings;
     tmp = this->_get_json_path(tmp, "api");
     if (!(tmp == "")) {
@@ -6805,14 +6937,14 @@ YModuleLogCallback YModule::get_logCallback()
 }
 
 
-//--- (generated code: Module functions)
-//--- (end of generated code: Module functions)
+//--- (generated code: YModule functions)
+//--- (end of generated code: YModule functions)
 
 
 
 
 YSensor::YSensor(const string& func): YFunction(func)
-//--- (generated code: Sensor initialization)
+//--- (generated code: YSensor initialization)
     ,_unit(UNIT_INVALID)
     ,_currentValue(CURRENTVALUE_INVALID)
     ,_lowestValue(LOWESTVALUE_INVALID)
@@ -6831,8 +6963,10 @@ YSensor::YSensor(const string& func): YFunction(func)
     ,_offset(0.0)
     ,_scale(0.0)
     ,_decexp(0.0)
+    ,_isScal(0)
+    ,_isScal32(0)
     ,_caltyp(0)
-//--- (end of generated code: Sensor initialization)
+//--- (end of generated code: YSensor initialization)
 {
     _className = "Sensor";
 }
@@ -8148,8 +8282,8 @@ YSensor* YSensor::FirstSensor(void)
 
 //--- (end of generated code: YSensor implementation)
 
-//--- (generated code: Sensor functions)
-//--- (end of generated code: Sensor functions)
+//--- (generated code: YSensor functions)
+//--- (end of generated code: YSensor functions)
 
 
 
@@ -8515,7 +8649,7 @@ int YDataLogger::get_dataStreams(vector<YDataStream *>& v)
 
 
 YDataLogger::YDataLogger(const string& func): YFunction(func)
-//--- (generated code: DataLogger initialization)
+//--- (generated code: YDataLogger initialization)
     ,_currentRunIndex(CURRENTRUNINDEX_INVALID)
     ,_timeUTC(TIMEUTC_INVALID)
     ,_recording(RECORDING_INVALID)
@@ -8523,7 +8657,7 @@ YDataLogger::YDataLogger(const string& func): YFunction(func)
     ,_beaconDriven(BEACONDRIVEN_INVALID)
     ,_clearHistory(CLEARHISTORY_INVALID)
     ,_valueCallbackDataLogger(NULL)
-//--- (end of generated code: DataLogger initialization)
+//--- (end of generated code: YDataLogger initialization)
 {
     _className = "DataLogger";
 }
@@ -9017,5 +9151,5 @@ YDataLogger* YDataLogger::FirstDataLogger(void)
 
 //--- (end of generated code: YDataLogger implementation)
 
-//--- (generated code: DataLogger functions)
-//--- (end of generated code: DataLogger functions)
+//--- (generated code: YDataLogger functions)
+//--- (end of generated code: YDataLogger functions)

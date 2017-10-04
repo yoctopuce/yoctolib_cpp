@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_anbutton.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_anbutton.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindAnButton(), the high-level API for AnButton functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,7 +49,7 @@
 #define  __FILE_ID__  "anbutton"
 
 YAnButton::YAnButton(const string& func): YFunction(func)
-//--- (AnButton initialization)
+//--- (YAnButton initialization)
     ,_calibratedValue(CALIBRATEDVALUE_INVALID)
     ,_rawValue(RAWVALUE_INVALID)
     ,_analogCalibration(ANALOGCALIBRATION_INVALID)
@@ -62,7 +62,7 @@ YAnButton::YAnButton(const string& func): YFunction(func)
     ,_pulseCounter(PULSECOUNTER_INVALID)
     ,_pulseTimer(PULSETIMER_INVALID)
     ,_valueCallbackAnButton(NULL)
-//--- (end of AnButton initialization)
+//--- (end of YAnButton initialization)
 {
     _className="AnButton";
 }
@@ -702,5 +702,5 @@ YAnButton* YAnButton::FirstAnButton(void)
 
 //--- (end of YAnButton implementation)
 
-//--- (AnButton functions)
-//--- (end of AnButton functions)
+//--- (YAnButton functions)
+//--- (end of YAnButton functions)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_display.cpp 28754 2017-10-03 11:54:51Z seb $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -10,26 +10,26 @@
  *
  *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
  *  non-exclusive license to use, modify, copy and integrate this
- *  file into your software for the sole purpose of interfacing 
- *  with Yoctopuce products. 
+ *  file into your software for the sole purpose of interfacing
+ *  with Yoctopuce products.
  *
- *  You may reproduce and distribute copies of this file in 
+ *  You may reproduce and distribute copies of this file in
  *  source or object form, as long as the sole purpose of this
- *  code is to interface with Yoctopuce products. You must retain 
+ *  code is to interface with Yoctopuce products. You must retain
  *  this notice in the distributed source file.
  *
  *  You should refer to Yoctopuce General Terms and Conditions
- *  for additional information regarding your rights and 
+ *  for additional information regarding your rights and
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -48,7 +48,11 @@
 #define  __FILE_ID__  "display"
 
 
-
+YDisplayLayer::YDisplayLayer(YDisplay *parent, int id):
+//--- (generated code: YDisplayLayer initialization)
+//--- (end of generated code: YDisplayLayer initialization)
+_display(parent),_id(id),_cmdbuff(""),_hidden(false)
+{}
 
 
 int YDisplayLayer::flush_now(void)
@@ -66,7 +70,7 @@ int YDisplayLayer::flush_now(void)
 int YDisplayLayer::command_push(string cmd)
 {
     int res = YAPI_SUCCESS;
-    
+
     if(_cmdbuff.length() + cmd.length() >= 100) {
         // force flush before, to prevent overflow
         res = flush_now();
@@ -601,7 +605,7 @@ int YDisplayLayer::resetHiddenFlag(void)
 
 
 YDisplay::YDisplay(const string& func): YFunction(func)
-//--- (generated code: Display initialization)
+//--- (generated code: YDisplay initialization)
     ,_enabled(ENABLED_INVALID)
     ,_startupSeq(STARTUPSEQ_INVALID)
     ,_brightness(BRIGHTNESS_INVALID)
@@ -614,7 +618,7 @@ YDisplay::YDisplay(const string& func): YFunction(func)
     ,_layerCount(LAYERCOUNT_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackDisplay(NULL)
-//--- (end of generated code: Display initialization)
+//--- (end of generated code: YDisplay initialization)
             ,_allDisplayLayers(0)
             ,_recording(false)
             ,_sequence("")
@@ -1450,5 +1454,5 @@ int YDisplay::sendCommand(string cmd)
 }
 
 
-//--- (generated code: Display functions)
-//--- (end of generated code: Display functions)
+//--- (generated code: YDisplay functions)
+//--- (end of generated code: YDisplay functions)

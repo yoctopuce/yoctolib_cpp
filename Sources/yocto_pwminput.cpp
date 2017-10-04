@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_pwminput.cpp 28556 2017-09-15 15:00:00Z seb $
+ * $Id: yocto_pwminput.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindPwmInput(), the high-level API for PwmInput functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,7 +49,7 @@
 #define  __FILE_ID__  "pwminput"
 
 YPwmInput::YPwmInput(const string& func): YSensor(func)
-//--- (PwmInput initialization)
+//--- (YPwmInput initialization)
     ,_dutyCycle(DUTYCYCLE_INVALID)
     ,_pulseDuration(PULSEDURATION_INVALID)
     ,_frequency(FREQUENCY_INVALID)
@@ -60,7 +60,7 @@ YPwmInput::YPwmInput(const string& func): YSensor(func)
     ,_debouncePeriod(DEBOUNCEPERIOD_INVALID)
     ,_valueCallbackPwmInput(NULL)
     ,_timedReportCallbackPwmInput(NULL)
-//--- (end of PwmInput initialization)
+//--- (end of YPwmInput initialization)
 {
     _className="PwmInput";
 }
@@ -576,5 +576,5 @@ YPwmInput* YPwmInput::FirstPwmInput(void)
 
 //--- (end of YPwmInput implementation)
 
-//--- (PwmInput functions)
-//--- (end of PwmInput functions)
+//--- (YPwmInput functions)
+//--- (end of YPwmInput functions)

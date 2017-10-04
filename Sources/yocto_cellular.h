@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.h 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_cellular.h 28748 2017-10-03 08:23:39Z seb $
  *
  * Declares yFindCellular(), the high-level API for Cellular functions
  *
@@ -124,8 +124,8 @@ class YOCTO_CLASS_EXPORT YCellRecord {
     //--- (generated code: YCellRecord constructor)
 
     //--- (end of generated code: YCellRecord constructor)
-    //--- (generated code: CellRecord initialization)
-    //--- (end of generated code: CellRecord initialization)
+    //--- (generated code: YCellRecord initialization)
+    //--- (end of generated code: YCellRecord initialization)
 
 public:
     YCellRecord(int mcc,int mnc,int lac,int cellId,int dbm,int tad,const string &oper);
@@ -717,7 +717,7 @@ public:
     //--- (end of generated code: YCellular accessors declaration)
 };
 
-//--- (generated code: Cellular functions declaration)
+//--- (generated code: YCellular functions declaration)
 
 /**
  * Retrieves a cellular interface for a given identifier.
@@ -760,6 +760,6 @@ inline YCellular* yFindCellular(const string& func)
 inline YCellular* yFirstCellular(void)
 { return YCellular::FirstCellular();}
 
-//--- (end of generated code: Cellular functions declaration)
+//--- (end of generated code: YCellular functions declaration)
 
 #endif

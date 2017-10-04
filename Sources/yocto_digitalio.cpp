@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_digitalio.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_digitalio.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindDigitalIO(), the high-level API for DigitalIO functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,7 +49,7 @@
 #define  __FILE_ID__  "digitalio"
 
 YDigitalIO::YDigitalIO(const string& func): YFunction(func)
-//--- (DigitalIO initialization)
+//--- (YDigitalIO initialization)
     ,_portState(PORTSTATE_INVALID)
     ,_portDirection(PORTDIRECTION_INVALID)
     ,_portOpenDrain(PORTOPENDRAIN_INVALID)
@@ -59,7 +59,7 @@ YDigitalIO::YDigitalIO(const string& func): YFunction(func)
     ,_outputVoltage(OUTPUTVOLTAGE_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackDigitalIO(NULL)
-//--- (end of DigitalIO initialization)
+//--- (end of YDigitalIO initialization)
 {
     _className="DigitalIO";
 }
@@ -814,5 +814,5 @@ YDigitalIO* YDigitalIO::FirstDigitalIO(void)
 
 //--- (end of YDigitalIO implementation)
 
-//--- (DigitalIO functions)
-//--- (end of DigitalIO functions)
+//--- (YDigitalIO functions)
+//--- (end of YDigitalIO functions)

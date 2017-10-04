@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_compass.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_compass.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindCompass(), the high-level API for Compass functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,13 +49,13 @@
 #define  __FILE_ID__  "compass"
 
 YCompass::YCompass(const string& func): YSensor(func)
-//--- (Compass initialization)
+//--- (YCompass initialization)
     ,_bandwidth(BANDWIDTH_INVALID)
     ,_axis(AXIS_INVALID)
     ,_magneticHeading(MAGNETICHEADING_INVALID)
     ,_valueCallbackCompass(NULL)
     ,_timedReportCallbackCompass(NULL)
-//--- (end of Compass initialization)
+//--- (end of YCompass initialization)
 {
     _className="Compass";
 }
@@ -338,5 +338,5 @@ YCompass* YCompass::FirstCompass(void)
 
 //--- (end of YCompass implementation)
 
-//--- (Compass functions)
-//--- (end of Compass functions)
+//--- (YCompass functions)
+//--- (end of YCompass functions)

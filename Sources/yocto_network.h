@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_network.h 28015 2017-07-07 16:27:06Z mvuilleu $
+ * $Id: yocto_network.h 28748 2017-10-03 08:23:39Z seb $
  *
  * Declares yFindNetwork(), the high-level API for Network functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -997,7 +997,7 @@ public:
     //--- (end of YNetwork accessors declaration)
 };
 
-//--- (Network functions declaration)
+//--- (YNetwork functions declaration)
 
 /**
  * Retrieves a network interface for a given identifier.
@@ -1040,6 +1040,6 @@ inline YNetwork* yFindNetwork(const string& func)
 inline YNetwork* yFirstNetwork(void)
 { return YNetwork::FirstNetwork();}
 
-//--- (end of Network functions declaration)
+//--- (end of YNetwork functions declaration)
 
 #endif

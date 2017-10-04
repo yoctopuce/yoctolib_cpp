@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_anbutton.h 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_anbutton.h 28748 2017-10-03 08:23:39Z seb $
  *
  * Declares yFindAnButton(), the high-level API for AnButton functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -443,7 +443,7 @@ public:
     //--- (end of YAnButton accessors declaration)
 };
 
-//--- (AnButton functions declaration)
+//--- (YAnButton functions declaration)
 
 /**
  * Retrieves an analog input for a given identifier.
@@ -486,6 +486,6 @@ inline YAnButton* yFindAnButton(const string& func)
 inline YAnButton* yFirstAnButton(void)
 { return YAnButton::FirstAnButton();}
 
-//--- (end of AnButton functions declaration)
+//--- (end of YAnButton functions declaration)
 
 #endif

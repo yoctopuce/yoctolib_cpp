@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_audioout.h 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_audioout.h 28748 2017-10-03 08:23:39Z seb $
  *
  * Declares yFindAudioOut(), the high-level API for AudioOut functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -277,7 +277,7 @@ public:
     //--- (end of YAudioOut accessors declaration)
 };
 
-//--- (AudioOut functions declaration)
+//--- (YAudioOut functions declaration)
 
 /**
  * Retrieves an audio output for a given identifier.
@@ -320,6 +320,6 @@ inline YAudioOut* yFindAudioOut(const string& func)
 inline YAudioOut* yFirstAudioOut(void)
 { return YAudioOut::FirstAudioOut();}
 
-//--- (end of AudioOut functions declaration)
+//--- (end of YAudioOut functions declaration)
 
 #endif

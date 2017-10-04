@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_realtimeclock.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_realtimeclock.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,13 +49,13 @@
 #define  __FILE_ID__  "realtimeclock"
 
 YRealTimeClock::YRealTimeClock(const string& func): YFunction(func)
-//--- (RealTimeClock initialization)
+//--- (YRealTimeClock initialization)
     ,_unixTime(UNIXTIME_INVALID)
     ,_dateTime(DATETIME_INVALID)
     ,_utcOffset(UTCOFFSET_INVALID)
     ,_timeSet(TIMESET_INVALID)
     ,_valueCallbackRealTimeClock(NULL)
-//--- (end of RealTimeClock initialization)
+//--- (end of YRealTimeClock initialization)
 {
     _className="RealTimeClock";
 }
@@ -370,5 +370,5 @@ YRealTimeClock* YRealTimeClock::FirstRealTimeClock(void)
 
 //--- (end of YRealTimeClock implementation)
 
-//--- (RealTimeClock functions)
-//--- (end of RealTimeClock functions)
+//--- (YRealTimeClock functions)
+//--- (end of YRealTimeClock functions)

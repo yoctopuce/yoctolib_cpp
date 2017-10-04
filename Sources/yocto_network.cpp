@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_network.cpp 28015 2017-07-07 16:27:06Z mvuilleu $
+ * $Id: yocto_network.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindNetwork(), the high-level API for Network functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,7 +49,7 @@
 #define  __FILE_ID__  "network"
 
 YNetwork::YNetwork(const string& func): YFunction(func)
-//--- (Network initialization)
+//--- (YNetwork initialization)
     ,_readiness(READINESS_INVALID)
     ,_macAddress(MACADDRESS_INVALID)
     ,_ipAddress(IPADDRESS_INVALID)
@@ -75,7 +75,7 @@ YNetwork::YNetwork(const string& func): YFunction(func)
     ,_callbackMaxDelay(CALLBACKMAXDELAY_INVALID)
     ,_poeCurrent(POECURRENT_INVALID)
     ,_valueCallbackNetwork(NULL)
-//--- (end of Network initialization)
+//--- (end of YNetwork initialization)
 {
     _className="Network";
 }
@@ -1643,5 +1643,5 @@ YNetwork* YNetwork::FirstNetwork(void)
 
 //--- (end of YNetwork implementation)
 
-//--- (Network functions)
-//--- (end of Network functions)
+//--- (YNetwork functions)
+//--- (end of YNetwork functions)

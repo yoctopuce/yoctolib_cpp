@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_tilt.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_tilt.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindTilt(), the high-level API for Tilt functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,12 +49,12 @@
 #define  __FILE_ID__  "tilt"
 
 YTilt::YTilt(const string& func): YSensor(func)
-//--- (Tilt initialization)
+//--- (YTilt initialization)
     ,_bandwidth(BANDWIDTH_INVALID)
     ,_axis(AXIS_INVALID)
     ,_valueCallbackTilt(NULL)
     ,_timedReportCallbackTilt(NULL)
-//--- (end of Tilt initialization)
+//--- (end of YTilt initialization)
 {
     _className="Tilt";
 }
@@ -304,5 +304,5 @@ YTilt* YTilt::FirstTilt(void)
 
 //--- (end of YTilt implementation)
 
-//--- (Tilt functions)
-//--- (end of Tilt functions)
+//--- (YTilt functions)
+//--- (end of YTilt functions)

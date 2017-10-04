@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_wakeupschedule.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_wakeupschedule.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindWakeUpSchedule(), the high-level API for WakeUpSchedule functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,7 +49,7 @@
 #define  __FILE_ID__  "wakeupschedule"
 
 YWakeUpSchedule::YWakeUpSchedule(const string& func): YFunction(func)
-//--- (WakeUpSchedule initialization)
+//--- (YWakeUpSchedule initialization)
     ,_minutesA(MINUTESA_INVALID)
     ,_minutesB(MINUTESB_INVALID)
     ,_hours(HOURS_INVALID)
@@ -58,7 +58,7 @@ YWakeUpSchedule::YWakeUpSchedule(const string& func): YFunction(func)
     ,_months(MONTHS_INVALID)
     ,_nextOccurence(NEXTOCCURENCE_INVALID)
     ,_valueCallbackWakeUpSchedule(NULL)
-//--- (end of WakeUpSchedule initialization)
+//--- (end of YWakeUpSchedule initialization)
 {
     _className="WakeUpSchedule";
 }
@@ -594,5 +594,5 @@ YWakeUpSchedule* YWakeUpSchedule::FirstWakeUpSchedule(void)
 
 //--- (end of YWakeUpSchedule implementation)
 
-//--- (WakeUpSchedule functions)
-//--- (end of WakeUpSchedule functions)
+//--- (YWakeUpSchedule functions)
+//--- (end of YWakeUpSchedule functions)

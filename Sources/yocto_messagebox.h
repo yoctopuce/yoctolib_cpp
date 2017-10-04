@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.h 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_messagebox.h 28748 2017-10-03 08:23:39Z seb $
  *
  * Declares yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -98,8 +98,8 @@ class YOCTO_CLASS_EXPORT YSms {
     //--- (generated code: YSms constructor)
 
     //--- (end of generated code: YSms constructor)
-    //--- (generated code: Sms initialization)
-    //--- (end of generated code: Sms initialization)
+    //--- (generated code: YSms initialization)
+    //--- (end of generated code: YSms initialization)
 
 public:
     YSms(void);
@@ -517,7 +517,7 @@ public:
     //--- (end of generated code: YMessageBox accessors declaration)
 };
 
-//--- (generated code: MessageBox functions declaration)
+//--- (generated code: YMessageBox functions declaration)
 
 /**
  * Retrieves a MessageBox interface for a given identifier.
@@ -560,6 +560,6 @@ inline YMessageBox* yFindMessageBox(const string& func)
 inline YMessageBox* yFirstMessageBox(void)
 { return YMessageBox::FirstMessageBox();}
 
-//--- (end of generated code: MessageBox functions declaration)
+//--- (end of generated code: YMessageBox functions declaration)
 
 #endif

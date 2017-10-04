@@ -1,35 +1,35 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_gyro.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindGyro(), the high-level API for Gyro functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
  *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
  *  non-exclusive license to use, modify, copy and integrate this
- *  file into your software for the sole purpose of interfacing 
- *  with Yoctopuce products. 
+ *  file into your software for the sole purpose of interfacing
+ *  with Yoctopuce products.
  *
- *  You may reproduce and distribute copies of this file in 
+ *  You may reproduce and distribute copies of this file in
  *  source or object form, as long as the sole purpose of this
- *  code is to interface with Yoctopuce products. You must retain 
+ *  code is to interface with Yoctopuce products. You must retain
  *  this notice in the distributed source file.
  *
  *  You should refer to Yoctopuce General Terms and Conditions
- *  for additional information regarding your rights and 
+ *  for additional information regarding your rights and
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -51,15 +51,15 @@
 
 
 YQt::YQt(const string& func): YSensor(func)
-//--- (generated code: Qt initialization)
+//--- (generated code: YQt initialization)
     ,_valueCallbackQt(NULL)
     ,_timedReportCallbackQt(NULL)
-//--- (end of generated code: Qt initialization)
+//--- (end of generated code: YQt initialization)
 {
     _className="Qt";
 }
 
-YQt::~YQt() 
+YQt::~YQt()
 {
 //--- (generated code: YQt cleanup)
 //--- (end of generated code: YQt cleanup)
@@ -216,8 +216,8 @@ YQt* YQt::FirstQt(void)
 
 //--- (end of generated code: YQt implementation)
 
-//--- (generated code: Qt functions)
-//--- (end of generated code: Qt functions)
+//--- (generated code: YQt functions)
+//--- (end of generated code: YQt functions)
 
 
 static void yInternalGyroCallback(YQt *obj, const string& value)
@@ -236,7 +236,7 @@ static void yInternalGyroCallback(YQt *obj, const string& value)
 
 
 YGyro::YGyro(const string& func): YSensor(func)
-//--- (generated code: Gyro initialization)
+//--- (generated code: YGyro initialization)
     ,_bandwidth(BANDWIDTH_INVALID)
     ,_xValue(XVALUE_INVALID)
     ,_yValue(YVALUE_INVALID)
@@ -258,12 +258,12 @@ YGyro::YGyro(const string& func): YSensor(func)
     ,_roll(0.0)
     ,_quatCallback(NULL)
     ,_anglesCallback(NULL)
-//--- (end of generated code: Gyro initialization)
+//--- (end of generated code: YGyro initialization)
 {
     _className="Gyro";
 }
 
-YGyro::~YGyro() 
+YGyro::~YGyro()
 {
 //--- (generated code: YGyro cleanup)
 //--- (end of generated code: YGyro cleanup)
@@ -887,5 +887,5 @@ YGyro* YGyro::FirstGyro(void)
 
 //--- (end of generated code: YGyro implementation)
 
-//--- (generated code: Gyro functions)
-//--- (end of generated code: Gyro functions)
+//--- (generated code: YGyro functions)
+//--- (end of generated code: YGyro functions)

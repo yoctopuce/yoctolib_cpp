@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_hubport.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_hubport.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindHubPort(), the high-level API for HubPort functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,12 +49,12 @@
 #define  __FILE_ID__  "hubport"
 
 YHubPort::YHubPort(const string& func): YFunction(func)
-//--- (HubPort initialization)
+//--- (YHubPort initialization)
     ,_enabled(ENABLED_INVALID)
     ,_portState(PORTSTATE_INVALID)
     ,_baudRate(BAUDRATE_INVALID)
     ,_valueCallbackHubPort(NULL)
-//--- (end of HubPort initialization)
+//--- (end of YHubPort initialization)
 {
     _className="HubPort";
 }
@@ -313,5 +313,5 @@ YHubPort* YHubPort::FirstHubPort(void)
 
 //--- (end of YHubPort implementation)
 
-//--- (HubPort functions)
-//--- (end of HubPort functions)
+//--- (YHubPort functions)
+//--- (end of YHubPort functions)

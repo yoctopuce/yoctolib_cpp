@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_powersupply.cpp 28588 2017-09-19 09:17:00Z seb $
+ * $Id: yocto_powersupply.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindPowerSupply(), the high-level API for PowerSupply functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,7 +49,7 @@
 #define  __FILE_ID__  "powersupply"
 
 YPowerSupply::YPowerSupply(const string& func): YFunction(func)
-//--- (PowerSupply initialization)
+//--- (YPowerSupply initialization)
     ,_voltageSetPoint(VOLTAGESETPOINT_INVALID)
     ,_currentLimit(CURRENTLIMIT_INVALID)
     ,_powerOutput(POWEROUTPUT_INVALID)
@@ -64,7 +64,7 @@ YPowerSupply::YPowerSupply(const string& func): YFunction(func)
     ,_currentAtStartUp(CURRENTATSTARTUP_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackPowerSupply(NULL)
-//--- (end of PowerSupply initialization)
+//--- (end of YPowerSupply initialization)
 {
     _className="PowerSupply";
 }
@@ -815,5 +815,5 @@ YPowerSupply* YPowerSupply::FirstPowerSupply(void)
 
 //--- (end of YPowerSupply implementation)
 
-//--- (PowerSupply functions)
-//--- (end of PowerSupply functions)
+//--- (YPowerSupply functions)
+//--- (end of YPowerSupply functions)

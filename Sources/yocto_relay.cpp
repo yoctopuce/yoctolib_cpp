@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_relay.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_relay.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindRelay(), the high-level API for Relay functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,7 +49,7 @@
 #define  __FILE_ID__  "relay"
 
 YRelay::YRelay(const string& func): YFunction(func)
-//--- (Relay initialization)
+//--- (YRelay initialization)
     ,_state(STATE_INVALID)
     ,_stateAtPowerOn(STATEATPOWERON_INVALID)
     ,_maxTimeOnStateA(MAXTIMEONSTATEA_INVALID)
@@ -59,7 +59,7 @@ YRelay::YRelay(const string& func): YFunction(func)
     ,_delayedPulseTimer(DELAYEDPULSETIMER_INVALID)
     ,_countdown(COUNTDOWN_INVALID)
     ,_valueCallbackRelay(NULL)
-//--- (end of Relay initialization)
+//--- (end of YRelay initialization)
 {
     _className="Relay";
 }
@@ -660,5 +660,5 @@ YRelay* YRelay::FirstRelay(void)
 
 //--- (end of YRelay implementation)
 
-//--- (Relay functions)
-//--- (end of Relay functions)
+//--- (YRelay functions)
+//--- (end of YRelay functions)

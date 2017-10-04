@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_servo.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_servo.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindServo(), the high-level API for Servo functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,7 +49,7 @@
 #define  __FILE_ID__  "servo"
 
 YServo::YServo(const string& func): YFunction(func)
-//--- (Servo initialization)
+//--- (YServo initialization)
     ,_position(POSITION_INVALID)
     ,_enabled(ENABLED_INVALID)
     ,_range(RANGE_INVALID)
@@ -58,7 +58,7 @@ YServo::YServo(const string& func): YFunction(func)
     ,_positionAtPowerOn(POSITIONATPOWERON_INVALID)
     ,_enabledAtPowerOn(ENABLEDATPOWERON_INVALID)
     ,_valueCallbackServo(NULL)
-//--- (end of Servo initialization)
+//--- (end of YServo initialization)
 {
     _className="Servo";
 }
@@ -616,5 +616,5 @@ YServo* YServo::FirstServo(void)
 
 //--- (end of YServo implementation)
 
-//--- (Servo functions)
-//--- (end of Servo functions)
+//--- (YServo functions)
+//--- (end of YServo functions)

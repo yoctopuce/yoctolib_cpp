@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_cellular.cpp 28753 2017-10-03 11:23:38Z seb $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -51,8 +51,22 @@
 
 
 YCellRecord::YCellRecord(int mcc,int mnc,int lac,int cellId,int dbm,int tad,const string &oper):
-    _oper(oper),_mcc(mcc),_mnc(mnc),_lac(lac),_cid(cellId),_dbm(dbm),_tad(tad)
+//--- (generated code: YCellRecord initialization)
+    _mcc(0)
+    ,_mnc(0)
+    ,_lac(0)
+    ,_cid(0)
+    ,_dbm(0)
+    ,_tad(0)
+//--- (end of generated code: YCellRecord initialization)
 {
+    _oper = oper;
+    _mcc = mcc;
+    _mnc = mnc;
+    _lac = lac;
+    _cid = cellId;
+    _dbm = dbm;
+    _tad = tad;
 
 }
 
@@ -98,7 +112,7 @@ int YCellRecord::get_timingAdvance(void)
 
 
 YCellular::YCellular(const string& func): YFunction(func)
-//--- (generated code: Cellular initialization)
+//--- (generated code: YCellular initialization)
     ,_linkQuality(LINKQUALITY_INVALID)
     ,_cellOperator(CELLOPERATOR_INVALID)
     ,_cellIdentifier(CELLIDENTIFIER_INVALID)
@@ -116,7 +130,7 @@ YCellular::YCellular(const string& func): YFunction(func)
     ,_dataReceived(DATARECEIVED_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackCellular(NULL)
-//--- (end of generated code: Cellular initialization)
+//--- (end of generated code: YCellular initialization)
 {
     _className="Cellular";
 }
@@ -1284,5 +1298,5 @@ YCellular* YCellular::FirstCellular(void)
 
 //--- (end of generated code: YCellular implementation)
 
-//--- (generated code: Cellular functions)
-//--- (end of generated code: Cellular functions)
+//--- (generated code: YCellular functions)
+//--- (end of generated code: YCellular functions)

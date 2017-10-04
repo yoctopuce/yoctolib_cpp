@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_carbondioxide.cpp 28556 2017-09-15 15:00:00Z seb $
+ * $Id: yocto_carbondioxide.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,12 +49,12 @@
 #define  __FILE_ID__  "carbondioxide"
 
 YCarbonDioxide::YCarbonDioxide(const string& func): YSensor(func)
-//--- (CarbonDioxide initialization)
+//--- (YCarbonDioxide initialization)
     ,_abcPeriod(ABCPERIOD_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackCarbonDioxide(NULL)
     ,_timedReportCallbackCarbonDioxide(NULL)
-//--- (end of CarbonDioxide initialization)
+//--- (end of YCarbonDioxide initialization)
 {
     _className="CarbonDioxide";
 }
@@ -375,5 +375,5 @@ YCarbonDioxide* YCarbonDioxide::FirstCarbonDioxide(void)
 
 //--- (end of YCarbonDioxide implementation)
 
-//--- (CarbonDioxide functions)
-//--- (end of CarbonDioxide functions)
+//--- (YCarbonDioxide functions)
+//--- (end of YCarbonDioxide functions)

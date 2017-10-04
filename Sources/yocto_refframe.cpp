@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_refframe.cpp 28457 2017-09-06 08:34:21Z mvuilleu $
+ * $Id: yocto_refframe.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindRefFrame(), the high-level API for RefFrame functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,12 +49,13 @@
 #define  __FILE_ID__  "refframe"
 
 YRefFrame::YRefFrame(const string& func): YFunction(func)
-//--- (RefFrame initialization)
+//--- (YRefFrame initialization)
     ,_mountPos(MOUNTPOS_INVALID)
     ,_bearing(BEARING_INVALID)
     ,_calibrationParam(CALIBRATIONPARAM_INVALID)
     ,_fusionMode(FUSIONMODE_INVALID)
     ,_valueCallbackRefFrame(NULL)
+    ,_calibV2(0)
     ,_calibStage(0)
     ,_calibStageProgress(0)
     ,_calibProgress(0)
@@ -67,7 +68,7 @@ YRefFrame::YRefFrame(const string& func): YFunction(func)
     ,_calibAccXScale(0.0)
     ,_calibAccYScale(0.0)
     ,_calibAccZScale(0.0)
-//--- (end of RefFrame initialization)
+//--- (end of YRefFrame initialization)
 {
     _className="RefFrame";
 }
@@ -1058,5 +1059,5 @@ YRefFrame* YRefFrame::FirstRefFrame(void)
 
 //--- (end of YRefFrame implementation)
 
-//--- (RefFrame functions)
-//--- (end of RefFrame functions)
+//--- (YRefFrame functions)
+//--- (end of YRefFrame functions)

@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_led.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_led.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindLed(), the high-level API for Led functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,12 +49,12 @@
 #define  __FILE_ID__  "led"
 
 YLed::YLed(const string& func): YFunction(func)
-//--- (Led initialization)
+//--- (YLed initialization)
     ,_power(POWER_INVALID)
     ,_luminosity(LUMINOSITY_INVALID)
     ,_blinking(BLINKING_INVALID)
     ,_valueCallbackLed(NULL)
-//--- (end of Led initialization)
+//--- (end of YLed initialization)
 {
     _className="Led";
 }
@@ -360,5 +360,5 @@ YLed* YLed::FirstLed(void)
 
 //--- (end of YLed implementation)
 
-//--- (Led functions)
-//--- (end of Led functions)
+//--- (YLed functions)
+//--- (end of YLed functions)

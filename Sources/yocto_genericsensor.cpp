@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_genericsensor.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_genericsensor.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindGenericSensor(), the high-level API for GenericSensor functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,7 +49,7 @@
 #define  __FILE_ID__  "genericsensor"
 
 YGenericSensor::YGenericSensor(const string& func): YSensor(func)
-//--- (GenericSensor initialization)
+//--- (YGenericSensor initialization)
     ,_signalValue(SIGNALVALUE_INVALID)
     ,_signalUnit(SIGNALUNIT_INVALID)
     ,_signalRange(SIGNALRANGE_INVALID)
@@ -58,7 +58,7 @@ YGenericSensor::YGenericSensor(const string& func): YSensor(func)
     ,_signalSampling(SIGNALSAMPLING_INVALID)
     ,_valueCallbackGenericSensor(NULL)
     ,_timedReportCallbackGenericSensor(NULL)
-//--- (end of GenericSensor initialization)
+//--- (end of YGenericSensor initialization)
 {
     _className="GenericSensor";
 }
@@ -586,5 +586,5 @@ YGenericSensor* YGenericSensor::FirstGenericSensor(void)
 
 //--- (end of YGenericSensor implementation)
 
-//--- (GenericSensor functions)
-//--- (end of GenericSensor functions)
+//--- (YGenericSensor functions)
+//--- (end of YGenericSensor functions)

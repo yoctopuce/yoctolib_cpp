@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 28658 2017-09-26 16:30:25Z seb $
+ * $Id: yocto_serialport.cpp 28753 2017-10-03 11:23:38Z seb $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -49,7 +49,11 @@
 #define  __FILE_ID__  "serialport"
 
 
-YSnoopingRecord::YSnoopingRecord(const string& json):_tim(0),_dir(0),_msg("")
+YSnoopingRecord::YSnoopingRecord(const string& json):
+//--- (generated code: YSnoopingRecord initialization)
+    _tim(0)
+    ,_dir(0)
+//--- (end of generated code: YSnoopingRecord initialization)
 {
     yJsonStateMachine j;
     // Parse JSON data
@@ -104,7 +108,7 @@ string YSnoopingRecord::get_message(void)
 
 
 YSerialPort::YSerialPort(const string& func): YFunction(func)
-//--- (generated code: SerialPort initialization)
+//--- (generated code: YSerialPort initialization)
     ,_rxCount(RXCOUNT_INVALID)
     ,_txCount(TXCOUNT_INVALID)
     ,_errCount(ERRCOUNT_INVALID)
@@ -120,7 +124,7 @@ YSerialPort::YSerialPort(const string& func): YFunction(func)
     ,_valueCallbackSerialPort(NULL)
     ,_rxptr(0)
     ,_rxbuffptr(0)
-//--- (end of generated code: SerialPort initialization)
+//--- (end of generated code: YSerialPort initialization)
 {
     _className="SerialPort";
 }
@@ -2069,5 +2073,5 @@ YSerialPort* YSerialPort::FirstSerialPort(void)
 
 //--- (end of generated code: YSerialPort implementation)
 
-//--- (generated code: SerialPort functions)
-//--- (end of generated code: SerialPort functions)
+//--- (generated code: YSerialPort functions)
+//--- (end of generated code: YSerialPort functions)

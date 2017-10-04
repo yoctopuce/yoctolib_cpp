@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_quadraturedecoder.h 28159 2017-07-27 09:37:52Z seb $
+ * $Id: yocto_quadraturedecoder.h 28748 2017-10-03 08:23:39Z seb $
  *
  * Declares yFindQuadratureDecoder(), the high-level API for QuadratureDecoder functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -252,7 +252,7 @@ public:
     //--- (end of YQuadratureDecoder accessors declaration)
 };
 
-//--- (QuadratureDecoder functions declaration)
+//--- (YQuadratureDecoder functions declaration)
 
 /**
  * Retrieves a quadrature decoder for a given identifier.
@@ -295,6 +295,6 @@ inline YQuadratureDecoder* yFindQuadratureDecoder(const string& func)
 inline YQuadratureDecoder* yFirstQuadratureDecoder(void)
 { return YQuadratureDecoder::FirstQuadratureDecoder();}
 
-//--- (end of QuadratureDecoder functions declaration)
+//--- (end of YQuadratureDecoder functions declaration)
 
 #endif

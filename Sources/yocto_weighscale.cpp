@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_weighscale.cpp 28231 2017-07-31 16:37:33Z mvuilleu $
+ * $Id: yocto_weighscale.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindWeighScale(), the high-level API for WeighScale functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,7 +49,7 @@
 #define  __FILE_ID__  "weighscale"
 
 YWeighScale::YWeighScale(const string& func): YSensor(func)
-//--- (WeighScale initialization)
+//--- (YWeighScale initialization)
     ,_excitation(EXCITATION_INVALID)
     ,_adaptRatio(ADAPTRATIO_INVALID)
     ,_compTemperature(COMPTEMPERATURE_INVALID)
@@ -58,7 +58,7 @@ YWeighScale::YWeighScale(const string& func): YSensor(func)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackWeighScale(NULL)
     ,_timedReportCallbackWeighScale(NULL)
-//--- (end of WeighScale initialization)
+//--- (end of YWeighScale initialization)
 {
     _className="WeighScale";
 }
@@ -766,5 +766,5 @@ YWeighScale* YWeighScale::FirstWeighScale(void)
 
 //--- (end of YWeighScale implementation)
 
-//--- (WeighScale functions)
-//--- (end of WeighScale functions)
+//--- (YWeighScale functions)
+//--- (end of YWeighScale functions)

@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_spiport.cpp 28655 2017-09-26 15:55:10Z seb $
+ * $Id: yocto_spiport.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,7 +49,7 @@
 #define  __FILE_ID__  "spiport"
 
 YSpiPort::YSpiPort(const string& func): YFunction(func)
-//--- (SpiPort initialization)
+//--- (YSpiPort initialization)
     ,_rxCount(RXCOUNT_INVALID)
     ,_txCount(TXCOUNT_INVALID)
     ,_errCount(ERRCOUNT_INVALID)
@@ -67,7 +67,7 @@ YSpiPort::YSpiPort(const string& func): YFunction(func)
     ,_valueCallbackSpiPort(NULL)
     ,_rxptr(0)
     ,_rxbuffptr(0)
-//--- (end of SpiPort initialization)
+//--- (end of YSpiPort initialization)
 {
     _className="SpiPort";
 }
@@ -1508,5 +1508,5 @@ YSpiPort* YSpiPort::FirstSpiPort(void)
 
 //--- (end of YSpiPort implementation)
 
-//--- (SpiPort functions)
-//--- (end of SpiPort functions)
+//--- (YSpiPort functions)
+//--- (end of YSpiPort functions)

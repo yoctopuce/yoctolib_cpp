@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_latitude.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_latitude.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindLatitude(), the high-level API for Latitude functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,10 +49,10 @@
 #define  __FILE_ID__  "latitude"
 
 YLatitude::YLatitude(const string& func): YSensor(func)
-//--- (Latitude initialization)
+//--- (YLatitude initialization)
     ,_valueCallbackLatitude(NULL)
     ,_timedReportCallbackLatitude(NULL)
-//--- (end of Latitude initialization)
+//--- (end of YLatitude initialization)
 {
     _className="Latitude";
 }
@@ -214,5 +214,5 @@ YLatitude* YLatitude::FirstLatitude(void)
 
 //--- (end of YLatitude implementation)
 
-//--- (Latitude functions)
-//--- (end of Latitude functions)
+//--- (YLatitude functions)
+//--- (end of YLatitude functions)

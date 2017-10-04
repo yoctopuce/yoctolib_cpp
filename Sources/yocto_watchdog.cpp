@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_watchdog.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_watchdog.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindWatchdog(), the high-level API for Watchdog functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,7 +49,7 @@
 #define  __FILE_ID__  "watchdog"
 
 YWatchdog::YWatchdog(const string& func): YFunction(func)
-//--- (Watchdog initialization)
+//--- (YWatchdog initialization)
     ,_state(STATE_INVALID)
     ,_stateAtPowerOn(STATEATPOWERON_INVALID)
     ,_maxTimeOnStateA(MAXTIMEONSTATEA_INVALID)
@@ -63,7 +63,7 @@ YWatchdog::YWatchdog(const string& func): YFunction(func)
     ,_triggerDelay(TRIGGERDELAY_INVALID)
     ,_triggerDuration(TRIGGERDURATION_INVALID)
     ,_valueCallbackWatchdog(NULL)
-//--- (end of Watchdog initialization)
+//--- (end of YWatchdog initialization)
 {
     _className="Watchdog";
 }
@@ -912,5 +912,5 @@ YWatchdog* YWatchdog::FirstWatchdog(void)
 
 //--- (end of YWatchdog implementation)
 
-//--- (Watchdog functions)
-//--- (end of Watchdog functions)
+//--- (YWatchdog functions)
+//--- (end of YWatchdog functions)

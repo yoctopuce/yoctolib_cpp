@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.h 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_files.h 28748 2017-10-03 08:23:39Z seb $
  *
  * Declares yFindFiles(), the high-level API for Files functions
  *
@@ -10,26 +10,26 @@
  *
  *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
  *  non-exclusive license to use, modify, copy and integrate this
- *  file into your software for the sole purpose of interfacing 
- *  with Yoctopuce products. 
+ *  file into your software for the sole purpose of interfacing
+ *  with Yoctopuce products.
  *
- *  You may reproduce and distribute copies of this file in 
+ *  You may reproduce and distribute copies of this file in
  *  source or object form, as long as the sole purpose of this
- *  code is to interface with Yoctopuce products. You must retain 
+ *  code is to interface with Yoctopuce products. You must retain
  *  this notice in the distributed source file.
  *
  *  You should refer to Yoctopuce General Terms and Conditions
- *  for additional information regarding your rights and 
+ *  for additional information regarding your rights and
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -79,9 +79,9 @@ class YOCTO_CLASS_EXPORT YFileRecord {
     //--- (generated code: YFileRecord constructor)
 
     //--- (end of generated code: YFileRecord constructor)
-    //--- (generated code: FileRecord initialization)
-    //--- (end of generated code: FileRecord initialization)
-    
+    //--- (generated code: YFileRecord initialization)
+    //--- (end of generated code: YFileRecord initialization)
+
 public:
     YFileRecord(const string& json);
     //--- (generated code: YFileRecord accessors declaration)
@@ -133,8 +133,8 @@ class YOCTO_CLASS_EXPORT YFiles: public YFunction {
     YFiles(const string& func);
     //--- (end of generated code: YFiles attributes)
 
-    //--- (generated code: Files initialization)
-    //--- (end of generated code: Files initialization)
+    //--- (generated code: YFiles initialization)
+    //--- (end of generated code: YFiles initialization)
 
 public:
     ~YFiles();
@@ -323,7 +323,7 @@ public:
     //--- (end of generated code: YFiles accessors declaration)
 };
 
-//--- (generated code: Files functions declaration)
+//--- (generated code: YFiles functions declaration)
 
 /**
  * Retrieves a filesystem for a given identifier.
@@ -366,6 +366,6 @@ inline YFiles* yFindFiles(const string& func)
 inline YFiles* yFirstFiles(void)
 { return YFiles::FirstFiles();}
 
-//--- (end of generated code: Files functions declaration)
+//--- (end of generated code: YFiles functions declaration)
 
 #endif

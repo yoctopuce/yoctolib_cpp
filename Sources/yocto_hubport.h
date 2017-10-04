@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_hubport.h 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_hubport.h 28748 2017-10-03 08:23:39Z seb $
  *
  * Declares yFindHubPort(), the high-level API for HubPort functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -256,7 +256,7 @@ public:
     //--- (end of YHubPort accessors declaration)
 };
 
-//--- (HubPort functions declaration)
+//--- (YHubPort functions declaration)
 
 /**
  * Retrieves a Yocto-hub port for a given identifier.
@@ -299,6 +299,6 @@ inline YHubPort* yFindHubPort(const string& func)
 inline YHubPort* yFirstHubPort(void)
 { return YHubPort::FirstHubPort();}
 
-//--- (end of HubPort functions declaration)
+//--- (end of YHubPort functions declaration)
 
 #endif

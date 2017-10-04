@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_accelerometer.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_accelerometer.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindAccelerometer(), the high-level API for Accelerometer functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,7 +49,7 @@
 #define  __FILE_ID__  "accelerometer"
 
 YAccelerometer::YAccelerometer(const string& func): YSensor(func)
-//--- (Accelerometer initialization)
+//--- (YAccelerometer initialization)
     ,_bandwidth(BANDWIDTH_INVALID)
     ,_xValue(XVALUE_INVALID)
     ,_yValue(YVALUE_INVALID)
@@ -57,7 +57,7 @@ YAccelerometer::YAccelerometer(const string& func): YSensor(func)
     ,_gravityCancellation(GRAVITYCANCELLATION_INVALID)
     ,_valueCallbackAccelerometer(NULL)
     ,_timedReportCallbackAccelerometer(NULL)
-//--- (end of Accelerometer initialization)
+//--- (end of YAccelerometer initialization)
 {
     _className="Accelerometer";
 }
@@ -422,5 +422,5 @@ YAccelerometer* YAccelerometer::FirstAccelerometer(void)
 
 //--- (end of YAccelerometer implementation)
 
-//--- (Accelerometer functions)
-//--- (end of Accelerometer functions)
+//--- (YAccelerometer functions)
+//--- (end of YAccelerometer functions)

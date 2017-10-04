@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.h 28656 2017-09-26 16:13:04Z seb $
+ * $Id: yocto_serialport.h 28748 2017-10-03 08:23:39Z seb $
  *
  * Declares yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -102,8 +102,8 @@ class YOCTO_CLASS_EXPORT YSnoopingRecord {
     //--- (generated code: YSnoopingRecord constructor)
 
     //--- (end of generated code: YSnoopingRecord constructor)
-    //--- (generated code: SnoopingRecord initialization)
-    //--- (end of generated code: SnoopingRecord initialization)
+    //--- (generated code: YSnoopingRecord initialization)
+    //--- (end of generated code: YSnoopingRecord initialization)
 
 public:
     YSnoopingRecord(const string& json);
@@ -961,7 +961,7 @@ public:
     //--- (end of generated code: YSerialPort accessors declaration)
 };
 
-//--- (generated code: SerialPort functions declaration)
+//--- (generated code: YSerialPort functions declaration)
 
 /**
  * Retrieves a serial port for a given identifier.
@@ -1004,6 +1004,6 @@ inline YSerialPort* yFindSerialPort(const string& func)
 inline YSerialPort* yFirstSerialPort(void)
 { return YSerialPort::FirstSerialPort();}
 
-//--- (end of generated code: SerialPort functions declaration)
+//--- (end of generated code: YSerialPort functions declaration)
 
 #endif

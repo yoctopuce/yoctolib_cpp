@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.h 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_display.h 28753 2017-10-03 11:23:38Z seb $
  *
  * Declares yFindDisplay(), the high-level API for Display functions
  *
@@ -10,26 +10,26 @@
  *
  *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
  *  non-exclusive license to use, modify, copy and integrate this
- *  file into your software for the sole purpose of interfacing 
- *  with Yoctopuce products. 
+ *  file into your software for the sole purpose of interfacing
+ *  with Yoctopuce products.
  *
- *  You may reproduce and distribute copies of this file in 
+ *  You may reproduce and distribute copies of this file in
  *  source or object form, as long as the sole purpose of this
- *  code is to interface with Yoctopuce products. You must retain 
+ *  code is to interface with Yoctopuce products. You must retain
  *  this notice in the distributed source file.
  *
  *  You should refer to Yoctopuce General Terms and Conditions
- *  for additional information regarding your rights and 
+ *  for additional information regarding your rights and
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -135,23 +135,22 @@ class YOCTO_CLASS_EXPORT YDisplayLayer {
     //--- (generated code: YDisplayLayer constructor)
 
     //--- (end of generated code: YDisplayLayer constructor)
-    //--- (generated code: DisplayLayer initialization)
-    //--- (end of generated code: DisplayLayer initialization)
-	
+    //--- (generated code: YDisplayLayer initialization)
+    //--- (end of generated code: YDisplayLayer initialization)
+
     YDisplay *_display;
     int    _id;
     string _cmdbuff;
     bool   _hidden;
-    
+
     // internal function to send a command for this layer
     int command_push(string cmd);
     int command_flush(string cmd);
-    
+
 public:
     int flush_now();
     virtual ~YDisplayLayer(){};
-    YDisplayLayer(YDisplay *parent, int id):
-    _display(parent),_id(id),_cmdbuff(""),_hidden(false){};
+    YDisplayLayer(YDisplay *parent, int id);
     //--- (generated code: YDisplayLayer accessors declaration)
 
     static const Y_ALIGN ALIGN_TOP_LEFT = Y_ALIGN_TOP_LEFT;
@@ -617,8 +616,8 @@ class YOCTO_CLASS_EXPORT YDisplay: public YFunction {
     bool                    _recording;
     string                  _sequence;
 
-    //--- (generated code: Display initialization)
-    //--- (end of generated code: Display initialization)
+    //--- (generated code: YDisplay initialization)
+    //--- (end of generated code: YDisplay initialization)
 
 public:
     ~YDisplay();
@@ -1044,10 +1043,10 @@ public:
 #endif
     //--- (end of generated code: YDisplay accessors declaration)
 
-    
-    
-    
-    
+
+
+
+
     /**
      * Returns a YDisplayLayer object that can be used to draw on the specified
      * layer. The content is displayed only when the layer is active on the
@@ -1060,17 +1059,17 @@ public:
      * On failure, throws an exception or returns NULL.
      */
     YDisplayLayer* get_displayLayer(unsigned layerId);
-    
-      
+
+
     int flushLayers(void);
-    
+
     int sendCommand(string cmd);
-    
+
     // internal function to clear hidden flag during resetAll
     void resetHiddenLayerFlags(void);
 };
 
-//--- (generated code: Display functions declaration)
+//--- (generated code: YDisplay functions declaration)
 
 /**
  * Retrieves a display for a given identifier.
@@ -1113,6 +1112,6 @@ inline YDisplay* yFindDisplay(const string& func)
 inline YDisplay* yFirstDisplay(void)
 { return YDisplay::FirstDisplay();}
 
-//--- (end of generated code: Display functions declaration)
+//--- (end of generated code: YDisplay functions declaration)
 
 #endif

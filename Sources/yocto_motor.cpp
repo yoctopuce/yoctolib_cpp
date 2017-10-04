@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_motor.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_motor.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindMotor(), the high-level API for Motor functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,7 +49,7 @@
 #define  __FILE_ID__  "motor"
 
 YMotor::YMotor(const string& func): YFunction(func)
-//--- (Motor initialization)
+//--- (YMotor initialization)
     ,_motorStatus(MOTORSTATUS_INVALID)
     ,_drivingForce(DRIVINGFORCE_INVALID)
     ,_brakingForce(BRAKINGFORCE_INVALID)
@@ -60,7 +60,7 @@ YMotor::YMotor(const string& func): YFunction(func)
     ,_failSafeTimeout(FAILSAFETIMEOUT_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackMotor(NULL)
-//--- (end of Motor initialization)
+//--- (end of YMotor initialization)
 {
     _className="Motor";
 }
@@ -793,5 +793,5 @@ YMotor* YMotor::FirstMotor(void)
 
 //--- (end of YMotor implementation)
 
-//--- (Motor functions)
-//--- (end of Motor functions)
+//--- (YMotor functions)
+//--- (end of YMotor functions)

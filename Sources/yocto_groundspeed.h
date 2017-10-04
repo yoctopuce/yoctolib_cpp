@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_groundspeed.h 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_groundspeed.h 28748 2017-10-03 08:23:39Z seb $
  *
  * Declares yFindGroundSpeed(), the high-level API for GroundSpeed functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -182,7 +182,7 @@ public:
     //--- (end of YGroundSpeed accessors declaration)
 };
 
-//--- (GroundSpeed functions declaration)
+//--- (YGroundSpeed functions declaration)
 
 /**
  * Retrieves a ground speed sensor for a given identifier.
@@ -225,6 +225,6 @@ inline YGroundSpeed* yFindGroundSpeed(const string& func)
 inline YGroundSpeed* yFirstGroundSpeed(void)
 { return YGroundSpeed::FirstGroundSpeed();}
 
-//--- (end of GroundSpeed functions declaration)
+//--- (end of YGroundSpeed functions declaration)
 
 #endif

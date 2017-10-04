@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_altitude.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_altitude.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindAltitude(), the high-level API for Altitude functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,12 +49,12 @@
 #define  __FILE_ID__  "altitude"
 
 YAltitude::YAltitude(const string& func): YSensor(func)
-//--- (Altitude initialization)
+//--- (YAltitude initialization)
     ,_qnh(QNH_INVALID)
     ,_technology(TECHNOLOGY_INVALID)
     ,_valueCallbackAltitude(NULL)
     ,_timedReportCallbackAltitude(NULL)
-//--- (end of Altitude initialization)
+//--- (end of YAltitude initialization)
 {
     _className="Altitude";
 }
@@ -346,5 +346,5 @@ YAltitude* YAltitude::FirstAltitude(void)
 
 //--- (end of YAltitude implementation)
 
-//--- (Altitude functions)
-//--- (end of Altitude functions)
+//--- (YAltitude functions)
+//--- (end of YAltitude functions)

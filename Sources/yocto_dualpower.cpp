@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_dualpower.cpp 27704 2017-06-01 12:32:11Z seb $
+ * $Id: yocto_dualpower.cpp 28748 2017-10-03 08:23:39Z seb $
  *
  * Implements yFindDualPower(), the high-level API for DualPower functions
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -23,7 +23,7 @@
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED 'AS IS' WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
  *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
@@ -49,12 +49,12 @@
 #define  __FILE_ID__  "dualpower"
 
 YDualPower::YDualPower(const string& func): YFunction(func)
-//--- (DualPower initialization)
+//--- (YDualPower initialization)
     ,_powerState(POWERSTATE_INVALID)
     ,_powerControl(POWERCONTROL_INVALID)
     ,_extVoltage(EXTVOLTAGE_INVALID)
     ,_valueCallbackDualPower(NULL)
-//--- (end of DualPower initialization)
+//--- (end of YDualPower initialization)
 {
     _className="DualPower";
 }
@@ -312,5 +312,5 @@ YDualPower* YDualPower::FirstDualPower(void)
 
 //--- (end of YDualPower implementation)
 
-//--- (DualPower functions)
-//--- (end of DualPower functions)
+//--- (YDualPower functions)
+//--- (end of YDualPower functions)
