@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: makefile 28589 2017-09-19 09:20:08Z seb $
+#  $Id: makefile 28805 2017-10-12 08:54:03Z seb $
 #
 #  makefile for C++ library
 #  - - - - - - - - - License information: - - - - - - - - -
@@ -46,7 +46,8 @@ LINKWITH32 =  /LIBPATH:"$(VCINSTALLDIR)lib" /LIBPATH:"$(VCINSTALLDIR)atlmfc\lib"
 !IF !EXISTS(c:\Program Files\Microsoft SDKs\Windows\v7.1\)
 WINDOWS_SDK_64 = $(WINDOWSSDKDIR)
 CC64 = "$(VCINSTALLDIR)bin\x86_amd64\cl"
-LINKWITH64 =  /LIBPATH:"$(VCINSTALLDIR)lib\amd64" /LIBPATH:"$(VCINSTALLDIR)atlmfc\lib\amd64" /LIBPATH:"$(WINDOWS_SDK_64)lib\winv6.3\um\x64"
+LINKER64 = "$(VCINSTALLDIR)bin\x86_amd64\link"
+LINKWITH64 = /MACHINE:X64 /LIBPATH:"$(VCINSTALLDIR)lib\amd64" /LIBPATH:"$(VCINSTALLDIR)atlmfc\lib\amd64" /LIBPATH:"$(WINDOWS_SDK_64)Lib\$(WINDOWSSDKLIBVERSION)ucrt\x64" /LIBPATH:"$(WINDOWS_SDK_64)\Lib\$(WINDOWSSDKLIBVERSION)um\x64"
 !ELSE
 WINDOWS_SDK_64 = c:\Program Files\Microsoft SDKs\Windows\v7.1
 CC64 = "$(VCINSTALLDIR)bin\amd64\cl"

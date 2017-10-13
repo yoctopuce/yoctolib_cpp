@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 28762 2017-10-03 14:01:54Z seb $
+ * $Id: yocto_api.cpp 28799 2017-10-11 16:07:10Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -1154,7 +1154,7 @@ int YFirmwareUpdate::_processMore(int newupdate)
     string settings;
     string prod_prefix;
     int force = 0;
-    if (_progress_c < 100 && _progress_c != YAPI_VERSION_MISMATCH) {
+    if ((_progress_c < 100) && (_progress_c != YAPI_VERSION_MISMATCH)) {
         serial = _serial;
         firmwarepath = _firmwarepath;
         settings = _settings;
@@ -1164,7 +1164,7 @@ int YFirmwareUpdate::_processMore(int newupdate)
             force = 0;
         }
         res = yapiUpdateFirmwareEx(serial.c_str(), firmwarepath.c_str(), settings.c_str(), force, newupdate, errmsg);
-        if (res == YAPI_VERSION_MISMATCH && ((int)(_settings).size() != 0)) {
+        if ((res == YAPI_VERSION_MISMATCH) && ((int)(_settings).size() != 0)) {
             _progress_c = res;
             _progress_msg = string(errmsg);
             return _progress;

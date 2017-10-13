@@ -19,7 +19,9 @@
 #include <Windows.h>
 #include <tchar.h>
 #include <iphlpapi.h>
+#if !defined(snprintf)
 #define snprintf _snprintf
+#endif
 #define strdup _strdup
 
 #else
@@ -38,12 +40,12 @@ typedef int SOCKET;
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
+#include <stdio.h>
 
 #endif
 
 #include <iostream>
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
 #include "yocto_api.h"

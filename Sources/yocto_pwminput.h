@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwminput.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_pwminput.h 28807 2017-10-12 09:46:33Z seb $
  *
  * Declares yFindPwmInput(), the high-level API for PwmInput functions
  *
@@ -61,6 +61,10 @@ typedef enum {
     Y_PWMREPORTMODE_PWM_FREQUENCY = 1,
     Y_PWMREPORTMODE_PWM_PULSEDURATION = 2,
     Y_PWMREPORTMODE_PWM_EDGECOUNT = 3,
+    Y_PWMREPORTMODE_PWM_PULSECOUNT = 4,
+    Y_PWMREPORTMODE_PWM_CPS = 5,
+    Y_PWMREPORTMODE_PWM_CPM = 6,
+    Y_PWMREPORTMODE_PWM_STATE = 7,
     Y_PWMREPORTMODE_INVALID = -1,
 } Y_PWMREPORTMODE_enum;
 #endif
@@ -126,6 +130,10 @@ public:
     static const Y_PWMREPORTMODE_enum PWMREPORTMODE_PWM_FREQUENCY = Y_PWMREPORTMODE_PWM_FREQUENCY;
     static const Y_PWMREPORTMODE_enum PWMREPORTMODE_PWM_PULSEDURATION = Y_PWMREPORTMODE_PWM_PULSEDURATION;
     static const Y_PWMREPORTMODE_enum PWMREPORTMODE_PWM_EDGECOUNT = Y_PWMREPORTMODE_PWM_EDGECOUNT;
+    static const Y_PWMREPORTMODE_enum PWMREPORTMODE_PWM_PULSECOUNT = Y_PWMREPORTMODE_PWM_PULSECOUNT;
+    static const Y_PWMREPORTMODE_enum PWMREPORTMODE_PWM_CPS = Y_PWMREPORTMODE_PWM_CPS;
+    static const Y_PWMREPORTMODE_enum PWMREPORTMODE_PWM_CPM = Y_PWMREPORTMODE_PWM_CPM;
+    static const Y_PWMREPORTMODE_enum PWMREPORTMODE_PWM_STATE = Y_PWMREPORTMODE_PWM_STATE;
     static const Y_PWMREPORTMODE_enum PWMREPORTMODE_INVALID = Y_PWMREPORTMODE_INVALID;
     static const int DEBOUNCEPERIOD_INVALID = YAPI_INVALID_UINT;
 
@@ -181,7 +189,7 @@ public:
     /**
      * Returns the pulse counter value. Actually that
      * counter is incremented twice per period. That counter is
-     * limited  to 1 billion
+     * limited  to 1 billion.
      *
      * @return an integer corresponding to the pulse counter value
      *
@@ -213,8 +221,10 @@ public:
      * get_currentValue function and callbacks. Attention
      *
      * @return a value among Y_PWMREPORTMODE_PWM_DUTYCYCLE, Y_PWMREPORTMODE_PWM_FREQUENCY,
-     * Y_PWMREPORTMODE_PWM_PULSEDURATION and Y_PWMREPORTMODE_PWM_EDGECOUNT corresponding to the parameter
-     * (frequency/duty cycle, pulse width, edges count) returned by the get_currentValue function and callbacks
+     * Y_PWMREPORTMODE_PWM_PULSEDURATION, Y_PWMREPORTMODE_PWM_EDGECOUNT, Y_PWMREPORTMODE_PWM_PULSECOUNT,
+     * Y_PWMREPORTMODE_PWM_CPS, Y_PWMREPORTMODE_PWM_CPM and Y_PWMREPORTMODE_PWM_STATE corresponding to the
+     * parameter (frequency/duty cycle, pulse width, edges count) returned by the get_currentValue
+     * function and callbacks
      *
      * On failure, throws an exception or returns Y_PWMREPORTMODE_INVALID.
      */
@@ -230,8 +240,10 @@ public:
      * get_pulseCounter().
      *
      * @param newval : a value among Y_PWMREPORTMODE_PWM_DUTYCYCLE, Y_PWMREPORTMODE_PWM_FREQUENCY,
-     * Y_PWMREPORTMODE_PWM_PULSEDURATION and Y_PWMREPORTMODE_PWM_EDGECOUNT corresponding to the  parameter
-     *  type (frequency/duty cycle, pulse width, or edge count) returned by the get_currentValue function and callbacks
+     * Y_PWMREPORTMODE_PWM_PULSEDURATION, Y_PWMREPORTMODE_PWM_EDGECOUNT, Y_PWMREPORTMODE_PWM_PULSECOUNT,
+     * Y_PWMREPORTMODE_PWM_CPS, Y_PWMREPORTMODE_PWM_CPM and Y_PWMREPORTMODE_PWM_STATE corresponding to the
+     *  parameter  type (frequency/duty cycle, pulse width, or edge count) returned by the
+     * get_currentValue function and callbacks
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *

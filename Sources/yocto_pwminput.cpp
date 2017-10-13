@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwminput.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_pwminput.cpp 28807 2017-10-12 09:46:33Z seb $
  *
  * Implements yFindPwmInput(), the high-level API for PwmInput functions
  *
@@ -227,7 +227,7 @@ double YPwmInput::get_period(void)
 /**
  * Returns the pulse counter value. Actually that
  * counter is incremented twice per period. That counter is
- * limited  to 1 billion
+ * limited  to 1 billion.
  *
  * @return an integer corresponding to the pulse counter value
  *
@@ -305,8 +305,10 @@ s64 YPwmInput::get_pulseTimer(void)
  * get_currentValue function and callbacks. Attention
  *
  * @return a value among Y_PWMREPORTMODE_PWM_DUTYCYCLE, Y_PWMREPORTMODE_PWM_FREQUENCY,
- * Y_PWMREPORTMODE_PWM_PULSEDURATION and Y_PWMREPORTMODE_PWM_EDGECOUNT corresponding to the parameter
- * (frequency/duty cycle, pulse width, edges count) returned by the get_currentValue function and callbacks
+ * Y_PWMREPORTMODE_PWM_PULSEDURATION, Y_PWMREPORTMODE_PWM_EDGECOUNT, Y_PWMREPORTMODE_PWM_PULSECOUNT,
+ * Y_PWMREPORTMODE_PWM_CPS, Y_PWMREPORTMODE_PWM_CPM and Y_PWMREPORTMODE_PWM_STATE corresponding to the
+ * parameter (frequency/duty cycle, pulse width, edges count) returned by the get_currentValue
+ * function and callbacks
  *
  * On failure, throws an exception or returns Y_PWMREPORTMODE_INVALID.
  */
@@ -339,8 +341,10 @@ Y_PWMREPORTMODE_enum YPwmInput::get_pwmReportMode(void)
  * get_pulseCounter().
  *
  * @param newval : a value among Y_PWMREPORTMODE_PWM_DUTYCYCLE, Y_PWMREPORTMODE_PWM_FREQUENCY,
- * Y_PWMREPORTMODE_PWM_PULSEDURATION and Y_PWMREPORTMODE_PWM_EDGECOUNT corresponding to the  parameter
- *  type (frequency/duty cycle, pulse width, or edge count) returned by the get_currentValue function and callbacks
+ * Y_PWMREPORTMODE_PWM_PULSEDURATION, Y_PWMREPORTMODE_PWM_EDGECOUNT, Y_PWMREPORTMODE_PWM_PULSECOUNT,
+ * Y_PWMREPORTMODE_PWM_CPS, Y_PWMREPORTMODE_PWM_CPM and Y_PWMREPORTMODE_PWM_STATE corresponding to the
+ *  parameter  type (frequency/duty cycle, pulse width, or edge count) returned by the
+ * get_currentValue function and callbacks
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *

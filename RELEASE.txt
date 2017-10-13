@@ -1,1 +1,1 @@
-- Fix sms support
+- Add new methods in YPwmInput
