@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorledcluster.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_colorledcluster.h 29186 2017-11-16 10:04:13Z seb $
  *
  * Declares yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -561,6 +561,21 @@ public:
      * color codes. The first color code represents the target RGB value of the first LED,
      * the next color code represents the target value of the next LED, etc.
      *
+     * @param ledIndex : index of the first LED which should be updated
+     * @param rgbList : a list of target 24bit RGB codes, in the form 0xRRGGBB
+     * @param delay   : transition duration in ms
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         rgbArrayOfs_move(int ledIndex,vector<int> rgbList,int delay);
+
+    /**
+     * Sets up a smooth RGB color transition to the specified pixel-by-pixel list of RGB
+     * color codes. The first color code represents the target RGB value of the first LED,
+     * the next color code represents the target value of the next LED, etc.
+     *
      * @param rgbList : a list of target 24bit RGB codes, in the form 0xRRGGBB
      * @param delay   : transition duration in ms
      *
@@ -611,6 +626,21 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         hslArray_move(vector<int> hslList,int delay);
+
+    /**
+     * Sets up a smooth HSL color transition to the specified pixel-by-pixel list of HSL
+     * color codes. The first color code represents the target HSL value of the first LED,
+     * the second color code represents the target value of the second LED, etc.
+     *
+     * @param ledIndex : index of the first LED which should be updated
+     * @param hslList : a list of target 24bit HSL codes, in the form 0xHHSSLL
+     * @param delay   : transition duration in ms
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         hslArrayOfs_move(int ledIndex,vector<int> hslList,int delay);
 
     /**
      * Returns a binary buffer with content from the LED RGB buffer, as is.

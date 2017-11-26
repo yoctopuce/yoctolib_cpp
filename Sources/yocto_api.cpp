@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 28799 2017-10-11 16:07:10Z seb $
+ * $Id: yocto_api.cpp 29240 2017-11-23 13:29:57Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -6526,6 +6526,7 @@ int YModule::set_allSettings(string settings)
     for (unsigned ii = 0; ii < restoreLast.size(); ii++) {
         this->_download(restoreLast[ii]);
     }
+    this->clearCache();
     return YAPI_SUCCESS;
 }
 

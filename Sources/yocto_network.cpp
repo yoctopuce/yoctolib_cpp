@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_network.cpp 29064 2017-11-02 16:13:37Z seb $
  *
  * Implements yFindNetwork(), the high-level API for Network functions
  *
@@ -613,6 +613,10 @@ int YNetwork::set_userPassword(const string& newval)
 {
     string rest_val;
     int res;
+    if (newval.length() > YAPI_HASH_BUF_SIZE) {
+        _throw(YAPI_INVALID_ARGUMENT, "Password too long :" + newval);
+        return YAPI_INVALID_ARGUMENT;
+    }
     yEnterCriticalSection(&_this_cs);
     try {
         rest_val = newval;
@@ -673,6 +677,10 @@ int YNetwork::set_adminPassword(const string& newval)
 {
     string rest_val;
     int res;
+    if (newval.length() > YAPI_HASH_BUF_SIZE) {
+        _throw(YAPI_INVALID_ARGUMENT, "Password too long :" + newval);
+        return YAPI_INVALID_ARGUMENT;
+    }
     yEnterCriticalSection(&_this_cs);
     try {
         rest_val = newval;

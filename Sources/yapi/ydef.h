@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 28438 2017-09-01 05:49:08Z mvuilleu $
+ * $Id: ydef.h 29064 2017-11-02 16:13:37Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -403,7 +403,7 @@ typedef enum {
 #define YOCTO_DEVID_FACTORYBOOT     1
 #define YOCTO_DEVID_BOOTLOADER      2
 #define YOCTO_DEVID_HIGHEST         0xfefe
-
+#define YAPI_HASH_BUF_SIZE          28
 #define YOCTO_CALIB_TYPE_OFS        30
 
 // Other special ports

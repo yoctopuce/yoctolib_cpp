@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 25346 2016-09-15 12:45:51Z seb $
+ * $Id: yhash.c 29054 2017-11-01 10:09:54Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -497,13 +497,22 @@ yUrlRef yHashUrl(const char *url, const char *rootUrl, u8 testonly, char *errmsg
         if (*p == '@') {
             for (p = url; *p != ':' && *p != '@'; p++);
             if (*p != ':') {
-                return YERRMSG(YAPI_INVALID_ARGUMENT, "Missing authentication parameter");
+                if (errmsg) YSTRCPY(errmsg, YOCTO_ERRMSG_LEN, "missing authentication parameter");
+                return INVALID_HASH_IDX;
             }
             len = (int)(p - url);
+            if (len > HASH_BUF_SIZE) {
+                if (errmsg) YSTRCPY(errmsg, YOCTO_ERRMSG_LEN, "username too long");
+                return INVALID_HASH_IDX;
+            }
             huburl.user = yHashPutBuf((const u8*)url, len);
             url = ++p;
             while (*p != '@') p++;
             len = (int)(p - url);
+            if (len > HASH_BUF_SIZE) {
+                if (errmsg) YSTRCPY(errmsg, YOCTO_ERRMSG_LEN, "password too long");
+                return INVALID_HASH_IDX;
+            }
             huburl.password = yHashPutBuf((const u8*)url, len);
             url = ++p;
         }
@@ -552,10 +561,11 @@ yUrlRef yHashUrl(const char *url, const char *rootUrl, u8 testonly, char *errmsg
                 if(errmsg) YSTRCPY(errmsg,YOCTO_ERRMSG_LEN,"domain name too long");
                 return INVALID_HASH_IDX;
             }
-            if(hostlen)
-                huburl.byname.host = yHashPutBuf((const u8*)host,hostlen);
-            else
-                 huburl.byname.host = INVALID_HASH_IDX;
+            if (hostlen) {
+                huburl.byname.host = yHashPutBuf((const u8*)host, hostlen);
+            } else {
+                huburl.byname.host = INVALID_HASH_IDX;
+            }
             huburl.byname.domaine = yHashPutBuf((const u8*)url,domlen);
         }
     }

@@ -6,7 +6,7 @@
 <style type="text/css">
 /*********************************************************************
  *
- * $Id: yoctolib-cpp-EN.html 28807 2017-10-12 09:46:33Z seb $
+ * $Id: yoctolib-cpp-EN.html 28898 2017-10-17 08:34:29Z seb $
  *
  * Searchable documentation browser for Yoctopuce Library
  *
@@ -257,7 +257,7 @@ var minusimage="data:image/gif;base64,R0lGODlhEAAQAIAAAEJCQv///yH5BAAAAP8ALAAAAA
 
 var marginSize=250;
 var resizeCallBacks= new Array();
-var SVN_Id = '$Id: yoctolib-cpp-EN.html 28807 2017-10-12 09:46:33Z seb $';
+var SVN_Id = '$Id: yoctolib-cpp-EN.html 28898 2017-10-17 08:34:29Z seb $';
 var Version = (SVN_Id.split(' '))[3];
 var doc = new Array();
 
@@ -2374,7 +2374,7 @@ doc['PwmInput']['describe']={syn:'Returns a short text that describes unambiguou
 doc['PwmInput']['get_advMode']={syn:'Returns the measuring mode used for the advertised value pushed to the parent hub.',lib:'pwminput&rarr;get_advMode()',pro:'Y_ADVMODE_enum get_advMode()',cmt:'<p>Returns the measuring mode used for the advertised value pushed to the parent hub.</p>',ret:'a value among <tt>Y_ADVMODE_IMMEDIATE</tt>, <tt>Y_ADVMODE_PERIOD_AVG</tt>, <tt>Y_ADVMODE_PERIOD_MIN</tt> and <tt>Y_ADVMODE_PERIOD_MAX</tt> corresponding to the measuring mode used for the advertised value pushed to the parent hub',ext:'On failure, throws an exception or returns <tt>Y_ADVMODE_INVALID</tt>.'};
 doc['PwmInput']['get_advertisedValue']={syn:'Returns the current value of the PWM input (no more than 6 characters).',lib:'pwminput&rarr;get_advertisedValue()',pro:'string get_advertisedValue()',cmt:'<p>Returns the current value of the PWM input (no more than 6 characters).</p>',ret:'a string corresponding to the current value of the PWM input (no more than 6 characters).',ext:'On failure, throws an exception or returns <tt>Y_ADVERTISEDVALUE_INVALID</tt>.'};
 doc['PwmInput']['get_currentRawValue']={syn:'Returns the uncalibrated, unrounded raw value returned by the sensor, in HZ, as a floating point number.',lib:'pwminput&rarr;get_currentRawValue()',pro:'double get_currentRawValue()',cmt:'<p>Returns the uncalibrated, unrounded raw value returned by the sensor, in HZ, as a floating point number.</p>',ret:'a floating point number corresponding to the uncalibrated, unrounded raw value returned by the sensor, in HZ, as a floating point number',ext:'On failure, throws an exception or returns <tt>Y_CURRENTRAWVALUE_INVALID</tt>.'};
-doc['PwmInput']['get_currentValue']={syn:'Returns the current value of the PwmInput feature as a floating point number.',lib:'pwminput&rarr;get_currentValue()',pro:'double get_currentValue()',cmt:'<p>Returns the current value of the PwmInput feature as a floating point number. Depending on the pwmReportMode setting, this can be the frequency, in Hz, the duty cycle in % or the pulse length in ms.</p>',ret:'a floating point number corresponding to the current value of the PwmInput feature as a floating point number',ext:'On failure, throws an exception or returns <tt>Y_CURRENTVALUE_INVALID</tt>.'};
+doc['PwmInput']['get_currentValue']={syn:'Returns the current value of the PwmInput feature as a floating point number.',lib:'pwminput&rarr;get_currentValue()',pro:'double get_currentValue()',cmt:'<p>Returns the current value of the PwmInput feature as a floating point number. Depending on the pwmReportMode setting, this can be the frequency, in Hz, the duty cycle in %, the pulse length in ms, etc.</p>',ret:'a floating point number corresponding to the current value of the PwmInput feature as a floating point number',ext:'On failure, throws an exception or returns <tt>Y_CURRENTVALUE_INVALID</tt>.'};
 doc['PwmInput']['get_dataLogger']={syn:'Returns the YDatalogger object of the device hosting the sensor.',lib:'pwminput&rarr;get_dataLogger()',pro:'YDataLogger* get_dataLogger()',cmt:'<p>Returns the YDatalogger object of the device hosting the sensor. This method returns an object of class YDatalogger that can control global parameters of the data logger. The returned object should not be freed.</p>',ret:'an YDataLogger object or null on error.'};
 doc['PwmInput']['get_debouncePeriod']={syn:'Returns the shortest expected pulse duration, in ms.',lib:'pwminput&rarr;get_debouncePeriod()',pro:'int get_debouncePeriod()',cmt:'<p>Returns the shortest expected pulse duration, in ms. Any shorter pulse will be automatically ignored (debounce).</p>',ret:'an integer corresponding to the shortest expected pulse duration, in ms',ext:'On failure, throws an exception or returns <tt>Y_DEBOUNCEPERIOD_INVALID</tt>.'};
 doc['PwmInput']['get_dutyCycle']={syn:'Returns the PWM duty cycle, in per cents.',lib:'pwminput&rarr;get_dutyCycle()',pro:'double get_dutyCycle()',cmt:'<p>Returns the PWM duty cycle, in per cents.</p>',ret:'a floating point number corresponding to the PWM duty cycle, in per cents',ext:'On failure, throws an exception or returns <tt>Y_DUTYCYCLE_INVALID</tt>.'};

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorledcluster.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_colorledcluster.cpp 29186 2017-11-16 10:04:13Z seb $
  *
  * Implements yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -789,6 +789,7 @@ int YColorLedCluster::set_rgbColorArray(int ledIndex,vector<int> rgbList)
  * color codes. The first color code represents the target RGB value of the first LED,
  * the next color code represents the target value of the next LED, etc.
  *
+ * @param ledIndex : index of the first LED which should be updated
  * @param rgbList : a list of target 24bit RGB codes, in the form 0xRRGGBB
  * @param delay   : transition duration in ms
  *
@@ -796,7 +797,7 @@ int YColorLedCluster::set_rgbColorArray(int ledIndex,vector<int> rgbList)
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YColorLedCluster::rgbArray_move(vector<int> rgbList,int delay)
+int YColorLedCluster::rgbArrayOfs_move(int ledIndex,vector<int> rgbList,int delay)
 {
     int listlen = 0;
     string buff;
@@ -814,7 +815,27 @@ int YColorLedCluster::rgbArray_move(vector<int> rgbList,int delay)
         idx = idx + 1;
     }
 
-    res = this->_upload(YapiWrapper::ysprintf("rgb:%d",delay), buff);
+    res = this->_upload(YapiWrapper::ysprintf("rgb:%d:%d",delay,ledIndex), buff);
+    return res;
+}
+
+/**
+ * Sets up a smooth RGB color transition to the specified pixel-by-pixel list of RGB
+ * color codes. The first color code represents the target RGB value of the first LED,
+ * the next color code represents the target value of the next LED, etc.
+ *
+ * @param rgbList : a list of target 24bit RGB codes, in the form 0xRRGGBB
+ * @param delay   : transition duration in ms
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YColorLedCluster::rgbArray_move(vector<int> rgbList,int delay)
+{
+    int res = 0;
+
+    res = this->rgbArrayOfs_move(0,rgbList,delay);
     return res;
 }
 
@@ -883,6 +904,27 @@ int YColorLedCluster::set_hslColorArray(int ledIndex,vector<int> hslList)
  */
 int YColorLedCluster::hslArray_move(vector<int> hslList,int delay)
 {
+    int res = 0;
+
+    res = this->hslArrayOfs_move(0,hslList, delay);
+    return res;
+}
+
+/**
+ * Sets up a smooth HSL color transition to the specified pixel-by-pixel list of HSL
+ * color codes. The first color code represents the target HSL value of the first LED,
+ * the second color code represents the target value of the second LED, etc.
+ *
+ * @param ledIndex : index of the first LED which should be updated
+ * @param hslList : a list of target 24bit HSL codes, in the form 0xHHSSLL
+ * @param delay   : transition duration in ms
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YColorLedCluster::hslArrayOfs_move(int ledIndex,vector<int> hslList,int delay)
+{
     int listlen = 0;
     string buff;
     int idx = 0;
@@ -899,7 +941,7 @@ int YColorLedCluster::hslArray_move(vector<int> hslList,int delay)
         idx = idx + 1;
     }
 
-    res = this->_upload(YapiWrapper::ysprintf("hsl:%d",delay), buff);
+    res = this->_upload(YapiWrapper::ysprintf("hsl:%d:%d",delay,ledIndex), buff);
     return res;
 }
 
