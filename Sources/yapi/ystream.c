@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 27704 2017-06-01 12:32:11Z seb $
+ * $Id: ystream.c 29340 2017-11-29 10:42:47Z seb $
  *
  * USB stream implementation
  *
@@ -1141,7 +1141,7 @@ YRETCODE  yPktQueuePushH2D(yInterfaceSt *iface,const USB_Packet *pkt, char * err
 // return 1 if empty, 0 if not empty, or an error code
 static int yPktQueueWaitEmptyH2D(yInterfaceSt *iface,int ms, char * errmsg)
 {
-    if(ms > 0){
+    if (ms > 0) {
         yWaitForEvent(&iface->txQueue.emptyEvent, ms);
     }
     return yPktQueueIsEmpty(&iface->txQueue,errmsg);
@@ -1198,10 +1198,10 @@ YRETCODE yyySendPacket(yInterfaceSt *iface, const USB_Packet *pkt, char *errmsg)
     if (YISERR(res)) {
         return res;
     }
-    res= yPktQueueWaitEmptyH2D(iface,1000,errmsg);
+    res = yPktQueueWaitEmptyH2D(iface,5000,errmsg);
     if (YISERR(res)) {
         return (YRETCODE) res;
-    }else if(res>0){
+    }else if(res > 0){
         return YAPI_SUCCESS;
     }
     return YERRMSG(YAPI_TIMEOUT,"Unable to send packet to the device");

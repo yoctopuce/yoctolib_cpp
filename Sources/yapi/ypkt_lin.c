@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_lin.c 27418 2017-05-11 09:59:50Z seb $
+ * $Id: ypkt_lin.c 29340 2017-11-29 10:42:47Z seb $
  *
  * OS-specific USB packet layer, Linux version
  *
@@ -463,7 +463,7 @@ static int sendNextPkt(yInterfaceSt *iface, char *errmsg)
                                 sizeof(USB_Packet),
                                 wr_callback,
                                 iface->wrTr,
-                                1000);
+                                2000);
         res = libusb_submit_transfer(iface->wrTr->tr);
         if (res < 0) {
             return yLinSetErr("libusb_submit_transfer(WR) failed", res, errmsg);
@@ -559,6 +559,7 @@ static void wr_callback(struct libusb_transfer *transfer)
     yInterfaceSt *iface = lintr->iface;
     char          errmsg[YOCTO_ERRMSG_LEN];
     pktItem *pktitem;
+    int res;
 
     if (lintr == NULL) {
         HALLOG("CBwr:drop invalid ypkt wr_callback (lintr is null)\n");
@@ -577,7 +578,10 @@ static void wr_callback(struct libusb_transfer *transfer)
         // remove sent packet
         yPktQueuePopH2D(iface, &pktitem);
         yFree(pktitem);
-        sendNextPkt(iface, errmsg);
+        res = sendNextPkt(iface, errmsg);
+        if (res < 0) {
+            HALLOG("send of next pkt item failed:%d:%s\n", res, errmsg);
+        }
         return;
     case LIBUSB_TRANSFER_ERROR:
         iface->ioError++;
@@ -585,6 +589,10 @@ static void wr_callback(struct libusb_transfer *transfer)
         break;
     case LIBUSB_TRANSFER_TIMED_OUT :
         HALLOG("CBwr:%s pkt timeout\n",iface->serial);
+        res = sendNextPkt(iface, errmsg);
+        if (res < 0) {
+            HALLOG("retry of next pkt item failed:%d:%s\n", res, errmsg);
+        }
         break;
     case LIBUSB_TRANSFER_CANCELLED:
         HALLOG("CBwr:%s pkt_cancelled (len=%d) \n",iface->serial, transfer->actual_length);

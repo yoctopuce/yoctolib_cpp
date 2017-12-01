@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 28489 2017-09-12 13:19:37Z seb $
+ * $Id: yapi.c 29341 2017-11-29 10:43:43Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -61,9 +61,10 @@ static YRETCODE  yapiHTTPRequestAsyncEx_internal(int tcpchan, const char *device
 #ifdef DEBUG_YAPI_REQ
 
 #include <direct.h>
+#include <stdio.h>
 static int global_req_count = 0;
 
-static void write_onfile(int fileno, char *mode, const char *firstline, int firstline_len, const char * buffer, int bufferlen)
+static int write_onfile(int fileno, char *mode, const char *firstline, int firstline_len, const char * buffer, int bufferlen)
 {
     char filename[128];
     FILE *f;
@@ -3445,7 +3446,7 @@ YRETCODE  yapiHTTPRequestSyncDone_internal(YIOHDL *iohdl, char *errmsg)
 static void asyncDrop(void *context, const u8 *result, u32 resultlen, int retcode, const char *errmsg)
 {
 #ifdef DEBUG_YAPI_REQ
-    int req_count = (((u8*)context) - ((u8*)NULL));
+    int req_count = (int)(((u8*)context) - ((u8*)NULL));
     YREQ_LOG_APPEND(req_count, "ASync", result, resultlen, 0);
 #endif
 }
