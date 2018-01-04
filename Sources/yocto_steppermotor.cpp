@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_steppermotor.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_steppermotor.cpp 29507 2017-12-28 14:14:56Z mvuilleu $
  *
  * Implements yFindStepperMotor(), the high-level API for StepperMotor functions
  *
@@ -931,7 +931,28 @@ int YStepperMotor::_invokeValueCallback(string value)
 
 int YStepperMotor::sendCommand(string command)
 {
-    return this->set_command(command);
+    string id;
+    string url;
+    string retBin;
+    int res = 0;
+    id = this->get_functionId();
+    id = (id).substr( 12, 1);
+    url = YapiWrapper::ysprintf("cmd.txt?%s=%s", id.c_str(),command.c_str());
+    //may throw an exception
+    retBin = this->_download(url);
+    res = ((u8)retBin[0]);
+    if (res == 49) {
+        if (!(res == 48)) {
+            _throw(YAPI_DEVICE_BUSY,"Motor command pipeline is full, try again later");
+            return YAPI_DEVICE_BUSY;
+        }
+    } else {
+        if (!(res == 48)) {
+            _throw(YAPI_IO_ERROR,"Motor command failed permanently");
+            return YAPI_IO_ERROR;
+        }
+    }
+    return YAPI_SUCCESS;
 }
 
 /**
@@ -1004,6 +1025,22 @@ int YStepperMotor::moveRel(double relPos)
 }
 
 /**
+ * Starts the motor to reach a given relative position, keeping the speed under the
+ * specified limit. The time needed to reach the requested position will depend on
+ * the acceleration parameters configured for the motor.
+ *
+ * @param relPos : relative position, measured in steps from the current position.
+ * @param maxSpeed : limit speed, in steps per second.
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *         On failure, throws an exception or returns a negative error code.
+ */
+int YStepperMotor::moveRelSlow(double relPos,double maxSpeed)
+{
+    return this->sendCommand(YapiWrapper::ysprintf("m%d@%d",(int) floor(16*relPos+0.5),(int) floor(1000*maxSpeed+0.5)));
+}
+
+/**
  * Keep the motor in the same state for the specified amount of time, before processing next command.
  *
  * @param waitMs : wait time, specified in milliseconds.
@@ -1038,6 +1075,28 @@ int YStepperMotor::emergencyStop(void)
 int YStepperMotor::alertStepOut(void)
 {
     return this->sendCommand(".");
+}
+
+/**
+ * Move one single step in the selected direction without regards to end switches.
+ * The move occures even if the system is still in alert mode (end switch depressed). Caution.
+ * use this function with great care as it may cause mechanical damages !
+ *
+ * @param dir : Value +1 ou -1, according to the desired direction of the move
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *         On failure, throws an exception or returns a negative error code.
+ */
+int YStepperMotor::alertStepDir(int dir)
+{
+    if (!(dir != 0)) {
+        _throw(YAPI_INVALID_ARGUMENT,"direction must be +1 or -1");
+        return YAPI_INVALID_ARGUMENT;
+    }
+    if (dir > 0) {
+        return this->sendCommand(".+");
+    }
+    return this->sendCommand(".-");
 }
 
 /**

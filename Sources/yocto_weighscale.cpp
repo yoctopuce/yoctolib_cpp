@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_weighscale.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_weighscale.cpp 29472 2017-12-20 11:34:07Z mvuilleu $
  *
  * Implements yFindWeighScale(), the high-level API for WeighScale functions
  *
@@ -51,8 +51,9 @@
 YWeighScale::YWeighScale(const string& func): YSensor(func)
 //--- (YWeighScale initialization)
     ,_excitation(EXCITATION_INVALID)
-    ,_adaptRatio(ADAPTRATIO_INVALID)
-    ,_compTemperature(COMPTEMPERATURE_INVALID)
+    ,_compTempAdaptRatio(COMPTEMPADAPTRATIO_INVALID)
+    ,_compTempAvg(COMPTEMPAVG_INVALID)
+    ,_compTempChg(COMPTEMPCHG_INVALID)
     ,_compensation(COMPENSATION_INVALID)
     ,_zeroTracking(ZEROTRACKING_INVALID)
     ,_command(COMMAND_INVALID)
@@ -70,8 +71,9 @@ YWeighScale::~YWeighScale()
 }
 //--- (YWeighScale implementation)
 // static attributes
-const double YWeighScale::ADAPTRATIO_INVALID = YAPI_INVALID_DOUBLE;
-const double YWeighScale::COMPTEMPERATURE_INVALID = YAPI_INVALID_DOUBLE;
+const double YWeighScale::COMPTEMPADAPTRATIO_INVALID = YAPI_INVALID_DOUBLE;
+const double YWeighScale::COMPTEMPAVG_INVALID = YAPI_INVALID_DOUBLE;
+const double YWeighScale::COMPTEMPCHG_INVALID = YAPI_INVALID_DOUBLE;
 const double YWeighScale::COMPENSATION_INVALID = YAPI_INVALID_DOUBLE;
 const double YWeighScale::ZEROTRACKING_INVALID = YAPI_INVALID_DOUBLE;
 const string YWeighScale::COMMAND_INVALID = YAPI_INVALID_STRING;
@@ -81,11 +83,14 @@ int YWeighScale::_parseAttr(YJSONObject* json_val)
     if(json_val->has("excitation")) {
         _excitation =  (Y_EXCITATION_enum)json_val->getInt("excitation");
     }
-    if(json_val->has("adaptRatio")) {
-        _adaptRatio =  floor(json_val->getDouble("adaptRatio") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+    if(json_val->has("compTempAdaptRatio")) {
+        _compTempAdaptRatio =  floor(json_val->getDouble("compTempAdaptRatio") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
-    if(json_val->has("compTemperature")) {
-        _compTemperature =  floor(json_val->getDouble("compTemperature") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+    if(json_val->has("compTempAvg")) {
+        _compTempAvg =  floor(json_val->getDouble("compTempAvg") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+    }
+    if(json_val->has("compTempChg")) {
+        _compTempChg =  floor(json_val->getDouble("compTempChg") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
     if(json_val->has("compensation")) {
         _compensation =  floor(json_val->getDouble("compensation") * 1000.0 / 65536.0 + 0.5) / 1000.0;
@@ -157,22 +162,25 @@ int YWeighScale::set_excitation(Y_EXCITATION_enum newval)
 }
 
 /**
- * Changes the compensation temperature update rate, in percents.
+ * Changes the averaged temperature update rate, in percents.
+ * The averaged temperature is updated every 10 seconds, by applying this adaptation rate
+ * to the difference between the measures ambiant temperature and the current compensation
+ * temperature. The standard rate is 0.04 percents, and the maximal rate is 65 percents.
  *
- * @param newval : a floating point number corresponding to the compensation temperature update rate, in percents
+ * @param newval : a floating point number corresponding to the averaged temperature update rate, in percents
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YWeighScale::set_adaptRatio(double newval)
+int YWeighScale::set_compTempAdaptRatio(double newval)
 {
     string rest_val;
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
         char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
-        res = _setAttr("adaptRatio", rest_val);
+        res = _setAttr("compTempAdaptRatio", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
          throw;
@@ -182,14 +190,16 @@ int YWeighScale::set_adaptRatio(double newval)
 }
 
 /**
- * Returns the compensation temperature update rate, in percents.
- * the maximal value is 65 percents.
+ * Returns the averaged temperature update rate, in percents.
+ * The averaged temperature is updated every 10 seconds, by applying this adaptation rate
+ * to the difference between the measures ambiant temperature and the current compensation
+ * temperature. The standard rate is 0.04 percents, and the maximal rate is 65 percents.
  *
- * @return a floating point number corresponding to the compensation temperature update rate, in percents
+ * @return a floating point number corresponding to the averaged temperature update rate, in percents
  *
- * On failure, throws an exception or returns Y_ADAPTRATIO_INVALID.
+ * On failure, throws an exception or returns Y_COMPTEMPADAPTRATIO_INVALID.
  */
-double YWeighScale::get_adaptRatio(void)
+double YWeighScale::get_compTempAdaptRatio(void)
 {
     double res = 0.0;
     yEnterCriticalSection(&_this_cs);
@@ -198,11 +208,11 @@ double YWeighScale::get_adaptRatio(void)
             if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
-                    return YWeighScale::ADAPTRATIO_INVALID;
+                    return YWeighScale::COMPTEMPADAPTRATIO_INVALID;
                 }
             }
         }
-        res = _adaptRatio;
+        res = _compTempAdaptRatio;
     } catch (std::exception) {
         yLeaveCriticalSection(&_this_cs);
         throw;
@@ -212,13 +222,13 @@ double YWeighScale::get_adaptRatio(void)
 }
 
 /**
- * Returns the current compensation temperature.
+ * Returns the current averaged temperature, used for thermal compensation.
  *
- * @return a floating point number corresponding to the current compensation temperature
+ * @return a floating point number corresponding to the current averaged temperature, used for thermal compensation
  *
- * On failure, throws an exception or returns Y_COMPTEMPERATURE_INVALID.
+ * On failure, throws an exception or returns Y_COMPTEMPAVG_INVALID.
  */
-double YWeighScale::get_compTemperature(void)
+double YWeighScale::get_compTempAvg(void)
 {
     double res = 0.0;
     yEnterCriticalSection(&_this_cs);
@@ -227,11 +237,41 @@ double YWeighScale::get_compTemperature(void)
             if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
-                    return YWeighScale::COMPTEMPERATURE_INVALID;
+                    return YWeighScale::COMPTEMPAVG_INVALID;
                 }
             }
         }
-        res = _compTemperature;
+        res = _compTempAvg;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the current temperature variation, used for thermal compensation.
+ *
+ * @return a floating point number corresponding to the current temperature variation, used for
+ * thermal compensation
+ *
+ * On failure, throws an exception or returns Y_COMPTEMPCHG_INVALID.
+ */
+double YWeighScale::get_compTempChg(void)
+{
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YWeighScale::COMPTEMPCHG_INVALID;
+                }
+            }
+        }
+        res = _compTempChg;
     } catch (std::exception) {
         yLeaveCriticalSection(&_this_cs);
         throw;
@@ -514,12 +554,95 @@ int YWeighScale::setupSpan(double currWeight,double maxWeight)
     return this->set_command(YapiWrapper::ysprintf("S%d:%d", (int) floor(1000*currWeight+0.5),(int) floor(1000*maxWeight+0.5)));
 }
 
+int YWeighScale::setCompensationTable(int tableIndex,vector<double> tempValues,vector<double> compValues)
+{
+    int siz = 0;
+    int res = 0;
+    int idx = 0;
+    int found = 0;
+    double prev = 0.0;
+    double curr = 0.0;
+    double currComp = 0.0;
+    double idxTemp = 0.0;
+    siz = (int)tempValues.size();
+    if (!(siz != 1)) {
+        _throw(YAPI_INVALID_ARGUMENT,"thermal compensation table must have at least two points");
+        return YAPI_INVALID_ARGUMENT;
+    }
+    if (!(siz == (int)compValues.size())) {
+        _throw(YAPI_INVALID_ARGUMENT,"table sizes mismatch");
+        return YAPI_INVALID_ARGUMENT;
+    }
+
+    res = this->set_command(YapiWrapper::ysprintf("%dZ",tableIndex));
+    if (!(res==YAPI_SUCCESS)) {
+        _throw(YAPI_IO_ERROR,"unable to reset thermal compensation table");
+        return YAPI_IO_ERROR;
+    }
+    // add records in growing temperature value
+    found = 1;
+    prev = -999999.0;
+    while (found > 0) {
+        found = 0;
+        curr = 99999999.0;
+        currComp = -999999.0;
+        idx = 0;
+        while (idx < siz) {
+            idxTemp = tempValues[idx];
+            if ((idxTemp > prev) && (idxTemp < curr)) {
+                curr = idxTemp;
+                currComp = compValues[idx];
+                found = 1;
+            }
+            idx = idx + 1;
+        }
+        if (found > 0) {
+            res = this->set_command(YapiWrapper::ysprintf("%dm%d:%d", tableIndex, (int) floor(1000*curr+0.5),(int) floor(1000*currComp+0.5)));
+            if (!(res==YAPI_SUCCESS)) {
+                _throw(YAPI_IO_ERROR,"unable to set thermal compensation table");
+                return YAPI_IO_ERROR;
+            }
+            prev = curr;
+        }
+    }
+    return YAPI_SUCCESS;
+}
+
+int YWeighScale::loadCompensationTable(int tableIndex,vector<double>& tempValues,vector<double>& compValues)
+{
+    string id;
+    string bin_json;
+    vector<string> paramlist;
+    int siz = 0;
+    int idx = 0;
+    double temp = 0.0;
+    double comp = 0.0;
+
+    id = this->get_functionId();
+    id = (id).substr( 10, (int)(id).length() - 10);
+    bin_json = this->_download(YapiWrapper::ysprintf("extra.json?page=%d",(4*atoi((id).c_str()))+tableIndex));
+    paramlist = this->_json_get_array(bin_json);
+    // convert all values to float and append records
+    siz = (((int)paramlist.size()) >> (1));
+    tempValues.clear();
+    compValues.clear();
+    idx = 0;
+    while (idx < siz) {
+        temp = atof((paramlist[2*idx]).c_str())/1000.0;
+        comp = atof((paramlist[2*idx+1]).c_str())/1000.0;
+        tempValues.push_back(temp);
+        compValues.push_back(comp);
+        idx = idx + 1;
+    }
+    return YAPI_SUCCESS;
+}
+
 /**
  * Records a weight offset thermal compensation table, in order to automatically correct the
- * measured weight based on the compensation temperature.
+ * measured weight based on the averaged compensation temperature.
  * The weight correction will be applied by linear interpolation between specified points.
  *
- * @param tempValues : array of floating point numbers, corresponding to all
+ * @param tempValues : array of floating point numbers, corresponding to all averaged
  *         temperatures for which an offset correction is specified.
  * @param compValues : array of floating point numbers, corresponding to the offset correction
  *         to apply for each of the temperature included in the first
@@ -529,67 +652,18 @@ int YWeighScale::setupSpan(double currWeight,double maxWeight)
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YWeighScale::set_offsetCompensationTable(vector<double> tempValues,vector<double> compValues)
+int YWeighScale::set_offsetAvgCompensationTable(vector<double> tempValues,vector<double> compValues)
 {
-    int siz = 0;
-    int res = 0;
-    int idx = 0;
-    int found = 0;
-    double prev = 0.0;
-    double curr = 0.0;
-    double currComp = 0.0;
-    double idxTemp = 0.0;
-    siz = (int)tempValues.size();
-    if (!(siz != 1)) {
-        _throw(YAPI_INVALID_ARGUMENT,"thermal compensation table must have at least two points");
-        return YAPI_INVALID_ARGUMENT;
-    }
-    if (!(siz == (int)compValues.size())) {
-        _throw(YAPI_INVALID_ARGUMENT,"table sizes mismatch");
-        return YAPI_INVALID_ARGUMENT;
-    }
-
-    res = this->set_command("2Z");
-    if (!(res==YAPI_SUCCESS)) {
-        _throw(YAPI_IO_ERROR,"unable to reset thermal compensation table");
-        return YAPI_IO_ERROR;
-    }
-    // add records in growing temperature value
-    found = 1;
-    prev = -999999.0;
-    while (found > 0) {
-        found = 0;
-        curr = 99999999.0;
-        currComp = -999999.0;
-        idx = 0;
-        while (idx < siz) {
-            idxTemp = tempValues[idx];
-            if ((idxTemp > prev) && (idxTemp < curr)) {
-                curr = idxTemp;
-                currComp = compValues[idx];
-                found = 1;
-            }
-            idx = idx + 1;
-        }
-        if (found > 0) {
-            res = this->set_command(YapiWrapper::ysprintf("2m%d:%d", (int) floor(1000*curr+0.5),(int) floor(1000*currComp+0.5)));
-            if (!(res==YAPI_SUCCESS)) {
-                _throw(YAPI_IO_ERROR,"unable to set thermal compensation table");
-                return YAPI_IO_ERROR;
-            }
-            prev = curr;
-        }
-    }
-    return YAPI_SUCCESS;
+    return this->setCompensationTable(0, tempValues, compValues);
 }
 
 /**
  * Retrieves the weight offset thermal compensation table previously configured using the
- * set_offsetCompensationTable function.
+ * set_offsetAvgCompensationTable function.
  * The weight correction is applied by linear interpolation between specified points.
  *
  * @param tempValues : array of floating point numbers, that is filled by the function
- *         with all temperatures for which an offset correction is specified.
+ *         with all averaged temperatures for which an offset correction is specified.
  * @param compValues : array of floating point numbers, that is filled by the function
  *         with the offset correction applied for each of the temperature
  *         included in the first argument, index by index.
@@ -598,33 +672,49 @@ int YWeighScale::set_offsetCompensationTable(vector<double> tempValues,vector<do
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YWeighScale::loadOffsetCompensationTable(vector<double>& tempValues,vector<double>& compValues)
+int YWeighScale::loadOffsetAvgCompensationTable(vector<double>& tempValues,vector<double>& compValues)
 {
-    string id;
-    string bin_json;
-    vector<string> paramlist;
-    int siz = 0;
-    int idx = 0;
-    double temp = 0.0;
-    double comp = 0.0;
+    return this->loadCompensationTable(0, tempValues, compValues);
+}
 
-    id = this->get_functionId();
-    id = (id).substr( 11, (int)(id).length() - 11);
-    bin_json = this->_download("extra.json?page=2");
-    paramlist = this->_json_get_array(bin_json);
-    // convert all values to float and append records
-    siz = (((int)paramlist.size()) >> (1));
-    tempValues.clear();
-    compValues.clear();
-    idx = 0;
-    while (idx < siz) {
-        temp = atof((paramlist[2*idx]).c_str())/1000.0;
-        comp = atof((paramlist[2*idx+1]).c_str())/1000.0;
-        tempValues.push_back(temp);
-        compValues.push_back(comp);
-        idx = idx + 1;
-    }
-    return YAPI_SUCCESS;
+/**
+ * Records a weight offset thermal compensation table, in order to automatically correct the
+ * measured weight based on the variation of temperature.
+ * The weight correction will be applied by linear interpolation between specified points.
+ *
+ * @param tempValues : array of floating point numbers, corresponding to temperature
+ *         variations for which an offset correction is specified.
+ * @param compValues : array of floating point numbers, corresponding to the offset correction
+ *         to apply for each of the temperature variation included in the first
+ *         argument, index by index.
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YWeighScale::set_offsetChgCompensationTable(vector<double> tempValues,vector<double> compValues)
+{
+    return this->setCompensationTable(1, tempValues, compValues);
+}
+
+/**
+ * Retrieves the weight offset thermal compensation table previously configured using the
+ * set_offsetChgCompensationTable function.
+ * The weight correction is applied by linear interpolation between specified points.
+ *
+ * @param tempValues : array of floating point numbers, that is filled by the function
+ *         with all temperature variations for which an offset correction is specified.
+ * @param compValues : array of floating point numbers, that is filled by the function
+ *         with the offset correction applied for each of the temperature
+ *         variation included in the first argument, index by index.
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YWeighScale::loadOffsetChgCompensationTable(vector<double>& tempValues,vector<double>& compValues)
+{
+    return this->loadCompensationTable(1, tempValues, compValues);
 }
 
 /**
@@ -632,7 +722,7 @@ int YWeighScale::loadOffsetCompensationTable(vector<double>& tempValues,vector<d
  * measured weight based on the compensation temperature.
  * The weight correction will be applied by linear interpolation between specified points.
  *
- * @param tempValues : array of floating point numbers, corresponding to all
+ * @param tempValues : array of floating point numbers, corresponding to all averaged
  *         temperatures for which a span correction is specified.
  * @param compValues : array of floating point numbers, corresponding to the span correction
  *         (in percents) to apply for each of the temperature included in the first
@@ -642,67 +732,18 @@ int YWeighScale::loadOffsetCompensationTable(vector<double>& tempValues,vector<d
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YWeighScale::set_spanCompensationTable(vector<double> tempValues,vector<double> compValues)
+int YWeighScale::set_spanAvgCompensationTable(vector<double> tempValues,vector<double> compValues)
 {
-    int siz = 0;
-    int res = 0;
-    int idx = 0;
-    int found = 0;
-    double prev = 0.0;
-    double curr = 0.0;
-    double currComp = 0.0;
-    double idxTemp = 0.0;
-    siz = (int)tempValues.size();
-    if (!(siz != 1)) {
-        _throw(YAPI_INVALID_ARGUMENT,"thermal compensation table must have at least two points");
-        return YAPI_INVALID_ARGUMENT;
-    }
-    if (!(siz == (int)compValues.size())) {
-        _throw(YAPI_INVALID_ARGUMENT,"table sizes mismatch");
-        return YAPI_INVALID_ARGUMENT;
-    }
-
-    res = this->set_command("3Z");
-    if (!(res==YAPI_SUCCESS)) {
-        _throw(YAPI_IO_ERROR,"unable to reset thermal compensation table");
-        return YAPI_IO_ERROR;
-    }
-    // add records in growing temperature value
-    found = 1;
-    prev = -999999.0;
-    while (found > 0) {
-        found = 0;
-        curr = 99999999.0;
-        currComp = -999999.0;
-        idx = 0;
-        while (idx < siz) {
-            idxTemp = tempValues[idx];
-            if ((idxTemp > prev) && (idxTemp < curr)) {
-                curr = idxTemp;
-                currComp = compValues[idx];
-                found = 1;
-            }
-            idx = idx + 1;
-        }
-        if (found > 0) {
-            res = this->set_command(YapiWrapper::ysprintf("3m%d:%d", (int) floor(1000*curr+0.5),(int) floor(1000*currComp+0.5)));
-            if (!(res==YAPI_SUCCESS)) {
-                _throw(YAPI_IO_ERROR,"unable to set thermal compensation table");
-                return YAPI_IO_ERROR;
-            }
-            prev = curr;
-        }
-    }
-    return YAPI_SUCCESS;
+    return this->setCompensationTable(2, tempValues, compValues);
 }
 
 /**
  * Retrieves the weight span thermal compensation table previously configured using the
- * set_spanCompensationTable function.
+ * set_spanAvgCompensationTable function.
  * The weight correction is applied by linear interpolation between specified points.
  *
  * @param tempValues : array of floating point numbers, that is filled by the function
- *         with all temperatures for which an span correction is specified.
+ *         with all averaged temperatures for which an span correction is specified.
  * @param compValues : array of floating point numbers, that is filled by the function
  *         with the span correction applied for each of the temperature
  *         included in the first argument, index by index.
@@ -711,33 +752,49 @@ int YWeighScale::set_spanCompensationTable(vector<double> tempValues,vector<doub
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YWeighScale::loadSpanCompensationTable(vector<double>& tempValues,vector<double>& compValues)
+int YWeighScale::loadSpanAvgCompensationTable(vector<double>& tempValues,vector<double>& compValues)
 {
-    string id;
-    string bin_json;
-    vector<string> paramlist;
-    int siz = 0;
-    int idx = 0;
-    double temp = 0.0;
-    double comp = 0.0;
+    return this->loadCompensationTable(2, tempValues, compValues);
+}
 
-    id = this->get_functionId();
-    id = (id).substr( 11, (int)(id).length() - 11);
-    bin_json = this->_download("extra.json?page=3");
-    paramlist = this->_json_get_array(bin_json);
-    // convert all values to float and append records
-    siz = (((int)paramlist.size()) >> (1));
-    tempValues.clear();
-    compValues.clear();
-    idx = 0;
-    while (idx < siz) {
-        temp = atof((paramlist[2*idx]).c_str())/1000.0;
-        comp = atof((paramlist[2*idx+1]).c_str())/1000.0;
-        tempValues.push_back(temp);
-        compValues.push_back(comp);
-        idx = idx + 1;
-    }
-    return YAPI_SUCCESS;
+/**
+ * Records a weight span thermal compensation table, in order to automatically correct the
+ * measured weight based on the variation of temperature.
+ * The weight correction will be applied by linear interpolation between specified points.
+ *
+ * @param tempValues : array of floating point numbers, corresponding to all variations of
+ *         temperatures for which a span correction is specified.
+ * @param compValues : array of floating point numbers, corresponding to the span correction
+ *         (in percents) to apply for each of the temperature variation included
+ *         in the first argument, index by index.
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YWeighScale::set_spanChgCompensationTable(vector<double> tempValues,vector<double> compValues)
+{
+    return this->setCompensationTable(3, tempValues, compValues);
+}
+
+/**
+ * Retrieves the weight span thermal compensation table previously configured using the
+ * set_spanChgCompensationTable function.
+ * The weight correction is applied by linear interpolation between specified points.
+ *
+ * @param tempValues : array of floating point numbers, that is filled by the function
+ *         with all variation of temperature for which an span correction is specified.
+ * @param compValues : array of floating point numbers, that is filled by the function
+ *         with the span correction applied for each of variation of temperature
+ *         included in the first argument, index by index.
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YWeighScale::loadSpanChgCompensationTable(vector<double>& tempValues,vector<double>& compValues)
+{
+    return this->loadCompensationTable(3, tempValues, compValues);
 }
 
 YWeighScale *YWeighScale::nextWeighScale(void)

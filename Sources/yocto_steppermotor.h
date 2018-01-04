@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_steppermotor.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_steppermotor.h 29495 2017-12-22 16:45:20Z mvuilleu $
  *
  * Declares yFindStepperMotor(), the high-level API for StepperMotor functions
  *
@@ -568,6 +568,19 @@ public:
     virtual int         moveRel(double relPos);
 
     /**
+     * Starts the motor to reach a given relative position, keeping the speed under the
+     * specified limit. The time needed to reach the requested position will depend on
+     * the acceleration parameters configured for the motor.
+     *
+     * @param relPos : relative position, measured in steps from the current position.
+     * @param maxSpeed : limit speed, in steps per second.
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *         On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         moveRelSlow(double relPos,double maxSpeed);
+
+    /**
      * Keep the motor in the same state for the specified amount of time, before processing next command.
      *
      * @param waitMs : wait time, specified in milliseconds.
@@ -594,6 +607,18 @@ public:
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         alertStepOut(void);
+
+    /**
+     * Move one single step in the selected direction without regards to end switches.
+     * The move occures even if the system is still in alert mode (end switch depressed). Caution.
+     * use this function with great care as it may cause mechanical damages !
+     *
+     * @param dir : Value +1 ou -1, according to the desired direction of the move
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *         On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         alertStepDir(int dir);
 
     /**
      * Stops the motor smoothly as soon as possible, without waiting for ongoing move completion.

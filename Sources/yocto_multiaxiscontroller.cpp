@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_multiaxiscontroller.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_multiaxiscontroller.cpp 29507 2017-12-28 14:14:56Z mvuilleu $
  *
  * Implements yFindMultiAxisController(), the high-level API for MultiAxisController functions
  *
@@ -296,7 +296,25 @@ int YMultiAxisController::_invokeValueCallback(string value)
 
 int YMultiAxisController::sendCommand(string command)
 {
-    return this->set_command(command);
+    string url;
+    string retBin;
+    int res = 0;
+    url = YapiWrapper::ysprintf("cmd.txt?X=%s",command.c_str());
+    //may throw an exception
+    retBin = this->_download(url);
+    res = ((u8)retBin[0]);
+    if (res == 49) {
+        if (!(res == 48)) {
+            _throw(YAPI_DEVICE_BUSY,"Motor command pipeline is full, try again later");
+            return YAPI_DEVICE_BUSY;
+        }
+    } else {
+        if (!(res == 48)) {
+            _throw(YAPI_IO_ERROR,"Motor command failed permanently");
+            return YAPI_IO_ERROR;
+        }
+    }
+    return YAPI_SUCCESS;
 }
 
 /**

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 29240 2017-11-23 13:29:57Z seb $
+ * $Id: yocto_api.cpp 29465 2017-12-20 08:11:31Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -7095,7 +7095,8 @@ double YSensor::get_currentValue(void)
 }
 
 /**
- * Changes the recorded minimal value observed.
+ * Changes the recorded minimal value observed. Can be used to reset the value returned
+ * by get_lowestValue().
  *
  * @param newval : a floating point number corresponding to the recorded minimal value observed
  *
@@ -7121,6 +7122,7 @@ int YSensor::set_lowestValue(double newval)
 
 /**
  * Returns the minimal value observed for the measure since the device was started.
+ * Can be reset to an arbitrary value thanks to set_lowestValue().
  *
  * @return a floating point number corresponding to the minimal value observed for the measure since
  * the device was started
@@ -7151,7 +7153,8 @@ double YSensor::get_lowestValue(void)
 }
 
 /**
- * Changes the recorded maximal value observed.
+ * Changes the recorded maximal value observed. Can be used to reset the value returned
+ * by get_lowestValue().
  *
  * @param newval : a floating point number corresponding to the recorded maximal value observed
  *
@@ -7177,6 +7180,7 @@ int YSensor::set_highestValue(double newval)
 
 /**
  * Returns the maximal value observed for the measure since the device was started.
+ * Can be reset to an arbitrary value thanks to set_highestValue().
  *
  * @return a floating point number corresponding to the maximal value observed for the measure since
  * the device was started

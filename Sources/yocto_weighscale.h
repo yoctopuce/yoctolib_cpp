@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_weighscale.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_weighscale.h 29463 2017-12-20 07:40:43Z mvuilleu $
  *
  * Declares yFindWeighScale(), the high-level API for WeighScale functions
  *
@@ -63,8 +63,9 @@ typedef enum {
     Y_EXCITATION_INVALID = -1,
 } Y_EXCITATION_enum;
 #endif
-#define Y_ADAPTRATIO_INVALID            (YAPI_INVALID_DOUBLE)
-#define Y_COMPTEMPERATURE_INVALID       (YAPI_INVALID_DOUBLE)
+#define Y_COMPTEMPADAPTRATIO_INVALID    (YAPI_INVALID_DOUBLE)
+#define Y_COMPTEMPAVG_INVALID           (YAPI_INVALID_DOUBLE)
+#define Y_COMPTEMPCHG_INVALID           (YAPI_INVALID_DOUBLE)
 #define Y_COMPENSATION_INVALID          (YAPI_INVALID_DOUBLE)
 #define Y_ZEROTRACKING_INVALID          (YAPI_INVALID_DOUBLE)
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
@@ -89,8 +90,9 @@ protected:
     //--- (YWeighScale attributes)
     // Attributes (function value cache)
     Y_EXCITATION_enum _excitation;
-    double          _adaptRatio;
-    double          _compTemperature;
+    double          _compTempAdaptRatio;
+    double          _compTempAvg;
+    double          _compTempChg;
     double          _compensation;
     double          _zeroTracking;
     string          _command;
@@ -115,8 +117,9 @@ public:
     static const Y_EXCITATION_enum EXCITATION_DC = Y_EXCITATION_DC;
     static const Y_EXCITATION_enum EXCITATION_AC = Y_EXCITATION_AC;
     static const Y_EXCITATION_enum EXCITATION_INVALID = Y_EXCITATION_INVALID;
-    static const double ADAPTRATIO_INVALID;
-    static const double COMPTEMPERATURE_INVALID;
+    static const double COMPTEMPADAPTRATIO_INVALID;
+    static const double COMPTEMPAVG_INVALID;
+    static const double COMPTEMPCHG_INVALID;
     static const double COMPENSATION_INVALID;
     static const double ZEROTRACKING_INVALID;
     static const string COMMAND_INVALID;
@@ -149,42 +152,60 @@ public:
     { return this->set_excitation(newval); }
 
     /**
-     * Changes the compensation temperature update rate, in percents.
+     * Changes the averaged temperature update rate, in percents.
+     * The averaged temperature is updated every 10 seconds, by applying this adaptation rate
+     * to the difference between the measures ambiant temperature and the current compensation
+     * temperature. The standard rate is 0.04 percents, and the maximal rate is 65 percents.
      *
-     * @param newval : a floating point number corresponding to the compensation temperature update rate, in percents
+     * @param newval : a floating point number corresponding to the averaged temperature update rate, in percents
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
-    int             set_adaptRatio(double newval);
-    inline int      setAdaptRatio(double newval)
-    { return this->set_adaptRatio(newval); }
+    int             set_compTempAdaptRatio(double newval);
+    inline int      setCompTempAdaptRatio(double newval)
+    { return this->set_compTempAdaptRatio(newval); }
 
     /**
-     * Returns the compensation temperature update rate, in percents.
-     * the maximal value is 65 percents.
+     * Returns the averaged temperature update rate, in percents.
+     * The averaged temperature is updated every 10 seconds, by applying this adaptation rate
+     * to the difference between the measures ambiant temperature and the current compensation
+     * temperature. The standard rate is 0.04 percents, and the maximal rate is 65 percents.
      *
-     * @return a floating point number corresponding to the compensation temperature update rate, in percents
+     * @return a floating point number corresponding to the averaged temperature update rate, in percents
      *
-     * On failure, throws an exception or returns Y_ADAPTRATIO_INVALID.
+     * On failure, throws an exception or returns Y_COMPTEMPADAPTRATIO_INVALID.
      */
-    double              get_adaptRatio(void);
+    double              get_compTempAdaptRatio(void);
 
-    inline double       adaptRatio(void)
-    { return this->get_adaptRatio(); }
+    inline double       compTempAdaptRatio(void)
+    { return this->get_compTempAdaptRatio(); }
 
     /**
-     * Returns the current compensation temperature.
+     * Returns the current averaged temperature, used for thermal compensation.
      *
-     * @return a floating point number corresponding to the current compensation temperature
+     * @return a floating point number corresponding to the current averaged temperature, used for thermal compensation
      *
-     * On failure, throws an exception or returns Y_COMPTEMPERATURE_INVALID.
+     * On failure, throws an exception or returns Y_COMPTEMPAVG_INVALID.
      */
-    double              get_compTemperature(void);
+    double              get_compTempAvg(void);
 
-    inline double       compTemperature(void)
-    { return this->get_compTemperature(); }
+    inline double       compTempAvg(void)
+    { return this->get_compTempAvg(); }
+
+    /**
+     * Returns the current temperature variation, used for thermal compensation.
+     *
+     * @return a floating point number corresponding to the current temperature variation, used for
+     * thermal compensation
+     *
+     * On failure, throws an exception or returns Y_COMPTEMPCHG_INVALID.
+     */
+    double              get_compTempChg(void);
+
+    inline double       compTempChg(void)
+    { return this->get_compTempChg(); }
 
     /**
      * Returns the current current thermal compensation value.
@@ -318,12 +339,16 @@ public:
      */
     virtual int         setupSpan(double currWeight,double maxWeight);
 
+    virtual int         setCompensationTable(int tableIndex,vector<double> tempValues,vector<double> compValues);
+
+    virtual int         loadCompensationTable(int tableIndex,vector<double>& tempValues,vector<double>& compValues);
+
     /**
      * Records a weight offset thermal compensation table, in order to automatically correct the
-     * measured weight based on the compensation temperature.
+     * measured weight based on the averaged compensation temperature.
      * The weight correction will be applied by linear interpolation between specified points.
      *
-     * @param tempValues : array of floating point numbers, corresponding to all
+     * @param tempValues : array of floating point numbers, corresponding to all averaged
      *         temperatures for which an offset correction is specified.
      * @param compValues : array of floating point numbers, corresponding to the offset correction
      *         to apply for each of the temperature included in the first
@@ -333,15 +358,15 @@ public:
      *
      * On failure, throws an exception or returns a negative error code.
      */
-    virtual int         set_offsetCompensationTable(vector<double> tempValues,vector<double> compValues);
+    virtual int         set_offsetAvgCompensationTable(vector<double> tempValues,vector<double> compValues);
 
     /**
      * Retrieves the weight offset thermal compensation table previously configured using the
-     * set_offsetCompensationTable function.
+     * set_offsetAvgCompensationTable function.
      * The weight correction is applied by linear interpolation between specified points.
      *
      * @param tempValues : array of floating point numbers, that is filled by the function
-     *         with all temperatures for which an offset correction is specified.
+     *         with all averaged temperatures for which an offset correction is specified.
      * @param compValues : array of floating point numbers, that is filled by the function
      *         with the offset correction applied for each of the temperature
      *         included in the first argument, index by index.
@@ -350,14 +375,48 @@ public:
      *
      * On failure, throws an exception or returns a negative error code.
      */
-    virtual int         loadOffsetCompensationTable(vector<double>& tempValues,vector<double>& compValues);
+    virtual int         loadOffsetAvgCompensationTable(vector<double>& tempValues,vector<double>& compValues);
+
+    /**
+     * Records a weight offset thermal compensation table, in order to automatically correct the
+     * measured weight based on the variation of temperature.
+     * The weight correction will be applied by linear interpolation between specified points.
+     *
+     * @param tempValues : array of floating point numbers, corresponding to temperature
+     *         variations for which an offset correction is specified.
+     * @param compValues : array of floating point numbers, corresponding to the offset correction
+     *         to apply for each of the temperature variation included in the first
+     *         argument, index by index.
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         set_offsetChgCompensationTable(vector<double> tempValues,vector<double> compValues);
+
+    /**
+     * Retrieves the weight offset thermal compensation table previously configured using the
+     * set_offsetChgCompensationTable function.
+     * The weight correction is applied by linear interpolation between specified points.
+     *
+     * @param tempValues : array of floating point numbers, that is filled by the function
+     *         with all temperature variations for which an offset correction is specified.
+     * @param compValues : array of floating point numbers, that is filled by the function
+     *         with the offset correction applied for each of the temperature
+     *         variation included in the first argument, index by index.
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         loadOffsetChgCompensationTable(vector<double>& tempValues,vector<double>& compValues);
 
     /**
      * Records a weight span thermal compensation table, in order to automatically correct the
      * measured weight based on the compensation temperature.
      * The weight correction will be applied by linear interpolation between specified points.
      *
-     * @param tempValues : array of floating point numbers, corresponding to all
+     * @param tempValues : array of floating point numbers, corresponding to all averaged
      *         temperatures for which a span correction is specified.
      * @param compValues : array of floating point numbers, corresponding to the span correction
      *         (in percents) to apply for each of the temperature included in the first
@@ -367,15 +426,15 @@ public:
      *
      * On failure, throws an exception or returns a negative error code.
      */
-    virtual int         set_spanCompensationTable(vector<double> tempValues,vector<double> compValues);
+    virtual int         set_spanAvgCompensationTable(vector<double> tempValues,vector<double> compValues);
 
     /**
      * Retrieves the weight span thermal compensation table previously configured using the
-     * set_spanCompensationTable function.
+     * set_spanAvgCompensationTable function.
      * The weight correction is applied by linear interpolation between specified points.
      *
      * @param tempValues : array of floating point numbers, that is filled by the function
-     *         with all temperatures for which an span correction is specified.
+     *         with all averaged temperatures for which an span correction is specified.
      * @param compValues : array of floating point numbers, that is filled by the function
      *         with the span correction applied for each of the temperature
      *         included in the first argument, index by index.
@@ -384,7 +443,41 @@ public:
      *
      * On failure, throws an exception or returns a negative error code.
      */
-    virtual int         loadSpanCompensationTable(vector<double>& tempValues,vector<double>& compValues);
+    virtual int         loadSpanAvgCompensationTable(vector<double>& tempValues,vector<double>& compValues);
+
+    /**
+     * Records a weight span thermal compensation table, in order to automatically correct the
+     * measured weight based on the variation of temperature.
+     * The weight correction will be applied by linear interpolation between specified points.
+     *
+     * @param tempValues : array of floating point numbers, corresponding to all variations of
+     *         temperatures for which a span correction is specified.
+     * @param compValues : array of floating point numbers, corresponding to the span correction
+     *         (in percents) to apply for each of the temperature variation included
+     *         in the first argument, index by index.
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         set_spanChgCompensationTable(vector<double> tempValues,vector<double> compValues);
+
+    /**
+     * Retrieves the weight span thermal compensation table previously configured using the
+     * set_spanChgCompensationTable function.
+     * The weight correction is applied by linear interpolation between specified points.
+     *
+     * @param tempValues : array of floating point numbers, that is filled by the function
+     *         with all variation of temperature for which an span correction is specified.
+     * @param compValues : array of floating point numbers, that is filled by the function
+     *         with the span correction applied for each of variation of temperature
+     *         included in the first argument, index by index.
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         loadSpanChgCompensationTable(vector<double>& tempValues,vector<double>& compValues);
 
 
     inline static YWeighScale* Find(string func)

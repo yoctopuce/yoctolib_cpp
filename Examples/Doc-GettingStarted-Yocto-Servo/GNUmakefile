@@ -76,17 +76,21 @@ release: $(RELEASE_BUILD)
 	strip $(RELEASE_BUILD)
 	@rm -f $(STRIP_BUILD)
 
+../../Binaries/%/libyocto-static.a:
+	@echo compiling Yoctopuce C++ lib for $*
+	@make -C ../../Binaries $*/libyocto-static.a
+
 #linux rules
-$(DEMO_64) :  main.cpp $(YOCTO_API_DIR_64)* $(DIR_64)
+$(DEMO_64) :  main.cpp $(YOCTO_API_DIR_64)libyocto-static.a $(DIR_64)
 	@g++ $(OPTS_GENERIC) $(OPTS_64) -o $@ main.cpp -L$(YOCTO_API_DIR_64) $(OPTS_LINK)
 
-$(DEMO_32) : main.cpp $(YOCTO_API_DIR_32)*  $(DIR_32)
+$(DEMO_32) : main.cpp $(YOCTO_API_DIR_32)libyocto-static.a $(DIR_32)
 	@g++ $(OPTS_GENERIC) $(OPTS_32) -o $@ main.cpp -L$(YOCTO_API_DIR_32) $(OPTS_LINK)
 
-$(DEMO_ARMEL) : main.cpp $(YOCTO_API_DIR_ARMEL)*  $(DIR_ARMEL)
+$(DEMO_ARMEL) : main.cpp $(YOCTO_API_DIR_ARMEL)libyocto-static.a $(DIR_ARMEL)
 	@g++ $(OPTS_GENERIC) $(OPTS_ARMEL) -o $@ main.cpp -L$(YOCTO_API_DIR_ARMEL) $(OPTS_LINK)
 
-$(DEMO_ARMHF) : main.cpp $(YOCTO_API_DIR_ARMHF)*  $(DIR_ARMHF)
+$(DEMO_ARMHF) : main.cpp $(YOCTO_API_DIR_ARMHF)libyocto-static.a $(DIR_ARMHF)
 	@g++ $(OPTS_GENERIC) $(OPTS_ARMHF) -o $@ main.cpp -L$(YOCTO_API_DIR_ARMHF) $(OPTS_LINK)
 
 codeblock:

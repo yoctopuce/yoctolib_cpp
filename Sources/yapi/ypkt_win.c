@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_win.c 27402 2017-05-09 11:12:04Z seb $
+ * $Id: ypkt_win.c 29389 2017-12-07 08:57:39Z seb $
  *
  * OS-specific USB packet layer, Windows version
  *
@@ -288,7 +288,7 @@ static int yReserveGlobalAccess(yContextSt *ctx, char * errmsg)
     DWORD value_length = 512;
     int retval;
     s64 pid;
-    HKEY key;
+    HKEY key = NULL;
     LONG res;
 
     if (ctx->registry.hREG != NULL) {
