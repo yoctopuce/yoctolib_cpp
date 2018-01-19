@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 29340 2017-11-29 10:42:47Z seb $
+ * $Id: ystream.c 29651 2018-01-17 20:48:29Z mvuilleu $
  *
  * USB stream implementation
  *
@@ -254,19 +254,28 @@ int wcstombs_s(size_t *pReturnValue, char *mbstr, size_t sizeInBytes, const wcha
 
 void ypUpdateUSB(const char *serial, const char *funcid, const char *funcname, int funclass, int funydx, const char *funcval)
 {
+    char    funcid_cstr[YOCTO_FUNCTION_LEN];
     char    categ[YOCTO_FUNCTION_LEN];
     yStrRef serialref, funcidref, funcnameref = INVALID_HASH_IDX;
     u16     i;
 
+    funcid_cstr[0] = funcid[0];
     categ[0] = (funcid[0] & ~0x20); // aka to_upper()
     for(i = 1; i < YOCTO_FUNCTION_LEN-1; i++) {
         char c = funcid[i];
         if(!c || (c <= '9' && c >= '0')) break;
+        funcid_cstr[i] = c;
         categ[i] = c;
     }
     categ[i] = 0;
+    for(; i < YOCTO_FUNCTION_LEN-1; i++) {
+        char c = funcid[i];
+        if(!c) break;
+        funcid_cstr[i] = c;
+    }
+    funcid_cstr[i] = 0;
     serialref = yHashPutStr(serial);
-    funcidref = yHashPutStr(funcid);
+    funcidref = yHashPutStr(funcid_cstr);
     if(funcname) funcnameref = yHashPutStr(funcname);
     if(ypRegister(yHashPutStr(categ), serialref, funcidref, funcnameref, funclass, funydx, funcval)){
         // Forward high-level notification to API user

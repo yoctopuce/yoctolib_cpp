@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_multicellweighscale.h 29478 2017-12-21 08:10:05Z seb $
+ * $Id: yocto_multicellweighscale.h 29661 2018-01-18 13:32:13Z mvuilleu $
  *
  * Declares yFindMultiCellWeighScale(), the high-level API for MultiCellWeighScale functions
  *
@@ -126,6 +126,21 @@ public:
     static const double COMPENSATION_INVALID;
     static const double ZEROTRACKING_INVALID;
     static const string COMMAND_INVALID;
+
+    /**
+     * Changes the measuring unit for the weight.
+     * Remember to call the saveToFlash() method of the module if the
+     * modification must be kept.
+     *
+     * @param newval : a string corresponding to the measuring unit for the weight
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_unit(const string& newval);
+    inline int      setUnit(const string& newval)
+    { return this->set_unit(newval); }
 
     /**
      * Returns the number of load cells in use.

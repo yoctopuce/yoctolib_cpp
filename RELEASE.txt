@@ -1,3 +1,2 @@
-- Add YMultiCellWeighScale class
-- Change examples makefiles to compile the library
-- Fix rare IO errors on Raspberry PI
+- Fix handling of functionIds of length 19 (Yocto-MaxiBridge & Yocto-Stepper)
+- Fix overflow in get_upTime after 24 days

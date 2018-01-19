@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 29465 2017-12-20 08:11:31Z mvuilleu $
+ * $Id: yocto_api.h 29669 2018-01-19 08:25:56Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -292,6 +292,7 @@ typedef struct{
 
 
 // internal helper function
+s64 yatoi(const char *c);
 int _ystrpos(const string& haystack, const string& needle);
 vector<string> _strsplit(const string& str, char delimiter);
 
@@ -355,7 +356,7 @@ class YJSONArray : public YJSONContent
         YJSONContent* get(int i);
         YJSONArray* getYJSONArray(int i);
         int getInt(int i);
-        long getLong(int i);
+        s64 getLong(int i);
         void put(const string& flatAttr);
         virtual string toJSON();
         virtual string toString();
@@ -381,7 +382,7 @@ class YJSONString : public YJSONContent
 
 class YJSONNumber : public YJSONContent
 {
-        long _intValue;
+        s64 _intValue;
         double _doubleValue;
         bool _isFloat;
     public:
@@ -392,7 +393,7 @@ class YJSONNumber : public YJSONContent
 
     virtual int parse();
         virtual string toJSON();
-        long getLong();
+        s64 getLong();
         int getInt();
         double getDouble();
         virtual string toString();
@@ -420,7 +421,7 @@ public:
     string getString(const string& key);
     int getInt(const string& key);
     YJSONContent* get(const string& key);
-    long getLong(const string& key);
+    s64 getLong(const string& key);
     double getDouble(const string& key);
     virtual string toJSON();
     virtual string toString();

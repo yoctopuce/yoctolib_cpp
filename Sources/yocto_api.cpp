@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 29465 2017-12-20 08:11:31Z mvuilleu $
+ * $Id: yocto_api.cpp 29669 2018-01-19 08:25:56Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -332,7 +332,7 @@ int YJSONArray::getInt(int i)
     YJSONNumber* ystr = (YJSONNumber*)_arrayValue[i];
     return ystr->getInt();
 }
-long YJSONArray::getLong(int i)
+s64 YJSONArray::getLong(int i)
 {
     YJSONNumber* ystr = (YJSONNumber*)_arrayValue[i];
     return ystr->getLong();
@@ -517,14 +517,14 @@ int YJSONNumber::parse()
         sti = _data[cur_pos];
         if (sti == '.' && _isFloat == false) {
             string int_part = _data.substr(start, cur_pos - start);
-            _intValue = atoi((int_part).c_str());
+            _intValue = yatoi((int_part).c_str());
             _isFloat = true;
         } else if (sti < '0' || sti > '9') {
             string numberpart = _data.substr(start, cur_pos - start);
             if (_isFloat) {
                 _doubleValue = atof((numberpart).c_str());
             } else {
-                _intValue = atoi((numberpart).c_str());
+                _intValue = yatoi((numberpart).c_str());
             }
             if (neg) {
                 _doubleValue = 0 - _doubleValue;
@@ -545,10 +545,10 @@ string YJSONNumber::toJSON()
         return YapiWrapper::ysprintf("%d", _intValue);
 }
 
-long YJSONNumber::getLong()
+s64 YJSONNumber::getLong()
 {
     if (_isFloat)
-        return (long)_doubleValue;
+        return (s64)_doubleValue;
     else
         return _intValue;
 }
@@ -566,7 +566,7 @@ double YJSONNumber::getDouble()
     if (_isFloat)
         return _doubleValue;
     else
-        return _intValue;
+        return (double)_intValue;
 }
 
 string YJSONNumber::toString()
@@ -787,7 +787,7 @@ YJSONContent* YJSONObject::get(const string& key)
     return _parsed[key];
 }
 
-long YJSONObject::getLong(const string& key)
+s64 YJSONObject::getLong(const string& key)
 {
     YJSONNumber* yint = (YJSONNumber*)_parsed[key];
     return yint->getLong();
@@ -4150,6 +4150,26 @@ string YAPI::_hexStr2Bin(const string& hex_str)
     return res;
 }
 
+
+
+s64 yatoi(const char *p)
+{
+    s64 value = 0;
+    bool neg = *p == '-';
+    if (*p == '+' || neg) {
+        p++;
+    }
+    while (*p >= '0' && *p <= '9') {
+        value *= 10;
+        value += *p - '0';
+        p++;
+    }
+    if (neg) {
+        return -value;
+    } else {
+        return value;
+    }
+}
 
 
 /**

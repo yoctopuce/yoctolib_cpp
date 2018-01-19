@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_weighscale.cpp 29472 2017-12-20 11:34:07Z mvuilleu $
+ * $Id: yocto_weighscale.cpp 29661 2018-01-18 13:32:13Z mvuilleu $
  *
  * Implements yFindWeighScale(), the high-level API for WeighScale functions
  *
@@ -104,6 +104,33 @@ int YWeighScale::_parseAttr(YJSONObject* json_val)
     return YSensor::_parseAttr(json_val);
 }
 
+
+/**
+ * Changes the measuring unit for the weight.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
+ *
+ * @param newval : a string corresponding to the measuring unit for the weight
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YWeighScale::set_unit(const string& newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("unit", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
 
 /**
  * Returns the current load cell bridge excitation method.

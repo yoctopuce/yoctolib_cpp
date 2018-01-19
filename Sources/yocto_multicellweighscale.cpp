@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_multicellweighscale.cpp 29478 2017-12-21 08:10:05Z seb $
+ * $Id: yocto_multicellweighscale.cpp 29661 2018-01-18 13:32:13Z mvuilleu $
  *
  * Implements yFindMultiCellWeighScale(), the high-level API for MultiCellWeighScale functions
  *
@@ -108,6 +108,33 @@ int YMultiCellWeighScale::_parseAttr(YJSONObject* json_val)
     return YSensor::_parseAttr(json_val);
 }
 
+
+/**
+ * Changes the measuring unit for the weight.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
+ *
+ * @param newval : a string corresponding to the measuring unit for the weight
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YMultiCellWeighScale::set_unit(const string& newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("unit", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
 
 /**
  * Returns the number of load cells in use.

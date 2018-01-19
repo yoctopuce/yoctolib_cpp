@@ -40,7 +40,7 @@ int main(int argc, const char * argv[])
       return 1;
     }
   } else {
-    sensor = yFindGenericSensor(target + ".temperature1");
+    sensor = yFindGenericSensor(target + ".genericSensor1");
   }
 
   YGenericSensor *s1 = yFindGenericSensor(sensor->get_module()->get_serialNumber() +
