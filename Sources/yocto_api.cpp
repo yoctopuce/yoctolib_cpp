@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 29669 2018-01-19 08:25:56Z seb $
+ * $Id: yocto_api.cpp 29703 2018-01-23 18:06:02Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -3780,7 +3780,7 @@ void YDevice::clearCache(bool clearSubpath)
 {
     yEnterCriticalSection(&_lock);
     _cacheStamp = 0;
-    if (clearSubpath)
+    if (clearSubpath) {
         if (_cacheJson) {
             delete _cacheJson;
             _cacheJson = NULL;
@@ -3789,6 +3789,7 @@ void YDevice::clearCache(bool clearSubpath)
             delete _subpath;
             _subpath = NULL;
         }
+    }
     yLeaveCriticalSection(&_lock);
 }
 

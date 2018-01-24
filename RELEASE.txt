@@ -1,2 +1,1 @@
-- Fix handling of functionIds of length 19 (Yocto-MaxiBridge & Yocto-Stepper)
-- Fix overflow in get_upTime after 24 days
+- Fix compilation warnings with GCC
