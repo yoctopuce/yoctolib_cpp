@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 28224 2017-07-31 14:53:54Z seb $
+ * $Id: ytcp.c 29739 2018-01-25 17:03:29Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -346,7 +346,7 @@ static u32 resolveDNSCache(yUrlRef url, char *errmsg)
         }
         firstFree = i;
     }
-    yHashGetUrlPort(url, buffer, NULL, NULL, NULL, NULL);
+    yHashGetUrlPort(url, buffer, NULL, NULL, NULL, NULL, NULL);
     ip = yResolveDNS(buffer, errmsg);
     if (ip != 0 && firstFree < YDNS_CACHE_SIZE) {
         dnsCache[firstFree].url = url;
@@ -844,7 +844,7 @@ static int yHTTPOpenReqEx(struct _RequestSt *req, u64 mstimout, char *errmsg)
 
     YASSERT(req->proto == PROTO_AUTO || req->proto == PROTO_HTTP);
 
-    switch (yHashGetUrlPort(req->hub->url, buffer, &port, NULL, NULL, NULL)) {
+    switch (yHashGetUrlPort(req->hub->url, buffer, &port, NULL, NULL, NULL, NULL)) {
     case NAME_URL:
         ip = resolveDNSCache(req->hub->url, errmsg);
         if (ip == 0) {
@@ -1338,7 +1338,7 @@ struct _RequestSt* yReqAlloc(struct _HubSt *hub)
 {
     struct _RequestSt* req = yMalloc(sizeof(struct _RequestSt));
     memset(req, 0, sizeof(struct _RequestSt));
-    yHashGetUrlPort(hub->url, NULL, NULL, &req->proto, NULL, NULL);
+    yHashGetUrlPort(hub->url, NULL, NULL, &req->proto, NULL, NULL, NULL);
     TCPLOG("yTcpInitReq %p[%x:%x]\n", req, hub->url, req->proto);
     req->replybufsize = 1500;
     req->replybuf = (u8*)yMalloc(req->replybufsize);
@@ -2346,26 +2346,28 @@ static int ws_processRequests(HubSt* hub, char *errmsg)
 }
 
 
-
 /*
 *   Open Base tcp socket (done in background by yws_thread)
 */
-static int ws_openBaseSocket(struct _WSNetHubSt *hub, yUrlRef url, const char *request, int request_len, int mstimout, char *errmsg)
+static int ws_openBaseSocket(HubSt* basehub, int first_notification_connection, int mstimout, char* errmsg)
 {
     char buffer[YOCTO_HOSTNAME_NAME];
-    u32  ip;
-    u16  port;
+    u32 ip;
+    u16 port;
     yAsbUrlProto proto;
-    yStrRef user, pass;
-    int res, tcpchan;
+    yStrRef user, pass, subdomain;
+    int res, tcpchan, request_len;
+    char request[256];
+    char subdomain_buf[32];
+    struct _WSNetHubSt* wshub = &basehub->ws;
 
-    memset(hub, 0, sizeof(WSNetHub));
-    hub->skt = INVALID_SOCKET;
-    hub->s_next_async_id = 48;
+    memset(wshub, 0, sizeof(WSNetHub));
+    wshub->skt = INVALID_SOCKET;
+    wshub->s_next_async_id = 48;
 
-    switch (yHashGetUrlPort(url, buffer, &port, &proto, &user, &pass)) {
+    switch (yHashGetUrlPort(basehub->url, buffer, &port, &proto, &user, &pass, &subdomain)) {
     case NAME_URL:
-        ip = resolveDNSCache(url, errmsg);
+        ip = resolveDNSCache(basehub->url, errmsg);
         if (ip == 0) {
             return YAPI_IO_ERROR;
         }
@@ -2379,53 +2381,65 @@ static int ws_openBaseSocket(struct _WSNetHubSt *hub, yUrlRef url, const char *r
     if (proto == PROTO_HTTP) {
         return YERRMSG(YAPI_IO_ERROR, "not a websocket url");
     }
+    if (subdomain== INVALID_HASH_IDX) {
+        subdomain_buf[0] = 0;
+    }else {
+        YSPRINTF(subdomain_buf, 32, "/%s", yHashGetStrPtr(subdomain));
+    }
 
-    res = yTcpOpen(&hub->skt, ip, port, mstimout, errmsg);
+    WSLOG("hub(%s) try to open WS connection at %d\n", basehub->name, basehub->notifAbsPos);
+    if (first_notification_connection) {
+        YSPRINTF(request, 256, "GET %s/not.byn", subdomain_buf);
+    } else {
+        YSPRINTF(request, 256, "GET %s/not.byn?abs=%u", subdomain_buf, basehub->notifAbsPos);
+    }
+
+    res = yTcpOpen(&wshub->skt, ip, port, mstimout, errmsg);
     if (YISERR(res)) {
         // yTcpOpen has reset the socket to INVALID
-        yTcpClose(hub->skt);
-        hub->skt = INVALID_SOCKET;
+        yTcpClose(wshub->skt);
+        wshub->skt = INVALID_SOCKET;
         return res;
     }
-    hub->bws_open_tm = yapiGetTickCount();
-    hub->bws_timeout_tm = mstimout;
-    hub->user = user;
-    hub->pass = pass;
+    wshub->bws_open_tm = yapiGetTickCount();
+    wshub->bws_timeout_tm = mstimout;
+    wshub->user = user;
+    wshub->pass = pass;
     //write header
+    request_len = YSTRLEN(request);
 
-
-    res = yTcpWrite(hub->skt, request, request_len, errmsg);
+    res = yTcpWrite(wshub->skt, request, request_len, errmsg);
     if (YISERR(res)) {
-        yTcpClose(hub->skt);
-        hub->skt = INVALID_SOCKET;
+        yTcpClose(wshub->skt);
+        wshub->skt = INVALID_SOCKET;
         return res;
     }
-    res = yTcpWrite(hub->skt, ws_header_start, YSTRLEN(ws_header_start), errmsg);
+    res = yTcpWrite(wshub->skt, ws_header_start, YSTRLEN(ws_header_start), errmsg);
     if (YISERR(res)) {
-        yTcpClose(hub->skt);
-        hub->skt = INVALID_SOCKET;
-        return res;
-    }
-
-    hub->websocket_key_len = GenereateWebSockeyKey((u8*)request, request_len, hub->websocket_key);
-    res = yTcpWrite(hub->skt, hub->websocket_key, hub->websocket_key_len, errmsg);
-    if (YISERR(res)) {
-        yTcpClose(hub->skt);
-        hub->skt = INVALID_SOCKET;
+        yTcpClose(wshub->skt);
+        wshub->skt = INVALID_SOCKET;
         return res;
     }
 
-    res = yTcpWrite(hub->skt, ws_header_end, YSTRLEN(ws_header_end), errmsg);
+    wshub->websocket_key_len = GenereateWebSockeyKey((u8*)request, request_len, wshub->websocket_key);
+    res = yTcpWrite(wshub->skt, wshub->websocket_key, wshub->websocket_key_len, errmsg);
     if (YISERR(res)) {
-        yTcpClose(hub->skt);
-        hub->skt = INVALID_SOCKET;
+        yTcpClose(wshub->skt);
+        wshub->skt = INVALID_SOCKET;
         return res;
     }
 
-    hub->fifo_buffer = yMalloc(2048);
-    yFifoInit(&hub->mainfifo, hub->fifo_buffer, 2048);
+    res = yTcpWrite(wshub->skt, ws_header_end, YSTRLEN(ws_header_end), errmsg);
+    if (YISERR(res)) {
+        yTcpClose(wshub->skt);
+        wshub->skt = INVALID_SOCKET;
+        return res;
+    }
+
+    wshub->fifo_buffer = yMalloc(2048);
+    yFifoInit(&wshub->mainfifo, wshub->fifo_buffer, 2048);
     for (tcpchan = 0; tcpchan < MAX_ASYNC_TCPCHAN; tcpchan++) {
-        yInitializeCriticalSection(&hub->chan[tcpchan].access);
+        yInitializeCriticalSection(&wshub->chan[tcpchan].access);
     }
     return YAPI_SUCCESS;
 }
@@ -2552,7 +2566,6 @@ void* ws_thread(void* ctx)
     WSLOG("hub(%s) start thread \n", hub->name);
 
     while (!yThreadMustEnd(thread) && hub->state != NET_HUB_TOCLOSE) {
-        char request[256];
 
         if (hub->retryCount > 0) {
             u64 timeout = yapiGetTickCount() + hub->attemptDelay;
@@ -2564,13 +2577,7 @@ void* ws_thread(void* ctx)
         if (hub->state == NET_HUB_TOCLOSE) {
             break;
         }
-        WSLOG("hub(%s) try to open WS connection at %d\n", hub->name, hub->notifAbsPos);
-        if (first_notification_connection) {
-            YSPRINTF(request, 256, "GET /not.byn");
-        } else {
-            YSPRINTF(request, 256, "GET /not.byn?abs=%u", hub->notifAbsPos);
-        }
-        res = ws_openBaseSocket(&hub->ws, hub->url, request, YSTRLEN(request), 1000, errmsg);
+        res = ws_openBaseSocket(hub, first_notification_connection, 1000, errmsg);
         hub->lastAttempt = yapiGetTickCount();
         if (YISERR(res)) {
             yEnterCriticalSection(&hub->access);

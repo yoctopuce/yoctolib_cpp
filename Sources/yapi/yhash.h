@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.h 24575 2016-05-26 06:28:03Z seb $
+ * $Id: yhash.h 29739 2018-01-25 17:03:29Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -167,7 +167,7 @@ extern yStrRef SerialRef;
 extern yBlkHdl yWpListHead;
 extern yBlkHdl yYpListHead;
 
-#define YMAX_HUB_URL_DEEP           8
+#define YMAX_HUB_URL_DEEP           7
 #define YOCTO_HOSTNAME_NAME         (HASH_BUF_SIZE*2+2)
 
 typedef enum {
@@ -205,6 +205,7 @@ typedef struct{
     u16 proto;
     yStrRef user;
     yStrRef password;
+    yStrRef subdomain;
     yStrRef path[YMAX_HUB_URL_DEEP];
 } yAbsUrl;
 
@@ -220,7 +221,7 @@ char  *yHashGetStrPtr(yHash yhash);
 #ifndef MICROCHIP_API
 yUrlRef yHashUrlFromRef(yUrlRef urlref, const char *rootUrl);
 yUrlRef yHashUrl(const char *host, const char *rootUrl, u8 testonly, char *errmsg);
-yAsbUrlType  yHashGetUrlPort(yUrlRef urlref, char *url, u16 *port, yAsbUrlProto *proto, yStrRef *user, yStrRef *password);
+yAsbUrlType  yHashGetUrlPort(yUrlRef urlref, char *url, u16 *port, yAsbUrlProto *proto, yStrRef *user, yStrRef *password, yStrRef *subdomain);
 int yHashSameHub(yUrlRef url_a, yUrlRef url_b);
 void  yHashFree(void);
 #endif

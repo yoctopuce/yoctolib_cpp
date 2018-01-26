@@ -1,1 +1,3 @@
-- Fix compilation warnings with GCC
+- Add Example for Yocto-MaxiBridge and Yocto-Bridge
+- Add support for GatewayHub
+- Add methods in YProximity class to configure debouncing/hysteresis for Yocto-Proximity

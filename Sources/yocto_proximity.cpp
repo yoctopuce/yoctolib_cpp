@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_proximity.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_proximity.cpp 29767 2018-01-26 08:53:27Z seb $
  *
  * Implements yFindProximity(), the high-level API for Proximity functions
  *
@@ -52,6 +52,9 @@ YProximity::YProximity(const string& func): YSensor(func)
 //--- (YProximity initialization)
     ,_signalValue(SIGNALVALUE_INVALID)
     ,_detectionThreshold(DETECTIONTHRESHOLD_INVALID)
+    ,_detectionHysteresis(DETECTIONHYSTERESIS_INVALID)
+    ,_presenceMinTime(PRESENCEMINTIME_INVALID)
+    ,_removalMinTime(REMOVALMINTIME_INVALID)
     ,_isPresent(ISPRESENT_INVALID)
     ,_lastTimeApproached(LASTTIMEAPPROACHED_INVALID)
     ,_lastTimeRemoved(LASTTIMEREMOVED_INVALID)
@@ -81,6 +84,15 @@ int YProximity::_parseAttr(YJSONObject* json_val)
     }
     if(json_val->has("detectionThreshold")) {
         _detectionThreshold =  json_val->getInt("detectionThreshold");
+    }
+    if(json_val->has("detectionHysteresis")) {
+        _detectionHysteresis =  json_val->getInt("detectionHysteresis");
+    }
+    if(json_val->has("presenceMinTime")) {
+        _presenceMinTime =  json_val->getInt("presenceMinTime");
+    }
+    if(json_val->has("removalMinTime")) {
+        _removalMinTime =  json_val->getInt("removalMinTime");
     }
     if(json_val->has("isPresent")) {
         _isPresent =  (Y_ISPRESENT_enum)json_val->getInt("isPresent");
@@ -185,6 +197,178 @@ int YProximity::set_detectionThreshold(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("detectionThreshold", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the hysteresis used to determine the logical state of the proximity sensor, when considered
+ * as a binary input (on/off).
+ *
+ * @return an integer corresponding to the hysteresis used to determine the logical state of the
+ * proximity sensor, when considered
+ *         as a binary input (on/off)
+ *
+ * On failure, throws an exception or returns Y_DETECTIONHYSTERESIS_INVALID.
+ */
+int YProximity::get_detectionHysteresis(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YProximity::DETECTIONHYSTERESIS_INVALID;
+                }
+            }
+        }
+        res = _detectionHysteresis;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the hysteresis used to determine the logical state of the proximity sensor, when considered
+ * as a binary input (on/off).
+ *
+ * @param newval : an integer corresponding to the hysteresis used to determine the logical state of
+ * the proximity sensor, when considered
+ *         as a binary input (on/off)
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YProximity::set_detectionHysteresis(int newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("detectionHysteresis", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the minimal detection duration before signaling a presence event. Any shorter detection is
+ * considered as noise or bounce (false positive) and filtered out.
+ *
+ * @return an integer corresponding to the minimal detection duration before signaling a presence event
+ *
+ * On failure, throws an exception or returns Y_PRESENCEMINTIME_INVALID.
+ */
+int YProximity::get_presenceMinTime(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YProximity::PRESENCEMINTIME_INVALID;
+                }
+            }
+        }
+        res = _presenceMinTime;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the minimal detection duration before signaling a presence event. Any shorter detection is
+ * considered as noise or bounce (false positive) and filtered out.
+ *
+ * @param newval : an integer corresponding to the minimal detection duration before signaling a presence event
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YProximity::set_presenceMinTime(int newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("presenceMinTime", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the minimal detection duration before signaling a removal event. Any shorter detection is
+ * considered as noise or bounce (false positive) and filtered out.
+ *
+ * @return an integer corresponding to the minimal detection duration before signaling a removal event
+ *
+ * On failure, throws an exception or returns Y_REMOVALMINTIME_INVALID.
+ */
+int YProximity::get_removalMinTime(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YProximity::REMOVALMINTIME_INVALID;
+                }
+            }
+        }
+        res = _removalMinTime;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the minimal detection duration before signaling a removal event. Any shorter detection is
+ * considered as noise or bounce (false positive) and filtered out.
+ *
+ * @param newval : an integer corresponding to the minimal detection duration before signaling a removal event
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YProximity::set_removalMinTime(int newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("removalMinTime", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
          throw;

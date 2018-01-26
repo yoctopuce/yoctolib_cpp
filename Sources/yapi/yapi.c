@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 29341 2017-11-29 10:43:43Z seb $
+ * $Id: yapi.c 29739 2018-01-25 17:03:29Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -341,7 +341,7 @@ typedef struct {
 static int wpSafeCheckOverwrite(yUrlRef registeredUrl, HubSt *hub, yUrlRef devUrl)
 {
 
-    yAsbUrlType urlType = yHashGetUrlPort(devUrl, NULL, NULL, NULL, NULL, NULL);
+    yAsbUrlType urlType = yHashGetUrlPort(devUrl, NULL, NULL, NULL, NULL, NULL, NULL);
     yAsbUrlType registeredType;
 
     if (urlType ==USB_URL){
@@ -351,7 +351,7 @@ static int wpSafeCheckOverwrite(yUrlRef registeredUrl, HubSt *hub, yUrlRef devUr
 #endif
         return 0;
     }
-    registeredType = yHashGetUrlPort(registeredUrl, NULL, NULL, NULL, NULL, NULL);
+    registeredType = yHashGetUrlPort(registeredUrl, NULL, NULL, NULL, NULL, NULL, NULL);
     if(registeredType ==USB_URL){
 #ifdef DEBUG_WP
         dbglog("unregister same device connected by USB ( 0x%X vs 0x%X) \n",devUrl,hub->url);
@@ -526,7 +526,7 @@ YRETCODE yapiPullDeviceLogEx(int devydx)
     // dispatch request on correct hub (or pseudo usb HUB)
     url = wpGetDeviceUrlRef(dev);
 
-    switch (yHashGetUrlPort(url, NULL, NULL, &proto, NULL, NULL)) {
+    switch (yHashGetUrlPort(url, NULL, NULL, &proto, NULL, NULL, NULL)) {
     case USB_URL:
         res = yapiRequestOpenUSB(&iohdl, NULL, dev, request, reqlen, YIO_10_MINUTES_TCP_TIMEOUT, logResult, (void*)gen, errmsg);
         break;
@@ -1173,7 +1173,7 @@ static HubSt* yapiAllocHub(const char  *url,char *errmsg)
     name = (char*) yMalloc(len+1);
     memcpy(name,url,len+1);
     hub->name = name;
-    yHashGetUrlPort(huburl, NULL, NULL, &hub->proto, &user, &password);
+    yHashGetUrlPort(huburl, NULL, NULL, &hub->proto, &user, &password, NULL);
     yFifoInit(&(hub->not_fifo), hub->not_buffer, sizeof(hub->not_buffer));
     yInitializeCriticalSection(&hub->access);
 
@@ -2195,7 +2195,7 @@ static void* yhelper_thread(void* ctx)
                                         // invalid header received, give up
                                         char hubname[YOCTO_HOSTNAME_NAME]="";
                                         hub->state = NET_HUB_TOCLOSE;
-                                        yHashGetUrlPort(hub->url, hubname, NULL, NULL, NULL, NULL);
+                                        yHashGetUrlPort(hub->url, hubname, NULL, NULL, NULL, NULL, NULL);
                                         dbglog("Network hub %s cannot provide notifications", hubname);
                                     }
                                 }
@@ -2648,7 +2648,7 @@ static YRETCODE  yapiUpdateDeviceList_internal(u32 forceupdate, char *errmsg)
                 char buffer[YOCTO_HOSTNAME_NAME]="";
                 u16  port;
                 err = (YRETCODE) subres;
-                yHashGetUrlPort(yContext->nethub[i]->url, buffer, &port, NULL, NULL, NULL);
+                yHashGetUrlPort(yContext->nethub[i]->url, buffer, &port, NULL, NULL, NULL, NULL);
                 if(errmsg) {
                     YSPRINTF(errmsg,YOCTO_ERRMSG_LEN,"Enumeration failed for %s:%d (%s)",buffer,port,suberr);
                 }
@@ -2949,7 +2949,7 @@ static YRETCODE  yapiGetDevicePathEx_internal(const char *serial, char *rootdevi
         return YERR(YAPI_DEVICE_NOT_FOUND);
     }
     url = wpGetDeviceUrlRef(devdescr);
-    switch (yHashGetUrlPort(url, host, &port, &proto, NULL, NULL)) {
+    switch (yHashGetUrlPort(url, host, &port, &proto, NULL, NULL, NULL)) {
     case USB_URL:
         if (rootdevice) {
             *rootdevice = 0;
@@ -3228,7 +3228,7 @@ YRETCODE yapiRequestOpen(YIOHDL_internal *iohdl, int tcpchan, const char *device
 
     // dispatch request on correct hub (or pseudo usb HUB)
     url = wpGetDeviceUrlRef(dev);
-    switch(yHashGetUrlPort(url, buffer, NULL, &proto, NULL, NULL)) {
+    switch(yHashGetUrlPort(url, buffer, NULL, &proto, NULL, NULL, NULL)) {
     case USB_URL:
         return yapiRequestOpenUSB(iohdl, NULL, dev, request, reqlen, mstimeout, callback, context, errmsg);
     default:

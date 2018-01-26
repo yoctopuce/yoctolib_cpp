@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 28495 2017-09-13 13:36:02Z seb $
+ * $Id: yprog.c 29739 2018-01-25 17:03:29Z seb $
  *
  * Implementation of firmware upgrade functions
  *
@@ -1835,7 +1835,7 @@ static void* yFirmwareUpdate_thread(void* ctx)
             goto exit_and_free;
         }
         url = wpGetDeviceUrlRef(dev);
-        if (yHashGetUrlPort(url, NULL, NULL, NULL, NULL, NULL) == USB_URL) {
+        if (yHashGetUrlPort(url, NULL, NULL, NULL, NULL, NULL, NULL) == USB_URL) {
             // USB connected device -> reboot it in bootloader
             type = FLASH_USB;
             YSPRINTF(buffer, sizeof(buffer), reboot_req, subpath);

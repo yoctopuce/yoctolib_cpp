@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 29054 2017-11-01 10:09:54Z seb $
+ * $Id: yhash.c 29756 2018-01-25 23:15:28Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -506,6 +506,7 @@ yUrlRef yHashUrl(const char *url, const char *rootUrl, u8 testonly, char *errmsg
                 return INVALID_HASH_IDX;
             }
             huburl.user = yHashPutBuf((const u8*)url, len);
+            HLOGF(("user=%s\n", yHashGetStrPtr(huburl.user)));
             url = ++p;
             while (*p != '@') p++;
             len = (int)(p - url);
@@ -514,16 +515,30 @@ yUrlRef yHashUrl(const char *url, const char *rootUrl, u8 testonly, char *errmsg
                 return INVALID_HASH_IDX;
             }
             huburl.password = yHashPutBuf((const u8*)url, len);
+            HLOGF(("passwd=%s\n", yHashGetStrPtr(huburl.password)));
             url = ++p;
         }
-        end =strchr(url,'/');
-        if(!end)
+        end = strchr(url,'/');
+        if (end) {
+            p = posplus= end + 1;
+            while (*p  && *p != '/') p++;
+            len = (int)(p - posplus);
+            if (len > 0) {
+                if (len > HASH_BUF_SIZE) {
+                    if (errmsg) YSTRCPY(errmsg, YOCTO_ERRMSG_LEN, "subdomain too long");
+                    return INVALID_HASH_IDX;
+                }
+                huburl.subdomain = yHashPutBuf((const u8*)posplus, len);
+                HLOGF(("subdomain=%s\n", yHashGetStrPtr(huburl.subdomain)));
+            }
+        }else {
             end = url + strlen(url);
+        }
         pos = strchr(url,':');
-        posplus=pos+1;
+        posplus = pos + 1;
         if(pos && pos < end ){
-            len= (int)(end-posplus);
-            if(len>7){
+            len = (int)(end - posplus);
+            if(len > 7){
                 if(errmsg) YSTRCPY(errmsg,YOCTO_ERRMSG_LEN,"invalid port");
                 return INVALID_HASH_IDX;
             }
@@ -534,39 +549,44 @@ yUrlRef yHashUrl(const char *url, const char *rootUrl, u8 testonly, char *errmsg
         }else{
             huburl.byip.port = YOCTO_DEFAULT_PORT;
         }
+        HLOGF(("port=%d\n", huburl.byip.port));
+
         pos = strchr(url,'.');
-        posplus=pos+1;
+        posplus = pos + 1;
         if(pos && pos < end ){
-            hostlen = (int)(pos-url);
+            hostlen = (int)(pos - url);
             if(hostlen>HASH_BUF_SIZE){
                 if(errmsg) YSTRCPY(errmsg,YOCTO_ERRMSG_LEN,"hostname too long");
                 return INVALID_HASH_IDX;
             }
             host = url;
-            url=posplus;
+            url = posplus;
         }else{
-            hostlen=0;
+            hostlen = 0;
         }
         if(hostlen && hostlen <= 3){
-            memcpy(buffer,host,hostlen);
-            buffer[hostlen]=0;
-            iptest=atoi(buffer);
+            memcpy(buffer, host, hostlen);
+            buffer[hostlen] = 0;
+            iptest = atoi(buffer);
         }
-        if(iptest && iptest< 256 && end-host < 16){
+        if (iptest && iptest< 256 && (end - host) < 16) {
             // this is probably an ip
             huburl.byip.ip = yHashPutBuf((const u8*)host,(u16)(end-host));
-        }else{
-            domlen= (int)(end - url);
-            if(domlen >HASH_BUF_SIZE){
+            HLOGF(("ip=%s\n", yHashGetStrPtr(huburl.byip.ip)));
+        } else {
+            domlen = (int)(end - url);
+            if (domlen > HASH_BUF_SIZE) {
                 if(errmsg) YSTRCPY(errmsg,YOCTO_ERRMSG_LEN,"domain name too long");
                 return INVALID_HASH_IDX;
             }
             if (hostlen) {
                 huburl.byname.host = yHashPutBuf((const u8*)host, hostlen);
+                HLOGF(("host=%s\n", yHashGetStrPtr(huburl.byip.ip)));
             } else {
                 huburl.byname.host = INVALID_HASH_IDX;
             }
             huburl.byname.domaine = yHashPutBuf((const u8*)url,domlen);
+            HLOGF(("domain(host)=%s\n", yHashGetStrPtr(huburl.byip.ip)));
         }
     }
     if(yComputeRelPath(&huburl, rootUrl, testonly)<0){
@@ -576,7 +596,7 @@ yUrlRef yHashUrl(const char *url, const char *rootUrl, u8 testonly, char *errmsg
 }
 
 // return port , get hash of the url an a pointer to a buffer of YOCTO_HOSTNAME_NAME len
-yAsbUrlType  yHashGetUrlPort(yUrlRef urlref, char *url, u16 *port, yAsbUrlProto *proto, yStrRef *user, yStrRef *password)
+yAsbUrlType  yHashGetUrlPort(yUrlRef urlref, char *url, u16 *port, yAsbUrlProto *proto, yStrRef *user, yStrRef *password, yStrRef *subdomain)
 {
     yAbsUrl absurl;
 
@@ -585,6 +605,7 @@ yAsbUrlType  yHashGetUrlPort(yUrlRef urlref, char *url, u16 *port, yAsbUrlProto 
     if (proto) *proto = absurl.proto;
     if (user) *user = absurl.user;
     if (password) *password = absurl.password;
+    if (subdomain) *subdomain = absurl.subdomain;
 
     if(absurl.byusb.invalid1 ==INVALID_HASH_IDX && absurl.byusb.invalid2 == INVALID_HASH_IDX){
         // we have an USB address
