@@ -40,7 +40,7 @@ int main(int argc, const char* argv[])
             return 1;
         }
     } else {
-        sensor = yFindWeighScale(target + ".WeighScale");
+        sensor = yFindWeighScale(target + ".weighScale1");
     }
 
     string unit;
