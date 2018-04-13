@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 29739 2018-01-25 17:03:29Z seb $
+ * $Id: ytcp.c 29936 2018-02-09 09:41:35Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -1684,9 +1684,9 @@ None
 
 Parameters:
 cSourceData - Pointer to a string of binary data
-wSourceLen	- Length of the binary source data
-cDestData	- Pointer to write the Base-64 encoded data
-wDestLen	- Maximum length that can be written to cDestData
+wSourceLen  - Length of the binary source data
+cDestData   - Pointer to write the Base-64 encoded data
+wDestLen    - Maximum length that can be written to cDestData
 
 Returns:
 Number of encoded bytes written to cDestData.  This will always be
@@ -1751,7 +1751,7 @@ static u16 Base64Encode(const u8* cSourceData, u16 wSourceLen, u8* cDestData, u1
                 j = '+';
             else if (j == 63u)
                 j = '/';
-            else				// Padding
+            else                // Padding
                 j = '=';
 
             *cDestData++ = j;

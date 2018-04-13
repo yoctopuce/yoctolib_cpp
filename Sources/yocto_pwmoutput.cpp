@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwmoutput.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_pwmoutput.cpp 30595 2018-04-12 21:36:11Z mvuilleu $
  *
  * Implements yFindPwmOutput(), the high-level API for PwmOutput functions
  *
@@ -178,7 +178,7 @@ int YPwmOutput::set_frequency(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("frequency", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
@@ -232,7 +232,7 @@ int YPwmOutput::set_period(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("period", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
@@ -286,7 +286,7 @@ int YPwmOutput::set_dutyCycle(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("dutyCycle", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
@@ -341,7 +341,7 @@ int YPwmOutput::set_pulseDuration(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("pulseDuration", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
@@ -492,7 +492,7 @@ int YPwmOutput::set_dutyCycleAtPowerOn(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("dutyCycleAtPowerOn", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
@@ -621,8 +621,8 @@ int YPwmOutput::_invokeValueCallback(string value)
 }
 
 /**
- * Performs a smooth transistion of the pulse duration toward a given value. Any period,
- * frequency, duty cycle or pulse width change will cancel any ongoing transition process.
+ * Performs a smooth transistion of the pulse duration toward a given value.
+ * Any period, frequency, duty cycle or pulse width change will cancel any ongoing transition process.
  *
  * @param ms_target   : new pulse duration at the end of the transition
  *         (floating-point number, representing the pulse duration in milliseconds)
@@ -643,10 +643,11 @@ int YPwmOutput::pulseDurationMove(double ms_target,int ms_duration)
 }
 
 /**
- * Performs a smooth change of the pulse duration toward a given value.
+ * Performs a smooth change of the duty cycle toward a given value.
+ * Any period, frequency, duty cycle or pulse width change will cancel any ongoing transition process.
  *
  * @param target      : new duty cycle at the end of the transition
- *         (floating-point number, between 0 and 1)
+ *         (percentage, floating-point number between 0 and 100)
  * @param ms_duration : total duration of the transition, in milliseconds
  *
  * @return YAPI_SUCCESS when the call succeeds.
@@ -663,6 +664,96 @@ int YPwmOutput::dutyCycleMove(double target,int ms_duration)
         target = 100.0;
     }
     newval = YapiWrapper::ysprintf("%d:%d", (int) floor(target*65536+0.5),ms_duration);
+    return this->set_pwmTransition(newval);
+}
+
+/**
+ * Performs a smooth frequency change toward a given value.
+ * Any period, frequency, duty cycle or pulse width change will cancel any ongoing transition process.
+ *
+ * @param target      : new freuency at the end of the transition (floating-point number)
+ * @param ms_duration : total duration of the transition, in milliseconds
+ *
+ * @return YAPI_SUCCESS when the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YPwmOutput::frequencyMove(double target,int ms_duration)
+{
+    string newval;
+    if (target < 0.001) {
+        target = 0.001;
+    }
+    newval = YapiWrapper::ysprintf("%gHz:%d", target,ms_duration);
+    return this->set_pwmTransition(newval);
+}
+
+/**
+ * Trigger a given number of pulses of specified duration, at current frequency.
+ * At the end of the pulse train, revert to the original state of the PWM generator.
+ *
+ * @param ms_target : desired pulse duration
+ *         (floating-point number, representing the pulse duration in milliseconds)
+ * @param n_pulses  : desired pulse count
+ *
+ * @return YAPI_SUCCESS when the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YPwmOutput::triggerPulsesByDuration(double ms_target,int n_pulses)
+{
+    string newval;
+    if (ms_target < 0.0) {
+        ms_target = 0.0;
+    }
+    newval = YapiWrapper::ysprintf("%dms*%d", (int) floor(ms_target*65536+0.5),n_pulses);
+    return this->set_pwmTransition(newval);
+}
+
+/**
+ * Trigger a given number of pulses of specified duration, at current frequency.
+ * At the end of the pulse train, revert to the original state of the PWM generator.
+ *
+ * @param target   : desired duty cycle for the generated pulses
+ *         (percentage, floating-point number between 0 and 100)
+ * @param n_pulses : desired pulse count
+ *
+ * @return YAPI_SUCCESS when the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YPwmOutput::triggerPulsesByDutyCycle(double target,int n_pulses)
+{
+    string newval;
+    if (target < 0.0) {
+        target = 0.0;
+    }
+    if (target > 100.0) {
+        target = 100.0;
+    }
+    newval = YapiWrapper::ysprintf("%d*%d", (int) floor(target*65536+0.5),n_pulses);
+    return this->set_pwmTransition(newval);
+}
+
+/**
+ * Trigger a given number of pulses at the specified frequency, using current duty cycle.
+ * At the end of the pulse train, revert to the original state of the PWM generator.
+ *
+ * @param target   : desired frequency for the generated pulses (floating-point number)
+ *         (percentage, floating-point number between 0 and 100)
+ * @param n_pulses : desired pulse count
+ *
+ * @return YAPI_SUCCESS when the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YPwmOutput::triggerPulsesByFrequency(double target,int n_pulses)
+{
+    string newval;
+    if (target < 0.001) {
+        target = 0.001;
+    }
+    newval = YapiWrapper::ysprintf("%gHz*%d", target,n_pulses);
     return this->set_pwmTransition(newval);
 }
 

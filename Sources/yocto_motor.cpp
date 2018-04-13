@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_motor.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_motor.cpp 30501 2018-04-04 08:30:43Z seb $
  *
  * Implements yFindMotor(), the high-level API for Motor functions
  *
@@ -187,7 +187,7 @@ int YMotor::set_drivingForce(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("drivingForce", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
@@ -245,7 +245,7 @@ int YMotor::set_brakingForce(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("brakingForce", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
@@ -306,7 +306,7 @@ int YMotor::set_cutOffVoltage(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("cutOffVoltage", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
@@ -428,7 +428,7 @@ int YMotor::set_frequency(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("frequency", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);

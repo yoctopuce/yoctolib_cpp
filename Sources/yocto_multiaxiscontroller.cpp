@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_multiaxiscontroller.cpp 29507 2017-12-28 14:14:56Z mvuilleu $
+ * $Id: yocto_multiaxiscontroller.cpp 30483 2018-03-29 07:43:07Z mvuilleu $
  *
  * Implements yFindMultiAxisController(), the high-level API for MultiAxisController functions
  *
@@ -325,7 +325,7 @@ int YMultiAxisController::sendCommand(string command)
  */
 int YMultiAxisController::reset(void)
 {
-    return this->sendCommand("Z");
+    return this->set_command("Z");
 }
 
 /**
@@ -424,7 +424,7 @@ int YMultiAxisController::pause(int waitMs)
  */
 int YMultiAxisController::emergencyStop(void)
 {
-    return this->sendCommand("!");
+    return this->set_command("!");
 }
 
 /**
@@ -435,7 +435,7 @@ int YMultiAxisController::emergencyStop(void)
  */
 int YMultiAxisController::abortAndBrake(void)
 {
-    return this->sendCommand("B");
+    return this->set_command("B");
 }
 
 /**
@@ -446,7 +446,7 @@ int YMultiAxisController::abortAndBrake(void)
  */
 int YMultiAxisController::abortAndHiZ(void)
 {
-    return this->sendCommand("z");
+    return this->set_command("z");
 }
 
 YMultiAxisController *YMultiAxisController::nextMultiAxisController(void)

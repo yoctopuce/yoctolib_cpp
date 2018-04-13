@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 29703 2018-01-23 18:06:02Z seb $
+ * $Id: yocto_api.cpp 30501 2018-04-04 08:30:43Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -2887,8 +2887,7 @@ string YFunction::_decode_json_string(const string& json)
     return result;
 }
 
-
-string  YFunction::_escapeAttr(const string& changeval)
+static string  __escapeAttr(const string& changeval)
 {
     const char *p;
     unsigned char c;
@@ -2898,7 +2897,7 @@ string  YFunction::_escapeAttr(const string& changeval)
     for (p = changeval.c_str(); (c = *p) != 0; p++) {
         if (c <= ' ' || (c > 'z' && c != '~') || c == '"' || c == '%' || c == '&' ||
             c == '+' || c == '<' || c == '=' || c == '>' || c == '\\' || c == '^' || c == '`') {
-            if ((c==0xc2 || c==0xc3) && (p[1] & 0xc0)==0x80) {
+            if ((c == 0xc2 || c == 0xc3) && (p[1] & 0xc0) == 0x80) {
                 // UTF8-encoded ISO-8859-1 character: translate to plain ISO-8859-1
                 c = (c & 1) * 0x40;
                 p++;
@@ -2913,6 +2912,12 @@ string  YFunction::_escapeAttr(const string& changeval)
         }
     }
     return escaped;
+}
+
+
+string  YFunction::_escapeAttr(const string& changeval)
+{
+    return __escapeAttr(changeval);
 }
 
 
@@ -3702,7 +3707,9 @@ YRETCODE YDevice::requestAPI(YJSONObject*& apires, string& errmsg)
     if (_cacheJson == NULL) {
         request = "GET /api.json \r\n\r\n";
     } else {
-        request = "GET /api.json?fw="+_cacheJson->getYJSONObject("module")->getString("firmwareRelease")+" \r\n\r\n";
+        string fw_release = _cacheJson->getYJSONObject("module")->getString("firmwareRelease");
+        fw_release = __escapeAttr(fw_release);
+        request = "GET /api.json?fw="+fw_release+" \r\n\r\n";
     }
     // send request, without HTTP/1.1 suffix to get light headers
     res = this->HTTPRequest_unsafe(0, request, buffer, NULL, NULL, errmsg);
@@ -7131,7 +7138,7 @@ int YSensor::set_lowestValue(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("lowestValue", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
@@ -7189,7 +7196,7 @@ int YSensor::set_highestValue(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("highestValue", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
@@ -7492,7 +7499,7 @@ int YSensor::set_resolution(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("resolution", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);

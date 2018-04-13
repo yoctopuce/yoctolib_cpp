@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 29756 2018-01-25 23:15:28Z seb $
+ * $Id: yhash.c 30407 2018-03-20 09:36:05Z mvuilleu $
  *
  * Simple hash tables and device/function information store
  *
@@ -1745,7 +1745,7 @@ YAPI_FUNCTION ypSearch(const char *class_str, const char *func_or_name)
                     res = YP(hdl).serialNum + ((u32)(YP(hdl).funcId) << 16);
                     break;
                 }
-                if (best_name != -1 && YP(hdl).funcName == funcref) {
+                if (best_name == -1 && YP(hdl).funcName == funcref) {
                     best_name = YP(hdl).serialNum + ((u32)(YP(hdl).funcId) << 16);
                 }
             }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_voltageoutput.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_voltageoutput.cpp 30501 2018-04-04 08:30:43Z seb $
  *
  * Implements yFindVoltageOutput(), the high-level API for VoltageOutput functions
  *
@@ -100,7 +100,7 @@ int YVoltageOutput::set_currentVoltage(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("currentVoltage", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
@@ -193,7 +193,7 @@ int YVoltageOutput::set_voltageAtStartUp(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("voltageAtStartUp", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);

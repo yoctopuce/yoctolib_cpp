@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_steppermotor.cpp 29507 2017-12-28 14:14:56Z mvuilleu $
+ * $Id: yocto_steppermotor.cpp 30501 2018-04-04 08:30:43Z seb $
  *
  * Implements yFindStepperMotor(), the high-level API for StepperMotor functions
  *
@@ -303,7 +303,7 @@ int YStepperMotor::set_pullinSpeed(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("pullinSpeed", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
@@ -359,7 +359,7 @@ int YStepperMotor::set_maxAccel(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("maxAccel", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
@@ -413,7 +413,7 @@ int YStepperMotor::set_maxSpeed(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("maxSpeed", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
@@ -963,7 +963,7 @@ int YStepperMotor::sendCommand(string command)
  */
 int YStepperMotor::reset(void)
 {
-    return this->sendCommand("Z");
+    return this->set_command("Z");
 }
 
 /**
@@ -1061,7 +1061,7 @@ int YStepperMotor::pause(int waitMs)
  */
 int YStepperMotor::emergencyStop(void)
 {
-    return this->sendCommand("!");
+    return this->set_command("!");
 }
 
 /**
@@ -1074,7 +1074,7 @@ int YStepperMotor::emergencyStop(void)
  */
 int YStepperMotor::alertStepOut(void)
 {
-    return this->sendCommand(".");
+    return this->set_command(".");
 }
 
 /**
@@ -1094,9 +1094,9 @@ int YStepperMotor::alertStepDir(int dir)
         return YAPI_INVALID_ARGUMENT;
     }
     if (dir > 0) {
-        return this->sendCommand(".+");
+        return this->set_command(".+");
     }
-    return this->sendCommand(".-");
+    return this->set_command(".-");
 }
 
 /**
@@ -1107,7 +1107,7 @@ int YStepperMotor::alertStepDir(int dir)
  */
 int YStepperMotor::abortAndBrake(void)
 {
-    return this->sendCommand("B");
+    return this->set_command("B");
 }
 
 /**
@@ -1118,7 +1118,7 @@ int YStepperMotor::abortAndBrake(void)
  */
 int YStepperMotor::abortAndHiZ(void)
 {
-    return this->sendCommand("z");
+    return this->set_command("z");
 }
 
 YStepperMotor *YStepperMotor::nextStepperMotor(void)

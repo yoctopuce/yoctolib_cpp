@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_lin.c 29340 2017-11-29 10:42:47Z seb $
+ * $Id: ypkt_lin.c 30532 2018-04-05 14:28:20Z seb $
  *
  * OS-specific USB packet layer, Linux version
  *
@@ -578,10 +578,14 @@ static void wr_callback(struct libusb_transfer *transfer)
         // remove sent packet
         yPktQueuePopH2D(iface, &pktitem);
         yFree(pktitem);
+#if 0
+        // following code make no sense and failed on very slow computer
+        // (the main thread queue a new packet durring the yFree(pktitem);
         res = sendNextPkt(iface, errmsg);
         if (res < 0) {
             HALLOG("send of next pkt item failed:%d:%s\n", res, errmsg);
         }
+#endif
         return;
     case LIBUSB_TRANSFER_ERROR:
         iface->ioError++;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 29651 2018-01-17 20:48:29Z mvuilleu $
+ * $Id: ystream.c 30531 2018-04-05 13:28:53Z seb $
  *
  * USB stream implementation
  *
@@ -2371,6 +2371,7 @@ typedef struct {
     yPerfMon  yUsbReadBlock;
     yPerfMon  yUsbEOF;
     yPerfMon  yUsbClose;
+    yPerfMon  yUsbOpenDevDescr;
 } yUsbPerfMonSt;
 
 yUsbPerfMonSt yUsbPerf;

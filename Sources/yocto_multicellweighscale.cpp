@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_multicellweighscale.cpp 29804 2018-01-30 18:05:21Z mvuilleu $
+ * $Id: yocto_multicellweighscale.cpp 30501 2018-04-04 08:30:43Z seb $
  *
  * Implements yFindMultiCellWeighScale(), the high-level API for MultiCellWeighScale functions
  *
@@ -264,7 +264,7 @@ int YMultiCellWeighScale::set_compTempAdaptRatio(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("compTempAdaptRatio", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
@@ -411,7 +411,7 @@ int YMultiCellWeighScale::set_zeroTracking(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("zeroTracking", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);

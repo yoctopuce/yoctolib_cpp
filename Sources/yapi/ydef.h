@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 29064 2017-11-02 16:13:37Z seb $
+ * $Id: ydef.h 30530 2018-04-05 13:28:09Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -296,11 +296,11 @@ typedef void *YIOHDL;
 //#define DEBUG_CRITICAL_SECTION
 
 #ifdef DEBUG_CRITICAL_SECTION
-
+#if defined(WINDOWS_API)
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <WinBase.h>
-
+#endif
 typedef enum  {
     YCS_UNALLOCATED=0,
     YCS_ALLOCATED=1,

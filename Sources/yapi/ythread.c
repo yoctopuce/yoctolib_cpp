@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.c 26964 2017-03-29 08:57:59Z seb $
+ * $Id: ythread.c 30530 2018-04-05 13:28:09Z seb $
  *
  * OS-independent thread and synchronization library
  *
@@ -386,7 +386,9 @@ static u32 nbycs = 0;
 #define CS_ASSERT(x)   if(!(x)){printf("ASSERT FAILED:%s:%d (%s:%d)\n",__FILE__ , __LINE__,fileid,lineno);dump_YCS(csptr);CS_BREAK}
 #define CS_TRACK_NO    24
 
-CRITICAL_SECTION CS_CS;
+#ifdef WINDOWS_API
+
+static CRITICAL_SECTION CS_CS;
 
 void yInitDebugCS()
 {
@@ -398,6 +400,46 @@ void yFreeDebugCS()
     DeleteCriticalSection(&CS_CS);
 }
 
+
+static void yEnterDebugCS()
+{
+    EnterCriticalSection(&CS_CS);
+}
+
+
+static void yLeaveDebugCS()
+{
+    LeaveCriticalSection(&CS_CS);
+}
+
+
+#else
+static pthread_mutex_t CS_CS;
+
+void yInitDebugCS()
+{
+    pthread_mutex_init(&CS_CS, NULL);
+
+}
+
+void yFreeDebugCS()
+{
+    pthread_mutex_destroy(&CS_CS);
+}
+
+
+static void yEnterDebugCS()
+{
+    pthread_mutex_lock(&CS_CS);
+}
+
+
+static void yLeaveDebugCS()
+{
+    pthread_mutex_unlock(&CS_CS);
+}
+
+#endif
 
 
 static const char* YCS_STATE_STR[] = {
@@ -462,9 +504,9 @@ void yDbgInitializeCriticalSection(const char* fileid, int lineno, yCRITICAL_SEC
     int threadid = yThreadIndex();
     *csptr = malloc(sizeof(yCRITICAL_SECTION_ST));
     memset(*csptr, 0, sizeof(yCRITICAL_SECTION_ST));
-    EnterCriticalSection(&CS_CS);
+    yEnterDebugCS();
     (*csptr)->no = nbycs++;
-    LeaveCriticalSection(&CS_CS);
+    yLeaveDebugCS();
     if ((*csptr)->no == CS_TRACK_NO || CS_TRACK_NO < 0) {
         printf("NEW CS on %s:%d:%p (%d)\n", fileid, lineno, (*csptr), (*csptr)->no);
     }
@@ -480,8 +522,8 @@ void yDbgInitializeCriticalSection(const char* fileid, int lineno, yCRITICAL_SEC
 #else
     res = pthread_mutex_init(&((*csptr)->cs), NULL);
 #endif
-    EnterCriticalSection(&((*csptr)->cs));
-    LeaveCriticalSection(&((*csptr)->cs));
+    //EnterCriticalSection(&((*csptr)->cs));
+    //LeaveCriticalSection(&((*csptr)->cs));
 #if 0
     CS_ASSERT(res == 0);
     res = pthread_mutex_lock(&((*csptr)->cs));

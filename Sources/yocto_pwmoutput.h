@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwmoutput.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_pwmoutput.h 30595 2018-04-12 21:36:11Z mvuilleu $
  *
  * Declares yFindPwmOutput(), the high-level API for PwmOutput functions
  *
@@ -365,8 +365,8 @@ public:
     virtual int         _invokeValueCallback(string value);
 
     /**
-     * Performs a smooth transistion of the pulse duration toward a given value. Any period,
-     * frequency, duty cycle or pulse width change will cancel any ongoing transition process.
+     * Performs a smooth transistion of the pulse duration toward a given value.
+     * Any period, frequency, duty cycle or pulse width change will cancel any ongoing transition process.
      *
      * @param ms_target   : new pulse duration at the end of the transition
      *         (floating-point number, representing the pulse duration in milliseconds)
@@ -379,10 +379,11 @@ public:
     virtual int         pulseDurationMove(double ms_target,int ms_duration);
 
     /**
-     * Performs a smooth change of the pulse duration toward a given value.
+     * Performs a smooth change of the duty cycle toward a given value.
+     * Any period, frequency, duty cycle or pulse width change will cancel any ongoing transition process.
      *
      * @param target      : new duty cycle at the end of the transition
-     *         (floating-point number, between 0 and 1)
+     *         (percentage, floating-point number between 0 and 100)
      * @param ms_duration : total duration of the transition, in milliseconds
      *
      * @return YAPI_SUCCESS when the call succeeds.
@@ -390,6 +391,61 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         dutyCycleMove(double target,int ms_duration);
+
+    /**
+     * Performs a smooth frequency change toward a given value.
+     * Any period, frequency, duty cycle or pulse width change will cancel any ongoing transition process.
+     *
+     * @param target      : new freuency at the end of the transition (floating-point number)
+     * @param ms_duration : total duration of the transition, in milliseconds
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         frequencyMove(double target,int ms_duration);
+
+    /**
+     * Trigger a given number of pulses of specified duration, at current frequency.
+     * At the end of the pulse train, revert to the original state of the PWM generator.
+     *
+     * @param ms_target : desired pulse duration
+     *         (floating-point number, representing the pulse duration in milliseconds)
+     * @param n_pulses  : desired pulse count
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         triggerPulsesByDuration(double ms_target,int n_pulses);
+
+    /**
+     * Trigger a given number of pulses of specified duration, at current frequency.
+     * At the end of the pulse train, revert to the original state of the PWM generator.
+     *
+     * @param target   : desired duty cycle for the generated pulses
+     *         (percentage, floating-point number between 0 and 100)
+     * @param n_pulses : desired pulse count
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         triggerPulsesByDutyCycle(double target,int n_pulses);
+
+    /**
+     * Trigger a given number of pulses at the specified frequency, using current duty cycle.
+     * At the end of the pulse train, revert to the original state of the PWM generator.
+     *
+     * @param target   : desired frequency for the generated pulses (floating-point number)
+     *         (percentage, floating-point number between 0 and 100)
+     * @param n_pulses : desired pulse count
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         triggerPulsesByFrequency(double target,int n_pulses);
 
 
     inline static YPwmOutput* Find(string func)

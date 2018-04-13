@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_altitude.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_altitude.cpp 30501 2018-04-04 08:30:43Z seb $
  *
  * Implements yFindAltitude(), the high-level API for Altitude functions
  *
@@ -97,7 +97,7 @@ int YAltitude::set_currentValue(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("currentValue", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
@@ -126,7 +126,7 @@ int YAltitude::set_qnh(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("qnh", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);

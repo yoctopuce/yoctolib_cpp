@@ -1,1 +1,2 @@
-- Add support and examples for Yocto-Bridge and Yocto-MaxiBridge
+- Add new PWMOutput methods
+- Fix setting of values over 32768 for some functions

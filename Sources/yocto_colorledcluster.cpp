@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorledcluster.cpp 29186 2017-11-16 10:04:13Z seb $
+ * $Id: yocto_colorledcluster.cpp 30500 2018-04-04 07:53:46Z mvuilleu $
  *
  * Implements yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -51,6 +51,7 @@
 YColorLedCluster::YColorLedCluster(const string& func): YFunction(func)
 //--- (YColorLedCluster initialization)
     ,_activeLedCount(ACTIVELEDCOUNT_INVALID)
+    ,_ledType(LEDTYPE_INVALID)
     ,_maxLedCount(MAXLEDCOUNT_INVALID)
     ,_blinkSeqMaxCount(BLINKSEQMAXCOUNT_INVALID)
     ,_blinkSeqMaxSize(BLINKSEQMAXSIZE_INVALID)
@@ -74,6 +75,9 @@ int YColorLedCluster::_parseAttr(YJSONObject* json_val)
 {
     if(json_val->has("activeLedCount")) {
         _activeLedCount =  json_val->getInt("activeLedCount");
+    }
+    if(json_val->has("ledType")) {
+        _ledType =  (Y_LEDTYPE_enum)json_val->getInt("ledType");
     }
     if(json_val->has("maxLedCount")) {
         _maxLedCount =  json_val->getInt("maxLedCount");
@@ -137,6 +141,61 @@ int YColorLedCluster::set_activeLedCount(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("activeLedCount", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the RGB LED type currently handled by the device.
+ *
+ * @return either Y_LEDTYPE_RGB or Y_LEDTYPE_RGBW, according to the RGB LED type currently handled by the device
+ *
+ * On failure, throws an exception or returns Y_LEDTYPE_INVALID.
+ */
+Y_LEDTYPE_enum YColorLedCluster::get_ledType(void)
+{
+    Y_LEDTYPE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YColorLedCluster::LEDTYPE_INVALID;
+                }
+            }
+        }
+        res = _ledType;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the RGB LED type currently handled by the device.
+ *
+ * @param newval : either Y_LEDTYPE_RGB or Y_LEDTYPE_RGBW, according to the RGB LED type currently
+ * handled by the device
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YColorLedCluster::set_ledType(Y_LEDTYPE_enum newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("ledType", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
          throw;

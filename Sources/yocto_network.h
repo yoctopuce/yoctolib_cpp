@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_network.h 30462 2018-03-26 09:19:24Z mvuilleu $
  *
  * Declares yFindNetwork(), the high-level API for Network functions
  *
@@ -94,6 +94,7 @@ typedef enum {
     Y_CALLBACKENCODING_INFLUXDB = 8,
     Y_CALLBACKENCODING_MQTT = 9,
     Y_CALLBACKENCODING_YOCTO_API_JZON = 10,
+    Y_CALLBACKENCODING_PRTG = 11,
     Y_CALLBACKENCODING_INVALID = -1,
 } Y_CALLBACKENCODING_enum;
 #endif
@@ -212,6 +213,7 @@ public:
     static const Y_CALLBACKENCODING_enum CALLBACKENCODING_INFLUXDB = Y_CALLBACKENCODING_INFLUXDB;
     static const Y_CALLBACKENCODING_enum CALLBACKENCODING_MQTT = Y_CALLBACKENCODING_MQTT;
     static const Y_CALLBACKENCODING_enum CALLBACKENCODING_YOCTO_API_JZON = Y_CALLBACKENCODING_YOCTO_API_JZON;
+    static const Y_CALLBACKENCODING_enum CALLBACKENCODING_PRTG = Y_CALLBACKENCODING_PRTG;
     static const Y_CALLBACKENCODING_enum CALLBACKENCODING_INVALID = Y_CALLBACKENCODING_INVALID;
     static const string CALLBACKCREDENTIALS_INVALID;
     static const int CALLBACKINITIALDELAY_INVALID = YAPI_INVALID_UINT;
@@ -644,8 +646,8 @@ public:
      * @return a value among Y_CALLBACKENCODING_FORM, Y_CALLBACKENCODING_JSON,
      * Y_CALLBACKENCODING_JSON_ARRAY, Y_CALLBACKENCODING_CSV, Y_CALLBACKENCODING_YOCTO_API,
      * Y_CALLBACKENCODING_JSON_NUM, Y_CALLBACKENCODING_EMONCMS, Y_CALLBACKENCODING_AZURE,
-     * Y_CALLBACKENCODING_INFLUXDB, Y_CALLBACKENCODING_MQTT and Y_CALLBACKENCODING_YOCTO_API_JZON
-     * corresponding to the encoding standard to use for representing notification values
+     * Y_CALLBACKENCODING_INFLUXDB, Y_CALLBACKENCODING_MQTT, Y_CALLBACKENCODING_YOCTO_API_JZON and
+     * Y_CALLBACKENCODING_PRTG corresponding to the encoding standard to use for representing notification values
      *
      * On failure, throws an exception or returns Y_CALLBACKENCODING_INVALID.
      */
@@ -660,8 +662,8 @@ public:
      * @param newval : a value among Y_CALLBACKENCODING_FORM, Y_CALLBACKENCODING_JSON,
      * Y_CALLBACKENCODING_JSON_ARRAY, Y_CALLBACKENCODING_CSV, Y_CALLBACKENCODING_YOCTO_API,
      * Y_CALLBACKENCODING_JSON_NUM, Y_CALLBACKENCODING_EMONCMS, Y_CALLBACKENCODING_AZURE,
-     * Y_CALLBACKENCODING_INFLUXDB, Y_CALLBACKENCODING_MQTT and Y_CALLBACKENCODING_YOCTO_API_JZON
-     * corresponding to the encoding standard to use for representing notification values
+     * Y_CALLBACKENCODING_INFLUXDB, Y_CALLBACKENCODING_MQTT, Y_CALLBACKENCODING_YOCTO_API_JZON and
+     * Y_CALLBACKENCODING_PRTG corresponding to the encoding standard to use for representing notification values
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *

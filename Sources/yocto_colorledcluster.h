@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorledcluster.h 29186 2017-11-16 10:04:13Z seb $
+ * $Id: yocto_colorledcluster.h 30500 2018-04-04 07:53:46Z mvuilleu $
  *
  * Declares yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -52,6 +52,14 @@
 class YColorLedCluster; // forward declaration
 
 typedef void (*YColorLedClusterValueCallback)(YColorLedCluster *func, const string& functionValue);
+#ifndef _Y_LEDTYPE_ENUM
+#define _Y_LEDTYPE_ENUM
+typedef enum {
+    Y_LEDTYPE_RGB = 0,
+    Y_LEDTYPE_RGBW = 1,
+    Y_LEDTYPE_INVALID = -1,
+} Y_LEDTYPE_enum;
+#endif
 #define Y_ACTIVELEDCOUNT_INVALID        (YAPI_INVALID_UINT)
 #define Y_MAXLEDCOUNT_INVALID           (YAPI_INVALID_UINT)
 #define Y_BLINKSEQMAXCOUNT_INVALID      (YAPI_INVALID_UINT)
@@ -81,6 +89,7 @@ protected:
     //--- (YColorLedCluster attributes)
     // Attributes (function value cache)
     int             _activeLedCount;
+    Y_LEDTYPE_enum  _ledType;
     int             _maxLedCount;
     int             _blinkSeqMaxCount;
     int             _blinkSeqMaxSize;
@@ -102,6 +111,9 @@ public:
     //--- (YColorLedCluster accessors declaration)
 
     static const int ACTIVELEDCOUNT_INVALID = YAPI_INVALID_UINT;
+    static const Y_LEDTYPE_enum LEDTYPE_RGB = Y_LEDTYPE_RGB;
+    static const Y_LEDTYPE_enum LEDTYPE_RGBW = Y_LEDTYPE_RGBW;
+    static const Y_LEDTYPE_enum LEDTYPE_INVALID = Y_LEDTYPE_INVALID;
     static const int MAXLEDCOUNT_INVALID = YAPI_INVALID_UINT;
     static const int BLINKSEQMAXCOUNT_INVALID = YAPI_INVALID_UINT;
     static const int BLINKSEQMAXSIZE_INVALID = YAPI_INVALID_UINT;
@@ -131,6 +143,32 @@ public:
     int             set_activeLedCount(int newval);
     inline int      setActiveLedCount(int newval)
     { return this->set_activeLedCount(newval); }
+
+    /**
+     * Returns the RGB LED type currently handled by the device.
+     *
+     * @return either Y_LEDTYPE_RGB or Y_LEDTYPE_RGBW, according to the RGB LED type currently handled by the device
+     *
+     * On failure, throws an exception or returns Y_LEDTYPE_INVALID.
+     */
+    Y_LEDTYPE_enum      get_ledType(void);
+
+    inline Y_LEDTYPE_enum ledType(void)
+    { return this->get_ledType(); }
+
+    /**
+     * Changes the RGB LED type currently handled by the device.
+     *
+     * @param newval : either Y_LEDTYPE_RGB or Y_LEDTYPE_RGBW, according to the RGB LED type currently
+     * handled by the device
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_ledType(Y_LEDTYPE_enum newval);
+    inline int      setLedType(Y_LEDTYPE_enum newval)
+    { return this->set_ledType(newval); }
 
     /**
      * Returns the maximum number of LEDs that the device can handle.

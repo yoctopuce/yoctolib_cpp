@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_power.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_power.cpp 30501 2018-04-04 08:30:43Z seb $
  *
  * Implements yFindPower(), the high-level API for Power functions
  *
@@ -122,7 +122,7 @@ int YPower::set_meter(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"%d", (int)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("meter", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);

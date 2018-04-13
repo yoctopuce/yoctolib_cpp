@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 29480 2017-12-21 08:16:02Z seb $
+#  $Id: GNUmakefile 30414 2018-03-21 08:26:50Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -145,7 +145,7 @@ ifdef TOOLCHAIN_ARMHF
 # reduced ARMHF options to run properly on raspian-thing, but still be compatible with hard-floats VFP
 OPTS_ARMHF = -I$(STAGING_ARMHF)/usr/include/ $(OPTS_DBG) -mfloat-abi=hard -march=armv6 -marm -DBUILD_ARMHF
 else
-OPTS_ARMHF = -mfloat-abi=hard -march=armv6 -marm -DBUILD_ARMHF
+OPTS_ARMHF = -mfloat-abi=hard -march=armv6 -marm -DBUILD_ARMHF -Wno-psabi
 endif
 ifdef TOOLCHAIN_AARCH64
 OPTS_AARCH64 = -I$(STAGING_AARCH64)/usr/include/ $(OPTS_DBG) -march=native -DBUILD_AARCH64
