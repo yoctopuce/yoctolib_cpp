@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwmoutput.h 30595 2018-04-12 21:36:11Z mvuilleu $
+ * $Id: yocto_pwmoutput.h 30679 2018-04-24 09:34:17Z mvuilleu $
  *
  * Declares yFindPwmOutput(), the high-level API for PwmOutput functions
  *
@@ -446,6 +446,10 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         triggerPulsesByFrequency(double target,int n_pulses);
+
+    virtual int         markForRepeat(void);
+
+    virtual int         repeatFromMark(void);
 
 
     inline static YPwmOutput* Find(string func)

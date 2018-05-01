@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 29936 2018-02-09 09:41:35Z seb $
+ * $Id: ytcp.c 30637 2018-04-16 14:21:03Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -1415,7 +1415,7 @@ int  yReqOpen(struct _RequestSt *req, int wait_for_start, int tcpchan, const cha
 
         while (bodylen > 0 && (p[0] != '\r' || p[1] != '\n' ||
             p[2] != '\r' || p[3] != '\n')) {
-            p++, bodylen--;
+            p++; bodylen--;
         }
         p += 4;
         reqlen = (int)(p - request);

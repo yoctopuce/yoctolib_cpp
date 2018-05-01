@@ -24,7 +24,7 @@ visualstudioclean:
 	del /Q /F VisualStudio\debug
 	rmdir VisualStudio\debug
 
-release: Binary_Windows\demo.exe visual cleanobj visualstudioclean
+release: Binary_Windows\demo.exe visual clean visualstudioclean
 
 clean: cleanobj
 	del /Q /F Binary_Windows\demo.exe

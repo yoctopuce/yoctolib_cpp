@@ -12,7 +12,7 @@ YOCTO_API_LIB = ..\..\Binaries\windows\yocto-static.lib
 
 Binary_Windows\demo.exe: main.cpp $(YOCTO_API_LIB)
 	IF NOT EXIST Binary_Windows mkdir Binary_Windows
-	$(CPP) $(CPPFLAGS) /EHsc /nologo /I $(YOCTO_API_SRC) /Fe$@  main.cpp /link $(YOCTO_API_LIB) advapi32.lib
+	$(CPP) $(CPPFLAGS) /EHsc /nologo /I $(YOCTO_API_SRC) /Fe$@  main.cpp /link $(YOCTO_API_LIB)
 
 
 visual:
@@ -24,7 +24,7 @@ visualstudioclean:
 	del /Q /F VisualStudio\debug
 	rmdir VisualStudio\debug
 
-release: Binary_Windows\demo.exe visual cleanobj visualstudioclean
+release: Binary_Windows\demo.exe visual clean visualstudioclean
 
 clean: cleanobj
 	del /Q /F Binary_Windows\demo.exe

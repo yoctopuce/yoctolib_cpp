@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 28753 2017-10-03 11:23:38Z seb $
+ * $Id: yocto_serialport.cpp 30685 2018-04-24 13:46:18Z seb $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -829,7 +829,7 @@ int YSerialPort::reset(void)
  */
 int YSerialPort::writeByte(int code)
 {
-    return this->sendCommand(YapiWrapper::ysprintf("$%02x",code));
+    return this->sendCommand(YapiWrapper::ysprintf("$%02X",code));
 }
 
 /**
@@ -1209,11 +1209,11 @@ string YSerialPort::readHex(int nBytes)
     res = "";
     ofs = 0;
     while (ofs + 3 < bufflen) {
-        res = YapiWrapper::ysprintf("%s%02x%02x%02x%02x", res.c_str(), ((u8)buff[ofs]), ((u8)buff[ofs + 1]), ((u8)buff[ofs + 2]),((u8)buff[ofs + 3]));
+        res = YapiWrapper::ysprintf("%s%02X%02X%02X%02X", res.c_str(), ((u8)buff[ofs]), ((u8)buff[ofs + 1]), ((u8)buff[ofs + 2]),((u8)buff[ofs + 3]));
         ofs = ofs + 4;
     }
     while (ofs < bufflen) {
-        res = YapiWrapper::ysprintf("%s%02x", res.c_str(),((u8)buff[ofs]));
+        res = YapiWrapper::ysprintf("%s%02X", res.c_str(),((u8)buff[ofs]));
         ofs = ofs + 1;
     }
     return res;
@@ -1545,11 +1545,11 @@ vector<int> YSerialPort::queryMODBUS(int slaveNo,vector<int> pduBytes)
     int hexb = 0;
     funCode = pduBytes[0];
     nib = ((funCode) >> (4));
-    pat = YapiWrapper::ysprintf("%02x[%x%x]%x.*", slaveNo, nib, (nib+8),((funCode) & (15)));
-    cmd = YapiWrapper::ysprintf("%02x%02x", slaveNo,funCode);
+    pat = YapiWrapper::ysprintf("%02X[%X%X]%X.*", slaveNo, nib, (nib+8),((funCode) & (15)));
+    cmd = YapiWrapper::ysprintf("%02X%02X", slaveNo,funCode);
     i = 1;
     while (i < (int)pduBytes.size()) {
-        cmd = YapiWrapper::ysprintf("%s%02x", cmd.c_str(),((pduBytes[i]) & (0xff)));
+        cmd = YapiWrapper::ysprintf("%s%02X", cmd.c_str(),((pduBytes[i]) & (0xff)));
         i = i + 1;
     }
 

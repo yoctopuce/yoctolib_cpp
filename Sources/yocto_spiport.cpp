@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_spiport.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_spiport.cpp 30685 2018-04-24 13:46:18Z seb $
  *
  * Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -875,7 +875,7 @@ int YSpiPort::reset(void)
  */
 int YSpiPort::writeByte(int code)
 {
-    return this->sendCommand(YapiWrapper::ysprintf("$%02x",code));
+    return this->sendCommand(YapiWrapper::ysprintf("$%02X",code));
 }
 
 /**
@@ -1255,11 +1255,11 @@ string YSpiPort::readHex(int nBytes)
     res = "";
     ofs = 0;
     while (ofs + 3 < bufflen) {
-        res = YapiWrapper::ysprintf("%s%02x%02x%02x%02x", res.c_str(), ((u8)buff[ofs]), ((u8)buff[ofs + 1]), ((u8)buff[ofs + 2]),((u8)buff[ofs + 3]));
+        res = YapiWrapper::ysprintf("%s%02X%02X%02X%02X", res.c_str(), ((u8)buff[ofs]), ((u8)buff[ofs + 1]), ((u8)buff[ofs + 2]),((u8)buff[ofs + 3]));
         ofs = ofs + 4;
     }
     while (ofs < bufflen) {
-        res = YapiWrapper::ysprintf("%s%02x", res.c_str(),((u8)buff[ofs]));
+        res = YapiWrapper::ysprintf("%s%02X", res.c_str(),((u8)buff[ofs]));
         ofs = ofs + 1;
     }
     return res;

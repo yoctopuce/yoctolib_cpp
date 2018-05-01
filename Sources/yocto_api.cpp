@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 30501 2018-04-04 08:30:43Z seb $
+ * $Id: yocto_api.cpp 30638 2018-04-16 14:23:22Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -3735,21 +3735,33 @@ YRETCODE YDevice::requestAPI(YJSONObject*& apires, string& errmsg)
     j.st = YJSON_HTTP_START;
     if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_HTTP_READ_CODE) {
         errmsg = "Failed to parse HTTP header";
+        if (!YAPI::ExceptionsDisabled) {
+            throw YAPI_Exception(YAPI_IO_ERROR, errmsg);
+        }
         yLeaveCriticalSection(&_lock);
         return YAPI_IO_ERROR;
     }
     if(string(j.token) != "200") {
         errmsg = string("Unexpected HTTP return code: ")+j.token;
+        if (!YAPI::ExceptionsDisabled) {
+            throw YAPI_Exception(YAPI_IO_ERROR, errmsg);
+        }
         yLeaveCriticalSection(&_lock);
         return YAPI_IO_ERROR;
     }
     if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_HTTP_READ_MSG) {
         errmsg = "Unexpected HTTP header format";
+        if (!YAPI::ExceptionsDisabled) {
+            throw YAPI_Exception(YAPI_IO_ERROR, errmsg);
+        }
         yLeaveCriticalSection(&_lock);
         return YAPI_IO_ERROR;
     }
     if(yJsonParse(&j) != YJSON_PARSE_AVAIL || (j.st != YJSON_PARSE_STRUCT && j.st != YJSON_PARSE_ARRAY)) {
         errmsg = "Unexpected JSON reply format";
+        if (!YAPI::ExceptionsDisabled) {
+            throw YAPI_Exception(YAPI_IO_ERROR, errmsg);
+        }
         yLeaveCriticalSection(&_lock);
         return YAPI_IO_ERROR;
     }
@@ -3766,6 +3778,9 @@ YRETCODE YDevice::requestAPI(YJSONObject*& apires, string& errmsg)
             _cacheJson = NULL;
         }
         yLeaveCriticalSection(&_lock);
+        if (!YAPI::ExceptionsDisabled) {
+            throw YAPI_Exception(YAPI_IO_ERROR, errmsg);
+        }
         return YAPI_IO_ERROR;
     }
     // store result in cache

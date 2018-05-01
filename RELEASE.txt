@@ -1,2 +1,7 @@
 - Add new PWMOutput methods
-- Fix setting of values over 32768 for some functions
+- Improve function documentation in French for PWM-Tx
+- Fix Modbus ASCII message handling
+- Fix compilation warnings from G++ under Raspberry Pi
+- Fix set of attributes with value over 32768
+- Fix search of function by deviceref.func_logicalname
+- Remove precompiled examples from zip file

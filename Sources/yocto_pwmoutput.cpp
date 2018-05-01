@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwmoutput.cpp 30595 2018-04-12 21:36:11Z mvuilleu $
+ * $Id: yocto_pwmoutput.cpp 30679 2018-04-24 09:34:17Z mvuilleu $
  *
  * Implements yFindPwmOutput(), the high-level API for PwmOutput functions
  *
@@ -755,6 +755,16 @@ int YPwmOutput::triggerPulsesByFrequency(double target,int n_pulses)
     }
     newval = YapiWrapper::ysprintf("%gHz*%d", target,n_pulses);
     return this->set_pwmTransition(newval);
+}
+
+int YPwmOutput::markForRepeat(void)
+{
+    return this->set_pwmTransition(":");
+}
+
+int YPwmOutput::repeatFromMark(void)
+{
+    return this->set_pwmTransition("R");
 }
 
 YPwmOutput *YPwmOutput::nextPwmOutput(void)
