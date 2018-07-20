@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h 24575 2016-05-26 06:28:03Z seb $
+ * $Id: yapi.h 31208 2018-07-13 20:38:29Z mvuilleu $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -226,6 +226,24 @@ void YAPI_FUNCTION_EXPORT yapiRegisterDeviceRemovalCallback(yapiDeviceUpdateCall
 
  ***************************************************************************/
 void YAPI_FUNCTION_EXPORT yapiRegisterDeviceChangeCallback(yapiDeviceUpdateCallback changeCallback);
+
+/*****************************************************************************
+  Function:
+    void  yapiRegisterDeviceConfigChangeCallback(yapiDeviceUpdateCallback configChangeCallback);
+ 
+  Description:
+    Register a callback function, to be called when a persistent settings in
+    a device configuration has been changed (e.g. change of unit, etc).
+    To unregister your callback you can call this function with a NULL pointer.
+ 
+  Parameters:
+    configChangeCallback : a function to register or NULL to unregister the callback
+ 
+  Returns:
+    None
+ 
+ ***************************************************************************/
+void YAPI_FUNCTION_EXPORT yapiRegisterDeviceConfigChangeCallback(yapiDeviceUpdateCallback configChangeCallback);
 
 /*****************************************************************************
   Function:

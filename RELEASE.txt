@@ -1,7 +1,5 @@
-- Add new PWMOutput methods
-- Improve function documentation in French for PWM-Tx
-- Fix Modbus ASCII message handling
-- Fix compilation warnings from G++ under Raspberry Pi
-- Fix set of attributes with value over 32768
-- Fix search of function by deviceref.func_logicalname
-- Remove precompiled examples from zip file
+CPP v1.10.31315
+
+- Add support for phaseMove in PWMOutput class
+- Add support for config change notifications
+- Improve error recovery with WebSocket connection

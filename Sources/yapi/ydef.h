@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 30530 2018-04-05 13:28:09Z seb $
+ * $Id: ydef.h 31281 2018-07-19 09:46:54Z mvuilleu $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -466,7 +466,8 @@ typedef struct {
 
 #define USB_PKT_SIZE            64
 #define YPKT_USB_VERSION_NO_RETRY_BCD    0x0207
-#define YPKT_USB_VERSION_BCD             0x0208
+#define YPKT_USB_VERSION_NO_CONFCHG_BCD  0x0208
+#define YPKT_USB_VERSION_BCD             0x0209
 #define TO_SAFE_U16(safe,unsafe)        {(safe).low = (unsafe)&0xff; (safe).high=(unsafe)>>8;}
 #define FROM_SAFE_U16(safe,unsafe)      {(unsafe) = (safe).low |((u16)((safe).high)<<8);}
 
@@ -546,6 +547,7 @@ typedef union{
 #define NOTIFY_PKT_LOG         7
 #define NOTIFY_PKT_FUNCNAMEYDX 8
 #define NOTIFY_PKT_PRODINFO    9
+#define NOTIFY_PKT_CONFCHANGE  10
 
 #define NOTIFY_V2_LEGACY       0       // unused (reserved for compatibility with legacy notifications)
 #define NOTIFY_V2_6RAWBYTES    1       // largest type: data is always 6 bytes
@@ -679,6 +681,7 @@ typedef union {
 #define NOTIFY_NETPKT_LOG         '7'
 #define NOTIFY_NETPKT_FUNCNAMEYDX '8'
 #define NOTIFY_NETPKT_PRODINFO    '9'
+#define NOTIFY_NETPKT_CONFCHGYDX  's'
 #define NOTIFY_NETPKT_FLUSHV2YDX  't'
 #define NOTIFY_NETPKT_FUNCV2YDX   'u'
 #define NOTIFY_NETPKT_TIMEV2YDX   'v'
@@ -705,6 +708,7 @@ typedef union {
 #define NOTIFY_PKT_FUNCNAME_LEN         (sizeof(Notification_header) + sizeof(Notification_funcname))
 #define NOTIFY_PKT_FUNCVAL_LEN          (sizeof(Notification_header) + sizeof(Notification_funcval))
 #define NOTIFY_PKT_FUNCNAMEYDX_LEN      (sizeof(Notification_header) + sizeof(Notification_funcnameydx))
+#define NOTIFY_PKT_CONFCHG_LEN          (sizeof(Notification_header) + sizeof(u8))
 #define NOTIFY_PKT_TINYVAL_MAXLEN       (sizeof(Notification_tiny) + YOCTO_PUBVAL_SIZE)
 
 // Data in YSTREAM_REPORT stream

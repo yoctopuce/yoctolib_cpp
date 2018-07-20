@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 28489 2017-09-12 13:19:37Z seb $
+ * $Id: yproto.h 31217 2018-07-16 13:41:22Z mvuilleu $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -952,6 +952,7 @@ typedef struct{
     yapiDeviceLogCallback       logDeviceCallback;
     yapiDeviceUpdateCallback    arrivalCallback;
     yapiDeviceUpdateCallback    changeCallback;
+    yapiDeviceUpdateCallback    confChangeCallback;
     yapiDeviceUpdateCallback    removalCallback;
     yapiFunctionUpdateCallback  functionCallback;
     yapiTimedReportCallback     timedReportCallback;
@@ -1065,6 +1066,10 @@ int  yUsbReadBlock(YIOHDL_internal *ioghdl, char *buffer, int len,u64 blockUntil
 int  yUsbEOF(YIOHDL_internal *ioghdl,char *errmsg);
 int  yUsbClose(YIOHDL_internal *ioghdl,char *errmsg);
 
+#if 0
+// Implemented but never tested
+int  yUsbSendMeta(const char *str, USB_Meta_Pkt *pkt, int len, char *errmsg);
+#endif
 int  yUSBGetBooloader(const char *serial, const char * name,  yInterfaceSt *iface,char *errmsg);
 
 // Misc helper

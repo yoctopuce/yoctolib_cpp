@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_weighscale.cpp 30501 2018-04-04 08:30:43Z seb $
+ * $Id: yocto_weighscale.cpp 31016 2018-06-04 08:45:40Z mvuilleu $
  *
  * Implements yFindWeighScale(), the high-level API for WeighScale functions
  *
@@ -51,7 +51,8 @@
 YWeighScale::YWeighScale(const string& func): YSensor(func)
 //--- (YWeighScale initialization)
     ,_excitation(EXCITATION_INVALID)
-    ,_compTempAdaptRatio(COMPTEMPADAPTRATIO_INVALID)
+    ,_tempAvgAdaptRatio(TEMPAVGADAPTRATIO_INVALID)
+    ,_tempChgAdaptRatio(TEMPCHGADAPTRATIO_INVALID)
     ,_compTempAvg(COMPTEMPAVG_INVALID)
     ,_compTempChg(COMPTEMPCHG_INVALID)
     ,_compensation(COMPENSATION_INVALID)
@@ -71,7 +72,8 @@ YWeighScale::~YWeighScale()
 }
 //--- (YWeighScale implementation)
 // static attributes
-const double YWeighScale::COMPTEMPADAPTRATIO_INVALID = YAPI_INVALID_DOUBLE;
+const double YWeighScale::TEMPAVGADAPTRATIO_INVALID = YAPI_INVALID_DOUBLE;
+const double YWeighScale::TEMPCHGADAPTRATIO_INVALID = YAPI_INVALID_DOUBLE;
 const double YWeighScale::COMPTEMPAVG_INVALID = YAPI_INVALID_DOUBLE;
 const double YWeighScale::COMPTEMPCHG_INVALID = YAPI_INVALID_DOUBLE;
 const double YWeighScale::COMPENSATION_INVALID = YAPI_INVALID_DOUBLE;
@@ -83,8 +85,11 @@ int YWeighScale::_parseAttr(YJSONObject* json_val)
     if(json_val->has("excitation")) {
         _excitation =  (Y_EXCITATION_enum)json_val->getInt("excitation");
     }
-    if(json_val->has("compTempAdaptRatio")) {
-        _compTempAdaptRatio =  floor(json_val->getDouble("compTempAdaptRatio") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+    if(json_val->has("tempAvgAdaptRatio")) {
+        _tempAvgAdaptRatio =  floor(json_val->getDouble("tempAvgAdaptRatio") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+    }
+    if(json_val->has("tempChgAdaptRatio")) {
+        _tempChgAdaptRatio =  floor(json_val->getDouble("tempChgAdaptRatio") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
     if(json_val->has("compTempAvg")) {
         _compTempAvg =  floor(json_val->getDouble("compTempAvg") * 1000.0 / 65536.0 + 0.5) / 1000.0;
@@ -189,25 +194,26 @@ int YWeighScale::set_excitation(Y_EXCITATION_enum newval)
 }
 
 /**
- * Changes the averaged temperature update rate, in percents.
+ * Changes the averaged temperature update rate, in per mille.
+ * The purpose of this adaptation ratio is to model the thermal inertia of the load cell.
  * The averaged temperature is updated every 10 seconds, by applying this adaptation rate
  * to the difference between the measures ambiant temperature and the current compensation
- * temperature. The standard rate is 0.04 percents, and the maximal rate is 65 percents.
+ * temperature. The standard rate is 0.2 per mille, and the maximal rate is 65 per mille.
  *
- * @param newval : a floating point number corresponding to the averaged temperature update rate, in percents
+ * @param newval : a floating point number corresponding to the averaged temperature update rate, in per mille
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YWeighScale::set_compTempAdaptRatio(double newval)
+int YWeighScale::set_tempAvgAdaptRatio(double newval)
 {
     string rest_val;
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
-        res = _setAttr("compTempAdaptRatio", rest_val);
+        res = _setAttr("tempAvgAdaptRatio", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
          throw;
@@ -217,16 +223,17 @@ int YWeighScale::set_compTempAdaptRatio(double newval)
 }
 
 /**
- * Returns the averaged temperature update rate, in percents.
+ * Returns the averaged temperature update rate, in per mille.
+ * The purpose of this adaptation ratio is to model the thermal inertia of the load cell.
  * The averaged temperature is updated every 10 seconds, by applying this adaptation rate
  * to the difference between the measures ambiant temperature and the current compensation
- * temperature. The standard rate is 0.04 percents, and the maximal rate is 65 percents.
+ * temperature. The standard rate is 0.2 per mille, and the maximal rate is 65 per mille.
  *
- * @return a floating point number corresponding to the averaged temperature update rate, in percents
+ * @return a floating point number corresponding to the averaged temperature update rate, in per mille
  *
- * On failure, throws an exception or returns Y_COMPTEMPADAPTRATIO_INVALID.
+ * On failure, throws an exception or returns Y_TEMPAVGADAPTRATIO_INVALID.
  */
-double YWeighScale::get_compTempAdaptRatio(void)
+double YWeighScale::get_tempAvgAdaptRatio(void)
 {
     double res = 0.0;
     yEnterCriticalSection(&_this_cs);
@@ -235,11 +242,71 @@ double YWeighScale::get_compTempAdaptRatio(void)
             if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
-                    return YWeighScale::COMPTEMPADAPTRATIO_INVALID;
+                    return YWeighScale::TEMPAVGADAPTRATIO_INVALID;
                 }
             }
         }
-        res = _compTempAdaptRatio;
+        res = _tempAvgAdaptRatio;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the temperature change update rate, in per mille.
+ * The temperature change is updated every 10 seconds, by applying this adaptation rate
+ * to the difference between the measures ambiant temperature and the current temperature used for
+ * change compensation. The standard rate is 0.6 per mille, and the maximal rate is 65 pour mille.
+ *
+ * @param newval : a floating point number corresponding to the temperature change update rate, in per mille
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YWeighScale::set_tempChgAdaptRatio(double newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        res = _setAttr("tempChgAdaptRatio", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the temperature change update rate, in per mille.
+ * The temperature change is updated every 10 seconds, by applying this adaptation rate
+ * to the difference between the measures ambiant temperature and the current temperature used for
+ * change compensation. The standard rate is 0.6 per mille, and the maximal rate is 65 pour mille.
+ *
+ * @return a floating point number corresponding to the temperature change update rate, in per mille
+ *
+ * On failure, throws an exception or returns Y_TEMPCHGADAPTRATIO_INVALID.
+ */
+double YWeighScale::get_tempChgAdaptRatio(void)
+{
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YWeighScale::TEMPCHGADAPTRATIO_INVALID;
+                }
+            }
+        }
+        res = _tempChgAdaptRatio;
     } catch (std::exception) {
         yLeaveCriticalSection(&_this_cs);
         throw;

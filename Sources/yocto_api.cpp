@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 30638 2018-04-16 14:23:22Z seb $
+ * $Id: yocto_api.cpp 31233 2018-07-17 09:03:12Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -64,7 +64,6 @@ static  yCRITICAL_SECTION   _handleEvent_CS;
 
 static  std::vector<YFunction*>     _FunctionCallbacks;
 static  std::vector<YFunction*>     _TimedReportCallbackList;
-
 
 const string YFunction::HARDWAREID_INVALID = YAPI_INVALID_STRING;
 const string YFunction::FUNCTIONID_INVALID = YAPI_INVALID_STRING;
@@ -3554,7 +3553,6 @@ void YFunction::_UpdateTimedReportCallbackList(YFunction* func, bool add)
     }
 }
 
-
 // This is the internal device cache object
 vector<YDevice*> YDevice::_devCache;
 
@@ -3937,6 +3935,20 @@ void YAPI::_yapiDeviceChangeCallbackFwd(YDEV_DESCR devdesc)
     _plug_events.push(ev);
 }
 
+void YAPI::_yapiDeviceConfigChangeCallbackFwd(YDEV_DESCR devdesc)
+{
+    yapiDataEvent   ev;
+    yDeviceSt    infos;
+    string       errmsg;
+    
+    ev.type      = YAPI_DEV_CONFCHANGE;
+    if(YapiWrapper::getDeviceInfo(devdesc, infos, errmsg) != YAPI_SUCCESS) return;
+    ev.module = yFindModule(string(infos.serial)+".module");
+    ev.module->setImmutableAttributes(&infos);
+    //the function is allready thread safe (use yapiLockDeviceCallaback)
+    _data_events.push(ev);
+}
+
 void YAPI::_yapiFunctionUpdateCallbackFwd(YAPI_FUNCTION fundesc,const char *value)
 {
 	yapiDataEvent    ev;
@@ -3985,9 +3997,6 @@ void YAPI::_yapiHubDiscoveryCallbackFwd(const char *serial, const char *url)
 	strcpy(ev.url, url);
 	_plug_events.push(ev);
 }
-
-
-
 
 
 static double decExp[16] = {
@@ -4257,6 +4266,7 @@ YRETCODE YAPI::InitAPI(int mode, string& errmsg)
     yapiRegisterDeviceArrivalCallback(YAPI::_yapiDeviceArrivalCallbackFwd);
     yapiRegisterDeviceRemovalCallback(YAPI::_yapiDeviceRemovalCallbackFwd);
     yapiRegisterDeviceChangeCallback(YAPI::_yapiDeviceChangeCallbackFwd);
+    yapiRegisterDeviceConfigChangeCallback(YAPI::_yapiDeviceConfigChangeCallbackFwd);
     yapiRegisterFunctionUpdateCallback(YAPI::_yapiFunctionUpdateCallbackFwd);
 	yapiRegisterTimedReportCallback(YAPI::_yapiFunctionTimedReportCallbackFwd);
 	yapiRegisterHubDiscoveryCallback(YAPI::_yapiHubDiscoveryCallbackFwd);
@@ -4717,6 +4727,9 @@ YRETCODE YAPI::HandleEvents(string& errmsg)
             case YAPI_FUN_REFRESH:
                 ev.fun->isOnline();
                 break;
+            case YAPI_DEV_CONFCHANGE:
+                ev.module->_invokeConfigChangeCallback();
+                break;
             default:
                 break;
         }
@@ -5072,6 +5085,7 @@ YModule::YModule(const string& func): YFunction(func)
     ,_userVar(USERVAR_INVALID)
     ,_valueCallbackModule(NULL)
     ,_logCallback(NULL)
+    ,_confChangeCallback(NULL)
 //--- (end of generated code: YModule initialization)
 {
     _className = "Module";
@@ -5733,6 +5747,36 @@ int YModule::reboot(int secBeforeReboot)
 int YModule::triggerFirmwareUpdate(int secBeforeReboot)
 {
     return this->set_rebootCountdown(-secBeforeReboot);
+}
+
+/**
+ * Register a callback function, to be called when a persistent settings in
+ * a device configuration has been changed (e.g. change of unit, etc).
+ *
+ * @param callback : a procedure taking a YModule parameter, or NULL
+ *         to unregister a previously registered  callback.
+ */
+int YModule::registerConfigChangeCallback(YModuleConfigChangeCallback callback)
+{
+    _confChangeCallback = callback;
+    return 0;
+}
+
+int YModule::_invokeConfigChangeCallback(void)
+{
+    if (_confChangeCallback != NULL) {
+        _confChangeCallback(this);
+    }
+    return 0;
+}
+
+/**
+ * Triggers a configuration change callback, to check if they are supported or not.
+ */
+int YModule::triggerConfigChangeCallback(void)
+{
+    this->_setAttr("persistentSettings","2");
+    return 0;
 }
 
 /**

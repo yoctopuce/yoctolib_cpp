@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 29739 2018-01-25 17:03:29Z seb $
+ * $Id: yapi.c 31209 2018-07-13 22:32:53Z mvuilleu $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -1596,6 +1596,18 @@ static void  yapiRegisterDeviceChangeCallback_internal(yapiDeviceUpdateCallback 
 }
 
 
+static void  yapiRegisterDeviceConfigChangeCallback_internal(yapiDeviceUpdateCallback configChangeCallback)
+{
+    char errmsg[YOCTO_ERRMSG_LEN];
+    if(!yContext) {
+        yapiInitAPI_internal(0,errmsg);
+    }
+    if(yContext) {
+        yContext->confChangeCallback = configChangeCallback;
+    }
+}
+
+
 static void  yapiRegisterFunctionUpdateCallback_internal(yapiFunctionUpdateCallback updateCallback)
 {
     char errmsg[YOCTO_ERRMSG_LEN];
@@ -1723,7 +1735,7 @@ int handleNetNotification(HubSt *hub)
         return 1;
     }
     // handle short funcvalydx notifications
-    if(pkttype >= NOTIFY_NETPKT_FLUSHV2YDX && pkttype <= NOTIFY_NETPKT_TIMEAVGYDX) {
+    if(pkttype >= NOTIFY_NETPKT_CONFCHGYDX && pkttype <= NOTIFY_NETPKT_TIMEAVGYDX) {
         memset(value, 0, YOCTO_PUBVAL_LEN);
         if (end + 1 > (u16) sizeof(buffer)){
             dbglog("Drop invalid short notification (too long :%d)\n", end + 1);
@@ -1771,6 +1783,25 @@ int handleNetNotification(HubSt *hub)
 #endif
                     }
                     yLeaveCriticalSection(&yContext->generic_cs);
+                }
+                break;
+            case NOTIFY_NETPKT_CONFCHGYDX:
+                // Map hub-specific devydx to our devydx
+                devydx = hub->devYdxMap[devydx];
+                if(devydx < MAX_YDX_PER_HUB) {
+                    // Forward high-level device config change notification to API user
+                    if(yContext->confChangeCallback) {
+                        yStrRef serialref;
+                        yEnterCriticalSection(&yContext->generic_cs);
+                        serialref = yContext->generic_infos[devydx].serial;
+                        yLeaveCriticalSection(&yContext->generic_cs);
+                        yEnterCriticalSection(&yContext->deviceCallbackCS);
+#ifdef DEBUG_NET_NOTIFICATION
+                        dbglog("notify conf change for devydx %d\n", devydx);
+#endif
+                        yContext->confChangeCallback(serialref);
+                        yLeaveCriticalSection(&yContext->deviceCallbackCS);
+                    }
                 }
                 break;
             case NOTIFY_NETPKT_TIMEVALYDX:
@@ -2393,7 +2424,7 @@ static YRETCODE yapiRegisterHubEx(const char* url, int checkacces, char* errmsg)
         if (checkacces) {
             // ensure the thread has been able to connect to the hub
             u64 timeout = yapiGetTickCount() + YIO_DEFAULT_TCP_TIMEOUT;
-            while (hubst->state != NET_HUB_ESTABLISHED && hubst->state != NET_HUB_CLOSED && hubst->retryCount==0 && timeout > yapiGetTickCount()) {
+            while (hubst->state != NET_HUB_ESTABLISHED && hubst->state != NET_HUB_CLOSED  && timeout > yapiGetTickCount()) {
                 yapiSleep(100, errmsg);
             }
             if (hubst->state != NET_HUB_ESTABLISHED) {
@@ -2540,7 +2571,7 @@ static YRETCODE  yapiTestHub_internal(const char *url, int mstimeout, char *errm
 
                 // ensure the thread has been able to connect to the hub
                 timeout = yapiGetTickCount() + mstimeout;
-                while (hubst->state != NET_HUB_ESTABLISHED && hubst->state != NET_HUB_CLOSED && hubst->retryCount == 0 && timeout > yapiGetTickCount()) {
+                while (hubst->state != NET_HUB_ESTABLISHED && hubst->state != NET_HUB_CLOSED && timeout > yapiGetTickCount()) {
                     yapiSleep(10, errmsg);
                 }
                 if (hubst->state != NET_HUB_ESTABLISHED) {
@@ -4181,7 +4212,8 @@ typedef enum
     trcGetSubdevices,
     trcGetMem,
     trcFreeMem,
-    trcGetSubDevcies
+    trcGetSubDevcies,
+    trcRegisterDeviceConfigChangeCallback,
 } TRC_FUN;
 
 static const char * trc_funname[] =
@@ -4240,7 +4272,8 @@ static const char * trc_funname[] =
     "GetSubdev",
     "getmem",
     "freemem",
-    "getsubdev"
+    "getsubdev",
+    "RegDeviceConfChg",
 };
 
 static const char *dlltracefile = YDLL_TRACE_FILE;
@@ -4347,6 +4380,13 @@ void YAPI_FUNCTION_EXPORT yapiRegisterDeviceChangeCallback(yapiDeviceUpdateCallb
 {
     YDLL_CALL_ENTER(trcRegisterDeviceChangeCallback);
     yapiRegisterDeviceChangeCallback_internal(changeCallback);
+    YDLL_CALL_LEAVEVOID();
+}
+
+void YAPI_FUNCTION_EXPORT yapiRegisterDeviceConfigChangeCallback(yapiDeviceUpdateCallback configChangeCallback)
+{
+    YDLL_CALL_ENTER(trcRegisterDeviceConfigChangeCallback);
+    yapiRegisterDeviceConfigChangeCallback_internal(configChangeCallback);
     YDLL_CALL_LEAVEVOID();
 }
 
@@ -4797,6 +4837,7 @@ void YAPI_FUNCTION_EXPORT __stdcall vb6_yapiRegisterDeviceLogCallback(vb6_yapiDe
 void YAPI_FUNCTION_EXPORT __stdcall vb6_yapiRegisterDeviceArrivalCallback(vb6_yapiDeviceUpdateCallback arrivalCallback);
 void YAPI_FUNCTION_EXPORT __stdcall vb6_yapiRegisterDeviceRemovalCallback(vb6_yapiDeviceUpdateCallback removalCallback);
 void YAPI_FUNCTION_EXPORT __stdcall vb6_yapiRegisterDeviceChangeCallback(vb6_yapiDeviceUpdateCallback changeCallback);
+void YAPI_FUNCTION_EXPORT __stdcall vb6_yapiRegisterDeviceConfigChangeCallback(vb6_yapiDeviceUpdateCallback configChangeCallback);
 void YAPI_FUNCTION_EXPORT __stdcall vb6_yapiRegisterFunctionUpdateCallback(vb6_yapiFunctionUpdateCallback updateCallback);
 void YAPI_FUNCTION_EXPORT __stdcall vb6_yapiRegisterTimedReportCallback(vb6_yapiTimedReportCallback timedReportCallback);
 YRETCODE YAPI_FUNCTION_EXPORT __stdcall vb6_yapiLockFunctionCallBack( char *errmsg);
@@ -4956,6 +4997,22 @@ void YAPI_FUNCTION_EXPORT __stdcall vb6_yapiRegisterDeviceChangeCallback(vb6_yap
         yapiRegisterDeviceChangeCallback(yapiRegisterDeviceChangeCallbackFWD);
     } else {
         yapiRegisterDeviceChangeCallback(NULL);
+    }
+}
+
+static vb6_yapiDeviceUpdateCallback vb6_yapiRegisterDeviceConfigChangeCallbackFWD = NULL;
+void yapiRegisterDeviceConfigChangeCallbackFWD(YAPI_DEVICE devdescr)
+{
+    if (vb6_yapiRegisterDeviceConfigChangeCallbackFWD)
+        vb6_yapiRegisterDeviceConfigChangeCallbackFWD(devdescr);
+}
+void YAPI_FUNCTION_EXPORT __stdcall vb6_yapiRegisterDeviceConfigChangeCallback(vb6_yapiDeviceUpdateCallback configChangeCallback)
+{
+    vb6_yapiRegisterDeviceConfigChangeCallbackFWD = configChangeCallback;
+	if (configChangeCallback) {
+        yapiRegisterDeviceConfigChangeCallback(yapiRegisterDeviceConfigChangeCallbackFWD);
+    } else {
+        yapiRegisterDeviceConfigChangeCallback(NULL);
     }
 }
 

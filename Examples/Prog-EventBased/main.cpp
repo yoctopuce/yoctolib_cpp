@@ -27,11 +27,17 @@ static void deviceLog(YModule *module, const string& logline)
   cout << "log:" << module->get_hardwareId() << ":" << logline << endl;
 }
 
+static void deviceConfigChange(YModule *m)
+{
+    cout << "config change : " << m->get_serialNumber() << endl;
+}
+
 static void deviceArrival(YModule *m)
 {
   string serial = m->get_serialNumber();
   cout << "Device arrival : " << serial << endl;
   m->registerLogCallback(deviceLog);
+  m->registerConfigChangeCallback(deviceConfigChange);
   string hardwareId;
 
   // First solution: look for a specific type of function (eg. anButton)

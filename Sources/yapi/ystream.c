@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 30531 2018-04-05 13:28:53Z seb $
+ * $Id: ystream.c 31283 2018-07-19 09:58:31Z mvuilleu $
  *
  * USB stream implementation
  *
@@ -774,6 +774,9 @@ static void dumpAnyStream(char *prefix,int iface,u8 pkt,u8 stream,u8 size,u8 *da
                     case NOTIFY_PKT_LOG:
                         dbglog("%s: NOTIFY DEVICE LOG\n",prefix);
                         break;
+                    case NOTIFY_PKT_CONFCHANGE:
+                        dbglog("%s: NOTIFY DEVICE CONF CHANGE\n",prefix);
+                        break;
                     default:
                         dbglog("%s: Unknown NOTIFY\n",prefix);
                         break;
@@ -1218,7 +1221,6 @@ YRETCODE yyySendPacket(yInterfaceSt *iface, const USB_Packet *pkt, char *errmsg)
 
 static YRETCODE yAckPkt(yInterfaceSt *iface, int pktno, char *errmsg)
 {
-
     pktItem qpkt;
 
     YSTREAM_Head  *yshead = (YSTREAM_Head*)(qpkt.pkt.data);
@@ -1305,6 +1307,10 @@ static int CheckVersionCompatibility(u16 version,const char *serial, char *errms
     } else if (version != YPKT_USB_VERSION_BCD) {
         if (version == YPKT_USB_VERSION_NO_RETRY_BCD && (yContext->detecttype & Y_RESEND_MISSING_PKT) == 0) {
             // do prompt for firmware update since the Y_RESEND_MISSING_PKT feature is not used
+            return 1;
+        }
+        if (version == YPKT_USB_VERSION_NO_CONFCHG_BCD && YPKT_USB_VERSION_BCD == YPKT_USB_VERSION_NO_CONFCHG_BCD+1)  {
+            // do prompt for firmware update if the device simply has no config change notification
             return 1;
         }
         if (version > YPKT_USB_VERSION_BCD) {
@@ -1788,6 +1794,26 @@ static void yDispatchNotice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pkts
                 yContext->rawNotificationCb(notify);
             }
         }
+        break;
+    case NOTIFY_PKT_CONFCHANGE:
+        {
+            if (!strncmp(notify->head.serial, dev->infos.serial, YOCTO_SERIAL_LEN)) {
+                yStrRef serialref = yHashPutStr(notify->head.serial);
+                // Forward high-level device config change notification to API user
+                if(yContext->confChangeCallback){
+                    yEnterCriticalSection(&yContext->deviceCallbackCS);
+#ifdef DEBUG_NET_NOTIFICATION
+                    dbglog("notify conf change for %s\n",dev->infos.serial);
+#endif
+                    yContext->confChangeCallback(serialref);
+                    yLeaveCriticalSection(&yContext->deviceCallbackCS);
+                }
+            }
+            if(yContext->rawNotificationCb){
+                yContext->rawNotificationCb(notify);
+            }
+        }
+        break;
     default:
         break;
     }
@@ -2883,3 +2909,35 @@ int  yUsbClose(YIOHDL_internal *ioghdl,char *errmsg)
     YPERF_LEAVE(yUsbClose);
     return res;
 }
+
+#if 0
+// Implemented but never tested
+
+int  yUsbSendMeta(const char *device, USB_Meta_Pkt *pkt, int len, char *errmsg)
+{
+    yPrivDeviceSt *dev;
+    u8  *pktdata;
+    u8  maxpktlen;
+    int res;
+    
+    YPERF_ENTER(yUsbSendMeta);
+    
+    dev=findDev(device,FIND_FROM_ANY);
+    if(dev==NULL){
+        return YERR(YAPI_DEVICE_NOT_FOUND);
+    }
+    res = devStartIdle(PUSH_LOCATION dev,errmsg);
+    if (res == YAPI_SUCCESS) {
+        if (yStreamGetTxBuff(dev, &pktdata, &maxpktlen) && maxpktlen >= len) {
+            memcpy(pktdata, (u8 *)pkt, len);
+            YPROPERR(yStreamTransmit(dev, YSTREAM_META, len, errmsg));
+            YPROPERR(yStreamFlush(dev, errmsg));
+        }
+        devStopIdle(PUSH_LOCATION dev);
+    }
+    
+    YPERF_LEAVE(yUsbSendMeta);
+    return res;
+}
+
+#endif

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 29669 2018-01-19 08:25:56Z seb $
+ * $Id: yocto_api.h 31233 2018-07-17 09:03:12Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -86,6 +86,7 @@ typedef void (*YFunctionValueCallback)(YFunction *func, const string& functionVa
 class YModule; // forward declaration
 
 typedef void (*YModuleLogCallback)(YModule *module, const string& logline);
+typedef void (*YModuleConfigChangeCallback)(YModule *module);
 typedef void (*YModuleValueCallback)(YModule *func, const string& functionValue);
 #ifndef _Y_PERSISTENTSETTINGS_ENUM
 #define _Y_PERSISTENTSETTINGS_ENUM
@@ -251,7 +252,7 @@ typedef enum {
     YAPI_DEV_REMOVAL,
     YAPI_DEV_CHANGE,
     YAPI_DEV_LOG,
-	YAPI_HUB_DISCOVER
+    YAPI_HUB_DISCOVER
 } yapiGlobalEventType;
 
 typedef struct{
@@ -271,7 +272,8 @@ typedef enum {
 	YAPI_FUN_UPDATE,
 	YAPI_FUN_VALUE,
 	YAPI_FUN_TIMEDREPORT,
-	YAPI_FUN_REFRESH
+	YAPI_FUN_REFRESH,
+    YAPI_DEV_CONFCHANGE
 } yapiDataEventType;
 
 typedef struct{
@@ -287,6 +289,9 @@ typedef struct{
 			int         len;
 			int			report[18];
 		};
+        struct {
+            YModule    *module;
+        };
 	};
 }yapiDataEvent;
 
@@ -443,12 +448,13 @@ private:
     static  queue<yapiDataEvent>    _data_events;
     static  YHubDiscoveryCallback   _HubDiscoveryCallback;
     static  u64                 _nextEnum;
-
+    
     static  map<int,yCalibrationHandler> _calibHandlers;
     static  void        _yapiLogFunctionFwd(const char *log, u32 loglen);
     static  void        _yapiDeviceArrivalCallbackFwd(YDEV_DESCR devdesc);
     static  void        _yapiDeviceRemovalCallbackFwd(YDEV_DESCR devdesc);
     static  void        _yapiDeviceChangeCallbackFwd(YDEV_DESCR devdesc);
+    static  void        _yapiDeviceConfigChangeCallbackFwd(YDEV_DESCR devdesc);
     static  void        _yapiDeviceLogCallbackFwd(YDEV_DESCR devdesc, const char* line);
     static  void        _yapiFunctionTimedReportCallbackFwd(YAPI_FUNCTION fundesc, double timestamp, const u8 *bytes, u32 len);
 	static  void        _yapiHubDiscoveryCallbackFwd(const char *serial, const char *url);
@@ -1977,9 +1983,6 @@ public:
 
 };
 
-
-typedef void(*YModuleLogCallback)(YModule *module, const string& log);
-
 //--- (generated code: YModule declaration)
 /**
  * YModule Class: Module control interface
@@ -2010,6 +2013,7 @@ protected:
     int             _userVar;
     YModuleValueCallback _valueCallbackModule;
     YModuleLogCallback _logCallback;
+    YModuleConfigChangeCallback _confChangeCallback;
 
     friend YModule *yFindModule(const string& func);
     friend YModule *yFirstModule(void);
@@ -2131,8 +2135,7 @@ public:
 
     YModuleLogCallback get_logCallback();
 
-
-
+    
     //--- (generated code: YModule accessors declaration)
 
     static const string PRODUCTNAME_INVALID;
@@ -2434,6 +2437,22 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         triggerFirmwareUpdate(int secBeforeReboot);
+
+    /**
+     * Register a callback function, to be called when a persistent settings in
+     * a device configuration has been changed (e.g. change of unit, etc).
+     *
+     * @param callback : a procedure taking a YModule parameter, or NULL
+     *         to unregister a previously registered  callback.
+     */
+    virtual int         registerConfigChangeCallback(YModuleConfigChangeCallback callback);
+
+    virtual int         _invokeConfigChangeCallback(void);
+
+    /**
+     * Triggers a configuration change callback, to check if they are supported or not.
+     */
+    virtual int         triggerConfigChangeCallback(void);
 
     /**
      * Tests whether the byn file is valid for this module. This method is useful to test if the module

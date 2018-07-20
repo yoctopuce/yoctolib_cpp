@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_weighscale.h 29804 2018-01-30 18:05:21Z mvuilleu $
+ * $Id: yocto_weighscale.h 31016 2018-06-04 08:45:40Z mvuilleu $
  *
  * Declares yFindWeighScale(), the high-level API for WeighScale functions
  *
@@ -63,7 +63,8 @@ typedef enum {
     Y_EXCITATION_INVALID = -1,
 } Y_EXCITATION_enum;
 #endif
-#define Y_COMPTEMPADAPTRATIO_INVALID    (YAPI_INVALID_DOUBLE)
+#define Y_TEMPAVGADAPTRATIO_INVALID     (YAPI_INVALID_DOUBLE)
+#define Y_TEMPCHGADAPTRATIO_INVALID     (YAPI_INVALID_DOUBLE)
 #define Y_COMPTEMPAVG_INVALID           (YAPI_INVALID_DOUBLE)
 #define Y_COMPTEMPCHG_INVALID           (YAPI_INVALID_DOUBLE)
 #define Y_COMPENSATION_INVALID          (YAPI_INVALID_DOUBLE)
@@ -90,7 +91,8 @@ protected:
     //--- (YWeighScale attributes)
     // Attributes (function value cache)
     Y_EXCITATION_enum _excitation;
-    double          _compTempAdaptRatio;
+    double          _tempAvgAdaptRatio;
+    double          _tempChgAdaptRatio;
     double          _compTempAvg;
     double          _compTempChg;
     double          _compensation;
@@ -117,7 +119,8 @@ public:
     static const Y_EXCITATION_enum EXCITATION_DC = Y_EXCITATION_DC;
     static const Y_EXCITATION_enum EXCITATION_AC = Y_EXCITATION_AC;
     static const Y_EXCITATION_enum EXCITATION_INVALID = Y_EXCITATION_INVALID;
-    static const double COMPTEMPADAPTRATIO_INVALID;
+    static const double TEMPAVGADAPTRATIO_INVALID;
+    static const double TEMPCHGADAPTRATIO_INVALID;
     static const double COMPTEMPAVG_INVALID;
     static const double COMPTEMPCHG_INVALID;
     static const double COMPENSATION_INVALID;
@@ -167,35 +170,68 @@ public:
     { return this->set_excitation(newval); }
 
     /**
-     * Changes the averaged temperature update rate, in percents.
+     * Changes the averaged temperature update rate, in per mille.
+     * The purpose of this adaptation ratio is to model the thermal inertia of the load cell.
      * The averaged temperature is updated every 10 seconds, by applying this adaptation rate
      * to the difference between the measures ambiant temperature and the current compensation
-     * temperature. The standard rate is 0.04 percents, and the maximal rate is 65 percents.
+     * temperature. The standard rate is 0.2 per mille, and the maximal rate is 65 per mille.
      *
-     * @param newval : a floating point number corresponding to the averaged temperature update rate, in percents
+     * @param newval : a floating point number corresponding to the averaged temperature update rate, in per mille
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
-    int             set_compTempAdaptRatio(double newval);
-    inline int      setCompTempAdaptRatio(double newval)
-    { return this->set_compTempAdaptRatio(newval); }
+    int             set_tempAvgAdaptRatio(double newval);
+    inline int      setTempAvgAdaptRatio(double newval)
+    { return this->set_tempAvgAdaptRatio(newval); }
 
     /**
-     * Returns the averaged temperature update rate, in percents.
+     * Returns the averaged temperature update rate, in per mille.
+     * The purpose of this adaptation ratio is to model the thermal inertia of the load cell.
      * The averaged temperature is updated every 10 seconds, by applying this adaptation rate
      * to the difference between the measures ambiant temperature and the current compensation
-     * temperature. The standard rate is 0.04 percents, and the maximal rate is 65 percents.
+     * temperature. The standard rate is 0.2 per mille, and the maximal rate is 65 per mille.
      *
-     * @return a floating point number corresponding to the averaged temperature update rate, in percents
+     * @return a floating point number corresponding to the averaged temperature update rate, in per mille
      *
-     * On failure, throws an exception or returns Y_COMPTEMPADAPTRATIO_INVALID.
+     * On failure, throws an exception or returns Y_TEMPAVGADAPTRATIO_INVALID.
      */
-    double              get_compTempAdaptRatio(void);
+    double              get_tempAvgAdaptRatio(void);
 
-    inline double       compTempAdaptRatio(void)
-    { return this->get_compTempAdaptRatio(); }
+    inline double       tempAvgAdaptRatio(void)
+    { return this->get_tempAvgAdaptRatio(); }
+
+    /**
+     * Changes the temperature change update rate, in per mille.
+     * The temperature change is updated every 10 seconds, by applying this adaptation rate
+     * to the difference between the measures ambiant temperature and the current temperature used for
+     * change compensation. The standard rate is 0.6 per mille, and the maximal rate is 65 pour mille.
+     *
+     * @param newval : a floating point number corresponding to the temperature change update rate, in per mille
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_tempChgAdaptRatio(double newval);
+    inline int      setTempChgAdaptRatio(double newval)
+    { return this->set_tempChgAdaptRatio(newval); }
+
+    /**
+     * Returns the temperature change update rate, in per mille.
+     * The temperature change is updated every 10 seconds, by applying this adaptation rate
+     * to the difference between the measures ambiant temperature and the current temperature used for
+     * change compensation. The standard rate is 0.6 per mille, and the maximal rate is 65 pour mille.
+     *
+     * @return a floating point number corresponding to the temperature change update rate, in per mille
+     *
+     * On failure, throws an exception or returns Y_TEMPCHGADAPTRATIO_INVALID.
+     */
+    double              get_tempChgAdaptRatio(void);
+
+    inline double       tempChgAdaptRatio(void)
+    { return this->get_tempChgAdaptRatio(); }
 
     /**
      * Returns the current averaged temperature, used for thermal compensation.
