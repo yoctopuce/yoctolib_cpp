@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_bluetoothlink.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_bluetoothlink.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindBluetoothLink(), the high-level API for BluetoothLink functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YBluetoothLink return codes)
 //--- (end of YBluetoothLink return codes)
+//--- (YBluetoothLink yapiwrapper)
+//--- (end of YBluetoothLink yapiwrapper)
 //--- (YBluetoothLink definitions)
 class YBluetoothLink; // forward declaration
 

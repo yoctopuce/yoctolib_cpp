@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_voltageoutput.cpp 30501 2018-04-04 08:30:43Z seb $
+ * $Id: yocto_voltageoutput.cpp 31377 2018-07-27 08:24:38Z seb $
  *
  * Implements yFindVoltageOutput(), the high-level API for VoltageOutput functions
  *
@@ -123,7 +123,7 @@ double YVoltageOutput::get_currentVoltage(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YVoltageOutput::CURRENTVOLTAGE_INVALID;
@@ -145,7 +145,7 @@ string YVoltageOutput::get_voltageTransition(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YVoltageOutput::VOLTAGETRANSITION_INVALID;
@@ -216,7 +216,7 @@ double YVoltageOutput::get_voltageAtStartUp(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YVoltageOutput::VOLTAGEATSTARTUP_INVALID;

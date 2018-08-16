@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_daisychain.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_daisychain.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindDaisyChain(), the high-level API for DaisyChain functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YDaisyChain return codes)
 //--- (end of YDaisyChain return codes)
+//--- (YDaisyChain yapiwrapper)
+//--- (end of YDaisyChain yapiwrapper)
 //--- (YDaisyChain definitions)
 class YDaisyChain; // forward declaration
 

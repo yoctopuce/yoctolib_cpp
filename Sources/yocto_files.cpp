@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.cpp 28753 2017-10-03 11:23:38Z seb $
+ * $Id: yocto_files.cpp 31377 2018-07-27 08:24:38Z seb $
  *
  * Implements yFindFiles(), the high-level API for Files functions
  *
@@ -156,7 +156,7 @@ int YFiles::get_filesCount(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YFiles::FILESCOUNT_INVALID;
@@ -185,7 +185,7 @@ int YFiles::get_freeSpace(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YFiles::FREESPACE_INVALID;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_steppermotor.h 29495 2017-12-22 16:45:20Z mvuilleu $
+ * $Id: yocto_steppermotor.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindStepperMotor(), the high-level API for StepperMotor functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YStepperMotor return codes)
 //--- (end of YStepperMotor return codes)
+//--- (YStepperMotor yapiwrapper)
+//--- (end of YStepperMotor yapiwrapper)
 //--- (YStepperMotor definitions)
 class YStepperMotor; // forward declaration
 

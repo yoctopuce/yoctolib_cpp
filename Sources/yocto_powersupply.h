@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_powersupply.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_powersupply.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindPowerSupply(), the high-level API for PowerSupply functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YPowerSupply return codes)
 //--- (end of YPowerSupply return codes)
+//--- (YPowerSupply yapiwrapper)
+//--- (end of YPowerSupply yapiwrapper)
 //--- (YPowerSupply definitions)
 class YPowerSupply; // forward declaration
 

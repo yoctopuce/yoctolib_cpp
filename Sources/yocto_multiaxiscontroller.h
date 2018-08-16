@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_multiaxiscontroller.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_multiaxiscontroller.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindMultiAxisController(), the high-level API for MultiAxisController functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YMultiAxisController return codes)
 //--- (end of YMultiAxisController return codes)
+//--- (YMultiAxisController yapiwrapper)
+//--- (end of YMultiAxisController yapiwrapper)
 //--- (YMultiAxisController definitions)
 class YMultiAxisController; // forward declaration
 

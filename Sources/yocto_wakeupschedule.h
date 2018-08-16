@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wakeupschedule.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_wakeupschedule.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindWakeUpSchedule(), the high-level API for WakeUpSchedule functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YWakeUpSchedule return codes)
 //--- (end of YWakeUpSchedule return codes)
+//--- (YWakeUpSchedule yapiwrapper)
+//--- (end of YWakeUpSchedule yapiwrapper)
 //--- (YWakeUpSchedule definitions)
 class YWakeUpSchedule; // forward declaration
 

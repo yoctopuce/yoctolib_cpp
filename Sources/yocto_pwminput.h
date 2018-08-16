@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwminput.h 29968 2018-02-19 15:12:34Z seb $
+ * $Id: yocto_pwminput.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindPwmInput(), the high-level API for PwmInput functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YPwmInput return codes)
 //--- (end of YPwmInput return codes)
+//--- (YPwmInput yapiwrapper)
+//--- (end of YPwmInput yapiwrapper)
 //--- (YPwmInput definitions)
 class YPwmInput; // forward declaration
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 31209 2018-07-13 22:32:53Z mvuilleu $
+ * $Id: yapi.c 31494 2018-08-10 09:00:21Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -62,6 +62,9 @@ static YRETCODE  yapiHTTPRequestAsyncEx_internal(int tcpchan, const char *device
 
 #include <direct.h>
 #include <stdio.h>
+#define FILE_NO_BIT_MASK 0XFFF
+
+static yCRITICAL_SECTION   YREQ_CS;
 static int global_req_count = 0;
 
 static int write_onfile(int fileno, char *mode, const char *firstline, int firstline_len, const char * buffer, int bufferlen)
@@ -88,7 +91,8 @@ retry:
 }
 
 
-#define FILE_NO_BIT_MASK 0XFFF
+
+
 
 static int YREQ_LOG_START(const char *msg, const char *device, const char * request, int requestsize)
 {
@@ -98,7 +102,9 @@ static int YREQ_LOG_START(const char *msg, const char *device, const char * requ
     int threadIdx, count, first_len;
 
     //we may need to add mutex here
+    yEnterCriticalSection(&YREQ_CS);
     count = global_req_count++;
+    yLeaveCriticalSection(&YREQ_CS);
     int fileno = count & FILE_NO_BIT_MASK;
     // compute time string
     time(&rawtime);
@@ -118,7 +124,6 @@ static int YREQ_LOG_APPEND(int count, const char *msg, const char * response, in
     time_t rawtime;
     int threadIdx, first_len;
 
-    //we may need to add mutex here
     int fileno = count & FILE_NO_BIT_MASK;
     // compute time string
     time(&rawtime);
@@ -139,7 +144,6 @@ static int YREQ_LOG_APPEND_ERR(int count, const char *msg, const char *errmsg, i
     time_t rawtime;
     int threadIdx, first_len;
 
-    //we may need to add mutex here
     int fileno = count & FILE_NO_BIT_MASK;
     // compute time string
     time(&rawtime);
@@ -254,6 +258,7 @@ void yFunctionTimedUpdate(YAPI_FUNCTION fundescr, double deviceTime, const u8 *r
 typedef enum
 {
     ENU_HTTP_START,
+    ENU_JSON_START,
     ENU_API,
     ENU_NETWORK_START,
     ENU_NETWORK,
@@ -284,9 +289,16 @@ typedef enum
 
 
 #ifdef DEBUG_NET_ENUM
+
+extern const char* yJsonStateStr[];
 const char * ENU_PARSE_STATE_STR[]=
 {
     "ENU_HTTP_START",
+    "ENU_JSON_START",
+    "ENU_API",
+    "ENU_NETWORK_START",
+    "ENU_NETWORK",
+    "ENU_NET_ADMINPWD",
     "ENU_SERVICE",
     "ENU_WP_START",
     "ENU_WP_ARRAY",
@@ -303,6 +315,7 @@ const char * ENU_PARSE_STATE_STR[]=
     "ENU_YP_TYPE_LIST",
     "ENU_YP_ARRAY",
     "ENU_YP_ENTRY",
+    "ENU_YP_BASETYPE",
     "ENU_YP_HARDWAREID",
     "ENU_YP_LOGICALNAME",
     "ENU_YP_PRODUCTNAME",
@@ -771,6 +784,15 @@ static int yEnuJson(ENU_CONTEXT *enus, yJsonStateMachine *j)
             if(j->st != YJSON_HTTP_READ_CODE || YSTRCMP(j->token,"200")){
                 return YAPI_IO_ERROR;
             }
+            enus->state = ENU_JSON_START;
+            break;
+        case ENU_JSON_START:
+            if(j->st == YJSON_HTTP_READ_MSG)
+                break;
+            if(j->st == YJSON_PARSE_ARRAY)
+                return YAPI_IO_ERROR;
+            if (j->st == YJSON_PARSE_STRING)
+                return YAPI_IO_ERROR;
             enus->state = ENU_API;
             break;
         case ENU_API:
@@ -1014,6 +1036,7 @@ static int yNetHubEnumEx(HubSt *hub, ENU_CONTEXT *enus, char *errmsg)
     int req_count = YREQ_LOG_START("yNetHubEnumEx", hub->name, request, YSTRLEN(request));
     u64 start_tm = yapiGetTickCount();
 #endif
+
     req = yReqAlloc(hub);
     if (YISERR((res = yReqOpen(req, 2 * YIO_DEFAULT_TCP_TIMEOUT, 0, request, YSTRLEN(request), YIO_DEFAULT_TCP_TIMEOUT, NULL, NULL, NULL, NULL, errmsg)))) {
         yReqFree(req);
@@ -1040,8 +1063,9 @@ static int yNetHubEnumEx(HubSt *hub, ENU_CONTEXT *enus, char *errmsg)
             jstate=yJsonParse(&j);
             while(jstate == YJSON_PARSE_AVAIL){
                 if(YISERR(yEnuJson(enus,&j))){
-                    jstate = YJSON_FAILED;
-                    break;
+                    yReqClose(req);
+                    yReqFree(req);
+                    return YERRMSG(YAPI_IO_ERROR, "Invalid json data");
                 }
                 jstate=yJsonParse(&j);
             }
@@ -1055,7 +1079,7 @@ static int yNetHubEnumEx(HubSt *hub, ENU_CONTEXT *enus, char *errmsg)
                 yReqFree(req);
                 return res;
             }
-            if(res == 1) {
+            if(jstate == YJSON_NEED_INPUT && res == 1) {
                 // connection close before end of result
                 res = YERR(YAPI_IO_ERROR);
             }
@@ -1073,13 +1097,14 @@ static int yNetHubEnumEx(HubSt *hub, ENU_CONTEXT *enus, char *errmsg)
                 return YERRMSG(YAPI_IO_ERROR,"Remote host has close the connection");
             case YJSON_PARSE_AVAIL:
             case YJSON_FAILED:
+            default:
                 return YERRMSG(YAPI_IO_ERROR,"Invalid json data");
             case YJSON_SUCCESS:
-                break;
+                return res;
         }
     }
 
-    return YAPI_SUCCESS;
+    return res;
 }
 
 
@@ -1141,7 +1166,7 @@ static int yNetHubEnum(HubSt *hub,int forceupdate,char *errmsg)
         }
     }
     if(hub->state == NET_HUB_ESTABLISHED){
-        hub->devListExpires = yapiGetTickCount()+10000; // 10s validity when notification are working properly
+        hub->devListExpires = yapiGetTickCount() + yContext->deviceListValidityMs;
     } else {
         hub->devListExpires = yapiGetTickCount()+500;
     }
@@ -1297,6 +1322,10 @@ static void initializeAllCS(yContextSt *ctx)
     yInitializeCriticalSection(&ctx->deviceCallbackCS);
     yInitializeCriticalSection(&ctx->functionCallbackCS);
     yInitializeCriticalSection(&ctx->generic_cs);
+#ifdef DEBUG_YAPI_REQ
+    yInitializeCriticalSection(&YREQ_CS);
+#endif
+
 }
 
 static void deleteAllCS(yContextSt *ctx)
@@ -1390,6 +1419,7 @@ static YRETCODE yapiInitAPI_internal(int detect_type,char *errmsg)
     ctx=(yContextSt*)yMalloc(sizeof(yContextSt));
     yMemset(ctx,0,sizeof(yContextSt));
     ctx->detecttype=detect_type;
+    ctx->deviceListValidityMs = DEFAULT_NET_DEVLIST_VALIDITY_MS;
 
     //initialize enumeration CS
     initializeAllCS(ctx);
@@ -1494,6 +1524,30 @@ static void yapiFreeAPI_internal(void)
 }
 
 
+static void yapiSetNetDevListValidity_internal(u64 value)
+{
+    if (!yContext) {
+        return;
+    }
+    yEnterCriticalSection(&yContext->updateDev_cs);
+    yContext->deviceListValidityMs = value;
+    yLeaveCriticalSection(&yContext->updateDev_cs);
+}
+
+
+static u64 yapiGetNetDevListValidity_internal(void)
+{
+    u64 res;
+    if (!yContext) {
+        return DEFAULT_NET_DEVLIST_VALIDITY_MS;
+    }
+    yEnterCriticalSection(&yContext->updateDev_cs);
+    res = yContext->deviceListValidityMs;
+    yLeaveCriticalSection(&yContext->updateDev_cs);
+    return res;
+}
+
+
 static void yapiRegisterLogFunction_internal(yapiLogFunction logfun)
 {
     char errmsg[YOCTO_ERRMSG_LEN];
@@ -1529,7 +1583,6 @@ static void yapiStartStopDeviceLogCallback_internal(const char *serial,int start
     devydx = wpGetDevYdx(serialref);
     if (devydx < 0 )
         return;
-    dbglog("activate log %s %d\n", serial, start);
     yEnterCriticalSection(&yContext->generic_cs);
     if (start) {
         yContext->generic_infos[devydx].flags |= DEVGEN_LOG_ACTIVATED;
@@ -1633,6 +1686,8 @@ static void  yapiRegisterTimedReportCallback_internal(yapiTimedReportCallback ti
 
 
 #ifdef DEBUG_NET_NOTIFICATION
+#include <direct.h>
+#include <stdio.h>
 static void dumpNotif(const char *buffer)
 {
     FILE *f;
@@ -2047,6 +2102,7 @@ int handleNetNotification(HubSt *hub)
                      serial, children,*p,abspos);
             dumpNotif(Dbuffer);
 #endif
+            hub->devListExpires = 0;
             if ( *p == '0') {
                 unregisterNetDevice(yHashPutStr(children));
             }
@@ -4340,6 +4396,24 @@ void YAPI_FUNCTION_EXPORT yapiFreeAPI(void)
     yapiFreeAPI_internal();
     YDLL_CALL_LEAVEVOID();
 }
+
+
+void YAPI_FUNCTION_EXPORT yapiSetNetDevListValidity(int sValidity)
+{
+    YDLL_CALL_ENTER(trcRegisterLogFunction);
+    yapiSetNetDevListValidity_internal(sValidity * 1000);
+    YDLL_CALL_LEAVEVOID();
+}
+
+int YAPI_FUNCTION_EXPORT yapiGetNetDevListValidity(void)
+{
+    int res;
+    YDLL_CALL_ENTER(trcRegisterLogFunction);
+    res = (int) (yapiGetNetDevListValidity_internal() / 1000);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
 
 void YAPI_FUNCTION_EXPORT yapiRegisterLogFunction(yapiLogFunction logfun)
 {

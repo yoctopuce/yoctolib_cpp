@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 31281 2018-07-19 09:46:54Z mvuilleu $
+ * $Id: ydef.h 31421 2018-08-07 11:27:03Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -428,6 +428,9 @@ typedef enum {
 #define YOCTO_PUBVAL_LEN            16 // Temporary storage, >= YOCTO_PUBVAL_SIZE+2
 #define YOCTO_REPORT_LEN             9 // Max size of a timed report, including isAvg flag
 #define YOCTO_SERIAL_SEED_SIZE       (YOCTO_SERIAL_LEN - YOCTO_BASE_SERIAL_LEN - 1)
+
+// delay before reload of network hub
+#define DEFAULT_NET_DEVLIST_VALIDITY_MS 10000
 
 // websocket key from specification v13
 #define YOCTO_WEBSOCKET_MAGIC             "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"

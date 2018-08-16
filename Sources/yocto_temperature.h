@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_temperature.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_temperature.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindTemperature(), the high-level API for Temperature functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YTemperature return codes)
 //--- (end of YTemperature return codes)
+//--- (YTemperature yapiwrapper)
+//--- (end of YTemperature yapiwrapper)
 //--- (YTemperature definitions)
 class YTemperature; // forward declaration
 

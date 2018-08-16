@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_spiport.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_spiport.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YSpiPort return codes)
 //--- (end of YSpiPort return codes)
+//--- (YSpiPort yapiwrapper)
+//--- (end of YSpiPort yapiwrapper)
 //--- (YSpiPort definitions)
 class YSpiPort; // forward declaration
 

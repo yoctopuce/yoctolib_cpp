@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 28754 2017-10-03 11:54:51Z seb $
+ * $Id: yocto_display.cpp 31377 2018-07-27 08:24:38Z seb $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -695,7 +695,7 @@ Y_ENABLED_enum YDisplay::get_enabled(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YDisplay::ENABLED_INVALID;
@@ -749,7 +749,7 @@ string YDisplay::get_startupSeq(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YDisplay::STARTUPSEQ_INVALID;
@@ -805,7 +805,7 @@ int YDisplay::get_brightness(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YDisplay::BRIGHTNESS_INVALID;
@@ -862,7 +862,7 @@ Y_ORIENTATION_enum YDisplay::get_orientation(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YDisplay::ORIENTATION_INVALID;
@@ -918,7 +918,7 @@ int YDisplay::get_displayWidth(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YDisplay::DISPLAYWIDTH_INVALID;
@@ -947,7 +947,7 @@ int YDisplay::get_displayHeight(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YDisplay::DISPLAYHEIGHT_INVALID;
@@ -977,7 +977,7 @@ Y_DISPLAYTYPE_enum YDisplay::get_displayType(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration == 0) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YDisplay::DISPLAYTYPE_INVALID;
@@ -1006,7 +1006,7 @@ int YDisplay::get_layerWidth(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration == 0) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YDisplay::LAYERWIDTH_INVALID;
@@ -1035,7 +1035,7 @@ int YDisplay::get_layerHeight(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration == 0) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YDisplay::LAYERHEIGHT_INVALID;
@@ -1064,7 +1064,7 @@ int YDisplay::get_layerCount(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration == 0) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YDisplay::LAYERCOUNT_INVALID;
@@ -1086,7 +1086,7 @@ string YDisplay::get_command(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YDisplay::COMMAND_INVALID;

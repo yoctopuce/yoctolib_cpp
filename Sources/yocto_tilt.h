@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_tilt.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_tilt.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindTilt(), the high-level API for Tilt functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YTilt return codes)
 //--- (end of YTilt return codes)
+//--- (YTilt yapiwrapper)
+//--- (end of YTilt yapiwrapper)
 //--- (YTilt definitions)
 class YTilt; // forward declaration
 

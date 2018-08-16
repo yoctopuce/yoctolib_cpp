@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 31033 2018-06-08 07:07:55Z seb $
+ * $Id: ytcp.c 31476 2018-08-09 20:11:48Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -1236,6 +1236,37 @@ static int yHTTPMultiSelectReq(struct _RequestSt** reqs, int size, u64 ms, WakeU
 /********************************************************************************
 * WebSocket implementation for generic requests
 *******************************************************************************/
+#if 0
+static void dumpReqQueue(const char * msg, HubSt* hub, int tcpchan)
+{
+    struct _RequestSt* req;
+    char buffer[1024];
+    req = hub->ws.chan[tcpchan].requests;
+    YSPRINTF(buffer,1024,"dmp_%s(%d):", msg, tcpchan);
+    while (req != NULL ) {
+        char sbuffer[256];
+        YSPRINTF(sbuffer,256," %p(%d)", req, req->state);
+        YSTRCAT(buffer,1024,sbuffer);
+        req = req->ws.next;
+    }
+    dbglog("%s\n",buffer);
+}
+
+static void dumpbin(char *out, u8* buffer, int pktlen)
+{
+    int i;
+    for (i = 0; i  < pktlen ;i++)
+    {
+        u8 val = *buffer++;
+        if (val <32 ) {
+            val = ' ';
+        } else if (val > 126) {
+            val = '~';
+        }
+        *out++ = val;
+    }
+}
+#endif
 
 static int yWSOpenReqEx(struct _RequestSt* req, int tcpchan, u64 mstimeout, char* errmsg)
 {
@@ -1273,7 +1304,6 @@ static int yWSOpenReqEx(struct _RequestSt* req, int tcpchan, u64 mstimeout, char
     }
     req->ws.channel = tcpchan;
     req->timeout_tm = mstimeout;
-    //WSLOG("req(%s:%p): open req chan=%d timeout=%dms asyncId=%d\n", req->hub->name, req, tcpchan, (int)mstimeout, req->ws.asyncId);
     YASSERT(tcpchan < MAX_ASYNC_TCPCHAN);
     yEnterCriticalSection(&hub->ws.chan[tcpchan].access);
     req->ws.next = NULL; // just in case
@@ -1286,6 +1316,17 @@ static int yWSOpenReqEx(struct _RequestSt* req, int tcpchan, u64 mstimeout, char
     } else {
         hub->ws.chan[tcpchan].requests = req;
     }
+#if 0
+    WSLOG("req(%s:%p): open req chan=%d timeout=%dms asyncId=%d\n", req->hub->name, req, tcpchan, (int)mstimeout, req->ws.asyncId);
+    dumpReqQueue("open", hub, tcpchan);
+    {
+        char dump_buf[512];
+        int len = req->ws.requestsize >=512 ? 511:req->ws.requestsize;
+        dumpbin(dump_buf,req->ws.requestbuf,len);
+        dump_buf[len] = 0;
+        WSLOG("uop(%p):%s\n", req, dump_buf);
+    }
+#endif
     yLeaveCriticalSection(&hub->ws.chan[tcpchan].access);
     req->write_tm = yapiGetTickCount();
     return yDringWakeUpSocket(&hub->wuce, 1, errmsg);
@@ -2064,6 +2105,14 @@ static int ws_parseIncommingFrame(HubSt* hub, u8* buffer, int pktlen, char* errm
         while (req != NULL && req->state != REQ_OPEN && req->state != REQ_CLOSED_BY_HUB) {
             req = req->ws.next;
         }
+#if 0
+        {
+            char dump_buf[512];
+            dumpbin(dump_buf,buffer, pktlen);
+            dump_buf[pktlen] = 0;
+            WSLOG("use(%p):%s\n", req, dump_buf);
+        }
+#endif
         if (req == NULL) {
             dbglog("Drop incomming TCP trafic on channel (%d/%d)\n", strym.stream, strym.tcpchan);
         } else {
@@ -2085,6 +2134,14 @@ static int ws_parseIncommingFrame(HubSt* hub, u8* buffer, int pktlen, char* errm
         while (req != NULL && req->state != REQ_OPEN && req->state != REQ_CLOSED_BY_HUB) {
             req = req->ws.next;
         }
+#if 0
+        {
+            char dump_buf[512];
+            dumpbin(dump_buf,buffer, pktlen);
+            dump_buf[pktlen] = 0;
+            WSLOG("use(%p):%s\n", req, dump_buf);
+        }
+#endif
         if (req == NULL) {
             dbglog("Drop incomming TCP trafic on channel (%d/%d)\n", strym.stream, strym.tcpchan);
         } else {
@@ -2277,6 +2334,23 @@ static int ws_requestStillPending(HubSt* hub)
 }
 
 
+static RequestSt* getNextReqToSend(HubSt* hub, int tcpchan)
+{
+    RequestSt* req = hub->ws.chan[tcpchan].requests;
+    while (req) {
+        if (req->ws.requestpos < req->ws.requestsize && req->state == REQ_OPEN ) {
+            return req;
+        }
+        if (req->ws.asyncId){
+            req = req->ws.next;
+        }else {
+            return NULL;
+        }
+    }
+
+    return req;
+}
+
 /*
 *   look through all pending request if there is some data that we can send
 *
@@ -2293,121 +2367,117 @@ static int ws_processRequests(HubSt* hub, char* errmsg)
     for (tcpchan = 0; tcpchan < MAX_ASYNC_TCPCHAN; tcpchan++) {
         yEnterCriticalSection(&hub->ws.chan[tcpchan].access);
         if (hub->ws.chan[tcpchan].requests) {
-            RequestSt* req = hub->ws.chan[tcpchan].requests;
-            while (req) {
-                while (req && req->ws.requestsize == req->ws.requestpos && (req->state == REQ_CLOSED || req->state == REQ_CLOSED_BY_API)) {
-                    req = req->ws.next;
-                }
-                if (req) {
-                    int throttle_start = req->ws.requestpos;
-                    int throttle_end = req->ws.requestsize;
-                    if (throttle_end > 2108 && hub->ws.remoteVersion >= USB_META_WS_PROTO_V2 && tcpchan == 0) {
-                        // Perform throttling on large uploads
-                        if (req->ws.requestpos == 0) {
-                            // First chunk is always first multiple of full window (124 bytes) above 2KB
-                            throttle_end = 2108;
-                            // Prepare to compute effective transfer rate
-                            hub->ws.chan[tcpchan].lastUploadAckBytes = 0;
-                            hub->ws.chan[tcpchan].lastUploadAckTime = 0;
-                            // Start with initial RTT based estimate
-                            hub->ws.uploadRate = hub->ws.tcpMaxWindowSize * 1000 / hub->ws.tcpRoundTripTime;
-                        } else if (hub->ws.chan[tcpchan].lastUploadAckTime == 0) {
-                            // first block not yet acked, wait more
-                            //WSLOG("wait for first ack");
-                            throttle_end = 0;
-                        } else {
-                            // adapt window frame to available bandwidth
-                            int bytesOnTheAir = req->ws.requestpos - hub->ws.chan[tcpchan].lastUploadAckBytes;
-                            u32 uploadRate = hub->ws.uploadRate;
-                            u64 timeOnTheAir = (yapiGetTickCount() - hub->ws.chan[tcpchan].lastUploadAckTime);
-                            u64 toBeSent = 2 * uploadRate + 1024 - bytesOnTheAir + (uploadRate * timeOnTheAir / 1000);
-                            if (toBeSent + bytesOnTheAir > DEFAULT_TCP_MAX_WINDOW_SIZE) {
-                                toBeSent = DEFAULT_TCP_MAX_WINDOW_SIZE - bytesOnTheAir;
-                            }
-                            WSLOG("throttling: %d bytes/s (%"FMTu64" + %d = %"FMTu64")\n", hub->ws.uploadRate, toBeSent, bytesOnTheAir, bytesOnTheAir + toBeSent);
-                            if (toBeSent < 64) {
-                                u64 waitTime = 1000 * (128 - toBeSent) / hub->ws.uploadRate;
-                                if (waitTime < 2) waitTime = 2;
-                                hub->ws.next_transmit_tm = yapiGetTickCount() + waitTime;
-                                WSLOG("WS: %d sent %"FMTu64"ms ago, waiting %"FMTu64"ms...\n", bytesOnTheAir, timeOnTheAir, waitTime);
-                                throttle_end = 0;
-                            }
-                            if (throttle_end > req->ws.requestpos + toBeSent) {
-                                // when sending partial content, round up to full frames
-                                if (toBeSent > 124) {
-                                    toBeSent = (toBeSent / 124) * 124;
-                                }
-                                throttle_end = req->ws.requestpos + (u32)toBeSent;
-                            }
+            RequestSt* req;
+            while((req = getNextReqToSend(hub, tcpchan)) != NULL) {
+                int throttle_start = req->ws.requestpos;
+                int throttle_end = req->ws.requestsize;
+                if (throttle_end > 2108 && hub->ws.remoteVersion >= USB_META_WS_PROTO_V2 && tcpchan == 0) {
+                    // Perform throttling on large uploads
+                    if (req->ws.requestpos == 0) {
+                        // First chunk is always first multiple of full window (124 bytes) above 2KB
+                        throttle_end = 2108;
+                        // Prepare to compute effective transfer rate
+                        hub->ws.chan[tcpchan].lastUploadAckBytes = 0;
+                        hub->ws.chan[tcpchan].lastUploadAckTime = 0;
+                        // Start with initial RTT based estimate
+                        hub->ws.uploadRate = hub->ws.tcpMaxWindowSize * 1000 / hub->ws.tcpRoundTripTime;
+                    } else if (hub->ws.chan[tcpchan].lastUploadAckTime == 0) {
+                        // first block not yet acked, wait more
+                        //WSLOG("wait for first ack");
+                        throttle_end = 0;
+                    } else {
+                        // adapt window frame to available bandwidth
+                        int bytesOnTheAir = req->ws.requestpos - hub->ws.chan[tcpchan].lastUploadAckBytes;
+                        u32 uploadRate = hub->ws.uploadRate;
+                        u64 timeOnTheAir = (yapiGetTickCount() - hub->ws.chan[tcpchan].lastUploadAckTime);
+                        u64 toBeSent = 2 * uploadRate + 1024 - bytesOnTheAir + (uploadRate * timeOnTheAir / 1000);
+                        if (toBeSent + bytesOnTheAir > DEFAULT_TCP_MAX_WINDOW_SIZE) {
+                            toBeSent = DEFAULT_TCP_MAX_WINDOW_SIZE - bytesOnTheAir;
                         }
-                    }
-                    while (req->ws.requestpos < throttle_end) {
-                        int stream = YSTREAM_TCP;
-                        int datalen = throttle_end - req->ws.requestpos;
-                        if (datalen > WS_MAX_DATA_LEN) {
-                            datalen = WS_MAX_DATA_LEN;
-                        }
-                        if (req->ws.requestpos == 0) {
-                            req->ws.first_write_tm = yapiGetTickCount();
-                        }
-
-                        if (req->ws.asyncId && (req->ws.requestpos + datalen == req->ws.requestsize)) {
-                            // last frame of an async request
-                            u8 tmp_data[128];
-
-                            if (datalen == WS_MAX_DATA_LEN) {
-                                // last frame is already full we must send the async close in another one
-                                res = ws_sendFrame(hub, stream, tcpchan, req->ws.requestbuf + req->ws.requestpos, datalen, errmsg);
-                                if (YISERR(res)) {
-                                    req->errcode = res;
-                                    YSTRCPY(req->errmsg, YOCTO_ERRMSG_LEN, errmsg);
-                                    yLeaveCriticalSection(&hub->ws.chan[tcpchan].access);
-                                    ySetEvent(&req->finished);
-                                    return res;
-                                }
-                                WSLOG("ws_req:%p: send %d bytes on chan%d (%d/%d)\n", req, datalen, tcpchan, req->ws.requestpos, req->ws.requestsize);
-                                req->ws.requestpos += datalen;
-                                datalen = 0;
-                            }
-                            stream = YSTREAM_TCP_ASYNCCLOSE;
-                            if (datalen) {
-                                memcpy(tmp_data, req->ws.requestbuf + req->ws.requestpos, datalen);
-                            }
-                            tmp_data[datalen] = req->ws.asyncId;
-                            res = ws_sendFrame(hub, stream, tcpchan, tmp_data, datalen + 1, errmsg);
-                            WSLOG("req(%s:%p) sent async close %d\n", req->hub->name, req, req->ws.asyncId);
-                            req->ws.last_write_tm = yapiGetTickCount();
-                        } else {
-                            res = ws_sendFrame(hub, stream, tcpchan, req->ws.requestbuf + req->ws.requestpos, datalen, errmsg);
-                            req->ws.last_write_tm = yapiGetTickCount();
-                            //WSLOG("ws_req:%p: sent %d bytes on chan%d (%d/%d)\n", req, datalen, tcpchan, req->ws.requestpos, req->ws.requestsize);
-                        }
-                        if (YISERR(res)) {
-                            req->errcode = res;
-                            YSTRCPY(req->errmsg, YOCTO_ERRMSG_LEN, errmsg);
-                            yLeaveCriticalSection(&hub->ws.chan[tcpchan].access);
-                            ySetEvent(&req->finished);
-                            return res;
-                        }
-                        req->ws.requestpos += datalen;
-                    }
-                    if (req->ws.requestpos < req->ws.requestsize) {
-                        int sent = req->ws.requestpos - throttle_start;
-                        // not completely sent, cannot do more for now
-                        if (sent && hub->ws.uploadRate > 0) {
-                            u64 waitTime = 1000 * sent / hub->ws.uploadRate;
+                        WSLOG("throttling: %d bytes/s (%"FMTu64" + %d = %"FMTu64")\n", hub->ws.uploadRate, toBeSent, bytesOnTheAir, bytesOnTheAir + toBeSent);
+                        if (toBeSent < 64) {
+                            u64 waitTime = 1000 * (128 - toBeSent) / hub->ws.uploadRate;
                             if (waitTime < 2) waitTime = 2;
                             hub->ws.next_transmit_tm = yapiGetTickCount() + waitTime;
-                            WSLOG("Sent %dbytes, waiting %"FMTu64"ms...\n", sent, waitTime);
-                        } else {
-                            hub->ws.next_transmit_tm = yapiGetTickCount() + 100;
+                            WSLOG("WS: %d sent %"FMTu64"ms ago, waiting %"FMTu64"ms...\n", bytesOnTheAir, timeOnTheAir, waitTime);
+                            throttle_end = 0;
                         }
-                        req = NULL;
-                    } else {
-                        // end of request get ne following one
-                        req = req->ws.next;
+                        if (throttle_end > req->ws.requestpos + toBeSent) {
+                            // when sending partial content, round up to full frames
+                            if (toBeSent > 124) {
+                                toBeSent = (toBeSent / 124) * 124;
+                            }
+                            throttle_end = req->ws.requestpos + (u32)toBeSent;
+                        }
                     }
                 }
+                while (req->ws.requestpos < throttle_end) {
+                    int stream = YSTREAM_TCP;
+                    int datalen = throttle_end - req->ws.requestpos;
+                    if (datalen > WS_MAX_DATA_LEN) {
+                        datalen = WS_MAX_DATA_LEN;
+                    }
+                    if (req->ws.requestpos == 0) {
+                        req->ws.first_write_tm = yapiGetTickCount();
+                    }
+
+                    if (req->ws.asyncId && (req->ws.requestpos + datalen == req->ws.requestsize)) {
+                        // last frame of an async request
+                        u8 tmp_data[128];
+
+                        if (datalen == WS_MAX_DATA_LEN) {
+                            // last frame is already full we must send the async close in another one
+                            res = ws_sendFrame(hub, stream, tcpchan, req->ws.requestbuf + req->ws.requestpos, datalen, errmsg);
+                            if (YISERR(res)) {
+                                req->errcode = res;
+                                YSTRCPY(req->errmsg, YOCTO_ERRMSG_LEN, errmsg);
+                                yLeaveCriticalSection(&hub->ws.chan[tcpchan].access);
+                                ySetEvent(&req->finished);
+                                return res;
+                            }
+                            WSLOG("ws_req:%p: send %d bytes on chan%d (%d/%d)\n", req, datalen, tcpchan, req->ws.requestpos, req->ws.requestsize);
+                            req->ws.requestpos += datalen;
+                            datalen = 0;
+                        }
+                        stream = YSTREAM_TCP_ASYNCCLOSE;
+                        if (datalen) {
+                            memcpy(tmp_data, req->ws.requestbuf + req->ws.requestpos, datalen);
+                        }
+                        tmp_data[datalen] = req->ws.asyncId;
+                        res = ws_sendFrame(hub, stream, tcpchan, tmp_data, datalen + 1, errmsg);
+                        WSLOG("req(%s:%p) sent async close %d\n", req->hub->name, req, req->ws.asyncId);
+                        req->ws.last_write_tm = yapiGetTickCount();
+                    } else {
+                        res = ws_sendFrame(hub, stream, tcpchan, req->ws.requestbuf + req->ws.requestpos, datalen, errmsg);
+                        req->ws.last_write_tm = yapiGetTickCount();
+                        //WSLOG("ws_req:%p: sent %d bytes on chan%d (%d/%d)\n", req, datalen, tcpchan, req->ws.requestpos, req->ws.requestsize);
+                    }
+                    if (YISERR(res)) {
+                        req->errcode = res;
+                        YSTRCPY(req->errmsg, YOCTO_ERRMSG_LEN, errmsg);
+                        yLeaveCriticalSection(&hub->ws.chan[tcpchan].access);
+                        ySetEvent(&req->finished);
+                        return res;
+                    }
+                    req->ws.requestpos += datalen;
+                }
+                if (req->ws.requestpos < req->ws.requestsize) {
+                    int sent = req->ws.requestpos - throttle_start;
+                    // not completely sent, cannot do more for now
+                    if (sent && hub->ws.uploadRate > 0) {
+                        u64 waitTime = 1000 * sent / hub->ws.uploadRate;
+                        if (waitTime < 2) waitTime = 2;
+                        hub->ws.next_transmit_tm = yapiGetTickCount() + waitTime;
+                        WSLOG("Sent %dbytes, waiting %"FMTu64"ms...\n", sent, waitTime);
+                    } else {
+                        hub->ws.next_transmit_tm = yapiGetTickCount() + 100;
+                    }
+                    req = NULL;
+                } else {
+                    // end of request get ne following one
+                    req = req->ws.next;
+                }
+
             }
         }
         yLeaveCriticalSection(&hub->ws.chan[tcpchan].access);

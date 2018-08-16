@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_accelerometer.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_accelerometer.cpp 31377 2018-07-27 08:24:38Z seb $
  *
  * Implements yFindAccelerometer(), the high-level API for Accelerometer functions
  *
@@ -107,7 +107,7 @@ int YAccelerometer::get_bandwidth(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YAccelerometer::BANDWIDTH_INVALID;
@@ -162,7 +162,7 @@ double YAccelerometer::get_xValue(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YAccelerometer::XVALUE_INVALID;
@@ -191,7 +191,7 @@ double YAccelerometer::get_yValue(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YAccelerometer::YVALUE_INVALID;
@@ -220,7 +220,7 @@ double YAccelerometer::get_zValue(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YAccelerometer::ZVALUE_INVALID;
@@ -242,7 +242,7 @@ Y_GRAVITYCANCELLATION_enum YAccelerometer::get_gravityCancellation(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YAccelerometer::GRAVITYCANCELLATION_INVALID;

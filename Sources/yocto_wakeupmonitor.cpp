@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wakeupmonitor.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_wakeupmonitor.cpp 31377 2018-07-27 08:24:38Z seb $
  *
  * Implements yFindWakeUpMonitor(), the high-level API for WakeUpMonitor functions
  *
@@ -108,7 +108,7 @@ int YWakeUpMonitor::get_powerDuration(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YWakeUpMonitor::POWERDURATION_INVALID;
@@ -163,7 +163,7 @@ int YWakeUpMonitor::get_sleepCountdown(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YWakeUpMonitor::SLEEPCOUNTDOWN_INVALID;
@@ -217,7 +217,7 @@ s64 YWakeUpMonitor::get_nextWakeUp(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YWakeUpMonitor::NEXTWAKEUP_INVALID;
@@ -273,7 +273,7 @@ Y_WAKEUPREASON_enum YWakeUpMonitor::get_wakeUpReason(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YWakeUpMonitor::WAKEUPREASON_INVALID;
@@ -302,7 +302,7 @@ Y_WAKEUPSTATE_enum YWakeUpMonitor::get_wakeUpState(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YWakeUpMonitor::WAKEUPSTATE_INVALID;
@@ -340,7 +340,7 @@ s64 YWakeUpMonitor::get_rtcTime(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YWakeUpMonitor::RTCTIME_INVALID;

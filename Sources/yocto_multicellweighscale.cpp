@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_multicellweighscale.cpp 31016 2018-06-04 08:45:40Z mvuilleu $
+ * $Id: yocto_multicellweighscale.cpp 31377 2018-07-27 08:24:38Z seb $
  *
  * Implements yFindMultiCellWeighScale(), the high-level API for MultiCellWeighScale functions
  *
@@ -154,7 +154,7 @@ int YMultiCellWeighScale::get_cellCount(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YMultiCellWeighScale::CELLCOUNT_INVALID;
@@ -209,7 +209,7 @@ Y_EXCITATION_enum YMultiCellWeighScale::get_excitation(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YMultiCellWeighScale::EXCITATION_INVALID;
@@ -297,7 +297,7 @@ double YMultiCellWeighScale::get_tempAvgAdaptRatio(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YMultiCellWeighScale::TEMPAVGADAPTRATIO_INVALID;
@@ -357,7 +357,7 @@ double YMultiCellWeighScale::get_tempChgAdaptRatio(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YMultiCellWeighScale::TEMPCHGADAPTRATIO_INVALID;
@@ -386,7 +386,7 @@ double YMultiCellWeighScale::get_compTempAvg(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YMultiCellWeighScale::COMPTEMPAVG_INVALID;
@@ -416,7 +416,7 @@ double YMultiCellWeighScale::get_compTempChg(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YMultiCellWeighScale::COMPTEMPCHG_INVALID;
@@ -445,7 +445,7 @@ double YMultiCellWeighScale::get_compensation(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YMultiCellWeighScale::COMPENSATION_INVALID;
@@ -503,7 +503,7 @@ double YMultiCellWeighScale::get_zeroTracking(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YMultiCellWeighScale::ZEROTRACKING_INVALID;
@@ -525,7 +525,7 @@ string YMultiCellWeighScale::get_command(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YMultiCellWeighScale::COMMAND_INVALID;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_carbondioxide.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_carbondioxide.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YCarbonDioxide return codes)
 //--- (end of YCarbonDioxide return codes)
+//--- (YCarbonDioxide yapiwrapper)
+//--- (end of YCarbonDioxide yapiwrapper)
 //--- (YCarbonDioxide definitions)
 class YCarbonDioxide; // forward declaration
 

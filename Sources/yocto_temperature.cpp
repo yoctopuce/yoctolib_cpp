@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_temperature.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_temperature.cpp 31377 2018-07-27 08:24:38Z seb $
  *
  * Implements yFindTemperature(), the high-level API for Temperature functions
  *
@@ -140,7 +140,7 @@ Y_SENSORTYPE_enum YTemperature::get_sensorType(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YTemperature::SENSORTYPE_INVALID;
@@ -203,7 +203,7 @@ double YTemperature::get_signalValue(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YTemperature::SIGNALVALUE_INVALID;
@@ -232,7 +232,7 @@ string YTemperature::get_signalUnit(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration == 0) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YTemperature::SIGNALUNIT_INVALID;
@@ -254,7 +254,7 @@ string YTemperature::get_command(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YTemperature::COMMAND_INVALID;

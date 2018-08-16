@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_altitude.cpp 30501 2018-04-04 08:30:43Z seb $
+ * $Id: yocto_altitude.cpp 31377 2018-07-27 08:24:38Z seb $
  *
  * Implements yFindAltitude(), the high-level API for Altitude functions
  *
@@ -151,7 +151,7 @@ double YAltitude::get_qnh(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YAltitude::QNH_INVALID;
@@ -182,7 +182,7 @@ string YAltitude::get_technology(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YAltitude::TECHNOLOGY_INVALID;

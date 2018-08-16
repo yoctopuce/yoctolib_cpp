@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_daisychain.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_daisychain.cpp 31377 2018-07-27 08:24:38Z seb $
  *
  * Implements yFindDaisyChain(), the high-level API for DaisyChain functions
  *
@@ -97,7 +97,7 @@ Y_DAISYSTATE_enum YDaisyChain::get_daisyState(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YDaisyChain::DAISYSTATE_INVALID;
@@ -126,7 +126,7 @@ int YDaisyChain::get_childCount(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YDaisyChain::CHILDCOUNT_INVALID;
@@ -155,7 +155,7 @@ int YDaisyChain::get_requiredChildCount(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YDaisyChain::REQUIREDCHILDCOUNT_INVALID;

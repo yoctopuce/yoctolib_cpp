@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_carbondioxide.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_carbondioxide.cpp 31377 2018-07-27 08:24:38Z seb $
  *
  * Implements yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *
@@ -94,7 +94,7 @@ int YCarbonDioxide::get_abcPeriod(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YCarbonDioxide::ABCPERIOD_INVALID;
@@ -145,7 +145,7 @@ string YCarbonDioxide::get_command(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YCarbonDioxide::COMMAND_INVALID;

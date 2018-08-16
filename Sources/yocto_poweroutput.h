@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_poweroutput.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_poweroutput.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindPowerOutput(), the high-level API for PowerOutput functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YPowerOutput return codes)
 //--- (end of YPowerOutput return codes)
+//--- (YPowerOutput yapiwrapper)
+//--- (end of YPowerOutput yapiwrapper)
 //--- (YPowerOutput definitions)
 class YPowerOutput; // forward declaration
 

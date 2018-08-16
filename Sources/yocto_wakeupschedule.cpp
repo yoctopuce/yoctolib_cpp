@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wakeupschedule.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_wakeupschedule.cpp 31377 2018-07-27 08:24:38Z seb $
  *
  * Implements yFindWakeUpSchedule(), the high-level API for WakeUpSchedule functions
  *
@@ -111,7 +111,7 @@ int YWakeUpSchedule::get_minutesA(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YWakeUpSchedule::MINUTESA_INVALID;
@@ -165,7 +165,7 @@ int YWakeUpSchedule::get_minutesB(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YWakeUpSchedule::MINUTESB_INVALID;
@@ -219,7 +219,7 @@ int YWakeUpSchedule::get_hours(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YWakeUpSchedule::HOURS_INVALID;
@@ -273,7 +273,7 @@ int YWakeUpSchedule::get_weekDays(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YWakeUpSchedule::WEEKDAYS_INVALID;
@@ -327,7 +327,7 @@ int YWakeUpSchedule::get_monthDays(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YWakeUpSchedule::MONTHDAYS_INVALID;
@@ -381,7 +381,7 @@ int YWakeUpSchedule::get_months(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YWakeUpSchedule::MONTHS_INVALID;
@@ -435,7 +435,7 @@ s64 YWakeUpSchedule::get_nextOccurence(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YWakeUpSchedule::NEXTOCCURENCE_INVALID;

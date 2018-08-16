@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_voc.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_voc.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindVoc(), the high-level API for Voc functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YVoc return codes)
 //--- (end of YVoc return codes)
+//--- (YVoc yapiwrapper)
+//--- (end of YVoc yapiwrapper)
 //--- (YVoc definitions)
 class YVoc; // forward declaration
 

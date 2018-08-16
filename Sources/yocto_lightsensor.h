@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_lightsensor.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_lightsensor.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindLightSensor(), the high-level API for LightSensor functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YLightSensor return codes)
 //--- (end of YLightSensor return codes)
+//--- (YLightSensor yapiwrapper)
+//--- (end of YLightSensor yapiwrapper)
 //--- (YLightSensor definitions)
 class YLightSensor; // forward declaration
 

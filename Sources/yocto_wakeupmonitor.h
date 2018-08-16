@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wakeupmonitor.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_wakeupmonitor.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindWakeUpMonitor(), the high-level API for WakeUpMonitor functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YWakeUpMonitor return codes)
 //--- (end of YWakeUpMonitor return codes)
+//--- (YWakeUpMonitor yapiwrapper)
+//--- (end of YWakeUpMonitor yapiwrapper)
 //--- (YWakeUpMonitor definitions)
 class YWakeUpMonitor; // forward declaration
 

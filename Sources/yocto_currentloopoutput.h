@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_currentloopoutput.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_currentloopoutput.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindCurrentLoopOutput(), the high-level API for CurrentLoopOutput functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YCurrentLoopOutput return codes)
 //--- (end of YCurrentLoopOutput return codes)
+//--- (YCurrentLoopOutput yapiwrapper)
+//--- (end of YCurrentLoopOutput yapiwrapper)
 //--- (YCurrentLoopOutput definitions)
 class YCurrentLoopOutput; // forward declaration
 

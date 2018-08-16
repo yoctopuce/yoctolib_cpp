@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_relay.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_relay.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindRelay(), the high-level API for Relay functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YRelay return codes)
 //--- (end of YRelay return codes)
+//--- (YRelay yapiwrapper)
+//--- (end of YRelay yapiwrapper)
 //--- (YRelay definitions)
 class YRelay; // forward declaration
 

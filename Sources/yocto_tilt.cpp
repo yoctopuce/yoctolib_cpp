@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_tilt.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_tilt.cpp 31377 2018-07-27 08:24:38Z seb $
  *
  * Implements yFindTilt(), the high-level API for Tilt functions
  *
@@ -92,7 +92,7 @@ int YTilt::get_bandwidth(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YTilt::BANDWIDTH_INVALID;
@@ -140,7 +140,7 @@ Y_AXIS_enum YTilt::get_axis(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YTilt::AXIS_INVALID;

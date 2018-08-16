@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_voltageoutput.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_voltageoutput.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindVoltageOutput(), the high-level API for VoltageOutput functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YVoltageOutput return codes)
 //--- (end of YVoltageOutput return codes)
+//--- (YVoltageOutput yapiwrapper)
+//--- (end of YVoltageOutput yapiwrapper)
 //--- (YVoltageOutput definitions)
 class YVoltageOutput; // forward declaration
 

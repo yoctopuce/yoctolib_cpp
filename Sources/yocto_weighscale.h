@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_weighscale.h 31016 2018-06-04 08:45:40Z mvuilleu $
+ * $Id: yocto_weighscale.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindWeighScale(), the high-level API for WeighScale functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YWeighScale return codes)
 //--- (end of YWeighScale return codes)
+//--- (YWeighScale yapiwrapper)
+//--- (end of YWeighScale yapiwrapper)
 //--- (YWeighScale definitions)
 class YWeighScale; // forward declaration
 

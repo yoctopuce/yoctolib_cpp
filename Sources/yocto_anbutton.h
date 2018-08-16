@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_anbutton.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_anbutton.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindAnButton(), the high-level API for AnButton functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YAnButton return codes)
 //--- (end of YAnButton return codes)
+//--- (YAnButton yapiwrapper)
+//--- (end of YAnButton yapiwrapper)
 //--- (YAnButton definitions)
 class YAnButton; // forward declaration
 

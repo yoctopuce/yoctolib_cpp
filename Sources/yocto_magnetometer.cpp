@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_magnetometer.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_magnetometer.cpp 31377 2018-07-27 08:24:38Z seb $
  *
  * Implements yFindMagnetometer(), the high-level API for Magnetometer functions
  *
@@ -103,7 +103,7 @@ int YMagnetometer::get_bandwidth(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YMagnetometer::BANDWIDTH_INVALID;
@@ -159,7 +159,7 @@ double YMagnetometer::get_xValue(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YMagnetometer::XVALUE_INVALID;
@@ -189,7 +189,7 @@ double YMagnetometer::get_yValue(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YMagnetometer::YVALUE_INVALID;
@@ -219,7 +219,7 @@ double YMagnetometer::get_zValue(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YMagnetometer::ZVALUE_INVALID;

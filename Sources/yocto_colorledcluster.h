@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorledcluster.h 30500 2018-04-04 07:53:46Z mvuilleu $
+ * $Id: yocto_colorledcluster.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YColorLedCluster return codes)
 //--- (end of YColorLedCluster return codes)
+//--- (YColorLedCluster yapiwrapper)
+//--- (end of YColorLedCluster yapiwrapper)
 //--- (YColorLedCluster definitions)
 class YColorLedCluster; // forward declaration
 

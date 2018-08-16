@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_voltage.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_voltage.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindVoltage(), the high-level API for Voltage functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YVoltage return codes)
 //--- (end of YVoltage return codes)
+//--- (YVoltage yapiwrapper)
+//--- (end of YVoltage yapiwrapper)
 //--- (YVoltage definitions)
 class YVoltage; // forward declaration
 

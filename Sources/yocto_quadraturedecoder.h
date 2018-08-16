@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_quadraturedecoder.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_quadraturedecoder.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindQuadratureDecoder(), the high-level API for QuadratureDecoder functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YQuadratureDecoder return codes)
 //--- (end of YQuadratureDecoder return codes)
+//--- (YQuadratureDecoder yapiwrapper)
+//--- (end of YQuadratureDecoder yapiwrapper)
 //--- (YQuadratureDecoder definitions)
 class YQuadratureDecoder; // forward declaration
 

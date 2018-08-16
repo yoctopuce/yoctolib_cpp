@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_pwmoutput.h 31296 2018-07-19 12:34:36Z mvuilleu $
+ * $Id: yocto_pwmoutput.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindPwmOutput(), the high-level API for PwmOutput functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YPwmOutput return codes)
 //--- (end of YPwmOutput return codes)
+//--- (YPwmOutput yapiwrapper)
+//--- (end of YPwmOutput yapiwrapper)
 //--- (YPwmOutput definitions)
 class YPwmOutput; // forward declaration
 

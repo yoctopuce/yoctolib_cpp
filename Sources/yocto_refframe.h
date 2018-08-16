@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_refframe.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_refframe.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YRefFrame return codes)
 //--- (end of YRefFrame return codes)
+//--- (YRefFrame yapiwrapper)
+//--- (end of YRefFrame yapiwrapper)
 //--- (YRefFrame definitions)
 class YRefFrame; // forward declaration
 

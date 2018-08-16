@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 31217 2018-07-16 13:41:22Z mvuilleu $
+ * $Id: yproto.h 31426 2018-08-07 11:59:06Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -937,6 +937,7 @@ typedef struct{
     yCRITICAL_SECTION   io_cs;
     YIOHDL_internal     *yiohdl_first;
     u32                 io_counter;
+    u64                 deviceListValidityMs;
     // network discovery info
     HubSt*              nethub[NBMAX_NET_HUB];
     RequestSt*          tcpreq[ALLOC_YDX_PER_HUB];  // indexed by our own DevYdx

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_oscontrol.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_oscontrol.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindOsControl(), the high-level API for OsControl functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YOsControl return codes)
 //--- (end of YOsControl return codes)
+//--- (YOsControl yapiwrapper)
+//--- (end of YOsControl yapiwrapper)
 //--- (YOsControl definitions)
 class YOsControl; // forward declaration
 

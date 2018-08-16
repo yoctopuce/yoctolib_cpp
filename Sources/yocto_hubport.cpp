@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_hubport.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_hubport.cpp 31377 2018-07-27 08:24:38Z seb $
  *
  * Implements yFindHubPort(), the high-level API for HubPort functions
  *
@@ -96,7 +96,7 @@ Y_ENABLED_enum YHubPort::get_enabled(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YHubPort::ENABLED_INVALID;
@@ -152,7 +152,7 @@ Y_PORTSTATE_enum YHubPort::get_portState(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YHubPort::PORTSTATE_INVALID;
@@ -183,7 +183,7 @@ int YHubPort::get_baudRate(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YHubPort::BAUDRATE_INVALID;

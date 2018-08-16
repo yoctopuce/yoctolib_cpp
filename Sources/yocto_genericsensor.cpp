@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_genericsensor.cpp 30501 2018-04-04 08:30:43Z seb $
+ * $Id: yocto_genericsensor.cpp 31377 2018-07-27 08:24:38Z seb $
  *
  * Implements yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -141,7 +141,7 @@ double YGenericSensor::get_signalValue(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YGenericSensor::SIGNALVALUE_INVALID;
@@ -170,7 +170,7 @@ string YGenericSensor::get_signalUnit(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration == 0) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YGenericSensor::SIGNALUNIT_INVALID;
@@ -199,7 +199,7 @@ string YGenericSensor::get_signalRange(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YGenericSensor::SIGNALRANGE_INVALID;
@@ -253,7 +253,7 @@ string YGenericSensor::get_valueRange(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YGenericSensor::VALUERANGE_INVALID;
@@ -337,7 +337,7 @@ double YGenericSensor::get_signalBias(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YGenericSensor::SIGNALBIAS_INVALID;
@@ -373,7 +373,7 @@ Y_SIGNALSAMPLING_enum YGenericSensor::get_signalSampling(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YGenericSensor::SIGNALSAMPLING_INVALID;

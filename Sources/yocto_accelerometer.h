@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_accelerometer.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_accelerometer.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindAccelerometer(), the high-level API for Accelerometer functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YAccelerometer return codes)
 //--- (end of YAccelerometer return codes)
+//--- (YAccelerometer yapiwrapper)
+//--- (end of YAccelerometer yapiwrapper)
 //--- (YAccelerometer definitions)
 class YAccelerometer; // forward declaration
 

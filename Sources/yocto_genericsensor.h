@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_genericsensor.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_genericsensor.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YGenericSensor return codes)
 //--- (end of YGenericSensor return codes)
+//--- (YGenericSensor yapiwrapper)
+//--- (end of YGenericSensor yapiwrapper)
 //--- (YGenericSensor definitions)
 class YGenericSensor; // forward declaration
 

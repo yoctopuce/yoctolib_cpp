@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_network.h 30462 2018-03-26 09:19:24Z mvuilleu $
+ * $Id: yocto_network.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindNetwork(), the high-level API for Network functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YNetwork return codes)
 //--- (end of YNetwork return codes)
+//--- (YNetwork yapiwrapper)
+//--- (end of YNetwork yapiwrapper)
 //--- (YNetwork definitions)
 class YNetwork; // forward declaration
 

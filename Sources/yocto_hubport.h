@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_hubport.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_hubport.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindHubPort(), the high-level API for HubPort functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YHubPort return codes)
 //--- (end of YHubPort return codes)
+//--- (YHubPort yapiwrapper)
+//--- (end of YHubPort yapiwrapper)
 //--- (YHubPort definitions)
 class YHubPort; // forward declaration
 

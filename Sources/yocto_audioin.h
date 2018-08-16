@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_audioin.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_audioin.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindAudioIn(), the high-level API for AudioIn functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YAudioIn return codes)
 //--- (end of YAudioIn return codes)
+//--- (YAudioIn yapiwrapper)
+//--- (end of YAudioIn yapiwrapper)
 //--- (YAudioIn definitions)
 class YAudioIn; // forward declaration
 

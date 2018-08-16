@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_proximity.h 29767 2018-01-26 08:53:27Z seb $
+ * $Id: yocto_proximity.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindProximity(), the high-level API for Proximity functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YProximity return codes)
 //--- (end of YProximity return codes)
+//--- (YProximity yapiwrapper)
+//--- (end of YProximity yapiwrapper)
 //--- (YProximity definitions)
 class YProximity; // forward declaration
 

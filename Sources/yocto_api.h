@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 31233 2018-07-17 09:03:12Z mvuilleu $
+ * $Id: yocto_api.h 31539 2018-08-13 07:03:27Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -436,8 +436,98 @@ public:
 
 
 
+
+
 //
 // YAPI Context
+
+
+//--- (generated code: YAPIContext return codes)
+//--- (end of generated code: YAPIContext return codes)
+//--- (generated code: YAPIContext definitions)
+//--- (end of generated code: YAPIContext definitions)
+
+//--- (generated code: YAPIContext declaration)
+/**
+ * YAPIContext Class: Control interface for the firmware update process
+ *
+ *
+ */
+class YOCTO_CLASS_EXPORT YAPIContext {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
+//--- (end of generated code: YAPIContext declaration)
+protected:
+    //--- (generated code: YAPIContext attributes)
+    // Attributes (function value cache)
+    u64             _cacheValidity;
+    //--- (end of generated code: YAPIContext attributes)
+
+public:
+    YAPIContext();
+    ~YAPIContext();
+    //--- (generated code: YAPIContext accessors declaration)
+
+
+    /**
+     * Change the time between each forced enumeration of the YoctoHub used.
+     * By default, the library performs a complete enumeration every 10 seconds.
+     * To reduce network traffic it is possible to increase this delay.
+     * This is particularly useful when a YoctoHub is connected to a GSM network
+     * where the traffic is charged. This setting does not affect modules connected by USB,
+     * nor the operation of arrival/removal callbacks.
+     * Note: This function must be called after yInitAPI.
+     *
+     * @param deviceListValidity : number of seconds between each enumeration.
+     */
+    virtual void        SetDeviceListValidity(int deviceListValidity);
+
+    /**
+     * Returns the time between each forced enumeration of the YoctoHub used.
+     * Note: This function must be called after yInitAPI.
+     *
+     * @return the number of seconds between each enumeration.
+     */
+    virtual int         GetDeviceListValidity(void);
+
+    /**
+     * Change the validity period of the data loaded by the library.
+     * By default, when accessing a module, all the attributes of the
+     * module functions are automatically kept in cache for the standard
+     * duration (5 ms). This method can be used to change this standard duration,
+     * for example in order to reduce network or USB traffic. This parameter
+     * does not affect value change callbacks
+     * Note: This function must be called after yInitAPI.
+     *
+     * @param cacheValidityMs : an integer corresponding to the validity attributed to the
+     *         loaded function parameters, in milliseconds
+     */
+    virtual void        SetCacheValidity(u64 cacheValidityMs);
+
+    /**
+     * Returns the validity period of the data loaded by the library.
+     * This method returns the cache validity of all attributes
+     * module functions.
+     * Note: This function must be called after yInitAPI .
+     *
+     * @return an integer corresponding to the validity attributed to the
+     *         loaded function parameters, in milliseconds
+     */
+    virtual u64         GetCacheValidity(void);
+
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
+    //--- (end of generated code: YAPIContext accessors declaration)
+};
+
+//--- (generated code: YAPIContext functions declaration)
+//--- (end of generated code: YAPIContext functions declaration)
+
+
+
+
 //
 // This class provides C++-style entry points to lowlevcel functions defined to yapi.h
 // Could be implemented by a singleton, we use static methods insead
@@ -448,7 +538,7 @@ private:
     static  queue<yapiDataEvent>    _data_events;
     static  YHubDiscoveryCallback   _HubDiscoveryCallback;
     static  u64                 _nextEnum;
-    
+
     static  map<int,yCalibrationHandler> _calibHandlers;
     static  void        _yapiLogFunctionFwd(const char *log, u32 loglen);
     static  void        _yapiDeviceArrivalCallbackFwd(YDEV_DESCR devdesc);
@@ -460,6 +550,7 @@ private:
 	static  void        _yapiHubDiscoveryCallbackFwd(const char *serial, const char *url);
 
 public:
+    static  YAPIContext _yapiContext;
     static  void        _yapiFunctionUpdateCallbackFwd(YFUN_DESCR fundesc, const char *value);
     static  double      _decimalToDouble(s16 val);
     static  s16         _doubleToDecimal(double val);
@@ -471,7 +562,6 @@ public:
     static  string      _flattenJsonStruct(string jsonbuffer);
     static  string      _checkFirmware(const string& serial, const string& rev, const string& path);
 
-    static  int         DefaultCacheValidity;
     static  bool        ExceptionsDisabled;
     static  const string      INVALID_STRING;
     static  const int         INVALID_INT = YAPI_INVALID_INT;
@@ -805,6 +895,65 @@ public:
      * @return true if the name is valid, false otherwise.
      */
     static  bool        CheckLogicalName(const string& name);
+
+    //--- (generated code: YAPIContext yapiwrapper)
+    /**
+     * Change the time between each forced enumeration of the YoctoHub used.
+     * By default, the library performs a complete enumeration every 10 seconds.
+     * To reduce network traffic it is possible to increase this delay.
+     * This is particularly useful when a YoctoHub is connected to a GSM network
+     * where the traffic is charged. This setting does not affect modules connected by USB,
+     * nor the operation of arrival/removal callbacks.
+     * Note: This function must be called after yInitAPI.
+     *
+     * @param deviceListValidity : number of seconds between each enumeration.
+     */
+    inline static void SetDeviceListValidity(int deviceListValidity)
+    {
+        YAPI::_yapiContext.SetDeviceListValidity(deviceListValidity);
+    }
+    /**
+     * Returns the time between each forced enumeration of the YoctoHub used.
+     * Note: This function must be called after yInitAPI.
+     *
+     * @return the number of seconds between each enumeration.
+     */
+    inline static int GetDeviceListValidity(void)
+    {
+        return YAPI::_yapiContext.GetDeviceListValidity();
+    }
+    /**
+     * Change the validity period of the data loaded by the library.
+     * By default, when accessing a module, all the attributes of the
+     * module functions are automatically kept in cache for the standard
+     * duration (5 ms). This method can be used to change this standard duration,
+     * for example in order to reduce network or USB traffic. This parameter
+     * does not affect value change callbacks
+     * Note: This function must be called after yInitAPI.
+     *
+     * @param cacheValidityMs : an integer corresponding to the validity attributed to the
+     *         loaded function parameters, in milliseconds
+     */
+    inline static void SetCacheValidity(u64 cacheValidityMs)
+    {
+        YAPI::_yapiContext.SetCacheValidity(cacheValidityMs);
+    }
+    /**
+     * Returns the validity period of the data loaded by the library.
+     * This method returns the cache validity of all attributes
+     * module functions.
+     * Note: This function must be called after yInitAPI .
+     *
+     * @return an integer corresponding to the validity attributed to the
+     *         loaded function parameters, in milliseconds
+     */
+    inline static u64 GetCacheValidity(void)
+    {
+        return YAPI::_yapiContext.GetCacheValidity();
+    }
+//--- (end of generated code: YAPIContext yapiwrapper)
+
+
 };
 
 
@@ -1607,7 +1756,7 @@ protected:
 
     // Method used to change attributes
     YRETCODE    _setAttr(string attrname, string newvalue);
-    YRETCODE    _load_unsafe(int msValidity);
+    YRETCODE    _load_unsafe(u64 msValidity);
 
     static void _UpdateValueCallbackList(YFunction* func, bool add);
     static void _UpdateTimedReportCallbackList(YFunction* func, bool add);
@@ -2135,7 +2284,7 @@ public:
 
     YModuleLogCallback get_logCallback();
 
-    
+
     //--- (generated code: YModule accessors declaration)
 
     static const string PRODUCTNAME_INVALID;
@@ -4010,6 +4159,5 @@ inline YDataLogger* yFirstDataLogger(void)
 { return YDataLogger::FirstDataLogger();}
 
 //--- (end of generated code: YDataLogger functions declaration)
-
 
 #endif

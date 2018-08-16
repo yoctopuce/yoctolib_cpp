@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_digitalio.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_digitalio.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YDigitalIO return codes)
 //--- (end of YDigitalIO return codes)
+//--- (YDigitalIO yapiwrapper)
+//--- (end of YDigitalIO yapiwrapper)
 //--- (YDigitalIO definitions)
 class YDigitalIO; // forward declaration
 

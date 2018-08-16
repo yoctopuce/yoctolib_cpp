@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_currentloopoutput.cpp 30501 2018-04-04 08:30:43Z seb $
+ * $Id: yocto_currentloopoutput.cpp 31377 2018-07-27 08:24:38Z seb $
  *
  * Implements yFindCurrentLoopOutput(), the high-level API for CurrentLoopOutput functions
  *
@@ -129,7 +129,7 @@ double YCurrentLoopOutput::get_current(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YCurrentLoopOutput::CURRENT_INVALID;
@@ -151,7 +151,7 @@ string YCurrentLoopOutput::get_currentTransition(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YCurrentLoopOutput::CURRENTTRANSITION_INVALID;
@@ -222,7 +222,7 @@ double YCurrentLoopOutput::get_currentAtStartUp(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YCurrentLoopOutput::CURRENTATSTARTUP_INVALID;
@@ -254,7 +254,7 @@ Y_LOOPPOWER_enum YCurrentLoopOutput::get_loopPower(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YCurrentLoopOutput::LOOPPOWER_INVALID;

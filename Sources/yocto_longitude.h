@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_longitude.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_longitude.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindLongitude(), the high-level API for Longitude functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YLongitude return codes)
 //--- (end of YLongitude return codes)
+//--- (YLongitude yapiwrapper)
+//--- (end of YLongitude yapiwrapper)
 //--- (YLongitude definitions)
 class YLongitude; // forward declaration
 

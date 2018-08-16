@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_oscontrol.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_oscontrol.cpp 31377 2018-07-27 08:24:38Z seb $
  *
  * Implements yFindOsControl(), the high-level API for OsControl functions
  *
@@ -89,7 +89,7 @@ int YOsControl::get_shutdownCountdown(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YOsControl::SHUTDOWNCOUNTDOWN_INVALID;

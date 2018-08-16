@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorledcluster.cpp 30500 2018-04-04 07:53:46Z mvuilleu $
+ * $Id: yocto_colorledcluster.cpp 31377 2018-07-27 08:24:38Z seb $
  *
  * Implements yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -108,7 +108,7 @@ int YColorLedCluster::get_activeLedCount(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YColorLedCluster::ACTIVELEDCOUNT_INVALID;
@@ -162,7 +162,7 @@ Y_LEDTYPE_enum YColorLedCluster::get_ledType(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YColorLedCluster::LEDTYPE_INVALID;
@@ -217,7 +217,7 @@ int YColorLedCluster::get_maxLedCount(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration == 0) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YColorLedCluster::MAXLEDCOUNT_INVALID;
@@ -246,7 +246,7 @@ int YColorLedCluster::get_blinkSeqMaxCount(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration == 0) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YColorLedCluster::BLINKSEQMAXCOUNT_INVALID;
@@ -275,7 +275,7 @@ int YColorLedCluster::get_blinkSeqMaxSize(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration == 0) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YColorLedCluster::BLINKSEQMAXSIZE_INVALID;
@@ -297,7 +297,7 @@ string YColorLedCluster::get_command(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YColorLedCluster::COMMAND_INVALID;

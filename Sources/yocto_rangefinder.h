@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_rangefinder.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_rangefinder.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindRangeFinder(), the high-level API for RangeFinder functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YRangeFinder return codes)
 //--- (end of YRangeFinder return codes)
+//--- (YRangeFinder yapiwrapper)
+//--- (end of YRangeFinder yapiwrapper)
 //--- (YRangeFinder definitions)
 class YRangeFinder; // forward declaration
 

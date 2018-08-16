@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_multicellweighscale.h 31016 2018-06-04 08:45:40Z mvuilleu $
+ * $Id: yocto_multicellweighscale.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindMultiCellWeighScale(), the high-level API for MultiCellWeighScale functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YMultiCellWeighScale return codes)
 //--- (end of YMultiCellWeighScale return codes)
+//--- (YMultiCellWeighScale yapiwrapper)
+//--- (end of YMultiCellWeighScale yapiwrapper)
 //--- (YMultiCellWeighScale definitions)
 class YMultiCellWeighScale; // forward declaration
 

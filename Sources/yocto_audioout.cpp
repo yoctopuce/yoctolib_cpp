@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_audioout.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_audioout.cpp 31377 2018-07-27 08:24:38Z seb $
  *
  * Implements yFindAudioOut(), the high-level API for AudioOut functions
  *
@@ -104,7 +104,7 @@ int YAudioOut::get_volume(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YAudioOut::VOLUME_INVALID;
@@ -158,7 +158,7 @@ Y_MUTE_enum YAudioOut::get_mute(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YAudioOut::MUTE_INVALID;
@@ -216,7 +216,7 @@ string YAudioOut::get_volumeRange(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YAudioOut::VOLUMERANGE_INVALID;
@@ -245,7 +245,7 @@ int YAudioOut::get_signal(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YAudioOut::SIGNAL_INVALID;
@@ -274,7 +274,7 @@ int YAudioOut::get_noSignalFor(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YAudioOut::NOSIGNALFOR_INVALID;

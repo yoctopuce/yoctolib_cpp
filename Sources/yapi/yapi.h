@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h 31208 2018-07-13 20:38:29Z mvuilleu $
+ * $Id: yapi.h 31440 2018-08-07 17:09:12Z seb $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -147,6 +147,25 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int type,char *errmsg);
 void YAPI_FUNCTION_EXPORT yapiFreeAPI(void);
 
 
+
+/*****************************************************************************
+Function:
+void YAPI_FUNCTION_EXPORT yapiSetNetDevListValidity(int sValidity);
+u64 YAPI_FUNCTION_EXPORT yapiGetNetDevListValidity(void);
+
+Description:
+These function are used to dynamically change the network device list validity.
+By default it's 10 seconds, but with some GSM case you may want ot grow this
+value in order to reduce network trafic. Arrival/Removal are not affected
+by these functions.
+
+Note: the YAPI must be allready initalized otherwise the value will be discarded.
+
+***************************************************************************/
+void YAPI_FUNCTION_EXPORT yapiSetNetDevListValidity(int sValidity);
+int YAPI_FUNCTION_EXPORT yapiGetNetDevListValidity(void);
+
+
 /*****************************************************************************
   Function:
     void  yapiRegisterLogFunction(yapiLogFunction logfun);
@@ -230,18 +249,18 @@ void YAPI_FUNCTION_EXPORT yapiRegisterDeviceChangeCallback(yapiDeviceUpdateCallb
 /*****************************************************************************
   Function:
     void  yapiRegisterDeviceConfigChangeCallback(yapiDeviceUpdateCallback configChangeCallback);
- 
+
   Description:
     Register a callback function, to be called when a persistent settings in
     a device configuration has been changed (e.g. change of unit, etc).
     To unregister your callback you can call this function with a NULL pointer.
- 
+
   Parameters:
     configChangeCallback : a function to register or NULL to unregister the callback
- 
+
   Returns:
     None
- 
+
  ***************************************************************************/
 void YAPI_FUNCTION_EXPORT yapiRegisterDeviceConfigChangeCallback(yapiDeviceUpdateCallback configChangeCallback);
 
@@ -831,7 +850,7 @@ Description:
 Open a HTTP request to a given device, send a query and receive the HTTP header and
 page content into the buffer. The buffer with result will be returned by reference,
 so that the caller can use it or copy it. Do not free reply buffer manually, but
-always call yapiHTTPRequestSyncDone when finished. 
+always call yapiHTTPRequestSyncDone when finished.
 
 Parameters:
 iohdl        : the request handle that will be initialized
@@ -842,7 +861,7 @@ requestsize  : the length of the HTTP request
 reply        : a pointer to the reply buffer, returned by reference
 replysize    : the length of the reply buffer, returned by reference
 progress_cb  : a callback that is called to report progress
-progress_ctx : context passed to progress_cb 
+progress_ctx : context passed to progress_cb
 errmsg       : a pointer to a buffer of YOCTO_ERRMSG_LEN bytes to store any error message
 
 Returns:

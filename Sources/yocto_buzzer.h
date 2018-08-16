@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_buzzer.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_buzzer.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindBuzzer(), the high-level API for Buzzer functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YBuzzer return codes)
 //--- (end of YBuzzer return codes)
+//--- (YBuzzer yapiwrapper)
+//--- (end of YBuzzer yapiwrapper)
 //--- (YBuzzer definitions)
 class YBuzzer; // forward declaration
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_realtimeclock.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_realtimeclock.cpp 31377 2018-07-27 08:24:38Z seb $
  *
  * Implements yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *
@@ -101,7 +101,7 @@ s64 YRealTimeClock::get_unixTime(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YRealTimeClock::UNIXTIME_INVALID;
@@ -155,7 +155,7 @@ string YRealTimeClock::get_dateTime(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YRealTimeClock::DATETIME_INVALID;
@@ -184,7 +184,7 @@ int YRealTimeClock::get_utcOffset(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YRealTimeClock::UTCOFFSET_INVALID;
@@ -240,7 +240,7 @@ Y_TIMESET_enum YRealTimeClock::get_timeSet(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YRealTimeClock::TIMESET_INVALID;

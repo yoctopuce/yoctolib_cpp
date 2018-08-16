@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_dualpower.cpp 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_dualpower.cpp 31377 2018-07-27 08:24:38Z seb $
  *
  * Implements yFindDualPower(), the high-level API for DualPower functions
  *
@@ -96,7 +96,7 @@ Y_POWERSTATE_enum YDualPower::get_powerState(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YDualPower::POWERSTATE_INVALID;
@@ -126,7 +126,7 @@ Y_POWERCONTROL_enum YDualPower::get_powerControl(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YDualPower::POWERCONTROL_INVALID;
@@ -182,7 +182,7 @@ int YDualPower::get_extVoltage(void)
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::DefaultCacheValidity) != YAPI_SUCCESS) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
                     return YDualPower::EXTVOLTAGE_INVALID;

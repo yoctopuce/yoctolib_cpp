@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_current.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_current.h 31377 2018-07-27 08:24:38Z seb $
  *
  * Declares yFindCurrent(), the high-level API for Current functions
  *
@@ -48,6 +48,8 @@
 
 //--- (YCurrent return codes)
 //--- (end of YCurrent return codes)
+//--- (YCurrent yapiwrapper)
+//--- (end of YCurrent yapiwrapper)
 //--- (YCurrent definitions)
 class YCurrent; // forward declaration
 
