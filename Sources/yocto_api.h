@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 31539 2018-08-13 07:03:27Z seb $
+ * $Id: yocto_api.h 31770 2018-08-20 09:54:36Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -461,7 +461,7 @@ class YOCTO_CLASS_EXPORT YAPIContext {
 protected:
     //--- (generated code: YAPIContext attributes)
     // Attributes (function value cache)
-    u64             _cacheValidity;
+    u64             _defaultCacheValidity;
     //--- (end of generated code: YAPIContext attributes)
 
 public:
@@ -480,6 +480,7 @@ public:
      * Note: This function must be called after yInitAPI.
      *
      * @param deviceListValidity : number of seconds between each enumeration.
+     * @noreturn
      */
     virtual void        SetDeviceListValidity(int deviceListValidity);
 
@@ -501,7 +502,8 @@ public:
      * Note: This function must be called after yInitAPI.
      *
      * @param cacheValidityMs : an integer corresponding to the validity attributed to the
-     *         loaded function parameters, in milliseconds
+     *         loaded function parameters, in milliseconds.
+     * @noreturn
      */
     virtual void        SetCacheValidity(u64 cacheValidityMs);
 
@@ -907,6 +909,7 @@ public:
      * Note: This function must be called after yInitAPI.
      *
      * @param deviceListValidity : number of seconds between each enumeration.
+     * @noreturn
      */
     inline static void SetDeviceListValidity(int deviceListValidity)
     {
@@ -932,7 +935,8 @@ public:
      * Note: This function must be called after yInitAPI.
      *
      * @param cacheValidityMs : an integer corresponding to the validity attributed to the
-     *         loaded function parameters, in milliseconds
+     *         loaded function parameters, in milliseconds.
+     * @noreturn
      */
     inline static void SetCacheValidity(u64 cacheValidityMs)
     {

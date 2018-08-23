@@ -1,7 +1,4 @@
-CPP v1.10.31701
+CPP v1.10.31874
 
-- Add methods do change DeviceListValidity and CacheValidity
-- Add support for ConfigChange callbacks
-- Improve error recovery during DataSet.loadMore
-- Improve error reporting during UpdateDeviceList()
-- Fix race condition with WebSocket connexion
+- Add Doc-GettingStarted-Yocto-Color-V2 example
+- Add prog example streaming the value of a tilt sensor to UDP socket in ASCII form

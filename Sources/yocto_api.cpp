@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 31539 2018-08-13 07:03:27Z seb $
+ * $Id: yocto_api.cpp 31770 2018-08-20 09:54:36Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -2313,7 +2313,7 @@ vector<YMeasure> YDataSet::get_measures(void)
 
 YAPIContext::YAPIContext():
 //--- (generated code: YAPIContext initialization)
-    _cacheValidity(5)
+    _defaultCacheValidity(5)
 //--- (end of generated code: YAPIContext initialization)
 {
 
@@ -2338,6 +2338,7 @@ YAPIContext::~YAPIContext()
  * Note: This function must be called after yInitAPI.
  *
  * @param deviceListValidity : number of seconds between each enumeration.
+ * @noreturn
  */
 void YAPIContext::SetDeviceListValidity(int deviceListValidity)
 {
@@ -2367,11 +2368,12 @@ int YAPIContext::GetDeviceListValidity(void)
  * Note: This function must be called after yInitAPI.
  *
  * @param cacheValidityMs : an integer corresponding to the validity attributed to the
- *         loaded function parameters, in milliseconds
+ *         loaded function parameters, in milliseconds.
+ * @noreturn
  */
 void YAPIContext::SetCacheValidity(u64 cacheValidityMs)
 {
-    _cacheValidity = cacheValidityMs;
+    _defaultCacheValidity = cacheValidityMs;
 }
 
 /**
@@ -2385,7 +2387,7 @@ void YAPIContext::SetCacheValidity(u64 cacheValidityMs)
  */
 u64 YAPIContext::GetCacheValidity(void)
 {
-    return _cacheValidity;
+    return _defaultCacheValidity;
 }
 //--- (end of generated code: YAPIContext implementation)
 

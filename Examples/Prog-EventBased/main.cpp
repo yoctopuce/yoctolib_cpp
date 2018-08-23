@@ -29,7 +29,7 @@ static void deviceLog(YModule *module, const string& logline)
 
 static void deviceConfigChange(YModule *m)
 {
-    cout << "config change : " << m->get_serialNumber() << endl;
+  cout << "config change : " << m->get_serialNumber() << endl;
 }
 
 static void deviceArrival(YModule *m)
