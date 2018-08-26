@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_colorledcluster.h 31377 2018-07-27 08:24:38Z seb $
+ * $Id: yocto_colorledcluster.h 31886 2018-08-24 13:58:52Z seb $
  *
  * Declares yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -293,6 +293,22 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         set_rgbColorAtPowerOn(int ledIndex,int count,int rgbValue);
+
+    /**
+     * Changes the  color at device startup of consecutve LEDs in the cluster, using a HSL color. Encoding
+     * is done as follows: 0xHHSSLL.
+     * Don't forget to call saveLedsConfigAtPowerOn() to make sure the modification is saved in the device
+     * flash memory.
+     *
+     * @param ledIndex :  index of the first affected LED.
+     * @param count    :  affected LED count.
+     * @param hslValue :  new color.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         set_hslColorAtPowerOn(int ledIndex,int count,int hslValue);
 
     /**
      * Changes the current color of consecutive LEDs in the cluster, using a HSL color. Encoding is done
@@ -787,6 +803,10 @@ public:
      * On failure, throws an exception or returns an empty array.
      */
     virtual vector<int> get_blinkSeqState(int seqIndex,int count);
+
+    virtual int         hsl2rgbInt(int temp1,int temp2,int temp3);
+
+    virtual int         hsl2rgb(int hslValue);
 
 
     inline static YColorLedCluster* Find(string func)
