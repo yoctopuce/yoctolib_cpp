@@ -32,13 +32,19 @@ static void deviceConfigChange(YModule *m)
   cout << "config change : " << m->get_serialNumber() << endl;
 }
 
-static void deviceArrival(YModule *m)
+static void beaconChange(YModule* m, int beacon_state)
 {
+  cout << "Beacon of " << m->get_serialNumber() << " changed to " << beacon_state << endl;
+}
+
+static void deviceArrival(YModule* m)
+{
+  string hardwareId;
   string serial = m->get_serialNumber();
   cout << "Device arrival : " << serial << endl;
   m->registerLogCallback(deviceLog);
   m->registerConfigChangeCallback(deviceConfigChange);
-  string hardwareId;
+  m->registerBeaconCallback(beaconChange);
 
   // First solution: look for a specific type of function (eg. anButton)
   int fctcount = m->functionCount();

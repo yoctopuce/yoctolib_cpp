@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 31770 2018-08-20 09:54:36Z seb $
+ * $Id: yocto_api.h 32376 2018-09-27 07:57:07Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -115,6 +115,7 @@ typedef enum {
 #define Y_USBCURRENT_INVALID            (YAPI_INVALID_UINT)
 #define Y_REBOOTCOUNTDOWN_INVALID       (YAPI_INVALID_INT)
 #define Y_USERVAR_INVALID               (YAPI_INVALID_INT)
+typedef void (*YModuleBeaconCallback)(YModule *module, int beacon);
 //--- (end of generated code: YModule definitions)
 
 class YMeasure; // forward declaration
@@ -273,7 +274,8 @@ typedef enum {
 	YAPI_FUN_VALUE,
 	YAPI_FUN_TIMEDREPORT,
 	YAPI_FUN_REFRESH,
-    YAPI_DEV_CONFCHANGE
+    YAPI_DEV_CONFCHANGE,
+    YAPI_DEV_BEACON
 } yapiDataEventType;
 
 typedef struct{
@@ -291,8 +293,9 @@ typedef struct{
 		};
         struct {
             YModule    *module;
+            int         beacon;
         };
-	};
+    };
 }yapiDataEvent;
 
 
@@ -546,6 +549,7 @@ private:
     static  void        _yapiDeviceArrivalCallbackFwd(YDEV_DESCR devdesc);
     static  void        _yapiDeviceRemovalCallbackFwd(YDEV_DESCR devdesc);
     static  void        _yapiDeviceChangeCallbackFwd(YDEV_DESCR devdesc);
+    static  void        _yapiBeaconCallbackFwd(YDEV_DESCR devdesc, int beacon);
     static  void        _yapiDeviceConfigChangeCallbackFwd(YDEV_DESCR devdesc);
     static  void        _yapiDeviceLogCallbackFwd(YDEV_DESCR devdesc, const char* line);
     static  void        _yapiFunctionTimedReportCallbackFwd(YAPI_FUNCTION fundesc, double timestamp, const u8 *bytes, u32 len);
@@ -2167,6 +2171,7 @@ protected:
     YModuleValueCallback _valueCallbackModule;
     YModuleLogCallback _logCallback;
     YModuleConfigChangeCallback _confChangeCallback;
+    YModuleBeaconCallback _beaconCallback;
 
     friend YModule *yFindModule(const string& func);
     friend YModule *yFirstModule(void);
@@ -2182,6 +2187,8 @@ protected:
 
     // Method used to retrieve details of the nth function of our device
     YRETCODE        _getFunction(int idx, string& serial, string& funcId, string& baseType, string& funcName, string& funcVal, string& errMsg);
+
+    static void _updateModuleCallbackList(YModule* func, bool add);
 
 public:
     ~YModule();
@@ -2601,6 +2608,18 @@ public:
     virtual int         registerConfigChangeCallback(YModuleConfigChangeCallback callback);
 
     virtual int         _invokeConfigChangeCallback(void);
+
+    /**
+     * Register a callback function, to be called when the localization beacon of the module
+     * has been changed. The callback function should take two arguments: the YModule object of
+     * which the beacon has changed, and an integer describing the new beacon state.
+     *
+     * @param callback : The callback function to call, or NULL to unregister a
+     *         previously registered callback.
+     */
+    virtual int         registerBeaconCallback(YModuleBeaconCallback callback);
+
+    virtual int         _invokeBeaconCallback(int beaconState);
 
     /**
      * Triggers a configuration change callback, to check if they are supported or not.

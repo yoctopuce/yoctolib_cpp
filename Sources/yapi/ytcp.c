@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 31476 2018-08-09 20:11:48Z seb $
+ * $Id: ytcp.c 32391 2018-09-27 12:35:38Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -2158,7 +2158,7 @@ static int ws_parseIncommingFrame(HubSt* hub, u8* buffer, int pktlen, char* errm
         break;
     case YSTREAM_META: {
         USB_Meta_Pkt* meta = (USB_Meta_Pkt*)(buffer);
-        WSLOG("%"FMTu64": META type=%d len=%d\n",reltime, meta->announce.metaType, pktlen);
+        //WSLOG("%"FMTu64": META type=%d len=%d\n",reltime, meta->announce.metaType, pktlen);
         switch (meta->announce.metaType) {
         case USB_META_WS_ANNOUNCE:
             if (meta->announce.version < USB_META_WS_PROTO_V1 || pktlen < USB_META_WS_ANNOUNCE_SIZE) {
@@ -2266,8 +2266,6 @@ static int ws_parseIncommingFrame(HubSt* hub, u8* buffer, int pktlen, char* errm
                     deltaBytes = ackBytes - hub->ws.chan[tcpchan].lastUploadRateBytes;
                     deltaTime = ackTime - hub->ws.chan[tcpchan].lastUploadRateTime;
                     WSLOG("delta  bytes=%d  time=%"FMTu64"ms\n",deltaBytes, deltaTime);
-
-
                     if (deltaTime < 500) {
                         yLeaveCriticalSection(&hub->ws.chan[tcpchan].access);
                         break; // wait more
@@ -2338,12 +2336,12 @@ static RequestSt* getNextReqToSend(HubSt* hub, int tcpchan)
 {
     RequestSt* req = hub->ws.chan[tcpchan].requests;
     while (req) {
-        if (req->ws.requestpos < req->ws.requestsize && req->state == REQ_OPEN ) {
+        if (req->ws.requestpos < req->ws.requestsize && req->state == REQ_OPEN) {
             return req;
         }
-        if (req->ws.asyncId){
+        if (req->ws.asyncId) {
             req = req->ws.next;
-        }else {
+        } else {
             return NULL;
         }
     }
@@ -2361,6 +2359,8 @@ static int ws_processRequests(HubSt* hub, char* errmsg)
     int res;
 
     if (hub->ws.next_transmit_tm && hub->ws.next_transmit_tm > yapiGetTickCount()) {
+        //u64 wait = hub->ws.next_transmit_tm - yapiGetTickCount();
+        //WSLOG("skip reqProcess for %"FMTu64" ms\n", wait);
         return YAPI_SUCCESS;
     }
 
@@ -2368,7 +2368,7 @@ static int ws_processRequests(HubSt* hub, char* errmsg)
         yEnterCriticalSection(&hub->ws.chan[tcpchan].access);
         if (hub->ws.chan[tcpchan].requests) {
             RequestSt* req;
-            while((req = getNextReqToSend(hub, tcpchan)) != NULL) {
+            while ((req = getNextReqToSend(hub, tcpchan)) != NULL) {
                 int throttle_start = req->ws.requestpos;
                 int throttle_end = req->ws.requestsize;
                 if (throttle_end > 2108 && hub->ws.remoteVersion >= USB_META_WS_PROTO_V2 && tcpchan == 0) {
@@ -2472,12 +2472,8 @@ static int ws_processRequests(HubSt* hub, char* errmsg)
                     } else {
                         hub->ws.next_transmit_tm = yapiGetTickCount() + 100;
                     }
-                    req = NULL;
-                } else {
-                    // end of request get ne following one
-                    req = req->ws.next;
+                    break;
                 }
-
             }
         }
         yLeaveCriticalSection(&hub->ws.chan[tcpchan].access);
@@ -2959,6 +2955,19 @@ void* ws_thread(void* ctx)
 os_ifaces detectedIfaces[NB_OS_IFACES];
 int nbDetectedIfaces = 0;
 
+#ifdef DEBUG_NET_DETECTION
+
+void ip2a(u32 ip, char *buffer)
+{
+    unsigned char bytes[4];
+    bytes[0] = ip & 0xFF;
+    bytes[1] = (ip >> 8) & 0xFF;
+    bytes[2] = (ip >> 16) & 0xFF;
+    bytes[3] = (ip >> 24) & 0xFF;
+    YSPRINTF(buffer, 125, "%d.%d.%d.%d", bytes[0], bytes[1], bytes[2], bytes[3]);
+}
+#endif
+
 
 #ifdef WINDOWS_API
 YSTATIC int yDetectNetworkInterfaces(u32 only_ip)
@@ -2980,6 +2989,9 @@ YSTATIC int yDetectNetworkInterfaces(u32 only_ip)
     }
 
     nbifaces = returnedSize / sizeof(INTERFACE_INFO);
+#ifdef DEBUG_NET_DETECTION
+    dbglog("windows returned %d interfaces\n", nbifaces);
+#endif
     for (i = 0; i < nbifaces; i++) {
         if (winIfaces[i].iiFlags & IFF_LOOPBACK)
             continue;
@@ -2991,9 +3003,19 @@ YSTATIC int yDetectNetworkInterfaces(u32 only_ip)
             }
             detectedIfaces[nbDetectedIfaces].ip = winIfaces[i].iiAddress.AddressIn.sin_addr.S_un.S_addr;
             detectedIfaces[nbDetectedIfaces].netmask = winIfaces[i].iiNetmask.AddressIn.sin_addr.S_un.S_addr;
+#ifdef DEBUG_NET_DETECTION
+            {
+                char buffer[128];
+                ip2a(detectedIfaces[nbDetectedIfaces].ip, buffer);
+                dbglog(" iface%d: ip %s\n", nbifaces, buffer);
+            }
+#endif
             nbDetectedIfaces++;
         }
     }
+#ifdef DEBUG_NET_DETECTION
+    dbglog("%d interfaces are useable\n", nbDetectedIfaces);
+#endif
     return nbDetectedIfaces;
 }
 #else
@@ -3426,7 +3448,7 @@ int ySSDPStart(SSDPInfos* SSDP, ssdpHubDiscoveryCallback callback, char* errmsg)
         if (bind(SSDP->request_sock[i], (struct sockaddr*)&sockaddr, socksize) < 0) {
             return yNetSetErr();
         }
-        //create NOTIFY socker
+        //create NOTIFY socket
         SSDP->notify_sock[i] = ysocket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
         if (SSDP->notify_sock[i] == INVALID_SOCKET) {
             return yNetSetErr();

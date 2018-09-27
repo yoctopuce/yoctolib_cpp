@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 31421 2018-08-07 11:27:03Z seb $
+ * $Id: ydef.h 32346 2018-09-25 12:35:44Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -458,6 +458,7 @@ typedef struct {
     char    logicalname[YOCTO_LOGICAL_LEN];
     char    firmware[YOCTO_FIRMWARE_LEN];
     u8      beacon;
+    u8      pad;
 } yDeviceSt;
 
 // definitions for USB protocl

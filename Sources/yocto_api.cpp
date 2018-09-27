@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 31770 2018-08-20 09:54:36Z seb $
+ * $Id: yocto_api.cpp 32376 2018-09-27 07:57:07Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -64,6 +64,7 @@ static  yCRITICAL_SECTION   _handleEvent_CS;
 
 static  std::vector<YFunction*>     _FunctionCallbacks;
 static  std::vector<YFunction*>     _TimedReportCallbackList;
+static  std::map<YModule*, int>     _moduleCallbackList;
 
 const string YFunction::HARDWAREID_INVALID = YAPI_INVALID_STRING;
 const string YFunction::FUNCTIONID_INVALID = YAPI_INVALID_STRING;
@@ -1201,12 +1202,12 @@ int YFirmwareUpdate::_processMore(int newupdate)
                     _progress = YAPI_IO_ERROR;
                     _progress_msg = "Unable to update firmware";
                 } else {
-                    _progress =  100;
+                    _progress = 100;
                     _progress_msg = "success";
                 }
             }
         } else {
-            _progress =  100;
+            _progress = 100;
             _progress_msg = "success";
         }
     }
@@ -1346,7 +1347,7 @@ int YFirmwareUpdate::startUpdate(void)
     int leng = 0;
     err = _settings;
     leng = (int)(err).length();
-    if (( leng >= 6) && ("error:" == (err).substr(0, 6))) {
+    if ((leng >= 6) && ("error:" == (err).substr(0, 6))) {
         _progress = -1;
         _progress_msg = (err).substr( 6, leng - 6);
     } else {
@@ -3652,6 +3653,27 @@ void YFunction::_UpdateTimedReportCallbackList(YFunction* func, bool add)
     }
 }
 
+
+void YModule::_updateModuleCallbackList(YModule* module, bool add)
+{
+    map<YModule*, int>::iterator entry = _moduleCallbackList.find(module);
+    if (add) {
+        module->isOnline();
+        if (entry != _moduleCallbackList.end()) {
+            _moduleCallbackList[module]++;
+        } else {
+            _moduleCallbackList[module]=1;
+        }        
+    } else {
+        if (entry != _moduleCallbackList.end()) {
+            if (_moduleCallbackList[module] > 0) {
+                _moduleCallbackList[module]--;
+            }
+        }
+    }
+}
+
+
 // This is the internal device cache object
 vector<YDevice*> YDevice::_devCache;
 
@@ -4032,18 +4054,41 @@ void YAPI::_yapiDeviceChangeCallbackFwd(YDEV_DESCR devdesc)
     _plug_events.push(ev);
 }
 
+void YAPI::_yapiBeaconCallbackFwd(YDEV_DESCR devdesc, int beacon)
+{
+    yapiDataEvent    ev;
+    yDeviceSt    infos;
+    string       errmsg;
+    YModule      *module;
+
+    if (YapiWrapper::getDeviceInfo(devdesc, infos, errmsg) != YAPI_SUCCESS) return;
+    module = yFindModule(string(infos.serial) + ".module");
+    if (_moduleCallbackList.find(module) != _moduleCallbackList.end() && _moduleCallbackList[module] > 0) {
+        ev.type = YAPI_DEV_BEACON;
+        ev.module = module;
+        ev.beacon = beacon;
+        //the function is allready thread safe (use yapiLockFunctionCallaback)
+        _data_events.push(ev);
+    }
+}
+
+
 void YAPI::_yapiDeviceConfigChangeCallbackFwd(YDEV_DESCR devdesc)
 {
     yapiDataEvent   ev;
     yDeviceSt    infos;
     string       errmsg;
+    YModule      *module;
 
-    ev.type      = YAPI_DEV_CONFCHANGE;
     if(YapiWrapper::getDeviceInfo(devdesc, infos, errmsg) != YAPI_SUCCESS) return;
-    ev.module = yFindModule(string(infos.serial)+".module");
-    ev.module->setImmutableAttributes(&infos);
-    //the function is allready thread safe (use yapiLockDeviceCallaback)
-    _data_events.push(ev);
+    module = yFindModule(string(infos.serial) + ".module");
+    if (_moduleCallbackList.find(module) != _moduleCallbackList.end() && _moduleCallbackList[module] > 0) {
+        ev.type = YAPI_DEV_CONFCHANGE;
+        ev.module = module;
+        ev.module->setImmutableAttributes(&infos);
+        //the function is allready thread safe (use yapiLockFunctionCallaback)
+        _data_events.push(ev);
+    }
 }
 
 void YAPI::_yapiFunctionUpdateCallbackFwd(YAPI_FUNCTION fundesc,const char *value)
@@ -4363,6 +4408,7 @@ YRETCODE YAPI::InitAPI(int mode, string& errmsg)
     yapiRegisterDeviceArrivalCallback(YAPI::_yapiDeviceArrivalCallbackFwd);
     yapiRegisterDeviceRemovalCallback(YAPI::_yapiDeviceRemovalCallbackFwd);
     yapiRegisterDeviceChangeCallback(YAPI::_yapiDeviceChangeCallbackFwd);
+    yapiRegisterBeaconCallback(YAPI::_yapiBeaconCallbackFwd);
     yapiRegisterDeviceConfigChangeCallback(YAPI::_yapiDeviceConfigChangeCallbackFwd);
     yapiRegisterFunctionUpdateCallback(YAPI::_yapiFunctionUpdateCallbackFwd);
 	yapiRegisterTimedReportCallback(YAPI::_yapiFunctionTimedReportCallbackFwd);
@@ -4827,6 +4873,9 @@ YRETCODE YAPI::HandleEvents(string& errmsg)
             case YAPI_DEV_CONFCHANGE:
                 ev.module->_invokeConfigChangeCallback();
                 break;
+            case YAPI_DEV_BEACON:
+                ev.module->_invokeBeaconCallback((Y_BEACON_enum)ev.beacon);
+                break;
             default:
                 break;
         }
@@ -5183,6 +5232,7 @@ YModule::YModule(const string& func): YFunction(func)
     ,_valueCallbackModule(NULL)
     ,_logCallback(NULL)
     ,_confChangeCallback(NULL)
+    ,_beaconCallback(NULL)
 //--- (end of generated code: YModule initialization)
 {
     _className = "Module";
@@ -5855,6 +5905,11 @@ int YModule::triggerFirmwareUpdate(int secBeforeReboot)
  */
 int YModule::registerConfigChangeCallback(YModuleConfigChangeCallback callback)
 {
+    if (callback != NULL) {
+        YModule::_updateModuleCallbackList(this, true);
+    } else {
+        YModule::_updateModuleCallbackList(this, false);
+    }
     _confChangeCallback = callback;
     return 0;
 }
@@ -5868,11 +5923,38 @@ int YModule::_invokeConfigChangeCallback(void)
 }
 
 /**
+ * Register a callback function, to be called when the localization beacon of the module
+ * has been changed. The callback function should take two arguments: the YModule object of
+ * which the beacon has changed, and an integer describing the new beacon state.
+ *
+ * @param callback : The callback function to call, or NULL to unregister a
+ *         previously registered callback.
+ */
+int YModule::registerBeaconCallback(YModuleBeaconCallback callback)
+{
+    if (callback != NULL) {
+        YModule::_updateModuleCallbackList(this, true);
+    } else {
+        YModule::_updateModuleCallbackList(this, false);
+    }
+    _beaconCallback = callback;
+    return 0;
+}
+
+int YModule::_invokeBeaconCallback(int beaconState)
+{
+    if (_beaconCallback != NULL) {
+        _beaconCallback(this, beaconState);
+    }
+    return 0;
+}
+
+/**
  * Triggers a configuration change callback, to check if they are supported or not.
  */
 int YModule::triggerConfigChangeCallback(void)
 {
-    this->_setAttr("persistentSettings","2");
+    this->_setAttr("persistentSettings", "2");
     return 0;
 }
 
@@ -5903,7 +5985,7 @@ string YModule::checkFirmware(string path,bool onlynew)
     }
     //may throw an exception
     serial = this->get_serialNumber();
-    tmp_res = YFirmwareUpdate::CheckFirmware(serial,path, release);
+    tmp_res = YFirmwareUpdate::CheckFirmware(serial, path, release);
     if (_ystrpos(tmp_res, "error:") == 0) {
         this->_throw(YAPI_INVALID_ARGUMENT, tmp_res);
     }
@@ -6129,10 +6211,10 @@ bool YModule::hasFunction(string funcId)
     int i = 0;
     string fid;
 
-    count  = this->functionCount();
+    count = this->functionCount();
     i = 0;
     while (i < count) {
-        fid  = this->functionId(i);
+        fid = this->functionId(i);
         if (fid == funcId) {
             return true;
         }
@@ -7996,7 +8078,7 @@ YDataLogger* YSensor::get_dataLogger(void)
         return NULL;
     }
     hwid = serial + ".dataLogger";
-    logger  = YDataLogger::FindDataLogger(hwid);
+    logger = YDataLogger::FindDataLogger(hwid);
     return logger;
 }
 

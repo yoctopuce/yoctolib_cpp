@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h 31440 2018-08-07 17:09:12Z seb $
+ * $Id: yapi.h 32085 2018-09-17 16:15:36Z seb $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -66,6 +66,9 @@ typedef void YAPI_FUNCTION_EXPORT(*yapiLogFunction)(const char *log,u32 loglen);
 
 // prototype of the device arrival/update/removal callback
 typedef void YAPI_FUNCTION_EXPORT(*yapiDeviceUpdateCallback)(YAPI_DEVICE devdescr);
+
+// prototype of the device beacon change callback
+typedef void YAPI_FUNCTION_EXPORT(*yapiBeaconCallback)(YAPI_DEVICE devdescr, int beacon);
 
 
 // prototype of functions change callback
@@ -245,6 +248,8 @@ void YAPI_FUNCTION_EXPORT yapiRegisterDeviceRemovalCallback(yapiDeviceUpdateCall
 
  ***************************************************************************/
 void YAPI_FUNCTION_EXPORT yapiRegisterDeviceChangeCallback(yapiDeviceUpdateCallback changeCallback);
+
+void YAPI_FUNCTION_EXPORT yapiRegisterBeaconCallback(yapiBeaconCallback beaconCallback);
 
 /*****************************************************************************
   Function:

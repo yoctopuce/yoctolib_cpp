@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 31426 2018-08-07 11:59:06Z seb $
+ * $Id: yproto.h 32085 2018-09-17 16:15:36Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -953,6 +953,7 @@ typedef struct{
     yapiDeviceLogCallback       logDeviceCallback;
     yapiDeviceUpdateCallback    arrivalCallback;
     yapiDeviceUpdateCallback    changeCallback;
+    yapiBeaconCallback          beaconCallback;
     yapiDeviceUpdateCallback    confChangeCallback;
     yapiDeviceUpdateCallback    removalCallback;
     yapiFunctionUpdateCallback  functionCallback;

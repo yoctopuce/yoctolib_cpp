@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 31494 2018-08-10 09:00:21Z seb $
+ * $Id: yapi.c 32345 2018-09-25 12:26:25Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -671,7 +671,7 @@ void wpSafeRegister(HubSt *hub, u8 devYdx, yStrRef serialref,yStrRef lnameref, y
  ***************************************************************************/
 void wpSafeUpdate(HubSt *hub,u8 devYdx, yStrRef serialref,yStrRef lnameref, yUrlRef devUrl, s8 beacon)
 {
-
+    int reg;
     yUrlRef     registeredUrl =wpGetDeviceUrlRef(serialref);
 #ifdef DEBUG_WP
     {
@@ -696,21 +696,30 @@ void wpSafeUpdate(HubSt *hub,u8 devYdx, yStrRef serialref,yStrRef lnameref, yUrl
 #endif
         return;
     }
-    if (wpRegister(-1, serialref, lnameref, INVALID_HASH_IDX, 0, devUrl, beacon)) {
-        ypRegister(YSTRREF_MODULE_STRING, serialref, YSTRREF_mODULE_STRING, lnameref, YOCTO_AKA_YFUNCTION, -1, NULL);
-        if(hub && devYdx < MAX_YDX_PER_HUB) {
-            // Update hub-specific devYdx mapping between enus->devYdx and our wp devYdx
-            hub->devYdxMap[devYdx] = wpGetDevYdx(serialref);
+    reg = wpRegister(-1, serialref, lnameref, INVALID_HASH_IDX, 0, devUrl, beacon);
+    if (reg) {
+        if (reg & 1) {
+            ypRegister(YSTRREF_MODULE_STRING, serialref, YSTRREF_mODULE_STRING, lnameref, YOCTO_AKA_YFUNCTION, -1, NULL);
+            if (hub && devYdx < MAX_YDX_PER_HUB) {
+                // Update hub-specific devYdx mapping between enus->devYdx and our wp devYdx
+                hub->devYdxMap[devYdx] = wpGetDevYdx(serialref);
+            }
+            // Forward high-level notification to API user
+            if (yContext->changeCallback) {
+                yEnterCriticalSection(&yContext->deviceCallbackCS);
+                yContext->changeCallback(serialref);
+                yLeaveCriticalSection(&yContext->deviceCallbackCS);
+            }
         }
-        // Forward high-level notification to API user
-        if(yContext->changeCallback){
-            yEnterCriticalSection(&yContext->deviceCallbackCS);
-            yContext->changeCallback(serialref);
-            yLeaveCriticalSection(&yContext->deviceCallbackCS);
+        if (reg & 2) {
+            if (yContext->beaconCallback) {
+                yEnterCriticalSection(&yContext->functionCallbackCS);
+                yContext->beaconCallback(serialref, beacon);
+                yLeaveCriticalSection(&yContext->functionCallbackCS);
+            }
         }
     }
 }
-
 
 
 void wpSafeUnregister(yStrRef serialref)
@@ -1117,7 +1126,7 @@ static int yNetHubEnum(HubSt *hub,int forceupdate,char *errmsg)
     yStrRef         knownDevices[128];
 
     //check if the expiration has expired;
-    if(!forceupdate && hub->devListExpires > yapiGetTickCount()) {
+    if(!forceupdate && hub->state == NET_HUB_ESTABLISHED && hub->devListExpires > yapiGetTickCount()) {
         return YAPI_SUCCESS;
     }
 
@@ -1149,8 +1158,8 @@ static int yNetHubEnum(HubSt *hub,int forceupdate,char *errmsg)
             }
         }
     } else {
-        // if the hub is optional we will not triger an error but
-        // instead unregister all know device connecte on this hub
+        // if the hub is optional we will not trigger an error but
+        // instead unregister all know device connected on this hub
         if (hub->state == NET_HUB_ESTABLISHED) {
             // the hub send ping notification -> we can rely on helperthread status
             res = yNetHubEnumEx(hub, &enus, errmsg);
@@ -1461,6 +1470,33 @@ static YRETCODE yapiInitAPI_internal(int detect_type,char *errmsg)
 #ifndef YAPI_IN_YDEVICE
     yProgInit();
 #endif
+#if 0
+    int siz = sizeof(yDeviceSt);
+    dbglog("memset yDeviceSt struct of %d bytes\n", siz);
+
+
+    siz = offsetof(yDeviceSt, vendorid);
+    dbglog("ofs=%d instead of 0\n",siz);
+    siz = offsetof(yDeviceSt, deviceid);
+    dbglog("ofs=%d instead of 2\n",siz);
+    siz = offsetof(yDeviceSt, devrelease);
+    dbglog("ofs=%d instead of 4\n",siz);
+    siz = offsetof(yDeviceSt, nbinbterfaces);
+    dbglog("ofs=%d instead of 6\n",siz);
+    siz = offsetof(yDeviceSt, manufacturer);
+    dbglog("ofs=%d instead of 8\n",siz);
+    siz = offsetof(yDeviceSt, productname);
+    dbglog("ofs=%d instead of 28\n",siz);
+    siz = offsetof(yDeviceSt, serial);
+    dbglog("ofs=%d instead of 56\n",siz);
+    siz = offsetof(yDeviceSt, logicalname);
+    dbglog("ofs=%d instead of 76\n",siz);
+    siz = offsetof(yDeviceSt, firmware);
+    dbglog("ofs=%d instead of 96\n",siz);
+    siz = offsetof(yDeviceSt, beacon);
+    dbglog("ofs=%d instead of 118\n",siz);
+#endif
+
     return YAPI_SUCCESS;
 }
 
@@ -1649,6 +1685,18 @@ static void  yapiRegisterDeviceChangeCallback_internal(yapiDeviceUpdateCallback 
 }
 
 
+static void yapiRegisterBeaconCallback_internal(yapiBeaconCallback beaconCallback)
+{
+    char errmsg[YOCTO_ERRMSG_LEN];
+    if (!yContext) {
+        yapiInitAPI_internal(0, errmsg);
+    }
+    if (yContext) {
+        yContext->beaconCallback = beaconCallback;
+    }
+}
+
+
 static void  yapiRegisterDeviceConfigChangeCallback_internal(yapiDeviceUpdateCallback configChangeCallback)
 {
     char errmsg[YOCTO_ERRMSG_LEN];
@@ -1729,15 +1777,22 @@ static void wpUpdateTCP(HubSt *hub, const char *serial, const char *name, u8 bea
     }
     lnameref    = yHashPutStr(name);
     status = wpRegister(-1, serialref, lnameref, INVALID_HASH_IDX, 0, devurl, beacon);
-    if (status == 0) {
-        return; // no change
+    if (status & 1) {
+        ypRegister(YSTRREF_MODULE_STRING, serialref, YSTRREF_mODULE_STRING, lnameref, YOCTO_AKA_YFUNCTION, -1, NULL);
+        // Forward high-level notification to API user
+        if (yContext->changeCallback) {
+            yEnterCriticalSection(&yContext->deviceCallbackCS);
+            yContext->changeCallback(serialref);
+            yLeaveCriticalSection(&yContext->deviceCallbackCS);
+        }
     }
-    ypRegister(YSTRREF_MODULE_STRING, serialref, YSTRREF_mODULE_STRING, lnameref, YOCTO_AKA_YFUNCTION, -1, NULL);
-    // Forward high-level notification to API user
-    if(yContext->changeCallback){
-        yEnterCriticalSection(&yContext->deviceCallbackCS);
-        yContext->changeCallback(serialref);
-        yLeaveCriticalSection(&yContext->deviceCallbackCS);
+    if (status & 2) {
+        // Forward high-level notification to API user
+        if (yContext->beaconCallback) {
+            yEnterCriticalSection(&yContext->functionCallbackCS);
+            yContext->beaconCallback(serialref, beacon);
+            yLeaveCriticalSection(&yContext->functionCallbackCS);
+        }
     }
 }
 
@@ -4457,6 +4512,13 @@ void YAPI_FUNCTION_EXPORT yapiRegisterDeviceChangeCallback(yapiDeviceUpdateCallb
     YDLL_CALL_LEAVEVOID();
 }
 
+void YAPI_FUNCTION_EXPORT yapiRegisterBeaconCallback(yapiBeaconCallback beaconCallback)
+{
+    YDLL_CALL_ENTER(trcRegisterDeviceChangeCallback);
+    yapiRegisterBeaconCallback_internal(beaconCallback);
+    YDLL_CALL_LEAVEVOID();
+}
+
 void YAPI_FUNCTION_EXPORT yapiRegisterDeviceConfigChangeCallback(yapiDeviceUpdateCallback configChangeCallback)
 {
     YDLL_CALL_ENTER(trcRegisterDeviceConfigChangeCallback);
@@ -5321,4 +5383,3 @@ YRETCODE YAPI_FUNCTION_EXPORT __stdcall vb6_yapiTriggerHubDiscovery(char *errmsg
 
 
 #endif
-
