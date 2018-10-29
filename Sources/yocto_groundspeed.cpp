@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_groundspeed.cpp 28748 2017-10-03 08:23:39Z seb $
+ *  $Id: yocto_groundspeed.cpp 32610 2018-10-10 06:52:20Z seb $
  *
- * Implements yFindGroundSpeed(), the high-level API for GroundSpeed functions
+ *  Implements yFindGroundSpeed(), the high-level API for GroundSpeed functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *

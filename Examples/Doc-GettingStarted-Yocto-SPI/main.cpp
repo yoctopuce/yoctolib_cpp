@@ -1,3 +1,17 @@
+/*********************************************************************
+ *
+ *  $Id: main.cpp 32619 2018-10-10 12:22:50Z seb $
+ *
+ *  An example that show how to use a  Yocto-SPI
+ *
+ *  You can find more information on our web site:
+ *   Yocto-SPI documentation:
+ *      https://www.yoctopuce.com/EN/products/yocto-spi/doc.html
+ *   C++ API Reference:
+ *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
+ *
+ *********************************************************************/
+
 #include "yocto_api.h"
 #include "yocto_spiport.h"
 #include <iostream>

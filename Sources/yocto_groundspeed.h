@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_groundspeed.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_groundspeed.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindGroundSpeed(), the high-level API for GroundSpeed functions
+ *  Declares yFindGroundSpeed(), the high-level API for GroundSpeed functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -86,7 +86,7 @@ protected:
     //--- (end of YGroundSpeed attributes)
 
 public:
-    ~YGroundSpeed();
+    virtual ~YGroundSpeed();
     //--- (YGroundSpeed accessors declaration)
 
 

@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_weighscale.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_weighscale.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindWeighScale(), the high-level API for WeighScale functions
+ *  Declares yFindWeighScale(), the high-level API for WeighScale functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -114,7 +114,7 @@ protected:
     //--- (end of YWeighScale attributes)
 
 public:
-    ~YWeighScale();
+    virtual ~YWeighScale();
     //--- (YWeighScale accessors declaration)
 
     static const Y_EXCITATION_enum EXCITATION_OFF = Y_EXCITATION_OFF;

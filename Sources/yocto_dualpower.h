@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_dualpower.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_dualpower.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindDualPower(), the high-level API for DualPower functions
+ *  Declares yFindDualPower(), the high-level API for DualPower functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -110,7 +110,7 @@ protected:
     //--- (end of YDualPower attributes)
 
 public:
-    ~YDualPower();
+    virtual ~YDualPower();
     //--- (YDualPower accessors declaration)
 
     static const Y_POWERSTATE_enum POWERSTATE_OFF = Y_POWERSTATE_OFF;

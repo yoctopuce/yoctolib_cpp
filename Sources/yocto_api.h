@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 32376 2018-09-27 07:57:07Z seb $
+ * $Id: yocto_api.h 32489 2018-10-04 12:33:12Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -1371,6 +1371,7 @@ protected:
 public:
     YMeasure(double start, double end, double minVal, double avgVal, double maxVal);
     YMeasure();
+    virtual ~YMeasure(){};
 
     time_t*        get_startTimeUTC_asTime_t(time_t *time);
     time_t*        get_endTimeUTC_asTime_t(time_t *time);
@@ -1475,7 +1476,11 @@ protected:
 public:
     YDataSet(YFunction *parent, const string& functionId, const string& unit, s64 startTime, s64 endTime);
     YDataSet(YFunction *parent);
+    virtual ~YDataSet(){};
+
     int _parse(const string& json);
+
+
 
     //--- (generated code: YDataSet accessors declaration)
 
@@ -2191,7 +2196,7 @@ protected:
     static void _updateModuleCallbackList(YModule* func, bool add);
 
 public:
-    ~YModule();
+    virtual ~YModule();
 
     /**
      * Returns a global identifier of the function in the format MODULE_NAME&#46;FUNCTION_NAME.
@@ -2736,6 +2741,15 @@ public:
     virtual int         set_allSettings(string settings);
 
     /**
+     * Returns the unique hardware identifier of the module.
+     * The unique hardware identifier is made of the device serial
+     * number followed by string ".module".
+     *
+     * @return a string that uniquely identifies the module
+     */
+    virtual string      get_hardwareId(void);
+
+    /**
      * Downloads the specified built-in file and returns a binary buffer with its content.
      *
      * @param pathname : name of the new file to load
@@ -2901,7 +2915,7 @@ protected:
     //--- (end of generated code: YSensor initialization)
 
 public:
-    ~YSensor();
+    virtual ~YSensor();
     //--- (generated code: YSensor accessors declaration)
 
     static const string UNIT_INVALID;
@@ -3858,7 +3872,7 @@ class YOCTO_CLASS_EXPORT YDataLogger: public YFunction {
     friend int YOldDataStream::loadStream(void);
 
 public:
-    ~YDataLogger();
+    virtual ~YDataLogger();
 
     /**
      * Builds a list of all data streams hold by the data logger (legacy method).

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_serialport.h 32414 2018-10-01 08:48:46Z seb $
  *
  * Declares yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -107,6 +107,8 @@ class YOCTO_CLASS_EXPORT YSnoopingRecord {
 
 public:
     YSnoopingRecord(const string& json);
+    virtual ~YSnoopingRecord(){};
+
     //--- (generated code: YSnoopingRecord accessors declaration)
 
 

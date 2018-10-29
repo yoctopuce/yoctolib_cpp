@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_pwminput.cpp 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_pwminput.cpp 32610 2018-10-10 06:52:20Z seb $
  *
- * Implements yFindPwmInput(), the high-level API for PwmInput functions
+ *  Implements yFindPwmInput(), the high-level API for PwmInput functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -106,6 +106,34 @@ int YPwmInput::_parseAttr(YJSONObject* json_val)
     return YSensor::_parseAttr(json_val);
 }
 
+
+/**
+ * Changes the measuring unit for the measured quantity. That unit
+ * is just a string which is automatically initialized each time
+ * the measurement mode is changed. But is can be set to an
+ * arbitrary value.
+ *
+ * @param newval : a string corresponding to the measuring unit for the measured quantity
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YPwmInput::set_unit(const string& newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("unit", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
 
 /**
  * Returns the PWM duty cycle, in per cents.

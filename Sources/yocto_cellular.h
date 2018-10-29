@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_cellular.h 32417 2018-10-01 15:25:38Z seb $
  *
  * Declares yFindCellular(), the high-level API for Cellular functions
  *
@@ -129,6 +129,7 @@ class YOCTO_CLASS_EXPORT YCellRecord {
 
 public:
     YCellRecord(int mcc,int mnc,int lac,int cellId,int dbm,int tad,const string &oper);
+    virtual ~YCellRecord(){};
     //--- (generated code: YCellRecord accessors declaration)
 
 

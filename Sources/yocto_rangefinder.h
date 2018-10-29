@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_rangefinder.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_rangefinder.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindRangeFinder(), the high-level API for RangeFinder functions
+ *  Declares yFindRangeFinder(), the high-level API for RangeFinder functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -107,7 +107,7 @@ protected:
     //--- (end of YRangeFinder attributes)
 
 public:
-    ~YRangeFinder();
+    virtual ~YRangeFinder();
     //--- (YRangeFinder accessors declaration)
 
     static const Y_RANGEFINDERMODE_enum RANGEFINDERMODE_DEFAULT = Y_RANGEFINDERMODE_DEFAULT;

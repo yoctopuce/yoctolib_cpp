@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_anbutton.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_anbutton.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindAnButton(), the high-level API for AnButton functions
+ *  Declares yFindAnButton(), the high-level API for AnButton functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -124,7 +124,7 @@ protected:
     //--- (end of YAnButton attributes)
 
 public:
-    ~YAnButton();
+    virtual ~YAnButton();
     //--- (YAnButton accessors declaration)
 
     static const int CALIBRATEDVALUE_INVALID = YAPI_INVALID_UINT;

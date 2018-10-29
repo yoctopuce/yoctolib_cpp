@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_steppermotor.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_steppermotor.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindStepperMotor(), the high-level API for StepperMotor functions
+ *  Declares yFindStepperMotor(), the high-level API for StepperMotor functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -134,7 +134,7 @@ protected:
     //--- (end of YStepperMotor attributes)
 
 public:
-    ~YStepperMotor();
+    virtual ~YStepperMotor();
     //--- (YStepperMotor accessors declaration)
 
     static const Y_MOTORSTATE_enum MOTORSTATE_ABSENT = Y_MOTORSTATE_ABSENT;

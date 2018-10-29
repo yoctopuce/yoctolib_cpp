@@ -1,3 +1,15 @@
+/*********************************************************************
+ *
+ *  $Id: main.cpp 32619 2018-10-10 12:22:50Z seb $
+ *
+ *  Doc-ModuleControl example
+ *
+ *  You can find more information on our web site:
+ *   C++ API Reference:
+ *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
+ *
+ *********************************************************************/
+
 #include <iostream>
 #include <stdlib.h>
 

@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_spiport.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_spiport.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindSpiPort(), the high-level API for SpiPort functions
+ *  Declares yFindSpiPort(), the high-level API for SpiPort functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -144,7 +144,7 @@ protected:
     //--- (end of YSpiPort attributes)
 
 public:
-    ~YSpiPort();
+    virtual ~YSpiPort();
     //--- (YSpiPort accessors declaration)
 
     static const int RXCOUNT_INVALID = YAPI_INVALID_UINT;

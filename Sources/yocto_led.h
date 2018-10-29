@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_led.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_led.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindLed(), the high-level API for Led functions
+ *  Declares yFindLed(), the high-level API for Led functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -109,7 +109,7 @@ protected:
     //--- (end of YLed attributes)
 
 public:
-    ~YLed();
+    virtual ~YLed();
     //--- (YLed accessors declaration)
 
     static const Y_POWER_enum POWER_OFF = Y_POWER_OFF;

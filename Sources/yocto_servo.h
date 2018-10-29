@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_servo.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_servo.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindServo(), the high-level API for Servo functions
+ *  Declares yFindServo(), the high-level API for Servo functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -130,7 +130,7 @@ protected:
     //--- (end of YServo attributes)
 
 public:
-    ~YServo();
+    virtual ~YServo();
     //--- (YServo accessors declaration)
 
     static const int POSITION_INVALID = YAPI_INVALID_INT;

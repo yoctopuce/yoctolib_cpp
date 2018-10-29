@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_poweroutput.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_poweroutput.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindPowerOutput(), the high-level API for PowerOutput functions
+ *  Declares yFindPowerOutput(), the high-level API for PowerOutput functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -94,7 +94,7 @@ protected:
     //--- (end of YPowerOutput attributes)
 
 public:
-    ~YPowerOutput();
+    virtual ~YPowerOutput();
     //--- (YPowerOutput accessors declaration)
 
     static const Y_VOLTAGE_enum VOLTAGE_OFF = Y_VOLTAGE_OFF;

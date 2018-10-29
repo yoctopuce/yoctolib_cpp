@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_multicellweighscale.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_multicellweighscale.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindMultiCellWeighScale(), the high-level API for MultiCellWeighScale functions
+ *  Declares yFindMultiCellWeighScale(), the high-level API for MultiCellWeighScale functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -116,7 +116,7 @@ protected:
     //--- (end of YMultiCellWeighScale attributes)
 
 public:
-    ~YMultiCellWeighScale();
+    virtual ~YMultiCellWeighScale();
     //--- (YMultiCellWeighScale accessors declaration)
 
     static const int CELLCOUNT_INVALID = YAPI_INVALID_UINT;

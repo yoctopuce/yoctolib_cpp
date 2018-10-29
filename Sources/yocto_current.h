@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_current.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_current.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindCurrent(), the high-level API for Current functions
+ *  Declares yFindCurrent(), the high-level API for Current functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -97,7 +97,7 @@ protected:
     //--- (end of YCurrent attributes)
 
 public:
-    ~YCurrent();
+    virtual ~YCurrent();
     //--- (YCurrent accessors declaration)
 
     static const Y_ENABLED_enum ENABLED_FALSE = Y_ENABLED_FALSE;

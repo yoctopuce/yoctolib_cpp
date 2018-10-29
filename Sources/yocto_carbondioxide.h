@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_carbondioxide.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_carbondioxide.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
+ *  Declares yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -93,7 +93,7 @@ protected:
     //--- (end of YCarbonDioxide attributes)
 
 public:
-    ~YCarbonDioxide();
+    virtual ~YCarbonDioxide();
     //--- (YCarbonDioxide accessors declaration)
 
     static const int ABCPERIOD_INVALID = YAPI_INVALID_INT;

@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_pressure.cpp 28748 2017-10-03 08:23:39Z seb $
+ *  $Id: yocto_pressure.cpp 32610 2018-10-10 06:52:20Z seb $
  *
- * Implements yFindPressure(), the high-level API for Pressure functions
+ *  Implements yFindPressure(), the high-level API for Pressure functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *

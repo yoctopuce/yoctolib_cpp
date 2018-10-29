@@ -1,3 +1,17 @@
+/*********************************************************************
+ *
+ *  $Id: main.cpp 32716 2018-10-19 15:54:48Z seb $
+ *
+ *  An example that show how to use a  Yocto-Color
+ *
+ *  You can find more information on our web site:
+ *   Yocto-Color documentation:
+ *      https://www.yoctopuce.com/EN/products/yocto-color/doc.html
+ *   C++ API Reference:
+ *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
+ *
+ *********************************************************************/
+
 #include "yocto_api.h"
 #include "yocto_colorled.h"
 #include <iostream>
@@ -10,7 +24,7 @@ static void usage(void)
 {
   cout << "usage: demo <serial_number>  [ color | rgb ]" << endl;
   cout << "       demo <logical_name> [ color | rgb ]" << endl;
-  cout << "       demo any  [ color | rgb ]                (use any discovered device)" <<
+  cout << "       demo any  [ color | rgb ]" <<
        endl;
   cout << "Eg." << endl;
   cout << "   demo any FF1493 " << endl;

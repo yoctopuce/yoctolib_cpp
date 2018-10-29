@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_refframe.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_refframe.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindRefFrame(), the high-level API for RefFrame functions
+ *  Declares yFindRefFrame(), the high-level API for RefFrame functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -150,7 +150,7 @@ protected:
     //--- (end of YRefFrame attributes)
 
 public:
-    ~YRefFrame();
+    virtual ~YRefFrame();
     //--- (YRefFrame accessors declaration)
 
     static const int MOUNTPOS_INVALID = YAPI_INVALID_UINT;

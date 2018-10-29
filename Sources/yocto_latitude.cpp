@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_latitude.cpp 28748 2017-10-03 08:23:39Z seb $
+ *  $Id: yocto_latitude.cpp 32610 2018-10-10 06:52:20Z seb $
  *
- * Implements yFindLatitude(), the high-level API for Latitude functions
+ *  Implements yFindLatitude(), the high-level API for Latitude functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *

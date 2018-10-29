@@ -1,3 +1,15 @@
+/*********************************************************************
+ *
+ *  $Id: main.cpp 32619 2018-10-10 12:22:50Z seb $
+ *
+ *  Doc-Inventory example
+ *
+ *  You can find more information on our web site:
+ *   C++ API Reference:
+ *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
+ *
+ *********************************************************************/
+
 #include <iostream>
 
 #include "yocto_api.h"

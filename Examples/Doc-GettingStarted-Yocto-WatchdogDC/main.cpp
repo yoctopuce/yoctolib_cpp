@@ -1,3 +1,17 @@
+/*********************************************************************
+ *
+ *  $Id: main.cpp 32716 2018-10-19 15:54:48Z seb $
+ *
+ *  An example that show how to use a  Yocto-WatchdogDC
+ *
+ *  You can find more information on our web site:
+ *   Yocto-WatchdogDC documentation:
+ *      https://www.yoctopuce.com/EN/products/yocto-watchdogdc/doc.html
+ *   C++ API Reference:
+ *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
+ *
+ *********************************************************************/
+
 #include "yocto_api.h"
 #include "yocto_watchdog.h"
 #include <iostream>
@@ -10,7 +24,7 @@ static void usage(void)
 {
   cout << "usage: demo <serial_number>  [ on | off | reset ]" << endl;
   cout << "       demo <logical_name> [ on | off | reset ]" << endl;
-  cout << "       demo any [ on | off | reset]   (use any discovered device)" << endl;
+  cout << "       demo any [ on | off | reset] (use any discovered device)" << endl;
   exit(1);
 }
 

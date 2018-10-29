@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_voc.cpp 28748 2017-10-03 08:23:39Z seb $
+ *  $Id: yocto_voc.cpp 32610 2018-10-10 06:52:20Z seb $
  *
- * Implements yFindVoc(), the high-level API for Voc functions
+ *  Implements yFindVoc(), the high-level API for Voc functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *

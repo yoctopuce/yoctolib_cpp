@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 32085 2018-09-17 16:15:36Z seb $
+ * $Id: yproto.h 32494 2018-10-04 15:14:06Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -795,6 +795,8 @@ typedef struct _WSNetHubSt {
 } WSNetHub;
 
 
+#define INCOMPATIBLE_JZON_ENCODING 1
+
 typedef struct _HubSt {
     yUrlRef url;            // hub base URL, or INVALID_HASH_IDX if unused
     // misc flag that are maped to int for efficency and thread safety
@@ -818,7 +820,12 @@ typedef struct _HubSt {
     u8 devYdxMap[ALLOC_YDX_PER_HUB];   // maps hub's internal devYdx to our WP devYdx //fixme:
     int errcode;  // in case an error occured
     char errmsg[YOCTO_ERRMSG_LEN];
-    yCRITICAL_SECTION access; // CS for field that need to be protected agains concurency (these filed start with cs_
+    yCRITICAL_SECTION access; // CS for field that need to be protected again concurrency (these filed start with cs_)
+    u32 flags;
+    u32 typical_apireq_size;
+    char fw_release[YOCTO_FIRMWARE_LEN];
+    u8 *ref_api;
+    u32  ref_api_size;
     // implementations specific struct
     HTTPNetHub http;
     WSNetHub ws;

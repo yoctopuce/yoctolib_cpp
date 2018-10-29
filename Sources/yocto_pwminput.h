@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_pwminput.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_pwminput.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindPwmInput(), the high-level API for PwmInput functions
+ *  Declares yFindPwmInput(), the high-level API for PwmInput functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -121,7 +121,7 @@ protected:
     //--- (end of YPwmInput attributes)
 
 public:
-    ~YPwmInput();
+    virtual ~YPwmInput();
     //--- (YPwmInput accessors declaration)
 
     static const double DUTYCYCLE_INVALID;
@@ -142,6 +142,22 @@ public:
     static const Y_PWMREPORTMODE_enum PWMREPORTMODE_PWM_FREQ_CPM = Y_PWMREPORTMODE_PWM_FREQ_CPM;
     static const Y_PWMREPORTMODE_enum PWMREPORTMODE_INVALID = Y_PWMREPORTMODE_INVALID;
     static const int DEBOUNCEPERIOD_INVALID = YAPI_INVALID_UINT;
+
+    /**
+     * Changes the measuring unit for the measured quantity. That unit
+     * is just a string which is automatically initialized each time
+     * the measurement mode is changed. But is can be set to an
+     * arbitrary value.
+     *
+     * @param newval : a string corresponding to the measuring unit for the measured quantity
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_unit(const string& newval);
+    inline int      setUnit(const string& newval)
+    { return this->set_unit(newval); }
 
     /**
      * Returns the PWM duty cycle, in per cents.

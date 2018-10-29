@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_temperature.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_temperature.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindTemperature(), the high-level API for Temperature functions
+ *  Declares yFindTemperature(), the high-level API for Temperature functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -118,7 +118,7 @@ protected:
     //--- (end of YTemperature attributes)
 
 public:
-    ~YTemperature();
+    virtual ~YTemperature();
     //--- (YTemperature accessors declaration)
 
     static const Y_SENSORTYPE_enum SENSORTYPE_DIGITAL = Y_SENSORTYPE_DIGITAL;

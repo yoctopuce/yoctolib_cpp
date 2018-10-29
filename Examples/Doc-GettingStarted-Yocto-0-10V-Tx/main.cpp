@@ -1,3 +1,17 @@
+/*********************************************************************
+ *
+ *  $Id: main.cpp 32619 2018-10-10 12:22:50Z seb $
+ *
+ *  An example that show how to use a  Yocto-0-10V-Tx
+ *
+ *  You can find more information on our web site:
+ *   Yocto-0-10V-Tx documentation:
+ *      https://www.yoctopuce.com/EN/products/yocto-0-10v-tx/doc.html
+ *   C++ API Reference:
+ *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
+ *
+ *********************************************************************/
+
 #include "yocto_api.h"
 #include "yocto_voltageoutput.h"
 #include <iostream>

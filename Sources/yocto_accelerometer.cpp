@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_accelerometer.cpp 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_accelerometer.cpp 32610 2018-10-10 06:52:20Z seb $
  *
- * Implements yFindAccelerometer(), the high-level API for Accelerometer functions
+ *  Implements yFindAccelerometer(), the high-level API for Accelerometer functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *

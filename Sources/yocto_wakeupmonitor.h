@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_wakeupmonitor.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_wakeupmonitor.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindWakeUpMonitor(), the high-level API for WakeUpMonitor functions
+ *  Declares yFindWakeUpMonitor(), the high-level API for WakeUpMonitor functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -115,7 +115,7 @@ protected:
     //--- (end of YWakeUpMonitor attributes)
 
 public:
-    ~YWakeUpMonitor();
+    virtual ~YWakeUpMonitor();
     //--- (YWakeUpMonitor accessors declaration)
 
     static const int POWERDURATION_INVALID = YAPI_INVALID_INT;

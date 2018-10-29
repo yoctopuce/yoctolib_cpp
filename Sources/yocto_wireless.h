@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_wireless.h 32414 2018-10-01 08:48:46Z seb $
  *
  * Declares yFindWireless(), the high-level API for Wireless functions
  *
@@ -107,6 +107,7 @@ class YOCTO_CLASS_EXPORT YWlanRecord {
 
 public:
     YWlanRecord(const string& json);
+    virtual ~YWlanRecord(){};
     //--- (generated code: YWlanRecord accessors declaration)
 
 

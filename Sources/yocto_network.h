@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_network.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_network.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindNetwork(), the high-level API for Network functions
+ *  Declares yFindNetwork(), the high-level API for Network functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -174,7 +174,7 @@ protected:
     //--- (end of YNetwork attributes)
 
 public:
-    ~YNetwork();
+    virtual ~YNetwork();
     //--- (YNetwork accessors declaration)
 
     static const Y_READINESS_enum READINESS_DOWN = Y_READINESS_DOWN;

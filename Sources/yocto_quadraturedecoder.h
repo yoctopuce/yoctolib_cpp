@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_quadraturedecoder.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_quadraturedecoder.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindQuadratureDecoder(), the high-level API for QuadratureDecoder functions
+ *  Declares yFindQuadratureDecoder(), the high-level API for QuadratureDecoder functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -99,7 +99,7 @@ protected:
     //--- (end of YQuadratureDecoder attributes)
 
 public:
-    ~YQuadratureDecoder();
+    virtual ~YQuadratureDecoder();
     //--- (YQuadratureDecoder accessors declaration)
 
     static const double SPEED_INVALID;

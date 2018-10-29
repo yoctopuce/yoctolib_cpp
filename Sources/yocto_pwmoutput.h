@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_pwmoutput.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_pwmoutput.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindPwmOutput(), the high-level API for PwmOutput functions
+ *  Declares yFindPwmOutput(), the high-level API for PwmOutput functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -113,7 +113,7 @@ protected:
     //--- (end of YPwmOutput attributes)
 
 public:
-    ~YPwmOutput();
+    virtual ~YPwmOutput();
     //--- (YPwmOutput accessors declaration)
 
     static const Y_ENABLED_enum ENABLED_FALSE = Y_ENABLED_FALSE;

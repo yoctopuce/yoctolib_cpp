@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_files.h 32417 2018-10-01 15:25:38Z seb $
  *
  * Declares yFindFiles(), the high-level API for Files functions
  *
@@ -84,6 +84,7 @@ class YOCTO_CLASS_EXPORT YFileRecord {
 
 public:
     YFileRecord(const string& json);
+    virtual ~YFileRecord(){};
     //--- (generated code: YFileRecord accessors declaration)
 
 

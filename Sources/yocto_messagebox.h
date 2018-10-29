@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_messagebox.h 32414 2018-10-01 08:48:46Z seb $
  *
  * Declares yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -104,6 +104,7 @@ class YOCTO_CLASS_EXPORT YSms {
 public:
     YSms(void);
     YSms(YMessageBox *mbox);
+    virtual ~YSms(){};
     //--- (generated code: YSms accessors declaration)
 
 

@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_hubport.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_hubport.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindHubPort(), the high-level API for HubPort functions
+ *  Declares yFindHubPort(), the high-level API for HubPort functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -112,7 +112,7 @@ protected:
     //--- (end of YHubPort attributes)
 
 public:
-    ~YHubPort();
+    virtual ~YHubPort();
     //--- (YHubPort accessors declaration)
 
     static const Y_ENABLED_enum ENABLED_FALSE = Y_ENABLED_FALSE;

@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_audioin.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_audioin.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindAudioIn(), the high-level API for AudioIn functions
+ *  Declares yFindAudioIn(), the high-level API for AudioIn functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -100,7 +100,7 @@ protected:
     //--- (end of YAudioIn attributes)
 
 public:
-    ~YAudioIn();
+    virtual ~YAudioIn();
     //--- (YAudioIn accessors declaration)
 
     static const int VOLUME_INVALID = YAPI_INVALID_UINT;

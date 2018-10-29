@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_relay.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_relay.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindRelay(), the high-level API for Relay functions
+ *  Declares yFindRelay(), the high-level API for Relay functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -143,7 +143,7 @@ protected:
     //--- (end of YRelay attributes)
 
 public:
-    ~YRelay();
+    virtual ~YRelay();
     //--- (YRelay accessors declaration)
 
     static const Y_STATE_enum STATE_A = Y_STATE_A;

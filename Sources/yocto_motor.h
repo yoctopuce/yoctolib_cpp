@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_motor.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_motor.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindMotor(), the high-level API for Motor functions
+ *  Declares yFindMotor(), the high-level API for Motor functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -118,7 +118,7 @@ protected:
     //--- (end of YMotor attributes)
 
 public:
-    ~YMotor();
+    virtual ~YMotor();
     //--- (YMotor accessors declaration)
 
     static const Y_MOTORSTATUS_enum MOTORSTATUS_IDLE = Y_MOTORSTATUS_IDLE;

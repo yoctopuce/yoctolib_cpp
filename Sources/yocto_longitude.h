@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_longitude.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_longitude.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindLongitude(), the high-level API for Longitude functions
+ *  Declares yFindLongitude(), the high-level API for Longitude functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -86,7 +86,7 @@ protected:
     //--- (end of YLongitude attributes)
 
 public:
-    ~YLongitude();
+    virtual ~YLongitude();
     //--- (YLongitude accessors declaration)
 
 

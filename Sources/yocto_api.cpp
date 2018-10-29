@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 32376 2018-09-27 07:57:07Z seb $
+ * $Id: yocto_api.cpp 32489 2018-10-04 12:33:12Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -57,6 +57,7 @@
 #include <time.h>
 #include <stdarg.h>
 #include <math.h>
+#define YMEMORY_ALLOW_MALLOC
 #include "yapi/yproto.h"
 
 static  yCRITICAL_SECTION   _updateDeviceList_CS;
@@ -6794,6 +6795,21 @@ int YModule::set_allSettings(string settings)
     }
     this->clearCache();
     return YAPI_SUCCESS;
+}
+
+/**
+ * Returns the unique hardware identifier of the module.
+ * The unique hardware identifier is made of the device serial
+ * number followed by string ".module".
+ *
+ * @return a string that uniquely identifies the module
+ */
+string YModule::get_hardwareId(void)
+{
+    string serial;
+
+    serial = this->get_serialNumber();
+    return serial + ".module";
 }
 
 /**

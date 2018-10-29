@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_lightsensor.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_lightsensor.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindLightSensor(), the high-level API for LightSensor functions
+ *  Declares yFindLightSensor(), the high-level API for LightSensor functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -104,7 +104,7 @@ protected:
     //--- (end of YLightSensor attributes)
 
 public:
-    ~YLightSensor();
+    virtual ~YLightSensor();
     //--- (YLightSensor accessors declaration)
 
     static const Y_MEASURETYPE_enum MEASURETYPE_HUMAN_EYE = Y_MEASURETYPE_HUMAN_EYE;

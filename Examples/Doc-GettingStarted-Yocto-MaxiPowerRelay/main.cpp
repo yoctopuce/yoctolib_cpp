@@ -1,3 +1,17 @@
+/*********************************************************************
+ *
+ *  $Id: main.cpp 32716 2018-10-19 15:54:48Z seb $
+ *
+ *  An example that show how to use a  Yocto-MaxiPowerRelay
+ *
+ *  You can find more information on our web site:
+ *   Yocto-MaxiPowerRelay documentation:
+ *      https://www.yoctopuce.com/EN/products/yocto-maxipowerrelay/doc.html
+ *   C++ API Reference:
+ *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
+ *
+ *********************************************************************/
+
 #include "yocto_api.h"
 #include "yocto_relay.h"
 #include <iostream>
@@ -11,7 +25,7 @@ static void usage(const char* execname)
   cout  << "usage:" << endl;
   cout  << execname << " serial_number> <channel>  [ ON | OFF ]" << endl;
   cout  << execname << " <logical_name> <channel>[ ON | OFF ]" << endl;
-  cout  << execname << " any <channel> [ ON | OFF ]  (use any discovered device)" << endl;
+  cout  << execname << " any <channel> [ ON | OFF ]" << endl;
   cout  << "Example"   << endl;
   cout  << execname << " any 2 ON" << endl;
   exit(1);

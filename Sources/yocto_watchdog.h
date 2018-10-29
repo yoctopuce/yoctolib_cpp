@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_watchdog.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_watchdog.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindWatchdog(), the high-level API for Watchdog functions
+ *  Declares yFindWatchdog(), the high-level API for Watchdog functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -164,7 +164,7 @@ protected:
     //--- (end of YWatchdog attributes)
 
 public:
-    ~YWatchdog();
+    virtual ~YWatchdog();
     //--- (YWatchdog accessors declaration)
 
     static const Y_STATE_enum STATE_A = Y_STATE_A;

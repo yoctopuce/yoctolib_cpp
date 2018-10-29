@@ -1,3 +1,17 @@
+/*********************************************************************
+ *
+ *  $Id: main.cpp 32619 2018-10-10 12:22:50Z seb $
+ *
+ *  An example that show how to use a  Yocto-Maxi-IO
+ *
+ *  You can find more information on our web site:
+ *   Yocto-Maxi-IO documentation:
+ *      https://www.yoctopuce.com/EN/products/yocto-maxi-io/doc.html
+ *   C++ API Reference:
+ *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
+ *
+ *********************************************************************/
+
 #include "yocto_api.h"
 #include "yocto_digitalio.h"
 #include <iostream>

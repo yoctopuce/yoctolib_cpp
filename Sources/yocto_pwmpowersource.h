@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_pwmpowersource.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_pwmpowersource.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindPwmPowerSource(), the high-level API for PwmPowerSource functions
+ *  Declares yFindPwmPowerSource(), the high-level API for PwmPowerSource functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -95,7 +95,7 @@ protected:
     //--- (end of YPwmPowerSource attributes)
 
 public:
-    ~YPwmPowerSource();
+    virtual ~YPwmPowerSource();
     //--- (YPwmPowerSource accessors declaration)
 
     static const Y_POWERMODE_enum POWERMODE_USB_5V = Y_POWERMODE_USB_5V;

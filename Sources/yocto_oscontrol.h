@@ -1,10 +1,10 @@
 /*********************************************************************
  *
- * $Id: yocto_oscontrol.h 31377 2018-07-27 08:24:38Z seb $
+ *  $Id: yocto_oscontrol.h 32610 2018-10-10 06:52:20Z seb $
  *
- * Declares yFindOsControl(), the high-level API for OsControl functions
+ *  Declares yFindOsControl(), the high-level API for OsControl functions
  *
- * - - - - - - - - - License information: - - - - - - - - -
+ *  - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
@@ -87,7 +87,7 @@ protected:
     //--- (end of YOsControl attributes)
 
 public:
-    ~YOsControl();
+    virtual ~YOsControl();
     //--- (YOsControl accessors declaration)
 
     static const int SHUTDOWNCOUNTDOWN_INVALID = YAPI_INVALID_UINT;
