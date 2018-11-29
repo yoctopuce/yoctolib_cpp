@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h 32085 2018-09-17 16:15:36Z seb $
+ * $Id: yapi.h 32809 2018-10-31 12:37:34Z seb $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -78,7 +78,7 @@ typedef void YAPI_FUNCTION_EXPORT(*yapiBeaconCallback)(YAPI_DEVICE devdescr, int
 typedef void YAPI_FUNCTION_EXPORT(*yapiFunctionUpdateCallback)(YAPI_FUNCTION fundescr,const char *value);
 
 // prototype of timed report callback
-typedef void YAPI_FUNCTION_EXPORT(*yapiTimedReportCallback)(YAPI_FUNCTION fundesc, double timestamp, const u8 *bytes, u32 len);
+typedef void YAPI_FUNCTION_EXPORT(*yapiTimedReportCallback)(YAPI_FUNCTION fundesc, double timestamp,const u8 *bytes, u32 len, double duration);
 
 // prototype of the ssdp hub discovery callback
 typedef void YAPI_FUNCTION_EXPORT(*yapiHubDiscoveryCallback)(const char *serial, const char *url);

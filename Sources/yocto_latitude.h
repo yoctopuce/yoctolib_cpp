@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_latitude.h 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_latitude.h 32900 2018-11-02 10:12:43Z seb $
  *
  *  Declares yFindLatitude(), the high-level API for Latitude functions
  *
@@ -157,6 +157,9 @@ public:
 
     /**
      * Continues the enumeration of latitude sensors started using yFirstLatitude().
+     * Caution: You can't make any assumption about the returned latitude sensors order.
+     * If you want to find a specific a latitude sensor, use Latitude.findLatitude()
+     * and a hardwareID or a logical name.
      *
      * @return a pointer to a YLatitude object, corresponding to
      *         a latitude sensor currently online, or a NULL pointer

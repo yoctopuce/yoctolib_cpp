@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_segmenteddisplay.h 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_segmenteddisplay.h 32900 2018-11-02 10:12:43Z seb $
  *
  *  Declares yFindSegmentedDisplay(), the high-level API for SegmentedDisplay functions
  *
@@ -191,6 +191,9 @@ public:
 
     /**
      * Continues the enumeration of segmented displays started using yFirstSegmentedDisplay().
+     * Caution: You can't make any assumption about the returned segmented displays order.
+     * If you want to find a specific a segmented display, use SegmentedDisplay.findSegmentedDisplay()
+     * and a hardwareID or a logical name.
      *
      * @return a pointer to a YSegmentedDisplay object, corresponding to
      *         a segmented display currently online, or a NULL pointer

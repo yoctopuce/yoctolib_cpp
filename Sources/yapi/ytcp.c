@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 32391 2018-09-27 12:35:38Z seb $
+ * $Id: ytcp.c 33018 2018-11-07 17:45:34Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -2900,7 +2900,7 @@ void* ws_thread(void* ctx)
                             buffer_ofs += pktlen;
                             break;
                         }
-
+                        request_pending_logs(hub);
                         res = ws_parseIncommingFrame(hub, (u8*)buffer, buffer_ofs + pktlen, errmsg);
                         if (YISERR(res)) {
                             WSLOG("hub(%s) ws_parseIncommingFrame error %d:%s\n", hub->name, res, errmsg);

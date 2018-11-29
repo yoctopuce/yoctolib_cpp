@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_realtimeclock.h 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_realtimeclock.h 32900 2018-11-02 10:12:43Z seb $
  *
  *  Declares yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *
@@ -239,6 +239,9 @@ public:
 
     /**
      * Continues the enumeration of clocks started using yFirstRealTimeClock().
+     * Caution: You can't make any assumption about the returned clocks order.
+     * If you want to find a specific a clock, use RealTimeClock.findRealTimeClock()
+     * and a hardwareID or a logical name.
      *
      * @return a pointer to a YRealTimeClock object, corresponding to
      *         a clock currently online, or a NULL pointer

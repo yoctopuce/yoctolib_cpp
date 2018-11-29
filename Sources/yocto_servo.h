@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_servo.h 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_servo.h 32900 2018-11-02 10:12:43Z seb $
  *
  *  Declares yFindServo(), the high-level API for Servo functions
  *
@@ -382,6 +382,9 @@ public:
 
     /**
      * Continues the enumeration of servos started using yFirstServo().
+     * Caution: You can't make any assumption about the returned servos order.
+     * If you want to find a specific a servo, use Servo.findServo()
+     * and a hardwareID or a logical name.
      *
      * @return a pointer to a YServo object, corresponding to
      *         a servo currently online, or a NULL pointer

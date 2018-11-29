@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.h 32417 2018-10-01 15:25:38Z seb $
+ * $Id: yocto_files.h 32900 2018-11-02 10:12:43Z seb $
  *
  * Declares yFindFiles(), the high-level API for Files functions
  *
@@ -297,6 +297,9 @@ public:
 
     /**
      * Continues the enumeration of filesystems started using yFirstFiles().
+     * Caution: You can't make any assumption about the returned filesystems order.
+     * If you want to find a specific a filesystem, use Files.findFiles()
+     * and a hardwareID or a logical name.
      *
      * @return a pointer to a YFiles object, corresponding to
      *         a filesystem currently online, or a NULL pointer

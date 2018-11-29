@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_digitalio.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_digitalio.cpp 33135 2018-11-12 15:32:32Z mvuilleu $
  *
  *  Implements yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -104,9 +104,23 @@ int YDigitalIO::_parseAttr(YJSONObject* json_val)
 
 
 /**
- * Returns the digital IO port state: bit 0 represents input 0, and so on.
+ * Returns the digital IO port state as an integer with each bit
+ * representing a channel
+ * value 0 = 0b00000000 -> all channels are OFF
+ * value 1 = 0b00000001 -> channel #0 is ON
+ * value 2 = 0b00000010 -> channel #1 is ON
+ * value 3 = 0b00000011 -> channels #0 and #1 are ON
+ * value 4 = 0b00000100 -> channel #2 is ON
+ * and so on...
  *
- * @return an integer corresponding to the digital IO port state: bit 0 represents input 0, and so on
+ * @return an integer corresponding to the digital IO port state as an integer with each bit
+ *         representing a channel
+ *         value 0 = 0b00000000 -> all channels are OFF
+ *         value 1 = 0b00000001 -> channel #0 is ON
+ *         value 2 = 0b00000010 -> channel #1 is ON
+ *         value 3 = 0b00000011 -> channels #0 and #1 are ON
+ *         value 4 = 0b00000100 -> channel #2 is ON
+ *         and so on.
  *
  * On failure, throws an exception or returns Y_PORTSTATE_INVALID.
  */
@@ -133,10 +147,20 @@ int YDigitalIO::get_portState(void)
 }
 
 /**
- * Changes the digital IO port state: bit 0 represents input 0, and so on. This function has no effect
- * on bits configured as input in portDirection.
+ * Changes the state of all digital IO port's channels at once,
+ * the parameter is an integer with  each bit representing a channel.
+ * Bit 0 matches channel #0. So:
+ * To set all channels to  0 -> 0b00000000 -> parameter = 0
+ * To set channel #0 to 1 -> 0b00000001 -> parameter =  1
+ * To set channel #1 to  1 -> 0b00000010 -> parameter = 2
+ * To set channel #0 and #1 -> 0b00000011 -> parameter =  3
+ * To set channel #2 to 1 -> 0b00000100 -> parameter =  4
+ * an so on....
+ * Only channels configured as output, thanks to portDirection,
+ * are affected.
  *
- * @param newval : an integer corresponding to the digital IO port state: bit 0 represents input 0, and so on
+ * @param newval : an integer corresponding to the state of all digital IO port's channels at once,
+ *         the parameter is an integer with  each bit representing a channel
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -159,10 +183,9 @@ int YDigitalIO::set_portState(int newval)
 }
 
 /**
- * Returns the IO direction of all bits of the port: 0 makes a bit an input, 1 makes it an output.
+ * Returns the IO direction of all bits (i.e. channels) of the port: 0 makes a bit an input, 1 makes it an output.
  *
- * @return an integer corresponding to the IO direction of all bits of the port: 0 makes a bit an
- * input, 1 makes it an output
+ * @return an integer corresponding to the IO direction of all bits (i.e
  *
  * On failure, throws an exception or returns Y_PORTDIRECTION_INVALID.
  */
@@ -189,11 +212,10 @@ int YDigitalIO::get_portDirection(void)
 }
 
 /**
- * Changes the IO direction of all bits of the port: 0 makes a bit an input, 1 makes it an output.
+ * Changes the IO direction of all bits (i.e. channels) of the port: 0 makes a bit an input, 1 makes it an output.
  * Remember to call the saveToFlash() method  to make sure the setting is kept after a reboot.
  *
- * @param newval : an integer corresponding to the IO direction of all bits of the port: 0 makes a bit
- * an input, 1 makes it an output
+ * @param newval : an integer corresponding to the IO direction of all bits (i.e
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -364,9 +386,9 @@ int YDigitalIO::get_portDiags(void)
 }
 
 /**
- * Returns the number of bits implemented in the I/O port.
+ * Returns the number of bits (i.e. channels)implemented in the I/O port.
  *
- * @return an integer corresponding to the number of bits implemented in the I/O port
+ * @return an integer corresponding to the number of bits (i.e
  *
  * On failure, throws an exception or returns Y_PORTSIZE_INVALID.
  */
@@ -576,7 +598,7 @@ int YDigitalIO::_invokeValueCallback(string value)
 }
 
 /**
- * Sets a single bit of the I/O port.
+ * Sets a single bit (i.e. channel) of the I/O port.
  *
  * @param bitno : the bit number; lowest bit has index 0
  * @param bitstate : the state of the bit (1 or 0)
@@ -599,7 +621,7 @@ int YDigitalIO::set_bitState(int bitno,int bitstate)
 }
 
 /**
- * Returns the state of a single bit of the I/O port.
+ * Returns the state of a single bit (i.e. channel)  of the I/O port.
  *
  * @param bitno : the bit number; lowest bit has index 0
  *
@@ -615,7 +637,7 @@ int YDigitalIO::get_bitState(int bitno)
 }
 
 /**
- * Reverts a single bit of the I/O port.
+ * Reverts a single bit (i.e. channel) of the I/O port.
  *
  * @param bitno : the bit number; lowest bit has index 0
  *
@@ -629,7 +651,7 @@ int YDigitalIO::toggle_bitState(int bitno)
 }
 
 /**
- * Changes  the direction of a single bit from the I/O port.
+ * Changes  the direction of a single bit (i.e. channel) from the I/O port.
  *
  * @param bitno : the bit number; lowest bit has index 0
  * @param bitdirection : direction to set, 0 makes the bit an input, 1 makes it an output.
@@ -653,7 +675,8 @@ int YDigitalIO::set_bitDirection(int bitno,int bitdirection)
 }
 
 /**
- * Returns the direction of a single bit from the I/O port (0 means the bit is an input, 1  an output).
+ * Returns the direction of a single bit (i.e. channel) from the I/O port (0 means the bit is an
+ * input, 1  an output).
  *
  * @param bitno : the bit number; lowest bit has index 0
  *

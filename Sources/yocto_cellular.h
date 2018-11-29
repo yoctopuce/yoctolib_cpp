@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.h 32417 2018-10-01 15:25:38Z seb $
+ * $Id: yocto_cellular.h 32900 2018-11-02 10:12:43Z seb $
  *
  * Declares yFindCellular(), the high-level API for Cellular functions
  *
@@ -691,6 +691,9 @@ public:
 
     /**
      * Continues the enumeration of cellular interfaces started using yFirstCellular().
+     * Caution: You can't make any assumption about the returned cellular interfaces order.
+     * If you want to find a specific a cellular interface, use Cellular.findCellular()
+     * and a hardwareID or a logical name.
      *
      * @return a pointer to a YCellular object, corresponding to
      *         a cellular interface currently online, or a NULL pointer

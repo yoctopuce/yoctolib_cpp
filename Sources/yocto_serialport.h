@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.h 32414 2018-10-01 08:48:46Z seb $
+ * $Id: yocto_serialport.h 32900 2018-11-02 10:12:43Z seb $
  *
  * Declares yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -936,6 +936,9 @@ public:
 
     /**
      * Continues the enumeration of serial ports started using yFirstSerialPort().
+     * Caution: You can't make any assumption about the returned serial ports order.
+     * If you want to find a specific a serial port, use SerialPort.findSerialPort()
+     * and a hardwareID or a logical name.
      *
      * @return a pointer to a YSerialPort object, corresponding to
      *         a serial port currently online, or a NULL pointer

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 32494 2018-10-04 15:14:06Z seb $
+ * $Id: yproto.h 33018 2018-11-07 17:45:34Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -652,7 +652,8 @@ typedef struct  _yGenericDeviceSt {
     u32                 deviceLogPos;
     yFifoBuf            logFifo;
     u8*                 logBuffer;
-    double              deviceTime;
+    u64                 lastTimeRef;
+    u64                 lastFreq;
 } yGenericDeviceSt;
 
 void initDevYdxInfos(int devYdxy, yStrRef serial);
@@ -1087,6 +1088,7 @@ u32 yapiGetCNonce(u32 nc);
 YRETCODE  yapiHTTPRequestSyncStartEx_internal(YIOHDL *iohdl, int tcpchan, const char *device, const char *request, int requestsize, char **reply, int *replysize, yapiRequestProgressCallback progress_cb, void *progress_ctx, char *errmsg);
 YRETCODE  yapiHTTPRequestSyncDone_internal(YIOHDL *iohdl, char *errmsg);
 void yFunctionUpdate(YAPI_FUNCTION fundescr, const char *value);
-void yFunctionTimedUpdate(YAPI_FUNCTION fundescr, double deviceTime, const u8 *report, u32 len);
+void yFunctionTimedUpdate(YAPI_FUNCTION fundescr, u64 deviceTime, u64 freq, const u8 *report, u32 len);
 int yapiJsonGetPath_internal(const char *path, const char *json_data, int json_size, int withHTTPheader, const char **output, char *errmsg);
+void request_pending_logs(HubSt* hub);
 #endif

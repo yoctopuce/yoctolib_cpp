@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_voltageoutput.h 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_voltageoutput.h 32900 2018-11-02 10:12:43Z seb $
  *
  *  Declares yFindVoltageOutput(), the high-level API for VoltageOutput functions
  *
@@ -219,6 +219,9 @@ public:
 
     /**
      * Continues the enumeration of voltage outputs started using yFirstVoltageOutput().
+     * Caution: You can't make any assumption about the returned voltage outputs order.
+     * If you want to find a specific a voltage output, use VoltageOutput.findVoltageOutput()
+     * and a hardwareID or a logical name.
      *
      * @return a pointer to a YVoltageOutput object, corresponding to
      *         a voltage output currently online, or a NULL pointer

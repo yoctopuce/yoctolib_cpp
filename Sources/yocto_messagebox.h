@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.h 32414 2018-10-01 08:48:46Z seb $
+ * $Id: yocto_messagebox.h 32900 2018-11-02 10:12:43Z seb $
  *
  * Declares yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -491,6 +491,9 @@ public:
 
     /**
      * Continues the enumeration of MessageBox interfaces started using yFirstMessageBox().
+     * Caution: You can't make any assumption about the returned MessageBox interfaces order.
+     * If you want to find a specific a MessageBox interface, use MessageBox.findMessageBox()
+     * and a hardwareID or a logical name.
      *
      * @return a pointer to a YMessageBox object, corresponding to
      *         a MessageBox interface currently online, or a NULL pointer

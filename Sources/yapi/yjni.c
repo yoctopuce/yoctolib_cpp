@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yjni.c 21960 2015-11-06 15:59:59Z seb $
+ * $Id: yjni.c 32916 2018-11-02 11:07:34Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -478,7 +478,7 @@ static void jFunctionUpdateCallbackFwd(YAPI_FUNCTION fundesc,const char *value)
     (*env)->CallVoidMethod(env, jObj, yUSBHub_handleValueNotification, j_serial, j_funcId, j_value);
 }
 
-static void jFunctionTimedReportCallbackFwd(YAPI_FUNCTION fundesc, double timestamp, const u8 *bytes, u32 len)
+static void jFunctionTimedReportCallbackFwd(YAPI_FUNCTION fundesc, double timestamp, const u8 *bytes, u32 len, double duration)
 {
     char serial[YOCTO_SERIAL_LEN];
     char funcId[YOCTO_FUNCTION_LEN];
@@ -504,7 +504,7 @@ static void jFunctionTimedReportCallbackFwd(YAPI_FUNCTION fundesc, double timest
         return;
     }
 
-    YUSBHub_handleTimedNotification = (*env)->GetMethodID(env, yUSBHub_class, "handleTimedNotification", "(Ljava/lang/String;Ljava/lang/String;D[B)V");
+    YUSBHub_handleTimedNotification = (*env)->GetMethodID(env, yUSBHub_class, "handleTimedNotification", "(Ljava/lang/String;Ljava/lang/String;DD[B)V");
     if (YUSBHub_handleTimedNotification == 0) {
         dbglog("Unable to find add method of handleTimedNotification\n");
         return;
@@ -519,8 +519,7 @@ static void jFunctionTimedReportCallbackFwd(YAPI_FUNCTION fundesc, double timest
     }
 
     (*env)->SetByteArrayRegion(env, result, 0 , len, (jbyte*) bytes);  // copy
-
-    (*env)->CallVoidMethod(env, jObj, YUSBHub_handleTimedNotification, j_serial, j_funcId, timestamp, result);
+    (*env)->CallVoidMethod(env, jObj, YUSBHub_handleTimedNotification, j_serial, j_funcId, timestamp, duration, result);
 }
 
 

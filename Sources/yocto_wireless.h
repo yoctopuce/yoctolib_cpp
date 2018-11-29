@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.h 32414 2018-10-01 08:48:46Z seb $
+ * $Id: yocto_wireless.h 32900 2018-11-02 10:12:43Z seb $
  *
  * Declares yFindWireless(), the high-level API for Wireless functions
  *
@@ -413,6 +413,9 @@ public:
 
     /**
      * Continues the enumeration of wireless lan interfaces started using yFirstWireless().
+     * Caution: You can't make any assumption about the returned wireless lan interfaces order.
+     * If you want to find a specific a wireless lan interface, use Wireless.findWireless()
+     * and a hardwareID or a logical name.
      *
      * @return a pointer to a YWireless object, corresponding to
      *         a wireless lan interface currently online, or a NULL pointer

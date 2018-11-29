@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_genericsensor.h 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_genericsensor.h 33114 2018-11-09 21:58:19Z mvuilleu $
  *
  *  Declares yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -63,6 +63,7 @@ typedef enum {
     Y_SIGNALSAMPLING_HIGH_RATE_FILTERED = 1,
     Y_SIGNALSAMPLING_LOW_NOISE = 2,
     Y_SIGNALSAMPLING_LOW_NOISE_FILTERED = 3,
+    Y_SIGNALSAMPLING_HIGHEST_RATE = 4,
     Y_SIGNALSAMPLING_INVALID = -1,
 } Y_SIGNALSAMPLING_enum;
 #endif
@@ -123,6 +124,7 @@ public:
     static const Y_SIGNALSAMPLING_enum SIGNALSAMPLING_HIGH_RATE_FILTERED = Y_SIGNALSAMPLING_HIGH_RATE_FILTERED;
     static const Y_SIGNALSAMPLING_enum SIGNALSAMPLING_LOW_NOISE = Y_SIGNALSAMPLING_LOW_NOISE;
     static const Y_SIGNALSAMPLING_enum SIGNALSAMPLING_LOW_NOISE_FILTERED = Y_SIGNALSAMPLING_LOW_NOISE_FILTERED;
+    static const Y_SIGNALSAMPLING_enum SIGNALSAMPLING_HIGHEST_RATE = Y_SIGNALSAMPLING_HIGHEST_RATE;
     static const Y_SIGNALSAMPLING_enum SIGNALSAMPLING_INVALID = Y_SIGNALSAMPLING_INVALID;
 
     /**
@@ -254,8 +256,8 @@ public:
      * to get measures as stable as possible when working on a noisy signal.
      *
      * @return a value among Y_SIGNALSAMPLING_HIGH_RATE, Y_SIGNALSAMPLING_HIGH_RATE_FILTERED,
-     * Y_SIGNALSAMPLING_LOW_NOISE and Y_SIGNALSAMPLING_LOW_NOISE_FILTERED corresponding to the electric
-     * signal sampling method to use
+     * Y_SIGNALSAMPLING_LOW_NOISE, Y_SIGNALSAMPLING_LOW_NOISE_FILTERED and Y_SIGNALSAMPLING_HIGHEST_RATE
+     * corresponding to the electric signal sampling method to use
      *
      * On failure, throws an exception or returns Y_SIGNALSAMPLING_INVALID.
      */
@@ -273,8 +275,8 @@ public:
      * to get measures as stable as possible when working on a noisy signal.
      *
      * @param newval : a value among Y_SIGNALSAMPLING_HIGH_RATE, Y_SIGNALSAMPLING_HIGH_RATE_FILTERED,
-     * Y_SIGNALSAMPLING_LOW_NOISE and Y_SIGNALSAMPLING_LOW_NOISE_FILTERED corresponding to the electric
-     * signal sampling method to use
+     * Y_SIGNALSAMPLING_LOW_NOISE, Y_SIGNALSAMPLING_LOW_NOISE_FILTERED and Y_SIGNALSAMPLING_HIGHEST_RATE
+     * corresponding to the electric signal sampling method to use
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
@@ -361,6 +363,9 @@ public:
 
     /**
      * Continues the enumeration of generic sensors started using yFirstGenericSensor().
+     * Caution: You can't make any assumption about the returned generic sensors order.
+     * If you want to find a specific a generic sensor, use GenericSensor.findGenericSensor()
+     * and a hardwareID or a logical name.
      *
      * @return a pointer to a YGenericSensor object, corresponding to
      *         a generic sensor currently online, or a NULL pointer

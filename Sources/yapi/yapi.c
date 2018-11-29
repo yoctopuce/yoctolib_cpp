@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 32526 2018-10-05 12:46:31Z seb $
+ * $Id: yapi.c 33390 2018-11-26 14:33:41Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -238,14 +238,18 @@ void yFunctionUpdate(YAPI_FUNCTION fundescr, const char* value)
     }
 }
 
-void yFunctionTimedUpdate(YAPI_FUNCTION fundescr, double deviceTime, const u8* report, u32 len)
+void yFunctionTimedUpdate(YAPI_FUNCTION fundescr, u64 deviceTimeMs, u64 durationMs, const u8* report, u32 len)
 {
     if (yContext->timedReportCallback) {
+        double duration = 0;
+        if (durationMs > 0) {
+            duration = durationMs / 1000.0;
+        }
         yEnterCriticalSection(&yContext->functionCallbackCS);
 #ifdef DEBUG_CALLBACK
         write_timedcb_onfile(fundescr, deviceTime, report, len);
 #endif
-        yContext->timedReportCallback(fundescr, deviceTime, report, len);
+        yContext->timedReportCallback(fundescr, deviceTimeMs / 1000.0, report, len, duration);
         yLeaveCriticalSection(&yContext->functionCallbackCS);
     }
 }
@@ -572,14 +576,18 @@ YRETCODE yapiPullDeviceLogEx(int devydx)
         }
         return res;
     }
+#ifdef TRACE_NET_HUB
+    dbglog("TRACE pull device log\n");
+#endif
     used = YSTRLEN(request);
     p = request + used;
-    reqlen = YSPRINTF(p, 512 - used, "logs.txt?pos=%d\r\n\r\n", logPos);
+    YSPRINTF(p, 512 - used, "logs.txt?pos=%d \r\n\r\n", logPos);
+    reqlen = YSTRLEN(request);
     memset(&iohdl, 0, sizeof(YIOHDL_internal));
     // compute request timeout
     // dispatch request on correct hub (or pseudo usb HUB)
     url = wpGetDeviceUrlRef(dev);
-
+    errmsg[0] = 0;
     switch (yHashGetUrlPort(url, NULL, NULL, &proto, NULL, NULL, NULL)) {
     case USB_URL:
         res = yapiRequestOpenUSB(&iohdl, NULL, dev, request, reqlen, YIO_10_MINUTES_TCP_TIMEOUT, logResult, (void*)gen, errmsg);
@@ -602,12 +610,13 @@ YRETCODE yapiPullDeviceLogEx(int devydx)
         }
     }
 
+#ifdef TRACE_NET_HUB
+    dbglog("TRACE pull returned %d:%s\n",res,errmsg);
+#endif
     if (YISERR(res)) {
-        if (res != YAPI_DEVICE_NOT_FOUND && res != YAPI_DEVICE_BUSY) {
-            yEnterCriticalSection(&yContext->generic_cs);
-            gen->flags &= ~DEVGEN_LOG_PULLING;
-            yLeaveCriticalSection(&yContext->generic_cs);
-        }
+        yEnterCriticalSection(&yContext->generic_cs);
+        gen->flags &= ~DEVGEN_LOG_PULLING;
+        yLeaveCriticalSection(&yContext->generic_cs);
         return res;
     }
     return res;
@@ -659,7 +668,7 @@ void wpSafeRegister(HubSt* hub, u8 devYdx, yStrRef serialref, yStrRef lnameref, 
         } else {
             char host[YOCTO_HOSTNAME_NAME];
             u16  port;
-            yAsbUrlType type = yHashGetUrlPort(hub->url,host,&port);
+            yAsbUrlType type = yHashGetUrlPort(hub->url, host, &port, NULL, NULL, NULL, NULL);
             dbglog("SAFE WP: register %s(0x%X) from %s:%u\n",yHashGetStrPtr(serialref),serialref,host,port);
             dbglog("url    : hub = %d  dev =%d\n",hub->url,devUrl);
         }
@@ -718,7 +727,7 @@ void wpSafeUpdate(HubSt* hub, u8 devYdx, yStrRef serialref, yStrRef lnameref, yU
         } else {
             char host[YOCTO_HOSTNAME_NAME];
             u16  port;
-            yAsbUrlType type = yHashGetUrlPort(hub->url,host,&port);
+            yAsbUrlType type = yHashGetUrlPort(hub->url, host, &port, NULL, NULL, NULL, NULL);
             dbglog("SAFE WP: update %s(0x%X) from %s:%u\n",yHashGetStrPtr(serialref),serialref,host,port);
             dbglog("url    : hub = %d  dev =%d\n",hub->url,devUrl);
         }
@@ -783,7 +792,7 @@ static void parseNetWpEntry(ENU_CONTEXT* enus)
             enus->knownDevices[i] == enus->serial) {
             // mark the device as present (we sweep it later)
 #ifdef DEBUG_WP
-                dbglog("parseNetWpEntry %X was present\n",enus->serial);
+                dbglog("parseNetWpEntry %X (%s) was present\n",enus->serial,yHashGetStrPtr(enus->serial));
 #endif
             enus->knownDevices[i] = INVALID_HASH_IDX;
             break;
@@ -1336,7 +1345,7 @@ static int yEnuJZon(ENU_CONTEXT* enus, yJsonStateMachine* j, yJsonStateMachine* 
                 break;
             case WP_LOGICALNAME:
                 NETENUMLOG("set Logical name to %s\n", z->token);
-                enus->logicalName = yHashPutStr(j->token);
+                enus->logicalName = yHashPutStr(z->token);
                 enus->wp_state = WP_PRODUCT;
                 break;
             case WP_PRODUCT:
@@ -2439,20 +2448,34 @@ int handleNetNotification(HubSt* hub)
                 dumpNotif(Dbuffer);
 #endif
             if (funydx == 15) {
-                u32 t = report[1] + 0x100u * report[2] + 0x10000u * report[3] + 0x1000000u * report[4];
+                u64 t = report[1] + 0x100u * report[2] + 0x10000u * report[3] + 0x1000000u * report[4];
+                u32 ms = report[5] << 2;
+                u64 freq = 0;
+                if (pos >= 8) {
+                    ms += report[6] >> 6;
+                    freq = report[7];
+                    freq += (report[6] & 0xf) * 0x100;
+                    if (report[6] & 0x10) {
+                        freq *= 1000;
+                    }
+
+                }
                 yEnterCriticalSection(&yContext->generic_cs);
-                yContext->generic_infos[devydx].deviceTime = (double)t + report[5] / 250.0;
+                yContext->generic_infos[devydx].lastTimeRef = t * 1000 + ms;
+                yContext->generic_infos[devydx].lastFreq = freq;
                 yLeaveCriticalSection(&yContext->generic_cs);
             } else {
                 Notification_funydx funInfo;
                 YAPI_FUNCTION fundesc;
-                double deviceTime;
+                u64 deviceTime;
+                u64 freq;
                 yEnterCriticalSection(&yContext->generic_cs);
-                deviceTime = yContext->generic_infos[devydx].deviceTime;
+                deviceTime = yContext->generic_infos[devydx].lastTimeRef;
+                freq = yContext->generic_infos[devydx].lastFreq;
                 yLeaveCriticalSection(&yContext->generic_cs);
                 funInfo.raw = funydx;
                 ypRegisterByYdx(devydx, funInfo, NULL, &fundesc);
-                yFunctionTimedUpdate(fundesc, deviceTime, report, pos);
+                yFunctionTimedUpdate(fundesc, deviceTime, freq, report, pos);
             }
             break;
         case NOTIFY_NETPKT_FUNCV2YDX:
@@ -2711,6 +2734,17 @@ static int yTcpTrafficPending(void)
     return 0;
 }
 
+void request_pending_logs(HubSt* hub)
+{
+    int i;
+    for (i = 0; i < ALLOC_YDX_PER_HUB; i++) {
+        int devydx = hub->devYdxMap[i];
+        if (devydx != 0xff) {
+            yapiPullDeviceLogEx(devydx);
+        }
+    }
+}
+
 static void* yhelper_thread(void* ctx)
 {
     int i, towatch;
@@ -2730,12 +2764,7 @@ static void* yhelper_thread(void* ctx)
     yThreadSignalStart(thread);
     while (!yThreadMustEnd(thread)) {
         // Handle async connections as well in this thread
-        for (i = 0; i < ALLOC_YDX_PER_HUB; i++) {
-            int devydx = hub->devYdxMap[i];
-            if (devydx != 0xff) {
-                yapiPullDeviceLogEx(devydx);
-            }
-        }
+        request_pending_logs(hub);
         towatch = 0;
         if (hub->state == NET_HUB_ESTABLISHED || hub->state == NET_HUB_TRYING) {
             selectlist[towatch] = hub->http.notReq;
@@ -4748,6 +4777,9 @@ void yapiRegisterRawReportV2Cb(yRawReportV2Cb callback)
 //#define YDLL_TRACE_FILE "dll_trace.txt"
 
 #ifdef YDLL_TRACE_FILE
+#include <direct.h>
+#include <stdio.h>
+
 
 typedef enum
 {
@@ -5671,7 +5703,7 @@ void YAPI_FUNCTION_EXPORT __stdcall vb6_yapiRegisterFunctionUpdateCallback(vb6_y
 
 static vb6_yapiTimedReportCallback vb6_yapiRegisterTimedReportCallbackFWD = NULL;
 
-void yapiRegisterTimedReportCallbackFWD(YAPI_FUNCTION fundesc, double timestamp, const u8* bytes, u32 len)
+void yapiRegisterTimedReportCallbackFWD(YAPI_FUNCTION fundesc, double timestamp, const u8* bytes, u32 len, double duration)
 {
     if (vb6_yapiRegisterTimedReportCallbackFWD)
         vb6_yapiRegisterTimedReportCallbackFWD(fundesc, timestamp, bytes, len);

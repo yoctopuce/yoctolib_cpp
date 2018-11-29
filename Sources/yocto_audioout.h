@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_audioout.h 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_audioout.h 32900 2018-11-02 10:12:43Z seb $
  *
  *  Declares yFindAudioOut(), the high-level API for AudioOut functions
  *
@@ -252,6 +252,9 @@ public:
 
     /**
      * Continues the enumeration of audio outputs started using yFirstAudioOut().
+     * Caution: You can't make any assumption about the returned audio outputs order.
+     * If you want to find a specific an audio output, use AudioOut.findAudioOut()
+     * and a hardwareID or a logical name.
      *
      * @return a pointer to a YAudioOut object, corresponding to
      *         an audio output currently online, or a NULL pointer

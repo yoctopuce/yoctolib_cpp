@@ -126,6 +126,7 @@
 <ClCompile Include="..\..\..\Sources\yocto_motor.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_multiaxiscontroller.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_multicellweighscale.cpp" />
+<ClCompile Include="..\..\..\Sources\yocto_multisenscontroller.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_network.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_oscontrol.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_power.cpp" />
@@ -148,6 +149,7 @@
 <ClCompile Include="..\..\..\Sources\yocto_steppermotor.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_temperature.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_tilt.cpp" />
+<ClCompile Include="..\..\..\Sources\yocto_tvoc.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_voc.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_voltage.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_voltageoutput.cpp" />
@@ -209,6 +211,7 @@
 <ClInclude Include="..\..\..\Sources\yocto_motor.h" />
 <ClInclude Include="..\..\..\Sources\yocto_multiaxiscontroller.h" />
 <ClInclude Include="..\..\..\Sources\yocto_multicellweighscale.h" />
+<ClInclude Include="..\..\..\Sources\yocto_multisenscontroller.h" />
 <ClInclude Include="..\..\..\Sources\yocto_network.h" />
 <ClInclude Include="..\..\..\Sources\yocto_oscontrol.h" />
 <ClInclude Include="..\..\..\Sources\yocto_power.h" />
@@ -231,6 +234,7 @@
 <ClInclude Include="..\..\..\Sources\yocto_steppermotor.h" />
 <ClInclude Include="..\..\..\Sources\yocto_temperature.h" />
 <ClInclude Include="..\..\..\Sources\yocto_tilt.h" />
+<ClInclude Include="..\..\..\Sources\yocto_tvoc.h" />
 <ClInclude Include="..\..\..\Sources\yocto_voc.h" />
 <ClInclude Include="..\..\..\Sources\yocto_voltage.h" />
 <ClInclude Include="..\..\..\Sources\yocto_voltageoutput.h" />

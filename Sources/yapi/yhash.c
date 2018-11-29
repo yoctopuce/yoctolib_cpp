@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 32085 2018-09-17 16:15:36Z seb $
+ * $Id: yhash.c 32979 2018-11-06 15:02:57Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -703,7 +703,7 @@ static void wpExecuteUnregisterUnsec(void)
             {
                 char host[YOCTO_HOSTNAME_NAME];
                 u16  port;
-                yAsbUrlType type = yHashGetUrlPort( WP(hdl).url,host,&port);
+                yAsbUrlType type = yHashGetUrlPort( WP(hdl).url,host,&port,NULL,NULL,NULL,NULL);
                 switch(type){
                 case USB_URL:
                     dbglog("WP: unregister %s(0x%X) form USB\n",yHashGetStrPtr(WP(hdl).serial),WP(hdl).serial);
@@ -886,7 +886,7 @@ int wpRegister(int devYdx, yStrRef serial, yStrRef logicalName, yStrRef productN
     {
         char host[YOCTO_HOSTNAME_NAME];
         u16  port;
-        yAsbUrlType type = yHashGetUrlPort(devUrl,host,&port);
+        yAsbUrlType type = yHashGetUrlPort(devUrl,host,&port, NULL, NULL, NULL, NULL);
         switch(type){
         case USB_URL:
             dbglog("WP: regiser %s(0x%X) form USB (res=%d)\n",yHashGetStrPtr(serial),serial,changed);
@@ -974,7 +974,7 @@ int wpMarkForUnregister(yStrRef serial)
         char host[YOCTO_HOSTNAME_NAME];
         u16  port;
             if (retval) {
-                yAsbUrlType type = yHashGetUrlPort( WP(hdl).url,host,&port);
+                yAsbUrlType type = yHashGetUrlPort( WP(hdl).url,host,&port, NULL, NULL, NULL, NULL);
             switch(type){
             case USB_URL:
                 dbglog("WP: mark for unregister %s(0x%X) form USB\n",yHashGetStrPtr(serial),serial);
@@ -1352,7 +1352,7 @@ int ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, 
     }
     if (categ != YSTRREF_MODULE_STRING) {
         if (funYdx >= 0 && funYdx < 15) {
-            YP(hdl).funInfo.raw = funYdx;
+            YP(hdl).funInfo.v2.funydx = funYdx;
         } else {
             funYdx = YP(hdl).funInfo.v2.funydx;
         }
@@ -1392,7 +1392,7 @@ int ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, 
                     }
                 }
                 if (funYdx < 15) {
-                    YP(hdl).funInfo.raw = funYdx;
+                    YP(hdl).funInfo.v2.funydx = funYdx;
                 }
             }
             while (yahdl == INVALID_BLK_HDL) {
@@ -1498,7 +1498,6 @@ int ypGetAttributesByYdx(u8 devYdx, u8 funYdx, yStrRef* serial, yStrRef* logical
         }
         hdl = funYdxPtr[devYdx];
         while (hdl != INVALID_BLK_HDL && funYdx >= 6) {
-            //          YASSERT(YA(hdl).blkId == YBLKID_YPARRAY);
             if (YA(hdl).blkId != YBLKID_YPARRAY) {
                 yLeaveCriticalSection(&yYpMutex);
                 return -1; // discard invalid block silently

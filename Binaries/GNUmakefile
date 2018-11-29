@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 31393 2018-08-03 15:04:10Z seb $
+#  $Id: GNUmakefile 33290 2018-11-22 10:43:41Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -257,7 +257,7 @@ YOCTO_API_OBJS_STAT = yocto_api.o yocto_anbutton.o yocto_carbondioxide.o yocto_c
 	yocto_pwminput.o yocto_segmenteddisplay.o yocto_buzzer.o yocto_gps.o yocto_cellular.o yocto_groundspeed.o yocto_latitude.o \
 	yocto_longitude.o yocto_poweroutput.o yocto_quadraturedecoder.o yocto_currentloopoutput.o yocto_colorledcluster.o yocto_spiport.o \
 	yocto_messagebox.o yocto_steppermotor.o yocto_multiaxiscontroller.o yocto_proximity.o yocto_rangefinder.o yocto_daisychain.o \
-	yocto_weighscale.o yocto_voltageoutput.o yocto_powersupply.o yocto_multicellweighscale.o
+	yocto_weighscale.o yocto_voltageoutput.o yocto_powersupply.o yocto_multicellweighscale.o yocto_tvoc.o yocto_multisenscontroller.o
 
 YOCTO_API_OBJS_DYN  = $(patsubst %.o, %_dyn.o,$(YOCTO_API_OBJS_STAT))
 

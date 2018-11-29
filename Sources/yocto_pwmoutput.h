@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwmoutput.h 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_pwmoutput.h 33313 2018-11-22 16:11:56Z seb $
  *
  *  Declares yFindPwmOutput(), the high-level API for PwmOutput functions
  *
@@ -156,7 +156,11 @@ public:
 
     /**
      * Changes the PWM frequency. The duty cycle is kept unchanged thanks to an
-     * automatic pulse width change.
+     * automatic pulse width change, in other words, the change will not be applied
+     * before the end of the current period. This can significantly affect reaction
+     * time at low frequencies.
+     * To stop the PWM signal, do not set the frequency to zero, use the set_enabled()
+     * method instead.
      *
      * @param newval : a floating point number corresponding to the PWM frequency
      *
@@ -181,7 +185,10 @@ public:
     { return this->get_frequency(); }
 
     /**
-     * Changes the PWM period in milliseconds.
+     * Changes the PWM period in milliseconds. Caution: in order to avoid  random truncation of
+     * the current pulse, the change will not be applied
+     * before the end of the current period. This can significantly affect reaction
+     * time at low frequencies.
      *
      * @param newval : a floating point number corresponding to the PWM period in milliseconds
      *
@@ -474,6 +481,9 @@ public:
 
     /**
      * Continues the enumeration of PWMs started using yFirstPwmOutput().
+     * Caution: You can't make any assumption about the returned PWMs order.
+     * If you want to find a specific a PWM, use PwmOutput.findPwmOutput()
+     * and a hardwareID or a logical name.
      *
      * @return a pointer to a YPwmOutput object, corresponding to
      *         a PWM currently online, or a NULL pointer

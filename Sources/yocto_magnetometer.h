@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_magnetometer.h 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_magnetometer.h 32900 2018-11-02 10:12:43Z seb $
  *
  *  Declares yFindMagnetometer(), the high-level API for Magnetometer functions
  *
@@ -242,6 +242,9 @@ public:
 
     /**
      * Continues the enumeration of magnetometers started using yFirstMagnetometer().
+     * Caution: You can't make any assumption about the returned magnetometers order.
+     * If you want to find a specific a magnetometer, use Magnetometer.findMagnetometer()
+     * and a hardwareID or a logical name.
      *
      * @return a pointer to a YMagnetometer object, corresponding to
      *         a magnetometer currently online, or a NULL pointer

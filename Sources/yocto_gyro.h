@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.h 28748 2017-10-03 08:23:39Z seb $
+ * $Id: yocto_gyro.h 32900 2018-11-02 10:12:43Z seb $
  *
  * Declares yFindGyro(), the high-level API for Gyro functions
  *
@@ -154,6 +154,9 @@ public:
 
     /**
      * Continues the enumeration of quaternion components started using yFirstQt().
+     * Caution: You can't make any assumption about the returned quaternion components order.
+     * If you want to find a specific a quaternion component, use Qt.findQt()
+     * and a hardwareID or a logical name.
      *
      * @return a pointer to a YQt object, corresponding to
      *         a quaternion component currently online, or a NULL pointer
@@ -566,6 +569,9 @@ public:
 
     /**
      * Continues the enumeration of gyroscopes started using yFirstGyro().
+     * Caution: You can't make any assumption about the returned gyroscopes order.
+     * If you want to find a specific a gyroscope, use Gyro.findGyro()
+     * and a hardwareID or a logical name.
      *
      * @return a pointer to a YGyro object, corresponding to
      *         a gyroscope currently online, or a NULL pointer

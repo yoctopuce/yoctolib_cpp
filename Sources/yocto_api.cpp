@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 32489 2018-10-04 12:33:12Z seb $
+ * $Id: yocto_api.cpp 33400 2018-11-27 07:58:29Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -59,13 +59,14 @@
 #include <math.h>
 #define YMEMORY_ALLOW_MALLOC
 #include "yapi/yproto.h"
+#include <iostream>
 
-static  yCRITICAL_SECTION   _updateDeviceList_CS;
-static  yCRITICAL_SECTION   _handleEvent_CS;
+static yCRITICAL_SECTION _updateDeviceList_CS;
+static yCRITICAL_SECTION _handleEvent_CS;
 
-static  std::vector<YFunction*>     _FunctionCallbacks;
-static  std::vector<YFunction*>     _TimedReportCallbackList;
-static  std::map<YModule*, int>     _moduleCallbackList;
+static std::vector<YFunction*> _FunctionCallbacks;
+static std::vector<YFunction*> _TimedReportCallbackList;
+static std::map<YModule*, int> _moduleCallbackList;
 
 const string YFunction::HARDWAREID_INVALID = YAPI_INVALID_STRING;
 const string YFunction::FUNCTIONID_INVALID = YAPI_INVALID_STRING;
@@ -75,13 +76,12 @@ const double YDataStream::DATA_INVALID = Y_DATA_INVALID;
 
 int _ystrpos(const string& haystack, const string& needle)
 {
-    size_t  pos = haystack.find(needle);
-    if(pos == string::npos) {
+    size_t pos = haystack.find(needle);
+    if (pos == string::npos) {
         return -1;
     }
     return (int)pos;
 }
-
 
 vector<string> _strsplit(const string& str, char delimiter)
 {
@@ -93,13 +93,12 @@ vector<string> _strsplit(const string& str, char delimiter)
         found = str.find(delimiter, pos);
         if (found != std::string::npos) {
             res.push_back(str.substr(pos, found - pos));
-            pos = found+1;
+            pos = found + 1;
         }
     } while (found != std::string::npos);
     res.push_back(str.substr(pos));
     return res;
 }
-
 
 
 YJSONContent* YJSONContent::ParseJson(const string& data, int start, int stop)
@@ -129,10 +128,10 @@ YJSONContent::YJSONContent(const string& data, int start, int stop, YJSONType ty
 
 YJSONContent::YJSONContent(YJSONType type)
 {
-    _data = "";//todo: check not null
+    _data = ""; //todo: check not null
 }
 
-YJSONContent::YJSONContent(YJSONContent *ref)
+YJSONContent::YJSONContent(YJSONContent* ref)
 {
     _data = ref->_data;
     _data_start = ref->_data_start;
@@ -154,7 +153,7 @@ YJSONType YJSONContent::getJSONType()
 
 int YJSONContent::SkipGarbage(const string& data, int start, int stop)
 {
-    if (data.length() <= (unsigned) start) {
+    if (data.length() <= (unsigned)start) {
         return start;
     }
     char sti = data[start];
@@ -172,12 +171,12 @@ string YJSONContent::FormatError(const string& errmsg, int cur_pos)
         ststart = 0;
     if (stend > _data_boundary)
         stend = _data_boundary;
-    if (_data == "") {//todo: check not null
+    if (_data == "") {
+        //todo: check not null
         return errmsg;
     }
     return errmsg + " near " + _data.substr(ststart, cur_pos - ststart) + _data.substr(cur_pos, stend - cur_pos);
 }
-
 
 
 YJSONArray::YJSONArray(const string& data, int start, int stop) : YJSONContent(data, start, stop, ARRAY)
@@ -187,35 +186,31 @@ YJSONArray::YJSONArray(const string& data, int start, int stop) : YJSONContent(d
 YJSONArray::YJSONArray() : YJSONContent(ARRAY)
 { }
 
-YJSONArray::YJSONArray(YJSONArray *ref) : YJSONContent(ref)
+YJSONArray::YJSONArray(YJSONArray* ref) : YJSONContent(ref)
 {
     for (unsigned i = 0; i < ref->_arrayValue.size(); i++) {
         YJSONType type = ref->_arrayValue[i]->getJSONType();
         switch (type) {
-        case ARRAY:
-            {
-                YJSONArray* tmp = new YJSONArray((YJSONArray*)ref->_arrayValue[i]);
-                _arrayValue.push_back(tmp);
-            }
-            break;
-        case NUMBER:
-            {
-                YJSONNumber* tmp = new YJSONNumber((YJSONNumber*)ref->_arrayValue[i]);
-                _arrayValue.push_back(tmp);
-            }
-            break;
-        case STRING:
-            {
-                YJSONString* tmp = new YJSONString((YJSONString*)ref->_arrayValue[i]);
-                _arrayValue.push_back(tmp);
-            }
-            break;
-        case OBJECT:
-            {
-                YJSONObject* tmp = new YJSONObject((YJSONObject*)ref->_arrayValue[i]);
-                _arrayValue.push_back(tmp);
-            }
-            break;
+        case ARRAY: {
+            YJSONArray* tmp = new YJSONArray((YJSONArray*)ref->_arrayValue[i]);
+            _arrayValue.push_back(tmp);
+        }
+        break;
+        case NUMBER: {
+            YJSONNumber* tmp = new YJSONNumber((YJSONNumber*)ref->_arrayValue[i]);
+            _arrayValue.push_back(tmp);
+        }
+        break;
+        case STRING: {
+            YJSONString* tmp = new YJSONString((YJSONString*)ref->_arrayValue[i]);
+            _arrayValue.push_back(tmp);
+        }
+        break;
+        case OBJECT: {
+            YJSONObject* tmp = new YJSONObject((YJSONObject*)ref->_arrayValue[i]);
+            _arrayValue.push_back(tmp);
+        }
+        break;
         }
     }
 }
@@ -231,7 +226,7 @@ YJSONArray::~YJSONArray()
 
 int YJSONArray::length()
 {
-    return (int) _arrayValue.size();
+    return (int)_arrayValue.size();
 }
 
 int YJSONArray::parse()
@@ -247,60 +242,60 @@ int YJSONArray::parse()
     while (cur_pos < _data_boundary) {
         char sti = _data[cur_pos];
         switch (state) {
-            case JWAITFORDATA:
-                if (sti == '{') {
-                    YJSONObject* jobj = new YJSONObject(_data, cur_pos, _data_boundary);
-                    int len = jobj->parse();
-                    cur_pos += len;
-                    _arrayValue.push_back(jobj);
-                    state = JWAITFORNEXTARRAYITEM;
-                    //cur_pos is already incremented
-                    continue;
-                } else if (sti == '[') {
-                    YJSONArray* jobj = new YJSONArray(_data, cur_pos, _data_boundary);
-                    int len = jobj->parse();
-                    cur_pos += len;
-                    _arrayValue.push_back(jobj);
-                    state = JWAITFORNEXTARRAYITEM;
-                    //cur_pos is already incremented
-                    continue;
-                } else if (sti == '"') {
-                    YJSONString* jobj = new YJSONString(_data, cur_pos, _data_boundary);
-                    int len = jobj->parse();
-                    cur_pos += len;
-                    _arrayValue.push_back(jobj);
-                    state = JWAITFORNEXTARRAYITEM;
-                    //cur_pos is already incremented
-                    continue;
-                } else if (sti == '-' || (sti >= '0' && sti <= '9')) {
-                    YJSONNumber* jobj = new YJSONNumber(_data, cur_pos, _data_boundary);
-                    int len = jobj->parse();
-                    cur_pos += len;
-                    _arrayValue.push_back(jobj);
-                    state = JWAITFORNEXTARRAYITEM;
-                    //cur_pos is already incremented
-                    continue;
-                } else if (sti == ']') {
-                    _data_len = cur_pos + 1 - _data_start;
-                    return _data_len;
-                } else if (sti != ' ' && sti != '\n' && sti != '\r') {
-                    throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid char: was expecting  \",0..9,t or f", cur_pos));
+        case JWAITFORDATA:
+            if (sti == '{') {
+                YJSONObject* jobj = new YJSONObject(_data, cur_pos, _data_boundary);
+                int len = jobj->parse();
+                cur_pos += len;
+                _arrayValue.push_back(jobj);
+                state = JWAITFORNEXTARRAYITEM;
+                //cur_pos is already incremented
+                continue;
+            } else if (sti == '[') {
+                YJSONArray* jobj = new YJSONArray(_data, cur_pos, _data_boundary);
+                int len = jobj->parse();
+                cur_pos += len;
+                _arrayValue.push_back(jobj);
+                state = JWAITFORNEXTARRAYITEM;
+                //cur_pos is already incremented
+                continue;
+            } else if (sti == '"') {
+                YJSONString* jobj = new YJSONString(_data, cur_pos, _data_boundary);
+                int len = jobj->parse();
+                cur_pos += len;
+                _arrayValue.push_back(jobj);
+                state = JWAITFORNEXTARRAYITEM;
+                //cur_pos is already incremented
+                continue;
+            } else if (sti == '-' || (sti >= '0' && sti <= '9')) {
+                YJSONNumber* jobj = new YJSONNumber(_data, cur_pos, _data_boundary);
+                int len = jobj->parse();
+                cur_pos += len;
+                _arrayValue.push_back(jobj);
+                state = JWAITFORNEXTARRAYITEM;
+                //cur_pos is already incremented
+                continue;
+            } else if (sti == ']') {
+                _data_len = cur_pos + 1 - _data_start;
+                return _data_len;
+            } else if (sti != ' ' && sti != '\n' && sti != '\r') {
+                throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid char: was expecting  \",0..9,t or f", cur_pos));
+            }
+            break;
+        case JWAITFORNEXTARRAYITEM:
+            if (sti == ',') {
+                state = JWAITFORDATA;
+            } else if (sti == ']') {
+                _data_len = cur_pos + 1 - _data_start;
+                return _data_len;
+            } else {
+                if (sti != ' ' && sti != '\n' && sti != '\r') {
+                    throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid char: was expecting ,", cur_pos));
                 }
-                break;
-            case JWAITFORNEXTARRAYITEM:
-                if (sti == ',') {
-                    state = JWAITFORDATA;
-                } else if (sti == ']') {
-                    _data_len = cur_pos + 1 - _data_start;
-                    return _data_len;
-                } else {
-                    if (sti != ' ' && sti != '\n' && sti != '\r') {
-                        throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid char: was expecting ,", cur_pos));
-                    }
-                }
-                break;
-            default:
-                throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid state for YJSONObject", cur_pos));
+            }
+            break;
+        default:
+            throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid state for YJSONObject", cur_pos));
         }
         cur_pos++;
     }
@@ -333,13 +328,14 @@ int YJSONArray::getInt(int i)
     YJSONNumber* ystr = (YJSONNumber*)_arrayValue[i];
     return ystr->getInt();
 }
+
 s64 YJSONArray::getLong(int i)
 {
     YJSONNumber* ystr = (YJSONNumber*)_arrayValue[i];
     return ystr->getLong();
 }
 
- void YJSONArray::put(const string& flatAttr)
+void YJSONArray::put(const string& flatAttr)
 {
     YJSONString* strobj = new YJSONString();
     strobj->setContent(flatAttr);
@@ -348,10 +344,10 @@ s64 YJSONArray::getLong(int i)
 
 string YJSONArray::toJSON()
 {
-    string res ="[";
+    string res = "[";
     string sep = "";
     unsigned int i;
-    for (i = 0; i < _arrayValue.size(); i++){
+    for (i = 0; i < _arrayValue.size(); i++) {
         YJSONContent* yjsonContent = _arrayValue[i];
         string subres = yjsonContent->toJSON();
         res += sep;
@@ -364,10 +360,10 @@ string YJSONArray::toJSON()
 
 string YJSONArray::toString()
 {
-    string res ="[";
+    string res = "[";
     string sep = "";
     unsigned int i;
-    for (i = 0; i < _arrayValue.size(); i++){
+    for (i = 0; i < _arrayValue.size(); i++) {
         YJSONContent* yjsonContent = _arrayValue[i];
         string subres = yjsonContent->toString();
         res += sep;
@@ -379,14 +375,13 @@ string YJSONArray::toString()
 }
 
 
-
 YJSONString::YJSONString(const string& data, int start, int stop) : YJSONContent(data, start, stop, STRING)
 { }
 
 YJSONString::YJSONString() : YJSONContent(STRING)
 { }
 
-YJSONString::YJSONString(YJSONString *ref) : YJSONContent(ref)
+YJSONString::YJSONString(YJSONString* ref) : YJSONContent(ref)
 {
     _stringValue = ref->_stringValue;
 }
@@ -436,8 +431,8 @@ int YJSONString::parse()
 string YJSONString::toJSON()
 {
     string res = "\"";
-    const char* c =_stringValue.c_str();
-    while(*c) {
+    const char* c = _stringValue.c_str();
+    while (*c) {
         switch (*c) {
         case '"':
             res += "\\\"";
@@ -473,27 +468,26 @@ string YJSONString::toJSON()
     return res;
 }
 
-    string YJSONString::getString()
+string YJSONString::getString()
 {
     return _stringValue;
 }
 
-    string YJSONString::toString()
+string YJSONString::toString()
 {
     return _stringValue;
 }
 
-    void YJSONString::setContent(const string& value)
+void YJSONString::setContent(const string& value)
 {
     _stringValue = value;
 }
 
 
-
-YJSONNumber::YJSONNumber(const string& data, int start, int stop) : YJSONContent(data, start, stop, NUMBER), _intValue(0),_doubleValue(0),_isFloat(false)
+YJSONNumber::YJSONNumber(const string& data, int start, int stop) : YJSONContent(data, start, stop, NUMBER), _intValue(0), _doubleValue(0), _isFloat(false)
 { }
 
-YJSONNumber::YJSONNumber(YJSONNumber *ref) : YJSONContent(ref)
+YJSONNumber::YJSONNumber(YJSONNumber* ref) : YJSONContent(ref)
 {
     _intValue = ref->_intValue;
     _doubleValue = ref->_doubleValue;
@@ -503,7 +497,6 @@ YJSONNumber::YJSONNumber(YJSONNumber *ref) : YJSONContent(ref)
 
 int YJSONNumber::parse()
 {
-
     bool neg = false;
     int start;
     char sti;
@@ -579,19 +572,14 @@ string YJSONNumber::toString()
 }
 
 
-
-
-
-
 YJSONObject::YJSONObject(const string& data) : YJSONContent(data, 0, (int)data.length(), OBJECT)
 { }
 
 YJSONObject::YJSONObject(const string& data, int start, int len) : YJSONContent(data, start, len, OBJECT)
 { }
 
-YJSONObject::YJSONObject(YJSONObject *ref) : YJSONContent(ref)
+YJSONObject::YJSONObject(YJSONObject* ref) : YJSONContent(ref)
 {
-
     for (unsigned i = 0; i < ref->_keys.size(); i++) {
         string key = ref->_keys[i];
         _keys.push_back(key);
@@ -638,95 +626,95 @@ int YJSONObject::parse()
     while (cur_pos < _data_boundary) {
         char sti = _data[cur_pos];
         switch (state) {
-            case JWAITFORNAME:
-                if (sti == '"') {
-                    state = JWAITFORENDOFNAME;
-                    name_start = cur_pos + 1;
-                } else if (sti == '}') {
-                    _data_len = cur_pos + 1 - _data_start;
-                    return _data_len;
-                } else {
-                    if (sti != ' ' && sti != '\n' && sti != '\r') {
-                        throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid char: was expecting \"", cur_pos));
-                    }
+        case JWAITFORNAME:
+            if (sti == '"') {
+                state = JWAITFORENDOFNAME;
+                name_start = cur_pos + 1;
+            } else if (sti == '}') {
+                _data_len = cur_pos + 1 - _data_start;
+                return _data_len;
+            } else {
+                if (sti != ' ' && sti != '\n' && sti != '\r') {
+                    throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid char: was expecting \"", cur_pos));
                 }
-                break;
-            case JWAITFORENDOFNAME:
-                if (sti == '"') {
-                    current_name = _data.substr(name_start, cur_pos - name_start);
-                    state = JWAITFORCOLON;
+            }
+            break;
+        case JWAITFORENDOFNAME:
+            if (sti == '"') {
+                current_name = _data.substr(name_start, cur_pos - name_start);
+                state = JWAITFORCOLON;
 
-                } else {
-                    if (sti < 32) {
-                        throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid char: was expecting an identifier compliant char", cur_pos));
-                    }
+            } else {
+                if (sti < 32) {
+                    throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid char: was expecting an identifier compliant char", cur_pos));
                 }
-                break;
-            case JWAITFORCOLON:
-                if (sti == ':') {
-                    state = JWAITFORDATA;
-                } else {
-                    if (sti != ' ' && sti != '\n' && sti != '\r') {
-                        throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid char: was expecting \"", cur_pos));
-                    }
+            }
+            break;
+        case JWAITFORCOLON:
+            if (sti == ':') {
+                state = JWAITFORDATA;
+            } else {
+                if (sti != ' ' && sti != '\n' && sti != '\r') {
+                    throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid char: was expecting \"", cur_pos));
                 }
-                break;
-            case JWAITFORDATA:
-                if (sti == '{') {
-                    YJSONObject* jobj = new YJSONObject(_data, cur_pos, _data_boundary);
-                    int len = jobj->parse();
-                    cur_pos += len;
-                    _parsed[current_name] = jobj;
-                    _keys.push_back(current_name);
-                    state = JWAITFORNEXTSTRUCTMEMBER;
-                    //cur_pos is already incremented
-                    continue;
-                } else if (sti == '[') {
-                    YJSONArray* jobj = new YJSONArray(_data, cur_pos, _data_boundary);
-                    int len = jobj->parse();
-                    cur_pos += len;
-                    _parsed[current_name] = jobj;
-                    _keys.push_back(current_name);
-                    state = JWAITFORNEXTSTRUCTMEMBER;
-                    //cur_pos is already incremented
-                    continue;
-                } else if (sti == '"') {
-                    YJSONString* jobj = new YJSONString(_data, cur_pos, _data_boundary);
-                    int len = jobj->parse();
-                    cur_pos += len;
-                    _parsed[current_name] = jobj;
-                    _keys.push_back(current_name);
-                    state = JWAITFORNEXTSTRUCTMEMBER;
-                    //cur_pos is already incremented
-                    continue;
-                } else if (sti == '-' || (sti >= '0' && sti <= '9')) {
-                    YJSONNumber* jobj = new YJSONNumber(_data, cur_pos, _data_boundary);
-                    int len = jobj->parse();
-                    cur_pos += len;
-                    _parsed[current_name] = jobj;
-                    _keys.push_back(current_name);
-                    state = JWAITFORNEXTSTRUCTMEMBER;
-                    //cur_pos is already incremented
-                    continue;
-                } else if (sti != ' ' && sti != '\n' && sti != '\r') {
-                    throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid char: was expecting  \",0..9,t or f", cur_pos));
+            }
+            break;
+        case JWAITFORDATA:
+            if (sti == '{') {
+                YJSONObject* jobj = new YJSONObject(_data, cur_pos, _data_boundary);
+                int len = jobj->parse();
+                cur_pos += len;
+                _parsed[current_name] = jobj;
+                _keys.push_back(current_name);
+                state = JWAITFORNEXTSTRUCTMEMBER;
+                //cur_pos is already incremented
+                continue;
+            } else if (sti == '[') {
+                YJSONArray* jobj = new YJSONArray(_data, cur_pos, _data_boundary);
+                int len = jobj->parse();
+                cur_pos += len;
+                _parsed[current_name] = jobj;
+                _keys.push_back(current_name);
+                state = JWAITFORNEXTSTRUCTMEMBER;
+                //cur_pos is already incremented
+                continue;
+            } else if (sti == '"') {
+                YJSONString* jobj = new YJSONString(_data, cur_pos, _data_boundary);
+                int len = jobj->parse();
+                cur_pos += len;
+                _parsed[current_name] = jobj;
+                _keys.push_back(current_name);
+                state = JWAITFORNEXTSTRUCTMEMBER;
+                //cur_pos is already incremented
+                continue;
+            } else if (sti == '-' || (sti >= '0' && sti <= '9')) {
+                YJSONNumber* jobj = new YJSONNumber(_data, cur_pos, _data_boundary);
+                int len = jobj->parse();
+                cur_pos += len;
+                _parsed[current_name] = jobj;
+                _keys.push_back(current_name);
+                state = JWAITFORNEXTSTRUCTMEMBER;
+                //cur_pos is already incremented
+                continue;
+            } else if (sti != ' ' && sti != '\n' && sti != '\r') {
+                throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid char: was expecting  \",0..9,t or f", cur_pos));
+            }
+            break;
+        case JWAITFORNEXTSTRUCTMEMBER:
+            if (sti == ',') {
+                state = JWAITFORNAME;
+                name_start = cur_pos + 1;
+            } else if (sti == '}') {
+                _data_len = cur_pos + 1 - _data_start;
+                return _data_len;
+            } else {
+                if (sti != ' ' && sti != '\n' && sti != '\r') {
+                    throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid char: was expecting ,", cur_pos));
                 }
-                break;
-            case JWAITFORNEXTSTRUCTMEMBER:
-                if (sti == ',') {
-                    state = JWAITFORNAME;
-                    name_start = cur_pos + 1;
-                } else if (sti == '}') {
-                    _data_len = cur_pos + 1 - _data_start;
-                    return _data_len;
-                } else {
-                    if (sti != ' ' && sti != '\n' && sti != '\r') {
-                        throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid char: was expecting ,", cur_pos));
-                    }
-                }
-                break;
-            default:
-                throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid state for YJSONObject", cur_pos));
+            }
+            break;
+        default:
+            throw YAPI_Exception(YAPI_IO_ERROR, FormatError("invalid state for YJSONObject", cur_pos));
         }
         cur_pos++;
     }
@@ -841,7 +829,6 @@ string YJSONObject::toString()
 }
 
 
-
 void YJSONObject::parseWithRef(YJSONObject* reference)
 {
     if (reference != NULL) {
@@ -851,9 +838,7 @@ void YJSONObject::parseWithRef(YJSONObject* reference)
             convert(reference, yzon);
             delete yzon;
             return;
-        } catch (std::exception) {
-
-        }
+        } catch (std::exception) { }
     }
     this->parse();
 }
@@ -884,11 +869,11 @@ void YJSONObject::convert(YJSONObject* reference, YJSONArray* newArray)
             _keys.push_back(key);
         } else if (type == ARRAY && reference_item->getJSONType() == OBJECT) {
             YJSONObject* jobj = new YJSONObject(item->_data, item->_data_start, reference_item->_data_boundary);
-            jobj->convert((YJSONObject*) reference_item, (YJSONArray*) item);
-            _parsed[key] =jobj;
+            jobj->convert((YJSONObject*)reference_item, (YJSONArray*)item);
+            _parsed[key] = jobj;
             _keys.push_back(key);
         } else {
-            throw YAPI_Exception(YAPI_IO_ERROR,"Unable to convert yzon struct");
+            throw YAPI_Exception(YAPI_IO_ERROR, "Unable to convert yzon struct");
 
         }
     }
@@ -900,59 +885,50 @@ string YJSONObject::getKeyFromIdx(int i)
 }
 
 
-YDataStream::YDataStream(YFunction *parent):
-//--- (generated code: YDataStream initialization)
+YDataStream::YDataStream(YFunction* parent):
+    //--- (generated code: YDataStream initialization)
     _parent(NULL)
     ,_runNo(0)
     ,_utcStamp(0)
     ,_nCols(0)
     ,_nRows(0)
-    ,_duration(0)
+    ,_startTime(0.0)
+    ,_duration(0.0)
+    ,_dataSamplesInterval(0.0)
+    ,_firstMeasureDuration(0.0)
     ,_isClosed(0)
     ,_isAvg(0)
-    ,_isScal(0)
-    ,_isScal32(0)
-    ,_decimals(0)
-    ,_offset(0.0)
-    ,_scale(0.0)
-    ,_samplesPerHour(0)
     ,_minVal(0.0)
     ,_avgVal(0.0)
     ,_maxVal(0.0)
-    ,_decexp(0.0)
     ,_caltyp(0)
 //--- (end of generated code: YDataStream initialization)
 {
-    _parent   = parent;
+    _parent = parent;
 }
 
 
-
 // YDataStream constructor for the new datalogger
-YDataStream::YDataStream(YFunction *parent, YDataSet& dataset, const vector<int>& encoded):
-//--- (generated code: YDataStream initialization)
+YDataStream::YDataStream(YFunction* parent, YDataSet& dataset, const vector<int>& encoded):
+    //--- (generated code: YDataStream initialization)
     _parent(NULL)
     ,_runNo(0)
     ,_utcStamp(0)
     ,_nCols(0)
     ,_nRows(0)
-    ,_duration(0)
+    ,_startTime(0.0)
+    ,_duration(0.0)
+    ,_dataSamplesInterval(0.0)
+    ,_firstMeasureDuration(0.0)
     ,_isClosed(0)
     ,_isAvg(0)
-    ,_isScal(0)
-    ,_isScal32(0)
-    ,_decimals(0)
-    ,_offset(0.0)
-    ,_scale(0.0)
-    ,_samplesPerHour(0)
     ,_minVal(0.0)
     ,_avgVal(0.0)
     ,_maxVal(0.0)
-    ,_decexp(0.0)
     ,_caltyp(0)
 //--- (end of generated code: YDataStream initialization)
 {
-    _parent   = parent;
+    _parent = parent;
     this->_initFromDataSet(&dataset, encoded);
 }
 
@@ -967,35 +943,35 @@ YDataStream::~YDataStream()
 }
 
 // YDataSet constructor, when instantiated directly by a function
-YDataSet::YDataSet(YFunction *parent, const string& functionId, const string& unit, s64 startTime, s64 endTime):
-//--- (generated code: YDataSet initialization)
+YDataSet::YDataSet(YFunction* parent, const string& functionId, const string& unit, double startTime, double endTime):
+    //--- (generated code: YDataSet initialization)
     _parent(NULL)
-    ,_startTime(0)
-    ,_endTime(0)
+    ,_startTime(0.0)
+    ,_endTime(0.0)
     ,_progress(0)
 //--- (end of generated code: YDataSet initialization)
 {
-    _parent     = parent;
+    _parent = parent;
     _functionId = functionId;
-    _unit       = unit;
-    _startTime  = startTime;
-    _endTime    = endTime;
+    _unit = unit;
+    _startTime = startTime;
+    _endTime = endTime;
     _summary = YMeasure(0, 0, 0, 0, 0);
-    _progress   = -1;
+    _progress = -1;
 }
 
 // YDataSet constructor for the new datalogger
-YDataSet::YDataSet(YFunction *parent):
-//--- (generated code: YDataSet initialization)
+YDataSet::YDataSet(YFunction* parent):
+    //--- (generated code: YDataSet initialization)
     _parent(NULL)
-    ,_startTime(0)
-    ,_endTime(0)
+    ,_startTime(0.0)
+    ,_endTime(0.0)
     ,_progress(0)
 //--- (end of generated code: YDataSet initialization)
 {
-    _parent    = parent;
+    _parent = parent;
     _startTime = 0;
-    _endTime   = 0;
+    _endTime = 0;
     _summary = YMeasure(0, 0, 0, 0, 0);
 }
 
@@ -1003,20 +979,20 @@ YDataSet::YDataSet(YFunction *parent):
 int YDataSet::_parse(const string& json)
 {
     yJsonStateMachine j;
-    double summaryMinVal=DBL_MAX;
-    double summaryMaxVal=-DBL_MAX;
-    double summaryTotalTime=0;
-    double summaryTotalAvg=0;
+    double summaryMinVal = DBL_MAX;
+    double summaryMaxVal = -DBL_MAX;
+    double summaryTotalTime = 0;
+    double summaryTotalAvg = 0;
 
 
     // Parse JSON data
     j.src = json.c_str();
     j.end = j.src + strlen(j.src);
     j.st = YJSON_START;
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
+    if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
         return YAPI_NOT_SUPPORTED;
     }
-    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
+    while (yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
         if (!strcmp(j.token, "id")) {
             if (yJsonParse(&j) != YJSON_PARSE_AVAIL) {
                 return YAPI_NOT_SUPPORTED;
@@ -1037,13 +1013,13 @@ int YDataSet::_parse(const string& json)
             if (yJsonParse(&j) != YJSON_PARSE_AVAIL) {
                 return YAPI_NOT_SUPPORTED;
             }
-            if(_calib.size() == 0) {
+            if (_calib.size() == 0) {
                 _calib = YAPI::_decodeWords(_parent->_parseString(j));
             }
         } else if (!strcmp(j.token, "streams")) {
-            YDataStream *stream;
-            s64 streamEndTime, endTime = 0;
-            s64 streamStartTime, startTime = 0x7fffffff;
+            YDataStream* stream;
+            double streamEndTime, endTime = 0;
+            double streamStartTime, startTime = 0x7fffffff;
             _streams = vector<YDataStream*>();
             _preview = vector<YMeasure>();
             _measures = vector<YMeasure>();
@@ -1051,33 +1027,35 @@ int YDataSet::_parse(const string& json)
                 return YAPI_NOT_SUPPORTED;
             }
             // select streams for specified timeframe
-            while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.token[0] != ']') {
-                stream = _parent->_findDataStream(*this,_parent->_parseString(j));
-                streamStartTime = stream->get_startTimeUTC() - stream->get_dataSamplesIntervalMs()/1000;
-                streamEndTime = stream->get_startTimeUTC() + stream->get_duration();
-                if(_startTime > 0 && streamEndTime <= _startTime) {
+            while (yJsonParse(&j) == YJSON_PARSE_AVAIL && j.token[0] != ']') {
+                stream = _parent->_findDataStream(*this, _parent->_parseString(j));
+                // the timestamp in the data streams is the end of the measure, so the actual
+                // measurement start time is computed as one interval before the first timestamp
+                streamStartTime = stream->get_realStartTimeUTC();
+                streamEndTime = streamStartTime + stream->get_realDuration();
+                if (_startTime > 0 && streamEndTime <= _startTime) {
                     // this stream is too early, drop it
-                } else if(_endTime > 0 && stream->get_startTimeUTC() > _endTime) {
+                } else if (_endTime > 0 && streamStartTime >= _endTime) {
                     // this stream is too late, drop it
                 } else {
                     _streams.push_back(stream);
-                    if(startTime > streamStartTime) {
+                    if (startTime > streamStartTime) {
                         startTime = streamStartTime;
                     }
-                    if(endTime < streamEndTime) {
+                    if (endTime < streamEndTime) {
                         endTime = streamEndTime;
                     }
-                    if(stream->isClosed() && stream->get_startTimeUTC() >= _startTime &&
-                       (_endTime == 0 || streamEndTime <= _endTime)) {
+                    if (stream->isClosed() && streamStartTime >= _startTime &&
+                        (_endTime == 0 || streamEndTime <= _endTime)) {
                         if (summaryMinVal > stream->get_minValue())
-                            summaryMinVal =stream->get_minValue();
+                            summaryMinVal = stream->get_minValue();
                         if (summaryMaxVal < stream->get_maxValue())
-                            summaryMaxVal =stream->get_maxValue();
-                        summaryTotalAvg  += stream->get_averageValue() * stream->get_duration();
-                        summaryTotalTime += stream->get_duration();
+                            summaryMaxVal = stream->get_maxValue();
+                        summaryTotalAvg += stream->get_averageValue() * stream->get_realDuration();
+                        summaryTotalTime += stream->get_realDuration();
 
-                        YMeasure rec = YMeasure((double)stream->get_startTimeUTC(),
-                                                (double)streamEndTime,
+                        YMeasure rec = YMeasure(streamStartTime,
+                                                streamEndTime,
                                                 stream->get_minValue(),
                                                 stream->get_averageValue(),
                                                 stream->get_maxValue());
@@ -1085,15 +1063,15 @@ int YDataSet::_parse(const string& json)
                     }
                 }
             }
-            if((_streams.size() > 0)  && (summaryTotalTime>0)) {
+            if ((_streams.size() > 0) && (summaryTotalTime > 0)) {
                 // update time boundaries with actual data
-                if(_startTime < startTime) {
+                if (_startTime < startTime) {
                     _startTime = startTime;
                 }
-                if(_endTime == 0 || _endTime > endTime) {
+                if (_endTime == 0 || _endTime > endTime) {
                     _endTime = endTime;
                 }
-                _summary = YMeasure((double)_startTime,(double)_endTime,summaryMinVal,summaryTotalAvg/summaryTotalTime,summaryMaxVal);
+                _summary = YMeasure(_startTime, _endTime, summaryMinVal, summaryTotalAvg / summaryTotalTime, summaryMaxVal);
             }
         } else {
             yJsonSkip(&j, 1);
@@ -1105,7 +1083,7 @@ int YDataSet::_parse(const string& json)
 
 
 YFirmwareUpdate::YFirmwareUpdate(string serialNumber, string path, string settings) :
-//--- (generated code: YFirmwareUpdate initialization)
+    //--- (generated code: YFirmwareUpdate initialization)
     _progress_c(0)
     ,_progress(0)
     ,_restore_step(0)
@@ -1116,8 +1094,9 @@ YFirmwareUpdate::YFirmwareUpdate(string serialNumber, string path, string settin
     _settings = settings;
     _firmwarepath = path;
 }
+
 YFirmwareUpdate::YFirmwareUpdate(string serialNumber, string path, string settings, bool force) :
-//--- (generated code: YFirmwareUpdate initialization)
+    //--- (generated code: YFirmwareUpdate initialization)
     _progress_c(0)
     ,_progress(0)
     ,_restore_step(0)
@@ -1138,7 +1117,6 @@ YFirmwareUpdate::YFirmwareUpdate() :
     ,_force(0)
 //--- (end of generated code: YFirmwareUpdate initialization)
 {}
-
 
 
 //--- (generated code: YFirmwareUpdate implementation)
@@ -1370,51 +1348,45 @@ int YDataStream::_initFromDataSet(YDataSet* dataset,vector<int> encoded)
     int val = 0;
     int i = 0;
     int maxpos = 0;
-    int iRaw = 0;
-    int iRef = 0;
+    int ms_offset = 0;
+    int samplesPerHour = 0;
     double fRaw = 0.0;
     double fRef = 0.0;
-    double duration_float = 0.0;
     vector<int> iCalib;
     // decode sequence header to extract data
     _runNo = encoded[0] + (((encoded[1]) << (16)));
     _utcStamp = encoded[2] + (((encoded[3]) << (16)));
     val = encoded[4];
     _isAvg = (((val) & (0x100)) == 0);
-    _samplesPerHour = ((val) & (0xff));
+    samplesPerHour = ((val) & (0xff));
     if (((val) & (0x100)) != 0) {
-        _samplesPerHour = _samplesPerHour * 3600;
+        samplesPerHour = samplesPerHour * 3600;
     } else {
         if (((val) & (0x200)) != 0) {
-            _samplesPerHour = _samplesPerHour * 60;
+            samplesPerHour = samplesPerHour * 60;
         }
     }
-    val = encoded[5];
-    if (val > 32767) {
-        val = val - 65536;
+    _dataSamplesInterval = 3600.0 / samplesPerHour;
+    ms_offset = encoded[6];
+    if (ms_offset < 1000) {
+        // new encoding -> add the ms to the UTC timestamp
+        _startTime = _utcStamp + (ms_offset / 1000.0);
+    } else {
+        // legacy encoding subtract the measure interval form the UTC timestamp
+        _startTime = _utcStamp -  _dataSamplesInterval;
     }
-    _decimals = val;
-    _offset = val;
-    _scale = encoded[6];
-    _isScal = (_scale != 0);
-    _isScal32 = ((int)encoded.size() >= 14);
+    _firstMeasureDuration = encoded[5];
+    if (!(_isAvg)) {
+        _firstMeasureDuration = _firstMeasureDuration / 1000.0;
+    }
     val = encoded[7];
     _isClosed = (val != 0xffff);
     if (val == 0xffff) {
         val = 0;
     }
     _nRows = val;
-    duration_float = _nRows * 3600 / _samplesPerHour;
-    _duration = (int) floor(duration_float+0.5);
+    _duration = _nRows * _dataSamplesInterval;
     // precompute decoding parameters
-    _decexp = 1.0;
-    if (_scale == 0) {
-        i = 0;
-        while (i < _decimals) {
-            _decexp = _decexp * 10.0;
-            i = i + 1;
-        }
-    }
     iCalib = dataset->_get_calibration();
     _caltyp = iCalib[0];
     if (_caltyp != 0) {
@@ -1423,42 +1395,20 @@ int YDataStream::_initFromDataSet(YDataSet* dataset,vector<int> encoded)
         _calpar.clear();
         _calraw.clear();
         _calref.clear();
-        if (_isScal32) {
-            i = 1;
-            while (i < maxpos) {
-                _calpar.push_back(iCalib[i]);
-                i = i + 1;
-            }
-            i = 1;
-            while (i + 1 < maxpos) {
-                fRaw = iCalib[i];
-                fRaw = fRaw / 1000.0;
-                fRef = iCalib[i + 1];
-                fRef = fRef / 1000.0;
-                _calraw.push_back(fRaw);
-                _calref.push_back(fRef);
-                i = i + 2;
-            }
-        } else {
-            i = 1;
-            while (i + 1 < maxpos) {
-                iRaw = iCalib[i];
-                iRef = iCalib[i + 1];
-                _calpar.push_back(iRaw);
-                _calpar.push_back(iRef);
-                if (_isScal) {
-                    fRaw = iRaw;
-                    fRaw = (fRaw - _offset) / _scale;
-                    fRef = iRef;
-                    fRef = (fRef - _offset) / _scale;
-                    _calraw.push_back(fRaw);
-                    _calref.push_back(fRef);
-                } else {
-                    _calraw.push_back(YAPI::_decimalToDouble(iRaw));
-                    _calref.push_back(YAPI::_decimalToDouble(iRef));
-                }
-                i = i + 2;
-            }
+        i = 1;
+        while (i < maxpos) {
+            _calpar.push_back(iCalib[i]);
+            i = i + 1;
+        }
+        i = 1;
+        while (i + 1 < maxpos) {
+            fRaw = iCalib[i];
+            fRaw = fRaw / 1000.0;
+            fRef = iCalib[i + 1];
+            fRef = fRef / 1000.0;
+            _calraw.push_back(fRaw);
+            _calref.push_back(fRef);
+            i = i + 2;
         }
     }
     // preload column names for backward-compatibility
@@ -1476,15 +1426,9 @@ int YDataStream::_initFromDataSet(YDataSet* dataset,vector<int> encoded)
     }
     // decode min/avg/max values for the sequence
     if (_nRows > 0) {
-        if (_isScal32) {
-            _avgVal = this->_decodeAvg(encoded[8] + (((((encoded[9]) ^ (0x8000))) << (16))), 1);
-            _minVal = this->_decodeVal(encoded[10] + (((encoded[11]) << (16))));
-            _maxVal = this->_decodeVal(encoded[12] + (((encoded[13]) << (16))));
-        } else {
-            _minVal = this->_decodeVal(encoded[8]);
-            _maxVal = this->_decodeVal(encoded[9]);
-            _avgVal = this->_decodeAvg(encoded[10] + (((encoded[11]) << (16))), _nRows);
-        }
+        _avgVal = this->_decodeAvg(encoded[8] + (((((encoded[9]) ^ (0x8000))) << (16))), 1);
+        _minVal = this->_decodeVal(encoded[10] + (((encoded[11]) << (16))));
+        _maxVal = this->_decodeVal(encoded[12] + (((encoded[13]) << (16))));
     }
     return 0;
 }
@@ -1505,34 +1449,18 @@ int YDataStream::_parseStream(string sdata)
     if (_isAvg) {
         while (idx + 3 < (int)udat.size()) {
             dat.clear();
-            if (_isScal32) {
-                dat.push_back(this->_decodeVal(udat[idx + 2] + (((udat[idx + 3]) << (16)))));
-                dat.push_back(this->_decodeAvg(udat[idx] + (((((udat[idx + 1]) ^ (0x8000))) << (16))), 1));
-                dat.push_back(this->_decodeVal(udat[idx + 4] + (((udat[idx + 5]) << (16)))));
-                idx = idx + 6;
-            } else {
-                dat.push_back(this->_decodeVal(udat[idx]));
-                dat.push_back(this->_decodeAvg(udat[idx + 2] + (((udat[idx + 3]) << (16))), 1));
-                dat.push_back(this->_decodeVal(udat[idx + 1]));
-                idx = idx + 4;
-            }
+            dat.push_back(this->_decodeVal(udat[idx + 2] + (((udat[idx + 3]) << (16)))));
+            dat.push_back(this->_decodeAvg(udat[idx] + (((((udat[idx + 1]) ^ (0x8000))) << (16))), 1));
+            dat.push_back(this->_decodeVal(udat[idx + 4] + (((udat[idx + 5]) << (16)))));
+            idx = idx + 6;
             _values.push_back(dat);
         }
     } else {
-        if (_isScal && !(_isScal32)) {
-            while (idx < (int)udat.size()) {
-                dat.clear();
-                dat.push_back(this->_decodeVal(udat[idx]));
-                _values.push_back(dat);
-                idx = idx + 1;
-            }
-        } else {
-            while (idx + 1 < (int)udat.size()) {
-                dat.clear();
-                dat.push_back(this->_decodeAvg(udat[idx] + (((((udat[idx + 1]) ^ (0x8000))) << (16))), 1));
-                _values.push_back(dat);
-                idx = idx + 2;
-            }
+        while (idx + 1 < (int)udat.size()) {
+            dat.clear();
+            dat.push_back(this->_decodeAvg(udat[idx] + (((((udat[idx + 1]) ^ (0x8000))) << (16))), 1));
+            _values.push_back(dat);
+            idx = idx + 2;
         }
     }
 
@@ -1557,15 +1485,7 @@ double YDataStream::_decodeVal(int w)
 {
     double val = 0.0;
     val = w;
-    if (_isScal32) {
-        val = val / 1000.0;
-    } else {
-        if (_isScal) {
-            val = (val - _offset) / _scale;
-        } else {
-            val = YAPI::_decimalToDouble(w);
-        }
-    }
+    val = val / 1000.0;
     if (_caltyp != 0) {
         if (_calhdl != NULL) {
             val = _calhdl(val, _caltyp, _calpar, _calraw, _calref);
@@ -1578,15 +1498,7 @@ double YDataStream::_decodeAvg(int dw,int count)
 {
     double val = 0.0;
     val = dw;
-    if (_isScal32) {
-        val = val / 1000.0;
-    } else {
-        if (_isScal) {
-            val = (val / (100 * count) - _offset) / _scale;
-        } else {
-            val = val / (count * _decexp);
-        }
-    }
+    val = val / 1000.0;
     if (_caltyp != 0) {
         if (_calhdl != NULL) {
             val = _calhdl(val, _caltyp, _calpar, _calraw, _calref);
@@ -1618,7 +1530,9 @@ int YDataStream::get_runIndex(void)
  * If the device uses a firmware older than version 13000, value is
  * relative to the start of the time the device was powered on, and
  * is always positive.
- * If you need an absolute UTC timestamp, use get_startTimeUTC().
+ * If you need an absolute UTC timestamp, use get_realStartTimeUTC().
+ *
+ * <b>DEPRECATED</b>: This method has been replaced by get_realStartTimeUTC().
  *
  * @return an unsigned number corresponding to the number of seconds
  *         between the start of the run and the beginning of this data
@@ -1634,13 +1548,29 @@ int YDataStream::get_startTime(void)
  * If the UTC time was not set in the datalogger at the time of the recording
  * of this data stream, this method returns 0.
  *
+ * <b>DEPRECATED</b>: This method has been replaced by get_realStartTimeUTC().
+ *
  * @return an unsigned number corresponding to the number of seconds
  *         between the Jan 1, 1970 and the beginning of this data
  *         stream (i.e. Unix time representation of the absolute time).
  */
 s64 YDataStream::get_startTimeUTC(void)
 {
-    return _utcStamp;
+    return (int) floor(_startTime+0.5);
+}
+
+/**
+ * Returns the start time of the data stream, relative to the Jan 1, 1970.
+ * If the UTC time was not set in the datalogger at the time of the recording
+ * of this data stream, this method returns 0.
+ *
+ * @return a floating-point number  corresponding to the number of seconds
+ *         between the Jan 1, 1970 and the beginning of this data
+ *         stream (i.e. Unix time representation of the absolute time).
+ */
+double YDataStream::get_realStartTimeUTC(void)
+{
+    return _startTime;
 }
 
 /**
@@ -1653,12 +1583,17 @@ s64 YDataStream::get_startTimeUTC(void)
  */
 int YDataStream::get_dataSamplesIntervalMs(void)
 {
-    return ((3600000) / (_samplesPerHour));
+    return (int) floor(_dataSamplesInterval*1000+0.5);
 }
 
 double YDataStream::get_dataSamplesInterval(void)
 {
-    return 3600.0 / _samplesPerHour;
+    return _dataSamplesInterval;
+}
+
+double YDataStream::get_firstDataSamplesInterval(void)
+{
+    return _firstMeasureDuration;
 }
 
 /**
@@ -1774,19 +1709,12 @@ double YDataStream::get_maxValue(void)
     return _maxVal;
 }
 
-/**
- * Returns the approximate duration of this stream, in seconds.
- *
- * @return the number of seconds covered by this stream.
- *
- * On failure, throws an exception or returns Y_DURATION_INVALID.
- */
-int YDataStream::get_duration(void)
+double YDataStream::get_realDuration(void)
 {
     if (_isClosed) {
         return _duration;
     }
-    return (int)(((unsigned)time(NULL)) - _utcStamp);
+    return (double) ((unsigned)time(NULL)) - _utcStamp;
 }
 
 /**
@@ -1844,7 +1772,7 @@ double YDataStream::get_data(int row,int col)
 //--- (end of generated code: YDataStream implementation)
 
 YMeasure::YMeasure(double start, double end, double minVal, double avgVal, double maxVal):
-//--- (generated code: YMeasure initialization)
+    //--- (generated code: YMeasure initialization)
     _start(0.0)
     ,_end(0.0)
     ,_minVal(0.0)
@@ -1857,13 +1785,12 @@ YMeasure::YMeasure(double start, double end, double minVal, double avgVal, doubl
     _minVal = minVal;
     _avgVal = avgVal;
     _maxVal = maxVal;
-    _startTime_t = (time_t)(start+0.5);
-    _stopTime_t = (time_t)(end+0.5);
-
+    _startTime_t = (time_t)(start + 0.5);
+    _stopTime_t = (time_t)(end + 0.5);
 }
 
 YMeasure::YMeasure():
-//--- (generated code: YMeasure initialization)
+    //--- (generated code: YMeasure initialization)
     _start(0.0)
     ,_end(0.0)
     ,_minVal(0.0)
@@ -1944,18 +1871,18 @@ double YMeasure::get_maxValue(void)
 }
 //--- (end of generated code: YMeasure implementation)
 
-time_t*   YMeasure::get_startTimeUTC_asTime_t(time_t *time)
+time_t* YMeasure::get_startTimeUTC_asTime_t(time_t* time)
 {
-    if(time){
-        memcpy(time,&this->_stopTime_t,sizeof(time_t));
+    if (time) {
+        memcpy(time, &this->_startTime_t, sizeof(time_t));
     }
     return &this->_startTime_t;
-
 }
-time_t*   YMeasure::get_endTimeUTC_asTime_t(time_t *time)
+
+time_t* YMeasure::get_endTimeUTC_asTime_t(time_t* time)
 {
-    if(time){
-        memcpy(time,&this->_stopTime_t,sizeof(time_t));
+    if (time) {
+        memcpy(time, &this->_stopTime_t, sizeof(time_t));
     }
     return &this->_stopTime_t;
 }
@@ -1976,10 +1903,13 @@ int YDataSet::processMore(int progress,string data)
     string strdata;
     double tim = 0.0;
     double itv = 0.0;
+    double fitv = 0.0;
+    double end_ = 0.0;
     int nCols = 0;
     int minCol = 0;
     int avgCol = 0;
     int maxCol = 0;
+    bool firstMeasure = 0;
 
     if (progress != _progress) {
         return _progress;
@@ -1999,8 +1929,12 @@ int YDataSet::processMore(int progress,string data)
     if ((int)dataRows.size() == 0) {
         return this->get_progress();
     }
-    tim = (double) stream->get_startTimeUTC();
+    tim = stream->get_realStartTimeUTC();
+    fitv = stream->get_firstDataSamplesInterval();
     itv = stream->get_dataSamplesInterval();
+    if (fitv == 0) {
+        fitv = itv;
+    }
     if (tim < itv) {
         tim = itv;
     }
@@ -2017,14 +1951,20 @@ int YDataSet::processMore(int progress,string data)
         maxCol = 0;
     }
 
+    firstMeasure = true;
     for (unsigned ii = 0; ii < dataRows.size(); ii++) {
-        if ((tim >= _startTime) && ((_endTime == 0) || (tim <= _endTime))) {
-            _measures.push_back(YMeasure(tim - itv, tim,
+        if (firstMeasure) {
+            end_ = tim + fitv;
+            firstMeasure = false;
+        } else {
+            end_ = tim + itv;
+        }
+        if ((tim >= _startTime) && ((_endTime == 0) || (end_ <= _endTime))) {
+            _measures.push_back(YMeasure(tim , end_,
             dataRows[ii][minCol],
             dataRows[ii][avgCol],dataRows[ii][maxCol]));
         }
-        tim = tim + itv;
-        tim = floor(tim * 1000+0.5) / 1000.0;
+        tim = end_;
     }
     return this->get_progress();
 }
@@ -2086,13 +2026,21 @@ string YDataSet::get_unit(void)
  * to reflect the timestamp of the first measure actually found in the
  * dataLogger within the specified range.
  *
+ * <b>DEPRECATED</b>: This method has been replaced by get_summary()
+ * which contain more precise informations on the YDataSet.
+ *
  * @return an unsigned number corresponding to the number of seconds
  *         between the Jan 1, 1970 and the beginning of this data
  *         set (i.e. Unix time representation of the absolute time).
  */
 s64 YDataSet::get_startTimeUTC(void)
 {
-    return _startTime;
+    return this->imm_get_startTimeUTC();
+}
+
+s64 YDataSet::imm_get_startTimeUTC(void)
+{
+    return (s64) _startTime;
 }
 
 /**
@@ -2103,13 +2051,22 @@ s64 YDataSet::get_startTimeUTC(void)
  * to reflect the timestamp of the last measure actually found in the
  * dataLogger within the specified range.
  *
+ * <b>DEPRECATED</b>: This method has been replaced by get_summary()
+ * which contain more precise informations on the YDataSet.
+ *
+ *
  * @return an unsigned number corresponding to the number of seconds
  *         between the Jan 1, 1970 and the end of this data
  *         set (i.e. Unix time representation of the absolute time).
  */
 s64 YDataSet::get_endTimeUTC(void)
 {
-    return _endTime;
+    return this->imm_get_endTimeUTC();
+}
+
+s64 YDataSet::imm_get_endTimeUTC(void)
+{
+    return (s64) floor(_endTime+0.5);
 }
 
 /**
@@ -2148,10 +2105,10 @@ int YDataSet::loadMore(void)
     if (_progress < 0) {
         url = YapiWrapper::ysprintf("logger.json?id=%s",_functionId.c_str());
         if (_startTime != 0) {
-            url = YapiWrapper::ysprintf("%s&from=%u",url.c_str(),_startTime);
+            url = YapiWrapper::ysprintf("%s&from=%u",url.c_str(),this->imm_get_startTimeUTC());
         }
         if (_endTime != 0) {
-            url = YapiWrapper::ysprintf("%s&to=%u",url.c_str(),_endTime);
+            url = YapiWrapper::ysprintf("%s&to=%u",url.c_str(),this->imm_get_endTimeUTC()+1);
         }
     } else {
         if (_progress >= (int)_streams.size()) {
@@ -2226,21 +2183,22 @@ vector<YMeasure> YDataSet::get_preview(void)
  */
 vector<YMeasure> YDataSet::get_measuresAt(YMeasure measure)
 {
-    s64 startUtc = 0;
+    double startUtc = 0.0;
     YDataStream* stream = NULL;
     vector< vector<double> > dataRows;
     vector<YMeasure> measures;
     double tim = 0.0;
     double itv = 0.0;
+    double end_ = 0.0;
     int nCols = 0;
     int minCol = 0;
     int avgCol = 0;
     int maxCol = 0;
 
-    startUtc = (s64) floor(measure.get_startTimeUTC()+0.5);
+    startUtc = measure.get_startTimeUTC();
     stream = NULL;
     for (unsigned ii = 0; ii < _streams.size(); ii++) {
-        if (_streams[ii]->get_startTimeUTC() == startUtc) {
+        if (_streams[ii]->get_realStartTimeUTC() == startUtc) {
             stream = _streams[ii];
         }
     }
@@ -2251,7 +2209,7 @@ vector<YMeasure> YDataSet::get_measuresAt(YMeasure measure)
     if ((int)dataRows.size() == 0) {
         return measures;
     }
-    tim = (double) stream->get_startTimeUTC();
+    tim = stream->get_realStartTimeUTC();
     itv = stream->get_dataSamplesInterval();
     if (tim < itv) {
         tim = itv;
@@ -2270,12 +2228,13 @@ vector<YMeasure> YDataSet::get_measuresAt(YMeasure measure)
     }
 
     for (unsigned ii = 0; ii < dataRows.size(); ii++) {
-        if ((tim >= _startTime) && ((_endTime == 0) || (tim <= _endTime))) {
-            measures.push_back(YMeasure(tim - itv, tim,
+        end_ = tim + itv;
+        if ((tim >= _startTime) && ((_endTime == 0) || (end_ <= _endTime))) {
+            measures.push_back(YMeasure(tim, end_,
             dataRows[ii][minCol],
             dataRows[ii][avgCol],dataRows[ii][maxCol]));
         }
-        tim = tim + itv;
+        tim = end_;
     }
     return measures;
 }
@@ -2312,20 +2271,18 @@ vector<YMeasure> YDataSet::get_measures(void)
 //--- (end of generated code: YDataSet implementation)
 
 
-
 YAPIContext::YAPIContext():
-//--- (generated code: YAPIContext initialization)
+    //--- (generated code: YAPIContext initialization)
     _defaultCacheValidity(5)
 //--- (end of generated code: YAPIContext initialization)
-{
-
-}
+{}
 
 YAPIContext::~YAPIContext()
 {
-//--- (generated code: YAPIContext cleanup)
+    //--- (generated code: YAPIContext cleanup)
 //--- (end of generated code: YAPIContext cleanup)
 }
+
 //--- (generated code: YAPIContext implementation)
 // static attributes
 
@@ -2397,25 +2354,16 @@ u64 YAPIContext::GetCacheValidity(void)
 //--- (end of generated code: YAPIContext functions)
 
 
-
-
-
-
-
-
-
-
-
-std::map<string,YFunction*> YFunction::_cache;
+std::map<string, YFunction*> YFunction::_cache;
 
 
 // Constructor is protected. Use the device-specific factory function to instantiate
 YFunction::YFunction(const string& func):
-    _className("Function"),_func(func),
-    _lastErrorType(YAPI_SUCCESS),_lastErrorMsg(""),
+    _className("Function"), _func(func),
+    _lastErrorType(YAPI_SUCCESS), _lastErrorMsg(""),
     _fundescr(Y_FUNCTIONDESCRIPTOR_INVALID), _userData(NULL)
 
-//--- (generated code: YFunction initialization)
+    //--- (generated code: YFunction initialization)
     ,_logicalName(LOGICALNAME_INVALID)
     ,_advertisedValue(ADVERTISEDVALUE_INVALID)
     ,_valueCallbackFunction(NULL)
@@ -2427,7 +2375,7 @@ YFunction::YFunction(const string& func):
 
 YFunction::~YFunction()
 {
-//--- (generated code: YFunction cleanup)
+    //--- (generated code: YFunction cleanup)
 //--- (end of generated code: YFunction cleanup)
     _clearDataStreamCache();
     yDeleteCriticalSection(&_this_cs);
@@ -2435,14 +2383,14 @@ YFunction::~YFunction()
 
 
 // function cache methods
-YFunction*  YFunction::_FindFromCache(const string& classname, const string& func)
+YFunction* YFunction::_FindFromCache(const string& classname, const string& func)
 {
-     if(_cache.find(classname + "_" + func) != _cache.end())
+    if (_cache.find(classname + "_" + func) != _cache.end())
         return _cache[classname + "_" + func];
-     return NULL;
+    return NULL;
 }
 
-void        YFunction::_AddToCache(const string& classname, const string& func, YFunction *obj)
+void YFunction::_AddToCache(const string& classname, const string& func, YFunction* obj)
 {
     _cache[classname + "_" + func] = obj;
 }
@@ -2450,13 +2398,12 @@ void        YFunction::_AddToCache(const string& classname, const string& func, 
 void YFunction::_ClearCache()
 {
     for (std::map<string, YFunction*>::iterator cache_iterator = _cache.begin();
-             cache_iterator != _cache.end(); ++cache_iterator){
+         cache_iterator != _cache.end(); ++cache_iterator) {
         delete cache_iterator->second;
     }
     _cache.clear();
     _cache = std::map<string, YFunction*>();
 }
-
 
 
 //--- (generated code: YFunction implementation)
@@ -2758,7 +2705,7 @@ void YFunction::_throw(YRETCODE errType, string errMsg)
     _lastErrorType = errType;
     _lastErrorMsg = errMsg;
     // Method used to throw exceptions or save error type/message
-    if(!YAPI::ExceptionsDisabled) {
+    if (!YAPI::ExceptionsDisabled) {
         throw YAPI_Exception(errType, errMsg);
     }
 }
@@ -2770,34 +2717,34 @@ YRETCODE YFunction::_getDescriptor(YFUN_DESCR& fundescr, string& errmsg)
     YFUN_DESCR tmp_fundescr;
 
     tmp_fundescr = YapiWrapper::getFunction(_className, _func, errmsg);
-    if(YISERR(tmp_fundescr)) {
-        res = YapiWrapper::updateDeviceList(true,errmsg);
-        if(YISERR(res)) {
+    if (YISERR(tmp_fundescr)) {
+        res = YapiWrapper::updateDeviceList(true, errmsg);
+        if (YISERR(res)) {
             return (YRETCODE)res;
         }
         tmp_fundescr = YapiWrapper::getFunction(_className, _func, errmsg);
-        if(YISERR(tmp_fundescr)) {
+        if (YISERR(tmp_fundescr)) {
             return (YRETCODE)tmp_fundescr;
         }
     }
-    _fundescr =  fundescr = tmp_fundescr;
+    _fundescr = fundescr = tmp_fundescr;
     return YAPI_SUCCESS;
 }
 
 // Return a pointer to our device caching object (may trigger a hub scan)
 YRETCODE YFunction::_getDevice(YDevice*& dev, string& errmsg)
 {
-    YFUN_DESCR   fundescr;
-    YDEV_DESCR     devdescr;
-    YRETCODE    res;
+    YFUN_DESCR fundescr;
+    YDEV_DESCR devdescr;
+    YRETCODE res;
 
     // Resolve function name
     res = _getDescriptor(fundescr, errmsg);
-    if(YISERR(res)) return res;
+    if (YISERR(res)) return res;
 
     // Get device descriptor
     devdescr = YapiWrapper::getDeviceByFunction(fundescr, errmsg);
-    if(YISERR(devdescr)) return (YRETCODE)devdescr;
+    if (YISERR(devdescr)) return (YRETCODE)devdescr;
 
     // Get device object
     dev = YDevice::getDevice(devdescr);
@@ -2808,40 +2755,40 @@ YRETCODE YFunction::_getDevice(YDevice*& dev, string& errmsg)
 // Return the next known function of current class listed in the yellow pages
 YRETCODE YFunction::_nextFunction(string& hwid)
 {
-    vector<YFUN_DESCR>   v_fundescr;
-    YFUN_DESCR           fundescr;
-    YDEV_DESCR           devdescr;
-    string               serial, funcId, funcName, funcVal, errmsg;
-    int                  res;
+    vector<YFUN_DESCR> v_fundescr;
+    YFUN_DESCR fundescr;
+    YDEV_DESCR devdescr;
+    string serial, funcId, funcName, funcVal, errmsg;
+    int res;
 
     res = _getDescriptor(fundescr, errmsg);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         _throw((YRETCODE)res, errmsg);
         return (YRETCODE)res;
     }
     res = YapiWrapper::getFunctionsByClass(_className, fundescr, v_fundescr, sizeof(YFUN_DESCR), errmsg);
-    if(YISERR((YRETCODE)res)) {
+    if (YISERR((YRETCODE)res)) {
         _throw((YRETCODE)res, errmsg);
         return (YRETCODE)res;
     }
-    if(v_fundescr.size() == 0) {
+    if (v_fundescr.size() == 0) {
         hwid = "";
         return YAPI_SUCCESS;
     }
     res = YapiWrapper::getFunctionInfo(v_fundescr[0], devdescr, serial, funcId, funcName, funcVal, errmsg);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         _throw((YRETCODE)res, errmsg);
         return (YRETCODE)res;
     }
-    hwid = serial+"."+funcId;
+    hwid = serial + "." + funcId;
 
     return YAPI_SUCCESS;
 }
 
 // Parse a long JSON string
-string  YFunction::_parseString(yJsonStateMachine& j)
+string YFunction::_parseString(yJsonStateMachine& j)
 {
-    string  res;
+    string res;
 
     do {
 #ifdef WINDOWS_API
@@ -2869,7 +2816,7 @@ string  YFunction::_parseString(yJsonStateMachine& j)
     return res;
 }
 
-string      YFunction::_json_get_key(const string& json, const string& key)
+string YFunction::_json_get_key(const string& json, const string& key)
 {
     yJsonStateMachine j;
 
@@ -2877,21 +2824,21 @@ string      YFunction::_json_get_key(const string& json, const string& key)
     j.src = json.c_str();
     j.end = j.src + strlen(j.src);
     j.st = YJSON_START;
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
-        this->_throw(YAPI_IO_ERROR,"JSON structure expected");
+    if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
+        this->_throw(YAPI_IO_ERROR, "JSON structure expected");
         return YAPI_INVALID_STRING;
     }
-    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
+    while (yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
         if (!strcmp(j.token, key.c_str())) {
             if (yJsonParse(&j) != YJSON_PARSE_AVAIL) {
-                this->_throw(YAPI_IO_ERROR,"JSON structure expected");
+                this->_throw(YAPI_IO_ERROR, "JSON structure expected");
                 return YAPI_INVALID_STRING;
             }
-            return  _parseString(j);
+            return _parseString(j);
         }
         yJsonSkip(&j, 1);
     }
-    this->_throw(YAPI_IO_ERROR,"invalid JSON structure");
+    this->_throw(YAPI_IO_ERROR, "invalid JSON structure");
     return YAPI_INVALID_STRING;
 }
 
@@ -2901,8 +2848,8 @@ string YFunction::_json_get_string(const string& json)
     j.src = json.c_str();
     j.end = j.src + strlen(j.src);
     j.st = YJSON_START;
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRING) {
-        this->_throw(YAPI_IO_ERROR,"JSON string expected");
+    if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRING) {
+        this->_throw(YAPI_IO_ERROR, "JSON string expected");
         return "";
     }
     return _parseString(j);
@@ -2912,20 +2859,20 @@ vector<string> YFunction::_json_get_array(const string& json)
 {
     vector<string> res;
     yJsonStateMachine j;
-    const char *json_cstr,*last;
+    const char *json_cstr, *last;
     string backup = json;
     j.src = json_cstr = json.c_str();
     j.end = j.src + strlen(j.src);
     j.st = YJSON_START;
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_ARRAY) {
-        this->_throw(YAPI_IO_ERROR,"JSON structure expected");
+    if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_ARRAY) {
+        this->_throw(YAPI_IO_ERROR, "JSON structure expected");
         return res;
     }
     int depth = j.depth;
     do {
         last = j.src;
         while (yJsonParse(&j) == YJSON_PARSE_AVAIL) {
-            if (j.next == YJSON_PARSE_STRINGCONT || j.depth > depth){
+            if (j.next == YJSON_PARSE_STRINGCONT || j.depth > depth) {
                 continue;
             }
             break;
@@ -2937,7 +2884,7 @@ vector<string> YFunction::_json_get_array(const string& json)
 
         if (j.depth == depth) {
             long location, length;
-            while (*last == ',' || *last == '\n'){
+            while (*last == ',' || *last == '\n') {
                 last++;
             }
             location = (long)(last - json_cstr);
@@ -2945,16 +2892,16 @@ vector<string> YFunction::_json_get_array(const string& json)
             string item = json.substr(location, length);
             res.push_back(item);
         }
-    } while (j.st != YJSON_PARSE_ARRAY );
+    } while (j.st != YJSON_PARSE_ARRAY);
     return res;
 }
 
 string YFunction::_get_json_path(const string& json, const string& path)
 {
-    const char *json_data = json.c_str();
+    const char* json_data = json.c_str();
     int len = (int)(json.length() & 0x0fffffff);
-    const char *p;
-    char        errbuff[YOCTO_ERRMSG_LEN];
+    const char* p;
+    char errbuff[YOCTO_ERRMSG_LEN];
     int res;
 
     res = yapiJsonGetPath(path.c_str(), json_data, len, &p, errbuff);
@@ -2972,24 +2919,24 @@ string YFunction::_decode_json_string(const string& json)
 {
     int len = (int)(json.length() & 0x0fffffff);
     char buffer[128];
-    char *p = buffer;
+    char* p = buffer;
     int decoded_len;
 
-    if (len >= 127){
-        p = (char*) malloc(len + 1);
+    if (len >= 127) {
+        p = (char*)malloc(len + 1);
 
     }
     decoded_len = yapiJsonDecodeString(json.c_str(), p);
     string result = string(p, decoded_len);
-    if (len >= 127){
+    if (len >= 127) {
         free(p);
     }
     return result;
 }
 
-static string  __escapeAttr(const string& changeval)
+static string __escapeAttr(const string& changeval)
 {
-    const char *p;
+    const char* p;
     unsigned char c;
     unsigned char esc[3];
     string escaped = "";
@@ -3015,27 +2962,27 @@ static string  __escapeAttr(const string& changeval)
 }
 
 
-string  YFunction::_escapeAttr(const string& changeval)
+string YFunction::_escapeAttr(const string& changeval)
 {
     return __escapeAttr(changeval);
 }
 
 
-YRETCODE  YFunction::_buildSetRequest( const string& changeattr, const string  *changeval, string& request, string& errmsg)
+YRETCODE YFunction::_buildSetRequest(const string& changeattr, const string* changeval, string& request, string& errmsg)
 {
     int res;
     YFUN_DESCR fundesc;
-    char        funcid[YOCTO_FUNCTION_LEN];
-    char        errbuff[YOCTO_ERRMSG_LEN];
+    char funcid[YOCTO_FUNCTION_LEN];
+    char errbuff[YOCTO_ERRMSG_LEN];
 
 
     // Resolve the function name
     res = _getDescriptor(fundesc, errmsg);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         return (YRETCODE)res;
     }
 
-    if(YISERR(res=yapiGetFunctionInfo(fundesc, NULL, NULL, funcid, NULL, NULL,errbuff))){
+    if (YISERR(res=yapiGetFunctionInfo(fundesc, NULL, NULL, funcid, NULL, NULL,errbuff))) {
         errmsg = errbuff;
         _throw((YRETCODE)res, errmsg);
         return (YRETCODE)res;
@@ -3045,9 +2992,9 @@ YRETCODE  YFunction::_buildSetRequest( const string& changeattr, const string  *
     request.append("/");
     //request.append(".json/");
 
-    if(changeattr!="") {
+    if (changeattr != "") {
         request.append(changeattr);
-        if(changeval) {
+        if (changeval) {
             request.append("?");
             request.append(changeattr);
             request.append("=");
@@ -3061,8 +3008,7 @@ YRETCODE  YFunction::_buildSetRequest( const string& changeattr, const string  *
 }
 
 
-
-int YFunction::_parse(YJSONObject *j)
+int YFunction::_parse(YJSONObject* j)
 {
     this->_parseAttr(j);
     this->_parserHelper();
@@ -3072,51 +3018,50 @@ int YFunction::_parse(YJSONObject *j)
 // Set an attribute in the function, and parse the resulting new function state
 YRETCODE YFunction::_setAttr(string attrname, string newvalue)
 {
-    string      errmsg, request;
-    int         res;
-    YDevice     *dev;
+    string errmsg, request;
+    int res;
+    YDevice* dev;
 
     // Execute http request
     res = _buildSetRequest(attrname, &newvalue, request, errmsg);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         _throw((YRETCODE)res, errmsg);
         return (YRETCODE)res;
     }
     // Get device Object
-    res = _getDevice(dev,  errmsg);
-    if(YISERR(res)) {
+    res = _getDevice(dev, errmsg);
+    if (YISERR(res)) {
         _throw((YRETCODE)res, errmsg);
         return (YRETCODE)res;
     }
 
     res = dev->HTTPRequestAsync(0, request, NULL, NULL, errmsg);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         // Check if an update of the device list does not solve the issue
-        res = YapiWrapper::updateDeviceList(true,errmsg);
-        if(YISERR(res)) {
+        res = YapiWrapper::updateDeviceList(true, errmsg);
+        if (YISERR(res)) {
             _throw((YRETCODE)res, errmsg);
             return (YRETCODE)res;
         }
         res = dev->HTTPRequestAsync(0, request, NULL, NULL, errmsg);
-        if(YISERR(res)) {
+        if (YISERR(res)) {
             _throw((YRETCODE)res, errmsg);
             return (YRETCODE)res;
         }
     }
     if (_cacheExpiration != 0) {
-        _cacheExpiration=0;
+        _cacheExpiration = 0;
     }
     return YAPI_SUCCESS;
-
 }
 
 
 // Method used to send http request to the device (not the function)
-string      YFunction::_requestEx(int channel, const string& request, yapiRequestProgressCallback callback, void *context)
+string YFunction::_requestEx(int channel, const string& request, yapiRequestProgressCallback callback, void* context)
 {
-    YDevice     *dev;
-    string      errmsg, buffer;
-    int         res;
+    YDevice* dev;
+    string errmsg, buffer;
+    int res;
 
 
     // Resolve our reference to our device, load REST API
@@ -3148,37 +3093,36 @@ string      YFunction::_requestEx(int channel, const string& request, yapiReques
     return buffer;
 }
 
-string      YFunction::_request(const string& request)
+string YFunction::_request(const string& request)
 {
     return _requestEx(0, request, NULL, NULL);
 }
 
 
 // Method used to send http request to the device (not the function)
-string      YFunction::_download(const string& url)
+string YFunction::_download(const string& url)
 {
-    string      request,buffer;
-	size_t      found;
+    string request, buffer;
+    size_t found;
 
-    request = "GET /"+url+" HTTP/1.1\r\n\r\n";
+    request = "GET /" + url + " HTTP/1.1\r\n\r\n";
     buffer = this->_request(request);
     found = buffer.find("\r\n\r\n");
-    if(string::npos == found){
-        this->_throw(YAPI_IO_ERROR,"http request failed");
+    if (string::npos == found) {
+        this->_throw(YAPI_IO_ERROR, "http request failed");
         return YAPI_INVALID_STRING;
     }
 
-    return buffer.substr(found+4);
+    return buffer.substr(found + 4);
 }
 
 
 // Method used to upload a file to the device
-YRETCODE    YFunction::_uploadWithProgress(const string& path, const string& content, yapiRequestProgressCallback callback, void *context)
+YRETCODE YFunction::_uploadWithProgress(const string& path, const string& content, yapiRequestProgressCallback callback, void* context)
 {
-
-    string      request, buffer;
-    string      boundary;
-    size_t      found;
+    string request, buffer;
+    string boundary;
+    size_t found;
 
     request = "POST /upload.html HTTP/1.1\r\n";
     string body = "Content-Disposition: form-data; name=\"" + path + "\"; filename=\"api\"\r\n" +
@@ -3200,20 +3144,24 @@ YRETCODE    YFunction::_uploadWithProgress(const string& path, const string& con
 
 
 // Method used to upload a file to the device
-YRETCODE    YFunction::_upload(const string& path, const string& content)
+YRETCODE YFunction::_upload(const string& path, const string& content)
 {
     return this->_uploadWithProgress(path, content, NULL, NULL);
 }
 
 
 // Method used to cache DataStream objects (new DataLogger)
-YDataStream *YFunction::_findDataStream(YDataSet& dataset, const string& def)
+YDataStream* YFunction::_findDataStream(YDataSet& dataset, const string& def)
 {
-    string key = dataset.get_functionId()+":"+def;
-    if(_dataStreams.find(key) != _dataStreams.end())
+    string key = dataset.get_functionId() + ":" + def;
+    if (_dataStreams.find(key) != _dataStreams.end())
         return _dataStreams[key];
 
-    YDataStream *newDataStream = new YDataStream(this, dataset, YAPI::_decodeWords(def));
+    vector<int> words = YAPI::_decodeWords(def);
+    if (words.size() < 14) {
+        _throw(YAPI_VERSION_MISMATCH, "device firmware is too old");
+    }
+    YDataStream* newDataStream = new YDataStream(this, dataset, words);
     _dataStreams[key] = newDataStream;
     return newDataStream;
 }
@@ -3223,7 +3171,7 @@ void YFunction::_clearDataStreamCache()
 {
     std::map<string, YDataStream*>::iterator it;
     for (it = _dataStreams.begin(); it != _dataStreams.end(); ++it) {
-        YDataStream *ds = it->second;
+        YDataStream* ds = it->second;
 
         delete(ds);
     }
@@ -3231,19 +3179,18 @@ void YFunction::_clearDataStreamCache()
 }
 
 
-
 // Return a string that describes the function (class and logical name or hardware id)
 string YFunction::describe(void)
 {
-    YFUN_DESCR  fundescr;
-    YDEV_DESCR  devdescr;
-    string      errmsg, serial, funcId, funcName, funcValue;
-    string      descr =  _func;
+    YFUN_DESCR fundescr;
+    YDEV_DESCR devdescr;
+    string errmsg, serial, funcId, funcName, funcValue;
+    string descr = _func;
     string res;
 
     yEnterCriticalSection(&_this_cs);
     fundescr = YapiWrapper::getFunction(_className, _func, errmsg);
-    if(!YISERR(fundescr) && !YISERR(YapiWrapper::getFunctionInfo(fundescr, devdescr, serial, funcId, funcName, funcValue, errmsg))) {
+    if (!YISERR(fundescr) && !YISERR(YapiWrapper::getFunctionInfo(fundescr, devdescr, serial, funcId, funcName, funcValue, errmsg))) {
         res = _className + "(" + _func + ")=" + serial + "." + funcId;
     } else {
         res = _className + "(" + _func + ")=unresolved";
@@ -3255,36 +3202,34 @@ string YFunction::describe(void)
 // Return a string that describes the function (class and logical name or hardware id)
 string YFunction::get_friendlyName(void)
 {
-    YFUN_DESCR   fundescr,moddescr;
-    YDEV_DESCR   devdescr;
-    YRETCODE     retcode;
-    string       errmsg, serial, funcId, funcName, funcValue;
-    string       mod_serial, mod_funcId,mod_funcname;
+    YFUN_DESCR fundescr, moddescr;
+    YDEV_DESCR devdescr;
+    YRETCODE retcode;
+    string errmsg, serial, funcId, funcName, funcValue;
+    string mod_serial, mod_funcId, mod_funcname;
 
     yEnterCriticalSection(&_this_cs);
     // Resolve the function name
     retcode = _getDescriptor(fundescr, errmsg);
-    if(!YISERR(retcode) && !YISERR(YapiWrapper::getFunctionInfo(fundescr, devdescr, serial, funcId, funcName, funcValue, errmsg))) {
-        if(funcName!="") {
+    if (!YISERR(retcode) && !YISERR(YapiWrapper::getFunctionInfo(fundescr, devdescr, serial, funcId, funcName, funcValue, errmsg))) {
+        if (funcName != "") {
             funcId = funcName;
         }
 
         moddescr = YapiWrapper::getFunction("Module", serial, errmsg);
-        if(!YISERR(moddescr) && !YISERR(YapiWrapper::getFunctionInfo(moddescr, devdescr, mod_serial, mod_funcId, mod_funcname, funcValue, errmsg))) {
-            if(mod_funcname!="") {
+        if (!YISERR(moddescr) && !YISERR(YapiWrapper::getFunctionInfo(moddescr, devdescr, mod_serial, mod_funcId, mod_funcname, funcValue, errmsg))) {
+            if (mod_funcname != "") {
                 yLeaveCriticalSection(&_this_cs);
-                return mod_funcname+"."+funcId;
+                return mod_funcname + "." + funcId;
             }
         }
         yLeaveCriticalSection(&_this_cs);
-        return serial+"."+funcId;
+        return serial + "." + funcId;
     }
     yLeaveCriticalSection(&_this_cs);
     _throw((YRETCODE)YAPI::DEVICE_NOT_FOUND, errmsg);
     return Y_FRIENDLYNAME_INVALID;
 }
-
-
 
 
 /**
@@ -3298,29 +3243,29 @@ string YFunction::get_friendlyName(void)
  */
 string YFunction::get_hardwareId(void)
 {
-    YRETCODE    retcode;
-    YFUN_DESCR  fundesc;
-    string      errmsg;
-    char        snum[YOCTO_SERIAL_LEN];
-    char        funcid[YOCTO_FUNCTION_LEN];
-    char        errbuff[YOCTO_ERRMSG_LEN];
+    YRETCODE retcode;
+    YFUN_DESCR fundesc;
+    string errmsg;
+    char snum[YOCTO_SERIAL_LEN];
+    char funcid[YOCTO_FUNCTION_LEN];
+    char errbuff[YOCTO_ERRMSG_LEN];
 
     yEnterCriticalSection(&_this_cs);
     // Resolve the function name
     retcode = _getDescriptor(fundesc, errmsg);
-    if(YISERR(retcode)) {
+    if (YISERR(retcode)) {
         yLeaveCriticalSection(&_this_cs);
         _throw(retcode, errmsg);
         return HARDWAREID_INVALID;
     }
-    if(YISERR(retcode=yapiGetFunctionInfo(fundesc, NULL, snum, funcid, NULL, NULL,errbuff))){
+    if (YISERR(retcode=yapiGetFunctionInfo(fundesc, NULL, snum, funcid, NULL, NULL,errbuff))) {
         errmsg = errbuff;
         yLeaveCriticalSection(&_this_cs);
         _throw(retcode, errmsg);
         return HARDWAREID_INVALID;
     }
     yLeaveCriticalSection(&_this_cs);
-    return string(snum)+string(".")+string(funcid);
+    return string(snum) + string(".") + string(funcid);
 }
 
 /**
@@ -3333,21 +3278,21 @@ string YFunction::get_hardwareId(void)
  */
 string YFunction::get_functionId(void)
 {
-    YRETCODE    retcode;
-    YFUN_DESCR  fundesc;
-    string      errmsg;
-    char        funcid[YOCTO_FUNCTION_LEN];
-    char        errbuff[YOCTO_ERRMSG_LEN];
+    YRETCODE retcode;
+    YFUN_DESCR fundesc;
+    string errmsg;
+    char funcid[YOCTO_FUNCTION_LEN];
+    char errbuff[YOCTO_ERRMSG_LEN];
 
     yEnterCriticalSection(&_this_cs);
     // Resolve the function name
     retcode = _getDescriptor(fundesc, errmsg);
-    if(YISERR(retcode)) {
+    if (YISERR(retcode)) {
         yLeaveCriticalSection(&_this_cs);
         _throw(retcode, errmsg);
         return HARDWAREID_INVALID;
     }
-    if(YISERR(retcode=yapiGetFunctionInfo(fundesc, NULL, NULL, funcid, NULL, NULL,errbuff))){
+    if (YISERR(retcode=yapiGetFunctionInfo(fundesc, NULL, NULL, funcid, NULL, NULL,errbuff))) {
         errmsg = errbuff;
         yLeaveCriticalSection(&_this_cs);
         _throw(retcode, errmsg);
@@ -3395,32 +3340,32 @@ string YFunction::get_errorMessage(void)
  */
 bool YFunction::isOnline(void)
 {
-    YDevice     *dev;
-    string      errmsg;
-    YJSONObject *apires;
+    YDevice* dev;
+    string errmsg;
+    YJSONObject* apires;
 
     yEnterCriticalSection(&_this_cs);
     try {
-    // A valid value in cache means that the device is online
-    if (_cacheExpiration > yapiGetTickCount()) {
-        yLeaveCriticalSection(&_this_cs);
-        return true;
-    }
+        // A valid value in cache means that the device is online
+        if (_cacheExpiration > yapiGetTickCount()) {
+            yLeaveCriticalSection(&_this_cs);
+            return true;
+        }
 
-    // Check that the function is available, without throwing exceptions
-    if (YISERR(_getDevice(dev, errmsg))) {
-        yLeaveCriticalSection(&_this_cs);
-        return false;
-    }
+        // Check that the function is available, without throwing exceptions
+        if (YISERR(_getDevice(dev, errmsg))) {
+            yLeaveCriticalSection(&_this_cs);
+            return false;
+        }
 
-    // Try to execute a function request to be positively sure that the device is ready
-    if(YISERR(dev->requestAPI(apires, errmsg))) {
-        yLeaveCriticalSection(&_this_cs);
-        return false;
-	}
+        // Try to execute a function request to be positively sure that the device is ready
+        if (YISERR(dev->requestAPI(apires, errmsg))) {
+            yLeaveCriticalSection(&_this_cs);
+            return false;
+        }
 
-    // Preload the function data, since we have it in device cache
-    this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity());
+        // Preload the function data, since we have it in device cache
+        this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity());
     } catch (std::exception) {
         yLeaveCriticalSection(&_this_cs);
         return false;
@@ -3431,35 +3376,35 @@ bool YFunction::isOnline(void)
 
 YRETCODE YFunction::_load_unsafe(u64 msValidity)
 {
-    YJSONObject *j,*node;
-    YDevice     *dev;
-    string      errmsg;
-    YFUN_DESCR   fundescr;
-    int         res;
-    char        errbuf[YOCTO_ERRMSG_LEN];
-    char        serial[YOCTO_SERIAL_LEN];
-    char        funcId[YOCTO_FUNCTION_LEN];
+    YJSONObject *j, *node;
+    YDevice* dev;
+    string errmsg;
+    YFUN_DESCR fundescr;
+    int res;
+    char errbuf[YOCTO_ERRMSG_LEN];
+    char serial[YOCTO_SERIAL_LEN];
+    char funcId[YOCTO_FUNCTION_LEN];
 
     // Resolve our reference to our device, load REST API
     res = _getDevice(dev, errmsg);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         _throw((YRETCODE)res, errmsg);
         return (YRETCODE)res;
     }
     res = dev->requestAPI(j, errmsg);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         _throw((YRETCODE)res, errmsg);
         return (YRETCODE)res;
     }
 
     // Get our function Id
     fundescr = YapiWrapper::getFunction(_className, _func, errmsg);
-    if(YISERR(fundescr)) {
+    if (YISERR(fundescr)) {
         _throw((YRETCODE)fundescr, errmsg);
         return (YRETCODE)fundescr;
     }
     res = yapiGetFunctionInfo(fundescr, NULL, serial, funcId, NULL, NULL, errbuf);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         _throw((YRETCODE)res, errbuf);
         return (YRETCODE)res;
     }
@@ -3497,8 +3442,8 @@ YRETCODE YFunction::load(int msValidity)
 {
     YRETCODE res;
     yEnterCriticalSection(&_this_cs);
-    try{
-       res = this->_load_unsafe(msValidity);
+    try {
+        res = this->_load_unsafe(msValidity);
     } catch (std::exception) {
         yLeaveCriticalSection(&_this_cs);
         throw;
@@ -3516,8 +3461,8 @@ YRETCODE YFunction::load(int msValidity)
  */
 void YFunction::clearCache()
 {
-    YDevice     *dev;
-    string      errmsg, apires;
+    YDevice* dev;
+    string errmsg, apires;
 
 
     yEnterCriticalSection(&_this_cs);
@@ -3528,7 +3473,7 @@ void YFunction::clearCache()
         return;
     }
     dev->clearCache(false);
-    if (_cacheExpiration){
+    if (_cacheExpiration) {
         _cacheExpiration = yapiGetTickCount();
     }
     yLeaveCriticalSection(&_this_cs);
@@ -3542,25 +3487,24 @@ void YFunction::clearCache()
  *
  * @return an instance of YModule
  */
-YModule *YFunction::get_module(void)
+YModule* YFunction::get_module(void)
 {
     YFUN_DESCR fundescr;
     YDEV_DESCR devdescr;
-    string  errmsg, serial, funcId, funcName, funcValue;
+    string errmsg, serial, funcId, funcName, funcValue;
 
     yEnterCriticalSection(&_this_cs);
     fundescr = YapiWrapper::getFunction(_className, _func, errmsg);
-    if(!YISERR(fundescr)) {
-        if(!YISERR(YapiWrapper::getFunctionInfo(fundescr, devdescr, serial, funcId, funcName, funcValue, errmsg))) {
+    if (!YISERR(fundescr)) {
+        if (!YISERR(YapiWrapper::getFunctionInfo(fundescr, devdescr, serial, funcId, funcName, funcValue, errmsg))) {
             yLeaveCriticalSection(&_this_cs);
-            return yFindModule(serial+".module");
+            return yFindModule(serial + ".module");
         }
     }
     // return a true YModule object even if it is not a module valid for communicating
     yLeaveCriticalSection(&_this_cs);
-    return yFindModule(string("module_of_")+_className+"_"+_func);
+    return yFindModule(string("module_of_") + _className + "_" + _func);
 }
-
 
 
 /**
@@ -3571,9 +3515,9 @@ YModule *YFunction::get_module(void)
  *
  * @return the object stored previously by the caller.
  */
-void     *YFunction::get_userData(void)
+void* YFunction::get_userData(void)
 {
-    void *res;
+    void* res;
     yEnterCriticalSection(&_this_cs);
     res = _userData;
     yLeaveCriticalSection(&_this_cs);
@@ -3588,7 +3532,7 @@ void     *YFunction::get_userData(void)
  * @param data : any kind of object to be stored
  * @noreturn
  */
-void      YFunction::set_userData(void* data)
+void YFunction::set_userData(void* data)
 {
     yEnterCriticalSection(&_this_cs);
     _userData = data;
@@ -3608,7 +3552,7 @@ void      YFunction::set_userData(void* data)
 YFUN_DESCR YFunction::get_functionDescriptor(void)
 {
     // do not take CS un purpose
-	return _fundescr;
+    return _fundescr;
 }
 
 void YFunction::_UpdateValueCallbackList(YFunction* func, bool add)
@@ -3616,17 +3560,17 @@ void YFunction::_UpdateValueCallbackList(YFunction* func, bool add)
     if (add) {
         func->isOnline();
         vector<YFunction*>::iterator it;
-        for ( it=_FunctionCallbacks.begin() ; it < _FunctionCallbacks.end(); it++ ){
+        for (it = _FunctionCallbacks.begin(); it < _FunctionCallbacks.end(); it++) {
             if (*it == func)
                 return;
         }
         _FunctionCallbacks.push_back(func);
-    }else{
+    } else {
         vector<YFunction*>::iterator it;
-        for ( it=_FunctionCallbacks.begin() ; it < _FunctionCallbacks.end(); it++ ){
+        for (it = _FunctionCallbacks.begin(); it < _FunctionCallbacks.end(); it++) {
             if (*it == func) {
-                 _FunctionCallbacks.erase(it);
-                 break;
+                _FunctionCallbacks.erase(it);
+                break;
             }
         }
     }
@@ -3635,20 +3579,20 @@ void YFunction::_UpdateValueCallbackList(YFunction* func, bool add)
 
 void YFunction::_UpdateTimedReportCallbackList(YFunction* func, bool add)
 {
-  if (add) {
+    if (add) {
         func->isOnline();
         vector<YFunction*>::iterator it;
-        for ( it=_TimedReportCallbackList.begin() ; it < _TimedReportCallbackList.end(); it++ ){
+        for (it = _TimedReportCallbackList.begin(); it < _TimedReportCallbackList.end(); it++) {
             if (*it == func)
                 return;
         }
         _TimedReportCallbackList.push_back(func);
-    }else{
+    } else {
         vector<YFunction*>::iterator it;
-        for ( it=_TimedReportCallbackList.begin() ; it < _TimedReportCallbackList.end(); it++ ){
+        for (it = _TimedReportCallbackList.begin(); it < _TimedReportCallbackList.end(); it++) {
             if (*it == func) {
-                 _TimedReportCallbackList.erase(it);
-                 break;
+                _TimedReportCallbackList.erase(it);
+                break;
             }
         }
     }
@@ -3663,8 +3607,8 @@ void YModule::_updateModuleCallbackList(YModule* module, bool add)
         if (entry != _moduleCallbackList.end()) {
             _moduleCallbackList[module]++;
         } else {
-            _moduleCallbackList[module]=1;
-        }        
+            _moduleCallbackList[module] = 1;
+        }
     } else {
         if (entry != _moduleCallbackList.end()) {
             if (_moduleCallbackList[module] > 0) {
@@ -3678,7 +3622,8 @@ void YModule::_updateModuleCallbackList(YModule* module, bool add)
 // This is the internal device cache object
 vector<YDevice*> YDevice::_devCache;
 
-YDevice::YDevice(YDEV_DESCR devdesc): _devdescr(devdesc), _cacheStamp(0), _cacheJson(NULL), _subpath(NULL) {
+YDevice::YDevice(YDEV_DESCR devdesc): _devdescr(devdesc), _cacheStamp(0), _cacheJson(NULL), _subpath(NULL)
+{
     yInitializeCriticalSection(&_lock);
 };
 
@@ -3691,7 +3636,7 @@ YDevice::~YDevice() // destructor
 
 void YDevice::ClearCache()
 {
-    for(unsigned int idx = 0; idx < YDevice::_devCache.size(); idx++) {
+    for (unsigned int idx = 0; idx < YDevice::_devCache.size(); idx++) {
         delete _devCache[idx];
     }
     _devCache.clear();
@@ -3699,19 +3644,19 @@ void YDevice::ClearCache()
 }
 
 
-YDevice *YDevice::getDevice(YDEV_DESCR devdescr)
+YDevice* YDevice::getDevice(YDEV_DESCR devdescr)
 {
     // Search in cache
     yEnterCriticalSection(&YAPI::_global_cs);
-    for(unsigned int idx = 0; idx < YDevice::_devCache.size(); idx++) {
-        if(YDevice::_devCache[idx]->_devdescr == devdescr) {
+    for (unsigned int idx = 0; idx < YDevice::_devCache.size(); idx++) {
+        if (YDevice::_devCache[idx]->_devdescr == devdescr) {
             yLeaveCriticalSection(&YAPI::_global_cs);
             return YDevice::_devCache[idx];
         }
     }
 
     // Not found, add new entry
-    YDevice *dev = new YDevice(devdescr);
+    YDevice* dev = new YDevice(devdescr);
     YDevice::_devCache.push_back(dev);
     yLeaveCriticalSection(&YAPI::_global_cs);
 
@@ -3719,35 +3664,34 @@ YDevice *YDevice::getDevice(YDEV_DESCR devdescr)
 }
 
 
-YRETCODE    YDevice::HTTPRequestPrepare(const string& request, string& fullrequest, char *errbuff)
+YRETCODE YDevice::HTTPRequestPrepare(const string& request, string& fullrequest, char* errbuff)
 {
-    YRETCODE    res;
-    size_t      pos;
-     // mutex allready taken by caller
-    if(_subpath==NULL){
+    YRETCODE res;
+    size_t pos;
+    // mutex allready taken by caller
+    if (_subpath == NULL) {
         int neededsize;
         res = yapiGetDevicePath(_devdescr, _rootdevice, NULL, 0, &neededsize, errbuff);
-        if(YISERR(res)) return res;
+        if (YISERR(res)) return res;
         _subpath = new char[neededsize];
         res = yapiGetDevicePath(_devdescr, _rootdevice, _subpath, neededsize, NULL, errbuff);
-        if(YISERR(res)) return res;
+        if (YISERR(res)) return res;
     }
     pos = request.find_first_of('/');
-    fullrequest = request.substr(0,pos) + (string)_subpath + request.substr(pos+1);
+    fullrequest = request.substr(0, pos) + (string)_subpath + request.substr(pos + 1);
 
     return YAPI_SUCCESS;
 }
 
 
-
-YRETCODE    YDevice::HTTPRequest_unsafe(int channel, const string& request, string& buffer, yapiRequestProgressCallback callback, void *context, string& errmsg)
+YRETCODE YDevice::HTTPRequest_unsafe(int channel, const string& request, string& buffer, yapiRequestProgressCallback callback, void* context, string& errmsg)
 {
-    char        errbuff[YOCTO_ERRMSG_LEN] = "";
-    YRETCODE    res;
-    YIOHDL      iohdl;
-    string      fullrequest;
-    char        *reply;
-    int         replysize = 0;
+    char errbuff[YOCTO_ERRMSG_LEN] = "";
+    YRETCODE res;
+    YIOHDL iohdl;
+    string fullrequest;
+    char* reply;
+    int replysize = 0;
 
     if (YISERR(res = HTTPRequestPrepare(request, fullrequest, errbuff))) {
         errmsg = (string)errbuff;
@@ -3771,15 +3715,15 @@ YRETCODE    YDevice::HTTPRequest_unsafe(int channel, const string& request, stri
 }
 
 
-YRETCODE    YDevice::HTTPRequestAsync(int channel, const string& request, HTTPRequestCallback callback, void *context, string& errmsg)
+YRETCODE YDevice::HTTPRequestAsync(int channel, const string& request, HTTPRequestCallback callback, void* context, string& errmsg)
 {
-    char        errbuff[YOCTO_ERRMSG_LEN]="";
-    YRETCODE    res = YAPI_SUCCESS;
-    string      fullrequest;
+    char errbuff[YOCTO_ERRMSG_LEN] = "";
+    YRETCODE res = YAPI_SUCCESS;
+    string fullrequest;
     yEnterCriticalSection(&_lock);
-    _cacheStamp     = YAPI::GetTickCount(); //invalidate cache
-    if(YISERR(res=HTTPRequestPrepare(request, fullrequest, errbuff)) ||
-       YISERR(res=yapiHTTPRequestAsyncOutOfBand(channel, _rootdevice, fullrequest.c_str(), (int)fullrequest.length(), NULL, NULL, errbuff))){
+    _cacheStamp = YAPI::GetTickCount(); //invalidate cache
+    if (YISERR(res=HTTPRequestPrepare(request, fullrequest, errbuff)) ||
+        YISERR(res=yapiHTTPRequestAsyncOutOfBand(channel, _rootdevice, fullrequest.c_str(), (int)fullrequest.length(), NULL, NULL, errbuff))) {
         errmsg = (string)errbuff;
     }
     yLeaveCriticalSection(&_lock);
@@ -3787,13 +3731,13 @@ YRETCODE    YDevice::HTTPRequestAsync(int channel, const string& request, HTTPRe
 }
 
 
-YRETCODE    YDevice::HTTPRequest(int channel, const string& request, string& buffer, yapiRequestProgressCallback callback, void *context, string& errmsg)
+YRETCODE YDevice::HTTPRequest(int channel, const string& request, string& buffer, yapiRequestProgressCallback callback, void* context, string& errmsg)
 {
-    YRETCODE    res;
-    int         locked = 0;
-    int         i;
+    YRETCODE res;
+    int locked = 0;
+    int i;
 
-    for (i = 0; !locked && i < 5 ; i++) {
+    for (i = 0; !locked && i < 5; i++) {
         locked = yTryEnterCriticalSection(&_lock);
         if (!locked) {
             yApproximateSleep(50);
@@ -3811,15 +3755,15 @@ YRETCODE    YDevice::HTTPRequest(int channel, const string& request, string& buf
 YRETCODE YDevice::requestAPI(YJSONObject*& apires, string& errmsg)
 {
     yJsonStateMachine j;
-    string          rootdev,  buffer;
-    string          request = "GET /api.json \r\n\r\n";
-    string          json_str;
-    int             res;
+    string rootdev, buffer;
+    string request = "GET /api.json \r\n\r\n";
+    string json_str;
+    int res;
 
     yEnterCriticalSection(&_lock);
 
     // Check if we have a valid cache value
-    if(_cacheStamp > YAPI::GetTickCount()) {
+    if (_cacheStamp > YAPI::GetTickCount()) {
         apires = _cacheJson;
         yLeaveCriticalSection(&_lock);
         return YAPI_SUCCESS;
@@ -3829,21 +3773,21 @@ YRETCODE YDevice::requestAPI(YJSONObject*& apires, string& errmsg)
     } else {
         string fw_release = _cacheJson->getYJSONObject("module")->getString("firmwareRelease");
         fw_release = __escapeAttr(fw_release);
-        request = "GET /api.json?fw="+fw_release+" \r\n\r\n";
+        request = "GET /api.json?fw=" + fw_release + " \r\n\r\n";
     }
     // send request, without HTTP/1.1 suffix to get light headers
     res = this->HTTPRequest_unsafe(0, request, buffer, NULL, NULL, errmsg);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         yLeaveCriticalSection(&_lock);
         // Check if an update of the device list does not solve the issue
-        res = YapiWrapper::updateDeviceList(true,errmsg);
-        if(YISERR(res)) {
+        res = YapiWrapper::updateDeviceList(true, errmsg);
+        if (YISERR(res)) {
             return (YRETCODE)res;
         }
         yEnterCriticalSection(&_lock);
         // send request, without HTTP/1.1 suffix to get light headers
         res = this->HTTPRequest_unsafe(0, request, buffer, NULL, NULL, errmsg);
-        if(YISERR(res)) {
+        if (YISERR(res)) {
             yLeaveCriticalSection(&_lock);
             return (YRETCODE)res;
         }
@@ -3853,7 +3797,7 @@ YRETCODE YDevice::requestAPI(YJSONObject*& apires, string& errmsg)
     j.src = buffer.data();
     j.end = j.src + buffer.size();
     j.st = YJSON_HTTP_START;
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_HTTP_READ_CODE) {
+    if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_HTTP_READ_CODE) {
         errmsg = "Failed to parse HTTP header";
         if (!YAPI::ExceptionsDisabled) {
             throw YAPI_Exception(YAPI_IO_ERROR, errmsg);
@@ -3861,15 +3805,15 @@ YRETCODE YDevice::requestAPI(YJSONObject*& apires, string& errmsg)
         yLeaveCriticalSection(&_lock);
         return YAPI_IO_ERROR;
     }
-    if(string(j.token) != "200") {
-        errmsg = string("Unexpected HTTP return code: ")+j.token;
+    if (string(j.token) != "200") {
+        errmsg = string("Unexpected HTTP return code: ") + j.token;
         if (!YAPI::ExceptionsDisabled) {
             throw YAPI_Exception(YAPI_IO_ERROR, errmsg);
         }
         yLeaveCriticalSection(&_lock);
         return YAPI_IO_ERROR;
     }
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_HTTP_READ_MSG) {
+    if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_HTTP_READ_MSG) {
         errmsg = "Unexpected HTTP header format";
         if (!YAPI::ExceptionsDisabled) {
             throw YAPI_Exception(YAPI_IO_ERROR, errmsg);
@@ -3877,7 +3821,7 @@ YRETCODE YDevice::requestAPI(YJSONObject*& apires, string& errmsg)
         yLeaveCriticalSection(&_lock);
         return YAPI_IO_ERROR;
     }
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || (j.st != YJSON_PARSE_STRUCT && j.st != YJSON_PARSE_ARRAY)) {
+    if (yJsonParse(&j) != YJSON_PARSE_AVAIL || (j.st != YJSON_PARSE_STRUCT && j.st != YJSON_PARSE_ARRAY)) {
         errmsg = "Unexpected JSON reply format";
         if (!YAPI::ExceptionsDisabled) {
             throw YAPI_Exception(YAPI_IO_ERROR, errmsg);
@@ -3886,7 +3830,7 @@ YRETCODE YDevice::requestAPI(YJSONObject*& apires, string& errmsg)
         return YAPI_IO_ERROR;
     }
     // we know for sure that the last character parsed was a '{' or '['
-    do j.src--; while(j.src[0] != '{' && j.src[0] != '[');
+    do j.src--; while (j.src[0] != '{' && j.src[0] != '[');
     json_str = string(j.src);
     try {
         apires = new YJSONObject(json_str, 0, (int)json_str.length());
@@ -3915,9 +3859,6 @@ YRETCODE YDevice::requestAPI(YJSONObject*& apires, string& errmsg)
 }
 
 
-
-
-
 void YDevice::clearCache(bool clearSubpath)
 {
     yEnterCriticalSection(&_lock);
@@ -3935,12 +3876,12 @@ void YDevice::clearCache(bool clearSubpath)
     yLeaveCriticalSection(&_lock);
 }
 
-YRETCODE YDevice::getFunctions(vector<YFUN_DESCR> **functions, string& errmsg)
+YRETCODE YDevice::getFunctions(vector<YFUN_DESCR>** functions, string& errmsg)
 {
     yEnterCriticalSection(&_lock);
-    if(_functions.size() == 0) {
+    if (_functions.size() == 0) {
         int res = YapiWrapper::getFunctionsByDevice(_devdescr, 0, _functions, 64, errmsg);
-        if(YISERR(res)) return (YRETCODE)res;
+        if (YISERR(res)) return (YRETCODE)res;
     }
     *functions = &_functions;
     yLeaveCriticalSection(&_lock);
@@ -3949,50 +3890,49 @@ YRETCODE YDevice::getFunctions(vector<YFUN_DESCR> **functions, string& errmsg)
 }
 
 
-queue<yapiGlobalEvent>  YAPI::_plug_events;
-queue<yapiDataEvent>    YAPI::_data_events;
+queue<yapiGlobalEvent> YAPI::_plug_events;
+queue<yapiDataEvent> YAPI::_data_events;
 
-u64         YAPI::_nextEnum         = 0;
-bool        YAPI::_apiInitialized   = false;
+u64 YAPI::_nextEnum = 0;
+bool YAPI::_apiInitialized = false;
 
-std::map<int,yCalibrationHandler> YAPI::_calibHandlers;
-YHubDiscoveryCallback   YAPI::_HubDiscoveryCallback = NULL;
-
+std::map<int, yCalibrationHandler> YAPI::_calibHandlers;
+YHubDiscoveryCallback YAPI::_HubDiscoveryCallback = NULL;
 
 
 // Switch to turn off exceptions and use return codes instead, for source-code compatibility
 // with languages without exception support like pure C
 bool YAPI::ExceptionsDisabled = false;
 
-yCRITICAL_SECTION   YAPI::_global_cs;
-YAPIContext  YAPI::_yapiContext;
+yCRITICAL_SECTION YAPI::_global_cs;
+YAPIContext YAPI::_yapiContext;
 
 // standard error objects
 const string YAPI::INVALID_STRING = YAPI_INVALID_STRING;
 const double YAPI::INVALID_DOUBLE = (-DBL_MAX);
 
 
-yLogFunction            YAPI::LogFunction            = NULL;
-yDeviceUpdateCallback   YAPI::DeviceArrivalCallback  = NULL;
-yDeviceUpdateCallback   YAPI::DeviceRemovalCallback  = NULL;
-yDeviceUpdateCallback   YAPI::DeviceChangeCallback   = NULL;
+yLogFunction YAPI::LogFunction = NULL;
+yDeviceUpdateCallback YAPI::DeviceArrivalCallback = NULL;
+yDeviceUpdateCallback YAPI::DeviceRemovalCallback = NULL;
+yDeviceUpdateCallback YAPI::DeviceChangeCallback = NULL;
 
-void YAPI::_yapiLogFunctionFwd(const char *log, u32 loglen)
+void YAPI::_yapiLogFunctionFwd(const char* log, u32 loglen)
 {
-    if(YAPI::LogFunction)
+    if (YAPI::LogFunction)
         YAPI::LogFunction(string(log));
 }
 
 
 void YAPI::_yapiDeviceLogCallbackFwd(YDEV_DESCR devdesc, const char* line)
 {
-    YModule             *module;
-    yDeviceSt           infos;
-    string              errmsg;
-    YModuleLogCallback  callback;
+    YModule* module;
+    yDeviceSt infos;
+    string errmsg;
+    YModuleLogCallback callback;
 
-    if(YapiWrapper::getDeviceInfo(devdesc, infos, errmsg) != YAPI_SUCCESS) return;
-    module = YModule::FindModule(string(infos.serial)+".module");
+    if (YapiWrapper::getDeviceInfo(devdesc, infos, errmsg) != YAPI_SUCCESS) return;
+    module = YModule::FindModule(string(infos.serial) + ".module");
     callback = module->get_logCallback();
     if (callback) {
         callback(module, string(line));
@@ -4002,54 +3942,54 @@ void YAPI::_yapiDeviceLogCallbackFwd(YDEV_DESCR devdesc, const char* line)
 
 void YAPI::_yapiDeviceArrivalCallbackFwd(YDEV_DESCR devdesc)
 {
-	yapiGlobalEvent    ev;
-	yapiDataEvent      dataEv;
-    yDeviceSt    infos;
-    string       errmsg;
+    yapiGlobalEvent ev;
+    yapiDataEvent dataEv;
+    yDeviceSt infos;
+    string errmsg;
     vector<YFunction*>::iterator it;
 
-    YDevice *dev = YDevice::getDevice(devdesc);
+    YDevice* dev = YDevice::getDevice(devdesc);
     dev->clearCache(true);
-	dataEv.type = YAPI_FUN_REFRESH;
-    for ( it=_FunctionCallbacks.begin() ; it < _FunctionCallbacks.end(); it++ ){
-        if ((*it)->functionDescriptor() == Y_FUNCTIONDESCRIPTOR_INVALID){
-			dataEv.fun = *it;
-			_data_events.push(dataEv);
+    dataEv.type = YAPI_FUN_REFRESH;
+    for (it = _FunctionCallbacks.begin(); it < _FunctionCallbacks.end(); it++) {
+        if ((*it)->functionDescriptor() == Y_FUNCTIONDESCRIPTOR_INVALID) {
+            dataEv.fun = *it;
+            _data_events.push(dataEv);
         }
     }
     if (YAPI::DeviceArrivalCallback == NULL) return;
-    ev.type      = YAPI_DEV_ARRIVAL;
+    ev.type = YAPI_DEV_ARRIVAL;
     //the function is allready thread safe (use yapiLockDeviceCallaback)
-    if(YapiWrapper::getDeviceInfo(devdesc, infos, errmsg) != YAPI_SUCCESS) return;
-    ev.module = yFindModule(string(infos.serial)+".module");
+    if (YapiWrapper::getDeviceInfo(devdesc, infos, errmsg) != YAPI_SUCCESS) return;
+    ev.module = yFindModule(string(infos.serial) + ".module");
     ev.module->setImmutableAttributes(&infos);
     _plug_events.push(ev);
 }
 
 void YAPI::_yapiDeviceRemovalCallbackFwd(YDEV_DESCR devdesc)
 {
-	yapiGlobalEvent    ev;
-    yDeviceSt    infos;
-    string       errmsg;
+    yapiGlobalEvent ev;
+    yDeviceSt infos;
+    string errmsg;
 
     if (YAPI::DeviceRemovalCallback == NULL) return;
-    ev.type   = YAPI_DEV_REMOVAL;
-    if(YapiWrapper::getDeviceInfo(devdesc, infos, errmsg) != YAPI_SUCCESS) return;
-    ev.module = yFindModule(string(infos.serial)+".module");
+    ev.type = YAPI_DEV_REMOVAL;
+    if (YapiWrapper::getDeviceInfo(devdesc, infos, errmsg) != YAPI_SUCCESS) return;
+    ev.module = yFindModule(string(infos.serial) + ".module");
     //the function is allready thread safe (use yapiLockDeviceCallaback)
     _plug_events.push(ev);
 }
 
 void YAPI::_yapiDeviceChangeCallbackFwd(YDEV_DESCR devdesc)
 {
-	yapiGlobalEvent    ev;
-    yDeviceSt    infos;
-    string       errmsg;
+    yapiGlobalEvent ev;
+    yDeviceSt infos;
+    string errmsg;
 
     if (YAPI::DeviceChangeCallback == NULL) return;
-    ev.type      = YAPI_DEV_CHANGE;
-    if(YapiWrapper::getDeviceInfo(devdesc, infos, errmsg) != YAPI_SUCCESS) return;
-    ev.module = yFindModule(string(infos.serial)+".module");
+    ev.type = YAPI_DEV_CHANGE;
+    if (YapiWrapper::getDeviceInfo(devdesc, infos, errmsg) != YAPI_SUCCESS) return;
+    ev.module = yFindModule(string(infos.serial) + ".module");
     ev.module->setImmutableAttributes(&infos);
     //the function is allready thread safe (use yapiLockDeviceCallaback)
     _plug_events.push(ev);
@@ -4057,10 +3997,10 @@ void YAPI::_yapiDeviceChangeCallbackFwd(YDEV_DESCR devdesc)
 
 void YAPI::_yapiBeaconCallbackFwd(YDEV_DESCR devdesc, int beacon)
 {
-    yapiDataEvent    ev;
-    yDeviceSt    infos;
-    string       errmsg;
-    YModule      *module;
+    yapiDataEvent ev;
+    yDeviceSt infos;
+    string errmsg;
+    YModule* module;
 
     if (YapiWrapper::getDeviceInfo(devdesc, infos, errmsg) != YAPI_SUCCESS) return;
     module = yFindModule(string(infos.serial) + ".module");
@@ -4076,12 +4016,12 @@ void YAPI::_yapiBeaconCallbackFwd(YDEV_DESCR devdesc, int beacon)
 
 void YAPI::_yapiDeviceConfigChangeCallbackFwd(YDEV_DESCR devdesc)
 {
-    yapiDataEvent   ev;
-    yDeviceSt    infos;
-    string       errmsg;
-    YModule      *module;
+    yapiDataEvent ev;
+    yDeviceSt infos;
+    string errmsg;
+    YModule* module;
 
-    if(YapiWrapper::getDeviceInfo(devdesc, infos, errmsg) != YAPI_SUCCESS) return;
+    if (YapiWrapper::getDeviceInfo(devdesc, infos, errmsg) != YAPI_SUCCESS) return;
     module = yFindModule(string(infos.serial) + ".module");
     if (_moduleCallbackList.find(module) != _moduleCallbackList.end() && _moduleCallbackList[module] > 0) {
         ev.type = YAPI_DEV_CONFCHANGE;
@@ -4092,18 +4032,18 @@ void YAPI::_yapiDeviceConfigChangeCallbackFwd(YDEV_DESCR devdesc)
     }
 }
 
-void YAPI::_yapiFunctionUpdateCallbackFwd(YAPI_FUNCTION fundesc,const char *value)
+void YAPI::_yapiFunctionUpdateCallbackFwd(YAPI_FUNCTION fundesc, const char* value)
 {
-	yapiDataEvent    ev;
+    yapiDataEvent ev;
 
     //the function is allready thread safe (use yapiLockFunctionCallaback)
-    if(value==NULL){
-        ev.type      = YAPI_FUN_UPDATE;
-    }else{
-        ev.type      = YAPI_FUN_VALUE;
-        memcpy(ev.value,value,YOCTO_PUBVAL_LEN);
+    if (value == NULL) {
+        ev.type = YAPI_FUN_UPDATE;
+    } else {
+        ev.type = YAPI_FUN_VALUE;
+        memcpy(ev.value, value,YOCTO_PUBVAL_LEN);
     }
-    for (unsigned i=0 ; i< _FunctionCallbacks.size();i++) {
+    for (unsigned i = 0; i < _FunctionCallbacks.size(); i++) {
         if (_FunctionCallbacks[i]->get_functionDescriptor() == fundesc) {
             ev.fun = _FunctionCallbacks[i];
             _data_events.push(ev);
@@ -4111,51 +4051,53 @@ void YAPI::_yapiFunctionUpdateCallbackFwd(YAPI_FUNCTION fundesc,const char *valu
     }
 }
 
-void YAPI::_yapiFunctionTimedReportCallbackFwd(YAPI_FUNCTION fundesc,double timestamp, const u8 *bytes, u32 len)
+void YAPI::_yapiFunctionTimedReportCallbackFwd(YAPI_FUNCTION fundesc, double timestamp, const u8* bytes, u32 len, double duration)
 {
-	yapiDataEvent    ev;
+    yapiDataEvent ev;
 
-    for (unsigned i=0 ; i< _TimedReportCallbackList.size();i++) {
+    for (unsigned i = 0; i < _TimedReportCallbackList.size(); i++) {
         if (_TimedReportCallbackList[i]->get_functionDescriptor() == fundesc) {
-			u32 p = 0;
-			ev.type = YAPI_FUN_TIMEDREPORT;
+            u32 p = 0;
+            ev.type = YAPI_FUN_TIMEDREPORT;
             ev.sensor = (YSensor*)_TimedReportCallbackList[i];
-            ev.timestamp =  timestamp;
-			ev.len = len;
-            while(p < len) {
-				ev.report[p++] = *bytes++;
+            ev.timestamp = timestamp;
+            ev.duration = duration;
+            ev.len = len;
+            while (p < len) {
+                ev.report[p++] = *bytes++;
             }
             _data_events.push(ev);
         }
     }
 }
 
-void YAPI::_yapiHubDiscoveryCallbackFwd(const char *serial, const char *url)
+void YAPI::_yapiHubDiscoveryCallbackFwd(const char* serial, const char* url)
 {
-	yapiGlobalEvent    ev;
+    yapiGlobalEvent ev;
 
-	if (YAPI::_HubDiscoveryCallback == NULL) return;
-	ev.type = YAPI_HUB_DISCOVER;
-	strcpy(ev.serial, serial);
-	strcpy(ev.url, url);
-	_plug_events.push(ev);
+    if (YAPI::_HubDiscoveryCallback == NULL) return;
+    ev.type = YAPI_HUB_DISCOVER;
+    strcpy(ev.serial, serial);
+    strcpy(ev.url, url);
+    _plug_events.push(ev);
 }
 
 
 static double decExp[16] = {
     1.0e-6, 1.0e-5, 1.0e-4, 1.0e-3, 1.0e-2, 1.0e-1, 1.0,
-    1.0e1, 1.0e2, 1.0e3, 1.0e4, 1.0e5, 1.0e6, 1.0e7, 1.0e8, 1.0e9 };
+    1.0e1, 1.0e2, 1.0e3, 1.0e4, 1.0e5, 1.0e6, 1.0e7, 1.0e8, 1.0e9
+};
 
 // Convert Yoctopuce 16-bit decimal floats to standard double-precision floats
 //
 double YAPI::_decimalToDouble(s16 val)
 {
-    int     negate = 0;
-    int     mantis = val & 2047;
-    double  res;
+    int negate = 0;
+    int mantis = val & 2047;
+    double res;
 
-    if(mantis == 0) return 0.0;
-    if(val < 0) {
+    if (mantis == 0) return 0.0;
+    if (val < 0) {
         negate = 1;
         val = -val;
     }
@@ -4168,35 +4110,35 @@ double YAPI::_decimalToDouble(s16 val)
 //
 s16 YAPI::_doubleToDecimal(double val)
 {
-    int     negate = 0;
-    double  comp, mant;
-    int     decpow;
-    int     res;
+    int negate = 0;
+    double comp, mant;
+    int decpow;
+    int res;
 
-    if(val == 0.0) {
+    if (val == 0.0) {
         return 0;
     }
-    if(val < 0) {
+    if (val < 0) {
         negate = 1;
         val = -val;
     }
     comp = val / 1999.0;
     decpow = 0;
-    while(comp > decExp[decpow] && decpow < 15) {
+    while (comp > decExp[decpow] && decpow < 15) {
         decpow++;
     }
     mant = val / decExp[decpow];
-    if(decpow == 15 && mant > 2047.0) {
+    if (decpow == 15 && mant > 2047.0) {
         res = (15 << 11) + 2047; // overflow
     } else {
-        res = (decpow << 11) + (int)floor(mant+.5);
+        res = (decpow << 11) + (int)floor(mant + .5);
     }
     return (negate ? -res : res);
 }
 
 yCalibrationHandler YAPI::_getCalibrationHandler(int calibType)
 {
-    if(YAPI::_calibHandlers.find(calibType) == YAPI::_calibHandlers.end()) {
+    if (YAPI::_calibHandlers.find(calibType) == YAPI::_calibHandlers.end()) {
         return NULL;
     }
     return YAPI::_calibHandlers[calibType];
@@ -4206,30 +4148,30 @@ yCalibrationHandler YAPI::_getCalibrationHandler(int calibType)
 // Parse an array of u16 encoded in a base64-like string with memory-based compresssion
 vector<int> YAPI::_decodeWords(string sdat)
 {
-    vector<int>     udat;
+    vector<int> udat;
 
-    for(unsigned p = 0; p < sdat.size();) {
+    for (unsigned p = 0; p < sdat.size();) {
         unsigned val;
         unsigned c = sdat[p++];
-        if(c == '*') {
+        if (c == '*') {
             val = 0;
-        } else if(c == 'X') {
+        } else if (c == 'X') {
             val = 0xffff;
-        } else if(c == 'Y') {
+        } else if (c == 'Y') {
             val = 0x7fff;
-        } else if(c >= 'a') {
-            int srcpos = (int)udat.size()-1-(c-'a');
-            if(srcpos < 0)
+        } else if (c >= 'a') {
+            int srcpos = (int)udat.size() - 1 - (c - 'a');
+            if (srcpos < 0)
                 val = 0;
             else
                 val = udat[srcpos];
         } else {
-            if(p+2 > sdat.size()) return udat;
+            if (p + 2 > sdat.size()) return udat;
             val = (c - '0');
             c = sdat[p++];
             val += (c - '0') << 5;
             c = sdat[p++];
-            if(c == 'z') c = '\\';
+            if (c == 'z') c = '\\';
             val += (c - '0') << 10;
         }
         udat.push_back((int)val);
@@ -4242,44 +4184,44 @@ vector<int> YAPI::_decodeFloats(string sdat)
 {
     vector<int> idat;
 
-    for(unsigned p = 0; p < sdat.size();) {
+    for (unsigned p = 0; p < sdat.size();) {
         int val = 0;
         int sign = 1;
         int dec = 0;
         int decInc = 0;
         unsigned c = sdat[p++];
-        while(c != '-' && (c < '0' || c > '9')) {
-            if(p >= sdat.size()) {
+        while (c != '-' && (c < '0' || c > '9')) {
+            if (p >= sdat.size()) {
                 return idat;
             }
             c = sdat[p++];
         }
-        if(c == '-') {
-            if(p >= sdat.size()) {
+        if (c == '-') {
+            if (p >= sdat.size()) {
                 return idat;
             }
             sign = -sign;
             c = sdat[p++];
         }
-        while((c >= '0' && c <= '9') || c == '.') {
-            if(c == '.') {
+        while ((c >= '0' && c <= '9') || c == '.') {
+            if (c == '.') {
                 decInc = 1;
-            } else if(dec < 3) {
+            } else if (dec < 3) {
                 val = val * 10 + (c - '0');
                 dec += decInc;
             }
-            if(p < sdat.size()) {
+            if (p < sdat.size()) {
                 c = sdat[p++];
             } else {
                 c = 0;
             }
         }
-        if(dec < 3) {
-            if(dec == 0) val *= 1000;
-            else if(dec == 1) val *= 100;
+        if (dec < 3) {
+            if (dec == 0) val *= 1000;
+            else if (dec == 1) val *= 100;
             else val *= 10;
         }
-        idat.push_back(sign*val);
+        idat.push_back(sign * val);
     }
     return idat;
 }
@@ -4289,7 +4231,7 @@ static const char* hexArray = "0123456789ABCDEF";
 
 string YAPI::_bin2HexStr(const string& data)
 {
-    const u8 *ptr = (u8*) data.data();
+    const u8* ptr = (u8*)data.data();
     size_t len = data.length();
     string res = string(len * 2, 0);
     for (size_t j = 0; j < len; j++, ptr++) {
@@ -4298,24 +4240,23 @@ string YAPI::_bin2HexStr(const string& data)
         res[j * 2 + 1] = hexArray[v & 0x0F];
     }
     return res;
-
 }
 
 string YAPI::_hexStr2Bin(const string& hex_str)
 {
     size_t len = hex_str.length() / 2;
-    const char *p  = hex_str.c_str();
+    const char* p = hex_str.c_str();
     string res = string(len, 0);
     for (size_t i = 0; i < len; i++) {
         u8 b = 0;
         int j;
-        for(j = 0; j < 2; j++) {
+        for (j = 0; j < 2; j++) {
             b <<= 4;
-            if(*p >= 'a' && *p <='f'){
-                b +=  10 + *p - 'a';
-            }else if(*p >= 'A' && *p <='F'){
-                b +=  10 + *p - 'A';
-            }else if(*p >='0' && *p <='9'){
+            if (*p >= 'a' && *p <= 'f') {
+                b += 10 + *p - 'a';
+            } else if (*p >= 'A' && *p <= 'F') {
+                b += 10 + *p - 'A';
+            } else if (*p >= '0' && *p <= '9') {
                 b += *p - '0';
             }
             p++;
@@ -4326,8 +4267,7 @@ string YAPI::_hexStr2Bin(const string& hex_str)
 }
 
 
-
-s64 yatoi(const char *p)
+s64 yatoi(const char* p)
 {
     s64 value = 0;
     bool neg = *p == '-';
@@ -4367,7 +4307,7 @@ string YAPI::GetAPIVersion(void)
 {
     string version;
     string date;
-    YapiWrapper::getAPIVersion(version,date);
+    YapiWrapper::getAPIVersion(version, date);
     return version;
 }
 
@@ -4395,12 +4335,12 @@ string YAPI::GetAPIVersion(void)
 YRETCODE YAPI::InitAPI(int mode, string& errmsg)
 {
     char errbuf[YOCTO_ERRMSG_LEN];
-    int  i;
+    int i;
 
-    if(YAPI::_apiInitialized)
+    if (YAPI::_apiInitialized)
         return YAPI_SUCCESS;
     YRETCODE res = yapiInitAPI(mode, errbuf);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         errmsg = errbuf;
         return res;
     }
@@ -4412,13 +4352,13 @@ YRETCODE YAPI::InitAPI(int mode, string& errmsg)
     yapiRegisterBeaconCallback(YAPI::_yapiBeaconCallbackFwd);
     yapiRegisterDeviceConfigChangeCallback(YAPI::_yapiDeviceConfigChangeCallbackFwd);
     yapiRegisterFunctionUpdateCallback(YAPI::_yapiFunctionUpdateCallbackFwd);
-	yapiRegisterTimedReportCallback(YAPI::_yapiFunctionTimedReportCallbackFwd);
-	yapiRegisterHubDiscoveryCallback(YAPI::_yapiHubDiscoveryCallbackFwd);
+    yapiRegisterTimedReportCallback(YAPI::_yapiFunctionTimedReportCallbackFwd);
+    yapiRegisterHubDiscoveryCallback(YAPI::_yapiHubDiscoveryCallbackFwd);
 
     yInitializeCriticalSection(&_updateDeviceList_CS);
     yInitializeCriticalSection(&_handleEvent_CS);
     yInitializeCriticalSection(&_global_cs);
-    for(i = 0; i <= 20; i++) {
+    for (i = 0; i <= 20; i++) {
         YAPI::RegisterCalibrationHandler(i, YAPI::LinearCalibrationHandler);
     }
     YAPI::RegisterCalibrationHandler(YOCTO_CALIB_TYPE_OFS, YAPI::LinearCalibrationHandler);
@@ -4437,7 +4377,7 @@ YRETCODE YAPI::InitAPI(int mode, string& errmsg)
  */
 void YAPI::FreeAPI(void)
 {
-    if(YAPI::_apiInitialized) {
+    if (YAPI::_apiInitialized) {
         yapiFreeAPI();
         YAPI::_apiInitialized = false;
         yDeleteCriticalSection(&_updateDeviceList_CS);
@@ -4461,8 +4401,10 @@ void YAPI::FreeAPI(void)
  * error value which depends on its type and which is documented in
  * this reference manual.
  */
-void  YAPI::DisableExceptions(void)
-{ YAPI::ExceptionsDisabled = true; }
+void YAPI::DisableExceptions(void)
+{
+    YAPI::ExceptionsDisabled = true;
+}
 
 /**
  * Re-enables the use of exceptions for runtime error handling.
@@ -4472,7 +4414,9 @@ void  YAPI::DisableExceptions(void)
  * On failure, throws an exception or returns a negative error code.
  */
 void YAPI::EnableExceptions(void)
-{ YAPI::ExceptionsDisabled = false; }
+{
+    YAPI::ExceptionsDisabled = false;
+}
 
 /**
  * Registers a log callback function. This callback will be called each time
@@ -4497,10 +4441,10 @@ void YAPI::RegisterLogFunction(yLogFunction logfun)
 void YAPI::RegisterDeviceArrivalCallback(yDeviceUpdateCallback arrivalCallback)
 {
     YAPI::DeviceArrivalCallback = arrivalCallback;
-    if(arrivalCallback) {
-        YModule *mod =YModule::FirstModule();
-        while(mod){
-            if(mod->isOnline()){
+    if (arrivalCallback) {
+        YModule* mod = YModule::FirstModule();
+        while (mod) {
+            if (mod->isOnline()) {
                 yapiLockDeviceCallBack(NULL);
                 _yapiDeviceArrivalCallbackFwd(mod->functionDescriptor());
                 yapiUnlockDeviceCallBack(NULL);
@@ -4540,9 +4484,9 @@ void YAPI::RegisterDeviceChangeCallback(yDeviceUpdateCallback changeCallback)
  */
 void YAPI::RegisterHubDiscoveryCallback(YHubDiscoveryCallback hubDiscoveryCallback)
 {
-    YAPI::_HubDiscoveryCallback =  hubDiscoveryCallback;
-	string error;
-	YAPI::TriggerHubDiscovery(error);
+    YAPI::_HubDiscoveryCallback = hubDiscoveryCallback;
+    string error;
+    YAPI::TriggerHubDiscovery(error);
 }
 
 /**
@@ -4556,20 +4500,19 @@ void YAPI::RegisterHubDiscoveryCallback(YHubDiscoveryCallback hubDiscoveryCallba
  */
 YRETCODE YAPI::TriggerHubDiscovery(string& errmsg)
 {
-	YRETCODE res;
-	char errbuf[YOCTO_ERRMSG_LEN];
-	if (!YAPI::_apiInitialized) {
-		res = YAPI::InitAPI(0, errmsg);
-		if (YISERR(res)) return res;
-	}
-	res = yapiTriggerHubDiscovery(errbuf);
-    if(YISERR(res)) {
+    YRETCODE res;
+    char errbuf[YOCTO_ERRMSG_LEN];
+    if (!YAPI::_apiInitialized) {
+        res = YAPI::InitAPI(0, errmsg);
+        if (YISERR(res)) return res;
+    }
+    res = yapiTriggerHubDiscovery(errbuf);
+    if (YISERR(res)) {
         errmsg = errbuf;
         return res;
     }
     return YAPI_SUCCESS;
 }
-
 
 
 // Register a new value calibration handler for a given calibration type
@@ -4583,27 +4526,27 @@ void YAPI::RegisterCalibrationHandler(int calibrationType, yCalibrationHandler c
 //
 double YAPI::LinearCalibrationHandler(double rawValue, int calibType, intArr params, floatArr rawValues, floatArr refValues)
 {
-    double x   = rawValues[0];
+    double x = rawValues[0];
     double adj = refValues[0] - x;
-    int    i   = 0;
-    int    npt;
+    int i = 0;
+    int npt;
 
-    if(calibType < YOCTO_CALIB_TYPE_OFS) {
+    if (calibType < YOCTO_CALIB_TYPE_OFS) {
         // calibration types n=1..10 and 11..20 are meant for linear calibration using n points
         npt = calibType % 10;
-        if(npt > (int)rawValues.size()) npt = (int)rawValues.size();
-        if(npt > (int)refValues.size()) npt = (int)refValues.size();
+        if (npt > (int)rawValues.size()) npt = (int)rawValues.size();
+        if (npt > (int)refValues.size()) npt = (int)refValues.size();
     } else {
         npt = (int)refValues.size();
     }
-    while(rawValue > rawValues[i] && ++i < npt) {
-        double x2   = x;
+    while (rawValue > rawValues[i] && ++i < npt) {
+        double x2 = x;
         double adj2 = adj;
 
-        x   = rawValues[i];
+        x = rawValues[i];
         adj = refValues[i] - x;
 
-        if(rawValue < x && x > x2) {
+        if (rawValue < x && x > x2) {
             adj = adj2 + (adj - adj2) * (rawValue - x2) / (x - x2);
         }
     }
@@ -4628,8 +4571,8 @@ double YAPI::LinearCalibrationHandler(double rawValue, int calibType, intArr par
  */
 YRETCODE YAPI::TestHub(const string& url, int mstimeout, string& errmsg)
 {
-    char        errbuf[YOCTO_ERRMSG_LEN];
-    YRETCODE    res;
+    char errbuf[YOCTO_ERRMSG_LEN];
+    YRETCODE res;
     res = yapiTestHub(url.c_str(), mstimeout, errbuf);
     if (YISERR(res)) {
         errmsg = errbuf;
@@ -4684,14 +4627,14 @@ YRETCODE YAPI::TestHub(const string& url, int mstimeout, string& errmsg)
  */
 YRETCODE YAPI::RegisterHub(const string& url, string& errmsg)
 {
-    char        errbuf[YOCTO_ERRMSG_LEN];
-    YRETCODE    res;
-    if(!YAPI::_apiInitialized) {
+    char errbuf[YOCTO_ERRMSG_LEN];
+    YRETCODE res;
+    if (!YAPI::_apiInitialized) {
         res = YAPI::InitAPI(0, errmsg);
-        if(YISERR(res)) return res;
+        if (YISERR(res)) return res;
     }
     res = yapiRegisterHub(url.c_str(), errbuf);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         errmsg = errbuf;
     }
     return res;
@@ -4714,18 +4657,19 @@ YRETCODE YAPI::RegisterHub(const string& url, string& errmsg)
  */
 YRETCODE YAPI::PreregisterHub(const string& url, string& errmsg)
 {
-    char        errbuf[YOCTO_ERRMSG_LEN];
-    YRETCODE    res;
-    if(!YAPI::_apiInitialized) {
+    char errbuf[YOCTO_ERRMSG_LEN];
+    YRETCODE res;
+    if (!YAPI::_apiInitialized) {
         res = YAPI::InitAPI(0, errmsg);
-        if(YISERR(res)) return res;
+        if (YISERR(res)) return res;
     }
     res = yapiPreregisterHub(url.c_str(), errbuf);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         errmsg = errbuf;
     }
     return res;
 }
+
 /**
  * Setup the Yoctopuce library to no more use modules connected on a previously
  * registered machine with RegisterHub.
@@ -4735,7 +4679,7 @@ YRETCODE YAPI::PreregisterHub(const string& url, string& errmsg)
  */
 void YAPI::UnregisterHub(const string& url)
 {
-    if(!YAPI::_apiInitialized){
+    if (!YAPI::_apiInitialized) {
         return;
     }
     yapiUnregisterHub(url.c_str());
@@ -4759,55 +4703,55 @@ void YAPI::UnregisterHub(const string& url)
  */
 YRETCODE YAPI::UpdateDeviceList(string& errmsg)
 {
-    if(!YAPI::_apiInitialized) {
+    if (!YAPI::_apiInitialized) {
         YRETCODE res = YAPI::InitAPI(0, errmsg);
-        if(YISERR(res)) return res;
+        if (YISERR(res)) return res;
     }
     // prevent reentrance into this function
     yEnterCriticalSection(&_updateDeviceList_CS);
     // call the updateDeviceList of the yapi layer
     // yapi know when it is needed to do a full update
-    YRETCODE res = YapiWrapper::updateDeviceList(false,errmsg);
-    if(YISERR(res)) {
+    YRETCODE res = YapiWrapper::updateDeviceList(false, errmsg);
+    if (YISERR(res)) {
         yLeaveCriticalSection(&_updateDeviceList_CS);
         return res;
     }
     // handle other notification
     res = YapiWrapper::handleEvents(errmsg);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         yLeaveCriticalSection(&_updateDeviceList_CS);
         return res;
     }
     // unpop plug/unplug event and call user callback
-    while(!_plug_events.empty()){
+    while (!_plug_events.empty()) {
         yapiGlobalEvent ev;
         yapiLockDeviceCallBack(NULL);
-        if(_plug_events.empty()){
+        if (_plug_events.empty()) {
             yapiUnlockDeviceCallBack(NULL);
             break;
         }
         ev = _plug_events.front();
         _plug_events.pop();
         yapiUnlockDeviceCallBack(NULL);
-        switch(ev.type){
-            case YAPI_DEV_ARRIVAL:
-                if(!YAPI::DeviceArrivalCallback) break;
-                YAPI::DeviceArrivalCallback(ev.module);
-                break;
-            case YAPI_DEV_REMOVAL:
-                if(!YAPI::DeviceRemovalCallback) break;
-                YAPI::DeviceRemovalCallback(ev.module);
-                break;
-            case YAPI_DEV_CHANGE:
-                if(!YAPI::DeviceChangeCallback) break;
-                YAPI::DeviceChangeCallback(ev.module);
-                break;
-			case YAPI_HUB_DISCOVER:
-				if (!YAPI::_HubDiscoveryCallback) break;
-				YAPI::_HubDiscoveryCallback(string(ev.serial),string(ev.url));
-				break;
-			default:
-                break;
+        switch (ev.type) {
+        case YAPI_DEV_ARRIVAL:
+            if (!YAPI::DeviceArrivalCallback) break;
+            YAPI::DeviceArrivalCallback(ev.module);
+            break;
+        case YAPI_DEV_REMOVAL:
+            if (!YAPI::DeviceRemovalCallback) break;
+            YAPI::DeviceRemovalCallback(ev.module);
+            break;
+        case YAPI_DEV_CHANGE:
+            if (!YAPI::DeviceChangeCallback) break;
+            YAPI::DeviceChangeCallback(ev.module);
+            break;
+        case YAPI_HUB_DISCOVER:
+            if (!YAPI::_HubDiscoveryCallback) break;
+            YAPI::_HubDiscoveryCallback(string(ev.serial), string(ev.url));
+            break;
+        default:
+            break;
         }
     }
     yLeaveCriticalSection(&_updateDeviceList_CS);
@@ -4833,23 +4777,23 @@ YRETCODE YAPI::UpdateDeviceList(string& errmsg)
  */
 YRETCODE YAPI::HandleEvents(string& errmsg)
 {
-    YRETCODE    res;
+    YRETCODE res;
 
     // prevent reentrance into this function
     yEnterCriticalSection(&_handleEvent_CS);
-     // handle other notification
+    // handle other notification
     res = YapiWrapper::handleEvents(errmsg);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         yLeaveCriticalSection(&_handleEvent_CS);
         return res;
     }
     // pop data event and call user callback
     while (!_data_events.empty()) {
-        yapiDataEvent   ev;
-		YSensor			*sensor;
-		vector<int> report;
+        yapiDataEvent ev;
+        YSensor* sensor;
+        vector<int> report;
 
-		yapiLockFunctionCallBack(NULL);
+        yapiLockFunctionCallBack(NULL);
         if (_data_events.empty()) {
             yapiUnlockFunctionCallBack(NULL);
             break;
@@ -4858,27 +4802,27 @@ YRETCODE YAPI::HandleEvents(string& errmsg)
         _data_events.pop();
         yapiUnlockFunctionCallBack(NULL);
         switch (ev.type) {
-            case YAPI_FUN_VALUE:
-                ev.fun->_invokeValueCallback((string)ev.value);
-                break;
-            case YAPI_FUN_TIMEDREPORT:
-                if(ev.report[0] <= 2) {
-                    sensor = ev.sensor;
-                    report.assign(ev.report, ev.report + ev.len);
-                    sensor->_invokeTimedReportCallback(sensor->_decodeTimedReport(ev.timestamp, report));
-                }
-                break;
-            case YAPI_FUN_REFRESH:
-                ev.fun->isOnline();
-                break;
-            case YAPI_DEV_CONFCHANGE:
-                ev.module->_invokeConfigChangeCallback();
-                break;
-            case YAPI_DEV_BEACON:
-                ev.module->_invokeBeaconCallback((Y_BEACON_enum)ev.beacon);
-                break;
-            default:
-                break;
+        case YAPI_FUN_VALUE:
+            ev.fun->_invokeValueCallback((string)ev.value);
+            break;
+        case YAPI_FUN_TIMEDREPORT:
+            if (ev.report[0] <= 2) {
+                sensor = ev.sensor;
+                report.assign(ev.report, ev.report + ev.len);
+                sensor->_invokeTimedReportCallback(sensor->_decodeTimedReport(ev.timestamp, ev.duration, report));
+            }
+            break;
+        case YAPI_FUN_REFRESH:
+            ev.fun->isOnline();
+            break;
+        case YAPI_DEV_CONFCHANGE:
+            ev.module->_invokeConfigChangeCallback();
+            break;
+        case YAPI_DEV_BEACON:
+            ev.module->_invokeBeaconCallback((Y_BEACON_enum)ev.beacon);
+            break;
+        default:
+            break;
         }
     }
     yLeaveCriticalSection(&_handleEvent_CS);
@@ -4909,20 +4853,20 @@ YRETCODE YAPI::Sleep(unsigned ms_duration, string& errmsg)
     char errbuf[YOCTO_ERRMSG_LEN];
     YRETCODE res;
     u64 waituntil = YAPI::GetTickCount() + ms_duration;
-    do{
-       res = YAPI::HandleEvents(errmsg);
-        if(YISERR(res)) {
+    do {
+        res = YAPI::HandleEvents(errmsg);
+        if (YISERR(res)) {
             errmsg = errbuf;
             return res;
         }
-        if(waituntil>YAPI::GetTickCount()){
+        if (waituntil > YAPI::GetTickCount()) {
             res = yapiSleep(2, errbuf);
-            if(YISERR(res)) {
+            if (YISERR(res)) {
                 errmsg = errbuf;
                 return res;
             }
         }
-    }while(waituntil>YAPI::GetTickCount());
+    } while (waituntil > YAPI::GetTickCount());
 
     return YAPI_SUCCESS;
 }
@@ -4952,25 +4896,25 @@ u64 YAPI::GetTickCount(void)
  */
 bool YAPI::CheckLogicalName(const string& name)
 {
-    return (yapiCheckLogicalName(name.c_str())!=0);
+    return (yapiCheckLogicalName(name.c_str()) != 0);
 }
 
-u16 YapiWrapper::getAPIVersion(string& version,string& date)
+u16 YapiWrapper::getAPIVersion(string& version, string& date)
 {
-    const char  *_ver, *_date;
+    const char *_ver, *_date;
     u16 res = yapiGetAPIVersion(&_ver, &_date);
-    version     = _ver;
-    date        = _date;
+    version = _ver;
+    date = _date;
     return res;
 }
 
 YDEV_DESCR YapiWrapper::getDevice(const string& device_str, string& errmsg)
 {
-    char        errbuf[YOCTO_ERRMSG_LEN];
-    YDEV_DESCR     res;
+    char errbuf[YOCTO_ERRMSG_LEN];
+    YDEV_DESCR res;
 
     res = yapiGetDevice(device_str.data(), errbuf);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         errmsg = errbuf;
     }
     return (YDEV_DESCR)res;
@@ -4978,31 +4922,31 @@ YDEV_DESCR YapiWrapper::getDevice(const string& device_str, string& errmsg)
 
 int YapiWrapper::getAllDevices(vector<YDEV_DESCR>& buffer, string& errmsg)
 {
-    char    errbuf[YOCTO_ERRMSG_LEN];
-    int     n_elems = 32;
-    int     initsize = n_elems * sizeof(YDEV_DESCR);
-    int     neededsize, res;
-    YDEV_DESCR *ptr = new YDEV_DESCR[n_elems];
+    char errbuf[YOCTO_ERRMSG_LEN];
+    int n_elems = 32;
+    int initsize = n_elems * sizeof(YDEV_DESCR);
+    int neededsize, res;
+    YDEV_DESCR* ptr = new YDEV_DESCR[n_elems];
 
     res = yapiGetAllDevices(ptr, initsize, &neededsize, errbuf);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         delete [] ptr;
         errmsg = errbuf;
         return (YRETCODE)res;
     }
-    if(neededsize > initsize) {
+    if (neededsize > initsize) {
         delete [] ptr;
         n_elems = neededsize / sizeof(YDEV_DESCR);
         initsize = n_elems * sizeof(YDEV_DESCR);
         ptr = new YDEV_DESCR[n_elems];
         res = yapiGetAllDevices(ptr, initsize, NULL, errbuf);
-        if(YISERR(res)) {
+        if (YISERR(res)) {
             delete [] ptr;
             errmsg = errbuf;
             return (YRETCODE)res;
         }
     }
-    buffer = vector<YDEV_DESCR>(ptr, ptr+res);
+    buffer = vector<YDEV_DESCR>(ptr, ptr + res);
     delete [] ptr;
 
     return res;
@@ -5010,11 +4954,11 @@ int YapiWrapper::getAllDevices(vector<YDEV_DESCR>& buffer, string& errmsg)
 
 YRETCODE YapiWrapper::getDeviceInfo(YDEV_DESCR devdesc, yDeviceSt& infos, string& errmsg)
 {
-    char        errbuf[YOCTO_ERRMSG_LEN];
-    YRETCODE    res;
+    char errbuf[YOCTO_ERRMSG_LEN];
+    YRETCODE res;
 
     res = yapiGetDeviceInfo(devdesc, &infos, errbuf);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         errmsg = errbuf;
     }
     return res;
@@ -5025,7 +4969,7 @@ YFUN_DESCR YapiWrapper::getFunction(const string& class_str, const string& funct
     char errbuf[YOCTO_ERRMSG_LEN];
 
     YFUN_DESCR res = yapiGetFunction(class_str.data(), function_str.data(), errbuf);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         errmsg = errbuf;
     }
     return res;
@@ -5033,31 +4977,31 @@ YFUN_DESCR YapiWrapper::getFunction(const string& class_str, const string& funct
 
 int YapiWrapper::getFunctionsByClass(const string& class_str, YFUN_DESCR prevfundesc, vector<YFUN_DESCR>& buffer, int maxsize, string& errmsg)
 {
-    char    errbuf[YOCTO_ERRMSG_LEN];
-    int     n_elems = 32;
-    int     initsize = n_elems * sizeof(YDEV_DESCR);
-    int     neededsize;
-    YFUN_DESCR *ptr = new YFUN_DESCR[n_elems];
+    char errbuf[YOCTO_ERRMSG_LEN];
+    int n_elems = 32;
+    int initsize = n_elems * sizeof(YDEV_DESCR);
+    int neededsize;
+    YFUN_DESCR* ptr = new YFUN_DESCR[n_elems];
 
     int res = yapiGetFunctionsByClass(class_str.data(), prevfundesc, ptr, initsize, &neededsize, errbuf);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         delete [] ptr;
         errmsg = errbuf;
         return res;
     }
-    if(neededsize > initsize) {
+    if (neededsize > initsize) {
         delete [] ptr;
         n_elems = neededsize / sizeof(YFUN_DESCR);
         initsize = n_elems * sizeof(YFUN_DESCR);
         ptr = new YFUN_DESCR[n_elems];
         res = yapiGetFunctionsByClass(class_str.data(), prevfundesc, ptr, initsize, NULL, errbuf);
-        if(YISERR(res)) {
+        if (YISERR(res)) {
             delete [] ptr;
             errmsg = errbuf;
             return res;
         }
     }
-    buffer = vector<YFUN_DESCR>(ptr, ptr+res);
+    buffer = vector<YFUN_DESCR>(ptr, ptr + res);
     delete [] ptr;
 
     return res;
@@ -5065,31 +5009,31 @@ int YapiWrapper::getFunctionsByClass(const string& class_str, YFUN_DESCR prevfun
 
 int YapiWrapper::getFunctionsByDevice(YDEV_DESCR devdesc, YFUN_DESCR prevfundesc, vector<YFUN_DESCR>& buffer, int maxsize, string& errmsg)
 {
-    char    errbuf[YOCTO_ERRMSG_LEN];
-    int     n_elems = 32;
-    int     initsize = n_elems * sizeof(YDEV_DESCR);
-    int     neededsize;
-    YFUN_DESCR *ptr = new YFUN_DESCR[n_elems];
+    char errbuf[YOCTO_ERRMSG_LEN];
+    int n_elems = 32;
+    int initsize = n_elems * sizeof(YDEV_DESCR);
+    int neededsize;
+    YFUN_DESCR* ptr = new YFUN_DESCR[n_elems];
 
     int res = yapiGetFunctionsByDevice(devdesc, prevfundesc, ptr, initsize, &neededsize, errbuf);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         delete [] ptr;
         errmsg = errbuf;
         return res;
     }
-    if(neededsize > initsize) {
+    if (neededsize > initsize) {
         delete [] ptr;
         n_elems = neededsize / sizeof(YFUN_DESCR);
         initsize = n_elems * sizeof(YFUN_DESCR);
         ptr = new YFUN_DESCR[n_elems];
         res = yapiGetFunctionsByDevice(devdesc, prevfundesc, ptr, initsize, NULL, errbuf);
-        if(YISERR(res)) {
+        if (YISERR(res)) {
             delete [] ptr;
             errmsg = errbuf;
             return res;
         }
     }
-    buffer = vector<YFUN_DESCR>(ptr, ptr+res);
+    buffer = vector<YFUN_DESCR>(ptr, ptr + res);
     delete [] ptr;
 
     return res;
@@ -5097,11 +5041,11 @@ int YapiWrapper::getFunctionsByDevice(YDEV_DESCR devdesc, YFUN_DESCR prevfundesc
 
 YDEV_DESCR YapiWrapper::getDeviceByFunction(YFUN_DESCR fundesc, string& errmsg)
 {
-    char    errbuf[YOCTO_ERRMSG_LEN];
+    char errbuf[YOCTO_ERRMSG_LEN];
     YDEV_DESCR dev;
 
     int res = yapiGetFunctionInfo(fundesc, &dev, NULL, NULL, NULL, NULL, errbuf);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         errmsg = errbuf;
         return res;
     }
@@ -5111,11 +5055,11 @@ YDEV_DESCR YapiWrapper::getDeviceByFunction(YFUN_DESCR fundesc, string& errmsg)
 
 YRETCODE YapiWrapper::getFunctionInfo(YFUN_DESCR fundesc, YDEV_DESCR& devdescr, string& serial, string& funcId, string& funcName, string& funcVal, string& errmsg)
 {
-    char    errbuf[YOCTO_ERRMSG_LEN];
-    char    snum[YOCTO_SERIAL_LEN];
-    char    fnid[YOCTO_FUNCTION_LEN];
-    char    fnam[YOCTO_LOGICAL_LEN];
-    char    fval[YOCTO_PUBVAL_LEN];
+    char errbuf[YOCTO_ERRMSG_LEN];
+    char snum[YOCTO_SERIAL_LEN];
+    char fnid[YOCTO_FUNCTION_LEN];
+    char fnam[YOCTO_LOGICAL_LEN];
+    char fval[YOCTO_PUBVAL_LEN];
 
     YRETCODE res = yapiGetFunctionInfoEx(fundesc, &devdescr, snum, fnid, NULL, fnam, fval, errbuf);
     if (YISERR(res)) {
@@ -5132,15 +5076,15 @@ YRETCODE YapiWrapper::getFunctionInfo(YFUN_DESCR fundesc, YDEV_DESCR& devdescr, 
 
 YRETCODE YapiWrapper::getFunctionInfoEx(YFUN_DESCR fundesc, YDEV_DESCR& devdescr, string& serial, string& funcId, string& baseType, string& funcName, string& funcVal, string& errmsg)
 {
-    char    errbuf[YOCTO_ERRMSG_LEN];
-    char    snum[YOCTO_SERIAL_LEN];
-    char    fnid[YOCTO_FUNCTION_LEN];
-    char    fbt[YOCTO_FUNCTION_LEN];
-    char    fnam[YOCTO_LOGICAL_LEN];
-    char    fval[YOCTO_PUBVAL_LEN];
+    char errbuf[YOCTO_ERRMSG_LEN];
+    char snum[YOCTO_SERIAL_LEN];
+    char fnid[YOCTO_FUNCTION_LEN];
+    char fbt[YOCTO_FUNCTION_LEN];
+    char fnam[YOCTO_LOGICAL_LEN];
+    char fval[YOCTO_PUBVAL_LEN];
 
     YRETCODE res = yapiGetFunctionInfoEx(fundesc, &devdescr, snum, fnid, fbt, fnam, fval, errbuf);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         errmsg = errbuf;
     } else {
         serial = snum;
@@ -5153,10 +5097,10 @@ YRETCODE YapiWrapper::getFunctionInfoEx(YFUN_DESCR fundesc, YDEV_DESCR& devdescr
     return res;
 }
 
-YRETCODE YapiWrapper::updateDeviceList(bool forceupdate,string& errmsg)
+YRETCODE YapiWrapper::updateDeviceList(bool forceupdate, string& errmsg)
 {
-    char        errbuf[YOCTO_ERRMSG_LEN];
-    YRETCODE    res = yapiUpdateDeviceList(forceupdate ? 1 : 0, errbuf);
+    char errbuf[YOCTO_ERRMSG_LEN];
+    YRETCODE res = yapiUpdateDeviceList(forceupdate ? 1 : 0, errbuf);
     if (YISERR(res)) {
         errmsg = errbuf;
         return res;
@@ -5166,9 +5110,9 @@ YRETCODE YapiWrapper::updateDeviceList(bool forceupdate,string& errmsg)
 
 YRETCODE YapiWrapper::handleEvents(string& errmsg)
 {
-    char        errbuf[YOCTO_ERRMSG_LEN];
-    YRETCODE    res = yapiHandleEvents(errbuf);
-    if(YISERR(res)) {
+    char errbuf[YOCTO_ERRMSG_LEN];
+    YRETCODE res = yapiHandleEvents(errbuf);
+    if (YISERR(res)) {
         errmsg = errbuf;
         return res;
     }
@@ -5176,15 +5120,15 @@ YRETCODE YapiWrapper::handleEvents(string& errmsg)
 }
 
 
-string  YapiWrapper::ysprintf(const char *fmt, ...)
+string YapiWrapper::ysprintf(const char* fmt, ...)
 {
     va_list args;
     char on_stack_buffer[1024];
     int n, size = 1024;
-    char *buffer = on_stack_buffer;
+    char* buffer = on_stack_buffer;
     string res = "";
 
-    for (int i = 0; i < 13; i++)  {
+    for (int i = 0; i < 13; i++) {
         va_start(args, fmt);
         n = vsnprintf(buffer, size, fmt, args);
         va_end(args);
@@ -5194,7 +5138,7 @@ string  YapiWrapper::ysprintf(const char *fmt, ...)
         }
 
         if (n > -1) {
-            size  = n + 1;
+            size = n + 1;
         } else {
             size *= 2;
         }
@@ -5210,14 +5154,10 @@ string  YapiWrapper::ysprintf(const char *fmt, ...)
 }
 
 
-
-
-
-
 //--- (generated code: YModule constructor)
 YModule::YModule(const string& func): YFunction(func)
-//--- (end of generated code: YModule constructor)
-//--- (generated code: YModule initialization)
+                                      //--- (end of generated code: YModule constructor)
+                                      //--- (generated code: YModule initialization)
     ,_productName(PRODUCTNAME_INVALID)
     ,_serialNumber(SERIALNUMBER_INVALID)
     ,_productId(PRODUCTID_INVALID)
@@ -5244,8 +5184,6 @@ YModule::~YModule()
     //--- (generated code: YModule cleanup)
 //--- (end of generated code: YModule cleanup)
 }
-
-
 
 
 //--- (generated code: YModule implementation)
@@ -5771,6 +5709,7 @@ int YModule::set_userVar(int newval)
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
+ *
  * If a call to this object's is_online() method returns FALSE although
  * you are certain that the device is plugged, make sure that you did
  * call registerHub() at application initialization time.
@@ -5895,6 +5834,44 @@ int YModule::reboot(int secBeforeReboot)
 int YModule::triggerFirmwareUpdate(int secBeforeReboot)
 {
     return this->set_rebootCountdown(-secBeforeReboot);
+}
+
+void YModule::_startStopDevLog(string serial,bool start)
+{
+    int i_start = 0;
+    if (start) {
+        i_start = 1;
+    } else {
+        i_start = 0;
+    }
+
+    yapiStartStopDeviceLogCallback(serial.c_str(), i_start);
+}
+
+/**
+ * Registers a device log callback function. This callback will be called each time
+ * that a module sends a new log message. Mostly useful to debug a Yoctopuce module.
+ *
+ * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
+ *         arguments: the module object that emitted the log message, and the character string containing the log.
+ *         On failure, throws an exception or returns a negative error code.
+ */
+int YModule::registerLogCallback(YModuleLogCallback callback)
+{
+    string serial;
+
+    serial = this->get_serialNumber();
+    if (serial == YAPI_INVALID_STRING) {
+        return YAPI_DEVICE_NOT_FOUND;
+    }
+    _logCallback = callback;
+    this->_startStopDevLog(serial, callback != NULL);
+    return 0;
+}
+
+YModuleLogCallback YModule::get_logCallback(void)
+{
+    return _logCallback;
 }
 
 /**
@@ -6195,6 +6172,8 @@ int YModule::set_allSettingsAndFiles(string settings)
             this->_upload(name, YAPI::_hexStr2Bin(data));
         }
     }
+    // Apply settings a second time for file-dependent settings and dynamic sensor nodes
+    this->set_allSettings(json_api);
     return YAPI_SUCCESS;
 }
 
@@ -6992,17 +6971,17 @@ YModule* YModule::FirstModule(void)
 // Return a string that describes the function (class and logical name or hardware id)
 string YModule::get_friendlyName(void)
 {
-    YFUN_DESCR   fundescr,moddescr;
-    YDEV_DESCR   devdescr;
-    string       errmsg, serial, funcId, funcName, funcValue;
-    string       mod_serial, mod_funcId,mod_funcname;
+    YFUN_DESCR fundescr, moddescr;
+    YDEV_DESCR devdescr;
+    string errmsg, serial, funcId, funcName, funcValue;
+    string mod_serial, mod_funcId, mod_funcname;
 
     yEnterCriticalSection(&_this_cs);
     fundescr = YapiWrapper::getFunction(_className, _func, errmsg);
-    if(!YISERR(fundescr) && !YISERR(YapiWrapper::getFunctionInfo(fundescr, devdescr, serial, funcId, funcName, funcValue, errmsg))) {
+    if (!YISERR(fundescr) && !YISERR(YapiWrapper::getFunctionInfo(fundescr, devdescr, serial, funcId, funcName, funcValue, errmsg))) {
         moddescr = YapiWrapper::getFunction("Module", serial, errmsg);
-        if(!YISERR(moddescr) && !YISERR(YapiWrapper::getFunctionInfo(moddescr, devdescr, mod_serial, mod_funcId, mod_funcname, funcValue, errmsg))) {
-            if(mod_funcname!="") {
+        if (!YISERR(moddescr) && !YISERR(YapiWrapper::getFunctionInfo(moddescr, devdescr, mod_serial, mod_funcId, mod_funcname, funcValue, errmsg))) {
+            if (mod_funcname != "") {
                 yLeaveCriticalSection(&_this_cs);
                 return mod_funcname;
             }
@@ -7015,14 +6994,12 @@ string YModule::get_friendlyName(void)
 }
 
 
-
-
-void YModule::setImmutableAttributes(yDeviceSt *infos)
+void YModule::setImmutableAttributes(yDeviceSt* infos)
 {
     // do not take CS on purpose (called for update device list)
-    _serialNumber = (string) infos->serial;
-    _productName  = (string) infos->productname;
-    _productId    =  infos->deviceid;
+    _serialNumber = (string)infos->serial;
+    _productName = (string)infos->productname;
+    _productId = infos->deviceid;
     _cacheExpiration = YAPI::GetTickCount();
 }
 
@@ -7030,27 +7007,27 @@ void YModule::setImmutableAttributes(yDeviceSt *infos)
 // Return the properties of the nth function of our device
 YRETCODE YModule::_getFunction(int idx, string& serial, string& funcId, string& baseType, string& funcName, string& funcVal, string& errmsg)
 {
-    vector<YFUN_DESCR> *functions;
-    YDevice     *dev;
-    int         res;
-    YFUN_DESCR   fundescr;
-    YDEV_DESCR     devdescr;
+    vector<YFUN_DESCR>* functions;
+    YDevice* dev;
+    int res;
+    YFUN_DESCR fundescr;
+    YDEV_DESCR devdescr;
 
     // retrieve device object
     res = _getDevice(dev, errmsg);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         _throw((YRETCODE)res, errmsg);
         return (YRETCODE)res;
     }
 
     // get reference to all functions from the device
     res = dev->getFunctions(&functions, errmsg);
-    if(YISERR(res)) return (YRETCODE)res;
+    if (YISERR(res)) return (YRETCODE)res;
 
     // get latest function info from yellow pages
     fundescr = functions->at(idx);
     res = YapiWrapper::getFunctionInfoEx(fundescr, devdescr, serial, funcId, baseType, funcName, funcVal, errmsg);
-    if(YISERR(res)) return (YRETCODE)res;
+    if (YISERR(res)) return (YRETCODE)res;
 
     return YAPI_SUCCESS;
 }
@@ -7058,20 +7035,20 @@ YRETCODE YModule::_getFunction(int idx, string& serial, string& funcId, string& 
 // Retrieve the number of functions (beside "module") in the device
 int YModule::functionCount()
 {
-    vector<YFUN_DESCR> *functions;
-    YDevice     *dev;
-    string      errmsg;
-    int         res;
+    vector<YFUN_DESCR>* functions;
+    YDevice* dev;
+    string errmsg;
+    int res;
 
     yEnterCriticalSection(&_this_cs);
     res = _getDevice(dev, errmsg);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         yLeaveCriticalSection(&_this_cs);
         _throw((YRETCODE)res, errmsg);
         return (YRETCODE)res;
     }
     res = dev->getFunctions(&functions, errmsg);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         yLeaveCriticalSection(&_this_cs);
         _throw((YRETCODE)res, errmsg);
         return (YRETCODE)res;
@@ -7083,7 +7060,7 @@ int YModule::functionCount()
 // Retrieve the Id of the nth function (beside "module") in the device
 string YModule::functionId(int functionIndex)
 {
-    string      serial, funcId, funcName, basetype, funcVal, errmsg;
+    string serial, funcId, funcName, basetype, funcVal, errmsg;
     int res;
 
     yEnterCriticalSection(&_this_cs);
@@ -7094,7 +7071,7 @@ string YModule::functionId(int functionIndex)
         throw;
     }
     yLeaveCriticalSection(&_this_cs);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         _throw((YRETCODE)res, errmsg);
         return YAPI_INVALID_STRING;
     }
@@ -7104,7 +7081,7 @@ string YModule::functionId(int functionIndex)
 // Retrieve the logical name of the nth function (beside "module") in the device
 string YModule::functionName(int functionIndex)
 {
-    string      serial, funcId, basetype, funcName, funcVal, errmsg;
+    string serial, funcId, basetype, funcName, funcVal, errmsg;
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
@@ -7114,7 +7091,7 @@ string YModule::functionName(int functionIndex)
         throw;
     }
     yLeaveCriticalSection(&_this_cs);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         _throw((YRETCODE)res, errmsg);
         return YAPI_INVALID_STRING;
     }
@@ -7125,7 +7102,7 @@ string YModule::functionName(int functionIndex)
 // Retrieve the advertised value of the nth function (beside "module") in the device
 string YModule::functionValue(int functionIndex)
 {
-    string      serial, funcId, basetype, funcName, funcVal, errmsg;
+    string serial, funcId, basetype, funcName, funcVal, errmsg;
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
@@ -7135,7 +7112,7 @@ string YModule::functionValue(int functionIndex)
         throw;
     }
     yLeaveCriticalSection(&_this_cs);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         _throw((YRETCODE)res, errmsg);
         return YAPI_INVALID_STRING;
     }
@@ -7147,9 +7124,9 @@ string YModule::functionValue(int functionIndex)
 // Retrieve the Id of the nth function (beside "module") in the device
 string YModule::functionType(int functionIndex)
 {
-    string      serial, funcId, basetype, funcName, funcVal, errmsg;
-    char        buffer[YOCTO_FUNCTION_LEN], *d = buffer;
-    const char *p;
+    string serial, funcId, basetype, funcName, funcVal, errmsg;
+    char buffer[YOCTO_FUNCTION_LEN], *d = buffer;
+    const char* p;
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
@@ -7165,7 +7142,7 @@ string YModule::functionType(int functionIndex)
     }
     p = funcId.c_str();
     *d++ = *p++ & 0xdf;
-    while (*p && (*p <'0' || *p >'9')) {
+    while (*p && (*p < '0' || *p > '9')) {
         *d++ = *p++;
     }
     *d = 0;
@@ -7175,7 +7152,7 @@ string YModule::functionType(int functionIndex)
 // Retrieve the Id of the nth function (beside "module") in the device
 string YModule::functionBaseType(int functionIndex)
 {
-    string      serial, funcId, basetype, funcName, funcVal, errmsg;
+    string serial, funcId, basetype, funcName, funcVal, errmsg;
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
@@ -7194,40 +7171,12 @@ string YModule::functionBaseType(int functionIndex)
 }
 
 
-/**
- * Registers a device log callback function. This callback will be called each time
- * that a module sends a new log message. Mostly useful to debug a Yoctopuce module.
- *
- * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
- *         arguments: the module object that emitted the log message, and the character string containing the log.
- * @noreturn
- */
-void YModule::registerLogCallback(YModuleLogCallback callback)
-{
-    yEnterCriticalSection(&_this_cs);
-    _logCallback = callback;
-    yapiStartStopDeviceLogCallback(_serialNumber.c_str(), _logCallback!=NULL);
-    yLeaveCriticalSection(&_this_cs);
-}
-
-YModuleLogCallback YModule::get_logCallback()
-{
-    YModuleLogCallback res;
-    yEnterCriticalSection(&_this_cs);
-    res = _logCallback;
-    yLeaveCriticalSection(&_this_cs);
-    return res;
-}
-
-
 //--- (generated code: YModule functions)
 //--- (end of generated code: YModule functions)
 
 
-
-
 YSensor::YSensor(const string& func): YFunction(func)
-//--- (generated code: YSensor initialization)
+                                      //--- (generated code: YSensor initialization)
     ,_unit(UNIT_INVALID)
     ,_currentValue(CURRENTVALUE_INVALID)
     ,_lowestValue(LOWESTVALUE_INVALID)
@@ -7246,8 +7195,6 @@ YSensor::YSensor(const string& func): YFunction(func)
     ,_offset(0.0)
     ,_scale(0.0)
     ,_decexp(0.0)
-    ,_isScal(0)
-    ,_isScal32(0)
     ,_caltyp(0)
 //--- (end of generated code: YSensor initialization)
 {
@@ -7256,7 +7203,7 @@ YSensor::YSensor(const string& func): YFunction(func)
 
 YSensor::~YSensor()
 {
-//--- (generated code: YSensor cleanup)
+    //--- (generated code: YSensor cleanup)
 //--- (end of generated code: YSensor cleanup)
 }
 
@@ -7924,7 +7871,6 @@ int YSensor::_parserHelper(void)
     double fRef = 0.0;
     _caltyp = -1;
     _scale = -1;
-    _isScal32 = false;
     _calpar.clear();
     _calraw.clear();
     _calref.clear();
@@ -7958,8 +7904,6 @@ int YSensor::_parserHelper(void)
             }
         }
         // New 32bit text format
-        _isScal = true;
-        _isScal32 = true;
         _offset = 0;
         _scale = 1000;
         maxpos = (int)iCalib.size();
@@ -7990,23 +7934,13 @@ int YSensor::_parserHelper(void)
             return 0;
         }
         // Save variable format (scale for scalar, or decimal exponent)
-        _isScal = (iCalib[1] > 0);
-        if (_isScal) {
-            _offset = iCalib[0];
-            if (_offset > 32767) {
-                _offset = _offset - 65536;
-            }
-            _scale = iCalib[1];
-            _decexp = 0;
-        } else {
-            _offset = 0;
-            _scale = 1;
-            _decexp = 1.0;
-            position = iCalib[0];
-            while (position > 0) {
-                _decexp = _decexp * 10;
-                position = position - 1;
-            }
+        _offset = 0;
+        _scale = 1;
+        _decexp = 1.0;
+        position = iCalib[0];
+        while (position > 0) {
+            _decexp = _decexp * 10;
+            position = position - 1;
         }
         // Shortcut when there is no calibration parameter
         if ((int)iCalib.size() == 2) {
@@ -8038,17 +7972,8 @@ int YSensor::_parserHelper(void)
             iRef = iCalib[position + 1];
             _calpar.push_back(iRaw);
             _calpar.push_back(iRef);
-            if (_isScal) {
-                fRaw = iRaw;
-                fRaw = (fRaw - _offset) / _scale;
-                fRef = iRef;
-                fRef = (fRef - _offset) / _scale;
-                _calraw.push_back(fRaw);
-                _calref.push_back(fRef);
-            } else {
-                _calraw.push_back(YAPI::_decimalToDouble(iRaw));
-                _calref.push_back(YAPI::_decimalToDouble(iRef));
-            }
+            _calraw.push_back(YAPI::_decimalToDouble(iRaw));
+            _calref.push_back(YAPI::_decimalToDouble(iRef));
             position = position + 2;
         }
     }
@@ -8160,7 +8085,7 @@ int YSensor::stopDataLogger(void)
  *         data. Past measures can be loaded progressively
  *         using methods from the YDataSet object.
  */
-YDataSet YSensor::get_recordedData(s64 startTime,s64 endTime)
+YDataSet YSensor::get_recordedData(double startTime,double endTime)
 {
     string funcid;
     string funit;
@@ -8297,8 +8222,6 @@ string YSensor::_encodeCalibrationPoints(vector<double> rawValues,vector<double>
     string res;
     int npt = 0;
     int idx = 0;
-    int iRaw = 0;
-    int iRef = 0;
     npt = (int)rawValues.size();
     if (npt != (int)refValues.size()) {
         this->_throw(YAPI_INVALID_ARGUMENT, "Invalid calibration parameters (size mismatch)");
@@ -8319,36 +8242,12 @@ string YSensor::_encodeCalibrationPoints(vector<double> rawValues,vector<double>
         this->_throw(YAPI_NOT_SUPPORTED, "Calibration parameters format mismatch. Please upgrade your library or firmware.");
         return "0";
     }
-    if (_isScal32) {
-        // 32-bit fixed-point encoding
-        res = YapiWrapper::ysprintf("%d",YOCTO_CALIB_TYPE_OFS);
-        idx = 0;
-        while (idx < npt) {
-            res = YapiWrapper::ysprintf("%s,%g,%g", res.c_str(), rawValues[idx],refValues[idx]);
-            idx = idx + 1;
-        }
-    } else {
-        if (_isScal) {
-            // 16-bit fixed-point encoding
-            res = YapiWrapper::ysprintf("%d",npt);
-            idx = 0;
-            while (idx < npt) {
-                iRaw = (int) floor(rawValues[idx] * _scale + _offset+0.5);
-                iRef = (int) floor(refValues[idx] * _scale + _offset+0.5);
-                res = YapiWrapper::ysprintf("%s,%d,%d", res.c_str(), iRaw,iRef);
-                idx = idx + 1;
-            }
-        } else {
-            // 16-bit floating-point decimal encoding
-            res = YapiWrapper::ysprintf("%d",10 + npt);
-            idx = 0;
-            while (idx < npt) {
-                iRaw = (int) YAPI::_doubleToDecimal(rawValues[idx]);
-                iRef = (int) YAPI::_doubleToDecimal(refValues[idx]);
-                res = YapiWrapper::ysprintf("%s,%d,%d", res.c_str(), iRaw,iRef);
-                idx = idx + 1;
-            }
-        }
+    // 32-bit fixed-point encoding
+    res = YapiWrapper::ysprintf("%d",YOCTO_CALIB_TYPE_OFS);
+    idx = 0;
+    while (idx < npt) {
+        res = YapiWrapper::ysprintf("%s,%g,%g", res.c_str(), rawValues[idx],refValues[idx]);
+        idx = idx + 1;
     }
     return res;
 }
@@ -8370,140 +8269,103 @@ double YSensor::_applyCalibration(double rawValue)
     return _calhdl(rawValue, _caltyp, _calpar, _calraw, _calref);
 }
 
-YMeasure YSensor::_decodeTimedReport(double timestamp,vector<int> report)
+YMeasure YSensor::_decodeTimedReport(double timestamp,double duration,vector<int> report)
 {
     int i = 0;
     int byteVal = 0;
-    int poww = 0;
-    int minRaw = 0;
-    int avgRaw = 0;
-    int maxRaw = 0;
+    double poww = 0.0;
+    double minRaw = 0.0;
+    double avgRaw = 0.0;
+    double maxRaw = 0.0;
     int sublen = 0;
-    int difRaw = 0;
+    double difRaw = 0.0;
     double startTime = 0.0;
     double endTime = 0.0;
     double minVal = 0.0;
     double avgVal = 0.0;
     double maxVal = 0.0;
-    startTime = _prevTimedReport;
+    if (duration > 0) {
+        startTime = timestamp - duration;
+    } else {
+        startTime = _prevTimedReport;
+    }
     endTime = timestamp;
     _prevTimedReport = endTime;
     if (startTime == 0) {
         startTime = endTime;
     }
-    if (report[0] == 2) {
-        // 32bit timed report format
-        if ((int)report.size() <= 5) {
-            // sub-second report, 1-4 bytes
-            poww = 1;
-            avgRaw = 0;
-            byteVal = 0;
-            i = 1;
-            while (i < (int)report.size()) {
-                byteVal = report[i];
-                avgRaw = avgRaw + poww * byteVal;
-                poww = poww * 0x100;
-                i = i + 1;
-            }
-            if (((byteVal) & (0x80)) != 0) {
-                avgRaw = avgRaw - poww;
-            }
-            avgVal = avgRaw / 1000.0;
-            if (_caltyp != 0) {
-                if (_calhdl != NULL) {
-                    avgVal = _calhdl(avgVal, _caltyp, _calpar, _calraw, _calref);
-                }
-            }
-            minVal = avgVal;
-            maxVal = avgVal;
-        } else {
-            // averaged report: avg,avg-min,max-avg
-            sublen = 1 + ((report[1]) & (3));
-            poww = 1;
-            avgRaw = 0;
-            byteVal = 0;
-            i = 2;
-            while ((sublen > 0) && (i < (int)report.size())) {
-                byteVal = report[i];
-                avgRaw = avgRaw + poww * byteVal;
-                poww = poww * 0x100;
-                i = i + 1;
-                sublen = sublen - 1;
-            }
-            if (((byteVal) & (0x80)) != 0) {
-                avgRaw = avgRaw - poww;
-            }
-            sublen = 1 + ((((report[1]) >> (2))) & (3));
-            poww = 1;
-            difRaw = 0;
-            while ((sublen > 0) && (i < (int)report.size())) {
-                byteVal = report[i];
-                difRaw = difRaw + poww * byteVal;
-                poww = poww * 0x100;
-                i = i + 1;
-                sublen = sublen - 1;
-            }
-            minRaw = avgRaw - difRaw;
-            sublen = 1 + ((((report[1]) >> (4))) & (3));
-            poww = 1;
-            difRaw = 0;
-            while ((sublen > 0) && (i < (int)report.size())) {
-                byteVal = report[i];
-                difRaw = difRaw + poww * byteVal;
-                poww = poww * 0x100;
-                i = i + 1;
-                sublen = sublen - 1;
-            }
-            maxRaw = avgRaw + difRaw;
-            avgVal = avgRaw / 1000.0;
-            minVal = minRaw / 1000.0;
-            maxVal = maxRaw / 1000.0;
-            if (_caltyp != 0) {
-                if (_calhdl != NULL) {
-                    avgVal = _calhdl(avgVal, _caltyp, _calpar, _calraw, _calref);
-                    minVal = _calhdl(minVal, _caltyp, _calpar, _calraw, _calref);
-                    maxVal = _calhdl(maxVal, _caltyp, _calpar, _calraw, _calref);
-                }
+    // 32bit timed report format
+    if ((int)report.size() <= 5) {
+        // sub-second report, 1-4 bytes
+        poww = 1;
+        avgRaw = 0;
+        byteVal = 0;
+        i = 1;
+        while (i < (int)report.size()) {
+            byteVal = report[i];
+            avgRaw = avgRaw + poww * byteVal;
+            poww = poww * 0x100;
+            i = i + 1;
+        }
+        if (((byteVal) & (0x80)) != 0) {
+            avgRaw = avgRaw - poww;
+        }
+        avgVal = avgRaw / 1000.0;
+        if (_caltyp != 0) {
+            if (_calhdl != NULL) {
+                avgVal = _calhdl(avgVal, _caltyp, _calpar, _calraw, _calref);
             }
         }
+        minVal = avgVal;
+        maxVal = avgVal;
     } else {
-        // 16bit timed report format
-        if (report[0] == 0) {
-            // sub-second report, 1-4 bytes
-            poww = 1;
-            avgRaw = 0;
-            byteVal = 0;
-            i = 1;
-            while (i < (int)report.size()) {
-                byteVal = report[i];
-                avgRaw = avgRaw + poww * byteVal;
-                poww = poww * 0x100;
-                i = i + 1;
+        // averaged report: avg,avg-min,max-avg
+        sublen = 1 + ((report[1]) & (3));
+        poww = 1;
+        avgRaw = 0;
+        byteVal = 0;
+        i = 2;
+        while ((sublen > 0) && (i < (int)report.size())) {
+            byteVal = report[i];
+            avgRaw = avgRaw + poww * byteVal;
+            poww = poww * 0x100;
+            i = i + 1;
+            sublen = sublen - 1;
+        }
+        if (((byteVal) & (0x80)) != 0) {
+            avgRaw = avgRaw - poww;
+        }
+        sublen = 1 + ((((report[1]) >> (2))) & (3));
+        poww = 1;
+        difRaw = 0;
+        while ((sublen > 0) && (i < (int)report.size())) {
+            byteVal = report[i];
+            difRaw = difRaw + poww * byteVal;
+            poww = poww * 0x100;
+            i = i + 1;
+            sublen = sublen - 1;
+        }
+        minRaw = avgRaw - difRaw;
+        sublen = 1 + ((((report[1]) >> (4))) & (3));
+        poww = 1;
+        difRaw = 0;
+        while ((sublen > 0) && (i < (int)report.size())) {
+            byteVal = report[i];
+            difRaw = difRaw + poww * byteVal;
+            poww = poww * 0x100;
+            i = i + 1;
+            sublen = sublen - 1;
+        }
+        maxRaw = avgRaw + difRaw;
+        avgVal = avgRaw / 1000.0;
+        minVal = minRaw / 1000.0;
+        maxVal = maxRaw / 1000.0;
+        if (_caltyp != 0) {
+            if (_calhdl != NULL) {
+                avgVal = _calhdl(avgVal, _caltyp, _calpar, _calraw, _calref);
+                minVal = _calhdl(minVal, _caltyp, _calpar, _calraw, _calref);
+                maxVal = _calhdl(maxVal, _caltyp, _calpar, _calraw, _calref);
             }
-            if (_isScal) {
-                avgVal = this->_decodeVal(avgRaw);
-            } else {
-                if (((byteVal) & (0x80)) != 0) {
-                    avgRaw = avgRaw - poww;
-                }
-                avgVal = this->_decodeAvg(avgRaw);
-            }
-            minVal = avgVal;
-            maxVal = avgVal;
-        } else {
-            // averaged report 2+4+2 bytes
-            minRaw = report[1] + 0x100 * report[2];
-            maxRaw = report[3] + 0x100 * report[4];
-            avgRaw = report[5] + 0x100 * report[6] + 0x10000 * report[7];
-            byteVal = report[8];
-            if (((byteVal) & (0x80)) == 0) {
-                avgRaw = avgRaw + 0x1000000 * byteVal;
-            } else {
-                avgRaw = avgRaw - 0x1000000 * (0x100 - byteVal);
-            }
-            minVal = this->_decodeVal(minRaw);
-            avgVal = this->_decodeAvg(avgRaw);
-            maxVal = this->_decodeVal(maxRaw);
         }
     }
     return YMeasure( startTime, endTime, minVal, avgVal,maxVal);
@@ -8513,11 +8375,6 @@ double YSensor::_decodeVal(int w)
 {
     double val = 0.0;
     val = w;
-    if (_isScal) {
-        val = (val - _offset) / _scale;
-    } else {
-        val = YAPI::_decimalToDouble(w);
-    }
     if (_caltyp != 0) {
         if (_calhdl != NULL) {
             val = _calhdl(val, _caltyp, _calpar, _calraw, _calref);
@@ -8530,11 +8387,6 @@ double YSensor::_decodeAvg(int dw)
 {
     double val = 0.0;
     val = dw;
-    if (_isScal) {
-        val = (val / 100 - _offset) / _scale;
-    } else {
-        val = val / _decexp;
-    }
     if (_caltyp != 0) {
         if (_calhdl != NULL) {
             val = _calhdl(val, _caltyp, _calpar, _calraw, _calref);
@@ -8569,272 +8421,53 @@ YSensor* YSensor::FirstSensor(void)
 
 //--- (end of generated code: YSensor implementation)
 
+YDataSet YSensor::get_recordedData(s64 startTime, s64 endTime)
+{
+    return this->get_recordedData((double)startTime, (double)endTime);
+}
+
+YDataSet YSensor::get_recordedData(int startTime, int endTime)
+{
+    return this->get_recordedData((double)startTime, (double)endTime);
+}
+
 //--- (generated code: YSensor functions)
 //--- (end of generated code: YSensor functions)
 
 
-
-YOldDataStream::YOldDataStream(YDataLogger *parent, unsigned run,
-                               unsigned stamp, unsigned utc, unsigned itv)
-: YDataStream(parent)
-{
-    _dataLogger = parent;
-    _runNo = run;
-    _timeStamp = stamp;
-    _utcStamp = utc;
-    _interval = itv;
-    _samplesPerHour = 3600 / _interval;
-    _isClosed = 1;
-    _minVal = DATA_INVALID;
-    _avgVal = DATA_INVALID;
-    _maxVal = DATA_INVALID;
-}
-
-// Preload all values into the data stream object
-int YOldDataStream::loadStream(void)
-{
-    string              buffer;
-    yJsonStateMachine   j;
-    int                 res, ival;
-    double              fval;
-    unsigned            p, c = 0;
-    vector<int>         coldiv, coltyp;
-    vector<double>      colscl;
-    vector<int>         colofs;
-    vector<yCalibrationHandler> calhdl;
-    vector<int>         caltyp;
-    vector<intArr>      calpar;
-    vector<floatArr>    calraw;
-    vector<floatArr>    calref;
-
-    vector<int>         udat;
-    vector<double>      dat;
-
-    _values.clear();
-    if((res = _dataLogger->getData(_runNo, _timeStamp, buffer, j)) != YAPI_SUCCESS) {
-        return res;
-    }
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
-    fail:
-        _parent->_throw(YAPI_IO_ERROR, "Unexpected JSON reply format");
-        return YAPI_IO_ERROR;
-    }
-    _nRows = _nCols = 0;
-    _columnNames.clear();
-    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
-        if(!strcmp(j.token, "time")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto fail;
-            _timeStamp = atoi(j.token);
-        } else if(!strcmp(j.token, "UTC")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto fail;
-            _utcStamp = atoi(j.token);
-        } else if(!strcmp(j.token, "interval")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto fail;
-            _interval = atoi(j.token);
-        } else if(!strcmp(j.token, "nRows")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) goto fail;
-            _nRows = atoi(j.token);
-        } else if(!strcmp(j.token, "keys")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_ARRAY) break;
-            while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_STRING) {
-                _columnNames.push_back(_parent->_parseString(j));
-            }
-            if(j.token[0] != ']') goto fail;
-            if(_nCols == 0) {
-                _nCols = (int)_columnNames.size();
-            } else if(_nCols != (int)_columnNames.size()) {
-                _nCols = 0;
-                goto fail;
-            }
-        } else if(!strcmp(j.token, "div")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_ARRAY) break;
-            while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_NUM) {
-                coldiv.push_back(atoi(j.token));
-            }
-            if(j.token[0] != ']') goto fail;
-            if(_nCols == 0) {
-                _nCols = (int)coldiv.size();
-            } else if(_nCols != (int)coldiv.size()) {
-                _nCols = 0;
-                goto fail;
-            }
-        } else if(!strcmp(j.token, "type")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_ARRAY) break;
-            while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_NUM) {
-                coltyp.push_back(atoi(j.token));
-            }
-            if(j.token[0] != ']') goto fail;
-            if(_nCols == 0) {
-                _nCols = (int)coltyp.size();
-            } else if(_nCols != (int)coltyp.size()) {
-                _nCols = 0;
-                goto fail;
-            }
-        } else if(!strcmp(j.token, "scal")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_ARRAY) break;
-            c = 0;
-            while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_NUM) {
-                colscl.push_back((double)atoi(j.token) / 65536.0);
-                colofs.push_back(coltyp[c++] != 0 ? -32767 : 0);
-            }
-            if(j.token[0] != ']') goto fail;
-            if(_nCols == 0) {
-                _nCols = (int)colscl.size();
-            } else if(_nCols != (int)colscl.size()) {
-                _nCols = 0;
-                goto fail;
-            }
-        } else if(!strcmp(j.token, "cal")) {
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_ARRAY) break;
-            while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_STRING) {
-                char *p = j.token;
-                int  calibType = (*p ? atoi(p) : 0);
-                calhdl[c] = YAPI::_getCalibrationHandler(calibType);
-                if(!calhdl[c]) {
-                    caltyp[c] = 0;
-                    continue;
-                }
-                caltyp[c] = calibType;
-                while(*p && *p != ',') p++;
-                while(*p) {
-                    p++; // skip ','
-                    ival = atoi(p);
-                    if(calibType <= 10) {
-                        fval = (double)(ival + colofs[c]) / coldiv[c];
-                    } else {
-                        fval = YAPI::_decimalToDouble(ival);
-                    }
-                    calpar[c].push_back(ival);
-                    while(*p && *p != ',') p++;
-                    if(calpar[c].size() & 1) {
-                        calraw[c].push_back(fval);
-                    } else {
-                        calref[c].push_back(fval);
-                    }
-                }
-                c++;
-            }
-            if(j.token[0] != ']') goto fail;
-        } else if(!strcmp(j.token, "data")) {
-            if(colscl.size() == 0) {
-                for(p = 0; p < coldiv.size(); p++) {
-                    colscl.push_back(1.0 / (double)coldiv[p]);
-                    colofs.push_back(coltyp[p] != 0 ? -32767 : 0);
-                }
-            }
-            if(yJsonParse(&j) != YJSON_PARSE_AVAIL) break;
-            if(j.st == YJSON_PARSE_STRING) {
-                udat = YAPI::_decodeWords(_parent->_parseString(j));
-            } else if(j.st == YJSON_PARSE_ARRAY) {
-                udat.clear();
-                while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_NUM) {
-                    udat.push_back(atoi(j.token));
-                }
-                if(j.token[0] != ']' ) goto fail;
-            } else {
-                goto fail;
-            }
-            dat.clear();
-            c = 0;
-            for(p = 0; p < udat.size(); p++) {
-                double val;
-                if(coltyp[c] < 2) {
-                    val = (udat[p] + colofs[c]) * colscl[c];
-                } else {
-                    val = YAPI::_decimalToDouble((int)udat[p]-32767);
-                }
-                if(caltyp[c] > 0 && calhdl.size() >= c && calhdl[c]) {
-                    if(caltyp[c] <= 10) {
-                        // linear calibration using unscaled value
-                        val = calhdl[c]((udat[p] + colofs[c]) / coldiv[c], caltyp[c], calpar[c], calraw[c], calref[c]);
-                    } else if(caltyp[c] > 20) {
-                        // custom calibration function: floating-point value is uncalibrated in the datalogger
-                        val = calhdl[c](val, caltyp[c], calpar[c], calraw[c], calref[c]);
-                    }
-                }
-                dat.push_back(val);
-                c++;
-                if((int)c == _nCols) {
-                    _values.push_back(dat);
-                    dat.clear();
-                    c = 0;
-                }
-            }
-            if(dat.size() > 0) goto fail;
-        } else {
-            // ignore unknown field
-            yJsonSkip(&j, 1);
-        }
-    }
-
-    return YAPI_SUCCESS;
-}
-
-/**
- * Returns the start time of the data stream, relative to the beginning
- * of the run. If you need an absolute time, use get_startTimeUTC().
- *
- * This method does not cause any access to the device, as the value
- * is preloaded in the object at instantiation time.
- *
- * @return an unsigned number corresponding to the number of seconds
- *         between the start of the run and the beginning of this data
- *         stream.
- */
-int YOldDataStream::get_startTime(void)
-{
-    return _timeStamp;
-}
-
-/**
- * Returns the number of seconds elapsed between  two consecutive
- * rows of this data stream. By default, the data logger records one row
- * per second, but there might be alternative streams at lower resolution
- * created by summarizing the original stream for archiving purposes.
- *
- * This method does not cause any access to the device, as the value
- * is preloaded in the object at instantiation time.
- *
- * @return an unsigned number corresponding to a number of seconds.
- */
-double YOldDataStream::get_dataSamplesInterval(void)
-{
-    return _interval;
-}
-
 // DataLogger-specific method to retrieve and pre-parse recorded data
 //
-int YDataLogger::getData(unsigned runIdx, unsigned timeIdx, string &buffer, yJsonStateMachine &j)
+int YDataLogger::getData(unsigned runIdx, unsigned timeIdx, string& buffer, yJsonStateMachine& j)
 {
-    YDevice     *dev;
-    char        query[128];
-    string      errmsg;
-    int         res;
+    YDevice* dev;
+    char query[128];
+    string errmsg;
+    int res;
 
-    if(this->dataLoggerURL == "") this->dataLoggerURL = "/logger.json";
+    if (this->dataLoggerURL == "") this->dataLoggerURL = "/logger.json";
 
     // Resolve our reference to our device, load REST API
     res = _getDevice(dev, errmsg);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         _throw((YRETCODE)res, errmsg);
         return (YRETCODE)res;
     }
-    if(timeIdx) {
+    if (timeIdx) {
         // used by old datalogger only
         sprintf(query, "GET %s?run=%u&time=%u \r\n\r\n", this->dataLoggerURL.c_str(), runIdx, timeIdx);
     } else {
         sprintf(query, "GET %s \r\n\r\n", this->dataLoggerURL.c_str());
     }
     res = dev->HTTPRequest(0, query, buffer, NULL, NULL, errmsg);
-    if(YISERR(res)) {
+    if (YISERR(res)) {
         // Check if an update of the device list does not solve the issue
         res = YAPI::UpdateDeviceList(errmsg);
-        if(YISERR(res)) {
+        if (YISERR(res)) {
             _throw((YRETCODE)res, errmsg);
             return (YRETCODE)res;
         }
         res = dev->HTTPRequest(0, query, buffer, NULL, NULL, errmsg);
-        if(YISERR(res)) {
+        if (YISERR(res)) {
             _throw((YRETCODE)res, errmsg);
             return (YRETCODE)res;
         }
@@ -8844,20 +8477,15 @@ int YDataLogger::getData(unsigned runIdx, unsigned timeIdx, string &buffer, yJso
     j.src = buffer.data();
     j.end = j.src + buffer.size();
     j.st = YJSON_HTTP_START;
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_HTTP_READ_CODE) {
+    if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_HTTP_READ_CODE) {
         _throw(YAPI_IO_ERROR, "Failed to parse HTTP header");
         return YAPI_IO_ERROR;
     }
-    if(string(j.token) != "200") {
-        if(string(j.token) == "404" && this->dataLoggerURL != "/dataLogger.json") {
-            // retry using backward-compatible datalogger URL
-            this->dataLoggerURL = "/dataLogger.json";
-            return this->getData(runIdx, timeIdx, buffer, j);
-        }
-        _throw(YAPI_IO_ERROR, string("Unexpected HTTP return code: ")+j.token);
+    if (string(j.token) != "200") {
+        _throw(YAPI_IO_ERROR, string("Unexpected HTTP return code: ") + j.token);
         return YAPI_IO_ERROR;
     }
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_HTTP_READ_MSG) {
+    if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_HTTP_READ_MSG) {
         _throw(YAPI_IO_ERROR, "Unexpected HTTP header format");
         return YAPI_IO_ERROR;
     }
@@ -8865,78 +8493,9 @@ int YDataLogger::getData(unsigned runIdx, unsigned timeIdx, string &buffer, yJso
     return YAPI_SUCCESS;
 }
 
-/**
- * Builds a list of all data streams hold by the data logger (legacy method).
- * The caller must pass by reference an empty array to hold YDataStream
- * objects, and the function fills it with objects describing available
- * data sequences.
- *
- * This is the old way to retrieve data from the DataLogger.
- * For new applications, you should rather use get_dataSets()
- * method, or call directly get_recordedData() on the
- * sensor object.
- *
- * @param v : an array of YDataStream objects to be filled in
- *
- * @return YAPI_SUCCESS if the call succeeds.
- *
- * On failure, throws an exception or returns a negative error code.
- */
-int YDataLogger::get_dataStreams(vector<YDataStream *>& v)
-{
-    string              buffer;
-    yJsonStateMachine   j;
-    int                 res;
-    unsigned            i, si, arr[4];
-    YOldDataStream      *ods;
-
-    v.clear();
-    if((res = getData(0, 0, buffer, j)) != YAPI_SUCCESS) {
-        return res;
-    }
-    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_ARRAY) {
-        _throw(YAPI_IO_ERROR, "Unexpected JSON reply format");
-        return YAPI_IO_ERROR;
-    }
-    // expect arrays in array
-    while(yJsonParse(&j) == YJSON_PARSE_AVAIL) {
-        if(j.token[0] == '[') {
-            // old datalogger format: [runIdx, timerel, utc, interval]
-            for(i = 0; i < 4; i++) {
-                if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_NUM) break;
-                arr[i] = atoi(j.token);
-            }
-            if(i < 4) break;
-            // skip any extra item in array
-            while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.token[0] != ']')
-                ;
-            // instantiate a data stream
-            ods = new YOldDataStream(this,arr[0],arr[1],arr[2],arr[3]);
-            v.push_back(ods);
-        } else if(j.token[0] == '{') {
-            // new datalogger format: {"id":"...","unit":"...","streams":["...",...]}
-            size_t pos = buffer.find("\r\n\r\n", 0);
-            buffer = buffer.substr(pos+4);
-            vector<YDataSet> sets = this->parse_dataSets(buffer);
-            for (i=0; i < sets.size(); i++) {
-                vector<YDataStream*> ds = sets[i].get_privateDataStreams();
-                for (si=0; si < ds.size(); si++) {
-                    // return a user-owned copy
-
-                    v.push_back(new YDataStream(*ds[si]));
-                }
-            }
-            break;
-        } else break;
-    }
-
-    return YAPI_SUCCESS;
-}
-
-
 
 YDataLogger::YDataLogger(const string& func): YFunction(func)
-//--- (generated code: YDataLogger initialization)
+                                              //--- (generated code: YDataLogger initialization)
     ,_currentRunIndex(CURRENTRUNINDEX_INVALID)
     ,_timeUTC(TIMEUTC_INVALID)
     ,_recording(RECORDING_INVALID)

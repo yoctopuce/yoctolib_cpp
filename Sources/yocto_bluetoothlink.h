@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_bluetoothlink.h 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_bluetoothlink.h 32900 2018-11-02 10:12:43Z seb $
  *
  *  Declares yFindBluetoothLink(), the high-level API for BluetoothLink functions
  *
@@ -405,6 +405,9 @@ public:
 
     /**
      * Continues the enumeration of cellular interfaces started using yFirstBluetoothLink().
+     * Caution: You can't make any assumption about the returned cellular interfaces order.
+     * If you want to find a specific a cellular interface, use BluetoothLink.findBluetoothLink()
+     * and a hardwareID or a logical name.
      *
      * @return a pointer to a YBluetoothLink object, corresponding to
      *         a cellular interface currently online, or a NULL pointer

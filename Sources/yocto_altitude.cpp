@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_altitude.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_altitude.cpp 32950 2018-11-05 17:15:46Z seb $
  *
  *  Implements yFindAltitude(), the high-level API for Altitude functions
  *
@@ -110,7 +110,7 @@ int YAltitude::set_currentValue(double newval)
 /**
  * Changes the barometric pressure adjusted to sea level used to compute
  * the altitude (QNH). This enables you to compensate for atmospheric pressure
- * changes due to weather conditions.
+ * changes due to weather conditions. Applicable to barometric altimeters only.
  *
  * @param newval : a floating point number corresponding to the barometric pressure adjusted to sea
  * level used to compute
@@ -138,7 +138,7 @@ int YAltitude::set_qnh(double newval)
 
 /**
  * Returns the barometric pressure adjusted to sea level used to compute
- * the altitude (QNH).
+ * the altitude (QNH). Applicable to barometric altimeters only.
  *
  * @return a floating point number corresponding to the barometric pressure adjusted to sea level used to compute
  *         the altitude (QNH)

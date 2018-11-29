@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 31283 2018-07-19 09:58:31Z mvuilleu $
+ * $Id: ystream.c 33056 2018-11-08 16:08:20Z seb $
  *
  * USB stream implementation
  *
@@ -680,7 +680,7 @@ static int devStopIO(LOCATION yPrivDeviceSt *dev, char *errmsg)
 
 }
 
-static void devReportError(LOCATION yPrivDeviceSt *dev, char *error_to_set)
+static void devReportError(LOCATION yPrivDeviceSt *dev, const char *error_to_set)
 {
     //get access
     yEnterCriticalSection(&dev->acces_state);
@@ -1662,7 +1662,7 @@ static void yDispatchNotice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pkts
         }
 #endif
         if (smallnot->devydx < 255 && smallnot->funInfo.v2.typeV2 != NOTIFY_V2_FLUSHGROUP) {
-            ypUpdateYdx(smallnot->devydx,smallnot->funInfo,smallnot->pubval);
+            ypUpdateYdx(smallnot->devydx, smallnot->funInfo, smallnot->pubval);
             if(yContext->rawNotificationCb){
                 yContext->rawNotificationCb((USB_Notify_Pkt *)smallnot);
             }
@@ -1743,7 +1743,7 @@ static void yDispatchNotice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pkts
             dbglog("notify functname %s %s\n",notify->funcnamenot.funcid, notify->funcnamenot.funcname);
         }
 #endif
-        ypUpdateUSB(notDev->infos.serial,notify->funcnamenot.funcid,notify->funcnamenot.funcname,notify->funcnameydxnot.funclass,notify->funcnameydxnot.funydx,NULL);
+        ypUpdateUSB(notDev->infos.serial, notify->funcnamenot.funcid, notify->funcnamenot.funcname, notify->funcnameydxnot.funclass, notify->funcnameydxnot.funydx, NULL);
         if(yContext->rawNotificationCb){
             yContext->rawNotificationCb(notify);
         }
@@ -1802,7 +1802,7 @@ static void yDispatchNotice(yPrivDeviceSt *dev, USB_Notify_Pkt *notify, int pkts
                 // Forward high-level device config change notification to API user
                 if(yContext->confChangeCallback){
                     yEnterCriticalSection(&yContext->deviceCallbackCS);
-#ifdef DEBUG_NET_NOTIFICATION
+#ifdef DEBUG_NOTIFICATION
                     dbglog("notify conf change for %s\n",dev->infos.serial);
 #endif
                     yContext->confChangeCallback(serialref);
@@ -1841,21 +1841,21 @@ static void yDispatchReportV1(yPrivDeviceSt *dev, u8 *data, int pktsize)
             USB_Report_Pkt_V1 *report = (USB_Report_Pkt_V1*) data;
             int  len = report->extraLen + 1;
             if (report->funYdx == 0xf) {
-                u32 t = data[1] + 0x100u * data[2] + 0x10000u * data[3] + 0x1000000u * data[4];
+                u64 t = data[1] + 0x100u * data[2] + 0x10000u * data[3] + 0x1000000u * data[4];
                 yEnterCriticalSection(&yContext->generic_cs);
-                yContext->generic_infos[devydx].deviceTime = (double)t + data[5] / 250.0;
+                yContext->generic_infos[devydx].lastTimeRef = t * 1000 + data[5];
                 yLeaveCriticalSection(&yContext->generic_cs);
             } else {
                 YAPI_FUNCTION fundesc;
-                double devtime;
+                u64 devtime;
                 Notification_funydx funInfo;
                 funInfo.raw = report->funYdx;
                 ypRegisterByYdx(devydx, funInfo, NULL, &fundesc);
                 data[0] = report->isAvg ? 1 : 0;
                 yEnterCriticalSection(&yContext->generic_cs);
-                devtime = yContext->generic_infos[devydx].deviceTime;
+                devtime = yContext->generic_infos[devydx].lastTimeRef;
                 yLeaveCriticalSection(&yContext->generic_cs);
-                yFunctionTimedUpdate(fundesc, devtime, data, len + 1);
+                yFunctionTimedUpdate(fundesc, devtime, 0, data, len + 1);
             }
             pktsize -= 1 + len;
             data += 1 + len;
@@ -1878,28 +1878,41 @@ static void yDispatchReportV2(yPrivDeviceSt *dev, u8 *data, int pktsize)
         yContext->rawReportV2Cb(serialref, (USB_Report_Pkt_V2*) data, pktsize);
     }
     if (yContext->timedReportCallback) {
-        int  devydx = wpGetDevYdx(serialref);
+        int devydx = wpGetDevYdx(serialref);
         if (devydx < 0)
             return;
         while (pktsize > 0) {
             USB_Report_Pkt_V2 *report = (USB_Report_Pkt_V2*) data;
             int  len = report->extraLen + 1;
             if (report->funYdx == 0xf) {
-                u32 t = data[1] + 0x100u * data[2] + 0x10000u * data[3] + 0x1000000u * data[4];
+                u64 t = data[1] + 0x100u * data[2] + 0x10000u * data[3] + 0x1000000u * data[4];
+                u32 ms = data[5] << 2;
+                u64 freq = 0;
+                if (len >= 7) {
+                    ms += data[6] >>6;
+                    freq = data[7];
+                    freq += (data[6] & 0xf) * 0x100;
+                    if (data[6] & 0x10) {
+                        freq *= 1000;
+                    }
+                }
                 yEnterCriticalSection(&yContext->generic_cs);
-                yContext->generic_infos[devydx].deviceTime = (double)t + data[5] / 250.0;
+                yContext->generic_infos[devydx].lastTimeRef = t * 1000 + ms;
+                yContext->generic_infos[devydx].lastFreq = freq;
                 yLeaveCriticalSection(&yContext->generic_cs);
             } else {
                 YAPI_FUNCTION fundesc;
-                double devtime;
+                u64 devtime;
+                u64 freq;
                 Notification_funydx funInfo;
                 funInfo.raw = report->funYdx;
                 ypRegisterByYdx(devydx, funInfo, NULL, &fundesc);
                 data[0] = 2;
                 yEnterCriticalSection(&yContext->generic_cs);
-                devtime = yContext->generic_infos[devydx].deviceTime;
+                devtime = yContext->generic_infos[devydx].lastTimeRef;
+                freq = yContext->generic_infos[devydx].lastFreq;
                 yLeaveCriticalSection(&yContext->generic_cs);
-                yFunctionTimedUpdate(fundesc, devtime, data, len + 1);
+                yFunctionTimedUpdate(fundesc, devtime, freq, data, len + 1);
             }
             pktsize -= 1 + len;
             data += 1 + len;
@@ -2159,7 +2172,7 @@ static void enuUpdateDStatus(void)
                 res = StartDevice(p, errmsg);
                 if(YISERR(res)){
                     if (res !=YAPI_TIMEOUT && p->nb_startup_retry < NB_MAX_STARTUP_RETRY) {
-                        dbglog("Unable to start the device %s correctly (%s). retry later\n", p->infos.serial, errmsg);
+                        dbglog("Unable to start the device %s correctly (%s). retry later (%d)\n", p->infos.serial, errmsg, p->nb_startup_retry);
 #ifdef DEBUG_DEV_ENUM
                         dbglog("ENU:start %s(%d)->YDEV_UNPLUGED\n", p->infos.serial, p->infos.nbinbterfaces);
 #endif
@@ -2896,7 +2909,9 @@ int  yUsbClose(YIOHDL_internal *ioghdl,char *errmsg)
                 break;
             }
             if(timeout<yapiGetTickCount()) {
-                dbglog("yUSBClose without device ack\n");
+                const char* err = "yUSBClose without device ack";
+                dbglog("%s\n", err);
+                devReportError(PUSH_LOCATION p, err);
                 break;
             }
         }
