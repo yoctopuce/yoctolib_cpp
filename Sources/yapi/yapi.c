@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 33390 2018-11-26 14:33:41Z seb $
+ * $Id: yapi.c 33576 2018-12-07 08:13:18Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -1733,7 +1733,15 @@ static HubSt* yapiAllocHub(const char* url, char* errmsg)
         }
         hub->http.lastTraffic = yapiGetTickCount();
     } else {
+        int tcpchan;
+        memset(&hub->ws, 0, sizeof(WSNetHub));
         hub->ws.s_next_async_id = 48;
+        hub->ws. fifo_buffer = yMalloc(2048);
+        yFifoInit(&hub->ws.mainfifo, hub->ws.fifo_buffer, 2048);
+        for (tcpchan = 0; tcpchan < MAX_ASYNC_TCPCHAN; tcpchan++) {
+            yInitializeCriticalSection(&hub->ws.chan[tcpchan].access);
+        }
+
     }
 #ifdef TRACE_NET_HUB
     dbglog("HUB%p: %x->%s allocated \n",hub, hub->url, hub->name);
@@ -1748,7 +1756,7 @@ static void yapiFreeHub(HubSt* hub)
     dbglog("HUB: %x->%s Deleted \n",hub->url,hub->name);
 #endif
     yFreeWakeUpSocket(&hub->wuce);
-    if (hub->proto == !PROTO_WEBSOCKET) {
+    if (hub->proto != PROTO_WEBSOCKET) {
         if (hub->http.s_realm) yFree(hub->http.s_realm);
         if (hub->http.s_nonce) yFree(hub->http.s_nonce);
         if (hub->http.s_opaque) yFree(hub->http.s_opaque);
@@ -1756,6 +1764,13 @@ static void yapiFreeHub(HubSt* hub)
             yReqClose(hub->http.notReq);
             yReqFree(hub->http.notReq);
         }
+    } else {
+        int tcpchan;
+        for (tcpchan = 0; tcpchan < MAX_ASYNC_TCPCHAN; tcpchan++) {
+            yDeleteCriticalSection(&hub->ws.chan[tcpchan].access);
+        }
+        yFifoCleanup(&hub->ws.mainfifo);
+        yFree(hub->ws.fifo_buffer);
     }
     yDeleteCriticalSection(&hub->access);
     yFifoCleanup(&hub->not_fifo);

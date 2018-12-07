@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 33400 2018-11-27 07:58:29Z seb $
+ * $Id: yocto_api.cpp 33505 2018-12-05 14:45:46Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -946,16 +946,20 @@ YDataStream::~YDataStream()
 YDataSet::YDataSet(YFunction* parent, const string& functionId, const string& unit, double startTime, double endTime):
     //--- (generated code: YDataSet initialization)
     _parent(NULL)
-    ,_startTime(0.0)
-    ,_endTime(0.0)
+    ,_startTimeMs(0.0)
+    ,_endTimeMs(0.0)
     ,_progress(0)
+    ,_summaryMinVal(0.0)
+    ,_summaryMaxVal(0.0)
+    ,_summaryTotalAvg(0.0)
+    ,_summaryTotalTime(0.0)
 //--- (end of generated code: YDataSet initialization)
 {
     _parent = parent;
     _functionId = functionId;
     _unit = unit;
-    _startTime = startTime;
-    _endTime = endTime;
+    _startTimeMs = startTime*1000;
+    _endTimeMs = endTime*1000;
     _summary = YMeasure(0, 0, 0, 0, 0);
     _progress = -1;
 }
@@ -964,14 +968,18 @@ YDataSet::YDataSet(YFunction* parent, const string& functionId, const string& un
 YDataSet::YDataSet(YFunction* parent):
     //--- (generated code: YDataSet initialization)
     _parent(NULL)
-    ,_startTime(0.0)
-    ,_endTime(0.0)
+    ,_startTimeMs(0.0)
+    ,_endTimeMs(0.0)
     ,_progress(0)
+    ,_summaryMinVal(0.0)
+    ,_summaryMaxVal(0.0)
+    ,_summaryTotalAvg(0.0)
+    ,_summaryTotalTime(0.0)
 //--- (end of generated code: YDataSet initialization)
 {
     _parent = parent;
-    _startTime = 0;
-    _endTime = 0;
+    _startTimeMs = 0;
+    _endTimeMs = 0;
     _summary = YMeasure(0, 0, 0, 0, 0);
 }
 
@@ -979,11 +987,6 @@ YDataSet::YDataSet(YFunction* parent):
 int YDataSet::_parse(const string& json)
 {
     yJsonStateMachine j;
-    double summaryMinVal = DBL_MAX;
-    double summaryMaxVal = -DBL_MAX;
-    double summaryTotalTime = 0;
-    double summaryTotalAvg = 0;
-
 
     // Parse JSON data
     j.src = json.c_str();
@@ -1018,8 +1021,8 @@ int YDataSet::_parse(const string& json)
             }
         } else if (!strcmp(j.token, "streams")) {
             YDataStream* stream;
-            double streamEndTime, endTime = 0;
-            double streamStartTime, startTime = 0x7fffffff;
+            double streamEndTime;
+            double streamStartTime;
             _streams = vector<YDataStream*>();
             _preview = vector<YMeasure>();
             _measures = vector<YMeasure>();
@@ -1031,47 +1034,15 @@ int YDataSet::_parse(const string& json)
                 stream = _parent->_findDataStream(*this, _parent->_parseString(j));
                 // the timestamp in the data streams is the end of the measure, so the actual
                 // measurement start time is computed as one interval before the first timestamp
-                streamStartTime = stream->get_realStartTimeUTC();
-                streamEndTime = streamStartTime + stream->get_realDuration();
-                if (_startTime > 0 && streamEndTime <= _startTime) {
+                streamStartTime = floor(stream->get_realStartTimeUTC() * 1000 + 0.5);
+                streamEndTime = streamStartTime + floor(stream->get_realDuration() * 1000 +0.5);
+                if (_startTimeMs > 0 && streamEndTime <= _startTimeMs) {
                     // this stream is too early, drop it
-                } else if (_endTime > 0 && streamStartTime >= _endTime) {
+                } else if (_endTimeMs > 0 && streamStartTime >= _endTimeMs) {
                     // this stream is too late, drop it
                 } else {
                     _streams.push_back(stream);
-                    if (startTime > streamStartTime) {
-                        startTime = streamStartTime;
-                    }
-                    if (endTime < streamEndTime) {
-                        endTime = streamEndTime;
-                    }
-                    if (stream->isClosed() && streamStartTime >= _startTime &&
-                        (_endTime == 0 || streamEndTime <= _endTime)) {
-                        if (summaryMinVal > stream->get_minValue())
-                            summaryMinVal = stream->get_minValue();
-                        if (summaryMaxVal < stream->get_maxValue())
-                            summaryMaxVal = stream->get_maxValue();
-                        summaryTotalAvg += stream->get_averageValue() * stream->get_realDuration();
-                        summaryTotalTime += stream->get_realDuration();
-
-                        YMeasure rec = YMeasure(streamStartTime,
-                                                streamEndTime,
-                                                stream->get_minValue(),
-                                                stream->get_averageValue(),
-                                                stream->get_maxValue());
-                        _preview.push_back(rec);
-                    }
                 }
-            }
-            if ((_streams.size() > 0) && (summaryTotalTime > 0)) {
-                // update time boundaries with actual data
-                if (_startTime < startTime) {
-                    _startTime = startTime;
-                }
-                if (_endTime == 0 || _endTime > endTime) {
-                    _endTime = endTime;
-                }
-                _summary = YMeasure(_startTime, _endTime, summaryMinVal, summaryTotalAvg / summaryTotalTime, summaryMaxVal);
             }
         } else {
             yJsonSkip(&j, 1);
@@ -1896,11 +1867,179 @@ vector<int> YDataSet::_get_calibration(void)
     return _calib;
 }
 
+int YDataSet::loadSummary(string data)
+{
+    vector< vector<double> > dataRows;
+    double tim = 0.0;
+    double mitv = 0.0;
+    double itv = 0.0;
+    double fitv = 0.0;
+    double end_ = 0.0;
+    int nCols = 0;
+    int minCol = 0;
+    int avgCol = 0;
+    int maxCol = 0;
+    int res = 0;
+    int m_pos = 0;
+    double previewTotalTime = 0.0;
+    double previewTotalAvg = 0.0;
+    double previewMinVal = 0.0;
+    double previewMaxVal = 0.0;
+    double previewAvgVal = 0.0;
+    double previewStartMs = 0.0;
+    double previewStopMs = 0.0;
+    double previewDuration = 0.0;
+    double streamStartTimeMs = 0.0;
+    double streamDuration = 0.0;
+    double streamEndTimeMs = 0.0;
+    double minVal = 0.0;
+    double avgVal = 0.0;
+    double maxVal = 0.0;
+    double summaryStartMs = 0.0;
+    double summaryStopMs = 0.0;
+    double summaryTotalTime = 0.0;
+    double summaryTotalAvg = 0.0;
+    double summaryMinVal = 0.0;
+    double summaryMaxVal = 0.0;
+    string url;
+    string strdata;
+    vector<double> measure_data;
+
+    if (_progress < 0) {
+        strdata = data;
+        if (strdata == "{}") {
+            _parent->_throw(YAPI_VERSION_MISMATCH, "device firmware is too old");
+            return YAPI_VERSION_MISMATCH;
+        }
+        res = this->_parse(strdata);
+        if (res < 0) {
+            return res;
+        }
+    }
+    summaryTotalTime = 0;
+    summaryTotalAvg = 0;
+    summaryMinVal = YAPI_MAX_DOUBLE;
+    summaryMaxVal = YAPI_MIN_DOUBLE;
+    summaryStartMs = YAPI_MAX_DOUBLE;
+    summaryStopMs = YAPI_MIN_DOUBLE;
+
+    // Parse comlete streams
+    for (unsigned ii = 0; ii <  _streams.size(); ii++) {
+        streamStartTimeMs = floor( _streams[ii]->get_realStartTimeUTC() *1000+0.5);
+        streamDuration =  _streams[ii]->get_realDuration() ;
+        streamEndTimeMs = streamStartTimeMs + floor(streamDuration * 1000+0.5);
+        if ((streamStartTimeMs >= _startTimeMs) && ((_endTimeMs == 0) || (streamEndTimeMs <= _endTimeMs))) {
+            // stream that are completely inside the dataset
+            previewMinVal =  _streams[ii]->get_minValue();
+            previewAvgVal =  _streams[ii]->get_averageValue();
+            previewMaxVal =  _streams[ii]->get_maxValue();
+            previewStartMs = streamStartTimeMs;
+            previewStopMs = streamEndTimeMs;
+            previewDuration = streamDuration;
+        } else {
+            // stream that are partially in the dataset
+            // we need to parse data to filter value outide the dataset
+            url =  _streams[ii]->_get_url();
+            data = _parent->_download(url);
+            _streams[ii]->_parseStream(data);
+            dataRows =  _streams[ii]->get_dataRows();
+            if ((int)dataRows.size() == 0) {
+                return this->get_progress();
+            }
+            tim = streamStartTimeMs;
+            fitv = floor( _streams[ii]->get_firstDataSamplesInterval() * 1000+0.5);
+            itv = floor( _streams[ii]->get_dataSamplesInterval() * 1000+0.5);
+            nCols = (int)dataRows[0].size();
+            minCol = 0;
+            if (nCols > 2) {
+                avgCol = 1;
+            } else {
+                avgCol = 0;
+            }
+            if (nCols > 2) {
+                maxCol = 2;
+            } else {
+                maxCol = 0;
+            }
+            previewTotalTime = 0;
+            previewTotalAvg = 0;
+            previewStartMs = streamEndTimeMs;
+            previewStopMs = streamStartTimeMs;
+            previewMinVal = YAPI_MAX_DOUBLE;
+            previewMaxVal = YAPI_MIN_DOUBLE;
+            m_pos = 0;
+            while (m_pos < (int)dataRows.size()) {
+                measure_data  = dataRows[m_pos];
+                if (m_pos == 0) {
+                    mitv = fitv;
+                } else {
+                    mitv = itv;
+                }
+                end_ = tim + mitv;
+                if ((end_ > _startTimeMs) && ((_endTimeMs == 0) || (tim < _endTimeMs))) {
+                    minVal = measure_data[minCol];
+                    avgVal = measure_data[avgCol];
+                    maxVal = measure_data[maxCol];
+                    if (previewStartMs > tim) {
+                        previewStartMs = tim;
+                    }
+                    if (previewStopMs < end_) {
+                        previewStopMs = end_;
+                    }
+                    if (previewMinVal > minVal) {
+                        previewMinVal = minVal;
+                    }
+                    if (previewMaxVal < maxVal) {
+                        previewMaxVal = maxVal;
+                    }
+                    previewTotalAvg = previewTotalAvg + (avgVal * mitv);
+                    previewTotalTime = previewTotalTime + mitv;
+                }
+                tim = end_;
+                m_pos = m_pos + 1;
+            }
+            if (previewTotalTime > 0) {
+                previewAvgVal = previewTotalAvg / previewTotalTime;
+                previewDuration = (previewStopMs - previewStartMs) / 1000.0;
+            } else {
+                previewAvgVal = 0.0;
+                previewDuration = 0.0;
+            }
+        }
+        _preview.push_back(YMeasure( previewStartMs / 1000.0, previewStopMs / 1000.0, previewMinVal, previewAvgVal,previewMaxVal));
+        if (summaryMinVal > previewMinVal) {
+            summaryMinVal = previewMinVal;
+        }
+        if (summaryMaxVal < previewMaxVal) {
+            summaryMaxVal = previewMaxVal;
+        }
+        if (summaryStartMs > previewStartMs) {
+            summaryStartMs = previewStartMs;
+        }
+        if (summaryStopMs < previewStopMs) {
+            summaryStopMs = previewStopMs;
+        }
+        summaryTotalAvg = summaryTotalAvg + (previewAvgVal * previewDuration);
+        summaryTotalTime = summaryTotalTime + previewDuration;
+    }
+    if ((_startTimeMs == 0) || (_startTimeMs > summaryStartMs)) {
+        _startTimeMs = summaryStartMs;
+    }
+    if ((_endTimeMs == 0) || (_endTimeMs < summaryStopMs)) {
+        _endTimeMs = summaryStopMs;
+    }
+    if (summaryTotalTime > 0) {
+        _summary = YMeasure( summaryStartMs / 1000.0 , summaryStopMs / 1000.0 , summaryMinVal, summaryTotalAvg / summaryTotalTime,summaryMaxVal);
+    } else {
+        _summary = YMeasure( 0.0 , 0.0, YAPI_INVALID_DOUBLE, YAPI_INVALID_DOUBLE,YAPI_INVALID_DOUBLE);
+    }
+    return this->get_progress();
+}
+
 int YDataSet::processMore(int progress,string data)
 {
     YDataStream* stream = NULL;
     vector< vector<double> > dataRows;
-    string strdata;
     double tim = 0.0;
     double itv = 0.0;
     double fitv = 0.0;
@@ -1915,12 +2054,7 @@ int YDataSet::processMore(int progress,string data)
         return _progress;
     }
     if (_progress < 0) {
-        strdata = data;
-        if (strdata == "{}") {
-            _parent->_throw(YAPI_VERSION_MISMATCH, "device firmware is too old");
-            return YAPI_VERSION_MISMATCH;
-        }
-        return this->_parse(strdata);
+        return this->loadSummary(data);
     }
     stream = _streams[_progress];
     stream->_parseStream(data);
@@ -1929,9 +2063,9 @@ int YDataSet::processMore(int progress,string data)
     if ((int)dataRows.size() == 0) {
         return this->get_progress();
     }
-    tim = stream->get_realStartTimeUTC();
-    fitv = stream->get_firstDataSamplesInterval();
-    itv = stream->get_dataSamplesInterval();
+    tim = floor(stream->get_realStartTimeUTC() * 1000+0.5);
+    fitv = floor(stream->get_firstDataSamplesInterval() * 1000+0.5);
+    itv = floor(stream->get_dataSamplesInterval() * 1000+0.5);
     if (fitv == 0) {
         fitv = itv;
     }
@@ -1959,8 +2093,8 @@ int YDataSet::processMore(int progress,string data)
         } else {
             end_ = tim + itv;
         }
-        if ((tim >= _startTime) && ((_endTime == 0) || (end_ <= _endTime))) {
-            _measures.push_back(YMeasure(tim , end_,
+        if ((end_ > _startTimeMs) && ((_endTimeMs == 0) || (tim < _endTimeMs))) {
+            _measures.push_back(YMeasure(tim / 1000, end_ / 1000,
             dataRows[ii][minCol],
             dataRows[ii][avgCol],dataRows[ii][maxCol]));
         }
@@ -2040,7 +2174,7 @@ s64 YDataSet::get_startTimeUTC(void)
 
 s64 YDataSet::imm_get_startTimeUTC(void)
 {
-    return (s64) _startTime;
+    return (s64) (_startTimeMs / 1000.0);
 }
 
 /**
@@ -2066,7 +2200,7 @@ s64 YDataSet::get_endTimeUTC(void)
 
 s64 YDataSet::imm_get_endTimeUTC(void)
 {
-    return (s64) floor(_endTime+0.5);
+    return (s64) floor(_endTimeMs / 1000.0+0.5);
 }
 
 /**
@@ -2104,10 +2238,10 @@ int YDataSet::loadMore(void)
     YDataStream* stream = NULL;
     if (_progress < 0) {
         url = YapiWrapper::ysprintf("logger.json?id=%s",_functionId.c_str());
-        if (_startTime != 0) {
+        if (_startTimeMs != 0) {
             url = YapiWrapper::ysprintf("%s&from=%u",url.c_str(),this->imm_get_startTimeUTC());
         }
-        if (_endTime != 0) {
+        if (_endTimeMs != 0) {
             url = YapiWrapper::ysprintf("%s&to=%u",url.c_str(),this->imm_get_endTimeUTC()+1);
         }
     } else {
@@ -2183,7 +2317,7 @@ vector<YMeasure> YDataSet::get_preview(void)
  */
 vector<YMeasure> YDataSet::get_measuresAt(YMeasure measure)
 {
-    double startUtc = 0.0;
+    double startUtcMs = 0.0;
     YDataStream* stream = NULL;
     vector< vector<double> > dataRows;
     vector<YMeasure> measures;
@@ -2195,10 +2329,10 @@ vector<YMeasure> YDataSet::get_measuresAt(YMeasure measure)
     int avgCol = 0;
     int maxCol = 0;
 
-    startUtc = measure.get_startTimeUTC();
+    startUtcMs = measure.get_startTimeUTC() * 1000;
     stream = NULL;
     for (unsigned ii = 0; ii < _streams.size(); ii++) {
-        if (_streams[ii]->get_realStartTimeUTC() == startUtc) {
+        if (floor(_streams[ii]->get_realStartTimeUTC() *1000+0.5) == startUtcMs) {
             stream = _streams[ii];
         }
     }
@@ -2209,8 +2343,8 @@ vector<YMeasure> YDataSet::get_measuresAt(YMeasure measure)
     if ((int)dataRows.size() == 0) {
         return measures;
     }
-    tim = stream->get_realStartTimeUTC();
-    itv = stream->get_dataSamplesInterval();
+    tim = floor(stream->get_realStartTimeUTC() * 1000+0.5);
+    itv = floor(stream->get_dataSamplesInterval() * 1000+0.5);
     if (tim < itv) {
         tim = itv;
     }
@@ -2229,8 +2363,8 @@ vector<YMeasure> YDataSet::get_measuresAt(YMeasure measure)
 
     for (unsigned ii = 0; ii < dataRows.size(); ii++) {
         end_ = tim + itv;
-        if ((tim >= _startTime) && ((_endTime == 0) || (end_ <= _endTime))) {
-            measures.push_back(YMeasure(tim, end_,
+        if ((end_ > _startTimeMs) && ((_endTimeMs == 0) || (tim < _endTimeMs))) {
+            measures.push_back(YMeasure(tim / 1000.0, end_ / 1000.0,
             dataRows[ii][minCol],
             dataRows[ii][avgCol],dataRows[ii][maxCol]));
         }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 33393 2018-11-26 17:44:40Z seb $
+ * $Id: yocto_api.h 33499 2018-12-04 14:53:08Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -71,6 +71,8 @@ using std::map;
 #define YAPI_INVALID_UINT           (-1)
 #define YAPI_INVALID_LONG           (0x7FFFFFFFFFFFFFFFLL)
 #define YAPI_INVALID_DOUBLE         (-DBL_MAX)
+#define YAPI_MIN_DOUBLE             (-DBL_MAX)
+#define YAPI_MAX_DOUBLE             DBL_MAX
 
 
 //--- (generated code: YFunction definitions)
@@ -1471,14 +1473,18 @@ protected:
     string          _hardwareId;
     string          _functionId;
     string          _unit;
-    double          _startTime;
-    double          _endTime;
+    double          _startTimeMs;
+    double          _endTimeMs;
     int             _progress;
     vector<int>     _calib;
     vector<YDataStream*> _streams;
     YMeasure        _summary;
     vector<YMeasure> _preview;
     vector<YMeasure> _measures;
+    double          _summaryMinVal;
+    double          _summaryMaxVal;
+    double          _summaryTotalAvg;
+    double          _summaryTotalTime;
     //--- (end of generated code: YDataSet attributes)
 
 public:
@@ -1495,6 +1501,8 @@ public:
 
 
     virtual vector<int> _get_calibration(void);
+
+    virtual int         loadSummary(string data);
 
     virtual int         processMore(int progress,string data);
 

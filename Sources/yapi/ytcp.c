@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 33018 2018-11-07 17:45:34Z seb $
+ * $Id: ytcp.c 33576 2018-12-07 08:13:18Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -2493,12 +2493,26 @@ static int ws_openBaseSocket(HubSt* basehub, int first_notification_connection, 
     u16 port;
     yAsbUrlProto proto;
     yStrRef user, pass, subdomain;
-    int res, tcpchan, request_len;
+    int res, request_len;
     char request[256];
     char subdomain_buf[32];
     struct _WSNetHubSt* wshub = &basehub->ws;
 
-    memset(wshub, 0, sizeof(WSNetHub));
+    wshub->base_state = 0;
+    wshub->strym_state = 0;
+    wshub->remoteVersion = 0;
+    wshub->remoteNounce = 0;
+    wshub->nounce = 0;
+    wshub->bws_open_tm = 0;
+    wshub->bws_timeout_tm = 0;
+    wshub->bws_read_tm = 0;
+    wshub->next_transmit_tm = 0;
+    wshub->connectionTime = 0;
+    wshub->tcpRoundTripTime = 0;
+    wshub->tcpMaxWindowSize = 0;
+    wshub->uploadRate = 0;
+    wshub->openRequests = 0;
+
     wshub->skt = INVALID_SOCKET;
     wshub->s_next_async_id = 48;
 
@@ -2573,11 +2587,6 @@ static int ws_openBaseSocket(HubSt* basehub, int first_notification_connection, 
         return res;
     }
 
-    wshub->fifo_buffer = yMalloc(2048);
-    yFifoInit(&wshub->mainfifo, wshub->fifo_buffer, 2048);
-    for (tcpchan = 0; tcpchan < MAX_ASYNC_TCPCHAN; tcpchan++) {
-        yInitializeCriticalSection(&wshub->chan[tcpchan].access);
-    }
     return YAPI_SUCCESS;
 }
 
@@ -2587,14 +2596,9 @@ static int ws_openBaseSocket(HubSt* basehub, int first_notification_connection, 
 */
 static void ws_closeBaseSocket(struct _WSNetHubSt* base_req)
 {
-    int tcpchan;
     yTcpClose(base_req->skt);
     base_req->skt = INVALID_SOCKET;
-    for (tcpchan = 0; tcpchan < MAX_ASYNC_TCPCHAN; tcpchan++) {
-        yDeleteCriticalSection(&base_req->chan[tcpchan].access);
-    }
-    yFifoCleanup(&base_req->mainfifo);
-    yFree(base_req->fifo_buffer);
+    yFifoEmpty(&base_req->mainfifo);
 }
 
 
