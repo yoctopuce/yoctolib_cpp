@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 33576 2018-12-07 08:13:18Z seb $
+ * $Id: yapi.c 33615 2018-12-10 08:12:08Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -1677,7 +1677,7 @@ static int yNetHubEnum(HubSt* hub, int forceupdate, char* errmsg)
             // the hub send ping notification -> we can rely on helperthread status
             res = yNetHubEnumEx(hub, &enus, errmsg);
             if (YISERR(res)) {
-                dbglog("error with hub %s : %s",hub->name,errmsg);
+                dbglog("error with hub %s : %s\n",hub->name,errmsg);
             }
         }
     }

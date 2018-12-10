@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 33505 2018-12-05 14:45:46Z seb $
+ * $Id: yocto_api.cpp 33601 2018-12-09 14:30:31Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -8635,6 +8635,7 @@ YDataLogger::YDataLogger(const string& func): YFunction(func)
     ,_recording(RECORDING_INVALID)
     ,_autoStart(AUTOSTART_INVALID)
     ,_beaconDriven(BEACONDRIVEN_INVALID)
+    ,_usage(USAGE_INVALID)
     ,_clearHistory(CLEARHISTORY_INVALID)
     ,_valueCallbackDataLogger(NULL)
 //--- (end of generated code: YDataLogger initialization)
@@ -8668,6 +8669,9 @@ int YDataLogger::_parseAttr(YJSONObject* json_val)
     }
     if(json_val->has("beaconDriven")) {
         _beaconDriven =  (Y_BEACONDRIVEN_enum)json_val->getInt("beaconDriven");
+    }
+    if(json_val->has("usage")) {
+        _usage =  json_val->getInt("usage");
     }
     if(json_val->has("clearHistory")) {
         _clearHistory =  (Y_CLEARHISTORY_enum)json_val->getInt("clearHistory");
@@ -8928,6 +8932,35 @@ int YDataLogger::set_beaconDriven(Y_BEACONDRIVEN_enum newval)
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
          throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the percentage of datalogger memory in use.
+ *
+ * @return an integer corresponding to the percentage of datalogger memory in use
+ *
+ * On failure, throws an exception or returns Y_USAGE_INVALID.
+ */
+int YDataLogger::get_usage(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDataLogger::USAGE_INVALID;
+                }
+            }
+        }
+        res = _usage;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
     yLeaveCriticalSection(&_this_cs);
     return res;

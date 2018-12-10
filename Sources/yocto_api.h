@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 33499 2018-12-04 14:53:08Z seb $
+ * $Id: yocto_api.h 33601 2018-12-09 14:30:31Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -201,6 +201,7 @@ typedef enum {
 #endif
 #define Y_CURRENTRUNINDEX_INVALID       (YAPI_INVALID_UINT)
 #define Y_TIMEUTC_INVALID               (YAPI_INVALID_LONG)
+#define Y_USAGE_INVALID                 (YAPI_INVALID_UINT)
 //--- (end of generated code: YDataLogger definitions)
 
 
@@ -3828,6 +3829,7 @@ class YOCTO_CLASS_EXPORT YDataLogger: public YFunction {
     Y_RECORDING_enum _recording;
     Y_AUTOSTART_enum _autoStart;
     Y_BEACONDRIVEN_enum _beaconDriven;
+    int             _usage;
     Y_CLEARHISTORY_enum _clearHistory;
     YDataLoggerValueCallback _valueCallbackDataLogger;
 
@@ -3867,6 +3869,7 @@ public:
     static const Y_BEACONDRIVEN_enum BEACONDRIVEN_OFF = Y_BEACONDRIVEN_OFF;
     static const Y_BEACONDRIVEN_enum BEACONDRIVEN_ON = Y_BEACONDRIVEN_ON;
     static const Y_BEACONDRIVEN_enum BEACONDRIVEN_INVALID = Y_BEACONDRIVEN_INVALID;
+    static const int USAGE_INVALID = YAPI_INVALID_UINT;
     static const Y_CLEARHISTORY_enum CLEARHISTORY_FALSE = Y_CLEARHISTORY_FALSE;
     static const Y_CLEARHISTORY_enum CLEARHISTORY_TRUE = Y_CLEARHISTORY_TRUE;
     static const Y_CLEARHISTORY_enum CLEARHISTORY_INVALID = Y_CLEARHISTORY_INVALID;
@@ -3994,6 +3997,18 @@ public:
     int             set_beaconDriven(Y_BEACONDRIVEN_enum newval);
     inline int      setBeaconDriven(Y_BEACONDRIVEN_enum newval)
     { return this->set_beaconDriven(newval); }
+
+    /**
+     * Returns the percentage of datalogger memory in use.
+     *
+     * @return an integer corresponding to the percentage of datalogger memory in use
+     *
+     * On failure, throws an exception or returns Y_USAGE_INVALID.
+     */
+    int                 get_usage(void);
+
+    inline int          usage(void)
+    { return this->get_usage(); }
 
     Y_CLEARHISTORY_enum get_clearHistory(void);
 
