@@ -1,3 +1,4 @@
-CPP v1.10.33636
+CPP v1.10.33657
 
-- Add support for data logger usage attribute
+- Fix crash after 8192 YAPI.FreeAPI
+- Fix race condition that can lead to deadlock

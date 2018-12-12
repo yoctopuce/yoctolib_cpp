@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 32979 2018-11-06 15:02:57Z seb $
+ * $Id: yhash.c 33654 2018-12-12 14:49:15Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -199,6 +199,12 @@ void yHashInit(void)
     for (i = 0; i < NB_MAX_DEVICES; i++)
         funYdxPtr[i] = INVALID_BLK_HDL;
 #ifndef MICROCHIP_API
+    nextDevYdx = 0;
+    nextCatYdx = 1;
+    nextHashEntry = 256;
+    yWpListHead = INVALID_BLK_HDL;
+    yYpListHead = INVALID_BLK_HDL;
+    freeBlks = INVALID_BLK_HDL;
     memset((u8 *)usedDevYdx, 0, sizeof(usedDevYdx));
     yInitializeCriticalSection(&yHashMutex);
     yInitializeCriticalSection(&yFreeMutex);

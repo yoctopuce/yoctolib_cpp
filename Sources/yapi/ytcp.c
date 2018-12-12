@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 33576 2018-12-07 08:13:18Z seb $
+ * $Id: ytcp.c 33655 2018-12-12 14:52:37Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -1242,11 +1242,11 @@ static void dumpReqQueue(const char * msg, HubSt* hub, int tcpchan)
     struct _RequestSt* req;
     char buffer[1024];
     req = hub->ws.chan[tcpchan].requests;
-    YSPRINTF(buffer,1024,"dmp_%s(%d):", msg, tcpchan);
+    YSPRINTF(buffer,2048,"dmp_%s(%d):", msg, tcpchan);
     while (req != NULL ) {
-        char sbuffer[256];
-        YSPRINTF(sbuffer,256," %p(%d)", req, req->state);
-        YSTRCAT(buffer,1024,sbuffer);
+        char sbuffer[512];
+        YSPRINTF(sbuffer,512," %p(%d:%d %d->%d)", req, req->state, req->ws.asyncId, req->ws.requestpos,req->ws.requestsize);
+        YSTRCAT(buffer, 2048,sbuffer);
         req = req->ws.next;
     }
     dbglog("%s\n",buffer);
@@ -1294,6 +1294,10 @@ static int yWSOpenReqEx(struct _RequestSt* req, int tcpchan, u64 mstimeout, char
     } else {
         memcpy(p, "\r\n\r\n", 4);
     }
+    req->ws.channel = tcpchan;
+    req->timeout_tm = mstimeout;
+    YASSERT(tcpchan < MAX_ASYNC_TCPCHAN);
+    yEnterCriticalSection(&hub->ws.chan[tcpchan].access);
     if (req->callback) {
         yEnterCriticalSection(&hub->access);
         req->ws.asyncId = hub->ws.s_next_async_id++;
@@ -1302,10 +1306,6 @@ static int yWSOpenReqEx(struct _RequestSt* req, int tcpchan, u64 mstimeout, char
         }
         yLeaveCriticalSection(&hub->access);
     }
-    req->ws.channel = tcpchan;
-    req->timeout_tm = mstimeout;
-    YASSERT(tcpchan < MAX_ASYNC_TCPCHAN);
-    yEnterCriticalSection(&hub->ws.chan[tcpchan].access);
     req->ws.next = NULL; // just in case
     if (hub->ws.chan[tcpchan].requests) {
         r = hub->ws.chan[tcpchan].requests;
@@ -1578,6 +1578,7 @@ int yReqOpen(struct _RequestSt* req, int wait_for_start, int tcpchan, const char
     req->progressCtx = progress_ctx;
     req->read_tm = req->write_tm = req->open_tm = yapiGetTickCount();
     req->timeout_tm = mstimeout;
+    req->state = REQ_OPEN;
 
 
     // Really build and send the request
@@ -1590,7 +1591,6 @@ int yReqOpen(struct _RequestSt* req, int wait_for_start, int tcpchan, const char
         req->errmsg[0] = '\0';
         req->flags |= TCPREQ_IN_USE;
         yResetEvent(&req->finished);
-        req->state = REQ_OPEN;
     }
 
     yLeaveCriticalSection(&req->access);
@@ -2052,7 +2052,9 @@ static void ws_appendTCPData(RequestSt* req, u8* buffer, int pktlen, int isClose
     }
     req->read_tm = yapiGetTickCount();
     if (isClose) {
+        yEnterCriticalSection(&req->access);
         req->state = REQ_CLOSED;
+        yLeaveCriticalSection(&req->access);
         ySetEvent(&req->finished);
         if (req->callback != NULL) {
             // async request are automaticaly closed
@@ -2119,7 +2121,8 @@ static int ws_parseIncommingFrame(HubSt* hub, u8* buffer, int pktlen, char* errm
             int asyncid = buffer[pktlen - 1];
             pktlen--;
             if (req->ws.asyncId != asyncid) {
-                dbglog("WS: Incorrect async-close signature on tcpChan %d (%d)\n", strym.tcpchan, asyncid);
+                dbglog("WS: Incorrect async-close signature on tcpChan %d %p (%d:%d)\n", strym.tcpchan,req, req->ws.asyncId,asyncid);
+                //dumpReqQueue("recv",hub, strym.tcpchan);
                 break;
             }
             WSLOG("req(%s:%p) close async %d\n", req->hub->name, req, req->ws.asyncId);
@@ -2445,7 +2448,8 @@ static int ws_processRequests(HubSt* hub, char* errmsg)
                         }
                         tmp_data[datalen] = req->ws.asyncId;
                         res = ws_sendFrame(hub, stream, tcpchan, tmp_data, datalen + 1, errmsg);
-                        WSLOG("req(%s:%p) sent async close %d\n", req->hub->name, req, req->ws.asyncId);
+                        WSLOG("req(%s:%p) sent async close chan%d:%d\n", req->hub->name, req, tcpchan,req->ws.asyncId);
+                        //dumpReqQueue("as_c", req->hub, tcpchan);
                         req->ws.last_write_tm = yapiGetTickCount();
                     } else {
                         res = ws_sendFrame(hub, stream, tcpchan, req->ws.requestbuf + req->ws.requestpos, datalen, errmsg);

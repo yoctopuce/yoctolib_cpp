@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 33615 2018-12-10 08:12:08Z seb $
+ * $Id: yapi.c 33654 2018-12-12 14:49:15Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -100,12 +100,13 @@ static int YREQ_LOG_START(const char *msg, const char *device, const char * requ
     struct tm timeinfo;
     time_t rawtime;
     int threadIdx, count, first_len;
+    int fileno;
 
     //we may need to add mutex here
     yEnterCriticalSection(&YREQ_CS);
     count = global_req_count++;
     yLeaveCriticalSection(&YREQ_CS);
-    int fileno = count & FILE_NO_BIT_MASK;
+    fileno = count & FILE_NO_BIT_MASK;
     // compute time string
     time(&rawtime);
     localtime_s(&timeinfo, &rawtime);
@@ -437,6 +438,7 @@ static int wpSafeCheckOverwrite(yUrlRef registeredUrl, HubSt* hub, yUrlRef devUr
 void initDevYdxInfos(int devYdx, yStrRef serial)
 {
     yGenericDeviceSt* gen = yContext->generic_infos + devYdx;
+    YASSERT(devYdx < ALLOC_YDX_PER_HUB);
     yEnterCriticalSection(&yContext->generic_cs);
     memset(gen, 0, sizeof(yGenericDeviceSt));
     gen->serial = serial;
@@ -446,6 +448,7 @@ void initDevYdxInfos(int devYdx, yStrRef serial)
 void freeDevYdxInfos(int devYdx)
 {
     yGenericDeviceSt* gen = yContext->generic_infos + devYdx;
+    YASSERT(devYdx < ALLOC_YDX_PER_HUB);
     yEnterCriticalSection(&yContext->generic_cs);
     gen->serial = YSTRREF_EMPTY_STRING;
     yLeaveCriticalSection(&yContext->generic_cs);
@@ -1528,10 +1531,6 @@ static int yNetHubEnumEx(HubSt* hub, ENU_CONTEXT* enus, char* errmsg)
     RequestSt* req;
     int use_jzon;
 
-#ifdef DEBUG_YAPI_REQ
-    int req_count = YREQ_LOG_START("yNetHubEnumEx", hub->name, request, YSTRLEN(request));
-    u64 start_tm = yapiGetTickCount();
-#endif
 
     retry:
 
@@ -1552,6 +1551,11 @@ static int yNetHubEnumEx(HubSt* hub, ENU_CONTEXT* enus, char* errmsg)
     } else {
         request = base_request;
     }
+#ifdef DEBUG_YAPI_REQ
+    int req_count = YREQ_LOG_START("yNetHubEnumEx", hub->name, request, YSTRLEN(request));
+    u64 start_tm = yapiGetTickCount();
+#endif
+
     req = yReqAlloc(hub);
     if (YISERR((res = yReqOpen(req, 2 * YIO_DEFAULT_TCP_TIMEOUT, 0, request, YSTRLEN(request), YIO_DEFAULT_TCP_TIMEOUT, NULL, NULL, NULL, NULL, errmsg)))) {
         yReqFree(req);
@@ -1961,6 +1965,9 @@ static YRETCODE yapiInitAPI_internal(int detect_type, char* errmsg)
     //initialize enumeration CS
     initializeAllCS(ctx);
 
+    //initialize white/yellow pages support
+    yHashInit();
+
     //initialize device pool
     ctx->devs = NULL;
     ctx->devhdlcount = 1;
@@ -1973,9 +1980,6 @@ static YRETCODE yapiInitAPI_internal(int detect_type, char* errmsg)
         }
     }
 
-
-    //initialize white/yellow pages support
-    yHashInit();
 
     if (YISERR(yTcpInit(errmsg))) {
         deleteAllCS(ctx);
