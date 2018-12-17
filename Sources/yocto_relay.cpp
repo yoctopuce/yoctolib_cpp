@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_relay.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_relay.cpp 33709 2018-12-14 14:18:12Z seb $
  *
  *  Implements yFindRelay(), the high-level API for Relay functions
  *
@@ -447,7 +447,7 @@ int YRelay::set_pulseTimer(s64 newval)
  * Sets the relay to output B (active) for a specified duration, then brings it
  * automatically back to output A (idle state).
  *
- * @param ms_duration : pulse duration, in millisecondes
+ * @param ms_duration : pulse duration, in milliseconds
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -501,8 +501,8 @@ int YRelay::set_delayedPulseTimer(YDelayedPulse newval)
 /**
  * Schedules a pulse.
  *
- * @param ms_delay : waiting time before the pulse, in millisecondes
- * @param ms_duration : pulse duration, in millisecondes
+ * @param ms_delay : waiting time before the pulse, in milliseconds
+ * @param ms_duration : pulse duration, in milliseconds
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *

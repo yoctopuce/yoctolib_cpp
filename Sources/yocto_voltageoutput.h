@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_voltageoutput.h 32900 2018-11-02 10:12:43Z seb $
+ *  $Id: yocto_voltageoutput.h 33709 2018-12-14 14:18:12Z seb $
  *
  *  Declares yFindVoltageOutput(), the high-level API for VoltageOutput functions
  *
@@ -202,7 +202,7 @@ public:
     virtual int         _invokeValueCallback(string value);
 
     /**
-     * Performs a smooth transistion of output voltage. Any explicit voltage
+     * Performs a smooth transition of output voltage. Any explicit voltage
      * change cancels any ongoing transition process.
      *
      * @param V_target   : new output voltage value at the end of the transition

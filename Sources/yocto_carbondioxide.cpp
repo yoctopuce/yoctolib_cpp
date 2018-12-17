@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_carbondioxide.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_carbondioxide.cpp 33709 2018-12-14 14:18:12Z seb $
  *
  *  Implements yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *
@@ -113,7 +113,7 @@ int YCarbonDioxide::get_abcPeriod(void)
 /**
  * Changes Automatic Baseline Calibration period, in hours. If you need
  * to disable automatic baseline calibration (for instance when using the
- * sensor in an environment that is constantly above 400ppm CO2), set the
+ * sensor in an environment that is constantly above 400 ppm CO2), set the
  * period to -1. Remember to call the saveToFlash() method of the
  * module if the modification must be kept.
  *
@@ -307,7 +307,7 @@ int YCarbonDioxide::_invokeTimedReportCallback(YMeasure value)
  * automatic calibration period. However, if you disable automatic baseline
  * calibration, you may want to manually trigger a calibration from time to
  * time. Before starting a baseline calibration, make sure to put the sensor
- * in a standard environment (e.g. outside in fresh air) at around 400ppm.
+ * in a standard environment (e.g. outside in fresh air) at around 400 ppm.
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *

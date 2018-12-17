@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_lin.c 30532 2018-04-05 14:28:20Z seb $
+ * $Id: ypkt_lin.c 33734 2018-12-14 15:56:25Z seb $
  *
  * OS-specific USB packet layer, Linux version
  *
@@ -112,10 +112,10 @@ static int yReserveGlobalAccess(yContextSt *ctx, char *errmsg)
     if(fd<0){
         HALLOG("unable to open lock fifo (%d)\n",errno);
         if(errno==EACCES) {
-            return YERRMSG(YAPI_DOUBLE_ACCES, "we do not have acces to lock fifo");
+            return YERRMSG(YAPI_DOUBLE_ACCES, "we do not have access to lock fifo");
         }else{
-            // we cannot open lock file so we cannot realy
-            // check double instance so we asume that we are
+            // we cannot open lock file so we cannot really
+            // check double instance so we assume that we are
             // alone
             return YAPI_SUCCESS;
         }
@@ -124,7 +124,7 @@ static int yReserveGlobalAccess(yContextSt *ctx, char *errmsg)
     mypid = (int) getpid();
     res = read(fd, &chk_val, sizeof(chk_val));
     if (res == sizeof(chk_val)) {
-        //there is allready someone
+        //there is already someone
         usedpid = chk_val;
     } else{
         // nobody there -> store my PID
@@ -279,7 +279,7 @@ static void *event_thread(void *param)
             break;
         }
     }
-    HALLOG("event_thread run loop stoped\n");
+    HALLOG("event_thread run loop stopped\n");
     ctx->usb_thread_state = USB_THREAD_STOPED;
     return NULL;
 }
@@ -305,7 +305,7 @@ int yyyUSB_init(yContextSt *ctx,char *errmsg)
 #endif
     ctx->usb_thread_state = USB_THREAD_NOT_STARTED;
     pthread_create(&ctx->usb_thread, NULL, event_thread, ctx);
-    //wait thead start
+    //wait thread start
     while(ctx->usb_thread_state != USB_THREAD_RUNNING){
         usleep(50000);
     }
@@ -429,12 +429,12 @@ exit:
 
 
 
-// return 1 if OS hdl are identicals
+// return 1 if OS hdl are identical
 //        0 if any of the interface has changed
 int yyyOShdlCompare( yPrivDeviceSt *dev, yInterfaceSt *newiface)
 {
     if(dev->infos.nbinbterfaces != 1){
-        HALLOG("bad number of inteface for %s (%d)\n",dev->infos.serial,dev->infos.nbinbterfaces);
+        HALLOG("bad number of interface for %s (%d)\n",dev->infos.serial,dev->infos.nbinbterfaces);
         return 0;
     }
     if(dev->iface.devref != newiface->devref){
@@ -547,7 +547,7 @@ static void rd_callback(struct libusb_transfer *transfer)
     if (iface->flags.yyySetupDone) {
         res = submitReadPkt(iface, errmsg);
         if (res < 0) {
-            HALLOG("CBrd:%s libusb_submit_transfer errror %X\n", iface->serial, res);
+            HALLOG("CBrd:%s libusb_submit_transfer error %X\n", iface->serial, res);
         }
     }
 
@@ -681,7 +681,7 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
             iface->wrendp = ifd->endpoint[j].bEndpointAddress;
         }
     }
-    HALLOG("ednpoints are rd=%d wr=%d\n", iface->rdendp,iface->wrendp);
+    HALLOG("endpoints are rd=%d wr=%d\n", iface->rdendp,iface->wrendp);
 
     yPktQueueInit(&iface->rxQueue);
     yPktQueueInit(&iface->txQueue);
@@ -732,7 +732,7 @@ void yyyPacketShutdown(yInterfaceSt  *iface)
                 }
             }
         }
-        HALLOG("%s:%d libusb relase iface\n",iface->serial,iface->ifaceno);
+        HALLOG("%s:%d libusb release iface\n",iface->serial,iface->ifaceno);
         res = libusb_release_interface(iface->hdl,iface->ifaceno);
         if(res != 0 && res!=LIBUSB_ERROR_NOT_FOUND && res!=LIBUSB_ERROR_NO_DEVICE){
             HALLOG("%s:%dlibusb_release_interface error\n",iface->serial,iface->ifaceno);

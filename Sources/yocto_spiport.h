@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.h 32900 2018-11-02 10:12:43Z seb $
+ *  $Id: yocto_spiport.h 33722 2018-12-14 15:04:43Z seb $
  *
  *  Declares yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -75,13 +75,13 @@ typedef enum {
     Y_SSPOLARITY_INVALID = -1,
 } Y_SSPOLARITY_enum;
 #endif
-#ifndef _Y_SHITFTSAMPLING_ENUM
-#define _Y_SHITFTSAMPLING_ENUM
+#ifndef _Y_SHIFTSAMPLING_ENUM
+#define _Y_SHIFTSAMPLING_ENUM
 typedef enum {
-    Y_SHITFTSAMPLING_OFF = 0,
-    Y_SHITFTSAMPLING_ON = 1,
-    Y_SHITFTSAMPLING_INVALID = -1,
-} Y_SHITFTSAMPLING_enum;
+    Y_SHIFTSAMPLING_OFF = 0,
+    Y_SHIFTSAMPLING_ON = 1,
+    Y_SHIFTSAMPLING_INVALID = -1,
+} Y_SHIFTSAMPLING_enum;
 #endif
 #define Y_RXCOUNT_INVALID               (YAPI_INVALID_UINT)
 #define Y_TXCOUNT_INVALID               (YAPI_INVALID_UINT)
@@ -127,7 +127,7 @@ protected:
     string          _protocol;
     string          _spiMode;
     Y_SSPOLARITY_enum _ssPolarity;
-    Y_SHITFTSAMPLING_enum _shitftSampling;
+    Y_SHIFTSAMPLING_enum _shiftSampling;
     YSpiPortValueCallback _valueCallbackSpiPort;
     int             _rxptr;
     string          _rxbuff;
@@ -169,9 +169,9 @@ public:
     static const Y_SSPOLARITY_enum SSPOLARITY_ACTIVE_LOW = Y_SSPOLARITY_ACTIVE_LOW;
     static const Y_SSPOLARITY_enum SSPOLARITY_ACTIVE_HIGH = Y_SSPOLARITY_ACTIVE_HIGH;
     static const Y_SSPOLARITY_enum SSPOLARITY_INVALID = Y_SSPOLARITY_INVALID;
-    static const Y_SHITFTSAMPLING_enum SHITFTSAMPLING_OFF = Y_SHITFTSAMPLING_OFF;
-    static const Y_SHITFTSAMPLING_enum SHITFTSAMPLING_ON = Y_SHITFTSAMPLING_ON;
-    static const Y_SHITFTSAMPLING_enum SHITFTSAMPLING_INVALID = Y_SHITFTSAMPLING_INVALID;
+    static const Y_SHIFTSAMPLING_enum SHIFTSAMPLING_OFF = Y_SHIFTSAMPLING_OFF;
+    static const Y_SHIFTSAMPLING_enum SHIFTSAMPLING_ON = Y_SHIFTSAMPLING_ON;
+    static const Y_SHIFTSAMPLING_enum SHIFTSAMPLING_INVALID = Y_SHIFTSAMPLING_INVALID;
 
     /**
      * Returns the total number of bytes received since last reset.
@@ -435,30 +435,30 @@ public:
     /**
      * Returns true when the SDI line phase is shifted with regards to the SDO line.
      *
-     * @return either Y_SHITFTSAMPLING_OFF or Y_SHITFTSAMPLING_ON, according to true when the SDI line
-     * phase is shifted with regards to the SDO line
+     * @return either Y_SHIFTSAMPLING_OFF or Y_SHIFTSAMPLING_ON, according to true when the SDI line phase
+     * is shifted with regards to the SDO line
      *
-     * On failure, throws an exception or returns Y_SHITFTSAMPLING_INVALID.
+     * On failure, throws an exception or returns Y_SHIFTSAMPLING_INVALID.
      */
-    Y_SHITFTSAMPLING_enum get_shitftSampling(void);
+    Y_SHIFTSAMPLING_enum get_shiftSampling(void);
 
-    inline Y_SHITFTSAMPLING_enum shitftSampling(void)
-    { return this->get_shitftSampling(); }
+    inline Y_SHIFTSAMPLING_enum shiftSampling(void)
+    { return this->get_shiftSampling(); }
 
     /**
      * Changes the SDI line sampling shift. When disabled, SDI line is
      * sampled in the middle of data output time. When enabled, SDI line is
      * samples at the end of data output time.
      *
-     * @param newval : either Y_SHITFTSAMPLING_OFF or Y_SHITFTSAMPLING_ON, according to the SDI line sampling shift
+     * @param newval : either Y_SHIFTSAMPLING_OFF or Y_SHIFTSAMPLING_ON, according to the SDI line sampling shift
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
-    int             set_shitftSampling(Y_SHITFTSAMPLING_enum newval);
-    inline int      setShitftSampling(Y_SHITFTSAMPLING_enum newval)
-    { return this->set_shitftSampling(newval); }
+    int             set_shiftSampling(Y_SHIFTSAMPLING_enum newval);
+    inline int      setShiftSampling(Y_SHIFTSAMPLING_enum newval)
+    { return this->set_shiftSampling(newval); }
 
     /**
      * Retrieves a SPI port for a given identifier.

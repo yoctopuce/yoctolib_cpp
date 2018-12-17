@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_watchdog.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_watchdog.cpp 33709 2018-12-14 14:18:12Z seb $
  *
  *  Implements yFindWatchdog(), the high-level API for Watchdog functions
  *
@@ -463,7 +463,7 @@ int YWatchdog::set_pulseTimer(s64 newval)
  * Sets the relay to output B (active) for a specified duration, then brings it
  * automatically back to output A (idle state).
  *
- * @param ms_duration : pulse duration, in millisecondes
+ * @param ms_duration : pulse duration, in milliseconds
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -517,8 +517,8 @@ int YWatchdog::set_delayedPulseTimer(YDelayedPulse newval)
 /**
  * Schedules a pulse.
  *
- * @param ms_delay : waiting time before the pulse, in millisecondes
- * @param ms_duration : pulse duration, in millisecondes
+ * @param ms_delay : waiting time before the pulse, in milliseconds
+ * @param ms_duration : pulse duration, in milliseconds
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -563,9 +563,9 @@ s64 YWatchdog::get_countdown(void)
 }
 
 /**
- * Returns the watchdog runing state at module power on.
+ * Returns the watchdog running state at module power on.
  *
- * @return either Y_AUTOSTART_OFF or Y_AUTOSTART_ON, according to the watchdog runing state at module power on
+ * @return either Y_AUTOSTART_OFF or Y_AUTOSTART_ON, according to the watchdog running state at module power on
  *
  * On failure, throws an exception or returns Y_AUTOSTART_INVALID.
  */
@@ -592,11 +592,11 @@ Y_AUTOSTART_enum YWatchdog::get_autoStart(void)
 }
 
 /**
- * Changes the watchdog runningsttae at module power on. Remember to call the
+ * Changes the watchdog running state at module power on. Remember to call the
  * saveToFlash() method and then to reboot the module to apply this setting.
  *
- * @param newval : either Y_AUTOSTART_OFF or Y_AUTOSTART_ON, according to the watchdog runningsttae at
- * module power on
+ * @param newval : either Y_AUTOSTART_OFF or Y_AUTOSTART_ON, according to the watchdog running state
+ * at module power on
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -674,7 +674,7 @@ int YWatchdog::set_running(Y_RUNNING_enum newval)
 
 /**
  * Resets the watchdog. When the watchdog is running, this function
- * must be called on a regular basis to prevent the watchog to
+ * must be called on a regular basis to prevent the watchdog to
  * trigger
  *
  * @return YAPI_SUCCESS if the call succeeds.

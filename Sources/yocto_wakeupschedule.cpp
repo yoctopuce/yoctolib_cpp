@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupschedule.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_wakeupschedule.cpp 33709 2018-12-14 14:18:12Z seb $
  *
  *  Implements yFindWakeUpSchedule(), the high-level API for WakeUpSchedule functions
  *
@@ -153,9 +153,9 @@ int YWakeUpSchedule::set_minutesA(int newval)
 }
 
 /**
- * Returns the minutes in the 30-59 intervalof each hour scheduled for wake up.
+ * Returns the minutes in the 30-59 interval of each hour scheduled for wake up.
  *
- * @return an integer corresponding to the minutes in the 30-59 intervalof each hour scheduled for wake up
+ * @return an integer corresponding to the minutes in the 30-59 interval of each hour scheduled for wake up
  *
  * On failure, throws an exception or returns Y_MINUTESB_INVALID.
  */
@@ -423,9 +423,9 @@ int YWakeUpSchedule::set_months(int newval)
 }
 
 /**
- * Returns the date/time (seconds) of the next wake up occurence.
+ * Returns the date/time (seconds) of the next wake up occurrence.
  *
- * @return an integer corresponding to the date/time (seconds) of the next wake up occurence
+ * @return an integer corresponding to the date/time (seconds) of the next wake up occurrence
  *
  * On failure, throws an exception or returns Y_NEXTOCCURENCE_INVALID.
  */

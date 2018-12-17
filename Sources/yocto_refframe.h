@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_refframe.h 32900 2018-11-02 10:12:43Z seb $
+ *  $Id: yocto_refframe.h 33709 2018-12-14 14:18:12Z seb $
  *
  *  Declares yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -390,7 +390,7 @@ public:
      * The calibration procedure is completed when the method
      * get_3DCalibrationProgress returns 100. At this point,
      * the computed calibration parameters can be applied using method
-     * save3DCalibration. The calibration process can be canceled
+     * save3DCalibration. The calibration process can be cancelled
      * at any time using method cancel3DCalibration.
      *
      * On failure, throws an exception or returns a negative error code.

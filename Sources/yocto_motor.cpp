@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_motor.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_motor.cpp 33709 2018-12-14 14:18:12Z seb $
  *
  *  Implements yFindMotor(), the high-level API for Motor functions
  *
@@ -118,7 +118,7 @@ int YMotor::_parseAttr(YJSONObject* json_val)
  * BACKWD when the controller is driving the motor backward;
  * BRAKE  when the controller is braking;
  * LOVOLT when the controller has detected a low voltage condition;
- * HICURR when the controller has detected an overcurrent condition;
+ * HICURR when the controller has detected an over current condition;
  * HIHEAT when the controller has detected an overheat condition;
  * FAILSF when the controller switched on the failsafe security.
  *
@@ -721,7 +721,7 @@ int YMotor::_invokeValueCallback(string value)
  * Rearms the controller failsafe timer. When the motor is running and the failsafe feature
  * is active, this function should be called periodically to prove that the control process
  * is running properly. Otherwise, the motor is automatically stopped after the specified
- * timeout. Calling a motor <i>set</i> function implicitely rearms the failsafe timer.
+ * timeout. Calling a motor <i>set</i> function implicitly rearms the failsafe timer.
  */
 int YMotor::keepALive(void)
 {
@@ -729,7 +729,7 @@ int YMotor::keepALive(void)
 }
 
 /**
- * Reset the controller state to IDLE. This function must be invoked explicitely
+ * Reset the controller state to IDLE. This function must be invoked explicitly
  * after any error condition is signaled.
  */
 int YMotor::resetStatus(void)
@@ -738,7 +738,7 @@ int YMotor::resetStatus(void)
 }
 
 /**
- * Changes progressively the power sent to the moteur for a specific duration.
+ * Changes progressively the power sent to the motor for a specific duration.
  *
  * @param targetPower : desired motor power, in percents (between -100% and +100%)
  * @param delay : duration (in ms) of the transition

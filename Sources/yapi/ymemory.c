@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ymemory.c 31028 2018-06-05 14:19:09Z seb $
+ * $Id: ymemory.c 33697 2018-12-14 07:15:11Z martinm $
  *
  * Basic memory check function to prevent memory leak
  *
@@ -191,7 +191,7 @@ void  ySafeFree(const char *file,u32 line,void *ptr)
         YASSERT(0);
     }
     if(entry->state == YMEM_FREED){
-        dbglog("Free of allready freed pointer (0x%x) at %s:%d\n",ptr,file,line);
+        dbglog("Free of already freed pointer (0x%x) at %s:%d\n",ptr,file,line);
         dbglog("was allocated at %s:%d size =%d freed at %s:%d\n\n",
             entry->malloc_file, entry->malloc_line, entry->malloc_size, entry->free_file,entry->free_line);
         ymemdump();
@@ -223,7 +223,7 @@ void  ySafeTrace(const char *file,u32 line,void *ptr)
         YASSERT(0);
     }
     if(entry->state == YMEM_FREED){
-        dbglog("Update trace of allready freed pointer (0x%x) at %s:%d\n",ptr,file,line);
+        dbglog("Update trace of already freed pointer (0x%x) at %s:%d\n",ptr,file,line);
         dbglog("was allocated at %s:%d size =%d freed at %s:%d\n\n",
                entry->malloc_file, entry->malloc_line, entry->malloc_size, entry->free_file,entry->free_line);
         ymemdump();

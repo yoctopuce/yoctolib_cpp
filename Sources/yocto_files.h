@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.h 32900 2018-11-02 10:12:43Z seb $
+ * $Id: yocto_files.h 33709 2018-12-14 14:18:12Z seb $
  *
  * Declares yFindFiles(), the high-level API for Files functions
  *
@@ -230,7 +230,7 @@ public:
      * in the filesystem.
      *
      * @param pattern : an optional filter pattern, using star and question marks
-     *         as wildcards. When an empty pattern is provided, all file records
+     *         as wild cards. When an empty pattern is provided, all file records
      *         are returned.
      *
      * @return a list of YFileRecord objects, containing the file path
@@ -245,7 +245,7 @@ public:
      *
      * @param filename : the file name to test.
      *
-     * @return a true if the file existe, false ortherwise.
+     * @return a true if the file exist, false otherwise.
      *
      * On failure, throws an exception.
      */

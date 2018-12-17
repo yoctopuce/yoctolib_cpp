@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_win.c 29389 2017-12-07 08:57:39Z seb $
+ * $Id: ypkt_win.c 33734 2018-12-14 15:56:25Z seb $
  *
  * OS-specific USB packet layer, Windows version
  *
@@ -411,7 +411,7 @@ int yyyUSB_stop(yContextSt *ctx, char *errmsg)
 *****************************************************************/
 
 
-// no check on reentrance or initializations since we are only called
+// no check on reentrant or initializations since we are only called
 // by the yUpdateDeviceList witch take care of all this stuff
 // the caller is responsible of freeing the ifaces buffer (if not set to NULL)
 int yyyUSBGetInterfaces(yInterfaceSt **ifaces, int *nbifaceDetect, char *errmsg)
@@ -422,7 +422,7 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces, int *nbifaceDetect, char *errmsg)
     DWORD       needsize;
     HDEVINFO    DeviceInfoTable = INVALID_HANDLE_VALUE;
     int         nbifaceAlloc;
-    char        buffer[WIN_DEVICE_PATH_LEN];//buffer forp DetailedInterfaceData
+    char        buffer[WIN_DEVICE_PATH_LEN];//buffer for DetailedInterfaceData
 
     *ifaces = NULL;
     //setup some windows stuff
@@ -460,7 +460,7 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces, int *nbifaceDetect, char *errmsg)
             yInterfaceSt    *iface;
             int             find, retry = 16;
 
-            //ensure the buffer of detected interface is big enought
+            //ensure the buffer of detected interface is big enough
             if (*nbifaceDetect == nbifaceAlloc) {
                 yInterfaceSt    *tmp;
                 u32 newsize = nbifaceAlloc * 2 * sizeof(yInterfaceSt);
@@ -618,7 +618,7 @@ static int OpenReadHandles(yInterfaceSt    *iface)
         HALLOG("OpenReadHandles of %s error %d of %s:%d (%s)\n", DP(iface->devicePath), res, iface->serial, iface->ifaceno, errmsg);
         return res;
     }
-    // since Win Xp HID buffer sizw is 32 by default and can be up to 512
+    // since Win XP HID buffer size is 32 by default and can be up to 512
     setbuffres = yContext->hid.SetNumInputBuffers(iface->rdHDL, 256);
     if (!setbuffres) {
         res = yWinSetErr(iface, errmsg);
@@ -654,7 +654,7 @@ static void CloseReadHandles(yInterfaceSt    *iface)
             } else {
                 u32 error = GetLastError();
                 if (error != ERROR_OPERATION_ABORTED) {
-                    HALLOG("Error when stoping read IO on %s:%d\n", iface->serial, iface->ifaceno);
+                    HALLOG("Error when stopping read IO on %s:%d\n", iface->serial, iface->ifaceno);
                 }
             }
         }
@@ -715,7 +715,7 @@ retry:
             if (retrycount--) {
                 CloseReadHandles(iface);
                 if (YISERR(OpenReadHandles(iface))) {
-                    HALLOG("Open handles restared failed %s:%d\n", iface->serial, iface->ifaceno);
+                    HALLOG("Open read handles failed %s:%d\n", iface->serial, iface->ifaceno);
                     return res;
                 }
                 //seep a bit to let the OS restart thing correctly
@@ -739,7 +739,7 @@ retry:
             if (retrycount--) {
                 CloseReadHandles(iface);
                 if (YISERR(OpenReadHandles(iface))) {
-                    HALLOG("Open handles restared failed %s:%d\n", iface->serial, iface->ifaceno);
+                    HALLOG("Open read handles failed %s:%d\n", iface->serial, iface->ifaceno);
                     return res;
                 }
                 //seep a bit to let the OS restart thing correctly
@@ -757,7 +757,7 @@ retry:
             if (retrycount--) {
                 CloseReadHandles(iface);
                 if (YISERR(OpenReadHandles(iface))) {
-                    HALLOG("Open handles restared failed %s:%d\n", iface->serial, iface->ifaceno);
+                    HALLOG("Open read handles failed %s:%d\n", iface->serial, iface->ifaceno);
                     return res;
                 }
                 //seep a bit to let the OS restart thing correctly
@@ -791,7 +791,7 @@ retry:
             // reset handles
             CloseWriteHandles(iface);
             if (YISERR(OpenWriteHandles(iface))) {
-                HALLOG("Write handles restared failed %s:%d\n", iface->serial, iface->ifaceno);
+                HALLOG("Open write handles failed %s:%d\n", iface->serial, iface->ifaceno);
                 return code;
             }
             //seep a bit to let the OS restart thing correctly

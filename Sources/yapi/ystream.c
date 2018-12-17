@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 33056 2018-11-08 16:08:20Z seb $
+ * $Id: ystream.c 33735 2018-12-14 16:06:53Z seb $
  *
  * USB stream implementation
  *
@@ -363,7 +363,7 @@ static int devStartIdle(LOCATION yPrivDeviceSt *dev,char *errmsg)
             return YAPI_SUCCESS;
         case YRUN_IDLE:
 #ifdef DEBUG_DEVICE_LOCK
-            dbglog("doube Idle on %s (line %d)\n",dev->infos.serial,line);
+            dbglog("double Idle on %s (line %d)\n",dev->infos.serial,line);
 #endif
             res = YERR(YAPI_DEVICE_BUSY);
             break;
@@ -412,7 +412,7 @@ static void devStartEnum(LOCATION yPrivDeviceSt *dev)
     while((dev->rstatus == YRUN_IDLE || dev->rstatus == YRUN_BUSY ) && (u64)(yapiGetTickCount() - timeref) < 2000){
         // if someone is doing IO release the mutex and give him 2 second to quit
         yLeaveCriticalSection(&dev->acces_state);
-        yPktQueueSetError(&dev->iface.rxQueue, YAPI_DEVICE_NOT_FOUND, "Device need to be stoped");
+        yPktQueueSetError(&dev->iface.rxQueue, YAPI_DEVICE_NOT_FOUND, "Device need to be stopped");
         yApproximateSleep(100);
         yEnterCriticalSection(&dev->acces_state);
     }
@@ -486,7 +486,7 @@ static int devStartIO(LOCATION yPrivDeviceSt *dev, char *errmsg)
 #endif
         break;
     case YRUN_IDLE:
-        //should never occure since we keep the mutex during idlle
+        //should never occur since we keep the mutex during idle
 #ifdef DEBUG_DEVICE_LOCK
         dbglog("panic on %s (line %d)\n",dev->infos.serial,line);
 #endif
@@ -512,7 +512,7 @@ static int devPauseIO(LOCATION yPrivDeviceSt *dev,char *errmsg)
         res = YERRMSG(YAPI_DEVICE_NOT_FOUND,"This device is not available");
         break;
     case YRUN_REQUEST:
-        //should never ocuure
+        //should never occur
 #ifdef DEBUG_DEVICE_LOCK
         dbglog("panic on %s (line %d)\n",dev->infos.serial,line);
 #endif
@@ -529,7 +529,7 @@ static int devPauseIO(LOCATION yPrivDeviceSt *dev,char *errmsg)
         res = YERRMSG(YAPI_INVALID_ARGUMENT,"No IO started");
         break;
     case YRUN_IDLE:
-        //should never occure since we keep the mutex during idlle
+        //should never occur since we keep the mutex during idle
 #ifdef DEBUG_DEVICE_LOCK
         dbglog("panic on %s (line %d)\n",dev->infos.serial,line);
 #endif
@@ -579,7 +579,7 @@ static int devCheckIO(LOCATION yPrivDeviceSt *dev, YIOHDL_internal *iohdl,char *
         res = YERRMSG(YAPI_INVALID_ARGUMENT,"No IO started");
         break;
     case YRUN_IDLE:
-        //should never occure since we keep the mutex during idlle
+        //should never occur since we keep the mutex during idle
 #ifdef DEBUG_DEVICE_LOCK
         dbglog("panic on %s (line %d)\n",dev->infos.serial,line);
 #endif
@@ -627,7 +627,7 @@ static int devCheckAsyncIO(LOCATION yPrivDeviceSt *dev, char *errmsg)
         res = YERRMSG(YAPI_INVALID_ARGUMENT,"No IO started");
         break;
     case YRUN_IDLE:
-        //should never occure since we keep the mutex during idlle
+        //should never occur since we keep the mutex during idle
 #ifdef DEBUG_DEVICE_LOCK
         dbglog("panic on %s (line %d)\n",dev->infos.serial,line);
 #endif
@@ -666,7 +666,7 @@ static int devStopIO(LOCATION yPrivDeviceSt *dev, char *errmsg)
         res = YERRMSG(YAPI_INVALID_ARGUMENT,"No IO started");
         break;
     case YRUN_IDLE:
-        //should never occure since we keep the mutex during idlle
+        //should never occur since we keep the mutex during idle
 #ifdef DEBUG_DEVICE_LOCK
         dbglog("panic on %s (line %d)\n",dev->infos.serial,line);
 #endif
@@ -695,7 +695,7 @@ static void devReportError(LOCATION yPrivDeviceSt *dev, const char *error_to_set
         YSTRCPY(dev->errmsg,YOCTO_ERRMSG_LEN,error_to_set);
         break;
     case YRUN_IDLE:
-        //should never occure since we keep the mutex during idlle
+        //should never occur since we keep the mutex during idle
 #ifdef DEBUG_DEVICE_LOCK
         dbglog("panic on %s (line %d)\n",dev->infos.serial,line);
 #endif
@@ -987,7 +987,7 @@ static YRETCODE  yPktQueuePushEx(pktQueue *q,const USB_Packet *pkt, char * errms
 
 void  yPktQueueSetError(pktQueue *q, YRETCODE code, const char * msg)
 {
-    //lock the queue acces
+    //lock the queue access
     yEnterCriticalSection(&q->cs);
     //dbglog("PKTSetErr %d:%s\n",code,msg);
     YSTRCPY(q->errmsg,YOCTO_ERRMSG_LEN,msg);
@@ -1113,7 +1113,7 @@ YRETCODE  yPktQueuePushD2H(yInterfaceSt *iface,const USB_Packet *pkt, char * err
                 if (pktno > 7)
                     pktno = 0;
                 if (pkt->first_stream.pktno != pktno) {
-                    dbglog("mssing packet on push (need %d received %d)\n", pktno, pkt->first_stream.pktno );
+                    dbglog("missing packet on push (need %d received %d)\n", pktno, pkt->first_stream.pktno );
                     mustdump++;
                 }
             }
@@ -1288,8 +1288,8 @@ static void yyFormatConfPkt(pktItem *pkt, u8 conftype)
 }
 
 
-// check procol version compatibility
-// compatiblewithout limitation -> return 1
+// check protocol version compatibility
+// compatible without limitation -> return 1
 // compatible with limitations -> return 0;
 // incompatible -> return YAPI_IO_ERROR
 static int CheckVersionCompatibility(u16 version,const char *serial, char *errmsg)
@@ -1447,7 +1447,7 @@ again:
             goto again;
         }
         if (item->pkt.first_stream.pktno == dev->lastpktno) {
-            //late retry : drop it since we allready have the packet.
+            //late retry : drop it since we already have the packet.
             yFree(item);
             goto again;
         }
@@ -1827,7 +1827,7 @@ static void yDispatchReportV1(yPrivDeviceSt *dev, u8 *data, int pktsize)
 #ifdef DEBUG_NOTIFICATION
     {
         USB_Report_Pkt_V1 *report = (USB_Report_Pkt_V1*)data;
-        dbglog("timed report (v1) for %d %d\n", wpGetDevYdx(serialref), report->funYdx);
+        dbglog("timed report (V1) for %d %d\n", wpGetDevYdx(serialref), report->funYdx);
     }
 #endif
     if(yContext->rawReportCb) {
@@ -1871,7 +1871,7 @@ static void yDispatchReportV2(yPrivDeviceSt *dev, u8 *data, int pktsize)
 #ifdef DEBUG_NOTIFICATION
     {
         USB_Report_Pkt_V2 *report = (USB_Report_Pkt_V2*)data;
-        dbglog("timed report (v2) for %d %d\n", wpGetDevYdx(serialref), report->funYdx);
+        dbglog("timed report (V2) for %d %d\n", wpGetDevYdx(serialref), report->funYdx);
     }
 #endif
     if(yContext->rawReportV2Cb) {
@@ -1922,7 +1922,7 @@ static void yDispatchReportV2(yPrivDeviceSt *dev, u8 *data, int pktsize)
 
 // blockUntilTime:
 //    0 -> only check pending (non blocking)
-//    >0 -> wait util yapiGetTickCount is >= blockUntilTime
+//    >0 -> wait until yapiGetTickCount is >= blockUntilTime
 static int yDispatchReceive(yPrivDeviceSt *dev, u64 blockUntilTime, char *errmsg)
 {
     u8 stream;
@@ -1991,7 +1991,7 @@ static int yDispatchReceive(yPrivDeviceSt *dev, u64 blockUntilTime, char *errmsg
         }
         //listen again
         YPROPERR(yStreamReceptionDone(dev,errmsg));
-        // do not block on second atempt
+        // do not block on second attempt
         pktavail=yStreamReceived(dev,&stream, &data, &size, 0, errmsg);
         YPROPERR(pktavail);
     }
@@ -2011,8 +2011,8 @@ const char *YDEV_STATUS_TXT[] =
     "YDEV_UNPLUGED",              // device has been plugged by the past but is no more
                                   // -> YDEV_ARRIVAL
     "YDEV_WORKING",               // device is plugged and running
-                                  // -> YDEV->UNPLUGET, YDEV_ALLREADY_THERE
-    "YDEV_NOTRESPONDING"          // device has not repsond to StartDevice and we will never try to speak with it
+                                  // -> YDEV_UNPLUGED, YDEV_ALREADY_THERE
+    "YDEV_NOTRESPONDING"          // device has not answered to StartDevice and we will never try to speak with it
                                   // -> none
 } ;
 #endif
@@ -2145,7 +2145,7 @@ static void enuUpdateDStatus(void)
             if(YISERR(StopDevice(p,errmsg))){
                 dbglog("Unable to stop the device %s correctly:(%s)\n",p->infos.serial,errmsg);
             }
-            p->dStatus = YDEV_WORKING; //we need to put the device in working to start device (safe because we alread have the mutex)
+            p->dStatus = YDEV_WORKING; //we need to put the device in working to start device (safe because we already have the mutex)
             res = StartDevice(p, errmsg);
             if(YISERR(res)){
                 // we are unable to restart the device -> unplug it and follow the traditional process (white page update etc...)
@@ -2168,7 +2168,7 @@ static void enuUpdateDStatus(void)
             if( p->next_startup_attempt <= yapiGetTickCount()) {
                 devStartEnum(p);
                 updateWP = 0;
-                p->dStatus = YDEV_WORKING; //we need to put the device in working to start device (safe because we alread have the mutex)
+                p->dStatus = YDEV_WORKING; //we need to put the device in working to start device (safe because we already have the mutex)
                 res = StartDevice(p, errmsg);
                 if(YISERR(res)){
                     if (res !=YAPI_TIMEOUT && p->nb_startup_retry < NB_MAX_STARTUP_RETRY) {
@@ -2934,9 +2934,9 @@ int  yUsbSendMeta(const char *device, USB_Meta_Pkt *pkt, int len, char *errmsg)
     u8  *pktdata;
     u8  maxpktlen;
     int res;
-    
+
     YPERF_ENTER(yUsbSendMeta);
-    
+
     dev=findDev(device,FIND_FROM_ANY);
     if(dev==NULL){
         return YERR(YAPI_DEVICE_NOT_FOUND);
@@ -2950,7 +2950,7 @@ int  yUsbSendMeta(const char *device, USB_Meta_Pkt *pkt, int len, char *errmsg)
         }
         devStopIdle(PUSH_LOCATION dev);
     }
-    
+
     YPERF_LEAVE(yUsbSendMeta);
     return res;
 }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_spiport.cpp 33722 2018-12-14 15:04:43Z seb $
  *
  *  Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -63,7 +63,7 @@ YSpiPort::YSpiPort(const string& func): YFunction(func)
     ,_protocol(PROTOCOL_INVALID)
     ,_spiMode(SPIMODE_INVALID)
     ,_ssPolarity(SSPOLARITY_INVALID)
-    ,_shitftSampling(SHITFTSAMPLING_INVALID)
+    ,_shiftSampling(SHIFTSAMPLING_INVALID)
     ,_valueCallbackSpiPort(NULL)
     ,_rxptr(0)
     ,_rxbuffptr(0)
@@ -127,8 +127,8 @@ int YSpiPort::_parseAttr(YJSONObject* json_val)
     if(json_val->has("ssPolarity")) {
         _ssPolarity =  (Y_SSPOLARITY_enum)json_val->getInt("ssPolarity");
     }
-    if(json_val->has("shitftSampling")) {
-        _shitftSampling =  (Y_SHITFTSAMPLING_enum)json_val->getInt("shitftSampling");
+    if(json_val->has("shiftSampling")) {
+        _shiftSampling =  (Y_SHIFTSAMPLING_enum)json_val->getInt("shiftSampling");
     }
     return YFunction::_parseAttr(json_val);
 }
@@ -701,25 +701,25 @@ int YSpiPort::set_ssPolarity(Y_SSPOLARITY_enum newval)
 /**
  * Returns true when the SDI line phase is shifted with regards to the SDO line.
  *
- * @return either Y_SHITFTSAMPLING_OFF or Y_SHITFTSAMPLING_ON, according to true when the SDI line
- * phase is shifted with regards to the SDO line
+ * @return either Y_SHIFTSAMPLING_OFF or Y_SHIFTSAMPLING_ON, according to true when the SDI line phase
+ * is shifted with regards to the SDO line
  *
- * On failure, throws an exception or returns Y_SHITFTSAMPLING_INVALID.
+ * On failure, throws an exception or returns Y_SHIFTSAMPLING_INVALID.
  */
-Y_SHITFTSAMPLING_enum YSpiPort::get_shitftSampling(void)
+Y_SHIFTSAMPLING_enum YSpiPort::get_shiftSampling(void)
 {
-    Y_SHITFTSAMPLING_enum res;
+    Y_SHIFTSAMPLING_enum res;
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
-                    return YSpiPort::SHITFTSAMPLING_INVALID;
+                    return YSpiPort::SHIFTSAMPLING_INVALID;
                 }
             }
         }
-        res = _shitftSampling;
+        res = _shiftSampling;
     } catch (std::exception) {
         yLeaveCriticalSection(&_this_cs);
         throw;
@@ -733,20 +733,20 @@ Y_SHITFTSAMPLING_enum YSpiPort::get_shitftSampling(void)
  * sampled in the middle of data output time. When enabled, SDI line is
  * samples at the end of data output time.
  *
- * @param newval : either Y_SHITFTSAMPLING_OFF or Y_SHITFTSAMPLING_ON, according to the SDI line sampling shift
+ * @param newval : either Y_SHIFTSAMPLING_OFF or Y_SHIFTSAMPLING_ON, according to the SDI line sampling shift
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YSpiPort::set_shitftSampling(Y_SHITFTSAMPLING_enum newval)
+int YSpiPort::set_shiftSampling(Y_SHIFTSAMPLING_enum newval)
 {
     string rest_val;
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
         rest_val = (newval>0 ? "1" : "0");
-        res = _setAttr("shitftSampling", rest_val);
+        res = _setAttr("shiftSampling", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
          throw;

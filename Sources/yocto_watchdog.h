@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_watchdog.h 32900 2018-11-02 10:12:43Z seb $
+ *  $Id: yocto_watchdog.h 33709 2018-12-14 14:18:12Z seb $
  *
  *  Declares yFindWatchdog(), the high-level API for Watchdog functions
  *
@@ -124,11 +124,11 @@ typedef enum {
 /**
  * YWatchdog Class: Watchdog function interface
  *
- * The watchog function works like a relay and can cause a brief power cut
+ * The watchdog function works like a relay and can cause a brief power cut
  * to an appliance after a preset delay to force this appliance to
  * reset. The Watchdog must be called from time to time to reset the
  * timer and prevent the appliance reset.
- * The watchdog can be driven direcly with <i>pulse</i> and <i>delayedpulse</i> methods to switch
+ * The watchdog can be driven directly with <i>pulse</i> and <i>delayedpulse</i> methods to switch
  * off an appliance for a given duration.
  */
 class YOCTO_CLASS_EXPORT YWatchdog: public YFunction {
@@ -352,7 +352,7 @@ public:
      * Sets the relay to output B (active) for a specified duration, then brings it
      * automatically back to output A (idle state).
      *
-     * @param ms_duration : pulse duration, in millisecondes
+     * @param ms_duration : pulse duration, in milliseconds
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
@@ -372,8 +372,8 @@ public:
     /**
      * Schedules a pulse.
      *
-     * @param ms_delay : waiting time before the pulse, in millisecondes
-     * @param ms_duration : pulse duration, in millisecondes
+     * @param ms_delay : waiting time before the pulse, in milliseconds
+     * @param ms_duration : pulse duration, in milliseconds
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
@@ -396,9 +396,9 @@ public:
     { return this->get_countdown(); }
 
     /**
-     * Returns the watchdog runing state at module power on.
+     * Returns the watchdog running state at module power on.
      *
-     * @return either Y_AUTOSTART_OFF or Y_AUTOSTART_ON, according to the watchdog runing state at module power on
+     * @return either Y_AUTOSTART_OFF or Y_AUTOSTART_ON, according to the watchdog running state at module power on
      *
      * On failure, throws an exception or returns Y_AUTOSTART_INVALID.
      */
@@ -408,11 +408,11 @@ public:
     { return this->get_autoStart(); }
 
     /**
-     * Changes the watchdog runningsttae at module power on. Remember to call the
+     * Changes the watchdog running state at module power on. Remember to call the
      * saveToFlash() method and then to reboot the module to apply this setting.
      *
-     * @param newval : either Y_AUTOSTART_OFF or Y_AUTOSTART_ON, according to the watchdog runningsttae at
-     * module power on
+     * @param newval : either Y_AUTOSTART_OFF or Y_AUTOSTART_ON, according to the watchdog running state
+     * at module power on
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
@@ -449,7 +449,7 @@ public:
 
     /**
      * Resets the watchdog. When the watchdog is running, this function
-     * must be called on a regular basis to prevent the watchog to
+     * must be called on a regular basis to prevent the watchdog to
      * trigger
      *
      * @return YAPI_SUCCESS if the call succeeds.

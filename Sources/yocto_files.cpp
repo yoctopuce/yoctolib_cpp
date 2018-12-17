@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.cpp 31377 2018-07-27 08:24:38Z seb $
+ * $Id: yocto_files.cpp 33709 2018-12-14 14:18:12Z seb $
  *
  * Implements yFindFiles(), the high-level API for Files functions
  *
@@ -323,7 +323,7 @@ int YFiles::format_fs(void)
  * in the filesystem.
  *
  * @param pattern : an optional filter pattern, using star and question marks
- *         as wildcards. When an empty pattern is provided, all file records
+ *         as wild cards. When an empty pattern is provided, all file records
  *         are returned.
  *
  * @return a list of YFileRecord objects, containing the file path
@@ -350,7 +350,7 @@ vector<YFileRecord> YFiles::get_list(string pattern)
  *
  * @param filename : the file name to test.
  *
- * @return a true if the file existe, false ortherwise.
+ * @return a true if the file exist, false otherwise.
  *
  * On failure, throws an exception.
  */

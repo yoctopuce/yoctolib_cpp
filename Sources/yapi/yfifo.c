@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yfifo.c 23630 2016-03-29 21:05:54Z mvuilleu $
+ * $Id: yfifo.c 33734 2018-12-14 15:56:25Z seb $
  *
  * Implementation of a generic fifo queue
  *
@@ -321,7 +321,7 @@ u16 ySeekFifoEx(yFifoBuf *buf, const u8* pattern, u16 patlen,  u16 startofs, u16
     if (startofs + patlen > buf->datasize) {
         return 0xffff;
     }
-    // ajust searchlen and ptr to our buffer
+    // adjust searchlen and ptr to our buffer
     // size and position
     if (searchlen == 0 || searchlen > buf->datasize - startofs)
         searchlen = buf->datasize - startofs;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_temperature.cpp 33082 2018-11-08 18:08:16Z seb $
+ *  $Id: yocto_temperature.cpp 33709 2018-12-14 14:18:12Z seb $
  *
  *  Implements yFindTemperature(), the high-level API for Temperature functions
  *
@@ -446,7 +446,7 @@ int YTemperature::set_ntcParameters(double res25,double beta)
  * sensor based on thermistors.
  *
  * @param tempValues : array of floating point numbers, corresponding to all
- *         temperatures (in degrees Celcius) for which the resistance of the
+ *         temperatures (in degrees Celsius) for which the resistance of the
  *         thermistor is specified.
  * @param resValues : array of floating point numbers, corresponding to the resistance
  *         values (in Ohms) for each of the temperature included in the first
@@ -516,7 +516,7 @@ int YTemperature::set_thermistorResponseTable(vector<double> tempValues,vector<d
  * temperature sensor based on thermistors.
  *
  * @param tempValues : array of floating point numbers, that is filled by the function
- *         with all temperatures (in degrees Celcius) for which the resistance
+ *         with all temperatures (in degrees Celsius) for which the resistance
  *         of the thermistor is specified.
  * @param resValues : array of floating point numbers, that is filled by the function
  *         with the value (in Ohms) for each of the temperature included in the

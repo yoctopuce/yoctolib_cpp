@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.c 30530 2018-04-05 13:28:09Z seb $
+ * $Id: ythread.c 33734 2018-12-14 15:56:25Z seb $
  *
  * OS-independent thread and synchronization library
  *
@@ -91,7 +91,7 @@ void   yCloseEvent(yEvent *ev)
 static int    yCreateDetachedThreadEx(osThread *th_hdl, void* (*fun)(void *), void *arg)
 {
     *th_hdl = CreateThread(
-        NULL,                   // default security attibutes
+        NULL,                   // default security attributes
         0,                      // use default stack size
         (LPTHREAD_START_ROUTINE)fun,   // thread function name
         arg,                    // argument to thread function
@@ -293,7 +293,7 @@ int    yCreateDetachedThread(void* (*fun)(void *), void *arg)
 int    yThreadCreate(yThread *yth, void* (*fun)(void *), void *arg)
 {
     if (yth->st == YTHREAD_RUNNING)
-        return 0; // allready started nothing to do
+        return 0; // already started nothing to do
     if (yth->st == YTHREAD_NOT_STARTED) {
         yth->ctx = arg;
         yCreateEvent(&yth->ev);

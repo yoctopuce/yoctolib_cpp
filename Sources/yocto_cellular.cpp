@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 31377 2018-07-27 08:24:38Z seb $
+ * $Id: yocto_cellular.cpp 33709 2018-12-14 14:18:12Z seb $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -1026,7 +1026,7 @@ int YCellular::_invokeValueCallback(string value)
 
 /**
  * Sends a PUK code to unlock the SIM card after three failed PIN code attempts, and
- * setup a new PIN into the SIM card. Only ten consecutives tentatives are permitted:
+ * setup a new PIN into the SIM card. Only ten consecutive tentatives are permitted:
  * after that, the SIM card will be blocked permanently without any mean of recovery
  * to use it again. Note that after calling this method, you have usually to invoke
  * method set_pin() to tell the YoctoHub which PIN to use in the future.
@@ -1198,7 +1198,7 @@ vector<string> YCellular::get_availableOperators(void)
 /**
  * Returns a list of nearby cellular antennas, as required for quick
  * geolocation of the device. The first cell listed is the serving
- * cell, and the next ones are the neighboor cells reported by the
+ * cell, and the next ones are the neighbor cells reported by the
  * serving cell.
  *
  * @return a list of YCellRecords.

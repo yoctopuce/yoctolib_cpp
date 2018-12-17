@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 33654 2018-12-12 14:49:15Z seb $
+ * $Id: yapi.c 33734 2018-12-14 15:56:25Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -1137,7 +1137,7 @@ static int yEnuJson(ENU_CONTEXT* enus, yJsonStateMachine* j)
         break;
     case ENU_YP_HARDWAREID:
         point = strchr(j->token, '.');
-        if (!point) break; //to be safe discart this field if we do not found '.'
+        if (!point) break; //to be safe discard this field if we do not found '.'
         *point++ = '\0';
         NETENUMLOG("set serial  to %s\n",j->token);
         enus->serial = yHashPutStr(j->token);
@@ -1433,7 +1433,7 @@ static int yEnuJZon(ENU_CONTEXT* enus, yJsonStateMachine* j, yJsonStateMachine* 
                 break;
             case YP_HARDWAREID:
                 point = strchr(z->token, '.');
-                if (!point) break; //to be safe discart this field if we do not found '.'
+                if (!point) break; //to be safe discard this field if we do not found '.'
                 *point++ = '\0';
                 NETENUMLOG("set serial  to %s\n", z->token);
                 enus->serial = yHashPutStr(z->token);
@@ -1667,7 +1667,7 @@ static int yNetHubEnum(HubSt* hub, int forceupdate, char* errmsg)
             }
             return YAPI_IO_ERROR;
         } else {
-            // the hub does not send ping notification -> we will to a request and potentialy
+            // the hub does not send ping notification -> we will to a request and potentially
             // get a tcp timeout if the hub is not reachable
             res = yNetHubEnumEx(hub, &enus, errmsg);
             if (YISERR(res)) {
@@ -1700,7 +1700,7 @@ static int yNetHubEnum(HubSt* hub, int forceupdate, char* errmsg)
 }
 
 
-// initialize NetHubSt sctructure. no IO in this function
+// initialize NetHubSt structure. no IO in this function
 static HubSt* yapiAllocHub(const char* url, char* errmsg)
 {
     char* name;
@@ -1829,7 +1829,7 @@ static void unregisterNetHub(yUrlRef huburl)
 static void ssdpEntryUpdate(const char* serial, const char* urlToRegister, const char* urlToUnregister)
 {
     if (!yContext)
-        // API not yet initialized -> drop everthing
+        // API not yet initialized -> drop everything
         return;
     if (urlToRegister) {
         // still valid entry
@@ -1926,13 +1926,13 @@ static YRETCODE yapiInitAPI_internal(int detect_type, char* errmsg)
         // little endian
         if (sizeof(test_compile) != 4) return YERRMSG(YAPI_INVALID_ARGUMENT, "pragma pack is not supported");
 #ifdef CPU_BIG_ENDIAN
-        return YERRMSG(YAPI_INVALID_ARGUMENT, "Invalid endianness. Lib is compiled for big endian but is used on little endian cpu");
+        return YERRMSG(YAPI_INVALID_ARGUMENT, "Invalid endianness. Lib is compiled for big endian but is used on little endian CPU");
 #endif
     } else {
         // big endian
         if (sizeof(test_compile) != 4) return YERRMSG(YAPI_INVALID_ARGUMENT, "pragma pack is not supported");
 #ifndef CPU_BIG_ENDIAN
-        return YERRMSG(YAPI_INVALID_ARGUMENT, "Invalid endianness. Lib is compiled for little endian but is used on big endian cpu");
+        return YERRMSG(YAPI_INVALID_ARGUMENT, "Invalid endianness. Lib is compiled for little endian but is used on big endian CPU");
 #endif
     }
 
@@ -3039,7 +3039,7 @@ static YRETCODE yapiRegisterHubEx(const char* url, int checkacces, char* errmsg)
         if (checkacces) {
             hubst->mandatory = 1;
         }
-        //look if we allready know this
+        //look if we already know this
         yEnterCriticalSection(&yContext->enum_cs);
         firstfree = NBMAX_NET_HUB;
         for (i = 0; i < NBMAX_NET_HUB; i++) {
@@ -3301,7 +3301,7 @@ static void yapiUnregisterHub_internal(const char* url)
         if (huburl == INVALID_HASH_IDX) {
             return;
         }
-        //look if we allready know this
+        //look if we already know this
         yEnterCriticalSection(&yContext->enum_cs);
         unregisterNetHub(huburl);
         yLeaveCriticalSection(&yContext->enum_cs);
@@ -3382,7 +3382,7 @@ static YRETCODE yapiSleep_internal(int ms_duration, char* errmsg)
             err = yapiHandleEvents_internal(errmsg);
         }
         now = yapiGetTickCount();
-        // todo: we may want to use a samller timeout
+        // todo: we may want to use a smaller timeout
         if (now < timeout) {
             if (yWaitForEvent(&yContext->exitSleepEvent, (int)(timeout - now)))
                 test_pkt++; //just for testing

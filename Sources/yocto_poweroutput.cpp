@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_poweroutput.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_poweroutput.cpp 33709 2018-12-14 14:18:12Z seb $
  *
  *  Implements yFindPowerOutput(), the high-level API for PowerOutput functions
  *
@@ -134,7 +134,7 @@ int YPowerOutput::set_voltage(Y_VOLTAGE_enum newval)
 }
 
 /**
- * Retrieves a dual power  ouput control for a given identifier.
+ * Retrieves a dual power  output control for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -144,11 +144,11 @@ int YPowerOutput::set_voltage(Y_VOLTAGE_enum newval)
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that the power ouput control is online at the time
+ * This function does not require that the power output control is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YPowerOutput.isOnline() to test if the power ouput control is
+ * Use the method YPowerOutput.isOnline() to test if the power output control is
  * indeed online at a given time. In case of ambiguity when looking for
- * a dual power  ouput control by logical name, no error is notified: the first instance
+ * a dual power  output control by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
@@ -156,9 +156,9 @@ int YPowerOutput::set_voltage(Y_VOLTAGE_enum newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the power ouput control
+ * @param func : a string that uniquely characterizes the power output control
  *
- * @return a YPowerOutput object allowing you to drive the power ouput control.
+ * @return a YPowerOutput object allowing you to drive the power output control.
  */
 YPowerOutput* YPowerOutput::FindPowerOutput(string func)
 {

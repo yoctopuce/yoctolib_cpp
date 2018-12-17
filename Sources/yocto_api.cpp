@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 33601 2018-12-09 14:30:31Z mvuilleu $
+ * $Id: yocto_api.cpp 33734 2018-12-14 15:56:25Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -873,7 +873,7 @@ void YJSONObject::convert(YJSONObject* reference, YJSONArray* newArray)
             _parsed[key] = jobj;
             _keys.push_back(key);
         } else {
-            throw YAPI_Exception(YAPI_IO_ERROR, "Unable to convert yzon struct");
+            throw YAPI_Exception(YAPI_IO_ERROR, "Unable to convert JZON struct");
 
         }
     }
@@ -1923,7 +1923,7 @@ int YDataSet::loadSummary(string data)
     summaryStartMs = YAPI_MAX_DOUBLE;
     summaryStopMs = YAPI_MIN_DOUBLE;
 
-    // Parse comlete streams
+    // Parse complete streams
     for (unsigned ii = 0; ii <  _streams.size(); ii++) {
         streamStartTimeMs = floor( _streams[ii]->get_realStartTimeUTC() *1000+0.5);
         streamDuration =  _streams[ii]->get_realDuration() ;
@@ -1938,7 +1938,7 @@ int YDataSet::loadSummary(string data)
             previewDuration = streamDuration;
         } else {
             // stream that are partially in the dataset
-            // we need to parse data to filter value outide the dataset
+            // we need to parse data to filter value outside the dataset
             url =  _streams[ii]->_get_url();
             data = _parent->_download(url);
             _streams[ii]->_parseStream(data);
@@ -3802,7 +3802,7 @@ YRETCODE YDevice::HTTPRequestPrepare(const string& request, string& fullrequest,
 {
     YRETCODE res;
     size_t pos;
-    // mutex allready taken by caller
+    // mutex already taken by caller
     if (_subpath == NULL) {
         int neededsize;
         res = yapiGetDevicePath(_devdescr, _rootdevice, NULL, 0, &neededsize, errbuff);
@@ -4093,7 +4093,7 @@ void YAPI::_yapiDeviceArrivalCallbackFwd(YDEV_DESCR devdesc)
     }
     if (YAPI::DeviceArrivalCallback == NULL) return;
     ev.type = YAPI_DEV_ARRIVAL;
-    //the function is allready thread safe (use yapiLockDeviceCallaback)
+    //the function is already thread safe (use yapiLockDeviceCallaback)
     if (YapiWrapper::getDeviceInfo(devdesc, infos, errmsg) != YAPI_SUCCESS) return;
     ev.module = yFindModule(string(infos.serial) + ".module");
     ev.module->setImmutableAttributes(&infos);
@@ -4110,7 +4110,7 @@ void YAPI::_yapiDeviceRemovalCallbackFwd(YDEV_DESCR devdesc)
     ev.type = YAPI_DEV_REMOVAL;
     if (YapiWrapper::getDeviceInfo(devdesc, infos, errmsg) != YAPI_SUCCESS) return;
     ev.module = yFindModule(string(infos.serial) + ".module");
-    //the function is allready thread safe (use yapiLockDeviceCallaback)
+    //the function is already thread safe (use yapiLockDeviceCallaback)
     _plug_events.push(ev);
 }
 
@@ -4125,7 +4125,7 @@ void YAPI::_yapiDeviceChangeCallbackFwd(YDEV_DESCR devdesc)
     if (YapiWrapper::getDeviceInfo(devdesc, infos, errmsg) != YAPI_SUCCESS) return;
     ev.module = yFindModule(string(infos.serial) + ".module");
     ev.module->setImmutableAttributes(&infos);
-    //the function is allready thread safe (use yapiLockDeviceCallaback)
+    //the function is already thread safe (use yapiLockDeviceCallaback)
     _plug_events.push(ev);
 }
 
@@ -4142,7 +4142,7 @@ void YAPI::_yapiBeaconCallbackFwd(YDEV_DESCR devdesc, int beacon)
         ev.type = YAPI_DEV_BEACON;
         ev.module = module;
         ev.beacon = beacon;
-        //the function is allready thread safe (use yapiLockFunctionCallaback)
+        //the function is already thread safe (use yapiLockFunctionCallaback)
         _data_events.push(ev);
     }
 }
@@ -4161,7 +4161,7 @@ void YAPI::_yapiDeviceConfigChangeCallbackFwd(YDEV_DESCR devdesc)
         ev.type = YAPI_DEV_CONFCHANGE;
         ev.module = module;
         ev.module->setImmutableAttributes(&infos);
-        //the function is allready thread safe (use yapiLockFunctionCallaback)
+        //the function is already thread safe (use yapiLockFunctionCallaback)
         _data_events.push(ev);
     }
 }
@@ -4170,7 +4170,7 @@ void YAPI::_yapiFunctionUpdateCallbackFwd(YAPI_FUNCTION fundesc, const char* val
 {
     yapiDataEvent ev;
 
-    //the function is allready thread safe (use yapiLockFunctionCallaback)
+    //the function is already thread safe (use yapiLockFunctionCallaback)
     if (value == NULL) {
         ev.type = YAPI_FUN_UPDATE;
     } else {
@@ -4720,7 +4720,7 @@ YRETCODE YAPI::TestHub(const string& url, int mstimeout, string& errmsg)
  * parameter will determine how the API will work. Use the following values:
  *
  * <b>usb</b>: When the usb keyword is used, the API will work with
- * devices connected directly to the USB bus. Some programming languages such a Javascript,
+ * devices connected directly to the USB bus. Some programming languages such a JavaScript,
  * PHP, and Java don't provide direct access to USB hardware, so usb will
  * not work with these. In this case, use a VirtualHub or a networked YoctoHub (see below).
  *
@@ -5560,9 +5560,9 @@ int YModule::set_persistentSettings(Y_PERSISTENTSETTINGS_enum newval)
 }
 
 /**
- * Returns the luminosity of the  module informative leds (from 0 to 100).
+ * Returns the luminosity of the  module informative LEDs (from 0 to 100).
  *
- * @return an integer corresponding to the luminosity of the  module informative leds (from 0 to 100)
+ * @return an integer corresponding to the luminosity of the  module informative LEDs (from 0 to 100)
  *
  * On failure, throws an exception or returns Y_LUMINOSITY_INVALID.
  */
@@ -7699,7 +7699,7 @@ string YSensor::get_reportFrequency(void)
  * Changes the timed value notification frequency for this function.
  * The frequency can be specified as samples per second,
  * as sample per minute (for instance "15/m") or in samples per
- * hour (eg. "4/h"). To disable timed value notifications for this
+ * hour (e.g. "4/h"). To disable timed value notifications for this
  * function, use the value "OFF".
  *
  * @param newval : a string corresponding to the timed value notification frequency for this function
@@ -8037,7 +8037,7 @@ int YSensor::_parserHelper(void)
                 return 0;
             }
         }
-        // New 32bit text format
+        // New 32 bits text format
         _offset = 0;
         _scale = 1000;
         maxpos = (int)iCalib.size();
@@ -8209,11 +8209,11 @@ int YSensor::stopDataLogger(void)
  * @param startTime : the start of the desired measure time interval,
  *         as a Unix timestamp, i.e. the number of seconds since
  *         January 1, 1970 UTC. The special value 0 can be used
- *         to include any meaasure, without initial limit.
+ *         to include any measure, without initial limit.
  * @param endTime : the end of the desired measure time interval,
  *         as a Unix timestamp, i.e. the number of seconds since
  *         January 1, 1970 UTC. The special value 0 can be used
- *         to include any meaasure, without ending limit.
+ *         to include any measure, without ending limit.
  *
  * @return an instance of YDataSet, providing access to historical
  *         data. Past measures can be loaded progressively
@@ -8428,7 +8428,7 @@ YMeasure YSensor::_decodeTimedReport(double timestamp,double duration,vector<int
     if (startTime == 0) {
         startTime = endTime;
     }
-    // 32bit timed report format
+    // 32 bits timed report format
     if ((int)report.size() <= 5) {
         // sub-second report, 1-4 bytes
         poww = 1;

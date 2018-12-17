@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_carbondioxide.h 32900 2018-11-02 10:12:43Z seb $
+ *  $Id: yocto_carbondioxide.h 33709 2018-12-14 14:18:12Z seb $
  *
  *  Declares yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *
@@ -67,7 +67,7 @@ typedef void (*YCarbonDioxideTimedReportCallback)(YCarbonDioxide *func, YMeasure
  * The Yoctopuce class YCarbonDioxide allows you to read and configure Yoctopuce CO2
  * sensors. It inherits from YSensor class the core functions to read measurements,
  * to register callback functions,  to access the autonomous datalogger.
- * This class adds the ability to perform manual calibration if reuired.
+ * This class adds the ability to perform manual calibration if required.
  */
 class YOCTO_CLASS_EXPORT YCarbonDioxide: public YSensor {
 #ifdef __BORLANDC__
@@ -115,7 +115,7 @@ public:
     /**
      * Changes Automatic Baseline Calibration period, in hours. If you need
      * to disable automatic baseline calibration (for instance when using the
-     * sensor in an environment that is constantly above 400ppm CO2), set the
+     * sensor in an environment that is constantly above 400 ppm CO2), set the
      * period to -1. Remember to call the saveToFlash() method of the
      * module if the modification must be kept.
      *
@@ -207,7 +207,7 @@ public:
      * automatic calibration period. However, if you disable automatic baseline
      * calibration, you may want to manually trigger a calibration from time to
      * time. Before starting a baseline calibration, make sure to put the sensor
-     * in a standard environment (e.g. outside in fresh air) at around 400ppm.
+     * in a standard environment (e.g. outside in fresh air) at around 400 ppm.
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *

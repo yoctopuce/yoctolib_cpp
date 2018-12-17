@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 33018 2018-11-07 17:45:34Z seb $
+ * $Id: yproto.h 33734 2018-12-14 15:56:25Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -609,7 +609,7 @@ typedef enum
                                 // -> YDEV_WORKING  or YDEV_NOTRESPONDING
     YDEV_WORKING,               // device is plugged and running
                                 // -> YDEV_UNPLUGGED
-    YDEV_NOTRESPONDING          // device has not repsond to StartDevice and we will never try to speak with it
+    YDEV_NOTRESPONDING          // device has not answered to StartDevice and we will never try to speak with it
                                 // -> none
 } YDEV_STATUS;
 
@@ -642,7 +642,7 @@ typedef enum
 } YHTTP_STATUS;
 
 
-// structure that contain generic device information (usb and netowrk)
+// structure that contain generic device information (usb and network)
 #define DEVGEN_LOG_ACTIVATED     1u
 #define DEVGEN_LOG_PENDING       2u
 #define DEVGEN_LOG_PULLING       4u
@@ -680,7 +680,7 @@ typedef struct  _yPrivDeviceSt{
     yCRITICAL_SECTION   acces_state;
     YUSBDEV             yhdl;       // unique YHANDLE to identify device during execution
     YDEV_STATUS         dStatus;    // detection status
-    YENU_ACTION         enumAction; // action to triger at end of enumeration
+    YENU_ACTION         enumAction; // action to trigger at end of enumeration
     YRUN_STATUS         rstatus;    // running status of the device (valid only on working dev)
     char                errmsg[YOCTO_ERRMSG_LEN];
     unsigned int        nb_startup_retry;
@@ -800,7 +800,7 @@ typedef struct _WSNetHubSt {
 
 typedef struct _HubSt {
     yUrlRef url;            // hub base URL, or INVALID_HASH_IDX if unused
-    // misc flag that are maped to int for efficency and thread safety
+    // misc flag that are mapped to int for efficiency and thread safety
     int rw_access;
     int send_ping;
     int mandatory;
@@ -816,10 +816,10 @@ typedef struct _HubSt {
     int retryCount;
     u32 notifAbsPos;
     u64 lastAttempt;    // time of the last connection attempt (in ms)
-    u64 attemptDelay;   // delay until next attemps (in ms)
+    u64 attemptDelay;   // delay until next attempts (in ms)
     u64 devListExpires;
-    u8 devYdxMap[ALLOC_YDX_PER_HUB];   // maps hub's internal devYdx to our WP devYdx //fixme:
-    int errcode;  // in case an error occured
+    u8 devYdxMap[ALLOC_YDX_PER_HUB];   // maps hub's internal devYdx to our WP devYdx
+    int errcode;  // in case an error occurred
     char errmsg[YOCTO_ERRMSG_LEN];
     yCRITICAL_SECTION access; // CS for field that need to be protected again concurrency (these filed start with cs_)
     u32 flags;
@@ -839,7 +839,7 @@ typedef struct _HubSt {
 
 typedef struct _HTTPReqSt {
     YSOCKET             skt;            // socket used to talk to the device
-    YSOCKET             reuseskt;       // socket to reuse for next query, when keepalive is true
+    YSOCKET             reuseskt;       // socket to reuse for next query, when keep alive is true
 } HTTPReqSt;
 
 typedef struct _WSReqSt
@@ -878,14 +878,14 @@ typedef struct _RequestSt {
     int                 replysize;      // write pointer within replybuf
     int                 replypos;       // read pointer within replybuf; -1 when not ready to start reading
     int                 retryCount;     // number of authorization attempts
-    int                 errcode;        // in case an error occured
+    int                 errcode;        // in case an error occurred
     char                errmsg[YOCTO_ERRMSG_LEN];
-    u64                 open_tm;        // timestamp of the start of a connection used to detect timout of the device
+    u64                 open_tm;        // timestamp of the start of a connection used to detect timeout of the device
                                         // (must be reset if we reuse the socket)
     u64                 write_tm;       // timestamp of the last successfully write of the request
     u64                 read_tm;        // timestamp of the last received packet (must be reset if we reuse the socket)
     u64                 timeout_tm;     // the maximum time to live of this connection
-    u32                 flags;          // flags for keepalive and no expiration
+    u32                 flags;          // flags for keep alive and no expiration
     yAsbUrlProto        proto;          // the type of protocol used for this request (same information as the one contained in the hub url)
     yapiRequestAsyncCallback callback;
     void                *context;
@@ -932,7 +932,7 @@ typedef struct{
     yCRITICAL_SECTION   updateDev_cs;
     yCRITICAL_SECTION   handleEv_cs;
     yEvent              exitSleepEvent;
-    // global inforation on all devices
+    // global information on all devices
     yCRITICAL_SECTION   generic_cs;
     yGenericDeviceSt    generic_infos[ALLOC_YDX_PER_HUB];
     // usb stuff

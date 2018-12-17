@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_colorled.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_colorled.cpp 33709 2018-12-14 14:18:12Z seb $
  *
  *  Implements yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -625,7 +625,7 @@ int YColorLed::sendCommand(string command)
  * Add a new transition to the blinking sequence, the move will
  * be performed in the HSL space.
  *
- * @param HSLcolor : desired HSL color when the traisntion is completed
+ * @param HSLcolor : desired HSL color when the transition is completed
  * @param msDelay : duration of the color transition, in milliseconds.
  *
  * @return YAPI_SUCCESS if the call succeeds.

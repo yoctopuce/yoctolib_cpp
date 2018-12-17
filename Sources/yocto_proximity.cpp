@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_proximity.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_proximity.cpp 33709 2018-12-14 14:18:12Z seb $
  *
  *  Implements yFindProximity(), the high-level API for Proximity functions
  *
@@ -266,10 +266,10 @@ int YProximity::set_detectionHysteresis(int newval)
 }
 
 /**
- * Returns the minimal detection duration before signaling a presence event. Any shorter detection is
+ * Returns the minimal detection duration before signalling a presence event. Any shorter detection is
  * considered as noise or bounce (false positive) and filtered out.
  *
- * @return an integer corresponding to the minimal detection duration before signaling a presence event
+ * @return an integer corresponding to the minimal detection duration before signalling a presence event
  *
  * On failure, throws an exception or returns Y_PRESENCEMINTIME_INVALID.
  */
@@ -296,10 +296,10 @@ int YProximity::get_presenceMinTime(void)
 }
 
 /**
- * Changes the minimal detection duration before signaling a presence event. Any shorter detection is
+ * Changes the minimal detection duration before signalling a presence event. Any shorter detection is
  * considered as noise or bounce (false positive) and filtered out.
  *
- * @param newval : an integer corresponding to the minimal detection duration before signaling a presence event
+ * @param newval : an integer corresponding to the minimal detection duration before signalling a presence event
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -322,10 +322,10 @@ int YProximity::set_presenceMinTime(int newval)
 }
 
 /**
- * Returns the minimal detection duration before signaling a removal event. Any shorter detection is
+ * Returns the minimal detection duration before signalling a removal event. Any shorter detection is
  * considered as noise or bounce (false positive) and filtered out.
  *
- * @return an integer corresponding to the minimal detection duration before signaling a removal event
+ * @return an integer corresponding to the minimal detection duration before signalling a removal event
  *
  * On failure, throws an exception or returns Y_REMOVALMINTIME_INVALID.
  */
@@ -352,10 +352,10 @@ int YProximity::get_removalMinTime(void)
 }
 
 /**
- * Changes the minimal detection duration before signaling a removal event. Any shorter detection is
+ * Changes the minimal detection duration before signalling a removal event. Any shorter detection is
  * considered as noise or bounce (false positive) and filtered out.
  *
- * @param newval : an integer corresponding to the minimal detection duration before signaling a removal event
+ * @param newval : an integer corresponding to the minimal detection duration before signalling a removal event
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *

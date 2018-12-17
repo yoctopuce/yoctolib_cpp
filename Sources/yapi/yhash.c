@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 33654 2018-12-12 14:49:15Z seb $
+ * $Id: yhash.c 33734 2018-12-14 15:56:25Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -895,10 +895,10 @@ int wpRegister(int devYdx, yStrRef serial, yStrRef logicalName, yStrRef productN
         yAsbUrlType type = yHashGetUrlPort(devUrl,host,&port, NULL, NULL, NULL, NULL);
         switch(type){
         case USB_URL:
-            dbglog("WP: regiser %s(0x%X) form USB (res=%d)\n",yHashGetStrPtr(serial),serial,changed);
+            dbglog("WP: register %s(0x%X) form USB (res=%d)\n",yHashGetStrPtr(serial),serial,changed);
             break;
         default:
-            dbglog("WP: regiser %s(0x%X) from %s:%u (res=%d)\n",yHashGetStrPtr(serial),serial,host,port,changed);
+            dbglog("WP: register %s(0x%X) from %s:%u (res=%d)\n",yHashGetStrPtr(serial),serial,host,port,changed);
         }
     }
 #endif
@@ -989,7 +989,7 @@ int wpMarkForUnregister(yStrRef serial)
                 dbglog("WP: mark for unregister %s(0x%X) from %s:%u\n",yHashGetStrPtr(serial),serial,host,port);
             }
         }else{
-            dbglog("WP: mark for unregister %s(0x%X) witch is unregistred!\n",yHashGetStrPtr(serial),serial);
+            dbglog("WP: mark for unregister %s(0x%X) witch is unregistered!\n",yHashGetStrPtr(serial),serial);
         }
     }
 #endif

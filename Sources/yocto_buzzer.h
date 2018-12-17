@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_buzzer.h 32900 2018-11-02 10:12:43Z seb $
+ *  $Id: yocto_buzzer.h 33709 2018-12-14 14:18:12Z seb $
  *
  *  Declares yFindBuzzer(), the high-level API for Buzzer functions
  *
@@ -339,7 +339,7 @@ public:
      * Activates the buzzer for a short duration.
      *
      * @param frequency : pulse frequency, in hertz
-     * @param duration : pulse duration in millseconds
+     * @param duration : pulse duration in milliseconds
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
@@ -351,7 +351,7 @@ public:
      * Makes the buzzer frequency change over a period of time.
      *
      * @param frequency : frequency to reach, in hertz. A frequency under 25Hz stops the buzzer.
-     * @param duration :  pulse duration in millseconds
+     * @param duration :  pulse duration in milliseconds
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
@@ -363,7 +363,7 @@ public:
      * Makes the buzzer volume change over a period of time, frequency  stays untouched.
      *
      * @param volume : volume to reach in %
-     * @param duration : change duration in millseconds
+     * @param duration : change duration in milliseconds
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *

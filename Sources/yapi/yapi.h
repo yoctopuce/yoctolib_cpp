@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h 32809 2018-10-31 12:37:34Z seb $
+ * $Id: yapi.h 33734 2018-12-14 15:56:25Z seb $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -105,7 +105,7 @@ void YAPI_FUNCTION_EXPORT yapiStartStopDeviceLogCallback(const char *serial,int 
     Initializes  and Allocate structures needed for the YoctoAPI
 
   Parameters:
-    type: Y_DETECT_USB will auto-detect only USB connnected devices
+    type: Y_DETECT_USB will auto-detect only USB connected devices
           Y_DETECT_NET will auto-detect only Network devices
           Y_DETECT_ALL will auto-detect devices on all usable protocol
     errmsg: a pointer to a buffer of YOCTO_ERRMSG_LEN bytes to store any error message
@@ -158,11 +158,11 @@ u64 YAPI_FUNCTION_EXPORT yapiGetNetDevListValidity(void);
 
 Description:
 These function are used to dynamically change the network device list validity.
-By default it's 10 seconds, but with some GSM case you may want ot grow this
-value in order to reduce network trafic. Arrival/Removal are not affected
+By default it's 10 seconds, but with some GSM case you may want to grow this
+value in order to reduce network traffic. Arrival/Removal are not affected
 by these functions.
 
-Note: the YAPI must be allready initalized otherwise the value will be discarded.
+Note: the YAPI must be already initalized otherwise the value will be discarded.
 
 ***************************************************************************/
 void YAPI_FUNCTION_EXPORT yapiSetNetDevListValidity(int sValidity);
@@ -466,7 +466,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHandleEvents(char *errmsg);
  Description:
  Perform periodic polling tasks on USB queues, invoke callbacks, etc
  This function can be called either from application main loop (if any)
- or from a dedicated thread in a multithreaded application.
+ or from a dedicated thread in a multi threaded application.
 
  Parameters:
  errmsg: a pointer to a buffer of YOCTO_ERRMSG_LEN bytes to store any error message
@@ -675,7 +675,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetDevicePath(YAPI_DEVICE devdesc, char *rootd
    return the rootdevice and the path to access a device.
 
  Parameters:
-   serila      : the serial number of the devcie
+   serila      : the serial number of the device
    rootdevice  : a pointer to a buffer of YOCTO_SERIAL_LEN characters for receiving the rootdevice
    path        : a pointer to a buffer of for storing the base path to add to your HTTP request
    pathtsize   : size of the path buffer
@@ -703,8 +703,8 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetDevicePathEx(const char * serial, char *roo
    fails if there is no connected device with the requested function identification.
 
  Parameters:
-   class_str  : string refering to the function class
-   func_str   : string refering to a Yocto function (hardware id, logical name, etc.)
+   class_str  : string referring to the function class
+   func_str   : string referring to a Yocto function (hardware id, logical name, etc.)
    errmsg     : a pointer to a buffer of YOCTO_ERRMSG_LEN bytes to store any error message
 
  Returns:
@@ -834,7 +834,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetFunctionInfoEx(YAPI_FUNCTION fundesc, YAPI_
   Parameters:
     iohdl      : the request handle that will be initialized
     device     : a string that contain one of the flowing value: serial, logicalname, url
-    request    : the HTTP request (HTTP header + body, in case of POST) of the page/file to retreive
+    request    : the HTTP request (HTTP header + body, in case of POST) of the page/file to retrieve
     requestsize: the length of the HTTP request
     reply      : a pointer to the reply buffer, returned by reference
     replysize  : the length of the reply buffer, returned by reference
@@ -861,7 +861,7 @@ Parameters:
 iohdl        : the request handle that will be initialized
 channel      : channel to use for the request
 device       : a string that contain one of the flowing value: serial, logicalname, url
-request      : the HTTP request (HTTP header + body, in case of POST) of the page/file to retreive
+request      : the HTTP request (HTTP header + body, in case of POST) of the page/file to retrieve
 requestsize  : the length of the HTTP request
 reply        : a pointer to the reply buffer, returned by reference
 replysize    : the length of the reply buffer, returned by reference
@@ -890,7 +890,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncStartOutOfBand(YIOHDL *iohdl, i
  Parameters:
  iohdl      : the request handle that will be initialized
  device     : a string that contain one of the flowing value: serial, logicalname, url
- request    : the HTTP request (HTTP header) of the page/file to retreive
+ request    : the HTTP request (HTTP header) of the page/file to retrieve
  reply      : a pointer to the reply buffer, returned by reference
  replysize  : the length of the reply buffer, returned by reference
  errmsg     : a pointer to a buffer of YOCTO_ERRMSG_LEN bytes to store any error message
@@ -908,7 +908,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncStart(YIOHDL *iohdl, const char
    int yapiHTTPRequestSyncDone(YIOHDL *iohdl, char *errmsg)
 
  Description:
-   Terminate a call to yapiHTTPRequestSyncStart and free corresponding ressources.
+   Terminate a call to yapiHTTPRequestSyncStart and free corresponding resources.
    No other request can take place to the device until this function is called.
 
  Parameters:
@@ -932,7 +932,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestSyncDone(YIOHDL *iohdl, char *errms
 
  Parameters:
    device     : a string that contain one of the flowing value: serial, logicalname, url
-   request    : the HTTP request (HTTP hreader) of the page/file to retreive
+   request    : the HTTP request (HTTP header) of the page/file to retrieve
    callback   : RESERVED FOR FUTURE USE
    context    : RESERVED FOR FUTURE USE
    errmsg     : a pointer to a buffer of YOCTO_ERRMSG_LEN bytes to store any error message
@@ -956,7 +956,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestAsync(const char *device, const cha
 
  Parameters:
    device     : a string that contain one of the flowing value: serial, logicalname, url
-   request    : the HTTP request (HTTP header + body, in case of POST) of the page/file to retreive
+   request    : the HTTP request (HTTP header + body, in case of POST) of the page/file to retrieve
    requestsize: the length of the HTTP request
    callback   : RESERVED FOR FUTURE USE
    context    : RESERVED FOR FUTURE USE
@@ -983,7 +983,7 @@ Execute a HTTP request to a given device, and leave it to the API to complete th
 Parameters:
 channel    : channel to use for the request
 device     : a string that contain one of the flowing value: serial, logicalname, url
-request    : the HTTP request (HTTP header + body, in case of POST) of the page/file to retreive
+request    : the HTTP request (HTTP header + body, in case of POST) of the page/file to retrieve
 requestsize: the length of the HTTP request
 callback   : RESERVED FOR FUTURE USE
 context    : RESERVED FOR FUTURE USE
@@ -1009,11 +1009,11 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiHTTPRequestAsyncOutOfBand(int channel, const c
  Description:
    Open a HTTP request to a given device, send a query and receive the HTTP header and
    page content into the buffer. If the content is bigger than buffsize, buffer will contain
-   no more than buffsize. If not NULL fullsize will be updated with the size of the full content.
+   no more than buffsize. If not NULL full size will be updated with the size of the full content.
 
  Parameters:
    device     : a string that contain one of the flowing value: serial, logicalname, url
-   request    : the HTTP request (HTTP hreader) of the page/file to retreive
+   request    : the HTTP request (HTTP header) of the page/file to retrieve
    buffer     : a buffer to fill with result
    buffsize   : the size of the buffer
    fullsize   : (optional) an integer to update with the full size of the data
@@ -1036,11 +1036,11 @@ int YAPI_FUNCTION_EXPORT yapiHTTPRequest(const char *device, const char *request
 
  Description:
    register a callback function that will be called on every network hub  (or VirtualHub)
-   that send an SSDP annouce or respond to a SSDP search
+   that send an SSDP announce or respond to a SSDP search
 
  Parameters:
    hubDiscoveryCallback : the function to call when an network hub his detected by ssdp or null to
-                          unregister the prévious callback
+                          unregister the previous callback
 
  Returns:
 
@@ -1054,7 +1054,7 @@ void YAPI_FUNCTION_EXPORT yapiRegisterHubDiscoveryCallback(yapiHubDiscoveryCallb
    YRETCODE YAPI_FUNCTION_EXPORT yapiTriggerHubDiscovery(char *errmsg);
 
  Description:
-   Send an SSDP Msearch Request to force all online hub to annouce itself again.
+   Send an SSDP Msearch Request to force all online hub to announce itself again.
 
  Parameters:
    errmsg     : a pointer to a buffer of YOCTO_ERRMSG_LEN bytes to store any error message

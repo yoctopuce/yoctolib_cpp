@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 32864 2018-11-01 14:54:50Z seb $
+ * $Id: ydef.h 33734 2018-12-14 15:56:25Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -123,7 +123,7 @@ typedef signed long long        s64;
 #include <TargetConditionals.h>
 
 #if TARGET_IPHONE_SIMULATOR
-//#warning IOS simulatore platform
+//#warning IOS simulator platform
 #define IOS_API
 #elif TARGET_OS_IPHONE
 //#warning IOS platform
@@ -168,7 +168,7 @@ typedef signed long long        s64;
 
 
 #elif defined(__linux__)
-// gcc compiler on linux
+// gcc compiler on Linux
 #define LINUX_API
 
 #if defined(__i386__)
@@ -176,7 +176,7 @@ typedef signed long long        s64;
 #define FMTs64 "lld"
 #define FMTu64 "llu"
 #define FMTx64 "llx"
-#elif defined(__x86_64__)
+#elif defined(__x86_64__) || defined(__aarch64__)
 #define __64BITS__
 #define FMTs64 "ld"
 #define FMTu64 "lu"
@@ -224,7 +224,7 @@ typedef u8              YSOCKET;
 typedef s8              YYSBIO;
 typedef s8              YTRNKIO;
 #else
-// we have hardcoded the type of SOCKET to
+// we have hard coded the type of SOCKET to
 // prevent to mess up with user own code
 #if defined(WINDOWS_API)
 #if defined(__64BITS__)
@@ -461,7 +461,7 @@ typedef struct {
     u8      pad;
 } yDeviceSt;
 
-// definitions for USB protocl
+// definitions for USB protocol
 
 #ifndef C30
 #define Nop()
@@ -801,7 +801,7 @@ typedef struct {
 #define USB_META_WS_PROTO_V2            2 // adding API packets throttling
 
 #define USB_META_WS_AUTH_FLAGS_VALID    1 // set it if the sha1 and nonce are pertinent
-#define USB_META_WS_AUTH_FLAGS_RW       2 // set it if RW acces are granted
+#define USB_META_WS_AUTH_FLAGS_RW       2 // set it if RW access are granted
 
 typedef union {
     struct {
@@ -823,7 +823,7 @@ typedef union {
         char serial[YOCTO_SERIAL_LEN];
     } announce;
     struct {
-        u8  metaType;      // =USB_META_WS_AUTHENTICATION (authenticate trafic)
+        u8  metaType;      // =USB_META_WS_AUTHENTICATION (authenticate traffic)
         u8  version;       // the version of the authentication
         u16 flags;         // reserved bits
         u32 nonce;         // nonce append to password (in capital hex)
@@ -1024,7 +1024,7 @@ typedef union {
 #pragma pack(pop)
 #endif
 
-//device indentifications PIC24FJ256DA210 family
+//device identifications PIC24FJ256DA210 family
 #define FAMILY_PIC24FJ256DA210 0X41
 #define PIC24FJ128DA206     0x08
 #define PIC24FJ128DA106     0x09
@@ -1035,7 +1035,7 @@ typedef union {
 #define PIC24FJ256DA210     0x0E
 #define PIC24FJ256DA110     0x0F
 
-//device indentifications PIC24FJ64GB004 family
+//device identifications PIC24FJ64GB004 family
 #define FAMILY_PIC24FJ64GB004 0x42
 #define PIC24FJ32GB002      0x03
 #define PIC24FJ64GB002      0x07

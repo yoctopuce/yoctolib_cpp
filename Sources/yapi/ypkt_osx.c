@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_osx.c 28024 2017-07-10 08:50:02Z mvuilleu $
+ * $Id: ypkt_osx.c 33734 2018-12-14 15:56:25Z seb $
  *
  * OS-specific USB packet layer, Mac OS X version
  *
@@ -65,8 +65,8 @@ static int yReserveGlobalAccess(yContextSt *ctx, char *errmsg)
     mkfifo(YOCTO_LOCK_PIPE, 0600);
     fd = open(YOCTO_LOCK_PIPE, O_RDWR|O_NONBLOCK);
     if (fd < 0) {
-        // we cannot open lock file so we cannot realy
-        // check double instance so we asume that we are
+        // we cannot open lock file so we cannot really
+        // check double instance so we assume that we are
         // alone
         return YAPI_SUCCESS;
     }
@@ -74,7 +74,7 @@ static int yReserveGlobalAccess(yContextSt *ctx, char *errmsg)
     mypid = (int) getpid();
     res = read(fd, &chk_val, sizeof(chk_val));
     if (res == sizeof(chk_val)) {
-        //there is allready someone
+        //there is already someone
         usedpid = chk_val;
     } else{
         // nobody there -> store my PID
@@ -117,7 +117,7 @@ static void *event_thread(void *param)
         CFRunLoopRunInMode( kCFRunLoopDefaultMode, 10, FALSE);
     }
 
-    HALLOG("event_thread run loop stoped\n");
+    HALLOG("event_thread run loop stopped\n");
     ctx->usb_thread_state = USB_THREAD_STOPED;
     return NULL;
 }
@@ -142,7 +142,7 @@ static int setupHIDManager(yContextSt *ctx, OSX_HID_REF *hid, char *errmsg)
     IOHIDManagerSetDeviceMatching(hid->manager, dictionary );
     // now we can release the dictionary
     CFRelease(dictionary);
-    // sechedulle the HID Manager with our global run loop
+    // schedule the HID Manager with our global run loop
     IOHIDManagerScheduleWithRunLoop(hid->manager, ctx->usb_run_loop, kCFRunLoopDefaultMode);
 
     // Now open the IO HID Manager reference
@@ -365,7 +365,7 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces,int *nbifaceDetect,char *errmsg)
 
 
 
-// return 1 if OS hdl are identicals
+// return 1 if OS hdl are identical
 //        0 if any of the interface has changed
 int yyyOShdlCompare( yPrivDeviceSt *dev, yInterfaceSt *newdev)
 {
@@ -412,7 +412,7 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
         dev_refs = getDevRef(&yContext->hid, &deviceCount);
     }
     if(dev_refs == NULL) {
-        return YERRMSG(YAPI_IO_ERROR,"Device disapear before yyySetup");
+        return YERRMSG(YAPI_IO_ERROR,"Device disappear before yyySetup");
     }
 
 
@@ -459,8 +459,8 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
                                            &Handle_IOHIDDeviceIOHIDReportCallback,   // the callback routine
                                            iface);                     // context passed to callback
 
-    // save setuped iface pointer in context in order
-    // to retreive it durring unplugcallback
+    // save setup ed iface pointer in context in order
+    // to retrieve it during unplugcallback
     for (i=0; i< SETUPED_IFACE_CACHE_SIZE ; i++) {
         if(yContext->setupedIfaceCache[i]==NULL){
             yContext->setupedIfaceCache[i] = iface;
@@ -468,7 +468,7 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
         }
     }
     if (i==SETUPED_IFACE_CACHE_SIZE) {
-        return YERRMSG(YAPI_IO_ERROR,"Too many setuped USB interfaces");
+        return YERRMSG(YAPI_IO_ERROR,"Too many setup USB interfaces");
     }
     iface->flags.yyySetupDone = 1;
     return 0;
@@ -507,7 +507,7 @@ void yyyPacketShutdown(yInterfaceSt  *iface)
 {
     int i;
 
-    // remove iface from setuped ifaces
+    // remove iface from setup ifaces
     for (i=0; i< SETUPED_IFACE_CACHE_SIZE ; i++) {
         if(yContext->setupedIfaceCache[i]==iface){
             yContext->setupedIfaceCache[i] = NULL;

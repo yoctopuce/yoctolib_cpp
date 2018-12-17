@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 33290 2018-11-22 10:43:41Z seb $
+#  $Id: GNUmakefile 33699 2018-12-14 08:33:47Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -692,6 +692,8 @@ release_armhf: $(LIBS_ARMHF) clean_obj_armhf
 
 aarch64: $(LIBS_AARCH64)
 
+release_aarch64: $(LIBS_AARCH64) clean_obj_aarch64
+
 mips : export STAGING_DIR = $(STAGING_MIPS)
 mips: $(LIBS_MIPS)
 
@@ -731,6 +733,13 @@ default: i386
 release: release_i386
 
 else
+ifeq ($(ARCH), aarch64)
+default: aarch64
+
+release: release_aarch64
+
+else
+
 #$(warning $(ARM_BUILD_TYPE))
 ifeq ($(ARM_BUILD_TYPE), hf)
 default: armhf
@@ -742,6 +751,7 @@ default: armel
 
 release: release_armel
 
+endif
 endif
 endif
 endif

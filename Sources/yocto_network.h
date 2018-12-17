@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_network.h 32900 2018-11-02 10:12:43Z seb $
+ *  $Id: yocto_network.h 33709 2018-12-14 14:18:12Z seb $
  *
  *  Declares yFindNetwork(), the high-level API for Network functions
  *
@@ -484,7 +484,7 @@ public:
 
     /**
      * Changes the default HTML page returned by the hub. If not value are set the hub return
-     * "index.html" which is the web interface of the hub. It is possible de change this page
+     * "index.html" which is the web interface of the hub. It is possible to change this page
      * for file that has been uploaded on the hub.
      *
      * @param newval : an integer corresponding to the default HTML page returned by the hub
@@ -511,7 +511,7 @@ public:
 
     /**
      * Changes the default HTML page returned by the hub. If not value are set the hub return
-     * "index.html" which is the web interface of the hub. It is possible de change this page
+     * "index.html" which is the web interface of the hub. It is possible to change this page
      * for file that has been uploaded on the hub.
      *
      * @param newval : a string corresponding to the default HTML page returned by the hub
@@ -828,12 +828,12 @@ public:
     { return this->set_callbackMaxDelay(newval); }
 
     /**
-     * Returns the current consumed by the module from Power-over-Ethernet (PoE), in milli-amps.
+     * Returns the current consumed by the module from Power-over-Ethernet (PoE), in milliamps.
      * The current consumption is measured after converting PoE source to 5 Volt, and should
      * never exceed 1800 mA.
      *
      * @return an integer corresponding to the current consumed by the module from Power-over-Ethernet
-     * (PoE), in milli-amps
+     * (PoE), in milliamps
      *
      * On failure, throws an exception or returns Y_POECURRENT_INVALID.
      */
@@ -895,7 +895,7 @@ public:
      *
      * @param fallbackIpAddr : fallback IP address, to be used when no DHCP reply is received
      * @param fallbackSubnetMaskLen : fallback subnet mask length when no DHCP reply is received, as an
-     *         integer (eg. 24 means 255.255.255.0)
+     *         integer (e.g. 24 means 255.255.255.0)
      * @param fallbackRouter : fallback router IP address, to be used when no DHCP reply is received
      *
      * @return YAPI_SUCCESS when the call succeeds.
@@ -921,7 +921,7 @@ public:
      * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
      *
      * @param ipAddress : device IP address
-     * @param subnetMaskLen : subnet mask length, as an integer (eg. 24 means 255.255.255.0)
+     * @param subnetMaskLen : subnet mask length, as an integer (e.g. 24 means 255.255.255.0)
      * @param router : router IP address (default gateway)
      *
      * @return YAPI_SUCCESS when the call succeeds.
@@ -954,7 +954,7 @@ public:
     virtual int         triggerCallback(void);
 
     /**
-     * Setup periodic HTTP callbacks (simplifed function).
+     * Setup periodic HTTP callbacks (simplified function).
      *
      * @param interval : a string representing the callback periodicity, expressed in
      *         seconds, minutes or hours, eg. "60s", "5m", "1h", "48h".

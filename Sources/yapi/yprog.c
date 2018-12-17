@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 29739 2018-01-25 17:03:29Z seb $
+ * $Id: yprog.c 33734 2018-12-14 15:56:25Z seb $
  *
  * Implementation of firmware upgrade functions
  *
@@ -609,7 +609,7 @@ static void yGetFirmware(u32 ofs, u8 *dst, u16 size)
 
 
 
-//-1 = error 0= retry 1= ok (the global fctx.stepA is allready updated)
+//-1 = error 0= retry 1= ok (the global fctx.stepA is already updated)
 static int uGetDeviceInfo(void)
 {
     switch(fctx.stepB){
@@ -970,7 +970,7 @@ static int uFlashFlash()
         if(ypGetBootloaderReply(&firm_dev, &firm_pkt,NULL)<0){
             if((s32)(fctx.timeout - ytime()) < 0) {
 #ifdef DEBUG_FIRMWARE
-                dbglog("Bootlaoder did not send confirmation for Zone %x Block %x\n",fctx.currzone,fctx.bz.addr_page);
+                dbglog("Bootloader did not send confirmation for Zone %x Block %x\n",fctx.currzone,fctx.bz.addr_page);
 #endif
                 YSTRCPY(fctx.errmsg,FLASH_ERRMSG_LEN,"Device did not respond to verif pkt");
                 return -1;
@@ -1414,9 +1414,9 @@ static int getTCPBootloaders(void *ctx, const char* buffer, u32 len, char *errms
 }
 
 
-// return the list of bootladers in a specific hub
+// return the list of bootloaders in a specific hub
 // buffer must be an pointer to a buffer of min 4 * YOCTO_SERIAL_LEN
-// return the number of booloader copyed to buffer
+// return the number of bootloader copied to buffer
 int yNetHubGetBootloaders(const char *hubserial, char *buffer, char *errmsg)
 {
     const char * req = "GET /flash.json?a=list \r\n\r\n";
@@ -1813,7 +1813,7 @@ static void* yFirmwareUpdate_thread(void* ctx)
         goto exitthread;
     }
     fctx.len = res;
-    //copy firmware header into context variable (to have same behaviour as a device)
+    //copy firmware header into context variable (to have same behavior as a device)
     memcpy(&fctx.bynHead, fctx.firmware, sizeof(fctx.bynHead));
     YSTRCPY(fctx.bynHead.h.serial, YOCTO_SERIAL_LEN, yContext->fuCtx.serial);
 
@@ -1861,13 +1861,13 @@ static void* yFirmwareUpdate_thread(void* ctx)
                 }
                 if (i == res) {
                     // not in bootloader list...
-                    //...check if list is allready full..
+                    //...check if list is already full..
                     if (res == 4) {
                         setOsGlobalProgress(YAPI_IO_ERROR, "Too many devices in update mode");
                         goto exit_and_free;
                     }
                     if (is_shield) {
-                        //...and that we do not already have a shield in bootlader..
+                        //...and that we do not already have a shield in bootloader..
                         for (i = 0; i < res; i++) {
                             p = bootloaders + YOCTO_SERIAL_LEN * i;
                             if (YSTRNCMP(p, "YHUBSHL1", YOCTO_BASE_SERIAL_LEN)==0) {
@@ -1877,7 +1877,7 @@ static void* yFirmwareUpdate_thread(void* ctx)
                         }
                     }
 
-                    // ...must reboot in programtion
+                    // ...must reboot in programing
                     setOsGlobalProgress(8, "Reboot to firmware update mode");
                     YSPRINTF(buffer, sizeof(buffer), reboot_req, subpath);
                     res = yapiHTTPRequest(hubserial, buffer, replybuf, sizeof(replybuf), NULL, errmsg);

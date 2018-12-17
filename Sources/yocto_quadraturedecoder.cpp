@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_quadraturedecoder.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_quadraturedecoder.cpp 33709 2018-12-14 14:18:12Z seb $
  *
  *  Implements yFindQuadratureDecoder(), the high-level API for QuadratureDecoder functions
  *
@@ -82,7 +82,7 @@ int YQuadratureDecoder::_parseAttr(YJSONObject* json_val)
 
 /**
  * Changes the current expected position of the quadrature decoder.
- * Invoking this function implicitely activates the quadrature decoder.
+ * Invoking this function implicitly activates the quadrature decoder.
  *
  * @param newval : a floating point number corresponding to the current expected position of the quadrature decoder
  *
