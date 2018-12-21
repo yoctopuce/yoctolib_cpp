@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 33699 2018-12-14 08:33:47Z seb $
+#  $Id: GNUmakefile 33769 2018-12-19 14:54:02Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -763,6 +763,21 @@ release: release_osx
 
 endif
 
+libyapi-i386.so: $(YAPI_DIR_I386)libyapi.so.1.0.1
+	cp $< $@
+
+libyapi-amd64.so: $(YAPI_DIR_X64)libyapi.so.1.0.1
+	cp $< $@
+
+libyapi-armel.so: $(YAPI_DIR_ARMEL)libyapi.so.1.0.1
+	cp $< $@
+
+libyapi-armhf.so:  $(YAPI_DIR_ARMHF)libyapi.so.1.0.1
+	cp $< $@
+
+libyapi-aarch64.so: $(YAPI_DIR_AARCH64)libyapi.so.1.0.1
+	cp $< $@
+
 
 $(DIR_I386) $(DIR_X64) $(DIR_ARMEL) $(DIR_ARMHF) $(DIR_AARCH64) $(DIR_MIPS) $(DIR_MIPSEL) $(DIR_OSX) $(DIR_OSX32) \
 $(YAPI_DIR_I386) $(YAPI_DIR_X64) $(YAPI_DIR_ARMEL) $(YAPI_DIR_ARMHF) $(YAPI_DIR_AARCH64) $(YAPI_DIR_MIPS) $(YAPI_DIR_MIPSEL) $(YAPI_DIR_OSX) $(YAPI_DIR_OSX32) \
@@ -823,6 +838,6 @@ clean_osx: clean_obj_osx
 clean_osx32: clean_obj_osx32
 	@rm -rf $(DIR_OSX32)
 
-clean, clean_all: clean_i386 clean_x64 clean_armel clean_armhf clean_mips clean_mipsel clean_osx clean_osx32 clean_aarch64
+clean clean_all: clean_i386 clean_x64 clean_armel clean_armhf clean_mips clean_mipsel clean_osx clean_osx32 clean_aarch64
 	echo clean
 

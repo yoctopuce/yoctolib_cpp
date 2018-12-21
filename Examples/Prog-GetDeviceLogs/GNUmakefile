@@ -17,6 +17,7 @@ YOCTO_API_DIR_32  = ../../Binaries/linux/32bits/
 YOCTO_API_DIR_64  = ../../Binaries/linux/64bits/
 YOCTO_API_DIR_ARMEL = ../../Binaries/linux/armel/
 YOCTO_API_DIR_ARMHF = ../../Binaries/linux/armhf/
+YOCTO_API_DIR_AARCH64 = ../../Binaries/linux/aarch64/
 
 
 # most compatible ARMEL options, using soft-float
@@ -34,11 +35,12 @@ DIR_64 = Binary_Linux/64bits/
 DIR_32 = Binary_Linux/32bits/
 DIR_ARMEL = Binary_Linux/armel/
 DIR_ARMHF = Binary_Linux/armhf/
+DIR_AARCH64 = Binary_Linux/aarch64/
 DEMO_64 = $(DIR_64)demo
 DEMO_32 = $(DIR_32)demo
 DEMO_ARMEL = $(DIR_ARMEL)demo
 DEMO_ARMHF = $(DIR_ARMHF)demo
-
+DEMO_AARCH64 = $(DIR_AARCH64)demo
 
 ifeq ($(ARCH), x86_64)
 DEFAULT_BUILD = $(DEMO_64)
@@ -48,6 +50,10 @@ else ifeq ($(ARCH),i386)
 DEFAULT_BUILD = $(DEMO_32)
 RELEASE_BUILD = $(DEMO_32)
 STRIP_BUILD = $(DEMO_32)
+else ifeq ($(ARCH),aarch64)
+DEFAULT_BUILD = $(DEMO_AARCH64)
+RELEASE_BUILD = $(DEMO_AARCH64)
+STRIP_BUILD = $(DEMO_AARCH64)
 else
 ifeq ($(ARM_BUILD_TYPE), hf)
 DEFAULT_BUILD = $(DEMO_ARMHF)
@@ -59,11 +65,13 @@ RELEASE_BUILD = $(DEMO_ARMEL)
 STRIP_BUILD = $(DEMO_ARMEL)
 
 invalid:
-	@echo For ARM, use \"make armel\" or \"make armhf\" depending on the floating point ABI used by your system
+	@echo For ARM, use \"make armel\", \"make armhf\" or \"make aarch64\" depending on the distribution
 
 armhf: $(DEMO_ARMHF)
 
 armel: $(DEMO_ARMEL)
+
+aarch64: $(DEMO_AARCH64)
 
 endif
 
@@ -93,6 +101,9 @@ $(DEMO_ARMEL) : main.cpp $(YOCTO_API_DIR_ARMEL)libyocto-static.a $(DIR_ARMEL)
 $(DEMO_ARMHF) : main.cpp $(YOCTO_API_DIR_ARMHF)libyocto-static.a $(DIR_ARMHF)
 	@g++ $(OPTS_GENERIC) $(OPTS_ARMHF) -o $@ main.cpp -L$(YOCTO_API_DIR_ARMHF) $(OPTS_LINK)
 
+$(DEMO_AARCH64) : main.cpp $(YOCTO_API_DIR_AARCH64)libyocto-static.a $(DIR_AARCH64)
+	@g++ $(OPTS_GENERIC) $(OPTS_AARCH64) -o $@ main.cpp -L$(YOCTO_API_DIR_AARCH64) $(OPTS_LINK)
+
 codeblock:
 	codeblocks CodeBlocks/CodeBlocks_lin.cbp --build
 
@@ -102,7 +113,7 @@ codeblockclean:
 	@rm -rf CodeBlocks/CodeBlocks_lin.layout*
 
 clean:
-	@rm -rf  $(DEMO_64) $(DEMO_32) $(DEMO_ARMEL) $(DEMO_ARMHF)
+	@rm -rf  $(DEMO_64) $(DEMO_32) $(DEMO_ARMEL) $(DEMO_ARMHF) $(DEMO_AARCH64)
 
 else
 # MAC OS X COMPILATION
@@ -133,7 +144,7 @@ cleanobj:
 endif
 
 
-$(DIR_OSX)  $(DIR_64) $(DIR_32) $(DIR_ARMEL) $(DIR_ARMHF):
+$(DIR_OSX)  $(DIR_64) $(DIR_32) $(DIR_ARMEL) $(DIR_ARMHF) $(DIR_AARCH64):
 	@mkdir -p $@
 
 
