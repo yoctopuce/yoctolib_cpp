@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yfifo.h 24872 2016-06-20 13:29:48Z seb $
+ * $Id: yfifo.h 33858 2018-12-24 11:57:29Z seb $
  *
   * Declaration of a generic fifo queue
  *
@@ -73,6 +73,7 @@ typedef struct {
 #endif
 } yFifoBuf;
 
+// used only in yfarfifo.c (normal use variable to be more efficient)
 #define YFIFOEND(fifobuf)   ((fifobuf)->buff + (fifobuf)->buffsize)
 
 

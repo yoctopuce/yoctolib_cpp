@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yfifo.c 33734 2018-12-14 15:56:25Z seb $
+ * $Id: yfifo.c 33848 2018-12-22 00:09:50Z mvuilleu $
  *
  * Implementation of a generic fifo queue
  *
@@ -53,10 +53,16 @@ void yFifoInitEx(
 #endif
     yFifoBuf *buf, u8 *buffer, u16 bufflen)
 {
+#ifdef REDUCE_COMMON_CODE
+    buf->buff = buffer;
+    buf->buffsize = bufflen;
+    yFifoEmptyEx(buf);
+#else    
     memset(buf,0,sizeof(yFifoBuf));
     buf->buff = buffer;
     buf->buffsize = bufflen;
     buf->head = buf->tail = buffer;
+#endif    
 #ifdef DEBUG_FIFO
     buf->line   = line;
     buf->fileid = fileid;
@@ -107,7 +113,11 @@ void yFifoEmpty(yFifoBuf *buf)
 
 u16 yPushFifoEx(yFifoBuf *buf, const u8 *data, u16 datalen)
 {
-    u16 freespace = buf->buffsize - buf->datasize;
+    u16 buffsize = buf->buffsize;
+    u8  *fifoBuff = buf->buff;
+    u8  *fifoEnd = buf->buff + buffsize;
+    u8  *fifoTail = buf->tail;
+    u16 freespace = buffsize - buf->datasize;
 
     if (datalen > freespace) {
         // not enough space available in
@@ -116,18 +126,19 @@ u16 yPushFifoEx(yFifoBuf *buf, const u8 *data, u16 datalen)
         // max 64byte long)
         return 0;
     }
-    //append data to our fifo buffer
-    if (buf->tail + datalen <= YFIFOEND(buf)) {
-        memcpy(buf->tail, data, datalen);
-        buf->tail += datalen;
-        if (buf->tail == YFIFOEND(buf))
-            buf->tail = buf->buff;
+    //append data to our fifo buffer    
+    if (fifoTail + datalen <= fifoEnd) {
+        memcpy(fifoTail, data, datalen);
+        fifoTail += datalen;
+        if (fifoTail == fifoEnd)
+            fifoTail = fifoBuff;
     } else {
-        u16 cplen = (u16)(YFIFOEND(buf) - buf->tail);
-        memcpy(buf->tail, data, cplen);
-        memcpy(buf->buff, data + cplen, datalen - cplen);
-        buf->tail = buf->buff + (datalen - cplen);
+        u16 cplen = (u16)(fifoEnd - fifoTail);
+        memcpy(fifoTail, data, cplen);
+        memcpy(fifoBuff, data + cplen, datalen - cplen);
+        fifoTail = fifoBuff + (datalen - cplen);
     }
+    buf->tail = fifoTail;
     // This must remain very last, so that datasize always remain
     // the number of bytes really available in buffer (may be polled
     // from within interrupt handlers)
@@ -152,25 +163,31 @@ u16 yPushFifo(yFifoBuf *buf, const u8 *data, u16 datalen)
 
 u16 yPopFifoEx(yFifoBuf *buf, u8 *data, u16 datalen)
 {
-    if (datalen > buf->datasize)
-        datalen = buf->datasize;
-    if (buf->head + datalen > YFIFOEND(buf)) {
+    u16 buffsize = buf->buffsize;
+    u8  *fifoEnd = buf->buff + buffsize;
+    u8  *fifoHead = buf->head;
+    u16 dataSize = buf->datasize;
+
+    if (datalen > dataSize) {
+        datalen = dataSize;
+    }
+    if (fifoHead + datalen > fifoEnd) {
         //need to handle wrap
-        u16 firstpart = (u16)(YFIFOEND(buf) - buf->head);
+        u16 firstpart = (u16)(fifoEnd - fifoHead);
         if (data) {
-            memcpy(data, buf->head, firstpart);
+            memcpy(data, fifoHead, firstpart);
             memcpy(data + firstpart, buf->buff, datalen - firstpart);
         }
-
-        buf->head = buf->buff + (datalen - firstpart);
+        fifoHead = buf->buff + (datalen - firstpart);
     } else {
         if (data) {
-            memcpy(data, buf->head, datalen);
+            memcpy(data, fifoHead, datalen);
         }
-        buf->head += datalen;
-        if (buf->head == YFIFOEND(buf))
-            buf->head -= buf->buffsize;
+        fifoHead += datalen;
+        if (fifoHead == fifoEnd)
+            fifoHead -= buffsize;
     }
+    buf->head = fifoHead;
     // This must remain very last, so that buffsize-datasize always
     // remain the number of bytes really free in buffer (may be polled
     // from within interrupt handlers)
@@ -197,10 +214,10 @@ u16 yPopFifo(yFifoBuf *buf, u8 *data, u16 datalen)
 
 static u16 yForceFifoEx(yFifoBuf *buf, const u8 *data, u16 datalen)
 {
-    u16 freespace;
-    freespace = buf->buffsize - buf->datasize;
+    u16 buffsize = buf->buffsize;
+    u16 freespace = buffsize - buf->datasize;
 
-    if(datalen > buf->buffsize) {
+    if(datalen > buffsize) {
         return 0;
     }
 
@@ -231,21 +248,25 @@ u16 yForceFifo(yFifoBuf *buf, const u8 *data, u16 datalen, u32 *absCounter)
 
 u16 yPeekFifoEx(yFifoBuf *buf, u8 *data, u16 datalen, u16 startofs)
 {
-    u8 *ptr ;
-    if(startofs > buf->datasize){
+    u16 buffsize = buf->buffsize;
+    u8  *fifoEnd = buf->buff + buffsize;
+    u16 dataSize = buf->datasize;
+    u8  *ptr;
+    
+    if(startofs > dataSize){
         return 0;
     }
 
-    if (datalen + startofs > buf->datasize)
-        datalen = buf->datasize - startofs;
-
-    ptr=buf->head+startofs;
-    if(ptr >= YFIFOEND(buf)){
-        ptr -= buf->buffsize;
+    if (datalen + startofs > dataSize) {
+        datalen = dataSize - startofs;
     }
-    if (ptr + datalen > YFIFOEND(buf)) {
+    ptr = buf->head + startofs;
+    if(ptr >= fifoEnd){
+        ptr -= buffsize;
+    }
+    if (ptr + datalen > fifoEnd) {
         //need to handle wrap
-        u16 firstpart = (u16)(YFIFOEND(buf) - ptr);
+        u16 firstpart = (u16)(fifoEnd - ptr);
         if (data) {
             memcpy(data, ptr, firstpart);
             memcpy(data + firstpart, buf->buff, datalen - firstpart);
@@ -273,26 +294,29 @@ u16 yPeekFifo(yFifoBuf *buf, u8 *data, u16 datalen, u16 startofs)
 
 u16 yPeekContinuousFifoEx(yFifoBuf *buf, u8 **ptr, u16 startofs)
 {
-    u8 *lptr;
+    u16 buffsize = buf->buffsize;
+    u8  *fifoEnd = buf->buff + buffsize;
+    u16 dataSize = buf->datasize;
+    u8  *lptr;
 
-    if(startofs >= buf->datasize) {
+    if(startofs >= dataSize) {
         return 0;
     }
 
     lptr = buf->head + startofs;
-    if(lptr >= YFIFOEND(buf)) {
+    if(lptr >= fifoEnd) {
         // wrap
         if(ptr) {
-            *ptr = lptr - buf->buffsize;
+            *ptr = lptr - buffsize;
         }
-        return buf->datasize - startofs;
+        return dataSize - startofs;
     } else {
         // no wrap
-        u16 toend = (u16)(YFIFOEND(buf) - lptr);
+        u16 toend = (u16)(fifoEnd - lptr);
         if(ptr) {
             *ptr = lptr;
         }
-        return (toend < buf->datasize ? toend : buf->datasize);
+        return (toend < dataSize ? toend : dataSize);
     }
 
 }
@@ -313,21 +337,25 @@ u16 yPeekContinuousFifo(yFifoBuf *buf, u8 **ptr, u16 startofs)
 
 u16 ySeekFifoEx(yFifoBuf *buf, const u8* pattern, u16 patlen,  u16 startofs, u16 searchlen, u8 bTextCompare)
 {
-    u8 *ptr;
+    u16 buffsize = buf->buffsize;
+    u8  *fifoEnd = buf->buff + buffsize;
+    u16 dataSize = buf->datasize;
+    u8  *ptr;
     u16 patidx;
     u16 firstmatch = 0xffff;
 
     // pattern bigger than our buffer size -> not found
-    if (startofs + patlen > buf->datasize) {
+    if (startofs + patlen > dataSize) {
         return 0xffff;
     }
     // adjust searchlen and ptr to our buffer
     // size and position
-    if (searchlen == 0 || searchlen > buf->datasize - startofs)
-        searchlen = buf->datasize - startofs;
+    if (searchlen == 0 || searchlen > dataSize - startofs) {
+        searchlen = dataSize - startofs;
+    }
     ptr = buf->head + startofs;
-    if (ptr >= YFIFOEND(buf))
-        ptr -= buf->buffsize;
+    if (ptr >= fifoEnd)
+        ptr -= buffsize;
 
     patidx = 0;
     while (searchlen > 0 && patidx < patlen) {
@@ -351,8 +379,8 @@ u16 ySeekFifoEx(yFifoBuf *buf, const u8* pattern, u16 patlen,  u16 startofs, u16
         startofs++;
         searchlen--;
         ptr++;
-        if (ptr >= YFIFOEND(buf))
-            ptr -= buf->buffsize;
+        if (ptr >= fifoEnd)
+            ptr -= buffsize;
 
     }
     if (patidx == patlen) {

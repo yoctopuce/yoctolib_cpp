@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 33821 2018-12-21 13:57:06Z seb $
+ * $Id: yocto_api.cpp 34007 2019-01-15 17:28:40Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -2800,6 +2800,20 @@ string YFunction::loadAttribute(string attrName)
     return attrVal;
 }
 
+/**
+ * Returns the serial number of the module, as set by the factory.
+ *
+ * @return a string corresponding to the serial number of the module, as set by the factory.
+ *
+ * On failure, throws an exception or returns YModule.SERIALNUMBER_INVALID.
+ */
+string YFunction::get_serialNumber(void)
+{
+    YModule* m = NULL;
+    m = this->get_module();
+    return m->get_serialNumber();
+}
+
 int YFunction::_parserHelper(void)
 {
     return 0;
@@ -3184,7 +3198,7 @@ YRETCODE YFunction::_setAttr(string attrname, string newvalue)
         }
     }
     if (_cacheExpiration != 0) {
-        _cacheExpiration = 0;
+        _cacheExpiration = YAPI::GetTickCount();
     }
     return YAPI_SUCCESS;
 }
@@ -3497,7 +3511,7 @@ bool YFunction::isOnline(void)
             yLeaveCriticalSection(&_this_cs);
             return false;
         }
-
+        delete apires;
         // Preload the function data, since we have it in device cache
         this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity());
     } catch (std::exception) {
@@ -3534,11 +3548,13 @@ YRETCODE YFunction::_load_unsafe(u64 msValidity)
     // Get our function Id
     fundescr = YapiWrapper::getFunction(_className, _func, errmsg);
     if (YISERR(fundescr)) {
+        delete j;
         _throw((YRETCODE)fundescr, errmsg);
         return (YRETCODE)fundescr;
     }
     res = yapiGetFunctionInfo(fundescr, NULL, serial, funcId, NULL, NULL, errbuf);
     if (YISERR(res)) {
+        delete j;
         _throw((YRETCODE)res, errbuf);
         return (YRETCODE)res;
     }
@@ -3550,10 +3566,12 @@ YRETCODE YFunction::_load_unsafe(u64 msValidity)
     try {
         node = j->getYJSONObject(funcId);
     } catch (std::exception ex) {
+        delete j;
         _throw(YAPI_IO_ERROR, "unexpected JSON structure: missing function " + _funId);
         return YAPI_IO_ERROR;
     }
     _parse(node);
+    delete j;
     return YAPI_SUCCESS;
 }
 
@@ -3898,10 +3916,11 @@ YRETCODE YDevice::requestAPI(YJSONObject*& apires, string& errmsg)
 
     // Check if we have a valid cache value
     if (_cacheStamp > YAPI::GetTickCount()) {
-        apires = _cacheJson;
+        apires = new YJSONObject(_cacheJson);
         yLeaveCriticalSection(&_lock);
         return YAPI_SUCCESS;
     }
+    apires = NULL;
     if (_cacheJson == NULL) {
         request = "GET /api.json \r\n\r\n";
     } else {
@@ -3975,6 +3994,10 @@ YRETCODE YDevice::requestAPI(YJSONObject*& apires, string& errmsg)
             delete _cacheJson;
             _cacheJson = NULL;
         }
+        if (apires!=NULL){
+            delete apires;
+            apires = NULL;
+        }
         yLeaveCriticalSection(&_lock);
         if (!YAPI::ExceptionsDisabled) {
             throw YAPI_Exception(YAPI_IO_ERROR, errmsg);
@@ -3985,7 +4008,7 @@ YRETCODE YDevice::requestAPI(YJSONObject*& apires, string& errmsg)
     if (_cacheJson) {
         delete _cacheJson;
     }
-    _cacheJson = apires;
+    _cacheJson = new YJSONObject(apires);
     _cacheStamp = yapiGetTickCount() + YAPI::_yapiContext.GetCacheValidity();
     yLeaveCriticalSection(&_lock);
 
@@ -7426,6 +7449,13 @@ string YSensor::get_unit(void)
 
 /**
  * Returns the current value of the measure, in the specified unit, as a floating point number.
+ * Note that a get_currentValue() call will *not* start a measure in the device, it
+ * will just return the last measure that occurred in the device. Indeed, internally, each Yoctopuce
+ * devices is continuously making measurements at a hardware specific frequency.
+ *
+ * If continuously calling  get_currentValue() leads you to performances issues, then
+ * you might consider to switch to callback programming model. Check the "advanced
+ * programming" chapter in in your device user manual for more information.
  *
  * @return a floating point number corresponding to the current value of the measure, in the specified
  * unit, as a floating point number
@@ -7643,7 +7673,7 @@ string YSensor::get_logFrequency(void)
  * as sample per minute (for instance "15/m") or in samples per
  * hour (eg. "4/h"). To disable recording for this function, use
  * the value "OFF". Note that setting the  datalogger recording frequency
- * to a greater value than the sensor native sampling frequency is unless,
+ * to a greater value than the sensor native sampling frequency is useless,
  * and even counterproductive: those two frequencies are not related.
  *
  * @param newval : a string corresponding to the datalogger recording frequency for this function

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 33734 2018-12-14 15:56:25Z seb $
+ * $Id: yproto.h 34004 2019-01-15 17:13:49Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -485,6 +485,9 @@ void  dumpYPerfEntry(yPerfMon *entry,const char *name);
 /*****************************************************************************
  INTERNAL STRUCTURES and DEFINITIONS
 ****************************************************************************/
+
+#define USB_MAX_IO_DURATION 5000
+
 
 // MISC packet definitions
 #pragma pack(push,1)

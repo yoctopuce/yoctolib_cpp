@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 33734 2018-12-14 15:56:25Z seb $
+ * $Id: yapi.c 34004 2019-01-15 17:13:49Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -3326,6 +3326,8 @@ static YRETCODE yapiUpdateDeviceList_internal(u32 forceupdate, char* errmsg)
             return YAPI_SUCCESS;
         }
     }
+    yEnterCriticalSection(&yContext->handleEv_cs);
+
     if (yContext->detecttype & Y_DETECT_USB) {
         err = yUSBUpdateDeviceList(errmsg);
     }
@@ -3345,6 +3347,7 @@ static YRETCODE yapiUpdateDeviceList_internal(u32 forceupdate, char* errmsg)
             }
         }
     }
+    yLeaveCriticalSection(&yContext->handleEv_cs);
     yLeaveCriticalSection(&yContext->updateDev_cs);
 
     return err;
@@ -4161,7 +4164,10 @@ static YRETCODE yapiHTTPRequestAsyncEx_internal(int tcpchan, const char* device,
             if (retryCount) {
                 char suberr[YOCTO_ERRMSG_LEN];
                 dbglog("ASync request for %s failed. Retrying after yapiUpdateDeviceList\n",device);
-                if (YISERR(yapiUpdateDeviceList_internal(1, suberr))) {
+                // do not force the update device list. Otherwise this can lead to a deadlock when device reboot or is replugeed.
+                // ex : thread 1 UpdateDevicelist -> CB -> any call that use YDevice object
+                //      thread 2 Any request that use YDevice obj -> error->  UpdateDeviceList -> DeadLock
+                if (YISERR(yapiUpdateDeviceList_internal(0, suberr))) {
                     dbglog("yapiUpdateDeviceList failled too with %s\n",errmsg);
                     return res;
                 }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 33735 2018-12-14 16:06:53Z seb $
+ * $Id: ytcp.c 34009 2019-01-15 18:17:33Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -3203,7 +3203,6 @@ static void ySSDPUpdateCache(SSDPInfos* SSDP, const char* uuid, const char* url,
         if (YSTRCMP(uuid,p->uuid) == 0) {
             p->detectedTime = yapiGetTickCount();
             p->maxAge = cacheValidity;
-
             if (YSTRCMP(url, p->url)) {
                 if (SSDP->callback) {
                     SSDP->callback(p->serial, url, p->url);
@@ -3243,11 +3242,11 @@ static void ySSDPCheckExpiration(SSDPInfos* SSDP)
         SSDP_CACHE_ENTRY* p = SSDP->SSDPCache[i];
         if (p == NULL)
             break;
-        if ((u64)(now - p->detectedTime) > p->maxAge) {
-            p->maxAge = 0;
+        if (p->maxAge > 0 && (u64)(now - p->detectedTime) > p->maxAge) {
             if (SSDP->callback) {
                 SSDP->callback(p->serial, NULL, p->url);
             }
+            p->maxAge = 0;
         }
     }
 }
@@ -3516,9 +3515,8 @@ int ySSDPStart(SSDPInfos* SSDP, ssdpHubDiscoveryCallback callback, char* errmsg)
     if (yThreadCreate(&SSDP->thread, ySSDP_thread, SSDP) < 0) {
         return YERRMSG(YAPI_IO_ERROR,"Unable to start helper thread");
     }
-    SSDP->started++;
+    SSDP->started = 1;
     return ySSDPDiscover(SSDP, errmsg);
-    //return YAPI_SUCCESS;
 }
 
 
@@ -3551,7 +3549,6 @@ void ySSDPStop(SSDPInfos* SSDP)
     }
 
     for (i = 0; i < nbDetectedIfaces; i++) {
-
         if (SSDP->request_sock[i] != INVALID_SOCKET) {
             yclosesocket(SSDP->request_sock[i]);
             SSDP->request_sock[i] = INVALID_SOCKET;
@@ -3561,5 +3558,5 @@ void ySSDPStop(SSDPInfos* SSDP)
             SSDP->notify_sock[i] = INVALID_SOCKET;
         }
     }
-    SSDP->started--;
+    SSDP->started = 0;
 }

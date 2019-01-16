@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 33735 2018-12-14 16:06:53Z seb $
+ * $Id: ystream.c 34005 2019-01-15 17:17:13Z seb $
  *
  * USB stream implementation
  *
@@ -409,13 +409,19 @@ static void devStartEnum(LOCATION yPrivDeviceSt *dev)
     yEnterCriticalSection(&dev->acces_state);
 
     timeref = yapiGetTickCount();
-    while((dev->rstatus == YRUN_IDLE || dev->rstatus == YRUN_BUSY ) && (u64)(yapiGetTickCount() - timeref) < 2000){
+    while((dev->rstatus == YRUN_IDLE || dev->rstatus == YRUN_BUSY ) && (u64)(yapiGetTickCount() - timeref) < USB_MAX_IO_DURATION + 200){
         // if someone is doing IO release the mutex and give him 2 second to quit
         yLeaveCriticalSection(&dev->acces_state);
         yPktQueueSetError(&dev->iface.rxQueue, YAPI_DEVICE_NOT_FOUND, "Device need to be stopped");
         yApproximateSleep(100);
         yEnterCriticalSection(&dev->acces_state);
     }
+    if (dev->rstatus == YRUN_IDLE || dev->rstatus == YRUN_BUSY) {
+        dbglog("Unable to stop usb device %s because the device is busy (%d:%d)\n", dev->infos.serial, dev->dStatus, dev->rstatus);
+        YPANIC;
+    }
+
+    
     dev->rstatus = YRUN_STOPED;
     // keep the Mutex on purpose
 }
@@ -1210,8 +1216,8 @@ YRETCODE yyySendPacket(yInterfaceSt *iface, const USB_Packet *pkt, char *errmsg)
     if (YISERR(res)) {
         return res;
     }
-    res = yPktQueueWaitEmptyH2D(iface,5000,errmsg);
-    if (YISERR(res)) {
+    res = yPktQueueWaitEmptyH2D(iface, USB_MAX_IO_DURATION, errmsg);
+    if (YISERR(res)) { 
         return (YRETCODE) res;
     }else if(res > 0){
         return YAPI_SUCCESS;
@@ -2127,21 +2133,21 @@ static void enuUpdateDStatus(void)
         yStrRef serialref = yHashPutStr(p->infos.serial);
         switch(p->enumAction){
         case YENU_STOP:
-            devStartEnum(p);
+            devStartEnum(PUSH_LOCATION p);
 #ifdef DEBUG_DEV_ENUM
-            dbglog("ENU:stop %s(%d)->YDEV_UNPLUGED\n",p->infos.serial,p->infos.nbinbterfaces);
+            dbglog("ENU:stop %s(%d)(%d:%d)->YDEV_UNPLUGED\n",p->infos.serial,p->infos.nbinbterfaces,p->dStatus, p->rstatus);
 #endif
             p->dStatus = YDEV_UNPLUGGED;
             if(YISERR(StopDevice(p,errmsg))){
                 dbglog("Unable to stop the device %s correctly:(%s)\n",p->infos.serial,errmsg);
             }
             dbglog("Device %s unplugged\n",p->infos.serial);
-            devStopEnum(p);
+            devStopEnum(PUSH_LOCATION p);
             wpSafeUnregister(serialref);
             break;
 
         case YENU_RESTART:
-            devStartEnum(p);
+            devStartEnum(PUSH_LOCATION p);
             if(YISERR(StopDevice(p,errmsg))){
                 dbglog("Unable to stop the device %s correctly:(%s)\n",p->infos.serial,errmsg);
             }
@@ -2159,14 +2165,14 @@ static void enuUpdateDStatus(void)
                 dbglog("ENU:restart %s(%d)->YDEV_WORKING(restart)\n",p->infos.serial,p->infos.nbinbterfaces);
 #endif
             }
-            devStopEnum(p);
+            devStopEnum(PUSH_LOCATION p);
             if (YISERR(res)) {
                 wpSafeUnregister(serialref);
             }
             break;
         case YENU_START:
             if( p->next_startup_attempt <= yapiGetTickCount()) {
-                devStartEnum(p);
+                devStartEnum(PUSH_LOCATION p);
                 updateWP = 0;
                 p->dStatus = YDEV_WORKING; //we need to put the device in working to start device (safe because we already have the mutex)
                 res = StartDevice(p, errmsg);
@@ -2187,7 +2193,7 @@ static void enuUpdateDStatus(void)
                         p->dStatus = YDEV_NOTRESPONDING;
                         updateWP = 1;
                     }
-                    devStopEnum(p);
+                    devStopEnum(PUSH_LOCATION p);
                     if (updateWP) {
                         wpSafeUnregister(serialref);
                     }
@@ -2202,7 +2208,7 @@ static void enuUpdateDStatus(void)
                     beacon = p->infos.beacon;
                     deviceid = p->infos.deviceid;
                     usb = yHashUrlUSB(serialref);
-                    devStopEnum(p);
+                    devStopEnum(PUSH_LOCATION p);
                     wpSafeRegister(NULL, MAX_YDX_PER_HUB, serialref, lnameref, prodref, deviceid, usb, beacon);
                 }
             } else {

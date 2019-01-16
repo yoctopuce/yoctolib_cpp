@@ -1,3 +1,4 @@
-CPP v1.10.33831
+CPP v1.10.34022
 
-- Update makefiles to support aarch64 platform
+- Add get_serialNumber() to YFunctions class
+- Fix crash on device unplug when multiples thread are still using the device.

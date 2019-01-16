@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.h 28224 2017-07-31 14:53:54Z seb $
+ * $Id: ytcp.h 34009 2019-01-15 18:17:33Z seb $
  *
  *  Declaration of a client TCP stack
  *
@@ -159,7 +159,7 @@ typedef struct
 // will be called on discover, refresh, and expiration
 typedef void (*ssdpHubDiscoveryCallback)(const char *serial, const char *urlToRegister, const char *urlToUnregister);
 
-#define NB_SSDP_CACHE_ENTRY 32
+#define NB_SSDP_CACHE_ENTRY 64
 #define NB_OS_IFACES 8
 
 
