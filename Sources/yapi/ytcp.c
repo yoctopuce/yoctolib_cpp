@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 34009 2019-01-15 18:17:33Z seb $
+ * $Id: ytcp.c 34108 2019-01-23 08:03:59Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -3040,7 +3040,7 @@ YSTATIC int yDetectNetworkInterfaces(u32 only_ip)
             {
                 char buffer[128];
                 ip2a(detectedIfaces[nbDetectedIfaces].ip, buffer);
-                dbglog(" iface%d: ip %s\n", nbifaces, buffer);
+                dbglog(" iface%d: ip %s\n", i, buffer);
             }
 #endif
             nbDetectedIfaces++;
@@ -3409,6 +3409,7 @@ static void* ySSDP_thread(void* ctx)
                     }
                 }
                 if (FD_ISSET(SSDP->notify_sock[i], &fds)) {
+                    //dbglog("new packet on interface %d\n", i);
                     received = (int)yrecv(SSDP->notify_sock[i], (char *)buffer, sizeof(buffer)-1, 0);
                     if (received > 0) {
                         buffer[received] = 0;
@@ -3497,13 +3498,13 @@ int ySSDPStart(SSDPInfos* SSDP, ssdpHubDiscoveryCallback callback, char* errmsg)
         memset(&sockaddr, 0, socksize);
         sockaddr.sin_family = AF_INET;
         sockaddr.sin_port = htons(YSSDP_PORT);
-        sockaddr.sin_addr.s_addr = INADDR_ANY;
+        sockaddr.sin_addr.s_addr = 0;
         if (bind(SSDP->notify_sock[i], (struct sockaddr *)&sockaddr, socksize) < 0) {
             return yNetSetErr();
         }
 
         mcast_membership.imr_multiaddr.s_addr = inet_addr(YSSDP_MCAST_ADDR_STR);
-        mcast_membership.imr_interface.s_addr = INADDR_ANY;
+        mcast_membership.imr_interface.s_addr = detectedIfaces[i].ip;
         if (setsockopt(SSDP->notify_sock[i], IPPROTO_IP, IP_ADD_MEMBERSHIP, (void*)&mcast_membership, sizeof(mcast_membership)) < 0) {
             dbglog("Unable to add multicast membership for SSDP");
             yNetLogErr();

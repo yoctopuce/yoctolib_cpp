@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 34004 2019-01-15 17:13:49Z seb $
+ * $Id: yapi.c 34047 2019-01-17 15:59:19Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -3043,12 +3043,16 @@ static YRETCODE yapiRegisterHubEx(const char* url, int checkacces, char* errmsg)
         yEnterCriticalSection(&yContext->enum_cs);
         firstfree = NBMAX_NET_HUB;
         for (i = 0; i < NBMAX_NET_HUB; i++) {
-            if (yContext->nethub[i] && yHashSameHub(yContext->nethub[i]->url, hubst->url))
+            if (yContext->nethub[i] && yHashSameHub(yContext->nethub[i]->url, hubst->url)) {
+                yapiFreeHub(hubst);
+                hubst = yContext->nethub[i];
                 break;
+            }
             if (firstfree == NBMAX_NET_HUB && yContext->nethub[i] == NULL) {
                 firstfree = i;
             }
         }
+
 
 
         if (i >= NBMAX_NET_HUB && firstfree < NBMAX_NET_HUB) {
