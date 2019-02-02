@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 33734 2018-12-14 15:56:25Z seb $
+ * $Id: ydef.h 34151 2019-01-28 07:40:38Z mvuilleu $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -789,7 +789,7 @@ typedef struct {
 #define USB_META_WS_ERROR               6
 #define USB_META_ACK_UPLOAD             7
 
-#define USB_META_UTCTIME_SIZE           5u
+#define USB_META_UTCTIME_SIZE           6u
 #define USB_META_DLFLUSH_SIZE           1u
 #define USB_META_ACK_D2H_PACKET_SIZE    2u
 #define USB_META_WS_ANNOUNCE_SIZE       (8 + YOCTO_SERIAL_LEN)
@@ -807,6 +807,8 @@ typedef union {
     struct {
         u8  metaType;      // =USB_META_UTCTIME
         u8  unixTime[4];   // actually a DWORD in little-endian format
+        // next field was not present in the past, check packet length to verify if present
+        u8  subsecond;     // 1/250 of a second after unixTime
     } utcTime;
     struct {
         u8  metaType;      // =USB_META_DLFLUSH (flush datalogger)

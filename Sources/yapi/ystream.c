@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 34005 2019-01-15 17:17:13Z seb $
+ * $Id: ystream.c 34160 2019-01-28 14:18:42Z seb $
  *
  * USB stream implementation
  *
@@ -46,6 +46,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdint.h>
 #ifdef WINDOWS_API
 #include <time.h>
 #else
@@ -1475,39 +1476,71 @@ again:
 }
 
 
+#ifdef WINDOWS_API
+static void ygettimeofday(u32* sec, u32* ms)
+{
+    static const uint64_t EPOCH = ((uint64_t)116444736000000000ULL);
+
+    SYSTEMTIME system_time;
+    FILETIME file_time;
+    uint64_t time;
+
+    GetSystemTime(&system_time);
+    SystemTimeToFileTime(&system_time, &file_time);
+    time = ((uint64_t)file_time.dwLowDateTime);
+    time += ((uint64_t)file_time.dwHighDateTime) << 32;
+
+    *sec = (u32)((time - EPOCH) / 10000000L);
+    *ms = (u32)(system_time.wMilliseconds);
+}
+
+#else
+static void ygettimeofday(u32 *sec,u32 *ms)
+{
+    struct timeval now;
+    gettimeofday(&now, NULL);
+    *sec = (u32)now.tv_sec;
+    *ms = (u32)(now.tv_usec / 1000u);
+}
+
+#endif
+
+
 /*****************************************************************
  * yStream API with cycling logic of the inside of the packet
 *****************************************************************/
-static int yStreamGetTxBuff(yPrivDeviceSt *dev, u8 **data, u8 *maxsize);
-static int yStreamTransmit(yPrivDeviceSt *dev, u8 proto, u8 size, char *errmsg);
-static int yStreamFlush(yPrivDeviceSt *dev, char *errmsg);
+static int yStreamGetTxBuff(yPrivDeviceSt* dev, u8** data, u8* maxsize);
+static int yStreamTransmit(yPrivDeviceSt* dev, u8 proto, u8 size, char* errmsg);
+static int yStreamFlush(yPrivDeviceSt* dev, char* errmsg);
 
-static int yStreamSetup(yPrivDeviceSt *dev,char *errmsg)
+static int yStreamSetup(yPrivDeviceSt* dev, char* errmsg)
 {
-    u32 currUtcTime;
+    u32 currUtcTime, currUtcMs;
     YPROPERR(yPacketSetup(dev,errmsg));
     // now we have all setup packet sent and received
-    dev->currxpkt=NULL;
-    dev->curxofs=0xff;
+    dev->currxpkt = NULL;
+    dev->curxofs = 0xff;
     dev->curtxpkt = &dev->tmptxpkt;
-    dev->tmptxpkt.next=NULL;
-    dev->curtxofs=0;
-    dev->devYdxMap=NULL;
-    dev->lastUtcUpdate=0;
+    dev->tmptxpkt.next = NULL;
+    dev->curtxofs = 0;
+    dev->devYdxMap = NULL;
+    dev->lastUtcUpdate = 0;
     // send UTC time to the device
-    currUtcTime = (u32)time(NULL);
-    if (currUtcTime > (u32)0x51f151f1){ // timestamp appears to be valid
-        u8  *pktdata;
-        u8  maxpktlen;
+    ygettimeofday(&currUtcTime, &currUtcMs);
+    if (currUtcTime > (u32)0x51f151f1) {
+        // timestamp appears to be valid
+        u8* pktdata;
+        u8 maxpktlen;
         // send updated UTC timestamp to keep datalogger on time
-        if (yStreamGetTxBuff(dev, &pktdata, &maxpktlen) && maxpktlen >= 5) {
+        if (yStreamGetTxBuff(dev, &pktdata, &maxpktlen) && maxpktlen >= 6) {
             dev->lastUtcUpdate = currUtcTime;
             pktdata[0] = USB_META_UTCTIME;
             pktdata[1] = currUtcTime & 0xff;
             pktdata[2] = (currUtcTime >> 8) & 0xff;
             pktdata[3] = (currUtcTime >> 16) & 0xff;
             pktdata[4] = (currUtcTime >> 24) & 0xff;
-            YPROPERR(yStreamTransmit(dev, YSTREAM_META, 5, errmsg));
+            pktdata[5] = (currUtcMs / 4) & 0xff; // 1/250 seconds
+            YPROPERR(yStreamTransmit(dev, YSTREAM_META, 6, errmsg));
             YPROPERR(yStreamFlush(dev, errmsg));
         }
     }
@@ -1877,7 +1910,20 @@ static void yDispatchReportV2(yPrivDeviceSt *dev, u8 *data, int pktsize)
 #ifdef DEBUG_NOTIFICATION
     {
         USB_Report_Pkt_V2 *report = (USB_Report_Pkt_V2*)data;
-        dbglog("timed report (V2) for %d %d\n", wpGetDevYdx(serialref), report->funYdx);
+        int  len = report->extraLen + 1;
+        if (report->funYdx == 0xf) {
+            struct timeval now;
+            gettimeofday(&now, NULL);
+            u64 t = data[1] + 0x100u * data[2] + 0x10000u * data[3] + 0x1000000u * data[4];
+            u32 ms = data[5] << 2;
+            if (len >= 7) {
+                ms += data[6] >>6;
+            }
+            s64 deltaMs = ((s64)now.tv_sec*1000+now.tv_usec/1000) - ((s64)t*1000 + ms);
+            dbglog("timed report (V2) for %d: dt=%.3f\n", wpGetDevYdx(serialref), deltaMs/1000.0);
+        } else {
+            dbglog("timed report (V2) for %d %d\n", wpGetDevYdx(serialref), report->funYdx);
+        }
     }
 #endif
     if(yContext->rawReportV2Cb) {
@@ -2491,69 +2537,70 @@ int yUsbIdle(void)
     char            errmsg[YOCTO_ERRMSG_LEN];
 
     YPERF_ENTER(yUsbIdle);
-    for( p=yContext->devs ; p ; p=p->next){
+    for (p = yContext->devs; p; p = p->next) {
 
-        if(p->dStatus != YDEV_WORKING){
+        if (p->dStatus != YDEV_WORKING) {
             continue;
         }
 
-        res = devStartIdle(PUSH_LOCATION p,errmsg);
+        res = devStartIdle(PUSH_LOCATION p, errmsg);
         if (res == YAPI_SUCCESS) {
-            u32 currUtcTime;
-            if(YISERR(yDispatchReceive(p,0,errmsg))){
+            u32 currUtcTime, currUtcMs;
+            if (YISERR(yDispatchReceive(p,0,errmsg))) {
                 dbglog("yPacketDispatchReceive error:%s\n",errmsg);
-                devReportErrorFromIdle(PUSH_LOCATION p,errmsg);
+                devReportErrorFromIdle(PUSH_LOCATION p, errmsg);
                 continue;
             }
-            currUtcTime = (u32)time(NULL);
-            if(currUtcTime > (u32)0x51f151f1 && // timestamp appears to be valid
-               (!p->lastUtcUpdate || currUtcTime < p->lastUtcUpdate || currUtcTime >= p->lastUtcUpdate+60u)) {
-                u8  *pktdata;
-                u8  maxpktlen;
+            ygettimeofday(&currUtcTime, &currUtcMs);
+            if (currUtcTime > (u32)0x51f151f1 && // timestamp appears to be valid
+                (!p->lastUtcUpdate || currUtcTime < p->lastUtcUpdate || currUtcTime >= p->lastUtcUpdate + 60u)) {
+                u8* pktdata;
+                u8 maxpktlen;
                 // send updated UTC timestamp to keep datalogger on time
-                if(yStreamGetTxBuff(p,&pktdata, &maxpktlen) && maxpktlen >= 5){
+                if (yStreamGetTxBuff(p, &pktdata, &maxpktlen) && maxpktlen >= 6) {
                     p->lastUtcUpdate = currUtcTime;
                     pktdata[0] = USB_META_UTCTIME;
                     pktdata[1] = currUtcTime & 0xff;
-                    pktdata[2] = (currUtcTime>>8) & 0xff;
-                    pktdata[3] = (currUtcTime>>16) & 0xff;
-                    pktdata[4] = (currUtcTime>>24) & 0xff;
-                    if(YISERR(yStreamTransmit(p,YSTREAM_META,5,errmsg))){
+                    pktdata[2] = (currUtcTime >> 8) & 0xff;
+                    pktdata[3] = (currUtcTime >> 16) & 0xff;
+                    pktdata[4] = (currUtcTime >> 24) & 0xff;
+                    pktdata[5] = (currUtcMs / 4u) & 0xff; // 1/250 seconds
+                    if (YISERR(yStreamTransmit(p,YSTREAM_META,6,errmsg))) {
                         dbglog("Unable to send UTC timestamp\n");
-                    } else if(YISERR(yStreamFlush(p,errmsg))) {
+                    } else if (YISERR(yStreamFlush(p,errmsg))) {
                         dbglog("Unable to flush UTC timestamp\n");
                     }
                 }
             }
             devStopIdle(PUSH_LOCATION p);
             yapiPullDeviceLog(p->infos.serial);
-        } else if(res == YAPI_DEVICE_BUSY){
+        } else if (res == YAPI_DEVICE_BUSY) {
             if (p->httpstate != YHTTP_CLOSED && p->pendingIO.callback) {
                 // if we have an async IO on this device
                 // simulate read from users
                 if (!YISERR(devCheckAsyncIO(PUSH_LOCATION p,errmsg))) {
-                    int sendClose=0;
-                    if(YISERR(yDispatchReceive(p,0,errmsg))){
+                    int sendClose = 0;
+                    if (YISERR(yDispatchReceive(p,0,errmsg))) {
                         dbglog("yPacketDispatchReceive error:%s\n",errmsg);
-                        devReportError(PUSH_LOCATION p,errmsg);
+                        devReportError(PUSH_LOCATION p, errmsg);
                         continue;
                     }
-                    if(p->httpstate == YHTTP_CLOSE_BY_DEV) {
-                        sendClose=1;
-                    }else if(p->pendingIO.timeout<yapiGetTickCount()){
+                    if (p->httpstate == YHTTP_CLOSE_BY_DEV) {
+                        sendClose = 1;
+                    } else if (p->pendingIO.timeout < yapiGetTickCount()) {
                         dbglog("Last async request did not complete (%X:%d)\n",p->pendingIO.hdl,p->httpstate);
-                        sendClose=1;
+                        sendClose = 1;
                     }
                     if (sendClose) {
-                        u8  *pktdata;
-                        u8  maxpktlen;
+                        u8* pktdata;
+                        u8 maxpktlen;
                         // send connection close
-                        if(yStreamGetTxBuff(p,&pktdata, &maxpktlen)){
-                            u8 * ptr;
+                        if (yStreamGetTxBuff(p, &pktdata, &maxpktlen)) {
+                            u8* ptr;
                             u16 len;
-                            if(YISERR(yStreamTransmit(p,YSTREAM_TCP_CLOSE,0,errmsg))){
+                            if (YISERR(yStreamTransmit(p,YSTREAM_TCP_CLOSE,0,errmsg))) {
                                 dbglog("Unable to send async connection close\n");
-                            } else if(YISERR(yStreamFlush(p,errmsg))) {
+                            } else if (YISERR(yStreamFlush(p,errmsg))) {
                                 dbglog("Unable to flush async connection close\n");
                             }
                             // since we empty the fifo at each request we can use yPeekContinuousFifo
@@ -2563,7 +2610,7 @@ int yUsbIdle(void)
                             p->httpstate = YHTTP_CLOSED;
                         }
                     }
-                    if(p->httpstate == YHTTP_CLOSED) {
+                    if (p->httpstate == YHTTP_CLOSED) {
                         if (YISERR(res =devStopIO(PUSH_LOCATION p,errmsg))) {
                             dbglog("Idle : devStopIO err %s : %X:%s\n",p->infos.serial,res,errmsg);
                         }
