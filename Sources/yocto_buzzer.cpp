@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_buzzer.cpp 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_buzzer.cpp 34289 2019-02-03 21:12:49Z mvuilleu $
  *
  *  Implements yFindBuzzer(), the high-level API for Buzzer functions
  *
@@ -685,6 +685,28 @@ int YBuzzer::resetPlaySeq(void)
 int YBuzzer::oncePlaySeq(void)
 {
     return this->sendCommand("s");
+}
+
+/**
+ * Saves the preprogrammed playing sequence to flash memory.
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *         On failure, throws an exception or returns a negative error code.
+ */
+int YBuzzer::savePlaySeq(void)
+{
+    return this->sendCommand("W");
+}
+
+/**
+ * Reloads the preprogrammed playing sequence from the flash memory.
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *         On failure, throws an exception or returns a negative error code.
+ */
+int YBuzzer::reloadPlaySeq(void)
+{
+    return this->sendCommand("R");
 }
 
 /**
