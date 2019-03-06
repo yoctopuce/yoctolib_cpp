@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 34007 2019-01-15 17:28:40Z seb $
+ * $Id: yocto_api.cpp 34553 2019-03-06 10:16:15Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -159,6 +159,7 @@ int YJSONContent::SkipGarbage(const string& data, int start, int stop)
     char sti = data[start];
     while (start < stop && (sti == '\n' || sti == '\r' || sti == ' ')) {
         start++;
+        sti = data[start];
     }
     return start;
 }
@@ -233,7 +234,7 @@ int YJSONArray::parse()
 {
     int cur_pos = SkipGarbage(_data, _data_start, _data_boundary);
 
-    if (_data[cur_pos] != '[') {
+    if (cur_pos >= _data_boundary || _data[cur_pos] != '[') {
         throw YAPI_Exception(YAPI_IO_ERROR, FormatError("Opening braces was expected", cur_pos));
     }
     cur_pos++;
@@ -391,7 +392,7 @@ int YJSONString::parse()
     string value = "";
     int cur_pos = SkipGarbage(_data, _data_start, _data_boundary);
 
-    if (_data[cur_pos] != '"') {
+    if (cur_pos >= _data_boundary || _data[cur_pos] != '"') {
         throw YAPI_Exception(YAPI_IO_ERROR, FormatError("double quote was expected", cur_pos));
     }
     cur_pos++;
@@ -617,7 +618,7 @@ int YJSONObject::parse()
     int name_start = _data_start;
     int cur_pos = SkipGarbage(_data, _data_start, _data_boundary);
 
-    if (_data.length() <= (unsigned)cur_pos || _data[cur_pos] != '{') {
+    if (_data.length() <= (unsigned)cur_pos || cur_pos >= _data_boundary || _data[cur_pos] != '{') {
         throw YAPI_Exception(YAPI_IO_ERROR, FormatError("Opening braces was expected", cur_pos));
     }
     cur_pos++;
