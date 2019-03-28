@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.cpp 33709 2018-12-14 14:18:12Z seb $
+ * $Id: yocto_files.cpp 34651 2019-03-15 17:21:54Z seb $
  *
  * Implements yFindFiles(), the high-level API for Files functions
  *
@@ -92,16 +92,31 @@ YFileRecord::YFileRecord(const string& json):
 // static attributes
 
 
+/**
+ * Returns the name of the file.
+ *
+ * @return a string with the name of the file.
+ */
 string YFileRecord::get_name(void)
 {
     return _name;
 }
 
+/**
+ * Returns the size of the file in bytes.
+ *
+ * @return the size of the file.
+ */
 int YFileRecord::get_size(void)
 {
     return _size;
 }
 
+/**
+ * Returns the 32-bit CRC of the file content.
+ *
+ * @return the 32-bit CRC of the file content.
+ */
 int YFileRecord::get_crc(void)
 {
     return _crc;

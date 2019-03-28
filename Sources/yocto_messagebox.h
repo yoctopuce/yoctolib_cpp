@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.h 32900 2018-11-02 10:12:43Z seb $
+ * $Id: yocto_messagebox.h 34661 2019-03-18 11:02:50Z seb $
  *
  * Declares yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -66,7 +66,8 @@ typedef void (*YMessageBoxValueCallback)(YMessageBox *func, const string& functi
 /**
  * YSms Class: SMS message sent or received
  *
- *
+ * YSms objects are used to describe a SMS.
+ * These objects are used in particular in conjunction with the YMessageBox class.
  */
 class YOCTO_CLASS_EXPORT YSms {
 #ifdef __BORLANDC__
@@ -134,6 +135,11 @@ public:
 
     virtual string      get_userData(void);
 
+    /**
+     * Returns the content of the message.
+     *
+     * @return  a string with the content of the message.
+     */
     virtual string      get_textData(void);
 
     virtual vector<int> get_unicodeData(void);
@@ -178,8 +184,26 @@ public:
 
     virtual int         convertToUnicode(void);
 
+    /**
+     * Add a regular text to the SMS. This function support messages
+     * of more than 160 characters. ISO-latin accented characters
+     * are supported. For messages with special unicode characters such as asian
+     * characters and emoticons, use the  addUnicodeData method.
+     *
+     * @param val : the text to be sent in the message
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     */
     virtual int         addText(string val);
 
+    /**
+     * Add a unicode text to the SMS. This function support messages
+     * of more than 160 characters, using SMS concatenation.
+     *
+     * @param val : an array of special unicode characters
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     */
     virtual int         addUnicodeData(vector<int> val);
 
     virtual int         set_pdu(string pdu);
@@ -206,6 +230,14 @@ public:
 
     virtual int         parsePdu(string pdu);
 
+    /**
+     * Sends the SMS to the recipient. Messages of more than 160 characters are supported
+     * using SMS concatenation.
+     *
+     * @return YAPI_SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
     virtual int         send(void);
 
     virtual int         deleteFromSIM(void);

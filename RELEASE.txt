@@ -1,3 +1,3 @@
-CPP v1.10.34560
+CPP v1.10.34827
 
-- Fix in Json parser.
+- Update build script to work inside the "Developer Command Prompt for VS 2017

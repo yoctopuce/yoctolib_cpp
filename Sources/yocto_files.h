@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.h 33709 2018-12-14 14:18:12Z seb $
+ * $Id: yocto_files.h 34651 2019-03-15 17:21:54Z seb $
  *
  * Declares yFindFiles(), the high-level API for Files functions
  *
@@ -63,7 +63,8 @@ typedef void (*YFilesValueCallback)(YFiles *func, const string& functionValue);
 /**
  * YFileRecord Class: Description of a file on the device filesystem
  *
- *
+ * YFileRecord objects are used to describe a file that is stored on a Yoctopuce device.
+ * These objects are used in particular in conjunction with the YFiles class.
  */
 class YOCTO_CLASS_EXPORT YFileRecord {
 #ifdef __BORLANDC__
@@ -88,10 +89,25 @@ public:
     //--- (generated code: YFileRecord accessors declaration)
 
 
+    /**
+     * Returns the name of the file.
+     *
+     * @return a string with the name of the file.
+     */
     virtual string      get_name(void);
 
+    /**
+     * Returns the size of the file in bytes.
+     *
+     * @return the size of the file.
+     */
     virtual int         get_size(void);
 
+    /**
+     * Returns the 32-bit CRC of the file content.
+     *
+     * @return the 32-bit CRC of the file content.
+     */
     virtual int         get_crc(void);
 
 #ifdef __BORLANDC__

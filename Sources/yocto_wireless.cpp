@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.cpp 33709 2018-12-14 14:18:12Z seb $
+ * $Id: yocto_wireless.cpp 34651 2019-03-15 17:21:54Z seb $
  *
  * Implements yFindWireless(), the high-level API for Wireless functions
  *
@@ -101,21 +101,41 @@ YWlanRecord::YWlanRecord(const string& json):
 // static attributes
 
 
+/**
+ * Returns the name of the wireless network (SSID).
+ *
+ * @return a string with the name of the wireless network (SSID).
+ */
 string YWlanRecord::get_ssid(void)
 {
     return _ssid;
 }
 
+/**
+ * Returns the 802.11 channel.
+ *
+ * @return the 802.11 channel.
+ */
 int YWlanRecord::get_channel(void)
 {
     return _channel;
 }
 
+/**
+ * Returns the security algorithm used by the wireless network.
+ *
+ * @return a string with the security algorithm.
+ */
 string YWlanRecord::get_security(void)
 {
     return _sec;
 }
 
+/**
+ * Returns the quality of the wireless network link, in per cents.
+ *
+ * @return the quality of the wireless network link, in per cents.
+ */
 int YWlanRecord::get_linkQuality(void)
 {
     return _rssi;

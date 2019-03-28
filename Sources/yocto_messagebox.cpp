@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.cpp 31377 2018-07-27 08:24:38Z seb $
+ * $Id: yocto_messagebox.cpp 34661 2019-03-18 11:02:50Z seb $
  *
  * Implements yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -154,6 +154,11 @@ string YSms::get_userData(void)
     return _udata;
 }
 
+/**
+ * Returns the content of the message.
+ *
+ * @return  a string with the content of the message.
+ */
 string YSms::get_textData(void)
 {
     string isolatin;
@@ -381,6 +386,16 @@ int YSms::convertToUnicode(void)
     return YAPI_SUCCESS;
 }
 
+/**
+ * Add a regular text to the SMS. This function support messages
+ * of more than 160 characters. ISO-latin accented characters
+ * are supported. For messages with special unicode characters such as asian
+ * characters and emoticons, use the  addUnicodeData method.
+ *
+ * @param val : the text to be sent in the message
+ *
+ * @return YAPI_SUCCESS when the call succeeds.
+ */
 int YSms::addText(string val)
 {
     string udata;
@@ -438,6 +453,14 @@ int YSms::addText(string val)
     return this->set_userData(udata);
 }
 
+/**
+ * Add a unicode text to the SMS. This function support messages
+ * of more than 160 characters, using SMS concatenation.
+ *
+ * @param val : an array of special unicode characters
+ *
+ * @return YAPI_SUCCESS when the call succeeds.
+ */
 int YSms::addUnicodeData(vector<int> val)
 {
     int arrlen = 0;
@@ -1227,6 +1250,14 @@ int YSms::parsePdu(string pdu)
     return YAPI_SUCCESS;
 }
 
+/**
+ * Sends the SMS to the recipient. Messages of more than 160 characters are supported
+ * using SMS concatenation.
+ *
+ * @return YAPI_SUCCESS when the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
 int YSms::send(void)
 {
     int i = 0;
