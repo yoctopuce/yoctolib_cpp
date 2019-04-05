@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multisenscontroller.h 34705 2019-03-19 15:24:12Z mvuilleu $
+ *  $Id: yocto_multisenscontroller.h 34975 2019-04-04 17:01:43Z seb $
  *
  *  Declares yFindMultiSensController(), the high-level API for MultiSensController functions
  *
@@ -71,7 +71,7 @@ typedef enum {
 /**
  * YMultiSensController Class: MultiSensController function interface
  *
- * The Yoctopuce application programming interface allows you to setup a customize
+ * The Yoctopuce application programming interface allows you to setup a customized
  * sensor chain.
  */
 class YOCTO_CLASS_EXPORT YMultiSensController: public YFunction {
@@ -124,7 +124,7 @@ public:
     /**
      * Changes the number of sensors to poll. Remember to call the
      * saveToFlash() method of the module if the
-     * modification must be kept. It's recommended to restart the
+     * modification must be kept. It is recommended to restart the
      * device with  module->reboot() after modifying
      * (and saving) this settings
      *

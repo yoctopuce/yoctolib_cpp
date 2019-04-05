@@ -1,3 +1,6 @@
-CPP v1.10.34868
+CPP v1.10.34990
 
-- Beta Test
+- Fix loadThermistorResponseTable() method of YTemperature
+- Add documentation for YFileRecord and YWlanRecord class
+- Add toggle() method in YRelay class
+- Update build script to work inside the "Developer Command Prompt for VS 2017

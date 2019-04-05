@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_watchdog.cpp 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_watchdog.cpp 34976 2019-04-05 06:47:49Z seb $
  *
  *  Implements yFindWatchdog(), the high-level API for Watchdog functions
  *
@@ -63,6 +63,7 @@ YWatchdog::YWatchdog(const string& func): YFunction(func)
     ,_triggerDelay(TRIGGERDELAY_INVALID)
     ,_triggerDuration(TRIGGERDURATION_INVALID)
     ,_valueCallbackWatchdog(NULL)
+    ,_firm(0)
 //--- (end of YWatchdog initialization)
 {
     _className="Watchdog";
@@ -884,6 +885,42 @@ int YWatchdog::_invokeValueCallback(string value)
         YFunction::_invokeValueCallback(value);
     }
     return 0;
+}
+
+/**
+ * Switch the relay to the opposite state.
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YWatchdog::toggle(void)
+{
+    int sta = 0;
+    string fw;
+    YModule* mo = NULL;
+    if (_firm == 0) {
+        mo = this->get_module();
+        fw = mo->get_firmwareRelease();
+        if (fw == YModule::FIRMWARERELEASE_INVALID) {
+            return Y_STATE_INVALID;
+        }
+        _firm = atoi((fw).c_str());
+    }
+    if (_firm < 34921) {
+        sta = this->get_state();
+        if (sta == Y_STATE_INVALID) {
+            return Y_STATE_INVALID;
+        }
+        if (sta == Y_STATE_B) {
+            this->set_state(Y_STATE_A);
+        } else {
+            this->set_state(Y_STATE_B);
+        }
+        return YAPI_SUCCESS;
+    } else {
+        return this->_setAttr("state","X");
+    }
 }
 
 YWatchdog *YWatchdog::nextWatchdog(void)

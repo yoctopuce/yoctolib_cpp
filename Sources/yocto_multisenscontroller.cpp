@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multisenscontroller.cpp 34705 2019-03-19 15:24:12Z mvuilleu $
+ *  $Id: yocto_multisenscontroller.cpp 34975 2019-04-04 17:01:43Z seb $
  *
  *  Implements yFindMultiSensController(), the high-level API for MultiSensController functions
  *
@@ -119,7 +119,7 @@ int YMultiSensController::get_nSensors(void)
 /**
  * Changes the number of sensors to poll. Remember to call the
  * saveToFlash() method of the module if the
- * modification must be kept. It's recommended to restart the
+ * modification must be kept. It is recommended to restart the
  * device with  module->reboot() after modifying
  * (and saving) this settings
  *

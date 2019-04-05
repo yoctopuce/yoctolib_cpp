@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_relay.cpp 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_relay.cpp 34976 2019-04-05 06:47:49Z seb $
  *
  *  Implements yFindRelay(), the high-level API for Relay functions
  *
@@ -59,6 +59,7 @@ YRelay::YRelay(const string& func): YFunction(func)
     ,_delayedPulseTimer(DELAYEDPULSETIMER_INVALID)
     ,_countdown(COUNTDOWN_INVALID)
     ,_valueCallbackRelay(NULL)
+    ,_firm(0)
 //--- (end of YRelay initialization)
 {
     _className="Relay";
@@ -632,6 +633,42 @@ int YRelay::_invokeValueCallback(string value)
         YFunction::_invokeValueCallback(value);
     }
     return 0;
+}
+
+/**
+ * Switch the relay to the opposite state.
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YRelay::toggle(void)
+{
+    int sta = 0;
+    string fw;
+    YModule* mo = NULL;
+    if (_firm == 0) {
+        mo = this->get_module();
+        fw = mo->get_firmwareRelease();
+        if (fw == YModule::FIRMWARERELEASE_INVALID) {
+            return Y_STATE_INVALID;
+        }
+        _firm = atoi((fw).c_str());
+    }
+    if (_firm < 34921) {
+        sta = this->get_state();
+        if (sta == Y_STATE_INVALID) {
+            return Y_STATE_INVALID;
+        }
+        if (sta == Y_STATE_B) {
+            this->set_state(Y_STATE_A);
+        } else {
+            this->set_state(Y_STATE_B);
+        }
+        return YAPI_SUCCESS;
+    } else {
+        return this->_setAttr("state","X");
+    }
 }
 
 YRelay *YRelay::nextRelay(void)

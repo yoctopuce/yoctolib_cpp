@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_watchdog.h 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_watchdog.h 34975 2019-04-04 17:01:43Z seb $
  *
  *  Declares yFindWatchdog(), the high-level API for Watchdog functions
  *
@@ -152,6 +152,7 @@ protected:
     s64             _triggerDelay;
     s64             _triggerDuration;
     YWatchdogValueCallback _valueCallbackWatchdog;
+    int             _firm;
 
     friend YWatchdog *yFindWatchdog(const string& func);
     friend YWatchdog *yFirstWatchdog(void);
@@ -554,6 +555,15 @@ public:
     using YFunction::registerValueCallback;
 
     virtual int         _invokeValueCallback(string value);
+
+    /**
+     * Switch the relay to the opposite state.
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         toggle(void);
 
 
     inline static YWatchdog* Find(string func)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_relay.h 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_relay.h 34975 2019-04-04 17:01:43Z seb $
  *
  *  Declares yFindRelay(), the high-level API for Relay functions
  *
@@ -131,6 +131,7 @@ protected:
     YDelayedPulse   _delayedPulseTimer;
     s64             _countdown;
     YRelayValueCallback _valueCallbackRelay;
+    int             _firm;
 
     friend YRelay *yFindRelay(const string& func);
     friend YRelay *yFirstRelay(void);
@@ -410,6 +411,15 @@ public:
     using YFunction::registerValueCallback;
 
     virtual int         _invokeValueCallback(string value);
+
+    /**
+     * Switch the relay to the opposite state.
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         toggle(void);
 
 
     inline static YRelay* Find(string func)
