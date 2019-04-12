@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.c 24249 2016-04-26 13:03:58Z seb $
+ * $Id: ykey.c 35122 2019-04-11 20:38:55Z mvuilleu $
  *
  * Implementation of standard key computations
  *
@@ -441,6 +441,10 @@ u8  *ySHA1(const char *text)
 
     return (u8 *)wpak.shau;
 }
+
+#endif
+
+#if !defined(MICROCHIP_API) || defined(MRF24)
 
 void yInitPsk(const char *pass, const char *ssid)
 {
