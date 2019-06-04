@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 33769 2018-12-19 14:54:02Z seb $
+#  $Id: GNUmakefile 35634 2019-06-04 14:10:25Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -225,6 +225,7 @@ STRIP_ARMHF = $(TOOLCHAIN_ARMHF)/bin/arm-linux-gnueabihf-strip
 else
 STRIP_ARMHF = strip
 endif
+STRIP_AARCH64 = strip
 STRIP_MIPS = mips-openwrt-linux-strip
 STRIP_MIPSEL = mipsel-openwrt-linux-strip
 STRIP_OSX = strip
@@ -580,6 +581,7 @@ ifdef JAVA_HOME
 	@echo java_home set to $(JAVA_HOME)
 endif
 	@$(CC_AARCH64) $(OPTS_AARCH64) -shared -Wl,-soname,$(@F) -o $@ $(YAPI_OBJS_DYN_AARCH64) $(YAPI_LINKWITH_AARCH64)
+	@$(STRIP_AARCH64) $@
 
 $(DIR_AARCH64)test: $(OBJDIR_AARCH64) $(YAPI_DIR_AARCH64) $(ALL_OBJS_STAT_AARCH64) $(ALL_H) $(TEST_SRC)
 	@rm -rf $@
