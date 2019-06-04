@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_rangefinder.h 32900 2018-11-02 10:12:43Z seb $
+ *  $Id: yocto_rangefinder.h 35185 2019-04-16 19:43:18Z mvuilleu $
  *
  *  Declares yFindRangeFinder(), the high-level API for RangeFinder functions
  *
@@ -66,6 +66,8 @@ typedef enum {
     Y_RANGEFINDERMODE_INVALID = -1,
 } Y_RANGEFINDERMODE_enum;
 #endif
+#define Y_TIMEFRAME_INVALID             (YAPI_INVALID_LONG)
+#define Y_QUALITY_INVALID               (YAPI_INVALID_UINT)
 #define Y_HARDWARECALIBRATION_INVALID   (YAPI_INVALID_STRING)
 #define Y_CURRENTTEMPERATURE_INVALID    (YAPI_INVALID_DOUBLE)
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
@@ -90,6 +92,8 @@ protected:
     //--- (YRangeFinder attributes)
     // Attributes (function value cache)
     Y_RANGEFINDERMODE_enum _rangeFinderMode;
+    s64             _timeFrame;
+    int             _quality;
     string          _hardwareCalibration;
     double          _currentTemperature;
     string          _command;
@@ -115,6 +119,8 @@ public:
     static const Y_RANGEFINDERMODE_enum RANGEFINDERMODE_HIGH_ACCURACY = Y_RANGEFINDERMODE_HIGH_ACCURACY;
     static const Y_RANGEFINDERMODE_enum RANGEFINDERMODE_HIGH_SPEED = Y_RANGEFINDERMODE_HIGH_SPEED;
     static const Y_RANGEFINDERMODE_enum RANGEFINDERMODE_INVALID = Y_RANGEFINDERMODE_INVALID;
+    static const s64 TIMEFRAME_INVALID = YAPI_INVALID_LONG;
+    static const int QUALITY_INVALID = YAPI_INVALID_UINT;
     static const string HARDWARECALIBRATION_INVALID;
     static const double CURRENTTEMPERATURE_INVALID;
     static const string COMMAND_INVALID;
@@ -166,6 +172,49 @@ public:
     int             set_rangeFinderMode(Y_RANGEFINDERMODE_enum newval);
     inline int      setRangeFinderMode(Y_RANGEFINDERMODE_enum newval)
     { return this->set_rangeFinderMode(newval); }
+
+    /**
+     * Returns the time frame used to measure the distance and estimate the measure
+     * reliability. The time frame is expressed in milliseconds.
+     *
+     * @return an integer corresponding to the time frame used to measure the distance and estimate the measure
+     *         reliability
+     *
+     * On failure, throws an exception or returns Y_TIMEFRAME_INVALID.
+     */
+    s64                 get_timeFrame(void);
+
+    inline s64          timeFrame(void)
+    { return this->get_timeFrame(); }
+
+    /**
+     * Changes the time frame used to measure the distance and estimate the measure
+     * reliability. The time frame is expressed in milliseconds. A larger timeframe
+     * improves stability and reliability, at the cost of higher latency, but prevents
+     * the detection of events shorter than the time frame.
+     *
+     * @param newval : an integer corresponding to the time frame used to measure the distance and estimate the measure
+     *         reliability
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_timeFrame(s64 newval);
+    inline int      setTimeFrame(s64 newval)
+    { return this->set_timeFrame(newval); }
+
+    /**
+     * Returns a measure quality estimate, based on measured dispersion.
+     *
+     * @return an integer corresponding to a measure quality estimate, based on measured dispersion
+     *
+     * On failure, throws an exception or returns Y_QUALITY_INVALID.
+     */
+    int                 get_quality(void);
+
+    inline int          quality(void)
+    { return this->get_quality(); }
 
     string              get_hardwareCalibration(void);
 

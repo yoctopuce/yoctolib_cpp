@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 34553 2019-03-06 10:16:15Z seb $
+ * $Id: yocto_api.cpp 35620 2019-06-04 08:29:58Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -2799,6 +2799,30 @@ string YFunction::loadAttribute(string attrName)
     url = YapiWrapper::ysprintf("api/%s/%s", this->get_functionId().c_str(),attrName.c_str());
     attrVal = this->_download(url);
     return attrVal;
+}
+
+/**
+ * Test if the function is readOnly. Return true if the function is write protected
+ * or that the function is not available.
+ *
+ * @return true if the function is readOnly or not online.
+ */
+bool YFunction::isReadOnly(void)
+{
+    string serial;
+    char errmsg[YOCTO_ERRMSG_LEN];
+    int res = 0;
+    try {
+        serial = this->get_serialNumber();
+    } catch (std::exception& e) {
+        e.what();
+        return true;
+    }
+    res = yapiIsModuleWritable(serial.c_str(), errmsg);
+    if (res > 0) {
+        return false;
+    }
+    return true;
 }
 
 /**
@@ -5883,15 +5907,22 @@ int YModule::set_userVar(int newval)
 YModule* YModule::FindModule(string func)
 {
     YModule* obj = NULL;
+    string cleanHwId;
+    int modpos = 0;
     int taken = 0;
     if (YAPI::_apiInitialized) {
         yEnterCriticalSection(&YAPI::_global_cs);
         taken = 1;
     }try {
-        obj = (YModule*) YFunction::_FindFromCache("Module", func);
+        cleanHwId = func;
+        modpos = _ystrpos(func, ".module");
+        if (modpos != ((int)(func).length() - 7)) {
+            cleanHwId = func + ".module";
+        }
+        obj = (YModule*) YFunction::_FindFromCache("Module", cleanHwId);
         if (obj == NULL) {
-            obj = new YModule(func);
-            YFunction::_AddToCache("Module", func, obj);
+            obj = new YModule(cleanHwId);
+            YFunction::_AddToCache("Module", cleanHwId, obj);
         }
     } catch (std::exception) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
@@ -6203,15 +6234,17 @@ string YModule::get_allSettings(void)
         if (atoi((this->get_firmwareRelease()).c_str()) > 9000) {
             url = YapiWrapper::ysprintf("api/%s/sensorType", templist[ii].c_str());
             t_type = this->_download(url);
-            if (t_type == "RES_NTC") {
+            if (t_type == "RES_NTC" || t_type == "RES_LINEAR") {
                 id = ( templist[ii]).substr( 11, (int)( templist[ii]).length() - 11);
-                temp_data_bin = this->_download(YapiWrapper::ysprintf("extra.json?page=%s",id.c_str()));
-                if ((int)(temp_data_bin).size() == 0) {
-                    return temp_data_bin;
+                if (id == "") {
+                    id = "1";
                 }
-                item = YapiWrapper::ysprintf("%s{\"fid\":\"%s\", \"json\":%s}\n", sep.c_str(),  templist[ii].c_str(),temp_data_bin.c_str());
-                ext_settings = ext_settings + item;
-                sep = ",";
+                temp_data_bin = this->_download(YapiWrapper::ysprintf("extra.json?page=%s",id.c_str()));
+                if ((int)(temp_data_bin).size() > 0) {
+                    item = YapiWrapper::ysprintf("%s{\"fid\":\"%s\", \"json\":%s}\n", sep.c_str(),  templist[ii].c_str(),temp_data_bin.c_str());
+                    ext_settings = ext_settings + item;
+                    sep = ",";
+                }
             }
         }
     }
@@ -6256,7 +6289,7 @@ int YModule::loadThermistorExtra(string funcId,string jsonExtra)
     while (ofs + 1 < size) {
         curr = values[ofs];
         currTemp = values[ofs + 1];
-        url = YapiWrapper::ysprintf("api/%s/.json?command=m%s:%s",  funcId.c_str(), curr.c_str(),currTemp.c_str());
+        url = YapiWrapper::ysprintf("api/%s.json?command=m%s:%s", funcId.c_str(), curr.c_str(),currTemp.c_str());
         this->_download(url);
         ofs = ofs + 2;
     }

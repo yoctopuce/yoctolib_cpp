@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_temperature.h 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_temperature.h 35467 2019-05-16 14:41:53Z seb $
  *
  *  Declares yFindTemperature(), the high-level API for Temperature functions
  *
@@ -75,6 +75,7 @@ typedef enum {
     Y_SENSORTYPE_RES_LINEAR = 13,
     Y_SENSORTYPE_RES_INTERNAL = 14,
     Y_SENSORTYPE_IR = 15,
+    Y_SENSORTYPE_RES_PT1000 = 16,
     Y_SENSORTYPE_INVALID = -1,
 } Y_SENSORTYPE_enum;
 #endif
@@ -138,6 +139,7 @@ public:
     static const Y_SENSORTYPE_enum SENSORTYPE_RES_LINEAR = Y_SENSORTYPE_RES_LINEAR;
     static const Y_SENSORTYPE_enum SENSORTYPE_RES_INTERNAL = Y_SENSORTYPE_RES_INTERNAL;
     static const Y_SENSORTYPE_enum SENSORTYPE_IR = Y_SENSORTYPE_IR;
+    static const Y_SENSORTYPE_enum SENSORTYPE_RES_PT1000 = Y_SENSORTYPE_RES_PT1000;
     static const Y_SENSORTYPE_enum SENSORTYPE_INVALID = Y_SENSORTYPE_INVALID;
     static const double SIGNALVALUE_INVALID;
     static const string SIGNALUNIT_INVALID;
@@ -171,7 +173,8 @@ public:
      * Y_SENSORTYPE_TYPE_J, Y_SENSORTYPE_TYPE_N, Y_SENSORTYPE_TYPE_R, Y_SENSORTYPE_TYPE_S,
      * Y_SENSORTYPE_TYPE_T, Y_SENSORTYPE_PT100_4WIRES, Y_SENSORTYPE_PT100_3WIRES,
      * Y_SENSORTYPE_PT100_2WIRES, Y_SENSORTYPE_RES_OHM, Y_SENSORTYPE_RES_NTC, Y_SENSORTYPE_RES_LINEAR,
-     * Y_SENSORTYPE_RES_INTERNAL and Y_SENSORTYPE_IR corresponding to the temperature sensor type
+     * Y_SENSORTYPE_RES_INTERNAL, Y_SENSORTYPE_IR and Y_SENSORTYPE_RES_PT1000 corresponding to the
+     * temperature sensor type
      *
      * On failure, throws an exception or returns Y_SENSORTYPE_INVALID.
      */
@@ -191,7 +194,8 @@ public:
      * Y_SENSORTYPE_TYPE_J, Y_SENSORTYPE_TYPE_N, Y_SENSORTYPE_TYPE_R, Y_SENSORTYPE_TYPE_S,
      * Y_SENSORTYPE_TYPE_T, Y_SENSORTYPE_PT100_4WIRES, Y_SENSORTYPE_PT100_3WIRES,
      * Y_SENSORTYPE_PT100_2WIRES, Y_SENSORTYPE_RES_OHM, Y_SENSORTYPE_RES_NTC, Y_SENSORTYPE_RES_LINEAR,
-     * Y_SENSORTYPE_RES_INTERNAL and Y_SENSORTYPE_IR corresponding to the temperature sensor type
+     * Y_SENSORTYPE_RES_INTERNAL, Y_SENSORTYPE_IR and Y_SENSORTYPE_RES_PT1000 corresponding to the
+     * temperature sensor type
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *

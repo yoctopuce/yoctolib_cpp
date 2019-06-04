@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h 33734 2018-12-14 15:56:25Z seb $
+ * $Id: yapi.h 35418 2019-05-14 07:20:59Z seb $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -722,6 +722,23 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetDevicePathEx(const char * serial, char *roo
  ***************************************************************************/
 YAPI_FUNCTION YAPI_FUNCTION_EXPORT yapiGetFunction(const char *class_str, const char *function_str,char *errmsg);
 
+
+/*****************************************************************************
+ Function:
+   int yapiIsModuleWritable(const char *class_str)
+
+ Description:
+   return true is we can execute a set command on the module.
+
+ Parameters:
+   serial  : the serial number of the module
+   errmsg     : a pointer to a buffer of YOCTO_ERRMSG_LEN bytes to store any error message
+
+ Returns:
+  1 if we can execute set command on the module
+
+ ***************************************************************************/
+int YAPI_FUNCTION_EXPORT yapiIsModuleWritable(const char *serial, char *errmsg);
 
 /*****************************************************************************
  Function:

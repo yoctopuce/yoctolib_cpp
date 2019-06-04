@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_current.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_current.cpp 35360 2019-05-09 09:02:29Z mvuilleu $
  *
  *  Implements yFindCurrent(), the high-level API for Current functions
  *
@@ -75,6 +75,13 @@ int YCurrent::_parseAttr(YJSONObject* json_val)
 }
 
 
+/**
+ * Returns the activation state of this input.
+ *
+ * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the activation state of this input
+ *
+ * On failure, throws an exception or returns Y_ENABLED_INVALID.
+ */
 Y_ENABLED_enum YCurrent::get_enabled(void)
 {
     Y_ENABLED_enum res;
@@ -97,6 +104,17 @@ Y_ENABLED_enum YCurrent::get_enabled(void)
     return res;
 }
 
+/**
+ * Changes the activation state of this input. When an input is disabled,
+ * its value is no more updated. On some devices, disabling an input can
+ * improve the refresh rate of the other active inputs.
+ *
+ * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the activation state of this input
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
 int YCurrent::set_enabled(Y_ENABLED_enum newval)
 {
     string rest_val;

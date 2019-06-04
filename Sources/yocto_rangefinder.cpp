@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_rangefinder.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_rangefinder.cpp 35185 2019-04-16 19:43:18Z mvuilleu $
  *
  *  Implements yFindRangeFinder(), the high-level API for RangeFinder functions
  *
@@ -51,6 +51,8 @@
 YRangeFinder::YRangeFinder(const string& func): YSensor(func)
 //--- (YRangeFinder initialization)
     ,_rangeFinderMode(RANGEFINDERMODE_INVALID)
+    ,_timeFrame(TIMEFRAME_INVALID)
+    ,_quality(QUALITY_INVALID)
     ,_hardwareCalibration(HARDWARECALIBRATION_INVALID)
     ,_currentTemperature(CURRENTTEMPERATURE_INVALID)
     ,_command(COMMAND_INVALID)
@@ -76,6 +78,12 @@ int YRangeFinder::_parseAttr(YJSONObject* json_val)
 {
     if(json_val->has("rangeFinderMode")) {
         _rangeFinderMode =  (Y_RANGEFINDERMODE_enum)json_val->getInt("rangeFinderMode");
+    }
+    if(json_val->has("timeFrame")) {
+        _timeFrame =  json_val->getLong("timeFrame");
+    }
+    if(json_val->has("quality")) {
+        _quality =  json_val->getInt("quality");
     }
     if(json_val->has("hardwareCalibration")) {
         _hardwareCalibration =  json_val->getString("hardwareCalibration");
@@ -174,6 +182,95 @@ int YRangeFinder::set_rangeFinderMode(Y_RANGEFINDERMODE_enum newval)
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
          throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the time frame used to measure the distance and estimate the measure
+ * reliability. The time frame is expressed in milliseconds.
+ *
+ * @return an integer corresponding to the time frame used to measure the distance and estimate the measure
+ *         reliability
+ *
+ * On failure, throws an exception or returns Y_TIMEFRAME_INVALID.
+ */
+s64 YRangeFinder::get_timeFrame(void)
+{
+    s64 res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRangeFinder::TIMEFRAME_INVALID;
+                }
+            }
+        }
+        res = _timeFrame;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the time frame used to measure the distance and estimate the measure
+ * reliability. The time frame is expressed in milliseconds. A larger timeframe
+ * improves stability and reliability, at the cost of higher latency, but prevents
+ * the detection of events shorter than the time frame.
+ *
+ * @param newval : an integer corresponding to the time frame used to measure the distance and estimate the measure
+ *         reliability
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YRangeFinder::set_timeFrame(s64 newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
+        res = _setAttr("timeFrame", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns a measure quality estimate, based on measured dispersion.
+ *
+ * @return an integer corresponding to a measure quality estimate, based on measured dispersion
+ *
+ * On failure, throws an exception or returns Y_QUALITY_INVALID.
+ */
+int YRangeFinder::get_quality(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRangeFinder::QUALITY_INVALID;
+                }
+            }
+        }
+        res = _quality;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
     yLeaveCriticalSection(&_this_cs);
     return res;

@@ -94,6 +94,7 @@
     
 <ClCompile Include="..\..\..\Sources\yocto_anbutton.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_buzzer.cpp" />
+<ClCompile Include="..\..\..\Sources\yocto_files.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_led.cpp" />
 
     <ClCompile Include="..\main.cpp" />
@@ -115,6 +116,7 @@
     
 <ClInclude Include="..\..\..\Sources\yocto_anbutton.h" />
 <ClInclude Include="..\..\..\Sources\yocto_buzzer.h" />
+<ClInclude Include="..\..\..\Sources\yocto_files.h" />
 <ClInclude Include="..\..\..\Sources\yocto_led.h" />
 
   </ItemGroup>

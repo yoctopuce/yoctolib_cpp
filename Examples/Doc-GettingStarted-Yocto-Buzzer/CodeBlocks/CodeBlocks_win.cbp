@@ -139,11 +139,13 @@
 
 <Unit filename="..\..\..\Sources\yocto_anbutton.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_buzzer.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_files.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_led.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 
 
 <Unit filename="..\..\..\Sources\yocto_anbutton.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_buzzer.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_files.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_led.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 
         <Extensions>

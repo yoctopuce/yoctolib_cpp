@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 35124 2019-04-12 09:03:41Z seb $
+ * $Id: yocto_serialport.cpp 35467 2019-05-16 14:41:53Z seb $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -513,8 +513,8 @@ int YSerialPort::set_command(const string& newval)
  * Returns the voltage level used on the serial line.
  *
  * @return a value among Y_VOLTAGELEVEL_OFF, Y_VOLTAGELEVEL_TTL3V, Y_VOLTAGELEVEL_TTL3VR,
- * Y_VOLTAGELEVEL_TTL5V, Y_VOLTAGELEVEL_TTL5VR, Y_VOLTAGELEVEL_RS232 and Y_VOLTAGELEVEL_RS485
- * corresponding to the voltage level used on the serial line
+ * Y_VOLTAGELEVEL_TTL5V, Y_VOLTAGELEVEL_TTL5VR, Y_VOLTAGELEVEL_RS232, Y_VOLTAGELEVEL_RS485 and
+ * Y_VOLTAGELEVEL_TTL1V8 corresponding to the voltage level used on the serial line
  *
  * On failure, throws an exception or returns Y_VOLTAGELEVEL_INVALID.
  */
@@ -548,8 +548,8 @@ Y_VOLTAGELEVEL_enum YSerialPort::get_voltageLevel(void)
  * Trying to set an invalid value will have no effect.
  *
  * @param newval : a value among Y_VOLTAGELEVEL_OFF, Y_VOLTAGELEVEL_TTL3V, Y_VOLTAGELEVEL_TTL3VR,
- * Y_VOLTAGELEVEL_TTL5V, Y_VOLTAGELEVEL_TTL5VR, Y_VOLTAGELEVEL_RS232 and Y_VOLTAGELEVEL_RS485
- * corresponding to the voltage type used on the serial line
+ * Y_VOLTAGELEVEL_TTL5V, Y_VOLTAGELEVEL_TTL5VR, Y_VOLTAGELEVEL_RS232, Y_VOLTAGELEVEL_RS485 and
+ * Y_VOLTAGELEVEL_TTL1V8 corresponding to the voltage type used on the serial line
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *

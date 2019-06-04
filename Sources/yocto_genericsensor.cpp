@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_genericsensor.cpp 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_genericsensor.cpp 35360 2019-05-09 09:02:29Z mvuilleu $
  *
  *  Implements yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -56,6 +56,7 @@ YGenericSensor::YGenericSensor(const string& func): YSensor(func)
     ,_valueRange(VALUERANGE_INVALID)
     ,_signalBias(SIGNALBIAS_INVALID)
     ,_signalSampling(SIGNALSAMPLING_INVALID)
+    ,_enabled(ENABLED_INVALID)
     ,_valueCallbackGenericSensor(NULL)
     ,_timedReportCallbackGenericSensor(NULL)
 //--- (end of YGenericSensor initialization)
@@ -95,6 +96,9 @@ int YGenericSensor::_parseAttr(YJSONObject* json_val)
     }
     if(json_val->has("signalSampling")) {
         _signalSampling =  (Y_SIGNALSAMPLING_enum)json_val->getInt("signalSampling");
+    }
+    if(json_val->has("enabled")) {
+        _enabled =  (Y_ENABLED_enum)json_val->getInt("enabled");
     }
     return YSensor::_parseAttr(json_val);
 }
@@ -413,6 +417,62 @@ int YGenericSensor::set_signalSampling(Y_SIGNALSAMPLING_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("signalSampling", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the activation state of this input.
+ *
+ * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the activation state of this input
+ *
+ * On failure, throws an exception or returns Y_ENABLED_INVALID.
+ */
+Y_ENABLED_enum YGenericSensor::get_enabled(void)
+{
+    Y_ENABLED_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YGenericSensor::ENABLED_INVALID;
+                }
+            }
+        }
+        res = _enabled;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the activation state of this input. When an input is disabled,
+ * its value is no more updated. On some devices, disabling an input can
+ * improve the refresh rate of the other active inputs.
+ *
+ * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the activation state of this input
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YGenericSensor::set_enabled(Y_ENABLED_enum newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("enabled", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
          throw;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_osx.c 33734 2018-12-14 15:56:25Z seb $
+ * $Id: ypkt_osx.c 35237 2019-04-29 15:44:31Z mvuilleu $
  *
  * OS-specific USB packet layer, Mac OS X version
  *
@@ -105,20 +105,38 @@ static void yReleaseGlobalAccess(yContextSt *ctx)
     }
 }
 
+static USB_THREAD_STATE get_usb_thread_state(yContextSt  *ctx)
+{
+    USB_THREAD_STATE res;
+    yEnterCriticalSection(&ctx->parano_cs);
+    res =ctx->usb_thread_state;
+    yLeaveCriticalSection(&ctx->parano_cs);
+    return res;
+}
+
+
+static void set_usb_thread_state(yContextSt  *ctx, USB_THREAD_STATE st)
+{
+    yEnterCriticalSection(&ctx->parano_cs);
+    ctx->usb_thread_state = st;
+    yLeaveCriticalSection(&ctx->parano_cs);
+}
+
 static void *event_thread(void *param)
 {
     yContextSt  *ctx=param;
 
     ctx->usb_run_loop     = CFRunLoopGetCurrent();
-    ctx->usb_thread_state = USB_THREAD_RUNNING;
+    set_usb_thread_state(ctx, USB_THREAD_RUNNING);
     /* Non-blocking. See if the OS has any reports to give. */
     HALLOG("Start event_thread run loop\n");
-    while (ctx->usb_thread_state != USB_THREAD_MUST_STOP) {
+    while (get_usb_thread_state(ctx) != USB_THREAD_MUST_STOP) {
         CFRunLoopRunInMode( kCFRunLoopDefaultMode, 10, FALSE);
     }
 
     HALLOG("event_thread run loop stopped\n");
-    ctx->usb_thread_state = USB_THREAD_STOPED;
+    
+    set_usb_thread_state(ctx, USB_THREAD_STOPED);
     return NULL;
 }
 
@@ -189,9 +207,10 @@ int yyyUSB_init(yContextSt *ctx,char *errmsg)
         }
     }
 
-    ctx->usb_thread_state = USB_THREAD_NOT_STARTED;
+    yInitializeCriticalSection(&ctx->parano_cs);
+    set_usb_thread_state(ctx, USB_THREAD_NOT_STARTED);
     pthread_create(&ctx->usb_thread, NULL, event_thread, ctx);
-    while(ctx->usb_thread_state != USB_THREAD_RUNNING){
+    while(get_usb_thread_state(ctx) != USB_THREAD_RUNNING){
         usleep(50000);
     }
 
@@ -206,15 +225,15 @@ int yyyUSB_stop(yContextSt *ctx,char *errmsg)
 {
     stopHIDManager(&ctx->hid);
 
-    if(ctx->usb_thread_state == USB_THREAD_RUNNING){
-        ctx->usb_thread_state = USB_THREAD_MUST_STOP;
+    if(get_usb_thread_state(ctx) == USB_THREAD_RUNNING){
+        set_usb_thread_state(ctx, USB_THREAD_MUST_STOP);
         CFRunLoopStop(ctx->usb_run_loop);
     }
     pthread_join(ctx->usb_thread,NULL);
-    YASSERT(ctx->usb_thread_state == USB_THREAD_STOPED);
+    YASSERT(get_usb_thread_state(ctx) == USB_THREAD_STOPED);
 
     yReleaseGlobalAccess(ctx);
-
+    yDeleteCriticalSection(&ctx->parano_cs);
     return 0;
 }
 

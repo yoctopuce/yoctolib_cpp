@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_poweroutput.cpp 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_poweroutput.cpp 35467 2019-05-16 14:41:53Z seb $
  *
  *  Implements yFindPowerOutput(), the high-level API for PowerOutput functions
  *
@@ -77,8 +77,8 @@ int YPowerOutput::_parseAttr(YJSONObject* json_val)
 /**
  * Returns the voltage on the power output featured by the module.
  *
- * @return a value among Y_VOLTAGE_OFF, Y_VOLTAGE_OUT3V3 and Y_VOLTAGE_OUT5V corresponding to the
- * voltage on the power output featured by the module
+ * @return a value among Y_VOLTAGE_OFF, Y_VOLTAGE_OUT3V3, Y_VOLTAGE_OUT5V, Y_VOLTAGE_OUT4V7 and
+ * Y_VOLTAGE_OUT1V8 corresponding to the voltage on the power output featured by the module
  *
  * On failure, throws an exception or returns Y_VOLTAGE_INVALID.
  */
@@ -109,8 +109,8 @@ Y_VOLTAGE_enum YPowerOutput::get_voltage(void)
  * module. Remember to call the saveToFlash() method of the module if the
  * modification must be kept.
  *
- * @param newval : a value among Y_VOLTAGE_OFF, Y_VOLTAGE_OUT3V3 and Y_VOLTAGE_OUT5V corresponding to
- * the voltage on the power output provided by the
+ * @param newval : a value among Y_VOLTAGE_OFF, Y_VOLTAGE_OUT3V3, Y_VOLTAGE_OUT5V, Y_VOLTAGE_OUT4V7
+ * and Y_VOLTAGE_OUT1V8 corresponding to the voltage on the power output provided by the
  *         module
  *
  * @return YAPI_SUCCESS if the call succeeds.

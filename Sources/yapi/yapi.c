@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 34047 2019-01-17 15:59:19Z seb $
+ * $Id: yapi.c 35418 2019-05-14 07:20:59Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -605,7 +605,7 @@ YRETCODE yapiPullDeviceLogEx(int devydx)
         if (hub == NULL) {
             res = YERR(YAPI_DEVICE_NOT_FOUND);
         } else {
-            if (proto == PROTO_WEBSOCKET) {
+            if (proto != PROTO_HTTP) {
                 res = yapiRequestOpenWS(&iohdl, hub, dev, 0, request, reqlen, YIO_10_MINUTES_TCP_TIMEOUT, logResult, (void*)gen, NULL, NULL, errmsg);
             } else {
                 res = yapiRequestOpenHTTP(&iohdl, hub, dev, request, reqlen, 0, YIO_10_MINUTES_TCP_TIMEOUT, logResult, (void*)gen, errmsg);
@@ -1530,7 +1530,7 @@ static int yNetHubEnumEx(HubSt* hub, ENU_CONTEXT* enus, char* errmsg)
     u64 enumTimeout;
     RequestSt* req;
     int use_jzon;
-
+    int enum_done;
 
     retry:
 
@@ -1564,7 +1564,7 @@ static int yNetHubEnumEx(HubSt* hub, ENU_CONTEXT* enus, char* errmsg)
     }
     enumTimeout = yapiGetTickCount() + 10000;
 
-
+    enum_done = 0;
     while (yapiGetTickCount() < enumTimeout) {
         res = yReqSelect(req, 1000, errmsg);
         if (YISERR(res)) {
@@ -1593,6 +1593,7 @@ static int yNetHubEnumEx(HubSt* hub, ENU_CONTEXT* enus, char* errmsg)
         if (res <= 0) {
             res = yReqIsEof(req, errmsg);
             if (res > 0) {
+                enum_done = 1;
                 break;
             }
             if (YISERR(res)) {
@@ -1606,6 +1607,11 @@ static int yNetHubEnumEx(HubSt* hub, ENU_CONTEXT* enus, char* errmsg)
     }
     yReqClose(req);
     yReqFree(req);
+    if (!enum_done) {
+        return YERRMSG(YAPI_TIMEOUT, "Hub enumeration timeout");
+    }
+
+
     if (use_jzon) {
         res = parseJZONAPI(hub, enus, buffer, response_size, errmsg);
     } else {
@@ -1728,7 +1734,7 @@ static HubSt* yapiAllocHub(const char* url, char* errmsg)
     yFifoInit(&(hub->not_fifo), hub->not_buffer, sizeof(hub->not_buffer));
     yInitializeCriticalSection(&hub->access);
 
-    if (hub->proto != PROTO_WEBSOCKET) {
+    if (hub->proto == PROTO_HTTP) {
         if (user != INVALID_HASH_IDX) {
             hub->http.s_user = yHashGetStrPtr(user);
         }
@@ -1760,7 +1766,7 @@ static void yapiFreeHub(HubSt* hub)
     dbglog("HUB: %x->%s Deleted \n",hub->url,hub->name);
 #endif
     yFreeWakeUpSocket(&hub->wuce);
-    if (hub->proto != PROTO_WEBSOCKET) {
+    if (hub->proto == PROTO_HTTP) {
         if (hub->http.s_realm) yFree(hub->http.s_realm);
         if (hub->http.s_nonce) yFree(hub->http.s_nonce);
         if (hub->http.s_opaque) yFree(hub->http.s_opaque);
@@ -2821,8 +2827,8 @@ static void* yhelper_thread(void* ctx)
                     yLeaveCriticalSection(&hub->access);
 
 #ifdef TRACE_NET_HUB
-                dbglog("TRACE(%X->%s): unable to open notification socket(%s)\n",hub->url,hub->name,errmsg);
-                dbglog("TRACE(%X->%s): retry in %dms (%d retries)\n",hub->url,hub->name,hub->attemptDelay,hub->retryCount);
+                    dbglog("TRACE(%X->%s): unable to open notification socket(%s)\n",hub->url,hub->name,errmsg);
+                    dbglog("TRACE(%X->%s): retry in %dms (%d retries)\n",hub->url,hub->name,hub->attemptDelay,hub->retryCount);
 #endif
                 } else {
 #ifdef TRACE_NET_HUB
@@ -2918,6 +2924,10 @@ static void* yhelper_thread(void* ctx)
                             // remote close
                             YERRMSG(YAPI_IO_ERROR, "Connection closed by remote host");
                             dbglog("Disconnected from network hub %s (%s)\n", hub->name, errmsg);
+                        } else if (res == YAPI_UNAUTHORIZED) {
+                            // invalid login -> no need to retry
+                            dbglog("Disconnected from network hub %s (%s)\n", hub->name, errmsg);
+                            hub->state = NET_HUB_TOCLOSE;
                         } else {
                             //error
                             hub->attemptDelay = 500 << hub->retryCount;
@@ -3066,7 +3076,7 @@ static YRETCODE yapiRegisterHubEx(const char* url, int checkacces, char* errmsg)
                 yLeaveCriticalSection(&yContext->enum_cs);
                 return (YRETCODE)res;
             }
-            if (hubst->proto == PROTO_WEBSOCKET) {
+            if (hubst->proto != PROTO_HTTP) {
                 thead_handler = ws_thread;
             } else {
                 thead_handler = yhelper_thread;
@@ -3105,7 +3115,7 @@ static YRETCODE yapiRegisterHubEx(const char* url, int checkacces, char* errmsg)
             yLeaveCriticalSection(&yContext->updateDev_cs);
             if (YISERR(res)) {
                 yapiUnregisterHub_internal(url);
-            } else if (hubst->proto != PROTO_WEBSOCKET) {
+            } else if (hubst->proto == PROTO_HTTP) {
                 // for HTTP test admin pass if the hub require it
                 if (hubst->writeProtected && hubst->http.s_user && strcmp(hubst->http.s_user, "admin") == 0) {
                     YIOHDL iohdl;
@@ -3219,7 +3229,7 @@ static YRETCODE yapiTestHub_internal(const char* url, int mstimeout, char* errms
 #ifdef TRACE_NET_HUB
             dbglog("HUB: test %x->%s \n", hubst->url, hubst->name);
 #endif
-            if (hubst->proto == PROTO_WEBSOCKET) {
+            if (hubst->proto != PROTO_HTTP) {
                 u64 timeout;
                 if (YISERR(res = yStartWakeUpSocket(&hubst->wuce, errmsg))) {
                     yapiFreeHub(hubst);
@@ -3662,7 +3672,7 @@ static YRETCODE yapiGetDevicePathEx_internal(const char* serial, char* rootdevic
         wpGetDeviceUrl(devdescr, rootdevice, buffer, 512, neededsize);
         if (request) {
 
-            int len = YSPRINTF(request, requestsize, "%s://%s:%d%s", proto == PROTO_WEBSOCKET ? "ws" : "http", host, port, buffer);
+            int len = YSPRINTF(request, requestsize, "%s://%s:%d%s", proto != PROTO_HTTP ? "ws" : "http", host, port, buffer);
             *neededsize = len + 1;
         }
         if (rootdevice && YSTRCMP(rootdevice, serial) == 0) {
@@ -3938,7 +3948,7 @@ YRETCODE yapiRequestOpen(YIOHDL_internal* iohdl, int tcpchan, const char* device
         if (hub == NULL) {
             return YERR(YAPI_DEVICE_NOT_FOUND);
         }
-        if (proto == PROTO_WEBSOCKET) {
+        if (proto != PROTO_HTTP) {
             return yapiRequestOpenWS(iohdl, hub, dev, tcpchan, request, reqlen, mstimeout, callback, context, progress_cb, progress_ctx, errmsg);
         } else {
             return yapiRequestOpenHTTP(iohdl, hub, dev, request, reqlen, 2 * YIO_DEFAULT_TCP_TIMEOUT, mstimeout, callback, context, errmsg);
@@ -4357,6 +4367,40 @@ static YRETCODE yapiGetBootloaders_internal(char* buffer, int buffersize, int* f
         *fullsize = total;
 
     return (YRETCODE)size;
+}
+
+static int yapiIsModuleWritable_internal(const char *serial, char *errmsg)
+{
+    int i;
+    YAPI_DEVICE devdescr;
+    yUrlRef url;
+    yAsbUrlProto proto;
+
+    if (!yContext)
+        return YERR(YAPI_NOT_INITIALIZED);
+
+    devdescr = wpSearch(serial);
+    if (YISERR(devdescr)) {
+        return YERR(YAPI_DEVICE_NOT_FOUND);
+    }
+
+     // dispatch request on correct hub (or pseudo usb HUB)
+    url = wpGetDeviceUrlRef(devdescr);
+    switch (yHashGetUrlPort(url, NULL, NULL, &proto, NULL, NULL, NULL)) {
+    case USB_URL:
+        return 1;
+    default:
+        for (i = 0; i < NBMAX_NET_HUB; i++) {
+            if (yContext->nethub[i] && yHashSameHub(yContext->nethub[i]->url, url)) {
+                if (yContext->nethub[i]->writeProtected && !yContext->nethub[i]->rw_access) {
+                    return 0;
+                } else {
+                    return 1;
+                }
+            }
+        }
+        return YERR(YAPI_DEVICE_NOT_FOUND);
+    }
 }
 
 #ifndef YAPI_IN_YDEVICE
@@ -4857,6 +4901,7 @@ typedef enum
     trcRegisterHubDiscoveryCallback,
     trcTriggerHubDiscovery,
     trcGetBootloaders,
+    trcIsModuleWritable,
     trcJsonDecodeString,
     trcJsonGetPath,
     trcGetAllJsonKeys,
@@ -4917,6 +4962,7 @@ static const char * trc_funname[] =
     "RegHubDiscovery",
     "THubDiscov",
     "GBoot",
+    "isWr",
     "JsonDecStr",
     "JsonGetPath",
     "GAllJsonK",
@@ -5398,6 +5444,16 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetBootloaders(char* buffer, int buffersize, i
     YDLL_CALL_LEAVE(res);
     return res;
 }
+
+int YAPI_FUNCTION_EXPORT yapiIsModuleWritable(const char *serial, char* errmsg)
+{
+    int res;
+    YDLL_CALL_ENTER(trcIsModuleWritable);
+    res = yapiIsModuleWritable_internal(serial, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
 #ifndef YAPI_IN_YDEVICE
 
 int YAPI_FUNCTION_EXPORT yapiJsonDecodeString(const char* json_string, char* output)

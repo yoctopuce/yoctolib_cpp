@@ -92,10 +92,8 @@
     <ClCompile Include="..\..\..\Sources\yapi\ykey.c" />
     <ClCompile Include="..\..\..\Sources\yocto_api.cpp" />
     
-<ClCompile Include="..\..\..\Sources\yocto_humidity.cpp" />
+<ClCompile Include="..\..\..\Sources\yocto_pressure.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_temperature.cpp" />
-<ClCompile Include="..\..\..\Sources\yocto_tvoc.cpp" />
-<ClCompile Include="..\..\..\Sources\yocto_voc.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_datalogger.cpp" />
 
     <ClCompile Include="..\main.cpp" />
@@ -115,10 +113,8 @@
     <ClInclude Include="..\..\..\Sources\yapi\ykey.h" />
     <ClInclude Include="..\..\..\Sources\yocto_api.h" />
     
-<ClInclude Include="..\..\..\Sources\yocto_humidity.h" />
+<ClInclude Include="..\..\..\Sources\yocto_pressure.h" />
 <ClInclude Include="..\..\..\Sources\yocto_temperature.h" />
-<ClInclude Include="..\..\..\Sources\yocto_tvoc.h" />
-<ClInclude Include="..\..\..\Sources\yocto_voc.h" />
 <ClInclude Include="..\..\..\Sources\yocto_datalogger.h" />
 
   </ItemGroup>

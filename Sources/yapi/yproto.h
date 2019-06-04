@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 34004 2019-01-15 17:13:49Z seb $
+ * $Id: yproto.h 35382 2019-05-10 13:19:48Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -845,8 +845,17 @@ typedef struct _HTTPReqSt {
     YSOCKET             reuseskt;       // socket to reuse for next query, when keep alive is true
 } HTTPReqSt;
 
+typedef enum
+{
+    REQ_CLOSED_BY_BOTH = 0, REQ_OPEN, REQ_CLOSED_BY_HUB, REQ_CLOSED_BY_API
+} RequestState;
+
+#define WS_FLG_NEED_API_CLOSE     1
+
 typedef struct _WSReqSt
 {
+    RequestState state;  // state of the request
+    u32 flags;
     int channel;
     int asyncId;
     u32 iohdl;
@@ -858,10 +867,6 @@ typedef struct _WSReqSt
     u64 last_write_tm;
 } WSReqSt;
 
-typedef enum
-{
-    REQ_CLOSED = 0, REQ_OPEN, REQ_CLOSED_BY_HUB, REQ_CLOSED_BY_API, REQ_ERROR
-} RequestState;
 
 typedef void(*RequestProgress)(void *context, u32 acked, u32 totalbytes);
 
@@ -870,7 +875,6 @@ typedef struct _RequestSt {
     HubSt               *hub;           // pointer to the NetHubSt handling the device
     yCRITICAL_SECTION   access;
     yEvent              finished;       // event seted when this request can be reused
-    RequestState        state;          // state of the request (fixme: currenty only use by WS)
     char                *headerbuf;     // Used to store all lines of the HTTP header (with the double \r\n)
     int                 headerbufsize;  // allocated size of requestbuf
     char                *bodybuf;       // Used to store the body of the POST request
@@ -990,6 +994,8 @@ typedef struct{
     CFRunLoopRef        usb_run_loop;
     pthread_t           usb_thread;
     USB_THREAD_STATE    usb_thread_state;
+    yCRITICAL_SECTION   parano_cs;
+
 #elif defined(LINUX_API)
     yCRITICAL_SECTION   string_cache_cs;
     libusb_context      *libusb;

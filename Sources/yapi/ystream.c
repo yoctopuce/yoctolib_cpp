@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 34160 2019-01-28 14:18:42Z seb $
+ * $Id: ystream.c 35472 2019-05-16 16:15:10Z mvuilleu $
  *
  * USB stream implementation
  *
@@ -938,13 +938,14 @@ void yPktQueueInit(pktQueue *q)
 void yPktQueueFree(pktQueue *q)
 {
     pktItem *p,*t;
-
+    yEnterCriticalSection(&q->cs);
     p=q->first;
     while(p){
         t=p;
         p=p->next;
         yFree(t);
     }
+    yLeaveCriticalSection(&q->cs);
     yDeleteCriticalSection(&q->cs);
     yCloseEvent(&q->notEmptyEvent);
     yCloseEvent(&q->emptyEvent);

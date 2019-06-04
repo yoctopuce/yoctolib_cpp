@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 33916 2018-12-28 10:38:18Z seb $
+ * $Id: yocto_api.h 35467 2019-05-16 14:41:53Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -1984,6 +1984,14 @@ public:
      * On failure, throws an exception or returns an empty string.
      */
     virtual string      loadAttribute(string attrName);
+
+    /**
+     * Test if the function is readOnly. Return true if the function is write protected
+     * or that the function is not available.
+     *
+     * @return true if the function is readOnly or not online.
+     */
+    virtual bool        isReadOnly(void);
 
     /**
      * Returns the serial number of the module, as set by the factory.
