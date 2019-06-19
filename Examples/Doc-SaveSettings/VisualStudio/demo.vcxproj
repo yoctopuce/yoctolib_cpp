@@ -95,6 +95,7 @@
 <ClCompile Include="..\..\..\Sources\yocto_accelerometer.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_altitude.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_anbutton.cpp" />
+<ClCompile Include="..\..\..\Sources\yocto_arithmeticsensor.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_audioin.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_audioout.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_bluetoothlink.cpp" />
@@ -180,6 +181,7 @@
 <ClInclude Include="..\..\..\Sources\yocto_accelerometer.h" />
 <ClInclude Include="..\..\..\Sources\yocto_altitude.h" />
 <ClInclude Include="..\..\..\Sources\yocto_anbutton.h" />
+<ClInclude Include="..\..\..\Sources\yocto_arithmeticsensor.h" />
 <ClInclude Include="..\..\..\Sources\yocto_audioin.h" />
 <ClInclude Include="..\..\..\Sources\yocto_audioout.h" />
 <ClInclude Include="..\..\..\Sources\yocto_bluetoothlink.h" />

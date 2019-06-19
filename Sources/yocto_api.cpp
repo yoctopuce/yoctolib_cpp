@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 35620 2019-06-04 08:29:58Z seb $
+ * $Id: yocto_api.cpp 35677 2019-06-05 09:34:47Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -3285,13 +3285,12 @@ string YFunction::_download(const string& url)
         this->_throw(YAPI_IO_ERROR, "http request failed");
         return YAPI_INVALID_STRING;
     }
-
     return buffer.substr(found + 4);
 }
 
 
 // Method used to upload a file to the device
-YRETCODE YFunction::_uploadWithProgress(const string& path, const string& content, yapiRequestProgressCallback callback, void* context)
+string YFunction::_uploadWithProgressEx(const string& path, const string& content, yapiRequestProgressCallback callback, void* context)
 {
     string request, buffer;
     string boundary;
@@ -3310,16 +3309,31 @@ YRETCODE YFunction::_uploadWithProgress(const string& path, const string& conten
     found = buffer.find("\r\n\r\n");
     if (string::npos == found) {
         this->_throw(YAPI_IO_ERROR, "http request failed");
+        return YAPI_INVALID_STRING;
+    }
+    return buffer.substr(found + 4);;
+}
+
+YRETCODE YFunction::_uploadWithProgress(const string& path, const string& content, yapiRequestProgressCallback callback, void* context)
+{
+    string res = this->_uploadWithProgressEx(path, content, NULL, NULL);
+    if (res == YAPI_INVALID_STRING) {
         return YAPI_IO_ERROR;
     }
     return YAPI_SUCCESS;
 }
 
-
 // Method used to upload a file to the device
 YRETCODE YFunction::_upload(const string& path, const string& content)
 {
     return this->_uploadWithProgress(path, content, NULL, NULL);
+}
+
+
+// Method used to upload a file to the device
+string YFunction::_uploadEx(const string& path, const string& content)
+{
+    return this->_uploadWithProgressEx(path, content, NULL, NULL);
 }
 
 

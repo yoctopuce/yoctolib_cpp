@@ -28,6 +28,7 @@
 		B8A727A817E0CD3A0057e0f732d9 /* yocto_accelerometer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057f96b1e31 /* yocto_accelerometer.cpp */; };
 		B8A727A817E0CD3A0057623e05ed /* yocto_altitude.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057127045ab /* yocto_altitude.cpp */; };
 		B8A727A817E0CD3A0057e1763680 /* yocto_anbutton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057913876c6 /* yocto_anbutton.cpp */; };
+		B8A727A817E0CD3A0057cd6917da /* yocto_arithmeticsensor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057aa10221a /* yocto_arithmeticsensor.cpp */; };
 		B8A727A817E0CD3A005795cc3811 /* yocto_audioin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057b178f114 /* yocto_audioin.cpp */; };
 		B8A727A817E0CD3A0057e75effba /* yocto_audioout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00579710bffc /* yocto_audioout.cpp */; };
 		B8A727A817E0CD3A0057b1e68d85 /* yocto_bluetoothlink.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057a87aa16d /* yocto_bluetoothlink.cpp */; };
@@ -147,6 +148,8 @@
 		B8A727A817E0CD3A0057896226ec /* yocto_altitude.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_altitude.h; path = ../../../Sources/yocto_altitude.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057913876c6 /* yocto_anbutton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_anbutton.cpp; path = ../../../Sources/yocto_anbutton.cpp; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00575b0a812c /* yocto_anbutton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_anbutton.h; path = ../../../Sources/yocto_anbutton.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057aa10221a /* yocto_arithmeticsensor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_arithmeticsensor.cpp; path = ../../../Sources/yocto_arithmeticsensor.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005746a0d883 /* yocto_arithmeticsensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_arithmeticsensor.h; path = ../../../Sources/yocto_arithmeticsensor.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057b178f114 /* yocto_audioin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_audioin.cpp; path = ../../../Sources/yocto_audioin.cpp; sourceTree = "<group>"; };
 		B8A727A817E0CD3A005736177310 /* yocto_audioin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_audioin.h; path = ../../../Sources/yocto_audioin.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00579710bffc /* yocto_audioout.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_audioout.cpp; path = ../../../Sources/yocto_audioout.cpp; sourceTree = "<group>"; };
@@ -305,6 +308,8 @@
 				B8A727A817E0CD3A0057896226ec /* yocto_altitude.h */,
 				B8A727A817E0CD3A0057913876c6 /* yocto_anbutton.cpp */,
 				B8A727A817E0CD3A00575b0a812c /* yocto_anbutton.h */,
+				B8A727A817E0CD3A0057aa10221a /* yocto_arithmeticsensor.cpp */,
+				B8A727A817E0CD3A005746a0d883 /* yocto_arithmeticsensor.h */,
 				B8A727A817E0CD3A0057b178f114 /* yocto_audioin.cpp */,
 				B8A727A817E0CD3A005736177310 /* yocto_audioin.h */,
 				B8A727A817E0CD3A00579710bffc /* yocto_audioout.cpp */,
@@ -562,6 +567,7 @@
 				B8A727A817E0CD3A0057e0f732d9 /* yocto_accelerometer.cpp in Sources */,
 				B8A727A817E0CD3A0057623e05ed /* yocto_altitude.cpp in Sources */,
 				B8A727A817E0CD3A0057e1763680 /* yocto_anbutton.cpp in Sources */,
+				B8A727A817E0CD3A0057cd6917da /* yocto_arithmeticsensor.cpp in Sources */,
 				B8A727A817E0CD3A005795cc3811 /* yocto_audioin.cpp in Sources */,
 				B8A727A817E0CD3A0057e75effba /* yocto_audioout.cpp in Sources */,
 				B8A727A817E0CD3A0057b1e68d85 /* yocto_bluetoothlink.cpp in Sources */,

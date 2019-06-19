@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 35467 2019-05-16 14:41:53Z seb $
+ * $Id: yocto_api.h 35672 2019-06-05 08:26:31Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -1824,8 +1824,10 @@ public:
     string      _download(const string& url);
 
     // Method used to upload a file to the device
+    string      _uploadWithProgressEx(const string& path, const string& content, yapiRequestProgressCallback callback, void *context);
     YRETCODE    _uploadWithProgress(const string& path, const string& content, yapiRequestProgressCallback callback, void *context);
     YRETCODE    _upload(const string& path, const string& content);
+    string      _uploadEx(const string& path, const string& content);
 
     // Method used to parse a string in JSON data (low-level)
     string      _json_get_key(const string& json, const string& data);
