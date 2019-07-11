@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 35677 2019-06-05 09:34:47Z seb $
+ * $Id: yocto_api.cpp 36141 2019-07-08 17:51:33Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -1053,6 +1053,141 @@ int YDataSet::_parse(const string& json)
     return this->get_progress();
 }
 
+// YConsolidatedDataSet constructor
+YConsolidatedDataSet::YConsolidatedDataSet(double startTime, double endTime, vector<YSensor*> sensorList) :
+  //--- (generated code: YConsolidatedDataSet initialization)
+    _start(0.0)
+    ,_end(0.0)
+    ,_nsensors(0)
+//--- (end of generated code: YConsolidatedDataSet initialization)
+{
+  this->_init(startTime, endTime, sensorList);
+}
+
+//--- (generated code: YConsolidatedDataSet implementation)
+// static attributes
+
+
+int YConsolidatedDataSet::_init(double startt,double endt,vector<YSensor*> sensorList)
+{
+    _start = startt;
+    _end = endt;
+    _sensors = sensorList;
+    _nsensors = -1;
+    return YAPI_SUCCESS;
+}
+
+/**
+ * Extracts the next data record from the dataLogger of all sensors linked to this
+ * object.
+ *
+ * @param datarec : array of floating point numbers, that will be filled by the
+ *         function with the timestamp of the measure in first position,
+ *         followed by the measured value in next positions.
+ *
+ * @return an integer in the range 0 to 100 (percentage of completion),
+ *         or a negative error code in case of failure.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YConsolidatedDataSet::nextRecord(vector<double>& datarec)
+{
+    int s = 0;
+    int idx = 0;
+    YSensor* sensor = NULL;
+    YDataSet newdataset;
+    int globprogress = 0;
+    int currprogress = 0;
+    double currnexttim = 0.0;
+    double newvalue = 0.0;
+    vector<YMeasure> measures;
+    double nexttime = 0.0;
+    //
+    // Ensure the dataset have been retrieved
+    //
+    if (_nsensors == -1) {
+        _nsensors = (int)_sensors.size();
+        _datasets.clear();
+        _progresss.clear();
+        _nextidx.clear();
+        _nexttim.clear();
+        s = 0;
+        while (s < _nsensors) {
+            sensor = _sensors[s];
+            newdataset = sensor->get_recordedData(_start, _end);
+            _datasets.push_back(newdataset);
+            _progresss.push_back(0);
+            _nextidx.push_back(0);
+            _nexttim.push_back(0.0);
+            s = s + 1;
+        }
+    }
+    datarec.clear();
+    //
+    // Find next timestamp to process
+    //
+    nexttime = 0;
+    s = 0;
+    while (s < _nsensors) {
+        currnexttim = _nexttim[s];
+        if (currnexttim == 0) {
+            idx = _nextidx[s];
+            measures = _datasets[s].get_measures();
+            currprogress = _progresss[s];
+            while ((idx >= (int)measures.size()) && (currprogress < 100)) {
+                currprogress = _datasets[s].loadMore();
+                if (currprogress < 0) {
+                    currprogress = 100;
+                }
+                _progresss[s] = currprogress;
+                measures = _datasets[s].get_measures();
+            }
+            if (idx < (int)measures.size()) {
+                currnexttim = measures[idx].get_endTimeUTC();
+                _nexttim[s] = currnexttim;
+            }
+        }
+        if (currnexttim > 0) {
+            if ((nexttime == 0) || (nexttime > currnexttim)) {
+                nexttime = currnexttim;
+            }
+        }
+        s = s + 1;
+    }
+    if (nexttime == 0) {
+        return 100;
+    }
+    //
+    // Extract data for this timestamp
+    //
+    datarec.clear();
+    datarec.push_back(nexttime);
+    globprogress = 0;
+    s = 0;
+    while (s < _nsensors) {
+        if (_nexttim[s] == nexttime) {
+            idx = _nextidx[s];
+            measures = _datasets[s].get_measures();
+            newvalue = measures[idx].get_averageValue();
+            datarec.push_back(newvalue);
+            _nexttim[s] = 0.0;
+            _nextidx[s] = idx+1;
+        } else {
+            datarec.push_back(NAN);
+        }
+        currprogress = _progresss[s];
+        globprogress = globprogress + currprogress;
+        s = s + 1;
+    }
+    if (globprogress > 0) {
+        globprogress = ((globprogress) / (_nsensors));
+        if (globprogress > 99) {
+            globprogress = 99;
+        }
+    }
+    return globprogress;
+}
+//--- (end of generated code: YConsolidatedDataSet implementation)
 
 YFirmwareUpdate::YFirmwareUpdate(string serialNumber, string path, string settings) :
     //--- (generated code: YFirmwareUpdate initialization)
@@ -7349,9 +7484,10 @@ string YModule::functionType(int functionIndex)
     }
     p = funcId.c_str();
     *d++ = *p++ & 0xdf;
-    while (*p && (*p < '0' || *p > '9')) {
+    while (*p) {
         *d++ = *p++;
     }
+    while (d > buffer && d[-1] <= '9') d--;
     *d = 0;
     return string(buffer);
 }
@@ -7654,11 +7790,11 @@ double YSensor::get_highestValue(void)
 }
 
 /**
- * Returns the uncalibrated, unrounded raw value returned by the sensor, in the specified unit, as a
- * floating point number.
+ * Returns the uncalibrated, unrounded raw value returned by the
+ * sensor, in the specified unit, as a floating point number.
  *
- * @return a floating point number corresponding to the uncalibrated, unrounded raw value returned by
- * the sensor, in the specified unit, as a floating point number
+ * @return a floating point number corresponding to the uncalibrated, unrounded raw value returned by the
+ *         sensor, in the specified unit, as a floating point number
  *
  * On failure, throws an exception or returns Y_CURRENTRAWVALUE_INVALID.
  */

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.h 35467 2019-05-16 14:41:53Z seb $
+ * $Id: yocto_serialport.h 36048 2019-06-28 17:43:51Z mvuilleu $
  *
  * Declares yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -495,6 +495,110 @@ public:
     virtual int         sendCommand(string text);
 
     /**
+     * Reads a single line (or message) from the receive buffer, starting at current stream position.
+     * This function is intended to be used when the serial port is configured for a message protocol,
+     * such as 'Line' mode or frame protocols.
+     *
+     * If data at current stream position is not available anymore in the receive buffer,
+     * the function returns the oldest available line and moves the stream position just after.
+     * If no new full line is received, the function returns an empty line.
+     *
+     * @return a string with a single line of text
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual string      readLine(void);
+
+    /**
+     * Searches for incoming messages in the serial port receive buffer matching a given pattern,
+     * starting at current position. This function will only compare and return printable characters
+     * in the message strings. Binary protocols are handled as hexadecimal strings.
+     *
+     * The search returns all messages matching the expression provided as argument in the buffer.
+     * If no matching message is found, the search waits for one up to the specified maximum timeout
+     * (in milliseconds).
+     *
+     * @param pattern : a limited regular expression describing the expected message format,
+     *         or an empty string if all messages should be returned (no filtering).
+     *         When using binary protocols, the format applies to the hexadecimal
+     *         representation of the message.
+     * @param maxWait : the maximum number of milliseconds to wait for a message if none is found
+     *         in the receive buffer.
+     *
+     * @return an array of strings containing the messages found, if any.
+     *         Binary messages are converted to hexadecimal representation.
+     *
+     * On failure, throws an exception or returns an empty array.
+     */
+    virtual vector<string> readMessages(string pattern,int maxWait);
+
+    /**
+     * Changes the current internal stream position to the specified value. This function
+     * does not affect the device, it only changes the value stored in the API object
+     * for the next read operations.
+     *
+     * @param absPos : the absolute position index for next read operations.
+     *
+     * @return nothing.
+     */
+    virtual int         read_seek(int absPos);
+
+    /**
+     * Returns the current absolute stream position pointer of the API object.
+     *
+     * @return the absolute position index for next read operations.
+     */
+    virtual int         read_tell(void);
+
+    /**
+     * Returns the number of bytes available to read in the input buffer starting from the
+     * current absolute stream position pointer of the API object.
+     *
+     * @return the number of bytes available to read
+     */
+    virtual int         read_avail(void);
+
+    /**
+     * Sends a text line query to the serial port, and reads the reply, if any.
+     * This function is intended to be used when the serial port is configured for 'Line' protocol.
+     *
+     * @param query : the line query to send (without CR/LF)
+     * @param maxWait : the maximum number of milliseconds to wait for a reply.
+     *
+     * @return the next text line received after sending the text query, as a string.
+     *         Additional lines can be obtained by calling readLine or readMessages.
+     *
+     * On failure, throws an exception or returns an empty string.
+     */
+    virtual string      queryLine(string query,int maxWait);
+
+    /**
+     * Saves the job definition string (JSON data) into a job file.
+     * The job file can be later enabled using selectJob().
+     *
+     * @param jobfile : name of the job file to save on the device filesystem
+     * @param jsonDef : a string containing a JSON definition of the job
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         uploadJob(string jobfile,string jsonDef);
+
+    /**
+     * Load and start processing the specified job file. The file must have
+     * been previously created using the user interface or uploaded on the
+     * device filesystem using the uploadJob() function.
+     *
+     * @param jobfile : name of the job file (on the device filesystem)
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         selectJob(string jobfile);
+
+    /**
      * Clears the serial port buffer and resets counters to zero.
      *
      * @return YAPI_SUCCESS if the call succeeds.
@@ -615,7 +719,7 @@ public:
      *
      * @return a sequence of bytes with receive buffer contents
      *
-     * On failure, throws an exception or returns a negative error code.
+     * On failure, throws an exception or returns an empty array.
      */
     virtual vector<int> readArray(int nChars);
 
@@ -631,110 +735,6 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     virtual string      readHex(int nBytes);
-
-    /**
-     * Reads a single line (or message) from the receive buffer, starting at current stream position.
-     * This function is intended to be used when the serial port is configured for a message protocol,
-     * such as 'Line' mode or frame protocols.
-     *
-     * If data at current stream position is not available anymore in the receive buffer,
-     * the function returns the oldest available line and moves the stream position just after.
-     * If no new full line is received, the function returns an empty line.
-     *
-     * @return a string with a single line of text
-     *
-     * On failure, throws an exception or returns a negative error code.
-     */
-    virtual string      readLine(void);
-
-    /**
-     * Searches for incoming messages in the serial port receive buffer matching a given pattern,
-     * starting at current position. This function will only compare and return printable characters
-     * in the message strings. Binary protocols are handled as hexadecimal strings.
-     *
-     * The search returns all messages matching the expression provided as argument in the buffer.
-     * If no matching message is found, the search waits for one up to the specified maximum timeout
-     * (in milliseconds).
-     *
-     * @param pattern : a limited regular expression describing the expected message format,
-     *         or an empty string if all messages should be returned (no filtering).
-     *         When using binary protocols, the format applies to the hexadecimal
-     *         representation of the message.
-     * @param maxWait : the maximum number of milliseconds to wait for a message if none is found
-     *         in the receive buffer.
-     *
-     * @return an array of strings containing the messages found, if any.
-     *         Binary messages are converted to hexadecimal representation.
-     *
-     * On failure, throws an exception or returns an empty array.
-     */
-    virtual vector<string> readMessages(string pattern,int maxWait);
-
-    /**
-     * Changes the current internal stream position to the specified value. This function
-     * does not affect the device, it only changes the value stored in the API object
-     * for the next read operations.
-     *
-     * @param absPos : the absolute position index for next read operations.
-     *
-     * @return nothing.
-     */
-    virtual int         read_seek(int absPos);
-
-    /**
-     * Returns the current absolute stream position pointer of the API object.
-     *
-     * @return the absolute position index for next read operations.
-     */
-    virtual int         read_tell(void);
-
-    /**
-     * Returns the number of bytes available to read in the input buffer starting from the
-     * current absolute stream position pointer of the API object.
-     *
-     * @return the number of bytes available to read
-     */
-    virtual int         read_avail(void);
-
-    /**
-     * Sends a text line query to the serial port, and reads the reply, if any.
-     * This function is intended to be used when the serial port is configured for 'Line' protocol.
-     *
-     * @param query : the line query to send (without CR/LF)
-     * @param maxWait : the maximum number of milliseconds to wait for a reply.
-     *
-     * @return the next text line received after sending the text query, as a string.
-     *         Additional lines can be obtained by calling readLine or readMessages.
-     *
-     * On failure, throws an exception or returns an empty array.
-     */
-    virtual string      queryLine(string query,int maxWait);
-
-    /**
-     * Saves the job definition string (JSON data) into a job file.
-     * The job file can be later enabled using selectJob().
-     *
-     * @param jobfile : name of the job file to save on the device filesystem
-     * @param jsonDef : a string containing a JSON definition of the job
-     *
-     * @return YAPI_SUCCESS if the call succeeds.
-     *
-     * On failure, throws an exception or returns a negative error code.
-     */
-    virtual int         uploadJob(string jobfile,string jsonDef);
-
-    /**
-     * Load and start processing the specified job file. The file must have
-     * been previously created using the user interface or uploaded on the
-     * device filesystem using the uploadJob() function.
-     *
-     * @param jobfile : name of the job file (on the device filesystem)
-     *
-     * @return YAPI_SUCCESS if the call succeeds.
-     *
-     * On failure, throws an exception or returns a negative error code.
-     */
-    virtual int         selectJob(string jobfile);
 
     /**
      * Manually sets the state of the RTS line. This function has no effect when

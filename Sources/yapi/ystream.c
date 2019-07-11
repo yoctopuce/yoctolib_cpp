@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 35472 2019-05-16 16:15:10Z mvuilleu $
+ * $Id: ystream.c 36044 2019-06-28 17:33:59Z mvuilleu $
  *
  * USB stream implementation
  *
@@ -264,17 +264,13 @@ void ypUpdateUSB(const char *serial, const char *funcid, const char *funcname, i
     categ[0] = (funcid[0] & ~0x20); // aka to_upper()
     for(i = 1; i < YOCTO_FUNCTION_LEN-1; i++) {
         char c = funcid[i];
-        if(!c || (c <= '9' && c >= '0')) break;
+        if(!c) break;
         funcid_cstr[i] = c;
         categ[i] = c;
     }
-    categ[i] = 0;
-    for(; i < YOCTO_FUNCTION_LEN-1; i++) {
-        char c = funcid[i];
-        if(!c) break;
-        funcid_cstr[i] = c;
-    }
     funcid_cstr[i] = 0;
+    while (i > 0 && categ[i-1] <= '9') i--;
+    categ[i] = 0;
     serialref = yHashPutStr(serial);
     funcidref = yHashPutStr(funcid_cstr);
     if(funcname) funcnameref = yHashPutStr(funcname);

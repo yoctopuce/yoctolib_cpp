@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 35435 2019-05-14 12:57:14Z seb $
+ * $Id: ytcp.c 36163 2019-07-09 08:39:52Z mvuilleu $
  *
  * Implementation of a client TCP stack
  *
@@ -2442,6 +2442,33 @@ static RequestSt* getNextReqToSend(HubSt* hub, int tcpchan)
     return req;
 }
 
+static RequestSt* closeAllReq(HubSt* hub, int err, const char *errmsg)
+{
+    RequestSt* req;
+
+    int tcpchan;
+    for (tcpchan = 0; tcpchan < MAX_ASYNC_TCPCHAN; tcpchan++) {
+
+        yEnterCriticalSection(&hub->ws.chan[tcpchan].access);
+        req = hub->ws.chan[tcpchan].requests;
+        while (req) {
+            yEnterCriticalSection(&req->access);
+            if (req->ws.state != REQ_CLOSED_BY_BOTH) {
+                req->errcode = err;
+                YSTRCPY(req->errmsg, YOCTO_ERRMSG_LEN, errmsg);
+                req->ws.state = REQ_CLOSED_BY_BOTH;
+                ySetEvent(&req->finished);
+                yLeaveCriticalSection(&req->access);
+            }
+            req = req->ws.next;
+        }
+
+        yLeaveCriticalSection(&hub->ws.chan[tcpchan].access);
+    }
+    return req;
+}
+
+
 /*
 *   look through all pending request if there is some data that we can send
 *
@@ -2861,6 +2888,7 @@ void* ws_thread(void* ctx)
                 u32 mask;
                 int websocket_ok = 0;
                 int pktlen;
+                hub->ws.lastTraffic = yapiGetTickCount();
                 do {
                     u16 pos;
                     //something to handle;
@@ -3025,7 +3053,11 @@ void* ws_thread(void* ctx)
                     }
                 } while (!need_more_data && !YISERR(res));
             }
-            if (!YISERR(res)) {
+            if (hub->send_ping && ((u64)(yapiGetTickCount() - hub->ws.lastTraffic)) > NET_HUB_NOT_CONNECTION_TIMEOUT) {
+              WSLOG("PING: network hub %s(%x) didn't respond for too long (%d)\n", hub->name, hub->url, res);
+              continue_processing = 0;
+              closeAllReq(hub, res, errmsg);
+            } else if (!YISERR(res)) {
                 res = ws_processRequests(hub, errmsg);
                 if (YISERR(res)) {
                     WSLOG("hub(%s) ws_processRequests error %d:%s\n", hub->name, res, errmsg);
@@ -3043,6 +3075,7 @@ void* ws_thread(void* ctx)
             yEnterCriticalSection(&hub->access);
             hub->errcode = ySetErr(res, hub->errmsg, errmsg, NULL, 0);
             yLeaveCriticalSection(&hub->access);
+            closeAllReq(hub, res, errmsg);
             if (res == YAPI_UNAUTHORIZED) {
                 hub->state = NET_HUB_TOCLOSE;
             } else {

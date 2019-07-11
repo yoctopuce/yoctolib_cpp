@@ -89,7 +89,7 @@ int main(int argc, const char * argv[])
   YAPI::RegisterDeviceRemovalCallback(deviceRemoval);
   YAPI::DisableExceptions();
 
-  if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
+  if (YAPI::PreregisterHub("ws://172.17.17.50", errmsg) != YAPI::SUCCESS) {
     cerr << "RegisterHub error : " << errmsg << endl;
     return 1;
   }

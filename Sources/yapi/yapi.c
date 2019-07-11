@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 35418 2019-05-14 07:20:59Z seb $
+ * $Id: yapi.c 36157 2019-07-09 08:27:52Z mvuilleu $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -1746,12 +1746,12 @@ static HubSt* yapiAllocHub(const char* url, char* errmsg)
         int tcpchan;
         memset(&hub->ws, 0, sizeof(WSNetHub));
         hub->ws.s_next_async_id = 48;
-        hub->ws. fifo_buffer = yMalloc(2048);
+        hub->ws.fifo_buffer = yMalloc(2048);
         yFifoInit(&hub->ws.mainfifo, hub->ws.fifo_buffer, 2048);
         for (tcpchan = 0; tcpchan < MAX_ASYNC_TCPCHAN; tcpchan++) {
             yInitializeCriticalSection(&hub->ws.chan[tcpchan].access);
         }
-
+        hub->ws.lastTraffic = yapiGetTickCount();
     }
 #ifdef TRACE_NET_HUB
     dbglog("HUB%p: %x->%s allocated \n",hub, hub->url, hub->name);

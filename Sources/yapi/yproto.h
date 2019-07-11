@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 35382 2019-05-10 13:19:48Z seb $
+ * $Id: yproto.h 36157 2019-07-09 08:27:52Z mvuilleu $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -790,6 +790,7 @@ typedef struct _WSNetHubSt {
     u64 bws_read_tm;
     u64 next_transmit_tm;
     u64 connectionTime;
+    u64 lastTraffic;
     u32 tcpRoundTripTime;
     u32 tcpMaxWindowSize;
     u32 uploadRate;

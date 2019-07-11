@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 35672 2019-06-05 08:26:31Z seb $
+ * $Id: yocto_api.h 36207 2019-07-10 20:46:18Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -49,6 +49,10 @@
 #include <stdexcept>
 #include <cfloat>
 #include <cmath>
+
+#ifndef NAN
+#define NAN        ((float)((float)(1e+300 * 1e+300) * 0.0F))
+#endif
 
 #if defined(WINDOWS_API)
 #if defined(GENERATE_DLL) || defined(YOCTOPUCEDLL_EXPORTS)
@@ -1684,6 +1688,65 @@ public:
     //--- (end of generated code: YDataSet accessors declaration)
 };
 
+//--- (generated code: YConsolidatedDataSet declaration)
+/**
+ * YConsolidatedDataSet Class: Cross-sensor consolidated data sequence
+ *
+ * YConsolidatedDataSet objects make it possible to retrieve a set of
+ * recorded measures from multiple sensors, for a specified time interval.
+ * They can be used to load data points progressively, and to receive
+ * data records by timestamp, one by one..
+ */
+class YOCTO_CLASS_EXPORT YConsolidatedDataSet {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
+//--- (end of generated code: YConsolidatedDataSet declaration)
+protected:
+  //--- (generated code: YConsolidatedDataSet attributes)
+    // Attributes (function value cache)
+    double          _start;
+    double          _end;
+    int             _nsensors;
+    vector<YSensor*> _sensors;
+    vector<YDataSet> _datasets;
+    vector<int>     _progresss;
+    vector<int>     _nextidx;
+    vector<double>  _nexttim;
+    //--- (end of generated code: YConsolidatedDataSet attributes)
+
+public:
+  YConsolidatedDataSet(double startTime, double endTime, vector<YSensor*> sensorList);
+  YConsolidatedDataSet() {};
+  virtual ~YConsolidatedDataSet() {};
+
+
+  //--- (generated code: YConsolidatedDataSet accessors declaration)
+
+
+    virtual int         _init(double startt,double endt,vector<YSensor*> sensorList);
+
+    /**
+     * Extracts the next data record from the dataLogger of all sensors linked to this
+     * object.
+     *
+     * @param datarec : array of floating point numbers, that will be filled by the
+     *         function with the timestamp of the measure in first position,
+     *         followed by the measured value in next positions.
+     *
+     * @return an integer in the range 0 to 100 (percentage of completion),
+     *         or a negative error code in case of failure.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         nextRecord(vector<double>& datarec);
+
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
+    //--- (end of generated code: YConsolidatedDataSet accessors declaration)
+};
+
 //
 // YDevice Class (used internally)
 //
@@ -3075,11 +3138,11 @@ public:
     { return this->get_highestValue(); }
 
     /**
-     * Returns the uncalibrated, unrounded raw value returned by the sensor, in the specified unit, as a
-     * floating point number.
+     * Returns the uncalibrated, unrounded raw value returned by the
+     * sensor, in the specified unit, as a floating point number.
      *
-     * @return a floating point number corresponding to the uncalibrated, unrounded raw value returned by
-     * the sensor, in the specified unit, as a floating point number
+     * @return a floating point number corresponding to the uncalibrated, unrounded raw value returned by the
+     *         sensor, in the specified unit, as a floating point number
      *
      * On failure, throws an exception or returns Y_CURRENTRAWVALUE_INVALID.
      */

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 33734 2018-12-14 15:56:25Z seb $
+ * $Id: yhash.c 36044 2019-06-28 17:33:59Z mvuilleu $
  *
  * Simple hash tables and device/function information store
  *
@@ -1878,7 +1878,8 @@ static yBlkHdl functionSearch(YAPI_FUNCTION fundesc)
     funcref = (u16)(fundesc >> 16);
     yHashGetStr(funcref, funcname, YOCTO_FUNCTION_LEN);
     funcname[0] &= ~0x20; // uppercase first letter
-    for (p = funcname + 1; *p > '9'; p++);
+    for (p = funcname + 1; *p; p++);
+    while (p > funcname && p[-1] <= '9') p--;
     *p = 0;
     categref = yHashTestStr(funcname);
     if (categref == INVALID_HASH_IDX)

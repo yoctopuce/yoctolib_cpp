@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: makefile 35673 2019-06-05 08:47:23Z seb $
+#  $Id: makefile 36212 2019-07-11 04:57:56Z mvuilleu $
 #
 #  makefile for C++ library
 #  - - - - - - - - - License information: - - - - - - - - -
@@ -90,7 +90,7 @@ YOCTO_API_OBJS =  $(OD)\yocto_api.obj $(OD)\yocto_anbutton.obj $(OD)\yocto_carbo
 	$(OD)\yocto_quadraturedecoder.obj $(OD)\yocto_currentloopoutput.obj $(OD)\yocto_colorledcluster.obj $(OD)\yocto_spiport.obj \
 	$(OD)\yocto_steppermotor.obj $(OD)\yocto_multiaxiscontroller.obj $(OD)\yocto_proximity.obj $(OD)\yocto_rangefinder.obj \
 	$(OD)\yocto_daisychain.obj $(OD)\yocto_weighscale.obj $(OD)\yocto_voltageoutput.obj $(OD)\yocto_powersupply.obj $(OD)\yocto_multicellweighscale.obj \
-	$(OD)\yocto_tvoc.obj $(OD)\yocto_multisenscontroller.obj $(OD)\yocto_arithmeticsensor.obj
+	$(OD)\yocto_tvoc.obj $(OD)\yocto_multisenscontroller.obj $(OD)\yocto_arithmeticsensor.obj $(OD)\yocto_i2cport.obj
 
 YOCTO_API_OBJS32 = $(YOCTO_API_OBJS:arch_type=windows\obj_dir)
 
