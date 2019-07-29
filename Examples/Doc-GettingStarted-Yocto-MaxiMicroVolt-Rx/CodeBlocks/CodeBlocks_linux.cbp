@@ -137,11 +137,19 @@
             <Option virtualFolder="YoctoLibrary\" />
         </Unit>
 
-<Unit filename="..\..\..\Sources\yocto_carbondioxide.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_arithmeticsensor.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_files.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_genericsensor.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_poweroutput.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_temperature.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_datalogger.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 
 
-<Unit filename="..\..\..\Sources\yocto_carbondioxide.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_arithmeticsensor.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_files.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_genericsensor.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_poweroutput.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_temperature.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_datalogger.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 
         <Extensions>

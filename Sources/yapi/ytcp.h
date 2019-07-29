@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.h 34009 2019-01-15 18:17:33Z seb $
+ * $Id: ytcp.h 36275 2019-07-16 08:32:15Z seb $
  *
  *  Declaration of a client TCP stack
  *
@@ -79,11 +79,10 @@ extern "C" {
 #else
 #define SOCK_ERR    (errno)
 #endif
-#define REPORT_ERR(msg) if(errmsg){ YSPRINTF(errmsg,YOCTO_ERRMSG_LEN,"%s (%s:%d / errno=%d)",(msg), __FILE_ID__, __LINE__, SOCK_ERR);errmsg[YOCTO_ERRMSG_LEN-1]='\0';}
 
-#define yNetSetErr()  yNetSetErrEx(__LINE__,SOCK_ERR,errmsg)
+#define yNetSetErr()  yNetSetErrEx(__FILE_ID__, __LINE__,SOCK_ERR,errmsg)
 
-int yNetSetErrEx(u32 line,unsigned err,char *errmsg);
+int yNetSetErrEx(const char *fileid, u32 line,unsigned err,char *errmsg);
 
 #define YTCP_REMOTE_CLOSE 1
 

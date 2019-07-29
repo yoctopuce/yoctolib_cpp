@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_win.c 33734 2018-12-14 15:56:25Z seb $
+ * $Id: ypkt_win.c 36483 2019-07-24 16:48:31Z seb $
  *
  * OS-specific USB packet layer, Windows version
  *
@@ -39,6 +39,7 @@
 
 #define __FILE_ID__  "ypkt_win"
 #include "yapi.h"
+#include <stdio.h>
 #if defined(WINDOWS_API) && !defined(WINCE)
 #include "yproto.h"
 #include <TlHelp32.h>
@@ -55,7 +56,7 @@
 
 #define yWinSetErr(iface,errmsg)  yWinSetErrEx(__LINE__,iface,GetLastError(),"",errmsg)
 
-static int yWinSetErrEx(u32 line, yInterfaceSt *iface, DWORD err, const char *msg, char *errmsg)
+static int yWinSetErrEx(u32 line, yInterfaceSt* iface, DWORD err, const char* msg, char* errmsg)
 {
     int len;
     if (errmsg == NULL)
@@ -101,7 +102,7 @@ static void yWinPushEx(u32 line, yInterfaceSt *iface, pktQueue  *q, DWORD err)
 #endif
 
 
-static u32 decodeHex(const char *p, int nbdigit)
+static u32 decodeHex(const char* p, int nbdigit)
 {
     u32 ret = 0;
     int i;
@@ -122,11 +123,10 @@ static u32 decodeHex(const char *p, int nbdigit)
 }
 
 
-
 #define FIRST_OF        1
 #define FIRST_NOT_OF    2
 
-static char* findDelim(char *str, const char *delimiters, const int nbdelim, const int mode)
+static char* findDelim(char* str, const char* delimiters, const int nbdelim, const int mode)
 {
     int d;
 
@@ -151,9 +151,9 @@ static char* findDelim(char *str, const char *delimiters, const int nbdelim, con
 }
 
 
-void DecodeHardwareid(char *str, u32 *vendorid, u32 *deviceid, u32 *release, u32 *iface)
+void DecodeHardwareid(char* str, u32* vendorid, u32* deviceid, u32* release, u32* iface)
 {
-    const char *delim = "\\&?";
+    const char* delim = "\\&?";
     char *token_start, *token_stop;
     token_start = findDelim(str, delim, 4, FIRST_NOT_OF);
     token_stop = findDelim(token_start, delim, 4, FIRST_OF);
@@ -174,8 +174,7 @@ void DecodeHardwareid(char *str, u32 *vendorid, u32 *deviceid, u32 *release, u32
 }
 
 
-
-static int getProcName(char *buffer, int buffer_size)
+static int getProcName(char* buffer, int buffer_size)
 {
     HANDLE hProcessSnap;
     PROCESSENTRY32 pe32;
@@ -196,7 +195,7 @@ static int getProcName(char *buffer, int buffer_size)
     // and exit if unsuccessful
     if (!Process32First(hProcessSnap, &pe32)) {
         dbglog("Process32First error\n"); // show cause of failure
-        CloseHandle(hProcessSnap);          // clean the snapshot object
+        CloseHandle(hProcessSnap); // clean the snapshot object
         return pid;
     }
 
@@ -209,7 +208,7 @@ static int getProcName(char *buffer, int buffer_size)
 #else
 #if defined(_MSC_VER) && (_MSC_VER > MSC_VS2003)
             {
-                size_t          len;
+                size_t len;
                 wcstombs_s(&len, buffer, buffer_size, (wchar_t*)pe32.szExeFile, _TRUNCATE);
             }
 #else
@@ -226,7 +225,6 @@ static int getProcName(char *buffer, int buffer_size)
 }
 
 
-
 #define LEGACY_YOCTOPUCE_KEY "Software\\Yoctopuce\\"
 #define USB_LOCK_KEY "Software\\Yoctopuce\\usb_lock\\"
 #ifndef KEY_WOW64_32KEY
@@ -234,7 +232,7 @@ static int getProcName(char *buffer, int buffer_size)
 #define KEY_WOW64_32KEY 0
 #endif
 
-static int yConvertUSBLockKey(yContextSt *ctx, int deletekey)
+static int yConvertUSBLockKey(yContextSt* ctx, int deletekey)
 {
     HKEY key;
     LONG res;
@@ -280,89 +278,29 @@ static int yConvertUSBLockKey(yContextSt *ctx, int deletekey)
 
 // return 1 if we can reserve access to the device 0 if the device
 // is already reserved
-static int yReserveGlobalAccess(yContextSt *ctx, char * errmsg)
+static int yReserveGlobalAccess(yContextSt* ctx, char* errmsg)
 {
-    int has_reg_key = 1;
-    char process_name[512];
-    char buffer[32];
-    DWORD value_length = 512;
     int retval;
-    s64 pid;
-    HKEY key = NULL;
-    LONG res;
-
-    if (ctx->registry.hREG != NULL) {
-        res = ctx->registry.yRegCreateKeyEx(HKEY_LOCAL_MACHINE, USB_LOCK_KEY, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE | KEY_READ | KEY_WOW64_32KEY, NULL, &key, NULL);
-        if (res == ERROR_CHILD_MUST_BE_VOLATILE) {
-            yConvertUSBLockKey(ctx, 1);
-            res = ctx->registry.yRegCreateKeyEx(HKEY_LOCAL_MACHINE, USB_LOCK_KEY, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE | KEY_READ | KEY_WOW64_32KEY, NULL, &key, NULL);
-            if (res != ERROR_SUCCESS) {
-                has_reg_key = 0;
-            }
-        } else if (res == ERROR_SUCCESS) {
-            yConvertUSBLockKey(ctx, 0);
-        } else {
-            has_reg_key = 0;
-        }
-    } else {
-        has_reg_key = 0;
-    }
 
     ctx->apiLock = CreateMailslotA("\\\\.\\mailslot\\yoctopuce_yapi", 8, 0, NULL);
-    ctx->nameLock = CreateMailslotA("\\\\.\\mailslot\\yoctopuce_yapi_name", 8, 0, NULL);
     if (ctx->apiLock == INVALID_HANDLE_VALUE) {
         // unable to create lock -> another instance is already using the device
         retval = YAPI_DOUBLE_ACCES;
         YERRMSG(YAPI_DOUBLE_ACCES, "Another process is already using yAPI");
-        if (has_reg_key && ctx->nameLock == INVALID_HANDLE_VALUE) {
-            pid = -1;
-            res = ctx->registry.yRegQueryValueEx(key, "process_id", NULL, NULL, (LPBYTE)buffer, &value_length);
-            if (res == ERROR_SUCCESS) {
-                pid = atoi(buffer);
-            }
-            value_length = 512;
-            res = ctx->registry.yRegQueryValueEx(key, "process_name", NULL, NULL, (LPBYTE)process_name, &value_length);
-            if (res == ERROR_SUCCESS && pid >= 0) {
-                char current_name[512];
-                getProcName(current_name, 512);
-                if (YSTRCMP(process_name, current_name)) {
-                    YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Another process named %s (pid %"FMTs64") is already using yAPI", process_name, pid);
-                } else {
-                    YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Another %s (pid %"FMTs64") is already using yAPI", process_name, pid);
-                }
-            }
-        }
     } else {
         retval = YAPI_SUCCESS;
-        if (has_reg_key) {
-            int pid = getProcName(process_name, 512);
-            YSPRINTF(buffer, 32, "%d", pid);
-            if (ctx->registry.yRegSetValueEx(key, "process_id", 0, REG_SZ, (BYTE*)buffer, YSTRLEN(buffer)) != ERROR_SUCCESS) {
-                dbglog("Unable to set registry value yapi_process");
-            }
-            if (ctx->registry.yRegSetValueEx(key, "process_name", 0, REG_SZ, (BYTE*)process_name, YSTRLEN(process_name)) != ERROR_SUCCESS) {
-                dbglog("Unable to set registry value yapi_process");
-            }
-        }
     }
-    if (has_reg_key) {
-        ctx->registry.yRegCloseKey(key);
-    }
-
     return retval;
 }
 
-static void yReleaseGlobalAccess(yContextSt *ctx)
+static void yReleaseGlobalAccess(yContextSt* ctx)
 {
     CloseHandle(ctx->apiLock);
     ctx->apiLock = INVALID_HANDLE_VALUE;
-    CloseHandle(ctx->nameLock);
-    ctx->nameLock = INVALID_HANDLE_VALUE;
 }
 
 
-
-int yyyUSB_init(yContextSt *ctx, char *errmsg)
+int yyyUSB_init(yContextSt* ctx, char* errmsg)
 {
     ctx->registry.hREG = LoadLibraryA("Advapi32.dll");
     if (ctx->registry.hREG != NULL) {
@@ -395,7 +333,7 @@ int yyyUSB_init(yContextSt *ctx, char *errmsg)
 }
 
 
-int yyyUSB_stop(yContextSt *ctx, char *errmsg)
+int yyyUSB_stop(yContextSt* ctx, char* errmsg)
 {
     yDeleteCriticalSection(&ctx->prevEnum_cs);
     if (ctx->prevEnum) {
@@ -406,6 +344,7 @@ int yyyUSB_stop(yContextSt *ctx, char *errmsg)
     yReleaseGlobalAccess(ctx);
     return YAPI_SUCCESS;
 }
+
 /*****************************************************************
 * yPacket API without cycling logic
 *****************************************************************/
@@ -414,15 +353,15 @@ int yyyUSB_stop(yContextSt *ctx, char *errmsg)
 // no check on reentrant or initializations since we are only called
 // by the yUpdateDeviceList witch take care of all this stuff
 // the caller is responsible of freeing the ifaces buffer (if not set to NULL)
-int yyyUSBGetInterfaces(yInterfaceSt **ifaces, int *nbifaceDetect, char *errmsg)
+int yyyUSBGetInterfaces(yInterfaceSt** ifaces, int* nbifaceDetect, char* errmsg)
 {
-    PSP_DEVICE_INTERFACE_DETAIL_DATA_A    pDetailedInterfaceData;
-    int         index = 0;
-    GUID        InterfaceClassGuid;
-    DWORD       needsize;
-    HDEVINFO    DeviceInfoTable = INVALID_HANDLE_VALUE;
-    int         nbifaceAlloc;
-    char        buffer[WIN_DEVICE_PATH_LEN];//buffer for DetailedInterfaceData
+    PSP_DEVICE_INTERFACE_DETAIL_DATA_A pDetailedInterfaceData;
+    int index = 0;
+    GUID InterfaceClassGuid;
+    DWORD needsize;
+    HDEVINFO DeviceInfoTable = INVALID_HANDLE_VALUE;
+    int nbifaceAlloc;
+    char buffer[WIN_DEVICE_PATH_LEN]; //buffer for DetailedInterfaceData
 
     *ifaces = NULL;
     //setup some windows stuff
@@ -441,7 +380,7 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces, int *nbifaceDetect, char *errmsg)
 
     //Now look through the list we just populated.  We are trying to see if any of them match our device.
     for (;; index++) {
-        u32             vendorid, deviceid, release, ifaceno, inst_state;
+        u32 vendorid, deviceid, release, ifaceno, inst_state;
         SP_DEVINFO_DATA DevInfoData;
 
         DevInfoData.cbSize = sizeof(SP_DEVINFO_DATA);
@@ -456,13 +395,13 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces, int *nbifaceDetect, char *errmsg)
         // get installation status see:http://msdn.microsoft.com/en-us/library/ff543130
         SetupDiGetDeviceRegistryProperty(DeviceInfoTable, &DevInfoData, SPDRP_INSTALL_STATE, NULL, (PBYTE)&inst_state, sizeof(inst_state), &needsize);
         if (vendorid == YOCTO_VENDORID && inst_state == 0) {
-            SP_DEVICE_INTERFACE_DATA    InterfaceData;
-            yInterfaceSt    *iface;
-            int             find, retry = 16;
+            SP_DEVICE_INTERFACE_DATA InterfaceData;
+            yInterfaceSt* iface;
+            int find, retry = 16;
 
             //ensure the buffer of detected interface is big enough
             if (*nbifaceDetect == nbifaceAlloc) {
-                yInterfaceSt    *tmp;
+                yInterfaceSt* tmp;
                 u32 newsize = nbifaceAlloc * 2 * sizeof(yInterfaceSt);
                 tmp = (yInterfaceSt*)yMalloc(newsize);
                 memset(tmp, 0, newsize);
@@ -495,7 +434,7 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces, int *nbifaceDetect, char *errmsg)
             if (find < yContext->prevEnumCnt) {
                 yMemcpy(iface->serial, yContext->prevEnum[find].serial, YOCTO_SERIAL_LEN * 2);
             } else {
-                HANDLE          control;
+                HANDLE control;
                 HALLOG("Get serial for %s\n", pDetailedInterfaceData->DevicePath);
                 control = CreateFileA(pDetailedInterfaceData->DevicePath, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, 0);
                 if (control == INVALID_HANDLE_VALUE) {
@@ -513,7 +452,7 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces, int *nbifaceDetect, char *errmsg)
                 }
 #if defined(_MSC_VER) && (_MSC_VER > MSC_VS2003)
                 {
-                    size_t          len;
+                    size_t len;
                     wcstombs_s(&len, iface->serial, YOCTO_SERIAL_LEN * 2, (wchar_t*)buffer, _TRUNCATE);
                 }
 #else
@@ -555,7 +494,7 @@ int yyyUSBGetInterfaces(yInterfaceSt **ifaces, int *nbifaceDetect, char *errmsg)
 
 // return 1 if OS hdl are identicals
 //        0 if any of the interface has changed
-int yyyOShdlCompare(yPrivDeviceSt *dev, yInterfaceSt *newiface)
+int yyyOShdlCompare(yPrivDeviceSt* dev, yInterfaceSt* newiface)
 {
     if (dev->infos.nbinbterfaces != 1) {
         HALLOG("bad number of inteface for %s (%d)\n", dev->infos.serial, dev->infos.nbinbterfaces);
@@ -569,24 +508,20 @@ int yyyOShdlCompare(yPrivDeviceSt *dev, yInterfaceSt *newiface)
 }
 
 
-
 /*****************************************************************
 * Window implementation of yyypacket functions
 *****************************************************************/
 
 
-
-
-
-static int OpenWriteHandles(yInterfaceSt    *iface)
+static int OpenWriteHandles(yInterfaceSt* iface)
 {
     int res;
     iface->wrHDL = INVALID_HANDLE_VALUE;
     //open blocking write handle
     iface->wrHDL = CreateFileA(iface->devicePath, GENERIC_WRITE | GENERIC_READ,
-        FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, 0);
+                               FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, 0);
     if (iface->wrHDL == INVALID_HANDLE_VALUE) {
-        char  errmsg[YOCTO_ERRMSG_LEN];
+        char errmsg[YOCTO_ERRMSG_LEN];
         res = yWinSetErr(iface, errmsg);
         HALLOG("OpenWriteHandles error of %s:%d (%s)\n", iface->serial, iface->ifaceno, errmsg);
         return res;
@@ -595,7 +530,7 @@ static int OpenWriteHandles(yInterfaceSt    *iface)
 }
 
 
-static void CloseWriteHandles(yInterfaceSt    *iface)
+static void CloseWriteHandles(yInterfaceSt* iface)
 {
     if (iface->wrHDL != INVALID_HANDLE_VALUE) {
         CloseHandle(iface->wrHDL);
@@ -604,15 +539,14 @@ static void CloseWriteHandles(yInterfaceSt    *iface)
 }
 
 
-
-static int OpenReadHandles(yInterfaceSt    *iface)
+static int OpenReadHandles(yInterfaceSt* iface)
 {
-    char  errmsg[YOCTO_ERRMSG_LEN];
+    char errmsg[YOCTO_ERRMSG_LEN];
     int res;
     BOOLEAN setbuffres;
     //open non blocking read handle
     iface->rdHDL = CreateFileA(iface->devicePath, GENERIC_WRITE | GENERIC_READ,
-        FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, 0);
+                               FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, 0);
     if (iface->rdHDL == INVALID_HANDLE_VALUE) {
         res = yWinSetErr(iface, errmsg);
         HALLOG("OpenReadHandles of %s error %d of %s:%d (%s)\n", DP(iface->devicePath), res, iface->serial, iface->ifaceno, errmsg);
@@ -635,7 +569,7 @@ static int OpenReadHandles(yInterfaceSt    *iface)
 }
 
 
-static void CloseReadHandles(yInterfaceSt    *iface)
+static void CloseReadHandles(yInterfaceSt* iface)
 {
     DWORD readed;
 
@@ -671,10 +605,10 @@ static void CloseReadHandles(yInterfaceSt    *iface)
 }
 
 
-static int StartReadIO(yInterfaceSt *iface, char *errmsg)
+static int StartReadIO(yInterfaceSt* iface, char* errmsg)
 {
     DWORD readed;
-    u32   retrycount = 0;
+    u32 retrycount = 0;
 retry:
     YASSERT(iface->rdpending == 0);
     memset(&iface->rdOL, 0, sizeof(iface->rdOL));
@@ -698,15 +632,12 @@ retry:
 }
 
 
-
-
-
 //Look if we have new packet arrived
-static int yyyyRead(yInterfaceSt *iface, char *errmsg)
+static int yyyyRead(yInterfaceSt* iface, char* errmsg)
 {
-    DWORD           readed;
-    int             res;
-    int             retrycount = 1;
+    DWORD readed;
+    int res;
+    int retrycount = 1;
 retry:
     if (iface->rdpending == 0) {
         // no IO started -> start a new one
@@ -775,12 +706,12 @@ retry:
 }
 
 
-static int yyyyWrite(yInterfaceSt *iface, pktItem *pktItem)
+static int yyyyWrite(yInterfaceSt* iface, pktItem* pktItem)
 {
-    char            errmsg[YOCTO_ERRMSG_LEN];
-    DWORD           written;
-    OS_USB_Packet   winpkt;
-    int             retrycount = 1;
+    char errmsg[YOCTO_ERRMSG_LEN];
+    DWORD written;
+    OS_USB_Packet winpkt;
+    int retrycount = 1;
 
     winpkt.dummy = 0;
     memcpy(&winpkt.pkt, &pktItem->pkt, sizeof(USB_Packet));
@@ -808,14 +739,13 @@ retry:
 }
 
 
-
 static void* yyyUsbIoThread(void* thread_void)
 {
-    u32             i;
-    char            errmsg[YOCTO_ERRMSG_LEN];
-    DWORD           dwEvent;
-    yThread         *thread = (yThread*)thread_void;
-    yInterfaceSt    *iface = (yInterfaceSt*)thread->ctx;
+    u32 i;
+    char errmsg[YOCTO_ERRMSG_LEN];
+    DWORD dwEvent;
+    yThread* thread = (yThread*)thread_void;
+    yInterfaceSt* iface = (yInterfaceSt*)thread->ctx;
 
 
     iface->wrHDL = INVALID_HANDLE_VALUE;
@@ -858,7 +788,7 @@ static void* yyyUsbIoThread(void* thread_void)
     HALLOG("----IoThread start of %s:%d (%s)  ---\n", iface->serial, iface->ifaceno, DP(iface->devicePath));
 
     while (!yThreadMustEnd(thread)) {
-        pktItem *pktItem;
+        pktItem* pktItem;
         yPktQueuePeekH2D(iface, &pktItem);
         //first write pending out packet
         while (pktItem) {
@@ -890,10 +820,10 @@ static void* yyyUsbIoThread(void* thread_void)
 
         // Wait for the thread to signal one of the event objects
         dwEvent = WaitForMultipleObjects(
-            2,          // number of objects in array
-            iface->EV,  // array of objects
-            FALSE,      // wait for any object
-            50);        // wait for max 50 ms
+            2, // number of objects in array
+            iface->EV, // array of objects
+            FALSE, // wait for any object
+            50); // wait for max 50 ms
         if (dwEvent == WAIT_FAILED) {
             YRETCODE code = yWinSetErr(iface, errmsg);
             HALLOG("Wait error %s:%d (%s)\n", iface->serial, iface->ifaceno, errmsg);
@@ -909,7 +839,7 @@ static void* yyyUsbIoThread(void* thread_void)
                 break;
             }
         }
-            }
+    }
 
 exitThread:
     HALLOG("----IoThread end of  %s:%d (%s)  ---\n", iface->serial, iface->ifaceno, DP(iface->devicePath));
@@ -921,10 +851,10 @@ exitThread:
     CloseReadHandles(iface);
     yThreadSignalEnd(thread);
     return NULL;
-        }
+}
 
 
-int yyySetup(yInterfaceSt *iface, char *errmsg)
+int yyySetup(yInterfaceSt* iface, char* errmsg)
 {
     HALLOG("yyySetup %p\n", iface);
     yPktQueueInit(&iface->rxQueue);
@@ -936,13 +866,13 @@ int yyySetup(yInterfaceSt *iface, char *errmsg)
     return YAPI_SUCCESS;
 }
 
-int yyySignalOutPkt(yInterfaceSt *iface, char *errmsg)
+int yyySignalOutPkt(yInterfaceSt* iface, char* errmsg)
 {
     ySetEvent(&iface->EV[YWIN_EVENT_INTERRUPT]);
     return YAPI_SUCCESS;
 }
 
-void yyyPacketShutdown(yInterfaceSt *iface)
+void yyyPacketShutdown(yInterfaceSt* iface)
 {
     HALLOG("yyyPacketShutdown %p\n", iface);
     if (yThreadIsRunning(&iface->io_thread)) {
