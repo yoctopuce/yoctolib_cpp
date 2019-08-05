@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_buzzer.h 34289 2019-02-03 21:12:49Z mvuilleu $
+ *  $Id: yocto_buzzer.h 36554 2019-07-29 12:21:31Z mvuilleu $
  *
  *  Declares yFindBuzzer(), the high-level API for Buzzer functions
  *
@@ -145,7 +145,8 @@ public:
     { return this->get_volume(); }
 
     /**
-     * Changes the volume of the signal sent to the buzzer/speaker.
+     * Changes the volume of the signal sent to the buzzer/speaker. Remember to call the
+     * saveToFlash() method of the module if the modification must be kept.
      *
      * @param newval : an integer corresponding to the volume of the signal sent to the buzzer/speaker
      *

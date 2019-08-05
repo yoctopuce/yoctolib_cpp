@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 36157 2019-07-09 08:27:52Z mvuilleu $
+ * $Id: yapi.c 36549 2019-07-29 08:29:26Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -1808,6 +1808,13 @@ static void unregisterNetHub(yUrlRef huburl)
 #ifdef TRACE_NET_HUB
             dbglog("HUB: unregister %x->%s  \n",huburl,hub->name);
 #endif
+            timeref = yapiGetTickCount();
+
+            while ((yapiGetTickCount() - timeref < YIO_DEFAULT_TCP_TIMEOUT) && yReqHasPending(hub)) {
+                yapiHandleEvents_internal(errmsg);
+                yApproximateSleep(50);
+            }
+
             hub->state = NET_HUB_TOCLOSE;
             yThreadRequestEnd(&hub->net_thread);
             yDringWakeUpSocket(&hub->wuce, 0, errmsg);

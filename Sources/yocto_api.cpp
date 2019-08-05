@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 36141 2019-07-08 17:51:33Z mvuilleu $
+ * $Id: yocto_api.cpp 36629 2019-07-31 13:03:53Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -1492,7 +1492,15 @@ int YDataStream::_initFromDataSet(YDataSet* dataset,vector<int> encoded)
         val = 0;
     }
     _nRows = val;
-    _duration = _nRows * _dataSamplesInterval;
+    if (_nRows > 0) {
+        if (_firstMeasureDuration > 0) {
+            _duration = _firstMeasureDuration + (_nRows - 1) * _dataSamplesInterval;
+        } else {
+            _duration = _nRows * _dataSamplesInterval;
+        }
+    } else {
+        _duration = 0;
+    }
     // precompute decoding parameters
     iCalib = dataset->_get_calibration();
     _caltyp = iCalib[0];
@@ -5655,9 +5663,10 @@ int YModule::get_productId(void)
 }
 
 /**
- * Returns the hardware release version of the module.
+ * Returns the release number of the module hardware, preprogrammed at the factory.
+ * The original hardware release returns value 1, revision B returns value 2, etc.
  *
- * @return an integer corresponding to the hardware release version of the module
+ * @return an integer corresponding to the release number of the module hardware, preprogrammed at the factory
  *
  * On failure, throws an exception or returns Y_PRODUCTRELEASE_INVALID.
  */
@@ -5666,7 +5675,7 @@ int YModule::get_productRelease(void)
     int res = 0;
     yEnterCriticalSection(&_this_cs);
     try {
-        if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (_cacheExpiration == 0) {
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
@@ -6119,6 +6128,22 @@ int YModule::_invokeValueCallback(string value)
         YFunction::_invokeValueCallback(value);
     }
     return 0;
+}
+
+string YModule::get_productNameAndRevision(void)
+{
+    string prodname;
+    int prodrel = 0;
+    string fullname;
+
+    prodname = this->get_productName();
+    prodrel = this->get_productRelease();
+    if (prodrel > 1) {
+        fullname = YapiWrapper::ysprintf("%s rev. %c", prodname.c_str(),64+prodrel);
+    } else {
+        fullname = prodname;
+    }
+    return fullname;
 }
 
 /**

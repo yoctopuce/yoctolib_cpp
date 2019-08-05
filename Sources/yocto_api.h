@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 36207 2019-07-10 20:46:18Z mvuilleu $
+ * $Id: yocto_api.h 36544 2019-07-29 05:34:16Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -2457,9 +2457,10 @@ public:
     { return this->get_productId(); }
 
     /**
-     * Returns the hardware release version of the module.
+     * Returns the release number of the module hardware, preprogrammed at the factory.
+     * The original hardware release returns value 1, revision B returns value 2, etc.
      *
-     * @return an integer corresponding to the hardware release version of the module
+     * @return an integer corresponding to the release number of the module hardware, preprogrammed at the factory
      *
      * On failure, throws an exception or returns Y_PRODUCTRELEASE_INVALID.
      */
@@ -2659,6 +2660,8 @@ public:
     using YFunction::registerValueCallback;
 
     virtual int         _invokeValueCallback(string value);
+
+    virtual string      get_productNameAndRevision(void);
 
     /**
      * Saves current settings in the nonvolatile memory of the module.

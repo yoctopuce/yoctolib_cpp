@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_led.h 32900 2018-11-02 10:12:43Z seb $
+ *  $Id: yocto_led.h 36554 2019-07-29 12:21:31Z mvuilleu $
  *
  *  Declares yFindLed(), the high-level API for Led functions
  *
@@ -162,7 +162,8 @@ public:
     { return this->get_luminosity(); }
 
     /**
-     * Changes the current LED intensity (in per cent).
+     * Changes the current LED intensity (in per cent). Remember to call the
+     * saveToFlash() method of the module if the modification must be kept.
      *
      * @param newval : an integer corresponding to the current LED intensity (in per cent)
      *
