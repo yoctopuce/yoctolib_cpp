@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 36048 2019-06-28 17:43:51Z mvuilleu $
+ * $Id: yocto_serialport.cpp 37168 2019-09-13 17:25:10Z mvuilleu $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -118,8 +118,8 @@ YSerialPort::YSerialPort(const string& func): YFunction(func)
     ,_currentJob(CURRENTJOB_INVALID)
     ,_startupJob(STARTUPJOB_INVALID)
     ,_command(COMMAND_INVALID)
-    ,_voltageLevel(VOLTAGELEVEL_INVALID)
     ,_protocol(PROTOCOL_INVALID)
+    ,_voltageLevel(VOLTAGELEVEL_INVALID)
     ,_serialMode(SERIALMODE_INVALID)
     ,_valueCallbackSerialPort(NULL)
     ,_rxptr(0)
@@ -172,11 +172,11 @@ int YSerialPort::_parseAttr(YJSONObject* json_val)
     if(json_val->has("command")) {
         _command =  json_val->getString("command");
     }
-    if(json_val->has("voltageLevel")) {
-        _voltageLevel =  (Y_VOLTAGELEVEL_enum)json_val->getInt("voltageLevel");
-    }
     if(json_val->has("protocol")) {
         _protocol =  json_val->getString("protocol");
+    }
+    if(json_val->has("voltageLevel")) {
+        _voltageLevel =  (Y_VOLTAGELEVEL_enum)json_val->getInt("voltageLevel");
     }
     if(json_val->has("serialMode")) {
         _serialMode =  json_val->getString("serialMode");
@@ -389,11 +389,10 @@ string YSerialPort::get_currentJob(void)
 }
 
 /**
- * Changes the job to use when the device is powered on.
- * Remember to call the saveToFlash() method of the module if the
- * modification must be kept.
+ * Selects a job file to run immediately. If an empty string is
+ * given as argument, stops running current job file.
  *
- * @param newval : a string corresponding to the job to use when the device is powered on
+ * @param newval : a string
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -510,68 +509,6 @@ int YSerialPort::set_command(const string& newval)
 }
 
 /**
- * Returns the voltage level used on the serial line.
- *
- * @return a value among Y_VOLTAGELEVEL_OFF, Y_VOLTAGELEVEL_TTL3V, Y_VOLTAGELEVEL_TTL3VR,
- * Y_VOLTAGELEVEL_TTL5V, Y_VOLTAGELEVEL_TTL5VR, Y_VOLTAGELEVEL_RS232, Y_VOLTAGELEVEL_RS485 and
- * Y_VOLTAGELEVEL_TTL1V8 corresponding to the voltage level used on the serial line
- *
- * On failure, throws an exception or returns Y_VOLTAGELEVEL_INVALID.
- */
-Y_VOLTAGELEVEL_enum YSerialPort::get_voltageLevel(void)
-{
-    Y_VOLTAGELEVEL_enum res;
-    yEnterCriticalSection(&_this_cs);
-    try {
-        if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
-                {
-                    yLeaveCriticalSection(&_this_cs);
-                    return YSerialPort::VOLTAGELEVEL_INVALID;
-                }
-            }
-        }
-        res = _voltageLevel;
-    } catch (std::exception) {
-        yLeaveCriticalSection(&_this_cs);
-        throw;
-    }
-    yLeaveCriticalSection(&_this_cs);
-    return res;
-}
-
-/**
- * Changes the voltage type used on the serial line. Valid
- * values  will depend on the Yoctopuce device model featuring
- * the serial port feature.  Check your device documentation
- * to find out which values are valid for that specific model.
- * Trying to set an invalid value will have no effect.
- *
- * @param newval : a value among Y_VOLTAGELEVEL_OFF, Y_VOLTAGELEVEL_TTL3V, Y_VOLTAGELEVEL_TTL3VR,
- * Y_VOLTAGELEVEL_TTL5V, Y_VOLTAGELEVEL_TTL5VR, Y_VOLTAGELEVEL_RS232, Y_VOLTAGELEVEL_RS485 and
- * Y_VOLTAGELEVEL_TTL1V8 corresponding to the voltage type used on the serial line
- *
- * @return YAPI_SUCCESS if the call succeeds.
- *
- * On failure, throws an exception or returns a negative error code.
- */
-int YSerialPort::set_voltageLevel(Y_VOLTAGELEVEL_enum newval)
-{
-    string rest_val;
-    int res;
-    yEnterCriticalSection(&_this_cs);
-    try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-        res = _setAttr("voltageLevel", rest_val);
-    } catch (std::exception) {
-         yLeaveCriticalSection(&_this_cs);
-         throw;
-    }
-    yLeaveCriticalSection(&_this_cs);
-    return res;
-}
-
-/**
  * Returns the type of protocol used over the serial line, as a string.
  * Possible values are "Line" for ASCII messages separated by CR and/or LF,
  * "Frame:[timeout]ms" for binary messages separated by a delay time,
@@ -620,6 +557,8 @@ string YSerialPort::get_protocol(void)
  * "Byte" for a continuous binary stream.
  * The suffix "/[wait]ms" can be added to reduce the transmit rate so that there
  * is always at lest the specified number of milliseconds between each bytes sent.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
  *
  * @param newval : a string corresponding to the type of protocol used over the serial line
  *
@@ -635,6 +574,70 @@ int YSerialPort::set_protocol(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("protocol", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the voltage level used on the serial line.
+ *
+ * @return a value among Y_VOLTAGELEVEL_OFF, Y_VOLTAGELEVEL_TTL3V, Y_VOLTAGELEVEL_TTL3VR,
+ * Y_VOLTAGELEVEL_TTL5V, Y_VOLTAGELEVEL_TTL5VR, Y_VOLTAGELEVEL_RS232, Y_VOLTAGELEVEL_RS485 and
+ * Y_VOLTAGELEVEL_TTL1V8 corresponding to the voltage level used on the serial line
+ *
+ * On failure, throws an exception or returns Y_VOLTAGELEVEL_INVALID.
+ */
+Y_VOLTAGELEVEL_enum YSerialPort::get_voltageLevel(void)
+{
+    Y_VOLTAGELEVEL_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSerialPort::VOLTAGELEVEL_INVALID;
+                }
+            }
+        }
+        res = _voltageLevel;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the voltage type used on the serial line. Valid
+ * values  will depend on the Yoctopuce device model featuring
+ * the serial port feature.  Check your device documentation
+ * to find out which values are valid for that specific model.
+ * Trying to set an invalid value will have no effect.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
+ *
+ * @param newval : a value among Y_VOLTAGELEVEL_OFF, Y_VOLTAGELEVEL_TTL3V, Y_VOLTAGELEVEL_TTL3VR,
+ * Y_VOLTAGELEVEL_TTL5V, Y_VOLTAGELEVEL_TTL5VR, Y_VOLTAGELEVEL_RS232, Y_VOLTAGELEVEL_RS485 and
+ * Y_VOLTAGELEVEL_TTL1V8 corresponding to the voltage type used on the serial line
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YSerialPort::set_voltageLevel(Y_VOLTAGELEVEL_enum newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("voltageLevel", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
          throw;
@@ -685,6 +688,8 @@ string YSerialPort::get_serialMode(void)
  * to enable flow control: "CtsRts" for hardware handshake, "XOnXOff"
  * for logical flow control and "Simplex" for acquiring a shared bus using
  * the RTS line (as used by some RS485 adapters for instance).
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
  *
  * @param newval : a string corresponding to the serial port communication parameters, with a string such as
  *         "9600,8N1"
@@ -1557,7 +1562,7 @@ vector<int> YSerialPort::queryMODBUS(int slaveNo,vector<int> pduBytes)
     msgs = this->_download(url);
     reps = this->_json_get_array(msgs);
     if (!((int)reps.size() > 1)) {
-        _throw(YAPI_IO_ERROR,"no reply from slave");
+        _throw(YAPI_IO_ERROR,"no reply from MODBUS slave");
         return res;
     }
     if ((int)reps.size() > 1) {

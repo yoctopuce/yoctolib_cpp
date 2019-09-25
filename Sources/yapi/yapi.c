@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 36549 2019-07-29 08:29:26Z seb $
+ * $Id: yapi.c 37220 2019-09-18 14:40:17Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -1557,7 +1557,7 @@ static int yNetHubEnumEx(HubSt* hub, ENU_CONTEXT* enus, char* errmsg)
 #endif
 
     req = yReqAlloc(hub);
-    if (YISERR((res = yReqOpen(req, 2 * YIO_DEFAULT_TCP_TIMEOUT, 0, request, YSTRLEN(request), YIO_DEFAULT_TCP_TIMEOUT, NULL, NULL, NULL, NULL, errmsg)))) {
+    if (YISERR((res = yReqOpen(req, 2 * YctxNetworkTimeout, 0, request, YSTRLEN(request), YctxNetworkTimeout, NULL, NULL, NULL, NULL, errmsg)))) {
         yReqFree(req);
         yFree(buffer);
         return res;
@@ -1698,7 +1698,7 @@ static int yNetHubEnum(HubSt* hub, int forceupdate, char* errmsg)
         }
     }
     if (hub->state == NET_HUB_ESTABLISHED) {
-        hub->devListExpires = yapiGetTickCount() + yContext->deviceListValidityMs;
+        hub->devListExpires = yapiGetTickCount() + YctxDeviceListValidityMs;
     } else {
         hub->devListExpires = yapiGetTickCount() + 500;
     }
@@ -1810,7 +1810,7 @@ static void unregisterNetHub(yUrlRef huburl)
 #endif
             timeref = yapiGetTickCount();
 
-            while ((yapiGetTickCount() - timeref < YIO_DEFAULT_TCP_TIMEOUT) && yReqHasPending(hub)) {
+            while ((yapiGetTickCount() - timeref < YctxNetworkTimeout) && yReqHasPending(hub)) {
                 yapiHandleEvents_internal(errmsg);
                 yApproximateSleep(50);
             }
@@ -1819,8 +1819,8 @@ static void unregisterNetHub(yUrlRef huburl)
             yThreadRequestEnd(&hub->net_thread);
             yDringWakeUpSocket(&hub->wuce, 0, errmsg);
             // wait for the helper thread to stop monitoring these devices
-            timeref = yapiGetTickCount();
-            while (yThreadIsRunning(&hub->net_thread) && (yapiGetTickCount() - timeref < YIO_DEFAULT_TCP_TIMEOUT)) {
+            //timeref = yapiGetTickCount();
+            while (yThreadIsRunning(&hub->net_thread) && (yapiGetTickCount() - timeref < YctxNetworkTimeout)) {
                 yApproximateSleep(10);
             }
             yThreadKill(&hub->net_thread);
@@ -1910,6 +1910,8 @@ typedef union
 } test_compile;
 #pragma pack(pop)
 
+u64 YctxDeviceListValidityMs = DEFAULT_NET_DEVLIST_VALIDITY_MS;
+u32 YctxNetworkTimeout = YIO_DEFAULT_TCP_TIMEOUT;
 
 static YRETCODE yapiInitAPI_internal(int detect_type, char* errmsg)
 {
@@ -1973,8 +1975,7 @@ static YRETCODE yapiInitAPI_internal(int detect_type, char* errmsg)
     ctx = (yContextSt*)yMalloc(sizeof(yContextSt));
     yMemset(ctx,0,sizeof(yContextSt));
     ctx->detecttype = detect_type;
-    ctx->deviceListValidityMs = DEFAULT_NET_DEVLIST_VALIDITY_MS;
-
+    
     //initialize enumeration CS
     initializeAllCS(ctx);
 
@@ -2105,28 +2106,33 @@ static void yapiFreeAPI_internal(void)
 }
 
 
+static void yapiSetNetworkTimeout_internal(int mstimeout)
+{
+    YctxNetworkTimeout = mstimeout;
+}
+
+
+static u32 yapiGetNetworkTimeout_internal(void)
+{
+    u32 res;
+    res = YctxNetworkTimeout;
+    return res;
+}
+
+
 static void yapiSetNetDevListValidity_internal(u64 value)
 {
-    if (!yContext) {
-        return;
-    }
-    yEnterCriticalSection(&yContext->updateDev_cs);
-    yContext->deviceListValidityMs = value;
-    yLeaveCriticalSection(&yContext->updateDev_cs);
+    YctxDeviceListValidityMs = value;
 }
 
 
 static u64 yapiGetNetDevListValidity_internal(void)
 {
     u64 res;
-    if (!yContext) {
-        return DEFAULT_NET_DEVLIST_VALIDITY_MS;
-    }
-    yEnterCriticalSection(&yContext->updateDev_cs);
-    res = yContext->deviceListValidityMs;
-    yLeaveCriticalSection(&yContext->updateDev_cs);
+    res = YctxDeviceListValidityMs;
     return res;
 }
+
 
 
 static void yapiRegisterLogFunction_internal(yapiLogFunction logfun)
@@ -2822,7 +2828,7 @@ static void* yhelper_thread(void* ctx)
                 } else {
                     YSPRINTF(request, 256, "GET /not.byn?abs=%u HTTP/1.1\r\n\r\n", hub->notifAbsPos);
                 }
-                res = yReqOpen(hub->http.notReq, 2 * YIO_DEFAULT_TCP_TIMEOUT, 0, request, YSTRLEN(request), 0, NULL, NULL, NULL, NULL, errmsg);
+                res = yReqOpen(hub->http.notReq, 2 * YctxNetworkTimeout, 0, request, YSTRLEN(request), 0, NULL, NULL, NULL, NULL, errmsg);
                 if (YISERR(res)) {
                     hub->attemptDelay = 500 << hub->retryCount;
                     if (hub->attemptDelay > 8000)
@@ -3006,6 +3012,23 @@ static YRETCODE yapiUnlockDeviceCallBack_internal(char* errmsg)
     return YAPI_SUCCESS;
 }
 
+YRETCODE YAPI_FUNCTION_EXPORT yapiGetDLLPath(char *path, int pathsize, char *errmsg)
+{
+    
+#ifdef WINDOWS_API
+    int res;
+    HMODULE module_handle_a = GetModuleHandleA("yapi");
+    res = GetModuleFileNameA(module_handle_a, path, pathsize);
+    if (res > 0) {
+        return res;
+    } else {
+        dbglog("Unable to get dll path : %d\n", res);
+        return YERR(YAPI_IO_ERROR);
+    }
+#else
+    return YERR(YAPI_NOT_SUPPORTED);
+#endif
+}
 
 static YRETCODE yapiRegisterHubEx(const char* url, int checkacces, char* errmsg)
 {
@@ -3103,7 +3126,7 @@ static YRETCODE yapiRegisterHubEx(const char* url, int checkacces, char* errmsg)
 
         if (checkacces) {
             // ensure the thread has been able to connect to the hub
-            u64 timeout = yapiGetTickCount() + YIO_DEFAULT_TCP_TIMEOUT;
+            u64 timeout = yapiGetTickCount() + YctxNetworkTimeout;
             while (hubst->state != NET_HUB_ESTABLISHED && hubst->state != NET_HUB_CLOSED && timeout > yapiGetTickCount()) {
                 yapiSleep(100, errmsg);
             }
@@ -3159,7 +3182,7 @@ static int pingURLOnhub(HubSt* hubst, const char* request, int mstimeout, char* 
     globalTimeout = yapiGetTickCount() + mstimeout;
 
     req = yReqAlloc(hubst);
-    if (YISERR((res = yReqOpen(req, 2 * YIO_DEFAULT_TCP_TIMEOUT, 0, request, YSTRLEN(request), mstimeout, NULL, NULL, NULL, NULL, errmsg)))) {
+    if (YISERR((res = yReqOpen(req, 2 * YctxNetworkTimeout, 0, request, YSTRLEN(request), mstimeout, NULL, NULL, NULL, NULL, errmsg)))) {
         yReqFree(req);
         return res;
     }
@@ -3889,7 +3912,7 @@ static int yapiRequestOpenWS(YIOHDL_internal* iohdl, HubSt* hub, YAPI_DEVICE dev
         return YERRMSG(YAPI_TIMEOUT, "hub is not ready");
     }
 
-    res = (YRETCODE)yReqOpen(req, 2 * YIO_DEFAULT_TCP_TIMEOUT, tcpchan, request, reqlen, mstimeout, callback, context, progress_cb, progress_ctx, errmsg);
+    res = (YRETCODE)yReqOpen(req, 2 * YctxNetworkTimeout, tcpchan, request, reqlen, mstimeout, callback, context, progress_cb, progress_ctx, errmsg);
     if (res != YAPI_SUCCESS) {
         return res;
     }
@@ -3907,7 +3930,7 @@ YRETCODE yapiRequestOpen(YIOHDL_internal* iohdl, int tcpchan, const char* device
     yUrlRef url;
     yAsbUrlProto proto;
     int i, len;
-    u64 mstimeout = YIO_DEFAULT_TCP_TIMEOUT;
+    u64 mstimeout = YctxNetworkTimeout;
     HubSt* hub = NULL;
 
     if (!yContext) {
@@ -3958,7 +3981,7 @@ YRETCODE yapiRequestOpen(YIOHDL_internal* iohdl, int tcpchan, const char* device
         if (proto != PROTO_HTTP) {
             return yapiRequestOpenWS(iohdl, hub, dev, tcpchan, request, reqlen, mstimeout, callback, context, progress_cb, progress_ctx, errmsg);
         } else {
-            return yapiRequestOpenHTTP(iohdl, hub, dev, request, reqlen, 2 * YIO_DEFAULT_TCP_TIMEOUT, mstimeout, callback, context, errmsg);
+            return yapiRequestOpenHTTP(iohdl, hub, dev, request, reqlen, 2 * YctxNetworkTimeout, mstimeout, callback, context, errmsg);
         }
     }
 }
@@ -4920,7 +4943,14 @@ typedef enum
     trcFreeMem,
     trcGetSubDevcies,
     trcRegisterDeviceConfigChangeCallback,
+    trcGetNetworkTimeout,
+    trcSetNetworkTimeout,
+    trcGetNetDevListValidity,
+    trcSetNetDevListValidity,
 } TRC_FUN;
+
+
+
 
 static const char * trc_funname[] =
 {
@@ -4981,6 +5011,11 @@ static const char * trc_funname[] =
     "freemem",
     "getsubdev",
     "RegDeviceConfChg",
+    "GetNetworkTimeout",
+    "SetNetworkTimeout",
+    "GetNetDevListValidity",
+    "SetNetDevListValidity",
+
 };
 
 static const char *dlltracefile = YDLL_TRACE_FILE;
@@ -5049,9 +5084,26 @@ void YAPI_FUNCTION_EXPORT yapiFreeAPI(void)
 }
 
 
+void YAPI_FUNCTION_EXPORT yapiSetNetworkTimeout(u32 msTimeout)
+{
+    YDLL_CALL_ENTER(trcSetNetworkTimeout);
+    yapiSetNetworkTimeout_internal(msTimeout);
+    YDLL_CALL_LEAVEVOID();
+}
+
+u32 YAPI_FUNCTION_EXPORT yapiGetNetworkTimeout(void)
+{
+    u32 res;
+    YDLL_CALL_ENTER(trcGetNetworkTimeout);
+    res = yapiGetNetworkTimeout_internal();
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+
 void YAPI_FUNCTION_EXPORT yapiSetNetDevListValidity(int sValidity)
 {
-    YDLL_CALL_ENTER(trcRegisterLogFunction);
+    YDLL_CALL_ENTER(trcSetNetDevListValidity);
     yapiSetNetDevListValidity_internal(sValidity * 1000);
     YDLL_CALL_LEAVEVOID();
 }
@@ -5059,7 +5111,7 @@ void YAPI_FUNCTION_EXPORT yapiSetNetDevListValidity(int sValidity)
 int YAPI_FUNCTION_EXPORT yapiGetNetDevListValidity(void)
 {
     int res;
-    YDLL_CALL_ENTER(trcRegisterLogFunction);
+    YDLL_CALL_ENTER(trcGetNetDevListValidity);
     res = (int)(yapiGetNetDevListValidity_internal() / 1000);
     YDLL_CALL_LEAVE(res);
     return res;

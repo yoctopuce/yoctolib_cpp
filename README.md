@@ -109,7 +109,7 @@ WARRANTY, OR OTHERWISE.
 
 ## Installation
 
-The archive is shipped with precompiled libraries. If you want to rebuild
+The archive is shipped without precompiled libraries. If you want to build
 them from source, or to compile the examples, use the following command:
 
 on Windows: build

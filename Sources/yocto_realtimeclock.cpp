@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_realtimeclock.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_realtimeclock.cpp 37000 2019-09-03 06:40:17Z mvuilleu $
  *
  *  Implements yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *
@@ -203,6 +203,8 @@ int YRealTimeClock::get_utcOffset(void)
 /**
  * Changes the number of seconds between current time and UTC time (time zone).
  * The timezone is automatically rounded to the nearest multiple of 15 minutes.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
  *
  * @param newval : an integer corresponding to the number of seconds between current time and UTC time (time zone)
  *

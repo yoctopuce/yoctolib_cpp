@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_proximity.h 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_proximity.h 37149 2019-09-12 21:24:53Z mvuilleu $
  *
  *  Declares yFindProximity(), the high-level API for Proximity functions
  *
@@ -177,6 +177,7 @@ public:
     /**
      * Changes the threshold used to determine the logical state of the proximity sensor, when considered
      * as a binary input (on/off).
+     * Remember to call the saveToFlash() method of the module if the modification must be kept.
      *
      * @param newval : an integer corresponding to the threshold used to determine the logical state of
      * the proximity sensor, when considered
@@ -208,6 +209,7 @@ public:
     /**
      * Changes the hysteresis used to determine the logical state of the proximity sensor, when considered
      * as a binary input (on/off).
+     * Remember to call the saveToFlash() method of the module if the modification must be kept.
      *
      * @param newval : an integer corresponding to the hysteresis used to determine the logical state of
      * the proximity sensor, when considered
@@ -237,6 +239,7 @@ public:
     /**
      * Changes the minimal detection duration before signalling a presence event. Any shorter detection is
      * considered as noise or bounce (false positive) and filtered out.
+     * Remember to call the saveToFlash() method of the module if the modification must be kept.
      *
      * @param newval : an integer corresponding to the minimal detection duration before signalling a presence event
      *
@@ -264,6 +267,7 @@ public:
     /**
      * Changes the minimal detection duration before signalling a removal event. Any shorter detection is
      * considered as noise or bounce (false positive) and filtered out.
+     * Remember to call the saveToFlash() method of the module if the modification must be kept.
      *
      * @param newval : an integer corresponding to the minimal detection duration before signalling a removal event
      *
@@ -369,6 +373,7 @@ public:
      * get_currentValue function and callbacks.
      * The edge count value is limited to the 6 lowest digits. For values greater than one million, use
      * get_pulseCounter().
+     * Remember to call the saveToFlash() method of the module if the modification must be kept.
      *
      * @param newval : a value among Y_PROXIMITYREPORTMODE_NUMERIC, Y_PROXIMITYREPORTMODE_PRESENCE and
      * Y_PROXIMITYREPORTMODE_PULSECOUNT corresponding to the  parameter  type (sensor value, presence or

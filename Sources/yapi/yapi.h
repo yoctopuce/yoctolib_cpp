@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h 35418 2019-05-14 07:20:59Z seb $
+ * $Id: yapi.h 37220 2019-09-18 14:40:17Z seb $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -55,7 +55,6 @@ extern "C" {
 // Timeout for blocking requests to the devices, in milliseconds
 #define YAPI_BLOCKING_USBOPEN_REQUEST_TIMEOUT    2000
 #define YAPI_BLOCKING_USBREAD_REQUEST_TIMEOUT    8000
-#define YAPI_BLOCKING_NET_REQUEST_TIMEOUT       30000
 
 /*****************************************************************************
  CALLBACK TYPES
@@ -149,6 +148,20 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int type,char *errmsg);
  ***************************************************************************/
 void YAPI_FUNCTION_EXPORT yapiFreeAPI(void);
 
+/*****************************************************************************
+Function:
+void YAPI_FUNCTION_EXPORT yapiSetNetworkTimeout(int msTimeout);
+u64 YAPI_FUNCTION_EXPORT yapiGetNetworkTimeout(void);
+
+Description:
+These function are used to dynamically change the network timeout. This may helpfull
+if you have a particular slow network (ie with GSM modem). Default timeout is 20000ms
+
+Note: the YAPI must be already initialized otherwise the value will be discarded.
+
+***************************************************************************/
+void YAPI_FUNCTION_EXPORT yapiSetNetworkTimeout(u32 msTimeout);
+u32 YAPI_FUNCTION_EXPORT yapiGetNetworkTimeout(void);
 
 
 /*****************************************************************************
@@ -162,7 +175,7 @@ By default it's 10 seconds, but with some GSM case you may want to grow this
 value in order to reduce network traffic. Arrival/Removal are not affected
 by these functions.
 
-Note: the YAPI must be already initalized otherwise the value will be discarded.
+Note: the YAPI must be already initialized otherwise the value will be discarded.
 
 ***************************************************************************/
 void YAPI_FUNCTION_EXPORT yapiSetNetDevListValidity(int sValidity);
@@ -1088,6 +1101,8 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiTriggerHubDiscovery(char *errmsg);
 
 
 YRETCODE YAPI_FUNCTION_EXPORT yapiGetSubdevices(const char *serial, char *buffer, int buffersize, int *fullsize, char *errmsg);
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiGetDLLPath(char *path, int pathsize, char *errmsg);
 
 /*****************************************************************************
   Flash API

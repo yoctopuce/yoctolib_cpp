@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.cpp 36048 2019-06-28 17:43:51Z mvuilleu $
+ *  $Id: yocto_spiport.cpp 37141 2019-09-12 12:37:10Z mvuilleu $
  *
  *  Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -59,8 +59,8 @@ YSpiPort::YSpiPort(const string& func): YFunction(func)
     ,_currentJob(CURRENTJOB_INVALID)
     ,_startupJob(STARTUPJOB_INVALID)
     ,_command(COMMAND_INVALID)
-    ,_voltageLevel(VOLTAGELEVEL_INVALID)
     ,_protocol(PROTOCOL_INVALID)
+    ,_voltageLevel(VOLTAGELEVEL_INVALID)
     ,_spiMode(SPIMODE_INVALID)
     ,_ssPolarity(SSPOLARITY_INVALID)
     ,_shiftSampling(SHIFTSAMPLING_INVALID)
@@ -115,11 +115,11 @@ int YSpiPort::_parseAttr(YJSONObject* json_val)
     if(json_val->has("command")) {
         _command =  json_val->getString("command");
     }
-    if(json_val->has("voltageLevel")) {
-        _voltageLevel =  (Y_VOLTAGELEVEL_enum)json_val->getInt("voltageLevel");
-    }
     if(json_val->has("protocol")) {
         _protocol =  json_val->getString("protocol");
+    }
+    if(json_val->has("voltageLevel")) {
+        _voltageLevel =  (Y_VOLTAGELEVEL_enum)json_val->getInt("voltageLevel");
     }
     if(json_val->has("spiMode")) {
         _spiMode =  json_val->getString("spiMode");
@@ -338,11 +338,10 @@ string YSpiPort::get_currentJob(void)
 }
 
 /**
- * Changes the job to use when the device is powered on.
- * Remember to call the saveToFlash() method of the module if the
- * modification must be kept.
+ * Selects a job file to run immediately. If an empty string is
+ * given as argument, stops running current job file.
  *
- * @param newval : a string corresponding to the job to use when the device is powered on
+ * @param newval : a string
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -459,68 +458,6 @@ int YSpiPort::set_command(const string& newval)
 }
 
 /**
- * Returns the voltage level used on the serial line.
- *
- * @return a value among Y_VOLTAGELEVEL_OFF, Y_VOLTAGELEVEL_TTL3V, Y_VOLTAGELEVEL_TTL3VR,
- * Y_VOLTAGELEVEL_TTL5V, Y_VOLTAGELEVEL_TTL5VR, Y_VOLTAGELEVEL_RS232, Y_VOLTAGELEVEL_RS485 and
- * Y_VOLTAGELEVEL_TTL1V8 corresponding to the voltage level used on the serial line
- *
- * On failure, throws an exception or returns Y_VOLTAGELEVEL_INVALID.
- */
-Y_VOLTAGELEVEL_enum YSpiPort::get_voltageLevel(void)
-{
-    Y_VOLTAGELEVEL_enum res;
-    yEnterCriticalSection(&_this_cs);
-    try {
-        if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
-                {
-                    yLeaveCriticalSection(&_this_cs);
-                    return YSpiPort::VOLTAGELEVEL_INVALID;
-                }
-            }
-        }
-        res = _voltageLevel;
-    } catch (std::exception) {
-        yLeaveCriticalSection(&_this_cs);
-        throw;
-    }
-    yLeaveCriticalSection(&_this_cs);
-    return res;
-}
-
-/**
- * Changes the voltage type used on the serial line. Valid
- * values  will depend on the Yoctopuce device model featuring
- * the serial port feature.  Check your device documentation
- * to find out which values are valid for that specific model.
- * Trying to set an invalid value will have no effect.
- *
- * @param newval : a value among Y_VOLTAGELEVEL_OFF, Y_VOLTAGELEVEL_TTL3V, Y_VOLTAGELEVEL_TTL3VR,
- * Y_VOLTAGELEVEL_TTL5V, Y_VOLTAGELEVEL_TTL5VR, Y_VOLTAGELEVEL_RS232, Y_VOLTAGELEVEL_RS485 and
- * Y_VOLTAGELEVEL_TTL1V8 corresponding to the voltage type used on the serial line
- *
- * @return YAPI_SUCCESS if the call succeeds.
- *
- * On failure, throws an exception or returns a negative error code.
- */
-int YSpiPort::set_voltageLevel(Y_VOLTAGELEVEL_enum newval)
-{
-    string rest_val;
-    int res;
-    yEnterCriticalSection(&_this_cs);
-    try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-        res = _setAttr("voltageLevel", rest_val);
-    } catch (std::exception) {
-         yLeaveCriticalSection(&_this_cs);
-         throw;
-    }
-    yLeaveCriticalSection(&_this_cs);
-    return res;
-}
-
-/**
  * Returns the type of protocol used over the serial line, as a string.
  * Possible values are "Line" for ASCII messages separated by CR and/or LF,
  * "Frame:[timeout]ms" for binary messages separated by a delay time,
@@ -561,6 +498,8 @@ string YSpiPort::get_protocol(void)
  * "Byte" for a continuous binary stream.
  * The suffix "/[wait]ms" can be added to reduce the transmit rate so that there
  * is always at lest the specified number of milliseconds between each bytes sent.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
  *
  * @param newval : a string corresponding to the type of protocol used over the serial line
  *
@@ -576,6 +515,70 @@ int YSpiPort::set_protocol(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("protocol", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the voltage level used on the serial line.
+ *
+ * @return a value among Y_VOLTAGELEVEL_OFF, Y_VOLTAGELEVEL_TTL3V, Y_VOLTAGELEVEL_TTL3VR,
+ * Y_VOLTAGELEVEL_TTL5V, Y_VOLTAGELEVEL_TTL5VR, Y_VOLTAGELEVEL_RS232, Y_VOLTAGELEVEL_RS485 and
+ * Y_VOLTAGELEVEL_TTL1V8 corresponding to the voltage level used on the serial line
+ *
+ * On failure, throws an exception or returns Y_VOLTAGELEVEL_INVALID.
+ */
+Y_VOLTAGELEVEL_enum YSpiPort::get_voltageLevel(void)
+{
+    Y_VOLTAGELEVEL_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSpiPort::VOLTAGELEVEL_INVALID;
+                }
+            }
+        }
+        res = _voltageLevel;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the voltage type used on the serial line. Valid
+ * values  will depend on the Yoctopuce device model featuring
+ * the serial port feature.  Check your device documentation
+ * to find out which values are valid for that specific model.
+ * Trying to set an invalid value will have no effect.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
+ *
+ * @param newval : a value among Y_VOLTAGELEVEL_OFF, Y_VOLTAGELEVEL_TTL3V, Y_VOLTAGELEVEL_TTL3VR,
+ * Y_VOLTAGELEVEL_TTL5V, Y_VOLTAGELEVEL_TTL5VR, Y_VOLTAGELEVEL_RS232, Y_VOLTAGELEVEL_RS485 and
+ * Y_VOLTAGELEVEL_TTL1V8 corresponding to the voltage type used on the serial line
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YSpiPort::set_voltageLevel(Y_VOLTAGELEVEL_enum newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("voltageLevel", rest_val);
     } catch (std::exception) {
          yLeaveCriticalSection(&_this_cs);
          throw;
@@ -620,6 +623,8 @@ string YSpiPort::get_spiMode(void)
  * Changes the SPI port communication parameters, with a string such as
  * "125000,0,msb". The string includes the baud rate, the SPI mode (between
  * 0 and 3) and the bit order.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
  *
  * @param newval : a string corresponding to the SPI port communication parameters, with a string such as
  *         "125000,0,msb"
@@ -675,6 +680,8 @@ Y_SSPOLARITY_enum YSpiPort::get_ssPolarity(void)
 
 /**
  * Changes the SS line polarity.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
  *
  * @param newval : either Y_SSPOLARITY_ACTIVE_LOW or Y_SSPOLARITY_ACTIVE_HIGH, according to the SS line polarity
  *
@@ -732,6 +739,8 @@ Y_SHIFTSAMPLING_enum YSpiPort::get_shiftSampling(void)
  * Changes the SDI line sampling shift. When disabled, SDI line is
  * sampled in the middle of data output time. When enabled, SDI line is
  * samples at the end of data output time.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
  *
  * @param newval : either Y_SHIFTSAMPLING_OFF or Y_SHIFTSAMPLING_ON, according to the SDI line sampling shift
  *

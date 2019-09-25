@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupmonitor.h 32900 2018-11-02 10:12:43Z seb $
+ *  $Id: yocto_wakeupmonitor.h 37000 2019-09-03 06:40:17Z mvuilleu $
  *
  *  Declares yFindWakeUpMonitor(), the high-level API for WakeUpMonitor functions
  *
@@ -147,6 +147,8 @@ public:
 
     /**
      * Changes the maximal wake up time (seconds) before automatically going to sleep.
+     * Remember to call the saveToFlash() method of the module if the
+     * modification must be kept.
      *
      * @param newval : an integer corresponding to the maximal wake up time (seconds) before automatically
      * going to sleep

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupschedule.h 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_wakeupschedule.h 37000 2019-09-03 06:40:17Z mvuilleu $
  *
  *  Declares yFindWakeUpSchedule(), the high-level API for WakeUpSchedule functions
  *
@@ -124,6 +124,8 @@ public:
 
     /**
      * Changes the minutes in the 00-29 interval when a wake up must take place.
+     * Remember to call the saveToFlash() method of the module if the
+     * modification must be kept.
      *
      * @param newval : an integer corresponding to the minutes in the 00-29 interval when a wake up must take place
      *
@@ -149,6 +151,8 @@ public:
 
     /**
      * Changes the minutes in the 30-59 interval when a wake up must take place.
+     * Remember to call the saveToFlash() method of the module if the
+     * modification must be kept.
      *
      * @param newval : an integer corresponding to the minutes in the 30-59 interval when a wake up must take place
      *
@@ -174,6 +178,8 @@ public:
 
     /**
      * Changes the hours when a wake up must take place.
+     * Remember to call the saveToFlash() method of the module if the
+     * modification must be kept.
      *
      * @param newval : an integer corresponding to the hours when a wake up must take place
      *
@@ -199,6 +205,8 @@ public:
 
     /**
      * Changes the days of the week when a wake up must take place.
+     * Remember to call the saveToFlash() method of the module if the
+     * modification must be kept.
      *
      * @param newval : an integer corresponding to the days of the week when a wake up must take place
      *
@@ -224,6 +232,8 @@ public:
 
     /**
      * Changes the days of the month when a wake up must take place.
+     * Remember to call the saveToFlash() method of the module if the
+     * modification must be kept.
      *
      * @param newval : an integer corresponding to the days of the month when a wake up must take place
      *
@@ -249,6 +259,8 @@ public:
 
     /**
      * Changes the months when a wake up must take place.
+     * Remember to call the saveToFlash() method of the module if the
+     * modification must be kept.
      *
      * @param newval : an integer corresponding to the months when a wake up must take place
      *

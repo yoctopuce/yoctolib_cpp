@@ -66,7 +66,7 @@ int main(int argc, const char * argv[])
 
   // sample code reading MCP9804 temperature sensor
   i2cPort->set_i2cMode("400kbps");
-  i2cPort->set_voltageLevel(YI2cPort::VOLTAGELEVEL_TTL3V);
+  i2cPort->set_i2cVoltageLevel(YI2cPort::I2CVOLTAGELEVEL_3V3);
   i2cPort->reset();
   // do not forget to configure the powerOutput and 
   // of the Yocto-I2C as well if used

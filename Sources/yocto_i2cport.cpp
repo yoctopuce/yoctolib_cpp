@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_i2cport.cpp 36207 2019-07-10 20:46:18Z mvuilleu $
+ *  $Id: yocto_i2cport.cpp 37168 2019-09-13 17:25:10Z mvuilleu $
  *
  *  Implements yFindI2cPort(), the high-level API for I2cPort functions
  *
@@ -59,8 +59,8 @@ YI2cPort::YI2cPort(const string& func): YFunction(func)
     ,_currentJob(CURRENTJOB_INVALID)
     ,_startupJob(STARTUPJOB_INVALID)
     ,_command(COMMAND_INVALID)
-    ,_voltageLevel(VOLTAGELEVEL_INVALID)
     ,_protocol(PROTOCOL_INVALID)
+    ,_i2cVoltageLevel(I2CVOLTAGELEVEL_INVALID)
     ,_i2cMode(I2CMODE_INVALID)
     ,_valueCallbackI2cPort(NULL)
     ,_rxptr(0)
@@ -113,11 +113,11 @@ int YI2cPort::_parseAttr(YJSONObject* json_val)
     if(json_val->has("command")) {
         _command =  json_val->getString("command");
     }
-    if(json_val->has("voltageLevel")) {
-        _voltageLevel =  (Y_VOLTAGELEVEL_enum)json_val->getInt("voltageLevel");
-    }
     if(json_val->has("protocol")) {
         _protocol =  json_val->getString("protocol");
+    }
+    if(json_val->has("i2cVoltageLevel")) {
+        _i2cVoltageLevel =  (Y_I2CVOLTAGELEVEL_enum)json_val->getInt("i2cVoltageLevel");
     }
     if(json_val->has("i2cMode")) {
         _i2cMode =  json_val->getString("i2cMode");
@@ -330,11 +330,10 @@ string YI2cPort::get_currentJob(void)
 }
 
 /**
- * Changes the job to use when the device is powered on.
- * Remember to call the saveToFlash() method of the module if the
- * modification must be kept.
+ * Selects a job file to run immediately. If an empty string is
+ * given as argument, stops running current job file.
  *
- * @param newval : a string corresponding to the job to use when the device is powered on
+ * @param newval : a string
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -451,74 +450,12 @@ int YI2cPort::set_command(const string& newval)
 }
 
 /**
- * Returns the voltage level used on the serial line.
- *
- * @return a value among Y_VOLTAGELEVEL_OFF, Y_VOLTAGELEVEL_TTL3V, Y_VOLTAGELEVEL_TTL3VR,
- * Y_VOLTAGELEVEL_TTL5V, Y_VOLTAGELEVEL_TTL5VR, Y_VOLTAGELEVEL_RS232, Y_VOLTAGELEVEL_RS485 and
- * Y_VOLTAGELEVEL_TTL1V8 corresponding to the voltage level used on the serial line
- *
- * On failure, throws an exception or returns Y_VOLTAGELEVEL_INVALID.
- */
-Y_VOLTAGELEVEL_enum YI2cPort::get_voltageLevel(void)
-{
-    Y_VOLTAGELEVEL_enum res;
-    yEnterCriticalSection(&_this_cs);
-    try {
-        if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
-                {
-                    yLeaveCriticalSection(&_this_cs);
-                    return YI2cPort::VOLTAGELEVEL_INVALID;
-                }
-            }
-        }
-        res = _voltageLevel;
-    } catch (std::exception) {
-        yLeaveCriticalSection(&_this_cs);
-        throw;
-    }
-    yLeaveCriticalSection(&_this_cs);
-    return res;
-}
-
-/**
- * Changes the voltage type used on the serial line. Valid
- * values  will depend on the Yoctopuce device model featuring
- * the serial port feature.  Check your device documentation
- * to find out which values are valid for that specific model.
- * Trying to set an invalid value will have no effect.
- *
- * @param newval : a value among Y_VOLTAGELEVEL_OFF, Y_VOLTAGELEVEL_TTL3V, Y_VOLTAGELEVEL_TTL3VR,
- * Y_VOLTAGELEVEL_TTL5V, Y_VOLTAGELEVEL_TTL5VR, Y_VOLTAGELEVEL_RS232, Y_VOLTAGELEVEL_RS485 and
- * Y_VOLTAGELEVEL_TTL1V8 corresponding to the voltage type used on the serial line
- *
- * @return YAPI_SUCCESS if the call succeeds.
- *
- * On failure, throws an exception or returns a negative error code.
- */
-int YI2cPort::set_voltageLevel(Y_VOLTAGELEVEL_enum newval)
-{
-    string rest_val;
-    int res;
-    yEnterCriticalSection(&_this_cs);
-    try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-        res = _setAttr("voltageLevel", rest_val);
-    } catch (std::exception) {
-         yLeaveCriticalSection(&_this_cs);
-         throw;
-    }
-    yLeaveCriticalSection(&_this_cs);
-    return res;
-}
-
-/**
- * Returns the type of protocol used over the serial line, as a string.
+ * Returns the type of protocol used to send I2C messages, as a string.
  * Possible values are
  * "Line" for messages separated by LF or
  * "Char" for continuous stream of codes.
  *
- * @return a string corresponding to the type of protocol used over the serial line, as a string
+ * @return a string corresponding to the type of protocol used to send I2C messages, as a string
  *
  * On failure, throws an exception or returns Y_PROTOCOL_INVALID.
  */
@@ -545,14 +482,16 @@ string YI2cPort::get_protocol(void)
 }
 
 /**
- * Changes the type of protocol used over the serial line.
+ * Changes the type of protocol used to send I2C messages.
  * Possible values are
  * "Line" for messages separated by LF or
  * "Char" for continuous stream of codes.
  * The suffix "/[wait]ms" can be added to reduce the transmit rate so that there
  * is always at lest the specified number of milliseconds between each message sent.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
  *
- * @param newval : a string corresponding to the type of protocol used over the serial line
+ * @param newval : a string corresponding to the type of protocol used to send I2C messages
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -575,12 +514,72 @@ int YI2cPort::set_protocol(const string& newval)
 }
 
 /**
+ * Returns the voltage level used on the I2C bus.
+ *
+ * @return a value among Y_I2CVOLTAGELEVEL_OFF, Y_I2CVOLTAGELEVEL_3V3 and Y_I2CVOLTAGELEVEL_1V8
+ * corresponding to the voltage level used on the I2C bus
+ *
+ * On failure, throws an exception or returns Y_I2CVOLTAGELEVEL_INVALID.
+ */
+Y_I2CVOLTAGELEVEL_enum YI2cPort::get_i2cVoltageLevel(void)
+{
+    Y_I2CVOLTAGELEVEL_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YI2cPort::I2CVOLTAGELEVEL_INVALID;
+                }
+            }
+        }
+        res = _i2cVoltageLevel;
+    } catch (std::exception) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the voltage level used on the I2C bus.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
+ *
+ * @param newval : a value among Y_I2CVOLTAGELEVEL_OFF, Y_I2CVOLTAGELEVEL_3V3 and
+ * Y_I2CVOLTAGELEVEL_1V8 corresponding to the voltage level used on the I2C bus
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YI2cPort::set_i2cVoltageLevel(Y_I2CVOLTAGELEVEL_enum newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("i2cVoltageLevel", rest_val);
+    } catch (std::exception) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
  * Returns the SPI port communication parameters, as a string such as
- * "400kbps,2000ms". The string includes the baud rate and  th  e recovery delay
- * after communications errors.
+ * "400kbps,2000ms,NoRestart". The string includes the baud rate, the
+ * recovery delay after communications errors, and if needed the option
+ * NoRestart to use a Stop/Start sequence instead of the
+ * Restart state when performing read on the I2C bus.
  *
  * @return a string corresponding to the SPI port communication parameters, as a string such as
- *         "400kbps,2000ms"
+ *         "400kbps,2000ms,NoRestart"
  *
  * On failure, throws an exception or returns Y_I2CMODE_INVALID.
  */
@@ -608,8 +607,12 @@ string YI2cPort::get_i2cMode(void)
 
 /**
  * Changes the SPI port communication parameters, with a string such as
- * "400kbps,2000ms". The string includes the baud rate and the recovery delay
- * after communications errors.
+ * "400kbps,2000ms". The string includes the baud rate, the
+ * recovery delay after communications errors, and if needed the option
+ * NoRestart to use a Stop/Start sequence instead of the
+ * Restart state when performing read on the I2C bus.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
  *
  * @param newval : a string corresponding to the SPI port communication parameters, with a string such as
  *         "400kbps,2000ms"
@@ -974,17 +977,17 @@ int YI2cPort::i2cSendBin(int slaveAddr,string buff)
 
     reply = this->queryLine(msg,1000);
     if (!((int)(reply).length() > 0)) {
-        _throw(YAPI_IO_ERROR,"no response from device");
+        _throw(YAPI_IO_ERROR,"No response from I2C device");
         return YAPI_IO_ERROR;
     }
     idx = _ystrpos(reply, "[N]!");
     if (!(idx < 0)) {
-        _throw(YAPI_IO_ERROR,"No ACK received");
+        _throw(YAPI_IO_ERROR,"No I2C ACK received");
         return YAPI_IO_ERROR;
     }
     idx = _ystrpos(reply, "!");
     if (!(idx < 0)) {
-        _throw(YAPI_IO_ERROR,"Protocol error");
+        _throw(YAPI_IO_ERROR,"I2C protocol error");
         return YAPI_IO_ERROR;
     }
     return YAPI_SUCCESS;
@@ -1019,17 +1022,17 @@ int YI2cPort::i2cSendArray(int slaveAddr,vector<int> values)
 
     reply = this->queryLine(msg,1000);
     if (!((int)(reply).length() > 0)) {
-        _throw(YAPI_IO_ERROR,"no response from device");
+        _throw(YAPI_IO_ERROR,"No response from I2C device");
         return YAPI_IO_ERROR;
     }
     idx = _ystrpos(reply, "[N]!");
     if (!(idx < 0)) {
-        _throw(YAPI_IO_ERROR,"No ACK received");
+        _throw(YAPI_IO_ERROR,"No I2C ACK received");
         return YAPI_IO_ERROR;
     }
     idx = _ystrpos(reply, "!");
     if (!(idx < 0)) {
-        _throw(YAPI_IO_ERROR,"Protocol error");
+        _throw(YAPI_IO_ERROR,"I2C protocol error");
         return YAPI_IO_ERROR;
     }
     return YAPI_SUCCESS;
@@ -1073,17 +1076,17 @@ string YI2cPort::i2cSendAndReceiveBin(int slaveAddr,string buff,int rcvCount)
     reply = this->queryLine(msg,1000);
     rcvbytes = string(0, (char)0);
     if (!((int)(reply).length() > 0)) {
-        _throw(YAPI_IO_ERROR,"no response from device");
+        _throw(YAPI_IO_ERROR,"No response from I2C device");
         return rcvbytes;
     }
     idx = _ystrpos(reply, "[N]!");
     if (!(idx < 0)) {
-        _throw(YAPI_IO_ERROR,"No ACK received");
+        _throw(YAPI_IO_ERROR,"No I2C ACK received");
         return rcvbytes;
     }
     idx = _ystrpos(reply, "!");
     if (!(idx < 0)) {
-        _throw(YAPI_IO_ERROR,"Protocol error");
+        _throw(YAPI_IO_ERROR,"I2C protocol error");
         return rcvbytes;
     }
     reply = (reply).substr( (int)(reply).length()-2*rcvCount, 2*rcvCount);
@@ -1129,17 +1132,17 @@ vector<int> YI2cPort::i2cSendAndReceiveArray(int slaveAddr,vector<int> values,in
 
     reply = this->queryLine(msg,1000);
     if (!((int)(reply).length() > 0)) {
-        _throw(YAPI_IO_ERROR,"no response from device");
+        _throw(YAPI_IO_ERROR,"No response from I2C device");
         return res;
     }
     idx = _ystrpos(reply, "[N]!");
     if (!(idx < 0)) {
-        _throw(YAPI_IO_ERROR,"No ACK received");
+        _throw(YAPI_IO_ERROR,"No I2C ACK received");
         return res;
     }
     idx = _ystrpos(reply, "!");
     if (!(idx < 0)) {
-        _throw(YAPI_IO_ERROR,"Protocol error");
+        _throw(YAPI_IO_ERROR,"I2C protocol error");
         return res;
     }
     reply = (reply).substr( (int)(reply).length()-2*rcvCount, 2*rcvCount);

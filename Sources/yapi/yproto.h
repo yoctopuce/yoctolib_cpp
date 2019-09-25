@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 36157 2019-07-09 08:27:52Z mvuilleu $
+ * $Id: yproto.h 37220 2019-09-18 14:40:17Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -934,6 +934,10 @@ typedef struct _YIOHDL_internal {
 
 
 #define YCTX_OSX_MULTIPLES_HID 1
+extern u64 YctxDeviceListValidityMs;
+extern u32 YctxNetworkTimeout;
+
+
 // structure that contain information about the API
 typedef struct{
     //yapi CS
@@ -953,7 +957,6 @@ typedef struct{
     yCRITICAL_SECTION   io_cs;
     YIOHDL_internal     *yiohdl_first;
     u32                 io_counter;
-    u64                 deviceListValidityMs;
     // network discovery info
     HubSt*              nethub[NBMAX_NET_HUB];
     RequestSt*          tcpreq[ALLOC_YDX_PER_HUB];  // indexed by our own DevYdx

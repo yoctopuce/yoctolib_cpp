@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_rangefinder.cpp 35185 2019-04-16 19:43:18Z mvuilleu $
+ *  $Id: yocto_rangefinder.cpp 37149 2019-09-12 21:24:53Z mvuilleu $
  *
  *  Implements yFindRangeFinder(), the high-level API for RangeFinder functions
  *
@@ -161,6 +161,7 @@ Y_RANGEFINDERMODE_enum YRangeFinder::get_rangeFinderMode(void)
 /**
  * Changes the rangefinder running mode, allowing you to put priority on
  * precision, speed or maximum range.
+ * Remember to call the saveToFlash() method of the module if the modification must be kept.
  *
  * @param newval : a value among Y_RANGEFINDERMODE_DEFAULT, Y_RANGEFINDERMODE_LONG_RANGE,
  * Y_RANGEFINDERMODE_HIGH_ACCURACY and Y_RANGEFINDERMODE_HIGH_SPEED corresponding to the rangefinder
@@ -223,6 +224,7 @@ s64 YRangeFinder::get_timeFrame(void)
  * reliability. The time frame is expressed in milliseconds. A larger timeframe
  * improves stability and reliability, at the cost of higher latency, but prevents
  * the detection of events shorter than the time frame.
+ * Remember to call the saveToFlash() method of the module if the modification must be kept.
  *
  * @param newval : an integer corresponding to the time frame used to measure the distance and estimate the measure
  *         reliability

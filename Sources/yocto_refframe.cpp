@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_refframe.cpp 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_refframe.cpp 37000 2019-09-03 06:40:17Z mvuilleu $
  *
  *  Implements yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -246,6 +246,14 @@ int YRefFrame::set_calibrationParam(const string& newval)
     return res;
 }
 
+/**
+ * Returns the BNO055 fusion mode. Note this feature is only availabe on Yocto-3D-V2.
+ *
+ * @return a value among Y_FUSIONMODE_NDOF, Y_FUSIONMODE_NDOF_FMC_OFF, Y_FUSIONMODE_M4G,
+ * Y_FUSIONMODE_COMPASS and Y_FUSIONMODE_IMU corresponding to the BNO055 fusion mode
+ *
+ * On failure, throws an exception or returns Y_FUSIONMODE_INVALID.
+ */
 Y_FUSIONMODE_enum YRefFrame::get_fusionMode(void)
 {
     Y_FUSIONMODE_enum res;
@@ -268,6 +276,17 @@ Y_FUSIONMODE_enum YRefFrame::get_fusionMode(void)
     return res;
 }
 
+/**
+ * Change the BNO055 fusion mode. Note: this feature is only availabe on Yocto-3D-V2.
+ * Remember to call the matching module saveToFlash() method to save the setting permanently.
+ *
+ * @param newval : a value among Y_FUSIONMODE_NDOF, Y_FUSIONMODE_NDOF_FMC_OFF, Y_FUSIONMODE_M4G,
+ * Y_FUSIONMODE_COMPASS and Y_FUSIONMODE_IMU
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
 int YRefFrame::set_fusionMode(Y_FUSIONMODE_enum newval)
 {
     string rest_val;

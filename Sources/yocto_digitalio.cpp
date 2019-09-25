@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_digitalio.cpp 33722 2018-12-14 15:04:43Z seb $
+ *  $Id: yocto_digitalio.cpp 37149 2019-09-12 21:24:53Z mvuilleu $
  *
  *  Implements yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -397,7 +397,7 @@ int YDigitalIO::get_portSize(void)
     int res = 0;
     yEnterCriticalSection(&_this_cs);
     try {
-        if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (_cacheExpiration == 0) {
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);

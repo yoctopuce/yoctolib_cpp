@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupschedule.cpp 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_wakeupschedule.cpp 37000 2019-09-03 06:40:17Z mvuilleu $
  *
  *  Implements yFindWakeUpSchedule(), the high-level API for WakeUpSchedule functions
  *
@@ -129,6 +129,8 @@ int YWakeUpSchedule::get_minutesA(void)
 
 /**
  * Changes the minutes in the 00-29 interval when a wake up must take place.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
  *
  * @param newval : an integer corresponding to the minutes in the 00-29 interval when a wake up must take place
  *
@@ -183,6 +185,8 @@ int YWakeUpSchedule::get_minutesB(void)
 
 /**
  * Changes the minutes in the 30-59 interval when a wake up must take place.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
  *
  * @param newval : an integer corresponding to the minutes in the 30-59 interval when a wake up must take place
  *
@@ -237,6 +241,8 @@ int YWakeUpSchedule::get_hours(void)
 
 /**
  * Changes the hours when a wake up must take place.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
  *
  * @param newval : an integer corresponding to the hours when a wake up must take place
  *
@@ -291,6 +297,8 @@ int YWakeUpSchedule::get_weekDays(void)
 
 /**
  * Changes the days of the week when a wake up must take place.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
  *
  * @param newval : an integer corresponding to the days of the week when a wake up must take place
  *
@@ -345,6 +353,8 @@ int YWakeUpSchedule::get_monthDays(void)
 
 /**
  * Changes the days of the month when a wake up must take place.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
  *
  * @param newval : an integer corresponding to the days of the month when a wake up must take place
  *
@@ -399,6 +409,8 @@ int YWakeUpSchedule::get_months(void)
 
 /**
  * Changes the months when a wake up must take place.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
  *
  * @param newval : an integer corresponding to the months when a wake up must take place
  *

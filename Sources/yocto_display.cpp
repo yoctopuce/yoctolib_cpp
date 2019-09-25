@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 33877 2018-12-26 12:19:48Z seb $
+ * $Id: yocto_display.cpp 37000 2019-09-03 06:40:17Z mvuilleu $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -918,7 +918,7 @@ int YDisplay::get_displayWidth(void)
     int res = 0;
     yEnterCriticalSection(&_this_cs);
     try {
-        if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (_cacheExpiration == 0) {
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
@@ -947,7 +947,7 @@ int YDisplay::get_displayHeight(void)
     int res = 0;
     yEnterCriticalSection(&_this_cs);
     try {
-        if (_cacheExpiration <= YAPI::GetTickCount()) {
+        if (_cacheExpiration == 0) {
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);

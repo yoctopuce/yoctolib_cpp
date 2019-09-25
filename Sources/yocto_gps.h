@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_gps.h 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_gps.h 37165 2019-09-13 16:57:27Z mvuilleu $
  *
  *  Declares yFindGps(), the high-level API for Gps functions
  *
@@ -71,6 +71,19 @@ typedef enum {
     Y_COORDSYSTEM_INVALID = -1,
 } Y_COORDSYSTEM_enum;
 #endif
+#ifndef _Y_CONSTELLATION_ENUM
+#define _Y_CONSTELLATION_ENUM
+typedef enum {
+    Y_CONSTELLATION_GPS = 0,
+    Y_CONSTELLATION_GLONASS = 1,
+    Y_CONSTELLATION_GALLILEO = 2,
+    Y_CONSTELLATION_GNSS = 3,
+    Y_CONSTELLATION_GPS_GLONASS = 4,
+    Y_CONSTELLATION_GPS_GALLILEO = 5,
+    Y_CONSTELLATION_GLONASS_GALLELIO = 6,
+    Y_CONSTELLATION_INVALID = -1,
+} Y_CONSTELLATION_enum;
+#endif
 #define Y_SATCOUNT_INVALID              (YAPI_INVALID_LONG)
 #define Y_LATITUDE_INVALID              (YAPI_INVALID_STRING)
 #define Y_LONGITUDE_INVALID             (YAPI_INVALID_STRING)
@@ -105,6 +118,7 @@ protected:
     Y_ISFIXED_enum  _isFixed;
     s64             _satCount;
     Y_COORDSYSTEM_enum _coordSystem;
+    Y_CONSTELLATION_enum _constellation;
     string          _latitude;
     string          _longitude;
     double          _dilution;
@@ -139,6 +153,14 @@ public:
     static const Y_COORDSYSTEM_enum COORDSYSTEM_GPS_DM = Y_COORDSYSTEM_GPS_DM;
     static const Y_COORDSYSTEM_enum COORDSYSTEM_GPS_D = Y_COORDSYSTEM_GPS_D;
     static const Y_COORDSYSTEM_enum COORDSYSTEM_INVALID = Y_COORDSYSTEM_INVALID;
+    static const Y_CONSTELLATION_enum CONSTELLATION_GPS = Y_CONSTELLATION_GPS;
+    static const Y_CONSTELLATION_enum CONSTELLATION_GLONASS = Y_CONSTELLATION_GLONASS;
+    static const Y_CONSTELLATION_enum CONSTELLATION_GALLILEO = Y_CONSTELLATION_GALLILEO;
+    static const Y_CONSTELLATION_enum CONSTELLATION_GNSS = Y_CONSTELLATION_GNSS;
+    static const Y_CONSTELLATION_enum CONSTELLATION_GPS_GLONASS = Y_CONSTELLATION_GPS_GLONASS;
+    static const Y_CONSTELLATION_enum CONSTELLATION_GPS_GALLILEO = Y_CONSTELLATION_GPS_GALLILEO;
+    static const Y_CONSTELLATION_enum CONSTELLATION_GLONASS_GALLELIO = Y_CONSTELLATION_GLONASS_GALLELIO;
+    static const Y_CONSTELLATION_enum CONSTELLATION_INVALID = Y_CONSTELLATION_INVALID;
     static const string LATITUDE_INVALID;
     static const string LONGITUDE_INVALID;
     static const double DILUTION_INVALID;
@@ -190,6 +212,8 @@ public:
 
     /**
      * Changes the representation system used for positioning data.
+     * Remember to call the saveToFlash() method of the module if the
+     * modification must be kept.
      *
      * @param newval : a value among Y_COORDSYSTEM_GPS_DMS, Y_COORDSYSTEM_GPS_DM and Y_COORDSYSTEM_GPS_D
      * corresponding to the representation system used for positioning data
@@ -201,6 +225,41 @@ public:
     int             set_coordSystem(Y_COORDSYSTEM_enum newval);
     inline int      setCoordSystem(Y_COORDSYSTEM_enum newval)
     { return this->set_coordSystem(newval); }
+
+    /**
+     * Returns the the satellites constellation used to compute
+     * positioning data.
+     *
+     * @return a value among Y_CONSTELLATION_GPS, Y_CONSTELLATION_GLONASS, Y_CONSTELLATION_GALLILEO,
+     * Y_CONSTELLATION_GNSS, Y_CONSTELLATION_GPS_GLONASS, Y_CONSTELLATION_GPS_GALLILEO and
+     * Y_CONSTELLATION_GLONASS_GALLELIO corresponding to the the satellites constellation used to compute
+     *         positioning data
+     *
+     * On failure, throws an exception or returns Y_CONSTELLATION_INVALID.
+     */
+    Y_CONSTELLATION_enum get_constellation(void);
+
+    inline Y_CONSTELLATION_enum constellation(void)
+    { return this->get_constellation(); }
+
+    /**
+     * Changes the satellites constellation used to compute
+     * positioning data. Possible  constellations are GPS, Glonass, Galileo ,
+     * GNSS ( = GPS + Glonass + Galileo) and the 3 possible pairs. This seeting has effect on Yocto-GPS rev A.
+     *
+     * @param newval : a value among Y_CONSTELLATION_GPS, Y_CONSTELLATION_GLONASS,
+     * Y_CONSTELLATION_GALLILEO, Y_CONSTELLATION_GNSS, Y_CONSTELLATION_GPS_GLONASS,
+     * Y_CONSTELLATION_GPS_GALLILEO and Y_CONSTELLATION_GLONASS_GALLELIO corresponding to the satellites
+     * constellation used to compute
+     *         positioning data
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_constellation(Y_CONSTELLATION_enum newval);
+    inline int      setConstellation(Y_CONSTELLATION_enum newval)
+    { return this->set_constellation(newval); }
 
     /**
      * Returns the current latitude.
@@ -321,6 +380,8 @@ public:
      * Changes the number of seconds between current time and UTC time (time zone).
      * The timezone is automatically rounded to the nearest multiple of 15 minutes.
      * If current UTC time is known, the current time is automatically be updated according to the selected time zone.
+     * Remember to call the saveToFlash() method of the module if the
+     * modification must be kept.
      *
      * @param newval : an integer corresponding to the number of seconds between current time and UTC time (time zone)
      *

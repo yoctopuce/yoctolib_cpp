@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_colorledcluster.cpp 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_colorledcluster.cpp 37000 2019-09-03 06:40:17Z mvuilleu $
  *
  *  Implements yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -126,6 +126,8 @@ int YColorLedCluster::get_activeLedCount(void)
 
 /**
  * Changes the number of LEDs currently handled by the device.
+ * Remember to call the matching module
+ * saveToFlash() method to save the setting permanently.
  *
  * @param newval : an integer corresponding to the number of LEDs currently handled by the device
  *
@@ -180,6 +182,8 @@ Y_LEDTYPE_enum YColorLedCluster::get_ledType(void)
 
 /**
  * Changes the RGB LED type currently handled by the device.
+ * Remember to call the matching module
+ * saveToFlash() method to save the setting permanently.
  *
  * @param newval : either Y_LEDTYPE_RGB or Y_LEDTYPE_RGBW, according to the RGB LED type currently
  * handled by the device

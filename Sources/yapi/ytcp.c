@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 36499 2019-07-25 16:30:09Z seb $
+ * $Id: ytcp.c 37206 2019-09-16 16:39:48Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -2875,7 +2875,7 @@ void* ws_thread(void* ctx)
             do {
                 //minimal timeout is always 500
                 yApproximateSleep(100);
-            } while (timeout > yapiGetTickCount());
+            } while (timeout > yapiGetTickCount()&& !yThreadMustEnd(thread));
         }
         if (hub->state == NET_HUB_TOCLOSE) {
             break;

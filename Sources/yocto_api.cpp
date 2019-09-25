@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 36629 2019-07-31 13:03:53Z seb $
+ * $Id: yocto_api.cpp 37230 2019-09-20 08:43:51Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -2566,15 +2566,15 @@ YAPIContext::~YAPIContext()
 
 
 /**
- * Change the time between each forced enumeration of the YoctoHub used.
- * By default, the library performs a complete enumeration every 10 seconds.
- * To reduce network traffic it is possible to increase this delay.
- * This is particularly useful when a YoctoHub is connected to a GSM network
- * where the traffic is charged. This setting does not affect modules connected by USB,
- * nor the operation of arrival/removal callbacks.
- * Note: This function must be called after yInitAPI.
+ * Modifies the delay between each forced enumeration of the used YoctoHubs.
+ * By default, the library performs a full enumeration every 10 seconds.
+ * To reduce network traffic, you can increase this delay.
+ * It's particularly useful when a YoctoHub is connected to the GSM network
+ * where traffic is billed. This parameter doesn't impact modules connected by USB,
+ * nor the working of module arrival/removal callbacks.
+ * Note: you must call this function after yInitAPI.
  *
- * @param deviceListValidity : number of seconds between each enumeration.
+ * @param deviceListValidity : nubmer of seconds between each enumeration.
  * @noreturn
  */
 void YAPIContext::SetDeviceListValidity(int deviceListValidity)
@@ -2583,8 +2583,8 @@ void YAPIContext::SetDeviceListValidity(int deviceListValidity)
 }
 
 /**
- * Returns the time between each forced enumeration of the YoctoHub used.
- * Note: This function must be called after yInitAPI.
+ * Returns the delay between each forced enumeration of the used YoctoHubs.
+ * Note: you must call this function after yInitAPI.
  *
  * @return the number of seconds between each enumeration.
  */
@@ -2592,6 +2592,37 @@ int YAPIContext::GetDeviceListValidity(void)
 {
     int res = 0;
     res = yapiGetNetDevListValidity();
+    return res;
+}
+
+/**
+ * Modifies the network connection delay for YAPI.RegisterHub() and
+ * YAPI.UpdateDeviceList(). This delay impacts only the YoctoHubs and VirtualHub
+ * which are accessible through the network. By default, this delay is of 20000 milliseconds,
+ * but depending or you network you may want to change this delay.
+ * For example if your network infrastructure uses a GSM connection.
+ *
+ * @param networkMsTimeout : the network connection delay in milliseconds.
+ * @noreturn
+ */
+void YAPIContext::SetNetworkTimeout(int networkMsTimeout)
+{
+    yapiSetNetworkTimeout(networkMsTimeout);
+}
+
+/**
+ * Returns the network connection delay for YAPI.RegisterHub() and
+ * YAPI.UpdateDeviceList(). This delay impacts only the YoctoHubs and VirtualHub
+ * which are accessible through the network. By default, this delay is of 20000 milliseconds,
+ * but depending or you network you may want to change this delay.
+ * For example if your network infrastructure uses a GSM connection.
+ *
+ * @return the network connection delay in milliseconds.
+ */
+int YAPIContext::GetNetworkTimeout(void)
+{
+    int res = 0;
+    res = yapiGetNetworkTimeout();
     return res;
 }
 
@@ -6067,16 +6098,16 @@ YModule* YModule::FindModule(string func)
     YModule* obj = NULL;
     string cleanHwId;
     int modpos = 0;
+    cleanHwId = func;
+    modpos = _ystrpos(func, ".module");
+    if (modpos != ((int)(func).length() - 7)) {
+        cleanHwId = func + ".module";
+    }
     int taken = 0;
     if (YAPI::_apiInitialized) {
         yEnterCriticalSection(&YAPI::_global_cs);
         taken = 1;
     }try {
-        cleanHwId = func;
-        modpos = _ystrpos(func, ".module");
-        if (modpos != ((int)(func).length() - 7)) {
-            cleanHwId = func + ".module";
-        }
         obj = (YModule*) YFunction::_FindFromCache("Module", cleanHwId);
         if (obj == NULL) {
             obj = new YModule(cleanHwId);
@@ -6540,8 +6571,7 @@ int YModule::set_allSettingsAndFiles(string settings)
         }
     }
     // Apply settings a second time for file-dependent settings and dynamic sensor nodes
-    this->set_allSettings(json_api);
-    return YAPI_SUCCESS;
+    return this->set_allSettings(json_api);
 }
 
 /**
@@ -6857,6 +6887,32 @@ string YModule::calibConvert(string param,string currentFuncValue,string unit_na
     return param;
 }
 
+int YModule::_tryExec(string url)
+{
+    int res = 0;
+    int done = 0;
+    res = YAPI_SUCCESS;
+    done = 1;
+    try {
+        this->_download(url);
+    } catch (std::exception& e) {
+        e.what();
+        done = 0;
+    }
+    if (done == 0) {
+        // retry silently after a short wait
+        try {
+            {string ignore_error; YAPI::Sleep(500, ignore_error);};
+            this->_download(url);
+        } catch (std::exception& e) {
+            e.what();
+            // second failure, return error code
+            res = this->get_errorType();
+        }
+    }
+    return res;
+}
+
 /**
  * Restores all the settings of the device. Useful to restore all the logical names and calibrations parameters
  * of a module from a backup.Remember to call the saveToFlash() method of the module if the
@@ -6886,6 +6942,8 @@ int YModule::set_allSettings(string settings)
     int leng = 0;
     int i = 0;
     int j = 0;
+    int subres = 0;
+    int res = 0;
     string njpath;
     string jpath;
     string fun;
@@ -6902,6 +6960,7 @@ int YModule::set_allSettings(string settings)
     string each_str;
     bool do_update = 0;
     bool found = 0;
+    res = YAPI_SUCCESS;
     tmp = settings;
     tmp = this->_get_json_path(tmp, "api");
     if (!(tmp == "")) {
@@ -6928,7 +6987,14 @@ int YModule::set_allSettings(string settings)
         old_val_arr.push_back(value);
     }
 
-    actualSettings = this->_download("api.json");
+    try {
+        actualSettings = this->_download("api.json");
+    } catch (std::exception& e) {
+        e.what();
+        // retry silently after a short wait
+        {string ignore_error; YAPI::Sleep(500, ignore_error);};
+        actualSettings = this->_download("api.json");
+    }
     actualSettings = this->_flattenJsonStruct(actualSettings);
     new_dslist = this->_json_get_array(actualSettings);
     for (unsigned ii = 0; ii < new_dslist.size(); ii++) {
@@ -7017,6 +7083,9 @@ int YModule::set_allSettings(string settings)
         if ((do_update) && (attr == "message")) {
             do_update = false;
         }
+        if ((do_update) && (attr == "signalValue")) {
+            do_update = false;
+        }
         if ((do_update) && (attr == "currentValue")) {
             do_update = false;
         }
@@ -7069,6 +7138,12 @@ int YModule::set_allSettings(string settings)
             do_update = false;
         }
         if ((do_update) && (attr == "msgCount")) {
+            do_update = false;
+        }
+        if ((do_update) && (attr == "rxMsgCount")) {
+            do_update = false;
+        }
+        if ((do_update) && (attr == "txMsgCount")) {
             do_update = false;
         }
         if (do_update) {
@@ -7124,23 +7199,32 @@ int YModule::set_allSettings(string settings)
                 }
                 newval = this->calibConvert(old_calib, new_val_arr[i], unit_name, sensorType);
                 url = "api/" + fun + ".json?" + attr + "=" + this->_escapeAttr(newval);
-                this->_download(url);
+                subres = this->_tryExec(url);
+                if ((res == YAPI_SUCCESS) && (subres != YAPI_SUCCESS)) {
+                    res = subres;
+                }
             } else {
                 url = "api/" + fun + ".json?" + attr + "=" + this->_escapeAttr(oldval);
                 if (attr == "resolution") {
                     restoreLast.push_back(url);
                 } else {
-                    this->_download(url);
+                    subres = this->_tryExec(url);
+                    if ((res == YAPI_SUCCESS) && (subres != YAPI_SUCCESS)) {
+                        res = subres;
+                    }
                 }
             }
         }
         i = i + 1;
     }
     for (unsigned ii = 0; ii < restoreLast.size(); ii++) {
-        this->_download(restoreLast[ii]);
+        subres = this->_tryExec(restoreLast[ii]);
+        if ((res == YAPI_SUCCESS) && (subres != YAPI_SUCCESS)) {
+            res = subres;
+        }
     }
     this->clearCache();
-    return YAPI_SUCCESS;
+    return res;
 }
 
 /**
@@ -7884,6 +7968,7 @@ string YSensor::get_logFrequency(void)
  * the value "OFF". Note that setting the  datalogger recording frequency
  * to a greater value than the sensor native sampling frequency is useless,
  * and even counterproductive: those two frequencies are not related.
+ * Remember to call the saveToFlash() method of the module if the modification must be kept.
  *
  * @param newval : a string corresponding to the datalogger recording frequency for this function
  *
@@ -7947,6 +8032,7 @@ string YSensor::get_reportFrequency(void)
  * notification frequency to a greater value than the sensor native
  * sampling frequency is unless, and even counterproductive: those two
  * frequencies are not related.
+ * Remember to call the saveToFlash() method of the module if the modification must be kept.
  *
  * @param newval : a string corresponding to the timed value notification frequency for this function
  *
@@ -8002,6 +8088,7 @@ Y_ADVMODE_enum YSensor::get_advMode(void)
 
 /**
  * Changes the measuring mode used for the advertised value pushed to the parent hub.
+ * Remember to call the saveToFlash() method of the module if the modification must be kept.
  *
  * @param newval : a value among Y_ADVMODE_IMMEDIATE, Y_ADVMODE_PERIOD_AVG, Y_ADVMODE_PERIOD_MIN and
  * Y_ADVMODE_PERIOD_MAX corresponding to the measuring mode used for the advertised value pushed to the parent hub
@@ -8067,6 +8154,7 @@ int YSensor::set_calibrationParam(const string& newval)
 /**
  * Changes the resolution of the measured physical values. The resolution corresponds to the numerical precision
  * when displaying value. It does not change the precision of the measure itself.
+ * Remember to call the saveToFlash() method of the module if the modification must be kept.
  *
  * @param newval : a floating point number corresponding to the resolution of the measured physical values
  *
@@ -8093,6 +8181,7 @@ int YSensor::set_resolution(double newval)
 /**
  * Returns the resolution of the measured values. The resolution corresponds to the numerical precision
  * of the measures, which is not always the same as the actual precision of the sensor.
+ * Remember to call the saveToFlash() method of the module if the modification must be kept.
  *
  * @return a floating point number corresponding to the resolution of the measured values
  *
