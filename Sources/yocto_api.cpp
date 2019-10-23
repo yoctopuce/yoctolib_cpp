@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 37230 2019-09-20 08:43:51Z seb $
+ * $Id: yocto_api.cpp 37692 2019-10-14 14:58:03Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -839,7 +839,7 @@ void YJSONObject::parseWithRef(YJSONObject* reference)
             convert(reference, yzon);
             delete yzon;
             return;
-        } catch (std::exception) { }
+        } catch (std::exception &) { }
     }
     this->parse();
 }
@@ -2596,8 +2596,8 @@ int YAPIContext::GetDeviceListValidity(void)
 }
 
 /**
- * Modifies the network connection delay for YAPI.RegisterHub() and
- * YAPI.UpdateDeviceList(). This delay impacts only the YoctoHubs and VirtualHub
+ * Modifies the network connection delay for yRegisterHub() and yUpdateDeviceList().
+ * This delay impacts only the YoctoHubs and VirtualHub
  * which are accessible through the network. By default, this delay is of 20000 milliseconds,
  * but depending or you network you may want to change this delay.
  * For example if your network infrastructure uses a GSM connection.
@@ -2611,8 +2611,8 @@ void YAPIContext::SetNetworkTimeout(int networkMsTimeout)
 }
 
 /**
- * Returns the network connection delay for YAPI.RegisterHub() and
- * YAPI.UpdateDeviceList(). This delay impacts only the YoctoHubs and VirtualHub
+ * Returns the network connection delay for yRegisterHub() and yUpdateDeviceList().
+ * This delay impacts only the YoctoHubs and VirtualHub
  * which are accessible through the network. By default, this delay is of 20000 milliseconds,
  * but depending or you network you may want to change this delay.
  * For example if your network infrastructure uses a GSM connection.
@@ -2753,7 +2753,7 @@ string YFunction::get_logicalName(void)
             }
         }
         res = _logicalName;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -2785,7 +2785,7 @@ int YFunction::set_logicalName(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("logicalName", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -2814,7 +2814,7 @@ string YFunction::get_advertisedValue(void)
             }
         }
         res = _advertisedValue;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -2830,7 +2830,7 @@ int YFunction::set_advertisedValue(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("advertisedValue", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -2878,7 +2878,7 @@ YFunction* YFunction::FindFunction(string func)
             obj = new YFunction(func);
             YFunction::_AddToCache("Function", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }
@@ -3727,7 +3727,7 @@ bool YFunction::isOnline(void)
         delete apires;
         // Preload the function data, since we have it in device cache
         this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity());
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         return false;
     }
@@ -3778,7 +3778,7 @@ YRETCODE YFunction::_load_unsafe(u64 msValidity)
 
     try {
         node = j->getYJSONObject(funcId);
-    } catch (std::exception ex) {
+    } catch (std::exception &) {
         delete j;
         _throw(YAPI_IO_ERROR, "unexpected JSON structure: missing function " + _funId);
         return YAPI_IO_ERROR;
@@ -3809,7 +3809,7 @@ YRETCODE YFunction::load(int msValidity)
     yEnterCriticalSection(&_this_cs);
     try {
         res = this->_load_unsafe(msValidity);
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -4201,7 +4201,7 @@ YRETCODE YDevice::requestAPI(YJSONObject*& apires, string& errmsg)
     try {
         apires = new YJSONObject(json_str, 0, (int)json_str.length());
         apires->parseWithRef(_cacheJson);
-    } catch (std::exception ex) {
+    } catch (std::exception &ex) {
         errmsg = "unexpected JSON structure: " + string(ex.what());
         if (_cacheJson) {
             delete _cacheJson;
@@ -5627,7 +5627,7 @@ string YModule::get_productName(void)
             }
         }
         res = _productName;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -5656,7 +5656,7 @@ string YModule::get_serialNumber(void)
             }
         }
         res = _serialNumber;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -5685,7 +5685,7 @@ int YModule::get_productId(void)
             }
         }
         res = _productId;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -5715,7 +5715,7 @@ int YModule::get_productRelease(void)
             }
         }
         res = _productRelease;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -5744,7 +5744,7 @@ string YModule::get_firmwareRelease(void)
             }
         }
         res = _firmwareRelease;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -5774,7 +5774,7 @@ Y_PERSISTENTSETTINGS_enum YModule::get_persistentSettings(void)
             }
         }
         res = _persistentSettings;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -5790,7 +5790,7 @@ int YModule::set_persistentSettings(Y_PERSISTENTSETTINGS_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("persistentSettings", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -5819,7 +5819,7 @@ int YModule::get_luminosity(void)
             }
         }
         res = _luminosity;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -5847,7 +5847,7 @@ int YModule::set_luminosity(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("luminosity", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -5876,7 +5876,7 @@ Y_BEACON_enum YModule::get_beacon(void)
             }
         }
         res = _beacon;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -5901,7 +5901,7 @@ int YModule::set_beacon(Y_BEACON_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("beacon", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -5930,7 +5930,7 @@ s64 YModule::get_upTime(void)
             }
         }
         res = _upTime;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -5959,7 +5959,7 @@ int YModule::get_usbCurrent(void)
             }
         }
         res = _usbCurrent;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -5990,7 +5990,7 @@ int YModule::get_rebootCountdown(void)
             }
         }
         res = _rebootCountdown;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -6006,7 +6006,7 @@ int YModule::set_rebootCountdown(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("rebootCountdown", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -6036,7 +6036,7 @@ int YModule::get_userVar(void)
             }
         }
         res = _userVar;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -6063,7 +6063,7 @@ int YModule::set_userVar(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("userVar", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -6113,7 +6113,7 @@ YModule* YModule::FindModule(string func)
             obj = new YModule(cleanHwId);
             YFunction::_AddToCache("Module", cleanHwId, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }
@@ -7517,7 +7517,7 @@ string YModule::functionId(int functionIndex)
     yEnterCriticalSection(&_this_cs);
     try {
         res = _getFunction(functionIndex, serial, funcId, basetype, funcName, funcVal, errmsg);
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -7537,7 +7537,7 @@ string YModule::functionName(int functionIndex)
     yEnterCriticalSection(&_this_cs);
     try {
         res = _getFunction(functionIndex, serial, funcId, basetype, funcName, funcVal, errmsg);
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -7558,7 +7558,7 @@ string YModule::functionValue(int functionIndex)
     yEnterCriticalSection(&_this_cs);
     try {
         res = _getFunction(functionIndex, serial, funcId, basetype, funcName, funcVal, errmsg);
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -7582,7 +7582,7 @@ string YModule::functionType(int functionIndex)
     yEnterCriticalSection(&_this_cs);
     try {
         res = _getFunction(functionIndex, serial, funcId, basetype, funcName, funcVal, errmsg);
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -7609,7 +7609,7 @@ string YModule::functionBaseType(int functionIndex)
     yEnterCriticalSection(&_this_cs);
     try {
         res = _getFunction(functionIndex, serial, funcId, basetype, funcName, funcVal, errmsg);
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -7732,7 +7732,7 @@ string YSensor::get_unit(void)
             }
         }
         res = _unit;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -7774,7 +7774,7 @@ double YSensor::get_currentValue(void)
         }
         res = res * _iresol;
         res = floor(res+0.5) / _iresol;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -7800,7 +7800,7 @@ int YSensor::set_lowestValue(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("lowestValue", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -7832,7 +7832,7 @@ double YSensor::get_lowestValue(void)
         }
         res = _lowestValue * _iresol;
         res = floor(res+0.5) / _iresol;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -7858,7 +7858,7 @@ int YSensor::set_highestValue(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("highestValue", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -7890,7 +7890,7 @@ double YSensor::get_highestValue(void)
         }
         res = _highestValue * _iresol;
         res = floor(res+0.5) / _iresol;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -7921,7 +7921,7 @@ double YSensor::get_currentRawValue(void)
             }
         }
         res = _currentRawValue;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -7952,7 +7952,7 @@ string YSensor::get_logFrequency(void)
             }
         }
         res = _logFrequency;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -7984,7 +7984,7 @@ int YSensor::set_logFrequency(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("logFrequency", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -8015,7 +8015,7 @@ string YSensor::get_reportFrequency(void)
             }
         }
         res = _reportFrequency;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -8048,7 +8048,7 @@ int YSensor::set_reportFrequency(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("reportFrequency", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -8078,7 +8078,7 @@ Y_ADVMODE_enum YSensor::get_advMode(void)
             }
         }
         res = _advMode;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -8105,7 +8105,7 @@ int YSensor::set_advMode(Y_ADVMODE_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("advMode", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -8127,7 +8127,7 @@ string YSensor::get_calibrationParam(void)
             }
         }
         res = _calibrationParam;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -8143,7 +8143,7 @@ int YSensor::set_calibrationParam(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("calibrationParam", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -8170,7 +8170,7 @@ int YSensor::set_resolution(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("resolution", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -8201,7 +8201,7 @@ double YSensor::get_resolution(void)
             }
         }
         res = _resolution;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -8233,7 +8233,7 @@ int YSensor::get_sensorState(void)
             }
         }
         res = _sensorState;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -8281,7 +8281,7 @@ YSensor* YSensor::FindSensor(string func)
             obj = new YSensor(func);
             YFunction::_AddToCache("Sensor", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }
@@ -8627,7 +8627,7 @@ int YSensor::calibrateFromPoints(vector<double> rawValues,vector<double> refValu
     try {
         rest_val = this->_encodeCalibrationPoints(rawValues, refValues);
         res = this->_setAttr("calibrationParam", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -8678,7 +8678,7 @@ int YSensor::loadCalibrationPoints(vector<double>& rawValues,vector<double>& ref
         for (unsigned ii = 0; ii < _calref.size(); ii++) {
             refValues.push_back(_calref[ii]);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -9038,7 +9038,7 @@ int YDataLogger::get_currentRunIndex(void)
             }
         }
         res = _currentRunIndex;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -9067,7 +9067,7 @@ s64 YDataLogger::get_timeUTC(void)
             }
         }
         res = _timeUTC;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -9092,7 +9092,7 @@ int YDataLogger::set_timeUTC(s64 newval)
     try {
         char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
         res = _setAttr("timeUTC", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -9122,7 +9122,7 @@ Y_RECORDING_enum YDataLogger::get_recording(void)
             }
         }
         res = _recording;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -9148,7 +9148,7 @@ int YDataLogger::set_recording(Y_RECORDING_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("recording", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -9178,7 +9178,7 @@ Y_AUTOSTART_enum YDataLogger::get_autoStart(void)
             }
         }
         res = _autoStart;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -9208,7 +9208,7 @@ int YDataLogger::set_autoStart(Y_AUTOSTART_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("autoStart", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -9238,7 +9238,7 @@ Y_BEACONDRIVEN_enum YDataLogger::get_beaconDriven(void)
             }
         }
         res = _beaconDriven;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -9266,7 +9266,7 @@ int YDataLogger::set_beaconDriven(Y_BEACONDRIVEN_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("beaconDriven", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -9295,7 +9295,7 @@ int YDataLogger::get_usage(void)
             }
         }
         res = _usage;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -9317,7 +9317,7 @@ Y_CLEARHISTORY_enum YDataLogger::get_clearHistory(void)
             }
         }
         res = _clearHistory;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -9333,7 +9333,7 @@ int YDataLogger::set_clearHistory(Y_CLEARHISTORY_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("clearHistory", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -9381,7 +9381,7 @@ YDataLogger* YDataLogger::FindDataLogger(string func)
             obj = new YDataLogger(func);
             YFunction::_AddToCache("DataLogger", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

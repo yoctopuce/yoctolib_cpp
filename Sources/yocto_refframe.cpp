@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_refframe.cpp 37000 2019-09-03 06:40:17Z mvuilleu $
+ *  $Id: yocto_refframe.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -115,7 +115,7 @@ int YRefFrame::get_mountPos(void)
             }
         }
         res = _mountPos;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -131,7 +131,7 @@ int YRefFrame::set_mountPos(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("mountPos", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -169,7 +169,7 @@ int YRefFrame::set_bearing(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("bearing", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -200,7 +200,7 @@ double YRefFrame::get_bearing(void)
             }
         }
         res = _bearing;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -222,7 +222,7 @@ string YRefFrame::get_calibrationParam(void)
             }
         }
         res = _calibrationParam;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -238,7 +238,7 @@ int YRefFrame::set_calibrationParam(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("calibrationParam", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -268,7 +268,7 @@ Y_FUSIONMODE_enum YRefFrame::get_fusionMode(void)
             }
         }
         res = _fusionMode;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -295,7 +295,7 @@ int YRefFrame::set_fusionMode(Y_FUSIONMODE_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("fusionMode", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -343,7 +343,7 @@ YRefFrame* YRefFrame::FindRefFrame(string func)
             obj = new YRefFrame(func);
             YFunction::_AddToCache("RefFrame", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

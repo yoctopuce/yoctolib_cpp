@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_accelerometer.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_accelerometer.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  *  Implements yFindAccelerometer(), the high-level API for Accelerometer functions
  *
@@ -115,7 +115,7 @@ int YAccelerometer::get_bandwidth(void)
             }
         }
         res = _bandwidth;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -126,6 +126,8 @@ int YAccelerometer::get_bandwidth(void)
 /**
  * Changes the measure update frequency, measured in Hz (Yocto-3D-V2 only). When the
  * frequency is lower, the device performs averaging.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
  *
@@ -141,7 +143,7 @@ int YAccelerometer::set_bandwidth(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("bandwidth", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -170,7 +172,7 @@ double YAccelerometer::get_xValue(void)
             }
         }
         res = _xValue;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -199,7 +201,7 @@ double YAccelerometer::get_yValue(void)
             }
         }
         res = _yValue;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -228,7 +230,7 @@ double YAccelerometer::get_zValue(void)
             }
         }
         res = _zValue;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -250,7 +252,7 @@ Y_GRAVITYCANCELLATION_enum YAccelerometer::get_gravityCancellation(void)
             }
         }
         res = _gravityCancellation;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -266,7 +268,7 @@ int YAccelerometer::set_gravityCancellation(Y_GRAVITYCANCELLATION_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("gravityCancellation", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -314,7 +316,7 @@ YAccelerometer* YAccelerometer::FindAccelerometer(string func)
             obj = new YAccelerometer(func);
             YFunction::_AddToCache("Accelerometer", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

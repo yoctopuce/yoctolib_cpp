@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_hubport.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_hubport.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindHubPort(), the high-level API for HubPort functions
  *
@@ -104,7 +104,7 @@ Y_ENABLED_enum YHubPort::get_enabled(void)
             }
         }
         res = _enabled;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -130,7 +130,7 @@ int YHubPort::set_enabled(Y_ENABLED_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("enabled", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -160,7 +160,7 @@ Y_PORTSTATE_enum YHubPort::get_portState(void)
             }
         }
         res = _portState;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -191,7 +191,7 @@ int YHubPort::get_baudRate(void)
             }
         }
         res = _baudRate;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -239,7 +239,7 @@ YHubPort* YHubPort::FindHubPort(string func)
             obj = new YHubPort(func);
             YFunction::_AddToCache("HubPort", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

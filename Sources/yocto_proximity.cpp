@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_proximity.cpp 37149 2019-09-12 21:24:53Z mvuilleu $
+ *  $Id: yocto_proximity.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindProximity(), the high-level API for Proximity functions
  *
@@ -137,7 +137,7 @@ double YProximity::get_signalValue(void)
             }
         }
         res = floor(_signalValue * 1000+0.5) / 1000;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -169,7 +169,7 @@ int YProximity::get_detectionThreshold(void)
             }
         }
         res = _detectionThreshold;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -198,7 +198,7 @@ int YProximity::set_detectionThreshold(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("detectionThreshold", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -230,7 +230,7 @@ int YProximity::get_detectionHysteresis(void)
             }
         }
         res = _detectionHysteresis;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -259,7 +259,7 @@ int YProximity::set_detectionHysteresis(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("detectionHysteresis", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -289,7 +289,7 @@ int YProximity::get_presenceMinTime(void)
             }
         }
         res = _presenceMinTime;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -316,7 +316,7 @@ int YProximity::set_presenceMinTime(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("presenceMinTime", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -346,7 +346,7 @@ int YProximity::get_removalMinTime(void)
             }
         }
         res = _removalMinTime;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -373,7 +373,7 @@ int YProximity::set_removalMinTime(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("removalMinTime", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -404,7 +404,7 @@ Y_ISPRESENT_enum YProximity::get_isPresent(void)
             }
         }
         res = _isPresent;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -436,7 +436,7 @@ s64 YProximity::get_lastTimeApproached(void)
             }
         }
         res = _lastTimeApproached;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -468,7 +468,7 @@ s64 YProximity::get_lastTimeRemoved(void)
             }
         }
         res = _lastTimeRemoved;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -499,7 +499,7 @@ s64 YProximity::get_pulseCounter(void)
             }
         }
         res = _pulseCounter;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -515,7 +515,7 @@ int YProximity::set_pulseCounter(s64 newval)
     try {
         char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
         res = _setAttr("pulseCounter", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -544,7 +544,7 @@ s64 YProximity::get_pulseTimer(void)
             }
         }
         res = _pulseTimer;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -576,7 +576,7 @@ Y_PROXIMITYREPORTMODE_enum YProximity::get_proximityReportMode(void)
             }
         }
         res = _proximityReportMode;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -607,7 +607,7 @@ int YProximity::set_proximityReportMode(Y_PROXIMITYREPORTMODE_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("proximityReportMode", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -655,7 +655,7 @@ YProximity* YProximity::FindProximity(string func)
             obj = new YProximity(func);
             YFunction::_AddToCache("Proximity", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwmoutput.h 37000 2019-09-03 06:40:17Z mvuilleu $
+ *  $Id: yocto_pwmoutput.h 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  *  Declares yFindPwmOutput(), the high-level API for PwmOutput functions
  *
@@ -189,7 +189,8 @@ public:
      * Changes the PWM period in milliseconds. Caution: in order to avoid  random truncation of
      * the current pulse, the change will not be applied
      * before the end of the current period. This can significantly affect reaction
-     * time at low frequencies.
+     * time at low frequencies. If you call the matching module saveToFlash()
+     * method, the frequency will be kept after a device power cycle.
      *
      * @param newval : a floating point number corresponding to the PWM period in milliseconds
      *

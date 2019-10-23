@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multisenscontroller.cpp 34975 2019-04-04 17:01:43Z seb $
+ *  $Id: yocto_multisenscontroller.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindMultiSensController(), the high-level API for MultiSensController functions
  *
@@ -108,7 +108,7 @@ int YMultiSensController::get_nSensors(void)
             }
         }
         res = _nSensors;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -137,7 +137,7 @@ int YMultiSensController::set_nSensors(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("nSensors", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -166,7 +166,7 @@ int YMultiSensController::get_maxSensors(void)
             }
         }
         res = _maxSensors;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -196,7 +196,7 @@ Y_MAINTENANCEMODE_enum YMultiSensController::get_maintenanceMode(void)
             }
         }
         res = _maintenanceMode;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -224,7 +224,7 @@ int YMultiSensController::set_maintenanceMode(Y_MAINTENANCEMODE_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("maintenanceMode", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -246,7 +246,7 @@ string YMultiSensController::get_command(void)
             }
         }
         res = _command;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -262,7 +262,7 @@ int YMultiSensController::set_command(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("command", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -310,7 +310,7 @@ YMultiSensController* YMultiSensController::FindMultiSensController(string func)
             obj = new YMultiSensController(func);
             YFunction::_AddToCache("MultiSensController", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

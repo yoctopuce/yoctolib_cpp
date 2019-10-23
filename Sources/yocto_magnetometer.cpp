@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_magnetometer.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_magnetometer.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  *  Implements yFindMagnetometer(), the high-level API for Magnetometer functions
  *
@@ -111,7 +111,7 @@ int YMagnetometer::get_bandwidth(void)
             }
         }
         res = _bandwidth;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -122,6 +122,8 @@ int YMagnetometer::get_bandwidth(void)
 /**
  * Changes the measure update frequency, measured in Hz (Yocto-3D-V2 only). When the
  * frequency is lower, the device performs averaging.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
  *
@@ -137,7 +139,7 @@ int YMagnetometer::set_bandwidth(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("bandwidth", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -167,7 +169,7 @@ double YMagnetometer::get_xValue(void)
             }
         }
         res = _xValue;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -197,7 +199,7 @@ double YMagnetometer::get_yValue(void)
             }
         }
         res = _yValue;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -227,7 +229,7 @@ double YMagnetometer::get_zValue(void)
             }
         }
         res = _zValue;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -275,7 +277,7 @@ YMagnetometer* YMagnetometer::FindMagnetometer(string func)
             obj = new YMagnetometer(func);
             YFunction::_AddToCache("Magnetometer", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

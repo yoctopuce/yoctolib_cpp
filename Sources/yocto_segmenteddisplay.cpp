@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_segmenteddisplay.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_segmenteddisplay.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindSegmentedDisplay(), the high-level API for SegmentedDisplay functions
  *
@@ -100,7 +100,7 @@ string YSegmentedDisplay::get_displayedText(void)
             }
         }
         res = _displayedText;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -125,7 +125,7 @@ int YSegmentedDisplay::set_displayedText(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("displayedText", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -147,7 +147,7 @@ Y_DISPLAYMODE_enum YSegmentedDisplay::get_displayMode(void)
             }
         }
         res = _displayMode;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -163,7 +163,7 @@ int YSegmentedDisplay::set_displayMode(Y_DISPLAYMODE_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("displayMode", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -211,7 +211,7 @@ YSegmentedDisplay* YSegmentedDisplay::FindSegmentedDisplay(string func)
             obj = new YSegmentedDisplay(func);
             YFunction::_AddToCache("SegmentedDisplay", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

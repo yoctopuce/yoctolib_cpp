@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_colorledcluster.cpp 37000 2019-09-03 06:40:17Z mvuilleu $
+ *  $Id: yocto_colorledcluster.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  *  Implements yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -116,7 +116,7 @@ int YColorLedCluster::get_activeLedCount(void)
             }
         }
         res = _activeLedCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -143,7 +143,7 @@ int YColorLedCluster::set_activeLedCount(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("activeLedCount", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -172,7 +172,7 @@ Y_LEDTYPE_enum YColorLedCluster::get_ledType(void)
             }
         }
         res = _ledType;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -200,7 +200,7 @@ int YColorLedCluster::set_ledType(Y_LEDTYPE_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("ledType", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -229,7 +229,7 @@ int YColorLedCluster::get_maxLedCount(void)
             }
         }
         res = _maxLedCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -258,7 +258,7 @@ int YColorLedCluster::get_blinkSeqMaxCount(void)
             }
         }
         res = _blinkSeqMaxCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -287,7 +287,7 @@ int YColorLedCluster::get_blinkSeqMaxSize(void)
             }
         }
         res = _blinkSeqMaxSize;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -309,7 +309,7 @@ string YColorLedCluster::get_command(void)
             }
         }
         res = _command;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -325,7 +325,7 @@ int YColorLedCluster::set_command(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("command", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -373,7 +373,7 @@ YColorLedCluster* YColorLedCluster::FindColorLedCluster(string func)
             obj = new YColorLedCluster(func);
             YFunction::_AddToCache("ColorLedCluster", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }
@@ -445,9 +445,8 @@ int YColorLedCluster::set_rgbColor(int ledIndex,int count,int rgbValue)
 
 /**
  * Changes the  color at device startup of consecutive LEDs in the cluster, using a RGB color.
- * Encoding is done as follows: 0xRRGGBB.
- * Don't forget to call saveLedsConfigAtPowerOn() to make sure the modification is saved in the device
- * flash memory.
+ * Encoding is done as follows: 0xRRGGBB. Don't forget to call saveLedsConfigAtPowerOn()
+ * to make sure the modification is saved in the device flash memory.
  *
  * @param ledIndex :  index of the first affected LED.
  * @param count    :  affected LED count.
@@ -464,9 +463,8 @@ int YColorLedCluster::set_rgbColorAtPowerOn(int ledIndex,int count,int rgbValue)
 
 /**
  * Changes the  color at device startup of consecutive LEDs in the cluster, using a HSL color.
- * Encoding is done as follows: 0xHHSSLL.
- * Don't forget to call saveLedsConfigAtPowerOn() to make sure the modification is saved in the device
- * flash memory.
+ * Encoding is done as follows: 0xHHSSLL. Don't forget to call saveLedsConfigAtPowerOn()
+ * to make sure the modification is saved in the device flash memory.
  *
  * @param ledIndex :  index of the first affected LED.
  * @param count    :  affected LED count.

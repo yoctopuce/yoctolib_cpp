@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_digitalio.cpp 37149 2019-09-12 21:24:53Z mvuilleu $
+ *  $Id: yocto_digitalio.cpp 37653 2019-10-11 17:37:17Z mvuilleu $
  *
  *  Implements yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -105,7 +105,7 @@ int YDigitalIO::_parseAttr(YJSONObject* json_val)
 
 /**
  * Returns the digital IO port state as an integer with each bit
- * representing a channel
+ * representing a channel.
  * value 0 = 0b00000000 -> all channels are OFF
  * value 1 = 0b00000001 -> channel #0 is ON
  * value 2 = 0b00000010 -> channel #1 is ON
@@ -115,12 +115,6 @@ int YDigitalIO::_parseAttr(YJSONObject* json_val)
  *
  * @return an integer corresponding to the digital IO port state as an integer with each bit
  *         representing a channel
- *         value 0 = 0b00000000 -> all channels are OFF
- *         value 1 = 0b00000001 -> channel #0 is ON
- *         value 2 = 0b00000010 -> channel #1 is ON
- *         value 3 = 0b00000011 -> channels #0 and #1 are ON
- *         value 4 = 0b00000100 -> channel #2 is ON
- *         and so on.
  *
  * On failure, throws an exception or returns Y_PORTSTATE_INVALID.
  */
@@ -138,7 +132,7 @@ int YDigitalIO::get_portState(void)
             }
         }
         res = _portState;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -147,20 +141,19 @@ int YDigitalIO::get_portState(void)
 }
 
 /**
- * Changes the state of all digital IO port's channels at once,
- * the parameter is an integer with  each bit representing a channel.
- * Bit 0 matches channel #0. So:
+ * Changes the state of all digital IO port's channels at once: the parameter
+ * is an integer where each bit represents a channel, with bit 0 matching channel #0.
  * To set all channels to  0 -> 0b00000000 -> parameter = 0
  * To set channel #0 to 1 -> 0b00000001 -> parameter =  1
  * To set channel #1 to  1 -> 0b00000010 -> parameter = 2
  * To set channel #0 and #1 -> 0b00000011 -> parameter =  3
  * To set channel #2 to 1 -> 0b00000100 -> parameter =  4
  * an so on....
- * Only channels configured as output, thanks to portDirection,
- * are affected.
+ * Only channels configured as outputs will be affecter, according to the value
+ * configured using set_portDirection.
  *
- * @param newval : an integer corresponding to the state of all digital IO port's channels at once,
- *         the parameter is an integer with  each bit representing a channel
+ * @param newval : an integer corresponding to the state of all digital IO port's channels at once: the parameter
+ *         is an integer where each bit represents a channel, with bit 0 matching channel #0
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -174,7 +167,7 @@ int YDigitalIO::set_portState(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("portState", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -183,9 +176,10 @@ int YDigitalIO::set_portState(int newval)
 }
 
 /**
- * Returns the IO direction of all bits (i.e. channels) of the port: 0 makes a bit an input, 1 makes it an output.
+ * Returns the I/O direction of all channels of the port (bitmap): 0 makes a bit an input, 1 makes it an output.
  *
- * @return an integer corresponding to the IO direction of all bits (i.e
+ * @return an integer corresponding to the I/O direction of all channels of the port (bitmap): 0 makes
+ * a bit an input, 1 makes it an output
  *
  * On failure, throws an exception or returns Y_PORTDIRECTION_INVALID.
  */
@@ -203,7 +197,7 @@ int YDigitalIO::get_portDirection(void)
             }
         }
         res = _portDirection;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -212,10 +206,11 @@ int YDigitalIO::get_portDirection(void)
 }
 
 /**
- * Changes the IO direction of all bits (i.e. channels) of the port: 0 makes a bit an input, 1 makes it an output.
+ * Changes the I/O direction of all channels of the port (bitmap): 0 makes a bit an input, 1 makes it an output.
  * Remember to call the saveToFlash() method  to make sure the setting is kept after a reboot.
  *
- * @param newval : an integer corresponding to the IO direction of all bits (i.e
+ * @param newval : an integer corresponding to the I/O direction of all channels of the port (bitmap):
+ * 0 makes a bit an input, 1 makes it an output
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -229,7 +224,7 @@ int YDigitalIO::set_portDirection(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("portDirection", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -260,7 +255,7 @@ int YDigitalIO::get_portOpenDrain(void)
             }
         }
         res = _portOpenDrain;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -287,7 +282,7 @@ int YDigitalIO::set_portOpenDrain(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("portOpenDrain", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -317,7 +312,7 @@ int YDigitalIO::get_portPolarity(void)
             }
         }
         res = _portPolarity;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -346,7 +341,7 @@ int YDigitalIO::set_portPolarity(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("portPolarity", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -377,7 +372,7 @@ int YDigitalIO::get_portDiags(void)
             }
         }
         res = _portDiags;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -406,7 +401,7 @@ int YDigitalIO::get_portSize(void)
             }
         }
         res = _portSize;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -436,7 +431,7 @@ Y_OUTPUTVOLTAGE_enum YDigitalIO::get_outputVoltage(void)
             }
         }
         res = _outputVoltage;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -463,7 +458,7 @@ int YDigitalIO::set_outputVoltage(Y_OUTPUTVOLTAGE_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("outputVoltage", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -485,7 +480,7 @@ string YDigitalIO::get_command(void)
             }
         }
         res = _command;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -501,7 +496,7 @@ int YDigitalIO::set_command(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("command", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -549,7 +544,7 @@ YDigitalIO* YDigitalIO::FindDigitalIO(string func)
             obj = new YDigitalIO(func);
             YFunction::_AddToCache("DigitalIO", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

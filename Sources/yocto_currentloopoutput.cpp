@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_currentloopoutput.cpp 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_currentloopoutput.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindCurrentLoopOutput(), the high-level API for CurrentLoopOutput functions
  *
@@ -108,7 +108,7 @@ int YCurrentLoopOutput::set_current(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("current", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -137,7 +137,7 @@ double YCurrentLoopOutput::get_current(void)
             }
         }
         res = _current;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -159,7 +159,7 @@ string YCurrentLoopOutput::get_currentTransition(void)
             }
         }
         res = _currentTransition;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -175,7 +175,7 @@ int YCurrentLoopOutput::set_currentTransition(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("currentTransition", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -201,7 +201,7 @@ int YCurrentLoopOutput::set_currentAtStartUp(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("currentAtStartUp", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -230,7 +230,7 @@ double YCurrentLoopOutput::get_currentAtStartUp(void)
             }
         }
         res = _currentAtStartUp;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -262,7 +262,7 @@ Y_LOOPPOWER_enum YCurrentLoopOutput::get_loopPower(void)
             }
         }
         res = _loopPower;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -310,7 +310,7 @@ YCurrentLoopOutput* YCurrentLoopOutput::FindCurrentLoopOutput(string func)
             obj = new YCurrentLoopOutput(func);
             YFunction::_AddToCache("CurrentLoopOutput", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

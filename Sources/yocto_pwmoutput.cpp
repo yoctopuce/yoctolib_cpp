@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwmoutput.cpp 37000 2019-09-03 06:40:17Z mvuilleu $
+ *  $Id: yocto_pwmoutput.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  *  Implements yFindPwmOutput(), the high-level API for PwmOutput functions
  *
@@ -129,7 +129,7 @@ Y_ENABLED_enum YPwmOutput::get_enabled(void)
             }
         }
         res = _enabled;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -154,7 +154,7 @@ int YPwmOutput::set_enabled(Y_ENABLED_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("enabled", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -185,7 +185,7 @@ int YPwmOutput::set_frequency(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("frequency", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -214,7 +214,7 @@ double YPwmOutput::get_frequency(void)
             }
         }
         res = _frequency;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -226,7 +226,8 @@ double YPwmOutput::get_frequency(void)
  * Changes the PWM period in milliseconds. Caution: in order to avoid  random truncation of
  * the current pulse, the change will not be applied
  * before the end of the current period. This can significantly affect reaction
- * time at low frequencies.
+ * time at low frequencies. If you call the matching module saveToFlash()
+ * method, the frequency will be kept after a device power cycle.
  *
  * @param newval : a floating point number corresponding to the PWM period in milliseconds
  *
@@ -242,7 +243,7 @@ int YPwmOutput::set_period(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("period", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -271,7 +272,7 @@ double YPwmOutput::get_period(void)
             }
         }
         res = _period;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -296,7 +297,7 @@ int YPwmOutput::set_dutyCycle(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("dutyCycle", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -325,7 +326,7 @@ double YPwmOutput::get_dutyCycle(void)
             }
         }
         res = _dutyCycle;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -351,7 +352,7 @@ int YPwmOutput::set_pulseDuration(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("pulseDuration", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -381,7 +382,7 @@ double YPwmOutput::get_pulseDuration(void)
             }
         }
         res = _pulseDuration;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -403,7 +404,7 @@ string YPwmOutput::get_pwmTransition(void)
             }
         }
         res = _pwmTransition;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -419,7 +420,7 @@ int YPwmOutput::set_pwmTransition(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("pwmTransition", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -449,7 +450,7 @@ Y_ENABLEDATPOWERON_enum YPwmOutput::get_enabledAtPowerOn(void)
             }
         }
         res = _enabledAtPowerOn;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -476,7 +477,7 @@ int YPwmOutput::set_enabledAtPowerOn(Y_ENABLEDATPOWERON_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("enabledAtPowerOn", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -502,7 +503,7 @@ int YPwmOutput::set_dutyCycleAtPowerOn(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("dutyCycleAtPowerOn", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -532,7 +533,7 @@ double YPwmOutput::get_dutyCycleAtPowerOn(void)
             }
         }
         res = _dutyCycleAtPowerOn;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -580,7 +581,7 @@ YPwmOutput* YPwmOutput::FindPwmOutput(string func)
             obj = new YPwmOutput(func);
             YFunction::_AddToCache("PwmOutput", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

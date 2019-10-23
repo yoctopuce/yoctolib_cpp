@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 37168 2019-09-13 17:25:10Z mvuilleu $
+ * $Id: yocto_serialport.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -206,7 +206,7 @@ int YSerialPort::get_rxCount(void)
             }
         }
         res = _rxCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -235,7 +235,7 @@ int YSerialPort::get_txCount(void)
             }
         }
         res = _txCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -264,7 +264,7 @@ int YSerialPort::get_errCount(void)
             }
         }
         res = _errCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -293,7 +293,7 @@ int YSerialPort::get_rxMsgCount(void)
             }
         }
         res = _rxMsgCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -322,7 +322,7 @@ int YSerialPort::get_txMsgCount(void)
             }
         }
         res = _txMsgCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -351,7 +351,7 @@ string YSerialPort::get_lastMsg(void)
             }
         }
         res = _lastMsg;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -380,7 +380,7 @@ string YSerialPort::get_currentJob(void)
             }
         }
         res = _currentJob;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -406,7 +406,7 @@ int YSerialPort::set_currentJob(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("currentJob", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -435,7 +435,7 @@ string YSerialPort::get_startupJob(void)
             }
         }
         res = _startupJob;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -462,7 +462,7 @@ int YSerialPort::set_startupJob(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("startupJob", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -484,7 +484,7 @@ string YSerialPort::get_command(void)
             }
         }
         res = _command;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -500,7 +500,7 @@ int YSerialPort::set_command(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("command", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -537,7 +537,7 @@ string YSerialPort::get_protocol(void)
             }
         }
         res = _protocol;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -574,7 +574,7 @@ int YSerialPort::set_protocol(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("protocol", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -605,7 +605,7 @@ Y_VOLTAGELEVEL_enum YSerialPort::get_voltageLevel(void)
             }
         }
         res = _voltageLevel;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -638,7 +638,7 @@ int YSerialPort::set_voltageLevel(Y_VOLTAGELEVEL_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("voltageLevel", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -673,7 +673,7 @@ string YSerialPort::get_serialMode(void)
             }
         }
         res = _serialMode;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -706,7 +706,7 @@ int YSerialPort::set_serialMode(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("serialMode", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -754,7 +754,7 @@ YSerialPort* YSerialPort::FindSerialPort(string func)
             obj = new YSerialPort(func);
             YFunction::_AddToCache("SerialPort", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_realtimeclock.cpp 37000 2019-09-03 06:40:17Z mvuilleu $
+ *  $Id: yocto_realtimeclock.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *
@@ -109,7 +109,7 @@ s64 YRealTimeClock::get_unixTime(void)
             }
         }
         res = _unixTime;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -134,7 +134,7 @@ int YRealTimeClock::set_unixTime(s64 newval)
     try {
         char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
         res = _setAttr("unixTime", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -163,7 +163,7 @@ string YRealTimeClock::get_dateTime(void)
             }
         }
         res = _dateTime;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -192,7 +192,7 @@ int YRealTimeClock::get_utcOffset(void)
             }
         }
         res = _utcOffset;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -220,7 +220,7 @@ int YRealTimeClock::set_utcOffset(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("utcOffset", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -250,7 +250,7 @@ Y_TIMESET_enum YRealTimeClock::get_timeSet(void)
             }
         }
         res = _timeSet;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -298,7 +298,7 @@ YRealTimeClock* YRealTimeClock::FindRealTimeClock(string func)
             obj = new YRealTimeClock(func);
             YFunction::_AddToCache("RealTimeClock", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_i2cport.cpp 37168 2019-09-13 17:25:10Z mvuilleu $
+ *  $Id: yocto_i2cport.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindI2cPort(), the high-level API for I2cPort functions
  *
@@ -147,7 +147,7 @@ int YI2cPort::get_rxCount(void)
             }
         }
         res = _rxCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -176,7 +176,7 @@ int YI2cPort::get_txCount(void)
             }
         }
         res = _txCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -205,7 +205,7 @@ int YI2cPort::get_errCount(void)
             }
         }
         res = _errCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -234,7 +234,7 @@ int YI2cPort::get_rxMsgCount(void)
             }
         }
         res = _rxMsgCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -263,7 +263,7 @@ int YI2cPort::get_txMsgCount(void)
             }
         }
         res = _txMsgCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -292,7 +292,7 @@ string YI2cPort::get_lastMsg(void)
             }
         }
         res = _lastMsg;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -321,7 +321,7 @@ string YI2cPort::get_currentJob(void)
             }
         }
         res = _currentJob;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -347,7 +347,7 @@ int YI2cPort::set_currentJob(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("currentJob", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -376,7 +376,7 @@ string YI2cPort::get_startupJob(void)
             }
         }
         res = _startupJob;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -403,7 +403,7 @@ int YI2cPort::set_startupJob(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("startupJob", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -425,7 +425,7 @@ string YI2cPort::get_command(void)
             }
         }
         res = _command;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -441,7 +441,7 @@ int YI2cPort::set_command(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("command", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -473,7 +473,7 @@ string YI2cPort::get_protocol(void)
             }
         }
         res = _protocol;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -505,7 +505,7 @@ int YI2cPort::set_protocol(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("protocol", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -535,7 +535,7 @@ Y_I2CVOLTAGELEVEL_enum YI2cPort::get_i2cVoltageLevel(void)
             }
         }
         res = _i2cVoltageLevel;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -563,7 +563,7 @@ int YI2cPort::set_i2cVoltageLevel(Y_I2CVOLTAGELEVEL_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("i2cVoltageLevel", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -597,7 +597,7 @@ string YI2cPort::get_i2cMode(void)
             }
         }
         res = _i2cMode;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -629,7 +629,7 @@ int YI2cPort::set_i2cMode(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("i2cMode", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -677,7 +677,7 @@ YI2cPort* YI2cPort::FindI2cPort(string func)
             obj = new YI2cPort(func);
             YFunction::_AddToCache("I2cPort", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.cpp 31377 2018-07-27 08:24:38Z seb $
+ * $Id: yocto_gyro.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  * Implements yFindGyro(), the high-level API for Gyro functions
  *
@@ -108,7 +108,7 @@ YQt* YQt::FindQt(string func)
             obj = new YQt(func);
             YFunction::_AddToCache("Qt", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }
@@ -313,7 +313,7 @@ int YGyro::get_bandwidth(void)
             }
         }
         res = _bandwidth;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -324,6 +324,8 @@ int YGyro::get_bandwidth(void)
 /**
  * Changes the measure update frequency, measured in Hz (Yocto-3D-V2 only). When the
  * frequency is lower, the device performs averaging.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
  *
@@ -339,7 +341,7 @@ int YGyro::set_bandwidth(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("bandwidth", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -369,7 +371,7 @@ double YGyro::get_xValue(void)
             }
         }
         res = _xValue;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -399,7 +401,7 @@ double YGyro::get_yValue(void)
             }
         }
         res = _yValue;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -429,7 +431,7 @@ double YGyro::get_zValue(void)
             }
         }
         res = _zValue;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -477,7 +479,7 @@ YGyro* YGyro::FindGyro(string func)
             obj = new YGyro(func);
             YFunction::_AddToCache("Gyro", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

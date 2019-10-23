@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_motor.cpp 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_motor.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  *  Implements yFindMotor(), the high-level API for Motor functions
  *
@@ -144,7 +144,7 @@ Y_MOTORSTATUS_enum YMotor::get_motorStatus(void)
             }
         }
         res = _motorStatus;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -160,7 +160,7 @@ int YMotor::set_motorStatus(Y_MOTORSTATUS_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("motorStatus", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -189,7 +189,7 @@ int YMotor::set_drivingForce(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("drivingForce", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -219,7 +219,7 @@ double YMotor::get_drivingForce(void)
             }
         }
         res = _drivingForce;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -247,7 +247,7 @@ int YMotor::set_brakingForce(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("brakingForce", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -277,7 +277,7 @@ double YMotor::get_brakingForce(void)
             }
         }
         res = _brakingForce;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -291,6 +291,8 @@ double YMotor::get_brakingForce(void)
  * occur when drawing current from an "empty" battery.
  * Note that whatever the cutoff threshold, the controller switches to undervoltage
  * error state if the power supply goes under 3V, even for a very brief time.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : a floating point number corresponding to the threshold voltage under which the
  * controller automatically switches to error state
@@ -308,7 +310,7 @@ int YMotor::set_cutOffVoltage(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("cutOffVoltage", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -341,7 +343,7 @@ double YMotor::get_cutOffVoltage(void)
             }
         }
         res = _cutOffVoltage;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -349,15 +351,6 @@ double YMotor::get_cutOffVoltage(void)
     return res;
 }
 
-/**
- * Returns the current threshold (in mA) above which the controller automatically
- * switches to error state. A zero value means that there is no limit.
- *
- * @return an integer corresponding to the current threshold (in mA) above which the controller automatically
- *         switches to error state
- *
- * On failure, throws an exception or returns Y_OVERCURRENTLIMIT_INVALID.
- */
 int YMotor::get_overCurrentLimit(void)
 {
     int res = 0;
@@ -372,7 +365,7 @@ int YMotor::get_overCurrentLimit(void)
             }
         }
         res = _overCurrentLimit;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -384,7 +377,8 @@ int YMotor::get_overCurrentLimit(void)
  * Changes the current threshold (in mA) above which the controller automatically
  * switches to error state. A zero value means that there is no limit. Note that whatever the
  * current limit is, the controller switches to OVERCURRENT status if the current
- * goes above 32A, even for a very brief time.
+ * goes above 32A, even for a very brief time. Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : an integer corresponding to the current threshold (in mA) above which the
  * controller automatically
@@ -402,7 +396,7 @@ int YMotor::set_overCurrentLimit(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("overCurrentLimit", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -414,7 +408,8 @@ int YMotor::set_overCurrentLimit(int newval)
  * Changes the PWM frequency used to control the motor. Low frequency is usually
  * more efficient and may help the motor to start, but an audible noise might be
  * generated. A higher frequency reduces the noise, but more energy is converted
- * into heat.
+ * into heat. Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : a floating point number corresponding to the PWM frequency used to control the motor
  *
@@ -430,7 +425,7 @@ int YMotor::set_frequency(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("frequency", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -459,7 +454,7 @@ double YMotor::get_frequency(void)
             }
         }
         res = _frequency;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -491,7 +486,7 @@ int YMotor::get_starterTime(void)
             }
         }
         res = _starterTime;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -501,7 +496,8 @@ int YMotor::get_starterTime(void)
 
 /**
  * Changes the duration (in ms) during which the motor is driven at low frequency to help
- * it start up.
+ * it start up. Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : an integer corresponding to the duration (in ms) during which the motor is driven
  * at low frequency to help
@@ -519,7 +515,7 @@ int YMotor::set_starterTime(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("starterTime", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -553,7 +549,7 @@ int YMotor::get_failSafeTimeout(void)
             }
         }
         res = _failSafeTimeout;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -566,6 +562,8 @@ int YMotor::get_failSafeTimeout(void)
  * receiving any instruction from the control process. When this delay has elapsed,
  * the controller automatically stops the motor and switches to FAILSAFE error.
  * Failsafe security is disabled when the value is zero.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : an integer corresponding to the delay in milliseconds allowed for the controller to
  * run autonomously without
@@ -583,7 +581,7 @@ int YMotor::set_failSafeTimeout(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("failSafeTimeout", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -605,7 +603,7 @@ string YMotor::get_command(void)
             }
         }
         res = _command;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -621,7 +619,7 @@ int YMotor::set_command(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("command", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -669,7 +667,7 @@ YMotor* YMotor::FindMotor(string func)
             obj = new YMotor(func);
             YFunction::_AddToCache("Motor", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_audioin.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_audioin.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  *  Implements yFindAudioIn(), the high-level API for AudioIn functions
  *
@@ -112,7 +112,7 @@ int YAudioIn::get_volume(void)
             }
         }
         res = _volume;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -122,6 +122,8 @@ int YAudioIn::get_volume(void)
 
 /**
  * Changes audio input gain, in per cents.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : an integer corresponding to audio input gain, in per cents
  *
@@ -137,7 +139,7 @@ int YAudioIn::set_volume(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("volume", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -166,7 +168,7 @@ Y_MUTE_enum YAudioIn::get_mute(void)
             }
         }
         res = _mute;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -192,7 +194,7 @@ int YAudioIn::set_mute(Y_MUTE_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("mute", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -224,7 +226,7 @@ string YAudioIn::get_volumeRange(void)
             }
         }
         res = _volumeRange;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -253,7 +255,7 @@ int YAudioIn::get_signal(void)
             }
         }
         res = _signal;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -282,7 +284,7 @@ int YAudioIn::get_noSignalFor(void)
             }
         }
         res = _noSignalFor;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -330,7 +332,7 @@ YAudioIn* YAudioIn::FindAudioIn(string func)
             obj = new YAudioIn(func);
             YFunction::_AddToCache("AudioIn", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_oscontrol.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_oscontrol.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindOsControl(), the high-level API for OsControl functions
  *
@@ -97,7 +97,7 @@ int YOsControl::get_shutdownCountdown(void)
             }
         }
         res = _shutdownCountdown;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -113,7 +113,7 @@ int YOsControl::set_shutdownCountdown(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("shutdownCountdown", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -161,7 +161,7 @@ YOsControl* YOsControl::FindOsControl(string func)
             obj = new YOsControl(func);
             YFunction::_AddToCache("OsControl", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

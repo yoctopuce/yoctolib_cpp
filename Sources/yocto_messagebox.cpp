@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.cpp 34661 2019-03-18 11:02:50Z seb $
+ * $Id: yocto_messagebox.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  * Implements yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -1372,7 +1372,7 @@ int YMessageBox::get_slotsInUse(void)
             }
         }
         res = _slotsInUse;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -1401,7 +1401,7 @@ int YMessageBox::get_slotsCount(void)
             }
         }
         res = _slotsCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -1423,7 +1423,7 @@ string YMessageBox::get_slotsBitmap(void)
             }
         }
         res = _slotsBitmap;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -1452,7 +1452,7 @@ int YMessageBox::get_pduSent(void)
             }
         }
         res = _pduSent;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -1477,7 +1477,7 @@ int YMessageBox::set_pduSent(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("pduSent", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -1506,7 +1506,7 @@ int YMessageBox::get_pduReceived(void)
             }
         }
         res = _pduReceived;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -1531,7 +1531,7 @@ int YMessageBox::set_pduReceived(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("pduReceived", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -1553,7 +1553,7 @@ string YMessageBox::get_command(void)
             }
         }
         res = _command;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -1569,7 +1569,7 @@ int YMessageBox::set_command(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("command", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -1617,7 +1617,7 @@ YMessageBox* YMessageBox::FindMessageBox(string func)
             obj = new YMessageBox(func);
             YFunction::_AddToCache("MessageBox", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

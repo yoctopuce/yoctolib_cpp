@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 33709 2018-12-14 14:18:12Z seb $
+ * $Id: yocto_cellular.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -227,7 +227,7 @@ int YCellular::get_linkQuality(void)
             }
         }
         res = _linkQuality;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -256,7 +256,7 @@ string YCellular::get_cellOperator(void)
             }
         }
         res = _cellOperator;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -286,7 +286,7 @@ string YCellular::get_cellIdentifier(void)
             }
         }
         res = _cellIdentifier;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -316,7 +316,7 @@ Y_CELLTYPE_enum YCellular::get_cellType(void)
             }
         }
         res = _cellType;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -349,7 +349,7 @@ string YCellular::get_imsi(void)
             }
         }
         res = _imsi;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -378,7 +378,7 @@ string YCellular::get_message(void)
             }
         }
         res = _message;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -411,7 +411,7 @@ string YCellular::get_pin(void)
             }
         }
         res = _pin;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -446,7 +446,7 @@ int YCellular::set_pin(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("pin", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -479,7 +479,7 @@ string YCellular::get_lockedOperator(void)
             }
         }
         res = _lockedOperator;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -491,6 +491,8 @@ string YCellular::get_lockedOperator(void)
  * Changes the name of the cell operator to be used. If the name is an empty
  * string, the choice will be made automatically based on the SIM card. Otherwise,
  * the selected operator is the only one that will be used.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : a string corresponding to the name of the cell operator to be used
  *
@@ -506,7 +508,7 @@ int YCellular::set_lockedOperator(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("lockedOperator", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -536,7 +538,7 @@ Y_AIRPLANEMODE_enum YCellular::get_airplaneMode(void)
             }
         }
         res = _airplaneMode;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -562,7 +564,7 @@ int YCellular::set_airplaneMode(Y_AIRPLANEMODE_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("airplaneMode", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -593,7 +595,7 @@ Y_ENABLEDATA_enum YCellular::get_enableData(void)
             }
         }
         res = _enableData;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -608,6 +610,8 @@ Y_ENABLEDATA_enum YCellular::get_enableData(void)
  * on roaming networks may cause prohibitive communication costs !
  *
  * When data services are disabled, SMS are the only mean of communication.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : a value among Y_ENABLEDATA_HOMENETWORK, Y_ENABLEDATA_ROAMING, Y_ENABLEDATA_NEVER
  * and Y_ENABLEDATA_NEUTRALITY corresponding to the condition for enabling IP data services (GPRS)
@@ -624,7 +628,7 @@ int YCellular::set_enableData(Y_ENABLEDATA_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("enableData", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -654,7 +658,7 @@ string YCellular::get_apn(void)
             }
         }
         res = _apn;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -665,6 +669,8 @@ string YCellular::get_apn(void)
 /**
  * Returns the Access Point Name (APN) to be used, if needed.
  * When left blank, the APN suggested by the cell operator will be used.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : a string
  *
@@ -680,7 +686,7 @@ int YCellular::set_apn(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("apn", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -712,7 +718,7 @@ string YCellular::get_apnSecret(void)
             }
         }
         res = _apnSecret;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -728,7 +734,7 @@ int YCellular::set_apnSecret(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("apnSecret", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -757,7 +763,7 @@ int YCellular::get_pingInterval(void)
             }
         }
         res = _pingInterval;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -767,6 +773,8 @@ int YCellular::get_pingInterval(void)
 
 /**
  * Changes the automated connectivity check interval, in seconds.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : an integer corresponding to the automated connectivity check interval, in seconds
  *
@@ -782,7 +790,7 @@ int YCellular::set_pingInterval(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("pingInterval", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -811,7 +819,7 @@ int YCellular::get_dataSent(void)
             }
         }
         res = _dataSent;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -836,7 +844,7 @@ int YCellular::set_dataSent(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("dataSent", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -865,7 +873,7 @@ int YCellular::get_dataReceived(void)
             }
         }
         res = _dataReceived;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -890,7 +898,7 @@ int YCellular::set_dataReceived(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("dataReceived", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -912,7 +920,7 @@ string YCellular::get_command(void)
             }
         }
         res = _command;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -928,7 +936,7 @@ int YCellular::set_command(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("command", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -976,7 +984,7 @@ YCellular* YCellular::FindCellular(string func)
             obj = new YCellular(func);
             YFunction::_AddToCache("Cellular", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

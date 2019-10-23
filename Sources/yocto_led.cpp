@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_led.cpp 36554 2019-07-29 12:21:31Z mvuilleu $
+ *  $Id: yocto_led.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindLed(), the high-level API for Led functions
  *
@@ -103,7 +103,7 @@ Y_POWER_enum YLed::get_power(void)
             }
         }
         res = _power;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -128,7 +128,7 @@ int YLed::set_power(Y_POWER_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("power", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -157,7 +157,7 @@ int YLed::get_luminosity(void)
             }
         }
         res = _luminosity;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -183,7 +183,7 @@ int YLed::set_luminosity(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("luminosity", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -213,7 +213,7 @@ Y_BLINKING_enum YLed::get_blinking(void)
             }
         }
         res = _blinking;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -239,7 +239,7 @@ int YLed::set_blinking(Y_BLINKING_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("blinking", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -287,7 +287,7 @@ YLed* YLed::FindLed(string func)
             obj = new YLed(func);
             YFunction::_AddToCache("Led", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

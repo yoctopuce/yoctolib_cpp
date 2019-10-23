@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_humidity.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_humidity.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindHumidity(), the high-level API for Humidity functions
  *
@@ -104,7 +104,7 @@ int YHumidity::set_unit(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("unit", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -133,7 +133,7 @@ double YHumidity::get_relHum(void)
             }
         }
         res = _relHum;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -162,7 +162,7 @@ double YHumidity::get_absHum(void)
             }
         }
         res = _absHum;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -210,7 +210,7 @@ YHumidity* YHumidity::FindHumidity(string func)
             obj = new YHumidity(func);
             YFunction::_AddToCache("Humidity", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

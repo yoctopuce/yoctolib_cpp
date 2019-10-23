@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_temperature.cpp 35467 2019-05-16 14:41:53Z seb $
+ *  $Id: yocto_temperature.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindTemperature(), the high-level API for Temperature functions
  *
@@ -115,7 +115,7 @@ int YTemperature::set_unit(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("unit", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -149,7 +149,7 @@ Y_SENSORTYPE_enum YTemperature::get_sensorType(void)
             }
         }
         res = _sensorType;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -183,7 +183,7 @@ int YTemperature::set_sensorType(Y_SENSORTYPE_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("sensorType", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -213,7 +213,7 @@ double YTemperature::get_signalValue(void)
             }
         }
         res = floor(_signalValue * 1000+0.5) / 1000;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -242,7 +242,7 @@ string YTemperature::get_signalUnit(void)
             }
         }
         res = _signalUnit;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -264,7 +264,7 @@ string YTemperature::get_command(void)
             }
         }
         res = _command;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -280,7 +280,7 @@ int YTemperature::set_command(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("command", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -328,7 +328,7 @@ YTemperature* YTemperature::FindTemperature(string func)
             obj = new YTemperature(func);
             YFunction::_AddToCache("Temperature", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

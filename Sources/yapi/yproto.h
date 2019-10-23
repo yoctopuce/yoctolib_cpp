@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 37220 2019-09-18 14:40:17Z seb $
+ * $Id: yproto.h 37780 2019-10-23 10:28:34Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -678,6 +678,8 @@ typedef struct{
 #define NEXT_YPKT_NO(current) ((current+1)& YPKTNOMSK)
 #define NEXT_IFACE_NO(current,total) (current+1<total?current+1:0)
 
+#define DEV_FLAGS_GUESS_USB_PKT   1u
+
 // structure that contain all information about a device
 typedef struct  _yPrivDeviceSt{
     yCRITICAL_SECTION   acces_state;
@@ -688,6 +690,7 @@ typedef struct  _yPrivDeviceSt{
     char                errmsg[YOCTO_ERRMSG_LEN];
     unsigned int        nb_startup_retry;
     u64                 next_startup_attempt;
+    u32                 flags;
     USB_HDL             pendingIO;
     YHTTP_STATUS        httpstate;
     yDeviceSt           infos;      // device infos

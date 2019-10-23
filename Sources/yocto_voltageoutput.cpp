@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_voltageoutput.cpp 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_voltageoutput.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindVoltageOutput(), the high-level API for VoltageOutput functions
  *
@@ -102,7 +102,7 @@ int YVoltageOutput::set_currentVoltage(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("currentVoltage", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -131,7 +131,7 @@ double YVoltageOutput::get_currentVoltage(void)
             }
         }
         res = _currentVoltage;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -153,7 +153,7 @@ string YVoltageOutput::get_voltageTransition(void)
             }
         }
         res = _voltageTransition;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -169,7 +169,7 @@ int YVoltageOutput::set_voltageTransition(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("voltageTransition", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -195,7 +195,7 @@ int YVoltageOutput::set_voltageAtStartUp(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("voltageAtStartUp", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -224,7 +224,7 @@ double YVoltageOutput::get_voltageAtStartUp(void)
             }
         }
         res = _voltageAtStartUp;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -272,7 +272,7 @@ YVoltageOutput* YVoltageOutput::FindVoltageOutput(string func)
             obj = new YVoltageOutput(func);
             YFunction::_AddToCache("VoltageOutput", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

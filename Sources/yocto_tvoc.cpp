@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_tvoc.cpp 33270 2018-11-22 08:41:15Z seb $
+ *  $Id: yocto_tvoc.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindTvoc(), the high-level API for Tvoc functions
  *
@@ -106,7 +106,7 @@ YTvoc* YTvoc::FindTvoc(string func)
             obj = new YTvoc(func);
             YFunction::_AddToCache("Tvoc", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

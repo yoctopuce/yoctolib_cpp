@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_compass.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_compass.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  *  Implements yFindCompass(), the high-level API for Compass functions
  *
@@ -105,7 +105,7 @@ int YCompass::get_bandwidth(void)
             }
         }
         res = _bandwidth;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -116,6 +116,8 @@ int YCompass::get_bandwidth(void)
 /**
  * Changes the measure update frequency, measured in Hz (Yocto-3D-V2 only). When the
  * frequency is lower, the device performs averaging.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
  *
@@ -131,7 +133,7 @@ int YCompass::set_bandwidth(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("bandwidth", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -153,7 +155,7 @@ Y_AXIS_enum YCompass::get_axis(void)
             }
         }
         res = _axis;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -182,7 +184,7 @@ double YCompass::get_magneticHeading(void)
             }
         }
         res = _magneticHeading;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -230,7 +232,7 @@ YCompass* YCompass::FindCompass(string func)
             obj = new YCompass(func);
             YFunction::_AddToCache("Compass", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

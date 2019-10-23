@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_anbutton.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_anbutton.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindAnButton(), the high-level API for AnButton functions
  *
@@ -135,7 +135,7 @@ int YAnButton::get_calibratedValue(void)
             }
         }
         res = _calibratedValue;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -164,7 +164,7 @@ int YAnButton::get_rawValue(void)
             }
         }
         res = _rawValue;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -193,7 +193,7 @@ Y_ANALOGCALIBRATION_enum YAnButton::get_analogCalibration(void)
             }
         }
         res = _analogCalibration;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -219,7 +219,7 @@ int YAnButton::set_analogCalibration(Y_ANALOGCALIBRATION_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("analogCalibration", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -249,7 +249,7 @@ int YAnButton::get_calibrationMax(void)
             }
         }
         res = _calibrationMax;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -278,7 +278,7 @@ int YAnButton::set_calibrationMax(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("calibrationMax", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -308,7 +308,7 @@ int YAnButton::get_calibrationMin(void)
             }
         }
         res = _calibrationMin;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -337,7 +337,7 @@ int YAnButton::set_calibrationMin(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("calibrationMin", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -367,7 +367,7 @@ int YAnButton::get_sensitivity(void)
             }
         }
         res = _sensitivity;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -398,7 +398,7 @@ int YAnButton::set_sensitivity(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("sensitivity", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -428,7 +428,7 @@ Y_ISPRESSED_enum YAnButton::get_isPressed(void)
             }
         }
         res = _isPressed;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -460,7 +460,7 @@ s64 YAnButton::get_lastTimePressed(void)
             }
         }
         res = _lastTimePressed;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -492,7 +492,7 @@ s64 YAnButton::get_lastTimeReleased(void)
             }
         }
         res = _lastTimeReleased;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -523,7 +523,7 @@ s64 YAnButton::get_pulseCounter(void)
             }
         }
         res = _pulseCounter;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -539,7 +539,7 @@ int YAnButton::set_pulseCounter(s64 newval)
     try {
         char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
         res = _setAttr("pulseCounter", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -568,7 +568,7 @@ s64 YAnButton::get_pulseTimer(void)
             }
         }
         res = _pulseTimer;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -616,7 +616,7 @@ YAnButton* YAnButton::FindAnButton(string func)
             obj = new YAnButton(func);
             YFunction::_AddToCache("AnButton", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

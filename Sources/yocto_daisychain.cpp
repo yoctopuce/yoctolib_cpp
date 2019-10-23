@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_daisychain.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_daisychain.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  *  Implements yFindDaisyChain(), the high-level API for DaisyChain functions
  *
@@ -105,7 +105,7 @@ Y_DAISYSTATE_enum YDaisyChain::get_daisyState(void)
             }
         }
         res = _daisyState;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -134,7 +134,7 @@ int YDaisyChain::get_childCount(void)
             }
         }
         res = _childCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -163,7 +163,7 @@ int YDaisyChain::get_requiredChildCount(void)
             }
         }
         res = _requiredChildCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -175,7 +175,8 @@ int YDaisyChain::get_requiredChildCount(void)
  * Changes the number of child nodes expected in normal conditions.
  * If the value is zero, no check is performed. If it is non-zero, the number
  * child nodes is checked on startup and the status will change to error if
- * the count does not match.
+ * the count does not match. Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : an integer corresponding to the number of child nodes expected in normal conditions
  *
@@ -191,7 +192,7 @@ int YDaisyChain::set_requiredChildCount(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("requiredChildCount", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -239,7 +240,7 @@ YDaisyChain* YDaisyChain::FindDaisyChain(string func)
             obj = new YDaisyChain(func);
             YFunction::_AddToCache("DaisyChain", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

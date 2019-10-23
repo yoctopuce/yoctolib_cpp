@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_relay.cpp 34976 2019-04-05 06:47:49Z seb $
+ *  $Id: yocto_relay.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  *  Implements yFindRelay(), the high-level API for Relay functions
  *
@@ -135,7 +135,7 @@ Y_STATE_enum YRelay::get_state(void)
             }
         }
         res = _state;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -161,7 +161,7 @@ int YRelay::set_state(Y_STATE_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("state", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -193,7 +193,7 @@ Y_STATEATPOWERON_enum YRelay::get_stateAtPowerOn(void)
             }
         }
         res = _stateAtPowerOn;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -202,11 +202,14 @@ Y_STATEATPOWERON_enum YRelay::get_stateAtPowerOn(void)
 }
 
 /**
- * Preset the state of the relays at device startup (A for the idle position,
- * B for the active position, UNCHANGED for no modification). Remember to call the matching module saveToFlash()
+ * Changes the state of the relays at device startup (A for the idle position,
+ * B for the active position, UNCHANGED for no modification).
+ * Remember to call the matching module saveToFlash()
  * method, otherwise this call will have no effect.
  *
  * @param newval : a value among Y_STATEATPOWERON_UNCHANGED, Y_STATEATPOWERON_A and Y_STATEATPOWERON_B
+ * corresponding to the state of the relays at device startup (A for the idle position,
+ *         B for the active position, UNCHANGED for no modification)
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -220,7 +223,7 @@ int YRelay::set_stateAtPowerOn(Y_STATEATPOWERON_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("stateAtPowerOn", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -229,10 +232,11 @@ int YRelay::set_stateAtPowerOn(Y_STATEATPOWERON_enum newval)
 }
 
 /**
- * Retourne the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state A before automatically
- * switching back in to B state. Zero means no maximum time.
+ * Returns the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state
+ * A before automatically switching back in to B state. Zero means no time limit.
  *
- * @return an integer
+ * @return an integer corresponding to the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state
+ *         A before automatically switching back in to B state
  *
  * On failure, throws an exception or returns Y_MAXTIMEONSTATEA_INVALID.
  */
@@ -250,7 +254,7 @@ s64 YRelay::get_maxTimeOnStateA(void)
             }
         }
         res = _maxTimeOnStateA;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -259,10 +263,13 @@ s64 YRelay::get_maxTimeOnStateA(void)
 }
 
 /**
- * Sets the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state A before automatically
- * switching back in to B state. Use zero for no maximum time.
+ * Changes the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state A
+ * before automatically switching back in to B state. Use zero for no time limit.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
- * @param newval : an integer
+ * @param newval : an integer corresponding to the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state A
+ *         before automatically switching back in to B state
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -276,7 +283,7 @@ int YRelay::set_maxTimeOnStateA(s64 newval)
     try {
         char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
         res = _setAttr("maxTimeOnStateA", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -285,8 +292,8 @@ int YRelay::set_maxTimeOnStateA(s64 newval)
 }
 
 /**
- * Retourne the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state B before automatically
- * switching back in to A state. Zero means no maximum time.
+ * Retourne the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state B
+ * before automatically switching back in to A state. Zero means no time limit.
  *
  * @return an integer
  *
@@ -306,7 +313,7 @@ s64 YRelay::get_maxTimeOnStateB(void)
             }
         }
         res = _maxTimeOnStateB;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -315,10 +322,14 @@ s64 YRelay::get_maxTimeOnStateB(void)
 }
 
 /**
- * Sets the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state B before automatically
- * switching back in to A state. Use zero for no maximum time.
+ * Changes the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state B before
+ * automatically switching back in to A state. Use zero for no time limit.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
- * @param newval : an integer
+ * @param newval : an integer corresponding to the maximum time (ms) allowed for $THEFUNCTIONS$ to
+ * stay in state B before
+ *         automatically switching back in to A state
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -332,7 +343,7 @@ int YRelay::set_maxTimeOnStateB(s64 newval)
     try {
         char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
         res = _setAttr("maxTimeOnStateB", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -362,7 +373,7 @@ Y_OUTPUT_enum YRelay::get_output(void)
             }
         }
         res = _output;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -388,7 +399,7 @@ int YRelay::set_output(Y_OUTPUT_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("output", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -420,7 +431,7 @@ s64 YRelay::get_pulseTimer(void)
             }
         }
         res = _pulseTimer;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -436,7 +447,7 @@ int YRelay::set_pulseTimer(s64 newval)
     try {
         char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
         res = _setAttr("pulseTimer", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -475,7 +486,7 @@ YDelayedPulse YRelay::get_delayedPulseTimer(void)
             }
         }
         res = _delayedPulseTimer;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -491,7 +502,7 @@ int YRelay::set_delayedPulseTimer(YDelayedPulse newval)
     try {
         char buff[64]; sprintf(buff,"%d:%d",newval.target,newval.ms); rest_val = string(buff);
         res = _setAttr("delayedPulseTimer", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -539,7 +550,7 @@ s64 YRelay::get_countdown(void)
             }
         }
         res = _countdown;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -587,7 +598,7 @@ YRelay* YRelay::FindRelay(string func)
             obj = new YRelay(func);
             YFunction::_AddToCache("Relay", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

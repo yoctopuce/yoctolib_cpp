@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_altitude.cpp 34115 2019-01-23 14:23:54Z seb $
+ *  $Id: yocto_altitude.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  *  Implements yFindAltitude(), the high-level API for Altitude functions
  *
@@ -84,6 +84,8 @@ int YAltitude::_parseAttr(YJSONObject* json_val)
 /**
  * Changes the current estimated altitude. This allows one to compensate for
  * ambient pressure variations and to work in relative mode.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : a floating point number corresponding to the current estimated altitude
  *
@@ -99,7 +101,7 @@ int YAltitude::set_currentValue(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("currentValue", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -111,6 +113,8 @@ int YAltitude::set_currentValue(double newval)
  * Changes the barometric pressure adjusted to sea level used to compute
  * the altitude (QNH). This enables you to compensate for atmospheric pressure
  * changes due to weather conditions. Applicable to barometric altimeters only.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : a floating point number corresponding to the barometric pressure adjusted to sea
  * level used to compute
@@ -128,7 +132,7 @@ int YAltitude::set_qnh(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("qnh", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -159,7 +163,7 @@ double YAltitude::get_qnh(void)
             }
         }
         res = _qnh;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -190,7 +194,7 @@ string YAltitude::get_technology(void)
             }
         }
         res = _technology;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -238,7 +242,7 @@ YAltitude* YAltitude::FindAltitude(string func)
             obj = new YAltitude(func);
             YFunction::_AddToCache("Altitude", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

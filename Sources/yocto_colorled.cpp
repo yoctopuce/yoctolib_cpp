@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_colorled.cpp 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_colorled.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -148,7 +148,7 @@ int YColorLed::get_rgbColor(void)
             }
         }
         res = _rgbColor;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -173,7 +173,7 @@ int YColorLed::set_rgbColor(int newval)
     try {
         char buf[32]; sprintf(buf,"0x%06x",newval); rest_val = string(buf);
         res = _setAttr("rgbColor", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -202,7 +202,7 @@ int YColorLed::get_hslColor(void)
             }
         }
         res = _hslColor;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -227,7 +227,7 @@ int YColorLed::set_hslColor(int newval)
     try {
         char buf[32]; sprintf(buf,"0x%06x",newval); rest_val = string(buf);
         res = _setAttr("hslColor", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -249,7 +249,7 @@ YMove YColorLed::get_rgbMove(void)
             }
         }
         res = _rgbMove;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -265,7 +265,7 @@ int YColorLed::set_rgbMove(YMove newval)
     try {
         char buff[64]; sprintf(buff,"%d:%d",newval.target,newval.ms); rest_val = string(buff);
         res = _setAttr("rgbMove", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -304,7 +304,7 @@ YMove YColorLed::get_hslMove(void)
             }
         }
         res = _hslMove;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -320,7 +320,7 @@ int YColorLed::set_hslMove(YMove newval)
     try {
         char buff[64]; sprintf(buff,"%d:%d",newval.target,newval.ms); rest_val = string(buff);
         res = _setAttr("hslMove", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -366,7 +366,7 @@ int YColorLed::get_rgbColorAtPowerOn(void)
             }
         }
         res = _rgbColorAtPowerOn;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -392,7 +392,7 @@ int YColorLed::set_rgbColorAtPowerOn(int newval)
     try {
         char buf[32]; sprintf(buf,"0x%06x",newval); rest_val = string(buf);
         res = _setAttr("rgbColorAtPowerOn", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -421,7 +421,7 @@ int YColorLed::get_blinkSeqSize(void)
             }
         }
         res = _blinkSeqSize;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -450,7 +450,7 @@ int YColorLed::get_blinkSeqMaxSize(void)
             }
         }
         res = _blinkSeqMaxSize;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -482,7 +482,7 @@ int YColorLed::get_blinkSeqSignature(void)
             }
         }
         res = _blinkSeqSignature;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -504,7 +504,7 @@ string YColorLed::get_command(void)
             }
         }
         res = _command;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -520,7 +520,7 @@ int YColorLed::set_command(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("command", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -568,7 +568,7 @@ YColorLed* YColorLed::FindColorLed(string func)
             obj = new YColorLed(func);
             YFunction::_AddToCache("ColorLed", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_lightsensor.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_lightsensor.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindLightSensor(), the high-level API for LightSensor functions
  *
@@ -83,7 +83,7 @@ int YLightSensor::set_currentValue(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("currentValue", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -133,7 +133,7 @@ Y_MEASURETYPE_enum YLightSensor::get_measureType(void)
             }
         }
         res = _measureType;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -164,7 +164,7 @@ int YLightSensor::set_measureType(Y_MEASURETYPE_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("measureType", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -212,7 +212,7 @@ YLightSensor* YLightSensor::FindLightSensor(string func)
             obj = new YLightSensor(func);
             YFunction::_AddToCache("LightSensor", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

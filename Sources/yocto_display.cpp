@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 37000 2019-09-03 06:40:17Z mvuilleu $
+ * $Id: yocto_display.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -704,7 +704,7 @@ Y_ENABLED_enum YDisplay::get_enabled(void)
             }
         }
         res = _enabled;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -729,7 +729,7 @@ int YDisplay::set_enabled(Y_ENABLED_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("enabled", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -758,7 +758,7 @@ string YDisplay::get_startupSeq(void)
             }
         }
         res = _startupSeq;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -785,7 +785,7 @@ int YDisplay::set_startupSeq(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("startupSeq", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -814,7 +814,7 @@ int YDisplay::get_brightness(void)
             }
         }
         res = _brightness;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -841,7 +841,7 @@ int YDisplay::set_brightness(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("brightness", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -871,7 +871,7 @@ Y_ORIENTATION_enum YDisplay::get_orientation(void)
             }
         }
         res = _orientation;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -898,7 +898,7 @@ int YDisplay::set_orientation(Y_ORIENTATION_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("orientation", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -927,7 +927,7 @@ int YDisplay::get_displayWidth(void)
             }
         }
         res = _displayWidth;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -956,7 +956,7 @@ int YDisplay::get_displayHeight(void)
             }
         }
         res = _displayHeight;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -986,7 +986,7 @@ Y_DISPLAYTYPE_enum YDisplay::get_displayType(void)
             }
         }
         res = _displayType;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -1015,7 +1015,7 @@ int YDisplay::get_layerWidth(void)
             }
         }
         res = _layerWidth;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -1044,7 +1044,7 @@ int YDisplay::get_layerHeight(void)
             }
         }
         res = _layerHeight;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -1073,7 +1073,7 @@ int YDisplay::get_layerCount(void)
             }
         }
         res = _layerCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -1095,7 +1095,7 @@ string YDisplay::get_command(void)
             }
         }
         res = _command;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -1111,7 +1111,7 @@ int YDisplay::set_command(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("command", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -1159,7 +1159,7 @@ YDisplay* YDisplay::FindDisplay(string func)
             obj = new YDisplay(func);
             YFunction::_AddToCache("Display", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

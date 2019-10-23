@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_accelerometer.h 32900 2018-11-02 10:12:43Z seb $
+ *  $Id: yocto_accelerometer.h 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  *  Declares yFindAccelerometer(), the high-level API for Accelerometer functions
  *
@@ -137,6 +137,8 @@ public:
     /**
      * Changes the measure update frequency, measured in Hz (Yocto-3D-V2 only). When the
      * frequency is lower, the device performs averaging.
+     * Remember to call the saveToFlash()
+     * method of the module if the modification must be kept.
      *
      * @param newval : an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
      *

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_gps.cpp 37165 2019-09-13 16:57:27Z mvuilleu $
+ *  $Id: yocto_gps.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindGps(), the high-level API for Gps functions
  *
@@ -156,7 +156,7 @@ Y_ISFIXED_enum YGps::get_isFixed(void)
             }
         }
         res = _isFixed;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -185,7 +185,7 @@ s64 YGps::get_satCount(void)
             }
         }
         res = _satCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -215,7 +215,7 @@ Y_COORDSYSTEM_enum YGps::get_coordSystem(void)
             }
         }
         res = _coordSystem;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -243,7 +243,7 @@ int YGps::set_coordSystem(Y_COORDSYSTEM_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("coordSystem", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -276,7 +276,7 @@ Y_CONSTELLATION_enum YGps::get_constellation(void)
             }
         }
         res = _constellation;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -307,7 +307,7 @@ int YGps::set_constellation(Y_CONSTELLATION_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("constellation", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -336,7 +336,7 @@ string YGps::get_latitude(void)
             }
         }
         res = _latitude;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -365,7 +365,7 @@ string YGps::get_longitude(void)
             }
         }
         res = _longitude;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -396,7 +396,7 @@ double YGps::get_dilution(void)
             }
         }
         res = _dilution;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -426,7 +426,7 @@ double YGps::get_altitude(void)
             }
         }
         res = _altitude;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -455,7 +455,7 @@ double YGps::get_groundSpeed(void)
             }
         }
         res = _groundSpeed;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -486,7 +486,7 @@ double YGps::get_direction(void)
             }
         }
         res = _direction;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -517,7 +517,7 @@ s64 YGps::get_unixTime(void)
             }
         }
         res = _unixTime;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -546,7 +546,7 @@ string YGps::get_dateTime(void)
             }
         }
         res = _dateTime;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -575,7 +575,7 @@ int YGps::get_utcOffset(void)
             }
         }
         res = _utcOffset;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -604,7 +604,7 @@ int YGps::set_utcOffset(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("utcOffset", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -626,7 +626,7 @@ string YGps::get_command(void)
             }
         }
         res = _command;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -642,7 +642,7 @@ int YGps::set_command(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("command", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -690,7 +690,7 @@ YGps* YGps::FindGps(string func)
             obj = new YGps(func);
             YFunction::_AddToCache("Gps", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

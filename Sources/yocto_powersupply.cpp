@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_powersupply.cpp 34115 2019-01-23 14:23:54Z seb $
+ *  $Id: yocto_powersupply.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindPowerSupply(), the high-level API for PowerSupply functions
  *
@@ -150,7 +150,7 @@ int YPowerSupply::set_voltageSetPoint(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("voltageSetPoint", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -179,7 +179,7 @@ double YPowerSupply::get_voltageSetPoint(void)
             }
         }
         res = _voltageSetPoint;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -204,7 +204,7 @@ int YPowerSupply::set_currentLimit(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("currentLimit", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -233,7 +233,7 @@ double YPowerSupply::get_currentLimit(void)
             }
         }
         res = _currentLimit;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -262,7 +262,7 @@ Y_POWEROUTPUT_enum YPowerSupply::get_powerOutput(void)
             }
         }
         res = _powerOutput;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -287,7 +287,7 @@ int YPowerSupply::set_powerOutput(Y_POWEROUTPUT_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("powerOutput", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -316,7 +316,7 @@ Y_VOLTAGESENSE_enum YPowerSupply::get_voltageSense(void)
             }
         }
         res = _voltageSense;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -341,7 +341,7 @@ int YPowerSupply::set_voltageSense(Y_VOLTAGESENSE_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("voltageSense", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -370,7 +370,7 @@ double YPowerSupply::get_measuredVoltage(void)
             }
         }
         res = _measuredVoltage;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -399,7 +399,7 @@ double YPowerSupply::get_measuredCurrent(void)
             }
         }
         res = _measuredCurrent;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -428,7 +428,7 @@ double YPowerSupply::get_inputVoltage(void)
             }
         }
         res = _inputVoltage;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -457,7 +457,7 @@ double YPowerSupply::get_vInt(void)
             }
         }
         res = _vInt;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -486,7 +486,7 @@ double YPowerSupply::get_ldoTemperature(void)
             }
         }
         res = _ldoTemperature;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -508,7 +508,7 @@ string YPowerSupply::get_voltageTransition(void)
             }
         }
         res = _voltageTransition;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -524,7 +524,7 @@ int YPowerSupply::set_voltageTransition(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("voltageTransition", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -550,7 +550,7 @@ int YPowerSupply::set_voltageAtStartUp(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("voltageAtStartUp", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -579,7 +579,7 @@ double YPowerSupply::get_voltageAtStartUp(void)
             }
         }
         res = _voltageAtStartUp;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -605,7 +605,7 @@ int YPowerSupply::set_currentAtStartUp(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("currentAtStartUp", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -634,7 +634,7 @@ double YPowerSupply::get_currentAtStartUp(void)
             }
         }
         res = _currentAtStartUp;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -656,7 +656,7 @@ string YPowerSupply::get_command(void)
             }
         }
         res = _command;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -672,7 +672,7 @@ int YPowerSupply::set_command(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("command", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -720,7 +720,7 @@ YPowerSupply* YPowerSupply::FindPowerSupply(string func)
             obj = new YPowerSupply(func);
             YFunction::_AddToCache("PowerSupply", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

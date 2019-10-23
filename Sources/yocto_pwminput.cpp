@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwminput.cpp 37149 2019-09-12 21:24:53Z mvuilleu $
+ *  $Id: yocto_pwminput.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindPwmInput(), the high-level API for PwmInput functions
  *
@@ -128,7 +128,7 @@ int YPwmInput::set_unit(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("unit", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -157,7 +157,7 @@ double YPwmInput::get_dutyCycle(void)
             }
         }
         res = _dutyCycle;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -187,7 +187,7 @@ double YPwmInput::get_pulseDuration(void)
             }
         }
         res = _pulseDuration;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -216,7 +216,7 @@ double YPwmInput::get_frequency(void)
             }
         }
         res = _frequency;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -245,7 +245,7 @@ double YPwmInput::get_period(void)
             }
         }
         res = _period;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -276,7 +276,7 @@ s64 YPwmInput::get_pulseCounter(void)
             }
         }
         res = _pulseCounter;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -292,7 +292,7 @@ int YPwmInput::set_pulseCounter(s64 newval)
     try {
         char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
         res = _setAttr("pulseCounter", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -321,7 +321,7 @@ s64 YPwmInput::get_pulseTimer(void)
             }
         }
         res = _pulseTimer;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -355,7 +355,7 @@ Y_PWMREPORTMODE_enum YPwmInput::get_pwmReportMode(void)
             }
         }
         res = _pwmReportMode;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -388,7 +388,7 @@ int YPwmInput::set_pwmReportMode(Y_PWMREPORTMODE_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("pwmReportMode", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -417,7 +417,7 @@ int YPwmInput::get_debouncePeriod(void)
             }
         }
         res = _debouncePeriod;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -443,7 +443,7 @@ int YPwmInput::set_debouncePeriod(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("debouncePeriod", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -491,7 +491,7 @@ YPwmInput* YPwmInput::FindPwmInput(string func)
             obj = new YPwmInput(func);
             YFunction::_AddToCache("PwmInput", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

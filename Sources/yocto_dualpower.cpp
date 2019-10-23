@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_dualpower.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_dualpower.cpp 37609 2019-10-09 16:59:35Z mvuilleu $
  *
  *  Implements yFindDualPower(), the high-level API for DualPower functions
  *
@@ -104,7 +104,7 @@ Y_POWERSTATE_enum YDualPower::get_powerState(void)
             }
         }
         res = _powerState;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -134,7 +134,7 @@ Y_POWERCONTROL_enum YDualPower::get_powerControl(void)
             }
         }
         res = _powerControl;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -144,6 +144,7 @@ Y_POWERCONTROL_enum YDualPower::get_powerControl(void)
 
 /**
  * Changes the selected power source for module functions that require lots of current.
+ * Remember to call the saveToFlash() method of the module if the modification must be kept.
  *
  * @param newval : a value among Y_POWERCONTROL_AUTO, Y_POWERCONTROL_FROM_USB, Y_POWERCONTROL_FROM_EXT
  * and Y_POWERCONTROL_OFF corresponding to the selected power source for module functions that require
@@ -161,7 +162,7 @@ int YDualPower::set_powerControl(Y_POWERCONTROL_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("powerControl", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -190,7 +191,7 @@ int YDualPower::get_extVoltage(void)
             }
         }
         res = _extVoltage;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -238,7 +239,7 @@ YDualPower* YDualPower::FindDualPower(string func)
             obj = new YDualPower(func);
             YFunction::_AddToCache("DualPower", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

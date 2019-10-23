@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_tilt.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_tilt.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  *  Implements yFindTilt(), the high-level API for Tilt functions
  *
@@ -100,7 +100,7 @@ int YTilt::get_bandwidth(void)
             }
         }
         res = _bandwidth;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -111,6 +111,8 @@ int YTilt::get_bandwidth(void)
 /**
  * Changes the measure update frequency, measured in Hz (Yocto-3D-V2 only). When the
  * frequency is lower, the device performs averaging.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
  *
@@ -126,7 +128,7 @@ int YTilt::set_bandwidth(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("bandwidth", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -148,7 +150,7 @@ Y_AXIS_enum YTilt::get_axis(void)
             }
         }
         res = _axis;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -196,7 +198,7 @@ YTilt* YTilt::FindTilt(string func)
             obj = new YTilt(func);
             YFunction::_AddToCache("Tilt", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

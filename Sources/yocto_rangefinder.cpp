@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_rangefinder.cpp 37149 2019-09-12 21:24:53Z mvuilleu $
+ *  $Id: yocto_rangefinder.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindRangeFinder(), the high-level API for RangeFinder functions
  *
@@ -119,7 +119,7 @@ int YRangeFinder::set_unit(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("unit", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -150,7 +150,7 @@ Y_RANGEFINDERMODE_enum YRangeFinder::get_rangeFinderMode(void)
             }
         }
         res = _rangeFinderMode;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -180,7 +180,7 @@ int YRangeFinder::set_rangeFinderMode(Y_RANGEFINDERMODE_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("rangeFinderMode", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -211,7 +211,7 @@ s64 YRangeFinder::get_timeFrame(void)
             }
         }
         res = _timeFrame;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -241,7 +241,7 @@ int YRangeFinder::set_timeFrame(s64 newval)
     try {
         char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
         res = _setAttr("timeFrame", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -270,7 +270,7 @@ int YRangeFinder::get_quality(void)
             }
         }
         res = _quality;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -292,7 +292,7 @@ string YRangeFinder::get_hardwareCalibration(void)
             }
         }
         res = _hardwareCalibration;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -308,7 +308,7 @@ int YRangeFinder::set_hardwareCalibration(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("hardwareCalibration", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -337,7 +337,7 @@ double YRangeFinder::get_currentTemperature(void)
             }
         }
         res = _currentTemperature;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -359,7 +359,7 @@ string YRangeFinder::get_command(void)
             }
         }
         res = _command;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -375,7 +375,7 @@ int YRangeFinder::set_command(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("command", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -423,7 +423,7 @@ YRangeFinder* YRangeFinder::FindRangeFinder(string func)
             obj = new YRangeFinder(func);
             YFunction::_AddToCache("RangeFinder", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

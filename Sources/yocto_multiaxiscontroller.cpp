@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multiaxiscontroller.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_multiaxiscontroller.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindMultiAxisController(), the high-level API for MultiAxisController functions
  *
@@ -104,7 +104,7 @@ int YMultiAxisController::get_nAxis(void)
             }
         }
         res = _nAxis;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -129,7 +129,7 @@ int YMultiAxisController::set_nAxis(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("nAxis", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -160,7 +160,7 @@ Y_GLOBALSTATE_enum YMultiAxisController::get_globalState(void)
             }
         }
         res = _globalState;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -182,7 +182,7 @@ string YMultiAxisController::get_command(void)
             }
         }
         res = _command;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -198,7 +198,7 @@ int YMultiAxisController::set_command(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("command", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -246,7 +246,7 @@ YMultiAxisController* YMultiAxisController::FindMultiAxisController(string func)
             obj = new YMultiAxisController(func);
             YFunction::_AddToCache("MultiAxisController", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupschedule.cpp 37000 2019-09-03 06:40:17Z mvuilleu $
+ *  $Id: yocto_wakeupschedule.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindWakeUpSchedule(), the high-level API for WakeUpSchedule functions
  *
@@ -119,7 +119,7 @@ int YWakeUpSchedule::get_minutesA(void)
             }
         }
         res = _minutesA;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -146,7 +146,7 @@ int YWakeUpSchedule::set_minutesA(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("minutesA", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -175,7 +175,7 @@ int YWakeUpSchedule::get_minutesB(void)
             }
         }
         res = _minutesB;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -202,7 +202,7 @@ int YWakeUpSchedule::set_minutesB(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("minutesB", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -231,7 +231,7 @@ int YWakeUpSchedule::get_hours(void)
             }
         }
         res = _hours;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -258,7 +258,7 @@ int YWakeUpSchedule::set_hours(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("hours", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -287,7 +287,7 @@ int YWakeUpSchedule::get_weekDays(void)
             }
         }
         res = _weekDays;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -314,7 +314,7 @@ int YWakeUpSchedule::set_weekDays(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("weekDays", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -343,7 +343,7 @@ int YWakeUpSchedule::get_monthDays(void)
             }
         }
         res = _monthDays;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -370,7 +370,7 @@ int YWakeUpSchedule::set_monthDays(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("monthDays", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -399,7 +399,7 @@ int YWakeUpSchedule::get_months(void)
             }
         }
         res = _months;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -426,7 +426,7 @@ int YWakeUpSchedule::set_months(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("months", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -455,7 +455,7 @@ s64 YWakeUpSchedule::get_nextOccurence(void)
             }
         }
         res = _nextOccurence;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -503,7 +503,7 @@ YWakeUpSchedule* YWakeUpSchedule::FindWakeUpSchedule(string func)
             obj = new YWakeUpSchedule(func);
             YFunction::_AddToCache("WakeUpSchedule", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

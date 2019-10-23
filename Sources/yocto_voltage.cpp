@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_voltage.cpp 35360 2019-05-09 09:02:29Z mvuilleu $
+ *  $Id: yocto_voltage.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  *  Implements yFindVoltage(), the high-level API for Voltage functions
  *
@@ -96,7 +96,7 @@ Y_ENABLED_enum YVoltage::get_enabled(void)
             }
         }
         res = _enabled;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -105,11 +105,15 @@ Y_ENABLED_enum YVoltage::get_enabled(void)
 }
 
 /**
- * Changes the activation state of this input. When an input is disabled,
- * its value is no more updated. On some devices, disabling an input can
- * improve the refresh rate of the other active inputs.
+ * Changes the activation state of this voltage input. When AC measurements are disabled,
+ * the device will always assume a DC signal, and vice-versa. When both AC and DC measurements
+ * are active, the device switches between AC and DC mode based on the relative amplitude
+ * of variations compared to the average value.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
- * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the activation state of this input
+ * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the activation state of this
+ * voltage input
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -123,7 +127,7 @@ int YVoltage::set_enabled(Y_ENABLED_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("enabled", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -171,7 +175,7 @@ YVoltage* YVoltage::FindVoltage(string func)
             obj = new YVoltage(func);
             YFunction::_AddToCache("Voltage", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

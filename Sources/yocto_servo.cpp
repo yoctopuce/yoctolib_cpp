@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_servo.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_servo.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindServo(), the high-level API for Servo functions
  *
@@ -129,7 +129,7 @@ int YServo::get_position(void)
             }
         }
         res = _position;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -154,7 +154,7 @@ int YServo::set_position(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("position", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -183,7 +183,7 @@ Y_ENABLED_enum YServo::get_enabled(void)
             }
         }
         res = _enabled;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -208,7 +208,7 @@ int YServo::set_enabled(Y_ENABLED_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("enabled", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -237,7 +237,7 @@ int YServo::get_range(void)
             }
         }
         res = _range;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -268,7 +268,7 @@ int YServo::set_range(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("range", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -297,7 +297,7 @@ int YServo::get_neutral(void)
             }
         }
         res = _neutral;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -328,7 +328,7 @@ int YServo::set_neutral(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("neutral", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -350,7 +350,7 @@ YMove YServo::get_move(void)
             }
         }
         res = _move;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -366,7 +366,7 @@ int YServo::set_move(YMove newval)
     try {
         char buff[64]; sprintf(buff,"%d:%d",newval.target,newval.ms); rest_val = string(buff);
         res = _setAttr("move", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -412,7 +412,7 @@ int YServo::get_positionAtPowerOn(void)
             }
         }
         res = _positionAtPowerOn;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -438,7 +438,7 @@ int YServo::set_positionAtPowerOn(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("positionAtPowerOn", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -468,7 +468,7 @@ Y_ENABLEDATPOWERON_enum YServo::get_enabledAtPowerOn(void)
             }
         }
         res = _enabledAtPowerOn;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -494,7 +494,7 @@ int YServo::set_enabledAtPowerOn(Y_ENABLEDATPOWERON_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("enabledAtPowerOn", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -542,7 +542,7 @@ YServo* YServo::FindServo(string func)
             obj = new YServo(func);
             YFunction::_AddToCache("Servo", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

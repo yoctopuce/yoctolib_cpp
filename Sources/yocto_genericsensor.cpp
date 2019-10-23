@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_genericsensor.cpp 35360 2019-05-09 09:02:29Z mvuilleu $
+ *  $Id: yocto_genericsensor.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  *  Implements yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -123,7 +123,7 @@ int YGenericSensor::set_unit(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("unit", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -153,7 +153,7 @@ double YGenericSensor::get_signalValue(void)
             }
         }
         res = floor(_signalValue * 1000+0.5) / 1000;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -182,7 +182,7 @@ string YGenericSensor::get_signalUnit(void)
             }
         }
         res = _signalUnit;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -191,9 +191,9 @@ string YGenericSensor::get_signalUnit(void)
 }
 
 /**
- * Returns the electric signal range used by the sensor.
+ * Returns the input signal range used by the sensor.
  *
- * @return a string corresponding to the electric signal range used by the sensor
+ * @return a string corresponding to the input signal range used by the sensor
  *
  * On failure, throws an exception or returns Y_SIGNALRANGE_INVALID.
  */
@@ -211,7 +211,7 @@ string YGenericSensor::get_signalRange(void)
             }
         }
         res = _signalRange;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -220,9 +220,20 @@ string YGenericSensor::get_signalRange(void)
 }
 
 /**
- * Changes the electric signal range used by the sensor. Default value is "-999999.999...999999.999".
+ * Changes the input signal range used by the sensor.
+ * When the input signal gets out of the planned range, the output value
+ * will be set to an arbitrary large value, whose sign indicates the direction
+ * of the range overrun.
  *
- * @param newval : a string corresponding to the electric signal range used by the sensor
+ * For a 4-20mA sensor, the default input signal range is "4...20".
+ * For a 0-10V sensor, the default input signal range is "0.1...10".
+ * For numeric communication interfaces, the default input signal range is
+ * "-999999.999...999999.999".
+ *
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
+ *
+ * @param newval : a string corresponding to the input signal range used by the sensor
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -236,7 +247,7 @@ int YGenericSensor::set_signalRange(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("signalRange", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -265,7 +276,7 @@ string YGenericSensor::get_valueRange(void)
             }
         }
         res = _valueRange;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -274,10 +285,17 @@ string YGenericSensor::get_valueRange(void)
 }
 
 /**
- * Changes the physical value range measured by the sensor. As a side effect, the range modification may
- * automatically modify the display resolution. Default value is "-999999.999...999999.999".
+ * Changes the output value range, corresponding to the physical value measured
+ * by the sensor. The default output value range is the same as the input signal
+ * range (1:1 mapping), but you can change it so that the function automatically
+ * computes the physical value encoded by the input signal. Be aware that, as a
+ * side effect, the range modification may automatically modify the display resolution.
  *
- * @param newval : a string corresponding to the physical value range measured by the sensor
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
+ *
+ * @param newval : a string corresponding to the output value range, corresponding to the physical value measured
+ *         by the sensor
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -291,7 +309,7 @@ int YGenericSensor::set_valueRange(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("valueRange", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -303,6 +321,8 @@ int YGenericSensor::set_valueRange(const string& newval)
  * Changes the electric signal bias for zero shift adjustment.
  * If your electric signal reads positive when it should be zero, setup
  * a positive signalBias of the same value to fix the zero shift.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : a floating point number corresponding to the electric signal bias for zero shift adjustment
  *
@@ -318,7 +338,7 @@ int YGenericSensor::set_signalBias(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("signalBias", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -349,7 +369,7 @@ double YGenericSensor::get_signalBias(void)
             }
         }
         res = _signalBias;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -385,7 +405,7 @@ Y_SIGNALSAMPLING_enum YGenericSensor::get_signalSampling(void)
             }
         }
         res = _signalSampling;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -400,6 +420,8 @@ Y_SIGNALSAMPLING_enum YGenericSensor::get_signalSampling(void)
  * The LOW_NOISE method uses a reduced acquisition frequency to reduce noise.
  * The LOW_NOISE_FILTERED method combines a reduced frequency with the median filter
  * to get measures as stable as possible when working on a noisy signal.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : a value among Y_SIGNALSAMPLING_HIGH_RATE, Y_SIGNALSAMPLING_HIGH_RATE_FILTERED,
  * Y_SIGNALSAMPLING_LOW_NOISE, Y_SIGNALSAMPLING_LOW_NOISE_FILTERED and Y_SIGNALSAMPLING_HIGHEST_RATE
@@ -417,7 +439,7 @@ int YGenericSensor::set_signalSampling(Y_SIGNALSAMPLING_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("signalSampling", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -446,7 +468,7 @@ Y_ENABLED_enum YGenericSensor::get_enabled(void)
             }
         }
         res = _enabled;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -458,6 +480,8 @@ Y_ENABLED_enum YGenericSensor::get_enabled(void)
  * Changes the activation state of this input. When an input is disabled,
  * its value is no more updated. On some devices, disabling an input can
  * improve the refresh rate of the other active inputs.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the activation state of this input
  *
@@ -473,7 +497,7 @@ int YGenericSensor::set_enabled(Y_ENABLED_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("enabled", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -521,7 +545,7 @@ YGenericSensor* YGenericSensor::FindGenericSensor(string func)
             obj = new YGenericSensor(func);
             YFunction::_AddToCache("GenericSensor", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }
@@ -605,7 +629,8 @@ int YGenericSensor::_invokeTimedReportCallback(YMeasure value)
 
 /**
  * Adjusts the signal bias so that the current signal value is need
- * precisely as zero.
+ * precisely as zero. Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *

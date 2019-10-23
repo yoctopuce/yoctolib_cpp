@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_watchdog.h 34975 2019-04-04 17:01:43Z seb $
+ *  $Id: yocto_watchdog.h 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  *  Declares yFindWatchdog(), the high-level API for Watchdog functions
  *
@@ -235,11 +235,14 @@ public:
     { return this->get_stateAtPowerOn(); }
 
     /**
-     * Preset the state of the watchdog at device startup (A for the idle position,
-     * B for the active position, UNCHANGED for no modification). Remember to call the matching module saveToFlash()
+     * Changes the state of the watchdog at device startup (A for the idle position,
+     * B for the active position, UNCHANGED for no modification).
+     * Remember to call the matching module saveToFlash()
      * method, otherwise this call will have no effect.
      *
      * @param newval : a value among Y_STATEATPOWERON_UNCHANGED, Y_STATEATPOWERON_A and Y_STATEATPOWERON_B
+     * corresponding to the state of the watchdog at device startup (A for the idle position,
+     *         B for the active position, UNCHANGED for no modification)
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
@@ -250,10 +253,11 @@ public:
     { return this->set_stateAtPowerOn(newval); }
 
     /**
-     * Retourne the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state A before automatically
-     * switching back in to B state. Zero means no maximum time.
+     * Returns the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state
+     * A before automatically switching back in to B state. Zero means no time limit.
      *
-     * @return an integer
+     * @return an integer corresponding to the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state
+     *         A before automatically switching back in to B state
      *
      * On failure, throws an exception or returns Y_MAXTIMEONSTATEA_INVALID.
      */
@@ -263,10 +267,13 @@ public:
     { return this->get_maxTimeOnStateA(); }
 
     /**
-     * Sets the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state A before automatically
-     * switching back in to B state. Use zero for no maximum time.
+     * Changes the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state A
+     * before automatically switching back in to B state. Use zero for no time limit.
+     * Remember to call the saveToFlash()
+     * method of the module if the modification must be kept.
      *
-     * @param newval : an integer
+     * @param newval : an integer corresponding to the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state A
+     *         before automatically switching back in to B state
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
@@ -277,8 +284,8 @@ public:
     { return this->set_maxTimeOnStateA(newval); }
 
     /**
-     * Retourne the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state B before automatically
-     * switching back in to A state. Zero means no maximum time.
+     * Retourne the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state B
+     * before automatically switching back in to A state. Zero means no time limit.
      *
      * @return an integer
      *
@@ -290,10 +297,14 @@ public:
     { return this->get_maxTimeOnStateB(); }
 
     /**
-     * Sets the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state B before automatically
-     * switching back in to A state. Use zero for no maximum time.
+     * Changes the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state B before
+     * automatically switching back in to A state. Use zero for no time limit.
+     * Remember to call the saveToFlash()
+     * method of the module if the modification must be kept.
      *
-     * @param newval : an integer
+     * @param newval : an integer corresponding to the maximum time (ms) allowed for $THEFUNCTIONS$ to
+     * stay in state B before
+     *         automatically switching back in to A state
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
@@ -473,10 +484,12 @@ public:
     { return this->get_triggerDelay(); }
 
     /**
-     * Changes the waiting delay before a reset is triggered by the watchdog, in milliseconds.
+     * Changes the waiting delay before a reset is triggered by the watchdog,
+     * in milliseconds. Remember to call the saveToFlash()
+     * method of the module if the modification must be kept.
      *
-     * @param newval : an integer corresponding to the waiting delay before a reset is triggered by the
-     * watchdog, in milliseconds
+     * @param newval : an integer corresponding to the waiting delay before a reset is triggered by the watchdog,
+     *         in milliseconds
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
@@ -500,6 +513,8 @@ public:
 
     /**
      * Changes the duration of resets caused by the watchdog, in milliseconds.
+     * Remember to call the saveToFlash()
+     * method of the module if the modification must be kept.
      *
      * @param newval : an integer corresponding to the duration of resets caused by the watchdog, in milliseconds
      *

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_arithmeticsensor.cpp 35698 2019-06-05 17:25:12Z mvuilleu $
+ *  $Id: yocto_arithmeticsensor.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindArithmeticSensor(), the high-level API for ArithmeticSensor functions
  *
@@ -100,7 +100,7 @@ int YArithmeticSensor::set_unit(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("unit", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -129,7 +129,7 @@ string YArithmeticSensor::get_description(void)
             }
         }
         res = _description;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -151,7 +151,7 @@ string YArithmeticSensor::get_command(void)
             }
         }
         res = _command;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -167,7 +167,7 @@ int YArithmeticSensor::set_command(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("command", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -215,7 +215,7 @@ YArithmeticSensor* YArithmeticSensor::FindArithmeticSensor(string func)
             obj = new YArithmeticSensor(func);
             YFunction::_AddToCache("ArithmeticSensor", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

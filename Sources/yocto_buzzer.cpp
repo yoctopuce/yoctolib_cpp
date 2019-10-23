@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_buzzer.cpp 36554 2019-07-29 12:21:31Z mvuilleu $
+ *  $Id: yocto_buzzer.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindBuzzer(), the high-level API for Buzzer functions
  *
@@ -113,7 +113,7 @@ int YBuzzer::set_frequency(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("frequency", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -142,7 +142,7 @@ double YBuzzer::get_frequency(void)
             }
         }
         res = _frequency;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -171,7 +171,7 @@ int YBuzzer::get_volume(void)
             }
         }
         res = _volume;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -197,7 +197,7 @@ int YBuzzer::set_volume(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("volume", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -226,7 +226,7 @@ int YBuzzer::get_playSeqSize(void)
             }
         }
         res = _playSeqSize;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -255,7 +255,7 @@ int YBuzzer::get_playSeqMaxSize(void)
             }
         }
         res = _playSeqMaxSize;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -287,7 +287,7 @@ int YBuzzer::get_playSeqSignature(void)
             }
         }
         res = _playSeqSignature;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -309,7 +309,7 @@ string YBuzzer::get_command(void)
             }
         }
         res = _command;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -325,7 +325,7 @@ int YBuzzer::set_command(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("command", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -373,7 +373,7 @@ YBuzzer* YBuzzer::FindBuzzer(string func)
             obj = new YBuzzer(func);
             YFunction::_AddToCache("Buzzer", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_poweroutput.cpp 35467 2019-05-16 14:41:53Z seb $
+ *  $Id: yocto_poweroutput.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindPowerOutput(), the high-level API for PowerOutput functions
  *
@@ -96,7 +96,7 @@ Y_VOLTAGE_enum YPowerOutput::get_voltage(void)
             }
         }
         res = _voltage;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -125,7 +125,7 @@ int YPowerOutput::set_voltage(Y_VOLTAGE_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("voltage", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -173,7 +173,7 @@ YPowerOutput* YPowerOutput::FindPowerOutput(string func)
             obj = new YPowerOutput(func);
             YFunction::_AddToCache("PowerOutput", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

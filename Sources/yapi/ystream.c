@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 36044 2019-06-28 17:33:59Z mvuilleu $
+ * $Id: ystream.c 37780 2019-10-23 10:28:34Z seb $
  *
  * USB stream implementation
  *
@@ -418,7 +418,7 @@ static void devStartEnum(LOCATION yPrivDeviceSt *dev)
         YPANIC;
     }
 
-    
+
     dev->rstatus = YRUN_STOPED;
     // keep the Mutex on purpose
 }
@@ -1215,7 +1215,7 @@ YRETCODE yyySendPacket(yInterfaceSt *iface, const USB_Packet *pkt, char *errmsg)
         return res;
     }
     res = yPktQueueWaitEmptyH2D(iface, USB_MAX_IO_DURATION, errmsg);
-    if (YISERR(res)) { 
+    if (YISERR(res)) {
         return (YRETCODE) res;
     }else if(res > 0){
         return YAPI_SUCCESS;
@@ -1357,11 +1357,11 @@ static int ySendStart(yPrivDeviceSt *dev,char *errmsg)
     return YAPI_SUCCESS;
 }
 
-
 static int yPacketSetup(yPrivDeviceSt *dev,char *errmsg)
 {
     pktItem qpkt, *rpkt = NULL;
     int res;
+    u32 timeout;
 
     YPROPERR(yyySetup(&dev->iface, errmsg));
 
@@ -1370,23 +1370,36 @@ static int yPacketSetup(yPrivDeviceSt *dev,char *errmsg)
     qpkt.pkt.confpkt.conf.reset.ok = 1;
     TO_SAFE_U16(qpkt.pkt.confpkt.conf.reset.api, YPKT_USB_VERSION_BCD);
     YPROPERR(yyySendPacket(&dev->iface, &qpkt.pkt, errmsg));
+    timeout =  (dev->flags & DEV_FLAGS_GUESS_USB_PKT) ? 1:5;
+    res = yyWaitOnlyConfPkt(&dev->iface, USB_CONF_RESET, &rpkt, timeout, errmsg);
+    if (res == YAPI_TIMEOUT && dev->flags & DEV_FLAGS_GUESS_USB_PKT){
+        // we may have the Raspberry Pi 4 bug : some packets are not repported by the kernel
+        // supose that we have received the packet and try to continue with packet ack to see
+        // if we can work around this bug
+        yContext->detecttype |= Y_RESEND_MISSING_PKT;
+        dev->iface.pkt_version = YPKT_USB_VERSION_BCD;
+        dbglog("Guess USB reset packet\n");
+        yApproximateSleep(10);
+    }else {
+        // standard handling. T
+        if (YISERR(res) || rpkt == NULL) {
+            res = YERRMSG(YAPI_TIMEOUT, "Device does not respond to reset");
+            goto error;
+        }
+        FROM_SAFE_U16(rpkt->pkt.confpkt.conf.reset.api, dev->iface.pkt_version);
+        if (CheckVersionCompatibility(dev->iface.pkt_version, dev->iface.serial, errmsg)<0) {
+            res = YAPI_VERSION_MISMATCH;
+            goto error;
+        }
+        YASSERT(rpkt->pkt.confpkt.conf.reset.ifaceno < NBMAX_INTERFACE_PER_DEV);
+        if (rpkt->pkt.confpkt.conf.reset.nbifaces != 1) {
+            res = YERRMSG(YAPI_VERSION_MISMATCH, "Multiples USB interface are no more supported");
+            goto error;
+        }
+        yFree(rpkt);
+    }
 
-    if (YISERR(yyWaitOnlyConfPkt(&dev->iface, USB_CONF_RESET, &rpkt, 5, errmsg)) || rpkt == NULL) {
-        res = YERRMSG(YAPI_VERSION_MISMATCH, "Device does not respond to reset");
-        goto error;
-    }
-    FROM_SAFE_U16(rpkt->pkt.confpkt.conf.reset.api, dev->iface.pkt_version);
-    if (CheckVersionCompatibility(dev->iface.pkt_version, dev->iface.serial, errmsg)<0) {
-        res = YAPI_VERSION_MISMATCH;
-        goto error;
-    }
-    YASSERT(rpkt->pkt.confpkt.conf.reset.ifaceno < NBMAX_INTERFACE_PER_DEV);
-    if (rpkt->pkt.confpkt.conf.reset.nbifaces != 1) {
-        res = YERRMSG(YAPI_VERSION_MISMATCH, "Multiples USB interface are no more supported");
-        goto error;
-    }
     dev->iface.ifaceno = 0;
-    yFree(rpkt);
     rpkt = NULL;
 
     if(!YISERR(res=ySendStart(dev,errmsg))){
@@ -2131,6 +2144,14 @@ static int StartDevice(yPrivDeviceSt *dev, char *errmsg)
         u64 timeout;
         int res = yStreamSetup(dev, errmsg);
         if (YISERR(res)) {
+            if (res==YAPI_TIMEOUT) {
+                // we may have the Raspberry Pi 4 bug : some packets are not repported by the kernel
+                // supose that we have received the packet and try to continue with packet ack to see
+                // if we can work around this bug
+                dev->flags |= DEV_FLAGS_GUESS_USB_PKT;
+                dbglog("Enable guessing of reset USB packet\n");
+
+            }
             continue;
         }
         timeout = yapiGetTickCount() + 10000;

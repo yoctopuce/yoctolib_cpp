@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_bluetoothlink.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_bluetoothlink.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  *  Implements yFindBluetoothLink(), the high-level API for BluetoothLink functions
  *
@@ -137,7 +137,7 @@ string YBluetoothLink::get_ownAddress(void)
             }
         }
         res = _ownAddress;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -170,7 +170,7 @@ string YBluetoothLink::get_pairingPin(void)
             }
         }
         res = _pairingPin;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -197,7 +197,7 @@ int YBluetoothLink::set_pairingPin(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("pairingPin", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -226,7 +226,7 @@ string YBluetoothLink::get_remoteAddress(void)
             }
         }
         res = _remoteAddress;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -236,6 +236,8 @@ string YBluetoothLink::get_remoteAddress(void)
 
 /**
  * Changes the MAC-48 address defining which remote device to connect to.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : a string corresponding to the MAC-48 address defining which remote device to connect to
  *
@@ -251,7 +253,7 @@ int YBluetoothLink::set_remoteAddress(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("remoteAddress", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -280,7 +282,7 @@ string YBluetoothLink::get_remoteName(void)
             }
         }
         res = _remoteName;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -309,7 +311,7 @@ Y_MUTE_enum YBluetoothLink::get_mute(void)
             }
         }
         res = _mute;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -335,7 +337,7 @@ int YBluetoothLink::set_mute(Y_MUTE_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("mute", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -364,7 +366,7 @@ int YBluetoothLink::get_preAmplifier(void)
             }
         }
         res = _preAmplifier;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -374,6 +376,8 @@ int YBluetoothLink::get_preAmplifier(void)
 
 /**
  * Changes the audio pre-amplifier volume, in per cents.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : an integer corresponding to the audio pre-amplifier volume, in per cents
  *
@@ -389,7 +393,7 @@ int YBluetoothLink::set_preAmplifier(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("preAmplifier", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -418,7 +422,7 @@ int YBluetoothLink::get_volume(void)
             }
         }
         res = _volume;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -443,7 +447,7 @@ int YBluetoothLink::set_volume(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("volume", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -473,7 +477,7 @@ Y_LINKSTATE_enum YBluetoothLink::get_linkState(void)
             }
         }
         res = _linkState;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -503,7 +507,7 @@ int YBluetoothLink::get_linkQuality(void)
             }
         }
         res = _linkQuality;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -525,7 +529,7 @@ string YBluetoothLink::get_command(void)
             }
         }
         res = _command;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -541,7 +545,7 @@ int YBluetoothLink::set_command(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("command", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -589,7 +593,7 @@ YBluetoothLink* YBluetoothLink::FindBluetoothLink(string func)
             obj = new YBluetoothLink(func);
             YFunction::_AddToCache("BluetoothLink", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

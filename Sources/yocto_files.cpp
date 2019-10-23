@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.cpp 34651 2019-03-15 17:21:54Z seb $
+ * $Id: yocto_files.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  * Implements yFindFiles(), the high-level API for Files functions
  *
@@ -179,7 +179,7 @@ int YFiles::get_filesCount(void)
             }
         }
         res = _filesCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -208,7 +208,7 @@ int YFiles::get_freeSpace(void)
             }
         }
         res = _freeSpace;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -256,7 +256,7 @@ YFiles* YFiles::FindFiles(string func)
             obj = new YFiles(func);
             YFunction::_AddToCache("Files", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

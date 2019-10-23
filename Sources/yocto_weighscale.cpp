@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_weighscale.cpp 37165 2019-09-13 16:57:27Z mvuilleu $
+ *  $Id: yocto_weighscale.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindWeighScale(), the high-level API for WeighScale functions
  *
@@ -129,7 +129,7 @@ int YWeighScale::set_unit(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("unit", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -159,7 +159,7 @@ Y_EXCITATION_enum YWeighScale::get_excitation(void)
             }
         }
         res = _excitation;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -187,7 +187,7 @@ int YWeighScale::set_excitation(Y_EXCITATION_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("excitation", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -218,7 +218,7 @@ int YWeighScale::set_tempAvgAdaptRatio(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("tempAvgAdaptRatio", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -251,7 +251,7 @@ double YWeighScale::get_tempAvgAdaptRatio(void)
             }
         }
         res = _tempAvgAdaptRatio;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -281,7 +281,7 @@ int YWeighScale::set_tempChgAdaptRatio(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("tempChgAdaptRatio", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -313,7 +313,7 @@ double YWeighScale::get_tempChgAdaptRatio(void)
             }
         }
         res = _tempChgAdaptRatio;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -342,7 +342,7 @@ double YWeighScale::get_compTempAvg(void)
             }
         }
         res = _compTempAvg;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -372,7 +372,7 @@ double YWeighScale::get_compTempChg(void)
             }
         }
         res = _compTempChg;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -401,7 +401,7 @@ double YWeighScale::get_compensation(void)
             }
         }
         res = _compensation;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -430,7 +430,7 @@ int YWeighScale::set_zeroTracking(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("zeroTracking", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -461,7 +461,7 @@ double YWeighScale::get_zeroTracking(void)
             }
         }
         res = _zeroTracking;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -483,7 +483,7 @@ string YWeighScale::get_command(void)
             }
         }
         res = _command;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -499,7 +499,7 @@ int YWeighScale::set_command(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("command", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -547,7 +547,7 @@ YWeighScale* YWeighScale::FindWeighScale(string func)
             obj = new YWeighScale(func);
             YFunction::_AddToCache("WeighScale", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

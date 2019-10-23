@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.cpp 34651 2019-03-15 17:21:54Z seb $
+ * $Id: yocto_wireless.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  * Implements yFindWireless(), the high-level API for Wireless functions
  *
@@ -217,7 +217,7 @@ int YWireless::get_linkQuality(void)
             }
         }
         res = _linkQuality;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -246,7 +246,7 @@ string YWireless::get_ssid(void)
             }
         }
         res = _ssid;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -276,7 +276,7 @@ int YWireless::get_channel(void)
             }
         }
         res = _channel;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -306,7 +306,7 @@ Y_SECURITY_enum YWireless::get_security(void)
             }
         }
         res = _security;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -335,7 +335,7 @@ string YWireless::get_message(void)
             }
         }
         res = _message;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -357,7 +357,7 @@ string YWireless::get_wlanConfig(void)
             }
         }
         res = _wlanConfig;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -373,7 +373,7 @@ int YWireless::set_wlanConfig(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("wlanConfig", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -416,7 +416,7 @@ Y_WLANSTATE_enum YWireless::get_wlanState(void)
             }
         }
         res = _wlanState;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -464,7 +464,7 @@ YWireless* YWireless::FindWireless(string func)
             obj = new YWireless(func);
             YFunction::_AddToCache("Wireless", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

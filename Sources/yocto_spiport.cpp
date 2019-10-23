@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.cpp 37141 2019-09-12 12:37:10Z mvuilleu $
+ *  $Id: yocto_spiport.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -155,7 +155,7 @@ int YSpiPort::get_rxCount(void)
             }
         }
         res = _rxCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -184,7 +184,7 @@ int YSpiPort::get_txCount(void)
             }
         }
         res = _txCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -213,7 +213,7 @@ int YSpiPort::get_errCount(void)
             }
         }
         res = _errCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -242,7 +242,7 @@ int YSpiPort::get_rxMsgCount(void)
             }
         }
         res = _rxMsgCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -271,7 +271,7 @@ int YSpiPort::get_txMsgCount(void)
             }
         }
         res = _txMsgCount;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -300,7 +300,7 @@ string YSpiPort::get_lastMsg(void)
             }
         }
         res = _lastMsg;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -329,7 +329,7 @@ string YSpiPort::get_currentJob(void)
             }
         }
         res = _currentJob;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -355,7 +355,7 @@ int YSpiPort::set_currentJob(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("currentJob", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -384,7 +384,7 @@ string YSpiPort::get_startupJob(void)
             }
         }
         res = _startupJob;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -411,7 +411,7 @@ int YSpiPort::set_startupJob(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("startupJob", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -433,7 +433,7 @@ string YSpiPort::get_command(void)
             }
         }
         res = _command;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -449,7 +449,7 @@ int YSpiPort::set_command(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("command", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -482,7 +482,7 @@ string YSpiPort::get_protocol(void)
             }
         }
         res = _protocol;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -515,7 +515,7 @@ int YSpiPort::set_protocol(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("protocol", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -546,7 +546,7 @@ Y_VOLTAGELEVEL_enum YSpiPort::get_voltageLevel(void)
             }
         }
         res = _voltageLevel;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -579,7 +579,7 @@ int YSpiPort::set_voltageLevel(Y_VOLTAGELEVEL_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("voltageLevel", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -611,7 +611,7 @@ string YSpiPort::get_spiMode(void)
             }
         }
         res = _spiMode;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -641,7 +641,7 @@ int YSpiPort::set_spiMode(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("spiMode", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -670,7 +670,7 @@ Y_SSPOLARITY_enum YSpiPort::get_ssPolarity(void)
             }
         }
         res = _ssPolarity;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -697,7 +697,7 @@ int YSpiPort::set_ssPolarity(Y_SSPOLARITY_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("ssPolarity", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -727,7 +727,7 @@ Y_SHIFTSAMPLING_enum YSpiPort::get_shiftSampling(void)
             }
         }
         res = _shiftSampling;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -756,7 +756,7 @@ int YSpiPort::set_shiftSampling(Y_SHIFTSAMPLING_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("shiftSampling", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -804,7 +804,7 @@ YSpiPort* YSpiPort::FindSpiPort(string func)
             obj = new YSpiPort(func);
             YFunction::_AddToCache("SpiPort", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

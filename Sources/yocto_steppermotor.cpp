@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_steppermotor.cpp 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_steppermotor.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindStepperMotor(), the high-level API for StepperMotor functions
  *
@@ -160,7 +160,7 @@ Y_MOTORSTATE_enum YStepperMotor::get_motorState(void)
             }
         }
         res = _motorState;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -189,7 +189,7 @@ int YStepperMotor::get_diags(void)
             }
         }
         res = _diags;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -219,7 +219,7 @@ int YStepperMotor::set_stepPos(double newval)
     try {
         char buf[32]; sprintf(buf,"%.2f", floor(newval * 100.0)/100.0); rest_val = string(buf);
         res = _setAttr("stepPos", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -249,7 +249,7 @@ double YStepperMotor::get_stepPos(void)
             }
         }
         res = _stepPos;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -279,7 +279,7 @@ double YStepperMotor::get_speed(void)
             }
         }
         res = _speed;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -305,7 +305,7 @@ int YStepperMotor::set_pullinSpeed(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("pullinSpeed", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -335,7 +335,7 @@ double YStepperMotor::get_pullinSpeed(void)
             }
         }
         res = _pullinSpeed;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -361,7 +361,7 @@ int YStepperMotor::set_maxAccel(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("maxAccel", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -390,7 +390,7 @@ double YStepperMotor::get_maxAccel(void)
             }
         }
         res = _maxAccel;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -415,7 +415,7 @@ int YStepperMotor::set_maxSpeed(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("maxSpeed", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -444,7 +444,7 @@ double YStepperMotor::get_maxSpeed(void)
             }
         }
         res = _maxSpeed;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -474,7 +474,7 @@ Y_STEPPING_enum YStepperMotor::get_stepping(void)
             }
         }
         res = _stepping;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -500,7 +500,7 @@ int YStepperMotor::set_stepping(Y_STEPPING_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("stepping", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -529,7 +529,7 @@ int YStepperMotor::get_overcurrent(void)
             }
         }
         res = _overcurrent;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -554,7 +554,7 @@ int YStepperMotor::set_overcurrent(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("overcurrent", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -583,7 +583,7 @@ int YStepperMotor::get_tCurrStop(void)
             }
         }
         res = _tCurrStop;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -609,7 +609,7 @@ int YStepperMotor::set_tCurrStop(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("tCurrStop", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -638,7 +638,7 @@ int YStepperMotor::get_tCurrRun(void)
             }
         }
         res = _tCurrRun;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -664,7 +664,7 @@ int YStepperMotor::set_tCurrRun(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("tCurrRun", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -686,7 +686,7 @@ string YStepperMotor::get_alertMode(void)
             }
         }
         res = _alertMode;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -702,7 +702,7 @@ int YStepperMotor::set_alertMode(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("alertMode", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -724,7 +724,7 @@ string YStepperMotor::get_auxMode(void)
             }
         }
         res = _auxMode;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -740,7 +740,7 @@ int YStepperMotor::set_auxMode(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("auxMode", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -769,7 +769,7 @@ int YStepperMotor::get_auxSignal(void)
             }
         }
         res = _auxSignal;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -795,7 +795,7 @@ int YStepperMotor::set_auxSignal(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("auxSignal", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -817,7 +817,7 @@ string YStepperMotor::get_command(void)
             }
         }
         res = _command;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -833,7 +833,7 @@ int YStepperMotor::set_command(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("command", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -881,7 +881,7 @@ YStepperMotor* YStepperMotor::FindStepperMotor(string func)
             obj = new YStepperMotor(func);
             YFunction::_AddToCache("StepperMotor", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

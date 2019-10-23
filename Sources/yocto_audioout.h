@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_audioout.h 32900 2018-11-02 10:12:43Z seb $
+ *  $Id: yocto_audioout.h 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  *  Declares yFindAudioOut(), the high-level API for AudioOut functions
  *
@@ -125,6 +125,8 @@ public:
 
     /**
      * Changes audio output volume, in per cents.
+     * Remember to call the saveToFlash()
+     * method of the module if the modification must be kept.
      *
      * @param newval : an integer corresponding to audio output volume, in per cents
      *

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_carbondioxide.cpp 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_carbondioxide.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *
@@ -102,7 +102,7 @@ int YCarbonDioxide::get_abcPeriod(void)
             }
         }
         res = _abcPeriod;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -131,7 +131,7 @@ int YCarbonDioxide::set_abcPeriod(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("abcPeriod", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -153,7 +153,7 @@ string YCarbonDioxide::get_command(void)
             }
         }
         res = _command;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -169,7 +169,7 @@ int YCarbonDioxide::set_command(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("command", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -217,7 +217,7 @@ YCarbonDioxide* YCarbonDioxide::FindCarbonDioxide(string func)
             obj = new YCarbonDioxide(func);
             YFunction::_AddToCache("CarbonDioxide", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

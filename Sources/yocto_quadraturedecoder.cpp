@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_quadraturedecoder.cpp 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_quadraturedecoder.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  *  Implements yFindQuadratureDecoder(), the high-level API for QuadratureDecoder functions
  *
@@ -98,7 +98,7 @@ int YQuadratureDecoder::set_currentValue(double newval)
     try {
         char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("currentValue", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -127,7 +127,7 @@ double YQuadratureDecoder::get_speed(void)
             }
         }
         res = _speed;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -157,7 +157,7 @@ Y_DECODING_enum YQuadratureDecoder::get_decoding(void)
             }
         }
         res = _decoding;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -167,6 +167,8 @@ Y_DECODING_enum YQuadratureDecoder::get_decoding(void)
 
 /**
  * Changes the activation state of the quadrature decoder.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : either Y_DECODING_OFF or Y_DECODING_ON, according to the activation state of the
  * quadrature decoder
@@ -183,7 +185,7 @@ int YQuadratureDecoder::set_decoding(Y_DECODING_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("decoding", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -231,7 +233,7 @@ YQuadratureDecoder* YQuadratureDecoder::FindQuadratureDecoder(string func)
             obj = new YQuadratureDecoder(func);
             YFunction::_AddToCache("QuadratureDecoder", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

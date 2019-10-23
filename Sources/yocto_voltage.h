@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_voltage.h 35360 2019-05-09 09:02:29Z mvuilleu $
+ *  $Id: yocto_voltage.h 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  *  Declares yFindVoltage(), the high-level API for Voltage functions
  *
@@ -117,11 +117,15 @@ public:
     { return this->get_enabled(); }
 
     /**
-     * Changes the activation state of this input. When an input is disabled,
-     * its value is no more updated. On some devices, disabling an input can
-     * improve the refresh rate of the other active inputs.
+     * Changes the activation state of this voltage input. When AC measurements are disabled,
+     * the device will always assume a DC signal, and vice-versa. When both AC and DC measurements
+     * are active, the device switches between AC and DC mode based on the relative amplitude
+     * of variations compared to the average value.
+     * Remember to call the saveToFlash()
+     * method of the module if the modification must be kept.
      *
-     * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the activation state of this input
+     * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the activation state of this
+     * voltage input
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *

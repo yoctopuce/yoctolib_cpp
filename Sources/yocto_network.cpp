@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_network.cpp 34604 2019-03-11 14:49:45Z seb $
+ *  $Id: yocto_network.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
  *
  *  Implements yFindNetwork(), the high-level API for Network functions
  *
@@ -215,7 +215,7 @@ Y_READINESS_enum YNetwork::get_readiness(void)
             }
         }
         res = _readiness;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -245,7 +245,7 @@ string YNetwork::get_macAddress(void)
             }
         }
         res = _macAddress;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -275,7 +275,7 @@ string YNetwork::get_ipAddress(void)
             }
         }
         res = _ipAddress;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -304,7 +304,7 @@ string YNetwork::get_subnetMask(void)
             }
         }
         res = _subnetMask;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -333,7 +333,7 @@ string YNetwork::get_router(void)
             }
         }
         res = _router;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -374,7 +374,7 @@ string YNetwork::get_ipConfig(void)
             }
         }
         res = _ipConfig;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -390,7 +390,7 @@ int YNetwork::set_ipConfig(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("ipConfig", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -419,7 +419,7 @@ string YNetwork::get_primaryDNS(void)
             }
         }
         res = _primaryDNS;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -446,7 +446,7 @@ int YNetwork::set_primaryDNS(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("primaryDNS", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -475,7 +475,7 @@ string YNetwork::get_secondaryDNS(void)
             }
         }
         res = _secondaryDNS;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -502,7 +502,7 @@ int YNetwork::set_secondaryDNS(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("secondaryDNS", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -531,7 +531,7 @@ string YNetwork::get_ntpServer(void)
             }
         }
         res = _ntpServer;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -558,7 +558,7 @@ int YNetwork::set_ntpServer(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("ntpServer", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -589,7 +589,7 @@ string YNetwork::get_userPassword(void)
             }
         }
         res = _userPassword;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -622,7 +622,7 @@ int YNetwork::set_userPassword(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("userPassword", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -653,7 +653,7 @@ string YNetwork::get_adminPassword(void)
             }
         }
         res = _adminPassword;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -686,7 +686,7 @@ int YNetwork::set_adminPassword(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("adminPassword", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -695,9 +695,9 @@ int YNetwork::set_adminPassword(const string& newval)
 }
 
 /**
- * Returns the HTML page to serve for the URL "/"" of the hub.
+ * Returns the TCP port used to serve the hub web UI.
  *
- * @return an integer corresponding to the HTML page to serve for the URL "/"" of the hub
+ * @return an integer corresponding to the TCP port used to serve the hub web UI
  *
  * On failure, throws an exception or returns Y_HTTPPORT_INVALID.
  */
@@ -715,7 +715,7 @@ int YNetwork::get_httpPort(void)
             }
         }
         res = _httpPort;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -724,11 +724,13 @@ int YNetwork::get_httpPort(void)
 }
 
 /**
- * Changes the default HTML page returned by the hub. If not value are set the hub return
- * "index.html" which is the web interface of the hub. It is possible to change this page
- * for file that has been uploaded on the hub.
+ * Changes the the TCP port used to serve the hub web UI. The default value is port 80,
+ * which is the default for all Web servers. Regardless of the value set here,
+ * the hub will always reply on port 4444, which is used by default by Yoctopuce
+ * API library. When you change this parameter, remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
- * @param newval : an integer corresponding to the default HTML page returned by the hub
+ * @param newval : an integer corresponding to the the TCP port used to serve the hub web UI
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -742,7 +744,7 @@ int YNetwork::set_httpPort(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("httpPort", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -771,7 +773,7 @@ string YNetwork::get_defaultPage(void)
             }
         }
         res = _defaultPage;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -782,7 +784,9 @@ string YNetwork::get_defaultPage(void)
 /**
  * Changes the default HTML page returned by the hub. If not value are set the hub return
  * "index.html" which is the web interface of the hub. It is possible to change this page
- * for file that has been uploaded on the hub.
+ * for file that has been uploaded on the hub. The maximum filename size is 15 characters.
+ * When you change this parameter, remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : a string corresponding to the default HTML page returned by the hub
  *
@@ -798,7 +802,7 @@ int YNetwork::set_defaultPage(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("defaultPage", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -830,7 +834,7 @@ Y_DISCOVERABLE_enum YNetwork::get_discoverable(void)
             }
         }
         res = _discoverable;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -841,6 +845,8 @@ Y_DISCOVERABLE_enum YNetwork::get_discoverable(void)
 /**
  * Changes the activation state of the multicast announce protocols to allow easy
  * discovery of the module in the network neighborhood (uPnP/Bonjour protocol).
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : either Y_DISCOVERABLE_FALSE or Y_DISCOVERABLE_TRUE, according to the activation
  * state of the multicast announce protocols to allow easy
@@ -858,7 +864,7 @@ int YNetwork::set_discoverable(Y_DISCOVERABLE_enum newval)
     try {
         rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("discoverable", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -891,7 +897,7 @@ int YNetwork::get_wwwWatchdogDelay(void)
             }
         }
         res = _wwwWatchdogDelay;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -903,7 +909,8 @@ int YNetwork::get_wwwWatchdogDelay(void)
  * Changes the allowed downtime of the WWW link (in seconds) before triggering an automated
  * reboot to try to recover Internet connectivity. A zero value disables automated reboot
  * in case of Internet connectivity loss. The smallest valid non-zero timeout is
- * 90 seconds.
+ * 90 seconds. Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : an integer corresponding to the allowed downtime of the WWW link (in seconds)
  * before triggering an automated
@@ -921,7 +928,7 @@ int YNetwork::set_wwwWatchdogDelay(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("wwwWatchdogDelay", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -950,7 +957,7 @@ string YNetwork::get_callbackUrl(void)
             }
         }
         res = _callbackUrl;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -976,7 +983,7 @@ int YNetwork::set_callbackUrl(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("callbackUrl", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -1006,7 +1013,7 @@ Y_CALLBACKMETHOD_enum YNetwork::get_callbackMethod(void)
             }
         }
         res = _callbackMethod;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -1016,6 +1023,8 @@ Y_CALLBACKMETHOD_enum YNetwork::get_callbackMethod(void)
 
 /**
  * Changes the HTTP method used to notify callbacks for significant state changes.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
  *
  * @param newval : a value among Y_CALLBACKMETHOD_POST, Y_CALLBACKMETHOD_GET and Y_CALLBACKMETHOD_PUT
  * corresponding to the HTTP method used to notify callbacks for significant state changes
@@ -1032,7 +1041,7 @@ int YNetwork::set_callbackMethod(Y_CALLBACKMETHOD_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("callbackMethod", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -1065,7 +1074,7 @@ Y_CALLBACKENCODING_enum YNetwork::get_callbackEncoding(void)
             }
         }
         res = _callbackEncoding;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -1075,6 +1084,8 @@ Y_CALLBACKENCODING_enum YNetwork::get_callbackEncoding(void)
 
 /**
  * Changes the encoding standard to use for representing notification values.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
  *
  * @param newval : a value among Y_CALLBACKENCODING_FORM, Y_CALLBACKENCODING_JSON,
  * Y_CALLBACKENCODING_JSON_ARRAY, Y_CALLBACKENCODING_CSV, Y_CALLBACKENCODING_YOCTO_API,
@@ -1094,7 +1105,7 @@ int YNetwork::set_callbackEncoding(Y_CALLBACKENCODING_enum newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("callbackEncoding", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -1125,7 +1136,7 @@ string YNetwork::get_callbackCredentials(void)
             }
         }
         res = _callbackCredentials;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -1158,7 +1169,7 @@ int YNetwork::set_callbackCredentials(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("callbackCredentials", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -1207,7 +1218,7 @@ int YNetwork::get_callbackInitialDelay(void)
             }
         }
         res = _callbackInitialDelay;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -1217,6 +1228,7 @@ int YNetwork::get_callbackInitialDelay(void)
 
 /**
  * Changes the initial waiting time before first callback notifications, in seconds.
+ * Remember to call the saveToFlash() method of the module if the modification must be kept.
  *
  * @param newval : an integer corresponding to the initial waiting time before first callback
  * notifications, in seconds
@@ -1233,7 +1245,7 @@ int YNetwork::set_callbackInitialDelay(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("callbackInitialDelay", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -1262,7 +1274,7 @@ string YNetwork::get_callbackSchedule(void)
             }
         }
         res = _callbackSchedule;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -1272,6 +1284,8 @@ string YNetwork::get_callbackSchedule(void)
 
 /**
  * Changes the HTTP callback schedule strategy, as a text string.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
  * @param newval : a string corresponding to the HTTP callback schedule strategy, as a text string
  *
@@ -1287,7 +1301,7 @@ int YNetwork::set_callbackSchedule(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("callbackSchedule", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -1316,7 +1330,7 @@ int YNetwork::get_callbackMinDelay(void)
             }
         }
         res = _callbackMinDelay;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -1326,6 +1340,7 @@ int YNetwork::get_callbackMinDelay(void)
 
 /**
  * Changes the minimum waiting time between two HTTP callbacks, in seconds.
+ * Remember to call the saveToFlash() method of the module if the modification must be kept.
  *
  * @param newval : an integer corresponding to the minimum waiting time between two HTTP callbacks, in seconds
  *
@@ -1341,7 +1356,7 @@ int YNetwork::set_callbackMinDelay(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("callbackMinDelay", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -1370,7 +1385,7 @@ int YNetwork::get_callbackMaxDelay(void)
             }
         }
         res = _callbackMaxDelay;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -1380,6 +1395,7 @@ int YNetwork::get_callbackMaxDelay(void)
 
 /**
  * Changes the waiting time between two HTTP callbacks when there is nothing new.
+ * Remember to call the saveToFlash() method of the module if the modification must be kept.
  *
  * @param newval : an integer corresponding to the waiting time between two HTTP callbacks when there
  * is nothing new
@@ -1396,7 +1412,7 @@ int YNetwork::set_callbackMaxDelay(int newval)
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("callbackMaxDelay", rest_val);
-    } catch (std::exception) {
+    } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
     }
@@ -1428,7 +1444,7 @@ int YNetwork::get_poeCurrent(void)
             }
         }
         res = _poeCurrent;
-    } catch (std::exception) {
+    } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
     }
@@ -1476,7 +1492,7 @@ YNetwork* YNetwork::FindNetwork(string func)
             obj = new YNetwork(func);
             YFunction::_AddToCache("Network", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }

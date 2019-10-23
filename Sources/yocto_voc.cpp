@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_voc.cpp 32610 2018-10-10 06:52:20Z seb $
+ *  $Id: yocto_voc.cpp 37334 2019-09-27 15:17:33Z seb $
  *
  *  Implements yFindVoc(), the high-level API for Voc functions
  *
@@ -106,7 +106,7 @@ YVoc* YVoc::FindVoc(string func)
             obj = new YVoc(func);
             YFunction::_AddToCache("Voc", func, obj);
         }
-    } catch (std::exception) {
+    } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
         throw;
     }
