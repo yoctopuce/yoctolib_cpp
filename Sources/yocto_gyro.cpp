@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
+ * $Id: yocto_gyro.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  * Implements yFindGyro(), the high-level API for Gyro functions
  *
@@ -91,7 +91,8 @@ YQt::~YQt()
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the quaternion component
+ * @param func : a string that uniquely characterizes the quaternion component, for instance
+ *         Y3DMK002.qt1.
  *
  * @return a YQt object allowing you to drive the quaternion component.
  */
@@ -462,7 +463,8 @@ double YGyro::get_zValue(void)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the gyroscope
+ * @param func : a string that uniquely characterizes the gyroscope, for instance
+ *         Y3DMK002.gyro.
  *
  * @return a YGyro object allowing you to drive the gyroscope.
  */

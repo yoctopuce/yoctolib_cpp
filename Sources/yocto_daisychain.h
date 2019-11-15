@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_daisychain.h 37619 2019-10-11 11:52:42Z mvuilleu $
+ *  $Id: yocto_daisychain.h 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Declares yFindDaisyChain(), the high-level API for DaisyChain functions
  *
@@ -191,7 +191,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the module chain
+     * @param func : a string that uniquely characterizes the module chain, for instance
+     *         MyDevice.daisyChain.
      *
      * @return a YDaisyChain object allowing you to drive the module chain.
      */
@@ -274,7 +275,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the module chain
+ * @param func : a string that uniquely characterizes the module chain, for instance
+ *         MyDevice.daisyChain.
  *
  * @return a YDaisyChain object allowing you to drive the module chain.
  */

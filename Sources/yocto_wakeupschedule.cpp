@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupschedule.cpp 37334 2019-09-27 15:17:33Z seb $
+ *  $Id: yocto_wakeupschedule.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindWakeUpSchedule(), the high-level API for WakeUpSchedule functions
  *
@@ -486,7 +486,8 @@ s64 YWakeUpSchedule::get_nextOccurence(void)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the wake up schedule
+ * @param func : a string that uniquely characterizes the wake up schedule, for instance
+ *         YHUBWLN3.wakeUpSchedule1.
  *
  * @return a YWakeUpSchedule object allowing you to drive the wake up schedule.
  */

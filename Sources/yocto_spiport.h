@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.h 37141 2019-09-12 12:37:10Z mvuilleu $
+ *  $Id: yocto_spiport.h 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Declares yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -101,8 +101,8 @@ typedef enum {
 /**
  * YSpiPort Class: SPI Port function interface
  *
- * The SpiPort function interface allows you to fully drive a Yoctopuce
- * SPI port, to send and receive data, and to configure communication
+ * The YSpiPort class allows you to fully drive a Yoctopuce SPI port, for instance using a Yocto-SPI.
+ * It can be used to send and receive data, and to configure communication
  * parameters (baud rate, bit count, parity, flow control and protocol).
  * Note that Yoctopuce SPI ports are not exposed as virtual COM ports.
  * They are meant to be used in the same way as all Yoctopuce devices.
@@ -494,7 +494,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the SPI port
+     * @param func : a string that uniquely characterizes the SPI port, for instance
+     *         YSPIMK01.spiPort.
      *
      * @return a YSpiPort object allowing you to drive the SPI port.
      */
@@ -833,7 +834,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the SPI port
+ * @param func : a string that uniquely characterizes the SPI port, for instance
+ *         YSPIMK01.spiPort.
  *
  * @return a YSpiPort object allowing you to drive the SPI port.
  */

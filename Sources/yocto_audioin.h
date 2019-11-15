@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_audioin.h 37619 2019-10-11 11:52:42Z mvuilleu $
+ *  $Id: yocto_audioin.h 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Declares yFindAudioIn(), the high-level API for AudioIn functions
  *
@@ -72,7 +72,7 @@ typedef enum {
 /**
  * YAudioIn Class: AudioIn function interface
  *
- * The Yoctopuce application programming interface allows you to configure the volume of the input channel.
+ * The YAudioIn class allows you to configure the volume of an audio input.
  */
 class YOCTO_CLASS_EXPORT YAudioIn: public YFunction {
 #ifdef __BORLANDC__
@@ -226,7 +226,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the audio input
+     * @param func : a string that uniquely characterizes the audio input, for instance
+     *         MyDevice.audioIn1.
      *
      * @return a YAudioIn object allowing you to drive the audio input.
      */
@@ -309,7 +310,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the audio input
+ * @param func : a string that uniquely characterizes the audio input, for instance
+ *         MyDevice.audioIn1.
  *
  * @return a YAudioIn object allowing you to drive the audio input.
  */

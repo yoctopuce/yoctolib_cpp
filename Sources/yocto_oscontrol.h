@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_oscontrol.h 32900 2018-11-02 10:12:43Z seb $
+ *  $Id: yocto_oscontrol.h 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Declares yFindOsControl(), the high-level API for OsControl functions
  *
@@ -61,8 +61,8 @@ typedef void (*YOsControlValueCallback)(YOsControl *func, const string& function
 /**
  * YOsControl Class: OS control
  *
- * The OScontrol object allows some control over the operating system running a VirtualHub.
- * OsControl is available on the VirtualHub software only. This feature must be activated at the VirtualHub
+ * The YOScontrol class provides some control over the operating system running a VirtualHub.
+ * YOsControl is available on VirtualHub software only. This feature must be activated at the VirtualHub
  * start up with -o option.
  */
 class YOCTO_CLASS_EXPORT YOsControl: public YFunction {
@@ -133,7 +133,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the OS control
+     * @param func : a string that uniquely characterizes the OS control, for instance
+     *         MyDevice.osControl.
      *
      * @return a YOsControl object allowing you to drive the OS control.
      */
@@ -227,7 +228,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the OS control
+ * @param func : a string that uniquely characterizes the OS control, for instance
+ *         MyDevice.osControl.
  *
  * @return a YOsControl object allowing you to drive the OS control.
  */

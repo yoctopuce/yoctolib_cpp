@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_tilt.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
+ *  $Id: yocto_tilt.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindTilt(), the high-level API for Tilt functions
  *
@@ -181,7 +181,8 @@ Y_AXIS_enum YTilt::get_axis(void)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the tilt sensor
+ * @param func : a string that uniquely characterizes the tilt sensor, for instance
+ *         Y3DMK002.tilt1.
  *
  * @return a YTilt object allowing you to drive the tilt sensor.
  */

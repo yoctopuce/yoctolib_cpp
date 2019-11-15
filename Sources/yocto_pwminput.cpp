@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwminput.cpp 37334 2019-09-27 15:17:33Z seb $
+ *  $Id: yocto_pwminput.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindPwmInput(), the high-level API for PwmInput functions
  *
@@ -474,7 +474,8 @@ int YPwmInput::set_debouncePeriod(int newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the PWM input
+ * @param func : a string that uniquely characterizes the PWM input, for instance
+ *         YPWMRX01.pwmInput1.
  *
  * @return a YPwmInput object allowing you to drive the PWM input.
  */

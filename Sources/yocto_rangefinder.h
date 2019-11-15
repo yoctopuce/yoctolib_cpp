@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_rangefinder.h 37149 2019-09-12 21:24:53Z mvuilleu $
+ *  $Id: yocto_rangefinder.h 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Declares yFindRangeFinder(), the high-level API for RangeFinder functions
  *
@@ -77,8 +77,9 @@ typedef enum {
 /**
  * YRangeFinder Class: RangeFinder function interface
  *
- * The Yoctopuce class YRangeFinder allows you to use and configure Yoctopuce range finder
- * sensors. It inherits from the YSensor class the core functions to read measurements,
+ * The YRangeFinder class allows you to use and configure Yoctopuce range finder
+ * sensors, for instance using a Yocto-RangeFinder. It inherits from the YSensor class the core
+ * functions to read measurements,
  * register callback functions, access the autonomous datalogger.
  * This class adds the ability to easily perform a one-point linear calibration
  * to compensate the effect of a glass or filter placed in front of the sensor.
@@ -271,7 +272,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the range finder
+     * @param func : a string that uniquely characterizes the range finder, for instance
+     *         YRNGFND1.rangeFinder1.
      *
      * @return a YRangeFinder object allowing you to drive the range finder.
      */
@@ -440,7 +442,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the range finder
+ * @param func : a string that uniquely characterizes the range finder, for instance
+ *         YRNGFND1.rangeFinder1.
  *
  * @return a YRangeFinder object allowing you to drive the range finder.
  */

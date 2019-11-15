@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_longitude.cpp 37334 2019-09-27 15:17:33Z seb $
+ *  $Id: yocto_longitude.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindLongitude(), the high-level API for Longitude functions
  *
@@ -89,7 +89,8 @@ YLongitude::~YLongitude()
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the longitude sensor
+ * @param func : a string that uniquely characterizes the longitude sensor, for instance
+ *         YGNSSMK1.longitude.
  *
  * @return a YLongitude object allowing you to drive the longitude sensor.
  */

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_altitude.h 37619 2019-10-11 11:52:42Z mvuilleu $
+ *  $Id: yocto_altitude.h 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Declares yFindAltitude(), the high-level API for Altitude functions
  *
@@ -64,8 +64,9 @@ typedef void (*YAltitudeTimedReportCallback)(YAltitude *func, YMeasure measure);
 /**
  * YAltitude Class: Altitude function interface
  *
- * The Yoctopuce class YAltitude allows you to read and configure Yoctopuce altitude
- * sensors. It inherits from the YSensor class the core functions to read measurements,
+ * The YAltitude class allows you to read and configure Yoctopuce altitude
+ * sensors, for instance using a Yocto-GPS or a Yocto-Altimeter-V2. It inherits from the YSensor class
+ * the core functions to read measurements,
  * to register callback functions, to access the autonomous datalogger.
  * This class adds the ability to configure the barometric pressure adjusted to
  * sea level (QNH) for barometric sensors.
@@ -186,7 +187,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the altimeter
+     * @param func : a string that uniquely characterizes the altimeter, for instance
+     *         YGNSSMK1.altitude.
      *
      * @return a YAltitude object allowing you to drive the altimeter.
      */
@@ -285,7 +287,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the altimeter
+ * @param func : a string that uniquely characterizes the altimeter, for instance
+ *         YGNSSMK1.altitude.
  *
  * @return a YAltitude object allowing you to drive the altimeter.
  */

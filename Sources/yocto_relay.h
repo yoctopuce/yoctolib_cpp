@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_relay.h 37619 2019-10-11 11:52:42Z mvuilleu $
+ *  $Id: yocto_relay.h 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Declares yFindRelay(), the high-level API for Relay functions
  *
@@ -106,13 +106,13 @@ public:
 /**
  * YRelay Class: Relay function interface
  *
- * The Yoctopuce application programming interface allows you to switch the relay state.
- * This change is not persistent: the relay will automatically return to its idle position
- * whenever power is lost or if the module is restarted.
- * The library can also generate automatically short pulses of determined duration.
+ * The YRelay class allows you to drive a Yoctopuce Relay, for instance using a Yocto-PowerRelay-V3, a
+ * Yocto-Relay, a Yocto-MaxiPowerRelay or a Yocto-MaxiCoupler-V2.
+ * It can be used to simply switch the relay, but also to automatically generate short pulses of
+ * determined duration.
  * On devices with two output for each relay (double throw), the two outputs are named A and B,
- * with output A corresponding to the idle position (at power off) and the output B corresponding to the
- * active state. If you prefer the alternate default state, simply switch your cables on the board.
+ * with output A corresponding to the idle position (normally closed) and the output B corresponding to the
+ * active state (normally open).
  */
 class YOCTO_CLASS_EXPORT YRelay: public YFunction {
 #ifdef __BORLANDC__
@@ -401,7 +401,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the relay
+     * @param func : a string that uniquely characterizes the relay, for instance
+     *         RELAYHI3.relay1.
      *
      * @return a YRelay object allowing you to drive the relay.
      */
@@ -493,7 +494,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the relay
+ * @param func : a string that uniquely characterizes the relay, for instance
+ *         RELAYHI3.relay1.
  *
  * @return a YRelay object allowing you to drive the relay.
  */

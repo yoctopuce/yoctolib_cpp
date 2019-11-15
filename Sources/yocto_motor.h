@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_motor.h 37619 2019-10-11 11:52:42Z mvuilleu $
+ *  $Id: yocto_motor.h 38030 2019-11-04 17:56:01Z mvuilleu $
  *
  *  Declares yFindMotor(), the high-level API for Motor functions
  *
@@ -71,9 +71,9 @@ typedef enum {
 #define Y_DRIVINGFORCE_INVALID          (YAPI_INVALID_DOUBLE)
 #define Y_BRAKINGFORCE_INVALID          (YAPI_INVALID_DOUBLE)
 #define Y_CUTOFFVOLTAGE_INVALID         (YAPI_INVALID_DOUBLE)
-#define Y_OVERCURRENTLIMIT_INVALID      (YAPI_INVALID_INT)
+#define Y_OVERCURRENTLIMIT_INVALID      (YAPI_INVALID_UINT)
 #define Y_FREQUENCY_INVALID             (YAPI_INVALID_DOUBLE)
-#define Y_STARTERTIME_INVALID           (YAPI_INVALID_INT)
+#define Y_STARTERTIME_INVALID           (YAPI_INVALID_UINT)
 #define Y_FAILSAFETIMEOUT_INVALID       (YAPI_INVALID_UINT)
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 //--- (end of YMotor definitions)
@@ -82,7 +82,8 @@ typedef enum {
 /**
  * YMotor Class: Motor function interface
  *
- * Yoctopuce application programming interface allows you to drive the
+ * The YMotor class allows you to drive a DC motor, for instance using a Yocto-Motor-DC. It can be
+ * used to configure the
  * power sent to the motor to make it turn both ways, but also to drive accelerations
  * and decelerations. The motor will then accelerate automatically: you will not
  * have to monitor it. The API also allows to slow down the motor by shortening
@@ -133,9 +134,9 @@ public:
     static const double DRIVINGFORCE_INVALID;
     static const double BRAKINGFORCE_INVALID;
     static const double CUTOFFVOLTAGE_INVALID;
-    static const int OVERCURRENTLIMIT_INVALID = YAPI_INVALID_INT;
+    static const int OVERCURRENTLIMIT_INVALID = YAPI_INVALID_UINT;
     static const double FREQUENCY_INVALID;
-    static const int STARTERTIME_INVALID = YAPI_INVALID_INT;
+    static const int STARTERTIME_INVALID = YAPI_INVALID_UINT;
     static const int FAILSAFETIMEOUT_INVALID = YAPI_INVALID_UINT;
     static const string COMMAND_INVALID;
 
@@ -263,6 +264,15 @@ public:
     inline double       cutOffVoltage(void)
     { return this->get_cutOffVoltage(); }
 
+    /**
+     * Returns the current threshold (in mA) above which the controller automatically
+     * switches to error state. A zero value means that there is no limit.
+     *
+     * @return an integer corresponding to the current threshold (in mA) above which the controller automatically
+     *         switches to error state
+     *
+     * On failure, throws an exception or returns Y_OVERCURRENTLIMIT_INVALID.
+     */
     int                 get_overCurrentLimit(void);
 
     inline int          overCurrentLimit(void)
@@ -417,7 +427,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the motor
+     * @param func : a string that uniquely characterizes the motor, for instance
+     *         MOTORCTL.motor.
      *
      * @return a YMotor object allowing you to drive the motor.
      */
@@ -538,7 +549,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the motor
+ * @param func : a string that uniquely characterizes the motor, for instance
+ *         MOTORCTL.motor.
  *
  * @return a YMotor object allowing you to drive the motor.
  */

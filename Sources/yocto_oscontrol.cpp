@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_oscontrol.cpp 37334 2019-09-27 15:17:33Z seb $
+ *  $Id: yocto_oscontrol.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindOsControl(), the high-level API for OsControl functions
  *
@@ -144,7 +144,8 @@ int YOsControl::set_shutdownCountdown(int newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the OS control
+ * @param func : a string that uniquely characterizes the OS control, for instance
+ *         MyDevice.osControl.
  *
  * @return a YOsControl object allowing you to drive the OS control.
  */

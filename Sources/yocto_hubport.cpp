@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_hubport.cpp 37334 2019-09-27 15:17:33Z seb $
+ *  $Id: yocto_hubport.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindHubPort(), the high-level API for HubPort functions
  *
@@ -222,7 +222,8 @@ int YHubPort::get_baudRate(void)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the Yocto-hub port
+ * @param func : a string that uniquely characterizes the Yocto-hub port, for instance
+ *         YHUBETH1.hubPort1.
  *
  * @return a YHubPort object allowing you to drive the Yocto-hub port.
  */

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_refframe.cpp 37334 2019-09-27 15:17:33Z seb $
+ *  $Id: yocto_refframe.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -326,7 +326,8 @@ int YRefFrame::set_fusionMode(Y_FUSIONMODE_enum newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the reference frame
+ * @param func : a string that uniquely characterizes the reference frame, for instance
+ *         Y3DMK002.refFrame.
  *
  * @return a YRefFrame object allowing you to drive the reference frame.
  */

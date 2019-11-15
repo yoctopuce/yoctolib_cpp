@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_gps.h 37165 2019-09-13 16:57:27Z mvuilleu $
+ *  $Id: yocto_gps.h 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Declares yFindGps(), the high-level API for Gps functions
  *
@@ -101,10 +101,11 @@ typedef enum {
 /**
  * YGps Class: GPS function interface
  *
- * The GPS function allows you to extract positioning
- * data from the GPS device. This class can provides
- * complete positioning information: However, if you
- * wish to define callbacks on position changes, you
+ * The YGps class allows you to retrieve positioning
+ * data from a GPS sensor, for instance using a Yocto-GPS. This class can provides
+ * complete positioning information. However, if you
+ * wish to define callbacks on position changes or record
+ * the position in the datalogger, you
  * should use the YLatitude et YLongitude classes.
  */
 class YOCTO_CLASS_EXPORT YGps: public YFunction {
@@ -425,7 +426,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the GPS
+     * @param func : a string that uniquely characterizes the GPS, for instance
+     *         YGNSSMK1.gps.
      *
      * @return a YGps object allowing you to drive the GPS.
      */
@@ -508,7 +510,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the GPS
+ * @param func : a string that uniquely characterizes the GPS, for instance
+ *         YGNSSMK1.gps.
  *
  * @return a YGps object allowing you to drive the GPS.
  */

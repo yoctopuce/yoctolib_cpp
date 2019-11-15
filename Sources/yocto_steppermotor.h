@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_steppermotor.h 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_steppermotor.h 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Declares yFindStepperMotor(), the high-level API for StepperMotor functions
  *
@@ -96,7 +96,7 @@ typedef enum {
 /**
  * YStepperMotor Class: StepperMotor function interface
  *
- * The Yoctopuce application programming interface allows you to drive a stepper motor.
+ * The YStepperMotor class allows you to drive a stepper motor.
  */
 class YOCTO_CLASS_EXPORT YStepperMotor: public YFunction {
 #ifdef __BORLANDC__
@@ -491,7 +491,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the stepper motor
+     * @param func : a string that uniquely characterizes the stepper motor, for instance
+     *         MyDevice.stepperMotor1.
      *
      * @return a YStepperMotor object allowing you to drive the stepper motor.
      */
@@ -699,7 +700,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the stepper motor
+ * @param func : a string that uniquely characterizes the stepper motor, for instance
+ *         MyDevice.stepperMotor1.
  *
  * @return a YStepperMotor object allowing you to drive the stepper motor.
  */

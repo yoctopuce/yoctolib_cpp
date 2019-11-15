@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_accelerometer.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
+ *  $Id: yocto_accelerometer.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindAccelerometer(), the high-level API for Accelerometer functions
  *
@@ -299,7 +299,8 @@ int YAccelerometer::set_gravityCancellation(Y_GRAVITYCANCELLATION_enum newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the accelerometer
+ * @param func : a string that uniquely characterizes the accelerometer, for instance
+ *         Y3DMK002.accelerometer.
  *
  * @return a YAccelerometer object allowing you to drive the accelerometer.
  */

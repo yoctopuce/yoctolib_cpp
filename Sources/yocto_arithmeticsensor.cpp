@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_arithmeticsensor.cpp 37334 2019-09-27 15:17:33Z seb $
+ *  $Id: yocto_arithmeticsensor.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindArithmeticSensor(), the high-level API for ArithmeticSensor functions
  *
@@ -198,7 +198,8 @@ int YArithmeticSensor::set_command(const string& newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the arithmetic sensor
+ * @param func : a string that uniquely characterizes the arithmetic sensor, for instance
+ *         RXUVOLT1.arithmeticSensor1.
  *
  * @return a YArithmeticSensor object allowing you to drive the arithmetic sensor.
  */

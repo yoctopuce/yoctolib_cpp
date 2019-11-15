@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multisenscontroller.cpp 37334 2019-09-27 15:17:33Z seb $
+ *  $Id: yocto_multisenscontroller.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindMultiSensController(), the high-level API for MultiSensController functions
  *
@@ -293,7 +293,8 @@ int YMultiSensController::set_command(const string& newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the multi-sensor controller
+ * @param func : a string that uniquely characterizes the multi-sensor controller, for instance
+ *         YTEMPIR1.multiSensController.
  *
  * @return a YMultiSensController object allowing you to drive the multi-sensor controller.
  */

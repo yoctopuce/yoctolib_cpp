@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pressure.h 32900 2018-11-02 10:12:43Z seb $
+ *  $Id: yocto_pressure.h 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Declares yFindPressure(), the high-level API for Pressure functions
  *
@@ -62,8 +62,9 @@ typedef void (*YPressureTimedReportCallback)(YPressure *func, YMeasure measure);
 /**
  * YPressure Class: Pressure function interface
  *
- * The Yoctopuce class YPressure allows you to read and configure Yoctopuce pressure
- * sensors. It inherits from YSensor class the core functions to read measurements,
+ * The YPressure class allows you to read and configure Yoctopuce pressure
+ * sensors, for instance using a Yocto-Meteo-V2, a Yocto-Pressure, a Yocto-CO2-V2 or a
+ * Yocto-Altimeter-V2. It inherits from YSensor class the core functions to read measurements,
  * to register callback functions, to access the autonomous datalogger.
  */
 class YOCTO_CLASS_EXPORT YPressure: public YSensor {
@@ -112,7 +113,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the pressure sensor
+     * @param func : a string that uniquely characterizes the pressure sensor, for instance
+     *         METEOMK2.pressure.
      *
      * @return a YPressure object allowing you to drive the pressure sensor.
      */
@@ -211,7 +213,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the pressure sensor
+ * @param func : a string that uniquely characterizes the pressure sensor, for instance
+ *         METEOMK2.pressure.
  *
  * @return a YPressure object allowing you to drive the pressure sensor.
  */

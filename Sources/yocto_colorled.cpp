@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_colorled.cpp 37334 2019-09-27 15:17:33Z seb $
+ *  $Id: yocto_colorled.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -375,9 +375,11 @@ int YColorLed::get_rgbColorAtPowerOn(void)
 }
 
 /**
- * Changes the color that the LED will display by default when the module is turned on.
+ * Changes the color that the LED displays by default when the module is turned on.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
- * @param newval : an integer corresponding to the color that the LED will display by default when the
+ * @param newval : an integer corresponding to the color that the LED displays by default when the
  * module is turned on
  *
  * @return YAPI_SUCCESS if the call succeeds.
@@ -551,7 +553,8 @@ int YColorLed::set_command(const string& newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the RGB LED
+ * @param func : a string that uniquely characterizes the RGB LED, for instance
+ *         YRGBLED2.colorLed1.
  *
  * @return a YColorLed object allowing you to drive the RGB LED.
  */

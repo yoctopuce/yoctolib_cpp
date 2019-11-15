@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 37220 2019-09-18 14:40:17Z seb $
+ * $Id: yapi.c 38062 2019-11-05 15:23:36Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -48,6 +48,11 @@
 #else
 #include <sys/time.h>
 #endif
+
+#ifdef LINUX_API
+#include <sys/utsname.h>
+#endif
+
 
 static YRETCODE yapiUpdateDeviceList_internal(u32 forceupdate, char* errmsg);
 static void yapiUnregisterHub_internal(const char* url);
@@ -1975,7 +1980,7 @@ static YRETCODE yapiInitAPI_internal(int detect_type, char* errmsg)
     ctx = (yContextSt*)yMalloc(sizeof(yContextSt));
     yMemset(ctx,0,sizeof(yContextSt));
     ctx->detecttype = detect_type;
-    
+
     //initialize enumeration CS
     initializeAllCS(ctx);
 
@@ -2016,6 +2021,20 @@ static YRETCODE yapiInitAPI_internal(int detect_type, char* errmsg)
 #ifndef YAPI_IN_YDEVICE
     yProgInit();
 #endif
+
+#ifdef LINUX_API
+    {
+        struct utsname buffer;
+
+        errno = 0;
+        if (uname(&buffer) == 0) {
+            if (strcmp(buffer.nodename,"raspberrypi")==0) {
+                ctx->linux_flags |= YCTX_LINUX_ON_RPI;
+            }
+        }
+   }
+#endif
+
 #if 0
     int siz = sizeof(yDeviceSt);
     dbglog("memset yDeviceSt struct of %d bytes\n", siz);
@@ -3014,7 +3033,7 @@ static YRETCODE yapiUnlockDeviceCallBack_internal(char* errmsg)
 
 YRETCODE YAPI_FUNCTION_EXPORT yapiGetDLLPath(char *path, int pathsize, char *errmsg)
 {
-    
+
 #ifdef WINDOWS_API
     int res;
     HMODULE module_handle_a = GetModuleHandleA("yapi");

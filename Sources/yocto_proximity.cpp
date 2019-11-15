@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_proximity.cpp 37334 2019-09-27 15:17:33Z seb $
+ *  $Id: yocto_proximity.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindProximity(), the high-level API for Proximity functions
  *
@@ -638,7 +638,8 @@ int YProximity::set_proximityReportMode(Y_PROXIMITYREPORTMODE_enum newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the proximity sensor
+ * @param func : a string that uniquely characterizes the proximity sensor, for instance
+ *         YPROXIM1.proximity1.
  *
  * @return a YProximity object allowing you to drive the proximity sensor.
  */

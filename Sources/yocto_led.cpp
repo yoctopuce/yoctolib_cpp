@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_led.cpp 37334 2019-09-27 15:17:33Z seb $
+ *  $Id: yocto_led.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindLed(), the high-level API for Led functions
  *
@@ -270,7 +270,8 @@ int YLed::set_blinking(Y_BLINKING_enum newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the LED
+ * @param func : a string that uniquely characterizes the LED, for instance
+ *         YBUZZER2.led1.
  *
  * @return a YLed object allowing you to drive the LED.
  */

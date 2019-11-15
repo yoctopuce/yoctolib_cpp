@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 37780 2019-10-23 10:28:34Z seb $
+ * $Id: ystream.c 38136 2019-11-14 09:18:58Z seb $
  *
  * USB stream implementation
  *
@@ -1379,7 +1379,24 @@ static int yPacketSetup(yPrivDeviceSt *dev,char *errmsg)
         yContext->detecttype |= Y_RESEND_MISSING_PKT;
         dev->iface.pkt_version = YPKT_USB_VERSION_BCD;
         dbglog("Guess USB reset packet\n");
+#ifdef LINUX_API
+        if (yContext->linux_flags & YCTX_LINUX_ON_RPI) {
+#ifdef VIRTUAL_HUB
+
+            dbglog("*****************************************************************************\n");
+            dbglog(" Old boot EEPROM of Raspberry Pi 4 contains a bug that affects USB performance.\n");
+            dbglog(" Try to update boot EEPROM with command \"sudo rpi-eeprom-update -a\"        \n");
+            dbglog(" More info on https://www.yoctopuce.com/EN/rpi4_bug\n");
+            dbglog("*****************************************************************************\n");
+
+#else
+            dbglog("WARNING: Old boot EEPROM of Raspberry Pi 4 contains a bug that affects USB performance. Try to update boot EEPROM with command \"sudo rpi-eeprom-update -a\"\n");
+#endif
+        }
+#endif
         yApproximateSleep(10);
+
+
     }else {
         // standard handling. T
         if (YISERR(res) || rpkt == NULL) {

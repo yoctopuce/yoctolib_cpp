@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_voltageoutput.cpp 37334 2019-09-27 15:17:33Z seb $
+ *  $Id: yocto_voltageoutput.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindVoltageOutput(), the high-level API for VoltageOutput functions
  *
@@ -255,7 +255,8 @@ double YVoltageOutput::get_voltageAtStartUp(void)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the voltage output
+ * @param func : a string that uniquely characterizes the voltage output, for instance
+ *         TX010V01.voltageOutput1.
  *
  * @return a YVoltageOutput object allowing you to drive the voltage output.
  */

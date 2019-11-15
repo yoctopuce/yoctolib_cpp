@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.h 37619 2019-10-11 11:52:42Z mvuilleu $
+ * $Id: yocto_gyro.h 38030 2019-11-04 17:56:01Z mvuilleu $
  *
  * Declares yFindGyro(), the high-level API for Gyro functions
  *
@@ -60,8 +60,11 @@ typedef void (*YQtTimedReportCallback)(YQt *func, YMeasure measure);
 /**
  * YQt Class: Quaternion interface
  *
- * The Yoctopuce API YQt class provides direct access to the Yocto3D attitude estimation
- * using a quaternion. It is usually not needed to use the YQt class directly, as the
+ * The YQt class provides direct access to the 3D attitude estimation provided by Yoctopuce
+ * inertial sensors, for instance using a Yocto-3D-V2. The four instances of YQt provide direct access
+ * to the individual
+ * quaternion components representing the orientation.
+ * It is usually not needed to use the YQt class directly, as the
  * YGyro class provides a more convenient higher-level interface.
  */
 class YOCTO_CLASS_EXPORT YQt: public YSensor {
@@ -110,7 +113,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the quaternion component
+     * @param func : a string that uniquely characterizes the quaternion component, for instance
+     *         Y3DMK002.qt1.
      *
      * @return a YQt object allowing you to drive the quaternion component.
      */
@@ -209,7 +213,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the quaternion component
+ * @param func : a string that uniquely characterizes the quaternion component, for instance
+ *         Y3DMK002.qt1.
  *
  * @return a YQt object allowing you to drive the quaternion component.
  */
@@ -239,7 +244,7 @@ class YGyro; // forward declaration
 typedef void (*YGyroValueCallback)(YGyro *func, const string& functionValue);
 class YMeasure; // forward declaration
 typedef void (*YGyroTimedReportCallback)(YGyro *func, YMeasure measure);
-#define Y_BANDWIDTH_INVALID             (YAPI_INVALID_INT)
+#define Y_BANDWIDTH_INVALID             (YAPI_INVALID_UINT)
 #define Y_XVALUE_INVALID                (YAPI_INVALID_DOUBLE)
 #define Y_YVALUE_INVALID                (YAPI_INVALID_DOUBLE)
 #define Y_ZVALUE_INVALID                (YAPI_INVALID_DOUBLE)
@@ -252,15 +257,10 @@ typedef void(*YAnglesCallback)(YGyro *yGyro, double roll, double pitch, double h
 /**
  * YGyro Class: Gyroscope function interface
  *
- * The YSensor class is the parent class for all Yoctopuce sensors. It can be
- * used to read the current value and unit of any sensor, read the min/max
- * value, configure autonomous recording frequency and access recorded data.
- * It also provide a function to register a callback invoked each time the
- * observed value changes, or at a predefined interval. Using this class rather
- * than a specific subclass makes it possible to create generic applications
- * that work with any Yoctopuce sensor, even those that do not yet exist.
- * Note: The YAnButton class is the only analog input which does not inherit
- * from YSensor.
+ * The YGyro class allows you to read and configure Yoctopuce angular velocity
+ * sensors, for instance using a Yocto-3D-V2. It inherits from YSensor class the core functions to
+ * read measurements,
+ * to register callback functions, to access the autonomous datalogger.
  */
 class YOCTO_CLASS_EXPORT YGyro: public YSensor {
 #ifdef __BORLANDC__
@@ -306,7 +306,7 @@ public:
     ~YGyro();
     //--- (generated code: YGyro accessors declaration)
 
-    static const int BANDWIDTH_INVALID = YAPI_INVALID_INT;
+    static const int BANDWIDTH_INVALID = YAPI_INVALID_UINT;
     static const double XVALUE_INVALID;
     static const double YVALUE_INVALID;
     static const double ZVALUE_INVALID;
@@ -401,7 +401,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the gyroscope
+     * @param func : a string that uniquely characterizes the gyroscope, for instance
+     *         Y3DMK002.gyro.
      *
      * @return a YGyro object allowing you to drive the gyroscope.
      */
@@ -626,7 +627,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the gyroscope
+ * @param func : a string that uniquely characterizes the gyroscope, for instance
+ *         Y3DMK002.gyro.
  *
  * @return a YGyro object allowing you to drive the gyroscope.
  */

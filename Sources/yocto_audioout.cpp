@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_audioout.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
+ *  $Id: yocto_audioout.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindAudioOut(), the high-level API for AudioOut functions
  *
@@ -315,7 +315,8 @@ int YAudioOut::get_noSignalFor(void)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the audio output
+ * @param func : a string that uniquely characterizes the audio output, for instance
+ *         MyDevice.audioOut1.
  *
  * @return a YAudioOut object allowing you to drive the audio output.
  */

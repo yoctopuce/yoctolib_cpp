@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_digitalio.cpp 37653 2019-10-11 17:37:17Z mvuilleu $
+ *  $Id: yocto_digitalio.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -527,7 +527,8 @@ int YDigitalIO::set_command(const string& newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the digital IO port
+ * @param func : a string that uniquely characterizes the digital IO port, for instance
+ *         MAXIIO02.digitalIO.
  *
  * @return a YDigitalIO object allowing you to drive the digital IO port.
  */

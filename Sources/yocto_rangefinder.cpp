@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_rangefinder.cpp 37334 2019-09-27 15:17:33Z seb $
+ *  $Id: yocto_rangefinder.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindRangeFinder(), the high-level API for RangeFinder functions
  *
@@ -406,7 +406,8 @@ int YRangeFinder::set_command(const string& newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the range finder
+ * @param func : a string that uniquely characterizes the range finder, for instance
+ *         YRNGFND1.rangeFinder1.
  *
  * @return a YRangeFinder object allowing you to drive the range finder.
  */

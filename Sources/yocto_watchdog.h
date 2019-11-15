@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_watchdog.h 37619 2019-10-11 11:52:42Z mvuilleu $
+ *  $Id: yocto_watchdog.h 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Declares yFindWatchdog(), the high-level API for Watchdog functions
  *
@@ -124,12 +124,14 @@ typedef enum {
 /**
  * YWatchdog Class: Watchdog function interface
  *
- * The watchdog function works like a relay and can cause a brief power cut
- * to an appliance after a preset delay to force this appliance to
- * reset. The Watchdog must be called from time to time to reset the
- * timer and prevent the appliance reset.
- * The watchdog can be driven directly with <i>pulse</i> and <i>delayedpulse</i> methods to switch
- * off an appliance for a given duration.
+ * The YWatchdog class allows you to drive a Yoctopuce watchdog, for instance using a Yocto-WatchdogDC.
+ * A watchdog works like a relay, with an extra timer that can automatically
+ * trigger a brief power cycle to an appliance after a preset delay, to force this
+ * appliance to reset if a problem occurs. During normal use, the watchdog timer
+ * is reset periodically by the application to prevent the automated power cycle.
+ * Whenever the application dies, the watchdog will automatically trigger the power cycle.
+ * The watchdog can also be driven directly with <i>pulse</i> and <i>delayedPulse</i>
+ * methods to switch off an appliance for a given duration.
  */
 class YOCTO_CLASS_EXPORT YWatchdog: public YFunction {
 #ifdef __BORLANDC__
@@ -549,7 +551,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the watchdog
+     * @param func : a string that uniquely characterizes the watchdog, for instance
+     *         WDOGDC01.watchdog1.
      *
      * @return a YWatchdog object allowing you to drive the watchdog.
      */
@@ -641,7 +644,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the watchdog
+ * @param func : a string that uniquely characterizes the watchdog, for instance
+ *         WDOGDC01.watchdog1.
  *
  * @return a YWatchdog object allowing you to drive the watchdog.
  */

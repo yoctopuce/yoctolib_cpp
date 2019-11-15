@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_i2cport.cpp 37334 2019-09-27 15:17:33Z seb $
+ *  $Id: yocto_i2cport.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindI2cPort(), the high-level API for I2cPort functions
  *
@@ -660,7 +660,8 @@ int YI2cPort::set_i2cMode(const string& newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the I2C port
+ * @param func : a string that uniquely characterizes the I2C port, for instance
+ *         YI2CMK01.i2cPort.
  *
  * @return a YI2cPort object allowing you to drive the I2C port.
  */

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 37780 2019-10-23 10:28:34Z seb $
+ * $Id: yproto.h 38062 2019-11-05 15:23:36Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -937,6 +937,7 @@ typedef struct _YIOHDL_internal {
 
 
 #define YCTX_OSX_MULTIPLES_HID 1
+#define YCTX_LINUX_ON_RPI 1
 extern u64 YctxDeviceListValidityMs;
 extern u32 YctxNetworkTimeout;
 
@@ -1004,6 +1005,7 @@ typedef struct{
     yCRITICAL_SECTION   parano_cs;
 
 #elif defined(LINUX_API)
+    u32                 linux_flags;
     yCRITICAL_SECTION   string_cache_cs;
     libusb_context      *libusb;
     pthread_t           usb_thread;

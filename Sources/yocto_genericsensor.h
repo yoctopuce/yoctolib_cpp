@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_genericsensor.h 37619 2019-10-11 11:52:42Z mvuilleu $
+ *  $Id: yocto_genericsensor.h 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Declares yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -87,7 +87,8 @@ typedef enum {
  * YGenericSensor Class: GenericSensor function interface
  *
  * The YGenericSensor class allows you to read and configure Yoctopuce signal
- * transducers. It inherits from YSensor class the core functions to read measurements,
+ * transducers, for instance using a Yocto-4-20mA-Rx, a Yocto-0-10V-Rx, a Yocto-milliVolt-Rx or a
+ * Yocto-RS232. It inherits from YSensor class the core functions to read measurements,
  * to register callback functions, to access the autonomous datalogger.
  * This class adds the ability to configure the automatic conversion between the
  * measured signal and the corresponding engineering unit.
@@ -372,7 +373,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the generic sensor
+     * @param func : a string that uniquely characterizes the generic sensor, for instance
+     *         RX420MA1.genericSensor1.
      *
      * @return a YGenericSensor object allowing you to drive the generic sensor.
      */
@@ -482,7 +484,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the generic sensor
+ * @param func : a string that uniquely characterizes the generic sensor, for instance
+ *         RX420MA1.genericSensor1.
  *
  * @return a YGenericSensor object allowing you to drive the generic sensor.
  */

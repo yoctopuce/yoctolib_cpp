@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_audioout.h 37619 2019-10-11 11:52:42Z mvuilleu $
+ *  $Id: yocto_audioout.h 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Declares yFindAudioOut(), the high-level API for AudioOut functions
  *
@@ -72,7 +72,7 @@ typedef enum {
 /**
  * YAudioOut Class: AudioOut function interface
  *
- * The Yoctopuce application programming interface allows you to configure the volume of the outout.
+ * The YAudioOut class allows you to configure the volume of an audio outout.
  */
 class YOCTO_CLASS_EXPORT YAudioOut: public YFunction {
 #ifdef __BORLANDC__
@@ -226,7 +226,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the audio output
+     * @param func : a string that uniquely characterizes the audio output, for instance
+     *         MyDevice.audioOut1.
      *
      * @return a YAudioOut object allowing you to drive the audio output.
      */
@@ -309,7 +310,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the audio output
+ * @param func : a string that uniquely characterizes the audio output, for instance
+ *         MyDevice.audioOut1.
  *
  * @return a YAudioOut object allowing you to drive the audio output.
  */

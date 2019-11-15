@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 37334 2019-09-27 15:17:33Z seb $
+ * $Id: yocto_display.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -1142,7 +1142,8 @@ int YDisplay::set_command(const string& newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the display
+ * @param func : a string that uniquely characterizes the display, for instance
+ *         YD128X64.display.
  *
  * @return a YDisplay object allowing you to drive the display.
  */

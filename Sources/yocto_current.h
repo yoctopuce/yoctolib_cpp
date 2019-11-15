@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_current.h 37619 2019-10-11 11:52:42Z mvuilleu $
+ *  $Id: yocto_current.h 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Declares yFindCurrent(), the high-level API for Current functions
  *
@@ -70,8 +70,9 @@ typedef enum {
 /**
  * YCurrent Class: Current function interface
  *
- * The Yoctopuce class YCurrent allows you to read and configure Yoctopuce current
- * sensors. It inherits from YSensor class the core functions to read measurements,
+ * The YCurrent class allows you to read and configure Yoctopuce current
+ * sensors, for instance using a Yocto-Watt, a Yocto-Amp or a Yocto-Motor-DC. It inherits from YSensor
+ * class the core functions to read measurements,
  * to register callback functions, to access the autonomous datalogger.
  */
 class YOCTO_CLASS_EXPORT YCurrent: public YSensor {
@@ -158,7 +159,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the current sensor
+     * @param func : a string that uniquely characterizes the current sensor, for instance
+     *         YWATTMK1.current1.
      *
      * @return a YCurrent object allowing you to drive the current sensor.
      */
@@ -257,7 +259,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the current sensor
+ * @param func : a string that uniquely characterizes the current sensor, for instance
+ *         YWATTMK1.current1.
  *
  * @return a YCurrent object allowing you to drive the current sensor.
  */

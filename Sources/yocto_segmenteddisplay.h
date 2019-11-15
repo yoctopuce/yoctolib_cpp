@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_segmenteddisplay.h 32900 2018-11-02 10:12:43Z seb $
+ *  $Id: yocto_segmenteddisplay.h 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Declares yFindSegmentedDisplay(), the high-level API for SegmentedDisplay functions
  *
@@ -163,7 +163,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the segmented displays
+     * @param func : a string that uniquely characterizes the segmented displays, for instance
+     *         MyDevice.segmentedDisplay.
      *
      * @return a YSegmentedDisplay object allowing you to drive the segmented displays.
      */
@@ -246,7 +247,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the segmented displays
+ * @param func : a string that uniquely characterizes the segmented displays, for instance
+ *         MyDevice.segmentedDisplay.
  *
  * @return a YSegmentedDisplay object allowing you to drive the segmented displays.
  */

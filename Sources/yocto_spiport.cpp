@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.cpp 37334 2019-09-27 15:17:33Z seb $
+ *  $Id: yocto_spiport.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -787,7 +787,8 @@ int YSpiPort::set_shiftSampling(Y_SHIFTSAMPLING_enum newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the SPI port
+ * @param func : a string that uniquely characterizes the SPI port, for instance
+ *         YSPIMK01.spiPort.
  *
  * @return a YSpiPort object allowing you to drive the SPI port.
  */

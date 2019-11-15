@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.h 37619 2019-10-11 11:52:42Z mvuilleu $
+ * $Id: yocto_cellular.h 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  * Declares yFindCellular(), the high-level API for Cellular functions
  *
@@ -158,8 +158,9 @@ public:
 /**
  * YCellular Class: Cellular function interface
  *
- * YCellular functions provides control over cellular network parameters
- * and status for devices that are GSM-enabled.
+ * The YCellular class provides control over cellular network parameters
+ * and status for devices that are GSM-enabled, for instance using a YoctoHub-GSM-3G-NA, a
+ * YoctoHub-GSM-3G-EU or a YoctoHub-GSM-2G.
  */
 class YOCTO_CLASS_EXPORT YCellular: public YFunction {
 #ifdef __BORLANDC__
@@ -599,7 +600,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the cellular interface
+     * @param func : a string that uniquely characterizes the cellular interface, for instance
+     *         YHUBGSM4.cellular.
      *
      * @return a YCellular object allowing you to drive the cellular interface.
      */
@@ -754,7 +756,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the cellular interface
+ * @param func : a string that uniquely characterizes the cellular interface, for instance
+ *         YHUBGSM4.cellular.
  *
  * @return a YCellular object allowing you to drive the cellular interface.
  */

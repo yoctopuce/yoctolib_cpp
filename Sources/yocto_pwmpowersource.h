@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwmpowersource.h 32900 2018-11-02 10:12:43Z seb $
+ *  $Id: yocto_pwmpowersource.h 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Declares yFindPwmPowerSource(), the high-level API for PwmPowerSource functions
  *
@@ -70,8 +70,8 @@ typedef enum {
 /**
  * YPwmPowerSource Class: PwmPowerSource function interface
  *
- * The Yoctopuce application programming interface allows you to configure
- * the voltage source used by all PWM on the same device.
+ * The YPwmPowerSource class allows you to configure
+ * the voltage source used by all PWM outputs on the same device, for instance using a Yocto-PWM-Tx.
  */
 class YOCTO_CLASS_EXPORT YPwmPowerSource: public YFunction {
 #ifdef __BORLANDC__
@@ -160,7 +160,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the voltage source
+     * @param func : a string that uniquely characterizes the voltage source, for instance
+     *         YPWMTX01.pwmPowerSource.
      *
      * @return a YPwmPowerSource object allowing you to drive the voltage source.
      */
@@ -243,7 +244,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the voltage source
+ * @param func : a string that uniquely characterizes the voltage source, for instance
+ *         YPWMTX01.pwmPowerSource.
  *
  * @return a YPwmPowerSource object allowing you to drive the voltage source.
  */

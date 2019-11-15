@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupmonitor.h 37000 2019-09-03 06:40:17Z mvuilleu $
+ *  $Id: yocto_wakeupmonitor.h 38030 2019-11-04 17:56:01Z mvuilleu $
  *
  *  Declares yFindWakeUpMonitor(), the high-level API for WakeUpMonitor functions
  *
@@ -74,8 +74,8 @@ typedef enum {
     Y_WAKEUPSTATE_INVALID = -1,
 } Y_WAKEUPSTATE_enum;
 #endif
-#define Y_POWERDURATION_INVALID         (YAPI_INVALID_INT)
-#define Y_SLEEPCOUNTDOWN_INVALID        (YAPI_INVALID_INT)
+#define Y_POWERDURATION_INVALID         (YAPI_INVALID_UINT)
+#define Y_SLEEPCOUNTDOWN_INVALID        (YAPI_INVALID_UINT)
 #define Y_NEXTWAKEUP_INVALID            (YAPI_INVALID_LONG)
 #define Y_RTCTIME_INVALID               (YAPI_INVALID_LONG)
 //--- (end of YWakeUpMonitor definitions)
@@ -84,8 +84,9 @@ typedef enum {
 /**
  * YWakeUpMonitor Class: WakeUpMonitor function interface
  *
- * The WakeUpMonitor function handles globally all wake-up sources, as well
- * as automated sleep mode.
+ * The YWakeUpMonitor class handles globally all wake-up sources, as well
+ * as automated sleep mode, for instance using a YoctoHub-Wireless-g, a YoctoHub-GSM-3G-NA, a
+ * YoctoHub-GSM-3G-EU or a YoctoHub-Wireless-SR.
  */
 class YOCTO_CLASS_EXPORT YWakeUpMonitor: public YFunction {
 #ifdef __BORLANDC__
@@ -118,8 +119,8 @@ public:
     virtual ~YWakeUpMonitor();
     //--- (YWakeUpMonitor accessors declaration)
 
-    static const int POWERDURATION_INVALID = YAPI_INVALID_INT;
-    static const int SLEEPCOUNTDOWN_INVALID = YAPI_INVALID_INT;
+    static const int POWERDURATION_INVALID = YAPI_INVALID_UINT;
+    static const int SLEEPCOUNTDOWN_INVALID = YAPI_INVALID_UINT;
     static const s64 NEXTWAKEUP_INVALID = YAPI_INVALID_LONG;
     static const Y_WAKEUPREASON_enum WAKEUPREASON_USBPOWER = Y_WAKEUPREASON_USBPOWER;
     static const Y_WAKEUPREASON_enum WAKEUPREASON_EXTPOWER = Y_WAKEUPREASON_EXTPOWER;
@@ -269,7 +270,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the monitor
+     * @param func : a string that uniquely characterizes the monitor, for instance
+     *         YHUBWLN3.wakeUpMonitor.
      *
      * @return a YWakeUpMonitor object allowing you to drive the monitor.
      */
@@ -405,7 +407,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the monitor
+ * @param func : a string that uniquely characterizes the monitor, for instance
+ *         YHUBWLN3.wakeUpMonitor.
  *
  * @return a YWakeUpMonitor object allowing you to drive the monitor.
  */

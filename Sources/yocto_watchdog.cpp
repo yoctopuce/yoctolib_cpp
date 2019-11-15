@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_watchdog.cpp 37619 2019-10-11 11:52:42Z mvuilleu $
+ *  $Id: yocto_watchdog.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindWatchdog(), the high-level API for Watchdog functions
  *
@@ -837,7 +837,8 @@ int YWatchdog::set_triggerDuration(s64 newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the watchdog
+ * @param func : a string that uniquely characterizes the watchdog, for instance
+ *         WDOGDC01.watchdog1.
  *
  * @return a YWatchdog object allowing you to drive the watchdog.
  */

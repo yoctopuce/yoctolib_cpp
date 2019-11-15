@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_buzzer.h 36554 2019-07-29 12:21:31Z mvuilleu $
+ *  $Id: yocto_buzzer.h 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Declares yFindBuzzer(), the high-level API for Buzzer functions
  *
@@ -66,8 +66,8 @@ typedef void (*YBuzzerValueCallback)(YBuzzer *func, const string& functionValue)
 /**
  * YBuzzer Class: Buzzer function interface
  *
- * The Yoctopuce application programming interface allows you to
- * choose the frequency and volume at which the buzzer must sound.
+ * The YBuzzer class allows you to drive a buzzer, for instance using a Yocto-Buzzer. You can
+ * choose the frequency and the volume at which the buzzer must sound.
  * You can also pre-program a play sequence.
  */
 class YOCTO_CLASS_EXPORT YBuzzer: public YFunction {
@@ -229,7 +229,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the buzzer
+     * @param func : a string that uniquely characterizes the buzzer, for instance
+     *         YBUZZER2.buzzer.
      *
      * @return a YBuzzer object allowing you to drive the buzzer.
      */
@@ -464,7 +465,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the buzzer
+ * @param func : a string that uniquely characterizes the buzzer, for instance
+ *         YBUZZER2.buzzer.
  *
  * @return a YBuzzer object allowing you to drive the buzzer.
  */

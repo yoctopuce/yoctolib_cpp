@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_powersupply.cpp 37334 2019-09-27 15:17:33Z seb $
+ *  $Id: yocto_powersupply.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindPowerSupply(), the high-level API for PowerSupply functions
  *
@@ -703,7 +703,8 @@ int YPowerSupply::set_command(const string& newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the regulated power supply
+ * @param func : a string that uniquely characterizes the regulated power supply, for instance
+ *         MyDevice.powerSupply.
  *
  * @return a YPowerSupply object allowing you to drive the regulated power supply.
  */

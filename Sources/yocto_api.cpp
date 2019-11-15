@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 37692 2019-10-14 14:58:03Z seb $
+ * $Id: yocto_api.cpp 38137 2019-11-14 10:23:36Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -1061,14 +1061,14 @@ YConsolidatedDataSet::YConsolidatedDataSet(double startTime, double endTime, vec
     ,_nsensors(0)
 //--- (end of generated code: YConsolidatedDataSet initialization)
 {
-  this->_init(startTime, endTime, sensorList);
+  this->imm_init(startTime, endTime, sensorList);
 }
 
 //--- (generated code: YConsolidatedDataSet implementation)
 // static attributes
 
 
-int YConsolidatedDataSet::_init(double startt,double endt,vector<YSensor*> sensorList)
+int YConsolidatedDataSet::imm_init(double startt,double endt,vector<YSensor*> sensorList)
 {
     _start = startt;
     _end = endt;
@@ -2861,7 +2861,8 @@ int YFunction::set_advertisedValue(const string& newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the function
+ * @param func : a string that uniquely characterizes the function, for instance
+ *         MyDevice..
  *
  * @return a YFunction object allowing you to drive the function.
  */
@@ -8264,7 +8265,8 @@ int YSensor::get_sensorState(void)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the sensor
+ * @param func : a string that uniquely characterizes the sensor, for instance
+ *         MyDevice..
  *
  * @return a YSensor object allowing you to drive the sensor.
  */
@@ -9364,7 +9366,8 @@ int YDataLogger::set_clearHistory(Y_CLEARHISTORY_enum newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the data logger
+ * @param func : a string that uniquely characterizes the data logger, for instance
+ *         LIGHTMK3.dataLogger.
  *
  * @return a YDataLogger object allowing you to drive the data logger.
  */

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_servo.cpp 37334 2019-09-27 15:17:33Z seb $
+ *  $Id: yocto_servo.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindServo(), the high-level API for Servo functions
  *
@@ -525,7 +525,8 @@ int YServo::set_enabledAtPowerOn(Y_ENABLEDATPOWERON_enum newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the servo
+ * @param func : a string that uniquely characterizes the servo, for instance
+ *         SERVORC1.servo1.
  *
  * @return a YServo object allowing you to drive the servo.
  */

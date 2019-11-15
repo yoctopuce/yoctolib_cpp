@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_dualpower.h 37609 2019-10-09 16:59:35Z mvuilleu $
+ *  $Id: yocto_dualpower.h 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Declares yFindDualPower(), the high-level API for DualPower functions
  *
@@ -201,7 +201,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the power control
+     * @param func : a string that uniquely characterizes the power control, for instance
+     *         SERVORC1.dualPower.
      *
      * @return a YDualPower object allowing you to drive the power control.
      */
@@ -284,7 +285,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the power control
+ * @param func : a string that uniquely characterizes the power control, for instance
+ *         SERVORC1.dualPower.
  *
  * @return a YDualPower object allowing you to drive the power control.
  */

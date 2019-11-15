@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pressure.cpp 37334 2019-09-27 15:17:33Z seb $
+ *  $Id: yocto_pressure.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindPressure(), the high-level API for Pressure functions
  *
@@ -89,7 +89,8 @@ YPressure::~YPressure()
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the pressure sensor
+ * @param func : a string that uniquely characterizes the pressure sensor, for instance
+ *         METEOMK2.pressure.
  *
  * @return a YPressure object allowing you to drive the pressure sensor.
  */

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_powersupply.h 34115 2019-01-23 14:23:54Z seb $
+ *  $Id: yocto_powersupply.h 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Declares yFindPowerSupply(), the high-level API for PowerSupply functions
  *
@@ -87,7 +87,8 @@ typedef enum {
 /**
  * YPowerSupply Class: PowerSupply function interface
  *
- * The Yoctopuce application programming interface allows you to change the voltage set point,
+ * The YPowerSupply class allows you to drive a Yoctopuce power supply$DEV_ENà.
+ * It can be use to change the voltage set point,
  * the current limit and the enable/disable the output.
  */
 class YOCTO_CLASS_EXPORT YPowerSupply: public YFunction {
@@ -398,7 +399,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the regulated power supply
+     * @param func : a string that uniquely characterizes the regulated power supply, for instance
+     *         MyDevice.powerSupply.
      *
      * @return a YPowerSupply object allowing you to drive the regulated power supply.
      */
@@ -493,7 +495,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the regulated power supply
+ * @param func : a string that uniquely characterizes the regulated power supply, for instance
+ *         MyDevice.powerSupply.
  *
  * @return a YPowerSupply object allowing you to drive the regulated power supply.
  */

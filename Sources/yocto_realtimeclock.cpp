@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_realtimeclock.cpp 37334 2019-09-27 15:17:33Z seb $
+ *  $Id: yocto_realtimeclock.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Implements yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *
@@ -281,7 +281,8 @@ Y_TIMESET_enum YRealTimeClock::get_timeSet(void)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the clock
+ * @param func : a string that uniquely characterizes the clock, for instance
+ *         YHUBWLN3.realTimeClock.
  *
  * @return a YRealTimeClock object allowing you to drive the clock.
  */

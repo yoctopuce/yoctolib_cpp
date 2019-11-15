@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupschedule.h 37000 2019-09-03 06:40:17Z mvuilleu $
+ *  $Id: yocto_wakeupschedule.h 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Declares yFindWakeUpSchedule(), the high-level API for WakeUpSchedule functions
  *
@@ -67,7 +67,8 @@ typedef void (*YWakeUpScheduleValueCallback)(YWakeUpSchedule *func, const string
 /**
  * YWakeUpSchedule Class: WakeUpSchedule function interface
  *
- * The WakeUpSchedule function implements a wake up condition. The wake up time is
+ * The YWakeUpSchedule class implements a wake up condition, for instance using a YoctoHub-Wireless-g,
+ * a YoctoHub-GSM-3G-NA, a YoctoHub-GSM-3G-EU or a YoctoHub-Wireless-SR. The wake up time is
  * specified as a set of months and/or days and/or hours and/or minutes when the
  * wake up should happen.
  */
@@ -307,7 +308,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the wake up schedule
+     * @param func : a string that uniquely characterizes the wake up schedule, for instance
+     *         YHUBWLN3.wakeUpSchedule1.
      *
      * @return a YWakeUpSchedule object allowing you to drive the wake up schedule.
      */
@@ -406,7 +408,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the wake up schedule
+ * @param func : a string that uniquely characterizes the wake up schedule, for instance
+ *         YHUBWLN3.wakeUpSchedule1.
  *
  * @return a YWakeUpSchedule object allowing you to drive the wake up schedule.
  */

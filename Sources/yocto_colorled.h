@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_colorled.h 33709 2018-12-14 14:18:12Z seb $
+ *  $Id: yocto_colorled.h 37827 2019-10-25 13:07:48Z mvuilleu $
  *
  *  Declares yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -84,8 +84,8 @@ public:
 /**
  * YColorLed Class: ColorLed function interface
  *
- * The Yoctopuce application programming interface
- * allows you to drive a color LED using RGB coordinates as well as HSL coordinates.
+ * The YColorLed class allows you to drive a color LED, for instance using a Yocto-Color-V2 or a Yocto-PowerColor.
+ * The color can be specified using RGB coordinates as well as HSL coordinates.
  * The module performs all conversions form RGB to HSL automatically. It is then
  * self-evident to turn on a LED with a given hue and to progressively vary its
  * saturation or lightness. If needed, you can find more information on the
@@ -239,9 +239,11 @@ public:
     { return this->get_rgbColorAtPowerOn(); }
 
     /**
-     * Changes the color that the LED will display by default when the module is turned on.
+     * Changes the color that the LED displays by default when the module is turned on.
+     * Remember to call the saveToFlash()
+     * method of the module if the modification must be kept.
      *
-     * @param newval : an integer corresponding to the color that the LED will display by default when the
+     * @param newval : an integer corresponding to the color that the LED displays by default when the
      * module is turned on
      *
      * @return YAPI_SUCCESS if the call succeeds.
@@ -323,7 +325,8 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the RGB LED
+     * @param func : a string that uniquely characterizes the RGB LED, for instance
+     *         YRGBLED2.colorLed1.
      *
      * @return a YColorLed object allowing you to drive the RGB LED.
      */
@@ -458,7 +461,8 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the RGB LED
+ * @param func : a string that uniquely characterizes the RGB LED, for instance
+ *         YRGBLED2.colorLed1.
  *
  * @return a YColorLed object allowing you to drive the RGB LED.
  */
