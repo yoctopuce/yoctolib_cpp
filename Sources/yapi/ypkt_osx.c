@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_osx.c 35237 2019-04-29 15:44:31Z mvuilleu $
+ * $Id: ypkt_osx.c 38460 2019-11-25 16:49:33Z seb $
  *
  * OS-specific USB packet layer, Mac OS X version
  *
@@ -194,6 +194,10 @@ int yyyUSB_init(yContextSt *ctx,char *errmsg)
 
     if (sysctlbyname("kern.osrelease", str, &size, NULL, 0) ==0){
         int numver;
+        //19.x.x  OS X 10.15.x Catalina
+        //18.x.x  OS X 10.14.x Mojave
+        //17.x.x  OS X 10.13.x High Sierra
+        //16.x.x  OS X 10.12.x Sierra
         //15.x.x  OS X 10.11.x El Capitan
         //14.x.x  OS X 10.10.x Yosemite
         //13.x.x  OS X 10.9.x Mavericks
@@ -204,6 +208,8 @@ int yyyUSB_init(yContextSt *ctx,char *errmsg)
         numver = atoi(str);
         if (numver >= 13 && numver < 15){
             ctx->osx_flags |= YCTX_OSX_MULTIPLES_HID;
+        }else if(numver >=19){
+            ctx->osx_flags |= YCTX_OSX_NO_RUN_LOOP_ON_DEVICE;
         }
     }
 
@@ -466,12 +472,13 @@ int yyySetup(yInterfaceSt *iface,char *errmsg)
     yPktQueueInit(&iface->rxQueue);
 	yPktQueueInit(&iface->txQueue);
 
-
-    /* Create the Run Loop Mode for this device. printing the reference seems to work. */
-    sprintf(str, "yocto_%p", iface->devref);
-    iface->run_loop_mode = CFStringCreateWithCString(NULL, str, kCFStringEncodingASCII);
-    /* Attach the device to a Run Loop */
-    IOHIDDeviceScheduleWithRunLoop(iface->devref, yContext->usb_run_loop, iface->run_loop_mode);
+    if((yContext->osx_flags & YCTX_OSX_NO_RUN_LOOP_ON_DEVICE) == 0){
+        /* Create the Run Loop Mode for this device. printing the reference seems to work. */
+        sprintf(str, "yocto_%p", iface->devref);
+        iface->run_loop_mode = CFStringCreateWithCString(NULL, str, kCFStringEncodingASCII);
+        /* Attach the device to a Run Loop */
+        IOHIDDeviceScheduleWithRunLoop(iface->devref, yContext->usb_run_loop, iface->run_loop_mode);
+    }
     IOHIDDeviceRegisterInputReportCallback( iface->devref,              // IOHIDDeviceRef for the HID device
                                            (u8*) &iface->tmprxpkt,     // pointer to the report data
                                            USB_PKT_SIZE,               // number of bytes in the report (CFIndex)

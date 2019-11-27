@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_gps.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_gps.h 38462 2019-11-25 17:14:30Z seb $
  *
  *  Declares yFindGps(), the high-level API for Gps functions
  *
@@ -74,17 +74,19 @@ typedef enum {
 #ifndef _Y_CONSTELLATION_ENUM
 #define _Y_CONSTELLATION_ENUM
 typedef enum {
-    Y_CONSTELLATION_GPS = 0,
-    Y_CONSTELLATION_GLONASS = 1,
-    Y_CONSTELLATION_GALLILEO = 2,
-    Y_CONSTELLATION_GNSS = 3,
+    Y_CONSTELLATION_GNSS = 0,
+    Y_CONSTELLATION_GPS = 1,
+    Y_CONSTELLATION_GLONASS = 2,
+    Y_CONSTELLATION_GALILEO = 3,
     Y_CONSTELLATION_GPS_GLONASS = 4,
-    Y_CONSTELLATION_GPS_GALLILEO = 5,
-    Y_CONSTELLATION_GLONASS_GALLELIO = 6,
+    Y_CONSTELLATION_GPS_GALILEO = 5,
+    Y_CONSTELLATION_GLONASS_GALILEO = 6,
     Y_CONSTELLATION_INVALID = -1,
 } Y_CONSTELLATION_enum;
 #endif
 #define Y_SATCOUNT_INVALID              (YAPI_INVALID_LONG)
+#define Y_SATPERCONST_INVALID           (YAPI_INVALID_LONG)
+#define Y_GPSREFRESHRATE_INVALID        (YAPI_INVALID_DOUBLE)
 #define Y_LATITUDE_INVALID              (YAPI_INVALID_STRING)
 #define Y_LONGITUDE_INVALID             (YAPI_INVALID_STRING)
 #define Y_DILUTION_INVALID              (YAPI_INVALID_DOUBLE)
@@ -118,6 +120,8 @@ protected:
     // Attributes (function value cache)
     Y_ISFIXED_enum  _isFixed;
     s64             _satCount;
+    s64             _satPerConst;
+    double          _gpsRefreshRate;
     Y_COORDSYSTEM_enum _coordSystem;
     Y_CONSTELLATION_enum _constellation;
     string          _latitude;
@@ -150,17 +154,19 @@ public:
     static const Y_ISFIXED_enum ISFIXED_TRUE = Y_ISFIXED_TRUE;
     static const Y_ISFIXED_enum ISFIXED_INVALID = Y_ISFIXED_INVALID;
     static const s64 SATCOUNT_INVALID = YAPI_INVALID_LONG;
+    static const s64 SATPERCONST_INVALID = YAPI_INVALID_LONG;
+    static const double GPSREFRESHRATE_INVALID;
     static const Y_COORDSYSTEM_enum COORDSYSTEM_GPS_DMS = Y_COORDSYSTEM_GPS_DMS;
     static const Y_COORDSYSTEM_enum COORDSYSTEM_GPS_DM = Y_COORDSYSTEM_GPS_DM;
     static const Y_COORDSYSTEM_enum COORDSYSTEM_GPS_D = Y_COORDSYSTEM_GPS_D;
     static const Y_COORDSYSTEM_enum COORDSYSTEM_INVALID = Y_COORDSYSTEM_INVALID;
+    static const Y_CONSTELLATION_enum CONSTELLATION_GNSS = Y_CONSTELLATION_GNSS;
     static const Y_CONSTELLATION_enum CONSTELLATION_GPS = Y_CONSTELLATION_GPS;
     static const Y_CONSTELLATION_enum CONSTELLATION_GLONASS = Y_CONSTELLATION_GLONASS;
-    static const Y_CONSTELLATION_enum CONSTELLATION_GALLILEO = Y_CONSTELLATION_GALLILEO;
-    static const Y_CONSTELLATION_enum CONSTELLATION_GNSS = Y_CONSTELLATION_GNSS;
+    static const Y_CONSTELLATION_enum CONSTELLATION_GALILEO = Y_CONSTELLATION_GALILEO;
     static const Y_CONSTELLATION_enum CONSTELLATION_GPS_GLONASS = Y_CONSTELLATION_GPS_GLONASS;
-    static const Y_CONSTELLATION_enum CONSTELLATION_GPS_GALLILEO = Y_CONSTELLATION_GPS_GALLILEO;
-    static const Y_CONSTELLATION_enum CONSTELLATION_GLONASS_GALLELIO = Y_CONSTELLATION_GLONASS_GALLELIO;
+    static const Y_CONSTELLATION_enum CONSTELLATION_GPS_GALILEO = Y_CONSTELLATION_GPS_GALILEO;
+    static const Y_CONSTELLATION_enum CONSTELLATION_GLONASS_GALILEO = Y_CONSTELLATION_GLONASS_GALILEO;
     static const Y_CONSTELLATION_enum CONSTELLATION_INVALID = Y_CONSTELLATION_INVALID;
     static const string LATITUDE_INVALID;
     static const string LONGITUDE_INVALID;
@@ -187,9 +193,9 @@ public:
     { return this->get_isFixed(); }
 
     /**
-     * Returns the count of visible satellites.
+     * Returns the total count of satellites used to compute GPS position.
      *
-     * @return an integer corresponding to the count of visible satellites
+     * @return an integer corresponding to the total count of satellites used to compute GPS position
      *
      * On failure, throws an exception or returns Y_SATCOUNT_INVALID.
      */
@@ -197,6 +203,34 @@ public:
 
     inline s64          satCount(void)
     { return this->get_satCount(); }
+
+    /**
+     * Returns the count of visible satellites per constellation encoded
+     * on a 32 bit integer: bits 0..5: GPS satellites count,  bits 6..11 : Glonass, bits 12..17 : Galileo.
+     * this value is refreshed every 5 seconds only.
+     *
+     * @return an integer corresponding to the count of visible satellites per constellation encoded
+     *         on a 32 bit integer: bits 0.
+     *
+     * On failure, throws an exception or returns Y_SATPERCONST_INVALID.
+     */
+    s64                 get_satPerConst(void);
+
+    inline s64          satPerConst(void)
+    { return this->get_satPerConst(); }
+
+    /**
+     * Returns effective GPS data refresh frequency.
+     * this value is refreshed every 5 seconds only.
+     *
+     * @return a floating point number corresponding to effective GPS data refresh frequency
+     *
+     * On failure, throws an exception or returns Y_GPSREFRESHRATE_INVALID.
+     */
+    double              get_gpsRefreshRate(void);
+
+    inline double       gpsRefreshRate(void)
+    { return this->get_gpsRefreshRate(); }
 
     /**
      * Returns the representation system used for positioning data.
@@ -231,9 +265,9 @@ public:
      * Returns the the satellites constellation used to compute
      * positioning data.
      *
-     * @return a value among Y_CONSTELLATION_GPS, Y_CONSTELLATION_GLONASS, Y_CONSTELLATION_GALLILEO,
-     * Y_CONSTELLATION_GNSS, Y_CONSTELLATION_GPS_GLONASS, Y_CONSTELLATION_GPS_GALLILEO and
-     * Y_CONSTELLATION_GLONASS_GALLELIO corresponding to the the satellites constellation used to compute
+     * @return a value among Y_CONSTELLATION_GNSS, Y_CONSTELLATION_GPS, Y_CONSTELLATION_GLONASS,
+     * Y_CONSTELLATION_GALILEO, Y_CONSTELLATION_GPS_GLONASS, Y_CONSTELLATION_GPS_GALILEO and
+     * Y_CONSTELLATION_GLONASS_GALILEO corresponding to the the satellites constellation used to compute
      *         positioning data
      *
      * On failure, throws an exception or returns Y_CONSTELLATION_INVALID.
@@ -245,13 +279,12 @@ public:
 
     /**
      * Changes the satellites constellation used to compute
-     * positioning data. Possible  constellations are GPS, Glonass, Galileo ,
-     * GNSS ( = GPS + Glonass + Galileo) and the 3 possible pairs. This seeting has effect on Yocto-GPS rev A.
+     * positioning data. Possible  constellations are GNSS ( = all supported constellations),
+     * GPS, Glonass, Galileo , and the 3 possible pairs. This setting has  no effect on Yocto-GPS (V1).
      *
-     * @param newval : a value among Y_CONSTELLATION_GPS, Y_CONSTELLATION_GLONASS,
-     * Y_CONSTELLATION_GALLILEO, Y_CONSTELLATION_GNSS, Y_CONSTELLATION_GPS_GLONASS,
-     * Y_CONSTELLATION_GPS_GALLILEO and Y_CONSTELLATION_GLONASS_GALLELIO corresponding to the satellites
-     * constellation used to compute
+     * @param newval : a value among Y_CONSTELLATION_GNSS, Y_CONSTELLATION_GPS, Y_CONSTELLATION_GLONASS,
+     * Y_CONSTELLATION_GALILEO, Y_CONSTELLATION_GPS_GLONASS, Y_CONSTELLATION_GPS_GALILEO and
+     * Y_CONSTELLATION_GLONASS_GALILEO corresponding to the satellites constellation used to compute
      *         positioning data
      *
      * @return YAPI_SUCCESS if the call succeeds.

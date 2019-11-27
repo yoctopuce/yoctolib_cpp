@@ -138,10 +138,16 @@
         </Unit>
 
 <Unit filename="..\..\..\Sources\yocto_carbondioxide.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_humidity.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_pressure.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_temperature.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_datalogger.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 
 
 <Unit filename="..\..\..\Sources\yocto_carbondioxide.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_humidity.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_pressure.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_temperature.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_datalogger.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 
         <Extensions>

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_current.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_current.cpp 38510 2019-11-26 15:36:38Z mvuilleu $
  *
  *  Implements yFindCurrent(), the high-level API for Current functions
  *
@@ -159,7 +159,7 @@ int YCurrent::set_enabled(Y_ENABLED_enum newval)
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the current sensor, for instance
- *         YWATTMK1.current1.
+ *         YAMPMK01.current1.
  *
  * @return a YCurrent object allowing you to drive the current sensor.
  */

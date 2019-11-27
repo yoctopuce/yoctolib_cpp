@@ -26,6 +26,9 @@
 		B8A727F017E0CD3A005705C0 /* yocto_api.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727AA17E0CD3A005705C0 /* yocto_api.cpp */; };
 
 		B8A727A817E0CD3A00577ae7b650 /* yocto_carbondioxide.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057637b9ab8 /* yocto_carbondioxide.cpp */; };
+		B8A727A817E0CD3A00578b94d099 /* yocto_humidity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057fbda90df /* yocto_humidity.cpp */; };
+		B8A727A817E0CD3A005727cb8115 /* yocto_pressure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00575785c153 /* yocto_pressure.cpp */; };
+		B8A727A817E0CD3A0057b1fed39d /* yocto_temperature.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057a4f4010d /* yocto_temperature.cpp */; };
 		B8A727A817E0CD3A0057c53fd06f /* yocto_datalogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005715c00932 /* yocto_datalogger.cpp */; };
 
 /* End PBXBuildFile section */
@@ -78,6 +81,12 @@
 
 		B8A727A817E0CD3A0057637b9ab8 /* yocto_carbondioxide.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_carbondioxide.cpp; path = ../../../Sources/yocto_carbondioxide.cpp; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00573ce6718 /* yocto_carbondioxide.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_carbondioxide.h; path = ../../../Sources/yocto_carbondioxide.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057fbda90df /* yocto_humidity.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_humidity.cpp; path = ../../../Sources/yocto_humidity.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057f503a69f /* yocto_humidity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_humidity.h; path = ../../../Sources/yocto_humidity.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00575785c153 /* yocto_pressure.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_pressure.cpp; path = ../../../Sources/yocto_pressure.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00573ec49f17 /* yocto_pressure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_pressure.h; path = ../../../Sources/yocto_pressure.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057a4f4010d /* yocto_temperature.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_temperature.cpp; path = ../../../Sources/yocto_temperature.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005758830d25 /* yocto_temperature.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_temperature.h; path = ../../../Sources/yocto_temperature.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A005715c00932 /* yocto_datalogger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_datalogger.cpp; path = ../../../Sources/yocto_datalogger.cpp; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057c9eeb83 /* yocto_datalogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_datalogger.h; path = ../../../Sources/yocto_datalogger.h; sourceTree = "<group>"; };
 
@@ -106,6 +115,12 @@
 
 				B8A727A817E0CD3A0057637b9ab8 /* yocto_carbondioxide.cpp */,
 				B8A727A817E0CD3A00573ce6718 /* yocto_carbondioxide.h */,
+				B8A727A817E0CD3A0057fbda90df /* yocto_humidity.cpp */,
+				B8A727A817E0CD3A0057f503a69f /* yocto_humidity.h */,
+				B8A727A817E0CD3A00575785c153 /* yocto_pressure.cpp */,
+				B8A727A817E0CD3A00573ec49f17 /* yocto_pressure.h */,
+				B8A727A817E0CD3A0057a4f4010d /* yocto_temperature.cpp */,
+				B8A727A817E0CD3A005758830d25 /* yocto_temperature.h */,
 				B8A727A817E0CD3A005715c00932 /* yocto_datalogger.cpp */,
 				B8A727A817E0CD3A0057c9eeb83 /* yocto_datalogger.h */,
 
@@ -235,6 +250,9 @@
 				B8A727F017E0CD3A005705C0 /* yocto_api.cpp in Sources */,
 
 				B8A727A817E0CD3A00577ae7b650 /* yocto_carbondioxide.cpp in Sources */,
+				B8A727A817E0CD3A00578b94d099 /* yocto_humidity.cpp in Sources */,
+				B8A727A817E0CD3A005727cb8115 /* yocto_pressure.cpp in Sources */,
+				B8A727A817E0CD3A0057b1fed39d /* yocto_temperature.cpp in Sources */,
 				B8A727A817E0CD3A0057c53fd06f /* yocto_datalogger.cpp in Sources */,
 
 			);

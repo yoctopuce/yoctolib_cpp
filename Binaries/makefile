@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: makefile 36212 2019-07-11 04:57:56Z mvuilleu $
+#  $Id: makefile 38378 2019-11-22 16:56:04Z seb $
 #
 #  makefile for C++ library
 #  - - - - - - - - - License information: - - - - - - - - -
@@ -76,6 +76,80 @@ OBJDIR_DLL64 = $(OUTDIR64)\obj_dir_dll
 OD = arch_type
 
 YOCTO_API_DIR = ..\Sources
+
+
+#-- yocto_patch_start --
+YOCTO_API_OBJS = 	$(OD)\yocto_api.obj\
+	$(OD)\yocto_accelerometer.obj \
+	$(OD)\yocto_altitude.obj \
+	$(OD)\yocto_anbutton.obj \
+	$(OD)\yocto_arithmeticsensor.obj \
+	$(OD)\yocto_audioin.obj \
+	$(OD)\yocto_audioout.obj \
+	$(OD)\yocto_bluetoothlink.obj \
+	$(OD)\yocto_buzzer.obj \
+	$(OD)\yocto_carbondioxide.obj \
+	$(OD)\yocto_cellular.obj \
+	$(OD)\yocto_colorled.obj \
+	$(OD)\yocto_colorledcluster.obj \
+	$(OD)\yocto_compass.obj \
+	$(OD)\yocto_current.obj \
+	$(OD)\yocto_currentloopoutput.obj \
+	$(OD)\yocto_daisychain.obj \
+	$(OD)\yocto_digitalio.obj \
+	$(OD)\yocto_display.obj \
+	$(OD)\yocto_dualpower.obj \
+	$(OD)\yocto_files.obj \
+	$(OD)\yocto_genericsensor.obj \
+	$(OD)\yocto_gps.obj \
+	$(OD)\yocto_groundspeed.obj \
+	$(OD)\yocto_gyro.obj \
+	$(OD)\yocto_hubport.obj \
+	$(OD)\yocto_humidity.obj \
+	$(OD)\yocto_i2cport.obj \
+	$(OD)\yocto_latitude.obj \
+	$(OD)\yocto_led.obj \
+	$(OD)\yocto_lightsensor.obj \
+	$(OD)\yocto_longitude.obj \
+	$(OD)\yocto_magnetometer.obj \
+	$(OD)\yocto_messagebox.obj \
+	$(OD)\yocto_motor.obj \
+	$(OD)\yocto_multiaxiscontroller.obj \
+	$(OD)\yocto_multicellweighscale.obj \
+	$(OD)\yocto_multisenscontroller.obj \
+	$(OD)\yocto_network.obj \
+	$(OD)\yocto_oscontrol.obj \
+	$(OD)\yocto_power.obj \
+	$(OD)\yocto_poweroutput.obj \
+	$(OD)\yocto_powersupply.obj \
+	$(OD)\yocto_pressure.obj \
+	$(OD)\yocto_proximity.obj \
+	$(OD)\yocto_pwminput.obj \
+	$(OD)\yocto_pwmoutput.obj \
+	$(OD)\yocto_pwmpowersource.obj \
+	$(OD)\yocto_quadraturedecoder.obj \
+	$(OD)\yocto_rangefinder.obj \
+	$(OD)\yocto_realtimeclock.obj \
+	$(OD)\yocto_refframe.obj \
+	$(OD)\yocto_relay.obj \
+	$(OD)\yocto_segmenteddisplay.obj \
+	$(OD)\yocto_serialport.obj \
+	$(OD)\yocto_servo.obj \
+	$(OD)\yocto_spiport.obj \
+	$(OD)\yocto_steppermotor.obj \
+	$(OD)\yocto_temperature.obj \
+	$(OD)\yocto_tilt.obj \
+	$(OD)\yocto_tvoc.obj \
+	$(OD)\yocto_voc.obj \
+	$(OD)\yocto_voltage.obj \
+	$(OD)\yocto_voltageoutput.obj \
+	$(OD)\yocto_wakeupmonitor.obj \
+	$(OD)\yocto_wakeupschedule.obj \
+	$(OD)\yocto_watchdog.obj \
+	$(OD)\yocto_weighscale.obj \
+	$(OD)\yocto_wireless.obj \
+
+#-- yocto_patch_stop --
 
 YOCTO_API_OBJS =  $(OD)\yocto_api.obj $(OD)\yocto_anbutton.obj $(OD)\yocto_carbondioxide.obj $(OD)\yocto_colorled.obj $(OD)\yocto_current.obj \
 	$(OD)\yocto_datalogger.obj $(OD)\yocto_display.obj $(OD)\yocto_dualpower.obj $(OD)\yocto_files.obj $(OD)\yocto_genericsensor.obj \

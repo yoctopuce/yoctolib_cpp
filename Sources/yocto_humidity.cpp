@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_humidity.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_humidity.cpp 38510 2019-11-26 15:36:38Z mvuilleu $
  *
  *  Implements yFindHumidity(), the high-level API for Humidity functions
  *
@@ -194,7 +194,7 @@ double YHumidity::get_absHum(void)
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the humidity sensor, for instance
- *         METEOMK2.humidity.
+ *         YCO2MK02.humidity.
  *
  * @return a YHumidity object allowing you to drive the humidity sensor.
  */

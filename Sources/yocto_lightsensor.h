@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_lightsensor.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_lightsensor.h 38510 2019-11-26 15:36:38Z mvuilleu $
  *
  *  Declares yFindLightSensor(), the high-level API for LightSensor functions
  *
@@ -74,7 +74,7 @@ typedef enum {
  * YLightSensor Class: LightSensor function interface
  *
  * The YLightSensor class allows you to read and configure Yoctopuce light
- * sensors, for instance using a Yocto-Light-V3, a Yocto-RangeFinder or a Yocto-Proximity. It inherits
+ * sensors, for instance using a Yocto-Light-V3, a Yocto-Proximity or a Yocto-RangeFinder. It inherits
  * from YSensor class the core functions to read measurements,
  * to register callback functions, to access the autonomous datalogger.
  * This class adds the ability to easily perform a one-point linear calibration

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ * $Id: yocto_cellular.cpp 38510 2019-11-26 15:36:38Z mvuilleu $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -74,36 +74,71 @@ YCellRecord::YCellRecord(int mcc,int mnc,int lac,int cellId,int dbm,int tad,cons
 // static attributes
 
 
+/**
+ * Returns the name of the the cell operator.
+ *
+ * @return a string with the name of the the cell operator.
+ */
 string YCellRecord::get_cellOperator(void)
 {
     return _oper;
 }
 
+/**
+ * Returns the Mobile Country Code (MCC).
+ *
+ * @return the Mobile Country Code (MCC).
+ */
 int YCellRecord::get_mobileCountryCode(void)
 {
     return _mcc;
 }
 
+/**
+ * Returns the Mobile Network Code (MNC).
+ *
+ * @return the Mobile Network Code (MNC).
+ */
 int YCellRecord::get_mobileNetworkCode(void)
 {
     return _mnc;
 }
 
+/**
+ * Returns the Location Area Code (LAC).
+ *
+ * @return the Location Area Code (LAC).
+ */
 int YCellRecord::get_locationAreaCode(void)
 {
     return _lac;
 }
 
+/**
+ * Returns the Cell Id.
+ *
+ * @return the Cell Id.
+ */
 int YCellRecord::get_cellId(void)
 {
     return _cid;
 }
 
+/**
+ * Returns the signal strength.
+ *
+ * @return the signal strength.
+ */
 int YCellRecord::get_signalStrength(void)
 {
     return _dbm;
 }
 
+/**
+ * Returns the Timing Advance (TA).
+ *
+ * @return the Timing Advance (TA).
+ */
 int YCellRecord::get_timingAdvance(void)
 {
     return _tad;
@@ -968,7 +1003,7 @@ int YCellular::set_command(const string& newval)
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the cellular interface, for instance
- *         YHUBGSM4.cellular.
+ *         YHUBGSM1.cellular.
  *
  * @return a YCellular object allowing you to drive the cellular interface.
  */

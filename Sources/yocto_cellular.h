@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ * $Id: yocto_cellular.h 38510 2019-11-26 15:36:38Z mvuilleu $
  *
  * Declares yFindCellular(), the high-level API for Cellular functions
  *
@@ -133,18 +133,53 @@ public:
     //--- (generated code: YCellRecord accessors declaration)
 
 
+    /**
+     * Returns the name of the the cell operator.
+     *
+     * @return a string with the name of the the cell operator.
+     */
     virtual string      get_cellOperator(void);
 
+    /**
+     * Returns the Mobile Country Code (MCC).
+     *
+     * @return the Mobile Country Code (MCC).
+     */
     virtual int         get_mobileCountryCode(void);
 
+    /**
+     * Returns the Mobile Network Code (MNC).
+     *
+     * @return the Mobile Network Code (MNC).
+     */
     virtual int         get_mobileNetworkCode(void);
 
+    /**
+     * Returns the Location Area Code (LAC).
+     *
+     * @return the Location Area Code (LAC).
+     */
     virtual int         get_locationAreaCode(void);
 
+    /**
+     * Returns the Cell Id.
+     *
+     * @return the Cell Id.
+     */
     virtual int         get_cellId(void);
 
+    /**
+     * Returns the signal strength.
+     *
+     * @return the signal strength.
+     */
     virtual int         get_signalStrength(void);
 
+    /**
+     * Returns the Timing Advance (TA).
+     *
+     * @return the Timing Advance (TA).
+     */
     virtual int         get_timingAdvance(void);
 
 #ifdef __BORLANDC__
@@ -159,8 +194,8 @@ public:
  * YCellular Class: Cellular function interface
  *
  * The YCellular class provides control over cellular network parameters
- * and status for devices that are GSM-enabled, for instance using a YoctoHub-GSM-3G-NA, a
- * YoctoHub-GSM-3G-EU or a YoctoHub-GSM-2G.
+ * and status for devices that are GSM-enabled, for instance using a YoctoHub-GSM-2G, a
+ * YoctoHub-GSM-3G-EU or a YoctoHub-GSM-3G-NA.
  */
 class YOCTO_CLASS_EXPORT YCellular: public YFunction {
 #ifdef __BORLANDC__
@@ -601,7 +636,7 @@ public:
      * call registerHub() at application initialization time.
      *
      * @param func : a string that uniquely characterizes the cellular interface, for instance
-     *         YHUBGSM4.cellular.
+     *         YHUBGSM1.cellular.
      *
      * @return a YCellular object allowing you to drive the cellular interface.
      */
@@ -757,7 +792,7 @@ public:
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the cellular interface, for instance
- *         YHUBGSM4.cellular.
+ *         YHUBGSM1.cellular.
  *
  * @return a YCellular object allowing you to drive the cellular interface.
  */

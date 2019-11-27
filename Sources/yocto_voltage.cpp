@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_voltage.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_voltage.cpp 38510 2019-11-26 15:36:38Z mvuilleu $
  *
  *  Implements yFindVoltage(), the high-level API for Voltage functions
  *
@@ -159,7 +159,7 @@ int YVoltage::set_enabled(Y_ENABLED_enum newval)
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the voltage sensor, for instance
- *         YWATTMK1.voltage1.
+ *         MOTORCTL.voltage.
  *
  * @return a YVoltage object allowing you to drive the voltage sensor.
  */

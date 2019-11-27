@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 36183 2019-07-10 06:20:19Z mvuilleu $
+#  $Id: GNUmakefile 38378 2019-11-22 16:56:04Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -234,13 +234,20 @@ STRIP_OSX = strip
 
 
 #define all tragets
-LIBS_I386    = $(DIR_I386)libyocto-static.a $(YAPI_DIR_I386)libyapi-static.a $(DIR_I386)libyocto.so.1.0.1 $(YAPI_DIR_I386)libyapi.so.1.0.1
-LIBS_X64     = $(DIR_X64)libyocto-static.a $(YAPI_DIR_X64)libyapi-static.a $(DIR_X64)libyocto.so.1.0.1 $(YAPI_DIR_X64)libyapi.so.1.0.1
-LIBS_ARMEL   = $(DIR_ARMEL)libyocto-static.a $(YAPI_DIR_ARMEL)libyapi-static.a $(DIR_ARMEL)libyocto.so.1.0.1 $(YAPI_DIR_ARMEL)libyapi.so.1.0.1
-LIBS_ARMHF   = $(DIR_ARMHF)libyocto-static.a $(YAPI_DIR_ARMHF)libyapi-static.a $(DIR_ARMHF)libyocto.so.1.0.1 $(YAPI_DIR_ARMHF)libyapi.so.1.0.1
-LIBS_AARCH64 = $(DIR_AARCH64)libyocto-static.a $(YAPI_DIR_AARCH64)libyapi-static.a $(DIR_AARCH64)libyocto.so.1.0.1 $(YAPI_DIR_AARCH64)libyapi.so.1.0.1
-LIBS_MIPS    = $(DIR_MIPS)libyocto-static.a $(YAPI_DIR_MIPS)libyapi-static.a $(DIR_MIPS)libyocto.so.1.0.1 $(YAPI_DIR_MIPS)libyapi.so.1.0.1
-LIBS_MIPSEL  = $(DIR_MIPSEL)libyocto-static.a $(YAPI_DIR_MIPSEL)libyapi-static.a $(DIR_MIPSEL)libyocto.so.1.0.1 $(YAPI_DIR_MIPSEL)libyapi.so.1.0.1
+LIBS_YAPI_I386    = $(YAPI_DIR_I386)libyapi-static.a $(YAPI_DIR_I386)libyapi.so.1.0.1
+LIBS_I386    = $(DIR_I386)libyocto-static.a $(DIR_I386)libyocto.so.1.0.1 $(LIBS_YAPI_I386)
+LIBS_YAPI_X64     = $(YAPI_DIR_X64)libyapi-static.a $(YAPI_DIR_X64)libyapi.so.1.0.1
+LIBS_X64     = $(DIR_X64)libyocto-static.a $(DIR_X64)libyocto.so.1.0.1 $(LIBS_YAPI_X64)
+LIBS_YAPI_ARMEL   = $(YAPI_DIR_ARMEL)libyapi-static.a $(YAPI_DIR_ARMEL)libyapi.so.1.0.1
+LIBS_ARMEL   = $(DIR_ARMEL)libyocto-static.a $(DIR_ARMEL)libyocto.so.1.0.1 $(LIBS_YAPI_ARMEL)
+LIBS_YAPI_ARMHF   = $(YAPI_DIR_ARMHF)libyapi-static.a $(YAPI_DIR_ARMHF)libyapi.so.1.0.1
+LIBS_ARMHF   = $(DIR_ARMHF)libyocto-static.a $(DIR_ARMHF)libyocto.so.1.0.1 $(LIBS_YAPI_ARMHF)
+LIBS_YAPI_AARCH64 = $(YAPI_DIR_AARCH64)libyapi-static.a $(YAPI_DIR_AARCH64)libyapi.so.1.0.1
+LIBS_AARCH64 = $(DIR_AARCH64)libyocto-static.a $(DIR_AARCH64)libyocto.so.1.0.1 $(LIBS_YAPI_AARCH64)
+LIBS_YAPI_MIPS    = $(YAPI_DIR_MIPS)libyapi-static.a $(YAPI_DIR_MIPS)libyapi.so.1.0.1
+LIBS_MIPS    = $(DIR_MIPS)libyocto-static.a $(DIR_MIPS)libyocto.so.1.0.1 $(LIBS_YAPI_MIPS)
+LIBS_YAPI_MIPSEL  = $(YAPI_DIR_MIPSEL)libyapi-static.a $(YAPI_DIR_MIPSEL)libyapi.so.1.0.1
+LIBS_MIPSEL  = $(DIR_MIPSEL)libyocto-static.a $(DIR_MIPSEL)libyocto.so.1.0.1 $(LIBS_YAPI_MIPSEL)
 LIBS_OSX     = $(DIR_OSX)libyocto-static.a  $(YAPI_DIR_OSX)libyapi-static.a $(DIR_OSX)libyocto.dylib $(YAPI_DIR_OSX)libyapi.dylib
 LIBS_OSX32     = $(YAPI_DIR_OSX32)libyapi.dylib
 
@@ -249,17 +256,80 @@ LIBS_OSX32     = $(YAPI_DIR_OSX32)libyapi.dylib
 #define all object needed
 SOURCES_DIR = ../Sources/
 
-YOCTO_API_OBJS_STAT = yocto_api.o yocto_anbutton.o yocto_carbondioxide.o yocto_colorled.o yocto_current.o yocto_datalogger.o yocto_display.o \
-	yocto_dualpower.o yocto_files.o yocto_genericsensor.o yocto_hubport.o yocto_humidity.o yocto_led.o yocto_lightsensor.o \
-	yocto_network.o yocto_oscontrol.o yocto_power.o yocto_pressure.o yocto_realtimeclock.o yocto_relay.o yocto_servo.o \
-	yocto_temperature.o yocto_voc.o yocto_voltage.o yocto_wakeupmonitor.o yocto_wakeupschedule.o yocto_watchdog.o \
-	yocto_wireless.o yocto_digitalio.o yocto_accelerometer.o yocto_magnetometer.o yocto_refframe.o yocto_tilt.o \
-	yocto_compass.o yocto_gyro.o yocto_pwmoutput.o yocto_pwmpowersource.o yocto_altitude.o yocto_motor.o yocto_serialport.o \
-	yocto_pwminput.o yocto_segmenteddisplay.o yocto_buzzer.o yocto_gps.o yocto_cellular.o yocto_groundspeed.o yocto_latitude.o \
-	yocto_longitude.o yocto_poweroutput.o yocto_quadraturedecoder.o yocto_currentloopoutput.o yocto_colorledcluster.o yocto_spiport.o \
-	yocto_messagebox.o yocto_steppermotor.o yocto_multiaxiscontroller.o yocto_proximity.o yocto_rangefinder.o yocto_daisychain.o \
-	yocto_weighscale.o yocto_voltageoutput.o yocto_powersupply.o yocto_multicellweighscale.o yocto_tvoc.o yocto_multisenscontroller.o \
-	yocto_arithmeticsensor.o yocto_i2cport.o
+
+#-- yocto_patch_start --
+YOCTO_API_OBJS_STAT = yocto_api.o\
+	yocto_accelerometer.o \
+	yocto_altitude.o \
+	yocto_anbutton.o \
+	yocto_arithmeticsensor.o \
+	yocto_audioin.o \
+	yocto_audioout.o \
+	yocto_bluetoothlink.o \
+	yocto_buzzer.o \
+	yocto_carbondioxide.o \
+	yocto_cellular.o \
+	yocto_colorled.o \
+	yocto_colorledcluster.o \
+	yocto_compass.o \
+	yocto_current.o \
+	yocto_currentloopoutput.o \
+	yocto_daisychain.o \
+	yocto_digitalio.o \
+	yocto_display.o \
+	yocto_dualpower.o \
+	yocto_files.o \
+	yocto_genericsensor.o \
+	yocto_gps.o \
+	yocto_groundspeed.o \
+	yocto_gyro.o \
+	yocto_hubport.o \
+	yocto_humidity.o \
+	yocto_i2cport.o \
+	yocto_latitude.o \
+	yocto_led.o \
+	yocto_lightsensor.o \
+	yocto_longitude.o \
+	yocto_magnetometer.o \
+	yocto_messagebox.o \
+	yocto_motor.o \
+	yocto_multiaxiscontroller.o \
+	yocto_multicellweighscale.o \
+	yocto_multisenscontroller.o \
+	yocto_network.o \
+	yocto_oscontrol.o \
+	yocto_power.o \
+	yocto_poweroutput.o \
+	yocto_powersupply.o \
+	yocto_pressure.o \
+	yocto_proximity.o \
+	yocto_pwminput.o \
+	yocto_pwmoutput.o \
+	yocto_pwmpowersource.o \
+	yocto_quadraturedecoder.o \
+	yocto_rangefinder.o \
+	yocto_realtimeclock.o \
+	yocto_refframe.o \
+	yocto_relay.o \
+	yocto_segmenteddisplay.o \
+	yocto_serialport.o \
+	yocto_servo.o \
+	yocto_spiport.o \
+	yocto_steppermotor.o \
+	yocto_temperature.o \
+	yocto_tilt.o \
+	yocto_tvoc.o \
+	yocto_voc.o \
+	yocto_voltage.o \
+	yocto_voltageoutput.o \
+	yocto_wakeupmonitor.o \
+	yocto_wakeupschedule.o \
+	yocto_watchdog.o \
+	yocto_weighscale.o \
+	yocto_wireless.o \
+
+#-- yocto_patch_stop --
+
 
 YOCTO_API_OBJS_DYN  = $(patsubst %.o, %_dyn.o,$(YOCTO_API_OBJS_STAT))
 
@@ -689,13 +759,19 @@ armel: $(LIBS_ARMEL)
 
 release_armel: $(LIBS_ARMEL) clean_obj_armel
 
+yapi_armel: $(LIBS_YAPI_ARMEL)
+
 armhf: $(LIBS_ARMHF)
 
 release_armhf: $(LIBS_ARMHF) clean_obj_armhf
 
+yapi_armhf: $(LIBS_YAPI_ARMHF)
+
 aarch64: $(LIBS_AARCH64)
 
 release_aarch64: $(LIBS_AARCH64) clean_obj_aarch64
+
+yapi_aarch64: $(LIBS_YAPI_AARCH64)
 
 mips : export STAGING_DIR = $(STAGING_MIPS)
 mips: $(LIBS_MIPS)

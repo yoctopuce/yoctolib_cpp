@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ * $Id: yocto_messagebox.cpp 38510 2019-11-26 15:36:38Z mvuilleu $
  *
  * Implements yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -1601,7 +1601,7 @@ int YMessageBox::set_command(const string& newval)
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the MessageBox interface, for instance
- *         YHUBGSM4.messageBox.
+ *         YHUBGSM1.messageBox.
  *
  * @return a YMessageBox object allowing you to drive the MessageBox interface.
  */

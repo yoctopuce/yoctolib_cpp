@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ * $Id: yocto_display.h 38510 2019-11-26 15:36:38Z mvuilleu $
  *
  * Declares yFindDisplay(), the high-level API for Display functions
  *
@@ -578,8 +578,8 @@ public:
 /**
  * YDisplay Class: Display function interface
  *
- * The YDisplay class allows to drive Yoctopuce displays, for instance using a Yocto-MaxiDisplay, a
- * Yocto-MiniDisplay, a Yocto-MaxiDisplay-G or a Yocto-Display.
+ * The YDisplay class allows to drive Yoctopuce displays, for instance using a Yocto-Display, a
+ * Yocto-MaxiDisplay, a Yocto-MaxiDisplay-G or a Yocto-MiniDisplay.
  * Yoctopuce display interface has been designed to easily
  * show information and images. The device provides built-in
  * multi-layer rendering. Layers can be drawn offline, individually,
@@ -860,7 +860,7 @@ public:
      * call registerHub() at application initialization time.
      *
      * @param func : a string that uniquely characterizes the display, for instance
-     *         YD128X64.display.
+     *         YD128X32.display.
      *
      * @return a YDisplay object allowing you to drive the display.
      */
@@ -1102,7 +1102,7 @@ public:
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the display, for instance
- *         YD128X64.display.
+ *         YD128X32.display.
  *
  * @return a YDisplay object allowing you to drive the display.
  */

@@ -1,4 +1,6 @@
-CPP v1.10.38168
+CPP v1.10.38532
 
-- Improve every class description (add sample product name)
-- Add warning if Raspberry Pi 4 use old boot EEPROM
+- Add documentation for YSnoopingRecord and YCellRecord class
+- Add documentation about YoctoHub-wireless-n specificities
+- Fix GPSConstellation constants
+- Fix devices not detected on macOS Catalina (10.15)

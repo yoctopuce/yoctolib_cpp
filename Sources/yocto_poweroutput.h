@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_poweroutput.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_poweroutput.h 38510 2019-11-26 15:36:38Z mvuilleu $
  *
  *  Declares yFindPowerOutput(), the high-level API for PowerOutput functions
  *
@@ -160,7 +160,7 @@ public:
      * call registerHub() at application initialization time.
      *
      * @param func : a string that uniquely characterizes the power output control, for instance
-     *         YSPIMK01.powerOutput.
+     *         YI2CMK01.powerOutput.
      *
      * @return a YPowerOutput object allowing you to drive the power output control.
      */
@@ -244,7 +244,7 @@ public:
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the power output control, for instance
- *         YSPIMK01.powerOutput.
+ *         YI2CMK01.powerOutput.
  *
  * @return a YPowerOutput object allowing you to drive the power output control.
  */

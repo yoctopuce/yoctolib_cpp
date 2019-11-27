@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_altitude.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_altitude.cpp 38510 2019-11-26 15:36:38Z mvuilleu $
  *
  *  Implements yFindAltitude(), the high-level API for Altitude functions
  *
@@ -226,7 +226,7 @@ string YAltitude::get_technology(void)
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the altimeter, for instance
- *         YGNSSMK1.altitude.
+ *         YALTIMK2.altitude.
  *
  * @return a YAltitude object allowing you to drive the altimeter.
  */

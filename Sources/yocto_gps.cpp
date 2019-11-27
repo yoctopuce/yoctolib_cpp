@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_gps.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_gps.cpp 38462 2019-11-25 17:14:30Z seb $
  *
  *  Implements yFindGps(), the high-level API for Gps functions
  *
@@ -52,6 +52,8 @@ YGps::YGps(const string& func): YFunction(func)
 //--- (YGps initialization)
     ,_isFixed(ISFIXED_INVALID)
     ,_satCount(SATCOUNT_INVALID)
+    ,_satPerConst(SATPERCONST_INVALID)
+    ,_gpsRefreshRate(GPSREFRESHRATE_INVALID)
     ,_coordSystem(COORDSYSTEM_INVALID)
     ,_constellation(CONSTELLATION_INVALID)
     ,_latitude(LATITUDE_INVALID)
@@ -77,6 +79,7 @@ YGps::~YGps()
 }
 //--- (YGps implementation)
 // static attributes
+const double YGps::GPSREFRESHRATE_INVALID = YAPI_INVALID_DOUBLE;
 const string YGps::LATITUDE_INVALID = YAPI_INVALID_STRING;
 const string YGps::LONGITUDE_INVALID = YAPI_INVALID_STRING;
 const double YGps::DILUTION_INVALID = YAPI_INVALID_DOUBLE;
@@ -93,6 +96,12 @@ int YGps::_parseAttr(YJSONObject* json_val)
     }
     if(json_val->has("satCount")) {
         _satCount =  json_val->getLong("satCount");
+    }
+    if(json_val->has("satPerConst")) {
+        _satPerConst =  json_val->getLong("satPerConst");
+    }
+    if(json_val->has("gpsRefreshRate")) {
+        _gpsRefreshRate =  floor(json_val->getDouble("gpsRefreshRate") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
     if(json_val->has("coordSystem")) {
         _coordSystem =  (Y_COORDSYSTEM_enum)json_val->getInt("coordSystem");
@@ -165,9 +174,9 @@ Y_ISFIXED_enum YGps::get_isFixed(void)
 }
 
 /**
- * Returns the count of visible satellites.
+ * Returns the total count of satellites used to compute GPS position.
  *
- * @return an integer corresponding to the count of visible satellites
+ * @return an integer corresponding to the total count of satellites used to compute GPS position
  *
  * On failure, throws an exception or returns Y_SATCOUNT_INVALID.
  */
@@ -185,6 +194,68 @@ s64 YGps::get_satCount(void)
             }
         }
         res = _satCount;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the count of visible satellites per constellation encoded
+ * on a 32 bit integer: bits 0..5: GPS satellites count,  bits 6..11 : Glonass, bits 12..17 : Galileo.
+ * this value is refreshed every 5 seconds only.
+ *
+ * @return an integer corresponding to the count of visible satellites per constellation encoded
+ *         on a 32 bit integer: bits 0.
+ *
+ * On failure, throws an exception or returns Y_SATPERCONST_INVALID.
+ */
+s64 YGps::get_satPerConst(void)
+{
+    s64 res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YGps::SATPERCONST_INVALID;
+                }
+            }
+        }
+        res = _satPerConst;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns effective GPS data refresh frequency.
+ * this value is refreshed every 5 seconds only.
+ *
+ * @return a floating point number corresponding to effective GPS data refresh frequency
+ *
+ * On failure, throws an exception or returns Y_GPSREFRESHRATE_INVALID.
+ */
+double YGps::get_gpsRefreshRate(void)
+{
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YGps::GPSREFRESHRATE_INVALID;
+                }
+            }
+        }
+        res = _gpsRefreshRate;
     } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
@@ -255,9 +326,9 @@ int YGps::set_coordSystem(Y_COORDSYSTEM_enum newval)
  * Returns the the satellites constellation used to compute
  * positioning data.
  *
- * @return a value among Y_CONSTELLATION_GPS, Y_CONSTELLATION_GLONASS, Y_CONSTELLATION_GALLILEO,
- * Y_CONSTELLATION_GNSS, Y_CONSTELLATION_GPS_GLONASS, Y_CONSTELLATION_GPS_GALLILEO and
- * Y_CONSTELLATION_GLONASS_GALLELIO corresponding to the the satellites constellation used to compute
+ * @return a value among Y_CONSTELLATION_GNSS, Y_CONSTELLATION_GPS, Y_CONSTELLATION_GLONASS,
+ * Y_CONSTELLATION_GALILEO, Y_CONSTELLATION_GPS_GLONASS, Y_CONSTELLATION_GPS_GALILEO and
+ * Y_CONSTELLATION_GLONASS_GALILEO corresponding to the the satellites constellation used to compute
  *         positioning data
  *
  * On failure, throws an exception or returns Y_CONSTELLATION_INVALID.
@@ -286,13 +357,12 @@ Y_CONSTELLATION_enum YGps::get_constellation(void)
 
 /**
  * Changes the satellites constellation used to compute
- * positioning data. Possible  constellations are GPS, Glonass, Galileo ,
- * GNSS ( = GPS + Glonass + Galileo) and the 3 possible pairs. This seeting has effect on Yocto-GPS rev A.
+ * positioning data. Possible  constellations are GNSS ( = all supported constellations),
+ * GPS, Glonass, Galileo , and the 3 possible pairs. This setting has  no effect on Yocto-GPS (V1).
  *
- * @param newval : a value among Y_CONSTELLATION_GPS, Y_CONSTELLATION_GLONASS,
- * Y_CONSTELLATION_GALLILEO, Y_CONSTELLATION_GNSS, Y_CONSTELLATION_GPS_GLONASS,
- * Y_CONSTELLATION_GPS_GALLILEO and Y_CONSTELLATION_GLONASS_GALLELIO corresponding to the satellites
- * constellation used to compute
+ * @param newval : a value among Y_CONSTELLATION_GNSS, Y_CONSTELLATION_GPS, Y_CONSTELLATION_GLONASS,
+ * Y_CONSTELLATION_GALILEO, Y_CONSTELLATION_GPS_GLONASS, Y_CONSTELLATION_GPS_GALILEO and
+ * Y_CONSTELLATION_GLONASS_GALILEO corresponding to the satellites constellation used to compute
  *         positioning data
  *
  * @return YAPI_SUCCESS if the call succeeds.

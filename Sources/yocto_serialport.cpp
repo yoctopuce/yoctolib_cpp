@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ * $Id: yocto_serialport.cpp 38239 2019-11-20 11:36:26Z seb $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -90,16 +90,31 @@ YSnoopingRecord::YSnoopingRecord(const string& json):
 // static attributes
 
 
+/**
+ * Returns the elapsed time, in ms, since the beginning of the preceding message.
+ *
+ * @return the elapsed time, in ms, since the beginning of the preceding message.
+ */
 int YSnoopingRecord::get_time(void)
 {
     return _tim;
 }
 
+/**
+ * Returns the message direction (RX=0 , TX=1) .
+ *
+ * @return the message direction (RX=0 , TX=1) .
+ */
 int YSnoopingRecord::get_direction(void)
 {
     return _dir;
 }
 
+/**
+ * Returns the message content.
+ *
+ * @return the message content.
+ */
 string YSnoopingRecord::get_message(void)
 {
     return _msg;
