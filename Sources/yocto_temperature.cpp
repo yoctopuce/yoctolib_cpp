@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_temperature.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_temperature.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindTemperature(), the high-level API for Temperature functions
  *
@@ -72,7 +72,7 @@ const double YTemperature::SIGNALVALUE_INVALID = YAPI_INVALID_DOUBLE;
 const string YTemperature::SIGNALUNIT_INVALID = YAPI_INVALID_STRING;
 const string YTemperature::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YTemperature::_parseAttr(YJSONObject* json_val)
+int YTemperature::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("sensorType")) {
         _sensorType =  (Y_SENSORTYPE_enum)json_val->getInt("sensorType");
@@ -599,7 +599,7 @@ YTemperature *YTemperature::nextTemperature(void)
     return YTemperature::FindTemperature(hwid);
 }
 
-YTemperature* YTemperature::FirstTemperature(void)
+YTemperature *YTemperature::FirstTemperature(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

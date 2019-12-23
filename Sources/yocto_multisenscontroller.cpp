@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multisenscontroller.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_multisenscontroller.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindMultiSensController(), the high-level API for MultiSensController functions
  *
@@ -69,7 +69,7 @@ YMultiSensController::~YMultiSensController()
 // static attributes
 const string YMultiSensController::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YMultiSensController::_parseAttr(YJSONObject* json_val)
+int YMultiSensController::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("nSensors")) {
         _nSensors =  json_val->getInt("nSensors");
@@ -390,7 +390,7 @@ YMultiSensController *YMultiSensController::nextMultiSensController(void)
     return YMultiSensController::FindMultiSensController(hwid);
 }
 
-YMultiSensController* YMultiSensController::FirstMultiSensController(void)
+YMultiSensController *YMultiSensController::FirstMultiSensController(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_genericsensor.cpp 38510 2019-11-26 15:36:38Z mvuilleu $
+ *  $Id: yocto_genericsensor.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -77,7 +77,7 @@ const string YGenericSensor::SIGNALRANGE_INVALID = YAPI_INVALID_STRING;
 const string YGenericSensor::VALUERANGE_INVALID = YAPI_INVALID_STRING;
 const double YGenericSensor::SIGNALBIAS_INVALID = YAPI_INVALID_DOUBLE;
 
-int YGenericSensor::_parseAttr(YJSONObject* json_val)
+int YGenericSensor::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("signalValue")) {
         _signalValue =  floor(json_val->getDouble("signalValue") * 1000.0 / 65536.0 + 0.5) / 1000.0;
@@ -656,7 +656,7 @@ YGenericSensor *YGenericSensor::nextGenericSensor(void)
     return YGenericSensor::FindGenericSensor(hwid);
 }
 
-YGenericSensor* YGenericSensor::FirstGenericSensor(void)
+YGenericSensor *YGenericSensor::FirstGenericSensor(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

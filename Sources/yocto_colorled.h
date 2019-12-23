@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_colorled.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_colorled.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -82,9 +82,9 @@ public:
 
 //--- (YColorLed declaration)
 /**
- * YColorLed Class: ColorLed function interface
+ * YColorLed Class: RGB LED control interface, available for instance in the Yocto-Color-V2 or the Yocto-PowerColor
  *
- * The YColorLed class allows you to drive a color LED, for instance using a Yocto-Color-V2 or a Yocto-PowerColor.
+ * The ColorLed class allows you to drive a color LED.
  * The color can be specified using RGB coordinates as well as HSL coordinates.
  * The module performs all conversions form RGB to HSL automatically. It is then
  * self-evident to turn on a LED with a given hue and to progressively vary its
@@ -114,7 +114,7 @@ protected:
     friend YColorLed *yFirstColorLed(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindColorLed factory function to instantiate
     YColorLed(const string& func);
@@ -401,7 +401,7 @@ public:
     virtual int         resetBlinkSeq(void);
 
 
-    inline static YColorLed* Find(string func)
+    inline static YColorLed *Find(string func)
     { return YColorLed::FindColorLed(func); }
 
     /**
@@ -427,8 +427,8 @@ public:
      *         the first RGB LED currently online, or a NULL pointer
      *         if there are none.
      */
-           static YColorLed* FirstColorLed(void);
-    inline static YColorLed* First(void)
+           static YColorLed *FirstColorLed(void);
+    inline static YColorLed *First(void)
     { return YColorLed::FirstColorLed();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -466,7 +466,7 @@ public:
  *
  * @return a YColorLed object allowing you to drive the RGB LED.
  */
-inline YColorLed* yFindColorLed(const string& func)
+inline YColorLed *yFindColorLed(const string& func)
 { return YColorLed::FindColorLed(func);}
 /**
  * Starts the enumeration of RGB LEDs currently accessible.
@@ -477,7 +477,7 @@ inline YColorLed* yFindColorLed(const string& func)
  *         the first RGB LED currently online, or a NULL pointer
  *         if there are none.
  */
-inline YColorLed* yFirstColorLed(void)
+inline YColorLed *yFirstColorLed(void)
 { return YColorLed::FirstColorLed();}
 
 //--- (end of YColorLed functions declaration)

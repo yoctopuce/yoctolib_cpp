@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_dualpower.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_dualpower.cpp 38913 2019-12-20 18:59:49Z mvuilleu $
  *
  *  Implements yFindDualPower(), the high-level API for DualPower functions
  *
@@ -67,7 +67,7 @@ YDualPower::~YDualPower()
 //--- (YDualPower implementation)
 // static attributes
 
-int YDualPower::_parseAttr(YJSONObject* json_val)
+int YDualPower::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("powerState")) {
         _powerState =  (Y_POWERSTATE_enum)json_val->getInt("powerState");
@@ -200,7 +200,7 @@ int YDualPower::get_extVoltage(void)
 }
 
 /**
- * Retrieves a dual power control for a given identifier.
+ * Retrieves a dual power switch for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -210,11 +210,11 @@ int YDualPower::get_extVoltage(void)
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that the power control is online at the time
+ * This function does not require that the dual power switch is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YDualPower.isOnline() to test if the power control is
+ * Use the method YDualPower.isOnline() to test if the dual power switch is
  * indeed online at a given time. In case of ambiguity when looking for
- * a dual power control by logical name, no error is notified: the first instance
+ * a dual power switch by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
@@ -222,10 +222,10 @@ int YDualPower::get_extVoltage(void)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the power control, for instance
+ * @param func : a string that uniquely characterizes the dual power switch, for instance
  *         SERVORC1.dualPower.
  *
- * @return a YDualPower object allowing you to drive the power control.
+ * @return a YDualPower object allowing you to drive the dual power switch.
  */
 YDualPower* YDualPower::FindDualPower(string func)
 {
@@ -298,7 +298,7 @@ YDualPower *YDualPower::nextDualPower(void)
     return YDualPower::FindDualPower(hwid);
 }
 
-YDualPower* YDualPower::FirstDualPower(void)
+YDualPower *YDualPower::FirstDualPower(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

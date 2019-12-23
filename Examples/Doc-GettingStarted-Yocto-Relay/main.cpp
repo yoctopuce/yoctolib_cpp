@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 32716 2018-10-19 15:54:48Z seb $
+ *  $Id: main.cpp 38820 2019-12-18 18:01:14Z seb $
  *
  *  An example that show how to use a  Yocto-Relay
  *
@@ -25,8 +25,8 @@ static void usage(void)
   cout << "usage: demo <serial_number>  [ A | B ]" << endl;
   cout << "       demo <logical_name> [ A | B ]" << endl;
   cout << "       demo any [ A | B ]" << endl;
-  u64 now = yGetTickCount();
-  while (yGetTickCount() - now < 3000) {
+  u64 now = YAPI::GetTickCount();
+  while (YAPI::GetTickCount() - now < 3000) {
     // wait 3 sec to show the message
   }
   exit(1);
@@ -46,19 +46,19 @@ int main(int argc, const char * argv[])
   state = toupper(argv[2][0]);
 
   // Setup the API to use local USB devices
-  if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
+  if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
     cerr << "RegisterHub error: " << errmsg << endl;
     return 1;
   }
 
   if (target == "any") {
-    relay =  yFirstRelay();
+    relay =  YRelay::FirstRelay();
     if (relay == NULL) {
       cout << "No module connected (check USB cable)" << endl;
       return 1;
     }
   } else {
-    relay =  yFindRelay(target + ".relay1");
+    relay =  YRelay::FindRelay(target + ".relay1");
   }
 
   if (relay->isOnline()) {
@@ -66,7 +66,7 @@ int main(int argc, const char * argv[])
   } else {
     cout << "Module not connected (check identification and USB cable)" << endl;
   }
-  yFreeAPI();
+  YAPI::FreeAPI();
 
   return 0;
 }

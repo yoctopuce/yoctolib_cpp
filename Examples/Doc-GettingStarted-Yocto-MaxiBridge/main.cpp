@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 32716 2018-10-19 15:54:48Z seb $
+ *  $Id: main.cpp 38864 2019-12-19 14:50:03Z seb $
  *
  *  An example that show how to use a  Yocto-MaxiBridge
  *
@@ -24,8 +24,8 @@ static void usage(void)
   cout << "usage: demo <serial_number> " << endl;
   cout << "       demo <logical_name>" << endl;
   cout << "       demo any" << endl;
-  u64 now = yGetTickCount();
-  while (yGetTickCount() - now < 3000) {
+  u64 now = YAPI::GetTickCount();
+  while (YAPI::GetTickCount() - now < 3000) {
     // wait 3 sec to show the message
   }
   exit(1);
@@ -42,19 +42,20 @@ int main(int argc, const char* argv[])
   target = (string)argv[1];
 
   // Setup the API to use local USB devices
-  if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
+  if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
     cerr << "RegisterHub error: " << errmsg << endl;
     return 1;
   }
 
   if (target == "any") {
-    sensor = yFirstMultiCellWeighScale();
+    sensor = YMultiCellWeighScale::FirstMultiCellWeighScale();
     if (sensor == NULL) {
       cout << "No module connected (check USB cable)" << endl;
       return 1;
     }
   } else {
-    sensor = yFindMultiCellWeighScale(target + ".multiCellWeighScale");
+    sensor = YMultiCellWeighScale::FindMultiCellWeighScale(
+               target + ".multiCellWeighScale");
   }
 
   string unit;
@@ -63,7 +64,7 @@ int main(int argc, const char* argv[])
     // On startup, enable excitation and tare weigh scale
     cout << "Resetting tare weight..." << endl;
     sensor->set_excitation(YMultiCellWeighScale::EXCITATION_AC);
-    ySleep(3000, errmsg);
+    YAPI::Sleep(3000, errmsg);
     sensor->tare();
     unit = sensor->get_unit();
   }
@@ -72,9 +73,9 @@ int main(int argc, const char* argv[])
   while (sensor->isOnline()) {
     cout << "Weight : " << sensor->get_currentValue() << unit;
     cout << "  (press Ctrl-C to exit)" << endl;
-    ySleep(1000, errmsg);
+    YAPI::Sleep(1000, errmsg);
   };
-  yFreeAPI();
+  YAPI::FreeAPI();
   cout << "Module not connected (check identification and USB cable)";
   return 0;
 }

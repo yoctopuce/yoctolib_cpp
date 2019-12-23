@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_humidity.h 38510 2019-11-26 15:36:38Z mvuilleu $
+ *  $Id: yocto_humidity.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindHumidity(), the high-level API for Humidity functions
  *
@@ -62,12 +62,12 @@ typedef void (*YHumidityTimedReportCallback)(YHumidity *func, YMeasure measure);
 
 //--- (YHumidity declaration)
 /**
- * YHumidity Class: Humidity function interface
+ * YHumidity Class: humidity sensor control interface, available for instance in the Yocto-CO2-V2, the
+ * Yocto-Meteo-V2 or the Yocto-VOC-V3
  *
- * The YHumidity class allows you to read and configure Yoctopuce humidity
- * sensors, for instance using a Yocto-CO2-V2, a Yocto-Meteo-V2 or a Yocto-VOC-V3. It inherits from
- * YSensor class the core functions to read measurements,
- * to register callback functions, to access the autonomous datalogger.
+ * The YHumidity class allows you to read and configure Yoctopuce humidity sensors.
+ * It inherits from YSensor class the core functions to read measurements,
+ * to register callback functions, and to access the autonomous datalogger.
  */
 class YOCTO_CLASS_EXPORT YHumidity: public YSensor {
 #ifdef __BORLANDC__
@@ -86,7 +86,7 @@ protected:
     friend YHumidity *yFirstHumidity(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindHumidity factory function to instantiate
     YHumidity(const string& func);
@@ -205,7 +205,7 @@ public:
     virtual int         _invokeTimedReportCallback(YMeasure value);
 
 
-    inline static YHumidity* Find(string func)
+    inline static YHumidity *Find(string func)
     { return YHumidity::FindHumidity(func); }
 
     /**
@@ -231,8 +231,8 @@ public:
      *         the first humidity sensor currently online, or a NULL pointer
      *         if there are none.
      */
-           static YHumidity* FirstHumidity(void);
-    inline static YHumidity* First(void)
+           static YHumidity *FirstHumidity(void);
+    inline static YHumidity *First(void)
     { return YHumidity::FirstHumidity();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -270,7 +270,7 @@ public:
  *
  * @return a YHumidity object allowing you to drive the humidity sensor.
  */
-inline YHumidity* yFindHumidity(const string& func)
+inline YHumidity *yFindHumidity(const string& func)
 { return YHumidity::FindHumidity(func);}
 /**
  * Starts the enumeration of humidity sensors currently accessible.
@@ -281,7 +281,7 @@ inline YHumidity* yFindHumidity(const string& func)
  *         the first humidity sensor currently online, or a NULL pointer
  *         if there are none.
  */
-inline YHumidity* yFirstHumidity(void)
+inline YHumidity *yFirstHumidity(void)
 { return YHumidity::FirstHumidity();}
 
 //--- (end of YHumidity functions declaration)

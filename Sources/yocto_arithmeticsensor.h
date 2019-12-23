@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_arithmeticsensor.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_arithmeticsensor.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindArithmeticSensor(), the high-level API for ArithmeticSensor functions
  *
@@ -62,12 +62,13 @@ typedef void (*YArithmeticSensorTimedReportCallback)(YArithmeticSensor *func, YM
 
 //--- (YArithmeticSensor declaration)
 /**
- * YArithmeticSensor Class: ArithmeticSensor function interface
+ * YArithmeticSensor Class: arithmetic sensor control interface, available for instance in the
+ * Yocto-MaxiMicroVolt-Rx
  *
  * The YArithmeticSensor class allows some Yoctopuce devices to compute in real-time
  * values based on an arithmetic formula involving one or more measured signals as
- * well as the temperature. This functionality is only available on specific
- * Yoctopuce devices, for instance using a Yocto-MaxiMicroVolt-Rx.
+ * well as the temperature. As for any physical sensor, the computed values can be
+ * read by callback and stored in the built-in datalogger.
  */
 class YOCTO_CLASS_EXPORT YArithmeticSensor: public YSensor {
 #ifdef __BORLANDC__
@@ -86,7 +87,7 @@ protected:
     friend YArithmeticSensor *yFirstArithmeticSensor(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindArithmeticSensor factory function to instantiate
     YArithmeticSensor(const string& func);
@@ -257,7 +258,7 @@ public:
     virtual int         loadAuxiliaryFunction(string name,vector<double>& inputValues,vector<double>& outputValues);
 
 
-    inline static YArithmeticSensor* Find(string func)
+    inline static YArithmeticSensor *Find(string func)
     { return YArithmeticSensor::FindArithmeticSensor(func); }
 
     /**
@@ -283,8 +284,8 @@ public:
      *         the first arithmetic sensor currently online, or a NULL pointer
      *         if there are none.
      */
-           static YArithmeticSensor* FirstArithmeticSensor(void);
-    inline static YArithmeticSensor* First(void)
+           static YArithmeticSensor *FirstArithmeticSensor(void);
+    inline static YArithmeticSensor *First(void)
     { return YArithmeticSensor::FirstArithmeticSensor();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -322,7 +323,7 @@ public:
  *
  * @return a YArithmeticSensor object allowing you to drive the arithmetic sensor.
  */
-inline YArithmeticSensor* yFindArithmeticSensor(const string& func)
+inline YArithmeticSensor *yFindArithmeticSensor(const string& func)
 { return YArithmeticSensor::FindArithmeticSensor(func);}
 /**
  * Starts the enumeration of arithmetic sensors currently accessible.
@@ -333,7 +334,7 @@ inline YArithmeticSensor* yFindArithmeticSensor(const string& func)
  *         the first arithmetic sensor currently online, or a NULL pointer
  *         if there are none.
  */
-inline YArithmeticSensor* yFirstArithmeticSensor(void)
+inline YArithmeticSensor *yFirstArithmeticSensor(void)
 { return YArithmeticSensor::FirstArithmeticSensor();}
 
 //--- (end of YArithmeticSensor functions declaration)

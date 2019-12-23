@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_digitalio.cpp 38510 2019-11-26 15:36:38Z mvuilleu $
+ *  $Id: yocto_digitalio.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -73,7 +73,7 @@ YDigitalIO::~YDigitalIO()
 // static attributes
 const string YDigitalIO::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YDigitalIO::_parseAttr(YJSONObject* json_val)
+int YDigitalIO::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("portState")) {
         _portState =  json_val->getInt("portState");
@@ -817,7 +817,7 @@ YDigitalIO *YDigitalIO::nextDigitalIO(void)
     return YDigitalIO::FindDigitalIO(hwid);
 }
 
-YDigitalIO* YDigitalIO::FirstDigitalIO(void)
+YDigitalIO *YDigitalIO::FirstDigitalIO(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

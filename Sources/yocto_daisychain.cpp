@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_daisychain.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_daisychain.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindDaisyChain(), the high-level API for DaisyChain functions
  *
@@ -67,7 +67,7 @@ YDaisyChain::~YDaisyChain()
 //--- (YDaisyChain implementation)
 // static attributes
 
-int YDaisyChain::_parseAttr(YJSONObject* json_val)
+int YDaisyChain::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("daisyState")) {
         _daisyState =  (Y_DAISYSTATE_enum)json_val->getInt("daisyState");
@@ -299,7 +299,7 @@ YDaisyChain *YDaisyChain::nextDaisyChain(void)
     return YDaisyChain::FindDaisyChain(hwid);
 }
 
-YDaisyChain* YDaisyChain::FirstDaisyChain(void)
+YDaisyChain *YDaisyChain::FirstDaisyChain(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

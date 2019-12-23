@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multiaxiscontroller.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_multiaxiscontroller.h 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Declares yFindMultiAxisController(), the high-level API for MultiAxisController functions
  *
@@ -94,7 +94,7 @@ protected:
     friend YMultiAxisController *yFirstMultiAxisController(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindMultiAxisController factory function to instantiate
     YMultiAxisController(const string& func);
@@ -289,7 +289,7 @@ public:
     virtual int         abortAndHiZ(void);
 
 
-    inline static YMultiAxisController* Find(string func)
+    inline static YMultiAxisController *Find(string func)
     { return YMultiAxisController::FindMultiAxisController(func); }
 
     /**
@@ -315,8 +315,8 @@ public:
      *         the first multi-axis controller currently online, or a NULL pointer
      *         if there are none.
      */
-           static YMultiAxisController* FirstMultiAxisController(void);
-    inline static YMultiAxisController* First(void)
+           static YMultiAxisController *FirstMultiAxisController(void);
+    inline static YMultiAxisController *First(void)
     { return YMultiAxisController::FirstMultiAxisController();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -354,7 +354,7 @@ public:
  *
  * @return a YMultiAxisController object allowing you to drive the multi-axis controller.
  */
-inline YMultiAxisController* yFindMultiAxisController(const string& func)
+inline YMultiAxisController *yFindMultiAxisController(const string& func)
 { return YMultiAxisController::FindMultiAxisController(func);}
 /**
  * Starts the enumeration of multi-axis controllers currently accessible.
@@ -365,7 +365,7 @@ inline YMultiAxisController* yFindMultiAxisController(const string& func)
  *         the first multi-axis controller currently online, or a NULL pointer
  *         if there are none.
  */
-inline YMultiAxisController* yFirstMultiAxisController(void)
+inline YMultiAxisController *yFirstMultiAxisController(void)
 { return YMultiAxisController::FirstMultiAxisController();}
 
 //--- (end of YMultiAxisController functions declaration)

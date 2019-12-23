@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_altitude.h 38510 2019-11-26 15:36:38Z mvuilleu $
+ *  $Id: yocto_altitude.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindAltitude(), the high-level API for Altitude functions
  *
@@ -62,12 +62,11 @@ typedef void (*YAltitudeTimedReportCallback)(YAltitude *func, YMeasure measure);
 
 //--- (YAltitude declaration)
 /**
- * YAltitude Class: Altitude function interface
+ * YAltitude Class: altimeter control interface, available for instance in the Yocto-Altimeter-V2 or the Yocto-GPS
  *
- * The YAltitude class allows you to read and configure Yoctopuce altitude
- * sensors, for instance using a Yocto-Altimeter-V2 or a Yocto-GPS. It inherits from the YSensor class
- * the core functions to read measurements,
- * to register callback functions, to access the autonomous datalogger.
+ * The YAltitude class allows you to read and configure Yoctopuce altimeters.
+ * It inherits from YSensor class the core functions to read measurements,
+ * to register callback functions, and to access the autonomous datalogger.
  * This class adds the ability to configure the barometric pressure adjusted to
  * sea level (QNH) for barometric sensors.
  */
@@ -88,7 +87,7 @@ protected:
     friend YAltitude *yFirstAltitude(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindAltitude factory function to instantiate
     YAltitude(const string& func);
@@ -227,7 +226,7 @@ public:
     virtual int         _invokeTimedReportCallback(YMeasure value);
 
 
-    inline static YAltitude* Find(string func)
+    inline static YAltitude *Find(string func)
     { return YAltitude::FindAltitude(func); }
 
     /**
@@ -253,8 +252,8 @@ public:
      *         the first altimeter currently online, or a NULL pointer
      *         if there are none.
      */
-           static YAltitude* FirstAltitude(void);
-    inline static YAltitude* First(void)
+           static YAltitude *FirstAltitude(void);
+    inline static YAltitude *First(void)
     { return YAltitude::FirstAltitude();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -292,7 +291,7 @@ public:
  *
  * @return a YAltitude object allowing you to drive the altimeter.
  */
-inline YAltitude* yFindAltitude(const string& func)
+inline YAltitude *yFindAltitude(const string& func)
 { return YAltitude::FindAltitude(func);}
 /**
  * Starts the enumeration of altimeters currently accessible.
@@ -303,7 +302,7 @@ inline YAltitude* yFindAltitude(const string& func)
  *         the first altimeter currently online, or a NULL pointer
  *         if there are none.
  */
-inline YAltitude* yFirstAltitude(void)
+inline YAltitude *yFirstAltitude(void)
 { return YAltitude::FirstAltitude();}
 
 //--- (end of YAltitude functions declaration)

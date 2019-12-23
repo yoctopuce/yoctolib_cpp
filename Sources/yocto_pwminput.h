@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwminput.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_pwminput.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindPwmInput(), the high-level API for PwmInput functions
  *
@@ -83,12 +83,11 @@ typedef enum {
 
 //--- (YPwmInput declaration)
 /**
- * YPwmInput Class: PwmInput function interface
+ * YPwmInput Class: PWM input control interface, available for instance in the Yocto-PWM-Rx
  *
- * The YPwmInput class allows you to read and configure Yoctopuce PWM
- * sensors, for instance using a Yocto-PWM-Rx. It inherits from YSensor class the core functions to
- * read measurements,
- * to register callback functions, to access the autonomous datalogger.
+ * The YPwmInput class allows you to read and configure Yoctopuce PWM inputs.
+ * It inherits from YSensor class the core functions to read measurements,
+ * to register callback functions, and to access the autonomous datalogger.
  * This class adds the ability to configure the signal parameter used to transmit
  * information: the duty cycle, the frequency or the pulse width.
  */
@@ -115,7 +114,7 @@ protected:
     friend YPwmInput *yFirstPwmInput(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindPwmInput factory function to instantiate
     YPwmInput(const string& func);
@@ -376,7 +375,7 @@ public:
     virtual int         resetCounter(void);
 
 
-    inline static YPwmInput* Find(string func)
+    inline static YPwmInput *Find(string func)
     { return YPwmInput::FindPwmInput(func); }
 
     /**
@@ -402,8 +401,8 @@ public:
      *         the first PWM input currently online, or a NULL pointer
      *         if there are none.
      */
-           static YPwmInput* FirstPwmInput(void);
-    inline static YPwmInput* First(void)
+           static YPwmInput *FirstPwmInput(void);
+    inline static YPwmInput *First(void)
     { return YPwmInput::FirstPwmInput();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -441,7 +440,7 @@ public:
  *
  * @return a YPwmInput object allowing you to drive the PWM input.
  */
-inline YPwmInput* yFindPwmInput(const string& func)
+inline YPwmInput *yFindPwmInput(const string& func)
 { return YPwmInput::FindPwmInput(func);}
 /**
  * Starts the enumeration of PWM inputs currently accessible.
@@ -452,7 +451,7 @@ inline YPwmInput* yFindPwmInput(const string& func)
  *         the first PWM input currently online, or a NULL pointer
  *         if there are none.
  */
-inline YPwmInput* yFirstPwmInput(void)
+inline YPwmInput *yFirstPwmInput(void)
 { return YPwmInput::FirstPwmInput();}
 
 //--- (end of YPwmInput functions declaration)

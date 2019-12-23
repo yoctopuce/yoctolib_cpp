@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupschedule.h 38510 2019-11-26 15:36:38Z mvuilleu $
+ *  $Id: yocto_wakeupschedule.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindWakeUpSchedule(), the high-level API for WakeUpSchedule functions
  *
@@ -65,10 +65,10 @@ typedef void (*YWakeUpScheduleValueCallback)(YWakeUpSchedule *func, const string
 
 //--- (YWakeUpSchedule declaration)
 /**
- * YWakeUpSchedule Class: WakeUpSchedule function interface
+ * YWakeUpSchedule Class: wake up schedule control interface, available for instance in the
+ * YoctoHub-GSM-3G-EU, the YoctoHub-GSM-3G-NA, the YoctoHub-Wireless-SR or the YoctoHub-Wireless-g
  *
- * The YWakeUpSchedule class implements a wake up condition, for instance using a YoctoHub-GSM-3G-EU,
- * a YoctoHub-GSM-3G-NA, a YoctoHub-Wireless-SR or a YoctoHub-Wireless-g. The wake up time is
+ * The YWakeUpSchedule class implements a wake up condition. The wake up time is
  * specified as a set of months and/or days and/or hours and/or minutes when the
  * wake up should happen.
  */
@@ -93,7 +93,7 @@ protected:
     friend YWakeUpSchedule *yFirstWakeUpSchedule(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindWakeUpSchedule factory function to instantiate
     YWakeUpSchedule(const string& func);
@@ -348,7 +348,7 @@ public:
     virtual int         set_minutes(s64 bitmap);
 
 
-    inline static YWakeUpSchedule* Find(string func)
+    inline static YWakeUpSchedule *Find(string func)
     { return YWakeUpSchedule::FindWakeUpSchedule(func); }
 
     /**
@@ -374,8 +374,8 @@ public:
      *         the first wake up schedule currently online, or a NULL pointer
      *         if there are none.
      */
-           static YWakeUpSchedule* FirstWakeUpSchedule(void);
-    inline static YWakeUpSchedule* First(void)
+           static YWakeUpSchedule *FirstWakeUpSchedule(void);
+    inline static YWakeUpSchedule *First(void)
     { return YWakeUpSchedule::FirstWakeUpSchedule();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -413,7 +413,7 @@ public:
  *
  * @return a YWakeUpSchedule object allowing you to drive the wake up schedule.
  */
-inline YWakeUpSchedule* yFindWakeUpSchedule(const string& func)
+inline YWakeUpSchedule *yFindWakeUpSchedule(const string& func)
 { return YWakeUpSchedule::FindWakeUpSchedule(func);}
 /**
  * Starts the enumeration of wake up schedules currently accessible.
@@ -424,7 +424,7 @@ inline YWakeUpSchedule* yFindWakeUpSchedule(const string& func)
  *         the first wake up schedule currently online, or a NULL pointer
  *         if there are none.
  */
-inline YWakeUpSchedule* yFirstWakeUpSchedule(void)
+inline YWakeUpSchedule *yFirstWakeUpSchedule(void)
 { return YWakeUpSchedule::FirstWakeUpSchedule();}
 
 //--- (end of YWakeUpSchedule functions declaration)

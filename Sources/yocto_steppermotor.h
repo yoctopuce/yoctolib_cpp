@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_steppermotor.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_steppermotor.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindStepperMotor(), the high-level API for StepperMotor functions
  *
@@ -94,7 +94,7 @@ typedef enum {
 
 //--- (YStepperMotor declaration)
 /**
- * YStepperMotor Class: StepperMotor function interface
+ * YStepperMotor Class: stepper motor control interface
  *
  * The YStepperMotor class allows you to drive a stepper motor.
  */
@@ -127,7 +127,7 @@ protected:
     friend YStepperMotor *yFirstStepperMotor(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindStepperMotor factory function to instantiate
     YStepperMotor(const string& func);
@@ -640,7 +640,7 @@ public:
     virtual int         abortAndHiZ(void);
 
 
-    inline static YStepperMotor* Find(string func)
+    inline static YStepperMotor *Find(string func)
     { return YStepperMotor::FindStepperMotor(func); }
 
     /**
@@ -666,8 +666,8 @@ public:
      *         the first stepper motor currently online, or a NULL pointer
      *         if there are none.
      */
-           static YStepperMotor* FirstStepperMotor(void);
-    inline static YStepperMotor* First(void)
+           static YStepperMotor *FirstStepperMotor(void);
+    inline static YStepperMotor *First(void)
     { return YStepperMotor::FirstStepperMotor();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -705,7 +705,7 @@ public:
  *
  * @return a YStepperMotor object allowing you to drive the stepper motor.
  */
-inline YStepperMotor* yFindStepperMotor(const string& func)
+inline YStepperMotor *yFindStepperMotor(const string& func)
 { return YStepperMotor::FindStepperMotor(func);}
 /**
  * Starts the enumeration of stepper motors currently accessible.
@@ -716,7 +716,7 @@ inline YStepperMotor* yFindStepperMotor(const string& func)
  *         the first stepper motor currently online, or a NULL pointer
  *         if there are none.
  */
-inline YStepperMotor* yFirstStepperMotor(void)
+inline YStepperMotor *yFirstStepperMotor(void)
 { return YStepperMotor::FirstStepperMotor();}
 
 //--- (end of YStepperMotor functions declaration)

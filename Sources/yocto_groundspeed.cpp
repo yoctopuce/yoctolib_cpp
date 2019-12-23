@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_groundspeed.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_groundspeed.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindGroundSpeed(), the high-level API for GroundSpeed functions
  *
@@ -199,7 +199,7 @@ YGroundSpeed *YGroundSpeed::nextGroundSpeed(void)
     return YGroundSpeed::FindGroundSpeed(hwid);
 }
 
-YGroundSpeed* YGroundSpeed::FirstGroundSpeed(void)
+YGroundSpeed *YGroundSpeed::FirstGroundSpeed(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_lightsensor.h 38510 2019-11-26 15:36:38Z mvuilleu $
+ *  $Id: yocto_lightsensor.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindLightSensor(), the high-level API for LightSensor functions
  *
@@ -71,12 +71,12 @@ typedef enum {
 
 //--- (YLightSensor declaration)
 /**
- * YLightSensor Class: LightSensor function interface
+ * YLightSensor Class: light sensor control interface, available for instance in the Yocto-Light-V3,
+ * the Yocto-Proximity or the Yocto-RangeFinder
  *
- * The YLightSensor class allows you to read and configure Yoctopuce light
- * sensors, for instance using a Yocto-Light-V3, a Yocto-Proximity or a Yocto-RangeFinder. It inherits
- * from YSensor class the core functions to read measurements,
- * to register callback functions, to access the autonomous datalogger.
+ * The YLightSensor class allows you to read and configure Yoctopuce light sensors.
+ * It inherits from YSensor class the core functions to read measurements,
+ * to register callback functions, and to access the autonomous datalogger.
  * This class adds the ability to easily perform a one-point linear calibration
  * to compensate the effect of a glass or filter placed in front of the sensor.
  * For some light sensors with several working modes, this class can select the
@@ -98,7 +98,7 @@ protected:
     friend YLightSensor *yFirstLightSensor(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindLightSensor factory function to instantiate
     YLightSensor(const string& func);
@@ -229,7 +229,7 @@ public:
     virtual int         _invokeTimedReportCallback(YMeasure value);
 
 
-    inline static YLightSensor* Find(string func)
+    inline static YLightSensor *Find(string func)
     { return YLightSensor::FindLightSensor(func); }
 
     /**
@@ -255,8 +255,8 @@ public:
      *         the first light sensor currently online, or a NULL pointer
      *         if there are none.
      */
-           static YLightSensor* FirstLightSensor(void);
-    inline static YLightSensor* First(void)
+           static YLightSensor *FirstLightSensor(void);
+    inline static YLightSensor *First(void)
     { return YLightSensor::FirstLightSensor();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -294,7 +294,7 @@ public:
  *
  * @return a YLightSensor object allowing you to drive the light sensor.
  */
-inline YLightSensor* yFindLightSensor(const string& func)
+inline YLightSensor *yFindLightSensor(const string& func)
 { return YLightSensor::FindLightSensor(func);}
 /**
  * Starts the enumeration of light sensors currently accessible.
@@ -305,7 +305,7 @@ inline YLightSensor* yFindLightSensor(const string& func)
  *         the first light sensor currently online, or a NULL pointer
  *         if there are none.
  */
-inline YLightSensor* yFirstLightSensor(void)
+inline YLightSensor *yFirstLightSensor(void)
 { return YLightSensor::FirstLightSensor();}
 
 //--- (end of YLightSensor functions declaration)

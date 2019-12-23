@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_arithmeticsensor.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_arithmeticsensor.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindArithmeticSensor(), the high-level API for ArithmeticSensor functions
  *
@@ -69,7 +69,7 @@ YArithmeticSensor::~YArithmeticSensor()
 const string YArithmeticSensor::DESCRIPTION_INVALID = YAPI_INVALID_STRING;
 const string YArithmeticSensor::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YArithmeticSensor::_parseAttr(YJSONObject* json_val)
+int YArithmeticSensor::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("description")) {
         _description =  json_val->getString("description");
@@ -449,7 +449,7 @@ YArithmeticSensor *YArithmeticSensor::nextArithmeticSensor(void)
     return YArithmeticSensor::FindArithmeticSensor(hwid);
 }
 
-YArithmeticSensor* YArithmeticSensor::FirstArithmeticSensor(void)
+YArithmeticSensor *YArithmeticSensor::FirstArithmeticSensor(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

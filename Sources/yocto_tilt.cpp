@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_tilt.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_tilt.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindTilt(), the high-level API for Tilt functions
  *
@@ -67,7 +67,7 @@ YTilt::~YTilt()
 //--- (YTilt implementation)
 // static attributes
 
-int YTilt::_parseAttr(YJSONObject* json_val)
+int YTilt::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("bandwidth")) {
         _bandwidth =  json_val->getInt("bandwidth");
@@ -291,7 +291,7 @@ YTilt *YTilt::nextTilt(void)
     return YTilt::FindTilt(hwid);
 }
 
-YTilt* YTilt::FirstTilt(void)
+YTilt *YTilt::FirstTilt(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

@@ -57,7 +57,7 @@ int main(int argc, const char * argv[])
 
 
   // Setup the API to use local USB devices
-  if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
+  if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
     cerr << "RegisterHub error: " << errmsg << endl;
     return 1;
   }

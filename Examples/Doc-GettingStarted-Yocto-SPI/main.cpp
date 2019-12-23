@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 32619 2018-10-10 12:22:50Z seb $
+ *  $Id: main.cpp 38820 2019-12-18 18:01:14Z seb $
  *
  *  An example that show how to use a  Yocto-SPI
  *
@@ -24,8 +24,8 @@ static void usage(void)
   cout << "usage: demo <serial_number> <value>" << endl;
   cout << "       demo <logical_name>  <value>" << endl;
   cout << "       demo any  <value>   (use any discovered device)" << endl;
-  u64 now = yGetTickCount();
-  while (yGetTickCount() - now < 3000) {
+  u64 now = YAPI::GetTickCount();
+  while (YAPI::GetTickCount() - now < 3000) {
     // wait 3 sec to show the message
   }
   exit(1);
@@ -45,20 +45,20 @@ int main(int argc, const char * argv[])
   value = (int)atol(argv[2]);
 
   // Setup the API to use local USB devices
-  if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
+  if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
     cerr << "RegisterHub error: " << errmsg << endl;
     return 1;
   }
 
   if (target == "any") {
-    spiPort = yFirstSpiPort();
+    spiPort = YSpiPort::FirstSpiPort();
     if (spiPort == NULL) {
       cerr << "No module connected (check USB cable)" << endl;
       return 1;
     }
   } else {
     target = (string) argv[1];
-    spiPort = yFindSpiPort(target + ".spiPort");
+    spiPort = YSpiPort::FindSpiPort(target + ".spiPort");
     if (!spiPort->isOnline()) {
       cerr << "Module not connected (check USB cable)" << endl;
       return 1;
@@ -90,6 +90,6 @@ int main(int argc, const char * argv[])
     value = value / 10;
   }
 
-  yFreeAPI();
+  YAPI::FreeAPI();
   return 0;
 }

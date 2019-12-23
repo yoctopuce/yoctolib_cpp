@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_dualpower.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_dualpower.h 38913 2019-12-20 18:59:49Z mvuilleu $
  *
  *  Declares yFindDualPower(), the high-level API for DualPower functions
  *
@@ -78,9 +78,9 @@ typedef enum {
 
 //--- (YDualPower declaration)
 /**
- * YDualPower Class: External power supply control interface
+ * YDualPower Class: dual power switch control interface, available for instance in the Yocto-Servo
  *
- * Yoctopuce application programming interface allows you to control
+ * The YDualPower class allows you to control
  * the power source to use for module functions that require high current.
  * The module can also automatically disconnect the external power
  * when a voltage drop is observed on the external power source
@@ -103,7 +103,7 @@ protected:
     friend YDualPower *yFirstDualPower(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindDualPower factory function to instantiate
     YDualPower(const string& func);
@@ -179,7 +179,7 @@ public:
     { return this->get_extVoltage(); }
 
     /**
-     * Retrieves a dual power control for a given identifier.
+     * Retrieves a dual power switch for a given identifier.
      * The identifier can be specified using several formats:
      * <ul>
      * <li>FunctionLogicalName</li>
@@ -189,11 +189,11 @@ public:
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
      *
-     * This function does not require that the power control is online at the time
+     * This function does not require that the dual power switch is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YDualPower.isOnline() to test if the power control is
+     * Use the method YDualPower.isOnline() to test if the dual power switch is
      * indeed online at a given time. In case of ambiguity when looking for
-     * a dual power control by logical name, no error is notified: the first instance
+     * a dual power switch by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
      *
@@ -201,10 +201,10 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the power control, for instance
+     * @param func : a string that uniquely characterizes the dual power switch, for instance
      *         SERVORC1.dualPower.
      *
-     * @return a YDualPower object allowing you to drive the power control.
+     * @return a YDualPower object allowing you to drive the dual power switch.
      */
     static YDualPower*  FindDualPower(string func);
 
@@ -225,34 +225,34 @@ public:
     virtual int         _invokeValueCallback(string value);
 
 
-    inline static YDualPower* Find(string func)
+    inline static YDualPower *Find(string func)
     { return YDualPower::FindDualPower(func); }
 
     /**
-     * Continues the enumeration of dual power controls started using yFirstDualPower().
-     * Caution: You can't make any assumption about the returned dual power controls order.
-     * If you want to find a specific a dual power control, use DualPower.findDualPower()
+     * Continues the enumeration of dual power switches started using yFirstDualPower().
+     * Caution: You can't make any assumption about the returned dual power switches order.
+     * If you want to find a specific a dual power switch, use DualPower.findDualPower()
      * and a hardwareID or a logical name.
      *
      * @return a pointer to a YDualPower object, corresponding to
-     *         a dual power control currently online, or a NULL pointer
-     *         if there are no more dual power controls to enumerate.
+     *         a dual power switch currently online, or a NULL pointer
+     *         if there are no more dual power switches to enumerate.
      */
            YDualPower      *nextDualPower(void);
     inline YDualPower      *next(void)
     { return this->nextDualPower();}
 
     /**
-     * Starts the enumeration of dual power controls currently accessible.
+     * Starts the enumeration of dual power switches currently accessible.
      * Use the method YDualPower.nextDualPower() to iterate on
-     * next dual power controls.
+     * next dual power switches.
      *
      * @return a pointer to a YDualPower object, corresponding to
-     *         the first dual power control currently online, or a NULL pointer
+     *         the first dual power switch currently online, or a NULL pointer
      *         if there are none.
      */
-           static YDualPower* FirstDualPower(void);
-    inline static YDualPower* First(void)
+           static YDualPower *FirstDualPower(void);
+    inline static YDualPower *First(void)
     { return YDualPower::FirstDualPower();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -263,7 +263,7 @@ public:
 //--- (YDualPower functions declaration)
 
 /**
- * Retrieves a dual power control for a given identifier.
+ * Retrieves a dual power switch for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -273,11 +273,11 @@ public:
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that the power control is online at the time
+ * This function does not require that the dual power switch is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YDualPower.isOnline() to test if the power control is
+ * Use the method YDualPower.isOnline() to test if the dual power switch is
  * indeed online at a given time. In case of ambiguity when looking for
- * a dual power control by logical name, no error is notified: the first instance
+ * a dual power switch by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
@@ -285,23 +285,23 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the power control, for instance
+ * @param func : a string that uniquely characterizes the dual power switch, for instance
  *         SERVORC1.dualPower.
  *
- * @return a YDualPower object allowing you to drive the power control.
+ * @return a YDualPower object allowing you to drive the dual power switch.
  */
-inline YDualPower* yFindDualPower(const string& func)
+inline YDualPower *yFindDualPower(const string& func)
 { return YDualPower::FindDualPower(func);}
 /**
- * Starts the enumeration of dual power controls currently accessible.
+ * Starts the enumeration of dual power switches currently accessible.
  * Use the method YDualPower.nextDualPower() to iterate on
- * next dual power controls.
+ * next dual power switches.
  *
  * @return a pointer to a YDualPower object, corresponding to
- *         the first dual power control currently online, or a NULL pointer
+ *         the first dual power switch currently online, or a NULL pointer
  *         if there are none.
  */
-inline YDualPower* yFirstDualPower(void)
+inline YDualPower *yFirstDualPower(void)
 { return YDualPower::FirstDualPower();}
 
 //--- (end of YDualPower functions declaration)

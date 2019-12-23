@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_daisychain.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_daisychain.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindDaisyChain(), the high-level API for DaisyChain functions
  *
@@ -71,9 +71,9 @@ typedef enum {
 
 //--- (YDaisyChain declaration)
 /**
- * YDaisyChain Class: DaisyChain function interface
+ * YDaisyChain Class: Module chain configuration interface
  *
- * The YDaisyChain interface can be used to verify that devices that
+ * The YDaisyChain class can be used to verify that devices that
  * are daisy-chained directly from device to device, without a hub,
  * are detected properly.
  */
@@ -94,7 +94,7 @@ protected:
     friend YDaisyChain *yFirstDaisyChain(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindDaisyChain factory function to instantiate
     YDaisyChain(const string& func);
@@ -215,7 +215,7 @@ public:
     virtual int         _invokeValueCallback(string value);
 
 
-    inline static YDaisyChain* Find(string func)
+    inline static YDaisyChain *Find(string func)
     { return YDaisyChain::FindDaisyChain(func); }
 
     /**
@@ -241,8 +241,8 @@ public:
      *         the first module chain currently online, or a NULL pointer
      *         if there are none.
      */
-           static YDaisyChain* FirstDaisyChain(void);
-    inline static YDaisyChain* First(void)
+           static YDaisyChain *FirstDaisyChain(void);
+    inline static YDaisyChain *First(void)
     { return YDaisyChain::FirstDaisyChain();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -280,7 +280,7 @@ public:
  *
  * @return a YDaisyChain object allowing you to drive the module chain.
  */
-inline YDaisyChain* yFindDaisyChain(const string& func)
+inline YDaisyChain *yFindDaisyChain(const string& func)
 { return YDaisyChain::FindDaisyChain(func);}
 /**
  * Starts the enumeration of module chains currently accessible.
@@ -291,7 +291,7 @@ inline YDaisyChain* yFindDaisyChain(const string& func)
  *         the first module chain currently online, or a NULL pointer
  *         if there are none.
  */
-inline YDaisyChain* yFirstDaisyChain(void)
+inline YDaisyChain *yFirstDaisyChain(void)
 { return YDaisyChain::FirstDaisyChain();}
 
 //--- (end of YDaisyChain functions declaration)

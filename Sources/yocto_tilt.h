@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_tilt.h 38030 2019-11-04 17:56:01Z mvuilleu $
+ *  $Id: yocto_tilt.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindTilt(), the high-level API for Tilt functions
  *
@@ -70,7 +70,7 @@ typedef enum {
 
 //--- (YTilt declaration)
 /**
- * YTilt Class: Tilt function interface
+ * YTilt Class: tilt sensor control interface, available for instance in the Yocto-3D-V2
  *
  * The YSensor class is the parent class for all Yoctopuce sensor types. It can be
  * used to read the current value and unit of any sensor, read the min/max
@@ -99,7 +99,7 @@ protected:
     friend YTilt *yFirstTilt(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindTilt factory function to instantiate
     YTilt(const string& func);
@@ -211,7 +211,7 @@ public:
     virtual int         _invokeTimedReportCallback(YMeasure value);
 
 
-    inline static YTilt* Find(string func)
+    inline static YTilt *Find(string func)
     { return YTilt::FindTilt(func); }
 
     /**
@@ -237,8 +237,8 @@ public:
      *         the first tilt sensor currently online, or a NULL pointer
      *         if there are none.
      */
-           static YTilt* FirstTilt(void);
-    inline static YTilt* First(void)
+           static YTilt *FirstTilt(void);
+    inline static YTilt *First(void)
     { return YTilt::FirstTilt();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -276,7 +276,7 @@ public:
  *
  * @return a YTilt object allowing you to drive the tilt sensor.
  */
-inline YTilt* yFindTilt(const string& func)
+inline YTilt *yFindTilt(const string& func)
 { return YTilt::FindTilt(func);}
 /**
  * Starts the enumeration of tilt sensors currently accessible.
@@ -287,7 +287,7 @@ inline YTilt* yFindTilt(const string& func)
  *         the first tilt sensor currently online, or a NULL pointer
  *         if there are none.
  */
-inline YTilt* yFirstTilt(void)
+inline YTilt *yFirstTilt(void)
 { return YTilt::FirstTilt();}
 
 //--- (end of YTilt functions declaration)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_power.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_power.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindPower(), the high-level API for Power functions
  *
@@ -63,12 +63,11 @@ typedef void (*YPowerTimedReportCallback)(YPower *func, YMeasure measure);
 
 //--- (YPower declaration)
 /**
- * YPower Class: Power function interface
+ * YPower Class: electrical power sensor control interface, available for instance in the Yocto-Watt
  *
- * The YPower class allows you to read and configure Yoctopuce power
- * sensors, for instance using a Yocto-Watt. It inherits from YSensor class the core functions to read
- * measurements,
- * to register callback functions, to access the autonomous datalogger.
+ * The YPower class allows you to read and configure Yoctopuce electrical power sensors.
+ * It inherits from YSensor class the core functions to read measurements,
+ * to register callback functions, and to access the autonomous datalogger.
  * This class adds the ability to access the energy counter and the power factor.
  */
 class YOCTO_CLASS_EXPORT YPower: public YSensor {
@@ -89,7 +88,7 @@ protected:
     friend YPower *yFirstPower(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindPower factory function to instantiate
     YPower(const string& func);
@@ -219,7 +218,7 @@ public:
     virtual int         reset(void);
 
 
-    inline static YPower* Find(string func)
+    inline static YPower *Find(string func)
     { return YPower::FindPower(func); }
 
     /**
@@ -245,8 +244,8 @@ public:
      *         the first electrical power sensor currently online, or a NULL pointer
      *         if there are none.
      */
-           static YPower* FirstPower(void);
-    inline static YPower* First(void)
+           static YPower *FirstPower(void);
+    inline static YPower *First(void)
     { return YPower::FirstPower();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -284,7 +283,7 @@ public:
  *
  * @return a YPower object allowing you to drive the electrical power sensor.
  */
-inline YPower* yFindPower(const string& func)
+inline YPower *yFindPower(const string& func)
 { return YPower::FindPower(func);}
 /**
  * Starts the enumeration of electrical power sensors currently accessible.
@@ -295,7 +294,7 @@ inline YPower* yFindPower(const string& func)
  *         the first electrical power sensor currently online, or a NULL pointer
  *         if there are none.
  */
-inline YPower* yFirstPower(void)
+inline YPower *yFirstPower(void)
 { return YPower::FirstPower();}
 
 //--- (end of YPower functions declaration)

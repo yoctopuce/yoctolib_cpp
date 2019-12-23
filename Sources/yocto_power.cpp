@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_power.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_power.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindPower(), the high-level API for Power functions
  *
@@ -70,7 +70,7 @@ YPower::~YPower()
 const double YPower::COSPHI_INVALID = YAPI_INVALID_DOUBLE;
 const double YPower::METER_INVALID = YAPI_INVALID_DOUBLE;
 
-int YPower::_parseAttr(YJSONObject* json_val)
+int YPower::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("cosPhi")) {
         _cosPhi =  floor(json_val->getDouble("cosPhi") * 1000.0 / 65536.0 + 0.5) / 1000.0;
@@ -337,7 +337,7 @@ YPower *YPower::nextPower(void)
     return YPower::FindPower(hwid);
 }
 
-YPower* YPower::FirstPower(void)
+YPower *YPower::FirstPower(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

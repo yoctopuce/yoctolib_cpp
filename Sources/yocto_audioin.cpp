@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_audioin.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_audioin.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindAudioIn(), the high-level API for AudioIn functions
  *
@@ -70,7 +70,7 @@ YAudioIn::~YAudioIn()
 // static attributes
 const string YAudioIn::VOLUMERANGE_INVALID = YAPI_INVALID_STRING;
 
-int YAudioIn::_parseAttr(YJSONObject* json_val)
+int YAudioIn::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("volume")) {
         _volume =  json_val->getInt("volume");
@@ -391,7 +391,7 @@ YAudioIn *YAudioIn::nextAudioIn(void)
     return YAudioIn::FindAudioIn(hwid);
 }
 
-YAudioIn* YAudioIn::FirstAudioIn(void)
+YAudioIn *YAudioIn::FirstAudioIn(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

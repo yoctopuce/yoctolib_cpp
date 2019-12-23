@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 38510 2019-11-26 15:36:38Z mvuilleu $
+ * $Id: yocto_display.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -644,7 +644,7 @@ YDisplay::~YDisplay()
 const string YDisplay::STARTUPSEQ_INVALID = YAPI_INVALID_STRING;
 const string YDisplay::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YDisplay::_parseAttr(YJSONObject* json_val)
+int YDisplay::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("enabled")) {
         _enabled =  (Y_ENABLED_enum)json_val->getInt("enabled");
@@ -1397,7 +1397,7 @@ YDisplay *YDisplay::nextDisplay(void)
     return YDisplay::FindDisplay(hwid);
 }
 
-YDisplay* YDisplay::FirstDisplay(void)
+YDisplay *YDisplay::FirstDisplay(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

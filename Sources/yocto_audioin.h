@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_audioin.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_audioin.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindAudioIn(), the high-level API for AudioIn functions
  *
@@ -70,7 +70,7 @@ typedef enum {
 
 //--- (YAudioIn declaration)
 /**
- * YAudioIn Class: AudioIn function interface
+ * YAudioIn Class: audio input control interface
  *
  * The YAudioIn class allows you to configure the volume of an audio input.
  */
@@ -93,7 +93,7 @@ protected:
     friend YAudioIn *yFirstAudioIn(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindAudioIn factory function to instantiate
     YAudioIn(const string& func);
@@ -250,7 +250,7 @@ public:
     virtual int         _invokeValueCallback(string value);
 
 
-    inline static YAudioIn* Find(string func)
+    inline static YAudioIn *Find(string func)
     { return YAudioIn::FindAudioIn(func); }
 
     /**
@@ -276,8 +276,8 @@ public:
      *         the first audio input currently online, or a NULL pointer
      *         if there are none.
      */
-           static YAudioIn* FirstAudioIn(void);
-    inline static YAudioIn* First(void)
+           static YAudioIn *FirstAudioIn(void);
+    inline static YAudioIn *First(void)
     { return YAudioIn::FirstAudioIn();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -315,7 +315,7 @@ public:
  *
  * @return a YAudioIn object allowing you to drive the audio input.
  */
-inline YAudioIn* yFindAudioIn(const string& func)
+inline YAudioIn *yFindAudioIn(const string& func)
 { return YAudioIn::FindAudioIn(func);}
 /**
  * Starts the enumeration of audio inputs currently accessible.
@@ -326,7 +326,7 @@ inline YAudioIn* yFindAudioIn(const string& func)
  *         the first audio input currently online, or a NULL pointer
  *         if there are none.
  */
-inline YAudioIn* yFirstAudioIn(void)
+inline YAudioIn *yFirstAudioIn(void)
 { return YAudioIn::FirstAudioIn();}
 
 //--- (end of YAudioIn functions declaration)

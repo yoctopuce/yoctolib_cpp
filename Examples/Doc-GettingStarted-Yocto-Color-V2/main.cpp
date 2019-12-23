@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 32716 2018-10-19 15:54:48Z seb $
+ *  $Id: main.cpp 38820 2019-12-18 18:01:14Z seb $
  *
  *  An example that show how to use a  Yocto-Color-V2
  *
@@ -29,8 +29,8 @@ static void usage(void)
   cout << "Eg." << endl;
   cout << "   demo any FF1493 " << endl;
   cout << "   demo YRGBLED1-123456 red" << endl;
-  u64 now = yGetTickCount();
-  while (yGetTickCount() - now < 3000) {
+  u64 now = YAPI::GetTickCount();
+  while (YAPI::GetTickCount() - now < 3000) {
     // wait 3 sec to show the message
   }
   exit(1);
@@ -59,7 +59,7 @@ int main(int argc, const char* argv[])
     color = (unsigned int)strtoul(color_str.c_str(), NULL, 16);
 
   // Setup the API to use local USB devices
-  if (YAPI::RegisterHub("usb", errmsg) != YAPI_SUCCESS) {
+  if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
     cerr << "RegisterHub error: " << errmsg << endl;
     return 1;
   }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 32619 2018-10-10 12:22:50Z seb $
+ *  $Id: main.cpp 38820 2019-12-18 18:01:14Z seb $
  *
  *  Doc-Inventory example
  *
@@ -21,7 +21,7 @@ int main(int argc, const char * argv[])
   string      errmsg;
 
   // Setup the API to use local USB devices
-  if(YAPI::RegisterHub("usb", errmsg) != YAPI_SUCCESS) {
+  if(YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
     cerr << "RegisterHub error: " << errmsg << endl;
     return 1;
   }
@@ -34,6 +34,6 @@ int main(int argc, const char * argv[])
     cout << module->get_productName()  << endl;
     module = module->nextModule();
   }
-  yFreeAPI();
+  YAPI::FreeAPI();
   return 0;
 }

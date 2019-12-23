@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_genericsensor.h 38510 2019-11-26 15:36:38Z mvuilleu $
+ *  $Id: yocto_genericsensor.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -84,11 +84,11 @@ typedef enum {
 
 //--- (YGenericSensor declaration)
 /**
- * YGenericSensor Class: GenericSensor function interface
+ * YGenericSensor Class: GenericSensor control interface, available for instance in the
+ * Yocto-0-10V-Rx, the Yocto-4-20mA-Rx, the Yocto-RS232 or the Yocto-milliVolt-Rx
  *
  * The YGenericSensor class allows you to read and configure Yoctopuce signal
- * transducers, for instance using a Yocto-0-10V-Rx, a Yocto-4-20mA-Rx, a Yocto-RS232 or a
- * Yocto-milliVolt-Rx. It inherits from YSensor class the core functions to read measurements,
+ * transducers. It inherits from YSensor class the core functions to read measurements,
  * to register callback functions, to access the autonomous datalogger.
  * This class adds the ability to configure the automatic conversion between the
  * measured signal and the corresponding engineering unit.
@@ -115,7 +115,7 @@ protected:
     friend YGenericSensor *yFirstGenericSensor(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindGenericSensor factory function to instantiate
     YGenericSensor(const string& func);
@@ -424,7 +424,7 @@ public:
     virtual int         zeroAdjust(void);
 
 
-    inline static YGenericSensor* Find(string func)
+    inline static YGenericSensor *Find(string func)
     { return YGenericSensor::FindGenericSensor(func); }
 
     /**
@@ -450,8 +450,8 @@ public:
      *         the first generic sensor currently online, or a NULL pointer
      *         if there are none.
      */
-           static YGenericSensor* FirstGenericSensor(void);
-    inline static YGenericSensor* First(void)
+           static YGenericSensor *FirstGenericSensor(void);
+    inline static YGenericSensor *First(void)
     { return YGenericSensor::FirstGenericSensor();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -489,7 +489,7 @@ public:
  *
  * @return a YGenericSensor object allowing you to drive the generic sensor.
  */
-inline YGenericSensor* yFindGenericSensor(const string& func)
+inline YGenericSensor *yFindGenericSensor(const string& func)
 { return YGenericSensor::FindGenericSensor(func);}
 /**
  * Starts the enumeration of generic sensors currently accessible.
@@ -500,7 +500,7 @@ inline YGenericSensor* yFindGenericSensor(const string& func)
  *         the first generic sensor currently online, or a NULL pointer
  *         if there are none.
  */
-inline YGenericSensor* yFirstGenericSensor(void)
+inline YGenericSensor *yFirstGenericSensor(void)
 { return YGenericSensor::FirstGenericSensor();}
 
 //--- (end of YGenericSensor functions declaration)

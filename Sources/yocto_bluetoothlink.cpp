@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_bluetoothlink.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_bluetoothlink.cpp 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Implements yFindBluetoothLink(), the high-level API for BluetoothLink functions
  *
@@ -79,7 +79,7 @@ const string YBluetoothLink::REMOTEADDRESS_INVALID = YAPI_INVALID_STRING;
 const string YBluetoothLink::REMOTENAME_INVALID = YAPI_INVALID_STRING;
 const string YBluetoothLink::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YBluetoothLink::_parseAttr(YJSONObject* json_val)
+int YBluetoothLink::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("ownAddress")) {
         _ownAddress =  json_val->getString("ownAddress");
@@ -554,7 +554,7 @@ int YBluetoothLink::set_command(const string& newval)
 }
 
 /**
- * Retrieves a cellular interface for a given identifier.
+ * Retrieves a Bluetooth sound controller for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -564,11 +564,11 @@ int YBluetoothLink::set_command(const string& newval)
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that the cellular interface is online at the time
+ * This function does not require that the Bluetooth sound controller is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YBluetoothLink.isOnline() to test if the cellular interface is
+ * Use the method YBluetoothLink.isOnline() to test if the Bluetooth sound controller is
  * indeed online at a given time. In case of ambiguity when looking for
- * a cellular interface by logical name, no error is notified: the first instance
+ * a Bluetooth sound controller by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
@@ -576,10 +576,10 @@ int YBluetoothLink::set_command(const string& newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the cellular interface, for instance
+ * @param func : a string that uniquely characterizes the Bluetooth sound controller, for instance
  *         MyDevice.bluetoothLink1.
  *
- * @return a YBluetoothLink object allowing you to drive the cellular interface.
+ * @return a YBluetoothLink object allowing you to drive the Bluetooth sound controller.
  */
 YBluetoothLink* YBluetoothLink::FindBluetoothLink(string func)
 {
@@ -676,7 +676,7 @@ YBluetoothLink *YBluetoothLink::nextBluetoothLink(void)
     return YBluetoothLink::FindBluetoothLink(hwid);
 }
 
-YBluetoothLink* YBluetoothLink::FirstBluetoothLink(void)
+YBluetoothLink *YBluetoothLink::FirstBluetoothLink(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

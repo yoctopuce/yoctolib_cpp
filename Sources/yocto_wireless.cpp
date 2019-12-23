@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.cpp 38510 2019-11-26 15:36:38Z mvuilleu $
+ * $Id: yocto_wireless.cpp 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  * Implements yFindWireless(), the high-level API for Wireless functions
  *
@@ -112,9 +112,9 @@ string YWlanRecord::get_ssid(void)
 }
 
 /**
- * Returns the 802.11 channel.
+ * Returns the 802.11 b/g/n channel number used by this network.
  *
- * @return the 802.11 channel.
+ * @return an integer corresponding to the channel.
  */
 int YWlanRecord::get_channel(void)
 {
@@ -123,6 +123,7 @@ int YWlanRecord::get_channel(void)
 
 /**
  * Returns the security algorithm used by the wireless network.
+ * If the network implements to security, the value is "OPEN".
  *
  * @return a string with the security algorithm.
  */
@@ -134,7 +135,7 @@ string YWlanRecord::get_security(void)
 /**
  * Returns the quality of the wireless network link, in per cents.
  *
- * @return the quality of the wireless network link, in per cents.
+ * @return an integer between 0 and 100 corresponding to the signal quality.
  */
 int YWlanRecord::get_linkQuality(void)
 {
@@ -169,7 +170,7 @@ const string YWireless::SSID_INVALID = YAPI_INVALID_STRING;
 const string YWireless::MESSAGE_INVALID = YAPI_INVALID_STRING;
 const string YWireless::WLANCONFIG_INVALID = YAPI_INVALID_STRING;
 
-int YWireless::_parseAttr(YJSONObject* json_val)
+int YWireless::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("linkQuality")) {
         _linkQuality =  json_val->getInt("linkQuality");
@@ -425,7 +426,7 @@ Y_WLANSTATE_enum YWireless::get_wlanState(void)
 }
 
 /**
- * Retrieves a wireless lan interface for a given identifier.
+ * Retrieves a wireless LAN interface for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -435,11 +436,11 @@ Y_WLANSTATE_enum YWireless::get_wlanState(void)
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that the wireless lan interface is online at the time
+ * This function does not require that the wireless LAN interface is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YWireless.isOnline() to test if the wireless lan interface is
+ * Use the method YWireless.isOnline() to test if the wireless LAN interface is
  * indeed online at a given time. In case of ambiguity when looking for
- * a wireless lan interface by logical name, no error is notified: the first instance
+ * a wireless LAN interface by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
@@ -447,10 +448,10 @@ Y_WLANSTATE_enum YWireless::get_wlanState(void)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the wireless lan interface, for instance
+ * @param func : a string that uniquely characterizes the wireless LAN interface, for instance
  *         YHUBWLN1.wireless.
  *
- * @return a YWireless object allowing you to drive the wireless lan interface.
+ * @return a YWireless object allowing you to drive the wireless LAN interface.
  */
 YWireless* YWireless::FindWireless(string func)
 {
@@ -637,7 +638,7 @@ YWireless *YWireless::nextWireless(void)
     return YWireless::FindWireless(hwid);
 }
 
-YWireless* YWireless::FirstWireless(void)
+YWireless *YWireless::FirstWireless(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

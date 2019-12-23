@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pressure.cpp 38510 2019-11-26 15:36:38Z mvuilleu $
+ *  $Id: yocto_pressure.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindPressure(), the high-level API for Pressure functions
  *
@@ -199,7 +199,7 @@ YPressure *YPressure::nextPressure(void)
     return YPressure::FindPressure(hwid);
 }
 
-YPressure* YPressure::FirstPressure(void)
+YPressure *YPressure::FirstPressure(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

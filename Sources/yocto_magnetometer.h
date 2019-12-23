@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_magnetometer.h 38030 2019-11-04 17:56:01Z mvuilleu $
+ *  $Id: yocto_magnetometer.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindMagnetometer(), the high-level API for Magnetometer functions
  *
@@ -64,7 +64,7 @@ typedef void (*YMagnetometerTimedReportCallback)(YMagnetometer *func, YMeasure m
 
 //--- (YMagnetometer declaration)
 /**
- * YMagnetometer Class: Magnetometer function interface
+ * YMagnetometer Class: magnetometer control interface, available for instance in the Yocto-3D-V2
  *
  * The YSensor class is the parent class for all Yoctopuce sensor types. It can be
  * used to read the current value and unit of any sensor, read the min/max
@@ -95,7 +95,7 @@ protected:
     friend YMagnetometer *yFirstMagnetometer(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindMagnetometer factory function to instantiate
     YMagnetometer(const string& func);
@@ -240,7 +240,7 @@ public:
     virtual int         _invokeTimedReportCallback(YMeasure value);
 
 
-    inline static YMagnetometer* Find(string func)
+    inline static YMagnetometer *Find(string func)
     { return YMagnetometer::FindMagnetometer(func); }
 
     /**
@@ -266,8 +266,8 @@ public:
      *         the first magnetometer currently online, or a NULL pointer
      *         if there are none.
      */
-           static YMagnetometer* FirstMagnetometer(void);
-    inline static YMagnetometer* First(void)
+           static YMagnetometer *FirstMagnetometer(void);
+    inline static YMagnetometer *First(void)
     { return YMagnetometer::FirstMagnetometer();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -305,7 +305,7 @@ public:
  *
  * @return a YMagnetometer object allowing you to drive the magnetometer.
  */
-inline YMagnetometer* yFindMagnetometer(const string& func)
+inline YMagnetometer *yFindMagnetometer(const string& func)
 { return YMagnetometer::FindMagnetometer(func);}
 /**
  * Starts the enumeration of magnetometers currently accessible.
@@ -316,7 +316,7 @@ inline YMagnetometer* yFindMagnetometer(const string& func)
  *         the first magnetometer currently online, or a NULL pointer
  *         if there are none.
  */
-inline YMagnetometer* yFirstMagnetometer(void)
+inline YMagnetometer *yFirstMagnetometer(void)
 { return YMagnetometer::FirstMagnetometer();}
 
 //--- (end of YMagnetometer functions declaration)

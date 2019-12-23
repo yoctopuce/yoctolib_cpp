@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 32619 2018-10-10 12:22:50Z seb $
+ *  $Id: main.cpp 38820 2019-12-18 18:01:14Z seb $
  *
  *  An example that show how to use a  Yocto-Demo
  *
@@ -24,8 +24,8 @@ static void usage(void)
   cout << "usage: demo <serial_number>  [ on | off ]" << endl;
   cout << "       demo <logical_name> [ on | off ]" << endl;
   cout << "       demo any [ on | off ] (use any discovered device)" << endl;
-  u64 now = yGetTickCount();
-  while (yGetTickCount() - now < 3000) {
+  u64 now = YAPI::GetTickCount();
+  while (YAPI::GetTickCount() - now < 3000) {
     // wait 3 sec to show the message
   }
   exit(1);
@@ -45,22 +45,22 @@ int main(int argc, const char * argv[])
   on_off = (string) argv[2];
 
   // Setup the API to use local USB devices
-  if(yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
+  if(YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
     cerr << "RegisterHub error: " << errmsg << endl;
     return 1;
   }
 
   if(target == "any") {
-    led =  yFirstLed();
+    led =  YLed::FirstLed();
   } else {
-    led =  yFindLed(target + ".led");
+    led =  YLed::FindLed(target + ".led");
   }
   if (led && led->isOnline()) {
     led->set_power(on_off == "on" ? Y_POWER_ON : Y_POWER_OFF);
   } else {
     cout << "Module not connected (check identification and USB cable)" << endl;
   }
-  yFreeAPI();
+  YAPI::FreeAPI();
 
   return 0;
 }

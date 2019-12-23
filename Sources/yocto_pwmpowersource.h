@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwmpowersource.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_pwmpowersource.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindPwmPowerSource(), the high-level API for PwmPowerSource functions
  *
@@ -68,10 +68,10 @@ typedef enum {
 
 //--- (YPwmPowerSource declaration)
 /**
- * YPwmPowerSource Class: PwmPowerSource function interface
+ * YPwmPowerSource Class: PWM generator power source control interface, available for instance in the Yocto-PWM-Tx
  *
  * The YPwmPowerSource class allows you to configure
- * the voltage source used by all PWM outputs on the same device, for instance using a Yocto-PWM-Tx.
+ * the voltage source used by all PWM outputs on the same device.
  */
 class YOCTO_CLASS_EXPORT YPwmPowerSource: public YFunction {
 #ifdef __BORLANDC__
@@ -88,7 +88,7 @@ protected:
     friend YPwmPowerSource *yFirstPwmPowerSource(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindPwmPowerSource factory function to instantiate
     YPwmPowerSource(const string& func);
@@ -138,7 +138,7 @@ public:
     { return this->set_powerMode(newval); }
 
     /**
-     * Retrieves a voltage source for a given identifier.
+     * Retrieves a PWM generator power source for a given identifier.
      * The identifier can be specified using several formats:
      * <ul>
      * <li>FunctionLogicalName</li>
@@ -148,11 +148,11 @@ public:
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
      *
-     * This function does not require that the voltage source is online at the time
+     * This function does not require that the PWM generator power source is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YPwmPowerSource.isOnline() to test if the voltage source is
+     * Use the method YPwmPowerSource.isOnline() to test if the PWM generator power source is
      * indeed online at a given time. In case of ambiguity when looking for
-     * a voltage source by logical name, no error is notified: the first instance
+     * a PWM generator power source by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
      *
@@ -160,10 +160,10 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the voltage source, for instance
+     * @param func : a string that uniquely characterizes the PWM generator power source, for instance
      *         YPWMTX01.pwmPowerSource.
      *
-     * @return a YPwmPowerSource object allowing you to drive the voltage source.
+     * @return a YPwmPowerSource object allowing you to drive the PWM generator power source.
      */
     static YPwmPowerSource* FindPwmPowerSource(string func);
 
@@ -184,34 +184,34 @@ public:
     virtual int         _invokeValueCallback(string value);
 
 
-    inline static YPwmPowerSource* Find(string func)
+    inline static YPwmPowerSource *Find(string func)
     { return YPwmPowerSource::FindPwmPowerSource(func); }
 
     /**
-     * Continues the enumeration of Voltage sources started using yFirstPwmPowerSource().
-     * Caution: You can't make any assumption about the returned Voltage sources order.
-     * If you want to find a specific a voltage source, use PwmPowerSource.findPwmPowerSource()
+     * Continues the enumeration of PWM generator power sources started using yFirstPwmPowerSource().
+     * Caution: You can't make any assumption about the returned PWM generator power sources order.
+     * If you want to find a specific a PWM generator power source, use PwmPowerSource.findPwmPowerSource()
      * and a hardwareID or a logical name.
      *
      * @return a pointer to a YPwmPowerSource object, corresponding to
-     *         a voltage source currently online, or a NULL pointer
-     *         if there are no more Voltage sources to enumerate.
+     *         a PWM generator power source currently online, or a NULL pointer
+     *         if there are no more PWM generator power sources to enumerate.
      */
            YPwmPowerSource *nextPwmPowerSource(void);
     inline YPwmPowerSource *next(void)
     { return this->nextPwmPowerSource();}
 
     /**
-     * Starts the enumeration of Voltage sources currently accessible.
+     * Starts the enumeration of PWM generator power sources currently accessible.
      * Use the method YPwmPowerSource.nextPwmPowerSource() to iterate on
-     * next Voltage sources.
+     * next PWM generator power sources.
      *
      * @return a pointer to a YPwmPowerSource object, corresponding to
-     *         the first source currently online, or a NULL pointer
+     *         the first PWM generator power source currently online, or a NULL pointer
      *         if there are none.
      */
-           static YPwmPowerSource* FirstPwmPowerSource(void);
-    inline static YPwmPowerSource* First(void)
+           static YPwmPowerSource *FirstPwmPowerSource(void);
+    inline static YPwmPowerSource *First(void)
     { return YPwmPowerSource::FirstPwmPowerSource();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -222,7 +222,7 @@ public:
 //--- (YPwmPowerSource functions declaration)
 
 /**
- * Retrieves a voltage source for a given identifier.
+ * Retrieves a PWM generator power source for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -232,11 +232,11 @@ public:
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that the voltage source is online at the time
+ * This function does not require that the PWM generator power source is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YPwmPowerSource.isOnline() to test if the voltage source is
+ * Use the method YPwmPowerSource.isOnline() to test if the PWM generator power source is
  * indeed online at a given time. In case of ambiguity when looking for
- * a voltage source by logical name, no error is notified: the first instance
+ * a PWM generator power source by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
@@ -244,23 +244,23 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the voltage source, for instance
+ * @param func : a string that uniquely characterizes the PWM generator power source, for instance
  *         YPWMTX01.pwmPowerSource.
  *
- * @return a YPwmPowerSource object allowing you to drive the voltage source.
+ * @return a YPwmPowerSource object allowing you to drive the PWM generator power source.
  */
-inline YPwmPowerSource* yFindPwmPowerSource(const string& func)
+inline YPwmPowerSource *yFindPwmPowerSource(const string& func)
 { return YPwmPowerSource::FindPwmPowerSource(func);}
 /**
- * Starts the enumeration of Voltage sources currently accessible.
+ * Starts the enumeration of PWM generator power sources currently accessible.
  * Use the method YPwmPowerSource.nextPwmPowerSource() to iterate on
- * next Voltage sources.
+ * next PWM generator power sources.
  *
  * @return a pointer to a YPwmPowerSource object, corresponding to
- *         the first source currently online, or a NULL pointer
+ *         the first PWM generator power source currently online, or a NULL pointer
  *         if there are none.
  */
-inline YPwmPowerSource* yFirstPwmPowerSource(void)
+inline YPwmPowerSource *yFirstPwmPowerSource(void)
 { return YPwmPowerSource::FirstPwmPowerSource();}
 
 //--- (end of YPwmPowerSource functions declaration)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_digitalio.h 38510 2019-11-26 15:36:38Z mvuilleu $
+ *  $Id: yocto_digitalio.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -74,16 +74,16 @@ typedef enum {
 
 //--- (YDigitalIO declaration)
 /**
- * YDigitalIO Class: Digital IO function interface
+ * YDigitalIO Class: digital IO port control interface, available for instance in the Yocto-IO or the
+ * Yocto-Maxi-IO-V2
  *
- * The YDigitalIO class allows you drive a Yoctopuce digital input/output port, for instance using a
- * Yocto-IO or a Yocto-Maxi-IO-V2.
+ * The YDigitalIO class allows you drive a Yoctopuce digital input/output port.
  * It can be used to setup the direction of each channel, to read the state of each channel
  * and to switch the state of each channel configures as an output.
  * You can work on all channels at once, or one by one. Most functions
  * use a binary representation for channels where bit 0 matches channel #0 , bit 1 matches channel
  * #1 and so on. If you are not familiar with numbers binary representation, you will find more
- * information here: en.wikipedia.org/wiki/Binary_number#Representation. It is also possible
+ * information here: https://en.wikipedia.org/wiki/Binary_number#Representation. It is also possible
  * to automatically generate short pulses of a determined duration. Electrical behavior
  * of each I/O can be modified (open drain and reverse polarity).
  */
@@ -109,7 +109,7 @@ protected:
     friend YDigitalIO *yFirstDigitalIO(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindDigitalIO factory function to instantiate
     YDigitalIO(const string& func);
@@ -512,7 +512,7 @@ public:
     virtual int         delayedPulse(int bitno,int ms_delay,int ms_duration);
 
 
-    inline static YDigitalIO* Find(string func)
+    inline static YDigitalIO *Find(string func)
     { return YDigitalIO::FindDigitalIO(func); }
 
     /**
@@ -538,8 +538,8 @@ public:
      *         the first digital IO port currently online, or a NULL pointer
      *         if there are none.
      */
-           static YDigitalIO* FirstDigitalIO(void);
-    inline static YDigitalIO* First(void)
+           static YDigitalIO *FirstDigitalIO(void);
+    inline static YDigitalIO *First(void)
     { return YDigitalIO::FirstDigitalIO();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -577,7 +577,7 @@ public:
  *
  * @return a YDigitalIO object allowing you to drive the digital IO port.
  */
-inline YDigitalIO* yFindDigitalIO(const string& func)
+inline YDigitalIO *yFindDigitalIO(const string& func)
 { return YDigitalIO::FindDigitalIO(func);}
 /**
  * Starts the enumeration of digital IO ports currently accessible.
@@ -588,7 +588,7 @@ inline YDigitalIO* yFindDigitalIO(const string& func)
  *         the first digital IO port currently online, or a NULL pointer
  *         if there are none.
  */
-inline YDigitalIO* yFirstDigitalIO(void)
+inline YDigitalIO *yFirstDigitalIO(void)
 { return YDigitalIO::FirstDigitalIO();}
 
 //--- (end of YDigitalIO functions declaration)

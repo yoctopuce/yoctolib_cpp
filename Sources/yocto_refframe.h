@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_refframe.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_refframe.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -96,11 +96,10 @@ typedef enum {
 
 //--- (YRefFrame declaration)
 /**
- * YRefFrame Class: Reference frame configuration
+ * YRefFrame Class: 3D reference frame configuration interface, available for instance in the Yocto-3D-V2
  *
  * The YRefFrame class is used to setup the base orientation of the Yoctopuce inertial
- * sensors, for instance using a Yocto-3D-V2. Thanks to this, orientation functions relative to the
- * earth surface plane
+ * sensors. Thanks to this, orientation functions relative to the earth surface plane
  * can use the proper reference frame. The class also implements a tridimensional
  * sensor calibration process, which can compensate for local variations
  * of standard gravity and improve the precision of the tilt sensors.
@@ -144,7 +143,7 @@ protected:
     friend YRefFrame *yFirstRefFrame(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindRefFrame factory function to instantiate
     YRefFrame(const string& func);
@@ -495,7 +494,7 @@ public:
     virtual int         cancel3DCalibration(void);
 
 
-    inline static YRefFrame* Find(string func)
+    inline static YRefFrame *Find(string func)
     { return YRefFrame::FindRefFrame(func); }
 
     /**
@@ -521,8 +520,8 @@ public:
      *         the first reference frame currently online, or a NULL pointer
      *         if there are none.
      */
-           static YRefFrame* FirstRefFrame(void);
-    inline static YRefFrame* First(void)
+           static YRefFrame *FirstRefFrame(void);
+    inline static YRefFrame *First(void)
     { return YRefFrame::FirstRefFrame();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -560,7 +559,7 @@ public:
  *
  * @return a YRefFrame object allowing you to drive the reference frame.
  */
-inline YRefFrame* yFindRefFrame(const string& func)
+inline YRefFrame *yFindRefFrame(const string& func)
 { return YRefFrame::FindRefFrame(func);}
 /**
  * Starts the enumeration of reference frames currently accessible.
@@ -571,7 +570,7 @@ inline YRefFrame* yFindRefFrame(const string& func)
  *         the first reference frame currently online, or a NULL pointer
  *         if there are none.
  */
-inline YRefFrame* yFirstRefFrame(void)
+inline YRefFrame *yFirstRefFrame(void)
 { return YRefFrame::FirstRefFrame();}
 
 //--- (end of YRefFrame functions declaration)

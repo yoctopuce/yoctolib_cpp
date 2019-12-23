@@ -137,23 +137,23 @@ int main(int argc, const char * argv[])
 
   for (i = 1; i < argc ; i++) {
     // Setup the API to use local USB devices
-    if(yRegisterHub(argv[i], errmsg) != YAPI_SUCCESS) {
+    if(YAPI::RegisterHub(argv[i], errmsg) != YAPI::SUCCESS) {
       cerr << "Unable to get acces to devices on " << argv[i] << endl;
       cerr << "error: " << errmsg << endl;
       return 1;
     }
   }
 
-  yDisableExceptions();
+  YAPI::DisableExceptions();
   // create our ColorMixer Object
   ColorMixer mixer = ColorMixer();
 
   // get our pointer on our 3 knob
   // we use will reference the 3 knob by the logical name
   // that we have configured using the VirtualHub
-  YAnButton* knobRed  = yFindAnButton("Red");
-  YAnButton* knobGreen = yFindAnButton("Green");
-  YAnButton* knobBlue  = yFindAnButton("Blue");
+  YAnButton* knobRed  = YAnButton::FindAnButton("Red");
+  YAnButton* knobGreen = YAnButton::FindAnButton("Green");
+  YAnButton* knobBlue  = YAnButton::FindAnButton("Blue");
 
   // register these 3 knob to the mixer
   mixer.assignRedButton( knobRed );
@@ -169,7 +169,7 @@ int main(int argc, const char * argv[])
     cout << "Warning: knob \"" << knobBlue->describe() << "\" is not connected" << endl;
 
   // register all led that is connected to our "network"
-  YColorLed* led = yFirstColorLed();
+  YColorLed* led = YColorLed::FirstColorLed();
   while(led) {
     mixer.addLED(led);
     nbled++;
@@ -179,9 +179,9 @@ int main(int argc, const char * argv[])
   // never hanling loop that will..
   while(1) {
     // ... handle all event durring 5000ms without using lots of CPU ...
-    ySleep(1000, errmsg);
+    YAPI::Sleep(1000, errmsg);
     // ... and check for device plug/unplug
-    yUpdateDeviceList(errmsg);
+    YAPI::UpdateDeviceList(errmsg);
   }
   return 0;
 }

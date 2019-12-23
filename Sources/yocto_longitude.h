@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_longitude.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_longitude.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindLongitude(), the high-level API for Longitude functions
  *
@@ -60,12 +60,11 @@ typedef void (*YLongitudeTimedReportCallback)(YLongitude *func, YMeasure measure
 
 //--- (YLongitude declaration)
 /**
- * YLongitude Class: Longitude function interface
+ * YLongitude Class: longitude sensor control interface, available for instance in the Yocto-GPS
  *
- * The YLongitude class allows you to read the longitude from Yoctopuce
- * geolocation sensors, for instance using a Yocto-GPS. It inherits from the YSensor class the core functions to
- * read measurements, register callback functions, access the autonomous
- * datalogger.
+ * The YLongitude class allows you to read and configure Yoctopuce longitude sensors.
+ * It inherits from YSensor class the core functions to read measurements,
+ * to register callback functions, and to access the autonomous datalogger.
  */
 class YOCTO_CLASS_EXPORT YLongitude: public YSensor {
 #ifdef __BORLANDC__
@@ -153,7 +152,7 @@ public:
     virtual int         _invokeTimedReportCallback(YMeasure value);
 
 
-    inline static YLongitude* Find(string func)
+    inline static YLongitude *Find(string func)
     { return YLongitude::FindLongitude(func); }
 
     /**
@@ -179,8 +178,8 @@ public:
      *         the first longitude sensor currently online, or a NULL pointer
      *         if there are none.
      */
-           static YLongitude* FirstLongitude(void);
-    inline static YLongitude* First(void)
+           static YLongitude *FirstLongitude(void);
+    inline static YLongitude *First(void)
     { return YLongitude::FirstLongitude();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -218,7 +217,7 @@ public:
  *
  * @return a YLongitude object allowing you to drive the longitude sensor.
  */
-inline YLongitude* yFindLongitude(const string& func)
+inline YLongitude *yFindLongitude(const string& func)
 { return YLongitude::FindLongitude(func);}
 /**
  * Starts the enumeration of longitude sensors currently accessible.
@@ -229,7 +228,7 @@ inline YLongitude* yFindLongitude(const string& func)
  *         the first longitude sensor currently online, or a NULL pointer
  *         if there are none.
  */
-inline YLongitude* yFirstLongitude(void)
+inline YLongitude *yFirstLongitude(void)
 { return YLongitude::FirstLongitude();}
 
 //--- (end of YLongitude functions declaration)

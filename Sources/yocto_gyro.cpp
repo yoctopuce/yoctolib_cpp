@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ * $Id: yocto_gyro.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  * Implements yFindGyro(), the high-level API for Gyro functions
  *
@@ -201,7 +201,7 @@ YQt *YQt::nextQt(void)
     return YQt::FindQt(hwid);
 }
 
-YQt* YQt::FirstQt(void)
+YQt *YQt::FirstQt(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
@@ -275,7 +275,7 @@ const double YGyro::XVALUE_INVALID = YAPI_INVALID_DOUBLE;
 const double YGyro::YVALUE_INVALID = YAPI_INVALID_DOUBLE;
 const double YGyro::ZVALUE_INVALID = YAPI_INVALID_DOUBLE;
 
-int YGyro::_parseAttr(YJSONObject* json_val)
+int YGyro::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("bandwidth")) {
         _bandwidth =  json_val->getInt("bandwidth");
@@ -875,7 +875,7 @@ YGyro *YGyro::nextGyro(void)
     return YGyro::FindGyro(hwid);
 }
 
-YGyro* YGyro::FirstGyro(void)
+YGyro *YGyro::FirstGyro(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_network.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_network.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindNetwork(), the high-level API for Network functions
  *
@@ -102,7 +102,7 @@ const string YNetwork::CALLBACKURL_INVALID = YAPI_INVALID_STRING;
 const string YNetwork::CALLBACKCREDENTIALS_INVALID = YAPI_INVALID_STRING;
 const string YNetwork::CALLBACKSCHEDULE_INVALID = YAPI_INVALID_STRING;
 
-int YNetwork::_parseAttr(YJSONObject* json_val)
+int YNetwork::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("readiness")) {
         _readiness =  (Y_READINESS_enum)json_val->getInt("readiness");
@@ -1653,7 +1653,7 @@ YNetwork *YNetwork::nextNetwork(void)
     return YNetwork::FindNetwork(hwid);
 }
 
-YNetwork* YNetwork::FirstNetwork(void)
+YNetwork *YNetwork::FirstNetwork(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

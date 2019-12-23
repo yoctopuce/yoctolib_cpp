@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.h 38510 2019-11-26 15:36:38Z mvuilleu $
+ * $Id: yocto_cellular.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  * Declares yFindCellular(), the high-level API for Cellular functions
  *
@@ -102,9 +102,11 @@ typedef enum {
 
 //--- (generated code: YCellRecord declaration)
 /**
- * YCellRecord Class: Description of a cellular antenna
+ * YCellRecord Class: Cellular antenna description, returned by cellular.quickCellSurvey method
  *
- *
+ * YCellRecord objects are used to describe a wireless network.
+ * These objects are used in particular in conjunction with the
+ * YCellular class.
  */
 class YOCTO_CLASS_EXPORT YCellRecord {
 #ifdef __BORLANDC__
@@ -134,51 +136,56 @@ public:
 
 
     /**
-     * Returns the name of the the cell operator.
+     * Returns the name of the the cell operator, as received from the network.
      *
      * @return a string with the name of the the cell operator.
      */
     virtual string      get_cellOperator(void);
 
     /**
-     * Returns the Mobile Country Code (MCC).
+     * Returns the Mobile Country Code (MCC). The MCC is a unique identifier for each country.
      *
-     * @return the Mobile Country Code (MCC).
+     * @return an integer corresponding to the Mobile Country Code (MCC).
      */
     virtual int         get_mobileCountryCode(void);
 
     /**
-     * Returns the Mobile Network Code (MNC).
+     * Returns the Mobile Network Code (MNC). The MNC is a unique identifier for each phone
+     * operator within a country.
      *
-     * @return the Mobile Network Code (MNC).
+     * @return an integer corresponding to the Mobile Network Code (MNC).
      */
     virtual int         get_mobileNetworkCode(void);
 
     /**
-     * Returns the Location Area Code (LAC).
+     * Returns the Location Area Code (LAC). The LAC is a unique identifier for each
+     * place within a country.
      *
-     * @return the Location Area Code (LAC).
+     * @return an integer corresponding to the Location Area Code (LAC).
      */
     virtual int         get_locationAreaCode(void);
 
     /**
-     * Returns the Cell Id.
+     * Returns the Cell ID. The Cell ID is a unique identifier for each
+     * base transmission station within a LAC.
      *
-     * @return the Cell Id.
+     * @return an integer corresponding to the Cell Id.
      */
     virtual int         get_cellId(void);
 
     /**
-     * Returns the signal strength.
+     * Returns the signal strength, measured in dBm.
      *
-     * @return the signal strength.
+     * @return an integer corresponding to the signal strength.
      */
     virtual int         get_signalStrength(void);
 
     /**
-     * Returns the Timing Advance (TA).
+     * Returns the Timing Advance (TA). The TA corresponds to the time necessary
+     * for the signal to reach the base station from the device.
+     * Each increment corresponds about to 550m of distance.
      *
-     * @return the Timing Advance (TA).
+     * @return an integer corresponding to the Timing Advance (TA).
      */
     virtual int         get_timingAdvance(void);
 
@@ -191,11 +198,12 @@ public:
 
 //--- (generated code: YCellular declaration)
 /**
- * YCellular Class: Cellular function interface
+ * YCellular Class: cellular interface control interface, available for instance in the
+ * YoctoHub-GSM-2G, the YoctoHub-GSM-3G-EU or the YoctoHub-GSM-3G-NA
  *
  * The YCellular class provides control over cellular network parameters
- * and status for devices that are GSM-enabled, for instance using a YoctoHub-GSM-2G, a
- * YoctoHub-GSM-3G-EU or a YoctoHub-GSM-3G-NA.
+ * and status for devices that are GSM-enabled.
+ * Note that TCP/IP parameters are configured separately, using class YNetwork.
  */
 class YOCTO_CLASS_EXPORT YCellular: public YFunction {
 #ifdef __BORLANDC__
@@ -227,7 +235,7 @@ protected:
     friend YCellular *yFirstCellular(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindCellular factory function to instantiate
     YCellular(const string& func);
@@ -731,7 +739,7 @@ public:
     virtual vector<YCellRecord> quickCellSurvey(void);
 
 
-    inline static YCellular* Find(string func)
+    inline static YCellular *Find(string func)
     { return YCellular::FindCellular(func); }
 
     /**
@@ -757,8 +765,8 @@ public:
      *         the first cellular interface currently online, or a NULL pointer
      *         if there are none.
      */
-           static YCellular* FirstCellular(void);
-    inline static YCellular* First(void)
+           static YCellular *FirstCellular(void);
+    inline static YCellular *First(void)
     { return YCellular::FirstCellular();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -796,7 +804,7 @@ public:
  *
  * @return a YCellular object allowing you to drive the cellular interface.
  */
-inline YCellular* yFindCellular(const string& func)
+inline YCellular *yFindCellular(const string& func)
 { return YCellular::FindCellular(func);}
 /**
  * Starts the enumeration of cellular interfaces currently accessible.
@@ -807,7 +815,7 @@ inline YCellular* yFindCellular(const string& func)
  *         the first cellular interface currently online, or a NULL pointer
  *         if there are none.
  */
-inline YCellular* yFirstCellular(void)
+inline YCellular *yFirstCellular(void)
 { return YCellular::FirstCellular();}
 
 //--- (end of generated code: YCellular functions declaration)

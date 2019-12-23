@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_carbondioxide.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_carbondioxide.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *
@@ -68,7 +68,7 @@ YCarbonDioxide::~YCarbonDioxide()
 // static attributes
 const string YCarbonDioxide::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YCarbonDioxide::_parseAttr(YJSONObject* json_val)
+int YCarbonDioxide::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("abcPeriod")) {
         _abcPeriod =  json_val->getInt("abcPeriod");
@@ -360,7 +360,7 @@ YCarbonDioxide *YCarbonDioxide::nextCarbonDioxide(void)
     return YCarbonDioxide::FindCarbonDioxide(hwid);
 }
 
-YCarbonDioxide* YCarbonDioxide::FirstCarbonDioxide(void)
+YCarbonDioxide *YCarbonDioxide::FirstCarbonDioxide(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

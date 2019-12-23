@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.cpp 38510 2019-11-26 15:36:38Z mvuilleu $
+ * $Id: yocto_messagebox.cpp 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  * Implements yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -1327,7 +1327,7 @@ YMessageBox::~YMessageBox()
 const string YMessageBox::SLOTSBITMAP_INVALID = YAPI_INVALID_STRING;
 const string YMessageBox::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YMessageBox::_parseAttr(YJSONObject* json_val)
+int YMessageBox::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("slotsInUse")) {
         _slotsInUse =  json_val->getInt("slotsInUse");
@@ -1578,7 +1578,7 @@ int YMessageBox::set_command(const string& newval)
 }
 
 /**
- * Retrieves a MessageBox interface for a given identifier.
+ * Retrieves a SMS message box interface for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -1588,11 +1588,11 @@ int YMessageBox::set_command(const string& newval)
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that the MessageBox interface is online at the time
+ * This function does not require that the SMS message box interface is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YMessageBox.isOnline() to test if the MessageBox interface is
+ * Use the method YMessageBox.isOnline() to test if the SMS message box interface is
  * indeed online at a given time. In case of ambiguity when looking for
- * a MessageBox interface by logical name, no error is notified: the first instance
+ * a SMS message box interface by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
@@ -1600,10 +1600,10 @@ int YMessageBox::set_command(const string& newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the MessageBox interface, for instance
+ * @param func : a string that uniquely characterizes the SMS message box interface, for instance
  *         YHUBGSM1.messageBox.
  *
- * @return a YMessageBox object allowing you to drive the MessageBox interface.
+ * @return a YMessageBox object allowing you to drive the SMS message box interface.
  */
 YMessageBox* YMessageBox::FindMessageBox(string func)
 {
@@ -2275,7 +2275,7 @@ YMessageBox *YMessageBox::nextMessageBox(void)
     return YMessageBox::FindMessageBox(hwid);
 }
 
-YMessageBox* YMessageBox::FirstMessageBox(void)
+YMessageBox *YMessageBox::FirstMessageBox(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

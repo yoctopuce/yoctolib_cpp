@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 32716 2018-10-19 15:54:48Z seb $
+ *  $Id: main.cpp 38820 2019-12-18 18:01:14Z seb $
  *
  *  An example that show how to use a  Yocto-WatchdogDC
  *
@@ -42,19 +42,19 @@ int main(int argc, const char * argv[])
   state = argv[2];
 
   // Setup the API to use local USB devices
-  if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
+  if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
     cerr << "RegisterHub error: " << errmsg << endl;
     return 1;
   }
 
   if (target == "any") {
-    watchdog = yFirstWatchdog();
+    watchdog = YWatchdog::FirstWatchdog();
     if (watchdog == NULL) {
       cout << "No module connected (check USB cable)" << endl;
       return 1;
     }
   } else {
-    watchdog =  yFindWatchdog(target + ".watchdog1");
+    watchdog =  YWatchdog::FindWatchdog(target + ".watchdog1");
   }
 
   if (watchdog->isOnline()) {
@@ -64,7 +64,7 @@ int main(int argc, const char * argv[])
   } else {
     cout << "Module not connected (check identification and USB cable)" << endl;
   }
-  yFreeAPI();
+  YAPI::FreeAPI();
 
   return 0;
 }

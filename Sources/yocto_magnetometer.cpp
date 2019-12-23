@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_magnetometer.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_magnetometer.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindMagnetometer(), the high-level API for Magnetometer functions
  *
@@ -72,7 +72,7 @@ const double YMagnetometer::XVALUE_INVALID = YAPI_INVALID_DOUBLE;
 const double YMagnetometer::YVALUE_INVALID = YAPI_INVALID_DOUBLE;
 const double YMagnetometer::ZVALUE_INVALID = YAPI_INVALID_DOUBLE;
 
-int YMagnetometer::_parseAttr(YJSONObject* json_val)
+int YMagnetometer::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("bandwidth")) {
         _bandwidth =  json_val->getInt("bandwidth");
@@ -370,7 +370,7 @@ YMagnetometer *YMagnetometer::nextMagnetometer(void)
     return YMagnetometer::FindMagnetometer(hwid);
 }
 
-YMagnetometer* YMagnetometer::FirstMagnetometer(void)
+YMagnetometer *YMagnetometer::FirstMagnetometer(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

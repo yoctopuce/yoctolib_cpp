@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_refframe.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_refframe.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -83,7 +83,7 @@ YRefFrame::~YRefFrame()
 const double YRefFrame::BEARING_INVALID = YAPI_INVALID_DOUBLE;
 const string YRefFrame::CALIBRATIONPARAM_INVALID = YAPI_INVALID_STRING;
 
-int YRefFrame::_parseAttr(YJSONObject* json_val)
+int YRefFrame::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("mountPos")) {
         _mountPos =  json_val->getInt("mountPos");
@@ -1063,7 +1063,7 @@ YRefFrame *YRefFrame::nextRefFrame(void)
     return YRefFrame::FindRefFrame(hwid);
 }
 
-YRefFrame* YRefFrame::FirstRefFrame(void)
+YRefFrame *YRefFrame::FirstRefFrame(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_buzzer.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_buzzer.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindBuzzer(), the high-level API for Buzzer functions
  *
@@ -72,7 +72,7 @@ YBuzzer::~YBuzzer()
 const double YBuzzer::FREQUENCY_INVALID = YAPI_INVALID_DOUBLE;
 const string YBuzzer::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YBuzzer::_parseAttr(YJSONObject* json_val)
+int YBuzzer::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("frequency")) {
         _frequency =  floor(json_val->getDouble("frequency") * 1000.0 / 65536.0 + 0.5) / 1000.0;
@@ -786,7 +786,7 @@ YBuzzer *YBuzzer::nextBuzzer(void)
     return YBuzzer::FindBuzzer(hwid);
 }
 
-YBuzzer* YBuzzer::FirstBuzzer(void)
+YBuzzer *YBuzzer::FirstBuzzer(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

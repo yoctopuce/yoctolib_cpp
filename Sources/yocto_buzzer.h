@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_buzzer.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_buzzer.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindBuzzer(), the high-level API for Buzzer functions
  *
@@ -64,9 +64,9 @@ typedef void (*YBuzzerValueCallback)(YBuzzer *func, const string& functionValue)
 
 //--- (YBuzzer declaration)
 /**
- * YBuzzer Class: Buzzer function interface
+ * YBuzzer Class: buzzer control interface, available for instance in the Yocto-Buzzer
  *
- * The YBuzzer class allows you to drive a buzzer, for instance using a Yocto-Buzzer. You can
+ * The YBuzzer class allows you to drive a buzzer. You can
  * choose the frequency and the volume at which the buzzer must sound.
  * You can also pre-program a play sequence.
  */
@@ -90,7 +90,7 @@ protected:
     friend YBuzzer *yFirstBuzzer(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindBuzzer factory function to instantiate
     YBuzzer(const string& func);
@@ -405,7 +405,7 @@ public:
     virtual int         playNotes(string notes);
 
 
-    inline static YBuzzer* Find(string func)
+    inline static YBuzzer *Find(string func)
     { return YBuzzer::FindBuzzer(func); }
 
     /**
@@ -431,8 +431,8 @@ public:
      *         the first buzzer currently online, or a NULL pointer
      *         if there are none.
      */
-           static YBuzzer* FirstBuzzer(void);
-    inline static YBuzzer* First(void)
+           static YBuzzer *FirstBuzzer(void);
+    inline static YBuzzer *First(void)
     { return YBuzzer::FirstBuzzer();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -470,7 +470,7 @@ public:
  *
  * @return a YBuzzer object allowing you to drive the buzzer.
  */
-inline YBuzzer* yFindBuzzer(const string& func)
+inline YBuzzer *yFindBuzzer(const string& func)
 { return YBuzzer::FindBuzzer(func);}
 /**
  * Starts the enumeration of buzzers currently accessible.
@@ -481,7 +481,7 @@ inline YBuzzer* yFindBuzzer(const string& func)
  *         the first buzzer currently online, or a NULL pointer
  *         if there are none.
  */
-inline YBuzzer* yFirstBuzzer(void)
+inline YBuzzer *yFirstBuzzer(void)
 { return YBuzzer::FirstBuzzer();}
 
 //--- (end of YBuzzer functions declaration)

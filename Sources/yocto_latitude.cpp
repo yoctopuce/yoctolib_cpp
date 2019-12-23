@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_latitude.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_latitude.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindLatitude(), the high-level API for Latitude functions
  *
@@ -199,7 +199,7 @@ YLatitude *YLatitude::nextLatitude(void)
     return YLatitude::FindLatitude(hwid);
 }
 
-YLatitude* YLatitude::FirstLatitude(void)
+YLatitude *YLatitude::FirstLatitude(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

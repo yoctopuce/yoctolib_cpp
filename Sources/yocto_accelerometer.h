@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_accelerometer.h 38030 2019-11-04 17:56:01Z mvuilleu $
+ *  $Id: yocto_accelerometer.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindAccelerometer(), the high-level API for Accelerometer functions
  *
@@ -72,12 +72,13 @@ typedef enum {
 
 //--- (YAccelerometer declaration)
 /**
- * YAccelerometer Class: Accelerometer function interface
+ * YAccelerometer Class: accelerometer control interface, available for instance in the Yocto-3D-V2
  *
- * The YAccelerometer class allows you to read and configure Yoctopuce acceleration
- * sensors, for instance using a Yocto-3D-V2. It inherits from YSensor class the core functions to
- * read measurements,
- * to register callback functions, to access the autonomous datalogger.
+ * The YAccelerometer class allows you to read and configure Yoctopuce accelerometers.
+ * It inherits from YSensor class the core functions to read measurements,
+ * to register callback functions, and to access the autonomous datalogger.
+ * This class adds the possibility to access x, y and z components of the acceleration
+ * vector separately.
  */
 class YOCTO_CLASS_EXPORT YAccelerometer: public YSensor {
 #ifdef __BORLANDC__
@@ -99,7 +100,7 @@ protected:
     friend YAccelerometer *yFirstAccelerometer(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindAccelerometer factory function to instantiate
     YAccelerometer(const string& func);
@@ -253,7 +254,7 @@ public:
     virtual int         _invokeTimedReportCallback(YMeasure value);
 
 
-    inline static YAccelerometer* Find(string func)
+    inline static YAccelerometer *Find(string func)
     { return YAccelerometer::FindAccelerometer(func); }
 
     /**
@@ -279,8 +280,8 @@ public:
      *         the first accelerometer currently online, or a NULL pointer
      *         if there are none.
      */
-           static YAccelerometer* FirstAccelerometer(void);
-    inline static YAccelerometer* First(void)
+           static YAccelerometer *FirstAccelerometer(void);
+    inline static YAccelerometer *First(void)
     { return YAccelerometer::FirstAccelerometer();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -318,7 +319,7 @@ public:
  *
  * @return a YAccelerometer object allowing you to drive the accelerometer.
  */
-inline YAccelerometer* yFindAccelerometer(const string& func)
+inline YAccelerometer *yFindAccelerometer(const string& func)
 { return YAccelerometer::FindAccelerometer(func);}
 /**
  * Starts the enumeration of accelerometers currently accessible.
@@ -329,7 +330,7 @@ inline YAccelerometer* yFindAccelerometer(const string& func)
  *         the first accelerometer currently online, or a NULL pointer
  *         if there are none.
  */
-inline YAccelerometer* yFirstAccelerometer(void)
+inline YAccelerometer *yFirstAccelerometer(void)
 { return YAccelerometer::FirstAccelerometer();}
 
 //--- (end of YAccelerometer functions declaration)

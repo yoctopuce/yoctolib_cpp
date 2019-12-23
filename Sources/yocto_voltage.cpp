@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_voltage.cpp 38510 2019-11-26 15:36:38Z mvuilleu $
+ *  $Id: yocto_voltage.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindVoltage(), the high-level API for Voltage functions
  *
@@ -66,7 +66,7 @@ YVoltage::~YVoltage()
 //--- (YVoltage implementation)
 // static attributes
 
-int YVoltage::_parseAttr(YJSONObject* json_val)
+int YVoltage::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("enabled")) {
         _enabled =  (Y_ENABLED_enum)json_val->getInt("enabled");
@@ -268,7 +268,7 @@ YVoltage *YVoltage::nextVoltage(void)
     return YVoltage::FindVoltage(hwid);
 }
 
-YVoltage* YVoltage::FirstVoltage(void)
+YVoltage *YVoltage::FirstVoltage(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 32619 2018-10-10 12:22:50Z seb $
+ *  $Id: main.cpp 38820 2019-12-18 18:01:14Z seb $
  *
  *  Doc-SaveSettings example
  *
@@ -28,7 +28,7 @@ int main(int argc, const char * argv[])
   string      errmsg;
 
   // Setup the API to use local USB devices
-  if(yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
+  if(YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
     cerr << "RegisterHub error: " << errmsg << endl;
     return 1;
   }
@@ -36,7 +36,7 @@ int main(int argc, const char * argv[])
   if(argc < 2)
     usage(argv[0]);
 
-  YModule *module = yFindModule(argv[1]);  // use serial or logical name
+  YModule *module = YModule::FindModule(argv[1]);  // use serial or logical name
 
   if (module->isOnline()) {
     if (argc >= 3) {
@@ -53,6 +53,6 @@ int main(int argc, const char * argv[])
     cout << argv[1] << " not connected (check identification and USB cable)"
          << endl;
   }
-  yFreeAPI();
+  YAPI::FreeAPI();
   return 0;
 }

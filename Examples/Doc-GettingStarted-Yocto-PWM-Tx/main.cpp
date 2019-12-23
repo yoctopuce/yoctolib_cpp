@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 32619 2018-10-10 12:22:50Z seb $
+ *  $Id: main.cpp 38820 2019-12-18 18:01:14Z seb $
  *
  *  An example that show how to use a  Yocto-PWM-Tx
  *
@@ -27,8 +27,8 @@ static void usage(void)
        << endl;
   cout << "       <frequency>: integer between 1Hz and 1000000Hz" << endl;
   cout << "       <dutyCycle>: floating point number between 0.0 and 100.0" << endl;
-  u64 now = yGetTickCount();
-  while (yGetTickCount() - now < 3000) {
+  u64 now = YAPI::GetTickCount();
+  while (YAPI::GetTickCount() - now < 3000) {
     // wait 3 sec to show the message
   }
   exit(1);
@@ -51,21 +51,21 @@ int main(int argc, const char * argv[])
   dutyCycle = atof(argv[3]);
 
   // Setup the API to use local USB devices
-  if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
+  if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
     cerr << "RegisterHub error: " << errmsg << endl;
     return 1;
   }
 
   if (target == "any") {
-    YPwmOutput *pwmoutput = yFirstPwmOutput();
+    YPwmOutput *pwmoutput = YPwmOutput::FirstPwmOutput();
     if (pwmoutput == NULL) {
       cout << "No module connected (check USB cable)" << endl;
       return 1;
     }
     target = pwmoutput->module()->get_serialNumber();
   }
-  pwmoutput1 =  yFindPwmOutput(target + ".pwmOutput1");
-  pwmoutput2 =  yFindPwmOutput(target + ".pwmOutput2");
+  pwmoutput1 =  YPwmOutput::FindPwmOutput(target + ".pwmOutput1");
+  pwmoutput2 =  YPwmOutput::FindPwmOutput(target + ".pwmOutput2");
 
   if (pwmoutput1->isOnline()) {
     // output 1 : immediate change
@@ -79,7 +79,7 @@ int main(int argc, const char * argv[])
   } else {
     cout << "Module not connected (check identification and USB cable)" << endl;
   }
-  yFreeAPI();
+  YAPI::FreeAPI();
 
   return 0;
 }

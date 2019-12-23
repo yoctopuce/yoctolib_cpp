@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_poweroutput.h 38510 2019-11-26 15:36:38Z mvuilleu $
+ *  $Id: yocto_poweroutput.h 38913 2019-12-20 18:59:49Z mvuilleu $
  *
  *  Declares yFindPowerOutput(), the high-level API for PowerOutput functions
  *
@@ -69,10 +69,11 @@ typedef enum {
 
 //--- (YPowerOutput declaration)
 /**
- * YPowerOutput Class: External power supply control interface
+ * YPowerOutput Class: power output control interface, available for instance in the Yocto-I2C, the
+ * Yocto-MaxiMicroVolt-Rx, the Yocto-SPI or the Yocto-Serial
  *
- * Yoctopuce application programming interface allows you to control
- * the power output featured on some devices such as the Yocto-Serial.
+ * The YPowerOutput class allows you to control
+ * the power output featured on some Yoctopuce devices.
  */
 class YOCTO_CLASS_EXPORT YPowerOutput: public YFunction {
 #ifdef __BORLANDC__
@@ -89,7 +90,7 @@ protected:
     friend YPowerOutput *yFirstPowerOutput(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindPowerOutput factory function to instantiate
     YPowerOutput(const string& func);
@@ -137,7 +138,7 @@ public:
     { return this->set_voltage(newval); }
 
     /**
-     * Retrieves a dual power  output control for a given identifier.
+     * Retrieves a power output for a given identifier.
      * The identifier can be specified using several formats:
      * <ul>
      * <li>FunctionLogicalName</li>
@@ -147,11 +148,11 @@ public:
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
      *
-     * This function does not require that the power output control is online at the time
+     * This function does not require that the power output is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YPowerOutput.isOnline() to test if the power output control is
+     * Use the method YPowerOutput.isOnline() to test if the power output is
      * indeed online at a given time. In case of ambiguity when looking for
-     * a dual power  output control by logical name, no error is notified: the first instance
+     * a power output by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
      *
@@ -159,10 +160,10 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the power output control, for instance
+     * @param func : a string that uniquely characterizes the power output, for instance
      *         YI2CMK01.powerOutput.
      *
-     * @return a YPowerOutput object allowing you to drive the power output control.
+     * @return a YPowerOutput object allowing you to drive the power output.
      */
     static YPowerOutput* FindPowerOutput(string func);
 
@@ -183,34 +184,34 @@ public:
     virtual int         _invokeValueCallback(string value);
 
 
-    inline static YPowerOutput* Find(string func)
+    inline static YPowerOutput *Find(string func)
     { return YPowerOutput::FindPowerOutput(func); }
 
     /**
-     * Continues the enumeration of dual power output controls started using yFirstPowerOutput().
-     * Caution: You can't make any assumption about the returned dual power output controls order.
-     * If you want to find a specific a dual power  output control, use PowerOutput.findPowerOutput()
+     * Continues the enumeration of power output started using yFirstPowerOutput().
+     * Caution: You can't make any assumption about the returned power output order.
+     * If you want to find a specific a power output, use PowerOutput.findPowerOutput()
      * and a hardwareID or a logical name.
      *
      * @return a pointer to a YPowerOutput object, corresponding to
-     *         a dual power  output control currently online, or a NULL pointer
-     *         if there are no more dual power output controls to enumerate.
+     *         a power output currently online, or a NULL pointer
+     *         if there are no more power output to enumerate.
      */
            YPowerOutput    *nextPowerOutput(void);
     inline YPowerOutput    *next(void)
     { return this->nextPowerOutput();}
 
     /**
-     * Starts the enumeration of dual power output controls currently accessible.
+     * Starts the enumeration of power output currently accessible.
      * Use the method YPowerOutput.nextPowerOutput() to iterate on
-     * next dual power output controls.
+     * next power output.
      *
      * @return a pointer to a YPowerOutput object, corresponding to
-     *         the first dual power output control currently online, or a NULL pointer
+     *         the first power output currently online, or a NULL pointer
      *         if there are none.
      */
-           static YPowerOutput* FirstPowerOutput(void);
-    inline static YPowerOutput* First(void)
+           static YPowerOutput *FirstPowerOutput(void);
+    inline static YPowerOutput *First(void)
     { return YPowerOutput::FirstPowerOutput();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -221,7 +222,7 @@ public:
 //--- (YPowerOutput functions declaration)
 
 /**
- * Retrieves a dual power  output control for a given identifier.
+ * Retrieves a power output for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -231,11 +232,11 @@ public:
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that the power output control is online at the time
+ * This function does not require that the power output is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YPowerOutput.isOnline() to test if the power output control is
+ * Use the method YPowerOutput.isOnline() to test if the power output is
  * indeed online at a given time. In case of ambiguity when looking for
- * a dual power  output control by logical name, no error is notified: the first instance
+ * a power output by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
@@ -243,23 +244,23 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the power output control, for instance
+ * @param func : a string that uniquely characterizes the power output, for instance
  *         YI2CMK01.powerOutput.
  *
- * @return a YPowerOutput object allowing you to drive the power output control.
+ * @return a YPowerOutput object allowing you to drive the power output.
  */
-inline YPowerOutput* yFindPowerOutput(const string& func)
+inline YPowerOutput *yFindPowerOutput(const string& func)
 { return YPowerOutput::FindPowerOutput(func);}
 /**
- * Starts the enumeration of dual power output controls currently accessible.
+ * Starts the enumeration of power output currently accessible.
  * Use the method YPowerOutput.nextPowerOutput() to iterate on
- * next dual power output controls.
+ * next power output.
  *
  * @return a pointer to a YPowerOutput object, corresponding to
- *         the first dual power output control currently online, or a NULL pointer
+ *         the first power output currently online, or a NULL pointer
  *         if there are none.
  */
-inline YPowerOutput* yFirstPowerOutput(void)
+inline YPowerOutput *yFirstPowerOutput(void)
 { return YPowerOutput::FirstPowerOutput();}
 
 //--- (end of YPowerOutput functions declaration)

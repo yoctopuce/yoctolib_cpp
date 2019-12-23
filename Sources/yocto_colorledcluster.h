@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_colorledcluster.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_colorledcluster.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -71,11 +71,11 @@ typedef enum {
 
 //--- (YColorLedCluster declaration)
 /**
- * YColorLedCluster Class: ColorLedCluster function interface
+ * YColorLedCluster Class: RGB LED cluster control interface, available for instance in the Yocto-Color-V2
  *
  * The YColorLedCluster class allows you to drive a
- * color LED cluster, for instance using a Yocto-Color-V2. Unlike the ColorLed class, the ColorLedCluster
- * allows to handle several LEDs at one. Color changes can be done using RGB
+ * color LED cluster. Unlike the ColorLed class, the YColorLedCluster
+ * class allows to handle several LEDs at once. Color changes can be done using RGB
  * coordinates as well as HSL coordinates.
  * The module performs all conversions form RGB to HSL automatically. It is then
  * self-evident to turn on a LED with a given hue and to progressively vary its
@@ -102,7 +102,7 @@ protected:
     friend YColorLedCluster *yFirstColorLedCluster(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindColorLedCluster factory function to instantiate
     YColorLedCluster(const string& func);
@@ -812,7 +812,7 @@ public:
     virtual int         hsl2rgb(int hslValue);
 
 
-    inline static YColorLedCluster* Find(string func)
+    inline static YColorLedCluster *Find(string func)
     { return YColorLedCluster::FindColorLedCluster(func); }
 
     /**
@@ -838,8 +838,8 @@ public:
      *         the first RGB LED cluster currently online, or a NULL pointer
      *         if there are none.
      */
-           static YColorLedCluster* FirstColorLedCluster(void);
-    inline static YColorLedCluster* First(void)
+           static YColorLedCluster *FirstColorLedCluster(void);
+    inline static YColorLedCluster *First(void)
     { return YColorLedCluster::FirstColorLedCluster();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -877,7 +877,7 @@ public:
  *
  * @return a YColorLedCluster object allowing you to drive the RGB LED cluster.
  */
-inline YColorLedCluster* yFindColorLedCluster(const string& func)
+inline YColorLedCluster *yFindColorLedCluster(const string& func)
 { return YColorLedCluster::FindColorLedCluster(func);}
 /**
  * Starts the enumeration of RGB LED clusters currently accessible.
@@ -888,7 +888,7 @@ inline YColorLedCluster* yFindColorLedCluster(const string& func)
  *         the first RGB LED cluster currently online, or a NULL pointer
  *         if there are none.
  */
-inline YColorLedCluster* yFirstColorLedCluster(void)
+inline YColorLedCluster *yFirstColorLedCluster(void)
 { return YColorLedCluster::FirstColorLedCluster();}
 
 //--- (end of YColorLedCluster functions declaration)

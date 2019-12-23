@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_led.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_led.cpp 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Implements yFindLed(), the high-level API for Led functions
  *
@@ -67,7 +67,7 @@ YLed::~YLed()
 //--- (YLed implementation)
 // static attributes
 
-int YLed::_parseAttr(YJSONObject* json_val)
+int YLed::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("power")) {
         _power =  (Y_POWER_enum)json_val->getInt("power");
@@ -248,7 +248,7 @@ int YLed::set_blinking(Y_BLINKING_enum newval)
 }
 
 /**
- * Retrieves a LED for a given identifier.
+ * Retrieves a monochrome LED for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -258,11 +258,11 @@ int YLed::set_blinking(Y_BLINKING_enum newval)
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that the LED is online at the time
+ * This function does not require that the monochrome LED is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YLed.isOnline() to test if the LED is
+ * Use the method YLed.isOnline() to test if the monochrome LED is
  * indeed online at a given time. In case of ambiguity when looking for
- * a LED by logical name, no error is notified: the first instance
+ * a monochrome LED by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
@@ -270,10 +270,10 @@ int YLed::set_blinking(Y_BLINKING_enum newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the LED, for instance
+ * @param func : a string that uniquely characterizes the monochrome LED, for instance
  *         YBUZZER2.led1.
  *
- * @return a YLed object allowing you to drive the LED.
+ * @return a YLed object allowing you to drive the monochrome LED.
  */
 YLed* YLed::FindLed(string func)
 {
@@ -346,7 +346,7 @@ YLed *YLed::nextLed(void)
     return YLed::FindLed(hwid);
 }
 
-YLed* YLed::FirstLed(void)
+YLed *YLed::FirstLed(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_colorled.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_colorled.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -76,7 +76,7 @@ const YMove YColorLed::RGBMOVE_INVALID = YMove();
 const YMove YColorLed::HSLMOVE_INVALID = YMove();
 const string YColorLed::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YColorLed::_parseAttr(YJSONObject* json_val)
+int YColorLed::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("rgbColor")) {
         _rgbColor =  json_val->getInt("rgbColor");
@@ -699,7 +699,7 @@ YColorLed *YColorLed::nextColorLed(void)
     return YColorLed::FindColorLed(hwid);
 }
 
-YColorLed* YColorLed::FirstColorLed(void)
+YColorLed *YColorLed::FirstColorLed(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

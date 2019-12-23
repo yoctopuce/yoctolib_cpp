@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_latitude.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_latitude.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindLatitude(), the high-level API for Latitude functions
  *
@@ -60,12 +60,11 @@ typedef void (*YLatitudeTimedReportCallback)(YLatitude *func, YMeasure measure);
 
 //--- (YLatitude declaration)
 /**
- * YLatitude Class: Latitude function interface
+ * YLatitude Class: latitude sensor control interface, available for instance in the Yocto-GPS
  *
- * The YLatitude class allows you to read the latitude from Yoctopuce
- * geolocation sensors, for instance using a Yocto-GPS. It inherits from the YSensor class the core functions to
- * read measurements, to register callback functions, to access the autonomous
- * datalogger.
+ * The YLatitude class allows you to read and configure Yoctopuce latitude sensors.
+ * It inherits from YSensor class the core functions to read measurements,
+ * to register callback functions, and to access the autonomous datalogger.
  */
 class YOCTO_CLASS_EXPORT YLatitude: public YSensor {
 #ifdef __BORLANDC__
@@ -153,7 +152,7 @@ public:
     virtual int         _invokeTimedReportCallback(YMeasure value);
 
 
-    inline static YLatitude* Find(string func)
+    inline static YLatitude *Find(string func)
     { return YLatitude::FindLatitude(func); }
 
     /**
@@ -179,8 +178,8 @@ public:
      *         the first latitude sensor currently online, or a NULL pointer
      *         if there are none.
      */
-           static YLatitude* FirstLatitude(void);
-    inline static YLatitude* First(void)
+           static YLatitude *FirstLatitude(void);
+    inline static YLatitude *First(void)
     { return YLatitude::FirstLatitude();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -218,7 +217,7 @@ public:
  *
  * @return a YLatitude object allowing you to drive the latitude sensor.
  */
-inline YLatitude* yFindLatitude(const string& func)
+inline YLatitude *yFindLatitude(const string& func)
 { return YLatitude::FindLatitude(func);}
 /**
  * Starts the enumeration of latitude sensors currently accessible.
@@ -229,7 +228,7 @@ inline YLatitude* yFindLatitude(const string& func)
  *         the first latitude sensor currently online, or a NULL pointer
  *         if there are none.
  */
-inline YLatitude* yFirstLatitude(void)
+inline YLatitude *yFirstLatitude(void)
 { return YLatitude::FirstLatitude();}
 
 //--- (end of YLatitude functions declaration)

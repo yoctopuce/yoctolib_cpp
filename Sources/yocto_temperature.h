@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_temperature.h 38510 2019-11-26 15:36:38Z mvuilleu $
+ *  $Id: yocto_temperature.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindTemperature(), the high-level API for Temperature functions
  *
@@ -86,14 +86,14 @@ typedef enum {
 
 //--- (YTemperature declaration)
 /**
- * YTemperature Class: Temperature function interface
+ * YTemperature Class: temperature sensor control interface, available for instance in the
+ * Yocto-Meteo-V2, the Yocto-PT100, the Yocto-Temperature or the Yocto-Thermocouple
  *
- * The YTemperature class allows you to read and configure Yoctopuce temperature
- * sensors, for instance using a Yocto-Meteo-V2, a Yocto-PT100, a Yocto-Temperature or a
- * Yocto-Thermocouple. It inherits from YSensor class the core functions to read measurements, to
- * register callback functions, to access the autonomous datalogger.
- * This class adds the ability to configure some specific parameters for some
- * sensors (connection type, temperature mapping table).
+ * The YTemperature class allows you to read and configure Yoctopuce temperature sensors.
+ * It inherits from YSensor class the core functions to read measurements,
+ * to register callback functions, and to access the autonomous datalogger.
+ * This class adds the ability to configure some specific parameters
+ * for some sensors (connection type, temperature mapping table).
  */
 class YOCTO_CLASS_EXPORT YTemperature: public YSensor {
 #ifdef __BORLANDC__
@@ -114,7 +114,7 @@ protected:
     friend YTemperature *yFirstTemperature(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindTemperature factory function to instantiate
     YTemperature(const string& func);
@@ -354,7 +354,7 @@ public:
     virtual int         loadThermistorResponseTable(vector<double>& tempValues,vector<double>& resValues);
 
 
-    inline static YTemperature* Find(string func)
+    inline static YTemperature *Find(string func)
     { return YTemperature::FindTemperature(func); }
 
     /**
@@ -380,8 +380,8 @@ public:
      *         the first temperature sensor currently online, or a NULL pointer
      *         if there are none.
      */
-           static YTemperature* FirstTemperature(void);
-    inline static YTemperature* First(void)
+           static YTemperature *FirstTemperature(void);
+    inline static YTemperature *First(void)
     { return YTemperature::FirstTemperature();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -419,7 +419,7 @@ public:
  *
  * @return a YTemperature object allowing you to drive the temperature sensor.
  */
-inline YTemperature* yFindTemperature(const string& func)
+inline YTemperature *yFindTemperature(const string& func)
 { return YTemperature::FindTemperature(func);}
 /**
  * Starts the enumeration of temperature sensors currently accessible.
@@ -430,7 +430,7 @@ inline YTemperature* yFindTemperature(const string& func)
  *         the first temperature sensor currently online, or a NULL pointer
  *         if there are none.
  */
-inline YTemperature* yFirstTemperature(void)
+inline YTemperature *yFirstTemperature(void)
 { return YTemperature::FirstTemperature();}
 
 //--- (end of YTemperature functions declaration)

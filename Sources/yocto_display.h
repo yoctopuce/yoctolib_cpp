@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.h 38510 2019-11-26 15:36:38Z mvuilleu $
+ * $Id: yocto_display.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  * Declares yFindDisplay(), the high-level API for Display functions
  *
@@ -117,10 +117,10 @@ class YDisplay;
 
 //--- (generated code: YDisplayLayer declaration)
 /**
- * YDisplayLayer Class: DisplayLayer object interface
+ * YDisplayLayer Class: Interface for drawing into display layers, obtained by calling display.get_displayLayer.
  *
- * A DisplayLayer is an image layer containing objects to display
- * (bitmaps, text, etc.). The content is displayed only when
+ * Each DisplayLayer represents an image layer containing objects
+ * to display (bitmaps, text, etc.). The content is displayed only when
  * the layer is active on the screen (and not masked by other
  * overlapping layers).
  */
@@ -576,15 +576,20 @@ public:
 
 //--- (generated code: YDisplay declaration)
 /**
- * YDisplay Class: Display function interface
+ * YDisplay Class: display control interface, available for instance in the Yocto-Display, the
+ * Yocto-MaxiDisplay, the Yocto-MaxiDisplay-G or the Yocto-MiniDisplay
  *
- * The YDisplay class allows to drive Yoctopuce displays, for instance using a Yocto-Display, a
- * Yocto-MaxiDisplay, a Yocto-MaxiDisplay-G or a Yocto-MiniDisplay.
+ * The YDisplay class allows to drive Yoctopuce displays.
  * Yoctopuce display interface has been designed to easily
  * show information and images. The device provides built-in
  * multi-layer rendering. Layers can be drawn offline, individually,
  * and freely moved on the display. It can also replay recorded
  * sequences (animations).
+ *
+ * In order to draw on the screen, you should use the
+ * display.get_displayLayer method to retrieve the layer(s) on
+ * which you want to draw, and then use methods defined in
+ * YDisplayLayer to draw on the layers.
  */
 class YOCTO_CLASS_EXPORT YDisplay: public YFunction {
 #ifdef __BORLANDC__
@@ -610,7 +615,7 @@ class YOCTO_CLASS_EXPORT YDisplay: public YFunction {
     friend YDisplay *yFirstDisplay(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindDisplay factory function to instantiate
     YDisplay(const string& func);
@@ -1016,7 +1021,7 @@ public:
     virtual int         swapLayerContent(int layerIdA,int layerIdB);
 
 
-    inline static YDisplay* Find(string func)
+    inline static YDisplay *Find(string func)
     { return YDisplay::FindDisplay(func); }
 
     /**
@@ -1042,8 +1047,8 @@ public:
      *         the first display currently online, or a NULL pointer
      *         if there are none.
      */
-           static YDisplay* FirstDisplay(void);
-    inline static YDisplay* First(void)
+           static YDisplay *FirstDisplay(void);
+    inline static YDisplay *First(void)
     { return YDisplay::FirstDisplay();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -1106,7 +1111,7 @@ public:
  *
  * @return a YDisplay object allowing you to drive the display.
  */
-inline YDisplay* yFindDisplay(const string& func)
+inline YDisplay *yFindDisplay(const string& func)
 { return YDisplay::FindDisplay(func);}
 /**
  * Starts the enumeration of displays currently accessible.
@@ -1117,7 +1122,7 @@ inline YDisplay* yFindDisplay(const string& func)
  *         the first display currently online, or a NULL pointer
  *         if there are none.
  */
-inline YDisplay* yFirstDisplay(void)
+inline YDisplay *yFirstDisplay(void)
 { return YDisplay::FirstDisplay();}
 
 //--- (end of generated code: YDisplay functions declaration)

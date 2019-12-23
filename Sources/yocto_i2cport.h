@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_i2cport.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_i2cport.h 38913 2019-12-20 18:59:49Z mvuilleu $
  *
  *  Declares yFindI2cPort(), the high-level API for I2cPort functions
  *
@@ -71,6 +71,8 @@ typedef enum {
 #define Y_LASTMSG_INVALID               (YAPI_INVALID_STRING)
 #define Y_CURRENTJOB_INVALID            (YAPI_INVALID_STRING)
 #define Y_STARTUPJOB_INVALID            (YAPI_INVALID_STRING)
+#define Y_JOBMAXTASK_INVALID            (YAPI_INVALID_UINT)
+#define Y_JOBMAXSIZE_INVALID            (YAPI_INVALID_UINT)
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 #define Y_PROTOCOL_INVALID              (YAPI_INVALID_STRING)
 #define Y_I2CMODE_INVALID               (YAPI_INVALID_STRING)
@@ -78,9 +80,9 @@ typedef enum {
 
 //--- (YI2cPort declaration)
 /**
- * YI2cPort Class: I2C Port function interface
+ * YI2cPort Class: I2C port control interface, available for instance in the Yocto-I2C
  *
- * The YI2cPort classe allows you to fully drive a Yoctopuce I2C port, for instance using a Yocto-I2C.
+ * The YI2cPort classe allows you to fully drive a Yoctopuce I2C port.
  * It can be used to send and receive data, and to configure communication
  * parameters (baud rate, etc).
  * Note that Yoctopuce I2C ports are not exposed as virtual COM ports.
@@ -102,6 +104,8 @@ protected:
     string          _lastMsg;
     string          _currentJob;
     string          _startupJob;
+    int             _jobMaxTask;
+    int             _jobMaxSize;
     string          _command;
     string          _protocol;
     Y_I2CVOLTAGELEVEL_enum _i2cVoltageLevel;
@@ -115,7 +119,7 @@ protected:
     friend YI2cPort *yFirstI2cPort(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindI2cPort factory function to instantiate
     YI2cPort(const string& func);
@@ -133,6 +137,8 @@ public:
     static const string LASTMSG_INVALID;
     static const string CURRENTJOB_INVALID;
     static const string STARTUPJOB_INVALID;
+    static const int JOBMAXTASK_INVALID = YAPI_INVALID_UINT;
+    static const int JOBMAXSIZE_INVALID = YAPI_INVALID_UINT;
     static const string COMMAND_INVALID;
     static const string PROTOCOL_INVALID;
     static const Y_I2CVOLTAGELEVEL_enum I2CVOLTAGELEVEL_OFF = Y_I2CVOLTAGELEVEL_OFF;
@@ -265,6 +271,30 @@ public:
     int             set_startupJob(const string& newval);
     inline int      setStartupJob(const string& newval)
     { return this->set_startupJob(newval); }
+
+    /**
+     * Returns the maximum number of tasks in a job that the device can handle.
+     *
+     * @return an integer corresponding to the maximum number of tasks in a job that the device can handle
+     *
+     * On failure, throws an exception or returns Y_JOBMAXTASK_INVALID.
+     */
+    int                 get_jobMaxTask(void);
+
+    inline int          jobMaxTask(void)
+    { return this->get_jobMaxTask(); }
+
+    /**
+     * Returns maximum size allowed for job files.
+     *
+     * @return an integer corresponding to maximum size allowed for job files
+     *
+     * On failure, throws an exception or returns Y_JOBMAXSIZE_INVALID.
+     */
+    int                 get_jobMaxSize(void);
+
+    inline int          jobMaxSize(void)
+    { return this->get_jobMaxSize(); }
 
     string              get_command(void);
 
@@ -689,7 +719,7 @@ public:
     virtual int         writeArray(vector<int> byteList);
 
 
-    inline static YI2cPort* Find(string func)
+    inline static YI2cPort *Find(string func)
     { return YI2cPort::FindI2cPort(func); }
 
     /**
@@ -715,8 +745,8 @@ public:
      *         the first I2C port currently online, or a NULL pointer
      *         if there are none.
      */
-           static YI2cPort* FirstI2cPort(void);
-    inline static YI2cPort* First(void)
+           static YI2cPort *FirstI2cPort(void);
+    inline static YI2cPort *First(void)
     { return YI2cPort::FirstI2cPort();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -754,7 +784,7 @@ public:
  *
  * @return a YI2cPort object allowing you to drive the I2C port.
  */
-inline YI2cPort* yFindI2cPort(const string& func)
+inline YI2cPort *yFindI2cPort(const string& func)
 { return YI2cPort::FindI2cPort(func);}
 /**
  * Starts the enumeration of I2C ports currently accessible.
@@ -765,7 +795,7 @@ inline YI2cPort* yFindI2cPort(const string& func)
  *         the first I2C port currently online, or a NULL pointer
  *         if there are none.
  */
-inline YI2cPort* yFirstI2cPort(void)
+inline YI2cPort *yFirstI2cPort(void)
 { return YI2cPort::FirstI2cPort();}
 
 //--- (end of YI2cPort functions declaration)

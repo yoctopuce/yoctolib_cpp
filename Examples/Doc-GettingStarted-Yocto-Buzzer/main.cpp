@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 32619 2018-10-10 12:22:50Z seb $
+ *  $Id: main.cpp 38820 2019-12-18 18:01:14Z seb $
  *
  *  An example that show how to use a  Yocto-Buzzer
  *
@@ -26,8 +26,8 @@ static void usage(void)
 {
   cout << "usage: demo <serial_number> " << endl;
   cout << "       demo any  (use any discovered device)" << endl;
-  u64 now = yGetTickCount();
-  while (yGetTickCount() - now < 3000) {
+  u64 now = YAPI::GetTickCount();
+  while (YAPI::GetTickCount() - now < 3000) {
     // wait 3 sec to show the message
   }
   exit(1);
@@ -49,19 +49,19 @@ int main(int argc, const char * argv[])
   target = (string) argv[1];
 
   // Setup the API to use local USB devices
-  if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
+  if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
     cerr << "RegisterHub error: " << errmsg << endl;
     return 1;
   }
 
   if (target == "any") {
-    buz = yFirstBuzzer();
+    buz = YBuzzer::FirstBuzzer();
     if (buz == NULL) {
       cout << "No module connected (check USB cable)" << endl;
       return 1;
     }
   } else {
-    buz = yFindBuzzer(target + ".buzzer");
+    buz = YBuzzer::FindBuzzer(target + ".buzzer");
   }
 
   if (!buz->isOnline()) {
@@ -70,10 +70,10 @@ int main(int argc, const char * argv[])
   }
   frequency = 1000;
   serial    = buz->get_module()->get_serialNumber();
-  led1      = yFindLed(serial + ".led1");
-  led2      = yFindLed(serial + ".led2");
-  button1   = yFindAnButton(serial + ".anButton1");
-  button2   = yFindAnButton(serial + ".anButton2");
+  led1      = YLed::FindLed(serial + ".led1");
+  led2      = YLed::FindLed(serial + ".led2");
+  button1   = YAnButton::FindAnButton(serial + ".anButton1");
+  button2   = YAnButton::FindAnButton(serial + ".anButton2");
 
   cout << "press a test button or hit Ctrl-C" << endl;
   while (1) {
@@ -100,6 +100,6 @@ int main(int argc, const char * argv[])
       led->set_power(YLed::POWER_OFF);
     }
   }
-  yFreeAPI();
+  YAPI::FreeAPI();
 }
 

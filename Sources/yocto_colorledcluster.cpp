@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_colorledcluster.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_colorledcluster.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -71,7 +71,7 @@ YColorLedCluster::~YColorLedCluster()
 // static attributes
 const string YColorLedCluster::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YColorLedCluster::_parseAttr(YJSONObject* json_val)
+int YColorLedCluster::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("activeLedCount")) {
         _activeLedCount =  json_val->getInt("activeLedCount");
@@ -1347,7 +1347,7 @@ YColorLedCluster *YColorLedCluster::nextColorLedCluster(void)
     return YColorLedCluster::FindColorLedCluster(hwid);
 }
 
-YColorLedCluster* YColorLedCluster::FirstColorLedCluster(void)
+YColorLedCluster *YColorLedCluster::FirstColorLedCluster(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_compass.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_compass.cpp 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Implements yFindCompass(), the high-level API for Compass functions
  *
@@ -69,7 +69,7 @@ YCompass::~YCompass()
 // static attributes
 const double YCompass::MAGNETICHEADING_INVALID = YAPI_INVALID_DOUBLE;
 
-int YCompass::_parseAttr(YJSONObject* json_val)
+int YCompass::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("bandwidth")) {
         _bandwidth =  json_val->getInt("bandwidth");
@@ -193,7 +193,7 @@ double YCompass::get_magneticHeading(void)
 }
 
 /**
- * Retrieves a compass for a given identifier.
+ * Retrieves a compass function for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -203,11 +203,11 @@ double YCompass::get_magneticHeading(void)
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that the compass is online at the time
+ * This function does not require that the compass function is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YCompass.isOnline() to test if the compass is
+ * Use the method YCompass.isOnline() to test if the compass function is
  * indeed online at a given time. In case of ambiguity when looking for
- * a compass by logical name, no error is notified: the first instance
+ * a compass function by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
@@ -215,10 +215,10 @@ double YCompass::get_magneticHeading(void)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the compass, for instance
+ * @param func : a string that uniquely characterizes the compass function, for instance
  *         Y3DMK002.compass.
  *
- * @return a YCompass object allowing you to drive the compass.
+ * @return a YCompass object allowing you to drive the compass function.
  */
 YCompass* YCompass::FindCompass(string func)
 {
@@ -325,7 +325,7 @@ YCompass *YCompass::nextCompass(void)
     return YCompass::FindCompass(hwid);
 }
 
-YCompass* YCompass::FirstCompass(void)
+YCompass *YCompass::FirstCompass(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

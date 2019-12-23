@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 32619 2018-10-10 12:22:50Z seb $
+ *  $Id: main.cpp 38820 2019-12-18 18:01:14Z seb $
  *
  *  An example that show how to use a  Yocto-Maxi-IO
  *
@@ -25,8 +25,8 @@ static void usage(void)
   cout << "usage: demo <serial_number>  " << endl;
   cout << "       demo <logical_name> " << endl;
   cout << "       demo any           (use any discovered device)" << endl;
-  u64 now = yGetTickCount();
-  while (yGetTickCount() - now < 3000) {
+  u64 now = YAPI::GetTickCount();
+  while (YAPI::GetTickCount() - now < 3000) {
     // wait 3 sec to show the message
   }
   exit(1);
@@ -44,20 +44,20 @@ int main(int argc, const char * argv[])
   target = (string) argv[1];
 
   // Setup the API to use local USB devices
-  if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
+  if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
     cerr << "RegisterHub error: " << errmsg << endl;
     return 1;
   }
 
   if (target == "any") {
     // try to find the first available digitial IO  feature
-    io =  yFirstDigitalIO();
+    io =  YDigitalIO::FirstDigitalIO();
     if (io == NULL) {
       cout << "No module connected (check USB cable)" << endl;
       return 1;
     }
   } else {
-    io =  yFindDigitalIO(target + ".digitalIO");
+    io =  YDigitalIO::FindDigitalIO(target + ".digitalIO");
   }
 
   // make sure the device is here
@@ -91,8 +91,8 @@ int main(int argc, const char * argv[])
     cout << "port value = " << line << endl;
     outputdata = (outputdata + 1) % 16; // cycle ouput 0..15
     io->set_portState(outputdata); // We could have used set_bitState as well
-    ySleep(1000, errmsg);
+    YAPI::Sleep(1000, errmsg);
   }
   cout << "Module disconnected" << endl;
-  yFreeAPI();
+  YAPI::FreeAPI();
 }

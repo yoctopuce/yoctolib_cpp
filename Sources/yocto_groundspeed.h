@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_groundspeed.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_groundspeed.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindGroundSpeed(), the high-level API for GroundSpeed functions
  *
@@ -60,12 +60,11 @@ typedef void (*YGroundSpeedTimedReportCallback)(YGroundSpeed *func, YMeasure mea
 
 //--- (YGroundSpeed declaration)
 /**
- * YGroundSpeed Class: GroundSpeed function interface
+ * YGroundSpeed Class: ground speed sensor control interface, available for instance in the Yocto-GPS
  *
- * The YGroundSpeed class allows you to read the ground speed from Yoctopuce
- * geolocation sensors, for instance using a Yocto-GPS. It inherits from the YSensor class the core functions to
- * read measurements, register callback functions, access the autonomous
- * datalogger.
+ * The YGroundSpeed class allows you to read and configure Yoctopuce ground speed sensors.
+ * It inherits from YSensor class the core functions to read measurements,
+ * to register callback functions, and to access the autonomous datalogger.
  */
 class YOCTO_CLASS_EXPORT YGroundSpeed: public YSensor {
 #ifdef __BORLANDC__
@@ -153,7 +152,7 @@ public:
     virtual int         _invokeTimedReportCallback(YMeasure value);
 
 
-    inline static YGroundSpeed* Find(string func)
+    inline static YGroundSpeed *Find(string func)
     { return YGroundSpeed::FindGroundSpeed(func); }
 
     /**
@@ -179,8 +178,8 @@ public:
      *         the first ground speed sensor currently online, or a NULL pointer
      *         if there are none.
      */
-           static YGroundSpeed* FirstGroundSpeed(void);
-    inline static YGroundSpeed* First(void)
+           static YGroundSpeed *FirstGroundSpeed(void);
+    inline static YGroundSpeed *First(void)
     { return YGroundSpeed::FirstGroundSpeed();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -218,7 +217,7 @@ public:
  *
  * @return a YGroundSpeed object allowing you to drive the ground speed sensor.
  */
-inline YGroundSpeed* yFindGroundSpeed(const string& func)
+inline YGroundSpeed *yFindGroundSpeed(const string& func)
 { return YGroundSpeed::FindGroundSpeed(func);}
 /**
  * Starts the enumeration of ground speed sensors currently accessible.
@@ -229,7 +228,7 @@ inline YGroundSpeed* yFindGroundSpeed(const string& func)
  *         the first ground speed sensor currently online, or a NULL pointer
  *         if there are none.
  */
-inline YGroundSpeed* yFirstGroundSpeed(void)
+inline YGroundSpeed *yFirstGroundSpeed(void)
 { return YGroundSpeed::FirstGroundSpeed();}
 
 //--- (end of YGroundSpeed functions declaration)

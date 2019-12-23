@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_longitude.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_longitude.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindLongitude(), the high-level API for Longitude functions
  *
@@ -199,7 +199,7 @@ YLongitude *YLongitude::nextLongitude(void)
     return YLongitude::FindLongitude(hwid);
 }
 
-YLongitude* YLongitude::FirstLongitude(void)
+YLongitude *YLongitude::FirstLongitude(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

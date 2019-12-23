@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_hubport.h 38510 2019-11-26 15:36:38Z mvuilleu $
+ *  $Id: yocto_hubport.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindHubPort(), the high-level API for HubPort functions
  *
@@ -81,11 +81,11 @@ typedef enum {
 
 //--- (YHubPort declaration)
 /**
- * YHubPort Class: Yocto-hub port interface
+ * YHubPort Class: YoctoHub slave port control interface, available for instance in the
+ * YoctoHub-Ethernet, the YoctoHub-GSM-3G-NA, the YoctoHub-Shield or the YoctoHub-Wireless-g
  *
- * The YHubPort class provides control over the power supply for every port
- * on a YoctoHub, for instance using a YoctoHub-Ethernet, a YoctoHub-GSM-3G-NA, a YoctoHub-Shield or a
- * YoctoHub-Wireless-g. It provide information about the device connected to it.
+ * The YHubPort class provides control over the power supply for slave ports
+ * on a YoctoHub. It provide information about the device connected to it.
  * The logical name of a YHubPort is always automatically set to the
  * unique serial number of the Yoctopuce device connected to it.
  */
@@ -106,7 +106,7 @@ protected:
     friend YHubPort *yFirstHubPort(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindHubPort factory function to instantiate
     YHubPort(const string& func);
@@ -128,9 +128,9 @@ public:
     static const int BAUDRATE_INVALID = YAPI_INVALID_UINT;
 
     /**
-     * Returns true if the Yocto-hub port is powered, false otherwise.
+     * Returns true if the YoctoHub port is powered, false otherwise.
      *
-     * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to true if the Yocto-hub port is
+     * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to true if the YoctoHub port is
      * powered, false otherwise
      *
      * On failure, throws an exception or returns Y_ENABLED_INVALID.
@@ -141,10 +141,10 @@ public:
     { return this->get_enabled(); }
 
     /**
-     * Changes the activation of the Yocto-hub port. If the port is enabled, the
+     * Changes the activation of the YoctoHub port. If the port is enabled, the
      * connected module is powered. Otherwise, port power is shut down.
      *
-     * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the activation of the Yocto-hub port
+     * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the activation of the YoctoHub port
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
@@ -155,10 +155,10 @@ public:
     { return this->set_enabled(newval); }
 
     /**
-     * Returns the current state of the Yocto-hub port.
+     * Returns the current state of the YoctoHub port.
      *
      * @return a value among Y_PORTSTATE_OFF, Y_PORTSTATE_OVRLD, Y_PORTSTATE_ON, Y_PORTSTATE_RUN and
-     * Y_PORTSTATE_PROG corresponding to the current state of the Yocto-hub port
+     * Y_PORTSTATE_PROG corresponding to the current state of the YoctoHub port
      *
      * On failure, throws an exception or returns Y_PORTSTATE_INVALID.
      */
@@ -168,11 +168,11 @@ public:
     { return this->get_portState(); }
 
     /**
-     * Returns the current baud rate used by this Yocto-hub port, in kbps.
+     * Returns the current baud rate used by this YoctoHub port, in kbps.
      * The default value is 1000 kbps, but a slower rate may be used if communication
      * problems are encountered.
      *
-     * @return an integer corresponding to the current baud rate used by this Yocto-hub port, in kbps
+     * @return an integer corresponding to the current baud rate used by this YoctoHub port, in kbps
      *
      * On failure, throws an exception or returns Y_BAUDRATE_INVALID.
      */
@@ -182,7 +182,7 @@ public:
     { return this->get_baudRate(); }
 
     /**
-     * Retrieves a Yocto-hub port for a given identifier.
+     * Retrieves a YoctoHub slave port for a given identifier.
      * The identifier can be specified using several formats:
      * <ul>
      * <li>FunctionLogicalName</li>
@@ -192,11 +192,11 @@ public:
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
      *
-     * This function does not require that the Yocto-hub port is online at the time
+     * This function does not require that the YoctoHub slave port is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YHubPort.isOnline() to test if the Yocto-hub port is
+     * Use the method YHubPort.isOnline() to test if the YoctoHub slave port is
      * indeed online at a given time. In case of ambiguity when looking for
-     * a Yocto-hub port by logical name, no error is notified: the first instance
+     * a YoctoHub slave port by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
      *
@@ -204,10 +204,10 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the Yocto-hub port, for instance
+     * @param func : a string that uniquely characterizes the YoctoHub slave port, for instance
      *         YHUBETH1.hubPort1.
      *
-     * @return a YHubPort object allowing you to drive the Yocto-hub port.
+     * @return a YHubPort object allowing you to drive the YoctoHub slave port.
      */
     static YHubPort*    FindHubPort(string func);
 
@@ -228,34 +228,34 @@ public:
     virtual int         _invokeValueCallback(string value);
 
 
-    inline static YHubPort* Find(string func)
+    inline static YHubPort *Find(string func)
     { return YHubPort::FindHubPort(func); }
 
     /**
-     * Continues the enumeration of Yocto-hub ports started using yFirstHubPort().
-     * Caution: You can't make any assumption about the returned Yocto-hub ports order.
-     * If you want to find a specific a Yocto-hub port, use HubPort.findHubPort()
+     * Continues the enumeration of YoctoHub slave ports started using yFirstHubPort().
+     * Caution: You can't make any assumption about the returned YoctoHub slave ports order.
+     * If you want to find a specific a YoctoHub slave port, use HubPort.findHubPort()
      * and a hardwareID or a logical name.
      *
      * @return a pointer to a YHubPort object, corresponding to
-     *         a Yocto-hub port currently online, or a NULL pointer
-     *         if there are no more Yocto-hub ports to enumerate.
+     *         a YoctoHub slave port currently online, or a NULL pointer
+     *         if there are no more YoctoHub slave ports to enumerate.
      */
            YHubPort        *nextHubPort(void);
     inline YHubPort        *next(void)
     { return this->nextHubPort();}
 
     /**
-     * Starts the enumeration of Yocto-hub ports currently accessible.
+     * Starts the enumeration of YoctoHub slave ports currently accessible.
      * Use the method YHubPort.nextHubPort() to iterate on
-     * next Yocto-hub ports.
+     * next YoctoHub slave ports.
      *
      * @return a pointer to a YHubPort object, corresponding to
-     *         the first Yocto-hub port currently online, or a NULL pointer
+     *         the first YoctoHub slave port currently online, or a NULL pointer
      *         if there are none.
      */
-           static YHubPort* FirstHubPort(void);
-    inline static YHubPort* First(void)
+           static YHubPort *FirstHubPort(void);
+    inline static YHubPort *First(void)
     { return YHubPort::FirstHubPort();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -266,7 +266,7 @@ public:
 //--- (YHubPort functions declaration)
 
 /**
- * Retrieves a Yocto-hub port for a given identifier.
+ * Retrieves a YoctoHub slave port for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -276,11 +276,11 @@ public:
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that the Yocto-hub port is online at the time
+ * This function does not require that the YoctoHub slave port is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YHubPort.isOnline() to test if the Yocto-hub port is
+ * Use the method YHubPort.isOnline() to test if the YoctoHub slave port is
  * indeed online at a given time. In case of ambiguity when looking for
- * a Yocto-hub port by logical name, no error is notified: the first instance
+ * a YoctoHub slave port by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
@@ -288,23 +288,23 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the Yocto-hub port, for instance
+ * @param func : a string that uniquely characterizes the YoctoHub slave port, for instance
  *         YHUBETH1.hubPort1.
  *
- * @return a YHubPort object allowing you to drive the Yocto-hub port.
+ * @return a YHubPort object allowing you to drive the YoctoHub slave port.
  */
-inline YHubPort* yFindHubPort(const string& func)
+inline YHubPort *yFindHubPort(const string& func)
 { return YHubPort::FindHubPort(func);}
 /**
- * Starts the enumeration of Yocto-hub ports currently accessible.
+ * Starts the enumeration of YoctoHub slave ports currently accessible.
  * Use the method YHubPort.nextHubPort() to iterate on
- * next Yocto-hub ports.
+ * next YoctoHub slave ports.
  *
  * @return a pointer to a YHubPort object, corresponding to
- *         the first Yocto-hub port currently online, or a NULL pointer
+ *         the first YoctoHub slave port currently online, or a NULL pointer
  *         if there are none.
  */
-inline YHubPort* yFirstHubPort(void)
+inline YHubPort *yFirstHubPort(void)
 { return YHubPort::FirstHubPort();}
 
 //--- (end of YHubPort functions declaration)

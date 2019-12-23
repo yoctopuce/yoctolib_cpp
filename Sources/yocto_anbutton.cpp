@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_anbutton.cpp 38510 2019-11-26 15:36:38Z mvuilleu $
+ *  $Id: yocto_anbutton.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindAnButton(), the high-level API for AnButton functions
  *
@@ -75,7 +75,7 @@ YAnButton::~YAnButton()
 //--- (YAnButton implementation)
 // static attributes
 
-int YAnButton::_parseAttr(YJSONObject* json_val)
+int YAnButton::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("calibratedValue")) {
         _calibratedValue =  json_val->getInt("calibratedValue");
@@ -687,7 +687,7 @@ YAnButton *YAnButton::nextAnButton(void)
     return YAnButton::FindAnButton(hwid);
 }
 
-YAnButton* YAnButton::FirstAnButton(void)
+YAnButton *YAnButton::FirstAnButton(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

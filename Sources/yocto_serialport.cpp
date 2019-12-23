@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 38239 2019-11-20 11:36:26Z seb $
+ * $Id: yocto_serialport.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -132,6 +132,8 @@ YSerialPort::YSerialPort(const string& func): YFunction(func)
     ,_lastMsg(LASTMSG_INVALID)
     ,_currentJob(CURRENTJOB_INVALID)
     ,_startupJob(STARTUPJOB_INVALID)
+    ,_jobMaxTask(JOBMAXTASK_INVALID)
+    ,_jobMaxSize(JOBMAXSIZE_INVALID)
     ,_command(COMMAND_INVALID)
     ,_protocol(PROTOCOL_INVALID)
     ,_voltageLevel(VOLTAGELEVEL_INVALID)
@@ -158,7 +160,7 @@ const string YSerialPort::COMMAND_INVALID = YAPI_INVALID_STRING;
 const string YSerialPort::PROTOCOL_INVALID = YAPI_INVALID_STRING;
 const string YSerialPort::SERIALMODE_INVALID = YAPI_INVALID_STRING;
 
-int YSerialPort::_parseAttr(YJSONObject* json_val)
+int YSerialPort::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("rxCount")) {
         _rxCount =  json_val->getInt("rxCount");
@@ -183,6 +185,12 @@ int YSerialPort::_parseAttr(YJSONObject* json_val)
     }
     if(json_val->has("startupJob")) {
         _startupJob =  json_val->getString("startupJob");
+    }
+    if(json_val->has("jobMaxTask")) {
+        _jobMaxTask =  json_val->getInt("jobMaxTask");
+    }
+    if(json_val->has("jobMaxSize")) {
+        _jobMaxSize =  json_val->getInt("jobMaxSize");
     }
     if(json_val->has("command")) {
         _command =  json_val->getString("command");
@@ -480,6 +488,64 @@ int YSerialPort::set_startupJob(const string& newval)
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the maximum number of tasks in a job that the device can handle.
+ *
+ * @return an integer corresponding to the maximum number of tasks in a job that the device can handle
+ *
+ * On failure, throws an exception or returns Y_JOBMAXTASK_INVALID.
+ */
+int YSerialPort::get_jobMaxTask(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration == 0) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSerialPort::JOBMAXTASK_INVALID;
+                }
+            }
+        }
+        res = _jobMaxTask;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns maximum size allowed for job files.
+ *
+ * @return an integer corresponding to maximum size allowed for job files
+ *
+ * On failure, throws an exception or returns Y_JOBMAXSIZE_INVALID.
+ */
+int YSerialPort::get_jobMaxSize(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration == 0) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSerialPort::JOBMAXSIZE_INVALID;
+                }
+            }
+        }
+        res = _jobMaxSize;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
     yLeaveCriticalSection(&_this_cs);
     return res;
@@ -2078,7 +2144,7 @@ YSerialPort *YSerialPort::nextSerialPort(void)
     return YSerialPort::FindSerialPort(hwid);
 }
 
-YSerialPort* YSerialPort::FirstSerialPort(void)
+YSerialPort *YSerialPort::FirstSerialPort(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_rangefinder.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_rangefinder.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindRangeFinder(), the high-level API for RangeFinder functions
  *
@@ -75,12 +75,11 @@ typedef enum {
 
 //--- (YRangeFinder declaration)
 /**
- * YRangeFinder Class: RangeFinder function interface
+ * YRangeFinder Class: range finder control interface, available for instance in the Yocto-RangeFinder
  *
- * The YRangeFinder class allows you to use and configure Yoctopuce range finder
- * sensors, for instance using a Yocto-RangeFinder. It inherits from the YSensor class the core
- * functions to read measurements,
- * register callback functions, access the autonomous datalogger.
+ * The YRangeFinder class allows you to read and configure Yoctopuce range finders.
+ * It inherits from YSensor class the core functions to read measurements,
+ * to register callback functions, and to access the autonomous datalogger.
  * This class adds the ability to easily perform a one-point linear calibration
  * to compensate the effect of a glass or filter placed in front of the sensor.
  */
@@ -105,7 +104,7 @@ protected:
     friend YRangeFinder *yFirstRangeFinder(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindRangeFinder factory function to instantiate
     YRangeFinder(const string& func);
@@ -382,7 +381,7 @@ public:
     virtual int         cancelCoverGlassCalibrations(void);
 
 
-    inline static YRangeFinder* Find(string func)
+    inline static YRangeFinder *Find(string func)
     { return YRangeFinder::FindRangeFinder(func); }
 
     /**
@@ -408,8 +407,8 @@ public:
      *         the first range finder currently online, or a NULL pointer
      *         if there are none.
      */
-           static YRangeFinder* FirstRangeFinder(void);
-    inline static YRangeFinder* First(void)
+           static YRangeFinder *FirstRangeFinder(void);
+    inline static YRangeFinder *First(void)
     { return YRangeFinder::FirstRangeFinder();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -447,7 +446,7 @@ public:
  *
  * @return a YRangeFinder object allowing you to drive the range finder.
  */
-inline YRangeFinder* yFindRangeFinder(const string& func)
+inline YRangeFinder *yFindRangeFinder(const string& func)
 { return YRangeFinder::FindRangeFinder(func);}
 /**
  * Starts the enumeration of range finders currently accessible.
@@ -458,7 +457,7 @@ inline YRangeFinder* yFindRangeFinder(const string& func)
  *         the first range finder currently online, or a NULL pointer
  *         if there are none.
  */
-inline YRangeFinder* yFirstRangeFinder(void)
+inline YRangeFinder *yFirstRangeFinder(void)
 { return YRangeFinder::FirstRangeFinder();}
 
 //--- (end of YRangeFinder functions declaration)

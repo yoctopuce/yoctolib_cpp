@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_poweroutput.cpp 38510 2019-11-26 15:36:38Z mvuilleu $
+ *  $Id: yocto_poweroutput.cpp 38913 2019-12-20 18:59:49Z mvuilleu $
  *
  *  Implements yFindPowerOutput(), the high-level API for PowerOutput functions
  *
@@ -65,7 +65,7 @@ YPowerOutput::~YPowerOutput()
 //--- (YPowerOutput implementation)
 // static attributes
 
-int YPowerOutput::_parseAttr(YJSONObject* json_val)
+int YPowerOutput::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("voltage")) {
         _voltage =  (Y_VOLTAGE_enum)json_val->getInt("voltage");
@@ -134,7 +134,7 @@ int YPowerOutput::set_voltage(Y_VOLTAGE_enum newval)
 }
 
 /**
- * Retrieves a dual power  output control for a given identifier.
+ * Retrieves a power output for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -144,11 +144,11 @@ int YPowerOutput::set_voltage(Y_VOLTAGE_enum newval)
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that the power output control is online at the time
+ * This function does not require that the power output is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YPowerOutput.isOnline() to test if the power output control is
+ * Use the method YPowerOutput.isOnline() to test if the power output is
  * indeed online at a given time. In case of ambiguity when looking for
- * a dual power  output control by logical name, no error is notified: the first instance
+ * a power output by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
@@ -156,10 +156,10 @@ int YPowerOutput::set_voltage(Y_VOLTAGE_enum newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the power output control, for instance
+ * @param func : a string that uniquely characterizes the power output, for instance
  *         YI2CMK01.powerOutput.
  *
- * @return a YPowerOutput object allowing you to drive the power output control.
+ * @return a YPowerOutput object allowing you to drive the power output.
  */
 YPowerOutput* YPowerOutput::FindPowerOutput(string func)
 {
@@ -232,7 +232,7 @@ YPowerOutput *YPowerOutput::nextPowerOutput(void)
     return YPowerOutput::FindPowerOutput(hwid);
 }
 
-YPowerOutput* YPowerOutput::FirstPowerOutput(void)
+YPowerOutput *YPowerOutput::FirstPowerOutput(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 32716 2018-10-19 15:54:48Z seb $
+ *  $Id: main.cpp 38820 2019-12-18 18:01:14Z seb $
  *
  *  An example that show how to use a  Yocto-Light
  *
@@ -24,8 +24,8 @@ static void usage(void)
   cout << "usage: demo <serial_number> " << endl;
   cout << "       demo <logical_name>" << endl;
   cout << "       demo any" << endl;
-  u64 now = yGetTickCount();
-  while (yGetTickCount() - now < 3000) {
+  u64 now = YAPI::GetTickCount();
+  while (YAPI::GetTickCount() - now < 3000) {
     // wait 3 sec to show the message
   }
   exit(1);
@@ -43,19 +43,19 @@ int main(int argc, const char * argv[])
   target = (string) argv[1];
 
   // Setup the API to use local USB devices
-  if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
+  if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
     cerr << "RegisterHub error: " << errmsg << endl;
     return 1;
   }
 
   if (target == "any") {
-    sensor = yFirstLightSensor();
+    sensor = YLightSensor::FirstLightSensor();
     if (sensor == NULL) {
       cout << "No module connected (check USB cable)" << endl;
       return 1;
     }
   } else {
-    sensor = yFindLightSensor(target + ".lightSensor");
+    sensor = YLightSensor::FindLightSensor(target + ".lightSensor");
   }
 
   while(1) {
@@ -66,9 +66,9 @@ int main(int argc, const char * argv[])
 
     cout << "Current ambient light: " << sensor->get_currentValue() << " lx";
     cout << "  (press Ctrl-C to exit)" << endl;
-    ySleep(1000, errmsg);
+    YAPI::Sleep(1000, errmsg);
   };
-  yFreeAPI();
+  YAPI::FreeAPI();
 
   return 0;
 }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_powersupply.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_powersupply.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindPowerSupply(), the high-level API for PowerSupply functions
  *
@@ -88,7 +88,7 @@ const double YPowerSupply::VOLTAGEATSTARTUP_INVALID = YAPI_INVALID_DOUBLE;
 const double YPowerSupply::CURRENTATSTARTUP_INVALID = YAPI_INVALID_DOUBLE;
 const string YPowerSupply::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YPowerSupply::_parseAttr(YJSONObject* json_val)
+int YPowerSupply::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("voltageSetPoint")) {
         _voltageSetPoint =  floor(json_val->getDouble("voltageSetPoint") * 1000.0 / 65536.0 + 0.5) / 1000.0;
@@ -800,7 +800,7 @@ YPowerSupply *YPowerSupply::nextPowerSupply(void)
     return YPowerSupply::FindPowerSupply(hwid);
 }
 
-YPowerSupply* YPowerSupply::FirstPowerSupply(void)
+YPowerSupply *YPowerSupply::FirstPowerSupply(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

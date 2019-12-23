@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 32619 2018-10-10 12:22:50Z seb $
+ *  $Id: main.cpp 38820 2019-12-18 18:01:14Z seb $
  *
  *  An example that show how to use a  Yocto-RS232
  *
@@ -26,16 +26,16 @@ int main(int argc, const char * argv[])
   YSerialPort *serialPort;
 
   // Setup the API to use local USB devices
-  if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
+  if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
     cerr << "RegisterHub error: " << errmsg << endl;
     return 1;
   }
 
   if (argc > 1) {
     target = (string) argv[1];
-    serialPort = yFindSerialPort(target + ".serialPort");
+    serialPort = YSerialPort::FindSerialPort(target + ".serialPort");
   } else {
-    serialPort = yFirstSerialPort();
+    serialPort = YSerialPort::FirstSerialPort();
     if (serialPort == NULL) {
       cerr << "No module connected (check USB cable)" << endl;
       return 1;
@@ -48,7 +48,7 @@ int main(int argc, const char * argv[])
 
   string line;
   do {
-    ySleep(500, errmsg);
+    YAPI::Sleep(500, errmsg);
     do {
       line = serialPort->readLine();
       if(line != "") {
@@ -61,6 +61,6 @@ int main(int argc, const char * argv[])
     serialPort->writeLine(line);
   } while(line != "");
 
-  yFreeAPI();
+  YAPI::FreeAPI();
   return 0;
 }

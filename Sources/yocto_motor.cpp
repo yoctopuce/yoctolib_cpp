@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_motor.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_motor.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindMotor(), the high-level API for Motor functions
  *
@@ -78,7 +78,7 @@ const double YMotor::CUTOFFVOLTAGE_INVALID = YAPI_INVALID_DOUBLE;
 const double YMotor::FREQUENCY_INVALID = YAPI_INVALID_DOUBLE;
 const string YMotor::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YMotor::_parseAttr(YJSONObject* json_val)
+int YMotor::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("motorStatus")) {
         _motorStatus =  (Y_MOTORSTATUS_enum)json_val->getInt("motorStatus");
@@ -785,7 +785,7 @@ YMotor *YMotor::nextMotor(void)
     return YMotor::FindMotor(hwid);
 }
 
-YMotor* YMotor::FirstMotor(void)
+YMotor *YMotor::FirstMotor(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

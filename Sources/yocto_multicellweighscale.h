@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multicellweighscale.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_multicellweighscale.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindMultiCellWeighScale(), the high-level API for MultiCellWeighScale functions
  *
@@ -77,11 +77,11 @@ typedef enum {
 
 //--- (YMultiCellWeighScale declaration)
 /**
- * YMultiCellWeighScale Class: MultiCellWeighScale function interface
+ * YMultiCellWeighScale Class: multi-cell weighing scale sensor control interface, available for
+ * instance in the Yocto-MaxiBridge
  *
  * The YMultiCellWeighScale class provides a weight measurement from a set of ratiometric
- * sensors, for instance using a Yocto-MaxiBridge. It can be used to control the bridge excitation
- * parameters, in order to avoid
+ * sensors. It can be used to control the bridge excitation parameters, in order to avoid
  * measure shifts caused by temperature variation in the electronics, and can also
  * automatically apply an additional correction factor based on temperature to
  * compensate for offsets in the load cells themselves.
@@ -110,7 +110,7 @@ protected:
     friend YMultiCellWeighScale *yFirstMultiCellWeighScale(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindMultiCellWeighScale factory function to instantiate
     YMultiCellWeighScale(const string& func);
@@ -434,7 +434,7 @@ public:
     virtual int         setupSpan(double currWeight,double maxWeight);
 
 
-    inline static YMultiCellWeighScale* Find(string func)
+    inline static YMultiCellWeighScale *Find(string func)
     { return YMultiCellWeighScale::FindMultiCellWeighScale(func); }
 
     /**
@@ -461,8 +461,8 @@ public:
      *         the first multi-cell weighing scale sensor currently online, or a NULL pointer
      *         if there are none.
      */
-           static YMultiCellWeighScale* FirstMultiCellWeighScale(void);
-    inline static YMultiCellWeighScale* First(void)
+           static YMultiCellWeighScale *FirstMultiCellWeighScale(void);
+    inline static YMultiCellWeighScale *First(void)
     { return YMultiCellWeighScale::FirstMultiCellWeighScale();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -500,7 +500,7 @@ public:
  *
  * @return a YMultiCellWeighScale object allowing you to drive the multi-cell weighing scale sensor.
  */
-inline YMultiCellWeighScale* yFindMultiCellWeighScale(const string& func)
+inline YMultiCellWeighScale *yFindMultiCellWeighScale(const string& func)
 { return YMultiCellWeighScale::FindMultiCellWeighScale(func);}
 /**
  * Starts the enumeration of multi-cell weighing scale sensors currently accessible.
@@ -511,7 +511,7 @@ inline YMultiCellWeighScale* yFindMultiCellWeighScale(const string& func)
  *         the first multi-cell weighing scale sensor currently online, or a NULL pointer
  *         if there are none.
  */
-inline YMultiCellWeighScale* yFirstMultiCellWeighScale(void)
+inline YMultiCellWeighScale *yFirstMultiCellWeighScale(void)
 { return YMultiCellWeighScale::FirstMultiCellWeighScale();}
 
 //--- (end of YMultiCellWeighScale functions declaration)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.h 38510 2019-11-26 15:36:38Z mvuilleu $
+ * $Id: yocto_messagebox.h 38913 2019-12-20 18:59:49Z mvuilleu $
  *
  * Declares yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -64,9 +64,9 @@ typedef void (*YMessageBoxValueCallback)(YMessageBox *func, const string& functi
 
 //--- (generated code: YSms declaration)
 /**
- * YSms Class: SMS message sent or received
+ * YSms Class: SMS message sent or received, returned by messageBox.get_messages or messageBox.newMessage
  *
- * YSms objects are used to describe a SMS.
+ * YSms objects are used to describe an SMS message, received or to be sent.
  * These objects are used in particular in conjunction with the YMessageBox class.
  */
 class YOCTO_CLASS_EXPORT YSms {
@@ -251,11 +251,11 @@ public:
 
 //--- (generated code: YMessageBox declaration)
 /**
- * YMessageBox Class: MessageBox function interface
+ * YMessageBox Class: SMS message box interface control interface, available for instance in the
+ * YoctoHub-GSM-2G, the YoctoHub-GSM-3G-EU or the YoctoHub-GSM-3G-NA
  *
- * The YMessageBox class provides SMS sending and receiving capability to
- * GSM-enabled Yoctopuce devices, for instance using a YoctoHub-GSM-2G, a YoctoHub-GSM-3G-EU or a
- * YoctoHub-GSM-3G-NA.
+ * The YMessageBox class provides SMS sending and receiving capability for
+ * GSM-enabled Yoctopuce devices.
  */
 class YOCTO_CLASS_EXPORT YMessageBox: public YFunction {
 #ifdef __BORLANDC__
@@ -284,7 +284,7 @@ protected:
     friend YMessageBox *yFirstMessageBox(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindMessageBox factory function to instantiate
     YMessageBox(const string& func);
@@ -390,7 +390,7 @@ public:
     { return this->set_command(newval); }
 
     /**
-     * Retrieves a MessageBox interface for a given identifier.
+     * Retrieves a SMS message box interface for a given identifier.
      * The identifier can be specified using several formats:
      * <ul>
      * <li>FunctionLogicalName</li>
@@ -400,11 +400,11 @@ public:
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
      *
-     * This function does not require that the MessageBox interface is online at the time
+     * This function does not require that the SMS message box interface is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YMessageBox.isOnline() to test if the MessageBox interface is
+     * Use the method YMessageBox.isOnline() to test if the SMS message box interface is
      * indeed online at a given time. In case of ambiguity when looking for
-     * a MessageBox interface by logical name, no error is notified: the first instance
+     * a SMS message box interface by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
      *
@@ -412,10 +412,10 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the MessageBox interface, for instance
+     * @param func : a string that uniquely characterizes the SMS message box interface, for instance
      *         YHUBGSM1.messageBox.
      *
-     * @return a YMessageBox object allowing you to drive the MessageBox interface.
+     * @return a YMessageBox object allowing you to drive the SMS message box interface.
      */
     static YMessageBox* FindMessageBox(string func);
 
@@ -520,34 +520,34 @@ public:
     virtual vector<YSms> get_messages(void);
 
 
-    inline static YMessageBox* Find(string func)
+    inline static YMessageBox *Find(string func)
     { return YMessageBox::FindMessageBox(func); }
 
     /**
-     * Continues the enumeration of MessageBox interfaces started using yFirstMessageBox().
-     * Caution: You can't make any assumption about the returned MessageBox interfaces order.
-     * If you want to find a specific a MessageBox interface, use MessageBox.findMessageBox()
+     * Continues the enumeration of SMS message box interfaces started using yFirstMessageBox().
+     * Caution: You can't make any assumption about the returned SMS message box interfaces order.
+     * If you want to find a specific a SMS message box interface, use MessageBox.findMessageBox()
      * and a hardwareID or a logical name.
      *
      * @return a pointer to a YMessageBox object, corresponding to
-     *         a MessageBox interface currently online, or a NULL pointer
-     *         if there are no more MessageBox interfaces to enumerate.
+     *         a SMS message box interface currently online, or a NULL pointer
+     *         if there are no more SMS message box interfaces to enumerate.
      */
            YMessageBox     *nextMessageBox(void);
     inline YMessageBox     *next(void)
     { return this->nextMessageBox();}
 
     /**
-     * Starts the enumeration of MessageBox interfaces currently accessible.
+     * Starts the enumeration of SMS message box interfaces currently accessible.
      * Use the method YMessageBox.nextMessageBox() to iterate on
-     * next MessageBox interfaces.
+     * next SMS message box interfaces.
      *
      * @return a pointer to a YMessageBox object, corresponding to
-     *         the first MessageBox interface currently online, or a NULL pointer
+     *         the first SMS message box interface currently online, or a NULL pointer
      *         if there are none.
      */
-           static YMessageBox* FirstMessageBox(void);
-    inline static YMessageBox* First(void)
+           static YMessageBox *FirstMessageBox(void);
+    inline static YMessageBox *First(void)
     { return YMessageBox::FirstMessageBox();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -558,7 +558,7 @@ public:
 //--- (generated code: YMessageBox functions declaration)
 
 /**
- * Retrieves a MessageBox interface for a given identifier.
+ * Retrieves a SMS message box interface for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -568,11 +568,11 @@ public:
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that the MessageBox interface is online at the time
+ * This function does not require that the SMS message box interface is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YMessageBox.isOnline() to test if the MessageBox interface is
+ * Use the method YMessageBox.isOnline() to test if the SMS message box interface is
  * indeed online at a given time. In case of ambiguity when looking for
- * a MessageBox interface by logical name, no error is notified: the first instance
+ * a SMS message box interface by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
@@ -580,23 +580,23 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the MessageBox interface, for instance
+ * @param func : a string that uniquely characterizes the SMS message box interface, for instance
  *         YHUBGSM1.messageBox.
  *
- * @return a YMessageBox object allowing you to drive the MessageBox interface.
+ * @return a YMessageBox object allowing you to drive the SMS message box interface.
  */
-inline YMessageBox* yFindMessageBox(const string& func)
+inline YMessageBox *yFindMessageBox(const string& func)
 { return YMessageBox::FindMessageBox(func);}
 /**
- * Starts the enumeration of MessageBox interfaces currently accessible.
+ * Starts the enumeration of SMS message box interfaces currently accessible.
  * Use the method YMessageBox.nextMessageBox() to iterate on
- * next MessageBox interfaces.
+ * next SMS message box interfaces.
  *
  * @return a pointer to a YMessageBox object, corresponding to
- *         the first MessageBox interface currently online, or a NULL pointer
+ *         the first SMS message box interface currently online, or a NULL pointer
  *         if there are none.
  */
-inline YMessageBox* yFirstMessageBox(void)
+inline YMessageBox *yFirstMessageBox(void)
 { return YMessageBox::FirstMessageBox();}
 
 //--- (end of generated code: YMessageBox functions declaration)

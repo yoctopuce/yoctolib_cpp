@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwminput.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_pwminput.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindPwmInput(), the high-level API for PwmInput functions
  *
@@ -77,7 +77,7 @@ const double YPwmInput::PULSEDURATION_INVALID = YAPI_INVALID_DOUBLE;
 const double YPwmInput::FREQUENCY_INVALID = YAPI_INVALID_DOUBLE;
 const double YPwmInput::PERIOD_INVALID = YAPI_INVALID_DOUBLE;
 
-int YPwmInput::_parseAttr(YJSONObject* json_val)
+int YPwmInput::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("dutyCycle")) {
         _dutyCycle =  floor(json_val->getDouble("dutyCycle") * 1000.0 / 65536.0 + 0.5) / 1000.0;
@@ -596,7 +596,7 @@ YPwmInput *YPwmInput::nextPwmInput(void)
     return YPwmInput::FindPwmInput(hwid);
 }
 
-YPwmInput* YPwmInput::FirstPwmInput(void)
+YPwmInput *YPwmInput::FirstPwmInput(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

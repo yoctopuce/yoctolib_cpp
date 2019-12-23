@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.h 38510 2019-11-26 15:36:38Z mvuilleu $
+ * $Id: yocto_files.h 38913 2019-12-20 18:59:49Z mvuilleu $
  *
  * Declares yFindFiles(), the high-level API for Files functions
  *
@@ -61,7 +61,7 @@ typedef void (*YFilesValueCallback)(YFiles *func, const string& functionValue);
 
 //--- (generated code: YFileRecord declaration)
 /**
- * YFileRecord Class: Description of a file on the device filesystem
+ * YFileRecord Class: Description of a file on the device filesystem, returned by files.get_list
  *
  * YFileRecord objects are used to describe a file that is stored on a Yoctopuce device.
  * These objects are used in particular in conjunction with the YFiles class.
@@ -122,11 +122,11 @@ public:
 
 //--- (generated code: YFiles declaration)
 /**
- * YFiles Class: Files function interface
+ * YFiles Class: filesystem control interface, available for instance in the Yocto-Color-V2, the
+ * Yocto-RS232, the YoctoHub-Ethernet or the YoctoHub-Wireless-g
  *
  * The YFiles class is used to access the filesystem embedded on
- * some Yoctopuce devices, for instance using a Yocto-Color-V2, a Yocto-RS232, a YoctoHub-Ethernet or
- * a YoctoHub-Wireless-g. This filesystem makes it
+ * some Yoctopuce devices. This filesystem makes it
  * possible for instance to design a custom web UI
  * (for networked devices) or to add fonts (on display devices).
  */
@@ -145,7 +145,7 @@ class YOCTO_CLASS_EXPORT YFiles: public YFunction {
     friend YFiles *yFirstFiles(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindFiles factory function to instantiate
     YFiles(const string& func);
@@ -310,7 +310,7 @@ public:
     virtual int         remove(string pathname);
 
 
-    inline static YFiles* Find(string func)
+    inline static YFiles *Find(string func)
     { return YFiles::FindFiles(func); }
 
     /**
@@ -336,8 +336,8 @@ public:
      *         the first filesystem currently online, or a NULL pointer
      *         if there are none.
      */
-           static YFiles* FirstFiles(void);
-    inline static YFiles* First(void)
+           static YFiles *FirstFiles(void);
+    inline static YFiles *First(void)
     { return YFiles::FirstFiles();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -375,7 +375,7 @@ public:
  *
  * @return a YFiles object allowing you to drive the filesystem.
  */
-inline YFiles* yFindFiles(const string& func)
+inline YFiles *yFindFiles(const string& func)
 { return YFiles::FindFiles(func);}
 /**
  * Starts the enumeration of filesystems currently accessible.
@@ -386,7 +386,7 @@ inline YFiles* yFindFiles(const string& func)
  *         the first filesystem currently online, or a NULL pointer
  *         if there are none.
  */
-inline YFiles* yFirstFiles(void)
+inline YFiles *yFirstFiles(void)
 { return YFiles::FirstFiles();}
 
 //--- (end of generated code: YFiles functions declaration)

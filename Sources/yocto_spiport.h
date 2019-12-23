@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_spiport.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -92,6 +92,8 @@ typedef enum {
 #define Y_LASTMSG_INVALID               (YAPI_INVALID_STRING)
 #define Y_CURRENTJOB_INVALID            (YAPI_INVALID_STRING)
 #define Y_STARTUPJOB_INVALID            (YAPI_INVALID_STRING)
+#define Y_JOBMAXTASK_INVALID            (YAPI_INVALID_UINT)
+#define Y_JOBMAXSIZE_INVALID            (YAPI_INVALID_UINT)
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 #define Y_PROTOCOL_INVALID              (YAPI_INVALID_STRING)
 #define Y_SPIMODE_INVALID               (YAPI_INVALID_STRING)
@@ -99,9 +101,9 @@ typedef enum {
 
 //--- (YSpiPort declaration)
 /**
- * YSpiPort Class: SPI Port function interface
+ * YSpiPort Class: SPI port control interface, available for instance in the Yocto-SPI
  *
- * The YSpiPort class allows you to fully drive a Yoctopuce SPI port, for instance using a Yocto-SPI.
+ * The YSpiPort class allows you to fully drive a Yoctopuce SPI port.
  * It can be used to send and receive data, and to configure communication
  * parameters (baud rate, bit count, parity, flow control and protocol).
  * Note that Yoctopuce SPI ports are not exposed as virtual COM ports.
@@ -123,6 +125,8 @@ protected:
     string          _lastMsg;
     string          _currentJob;
     string          _startupJob;
+    int             _jobMaxTask;
+    int             _jobMaxSize;
     string          _command;
     string          _protocol;
     Y_VOLTAGELEVEL_enum _voltageLevel;
@@ -138,7 +142,7 @@ protected:
     friend YSpiPort *yFirstSpiPort(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindSpiPort factory function to instantiate
     YSpiPort(const string& func);
@@ -156,6 +160,8 @@ public:
     static const string LASTMSG_INVALID;
     static const string CURRENTJOB_INVALID;
     static const string STARTUPJOB_INVALID;
+    static const int JOBMAXTASK_INVALID = YAPI_INVALID_UINT;
+    static const int JOBMAXSIZE_INVALID = YAPI_INVALID_UINT;
     static const string COMMAND_INVALID;
     static const string PROTOCOL_INVALID;
     static const Y_VOLTAGELEVEL_enum VOLTAGELEVEL_OFF = Y_VOLTAGELEVEL_OFF;
@@ -299,6 +305,30 @@ public:
     int             set_startupJob(const string& newval);
     inline int      setStartupJob(const string& newval)
     { return this->set_startupJob(newval); }
+
+    /**
+     * Returns the maximum number of tasks in a job that the device can handle.
+     *
+     * @return an integer corresponding to the maximum number of tasks in a job that the device can handle
+     *
+     * On failure, throws an exception or returns Y_JOBMAXTASK_INVALID.
+     */
+    int                 get_jobMaxTask(void);
+
+    inline int          jobMaxTask(void)
+    { return this->get_jobMaxTask(); }
+
+    /**
+     * Returns maximum size allowed for job files.
+     *
+     * @return an integer corresponding to maximum size allowed for job files
+     *
+     * On failure, throws an exception or returns Y_JOBMAXSIZE_INVALID.
+     */
+    int                 get_jobMaxSize(void);
+
+    inline int          jobMaxSize(void)
+    { return this->get_jobMaxSize(); }
 
     string              get_command(void);
 
@@ -774,7 +804,7 @@ public:
     virtual int         set_SS(int val);
 
 
-    inline static YSpiPort* Find(string func)
+    inline static YSpiPort *Find(string func)
     { return YSpiPort::FindSpiPort(func); }
 
     /**
@@ -800,8 +830,8 @@ public:
      *         the first SPI port currently online, or a NULL pointer
      *         if there are none.
      */
-           static YSpiPort* FirstSpiPort(void);
-    inline static YSpiPort* First(void)
+           static YSpiPort *FirstSpiPort(void);
+    inline static YSpiPort *First(void)
     { return YSpiPort::FirstSpiPort();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -839,7 +869,7 @@ public:
  *
  * @return a YSpiPort object allowing you to drive the SPI port.
  */
-inline YSpiPort* yFindSpiPort(const string& func)
+inline YSpiPort *yFindSpiPort(const string& func)
 { return YSpiPort::FindSpiPort(func);}
 /**
  * Starts the enumeration of SPI ports currently accessible.
@@ -850,7 +880,7 @@ inline YSpiPort* yFindSpiPort(const string& func)
  *         the first SPI port currently online, or a NULL pointer
  *         if there are none.
  */
-inline YSpiPort* yFirstSpiPort(void)
+inline YSpiPort *yFirstSpiPort(void)
 { return YSpiPort::FirstSpiPort();}
 
 //--- (end of YSpiPort functions declaration)

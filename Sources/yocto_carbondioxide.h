@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_carbondioxide.h 38030 2019-11-04 17:56:01Z mvuilleu $
+ *  $Id: yocto_carbondioxide.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *
@@ -62,12 +62,11 @@ typedef void (*YCarbonDioxideTimedReportCallback)(YCarbonDioxide *func, YMeasure
 
 //--- (YCarbonDioxide declaration)
 /**
- * YCarbonDioxide Class: CarbonDioxide function interface
+ * YCarbonDioxide Class: CO2 sensor control interface, available for instance in the Yocto-CO2-V2
  *
- * The YCarbonDioxide class allows you to read and configure Yoctopuce CO2
- * sensors, for instance using a Yocto-CO2-V2. It inherits from YSensor class the core functions to
- * read measurements,
- * to register callback functions,  to access the autonomous datalogger.
+ * The YCarbonDioxide class allows you to read and configure Yoctopuce CO2 sensors.
+ * It inherits from YSensor class the core functions to read measurements,
+ * to register callback functions, and to access the autonomous datalogger.
  * This class adds the ability to perform manual calibration if required.
  */
 class YOCTO_CLASS_EXPORT YCarbonDioxide: public YSensor {
@@ -87,7 +86,7 @@ protected:
     friend YCarbonDioxide *yFirstCarbonDioxide(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindCarbonDioxide factory function to instantiate
     YCarbonDioxide(const string& func);
@@ -240,7 +239,7 @@ public:
     virtual int         triggetZeroCalibration(void);
 
 
-    inline static YCarbonDioxide* Find(string func)
+    inline static YCarbonDioxide *Find(string func)
     { return YCarbonDioxide::FindCarbonDioxide(func); }
 
     /**
@@ -266,8 +265,8 @@ public:
      *         the first CO2 sensor currently online, or a NULL pointer
      *         if there are none.
      */
-           static YCarbonDioxide* FirstCarbonDioxide(void);
-    inline static YCarbonDioxide* First(void)
+           static YCarbonDioxide *FirstCarbonDioxide(void);
+    inline static YCarbonDioxide *First(void)
     { return YCarbonDioxide::FirstCarbonDioxide();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -305,7 +304,7 @@ public:
  *
  * @return a YCarbonDioxide object allowing you to drive the CO2 sensor.
  */
-inline YCarbonDioxide* yFindCarbonDioxide(const string& func)
+inline YCarbonDioxide *yFindCarbonDioxide(const string& func)
 { return YCarbonDioxide::FindCarbonDioxide(func);}
 /**
  * Starts the enumeration of CO2 sensors currently accessible.
@@ -316,7 +315,7 @@ inline YCarbonDioxide* yFindCarbonDioxide(const string& func)
  *         the first CO2 sensor currently online, or a NULL pointer
  *         if there are none.
  */
-inline YCarbonDioxide* yFirstCarbonDioxide(void)
+inline YCarbonDioxide *yFirstCarbonDioxide(void)
 { return YCarbonDioxide::FirstCarbonDioxide();}
 
 //--- (end of YCarbonDioxide functions declaration)

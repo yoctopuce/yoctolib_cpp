@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_powersupply.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_powersupply.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindPowerSupply(), the high-level API for PowerSupply functions
  *
@@ -85,9 +85,9 @@ typedef enum {
 
 //--- (YPowerSupply declaration)
 /**
- * YPowerSupply Class: PowerSupply function interface
+ * YPowerSupply Class: regulated power supply control interface
  *
- * The YPowerSupply class allows you to drive a Yoctopuce power supply$DEV_ENà.
+ * The YPowerSupply class allows you to drive a Yoctopuce power supply.
  * It can be use to change the voltage set point,
  * the current limit and the enable/disable the output.
  */
@@ -118,7 +118,7 @@ protected:
     friend YPowerSupply *yFirstPowerSupply(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindPowerSupply factory function to instantiate
     YPowerSupply(const string& func);
@@ -435,7 +435,7 @@ public:
     virtual int         voltageMove(double V_target,int ms_duration);
 
 
-    inline static YPowerSupply* Find(string func)
+    inline static YPowerSupply *Find(string func)
     { return YPowerSupply::FindPowerSupply(func); }
 
     /**
@@ -461,8 +461,8 @@ public:
      *         the first regulated power supply currently online, or a NULL pointer
      *         if there are none.
      */
-           static YPowerSupply* FirstPowerSupply(void);
-    inline static YPowerSupply* First(void)
+           static YPowerSupply *FirstPowerSupply(void);
+    inline static YPowerSupply *First(void)
     { return YPowerSupply::FirstPowerSupply();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -500,7 +500,7 @@ public:
  *
  * @return a YPowerSupply object allowing you to drive the regulated power supply.
  */
-inline YPowerSupply* yFindPowerSupply(const string& func)
+inline YPowerSupply *yFindPowerSupply(const string& func)
 { return YPowerSupply::FindPowerSupply(func);}
 /**
  * Starts the enumeration of regulated power supplies currently accessible.
@@ -511,7 +511,7 @@ inline YPowerSupply* yFindPowerSupply(const string& func)
  *         the first regulated power supply currently online, or a NULL pointer
  *         if there are none.
  */
-inline YPowerSupply* yFirstPowerSupply(void)
+inline YPowerSupply *yFirstPowerSupply(void)
 { return YPowerSupply::FirstPowerSupply();}
 
 //--- (end of YPowerSupply functions declaration)

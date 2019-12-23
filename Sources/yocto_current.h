@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_current.h 38510 2019-11-26 15:36:38Z mvuilleu $
+ *  $Id: yocto_current.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindCurrent(), the high-level API for Current functions
  *
@@ -68,12 +68,12 @@ typedef enum {
 
 //--- (YCurrent declaration)
 /**
- * YCurrent Class: Current function interface
+ * YCurrent Class: current sensor control interface, available for instance in the Yocto-Amp, the
+ * Yocto-Motor-DC or the Yocto-Watt
  *
- * The YCurrent class allows you to read and configure Yoctopuce current
- * sensors, for instance using a Yocto-Amp, a Yocto-Motor-DC or a Yocto-Watt. It inherits from YSensor
- * class the core functions to read measurements,
- * to register callback functions, to access the autonomous datalogger.
+ * The YCurrent class allows you to read and configure Yoctopuce current sensors.
+ * It inherits from YSensor class the core functions to read measurements,
+ * to register callback functions, and to access the autonomous datalogger.
  */
 class YOCTO_CLASS_EXPORT YCurrent: public YSensor {
 #ifdef __BORLANDC__
@@ -91,7 +91,7 @@ protected:
     friend YCurrent *yFirstCurrent(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindCurrent factory function to instantiate
     YCurrent(const string& func);
@@ -199,7 +199,7 @@ public:
     virtual int         _invokeTimedReportCallback(YMeasure value);
 
 
-    inline static YCurrent* Find(string func)
+    inline static YCurrent *Find(string func)
     { return YCurrent::FindCurrent(func); }
 
     /**
@@ -225,8 +225,8 @@ public:
      *         the first current sensor currently online, or a NULL pointer
      *         if there are none.
      */
-           static YCurrent* FirstCurrent(void);
-    inline static YCurrent* First(void)
+           static YCurrent *FirstCurrent(void);
+    inline static YCurrent *First(void)
     { return YCurrent::FirstCurrent();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -264,7 +264,7 @@ public:
  *
  * @return a YCurrent object allowing you to drive the current sensor.
  */
-inline YCurrent* yFindCurrent(const string& func)
+inline YCurrent *yFindCurrent(const string& func)
 { return YCurrent::FindCurrent(func);}
 /**
  * Starts the enumeration of current sensors currently accessible.
@@ -275,7 +275,7 @@ inline YCurrent* yFindCurrent(const string& func)
  *         the first current sensor currently online, or a NULL pointer
  *         if there are none.
  */
-inline YCurrent* yFirstCurrent(void)
+inline YCurrent *yFirstCurrent(void)
 { return YCurrent::FirstCurrent();}
 
 //--- (end of YCurrent functions declaration)

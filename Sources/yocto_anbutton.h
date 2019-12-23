@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_anbutton.h 38510 2019-11-26 15:36:38Z mvuilleu $
+ *  $Id: yocto_anbutton.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindAnButton(), the high-level API for AnButton functions
  *
@@ -83,10 +83,10 @@ typedef enum {
 
 //--- (YAnButton declaration)
 /**
- * YAnButton Class: AnButton function interface
+ * YAnButton Class: analog input control interface, available for instance in the Yocto-Buzzer, the
+ * Yocto-Display, the Yocto-Knob or the Yocto-MaxiDisplay
  *
- * The YAnButton class allows you to access simple resistive inputs on Yoctopuce
- * devices, for instance using a Yocto-Buzzer, a Yocto-Display, a Yocto-Knob or a Yocto-MaxiDisplay.
+ * The YAnButton class provide access to basic resistive inputs.
  * Such inputs can be used to measure the state
  * of a simple button as well as to read an analog potentiometer (variable resistance).
  * This can be use for instance with a continuous rotating knob, a throttle grip
@@ -119,7 +119,7 @@ protected:
     friend YAnButton *yFirstAnButton(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindAnButton factory function to instantiate
     YAnButton(const string& func);
@@ -416,7 +416,7 @@ public:
     virtual int         resetCounter(void);
 
 
-    inline static YAnButton* Find(string func)
+    inline static YAnButton *Find(string func)
     { return YAnButton::FindAnButton(func); }
 
     /**
@@ -442,8 +442,8 @@ public:
      *         the first analog input currently online, or a NULL pointer
      *         if there are none.
      */
-           static YAnButton* FirstAnButton(void);
-    inline static YAnButton* First(void)
+           static YAnButton *FirstAnButton(void);
+    inline static YAnButton *First(void)
     { return YAnButton::FirstAnButton();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -481,7 +481,7 @@ public:
  *
  * @return a YAnButton object allowing you to drive the analog input.
  */
-inline YAnButton* yFindAnButton(const string& func)
+inline YAnButton *yFindAnButton(const string& func)
 { return YAnButton::FindAnButton(func);}
 /**
  * Starts the enumeration of analog inputs currently accessible.
@@ -492,7 +492,7 @@ inline YAnButton* yFindAnButton(const string& func)
  *         the first analog input currently online, or a NULL pointer
  *         if there are none.
  */
-inline YAnButton* yFirstAnButton(void)
+inline YAnButton *yFirstAnButton(void)
 { return YAnButton::FirstAnButton();}
 
 //--- (end of YAnButton functions declaration)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_weighscale.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_weighscale.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindWeighScale(), the high-level API for WeighScale functions
  *
@@ -76,10 +76,10 @@ typedef enum {
 
 //--- (YWeighScale declaration)
 /**
- * YWeighScale Class: WeighScale function interface
+ * YWeighScale Class: weighing scale sensor control interface, available for instance in the
+ * Yocto-Bridge or the Yocto-MaxiBridge
  *
- * The YWeighScale class provides a weight measurement from a ratiometric sensor, for instance using a
- * Yocto-Bridge or a Yocto-MaxiBridge.
+ * The YWeighScale class provides a weight measurement from a ratiometric sensor.
  * It can be used to control the bridge excitation parameters, in order to avoid
  * measure shifts caused by temperature variation in the electronics, and can also
  * automatically apply an additional correction factor based on temperature to
@@ -108,7 +108,7 @@ protected:
     friend YWeighScale *yFirstWeighScale(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindWeighScale factory function to instantiate
     YWeighScale(const string& func);
@@ -545,7 +545,7 @@ public:
     virtual int         loadSpanChgCompensationTable(vector<double>& tempValues,vector<double>& compValues);
 
 
-    inline static YWeighScale* Find(string func)
+    inline static YWeighScale *Find(string func)
     { return YWeighScale::FindWeighScale(func); }
 
     /**
@@ -571,8 +571,8 @@ public:
      *         the first weighing scale sensor currently online, or a NULL pointer
      *         if there are none.
      */
-           static YWeighScale* FirstWeighScale(void);
-    inline static YWeighScale* First(void)
+           static YWeighScale *FirstWeighScale(void);
+    inline static YWeighScale *First(void)
     { return YWeighScale::FirstWeighScale();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -610,7 +610,7 @@ public:
  *
  * @return a YWeighScale object allowing you to drive the weighing scale sensor.
  */
-inline YWeighScale* yFindWeighScale(const string& func)
+inline YWeighScale *yFindWeighScale(const string& func)
 { return YWeighScale::FindWeighScale(func);}
 /**
  * Starts the enumeration of weighing scale sensors currently accessible.
@@ -621,7 +621,7 @@ inline YWeighScale* yFindWeighScale(const string& func)
  *         the first weighing scale sensor currently online, or a NULL pointer
  *         if there are none.
  */
-inline YWeighScale* yFirstWeighScale(void)
+inline YWeighScale *yFirstWeighScale(void)
 { return YWeighScale::FirstWeighScale();}
 
 //--- (end of YWeighScale functions declaration)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_relay.cpp 38510 2019-11-26 15:36:38Z mvuilleu $
+ *  $Id: yocto_relay.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindRelay(), the high-level API for Relay functions
  *
@@ -74,7 +74,7 @@ YRelay::~YRelay()
 // static attributes
 const YDelayedPulse YRelay::DELAYEDPULSETIMER_INVALID = YDelayedPulse();
 
-int YRelay::_parseAttr(YJSONObject* json_val)
+int YRelay::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("state")) {
         _state =  (Y_STATE_enum)json_val->getInt("state");
@@ -170,12 +170,12 @@ int YRelay::set_state(Y_STATE_enum newval)
 }
 
 /**
- * Returns the state of the relays at device startup (A for the idle position, B for the active
- * position, UNCHANGED for no change).
+ * Returns the state of the relays at device startup (A for the idle position,
+ * B for the active position, UNCHANGED to leave the relay state as is).
  *
  * @return a value among Y_STATEATPOWERON_UNCHANGED, Y_STATEATPOWERON_A and Y_STATEATPOWERON_B
- * corresponding to the state of the relays at device startup (A for the idle position, B for the
- * active position, UNCHANGED for no change)
+ * corresponding to the state of the relays at device startup (A for the idle position,
+ *         B for the active position, UNCHANGED to leave the relay state as is)
  *
  * On failure, throws an exception or returns Y_STATEATPOWERON_INVALID.
  */
@@ -203,13 +203,13 @@ Y_STATEATPOWERON_enum YRelay::get_stateAtPowerOn(void)
 
 /**
  * Changes the state of the relays at device startup (A for the idle position,
- * B for the active position, UNCHANGED for no modification).
+ * B for the active position, UNCHANGED to leave the relay state as is).
  * Remember to call the matching module saveToFlash()
  * method, otherwise this call will have no effect.
  *
  * @param newval : a value among Y_STATEATPOWERON_UNCHANGED, Y_STATEATPOWERON_A and Y_STATEATPOWERON_B
  * corresponding to the state of the relays at device startup (A for the idle position,
- *         B for the active position, UNCHANGED for no modification)
+ *         B for the active position, UNCHANGED to leave the relay state as is)
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -232,10 +232,10 @@ int YRelay::set_stateAtPowerOn(Y_STATEATPOWERON_enum newval)
 }
 
 /**
- * Returns the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state
+ * Returns the maximum time (ms) allowed for the relay to stay in state
  * A before automatically switching back in to B state. Zero means no time limit.
  *
- * @return an integer corresponding to the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state
+ * @return an integer corresponding to the maximum time (ms) allowed for the relay to stay in state
  *         A before automatically switching back in to B state
  *
  * On failure, throws an exception or returns Y_MAXTIMEONSTATEA_INVALID.
@@ -263,12 +263,12 @@ s64 YRelay::get_maxTimeOnStateA(void)
 }
 
 /**
- * Changes the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state A
+ * Changes the maximum time (ms) allowed for the relay to stay in state A
  * before automatically switching back in to B state. Use zero for no time limit.
  * Remember to call the saveToFlash()
  * method of the module if the modification must be kept.
  *
- * @param newval : an integer corresponding to the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state A
+ * @param newval : an integer corresponding to the maximum time (ms) allowed for the relay to stay in state A
  *         before automatically switching back in to B state
  *
  * @return YAPI_SUCCESS if the call succeeds.
@@ -292,7 +292,7 @@ int YRelay::set_maxTimeOnStateA(s64 newval)
 }
 
 /**
- * Retourne the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state B
+ * Retourne the maximum time (ms) allowed for the relay to stay in state B
  * before automatically switching back in to A state. Zero means no time limit.
  *
  * @return an integer
@@ -322,13 +322,13 @@ s64 YRelay::get_maxTimeOnStateB(void)
 }
 
 /**
- * Changes the maximum time (ms) allowed for $THEFUNCTIONS$ to stay in state B before
+ * Changes the maximum time (ms) allowed for the relay to stay in state B before
  * automatically switching back in to A state. Use zero for no time limit.
  * Remember to call the saveToFlash()
  * method of the module if the modification must be kept.
  *
- * @param newval : an integer corresponding to the maximum time (ms) allowed for $THEFUNCTIONS$ to
- * stay in state B before
+ * @param newval : an integer corresponding to the maximum time (ms) allowed for the relay to stay in
+ * state B before
  *         automatically switching back in to A state
  *
  * @return YAPI_SUCCESS if the call succeeds.
@@ -693,7 +693,7 @@ YRelay *YRelay::nextRelay(void)
     return YRelay::FindRelay(hwid);
 }
 
-YRelay* YRelay::FirstRelay(void)
+YRelay *YRelay::FirstRelay(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_audioout.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_audioout.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindAudioOut(), the high-level API for AudioOut functions
  *
@@ -70,7 +70,7 @@ YAudioOut::~YAudioOut()
 // static attributes
 const string YAudioOut::VOLUMERANGE_INVALID = YAPI_INVALID_STRING;
 
-int YAudioOut::_parseAttr(YJSONObject* json_val)
+int YAudioOut::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("volume")) {
         _volume =  json_val->getInt("volume");
@@ -391,7 +391,7 @@ YAudioOut *YAudioOut::nextAudioOut(void)
     return YAudioOut::FindAudioOut(hwid);
 }
 
-YAudioOut* YAudioOut::FirstAudioOut(void)
+YAudioOut *YAudioOut::FirstAudioOut(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

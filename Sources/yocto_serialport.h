@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.h 38510 2019-11-26 15:36:38Z mvuilleu $
+ * $Id: yocto_serialport.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  * Declares yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -74,6 +74,8 @@ typedef enum {
 #define Y_LASTMSG_INVALID               (YAPI_INVALID_STRING)
 #define Y_CURRENTJOB_INVALID            (YAPI_INVALID_STRING)
 #define Y_STARTUPJOB_INVALID            (YAPI_INVALID_STRING)
+#define Y_JOBMAXTASK_INVALID            (YAPI_INVALID_UINT)
+#define Y_JOBMAXSIZE_INVALID            (YAPI_INVALID_UINT)
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 #define Y_PROTOCOL_INVALID              (YAPI_INVALID_STRING)
 #define Y_SERIALMODE_INVALID            (YAPI_INVALID_STRING)
@@ -85,7 +87,7 @@ typedef enum {
 
 //--- (generated code: YSnoopingRecord declaration)
 /**
- * YSnoopingRecord Class: Description of a message intercepted
+ * YSnoopingRecord Class: Intercepted message description, returned by serialPort.snoopMessages method
  *
  *
  */
@@ -146,10 +148,10 @@ public:
 
 //--- (generated code: YSerialPort declaration)
 /**
- * YSerialPort Class: SerialPort function interface
+ * YSerialPort Class: serial port control interface, available for instance in the Yocto-RS232, the
+ * Yocto-RS485-V2 or the Yocto-Serial
  *
- * The YSerialPort class allows you to fully drive a Yoctopuce serial port, for instance using a
- * Yocto-RS232, a Yocto-RS485-V2 or a Yocto-Serial.
+ * The YSerialPort class allows you to fully drive a Yoctopuce serial port.
  * It can be used to send and receive data, and to configure communication
  * parameters (baud rate, bit count, parity, flow control and protocol).
  * Note that Yoctopuce serial ports are not exposed as virtual COM ports.
@@ -171,6 +173,8 @@ protected:
     string          _lastMsg;
     string          _currentJob;
     string          _startupJob;
+    int             _jobMaxTask;
+    int             _jobMaxSize;
     string          _command;
     string          _protocol;
     Y_VOLTAGELEVEL_enum _voltageLevel;
@@ -184,7 +188,7 @@ protected:
     friend YSerialPort *yFirstSerialPort(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindSerialPort factory function to instantiate
     YSerialPort(const string& func);
@@ -202,6 +206,8 @@ public:
     static const string LASTMSG_INVALID;
     static const string CURRENTJOB_INVALID;
     static const string STARTUPJOB_INVALID;
+    static const int JOBMAXTASK_INVALID = YAPI_INVALID_UINT;
+    static const int JOBMAXSIZE_INVALID = YAPI_INVALID_UINT;
     static const string COMMAND_INVALID;
     static const string PROTOCOL_INVALID;
     static const Y_VOLTAGELEVEL_enum VOLTAGELEVEL_OFF = Y_VOLTAGELEVEL_OFF;
@@ -339,6 +345,30 @@ public:
     int             set_startupJob(const string& newval);
     inline int      setStartupJob(const string& newval)
     { return this->set_startupJob(newval); }
+
+    /**
+     * Returns the maximum number of tasks in a job that the device can handle.
+     *
+     * @return an integer corresponding to the maximum number of tasks in a job that the device can handle
+     *
+     * On failure, throws an exception or returns Y_JOBMAXTASK_INVALID.
+     */
+    int                 get_jobMaxTask(void);
+
+    inline int          jobMaxTask(void)
+    { return this->get_jobMaxTask(); }
+
+    /**
+     * Returns maximum size allowed for job files.
+     *
+     * @return an integer corresponding to maximum size allowed for job files
+     *
+     * On failure, throws an exception or returns Y_JOBMAXSIZE_INVALID.
+     */
+    int                 get_jobMaxSize(void);
+
+    inline int          jobMaxSize(void)
+    { return this->get_jobMaxSize(); }
 
     string              get_command(void);
 
@@ -955,7 +985,7 @@ public:
     virtual vector<int> modbusWriteAndReadRegisters(int slaveNo,int pduWriteAddr,vector<int> values,int pduReadAddr,int nReadWords);
 
 
-    inline static YSerialPort* Find(string func)
+    inline static YSerialPort *Find(string func)
     { return YSerialPort::FindSerialPort(func); }
 
     /**
@@ -981,8 +1011,8 @@ public:
      *         the first serial port currently online, or a NULL pointer
      *         if there are none.
      */
-           static YSerialPort* FirstSerialPort(void);
-    inline static YSerialPort* First(void)
+           static YSerialPort *FirstSerialPort(void);
+    inline static YSerialPort *First(void)
     { return YSerialPort::FirstSerialPort();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -1020,7 +1050,7 @@ public:
  *
  * @return a YSerialPort object allowing you to drive the serial port.
  */
-inline YSerialPort* yFindSerialPort(const string& func)
+inline YSerialPort *yFindSerialPort(const string& func)
 { return YSerialPort::FindSerialPort(func);}
 /**
  * Starts the enumeration of serial ports currently accessible.
@@ -1031,7 +1061,7 @@ inline YSerialPort* yFindSerialPort(const string& func)
  *         the first serial port currently online, or a NULL pointer
  *         if there are none.
  */
-inline YSerialPort* yFirstSerialPort(void)
+inline YSerialPort *yFirstSerialPort(void)
 { return YSerialPort::FirstSerialPort();}
 
 //--- (end of generated code: YSerialPort functions declaration)

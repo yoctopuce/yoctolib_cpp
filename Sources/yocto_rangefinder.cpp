@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_rangefinder.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_rangefinder.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindRangeFinder(), the high-level API for RangeFinder functions
  *
@@ -74,7 +74,7 @@ const string YRangeFinder::HARDWARECALIBRATION_INVALID = YAPI_INVALID_STRING;
 const double YRangeFinder::CURRENTTEMPERATURE_INVALID = YAPI_INVALID_DOUBLE;
 const string YRangeFinder::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YRangeFinder::_parseAttr(YJSONObject* json_val)
+int YRangeFinder::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("rangeFinderMode")) {
         _rangeFinderMode =  (Y_RANGEFINDERMODE_enum)json_val->getInt("rangeFinderMode");
@@ -621,7 +621,7 @@ YRangeFinder *YRangeFinder::nextRangeFinder(void)
     return YRangeFinder::FindRangeFinder(hwid);
 }
 
-YRangeFinder* YRangeFinder::FirstRangeFinder(void)
+YRangeFinder *YRangeFinder::FirstRangeFinder(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

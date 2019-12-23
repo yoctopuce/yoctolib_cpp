@@ -61,14 +61,14 @@ int main(int argc, const char * argv[])
   vector<string> devices;
 
   // Setup the API to use local USB devices
-  if(YAPI::RegisterHub("usb", errmsg) != YAPI_SUCCESS) {
+  if(YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
     cerr << "RegisterHub error: " << errmsg << endl;
     return 1;
   }
   for (i = 1; i < argc; i++) {
     string hub_url = string(argv[i]);
     cout << "Update module connected to hub " << hub_url << endl;
-    if(YAPI::RegisterHub(hub_url, errmsg) != YAPI_SUCCESS) {
+    if(YAPI::RegisterHub(hub_url, errmsg) != YAPI::SUCCESS) {
       cerr << "RegisterHub error: " << errmsg << endl;
       return 1;
     }

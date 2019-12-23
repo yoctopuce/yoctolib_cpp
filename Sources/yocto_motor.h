@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_motor.h 38030 2019-11-04 17:56:01Z mvuilleu $
+ *  $Id: yocto_motor.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindMotor(), the high-level API for Motor functions
  *
@@ -80,10 +80,9 @@ typedef enum {
 
 //--- (YMotor declaration)
 /**
- * YMotor Class: Motor function interface
+ * YMotor Class: motor control interface, available for instance in the Yocto-Motor-DC
  *
- * The YMotor class allows you to drive a DC motor, for instance using a Yocto-Motor-DC. It can be
- * used to configure the
+ * The YMotor class allows you to drive a DC motor. It can be used to configure the
  * power sent to the motor to make it turn both ways, but also to drive accelerations
  * and decelerations. The motor will then accelerate automatically: you will not
  * have to monitor it. The API also allows to slow down the motor by shortening
@@ -112,7 +111,7 @@ protected:
     friend YMotor *yFirstMotor(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindMotor factory function to instantiate
     YMotor(const string& func);
@@ -489,7 +488,7 @@ public:
     virtual int         brakingForceMove(double targetPower,int delay);
 
 
-    inline static YMotor* Find(string func)
+    inline static YMotor *Find(string func)
     { return YMotor::FindMotor(func); }
 
     /**
@@ -515,8 +514,8 @@ public:
      *         the first motor currently online, or a NULL pointer
      *         if there are none.
      */
-           static YMotor* FirstMotor(void);
-    inline static YMotor* First(void)
+           static YMotor *FirstMotor(void);
+    inline static YMotor *First(void)
     { return YMotor::FirstMotor();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -554,7 +553,7 @@ public:
  *
  * @return a YMotor object allowing you to drive the motor.
  */
-inline YMotor* yFindMotor(const string& func)
+inline YMotor *yFindMotor(const string& func)
 { return YMotor::FindMotor(func);}
 /**
  * Starts the enumeration of motors currently accessible.
@@ -565,7 +564,7 @@ inline YMotor* yFindMotor(const string& func)
  *         the first motor currently online, or a NULL pointer
  *         if there are none.
  */
-inline YMotor* yFirstMotor(void)
+inline YMotor *yFirstMotor(void)
 { return YMotor::FirstMotor();}
 
 //--- (end of YMotor functions declaration)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_voltage.h 38510 2019-11-26 15:36:38Z mvuilleu $
+ *  $Id: yocto_voltage.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindVoltage(), the high-level API for Voltage functions
  *
@@ -68,12 +68,12 @@ typedef enum {
 
 //--- (YVoltage declaration)
 /**
- * YVoltage Class: Voltage function interface
+ * YVoltage Class: voltage sensor control interface, available for instance in the Yocto-Motor-DC, the
+ * Yocto-Volt or the Yocto-Watt
  *
- * The YVoltage class allows you to read and configure Yoctopuce voltage
- * sensors, for instance using a Yocto-Motor-DC, a Yocto-Volt or a Yocto-Watt. It inherits from
- * YSensor class the core functions to read measurements,
- * to register callback functions, to access the autonomous datalogger.
+ * The YVoltage class allows you to read and configure Yoctopuce voltage sensors.
+ * It inherits from YSensor class the core functions to read measurements,
+ * to register callback functions, and to access the autonomous datalogger.
  */
 class YOCTO_CLASS_EXPORT YVoltage: public YSensor {
 #ifdef __BORLANDC__
@@ -91,7 +91,7 @@ protected:
     friend YVoltage *yFirstVoltage(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindVoltage factory function to instantiate
     YVoltage(const string& func);
@@ -199,7 +199,7 @@ public:
     virtual int         _invokeTimedReportCallback(YMeasure value);
 
 
-    inline static YVoltage* Find(string func)
+    inline static YVoltage *Find(string func)
     { return YVoltage::FindVoltage(func); }
 
     /**
@@ -225,8 +225,8 @@ public:
      *         the first voltage sensor currently online, or a NULL pointer
      *         if there are none.
      */
-           static YVoltage* FirstVoltage(void);
-    inline static YVoltage* First(void)
+           static YVoltage *FirstVoltage(void);
+    inline static YVoltage *First(void)
     { return YVoltage::FirstVoltage();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -264,7 +264,7 @@ public:
  *
  * @return a YVoltage object allowing you to drive the voltage sensor.
  */
-inline YVoltage* yFindVoltage(const string& func)
+inline YVoltage *yFindVoltage(const string& func)
 { return YVoltage::FindVoltage(func);}
 /**
  * Starts the enumeration of voltage sensors currently accessible.
@@ -275,7 +275,7 @@ inline YVoltage* yFindVoltage(const string& func)
  *         the first voltage sensor currently online, or a NULL pointer
  *         if there are none.
  */
-inline YVoltage* yFirstVoltage(void)
+inline YVoltage *yFirstVoltage(void)
 { return YVoltage::FirstVoltage();}
 
 //--- (end of YVoltage functions declaration)

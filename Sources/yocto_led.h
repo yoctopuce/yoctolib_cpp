@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_led.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_led.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindLed(), the high-level API for Led functions
  *
@@ -79,9 +79,9 @@ typedef enum {
 
 //--- (YLed declaration)
 /**
- * YLed Class: Led function interface
+ * YLed Class: monochrome LED control interface, available for instance in the Yocto-Buzzer
  *
- * The YLed class allows you to drive a monocolor LED, for instance using a Yocto-Buzzer.
+ * The YLed class allows you to drive a monocolor LED.
  * You can not only to drive the intensity of the LED, but also to
  * have it blink at various preset frequencies.
  */
@@ -102,7 +102,7 @@ protected:
     friend YLed *yFirstLed(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindLed factory function to instantiate
     YLed(const string& func);
@@ -203,7 +203,7 @@ public:
     { return this->set_blinking(newval); }
 
     /**
-     * Retrieves a LED for a given identifier.
+     * Retrieves a monochrome LED for a given identifier.
      * The identifier can be specified using several formats:
      * <ul>
      * <li>FunctionLogicalName</li>
@@ -213,11 +213,11 @@ public:
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
      *
-     * This function does not require that the LED is online at the time
+     * This function does not require that the monochrome LED is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YLed.isOnline() to test if the LED is
+     * Use the method YLed.isOnline() to test if the monochrome LED is
      * indeed online at a given time. In case of ambiguity when looking for
-     * a LED by logical name, no error is notified: the first instance
+     * a monochrome LED by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
      *
@@ -225,10 +225,10 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the LED, for instance
+     * @param func : a string that uniquely characterizes the monochrome LED, for instance
      *         YBUZZER2.led1.
      *
-     * @return a YLed object allowing you to drive the LED.
+     * @return a YLed object allowing you to drive the monochrome LED.
      */
     static YLed*        FindLed(string func);
 
@@ -249,34 +249,34 @@ public:
     virtual int         _invokeValueCallback(string value);
 
 
-    inline static YLed* Find(string func)
+    inline static YLed *Find(string func)
     { return YLed::FindLed(func); }
 
     /**
-     * Continues the enumeration of LEDs started using yFirstLed().
-     * Caution: You can't make any assumption about the returned LEDs order.
-     * If you want to find a specific a LED, use Led.findLed()
+     * Continues the enumeration of monochrome LEDs started using yFirstLed().
+     * Caution: You can't make any assumption about the returned monochrome LEDs order.
+     * If you want to find a specific a monochrome LED, use Led.findLed()
      * and a hardwareID or a logical name.
      *
      * @return a pointer to a YLed object, corresponding to
-     *         a LED currently online, or a NULL pointer
-     *         if there are no more LEDs to enumerate.
+     *         a monochrome LED currently online, or a NULL pointer
+     *         if there are no more monochrome LEDs to enumerate.
      */
            YLed            *nextLed(void);
     inline YLed            *next(void)
     { return this->nextLed();}
 
     /**
-     * Starts the enumeration of LEDs currently accessible.
+     * Starts the enumeration of monochrome LEDs currently accessible.
      * Use the method YLed.nextLed() to iterate on
-     * next LEDs.
+     * next monochrome LEDs.
      *
      * @return a pointer to a YLed object, corresponding to
-     *         the first LED currently online, or a NULL pointer
+     *         the first monochrome LED currently online, or a NULL pointer
      *         if there are none.
      */
-           static YLed* FirstLed(void);
-    inline static YLed* First(void)
+           static YLed *FirstLed(void);
+    inline static YLed *First(void)
     { return YLed::FirstLed();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -287,7 +287,7 @@ public:
 //--- (YLed functions declaration)
 
 /**
- * Retrieves a LED for a given identifier.
+ * Retrieves a monochrome LED for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -297,11 +297,11 @@ public:
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that the LED is online at the time
+ * This function does not require that the monochrome LED is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YLed.isOnline() to test if the LED is
+ * Use the method YLed.isOnline() to test if the monochrome LED is
  * indeed online at a given time. In case of ambiguity when looking for
- * a LED by logical name, no error is notified: the first instance
+ * a monochrome LED by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
@@ -309,23 +309,23 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the LED, for instance
+ * @param func : a string that uniquely characterizes the monochrome LED, for instance
  *         YBUZZER2.led1.
  *
- * @return a YLed object allowing you to drive the LED.
+ * @return a YLed object allowing you to drive the monochrome LED.
  */
-inline YLed* yFindLed(const string& func)
+inline YLed *yFindLed(const string& func)
 { return YLed::FindLed(func);}
 /**
- * Starts the enumeration of LEDs currently accessible.
+ * Starts the enumeration of monochrome LEDs currently accessible.
  * Use the method YLed.nextLed() to iterate on
- * next LEDs.
+ * next monochrome LEDs.
  *
  * @return a pointer to a YLed object, corresponding to
- *         the first LED currently online, or a NULL pointer
+ *         the first monochrome LED currently online, or a NULL pointer
  *         if there are none.
  */
-inline YLed* yFirstLed(void)
+inline YLed *yFirstLed(void)
 { return YLed::FirstLed();}
 
 //--- (end of YLed functions declaration)

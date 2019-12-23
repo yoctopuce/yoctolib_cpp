@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_audioout.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_audioout.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindAudioOut(), the high-level API for AudioOut functions
  *
@@ -70,9 +70,9 @@ typedef enum {
 
 //--- (YAudioOut declaration)
 /**
- * YAudioOut Class: AudioOut function interface
+ * YAudioOut Class: audio output control interface
  *
- * The YAudioOut class allows you to configure the volume of an audio outout.
+ * The YAudioOut class allows you to configure the volume of an audio output.
  */
 class YOCTO_CLASS_EXPORT YAudioOut: public YFunction {
 #ifdef __BORLANDC__
@@ -93,7 +93,7 @@ protected:
     friend YAudioOut *yFirstAudioOut(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindAudioOut factory function to instantiate
     YAudioOut(const string& func);
@@ -250,7 +250,7 @@ public:
     virtual int         _invokeValueCallback(string value);
 
 
-    inline static YAudioOut* Find(string func)
+    inline static YAudioOut *Find(string func)
     { return YAudioOut::FindAudioOut(func); }
 
     /**
@@ -276,8 +276,8 @@ public:
      *         the first audio output currently online, or a NULL pointer
      *         if there are none.
      */
-           static YAudioOut* FirstAudioOut(void);
-    inline static YAudioOut* First(void)
+           static YAudioOut *FirstAudioOut(void);
+    inline static YAudioOut *First(void)
     { return YAudioOut::FirstAudioOut();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -315,7 +315,7 @@ public:
  *
  * @return a YAudioOut object allowing you to drive the audio output.
  */
-inline YAudioOut* yFindAudioOut(const string& func)
+inline YAudioOut *yFindAudioOut(const string& func)
 { return YAudioOut::FindAudioOut(func);}
 /**
  * Starts the enumeration of audio outputs currently accessible.
@@ -326,7 +326,7 @@ inline YAudioOut* yFindAudioOut(const string& func)
  *         the first audio output currently online, or a NULL pointer
  *         if there are none.
  */
-inline YAudioOut* yFirstAudioOut(void)
+inline YAudioOut *yFirstAudioOut(void)
 { return YAudioOut::FirstAudioOut();}
 
 //--- (end of YAudioOut functions declaration)

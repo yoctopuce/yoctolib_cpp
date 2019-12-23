@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_tvoc.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_tvoc.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindTvoc(), the high-level API for Tvoc functions
  *
@@ -199,7 +199,7 @@ YTvoc *YTvoc::nextTvoc(void)
     return YTvoc::FindTvoc(hwid);
 }
 
-YTvoc* YTvoc::FirstTvoc(void)
+YTvoc *YTvoc::FirstTvoc(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_voc.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_voc.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindVoc(), the high-level API for Voc functions
  *
@@ -199,7 +199,7 @@ YVoc *YVoc::nextVoc(void)
     return YVoc::FindVoc(hwid);
 }
 
-YVoc* YVoc::FirstVoc(void)
+YVoc *YVoc::FirstVoc(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_currentloopoutput.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_currentloopoutput.h 38913 2019-12-20 18:59:49Z mvuilleu $
  *
  *  Declares yFindCurrentLoopOutput(), the high-level API for CurrentLoopOutput functions
  *
@@ -70,9 +70,10 @@ typedef enum {
 
 //--- (YCurrentLoopOutput declaration)
 /**
- * YCurrentLoopOutput Class: CurrentLoopOutput function interface
+ * YCurrentLoopOutput Class: 4-20mA output control interface, available for instance in the Yocto-4-20mA-Tx
  *
- * The YCurrentLoopOutput class allows you to drive a 4-20mA output, for instance using a Yocto-4-20mA-Tx.
+ * The YCurrentLoopOutput class allows you to drive a 4-20mA output
+ * by regulating the current flowing through the current loop.
  * It can also provide information about the power state of the current loop.
  */
 class YOCTO_CLASS_EXPORT YCurrentLoopOutput: public YFunction {
@@ -93,7 +94,7 @@ protected:
     friend YCurrentLoopOutput *yFirstCurrentLoopOutput(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindCurrentLoopOutput factory function to instantiate
     YCurrentLoopOutput(const string& func);
@@ -247,7 +248,7 @@ public:
     virtual int         currentMove(double mA_target,int ms_duration);
 
 
-    inline static YCurrentLoopOutput* Find(string func)
+    inline static YCurrentLoopOutput *Find(string func)
     { return YCurrentLoopOutput::FindCurrentLoopOutput(func); }
 
     /**
@@ -273,8 +274,8 @@ public:
      *         the first 4-20mA output currently online, or a NULL pointer
      *         if there are none.
      */
-           static YCurrentLoopOutput* FirstCurrentLoopOutput(void);
-    inline static YCurrentLoopOutput* First(void)
+           static YCurrentLoopOutput *FirstCurrentLoopOutput(void);
+    inline static YCurrentLoopOutput *First(void)
     { return YCurrentLoopOutput::FirstCurrentLoopOutput();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -312,7 +313,7 @@ public:
  *
  * @return a YCurrentLoopOutput object allowing you to drive the 4-20mA output.
  */
-inline YCurrentLoopOutput* yFindCurrentLoopOutput(const string& func)
+inline YCurrentLoopOutput *yFindCurrentLoopOutput(const string& func)
 { return YCurrentLoopOutput::FindCurrentLoopOutput(func);}
 /**
  * Starts the enumeration of 4-20mA outputs currently accessible.
@@ -323,7 +324,7 @@ inline YCurrentLoopOutput* yFindCurrentLoopOutput(const string& func)
  *         the first 4-20mA output currently online, or a NULL pointer
  *         if there are none.
  */
-inline YCurrentLoopOutput* yFirstCurrentLoopOutput(void)
+inline YCurrentLoopOutput *yFirstCurrentLoopOutput(void)
 { return YCurrentLoopOutput::FirstCurrentLoopOutput();}
 
 //--- (end of YCurrentLoopOutput functions declaration)

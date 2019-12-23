@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_altitude.cpp 38510 2019-11-26 15:36:38Z mvuilleu $
+ *  $Id: yocto_altitude.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindAltitude(), the high-level API for Altitude functions
  *
@@ -69,7 +69,7 @@ YAltitude::~YAltitude()
 const double YAltitude::QNH_INVALID = YAPI_INVALID_DOUBLE;
 const string YAltitude::TECHNOLOGY_INVALID = YAPI_INVALID_STRING;
 
-int YAltitude::_parseAttr(YJSONObject* json_val)
+int YAltitude::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("qnh")) {
         _qnh =  floor(json_val->getDouble("qnh") * 1000.0 / 65536.0 + 0.5) / 1000.0;
@@ -335,7 +335,7 @@ YAltitude *YAltitude::nextAltitude(void)
     return YAltitude::FindAltitude(hwid);
 }
 
-YAltitude* YAltitude::FirstAltitude(void)
+YAltitude *YAltitude::FirstAltitude(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

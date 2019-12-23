@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupschedule.cpp 38510 2019-11-26 15:36:38Z mvuilleu $
+ *  $Id: yocto_wakeupschedule.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindWakeUpSchedule(), the high-level API for WakeUpSchedule functions
  *
@@ -71,7 +71,7 @@ YWakeUpSchedule::~YWakeUpSchedule()
 //--- (YWakeUpSchedule implementation)
 // static attributes
 
-int YWakeUpSchedule::_parseAttr(YJSONObject* json_val)
+int YWakeUpSchedule::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("minutesA")) {
         _minutesA =  json_val->getInt("minutesA");
@@ -591,7 +591,7 @@ YWakeUpSchedule *YWakeUpSchedule::nextWakeUpSchedule(void)
     return YWakeUpSchedule::FindWakeUpSchedule(hwid);
 }
 
-YWakeUpSchedule* YWakeUpSchedule::FirstWakeUpSchedule(void)
+YWakeUpSchedule *YWakeUpSchedule::FirstWakeUpSchedule(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

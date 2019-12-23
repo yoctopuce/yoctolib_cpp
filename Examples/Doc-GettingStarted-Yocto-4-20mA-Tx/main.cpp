@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 32619 2018-10-10 12:22:50Z seb $
+ *  $Id: main.cpp 38820 2019-12-18 18:01:14Z seb $
  *
  *  An example that show how to use a  Yocto-4-20mA-Tx
  *
@@ -29,8 +29,8 @@ static void usage(void)
   cout << "Eg." << endl;
   cout << "   demo any 12 " << endl;
   cerr << "   demo TX420MA1-123456 20" << endl;
-  u64 now = yGetTickCount();
-  while (yGetTickCount() - now < 3000) {
+  u64 now = YAPI::GetTickCount();
+  while (YAPI::GetTickCount() - now < 3000) {
     // wait 3 sec to show the message
   }
   exit(1);
@@ -51,19 +51,19 @@ int main(int argc, const char * argv[])
   value = atof(argv[2]);
 
   // Setup the API to use local USB devices
-  if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
+  if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
     cerr << "RegisterHub error: " << errmsg << endl;
     return 1;
   }
 
   if (target == "any") {
-    loop = yFirstCurrentLoopOutput();
+    loop = YCurrentLoopOutput::FirstCurrentLoopOutput();
     if (loop == NULL) {
       cout << "No module connected (check USB cable)" << endl;
       return 1;
     }
   } else {
-    loop = yFindCurrentLoopOutput(target + ".currentLoopOutput");
+    loop = YCurrentLoopOutput::FindCurrentLoopOutput(target + ".currentLoopOutput");
   }
 
   if (loop->isOnline()) {
@@ -82,6 +82,6 @@ int main(int argc, const char * argv[])
   } else {
     cout << "Module not connected (check identification and USB cable)" << endl;
   }
-  yFreeAPI();
+  YAPI::FreeAPI();
   return 0;
 }

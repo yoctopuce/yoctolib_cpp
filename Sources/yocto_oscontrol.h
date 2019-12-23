@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_oscontrol.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_oscontrol.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindOsControl(), the high-level API for OsControl functions
  *
@@ -59,7 +59,7 @@ typedef void (*YOsControlValueCallback)(YOsControl *func, const string& function
 
 //--- (YOsControl declaration)
 /**
- * YOsControl Class: OS control
+ * YOsControl Class: Operating system control interface via the VirtualHub application
  *
  * The YOScontrol class provides some control over the operating system running a VirtualHub.
  * YOsControl is available on VirtualHub software only. This feature must be activated at the VirtualHub
@@ -80,7 +80,7 @@ protected:
     friend YOsControl *yFirstOsControl(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindOsControl factory function to instantiate
     YOsControl(const string& func);
@@ -168,7 +168,7 @@ public:
     virtual int         shutdown(int secBeforeShutDown);
 
 
-    inline static YOsControl* Find(string func)
+    inline static YOsControl *Find(string func)
     { return YOsControl::FindOsControl(func); }
 
     /**
@@ -194,8 +194,8 @@ public:
      *         the first OS control currently online, or a NULL pointer
      *         if there are none.
      */
-           static YOsControl* FirstOsControl(void);
-    inline static YOsControl* First(void)
+           static YOsControl *FirstOsControl(void);
+    inline static YOsControl *First(void)
     { return YOsControl::FirstOsControl();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -233,7 +233,7 @@ public:
  *
  * @return a YOsControl object allowing you to drive the OS control.
  */
-inline YOsControl* yFindOsControl(const string& func)
+inline YOsControl *yFindOsControl(const string& func)
 { return YOsControl::FindOsControl(func);}
 /**
  * Starts the enumeration of OS control currently accessible.
@@ -244,7 +244,7 @@ inline YOsControl* yFindOsControl(const string& func)
  *         the first OS control currently online, or a NULL pointer
  *         if there are none.
  */
-inline YOsControl* yFirstOsControl(void)
+inline YOsControl *yFirstOsControl(void)
 { return YOsControl::FirstOsControl();}
 
 //--- (end of YOsControl functions declaration)

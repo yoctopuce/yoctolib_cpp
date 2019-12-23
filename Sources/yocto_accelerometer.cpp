@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_accelerometer.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_accelerometer.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindAccelerometer(), the high-level API for Accelerometer functions
  *
@@ -73,7 +73,7 @@ const double YAccelerometer::XVALUE_INVALID = YAPI_INVALID_DOUBLE;
 const double YAccelerometer::YVALUE_INVALID = YAPI_INVALID_DOUBLE;
 const double YAccelerometer::ZVALUE_INVALID = YAPI_INVALID_DOUBLE;
 
-int YAccelerometer::_parseAttr(YJSONObject* json_val)
+int YAccelerometer::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("bandwidth")) {
         _bandwidth =  json_val->getInt("bandwidth");
@@ -409,7 +409,7 @@ YAccelerometer *YAccelerometer::nextAccelerometer(void)
     return YAccelerometer::FindAccelerometer(hwid);
 }
 
-YAccelerometer* YAccelerometer::FirstAccelerometer(void)
+YAccelerometer *YAccelerometer::FirstAccelerometer(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 38510 2019-11-26 15:36:38Z mvuilleu $
+ * $Id: yocto_cellular.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -75,7 +75,7 @@ YCellRecord::YCellRecord(int mcc,int mnc,int lac,int cellId,int dbm,int tad,cons
 
 
 /**
- * Returns the name of the the cell operator.
+ * Returns the name of the the cell operator, as received from the network.
  *
  * @return a string with the name of the the cell operator.
  */
@@ -85,9 +85,9 @@ string YCellRecord::get_cellOperator(void)
 }
 
 /**
- * Returns the Mobile Country Code (MCC).
+ * Returns the Mobile Country Code (MCC). The MCC is a unique identifier for each country.
  *
- * @return the Mobile Country Code (MCC).
+ * @return an integer corresponding to the Mobile Country Code (MCC).
  */
 int YCellRecord::get_mobileCountryCode(void)
 {
@@ -95,9 +95,10 @@ int YCellRecord::get_mobileCountryCode(void)
 }
 
 /**
- * Returns the Mobile Network Code (MNC).
+ * Returns the Mobile Network Code (MNC). The MNC is a unique identifier for each phone
+ * operator within a country.
  *
- * @return the Mobile Network Code (MNC).
+ * @return an integer corresponding to the Mobile Network Code (MNC).
  */
 int YCellRecord::get_mobileNetworkCode(void)
 {
@@ -105,9 +106,10 @@ int YCellRecord::get_mobileNetworkCode(void)
 }
 
 /**
- * Returns the Location Area Code (LAC).
+ * Returns the Location Area Code (LAC). The LAC is a unique identifier for each
+ * place within a country.
  *
- * @return the Location Area Code (LAC).
+ * @return an integer corresponding to the Location Area Code (LAC).
  */
 int YCellRecord::get_locationAreaCode(void)
 {
@@ -115,9 +117,10 @@ int YCellRecord::get_locationAreaCode(void)
 }
 
 /**
- * Returns the Cell Id.
+ * Returns the Cell ID. The Cell ID is a unique identifier for each
+ * base transmission station within a LAC.
  *
- * @return the Cell Id.
+ * @return an integer corresponding to the Cell Id.
  */
 int YCellRecord::get_cellId(void)
 {
@@ -125,9 +128,9 @@ int YCellRecord::get_cellId(void)
 }
 
 /**
- * Returns the signal strength.
+ * Returns the signal strength, measured in dBm.
  *
- * @return the signal strength.
+ * @return an integer corresponding to the signal strength.
  */
 int YCellRecord::get_signalStrength(void)
 {
@@ -135,9 +138,11 @@ int YCellRecord::get_signalStrength(void)
 }
 
 /**
- * Returns the Timing Advance (TA).
+ * Returns the Timing Advance (TA). The TA corresponds to the time necessary
+ * for the signal to reach the base station from the device.
+ * Each increment corresponds about to 550m of distance.
  *
- * @return the Timing Advance (TA).
+ * @return an integer corresponding to the Timing Advance (TA).
  */
 int YCellRecord::get_timingAdvance(void)
 {
@@ -187,7 +192,7 @@ const string YCellular::APN_INVALID = YAPI_INVALID_STRING;
 const string YCellular::APNSECRET_INVALID = YAPI_INVALID_STRING;
 const string YCellular::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YCellular::_parseAttr(YJSONObject* json_val)
+int YCellular::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("linkQuality")) {
         _linkQuality =  json_val->getInt("linkQuality");
@@ -1326,7 +1331,7 @@ YCellular *YCellular::nextCellular(void)
     return YCellular::FindCellular(hwid);
 }
 
-YCellular* YCellular::FirstCellular(void)
+YCellular *YCellular::FirstCellular(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

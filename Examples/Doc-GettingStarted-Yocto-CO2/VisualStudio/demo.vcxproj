@@ -93,9 +93,6 @@
     <ClCompile Include="..\..\..\Sources\yocto_api.cpp" />
     
 <ClCompile Include="..\..\..\Sources\yocto_carbondioxide.cpp" />
-<ClCompile Include="..\..\..\Sources\yocto_humidity.cpp" />
-<ClCompile Include="..\..\..\Sources\yocto_pressure.cpp" />
-<ClCompile Include="..\..\..\Sources\yocto_temperature.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_datalogger.cpp" />
 
     <ClCompile Include="..\main.cpp" />
@@ -116,9 +113,6 @@
     <ClInclude Include="..\..\..\Sources\yocto_api.h" />
     
 <ClInclude Include="..\..\..\Sources\yocto_carbondioxide.h" />
-<ClInclude Include="..\..\..\Sources\yocto_humidity.h" />
-<ClInclude Include="..\..\..\Sources\yocto_pressure.h" />
-<ClInclude Include="..\..\..\Sources\yocto_temperature.h" />
 <ClInclude Include="..\..\..\Sources\yocto_datalogger.h" />
 
   </ItemGroup>

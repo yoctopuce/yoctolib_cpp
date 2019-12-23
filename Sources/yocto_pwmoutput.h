@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwmoutput.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_pwmoutput.h 38913 2019-12-20 18:59:49Z mvuilleu $
  *
  *  Declares yFindPwmOutput(), the high-level API for PwmOutput functions
  *
@@ -80,9 +80,9 @@ typedef enum {
 
 //--- (YPwmOutput declaration)
 /**
- * YPwmOutput Class: PwmOutput function interface
+ * YPwmOutput Class: PWM generator control interface, available for instance in the Yocto-PWM-Tx
  *
- * The YPwmOutput class allows you to drive a PWM output, for instance using a Yocto-PWM-Tx.
+ * The YPwmOutput class allows you to drive a pulse-width modulated output (PWM).
  * You can configure the frequency as well as the duty cycle, and setup progressive
  * transitions.
  */
@@ -108,7 +108,7 @@ protected:
     friend YPwmOutput *yFirstPwmOutput(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindPwmOutput factory function to instantiate
     YPwmOutput(const string& func);
@@ -132,9 +132,9 @@ public:
     static const double DUTYCYCLEATPOWERON_INVALID;
 
     /**
-     * Returns the state of the PWMs.
+     * Returns the state of the PWM generators.
      *
-     * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the state of the PWMs
+     * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the state of the PWM generators
      *
      * On failure, throws an exception or returns Y_ENABLED_INVALID.
      */
@@ -320,10 +320,10 @@ public:
     { return this->set_dutyCycleAtPowerOn(newval); }
 
     /**
-     * Returns the PWMs duty cycle at device power on as a floating point number between 0 and 100.
+     * Returns the PWM generators duty cycle at device power on as a floating point number between 0 and 100.
      *
-     * @return a floating point number corresponding to the PWMs duty cycle at device power on as a
-     * floating point number between 0 and 100
+     * @return a floating point number corresponding to the PWM generators duty cycle at device power on
+     * as a floating point number between 0 and 100
      *
      * On failure, throws an exception or returns Y_DUTYCYCLEATPOWERON_INVALID.
      */
@@ -333,7 +333,7 @@ public:
     { return this->get_dutyCycleAtPowerOn(); }
 
     /**
-     * Retrieves a PWM for a given identifier.
+     * Retrieves a PWM generator for a given identifier.
      * The identifier can be specified using several formats:
      * <ul>
      * <li>FunctionLogicalName</li>
@@ -343,11 +343,11 @@ public:
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
      *
-     * This function does not require that the PWM is online at the time
+     * This function does not require that the PWM generator is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YPwmOutput.isOnline() to test if the PWM is
+     * Use the method YPwmOutput.isOnline() to test if the PWM generator is
      * indeed online at a given time. In case of ambiguity when looking for
-     * a PWM by logical name, no error is notified: the first instance
+     * a PWM generator by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
      *
@@ -355,10 +355,10 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the PWM, for instance
+     * @param func : a string that uniquely characterizes the PWM generator, for instance
      *         YPWMTX01.pwmOutput1.
      *
-     * @return a YPwmOutput object allowing you to drive the PWM.
+     * @return a YPwmOutput object allowing you to drive the PWM generator.
      */
     static YPwmOutput*  FindPwmOutput(string func);
 
@@ -481,34 +481,34 @@ public:
     virtual int         repeatFromMark(void);
 
 
-    inline static YPwmOutput* Find(string func)
+    inline static YPwmOutput *Find(string func)
     { return YPwmOutput::FindPwmOutput(func); }
 
     /**
-     * Continues the enumeration of PWMs started using yFirstPwmOutput().
-     * Caution: You can't make any assumption about the returned PWMs order.
-     * If you want to find a specific a PWM, use PwmOutput.findPwmOutput()
+     * Continues the enumeration of PWM generators started using yFirstPwmOutput().
+     * Caution: You can't make any assumption about the returned PWM generators order.
+     * If you want to find a specific a PWM generator, use PwmOutput.findPwmOutput()
      * and a hardwareID or a logical name.
      *
      * @return a pointer to a YPwmOutput object, corresponding to
-     *         a PWM currently online, or a NULL pointer
-     *         if there are no more PWMs to enumerate.
+     *         a PWM generator currently online, or a NULL pointer
+     *         if there are no more PWM generators to enumerate.
      */
            YPwmOutput      *nextPwmOutput(void);
     inline YPwmOutput      *next(void)
     { return this->nextPwmOutput();}
 
     /**
-     * Starts the enumeration of PWMs currently accessible.
+     * Starts the enumeration of PWM generators currently accessible.
      * Use the method YPwmOutput.nextPwmOutput() to iterate on
-     * next PWMs.
+     * next PWM generators.
      *
      * @return a pointer to a YPwmOutput object, corresponding to
-     *         the first PWM currently online, or a NULL pointer
+     *         the first PWM generator currently online, or a NULL pointer
      *         if there are none.
      */
-           static YPwmOutput* FirstPwmOutput(void);
-    inline static YPwmOutput* First(void)
+           static YPwmOutput *FirstPwmOutput(void);
+    inline static YPwmOutput *First(void)
     { return YPwmOutput::FirstPwmOutput();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -519,7 +519,7 @@ public:
 //--- (YPwmOutput functions declaration)
 
 /**
- * Retrieves a PWM for a given identifier.
+ * Retrieves a PWM generator for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -529,11 +529,11 @@ public:
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that the PWM is online at the time
+ * This function does not require that the PWM generator is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YPwmOutput.isOnline() to test if the PWM is
+ * Use the method YPwmOutput.isOnline() to test if the PWM generator is
  * indeed online at a given time. In case of ambiguity when looking for
- * a PWM by logical name, no error is notified: the first instance
+ * a PWM generator by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
@@ -541,23 +541,23 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the PWM, for instance
+ * @param func : a string that uniquely characterizes the PWM generator, for instance
  *         YPWMTX01.pwmOutput1.
  *
- * @return a YPwmOutput object allowing you to drive the PWM.
+ * @return a YPwmOutput object allowing you to drive the PWM generator.
  */
-inline YPwmOutput* yFindPwmOutput(const string& func)
+inline YPwmOutput *yFindPwmOutput(const string& func)
 { return YPwmOutput::FindPwmOutput(func);}
 /**
- * Starts the enumeration of PWMs currently accessible.
+ * Starts the enumeration of PWM generators currently accessible.
  * Use the method YPwmOutput.nextPwmOutput() to iterate on
- * next PWMs.
+ * next PWM generators.
  *
  * @return a pointer to a YPwmOutput object, corresponding to
- *         the first PWM currently online, or a NULL pointer
+ *         the first PWM generator currently online, or a NULL pointer
  *         if there are none.
  */
-inline YPwmOutput* yFirstPwmOutput(void)
+inline YPwmOutput *yFirstPwmOutput(void)
 { return YPwmOutput::FirstPwmOutput();}
 
 //--- (end of YPwmOutput functions declaration)

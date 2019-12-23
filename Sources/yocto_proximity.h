@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_proximity.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_proximity.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindProximity(), the high-level API for Proximity functions
  *
@@ -86,14 +86,13 @@ typedef enum {
 
 //--- (YProximity declaration)
 /**
- * YProximity Class: Proximity function interface
+ * YProximity Class: proximity sensor control interface, available for instance in the Yocto-Proximity
  *
- * The YProximity class allows you to use and configure Yoctopuce proximity
- * sensors, for instance using a Yocto-Proximity. It inherits from the YSensor class the core
- * functions to read measurements,
- * to register callback functions, to access the autonomous datalogger.
- * This class adds the ability to easily perform a one-point linear calibration
- * to compensate the effect of a glass or filter placed in front of the sensor.
+ * The YProximity class allows you to read and configure Yoctopuce proximity sensors.
+ * It inherits from YSensor class the core functions to read measurements,
+ * to register callback functions, and to access the autonomous datalogger.
+ * This class adds the ability to setup a detection threshold and to count the
+ * number of detected state changes.
  */
 class YOCTO_CLASS_EXPORT YProximity: public YSensor {
 #ifdef __BORLANDC__
@@ -121,7 +120,7 @@ protected:
     friend YProximity *yFirstProximity(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindProximity factory function to instantiate
     YProximity(const string& func);
@@ -460,7 +459,7 @@ public:
     virtual int         resetCounter(void);
 
 
-    inline static YProximity* Find(string func)
+    inline static YProximity *Find(string func)
     { return YProximity::FindProximity(func); }
 
     /**
@@ -486,8 +485,8 @@ public:
      *         the first proximity sensor currently online, or a NULL pointer
      *         if there are none.
      */
-           static YProximity* FirstProximity(void);
-    inline static YProximity* First(void)
+           static YProximity *FirstProximity(void);
+    inline static YProximity *First(void)
     { return YProximity::FirstProximity();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -525,7 +524,7 @@ public:
  *
  * @return a YProximity object allowing you to drive the proximity sensor.
  */
-inline YProximity* yFindProximity(const string& func)
+inline YProximity *yFindProximity(const string& func)
 { return YProximity::FindProximity(func);}
 /**
  * Starts the enumeration of proximity sensors currently accessible.
@@ -536,7 +535,7 @@ inline YProximity* yFindProximity(const string& func)
  *         the first proximity sensor currently online, or a NULL pointer
  *         if there are none.
  */
-inline YProximity* yFirstProximity(void)
+inline YProximity *yFirstProximity(void)
 { return YProximity::FirstProximity();}
 
 //--- (end of YProximity functions declaration)

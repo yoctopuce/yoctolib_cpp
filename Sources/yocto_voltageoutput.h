@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_voltageoutput.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_voltageoutput.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindVoltageOutput(), the high-level API for VoltageOutput functions
  *
@@ -61,9 +61,9 @@ typedef void (*YVoltageOutputValueCallback)(YVoltageOutput *func, const string& 
 
 //--- (YVoltageOutput declaration)
 /**
- * YVoltageOutput Class: VoltageOutput function interface
+ * YVoltageOutput Class: voltage output control interface, available for instance in the Yocto-0-10V-Tx
  *
- * The YVoltageOutput class allows you to drive a voltage output, for instance using a Yocto-0-10V-Tx.
+ * The YVoltageOutput class allows you to drive a voltage output.
  */
 class YOCTO_CLASS_EXPORT YVoltageOutput: public YFunction {
 #ifdef __BORLANDC__
@@ -82,7 +82,7 @@ protected:
     friend YVoltageOutput *yFirstVoltageOutput(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindVoltageOutput factory function to instantiate
     YVoltageOutput(const string& func);
@@ -215,7 +215,7 @@ public:
     virtual int         voltageMove(double V_target,int ms_duration);
 
 
-    inline static YVoltageOutput* Find(string func)
+    inline static YVoltageOutput *Find(string func)
     { return YVoltageOutput::FindVoltageOutput(func); }
 
     /**
@@ -241,8 +241,8 @@ public:
      *         the first voltage output currently online, or a NULL pointer
      *         if there are none.
      */
-           static YVoltageOutput* FirstVoltageOutput(void);
-    inline static YVoltageOutput* First(void)
+           static YVoltageOutput *FirstVoltageOutput(void);
+    inline static YVoltageOutput *First(void)
     { return YVoltageOutput::FirstVoltageOutput();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -280,7 +280,7 @@ public:
  *
  * @return a YVoltageOutput object allowing you to drive the voltage output.
  */
-inline YVoltageOutput* yFindVoltageOutput(const string& func)
+inline YVoltageOutput *yFindVoltageOutput(const string& func)
 { return YVoltageOutput::FindVoltageOutput(func);}
 /**
  * Starts the enumeration of voltage outputs currently accessible.
@@ -291,7 +291,7 @@ inline YVoltageOutput* yFindVoltageOutput(const string& func)
  *         the first voltage output currently online, or a NULL pointer
  *         if there are none.
  */
-inline YVoltageOutput* yFirstVoltageOutput(void)
+inline YVoltageOutput *yFirstVoltageOutput(void)
 { return YVoltageOutput::FirstVoltageOutput();}
 
 //--- (end of YVoltageOutput functions declaration)

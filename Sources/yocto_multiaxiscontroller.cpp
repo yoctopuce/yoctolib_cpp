@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multiaxiscontroller.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_multiaxiscontroller.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindMultiAxisController(), the high-level API for MultiAxisController functions
  *
@@ -68,7 +68,7 @@ YMultiAxisController::~YMultiAxisController()
 // static attributes
 const string YMultiAxisController::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YMultiAxisController::_parseAttr(YJSONObject* json_val)
+int YMultiAxisController::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("nAxis")) {
         _nAxis =  json_val->getInt("nAxis");
@@ -460,7 +460,7 @@ YMultiAxisController *YMultiAxisController::nextMultiAxisController(void)
     return YMultiAxisController::FindMultiAxisController(hwid);
 }
 
-YMultiAxisController* YMultiAxisController::FirstMultiAxisController(void)
+YMultiAxisController *YMultiAxisController::FirstMultiAxisController(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

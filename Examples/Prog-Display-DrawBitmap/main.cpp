@@ -12,8 +12,8 @@ static void usage(void)
   cout << "usage: demo <serial_number>" << endl;
   cout << "       demo <logical_name>" << endl;
   cout << "       demo any (use any discovered device)" << endl;
-  u64 now = yGetTickCount();
-  while (yGetTickCount() - now < 3000) {
+  u64 now = YAPI::GetTickCount();
+  while (YAPI::GetTickCount() - now < 3000) {
     // wait 3 sec to show the message
   }
   exit(1);
@@ -32,7 +32,7 @@ int main(int argc, const char * argv[])
   }
 
   // Setup the API to use local USB devices
-  if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
+  if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
     cerr << "RegisterHub error: " << errmsg << endl;
     usage();
     return 1;
@@ -40,14 +40,14 @@ int main(int argc, const char * argv[])
 
   target = (string) argv[1];
   if (target == "any") {
-    disp = yFirstDisplay();
+    disp = YDisplay::FirstDisplay();
     if (disp == NULL) {
       cout << "No module connected (check USB cable)" << endl;
       usage();
       return 1;
     }
   } else {
-    disp = yFindDisplay(target + ".display");
+    disp = YDisplay::FindDisplay(target + ".display");
   }
 
   if (!disp->isOnline()) {

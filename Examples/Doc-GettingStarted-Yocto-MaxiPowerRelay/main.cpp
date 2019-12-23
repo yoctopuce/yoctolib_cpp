@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 32716 2018-10-19 15:54:48Z seb $
+ *  $Id: main.cpp 38820 2019-12-18 18:01:14Z seb $
  *
  *  An example that show how to use a  Yocto-MaxiPowerRelay
  *
@@ -46,13 +46,13 @@ int main(int argc, const char * argv[])
   state   = (string) argv[3];
 
   // Setup the API to use local USB devices
-  if (yRegisterHub("usb", errmsg) != YAPI_SUCCESS) {
+  if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
     cerr << "RegisterHub error: " << errmsg << endl;
     return 1;
   }
 
   if (target == "any") {
-    relay =  yFirstRelay();
+    relay =  YRelay::FirstRelay();
     if (relay == NULL) {
       cout << "No module connected (check USB cable)" << endl;
       return 1;
@@ -61,14 +61,14 @@ int main(int argc, const char * argv[])
   }
 
   cout << "Using " << target << endl;
-  relay =  yFindRelay((string)target + ".relay" + channel);
+  relay =  YRelay::FindRelay((string)target + ".relay" + channel);
 
   if (relay->isOnline()) {
     relay->set_state(state == "ON" ? Y_STATE_B : Y_STATE_A);
   } else {
     cout << "Module not connected (check identification and USB cable)" << endl;
   }
-  yFreeAPI();
+  YAPI::FreeAPI();
 
   return 0;
 }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_network.h 38510 2019-11-26 15:36:38Z mvuilleu $
+ *  $Id: yocto_network.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindNetwork(), the high-level API for Network functions
  *
@@ -124,11 +124,11 @@ typedef enum {
 
 //--- (YNetwork declaration)
 /**
- * YNetwork Class: Network function interface
+ * YNetwork Class: network interface control interface, available for instance in the
+ * YoctoHub-Ethernet, the YoctoHub-GSM-3G-EU, the YoctoHub-GSM-3G-NA or the YoctoHub-Wireless-g
  *
  * YNetwork objects provide access to TCP/IP parameters of Yoctopuce
- * devices that include a built-in network interface, for instance using a YoctoHub-Ethernet, a
- * YoctoHub-GSM-3G-EU, a YoctoHub-GSM-3G-NA or a YoctoHub-Wireless-g.
+ * devices that include a built-in network interface.
  */
 class YOCTO_CLASS_EXPORT YNetwork: public YFunction {
 #ifdef __BORLANDC__
@@ -168,7 +168,7 @@ protected:
     friend YNetwork *yFirstNetwork(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindNetwork factory function to instantiate
     YNetwork(const string& func);
@@ -988,7 +988,7 @@ public:
     virtual int         set_periodicCallbackSchedule(string interval,int offset);
 
 
-    inline static YNetwork* Find(string func)
+    inline static YNetwork *Find(string func)
     { return YNetwork::FindNetwork(func); }
 
     /**
@@ -1014,8 +1014,8 @@ public:
      *         the first network interface currently online, or a NULL pointer
      *         if there are none.
      */
-           static YNetwork* FirstNetwork(void);
-    inline static YNetwork* First(void)
+           static YNetwork *FirstNetwork(void);
+    inline static YNetwork *First(void)
     { return YNetwork::FirstNetwork();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -1053,7 +1053,7 @@ public:
  *
  * @return a YNetwork object allowing you to drive the network interface.
  */
-inline YNetwork* yFindNetwork(const string& func)
+inline YNetwork *yFindNetwork(const string& func)
 { return YNetwork::FindNetwork(func);}
 /**
  * Starts the enumeration of network interfaces currently accessible.
@@ -1064,7 +1064,7 @@ inline YNetwork* yFindNetwork(const string& func)
  *         the first network interface currently online, or a NULL pointer
  *         if there are none.
  */
-inline YNetwork* yFirstNetwork(void)
+inline YNetwork *yFirstNetwork(void)
 { return YNetwork::FirstNetwork();}
 
 //--- (end of YNetwork functions declaration)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_spiport.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -58,6 +58,8 @@ YSpiPort::YSpiPort(const string& func): YFunction(func)
     ,_lastMsg(LASTMSG_INVALID)
     ,_currentJob(CURRENTJOB_INVALID)
     ,_startupJob(STARTUPJOB_INVALID)
+    ,_jobMaxTask(JOBMAXTASK_INVALID)
+    ,_jobMaxSize(JOBMAXSIZE_INVALID)
     ,_command(COMMAND_INVALID)
     ,_protocol(PROTOCOL_INVALID)
     ,_voltageLevel(VOLTAGELEVEL_INVALID)
@@ -86,7 +88,7 @@ const string YSpiPort::COMMAND_INVALID = YAPI_INVALID_STRING;
 const string YSpiPort::PROTOCOL_INVALID = YAPI_INVALID_STRING;
 const string YSpiPort::SPIMODE_INVALID = YAPI_INVALID_STRING;
 
-int YSpiPort::_parseAttr(YJSONObject* json_val)
+int YSpiPort::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("rxCount")) {
         _rxCount =  json_val->getInt("rxCount");
@@ -111,6 +113,12 @@ int YSpiPort::_parseAttr(YJSONObject* json_val)
     }
     if(json_val->has("startupJob")) {
         _startupJob =  json_val->getString("startupJob");
+    }
+    if(json_val->has("jobMaxTask")) {
+        _jobMaxTask =  json_val->getInt("jobMaxTask");
+    }
+    if(json_val->has("jobMaxSize")) {
+        _jobMaxSize =  json_val->getInt("jobMaxSize");
     }
     if(json_val->has("command")) {
         _command =  json_val->getString("command");
@@ -414,6 +422,64 @@ int YSpiPort::set_startupJob(const string& newval)
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the maximum number of tasks in a job that the device can handle.
+ *
+ * @return an integer corresponding to the maximum number of tasks in a job that the device can handle
+ *
+ * On failure, throws an exception or returns Y_JOBMAXTASK_INVALID.
+ */
+int YSpiPort::get_jobMaxTask(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration == 0) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSpiPort::JOBMAXTASK_INVALID;
+                }
+            }
+        }
+        res = _jobMaxTask;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns maximum size allowed for job files.
+ *
+ * @return an integer corresponding to maximum size allowed for job files
+ *
+ * On failure, throws an exception or returns Y_JOBMAXSIZE_INVALID.
+ */
+int YSpiPort::get_jobMaxSize(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration == 0) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSpiPort::JOBMAXSIZE_INVALID;
+                }
+            }
+        }
+        res = _jobMaxSize;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
     yLeaveCriticalSection(&_this_cs);
     return res;
@@ -1502,7 +1568,7 @@ YSpiPort *YSpiPort::nextSpiPort(void)
     return YSpiPort::FindSpiPort(hwid);
 }
 
-YSpiPort* YSpiPort::FirstSpiPort(void)
+YSpiPort *YSpiPort::FirstSpiPort(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

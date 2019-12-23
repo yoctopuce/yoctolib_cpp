@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_quadraturedecoder.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_quadraturedecoder.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindQuadratureDecoder(), the high-level API for QuadratureDecoder functions
  *
@@ -69,12 +69,11 @@ typedef enum {
 
 //--- (YQuadratureDecoder declaration)
 /**
- * YQuadratureDecoder Class: QuadratureDecoder function interface
+ * YQuadratureDecoder Class: quadrature decoder control interface, available for instance in the Yocto-PWM-Rx
  *
- * The YQuadratureDecoder class allows you to decode a two-wire signal produced by a
- * quadrature encoder, for instance using a Yocto-PWM-Rx. It inherits from YSensor class the core
- * functions to read measurements,
- * to register callback functions, to access the autonomous datalogger.
+ * The YQuadratureDecoder class allows you to read and configure Yoctopuce quadrature decoders.
+ * It inherits from YSensor class the core functions to read measurements,
+ * to register callback functions, and to access the autonomous datalogger.
  */
 class YOCTO_CLASS_EXPORT YQuadratureDecoder: public YSensor {
 #ifdef __BORLANDC__
@@ -93,7 +92,7 @@ protected:
     friend YQuadratureDecoder *yFirstQuadratureDecoder(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindQuadratureDecoder factory function to instantiate
     YQuadratureDecoder(const string& func);
@@ -226,7 +225,7 @@ public:
     virtual int         _invokeTimedReportCallback(YMeasure value);
 
 
-    inline static YQuadratureDecoder* Find(string func)
+    inline static YQuadratureDecoder *Find(string func)
     { return YQuadratureDecoder::FindQuadratureDecoder(func); }
 
     /**
@@ -252,8 +251,8 @@ public:
      *         the first quadrature decoder currently online, or a NULL pointer
      *         if there are none.
      */
-           static YQuadratureDecoder* FirstQuadratureDecoder(void);
-    inline static YQuadratureDecoder* First(void)
+           static YQuadratureDecoder *FirstQuadratureDecoder(void);
+    inline static YQuadratureDecoder *First(void)
     { return YQuadratureDecoder::FirstQuadratureDecoder();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -291,7 +290,7 @@ public:
  *
  * @return a YQuadratureDecoder object allowing you to drive the quadrature decoder.
  */
-inline YQuadratureDecoder* yFindQuadratureDecoder(const string& func)
+inline YQuadratureDecoder *yFindQuadratureDecoder(const string& func)
 { return YQuadratureDecoder::FindQuadratureDecoder(func);}
 /**
  * Starts the enumeration of quadrature decoders currently accessible.
@@ -302,7 +301,7 @@ inline YQuadratureDecoder* yFindQuadratureDecoder(const string& func)
  *         the first quadrature decoder currently online, or a NULL pointer
  *         if there are none.
  */
-inline YQuadratureDecoder* yFirstQuadratureDecoder(void)
+inline YQuadratureDecoder *yFirstQuadratureDecoder(void)
 { return YQuadratureDecoder::FirstQuadratureDecoder();}
 
 //--- (end of YQuadratureDecoder functions declaration)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multicellweighscale.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_multicellweighscale.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindMultiCellWeighScale(), the high-level API for MultiCellWeighScale functions
  *
@@ -81,7 +81,7 @@ const double YMultiCellWeighScale::COMPENSATION_INVALID = YAPI_INVALID_DOUBLE;
 const double YMultiCellWeighScale::ZEROTRACKING_INVALID = YAPI_INVALID_DOUBLE;
 const string YMultiCellWeighScale::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YMultiCellWeighScale::_parseAttr(YJSONObject* json_val)
+int YMultiCellWeighScale::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("cellCount")) {
         _cellCount =  json_val->getInt("cellCount");
@@ -728,7 +728,7 @@ YMultiCellWeighScale *YMultiCellWeighScale::nextMultiCellWeighScale(void)
     return YMultiCellWeighScale::FindMultiCellWeighScale(hwid);
 }
 
-YMultiCellWeighScale* YMultiCellWeighScale::FirstMultiCellWeighScale(void)
+YMultiCellWeighScale *YMultiCellWeighScale::FirstMultiCellWeighScale(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

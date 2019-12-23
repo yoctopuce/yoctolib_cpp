@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_segmenteddisplay.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_segmenteddisplay.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindSegmentedDisplay(), the high-level API for SegmentedDisplay functions
  *
@@ -69,7 +69,7 @@ typedef enum {
 
 //--- (YSegmentedDisplay declaration)
 /**
- * YSegmentedDisplay Class: SegmentedDisplay function interface
+ * YSegmentedDisplay Class: segmented display control interface
  *
  * The SegmentedDisplay class allows you to drive segmented displays.
  */
@@ -89,7 +89,7 @@ protected:
     friend YSegmentedDisplay *yFirstSegmentedDisplay(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindSegmentedDisplay factory function to instantiate
     YSegmentedDisplay(const string& func);
@@ -151,9 +151,9 @@ public:
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
      *
-     * This function does not require that the segmented displays is online at the time
+     * This function does not require that the segmented display is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YSegmentedDisplay.isOnline() to test if the segmented displays is
+     * Use the method YSegmentedDisplay.isOnline() to test if the segmented display is
      * indeed online at a given time. In case of ambiguity when looking for
      * a segmented display by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
@@ -163,10 +163,10 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the segmented displays, for instance
+     * @param func : a string that uniquely characterizes the segmented display, for instance
      *         MyDevice.segmentedDisplay.
      *
-     * @return a YSegmentedDisplay object allowing you to drive the segmented displays.
+     * @return a YSegmentedDisplay object allowing you to drive the segmented display.
      */
     static YSegmentedDisplay* FindSegmentedDisplay(string func);
 
@@ -187,7 +187,7 @@ public:
     virtual int         _invokeValueCallback(string value);
 
 
-    inline static YSegmentedDisplay* Find(string func)
+    inline static YSegmentedDisplay *Find(string func)
     { return YSegmentedDisplay::FindSegmentedDisplay(func); }
 
     /**
@@ -210,11 +210,11 @@ public:
      * next segmented displays.
      *
      * @return a pointer to a YSegmentedDisplay object, corresponding to
-     *         the first segmented displays currently online, or a NULL pointer
+     *         the first segmented display currently online, or a NULL pointer
      *         if there are none.
      */
-           static YSegmentedDisplay* FirstSegmentedDisplay(void);
-    inline static YSegmentedDisplay* First(void)
+           static YSegmentedDisplay *FirstSegmentedDisplay(void);
+    inline static YSegmentedDisplay *First(void)
     { return YSegmentedDisplay::FirstSegmentedDisplay();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -235,9 +235,9 @@ public:
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that the segmented displays is online at the time
+ * This function does not require that the segmented display is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YSegmentedDisplay.isOnline() to test if the segmented displays is
+ * Use the method YSegmentedDisplay.isOnline() to test if the segmented display is
  * indeed online at a given time. In case of ambiguity when looking for
  * a segmented display by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -247,12 +247,12 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the segmented displays, for instance
+ * @param func : a string that uniquely characterizes the segmented display, for instance
  *         MyDevice.segmentedDisplay.
  *
- * @return a YSegmentedDisplay object allowing you to drive the segmented displays.
+ * @return a YSegmentedDisplay object allowing you to drive the segmented display.
  */
-inline YSegmentedDisplay* yFindSegmentedDisplay(const string& func)
+inline YSegmentedDisplay *yFindSegmentedDisplay(const string& func)
 { return YSegmentedDisplay::FindSegmentedDisplay(func);}
 /**
  * Starts the enumeration of segmented displays currently accessible.
@@ -260,10 +260,10 @@ inline YSegmentedDisplay* yFindSegmentedDisplay(const string& func)
  * next segmented displays.
  *
  * @return a pointer to a YSegmentedDisplay object, corresponding to
- *         the first segmented displays currently online, or a NULL pointer
+ *         the first segmented display currently online, or a NULL pointer
  *         if there are none.
  */
-inline YSegmentedDisplay* yFirstSegmentedDisplay(void)
+inline YSegmentedDisplay *yFirstSegmentedDisplay(void)
 { return YSegmentedDisplay::FirstSegmentedDisplay();}
 
 //--- (end of YSegmentedDisplay functions declaration)

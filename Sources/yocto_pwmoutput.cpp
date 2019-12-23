@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwmoutput.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_pwmoutput.cpp 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Implements yFindPwmOutput(), the high-level API for PwmOutput functions
  *
@@ -78,7 +78,7 @@ const double YPwmOutput::PULSEDURATION_INVALID = YAPI_INVALID_DOUBLE;
 const string YPwmOutput::PWMTRANSITION_INVALID = YAPI_INVALID_STRING;
 const double YPwmOutput::DUTYCYCLEATPOWERON_INVALID = YAPI_INVALID_DOUBLE;
 
-int YPwmOutput::_parseAttr(YJSONObject* json_val)
+int YPwmOutput::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("enabled")) {
         _enabled =  (Y_ENABLED_enum)json_val->getInt("enabled");
@@ -109,9 +109,9 @@ int YPwmOutput::_parseAttr(YJSONObject* json_val)
 
 
 /**
- * Returns the state of the PWMs.
+ * Returns the state of the PWM generators.
  *
- * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the state of the PWMs
+ * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the state of the PWM generators
  *
  * On failure, throws an exception or returns Y_ENABLED_INVALID.
  */
@@ -512,10 +512,10 @@ int YPwmOutput::set_dutyCycleAtPowerOn(double newval)
 }
 
 /**
- * Returns the PWMs duty cycle at device power on as a floating point number between 0 and 100.
+ * Returns the PWM generators duty cycle at device power on as a floating point number between 0 and 100.
  *
- * @return a floating point number corresponding to the PWMs duty cycle at device power on as a
- * floating point number between 0 and 100
+ * @return a floating point number corresponding to the PWM generators duty cycle at device power on
+ * as a floating point number between 0 and 100
  *
  * On failure, throws an exception or returns Y_DUTYCYCLEATPOWERON_INVALID.
  */
@@ -542,7 +542,7 @@ double YPwmOutput::get_dutyCycleAtPowerOn(void)
 }
 
 /**
- * Retrieves a PWM for a given identifier.
+ * Retrieves a PWM generator for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -552,11 +552,11 @@ double YPwmOutput::get_dutyCycleAtPowerOn(void)
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that the PWM is online at the time
+ * This function does not require that the PWM generator is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YPwmOutput.isOnline() to test if the PWM is
+ * Use the method YPwmOutput.isOnline() to test if the PWM generator is
  * indeed online at a given time. In case of ambiguity when looking for
- * a PWM by logical name, no error is notified: the first instance
+ * a PWM generator by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
@@ -564,10 +564,10 @@ double YPwmOutput::get_dutyCycleAtPowerOn(void)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the PWM, for instance
+ * @param func : a string that uniquely characterizes the PWM generator, for instance
  *         YPWMTX01.pwmOutput1.
  *
- * @return a YPwmOutput object allowing you to drive the PWM.
+ * @return a YPwmOutput object allowing you to drive the PWM generator.
  */
 YPwmOutput* YPwmOutput::FindPwmOutput(string func)
 {
@@ -807,7 +807,7 @@ YPwmOutput *YPwmOutput::nextPwmOutput(void)
     return YPwmOutput::FindPwmOutput(hwid);
 }
 
-YPwmOutput* YPwmOutput::FirstPwmOutput(void)
+YPwmOutput *YPwmOutput::FirstPwmOutput(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

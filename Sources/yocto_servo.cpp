@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_servo.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_servo.cpp 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Implements yFindServo(), the high-level API for Servo functions
  *
@@ -72,7 +72,7 @@ YServo::~YServo()
 // static attributes
 const YMove YServo::MOVE_INVALID = YMove();
 
-int YServo::_parseAttr(YJSONObject* json_val)
+int YServo::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("position")) {
         _position =  json_val->getInt("position");
@@ -163,9 +163,9 @@ int YServo::set_position(int newval)
 }
 
 /**
- * Returns the state of the servos.
+ * Returns the state of the RC servo motors.
  *
- * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the state of the servos
+ * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the state of the RC servo motors
  *
  * On failure, throws an exception or returns Y_ENABLED_INVALID.
  */
@@ -192,7 +192,7 @@ Y_ENABLED_enum YServo::get_enabled(void)
 }
 
 /**
- * Stops or starts the servo.
+ * Stops or starts the RC servo motor.
  *
  * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE
  *
@@ -503,7 +503,7 @@ int YServo::set_enabledAtPowerOn(Y_ENABLEDATPOWERON_enum newval)
 }
 
 /**
- * Retrieves a servo for a given identifier.
+ * Retrieves a RC servo motor for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -513,11 +513,11 @@ int YServo::set_enabledAtPowerOn(Y_ENABLEDATPOWERON_enum newval)
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that the servo is online at the time
+ * This function does not require that the RC servo motor is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YServo.isOnline() to test if the servo is
+ * Use the method YServo.isOnline() to test if the RC servo motor is
  * indeed online at a given time. In case of ambiguity when looking for
- * a servo by logical name, no error is notified: the first instance
+ * a RC servo motor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
@@ -525,10 +525,10 @@ int YServo::set_enabledAtPowerOn(Y_ENABLEDATPOWERON_enum newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the servo, for instance
+ * @param func : a string that uniquely characterizes the RC servo motor, for instance
  *         SERVORC1.servo1.
  *
- * @return a YServo object allowing you to drive the servo.
+ * @return a YServo object allowing you to drive the RC servo motor.
  */
 YServo* YServo::FindServo(string func)
 {
@@ -601,7 +601,7 @@ YServo *YServo::nextServo(void)
     return YServo::FindServo(hwid);
 }
 
-YServo* YServo::FirstServo(void)
+YServo *YServo::FirstServo(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

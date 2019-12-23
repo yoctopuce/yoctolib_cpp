@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_oscontrol.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_oscontrol.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindOsControl(), the high-level API for OsControl functions
  *
@@ -65,7 +65,7 @@ YOsControl::~YOsControl()
 //--- (YOsControl implementation)
 // static attributes
 
-int YOsControl::_parseAttr(YJSONObject* json_val)
+int YOsControl::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("shutdownCountdown")) {
         _shutdownCountdown =  json_val->getInt("shutdownCountdown");
@@ -234,7 +234,7 @@ YOsControl *YOsControl::nextOsControl(void)
     return YOsControl::FindOsControl(hwid);
 }
 
-YOsControl* YOsControl::FirstOsControl(void)
+YOsControl *YOsControl::FirstOsControl(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

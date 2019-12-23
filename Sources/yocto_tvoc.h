@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_tvoc.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_tvoc.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindTvoc(), the high-level API for Tvoc functions
  *
@@ -60,12 +60,12 @@ typedef void (*YTvocTimedReportCallback)(YTvoc *func, YMeasure measure);
 
 //--- (YTvoc declaration)
 /**
- * YTvoc Class: Tvoc function interface
+ * YTvoc Class: Total Volatile Organic Compound sensor control interface, available for instance in
+ * the Yocto-VOC-V3
  *
- * The YTvoc class allows you to read and configure Yoctopuce Total Volatile Organic
- * Compound sensors, for instance using a Yocto-VOC-V3. It inherits from YSensor class the core
- * functions to read measurements,
- * to register callback functions, to access the autonomous datalogger.
+ * The YTvoc class allows you to read and configure Yoctopuce Total Volatile Organic Compound sensors.
+ * It inherits from YSensor class the core functions to read measurements,
+ * to register callback functions, and to access the autonomous datalogger.
  */
 class YOCTO_CLASS_EXPORT YTvoc: public YSensor {
 #ifdef __BORLANDC__
@@ -153,7 +153,7 @@ public:
     virtual int         _invokeTimedReportCallback(YMeasure value);
 
 
-    inline static YTvoc* Find(string func)
+    inline static YTvoc *Find(string func)
     { return YTvoc::FindTvoc(func); }
 
     /**
@@ -179,8 +179,8 @@ public:
      *         the first Total Volatile Organic Compound sensor currently online, or a NULL pointer
      *         if there are none.
      */
-           static YTvoc* FirstTvoc(void);
-    inline static YTvoc* First(void)
+           static YTvoc *FirstTvoc(void);
+    inline static YTvoc *First(void)
     { return YTvoc::FirstTvoc();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -218,7 +218,7 @@ public:
  *
  * @return a YTvoc object allowing you to drive the Total  Volatile Organic Compound sensor.
  */
-inline YTvoc* yFindTvoc(const string& func)
+inline YTvoc *yFindTvoc(const string& func)
 { return YTvoc::FindTvoc(func);}
 /**
  * Starts the enumeration of Total Volatile Organic Compound sensors currently accessible.
@@ -229,7 +229,7 @@ inline YTvoc* yFindTvoc(const string& func)
  *         the first Total Volatile Organic Compound sensor currently online, or a NULL pointer
  *         if there are none.
  */
-inline YTvoc* yFirstTvoc(void)
+inline YTvoc *yFirstTvoc(void)
 { return YTvoc::FirstTvoc();}
 
 //--- (end of YTvoc functions declaration)

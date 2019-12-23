@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_servo.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_servo.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindServo(), the high-level API for Servo functions
  *
@@ -95,10 +95,10 @@ typedef enum {
 
 //--- (YServo declaration)
 /**
- * YServo Class: Servo function interface
+ * YServo Class: RC servo motor control interface, available for instance in the Yocto-Servo
  *
  * The YServo class is designed to drive remote-control servo motors
- * outputs, for instance using a Yocto-Servo. This class allows you not only to move
+ * outputs. This class allows you not only to move
  * a servo to a given position, but also to specify the time interval
  * in which the move should be performed. This makes it possible to
  * synchronize two servos involved in a same move.
@@ -124,7 +124,7 @@ protected:
     friend YServo *yFirstServo(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindServo factory function to instantiate
     YServo(const string& func);
@@ -172,9 +172,9 @@ public:
     { return this->set_position(newval); }
 
     /**
-     * Returns the state of the servos.
+     * Returns the state of the RC servo motors.
      *
-     * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the state of the servos
+     * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the state of the RC servo motors
      *
      * On failure, throws an exception or returns Y_ENABLED_INVALID.
      */
@@ -184,7 +184,7 @@ public:
     { return this->get_enabled(); }
 
     /**
-     * Stops or starts the servo.
+     * Stops or starts the RC servo motor.
      *
      * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE
      *
@@ -333,7 +333,7 @@ public:
     { return this->set_enabledAtPowerOn(newval); }
 
     /**
-     * Retrieves a servo for a given identifier.
+     * Retrieves a RC servo motor for a given identifier.
      * The identifier can be specified using several formats:
      * <ul>
      * <li>FunctionLogicalName</li>
@@ -343,11 +343,11 @@ public:
      * <li>ModuleLogicalName.FunctionLogicalName</li>
      * </ul>
      *
-     * This function does not require that the servo is online at the time
+     * This function does not require that the RC servo motor is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YServo.isOnline() to test if the servo is
+     * Use the method YServo.isOnline() to test if the RC servo motor is
      * indeed online at a given time. In case of ambiguity when looking for
-     * a servo by logical name, no error is notified: the first instance
+     * a RC servo motor by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
      *
@@ -355,10 +355,10 @@ public:
      * you are certain that the matching device is plugged, make sure that you did
      * call registerHub() at application initialization time.
      *
-     * @param func : a string that uniquely characterizes the servo, for instance
+     * @param func : a string that uniquely characterizes the RC servo motor, for instance
      *         SERVORC1.servo1.
      *
-     * @return a YServo object allowing you to drive the servo.
+     * @return a YServo object allowing you to drive the RC servo motor.
      */
     static YServo*      FindServo(string func);
 
@@ -379,34 +379,34 @@ public:
     virtual int         _invokeValueCallback(string value);
 
 
-    inline static YServo* Find(string func)
+    inline static YServo *Find(string func)
     { return YServo::FindServo(func); }
 
     /**
-     * Continues the enumeration of servos started using yFirstServo().
-     * Caution: You can't make any assumption about the returned servos order.
-     * If you want to find a specific a servo, use Servo.findServo()
+     * Continues the enumeration of RC servo motors started using yFirstServo().
+     * Caution: You can't make any assumption about the returned RC servo motors order.
+     * If you want to find a specific a RC servo motor, use Servo.findServo()
      * and a hardwareID or a logical name.
      *
      * @return a pointer to a YServo object, corresponding to
-     *         a servo currently online, or a NULL pointer
-     *         if there are no more servos to enumerate.
+     *         a RC servo motor currently online, or a NULL pointer
+     *         if there are no more RC servo motors to enumerate.
      */
            YServo          *nextServo(void);
     inline YServo          *next(void)
     { return this->nextServo();}
 
     /**
-     * Starts the enumeration of servos currently accessible.
+     * Starts the enumeration of RC servo motors currently accessible.
      * Use the method YServo.nextServo() to iterate on
-     * next servos.
+     * next RC servo motors.
      *
      * @return a pointer to a YServo object, corresponding to
-     *         the first servo currently online, or a NULL pointer
+     *         the first RC servo motor currently online, or a NULL pointer
      *         if there are none.
      */
-           static YServo* FirstServo(void);
-    inline static YServo* First(void)
+           static YServo *FirstServo(void);
+    inline static YServo *First(void)
     { return YServo::FirstServo();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -417,7 +417,7 @@ public:
 //--- (YServo functions declaration)
 
 /**
- * Retrieves a servo for a given identifier.
+ * Retrieves a RC servo motor for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -427,11 +427,11 @@ public:
  * <li>ModuleLogicalName.FunctionLogicalName</li>
  * </ul>
  *
- * This function does not require that the servo is online at the time
+ * This function does not require that the RC servo motor is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YServo.isOnline() to test if the servo is
+ * Use the method YServo.isOnline() to test if the RC servo motor is
  * indeed online at a given time. In case of ambiguity when looking for
- * a servo by logical name, no error is notified: the first instance
+ * a RC servo motor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
@@ -439,23 +439,23 @@ public:
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the servo, for instance
+ * @param func : a string that uniquely characterizes the RC servo motor, for instance
  *         SERVORC1.servo1.
  *
- * @return a YServo object allowing you to drive the servo.
+ * @return a YServo object allowing you to drive the RC servo motor.
  */
-inline YServo* yFindServo(const string& func)
+inline YServo *yFindServo(const string& func)
 { return YServo::FindServo(func);}
 /**
- * Starts the enumeration of servos currently accessible.
+ * Starts the enumeration of RC servo motors currently accessible.
  * Use the method YServo.nextServo() to iterate on
- * next servos.
+ * next RC servo motors.
  *
  * @return a pointer to a YServo object, corresponding to
- *         the first servo currently online, or a NULL pointer
+ *         the first RC servo motor currently online, or a NULL pointer
  *         if there are none.
  */
-inline YServo* yFirstServo(void)
+inline YServo *yFirstServo(void)
 { return YServo::FirstServo();}
 
 //--- (end of YServo functions declaration)

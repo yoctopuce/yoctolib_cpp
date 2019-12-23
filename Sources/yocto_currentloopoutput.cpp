@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_currentloopoutput.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_currentloopoutput.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindCurrentLoopOutput(), the high-level API for CurrentLoopOutput functions
  *
@@ -71,7 +71,7 @@ const double YCurrentLoopOutput::CURRENT_INVALID = YAPI_INVALID_DOUBLE;
 const string YCurrentLoopOutput::CURRENTTRANSITION_INVALID = YAPI_INVALID_STRING;
 const double YCurrentLoopOutput::CURRENTATSTARTUP_INVALID = YAPI_INVALID_DOUBLE;
 
-int YCurrentLoopOutput::_parseAttr(YJSONObject* json_val)
+int YCurrentLoopOutput::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("current")) {
         _current =  floor(json_val->getDouble("current") * 1000.0 / 65536.0 + 0.5) / 1000.0;
@@ -393,7 +393,7 @@ YCurrentLoopOutput *YCurrentLoopOutput::nextCurrentLoopOutput(void)
     return YCurrentLoopOutput::FindCurrentLoopOutput(hwid);
 }
 
-YCurrentLoopOutput* YCurrentLoopOutput::FirstCurrentLoopOutput(void)
+YCurrentLoopOutput *YCurrentLoopOutput::FirstCurrentLoopOutput(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_voc.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_voc.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindVoc(), the high-level API for Voc functions
  *
@@ -60,12 +60,11 @@ typedef void (*YVocTimedReportCallback)(YVoc *func, YMeasure measure);
 
 //--- (YVoc declaration)
 /**
- * YVoc Class: Voc function interface
+ * YVoc Class: Volatile Organic Compound sensor control interface, available for instance in the Yocto-VOC-V3
  *
- * The YVoc class allows you to read and configure Yoctopuce Volatile Organic
- * Compound sensors, for instance using a Yocto-VOC-V3. It inherits from YSensor class the core
- * functions to read measurements,
- * to register callback functions, to access the autonomous datalogger.
+ * The YVoc class allows you to read and configure Yoctopuce Volatile Organic Compound sensors.
+ * It inherits from YSensor class the core functions to read measurements,
+ * to register callback functions, and to access the autonomous datalogger.
  */
 class YOCTO_CLASS_EXPORT YVoc: public YSensor {
 #ifdef __BORLANDC__
@@ -153,7 +152,7 @@ public:
     virtual int         _invokeTimedReportCallback(YMeasure value);
 
 
-    inline static YVoc* Find(string func)
+    inline static YVoc *Find(string func)
     { return YVoc::FindVoc(func); }
 
     /**
@@ -179,8 +178,8 @@ public:
      *         the first Volatile Organic Compound sensor currently online, or a NULL pointer
      *         if there are none.
      */
-           static YVoc* FirstVoc(void);
-    inline static YVoc* First(void)
+           static YVoc *FirstVoc(void);
+    inline static YVoc *First(void)
     { return YVoc::FirstVoc();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -218,7 +217,7 @@ public:
  *
  * @return a YVoc object allowing you to drive the Volatile Organic Compound sensor.
  */
-inline YVoc* yFindVoc(const string& func)
+inline YVoc *yFindVoc(const string& func)
 { return YVoc::FindVoc(func);}
 /**
  * Starts the enumeration of Volatile Organic Compound sensors currently accessible.
@@ -229,7 +228,7 @@ inline YVoc* yFindVoc(const string& func)
  *         the first Volatile Organic Compound sensor currently online, or a NULL pointer
  *         if there are none.
  */
-inline YVoc* yFirstVoc(void)
+inline YVoc *yFirstVoc(void)
 { return YVoc::FirstVoc();}
 
 //--- (end of YVoc functions declaration)

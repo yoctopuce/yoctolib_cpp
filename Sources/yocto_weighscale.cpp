@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_weighscale.cpp 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_weighscale.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
  *
  *  Implements yFindWeighScale(), the high-level API for WeighScale functions
  *
@@ -80,7 +80,7 @@ const double YWeighScale::COMPENSATION_INVALID = YAPI_INVALID_DOUBLE;
 const double YWeighScale::ZEROTRACKING_INVALID = YAPI_INVALID_DOUBLE;
 const string YWeighScale::COMMAND_INVALID = YAPI_INVALID_STRING;
 
-int YWeighScale::_parseAttr(YJSONObject* json_val)
+int YWeighScale::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("excitation")) {
         _excitation =  (Y_EXCITATION_enum)json_val->getInt("excitation");
@@ -912,7 +912,7 @@ YWeighScale *YWeighScale::nextWeighScale(void)
     return YWeighScale::FindWeighScale(hwid);
 }
 
-YWeighScale* YWeighScale::FirstWeighScale(void)
+YWeighScale *YWeighScale::FirstWeighScale(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multisenscontroller.h 37827 2019-10-25 13:07:48Z mvuilleu $
+ *  $Id: yocto_multisenscontroller.h 38899 2019-12-20 17:21:03Z mvuilleu $
  *
  *  Declares yFindMultiSensController(), the high-level API for MultiSensController functions
  *
@@ -69,10 +69,11 @@ typedef enum {
 
 //--- (YMultiSensController declaration)
 /**
- * YMultiSensController Class: MultiSensController function interface
+ * YMultiSensController Class: Sensor chain configuration interface, available for instance in the
+ * Yocto-Temperature-IR
  *
  * The YMultiSensController class allows you to setup a customized
- * sensor chain on devices featuring that functionality, for instance using a Yocto-Temperature-IR.
+ * sensor chain on devices featuring that functionality.
  */
 class YOCTO_CLASS_EXPORT YMultiSensController: public YFunction {
 #ifdef __BORLANDC__
@@ -92,7 +93,7 @@ protected:
     friend YMultiSensController *yFirstMultiSensController(void);
 
     // Function-specific method for parsing of JSON output and caching result
-    virtual int     _parseAttr(YJSONObject* json_val);
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindMultiSensController factory function to instantiate
     YMultiSensController(const string& func);
@@ -251,7 +252,7 @@ public:
     virtual int         setupAddress(int addr);
 
 
-    inline static YMultiSensController* Find(string func)
+    inline static YMultiSensController *Find(string func)
     { return YMultiSensController::FindMultiSensController(func); }
 
     /**
@@ -277,8 +278,8 @@ public:
      *         the first multi-sensor controller currently online, or a NULL pointer
      *         if there are none.
      */
-           static YMultiSensController* FirstMultiSensController(void);
-    inline static YMultiSensController* First(void)
+           static YMultiSensController *FirstMultiSensController(void);
+    inline static YMultiSensController *First(void)
     { return YMultiSensController::FirstMultiSensController();}
 #ifdef __BORLANDC__
 #pragma option pop
@@ -316,7 +317,7 @@ public:
  *
  * @return a YMultiSensController object allowing you to drive the multi-sensor controller.
  */
-inline YMultiSensController* yFindMultiSensController(const string& func)
+inline YMultiSensController *yFindMultiSensController(const string& func)
 { return YMultiSensController::FindMultiSensController(func);}
 /**
  * Starts the enumeration of multi-sensor controllers currently accessible.
@@ -327,7 +328,7 @@ inline YMultiSensController* yFindMultiSensController(const string& func)
  *         the first multi-sensor controller currently online, or a NULL pointer
  *         if there are none.
  */
-inline YMultiSensController* yFirstMultiSensController(void)
+inline YMultiSensController *yFirstMultiSensController(void)
 { return YMultiSensController::FirstMultiSensController();}
 
 //--- (end of YMultiSensController functions declaration)
