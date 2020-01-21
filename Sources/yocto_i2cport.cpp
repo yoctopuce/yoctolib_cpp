@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_i2cport.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
+ *  $Id: yocto_i2cport.cpp 38934 2019-12-23 09:29:53Z seb $
  *
  *  Implements yFindI2cPort(), the high-level API for I2cPort functions
  *
@@ -638,13 +638,13 @@ int YI2cPort::set_i2cVoltageLevel(Y_I2CVOLTAGELEVEL_enum newval)
 }
 
 /**
- * Returns the SPI port communication parameters, as a string such as
+ * Returns the I2C port communication parameters, as a string such as
  * "400kbps,2000ms,NoRestart". The string includes the baud rate, the
  * recovery delay after communications errors, and if needed the option
  * NoRestart to use a Stop/Start sequence instead of the
  * Restart state when performing read on the I2C bus.
  *
- * @return a string corresponding to the SPI port communication parameters, as a string such as
+ * @return a string corresponding to the I2C port communication parameters, as a string such as
  *         "400kbps,2000ms,NoRestart"
  *
  * On failure, throws an exception or returns Y_I2CMODE_INVALID.
@@ -672,7 +672,7 @@ string YI2cPort::get_i2cMode(void)
 }
 
 /**
- * Changes the SPI port communication parameters, with a string such as
+ * Changes the I2C port communication parameters, with a string such as
  * "400kbps,2000ms". The string includes the baud rate, the
  * recovery delay after communications errors, and if needed the option
  * NoRestart to use a Stop/Start sequence instead of the
@@ -680,7 +680,7 @@ string YI2cPort::get_i2cMode(void)
  * Remember to call the saveToFlash() method of the module if the
  * modification must be kept.
  *
- * @param newval : a string corresponding to the SPI port communication parameters, with a string such as
+ * @param newval : a string corresponding to the I2C port communication parameters, with a string such as
  *         "400kbps,2000ms"
  *
  * @return YAPI_SUCCESS if the call succeeds.

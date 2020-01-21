@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_osx.c 38460 2019-11-25 16:49:33Z seb $
+ * $Id: ypkt_osx.c 39262 2020-01-21 10:03:52Z seb $
  *
  * OS-specific USB packet layer, Mac OS X version
  *
@@ -553,7 +553,10 @@ void yyyPacketShutdown(yInterfaceSt  *iface)
     yPktQueueFree(&iface->rxQueue);
 	yPktQueueFree(&iface->txQueue);
     iface->flags.yyySetupDone = 0;
-    CFRelease(iface->run_loop_mode);
+    if (iface->run_loop_mode){
+        CFRelease(iface->run_loop_mode);
+        iface->run_loop_mode =NULL;
+    }
     if (yContext->osx_flags & YCTX_OSX_MULTIPLES_HID) {
         stopHIDManager(&iface->hid);
     }

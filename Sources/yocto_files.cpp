@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
+ * $Id: yocto_files.cpp 38934 2019-12-23 09:29:53Z seb $
  *
  * Implements yFindFiles(), the high-level API for Files functions
  *
@@ -240,7 +240,7 @@ int YFiles::get_freeSpace(void)
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the filesystem, for instance
- *         YRGBLED2.files.
+ *         YBUZZER2.files.
  *
  * @return a YFiles object allowing you to drive the filesystem.
  */

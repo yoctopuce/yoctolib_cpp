@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 38136 2019-11-14 09:18:58Z seb $
+ * $Id: ystream.c 39246 2020-01-20 14:11:19Z seb $
  *
  * USB stream implementation
  *
@@ -1002,6 +1002,14 @@ void  yPktQueueSetError(pktQueue *q, YRETCODE code, const char * msg)
 }
 
 
+static void  yPktClearError(pktQueue *q)
+{
+    yEnterCriticalSection(&q->cs);
+    q->status = YAPI_SUCCESS;
+    yLeaveCriticalSection(&q->cs);
+}
+
+
 static int yPktQueueIsEmpty(pktQueue *q, char * errmsg)
 {
     int retval;
@@ -1206,20 +1214,34 @@ YRETCODE yPktQueuePopH2D(yInterfaceSt *iface,pktItem **pkt)
 YRETCODE yyySendPacket(yInterfaceSt *iface, const USB_Packet *pkt, char *errmsg)
 {
     int res;
-    res = yPktQueuePushH2D(iface,pkt,errmsg);
-    if (YISERR(res)) {
-        return (YRETCODE) res;
+#ifdef LINUX_API
+    int retry_count = 5;
+    pktItem *pktitem;
+
+    while (retry_count >= 0) {
+#endif
+        res = yPktQueuePushH2D(iface,pkt,errmsg);
+        if (YISERR(res)) {
+            return (YRETCODE) res;
+        }
+        res = yyySignalOutPkt(iface, errmsg);
+        if (YISERR(res)) {
+            return res;
+        }
+        res = yPktQueueWaitEmptyH2D(iface, USB_MAX_IO_DURATION, errmsg);
+        if (res!=YAPI_TIMEOUT && YISERR(res)) {
+            return (YRETCODE) res;
+        } else if(res > 0){
+            return YAPI_SUCCESS;
+        }
+#ifdef LINUX_API
+        //dbglog("Timeout on yyySendPacket (%d:%s) retry(%d)...\n",res, errmsg,retry_count);
+        yPktClearError(&iface->txQueue);
+        yPktQueuePopH2D(iface, &pktitem);
+        yFree(pktitem);
+        retry_count--;
     }
-    res = yyySignalOutPkt(iface, errmsg);
-    if (YISERR(res)) {
-        return res;
-    }
-    res = yPktQueueWaitEmptyH2D(iface, USB_MAX_IO_DURATION, errmsg);
-    if (YISERR(res)) {
-        return (YRETCODE) res;
-    }else if(res > 0){
-        return YAPI_SUCCESS;
-    }
+#endif
     return YERRMSG(YAPI_TIMEOUT,"Unable to send packet to the device");
 }
 

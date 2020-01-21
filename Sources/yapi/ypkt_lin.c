@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_lin.c 33734 2018-12-14 15:56:25Z seb $
+ * $Id: ypkt_lin.c 39066 2020-01-03 15:49:30Z seb $
  *
  * OS-specific USB packet layer, Linux version
  *
@@ -557,9 +557,7 @@ static void wr_callback(struct libusb_transfer *transfer)
 {
     linRdTr      *lintr = (linRdTr*)transfer->user_data;
     yInterfaceSt *iface = lintr->iface;
-    char          errmsg[YOCTO_ERRMSG_LEN];
     pktItem *pktitem;
-    int res;
 
     if (lintr == NULL) {
         HALLOG("CBwr:drop invalid ypkt wr_callback (lintr is null)\n");
@@ -592,11 +590,14 @@ static void wr_callback(struct libusb_transfer *transfer)
         HALLOG("CBwr:%s pkt error (len=%d nbError:%d)\n",iface->serial, transfer->actual_length,  iface->ioError);
         break;
     case LIBUSB_TRANSFER_TIMED_OUT :
-        HALLOG("CBwr:%s pkt timeout\n",iface->serial);
+        HALLOG("CBwr:%s pkt timeout (%u/%u)\n",iface->serial,iface->nbPktSent,iface->nbPktSubmited);
+        yPktQueueSetError(&iface->txQueue, YAPI_TIMEOUT, "USB transfer ended with LIBUSB_TRANSFER_TIMED_OUT");
+#if 0
         res = sendNextPkt(iface, errmsg);
         if (res < 0) {
             HALLOG("retry of next pkt item failed:%d:%s\n", res, errmsg);
         }
+#endif
         break;
     case LIBUSB_TRANSFER_CANCELLED:
         HALLOG("CBwr:%s pkt_cancelled (len=%d) \n",iface->serial, transfer->actual_length);
