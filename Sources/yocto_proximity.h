@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_proximity.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_proximity.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindProximity(), the high-level API for Proximity functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_PROXIMITY_H
 #define YOCTO_PROXIMITY_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YProximity return codes)
 //--- (end of YProximity return codes)
@@ -539,5 +544,10 @@ inline YProximity *yFirstProximity(void)
 { return YProximity::FirstProximity();}
 
 //--- (end of YProximity functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

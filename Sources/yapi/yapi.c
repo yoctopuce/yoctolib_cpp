@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 38062 2019-11-05 15:23:36Z seb $
+ * $Id: yapi.c 40312 2020-05-05 09:39:18Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -3088,10 +3088,12 @@ static YRETCODE yapiRegisterHubEx(const char* url, int checkacces, char* errmsg)
         }
     } else {
         HubSt* hubst = NULL;
+        char urlbuff[256];
         int firstfree;
         void* (*thead_handler)(void*);
-
-        hubst = yapiAllocHub(url, errmsg);
+        YSTRCPY(urlbuff, 256, url);
+    retry:
+        hubst = yapiAllocHub(urlbuff, errmsg);
         if (hubst == NULL) {
             return YAPI_INVALID_ARGUMENT;
         }
@@ -3157,6 +3159,17 @@ static YRETCODE yapiRegisterHubEx(const char* url, int checkacces, char* errmsg)
                     return YERRMSG(YAPI_IO_ERROR, "hub not ready");
                 }
                 unregisterNetHub(hubst->url);
+                if (res == YAPI_NOT_SUPPORTED) {
+                    if (YSTRNCMP(url, "http://", 7) == 0) {
+                        return res;
+                        
+                    } else if (YSTRNCMP(url, "ws://", 5) == 0) {
+                        url += 5;
+                    }
+
+                    YSPRINTF(urlbuff, 256, "http://%s", url);
+                    goto retry;
+                }
                 return res;
             }
             yEnterCriticalSection(&yContext->updateDev_cs);

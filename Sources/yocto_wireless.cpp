@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.cpp 38899 2019-12-20 17:21:03Z mvuilleu $
+ * $Id: yocto_wireless.cpp 40196 2020-04-30 06:47:29Z mvuilleu $
  *
  * Implements yFindWireless(), the high-level API for Wireless functions
  *
@@ -39,15 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
+#include <string.h>
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+
 #include "yocto_wireless.h"
 #include "yapi/yjson.h"
 #include "yapi/yapi.h"
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
 #define  __FILE_ID__  "wireless"
 
-
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YWlanRecord::YWlanRecord(const string& json):
 //--- (generated code: YWlanRecord initialization)

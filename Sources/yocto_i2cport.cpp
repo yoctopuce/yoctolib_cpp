@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_i2cport.cpp 38934 2019-12-23 09:29:53Z seb $
+ *  $Id: yocto_i2cport.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Implements yFindI2cPort(), the high-level API for I2cPort functions
  *
@@ -39,14 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
-#include "yocto_i2cport.h"
-#include "yapi/yjson.h"
-#include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "yocto_i2cport.h"
+#include "yapi/yjson.h"
+#include "yapi/yapi.h"
 #define  __FILE_ID__  "i2cport"
+
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YI2cPort::YI2cPort(const string& func): YFunction(func)
 //--- (YI2cPort initialization)
@@ -950,6 +955,44 @@ string YI2cPort::queryLine(string query,int maxWait)
     string res;
 
     url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=!%s", maxWait,this->_escapeAttr(query).c_str());
+    msgbin = this->_download(url);
+    msgarr = this->_json_get_array(msgbin);
+    msglen = (int)msgarr.size();
+    if (msglen == 0) {
+        return "";
+    }
+    // last element of array is the new position
+    msglen = msglen - 1;
+    _rxptr = atoi((msgarr[msglen]).c_str());
+    if (msglen == 0) {
+        return "";
+    }
+    res = this->_json_get_string(msgarr[0]);
+    return res;
+}
+
+/**
+ * Sends a binary message to the serial port, and reads the reply, if any.
+ * This function is intended to be used when the serial port is configured for
+ * Frame-based protocol.
+ *
+ * @param hexString : the message to send, coded in hexadecimal
+ * @param maxWait : the maximum number of milliseconds to wait for a reply.
+ *
+ * @return the next frame received after sending the message, as a hex string.
+ *         Additional frames can be obtained by calling readHex or readMessages.
+ *
+ * On failure, throws an exception or returns an empty string.
+ */
+string YI2cPort::queryHex(string hexString,int maxWait)
+{
+    string url;
+    string msgbin;
+    vector<string> msgarr;
+    int msglen = 0;
+    string res;
+
+    url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=$%s", maxWait,hexString.c_str());
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);
     msglen = (int)msgarr.size();

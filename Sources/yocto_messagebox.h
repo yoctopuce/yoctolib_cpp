@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.h 38913 2019-12-20 18:59:49Z mvuilleu $
+ * $Id: yocto_messagebox.h 40196 2020-04-30 06:47:29Z mvuilleu $
  *
  * Declares yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -41,9 +41,15 @@
 #ifndef YOCTO_MESSAGEBOX_H
 #define YOCTO_MESSAGEBOX_H
 
+#include <cfloat>
+#include <cmath>
+
 #include "yocto_api.h"
 
-
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 //--- (generated code: YMessageBox return codes)
 //--- (end of generated code: YMessageBox return codes)
 //--- (generated code: YMessageBox definitions)
@@ -600,5 +606,9 @@ inline YMessageBox *yFirstMessageBox(void)
 { return YMessageBox::FirstMessageBox();}
 
 //--- (end of generated code: YMessageBox functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+}
+#endif
 
 #endif

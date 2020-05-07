@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pressure.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_pressure.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindPressure(), the high-level API for Pressure functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_PRESSURE_H
 #define YOCTO_PRESSURE_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YPressure return codes)
 //--- (end of YPressure return codes)
@@ -233,5 +238,10 @@ inline YPressure *yFirstPressure(void)
 { return YPressure::FirstPressure();}
 
 //--- (end of YPressure functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

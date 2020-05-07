@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_longitude.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_longitude.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindLongitude(), the high-level API for Longitude functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_LONGITUDE_H
 #define YOCTO_LONGITUDE_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YLongitude return codes)
 //--- (end of YLongitude return codes)
@@ -60,7 +65,7 @@ typedef void (*YLongitudeTimedReportCallback)(YLongitude *func, YMeasure measure
 
 //--- (YLongitude declaration)
 /**
- * YLongitude Class: longitude sensor control interface, available for instance in the Yocto-GPS
+ * YLongitude Class: longitude sensor control interface, available for instance in the Yocto-GPS-V2
  *
  * The YLongitude class allows you to read and configure Yoctopuce longitude sensors.
  * It inherits from YSensor class the core functions to read measurements,
@@ -113,7 +118,7 @@ public:
      * call registerHub() at application initialization time.
      *
      * @param func : a string that uniquely characterizes the longitude sensor, for instance
-     *         YGNSSMK1.longitude.
+     *         YGNSSMK2.longitude.
      *
      * @return a YLongitude object allowing you to drive the longitude sensor.
      */
@@ -213,7 +218,7 @@ public:
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the longitude sensor, for instance
- *         YGNSSMK1.longitude.
+ *         YGNSSMK2.longitude.
  *
  * @return a YLongitude object allowing you to drive the longitude sensor.
  */
@@ -232,5 +237,10 @@ inline YLongitude *yFirstLongitude(void)
 { return YLongitude::FirstLongitude();}
 
 //--- (end of YLongitude functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

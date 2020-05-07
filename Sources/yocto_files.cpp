@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.cpp 38934 2019-12-23 09:29:53Z seb $
+ * $Id: yocto_files.cpp 40196 2020-04-30 06:47:29Z mvuilleu $
  *
  * Implements yFindFiles(), the high-level API for Files functions
  *
@@ -39,14 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
+#include <string.h>
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+
 #include "yocto_files.h"
 #include "yapi/yjson.h"
 #include "yapi/yapi.h"
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
 #define  __FILE_ID__  "files"
 
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YFileRecord::YFileRecord(const string& json):
 //--- (generated code: YFileRecord initialization)

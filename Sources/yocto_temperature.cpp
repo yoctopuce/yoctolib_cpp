@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_temperature.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
+ *  $Id: yocto_temperature.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Implements yFindTemperature(), the high-level API for Temperature functions
  *
@@ -39,14 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
-#include "yocto_temperature.h"
-#include "yapi/yjson.h"
-#include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "yocto_temperature.h"
+#include "yapi/yjson.h"
+#include "yapi/yapi.h"
 #define  __FILE_ID__  "temperature"
+
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YTemperature::YTemperature(const string& func): YSensor(func)
 //--- (YTemperature initialization)
@@ -130,8 +135,8 @@ int YTemperature::set_unit(const string& newval)
  * Y_SENSORTYPE_TYPE_J, Y_SENSORTYPE_TYPE_N, Y_SENSORTYPE_TYPE_R, Y_SENSORTYPE_TYPE_S,
  * Y_SENSORTYPE_TYPE_T, Y_SENSORTYPE_PT100_4WIRES, Y_SENSORTYPE_PT100_3WIRES,
  * Y_SENSORTYPE_PT100_2WIRES, Y_SENSORTYPE_RES_OHM, Y_SENSORTYPE_RES_NTC, Y_SENSORTYPE_RES_LINEAR,
- * Y_SENSORTYPE_RES_INTERNAL, Y_SENSORTYPE_IR and Y_SENSORTYPE_RES_PT1000 corresponding to the
- * temperature sensor type
+ * Y_SENSORTYPE_RES_INTERNAL, Y_SENSORTYPE_IR, Y_SENSORTYPE_RES_PT1000 and Y_SENSORTYPE_CHANNEL_OFF
+ * corresponding to the temperature sensor type
  *
  * On failure, throws an exception or returns Y_SENSORTYPE_INVALID.
  */
@@ -168,8 +173,8 @@ Y_SENSORTYPE_enum YTemperature::get_sensorType(void)
  * Y_SENSORTYPE_TYPE_J, Y_SENSORTYPE_TYPE_N, Y_SENSORTYPE_TYPE_R, Y_SENSORTYPE_TYPE_S,
  * Y_SENSORTYPE_TYPE_T, Y_SENSORTYPE_PT100_4WIRES, Y_SENSORTYPE_PT100_3WIRES,
  * Y_SENSORTYPE_PT100_2WIRES, Y_SENSORTYPE_RES_OHM, Y_SENSORTYPE_RES_NTC, Y_SENSORTYPE_RES_LINEAR,
- * Y_SENSORTYPE_RES_INTERNAL, Y_SENSORTYPE_IR and Y_SENSORTYPE_RES_PT1000 corresponding to the
- * temperature sensor type
+ * Y_SENSORTYPE_RES_INTERNAL, Y_SENSORTYPE_IR, Y_SENSORTYPE_RES_PT1000 and Y_SENSORTYPE_CHANNEL_OFF
+ * corresponding to the temperature sensor type
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *

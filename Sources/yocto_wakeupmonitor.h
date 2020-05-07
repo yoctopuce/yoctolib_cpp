@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupmonitor.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_wakeupmonitor.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindWakeUpMonitor(), the high-level API for WakeUpMonitor functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_WAKEUPMONITOR_H
 #define YOCTO_WAKEUPMONITOR_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YWakeUpMonitor return codes)
 //--- (end of YWakeUpMonitor return codes)
@@ -83,7 +88,7 @@ typedef enum {
 //--- (YWakeUpMonitor declaration)
 /**
  * YWakeUpMonitor Class: wake-up monitor control interface, available for instance in the
- * YoctoHub-GSM-3G-EU, the YoctoHub-GSM-3G-NA, the YoctoHub-Wireless-SR or the YoctoHub-Wireless-g
+ * YoctoHub-GSM-3G-EU, the YoctoHub-GSM-3G-NA, the YoctoHub-Wireless-g or the YoctoHub-Wireless-n
  *
  * The YWakeUpMonitor class handles globally all wake-up sources, as well
  * as automated sleep mode.
@@ -427,5 +432,10 @@ inline YWakeUpMonitor *yFirstWakeUpMonitor(void)
 { return YWakeUpMonitor::FirstWakeUpMonitor();}
 
 //--- (end of YWakeUpMonitor functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

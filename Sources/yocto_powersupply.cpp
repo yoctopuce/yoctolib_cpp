@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_powersupply.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
+ *  $Id: yocto_powersupply.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Implements yFindPowerSupply(), the high-level API for PowerSupply functions
  *
@@ -39,14 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
-#include "yocto_powersupply.h"
-#include "yapi/yjson.h"
-#include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "yocto_powersupply.h"
+#include "yapi/yjson.h"
+#include "yapi/yapi.h"
 #define  __FILE_ID__  "powersupply"
+
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YPowerSupply::YPowerSupply(const string& func): YFunction(func)
 //--- (YPowerSupply initialization)

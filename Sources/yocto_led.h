@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_led.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_led.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindLed(), the high-level API for Led functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_LED_H
 #define YOCTO_LED_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YLed return codes)
 //--- (end of YLed return codes)
@@ -329,5 +334,10 @@ inline YLed *yFirstLed(void)
 { return YLed::FirstLed();}
 
 //--- (end of YLed functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

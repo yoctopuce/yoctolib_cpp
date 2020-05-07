@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ * $Id: yocto_display.h 40196 2020-04-30 06:47:29Z mvuilleu $
  *
  * Declares yFindDisplay(), the high-level API for Display functions
  *
@@ -41,12 +41,15 @@
 #ifndef YOCTO_DISPLAY_H
 #define YOCTO_DISPLAY_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
 
+#include "yocto_api.h"
 
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 //--- (generated code: YDisplay definitions)
 class YDisplay; // forward declaration
 
@@ -1126,5 +1129,9 @@ inline YDisplay *yFirstDisplay(void)
 { return YDisplay::FirstDisplay();}
 
 //--- (end of generated code: YDisplay functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+}
+#endif
 
 #endif

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_motor.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_motor.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindMotor(), the high-level API for Motor functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_MOTOR_H
 #define YOCTO_MOTOR_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YMotor return codes)
 //--- (end of YMotor return codes)
@@ -568,5 +573,10 @@ inline YMotor *yFirstMotor(void)
 { return YMotor::FirstMotor();}
 
 //--- (end of YMotor functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

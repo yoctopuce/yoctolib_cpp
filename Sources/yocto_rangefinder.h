@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_rangefinder.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_rangefinder.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindRangeFinder(), the high-level API for RangeFinder functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_RANGEFINDER_H
 #define YOCTO_RANGEFINDER_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YRangeFinder return codes)
 //--- (end of YRangeFinder return codes)
@@ -461,5 +466,10 @@ inline YRangeFinder *yFirstRangeFinder(void)
 { return YRangeFinder::FirstRangeFinder();}
 
 //--- (end of YRangeFinder functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

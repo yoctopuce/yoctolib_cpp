@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
+ *  $Id: yocto_spiport.cpp 40296 2020-05-05 07:56:00Z seb $
  *
  *  Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -39,14 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
-#include "yocto_spiport.h"
-#include "yapi/yjson.h"
-#include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "yocto_spiport.h"
+#include "yapi/yjson.h"
+#include "yapi/yapi.h"
 #define  __FILE_ID__  "spiport"
+
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YSpiPort::YSpiPort(const string& func): YFunction(func)
 //--- (YSpiPort initialization)
@@ -1094,6 +1099,44 @@ string YSpiPort::queryLine(string query,int maxWait)
 }
 
 /**
+ * Sends a binary message to the serial port, and reads the reply, if any.
+ * This function is intended to be used when the serial port is configured for
+ * Frame-based protocol.
+ *
+ * @param hexString : the message to send, coded in hexadecimal
+ * @param maxWait : the maximum number of milliseconds to wait for a reply.
+ *
+ * @return the next frame received after sending the message, as a hex string.
+ *         Additional frames can be obtained by calling readHex or readMessages.
+ *
+ * On failure, throws an exception or returns an empty string.
+ */
+string YSpiPort::queryHex(string hexString,int maxWait)
+{
+    string url;
+    string msgbin;
+    vector<string> msgarr;
+    int msglen = 0;
+    string res;
+
+    url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=$%s", maxWait,hexString.c_str());
+    msgbin = this->_download(url);
+    msgarr = this->_json_get_array(msgbin);
+    msglen = (int)msgarr.size();
+    if (msglen == 0) {
+        return "";
+    }
+    // last element of array is the new position
+    msglen = msglen - 1;
+    _rxptr = atoi((msgarr[msglen]).c_str());
+    if (msglen == 0) {
+        return "";
+    }
+    res = this->_json_get_string(msgarr[0]);
+    return res;
+}
+
+/**
  * Saves the job definition string (JSON data) into a job file.
  * The job file can be later enabled using selectJob().
  *
@@ -1260,7 +1303,7 @@ int YSpiPort::writeHex(string hexString)
     buff = string(bufflen, (char)0);
     idx = 0;
     while (idx < bufflen) {
-        hexb = (int)strtoul((hexString).substr( 2 * idx, 2).c_str(), NULL, 16);
+        hexb = (int)YAPI::_hexStr2Long((hexString).substr( 2 * idx, 2));
         buff[idx] = (char)(hexb);
         idx = idx + 1;
     }

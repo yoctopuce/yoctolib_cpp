@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_weighscale.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_weighscale.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindWeighScale(), the high-level API for WeighScale functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_WEIGHSCALE_H
 #define YOCTO_WEIGHSCALE_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YWeighScale return codes)
 //--- (end of YWeighScale return codes)
@@ -625,5 +630,10 @@ inline YWeighScale *yFirstWeighScale(void)
 { return YWeighScale::FirstWeighScale();}
 
 //--- (end of YWeighScale functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

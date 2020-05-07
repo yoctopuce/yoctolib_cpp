@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 39246 2020-01-20 14:11:19Z seb $
+ * $Id: ystream.c 39309 2020-01-24 08:38:21Z seb $
  *
  * USB stream implementation
  *
@@ -1001,14 +1001,14 @@ void  yPktQueueSetError(pktQueue *q, YRETCODE code, const char * msg)
     yLeaveCriticalSection(&q->cs);
 }
 
-
+#ifdef LINUX_API
 static void  yPktClearError(pktQueue *q)
 {
     yEnterCriticalSection(&q->cs);
     q->status = YAPI_SUCCESS;
     yLeaveCriticalSection(&q->cs);
 }
-
+#endif
 
 static int yPktQueueIsEmpty(pktQueue *q, char * errmsg)
 {

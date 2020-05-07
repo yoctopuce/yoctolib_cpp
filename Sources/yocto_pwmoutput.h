@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwmoutput.h 38913 2019-12-20 18:59:49Z mvuilleu $
+ *  $Id: yocto_pwmoutput.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindPwmOutput(), the high-level API for PwmOutput functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_PWMOUTPUT_H
 #define YOCTO_PWMOUTPUT_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YPwmOutput return codes)
 //--- (end of YPwmOutput return codes)
@@ -561,5 +566,10 @@ inline YPwmOutput *yFirstPwmOutput(void)
 { return YPwmOutput::FirstPwmOutput();}
 
 //--- (end of YPwmOutput functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 34151 2019-01-28 07:40:38Z mvuilleu $
+ * $Id: ydef.h 40295 2020-05-05 07:37:33Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -43,6 +43,10 @@
 extern "C" {
 #endif
 
+// If needed, you can scope the all YoctoLib C++ classes within a specific namespace
+#ifdef USE_YOCTOLIB_NAMESPACE
+#define YOCTOLIB_NAMESPACE YoctoLib
+#endif
 
 #if defined(_WIN32)
 // Windows C compiler
@@ -220,7 +224,6 @@ typedef s32   YAPI_FUNCTION;    /* yStrRef of serial + (ystrRef of funcId << 16)
 #define INVALID_BLK_HDL     0   /* To use for yBlkHdl type */
 
 #ifdef MICROCHIP_API
-typedef u8              YSOCKET;
 typedef s8              YYSBIO;
 typedef s8              YTRNKIO;
 #else

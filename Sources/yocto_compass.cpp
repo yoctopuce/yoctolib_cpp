@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_compass.cpp 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_compass.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Implements yFindCompass(), the high-level API for Compass functions
  *
@@ -39,14 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
-#include "yocto_compass.h"
-#include "yapi/yjson.h"
-#include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "yocto_compass.h"
+#include "yapi/yjson.h"
+#include "yapi/yapi.h"
 #define  __FILE_ID__  "compass"
+
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YCompass::YCompass(const string& func): YSensor(func)
 //--- (YCompass initialization)

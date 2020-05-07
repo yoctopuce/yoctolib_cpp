@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_temperature.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_temperature.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindTemperature(), the high-level API for Temperature functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_TEMPERATURE_H
 #define YOCTO_TEMPERATURE_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YTemperature return codes)
 //--- (end of YTemperature return codes)
@@ -76,6 +81,7 @@ typedef enum {
     Y_SENSORTYPE_RES_INTERNAL = 14,
     Y_SENSORTYPE_IR = 15,
     Y_SENSORTYPE_RES_PT1000 = 16,
+    Y_SENSORTYPE_CHANNEL_OFF = 17,
     Y_SENSORTYPE_INVALID = -1,
 } Y_SENSORTYPE_enum;
 #endif
@@ -141,6 +147,7 @@ public:
     static const Y_SENSORTYPE_enum SENSORTYPE_RES_INTERNAL = Y_SENSORTYPE_RES_INTERNAL;
     static const Y_SENSORTYPE_enum SENSORTYPE_IR = Y_SENSORTYPE_IR;
     static const Y_SENSORTYPE_enum SENSORTYPE_RES_PT1000 = Y_SENSORTYPE_RES_PT1000;
+    static const Y_SENSORTYPE_enum SENSORTYPE_CHANNEL_OFF = Y_SENSORTYPE_CHANNEL_OFF;
     static const Y_SENSORTYPE_enum SENSORTYPE_INVALID = Y_SENSORTYPE_INVALID;
     static const double SIGNALVALUE_INVALID;
     static const string SIGNALUNIT_INVALID;
@@ -174,8 +181,8 @@ public:
      * Y_SENSORTYPE_TYPE_J, Y_SENSORTYPE_TYPE_N, Y_SENSORTYPE_TYPE_R, Y_SENSORTYPE_TYPE_S,
      * Y_SENSORTYPE_TYPE_T, Y_SENSORTYPE_PT100_4WIRES, Y_SENSORTYPE_PT100_3WIRES,
      * Y_SENSORTYPE_PT100_2WIRES, Y_SENSORTYPE_RES_OHM, Y_SENSORTYPE_RES_NTC, Y_SENSORTYPE_RES_LINEAR,
-     * Y_SENSORTYPE_RES_INTERNAL, Y_SENSORTYPE_IR and Y_SENSORTYPE_RES_PT1000 corresponding to the
-     * temperature sensor type
+     * Y_SENSORTYPE_RES_INTERNAL, Y_SENSORTYPE_IR, Y_SENSORTYPE_RES_PT1000 and Y_SENSORTYPE_CHANNEL_OFF
+     * corresponding to the temperature sensor type
      *
      * On failure, throws an exception or returns Y_SENSORTYPE_INVALID.
      */
@@ -195,8 +202,8 @@ public:
      * Y_SENSORTYPE_TYPE_J, Y_SENSORTYPE_TYPE_N, Y_SENSORTYPE_TYPE_R, Y_SENSORTYPE_TYPE_S,
      * Y_SENSORTYPE_TYPE_T, Y_SENSORTYPE_PT100_4WIRES, Y_SENSORTYPE_PT100_3WIRES,
      * Y_SENSORTYPE_PT100_2WIRES, Y_SENSORTYPE_RES_OHM, Y_SENSORTYPE_RES_NTC, Y_SENSORTYPE_RES_LINEAR,
-     * Y_SENSORTYPE_RES_INTERNAL, Y_SENSORTYPE_IR and Y_SENSORTYPE_RES_PT1000 corresponding to the
-     * temperature sensor type
+     * Y_SENSORTYPE_RES_INTERNAL, Y_SENSORTYPE_IR, Y_SENSORTYPE_RES_PT1000 and Y_SENSORTYPE_CHANNEL_OFF
+     * corresponding to the temperature sensor type
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
@@ -434,5 +441,10 @@ inline YTemperature *yFirstTemperature(void)
 { return YTemperature::FirstTemperature();}
 
 //--- (end of YTemperature functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

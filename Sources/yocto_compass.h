@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_compass.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_compass.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindCompass(), the high-level API for Compass functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_COMPASS_H
 #define YOCTO_COMPASS_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YCompass return codes)
 //--- (end of YCompass return codes)
@@ -300,5 +305,10 @@ inline YCompass *yFirstCompass(void)
 { return YCompass::FirstCompass();}
 
 //--- (end of YCompass functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

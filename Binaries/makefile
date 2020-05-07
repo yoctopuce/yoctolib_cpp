@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: makefile 38378 2019-11-22 16:56:04Z seb $
+#  $Id: makefile 40172 2020-04-28 16:43:22Z seb $
 #
 #  makefile for C++ library
 #  - - - - - - - - - License information: - - - - - - - - -
@@ -151,21 +151,6 @@ YOCTO_API_OBJS = 	$(OD)\yocto_api.obj\
 
 #-- yocto_patch_stop --
 
-YOCTO_API_OBJS =  $(OD)\yocto_api.obj $(OD)\yocto_anbutton.obj $(OD)\yocto_carbondioxide.obj $(OD)\yocto_colorled.obj $(OD)\yocto_current.obj \
-	$(OD)\yocto_datalogger.obj $(OD)\yocto_display.obj $(OD)\yocto_dualpower.obj $(OD)\yocto_files.obj $(OD)\yocto_genericsensor.obj \
-	$(OD)\yocto_hubport.obj $(OD)\yocto_humidity.obj $(OD)\yocto_led.obj $(OD)\yocto_lightsensor.obj $(OD)\yocto_network.obj \
-	$(OD)\yocto_oscontrol.obj $(OD)\yocto_power.obj $(OD)\yocto_pressure.obj $(OD)\yocto_realtimeclock.obj $(OD)\yocto_relay.obj \
-	$(OD)\yocto_servo.obj $(OD)\yocto_temperature.obj $(OD)\yocto_voc.obj $(OD)\yocto_voltage.obj \
-	$(OD)\yocto_wakeupmonitor.obj $(OD)\yocto_wakeupschedule.obj $(OD)\yocto_watchdog.obj $(OD)\yocto_wireless.obj $(OD)\yocto_digitalio.obj \
-	$(OD)\yocto_accelerometer.obj $(OD)\yocto_magnetometer.obj $(OD)\yocto_refFrame.obj $(OD)\yocto_tilt.obj $(OD)\yocto_compass.obj \
-	$(OD)\yocto_gyro.obj $(OD)\yocto_pwmoutput.obj $(OD)\yocto_pwmpowersource.obj $(OD)\yocto_altitude.obj $(OD)\yocto_motor.obj \
-	$(OD)\yocto_serialport.obj $(OD)\yocto_pwminput.obj $(OD)\yocto_segmenteddisplay.obj $(OD)\yocto_buzzer.obj $(OD)\yocto_gps.obj \
-	$(OD)\yocto_cellular.obj $(OD)\yocto_groundspeed.obj $(OD)\yocto_latitude.obj $(OD)\yocto_longitude.obj  $(OD)\yocto_poweroutput.obj \
-	$(OD)\yocto_quadraturedecoder.obj $(OD)\yocto_currentloopoutput.obj $(OD)\yocto_colorledcluster.obj $(OD)\yocto_spiport.obj \
-	$(OD)\yocto_steppermotor.obj $(OD)\yocto_multiaxiscontroller.obj $(OD)\yocto_proximity.obj $(OD)\yocto_rangefinder.obj \
-	$(OD)\yocto_daisychain.obj $(OD)\yocto_weighscale.obj $(OD)\yocto_voltageoutput.obj $(OD)\yocto_powersupply.obj $(OD)\yocto_multicellweighscale.obj \
-	$(OD)\yocto_tvoc.obj $(OD)\yocto_multisenscontroller.obj $(OD)\yocto_arithmeticsensor.obj $(OD)\yocto_i2cport.obj
-
 YOCTO_API_OBJS32 = $(YOCTO_API_OBJS:arch_type=windows\obj_dir)
 
 YOCTO_API_OBJS64 = $(YOCTO_API_OBJS:arch_type=windows\amd64\obj_dir)
@@ -247,7 +232,7 @@ $(OBJDIR32) $(OBJDIR_DLL32) $(YAPIOUT32) $(OBJDIR64) $(OBJDIR_DLL64) $(YAPIOUT64
 
 $(OUTDIR32)\yocto-static.lib: $(ALL_OBJS32)
 	@echo building lib ($@)
-    @lib /OUT:$@ $**
+	@lib /OUT:$@ $**
 
 $(OUTDIR32)\yocto.dll: $(ALL_OBJS_DLL32) $(YOCTO_API_DIR)\winresource.res
 	@echo building dll $@
@@ -255,7 +240,7 @@ $(OUTDIR32)\yocto.dll: $(ALL_OBJS_DLL32) $(YOCTO_API_DIR)\winresource.res
 
 $(YAPIOUT32)\yapi-static.lib: $(YAPI_OBJS32)
 	@echo building lib ($@)
-    @lib /OUT:$@ $**
+	@lib /OUT:$@ $**
 
 $(YAPIOUT32)\yapi.dll: $(YAPI_OBJS_DLL32) $(YAPI_DIR)\yapiresource.res
 	@echo building dll $@
@@ -263,7 +248,7 @@ $(YAPIOUT32)\yapi.dll: $(YAPI_OBJS_DLL32) $(YAPI_DIR)\yapiresource.res
 
 $(OUTDIR64)\yocto-static.lib: $(ALL_OBJS64)
 	@echo building lib ($@)
-    @lib /OUT:$@ $**
+	@lib /OUT:$@ $**
 
 $(OUTDIR64)\yocto.dll: $(ALL_OBJS_DLL64) $(YOCTO_API_DIR)\winresource64.res
 	@echo building dll $@
@@ -271,7 +256,7 @@ $(OUTDIR64)\yocto.dll: $(ALL_OBJS_DLL64) $(YOCTO_API_DIR)\winresource64.res
 
 $(YAPIOUT64)\yapi-static.lib: $(YAPI_OBJS64)
 	@echo building lib ($@)
-    @lib /OUT:$@ $**
+	@lib /OUT:$@ $**
 
 $(YAPIOUT64)\yapi.dll: $(YAPI_OBJS_DLL64) $(YAPI_DIR)\yapiresource64.res
 	@echo building dll $@

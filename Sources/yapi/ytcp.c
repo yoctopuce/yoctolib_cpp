@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 37206 2019-09-16 16:39:48Z seb $
+ * $Id: ytcp.c 40312 2020-05-05 09:39:18Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -2950,7 +2950,7 @@ void* ws_thread(void* ctx)
                         }
                         p = buffer + 9;
                         if (YSTRNCMP(p, "101", 3) != 0) {
-                            res = YERRMSG(YAPI_IO_ERROR, "hub does not support WebSocket");
+                            res = YERRMSG(YAPI_NOT_SUPPORTED, "hub does not support WebSocket");
                             // fatal error do not retry to reconnect
                             hub->state = NET_HUB_TOCLOSE;
                             break;

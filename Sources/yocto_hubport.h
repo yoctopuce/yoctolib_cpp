@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_hubport.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_hubport.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindHubPort(), the high-level API for HubPort functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_HUBPORT_H
 #define YOCTO_HUBPORT_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YHubPort return codes)
 //--- (end of YHubPort return codes)
@@ -82,7 +87,7 @@ typedef enum {
 //--- (YHubPort declaration)
 /**
  * YHubPort Class: YoctoHub slave port control interface, available for instance in the
- * YoctoHub-Ethernet, the YoctoHub-GSM-3G-NA, the YoctoHub-Shield or the YoctoHub-Wireless-g
+ * YoctoHub-Ethernet, the YoctoHub-GSM-3G-EU, the YoctoHub-Shield or the YoctoHub-Wireless-g
  *
  * The YHubPort class provides control over the power supply for slave ports
  * on a YoctoHub. It provide information about the device connected to it.
@@ -308,5 +313,10 @@ inline YHubPort *yFirstHubPort(void)
 { return YHubPort::FirstHubPort();}
 
 //--- (end of YHubPort functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

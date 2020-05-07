@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_poweroutput.cpp 38913 2019-12-20 18:59:49Z mvuilleu $
+ *  $Id: yocto_poweroutput.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Implements yFindPowerOutput(), the high-level API for PowerOutput functions
  *
@@ -39,14 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
-#include "yocto_poweroutput.h"
-#include "yapi/yjson.h"
-#include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "yocto_poweroutput.h"
+#include "yapi/yjson.h"
+#include "yapi/yapi.h"
 #define  __FILE_ID__  "poweroutput"
+
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YPowerOutput::YPowerOutput(const string& func): YFunction(func)
 //--- (YPowerOutput initialization)

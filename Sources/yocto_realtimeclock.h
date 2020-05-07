@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_realtimeclock.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_realtimeclock.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_REALTIMECLOCK_H
 #define YOCTO_REALTIMECLOCK_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YRealTimeClock return codes)
 //--- (end of YRealTimeClock return codes)
@@ -70,7 +75,7 @@ typedef enum {
 //--- (YRealTimeClock declaration)
 /**
  * YRealTimeClock Class: real-time clock control interface, available for instance in the
- * YoctoHub-GSM-3G-EU, the YoctoHub-GSM-3G-NA, the YoctoHub-Wireless-SR or the YoctoHub-Wireless-g
+ * YoctoHub-GSM-3G-EU, the YoctoHub-GSM-3G-NA, the YoctoHub-Wireless-g or the YoctoHub-Wireless-n
  *
  * The YRealTimeClock class provide access to the embedded real-time clock available on some Yoctopuce
  * devices. It can provide current date and time, even after a power outage
@@ -319,5 +324,10 @@ inline YRealTimeClock *yFirstRealTimeClock(void)
 { return YRealTimeClock::FirstRealTimeClock();}
 
 //--- (end of YRealTimeClock functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

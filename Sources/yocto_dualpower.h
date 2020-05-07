@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_dualpower.h 38913 2019-12-20 18:59:49Z mvuilleu $
+ *  $Id: yocto_dualpower.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindDualPower(), the high-level API for DualPower functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_DUALPOWER_H
 #define YOCTO_DUALPOWER_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YDualPower return codes)
 //--- (end of YDualPower return codes)
@@ -305,5 +310,10 @@ inline YDualPower *yFirstDualPower(void)
 { return YDualPower::FirstDualPower();}
 
 //--- (end of YDualPower functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

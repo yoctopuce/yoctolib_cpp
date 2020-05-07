@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_watchdog.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_watchdog.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindWatchdog(), the high-level API for Watchdog functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_WATCHDOG_H
 #define YOCTO_WATCHDOG_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YWatchdog return codes)
 //--- (end of YWatchdog return codes)
@@ -664,5 +669,10 @@ inline YWatchdog *yFirstWatchdog(void)
 { return YWatchdog::FirstWatchdog();}
 
 //--- (end of YWatchdog functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_segmenteddisplay.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_segmenteddisplay.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindSegmentedDisplay(), the high-level API for SegmentedDisplay functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_SEGMENTEDDISPLAY_H
 #define YOCTO_SEGMENTEDDISPLAY_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YSegmentedDisplay return codes)
 //--- (end of YSegmentedDisplay return codes)
@@ -267,5 +272,10 @@ inline YSegmentedDisplay *yFirstSegmentedDisplay(void)
 { return YSegmentedDisplay::FirstSegmentedDisplay();}
 
 //--- (end of YSegmentedDisplay functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

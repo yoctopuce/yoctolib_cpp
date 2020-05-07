@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multiaxiscontroller.h 38699 2019-12-06 16:19:54Z mvuilleu $
+ *  $Id: yocto_multiaxiscontroller.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindMultiAxisController(), the high-level API for MultiAxisController functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_MULTIAXISCONTROLLER_H
 #define YOCTO_MULTIAXISCONTROLLER_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YMultiAxisController return codes)
 //--- (end of YMultiAxisController return codes)
@@ -369,5 +374,10 @@ inline YMultiAxisController *yFirstMultiAxisController(void)
 { return YMultiAxisController::FirstMultiAxisController();}
 
 //--- (end of YMultiAxisController functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_carbondioxide.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_carbondioxide.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_CARBONDIOXIDE_H
 #define YOCTO_CARBONDIOXIDE_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YCarbonDioxide return codes)
 //--- (end of YCarbonDioxide return codes)
@@ -319,5 +324,10 @@ inline YCarbonDioxide *yFirstCarbonDioxide(void)
 { return YCarbonDioxide::FirstCarbonDioxide();}
 
 //--- (end of YCarbonDioxide functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

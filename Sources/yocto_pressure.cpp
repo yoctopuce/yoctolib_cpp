@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pressure.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
+ *  $Id: yocto_pressure.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Implements yFindPressure(), the high-level API for Pressure functions
  *
@@ -39,14 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
-#include "yocto_pressure.h"
-#include "yapi/yjson.h"
-#include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "yocto_pressure.h"
+#include "yapi/yjson.h"
+#include "yapi/yapi.h"
 #define  __FILE_ID__  "pressure"
+
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YPressure::YPressure(const string& func): YSensor(func)
 //--- (YPressure initialization)

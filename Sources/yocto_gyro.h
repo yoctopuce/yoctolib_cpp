@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ * $Id: yocto_gyro.h 40196 2020-04-30 06:47:29Z mvuilleu $
  *
  * Declares yFindGyro(), the high-level API for Gyro functions
  *
@@ -41,11 +41,15 @@
 #ifndef YOCTO_GYRO_H
 #define YOCTO_GYRO_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
 
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 //--- (generated code: YQt return codes)
 //--- (end of generated code: YQt return codes)
 //--- (generated code: YQt definitions)
@@ -649,5 +653,9 @@ inline YGyro *yFirstGyro(void)
 { return YGyro::FirstGyro();}
 
 //--- (end of generated code: YGyro functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+}
+#endif
 
 #endif

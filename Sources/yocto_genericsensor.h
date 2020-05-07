@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_genericsensor.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_genericsensor.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_GENERICSENSOR_H
 #define YOCTO_GENERICSENSOR_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YGenericSensor return codes)
 //--- (end of YGenericSensor return codes)
@@ -504,5 +509,10 @@ inline YGenericSensor *yFirstGenericSensor(void)
 { return YGenericSensor::FirstGenericSensor();}
 
 //--- (end of YGenericSensor functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

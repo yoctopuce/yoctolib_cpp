@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_network.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_network.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindNetwork(), the high-level API for Network functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_NETWORK_H
 #define YOCTO_NETWORK_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YNetwork return codes)
 //--- (end of YNetwork return codes)
@@ -97,6 +102,7 @@ typedef enum {
     Y_CALLBACKENCODING_MQTT = 9,
     Y_CALLBACKENCODING_YOCTO_API_JZON = 10,
     Y_CALLBACKENCODING_PRTG = 11,
+    Y_CALLBACKENCODING_INFLUXDB_V2 = 12,
     Y_CALLBACKENCODING_INVALID = -1,
 } Y_CALLBACKENCODING_enum;
 #endif
@@ -217,6 +223,7 @@ public:
     static const Y_CALLBACKENCODING_enum CALLBACKENCODING_MQTT = Y_CALLBACKENCODING_MQTT;
     static const Y_CALLBACKENCODING_enum CALLBACKENCODING_YOCTO_API_JZON = Y_CALLBACKENCODING_YOCTO_API_JZON;
     static const Y_CALLBACKENCODING_enum CALLBACKENCODING_PRTG = Y_CALLBACKENCODING_PRTG;
+    static const Y_CALLBACKENCODING_enum CALLBACKENCODING_INFLUXDB_V2 = Y_CALLBACKENCODING_INFLUXDB_V2;
     static const Y_CALLBACKENCODING_enum CALLBACKENCODING_INVALID = Y_CALLBACKENCODING_INVALID;
     static const string CALLBACKCREDENTIALS_INVALID;
     static const int CALLBACKINITIALDELAY_INVALID = YAPI_INVALID_UINT;
@@ -659,8 +666,9 @@ public:
      * @return a value among Y_CALLBACKENCODING_FORM, Y_CALLBACKENCODING_JSON,
      * Y_CALLBACKENCODING_JSON_ARRAY, Y_CALLBACKENCODING_CSV, Y_CALLBACKENCODING_YOCTO_API,
      * Y_CALLBACKENCODING_JSON_NUM, Y_CALLBACKENCODING_EMONCMS, Y_CALLBACKENCODING_AZURE,
-     * Y_CALLBACKENCODING_INFLUXDB, Y_CALLBACKENCODING_MQTT, Y_CALLBACKENCODING_YOCTO_API_JZON and
-     * Y_CALLBACKENCODING_PRTG corresponding to the encoding standard to use for representing notification values
+     * Y_CALLBACKENCODING_INFLUXDB, Y_CALLBACKENCODING_MQTT, Y_CALLBACKENCODING_YOCTO_API_JZON,
+     * Y_CALLBACKENCODING_PRTG and Y_CALLBACKENCODING_INFLUXDB_V2 corresponding to the encoding standard
+     * to use for representing notification values
      *
      * On failure, throws an exception or returns Y_CALLBACKENCODING_INVALID.
      */
@@ -677,8 +685,9 @@ public:
      * @param newval : a value among Y_CALLBACKENCODING_FORM, Y_CALLBACKENCODING_JSON,
      * Y_CALLBACKENCODING_JSON_ARRAY, Y_CALLBACKENCODING_CSV, Y_CALLBACKENCODING_YOCTO_API,
      * Y_CALLBACKENCODING_JSON_NUM, Y_CALLBACKENCODING_EMONCMS, Y_CALLBACKENCODING_AZURE,
-     * Y_CALLBACKENCODING_INFLUXDB, Y_CALLBACKENCODING_MQTT, Y_CALLBACKENCODING_YOCTO_API_JZON and
-     * Y_CALLBACKENCODING_PRTG corresponding to the encoding standard to use for representing notification values
+     * Y_CALLBACKENCODING_INFLUXDB, Y_CALLBACKENCODING_MQTT, Y_CALLBACKENCODING_YOCTO_API_JZON,
+     * Y_CALLBACKENCODING_PRTG and Y_CALLBACKENCODING_INFLUXDB_V2 corresponding to the encoding standard
+     * to use for representing notification values
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
@@ -1068,5 +1077,10 @@ inline YNetwork *yFirstNetwork(void)
 { return YNetwork::FirstNetwork();}
 
 //--- (end of YNetwork functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

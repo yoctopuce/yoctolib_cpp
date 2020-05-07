@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_gps.cpp 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_gps.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Implements yFindGps(), the high-level API for Gps functions
  *
@@ -39,14 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
-#include "yocto_gps.h"
-#include "yapi/yjson.h"
-#include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "yocto_gps.h"
+#include "yapi/yjson.h"
+#include "yapi/yapi.h"
 #define  __FILE_ID__  "gps"
+
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YGps::YGps(const string& func): YFunction(func)
 //--- (YGps initialization)
@@ -744,7 +749,7 @@ int YGps::set_command(const string& newval)
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the geolocalization module, for instance
- *         YGNSSMK1.gps.
+ *         YGNSSMK2.gps.
  *
  * @return a YGps object allowing you to drive the geolocalization module.
  */

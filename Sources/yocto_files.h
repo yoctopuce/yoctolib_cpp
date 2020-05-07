@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.h 38934 2019-12-23 09:29:53Z seb $
+ * $Id: yocto_files.h 40196 2020-04-30 06:47:29Z mvuilleu $
  *
  * Declares yFindFiles(), the high-level API for Files functions
  *
@@ -41,11 +41,15 @@
 #ifndef YOCTO_FILES_H
 #define YOCTO_FILES_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
 
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 //--- (generated code: YFiles definitions)
 class YFiles; // forward declaration
 
@@ -390,5 +394,9 @@ inline YFiles *yFirstFiles(void)
 { return YFiles::FirstFiles();}
 
 //--- (end of generated code: YFiles functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+}
+#endif
 
 #endif

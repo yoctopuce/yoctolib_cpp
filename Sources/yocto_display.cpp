@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
+ * $Id: yocto_display.cpp 40196 2020-04-30 06:47:29Z mvuilleu $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -39,14 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
+#include <string.h>
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+
 #include "yocto_display.h"
 #include "yapi/yjson.h"
 #include "yapi/yapi.h"
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
 #define  __FILE_ID__  "display"
 
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YDisplayLayer::YDisplayLayer(YDisplay *parent, int id):
 //--- (generated code: YDisplayLayer initialization)

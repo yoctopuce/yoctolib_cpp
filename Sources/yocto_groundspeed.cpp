@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_groundspeed.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
+ *  $Id: yocto_groundspeed.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Implements yFindGroundSpeed(), the high-level API for GroundSpeed functions
  *
@@ -39,14 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
-#include "yocto_groundspeed.h"
-#include "yapi/yjson.h"
-#include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "yocto_groundspeed.h"
+#include "yapi/yjson.h"
+#include "yapi/yapi.h"
 #define  __FILE_ID__  "groundspeed"
+
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YGroundSpeed::YGroundSpeed(const string& func): YSensor(func)
 //--- (YGroundSpeed initialization)
@@ -90,7 +95,7 @@ YGroundSpeed::~YGroundSpeed()
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the ground speed sensor, for instance
- *         YGNSSMK1.groundSpeed.
+ *         YGNSSMK2.groundSpeed.
  *
  * @return a YGroundSpeed object allowing you to drive the ground speed sensor.
  */

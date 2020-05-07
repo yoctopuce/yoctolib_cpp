@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_latitude.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
+ *  $Id: yocto_latitude.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Implements yFindLatitude(), the high-level API for Latitude functions
  *
@@ -39,14 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
-#include "yocto_latitude.h"
-#include "yapi/yjson.h"
-#include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "yocto_latitude.h"
+#include "yapi/yjson.h"
+#include "yapi/yapi.h"
 #define  __FILE_ID__  "latitude"
+
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YLatitude::YLatitude(const string& func): YSensor(func)
 //--- (YLatitude initialization)
@@ -90,7 +95,7 @@ YLatitude::~YLatitude()
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the latitude sensor, for instance
- *         YGNSSMK1.latitude.
+ *         YGNSSMK2.latitude.
  *
  * @return a YLatitude object allowing you to drive the latitude sensor.
  */

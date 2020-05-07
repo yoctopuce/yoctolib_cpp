@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 38378 2019-11-22 16:56:04Z seb $
+#  $Id: GNUmakefile 40261 2020-05-04 07:48:48Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -135,8 +135,9 @@ OPTS_PROD = -g -Wall
 OPTS_STAT =
 OPTS_DYN = -fPIC
 
+OPTS_JAVA = -fPIC -DYAPI_WITH_JNI -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux -I$(JAVA_HOME)/include/darwin
 ifdef JAVA_HOME
-OPTS_DYN = -fPIC -DYAPI_WITH_JNI -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux -I$(JAVA_HOME)/include/darwin
+OPTS_DYN = $(OPTS_JAVA)
 endif
 
 # most compatible ARMEL options, using soft-float
@@ -728,6 +729,7 @@ $(DIR_OSX)libyocto.dylib: $(DIR_OSX) $(ALL_OBJS_DYN_OSX) $(ALL_H)
 	@echo linking $@
 	@$(CPP_OSX)  -m64 -dynamiclib -Wl,-reexport_framework,IOKit,-reexport_framework,CoreFoundation,-headerpad_max_install_names,-undefined,dynamic_lookup,-compatibility_version,1.0,-current_version,1.0,-install_name,/usr/local/lib/libyocto.dylib -o $@ $(ALL_OBJS_DYN_OSX)
 
+$(YAPI_DIR_OSX)libyapi.dylib : OPTS_DYN = $(OPTS_JAVA)
 $(YAPI_DIR_OSX)libyapi.dylib: $(DIR_OSX) $(YAPI_OBJS_DYN_OSX) $(ALL_H)
 	@echo linking $@
 ifdef JAVA_HOME
@@ -740,6 +742,7 @@ $(DIR_OSX)test: $(OBJDIR_OSX) $(YAPI_DIR_OSX) ALL_OBJS_STAT_OSX) $(ALL_H) $(TEST
 	@echo linking $@
 	@$(CPP_OSX) $(OPTS_OSX) $(INC_PATH) -o $@ $(TEST_SRC) $(ALL_OBJS_STAT_OSX) $(LINKWITH_OSX)
 
+$(YAPI_DIR_OSX32)libyapi.dylib : OPTS_DYN = $(OPTS_JAVA)
 $(YAPI_DIR_OSX32)libyapi.dylib: $(OBJDIR_OSX32) $(YAPI_DIR_OSX32) $(YAPI_OBJS_DYN_OSX32) $(ALL_H)
 	@echo linking $@
 ifdef JAVA_HOME
@@ -842,21 +845,34 @@ release: release_osx
 
 endif
 
+libyapi-i386.so : OPTS_DYN = $(OPTS_JAVA)
 libyapi-i386.so: $(YAPI_DIR_I386)libyapi.so.1.0.1
 	cp $< $@
 
+libyapi-amd64.so : OPTS_DYN = $(OPTS_JAVA)
 libyapi-amd64.so: $(YAPI_DIR_X64)libyapi.so.1.0.1
 	cp $< $@
 
+libyapi-armel.so : OPTS_DYN = $(OPTS_JAVA)
 libyapi-armel.so: $(YAPI_DIR_ARMEL)libyapi.so.1.0.1
 	cp $< $@
 
+libyapi-armhf.so : OPTS_DYN = $(OPTS_JAVA)
 libyapi-armhf.so:  $(YAPI_DIR_ARMHF)libyapi.so.1.0.1
 	cp $< $@
 
+libyapi-aarch64.so : OPTS_DYN = $(OPTS_JAVA)
 libyapi-aarch64.so: $(YAPI_DIR_AARCH64)libyapi.so.1.0.1
 	cp $< $@
 
+
+check_java : 
+ifdef JAVA_HOME
+	@echo java_home set to $(JAVA_HOME)
+else
+	@echo "JAVA_HOME IS NOT DEFINED" 1>&2
+	exit 1
+endif
 
 $(DIR_I386) $(DIR_X64) $(DIR_ARMEL) $(DIR_ARMHF) $(DIR_AARCH64) $(DIR_MIPS) $(DIR_MIPSEL) $(DIR_OSX) $(DIR_OSX32) \
 $(YAPI_DIR_I386) $(YAPI_DIR_X64) $(YAPI_DIR_ARMEL) $(YAPI_DIR_ARMHF) $(YAPI_DIR_AARCH64) $(YAPI_DIR_MIPS) $(YAPI_DIR_MIPSEL) $(YAPI_DIR_OSX) $(YAPI_DIR_OSX32) \

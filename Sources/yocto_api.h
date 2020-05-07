@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 38913 2019-12-20 18:59:49Z mvuilleu $
+ * $Id: yocto_api.h 40241 2020-05-01 18:04:40Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -40,8 +40,6 @@
 #ifndef YOCTO_API_H
 #define YOCTO_API_H
 
-#include "yapi/ydef.h"
-#include "yapi/yjson.h"
 #include <string>
 #include <vector>
 #include <queue>
@@ -50,6 +48,18 @@
 #include <cfloat>
 #include <cmath>
 
+using std::string;
+using std::vector;
+using std::queue;
+using std::map;
+
+#include "yapi/ydef.h"
+#include "yapi/yjson.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 #ifndef NAN
 #define NAN        ((float)((float)(1e+300 * 1e+300) * 0.0F))
 #endif
@@ -65,11 +75,6 @@
 #define YOCTO_CLASS_EXPORT
 #endif
 
-using std::string;
-using std::vector;
-using std::queue;
-using std::map;
-
 #define YAPI_INVALID_STRING         "!INVALID!"
 #define YAPI_INVALID_INT            (0x7FFFFFFF)
 #define YAPI_INVALID_UINT           (-1)
@@ -78,6 +83,10 @@ using std::map;
 #define YAPI_MIN_DOUBLE             (-DBL_MAX)
 #define YAPI_MAX_DOUBLE             DBL_MAX
 
+// internal helper function
+s64 yatoi(const char *c);
+int _ystrpos(const string& haystack, const string& needle);
+vector<string> _strsplit(const string& str, char delimiter);
 
 //--- (generated code: YFunction definitions)
 class YFunction; // forward declaration
@@ -597,6 +606,7 @@ public:
     static  vector<int> _decodeFloats(string sdat);
     static  string      _bin2HexStr(const string& data);
     static  string      _hexStr2Bin(const string& str);
+    static  s64         _hexStr2Long(const string& str);
     static  string      _flattenJsonStruct(string jsonbuffer);
     static  string      _checkFirmware(const string& serial, const string& rev, const string& path);
 
@@ -4364,5 +4374,10 @@ inline YDataLogger *yFirstDataLogger(void)
 { return YDataLogger::FirstDataLogger();}
 
 //--- (end of generated code: YDataLogger functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

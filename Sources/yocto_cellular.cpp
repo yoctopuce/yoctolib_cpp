@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
+ * $Id: yocto_cellular.cpp 40296 2020-05-05 07:56:00Z seb $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -39,16 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
-#include "yocto_cellular.h"
-#include "yapi/yjson.h"
-#include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "yocto_cellular.h"
+#include "yapi/yjson.h"
+#include "yapi/yapi.h"
 #define  __FILE_ID__  "cellular"
 
-
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YCellRecord::YCellRecord(int mcc,int mnc,int lac,int cellId,int dbm,int tad,const string &oper):
 //--- (generated code: YCellRecord initialization)
@@ -160,6 +163,7 @@ YCellular::YCellular(const string& func): YFunction(func)
     ,_imsi(IMSI_INVALID)
     ,_message(MESSAGE_INVALID)
     ,_pin(PIN_INVALID)
+    ,_radioConfig(RADIOCONFIG_INVALID)
     ,_lockedOperator(LOCKEDOPERATOR_INVALID)
     ,_airplaneMode(AIRPLANEMODE_INVALID)
     ,_enableData(ENABLEDATA_INVALID)
@@ -187,6 +191,7 @@ const string YCellular::CELLIDENTIFIER_INVALID = YAPI_INVALID_STRING;
 const string YCellular::IMSI_INVALID = YAPI_INVALID_STRING;
 const string YCellular::MESSAGE_INVALID = YAPI_INVALID_STRING;
 const string YCellular::PIN_INVALID = YAPI_INVALID_STRING;
+const string YCellular::RADIOCONFIG_INVALID = YAPI_INVALID_STRING;
 const string YCellular::LOCKEDOPERATOR_INVALID = YAPI_INVALID_STRING;
 const string YCellular::APN_INVALID = YAPI_INVALID_STRING;
 const string YCellular::APNSECRET_INVALID = YAPI_INVALID_STRING;
@@ -214,6 +219,9 @@ int YCellular::_parseAttr(YJSONObject *json_val)
     }
     if(json_val->has("pin")) {
         _pin =  json_val->getString("pin");
+    }
+    if(json_val->has("radioConfig")) {
+        _radioConfig =  json_val->getString("radioConfig");
     }
     if(json_val->has("lockedOperator")) {
         _lockedOperator =  json_val->getString("lockedOperator");
@@ -338,7 +346,7 @@ string YCellular::get_cellIdentifier(void)
  * Active cellular connection type.
  *
  * @return a value among Y_CELLTYPE_GPRS, Y_CELLTYPE_EGPRS, Y_CELLTYPE_WCDMA, Y_CELLTYPE_HSDPA,
- * Y_CELLTYPE_NONE and Y_CELLTYPE_CDMA
+ * Y_CELLTYPE_NONE, Y_CELLTYPE_CDMA, Y_CELLTYPE_LTE_M, Y_CELLTYPE_NB_IOT and Y_CELLTYPE_EC_GSM_IOT
  *
  * On failure, throws an exception or returns Y_CELLTYPE_INVALID.
  */
@@ -365,13 +373,13 @@ Y_CELLTYPE_enum YCellular::get_cellType(void)
 }
 
 /**
- * Returns an opaque string if a PIN code has been configured in the device to access
- * the SIM card, or an empty string if none has been configured or if the code provided
- * was rejected by the SIM card.
+ * Returns the International Mobile Subscriber Identity (MSI) that uniquely identifies
+ * the SIM card. The first 3 digits represent the mobile country code (MCC), which
+ * is followed by the mobile network code (MNC), either 2-digit (European standard)
+ * or 3-digit (North American standard)
  *
- * @return a string corresponding to an opaque string if a PIN code has been configured in the device to access
- *         the SIM card, or an empty string if none has been configured or if the code provided
- *         was rejected by the SIM card
+ * @return a string corresponding to the International Mobile Subscriber Identity (MSI) that uniquely identifies
+ *         the SIM card
  *
  * On failure, throws an exception or returns Y_IMSI_INVALID.
  */
@@ -486,6 +494,72 @@ int YCellular::set_pin(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("pin", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the type of protocol used over the serial line, as a string.
+ * Possible values are "Line" for ASCII messages separated by CR and/or LF,
+ * "Frame:[timeout]ms" for binary messages separated by a delay time,
+ * "Char" for a continuous ASCII stream or
+ * "Byte" for a continuous binary stream.
+ *
+ * @return a string corresponding to the type of protocol used over the serial line, as a string
+ *
+ * On failure, throws an exception or returns Y_RADIOCONFIG_INVALID.
+ */
+string YCellular::get_radioConfig(void)
+{
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCellular::RADIOCONFIG_INVALID;
+                }
+            }
+        }
+        res = _radioConfig;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the type of protocol used over the serial line.
+ * Possible values are "Line" for ASCII messages separated by CR and/or LF,
+ * "Frame:[timeout]ms" for binary messages separated by a delay time,
+ * "Char" for a continuous ASCII stream or
+ * "Byte" for a continuous binary stream.
+ * The suffix "/[wait]ms" can be added to reduce the transmit rate so that there
+ * is always at lest the specified number of milliseconds between each bytes sent.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
+ *
+ * @param newval : a string corresponding to the type of protocol used over the serial line
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YCellular::set_radioConfig(const string& newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("radioConfig", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
@@ -1294,8 +1368,8 @@ vector<YCellRecord> YCellular::quickCellSurvey(void)
         llen = (int)(recs[ii]).length() - 2;
         if (llen >= 44) {
             if ((recs[ii]).substr(41, 3) == "dbm") {
-                lac = (int)strtoul((recs[ii]).substr(16, 4).c_str(), NULL, 16);
-                cellId = (int)strtoul((recs[ii]).substr(23, 4).c_str(), NULL, 16);
+                lac = (int)YAPI::_hexStr2Long((recs[ii]).substr(16, 4));
+                cellId = (int)YAPI::_hexStr2Long((recs[ii]).substr(23, 4));
                 dbms = (recs[ii]).substr(37, 4);
                 if ((dbms).substr(0, 1) == " ") {
                     dbms = (dbms).substr(1, 3);

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_altitude.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_altitude.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindAltitude(), the high-level API for Altitude functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_ALTITUDE_H
 #define YOCTO_ALTITUDE_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YAltitude return codes)
 //--- (end of YAltitude return codes)
@@ -62,7 +67,8 @@ typedef void (*YAltitudeTimedReportCallback)(YAltitude *func, YMeasure measure);
 
 //--- (YAltitude declaration)
 /**
- * YAltitude Class: altimeter control interface, available for instance in the Yocto-Altimeter-V2 or the Yocto-GPS
+ * YAltitude Class: altimeter control interface, available for instance in the Yocto-Altimeter-V2 or
+ * the Yocto-GPS-V2
  *
  * The YAltitude class allows you to read and configure Yoctopuce altimeters.
  * It inherits from YSensor class the core functions to read measurements,
@@ -306,5 +312,10 @@ inline YAltitude *yFirstAltitude(void)
 { return YAltitude::FirstAltitude();}
 
 //--- (end of YAltitude functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

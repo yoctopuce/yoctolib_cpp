@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_relay.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
+ *  $Id: yocto_relay.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Implements yFindRelay(), the high-level API for Relay functions
  *
@@ -39,14 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
-#include "yocto_relay.h"
-#include "yapi/yjson.h"
-#include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "yocto_relay.h"
+#include "yapi/yjson.h"
+#include "yapi/yapi.h"
 #define  __FILE_ID__  "relay"
+
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YRelay::YRelay(const string& func): YFunction(func)
 //--- (YRelay initialization)

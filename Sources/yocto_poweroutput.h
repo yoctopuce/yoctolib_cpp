@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_poweroutput.h 38913 2019-12-20 18:59:49Z mvuilleu $
+ *  $Id: yocto_poweroutput.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindPowerOutput(), the high-level API for PowerOutput functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_POWEROUTPUT_H
 #define YOCTO_POWEROUTPUT_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YPowerOutput return codes)
 //--- (end of YPowerOutput return codes)
@@ -264,5 +269,10 @@ inline YPowerOutput *yFirstPowerOutput(void)
 { return YPowerOutput::FirstPowerOutput();}
 
 //--- (end of YPowerOutput functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

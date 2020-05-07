@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_digitalio.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_digitalio.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_DIGITALIO_H
 #define YOCTO_DIGITALIO_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YDigitalIO return codes)
 //--- (end of YDigitalIO return codes)
@@ -592,5 +597,10 @@ inline YDigitalIO *yFirstDigitalIO(void)
 { return YDigitalIO::FirstDigitalIO();}
 
 //--- (end of YDigitalIO functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_voltageoutput.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
+ *  $Id: yocto_voltageoutput.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Implements yFindVoltageOutput(), the high-level API for VoltageOutput functions
  *
@@ -39,14 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
-#include "yocto_voltageoutput.h"
-#include "yapi/yjson.h"
-#include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "yocto_voltageoutput.h"
+#include "yapi/yjson.h"
+#include "yapi/yapi.h"
 #define  __FILE_ID__  "voltageoutput"
+
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YVoltageOutput::YVoltageOutput(const string& func): YFunction(func)
 //--- (YVoltageOutput initialization)

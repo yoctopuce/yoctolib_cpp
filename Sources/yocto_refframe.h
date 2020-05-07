@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_refframe.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_refframe.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_REFFRAME_H
 #define YOCTO_REFFRAME_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YRefFrame return codes)
 //--- (end of YRefFrame return codes)
@@ -574,5 +579,10 @@ inline YRefFrame *yFirstRefFrame(void)
 { return YRefFrame::FirstRefFrame();}
 
 //--- (end of YRefFrame functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

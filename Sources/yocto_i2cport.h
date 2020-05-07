@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_i2cport.h 38934 2019-12-23 09:29:53Z seb $
+ *  $Id: yocto_i2cport.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindI2cPort(), the high-level API for I2cPort functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_I2CPORT_H
 #define YOCTO_I2CPORT_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YI2cPort return codes)
 //--- (end of YI2cPort return codes)
@@ -533,6 +538,21 @@ public:
     virtual string      queryLine(string query,int maxWait);
 
     /**
+     * Sends a binary message to the serial port, and reads the reply, if any.
+     * This function is intended to be used when the serial port is configured for
+     * Frame-based protocol.
+     *
+     * @param hexString : the message to send, coded in hexadecimal
+     * @param maxWait : the maximum number of milliseconds to wait for a reply.
+     *
+     * @return the next frame received after sending the message, as a hex string.
+     *         Additional frames can be obtained by calling readHex or readMessages.
+     *
+     * On failure, throws an exception or returns an empty string.
+     */
+    virtual string      queryHex(string hexString,int maxWait);
+
+    /**
      * Saves the job definition string (JSON data) into a job file.
      * The job file can be later enabled using selectJob().
      *
@@ -799,5 +819,10 @@ inline YI2cPort *yFirstI2cPort(void)
 { return YI2cPort::FirstI2cPort();}
 
 //--- (end of YI2cPort functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

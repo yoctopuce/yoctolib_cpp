@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_groundspeed.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_groundspeed.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindGroundSpeed(), the high-level API for GroundSpeed functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_GROUNDSPEED_H
 #define YOCTO_GROUNDSPEED_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YGroundSpeed return codes)
 //--- (end of YGroundSpeed return codes)
@@ -60,7 +65,7 @@ typedef void (*YGroundSpeedTimedReportCallback)(YGroundSpeed *func, YMeasure mea
 
 //--- (YGroundSpeed declaration)
 /**
- * YGroundSpeed Class: ground speed sensor control interface, available for instance in the Yocto-GPS
+ * YGroundSpeed Class: ground speed sensor control interface, available for instance in the Yocto-GPS-V2
  *
  * The YGroundSpeed class allows you to read and configure Yoctopuce ground speed sensors.
  * It inherits from YSensor class the core functions to read measurements,
@@ -113,7 +118,7 @@ public:
      * call registerHub() at application initialization time.
      *
      * @param func : a string that uniquely characterizes the ground speed sensor, for instance
-     *         YGNSSMK1.groundSpeed.
+     *         YGNSSMK2.groundSpeed.
      *
      * @return a YGroundSpeed object allowing you to drive the ground speed sensor.
      */
@@ -213,7 +218,7 @@ public:
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the ground speed sensor, for instance
- *         YGNSSMK1.groundSpeed.
+ *         YGNSSMK2.groundSpeed.
  *
  * @return a YGroundSpeed object allowing you to drive the ground speed sensor.
  */
@@ -232,5 +237,10 @@ inline YGroundSpeed *yFirstGroundSpeed(void)
 { return YGroundSpeed::FirstGroundSpeed();}
 
 //--- (end of YGroundSpeed functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

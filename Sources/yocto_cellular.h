@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ * $Id: yocto_cellular.h 40196 2020-04-30 06:47:29Z mvuilleu $
  *
  * Declares yFindCellular(), the high-level API for Cellular functions
  *
@@ -41,11 +41,15 @@
 #ifndef YOCTO_CELLULAR_H
 #define YOCTO_CELLULAR_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
 
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 //--- (generated code: YCellular return codes)
 //--- (end of generated code: YCellular return codes)
 //--- (generated code: YCellular definitions)
@@ -61,6 +65,9 @@ typedef enum {
     Y_CELLTYPE_HSDPA = 3,
     Y_CELLTYPE_NONE = 4,
     Y_CELLTYPE_CDMA = 5,
+    Y_CELLTYPE_LTE_M = 6,
+    Y_CELLTYPE_NB_IOT = 7,
+    Y_CELLTYPE_EC_GSM_IOT = 8,
     Y_CELLTYPE_INVALID = -1,
 } Y_CELLTYPE_enum;
 #endif
@@ -88,6 +95,7 @@ typedef enum {
 #define Y_IMSI_INVALID                  (YAPI_INVALID_STRING)
 #define Y_MESSAGE_INVALID               (YAPI_INVALID_STRING)
 #define Y_PIN_INVALID                   (YAPI_INVALID_STRING)
+#define Y_RADIOCONFIG_INVALID           (YAPI_INVALID_STRING)
 #define Y_LOCKEDOPERATOR_INVALID        (YAPI_INVALID_STRING)
 #define Y_APN_INVALID                   (YAPI_INVALID_STRING)
 #define Y_APNSECRET_INVALID             (YAPI_INVALID_STRING)
@@ -220,6 +228,7 @@ protected:
     string          _imsi;
     string          _message;
     string          _pin;
+    string          _radioConfig;
     string          _lockedOperator;
     Y_AIRPLANEMODE_enum _airplaneMode;
     Y_ENABLEDATA_enum _enableData;
@@ -254,10 +263,14 @@ public:
     static const Y_CELLTYPE_enum CELLTYPE_HSDPA = Y_CELLTYPE_HSDPA;
     static const Y_CELLTYPE_enum CELLTYPE_NONE = Y_CELLTYPE_NONE;
     static const Y_CELLTYPE_enum CELLTYPE_CDMA = Y_CELLTYPE_CDMA;
+    static const Y_CELLTYPE_enum CELLTYPE_LTE_M = Y_CELLTYPE_LTE_M;
+    static const Y_CELLTYPE_enum CELLTYPE_NB_IOT = Y_CELLTYPE_NB_IOT;
+    static const Y_CELLTYPE_enum CELLTYPE_EC_GSM_IOT = Y_CELLTYPE_EC_GSM_IOT;
     static const Y_CELLTYPE_enum CELLTYPE_INVALID = Y_CELLTYPE_INVALID;
     static const string IMSI_INVALID;
     static const string MESSAGE_INVALID;
     static const string PIN_INVALID;
+    static const string RADIOCONFIG_INVALID;
     static const string LOCKEDOPERATOR_INVALID;
     static const Y_AIRPLANEMODE_enum AIRPLANEMODE_OFF = Y_AIRPLANEMODE_OFF;
     static const Y_AIRPLANEMODE_enum AIRPLANEMODE_ON = Y_AIRPLANEMODE_ON;
@@ -315,7 +328,7 @@ public:
      * Active cellular connection type.
      *
      * @return a value among Y_CELLTYPE_GPRS, Y_CELLTYPE_EGPRS, Y_CELLTYPE_WCDMA, Y_CELLTYPE_HSDPA,
-     * Y_CELLTYPE_NONE and Y_CELLTYPE_CDMA
+     * Y_CELLTYPE_NONE, Y_CELLTYPE_CDMA, Y_CELLTYPE_LTE_M, Y_CELLTYPE_NB_IOT and Y_CELLTYPE_EC_GSM_IOT
      *
      * On failure, throws an exception or returns Y_CELLTYPE_INVALID.
      */
@@ -325,13 +338,13 @@ public:
     { return this->get_cellType(); }
 
     /**
-     * Returns an opaque string if a PIN code has been configured in the device to access
-     * the SIM card, or an empty string if none has been configured or if the code provided
-     * was rejected by the SIM card.
+     * Returns the International Mobile Subscriber Identity (MSI) that uniquely identifies
+     * the SIM card. The first 3 digits represent the mobile country code (MCC), which
+     * is followed by the mobile network code (MNC), either 2-digit (European standard)
+     * or 3-digit (North American standard)
      *
-     * @return a string corresponding to an opaque string if a PIN code has been configured in the device to access
-     *         the SIM card, or an empty string if none has been configured or if the code provided
-     *         was rejected by the SIM card
+     * @return a string corresponding to the International Mobile Subscriber Identity (MSI) that uniquely identifies
+     *         the SIM card
      *
      * On failure, throws an exception or returns Y_IMSI_INVALID.
      */
@@ -390,6 +403,43 @@ public:
     int             set_pin(const string& newval);
     inline int      setPin(const string& newval)
     { return this->set_pin(newval); }
+
+    /**
+     * Returns the type of protocol used over the serial line, as a string.
+     * Possible values are "Line" for ASCII messages separated by CR and/or LF,
+     * "Frame:[timeout]ms" for binary messages separated by a delay time,
+     * "Char" for a continuous ASCII stream or
+     * "Byte" for a continuous binary stream.
+     *
+     * @return a string corresponding to the type of protocol used over the serial line, as a string
+     *
+     * On failure, throws an exception or returns Y_RADIOCONFIG_INVALID.
+     */
+    string              get_radioConfig(void);
+
+    inline string       radioConfig(void)
+    { return this->get_radioConfig(); }
+
+    /**
+     * Changes the type of protocol used over the serial line.
+     * Possible values are "Line" for ASCII messages separated by CR and/or LF,
+     * "Frame:[timeout]ms" for binary messages separated by a delay time,
+     * "Char" for a continuous ASCII stream or
+     * "Byte" for a continuous binary stream.
+     * The suffix "/[wait]ms" can be added to reduce the transmit rate so that there
+     * is always at lest the specified number of milliseconds between each bytes sent.
+     * Remember to call the saveToFlash() method of the module if the
+     * modification must be kept.
+     *
+     * @param newval : a string corresponding to the type of protocol used over the serial line
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_radioConfig(const string& newval);
+    inline int      setRadioConfig(const string& newval)
+    { return this->set_radioConfig(newval); }
 
     /**
      * Returns the name of the only cell operator to use if automatic choice is disabled,
@@ -819,5 +869,9 @@ inline YCellular *yFirstCellular(void)
 { return YCellular::FirstCellular();}
 
 //--- (end of generated code: YCellular functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+}
+#endif
 
 #endif

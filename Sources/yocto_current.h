@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_current.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_current.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindCurrent(), the high-level API for Current functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_CURRENT_H
 #define YOCTO_CURRENT_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YCurrent return codes)
 //--- (end of YCurrent return codes)
@@ -279,5 +284,10 @@ inline YCurrent *yFirstCurrent(void)
 { return YCurrent::FirstCurrent();}
 
 //--- (end of YCurrent functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

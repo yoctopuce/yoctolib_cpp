@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_voltageoutput.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_voltageoutput.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindVoltageOutput(), the high-level API for VoltageOutput functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_VOLTAGEOUTPUT_H
 #define YOCTO_VOLTAGEOUTPUT_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YVoltageOutput return codes)
 //--- (end of YVoltageOutput return codes)
@@ -295,5 +300,10 @@ inline YVoltageOutput *yFirstVoltageOutput(void)
 { return YVoltageOutput::FirstVoltageOutput();}
 
 //--- (end of YVoltageOutput functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

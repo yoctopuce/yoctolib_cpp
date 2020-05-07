@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_spiport.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_SPIPORT_H
 #define YOCTO_SPIPORT_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YSpiPort return codes)
 //--- (end of YSpiPort return codes)
@@ -628,6 +633,21 @@ public:
     virtual string      queryLine(string query,int maxWait);
 
     /**
+     * Sends a binary message to the serial port, and reads the reply, if any.
+     * This function is intended to be used when the serial port is configured for
+     * Frame-based protocol.
+     *
+     * @param hexString : the message to send, coded in hexadecimal
+     * @param maxWait : the maximum number of milliseconds to wait for a reply.
+     *
+     * @return the next frame received after sending the message, as a hex string.
+     *         Additional frames can be obtained by calling readHex or readMessages.
+     *
+     * On failure, throws an exception or returns an empty string.
+     */
+    virtual string      queryHex(string hexString,int maxWait);
+
+    /**
      * Saves the job definition string (JSON data) into a job file.
      * The job file can be later enabled using selectJob().
      *
@@ -884,5 +904,10 @@ inline YSpiPort *yFirstSpiPort(void)
 { return YSpiPort::FirstSpiPort();}
 
 //--- (end of YSpiPort functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

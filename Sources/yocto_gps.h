@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_gps.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_gps.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindGps(), the high-level API for Gps functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_GPS_H
 #define YOCTO_GPS_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YGps return codes)
 //--- (end of YGps return codes)
@@ -101,7 +106,7 @@ typedef enum {
 
 //--- (YGps declaration)
 /**
- * YGps Class: Geolocalization control interface (GPS, GNSS, ...), available for instance in the Yocto-GPS
+ * YGps Class: Geolocalization control interface (GPS, GNSS, ...), available for instance in the Yocto-GPS-V2
  *
  * The YGps class allows you to retrieve positioning
  * data from a GPS/GNSS sensor. This class can provides
@@ -460,7 +465,7 @@ public:
      * call registerHub() at application initialization time.
      *
      * @param func : a string that uniquely characterizes the geolocalization module, for instance
-     *         YGNSSMK1.gps.
+     *         YGNSSMK2.gps.
      *
      * @return a YGps object allowing you to drive the geolocalization module.
      */
@@ -544,7 +549,7 @@ public:
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the geolocalization module, for instance
- *         YGNSSMK1.gps.
+ *         YGNSSMK2.gps.
  *
  * @return a YGps object allowing you to drive the geolocalization module.
  */
@@ -563,5 +568,10 @@ inline YGps *yFirstGps(void)
 { return YGps::FirstGps();}
 
 //--- (end of YGps functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
+ * $Id: yocto_gyro.cpp 40196 2020-04-30 06:47:29Z mvuilleu $
  *
  * Implements yFindGyro(), the high-level API for Gyro functions
  *
@@ -39,16 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
-#include "yocto_gyro.h"
-#include "yapi/yjson.h"
-#include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "yocto_gyro.h"
+#include "yapi/yjson.h"
+#include "yapi/yapi.h"
 #define  __FILE_ID__  "gyro"
 
-
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YQt::YQt(const string& func): YSensor(func)
 //--- (generated code: YQt initialization)

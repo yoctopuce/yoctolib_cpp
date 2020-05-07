@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_dualpower.cpp 38913 2019-12-20 18:59:49Z mvuilleu $
+ *  $Id: yocto_dualpower.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Implements yFindDualPower(), the high-level API for DualPower functions
  *
@@ -39,14 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
-#include "yocto_dualpower.h"
-#include "yapi/yjson.h"
-#include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "yocto_dualpower.h"
+#include "yapi/yjson.h"
+#include "yapi/yapi.h"
 #define  __FILE_ID__  "dualpower"
+
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YDualPower::YDualPower(const string& func): YFunction(func)
 //--- (YDualPower initialization)

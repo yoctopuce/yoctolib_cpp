@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_lightsensor.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_lightsensor.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindLightSensor(), the high-level API for LightSensor functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_LIGHTSENSOR_H
 #define YOCTO_LIGHTSENSOR_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YLightSensor return codes)
 //--- (end of YLightSensor return codes)
@@ -309,5 +314,10 @@ inline YLightSensor *yFirstLightSensor(void)
 { return YLightSensor::FirstLightSensor();}
 
 //--- (end of YLightSensor functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

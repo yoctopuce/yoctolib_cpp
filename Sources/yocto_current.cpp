@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_current.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
+ *  $Id: yocto_current.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Implements yFindCurrent(), the high-level API for Current functions
  *
@@ -39,14 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
-#include "yocto_current.h"
-#include "yapi/yjson.h"
-#include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "yocto_current.h"
+#include "yapi/yjson.h"
+#include "yapi/yapi.h"
 #define  __FILE_ID__  "current"
+
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YCurrent::YCurrent(const string& func): YSensor(func)
 //--- (YCurrent initialization)

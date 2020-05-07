@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_tvoc.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_tvoc.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindTvoc(), the high-level API for Tvoc functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_TVOC_H
 #define YOCTO_TVOC_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YTvoc return codes)
 //--- (end of YTvoc return codes)
@@ -233,5 +238,10 @@ inline YTvoc *yFirstTvoc(void)
 { return YTvoc::FirstTvoc();}
 
 //--- (end of YTvoc functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

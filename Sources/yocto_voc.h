@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_voc.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_voc.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindVoc(), the high-level API for Voc functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_VOC_H
 #define YOCTO_VOC_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YVoc return codes)
 //--- (end of YVoc return codes)
@@ -232,5 +237,10 @@ inline YVoc *yFirstVoc(void)
 { return YVoc::FirstVoc();}
 
 //--- (end of YVoc functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

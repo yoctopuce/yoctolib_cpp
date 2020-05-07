@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ * $Id: yocto_serialport.h 40196 2020-04-30 06:47:29Z mvuilleu $
  *
  * Declares yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -37,15 +37,18 @@
  *
  *********************************************************************/
 
-
 #ifndef YOCTO_SERIALPORT_H
 #define YOCTO_SERIALPORT_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
 
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 //--- (generated code: YSerialPort return codes)
 //--- (end of generated code: YSerialPort return codes)
 //--- (generated code: YSerialPort definitions)
@@ -625,6 +628,21 @@ public:
     virtual string      queryLine(string query,int maxWait);
 
     /**
+     * Sends a binary message to the serial port, and reads the reply, if any.
+     * This function is intended to be used when the serial port is configured for
+     * Frame-based protocol.
+     *
+     * @param hexString : the message to send, coded in hexadecimal
+     * @param maxWait : the maximum number of milliseconds to wait for a reply.
+     *
+     * @return the next frame received after sending the message, as a hex string.
+     *         Additional frames can be obtained by calling readHex or readMessages.
+     *
+     * On failure, throws an exception or returns an empty string.
+     */
+    virtual string      queryHex(string hexString,int maxWait);
+
+    /**
      * Saves the job definition string (JSON data) into a job file.
      * The job file can be later enabled using selectJob().
      *
@@ -1065,5 +1083,9 @@ inline YSerialPort *yFirstSerialPort(void)
 { return YSerialPort::FirstSerialPort();}
 
 //--- (end of generated code: YSerialPort functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+}
+#endif
 
 #endif

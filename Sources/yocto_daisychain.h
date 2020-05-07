@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_daisychain.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_daisychain.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindDaisyChain(), the high-level API for DaisyChain functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_DAISYCHAIN_H
 #define YOCTO_DAISYCHAIN_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YDaisyChain return codes)
 //--- (end of YDaisyChain return codes)
@@ -295,5 +300,10 @@ inline YDaisyChain *yFirstDaisyChain(void)
 { return YDaisyChain::FirstDaisyChain();}
 
 //--- (end of YDaisyChain functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

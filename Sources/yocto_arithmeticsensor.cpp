@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_arithmeticsensor.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
+ *  $Id: yocto_arithmeticsensor.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Implements yFindArithmeticSensor(), the high-level API for ArithmeticSensor functions
  *
@@ -39,14 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
-#include "yocto_arithmeticsensor.h"
-#include "yapi/yjson.h"
-#include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "yocto_arithmeticsensor.h"
+#include "yapi/yjson.h"
+#include "yapi/yapi.h"
 #define  __FILE_ID__  "arithmeticsensor"
+
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YArithmeticSensor::YArithmeticSensor(const string& func): YSensor(func)
 //--- (YArithmeticSensor initialization)

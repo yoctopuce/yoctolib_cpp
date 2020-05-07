@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_oscontrol.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_oscontrol.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindOsControl(), the high-level API for OsControl functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_OSCONTROL_H
 #define YOCTO_OSCONTROL_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YOsControl return codes)
 //--- (end of YOsControl return codes)
@@ -248,5 +253,10 @@ inline YOsControl *yFirstOsControl(void)
 { return YOsControl::FirstOsControl();}
 
 //--- (end of YOsControl functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

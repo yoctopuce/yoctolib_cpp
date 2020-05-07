@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_altitude.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
+ *  $Id: yocto_altitude.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Implements yFindAltitude(), the high-level API for Altitude functions
  *
@@ -39,14 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
-#include "yocto_altitude.h"
-#include "yapi/yjson.h"
-#include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "yocto_altitude.h"
+#include "yapi/yjson.h"
+#include "yapi/yapi.h"
 #define  __FILE_ID__  "altitude"
+
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YAltitude::YAltitude(const string& func): YSensor(func)
 //--- (YAltitude initialization)

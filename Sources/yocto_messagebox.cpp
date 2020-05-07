@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.cpp 38899 2019-12-20 17:21:03Z mvuilleu $
+ * $Id: yocto_messagebox.cpp 40196 2020-04-30 06:47:29Z mvuilleu $
  *
  * Implements yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -39,16 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
-#include "yocto_messagebox.h"
-#include "yapi/yjson.h"
-#include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-#include <iostream>
+
+#include "yocto_messagebox.h"
+#include "yapi/yjson.h"
+#include "yapi/yapi.h"
 #define  __FILE_ID__  "messagebox"
 
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YSms::YSms(void):
 //--- (generated code: YSms initialization)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_refframe.cpp 38699 2019-12-06 16:19:54Z mvuilleu $
+ *  $Id: yocto_refframe.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Implements yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -39,14 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
-#include "yocto_refframe.h"
-#include "yapi/yjson.h"
-#include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "yocto_refframe.h"
+#include "yapi/yjson.h"
+#include "yapi/yapi.h"
 #define  __FILE_ID__  "refframe"
+
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YRefFrame::YRefFrame(const string& func): YFunction(func)
 //--- (YRefFrame initialization)

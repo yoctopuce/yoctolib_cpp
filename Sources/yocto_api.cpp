@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 38914 2019-12-20 19:14:33Z mvuilleu $
+ * $Id: yocto_api.cpp 40361 2020-05-06 14:28:00Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -38,8 +38,9 @@
  *********************************************************************/
 #define __FILE_ID__ "yocto_api"
 #define _CRT_SECURE_NO_DEPRECATE
+#define YMEMORY_ALLOW_MALLOC
+
 #include "yocto_api.h"
-#include "yapi/yapi.h"
 
 #ifdef WINDOWS_API
 #include <Windows.h>
@@ -52,14 +53,17 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <cfloat>
-#include <cmath>
 #include <time.h>
 #include <stdarg.h>
 #include <math.h>
-#define YMEMORY_ALLOW_MALLOC
-#include "yapi/yproto.h"
 #include <iostream>
+
+#include "yapi/yproto.h"
+#include "yapi/yapi.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 static yCRITICAL_SECTION _updateDeviceList_CS;
 static yCRITICAL_SECTION _handleEvent_CS;
@@ -73,6 +77,11 @@ const string YFunction::FUNCTIONID_INVALID = YAPI_INVALID_STRING;
 const string YFunction::FRIENDLYNAME_INVALID = YAPI_INVALID_STRING;
 
 const double YDataStream::DATA_INVALID = Y_DATA_INVALID;
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 int _ystrpos(const string& haystack, const string& needle)
 {
@@ -100,6 +109,30 @@ vector<string> _strsplit(const string& str, char delimiter)
     return res;
 }
 
+
+s64 yatoi(const char* p)
+{
+    s64 value = 0;
+    bool neg = *p == '-';
+    if (*p == '+' || neg) {
+        p++;
+    }
+    while (*p >= '0' && *p <= '9') {
+        value *= 10;
+        value += *p - '0';
+        p++;
+    }
+    if (neg) {
+        return -value;
+    }
+    else {
+        return value;
+    }
+}
+
+#ifdef YOCTOLIB_NAMESPACE
+}
+#endif
 
 YJSONContent* YJSONContent::ParseJson(const string& data, int start, int stop)
 {
@@ -4680,26 +4713,29 @@ string YAPI::_hexStr2Bin(const string& hex_str)
     return res;
 }
 
-
-s64 yatoi(const char* p)
+s64 YAPI::_hexStr2Long(const string& hex_str)
 {
-    s64 value = 0;
-    bool neg = *p == '-';
-    if (*p == '+' || neg) {
-        p++;
+    size_t len = hex_str.length() / 2;
+    const char* p = hex_str.c_str();
+    s64 res = 0;
+    for (size_t i = 0; i < len; i++) {
+        u8 b = 0;
+        int j;
+        for (j = 0; j < 2; j++) {
+            b <<= 4;
+            if (*p >= 'a' && *p <= 'f') {
+                b += 10 + *p - 'a';
+            } else if (*p >= 'A' && *p <= 'F') {
+                b += 10 + *p - 'A';
+            } else if (*p >= '0' && *p <= '9') {
+                b += *p - '0';
+            }
+            p++;
+        }
+        res = res*16 + b;
     }
-    while (*p >= '0' && *p <= '9') {
-        value *= 10;
-        value += *p - '0';
-        p++;
-    }
-    if (neg) {
-        return -value;
-    } else {
-        return value;
-    }
+    return res;
 }
-
 
 /**
  * Returns the version identifier for the Yoctopuce library in use.
@@ -4805,6 +4841,9 @@ void YAPI::FreeAPI(void)
         while (!_data_events.empty()) {
             _data_events.pop();
         }
+        _TimedReportCallbackList.clear();
+        _FunctionCallbacks.clear();
+        _moduleCallbackList.clear();
         _calibHandlers.clear();
     }
 }

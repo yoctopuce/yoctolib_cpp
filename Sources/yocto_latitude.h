@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_latitude.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_latitude.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindLatitude(), the high-level API for Latitude functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_LATITUDE_H
 #define YOCTO_LATITUDE_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YLatitude return codes)
 //--- (end of YLatitude return codes)
@@ -60,7 +65,7 @@ typedef void (*YLatitudeTimedReportCallback)(YLatitude *func, YMeasure measure);
 
 //--- (YLatitude declaration)
 /**
- * YLatitude Class: latitude sensor control interface, available for instance in the Yocto-GPS
+ * YLatitude Class: latitude sensor control interface, available for instance in the Yocto-GPS-V2
  *
  * The YLatitude class allows you to read and configure Yoctopuce latitude sensors.
  * It inherits from YSensor class the core functions to read measurements,
@@ -113,7 +118,7 @@ public:
      * call registerHub() at application initialization time.
      *
      * @param func : a string that uniquely characterizes the latitude sensor, for instance
-     *         YGNSSMK1.latitude.
+     *         YGNSSMK2.latitude.
      *
      * @return a YLatitude object allowing you to drive the latitude sensor.
      */
@@ -213,7 +218,7 @@ public:
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the latitude sensor, for instance
- *         YGNSSMK1.latitude.
+ *         YGNSSMK2.latitude.
  *
  * @return a YLatitude object allowing you to drive the latitude sensor.
  */
@@ -232,5 +237,10 @@ inline YLatitude *yFirstLatitude(void)
 { return YLatitude::FirstLatitude();}
 
 //--- (end of YLatitude functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

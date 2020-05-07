@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_relay.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_relay.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindRelay(), the high-level API for Relay functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_RELAY_H
 #define YOCTO_RELAY_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YRelay return codes)
 //--- (end of YRelay return codes)
@@ -514,5 +519,10 @@ inline YRelay *yFirstRelay(void)
 { return YRelay::FirstRelay();}
 
 //--- (end of YRelay functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

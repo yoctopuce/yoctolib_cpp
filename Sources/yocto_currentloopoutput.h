@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_currentloopoutput.h 38913 2019-12-20 18:59:49Z mvuilleu $
+ *  $Id: yocto_currentloopoutput.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindCurrentLoopOutput(), the high-level API for CurrentLoopOutput functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_CURRENTLOOPOUTPUT_H
 #define YOCTO_CURRENTLOOPOUTPUT_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YCurrentLoopOutput return codes)
 //--- (end of YCurrentLoopOutput return codes)
@@ -328,5 +333,10 @@ inline YCurrentLoopOutput *yFirstCurrentLoopOutput(void)
 { return YCurrentLoopOutput::FirstCurrentLoopOutput();}
 
 //--- (end of YCurrentLoopOutput functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_tilt.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_tilt.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindTilt(), the high-level API for Tilt functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_TILT_H
 #define YOCTO_TILT_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YTilt return codes)
 //--- (end of YTilt return codes)
@@ -291,5 +296,10 @@ inline YTilt *yFirstTilt(void)
 { return YTilt::FirstTilt();}
 
 //--- (end of YTilt functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupschedule.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_wakeupschedule.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindWakeUpSchedule(), the high-level API for WakeUpSchedule functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_WAKEUPSCHEDULE_H
 #define YOCTO_WAKEUPSCHEDULE_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YWakeUpSchedule return codes)
 //--- (end of YWakeUpSchedule return codes)
@@ -66,7 +71,7 @@ typedef void (*YWakeUpScheduleValueCallback)(YWakeUpSchedule *func, const string
 //--- (YWakeUpSchedule declaration)
 /**
  * YWakeUpSchedule Class: wake up schedule control interface, available for instance in the
- * YoctoHub-GSM-3G-EU, the YoctoHub-GSM-3G-NA, the YoctoHub-Wireless-SR or the YoctoHub-Wireless-g
+ * YoctoHub-GSM-3G-EU, the YoctoHub-GSM-3G-NA, the YoctoHub-Wireless-g or the YoctoHub-Wireless-n
  *
  * The YWakeUpSchedule class implements a wake up condition. The wake up time is
  * specified as a set of months and/or days and/or hours and/or minutes when the
@@ -428,5 +433,10 @@ inline YWakeUpSchedule *yFirstWakeUpSchedule(void)
 { return YWakeUpSchedule::FirstWakeUpSchedule();}
 
 //--- (end of YWakeUpSchedule functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

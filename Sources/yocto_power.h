@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_power.h 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_power.h 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Declares yFindPower(), the high-level API for Power functions
  *
@@ -41,10 +41,15 @@
 #ifndef YOCTO_POWER_H
 #define YOCTO_POWER_H
 
-#include "yocto_api.h"
 #include <cfloat>
 #include <cmath>
-#include <map>
+
+#include "yocto_api.h"
+
+#ifdef YOCTOLIB_NAMESPACE
+namespace YOCTOLIB_NAMESPACE
+{
+#endif
 
 //--- (YPower return codes)
 //--- (end of YPower return codes)
@@ -298,5 +303,10 @@ inline YPower *yFirstPower(void)
 { return YPower::FirstPower();}
 
 //--- (end of YPower functions declaration)
+
+#ifdef YOCTOLIB_NAMESPACE
+// end of namespace definition
+}
+#endif
 
 #endif

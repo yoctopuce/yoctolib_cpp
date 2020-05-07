@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_led.cpp 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_led.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
  *
  *  Implements yFindLed(), the high-level API for Led functions
  *
@@ -39,14 +39,19 @@
 
 
 #define _CRT_SECURE_NO_DEPRECATE //do not use windows secure crt
-#include "yocto_led.h"
-#include "yapi/yjson.h"
-#include "yapi/yapi.h"
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "yocto_led.h"
+#include "yapi/yjson.h"
+#include "yapi/yapi.h"
 #define  __FILE_ID__  "led"
+
+#ifdef YOCTOLIB_NAMESPACE
+using namespace YOCTOLIB_NAMESPACE;
+#endif
 
 YLed::YLed(const string& func): YFunction(func)
 //--- (YLed initialization)
