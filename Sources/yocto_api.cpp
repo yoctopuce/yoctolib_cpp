@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 40361 2020-05-06 14:28:00Z mvuilleu $
+ * $Id: yocto_api.cpp 40887 2020-06-09 16:09:42Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -2474,8 +2474,7 @@ int YDataSet::loadMore(void)
     }
     try {
         return this->processMore(_progress, _parent->_download(url));
-    } catch (std::exception& e) {
-        e.what();
+    } catch (std::exception&) {
         return this->processMore(_progress, _parent->_download(url));
     }
 }
@@ -3065,8 +3064,7 @@ bool YFunction::isReadOnly(void)
     int res = 0;
     try {
         serial = this->get_serialNumber();
-    } catch (std::exception& e) {
-        e.what();
+    } catch (std::exception&) {
         return true;
     }
     res = yapiIsModuleWritable(serial.c_str(), errmsg);
@@ -3308,7 +3306,7 @@ vector<string> YFunction::_json_get_array(const string& json)
 
         if (j.depth == depth) {
             long location, length;
-            while (*last == ',' || *last == '\n') {
+            while (*last == ',' || *last == '\n' || *last == '\r') {
                 last++;
             }
             location = (long)(last - json_cstr);
@@ -3345,7 +3343,9 @@ string YFunction::_decode_json_string(const string& json)
     char buffer[128];
     char* p = buffer;
     int decoded_len;
-
+    if (len==0) {
+        return "";
+    }
     if (len >= 127) {
         p = (char*)malloc(len + 1);
 
@@ -4818,10 +4818,22 @@ YRETCODE YAPI::InitAPI(int mode, string& errmsg)
 }
 
 /**
- * Frees dynamically allocated memory blocks used by the Yoctopuce library.
- * It is generally not required to call this function, unless you
- * want to free all dynamically allocated memory blocks in order to
- * track a memory leak for instance.
+ * Waits for all pending communications with Yoctopuce devices to be
+ * completed then frees dynamically allocated resources used by
+ * the Yoctopuce library.
+ *
+ * From an operating system standpoint, it is generally not required to call
+ * this function since the OS will automatically free allocated resources
+ * once your program is completed. However there are two situations when
+ * you may really want to use that function:
+ *
+ * - Free all dynamically allocated memory blocks in order to
+ * track a memory leak.
+ *
+ * - Send commands to devices right before the end
+ * of the program. Since commands are sent in an asynchronous way
+ * the program could exit before all commands are effectively sent.
+ *
  * You should not call any other library function after calling
  * yFreeAPI(), or your program will crash.
  */
@@ -4829,7 +4841,6 @@ void YAPI::FreeAPI(void)
 {
     if (YAPI::_apiInitialized) {
         yapiFreeAPI();
-        YAPI::_apiInitialized = false;
         yDeleteCriticalSection(&_updateDeviceList_CS);
         yDeleteCriticalSection(&_handleEvent_CS);
         yDeleteCriticalSection(&_global_cs);
@@ -4845,6 +4856,7 @@ void YAPI::FreeAPI(void)
         _FunctionCallbacks.clear();
         _moduleCallbackList.clear();
         _calibHandlers.clear();
+        YAPI::_apiInitialized = false;
     }
 }
 
@@ -6621,6 +6633,9 @@ int YModule::set_allSettingsAndFiles(string settings)
     string json_api;
     string json_files;
     string json_extra;
+    int fuperror = 0;
+    int globalres = 0;
+    fuperror = 0;
     json = settings;
     json_api = this->_get_json_path(json, "api");
     if (json_api == "") {
@@ -6650,11 +6665,20 @@ int YModule::set_allSettingsAndFiles(string settings)
             name = this->_decode_json_string(name);
             data = this->_get_json_path( files[ii], "data");
             data = this->_decode_json_string(data);
-            this->_upload(name, YAPI::_hexStr2Bin(data));
+            if (name == "") {
+                fuperror = fuperror + 1;
+            } else {
+                this->_upload(name, YAPI::_hexStr2Bin(data));
+            }
         }
     }
     // Apply settings a second time for file-dependent settings and dynamic sensor nodes
-    return this->set_allSettings(json_api);
+    globalres = this->set_allSettings(json_api);
+    if (!(fuperror == 0)) {
+        _throw(YAPI_IO_ERROR,"Error during file upload");
+        return YAPI_IO_ERROR;
+    }
+    return globalres;
 }
 
 /**
@@ -6978,8 +7002,7 @@ int YModule::_tryExec(string url)
     done = 1;
     try {
         this->_download(url);
-    } catch (std::exception& e) {
-        e.what();
+    } catch (std::exception&) {
         done = 0;
     }
     if (done == 0) {
@@ -6987,8 +7010,7 @@ int YModule::_tryExec(string url)
         try {
             {string ignore_error; YAPI::Sleep(500, ignore_error);};
             this->_download(url);
-        } catch (std::exception& e) {
-            e.what();
+        } catch (std::exception&) {
             // second failure, return error code
             res = this->get_errorType();
         }
@@ -7072,8 +7094,7 @@ int YModule::set_allSettings(string settings)
 
     try {
         actualSettings = this->_download("api.json");
-    } catch (std::exception& e) {
-        e.what();
+    } catch (std::exception&) {
         // retry silently after a short wait
         {string ignore_error; YAPI::Sleep(500, ignore_error);};
         actualSettings = this->_download("api.json");
