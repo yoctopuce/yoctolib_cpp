@@ -14,8 +14,6 @@ CONFIG += shared debug_and_release build_all
 
 QMAKE_TARGET_PRODUCT = "YoctoAPI"
 QMAKE_TARGET_DESCRIPTION = "API Yoctopuce for Qt"
-QMAKE_TARGET_COMPANY = "franckfuric.fr.nf"
-QMAKE_TARGET_COPYRIGHT = "by Franck FURIC"
 
 VERSION = 40411 # Don't forget to change if you use others versions
 
