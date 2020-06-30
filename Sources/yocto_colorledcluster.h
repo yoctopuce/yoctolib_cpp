@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_colorledcluster.h 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_colorledcluster.h 41109 2020-06-29 12:40:42Z seb $
  *
  *  Declares yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -76,7 +76,8 @@ typedef enum {
 
 //--- (YColorLedCluster declaration)
 /**
- * YColorLedCluster Class: RGB LED cluster control interface, available for instance in the Yocto-Color-V2
+ * YColorLedCluster Class: RGB LED cluster control interface, available for instance in the
+ * Yocto-Color-V2 or the Yocto-MaxiBuzzer
  *
  * The YColorLedCluster class allows you to drive a
  * color LED cluster. Unlike the ColorLed class, the YColorLedCluster

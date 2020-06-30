@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_network.h 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_network.h 41109 2020-06-29 12:40:42Z seb $
  *
  *  Declares yFindNetwork(), the high-level API for Network functions
  *
@@ -131,7 +131,7 @@ typedef enum {
 //--- (YNetwork declaration)
 /**
  * YNetwork Class: network interface control interface, available for instance in the
- * YoctoHub-Ethernet, the YoctoHub-GSM-3G-EU, the YoctoHub-GSM-3G-NA or the YoctoHub-Wireless-g
+ * YoctoHub-Ethernet, the YoctoHub-GSM-3G-EU, the YoctoHub-Wireless-g or the YoctoHub-Wireless-n
  *
  * YNetwork objects provide access to TCP/IP parameters of Yoctopuce
  * devices that include a built-in network interface.

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 40312 2020-05-05 09:39:18Z seb $
+ * $Id: yapi.c 41062 2020-06-25 10:16:20Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -3981,7 +3981,13 @@ YRETCODE yapiRequestOpen(YIOHDL_internal* iohdl, int tcpchan, const char* device
     if (memcmp(request, "GET ", 4) == 0) {
         if (ymemfind((u8*)request + 4, len, (u8*)"/testcb.txt", 11) >= 0) {
             mstimeout = YIO_1_MINUTE_TCP_TIMEOUT;
+        } else if (ymemfind((u8*)request + 4, len, (u8*)"/logger.json", 12) >= 0) {
+            mstimeout = YIO_1_MINUTE_TCP_TIMEOUT;
         } else if (ymemfind((u8*)request + 4, len, (u8*)"/rxmsg.json", 11) >= 0) {
+            mstimeout = YIO_1_MINUTE_TCP_TIMEOUT;
+        } else if (ymemfind((u8*)request + 4, len, (u8*)"/rxdata.bin", 11) >= 0) {
+            mstimeout = YIO_1_MINUTE_TCP_TIMEOUT;
+        } else if (ymemfind((u8*)request + 4, len, (u8*)"/at.txt", 7) >= 0) {
             mstimeout = YIO_1_MINUTE_TCP_TIMEOUT;
         } else if (ymemfind((u8*)request + 4, len, (u8*)"/files.json", 11) >= 0) {
             mstimeout = YIO_1_MINUTE_TCP_TIMEOUT;

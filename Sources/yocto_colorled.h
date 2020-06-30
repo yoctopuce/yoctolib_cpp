@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_colorled.h 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_colorled.h 41109 2020-06-29 12:40:42Z seb $
  *
  *  Declares yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -87,7 +87,8 @@ public:
 
 //--- (YColorLed declaration)
 /**
- * YColorLed Class: RGB LED control interface, available for instance in the Yocto-Color-V2 or the Yocto-PowerColor
+ * YColorLed Class: RGB LED control interface, available for instance in the Yocto-Color-V2, the
+ * Yocto-MaxiBuzzer or the Yocto-PowerColor
  *
  * The ColorLed class allows you to drive a color LED.
  * The color can be specified using RGB coordinates as well as HSL coordinates.

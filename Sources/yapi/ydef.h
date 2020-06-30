@@ -54,9 +54,7 @@ extern "C" {
 
 #ifdef _WIN64
 #define __64BITS__
-#ifndef __WIN64__  // Remove lot of error when build with Qt with MinGW-7.3.0 64b (__WIN64__ Already defined)
 #define __WIN64__
-#endif
 #else
 #define __32BITS__
 #endif

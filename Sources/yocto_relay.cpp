@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_relay.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_relay.cpp 41109 2020-06-29 12:40:42Z seb $
  *
  *  Implements yFindRelay(), the high-level API for Relay functions
  *
@@ -587,7 +587,7 @@ s64 YRelay::get_countdown(void)
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the relay, for instance
- *         MXCOUPL2.relay1.
+ *         YLTCHRL1.relay1.
  *
  * @return a YRelay object allowing you to drive the relay.
  */

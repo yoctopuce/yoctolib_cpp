@@ -125,7 +125,7 @@ $(DIR_OSX)demo: main.cpp $(YOCTO_API_DIR)*  $(DIR_OSX)
 	@gcc -g -I$(YOCTO_API_SRC) -o $@ main.cpp -L$(YOCTO_API_DIR) -lyocto-static -lstdc++  -framework IOKit -framework CoreFoundation
 
 xcode4:
-	xcodebuild -project Xcode/project.xcodeproj
+	xcodebuild -project Xcode/project.xcodeproj -UseModernBuildSystem=NO
 
 cleanxcode4:
 	@rm -rf  Xcode/build

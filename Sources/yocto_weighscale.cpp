@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_weighscale.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_weighscale.cpp 41112 2020-06-29 13:21:58Z seb $
  *
  *  Implements yFindWeighScale(), the high-level API for WeighScale functions
  *
@@ -637,7 +637,8 @@ int YWeighScale::_invokeTimedReportCallback(YMeasure value)
 
 /**
  * Adapts the load cell signal bias (stored in the corresponding genericSensor)
- * so that the current signal corresponds to a zero weight.
+ * so that the current signal corresponds to a zero weight. Remember to call the
+ * saveToFlash() method of the module if the modification must be kept.
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *

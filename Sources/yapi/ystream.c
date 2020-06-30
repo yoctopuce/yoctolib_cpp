@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 39309 2020-01-24 08:38:21Z seb $
+ * $Id: ystream.c 41001 2020-06-18 07:52:04Z seb $
  *
  * USB stream implementation
  *
@@ -1391,7 +1391,10 @@ static int yPacketSetup(yPrivDeviceSt *dev,char *errmsg)
     yyFormatConfPkt(&qpkt, USB_CONF_RESET);
     qpkt.pkt.confpkt.conf.reset.ok = 1;
     TO_SAFE_U16(qpkt.pkt.confpkt.conf.reset.api, YPKT_USB_VERSION_BCD);
-    YPROPERR(yyySendPacket(&dev->iface, &qpkt.pkt, errmsg));
+    res = yyySendPacket(&dev->iface, &qpkt.pkt, errmsg);
+    if (res < 0) {
+        goto error;
+    }
     timeout =  (dev->flags & DEV_FLAGS_GUESS_USB_PKT) ? 1:5;
     res = yyWaitOnlyConfPkt(&dev->iface, USB_CONF_RESET, &rpkt, timeout, errmsg);
     if (res == YAPI_TIMEOUT && dev->flags & DEV_FLAGS_GUESS_USB_PKT){

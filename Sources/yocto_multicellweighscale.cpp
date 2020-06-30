@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multicellweighscale.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_multicellweighscale.cpp 41108 2020-06-29 12:29:07Z seb $
  *
  *  Implements yFindMultiCellWeighScale(), the high-level API for MultiCellWeighScale functions
  *
@@ -696,7 +696,8 @@ int YMultiCellWeighScale::_invokeTimedReportCallback(YMeasure value)
 
 /**
  * Adapts the load cell signal bias (stored in the corresponding genericSensor)
- * so that the current signal corresponds to a zero weight.
+ * so that the current signal corresponds to a zero weight. Remember to call the
+ * saveToFlash() method of the module if the modification must be kept.
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
