@@ -316,12 +316,6 @@ typedef struct{
     };
 }yapiDataEvent;
 
-
-// internal helper function
-s64 yatoi(const char *c);
-int _ystrpos(const string& haystack, const string& needle);
-vector<string> _strsplit(const string& str, char delimiter);
-
 typedef enum {
     STRING,
     NUMBER,
