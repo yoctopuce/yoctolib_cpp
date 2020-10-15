@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.h 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_spiport.h 41171 2020-07-02 17:49:00Z mvuilleu $
  *
  *  Declares yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -51,11 +51,11 @@ namespace YOCTOLIB_NAMESPACE
 {
 #endif
 
-//--- (YSpiPort return codes)
-//--- (end of YSpiPort return codes)
-//--- (YSpiPort yapiwrapper)
-//--- (end of YSpiPort yapiwrapper)
-//--- (YSpiPort definitions)
+//--- (generated code: YSpiPort return codes)
+//--- (end of generated code: YSpiPort return codes)
+//--- (generated code: YSpiPort yapiwrapper)
+//--- (end of generated code: YSpiPort yapiwrapper)
+//--- (generated code: YSpiPort definitions)
 class YSpiPort; // forward declaration
 
 typedef void (*YSpiPortValueCallback)(YSpiPort *func, const string& functionValue);
@@ -102,9 +102,69 @@ typedef enum {
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 #define Y_PROTOCOL_INVALID              (YAPI_INVALID_STRING)
 #define Y_SPIMODE_INVALID               (YAPI_INVALID_STRING)
-//--- (end of YSpiPort definitions)
+//--- (end of generated code: YSpiPort definitions)
 
-//--- (YSpiPort declaration)
+//--- (generated code: YSpiSnoopingRecord definitions)
+//--- (end of generated code: YSpiSnoopingRecord definitions)
+
+//--- (generated code: YSpiSnoopingRecord declaration)
+/**
+ * YSpiSnoopingRecord Class: Intercepted SPI message description, returned by spiPort.snoopMessages method
+ *
+ *
+ */
+class YOCTO_CLASS_EXPORT YSpiSnoopingRecord {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
+//--- (end of generated code: YSpiSnoopingRecord declaration)
+    //--- (generated code: YSpiSnoopingRecord attributes)
+    // Attributes (function value cache)
+    int             _tim;
+    int             _dir;
+    string          _msg;
+    //--- (end of generated code: YSpiSnoopingRecord attributes)
+    //--- (generated code: YSpiSnoopingRecord constructor)
+
+    //--- (end of generated code: YSpiSnoopingRecord constructor)
+    //--- (generated code: YSpiSnoopingRecord initialization)
+    //--- (end of generated code: YSpiSnoopingRecord initialization)
+
+public:
+    YSpiSnoopingRecord(const string& json);
+    virtual ~YSpiSnoopingRecord(){};
+
+    //--- (generated code: YSpiSnoopingRecord accessors declaration)
+
+
+    /**
+     * Returns the elapsed time, in ms, since the beginning of the preceding message.
+     *
+     * @return the elapsed time, in ms, since the beginning of the preceding message.
+     */
+    virtual int         get_time(void);
+
+    /**
+     * Returns the message direction (RX=0, TX=1).
+     *
+     * @return the message direction (RX=0, TX=1).
+     */
+    virtual int         get_direction(void);
+
+    /**
+     * Returns the message content.
+     *
+     * @return the message content.
+     */
+    virtual string      get_message(void);
+
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
+    //--- (end of generated code: YSpiSnoopingRecord accessors declaration)
+};
+
+//--- (generated code: YSpiPort declaration)
 /**
  * YSpiPort Class: SPI port control interface, available for instance in the Yocto-SPI
  *
@@ -118,9 +178,9 @@ class YOCTO_CLASS_EXPORT YSpiPort: public YFunction {
 #ifdef __BORLANDC__
 #pragma option push -w-8022
 #endif
-//--- (end of YSpiPort declaration)
+//--- (end of generated code: YSpiPort declaration)
 protected:
-    //--- (YSpiPort attributes)
+    //--- (generated code: YSpiPort attributes)
     // Attributes (function value cache)
     int             _rxCount;
     int             _txCount;
@@ -151,11 +211,11 @@ protected:
 
     // Constructor is protected, use yFindSpiPort factory function to instantiate
     YSpiPort(const string& func);
-    //--- (end of YSpiPort attributes)
+    //--- (end of generated code: YSpiPort attributes)
 
 public:
     virtual ~YSpiPort();
-    //--- (YSpiPort accessors declaration)
+    //--- (generated code: YSpiPort accessors declaration)
 
     static const int RXCOUNT_INVALID = YAPI_INVALID_UINT;
     static const int TXCOUNT_INVALID = YAPI_INVALID_UINT;
@@ -823,6 +883,21 @@ public:
      */
     virtual int         set_SS(int val);
 
+    /**
+     * Retrieves messages (both direction) in the SPI port buffer, starting at current position.
+     *
+     * If no message is found, the search waits for one up to the specified maximum timeout
+     * (in milliseconds).
+     *
+     * @param maxWait : the maximum number of milliseconds to wait for a message if none is found
+     *         in the receive buffer.
+     *
+     * @return an array of YSpiSnoopingRecord objects containing the messages found, if any.
+     *
+     * On failure, throws an exception or returns an empty array.
+     */
+    virtual vector<YSpiSnoopingRecord> snoopMessages(int maxWait);
+
 
     inline static YSpiPort *Find(string func)
     { return YSpiPort::FindSpiPort(func); }
@@ -856,10 +931,10 @@ public:
 #ifdef __BORLANDC__
 #pragma option pop
 #endif
-    //--- (end of YSpiPort accessors declaration)
+    //--- (end of generated code: YSpiPort accessors declaration)
 };
 
-//--- (YSpiPort functions declaration)
+//--- (generated code: YSpiPort functions declaration)
 
 /**
  * Retrieves a SPI port for a given identifier.
@@ -903,7 +978,7 @@ inline YSpiPort *yFindSpiPort(const string& func)
 inline YSpiPort *yFirstSpiPort(void)
 { return YSpiPort::FirstSpiPort();}
 
-//--- (end of YSpiPort functions declaration)
+//--- (end of generated code: YSpiPort functions declaration)
 
 #ifdef YOCTOLIB_NAMESPACE
 // end of namespace definition

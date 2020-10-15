@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yfifo.c 33848 2018-12-22 00:09:50Z mvuilleu $
+ * $Id: yfifo.c 41307 2020-08-03 17:10:47Z mvuilleu $
  *
  * Implementation of a generic fifo queue
  *
@@ -449,7 +449,7 @@ void yxtoa(u32 x, char *buf, u16 len)
 }
 #endif
 
-#if defined(USE_TYPED_NOTIFICATIONS) || !defined(MICROCHIP_API)
+#if defined(USE_TYPED_NOTIFICATIONS) || !defined(MICROCHIP_API) || defined(HTTP_ON_NET)
 
 // Decode a standard (V1) or typed notification (V2), possibly not null terminated,
 // to its text representation (always null terminated)

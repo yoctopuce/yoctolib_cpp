@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_power.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_power.cpp 41290 2020-07-24 10:02:23Z mvuilleu $
  *
  *  Implements yFindPower(), the high-level API for Power functions
  *
@@ -57,6 +57,8 @@ YPower::YPower(const string& func): YSensor(func)
 //--- (YPower initialization)
     ,_cosPhi(COSPHI_INVALID)
     ,_meter(METER_INVALID)
+    ,_deliveredEnergyMeter(DELIVEREDENERGYMETER_INVALID)
+    ,_receivedEnergyMeter(RECEIVEDENERGYMETER_INVALID)
     ,_meterTimer(METERTIMER_INVALID)
     ,_valueCallbackPower(NULL)
     ,_timedReportCallbackPower(NULL)
@@ -74,6 +76,8 @@ YPower::~YPower()
 // static attributes
 const double YPower::COSPHI_INVALID = YAPI_INVALID_DOUBLE;
 const double YPower::METER_INVALID = YAPI_INVALID_DOUBLE;
+const double YPower::DELIVEREDENERGYMETER_INVALID = YAPI_INVALID_DOUBLE;
+const double YPower::RECEIVEDENERGYMETER_INVALID = YAPI_INVALID_DOUBLE;
 
 int YPower::_parseAttr(YJSONObject *json_val)
 {
@@ -82,6 +86,12 @@ int YPower::_parseAttr(YJSONObject *json_val)
     }
     if(json_val->has("meter")) {
         _meter =  floor(json_val->getDouble("meter") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+    }
+    if(json_val->has("deliveredEnergyMeter")) {
+        _deliveredEnergyMeter =  floor(json_val->getDouble("deliveredEnergyMeter") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+    }
+    if(json_val->has("receivedEnergyMeter")) {
+        _receivedEnergyMeter =  floor(json_val->getDouble("receivedEnergyMeter") * 1000.0 / 65536.0 + 0.5) / 1000.0;
     }
     if(json_val->has("meterTimer")) {
         _meterTimer =  json_val->getInt("meterTimer");
@@ -138,11 +148,12 @@ int YPower::set_meter(double newval)
 }
 
 /**
- * Returns the energy counter, maintained by the wattmeter by integrating the power consumption over time.
- * Note that this counter is reset at each start of the device.
+ * Returns the energy counter, maintained by the wattmeter by integrating the power consumption over time,
+ * but only when positive. Note that this counter is reset at each start of the device.
  *
  * @return a floating point number corresponding to the energy counter, maintained by the wattmeter by
- * integrating the power consumption over time
+ * integrating the power consumption over time,
+ *         but only when positive
  *
  * On failure, throws an exception or returns Y_METER_INVALID.
  */
@@ -160,6 +171,70 @@ double YPower::get_meter(void)
             }
         }
         res = _meter;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the energy counter, maintained by the wattmeter by integrating the power consumption over time,
+ * but only when positive. Note that this counter is reset at each start of the device.
+ *
+ * @return a floating point number corresponding to the energy counter, maintained by the wattmeter by
+ * integrating the power consumption over time,
+ *         but only when positive
+ *
+ * On failure, throws an exception or returns Y_DELIVEREDENERGYMETER_INVALID.
+ */
+double YPower::get_deliveredEnergyMeter(void)
+{
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YPower::DELIVEREDENERGYMETER_INVALID;
+                }
+            }
+        }
+        res = _deliveredEnergyMeter;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the energy counter, maintained by the wattmeter by integrating the power consumption over time,
+ * but only when negative. Note that this counter is reset at each start of the device.
+ *
+ * @return a floating point number corresponding to the energy counter, maintained by the wattmeter by
+ * integrating the power consumption over time,
+ *         but only when negative
+ *
+ * On failure, throws an exception or returns Y_RECEIVEDENERGYMETER_INVALID.
+ */
+double YPower::get_receivedEnergyMeter(void)
+{
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YPower::RECEIVEDENERGYMETER_INVALID;
+                }
+            }
+        }
+        res = _receivedEnergyMeter;
     } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
@@ -321,7 +396,7 @@ int YPower::_invokeTimedReportCallback(YMeasure value)
 }
 
 /**
- * Resets the energy counter.
+ * Resets the energy counters.
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *

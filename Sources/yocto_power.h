@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_power.h 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_power.h 41290 2020-07-24 10:02:23Z mvuilleu $
  *
  *  Declares yFindPower(), the high-level API for Power functions
  *
@@ -63,6 +63,8 @@ class YMeasure; // forward declaration
 typedef void (*YPowerTimedReportCallback)(YPower *func, YMeasure measure);
 #define Y_COSPHI_INVALID                (YAPI_INVALID_DOUBLE)
 #define Y_METER_INVALID                 (YAPI_INVALID_DOUBLE)
+#define Y_DELIVEREDENERGYMETER_INVALID  (YAPI_INVALID_DOUBLE)
+#define Y_RECEIVEDENERGYMETER_INVALID   (YAPI_INVALID_DOUBLE)
 #define Y_METERTIMER_INVALID            (YAPI_INVALID_UINT)
 //--- (end of YPower definitions)
 
@@ -85,6 +87,8 @@ protected:
     // Attributes (function value cache)
     double          _cosPhi;
     double          _meter;
+    double          _deliveredEnergyMeter;
+    double          _receivedEnergyMeter;
     int             _meterTimer;
     YPowerValueCallback _valueCallbackPower;
     YPowerTimedReportCallback _timedReportCallbackPower;
@@ -105,6 +109,8 @@ public:
 
     static const double COSPHI_INVALID;
     static const double METER_INVALID;
+    static const double DELIVEREDENERGYMETER_INVALID;
+    static const double RECEIVEDENERGYMETER_INVALID;
     static const int METERTIMER_INVALID = YAPI_INVALID_UINT;
 
     /**
@@ -126,11 +132,12 @@ public:
     { return this->set_meter(newval); }
 
     /**
-     * Returns the energy counter, maintained by the wattmeter by integrating the power consumption over time.
-     * Note that this counter is reset at each start of the device.
+     * Returns the energy counter, maintained by the wattmeter by integrating the power consumption over time,
+     * but only when positive. Note that this counter is reset at each start of the device.
      *
      * @return a floating point number corresponding to the energy counter, maintained by the wattmeter by
-     * integrating the power consumption over time
+     * integrating the power consumption over time,
+     *         but only when positive
      *
      * On failure, throws an exception or returns Y_METER_INVALID.
      */
@@ -138,6 +145,36 @@ public:
 
     inline double       meter(void)
     { return this->get_meter(); }
+
+    /**
+     * Returns the energy counter, maintained by the wattmeter by integrating the power consumption over time,
+     * but only when positive. Note that this counter is reset at each start of the device.
+     *
+     * @return a floating point number corresponding to the energy counter, maintained by the wattmeter by
+     * integrating the power consumption over time,
+     *         but only when positive
+     *
+     * On failure, throws an exception or returns Y_DELIVEREDENERGYMETER_INVALID.
+     */
+    double              get_deliveredEnergyMeter(void);
+
+    inline double       deliveredEnergyMeter(void)
+    { return this->get_deliveredEnergyMeter(); }
+
+    /**
+     * Returns the energy counter, maintained by the wattmeter by integrating the power consumption over time,
+     * but only when negative. Note that this counter is reset at each start of the device.
+     *
+     * @return a floating point number corresponding to the energy counter, maintained by the wattmeter by
+     * integrating the power consumption over time,
+     *         but only when negative
+     *
+     * On failure, throws an exception or returns Y_RECEIVEDENERGYMETER_INVALID.
+     */
+    double              get_receivedEnergyMeter(void);
+
+    inline double       receivedEnergyMeter(void)
+    { return this->get_receivedEnergyMeter(); }
 
     /**
      * Returns the elapsed time since last energy counter reset, in seconds.
@@ -214,7 +251,7 @@ public:
     virtual int         _invokeTimedReportCallback(YMeasure value);
 
     /**
-     * Resets the energy counter.
+     * Resets the energy counters.
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *

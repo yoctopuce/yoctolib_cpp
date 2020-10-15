@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_win.c 36483 2019-07-24 16:48:31Z seb $
+ * $Id: ypkt_win.c 41930 2020-09-25 09:10:14Z seb $
  *
  * OS-specific USB packet layer, Windows version
  *
@@ -584,7 +584,6 @@ static void CloseReadHandles(yInterfaceSt* iface)
                 } else {
                     yPktQueuePushD2H(iface, &iface->tmpd2hpkt.pkt, NULL);
                 }
-                ySetEvent(&yContext->exitSleepEvent);
             } else {
                 u32 error = GetLastError();
                 if (error != ERROR_OPERATION_ABORTED) {
@@ -622,7 +621,6 @@ retry:
         iface->rdpending = 1;
     } else {
         yPktQueuePushD2H(iface, &iface->tmpd2hpkt.pkt, NULL);
-        ySetEvent(&yContext->exitSleepEvent);
         // TODO: add some kind of timeout to be able to send reset packet
         // if device become crazy
         retrycount++;
@@ -663,7 +661,6 @@ retry:
             HALLOG("drop invalid packet on %s:%d (invalid size %d)\n", iface->serial, iface->ifaceno, readed);
         } else {
             yPktQueuePushD2H(iface, &iface->tmpd2hpkt.pkt, NULL);
-            ySetEvent(&yContext->exitSleepEvent);
         }
         res = StartReadIO(iface, errmsg);
         if (YISERR(res)) {

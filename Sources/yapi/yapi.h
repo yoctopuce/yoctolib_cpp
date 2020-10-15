@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h 37220 2019-09-18 14:40:17Z seb $
+ * $Id: yapi.h 41930 2020-09-25 09:10:14Z seb $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -1125,12 +1125,14 @@ YAPI_FUNCTION_EXPORT void* yapiGetMem(int size);
 YAPI_FUNCTION_EXPORT void yapiFreeMem(void *ptr);
 
 
+typedef  void (*yWakeUpCb)(void);
 typedef  void (*yRawNotificationCb)(USB_Notify_Pkt*);
 typedef  void (*yRawReportCb)(YAPI_DEVICE serialref, USB_Report_Pkt_V1 *report, int pktsize);
 typedef  void (*yRawReportV2Cb)(YAPI_DEVICE serialref, USB_Report_Pkt_V2 *report, int pktsize);
 void yapiRegisterRawNotificationCb(yRawNotificationCb callback);
 void yapiRegisterRawReportCb(yRawReportCb callback);
 void yapiRegisterRawReportV2Cb(yRawReportV2Cb callback);
+YRETCODE yapiRegisterWakeUpCb(yWakeUpCb callback);
 
 
 

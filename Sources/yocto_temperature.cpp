@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_temperature.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_temperature.cpp 42055 2020-10-14 09:47:26Z seb $
  *
  *  Implements yFindTemperature(), the high-level API for Temperature functions
  *
@@ -436,8 +436,8 @@ int YTemperature::set_ntcParameters(double res25,double beta)
     double res100 = 0.0;
     vector<double> tempValues;
     vector<double> resValues;
-    t0 = 25.0+275.15;
-    t1 = 100.0+275.15;
+    t0 = 25.0+273.15;
+    t1 = 100.0+273.15;
     res100 = res25 * exp(beta*(1.0/t1 - 1.0/t0));
     tempValues.clear();
     resValues.clear();

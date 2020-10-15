@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 36044 2019-06-28 17:33:59Z mvuilleu $
+ * $Id: yhash.c 41966 2020-09-29 07:41:25Z mvuilleu $
  *
  * Simple hash tables and device/function information store
  *
@@ -1357,7 +1357,7 @@ int ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, 
         }
     }
     if (categ != YSTRREF_MODULE_STRING) {
-        if (funYdx >= 0 && funYdx < 15) {
+        if (funYdx >= 0 && funYdx <= 15) {
             YP(hdl).funInfo.v2.funydx = funYdx;
         } else {
             funYdx = YP(hdl).funInfo.v2.funydx;
@@ -1397,7 +1397,7 @@ int ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, 
                         }
                     }
                 }
-                if (funYdx < 15) {
+                if (funYdx <= 15) {
                     YP(hdl).funInfo.v2.funydx = funYdx;
                 }
             }

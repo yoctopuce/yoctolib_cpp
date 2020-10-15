@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwminput.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_pwminput.cpp 41348 2020-08-10 15:12:57Z seb $
  *
  *  Implements yFindPwmInput(), the high-level API for PwmInput functions
  *
@@ -63,6 +63,8 @@ YPwmInput::YPwmInput(const string& func): YSensor(func)
     ,_pulseTimer(PULSETIMER_INVALID)
     ,_pwmReportMode(PWMREPORTMODE_INVALID)
     ,_debouncePeriod(DEBOUNCEPERIOD_INVALID)
+    ,_bandwidth(BANDWIDTH_INVALID)
+    ,_edgesPerPeriod(EDGESPERPERIOD_INVALID)
     ,_valueCallbackPwmInput(NULL)
     ,_timedReportCallbackPwmInput(NULL)
 //--- (end of YPwmInput initialization)
@@ -107,6 +109,12 @@ int YPwmInput::_parseAttr(YJSONObject *json_val)
     }
     if(json_val->has("debouncePeriod")) {
         _debouncePeriod =  json_val->getInt("debouncePeriod");
+    }
+    if(json_val->has("bandwidth")) {
+        _bandwidth =  json_val->getInt("bandwidth");
+    }
+    if(json_val->has("edgesPerPeriod")) {
+        _edgesPerPeriod =  json_val->getInt("edgesPerPeriod");
     }
     return YSensor::_parseAttr(json_val);
 }
@@ -341,8 +349,9 @@ s64 YPwmInput::get_pulseTimer(void)
  * @return a value among Y_PWMREPORTMODE_PWM_DUTYCYCLE, Y_PWMREPORTMODE_PWM_FREQUENCY,
  * Y_PWMREPORTMODE_PWM_PULSEDURATION, Y_PWMREPORTMODE_PWM_EDGECOUNT, Y_PWMREPORTMODE_PWM_PULSECOUNT,
  * Y_PWMREPORTMODE_PWM_CPS, Y_PWMREPORTMODE_PWM_CPM, Y_PWMREPORTMODE_PWM_STATE,
- * Y_PWMREPORTMODE_PWM_FREQ_CPS and Y_PWMREPORTMODE_PWM_FREQ_CPM corresponding to the parameter
- * (frequency/duty cycle, pulse width, edges count) returned by the get_currentValue function and callbacks
+ * Y_PWMREPORTMODE_PWM_FREQ_CPS, Y_PWMREPORTMODE_PWM_FREQ_CPM and Y_PWMREPORTMODE_PWM_PERIODCOUNT
+ * corresponding to the parameter (frequency/duty cycle, pulse width, edges count) returned by the
+ * get_currentValue function and callbacks
  *
  * On failure, throws an exception or returns Y_PWMREPORTMODE_INVALID.
  */
@@ -378,8 +387,9 @@ Y_PWMREPORTMODE_enum YPwmInput::get_pwmReportMode(void)
  * @param newval : a value among Y_PWMREPORTMODE_PWM_DUTYCYCLE, Y_PWMREPORTMODE_PWM_FREQUENCY,
  * Y_PWMREPORTMODE_PWM_PULSEDURATION, Y_PWMREPORTMODE_PWM_EDGECOUNT, Y_PWMREPORTMODE_PWM_PULSECOUNT,
  * Y_PWMREPORTMODE_PWM_CPS, Y_PWMREPORTMODE_PWM_CPM, Y_PWMREPORTMODE_PWM_STATE,
- * Y_PWMREPORTMODE_PWM_FREQ_CPS and Y_PWMREPORTMODE_PWM_FREQ_CPM corresponding to the  parameter  type
- * (frequency/duty cycle, pulse width, or edge count) returned by the get_currentValue function and callbacks
+ * Y_PWMREPORTMODE_PWM_FREQ_CPS, Y_PWMREPORTMODE_PWM_FREQ_CPM and Y_PWMREPORTMODE_PWM_PERIODCOUNT
+ * corresponding to the  parameter  type (frequency/duty cycle, pulse width, or edge count) returned
+ * by the get_currentValue function and callbacks
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -451,6 +461,94 @@ int YPwmInput::set_debouncePeriod(int newval)
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the input signal sampling rate, in kHz.
+ *
+ * @return an integer corresponding to the input signal sampling rate, in kHz
+ *
+ * On failure, throws an exception or returns Y_BANDWIDTH_INVALID.
+ */
+int YPwmInput::get_bandwidth(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YPwmInput::BANDWIDTH_INVALID;
+                }
+            }
+        }
+        res = _bandwidth;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the input signal sampling rate, measured in kHz.
+ * A lower sampling frequency can be used to hide hide-frequency bounce effects,
+ * for instance on electromechanical contacts, but limits the measure resolution.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
+ *
+ * @param newval : an integer corresponding to the input signal sampling rate, measured in kHz
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YPwmInput::set_bandwidth(int newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("bandwidth", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the number of edges detected per preiod. For a clean PWM signal, this should be exactly two,
+ * but in cas the signal is created by a mechanical contact with bounces, it can get higher.
+ *
+ * @return an integer corresponding to the number of edges detected per preiod
+ *
+ * On failure, throws an exception or returns Y_EDGESPERPERIOD_INVALID.
+ */
+int YPwmInput::get_edgesPerPeriod(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YPwmInput::EDGESPERPERIOD_INVALID;
+                }
+            }
+        }
+        res = _edgesPerPeriod;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
     yLeaveCriticalSection(&_this_cs);
     return res;

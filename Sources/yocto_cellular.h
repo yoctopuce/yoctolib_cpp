@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.h 40196 2020-04-30 06:47:29Z mvuilleu $
+ * $Id: yocto_cellular.h 42060 2020-10-14 10:02:12Z seb $
  *
  * Declares yFindCellular(), the high-level API for Cellular functions
  *
@@ -207,7 +207,7 @@ public:
 //--- (generated code: YCellular declaration)
 /**
  * YCellular Class: cellular interface control interface, available for instance in the
- * YoctoHub-GSM-2G, the YoctoHub-GSM-3G-EU or the YoctoHub-GSM-3G-NA
+ * YoctoHub-GSM-2G, the YoctoHub-GSM-3G-EU, the YoctoHub-GSM-3G-NA or the YoctoHub-GSM-4G
  *
  * The YCellular class provides control over cellular network parameters
  * and status for devices that are GSM-enabled.
@@ -787,6 +787,17 @@ public:
      * @return a list of YCellRecords.
      */
     virtual vector<YCellRecord> quickCellSurvey(void);
+
+    virtual string      imm_decodePLMN(string mccmnc);
+
+    /**
+     * Returns the cell operator brand for a given MCC/MNC pair.
+     *
+     * @param mccmnc : a string starting with a MCC code followed by a MNC code,
+     *
+     * @return a string containing the corresponding cell operator brand name.
+     */
+    virtual string      decodePLMN(string mccmnc);
 
 
     inline static YCellular *Find(string func)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 40296 2020-05-05 07:56:00Z seb $
+ * $Id: yocto_serialport.cpp 41171 2020-07-02 17:49:00Z mvuilleu $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -105,9 +105,9 @@ int YSnoopingRecord::get_time(void)
 }
 
 /**
- * Returns the message direction (RX=0 , TX=1) .
+ * Returns the message direction (RX=0, TX=1).
  *
- * @return the message direction (RX=0 , TX=1) .
+ * @return the message direction (RX=0, TX=1).
  */
 int YSnoopingRecord::get_direction(void)
 {
@@ -596,6 +596,7 @@ int YSerialPort::set_command(const string& newval)
 /**
  * Returns the type of protocol used over the serial line, as a string.
  * Possible values are "Line" for ASCII messages separated by CR and/or LF,
+ * "StxEtx" for ASCII messages delimited by STX/ETX codes,
  * "Frame:[timeout]ms" for binary messages separated by a delay time,
  * "Modbus-ASCII" for MODBUS messages in ASCII mode,
  * "Modbus-RTU" for MODBUS messages in RTU mode,
@@ -633,6 +634,7 @@ string YSerialPort::get_protocol(void)
 /**
  * Changes the type of protocol used over the serial line.
  * Possible values are "Line" for ASCII messages separated by CR and/or LF,
+ * "StxEtx" for ASCII messages delimited by STX/ETX codes,
  * "Frame:[timeout]ms" for binary messages separated by a delay time,
  * "Modbus-ASCII" for MODBUS messages in ASCII mode,
  * "Modbus-RTU" for MODBUS messages in RTU mode,
@@ -1628,6 +1630,24 @@ vector<YSnoopingRecord> YSerialPort::snoopMessages(int maxWait)
         idx = idx + 1;
     }
     return res;
+}
+
+/**
+ * Sends an ASCII string to the serial port, preceeded with an STX code and
+ * followed by an ETX code.
+ *
+ * @param text : the text string to send
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YSerialPort::writeStxEtx(string text)
+{
+    string buff;
+    buff = YapiWrapper::ysprintf("%c%s%c", 2, text.c_str(),3);
+    // send string using file upload
+    return this->_upload("txdata", buff);
 }
 
 /**

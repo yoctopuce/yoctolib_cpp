@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_i2cport.h 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_i2cport.h 41171 2020-07-02 17:49:00Z mvuilleu $
  *
  *  Declares yFindI2cPort(), the high-level API for I2cPort functions
  *
@@ -51,11 +51,11 @@ namespace YOCTOLIB_NAMESPACE
 {
 #endif
 
-//--- (YI2cPort return codes)
-//--- (end of YI2cPort return codes)
-//--- (YI2cPort yapiwrapper)
-//--- (end of YI2cPort yapiwrapper)
-//--- (YI2cPort definitions)
+//--- (generated code: YI2cPort return codes)
+//--- (end of generated code: YI2cPort return codes)
+//--- (generated code: YI2cPort yapiwrapper)
+//--- (end of generated code: YI2cPort yapiwrapper)
+//--- (generated code: YI2cPort definitions)
 class YI2cPort; // forward declaration
 
 typedef void (*YI2cPortValueCallback)(YI2cPort *func, const string& functionValue);
@@ -81,9 +81,69 @@ typedef enum {
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 #define Y_PROTOCOL_INVALID              (YAPI_INVALID_STRING)
 #define Y_I2CMODE_INVALID               (YAPI_INVALID_STRING)
-//--- (end of YI2cPort definitions)
+//--- (end of generated code: YI2cPort definitions)
 
-//--- (YI2cPort declaration)
+//--- (generated code: YI2cSnoopingRecord definitions)
+//--- (end of generated code: YI2cSnoopingRecord definitions)
+
+//--- (generated code: YI2cSnoopingRecord declaration)
+/**
+ * YI2cSnoopingRecord Class: Intercepted I2C message description, returned by i2cPort.snoopMessages method
+ *
+ *
+ */
+class YOCTO_CLASS_EXPORT YI2cSnoopingRecord {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
+//--- (end of generated code: YI2cSnoopingRecord declaration)
+    //--- (generated code: YI2cSnoopingRecord attributes)
+    // Attributes (function value cache)
+    int             _tim;
+    int             _dir;
+    string          _msg;
+    //--- (end of generated code: YI2cSnoopingRecord attributes)
+    //--- (generated code: YI2cSnoopingRecord constructor)
+
+    //--- (end of generated code: YI2cSnoopingRecord constructor)
+    //--- (generated code: YI2cSnoopingRecord initialization)
+    //--- (end of generated code: YI2cSnoopingRecord initialization)
+
+public:
+    YI2cSnoopingRecord(const string& json);
+    virtual ~YI2cSnoopingRecord(){};
+
+    //--- (generated code: YI2cSnoopingRecord accessors declaration)
+
+
+    /**
+     * Returns the elapsed time, in ms, since the beginning of the preceding message.
+     *
+     * @return the elapsed time, in ms, since the beginning of the preceding message.
+     */
+    virtual int         get_time(void);
+
+    /**
+     * Returns the message direction (RX=0, TX=1).
+     *
+     * @return the message direction (RX=0, TX=1).
+     */
+    virtual int         get_direction(void);
+
+    /**
+     * Returns the message content.
+     *
+     * @return the message content.
+     */
+    virtual string      get_message(void);
+
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
+    //--- (end of generated code: YI2cSnoopingRecord accessors declaration)
+};
+
+//--- (generated code: YI2cPort declaration)
 /**
  * YI2cPort Class: I2C port control interface, available for instance in the Yocto-I2C
  *
@@ -97,9 +157,9 @@ class YOCTO_CLASS_EXPORT YI2cPort: public YFunction {
 #ifdef __BORLANDC__
 #pragma option push -w-8022
 #endif
-//--- (end of YI2cPort declaration)
+//--- (end of generated code: YI2cPort declaration)
 protected:
-    //--- (YI2cPort attributes)
+    //--- (generated code: YI2cPort attributes)
     // Attributes (function value cache)
     int             _rxCount;
     int             _txCount;
@@ -128,11 +188,11 @@ protected:
 
     // Constructor is protected, use yFindI2cPort factory function to instantiate
     YI2cPort(const string& func);
-    //--- (end of YI2cPort attributes)
+    //--- (end of generated code: YI2cPort attributes)
 
 public:
     virtual ~YI2cPort();
-    //--- (YI2cPort accessors declaration)
+    //--- (generated code: YI2cPort accessors declaration)
 
     static const int RXCOUNT_INVALID = YAPI_INVALID_UINT;
     static const int TXCOUNT_INVALID = YAPI_INVALID_UINT;
@@ -738,6 +798,21 @@ public:
      */
     virtual int         writeArray(vector<int> byteList);
 
+    /**
+     * Retrieves messages (both direction) in the I2C port buffer, starting at current position.
+     *
+     * If no message is found, the search waits for one up to the specified maximum timeout
+     * (in milliseconds).
+     *
+     * @param maxWait : the maximum number of milliseconds to wait for a message if none is found
+     *         in the receive buffer.
+     *
+     * @return an array of YI2cSnoopingRecord objects containing the messages found, if any.
+     *
+     * On failure, throws an exception or returns an empty array.
+     */
+    virtual vector<YI2cSnoopingRecord> snoopMessages(int maxWait);
+
 
     inline static YI2cPort *Find(string func)
     { return YI2cPort::FindI2cPort(func); }
@@ -771,10 +846,10 @@ public:
 #ifdef __BORLANDC__
 #pragma option pop
 #endif
-    //--- (end of YI2cPort accessors declaration)
+    //--- (end of generated code: YI2cPort accessors declaration)
 };
 
-//--- (YI2cPort functions declaration)
+//--- (generated code: YI2cPort functions declaration)
 
 /**
  * Retrieves an I2C port for a given identifier.
@@ -818,7 +893,7 @@ inline YI2cPort *yFindI2cPort(const string& func)
 inline YI2cPort *yFirstI2cPort(void)
 { return YI2cPort::FirstI2cPort();}
 
-//--- (end of YI2cPort functions declaration)
+//--- (end of generated code: YI2cPort functions declaration)
 
 #ifdef YOCTOLIB_NAMESPACE
 // end of namespace definition

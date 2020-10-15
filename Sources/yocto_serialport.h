@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.h 40196 2020-04-30 06:47:29Z mvuilleu $
+ * $Id: yocto_serialport.h 41171 2020-07-02 17:49:00Z mvuilleu $
  *
  * Declares yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -90,7 +90,7 @@ typedef enum {
 
 //--- (generated code: YSnoopingRecord declaration)
 /**
- * YSnoopingRecord Class: Intercepted message description, returned by serialPort.snoopMessages method
+ * YSnoopingRecord Class: Intercepted serial message description, returned by serialPort.snoopMessages method
  *
  *
  */
@@ -126,9 +126,9 @@ public:
     virtual int         get_time(void);
 
     /**
-     * Returns the message direction (RX=0 , TX=1) .
+     * Returns the message direction (RX=0, TX=1).
      *
-     * @return the message direction (RX=0 , TX=1) .
+     * @return the message direction (RX=0, TX=1).
      */
     virtual int         get_direction(void);
 
@@ -385,6 +385,7 @@ public:
     /**
      * Returns the type of protocol used over the serial line, as a string.
      * Possible values are "Line" for ASCII messages separated by CR and/or LF,
+     * "StxEtx" for ASCII messages delimited by STX/ETX codes,
      * "Frame:[timeout]ms" for binary messages separated by a delay time,
      * "Modbus-ASCII" for MODBUS messages in ASCII mode,
      * "Modbus-RTU" for MODBUS messages in RTU mode,
@@ -405,6 +406,7 @@ public:
     /**
      * Changes the type of protocol used over the serial line.
      * Possible values are "Line" for ASCII messages separated by CR and/or LF,
+     * "StxEtx" for ASCII messages delimited by STX/ETX codes,
      * "Frame:[timeout]ms" for binary messages separated by a delay time,
      * "Modbus-ASCII" for MODBUS messages in ASCII mode,
      * "Modbus-RTU" for MODBUS messages in RTU mode,
@@ -845,6 +847,18 @@ public:
      * On failure, throws an exception or returns an empty array.
      */
     virtual vector<YSnoopingRecord> snoopMessages(int maxWait);
+
+    /**
+     * Sends an ASCII string to the serial port, preceeded with an STX code and
+     * followed by an ETX code.
+     *
+     * @param text : the text string to send
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         writeStxEtx(string text);
 
     /**
      * Sends a MODBUS message (provided as a hexadecimal string) to the serial port.

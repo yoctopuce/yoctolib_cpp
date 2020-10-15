@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 40887 2020-06-09 16:09:42Z seb $
+ * $Id: yocto_api.cpp 41371 2020-08-11 07:46:11Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -5179,15 +5179,9 @@ YRETCODE YAPI::UpdateDeviceList(string& errmsg)
     // call the updateDeviceList of the yapi layer
     // yapi know when it is needed to do a full update
     YRETCODE res = YapiWrapper::updateDeviceList(false, errmsg);
-    if (YISERR(res)) {
-        yLeaveCriticalSection(&_updateDeviceList_CS);
-        return res;
-    }
-    // handle other notification
-    res = YapiWrapper::handleEvents(errmsg);
-    if (YISERR(res)) {
-        yLeaveCriticalSection(&_updateDeviceList_CS);
-        return res;
+    if (!YISERR(res)) {
+        // handle other notification
+        res = YapiWrapper::handleEvents(errmsg);
     }
     // unpop plug/unplug event and call user callback
     while (!_plug_events.empty()) {
@@ -5222,7 +5216,7 @@ YRETCODE YAPI::UpdateDeviceList(string& errmsg)
         }
     }
     yLeaveCriticalSection(&_updateDeviceList_CS);
-    return YAPI_SUCCESS;
+    return res;
 }
 
 /**
@@ -9470,7 +9464,7 @@ int YDataLogger::set_clearHistory(Y_CLEARHISTORY_enum newval)
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the data logger, for instance
- *         Y3DMK002.dataLogger.
+ *         LIGHTMK3.dataLogger.
  *
  * @return a YDataLogger object allowing you to drive the data logger.
  */

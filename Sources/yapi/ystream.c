@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 41001 2020-06-18 07:52:04Z seb $
+ * $Id: ystream.c 41930 2020-09-25 09:10:14Z seb $
  *
  * USB stream implementation
  *
@@ -1111,6 +1111,7 @@ static void yPktQueueDup(pktQueue *q, int expected_pkt_no, const char *file, int
 
 YRETCODE  yPktQueuePushD2H(yInterfaceSt *iface,const USB_Packet *pkt, char * errmsg)
 {
+    YRETCODE res;
 #ifdef DUMP_USB_PKT_SHORT
     dumpPktSummary(iface->serial, iface->ifaceno,1,pkt);
 #endif
@@ -1136,8 +1137,9 @@ YRETCODE  yPktQueuePushD2H(yInterfaceSt *iface,const USB_Packet *pkt, char * err
         }
     }
 #endif
-
-    return yPktQueuePushEx(&iface->rxQueue,pkt,errmsg);
+    res = yPktQueuePushEx(&iface->rxQueue,pkt,errmsg);
+    WakeUpAllSleep();
+    return res;
 }
 
 YRETCODE yPktQueueWaitAndPopD2H(yInterfaceSt *iface,pktItem **pkt, int ms, char * errmsg)
@@ -1229,6 +1231,7 @@ YRETCODE yyySendPacket(yInterfaceSt *iface, const USB_Packet *pkt, char *errmsg)
             return res;
         }
         res = yPktQueueWaitEmptyH2D(iface, USB_MAX_IO_DURATION, errmsg);
+        WakeUpAllSleep();
         if (res!=YAPI_TIMEOUT && YISERR(res)) {
             return (YRETCODE) res;
         } else if(res > 0){

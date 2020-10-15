@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_anbutton.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_anbutton.cpp 42053 2020-10-14 09:46:00Z seb $
  *
  *  Implements yFindAnButton(), the high-level API for AnButton functions
  *
@@ -66,6 +66,7 @@ YAnButton::YAnButton(const string& func): YFunction(func)
     ,_lastTimeReleased(LASTTIMERELEASED_INVALID)
     ,_pulseCounter(PULSECOUNTER_INVALID)
     ,_pulseTimer(PULSETIMER_INVALID)
+    ,_inputType(INPUTTYPE_INVALID)
     ,_valueCallbackAnButton(NULL)
 //--- (end of YAnButton initialization)
 {
@@ -114,6 +115,9 @@ int YAnButton::_parseAttr(YJSONObject *json_val)
     }
     if(json_val->has("pulseTimer")) {
         _pulseTimer =  json_val->getLong("pulseTimer");
+    }
+    if(json_val->has("inputType")) {
+        _inputType =  (Y_INPUTTYPE_enum)json_val->getInt("inputType");
     }
     return YFunction::_parseAttr(json_val);
 }
@@ -576,6 +580,63 @@ s64 YAnButton::get_pulseTimer(void)
     } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the decoding method applied to the input (analog or multiplexed binary switches).
+ *
+ * @return either Y_INPUTTYPE_ANALOG or Y_INPUTTYPE_DIGITAL4, according to the decoding method applied
+ * to the input (analog or multiplexed binary switches)
+ *
+ * On failure, throws an exception or returns Y_INPUTTYPE_INVALID.
+ */
+Y_INPUTTYPE_enum YAnButton::get_inputType(void)
+{
+    Y_INPUTTYPE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YAnButton::INPUTTYPE_INVALID;
+                }
+            }
+        }
+        res = _inputType;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the decoding method applied to the input (analog or multiplexed binary switches).
+ * Remember to call the saveToFlash() method of the module if the modification must be kept.
+ *
+ * @param newval : either Y_INPUTTYPE_ANALOG or Y_INPUTTYPE_DIGITAL4, according to the decoding method
+ * applied to the input (analog or multiplexed binary switches)
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YAnButton::set_inputType(Y_INPUTTYPE_enum newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("inputType", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
     }
     yLeaveCriticalSection(&_this_cs);
     return res;

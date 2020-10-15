@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 40312 2020-05-05 09:39:18Z seb $
+ * $Id: ytcp.c 41748 2020-09-03 10:10:04Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -76,7 +76,9 @@ typedef int socklen_t;
     #include <fcntl.h>
     #include <netdb.h>
 #endif
-
+#if defined(OSX_API) && !defined(select)
+#include <sys/_select.h>
+#endif
 //todo: delare elseware
 static int ws_sendFrame(HubSt* hub, int stream, int tcpchan, const u8* data, int datalen, char* errmsg);
 
@@ -591,7 +593,7 @@ retry:
     res = select((int)skt + 1, &readfds, &writefds, &exceptfds, &timeout);
     if (res < 0) {
 #ifndef WINDOWS_API
-        if(SOCK_ERR ==  EAGAIN){
+        if(SOCK_ERR == EAGAIN || SOCK_ERR == EINTR){
             goto retry;
         } else
 #endif
@@ -641,7 +643,7 @@ static int yTcpWrite(YSOCKET skt, const char* buffer, int len, char* errmsg)
 #ifdef WINDOWS_API
             if (SOCK_ERR != WSAEWOULDBLOCK)
 #else
-            if(SOCK_ERR != EAGAIN)
+            if(SOCK_ERR != EAGAIN || SOCK_ERR == EINTR)
 
 #endif
             {
@@ -665,7 +667,7 @@ static int yTcpWrite(YSOCKET skt, const char* buffer, int len, char* errmsg)
                 res = select((int)skt + 1,NULL, &fds,NULL, &timeout);
                 if (res < 0) {
 #ifndef WINDOWS_API
-                    if(SOCK_ERR ==  EAGAIN){
+                    if(SOCK_ERR == EAGAIN || SOCK_ERR == EINTR){
                         continue;
                     } else
 #endif
@@ -694,7 +696,7 @@ static int yTcpRead(YSOCKET skt, u8* buffer, int len, char* errmsg)
             return 0;
         }
 #else
-        if(SOCK_ERR == EAGAIN){
+        if(SOCK_ERR == EAGAIN || SOCK_ERR == EINTR){
             return 0;
         }
 #endif
@@ -766,7 +768,7 @@ int yTcpDownload(const char* host, const char* url, u8** out_buffer, u32 mstimeo
         res = select((int)skt + 1, &fds,NULL,NULL, &timeout);
         if (res < 0) {
 #ifndef WINDOWS_API
-            if(SOCK_ERR ==  EAGAIN){
+            if(SOCK_ERR == EAGAIN || SOCK_ERR == EINTR){
                 continue;
             } else
 #endif
@@ -1126,7 +1128,7 @@ static int yHTTPMultiSelectReq(struct _RequestSt** reqs, int size, u64 ms, WakeU
     res = select((int)sktmax + 1, &fds, NULL, NULL, &timeout);
     if (res < 0) {
 #ifndef WINDOWS_API
-        if(SOCK_ERR ==  EAGAIN){
+        if(SOCK_ERR == EAGAIN || SOCK_ERR == EINTR){
             return 0;
         } else
 #endif
@@ -2469,7 +2471,7 @@ static RequestSt* getNextReqToSend(HubSt* hub, int tcpchan)
 
 static RequestSt* closeAllReq(HubSt* hub, int err, const char *errmsg)
 {
-    RequestSt* req;
+    RequestSt* req = NULL;
 
     int tcpchan;
     for (tcpchan = 0; tcpchan < MAX_ASYNC_TCPCHAN; tcpchan++) {
@@ -2800,7 +2802,7 @@ static int ws_thread_select(struct _WSNetHubSt* base_req, u64 ms, WakeUpSocket* 
     res = select((int)sktmax + 1, &fds, NULL, NULL, &timeout);
     if (res < 0) {
 #ifndef WINDOWS_API
-        if (SOCK_ERR == EAGAIN) {
+        if (SOCK_ERR == EAGAIN || SOCK_ERR == EINTR) {
             return 0;
         } else
 #endif
@@ -3535,7 +3537,7 @@ static void* ySSDP_thread(void* ctx)
         res = select((int)sktmax + 1, &fds, NULL, NULL, &timeout);
         if (res < 0) {
 #ifndef WINDOWS_API
-            if(SOCK_ERR ==  EAGAIN){
+            if(SOCK_ERR == EAGAIN || SOCK_ERR == EINTR){
                 continue;
             } else
 #endif

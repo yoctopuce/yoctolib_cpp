@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_i2cport.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_i2cport.cpp 41171 2020-07-02 17:49:00Z mvuilleu $
  *
  *  Implements yFindI2cPort(), the high-level API for I2cPort functions
  *
@@ -53,8 +53,80 @@
 using namespace YOCTOLIB_NAMESPACE;
 #endif
 
+YI2cSnoopingRecord::YI2cSnoopingRecord(const string& json):
+//--- (generated code: YI2cSnoopingRecord initialization)
+    _tim(0)
+    ,_dir(0)
+//--- (end of generated code: YI2cSnoopingRecord initialization)
+{
+    yJsonStateMachine j;
+    // Parse JSON data
+    j.src = json.c_str();
+    j.end = j.src + strlen(j.src);
+    j.st = YJSON_START;
+    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
+        return ;
+    }
+    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
+        if (!strcmp(j.token, "m")) {
+            string tmp;
+            if (yJsonParse(&j) != YJSON_PARSE_AVAIL) {
+                return ;
+            }
+            tmp = (string)j.token;
+            while(j.next == YJSON_PARSE_STRINGCONT && yJsonParse(&j) == YJSON_PARSE_AVAIL) {
+                tmp +=(string)j.token;
+            }
+            _dir = (tmp[0] == '<' ? 1 : 0);
+            _msg = tmp.substr(1);
+        } else if(!strcmp(j.token, "t")) {
+            if (yJsonParse(&j) != YJSON_PARSE_AVAIL) {
+                return;
+            }
+            _tim = atoi(j.token);;
+        } else {
+            yJsonSkip(&j, 1);
+        }
+    }
+}
+
+//--- (generated code: YI2cSnoopingRecord implementation)
+// static attributes
+
+
+/**
+ * Returns the elapsed time, in ms, since the beginning of the preceding message.
+ *
+ * @return the elapsed time, in ms, since the beginning of the preceding message.
+ */
+int YI2cSnoopingRecord::get_time(void)
+{
+    return _tim;
+}
+
+/**
+ * Returns the message direction (RX=0, TX=1).
+ *
+ * @return the message direction (RX=0, TX=1).
+ */
+int YI2cSnoopingRecord::get_direction(void)
+{
+    return _dir;
+}
+
+/**
+ * Returns the message content.
+ *
+ * @return the message content.
+ */
+string YI2cSnoopingRecord::get_message(void)
+{
+    return _msg;
+}
+//--- (end of generated code: YI2cSnoopingRecord implementation)
+
 YI2cPort::YI2cPort(const string& func): YFunction(func)
-//--- (YI2cPort initialization)
+//--- (generated code: YI2cPort initialization)
     ,_rxCount(RXCOUNT_INVALID)
     ,_txCount(TXCOUNT_INVALID)
     ,_errCount(ERRCOUNT_INVALID)
@@ -72,17 +144,17 @@ YI2cPort::YI2cPort(const string& func): YFunction(func)
     ,_valueCallbackI2cPort(NULL)
     ,_rxptr(0)
     ,_rxbuffptr(0)
-//--- (end of YI2cPort initialization)
+//--- (end of generated code: YI2cPort initialization)
 {
     _className="I2cPort";
 }
 
 YI2cPort::~YI2cPort()
 {
-//--- (YI2cPort cleanup)
-//--- (end of YI2cPort cleanup)
+//--- (generated code: YI2cPort cleanup)
+//--- (end of generated code: YI2cPort cleanup)
 }
-//--- (YI2cPort implementation)
+//--- (generated code: YI2cPort implementation)
 // static attributes
 const string YI2cPort::LASTMSG_INVALID = YAPI_INVALID_STRING;
 const string YI2cPort::CURRENTJOB_INVALID = YAPI_INVALID_STRING;
@@ -1445,6 +1517,46 @@ int YI2cPort::writeArray(vector<int> byteList)
     return this->writeHex(msg);
 }
 
+/**
+ * Retrieves messages (both direction) in the I2C port buffer, starting at current position.
+ *
+ * If no message is found, the search waits for one up to the specified maximum timeout
+ * (in milliseconds).
+ *
+ * @param maxWait : the maximum number of milliseconds to wait for a message if none is found
+ *         in the receive buffer.
+ *
+ * @return an array of YI2cSnoopingRecord objects containing the messages found, if any.
+ *
+ * On failure, throws an exception or returns an empty array.
+ */
+vector<YI2cSnoopingRecord> YI2cPort::snoopMessages(int maxWait)
+{
+    string url;
+    string msgbin;
+    vector<string> msgarr;
+    int msglen = 0;
+    vector<YI2cSnoopingRecord> res;
+    int idx = 0;
+
+    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&t=0", _rxptr,maxWait);
+    msgbin = this->_download(url);
+    msgarr = this->_json_get_array(msgbin);
+    msglen = (int)msgarr.size();
+    if (msglen == 0) {
+        return res;
+    }
+    // last element of array is the new position
+    msglen = msglen - 1;
+    _rxptr = atoi((msgarr[msglen]).c_str());
+    idx = 0;
+    while (idx < msglen) {
+        res.push_back(YI2cSnoopingRecord(msgarr[idx]));
+        idx = idx + 1;
+    }
+    return res;
+}
+
 YI2cPort *YI2cPort::nextI2cPort(void)
 {
     string  hwid;
@@ -1469,7 +1581,7 @@ YI2cPort *YI2cPort::FirstI2cPort(void)
     return YI2cPort::FindI2cPort(serial+"."+funcId);
 }
 
-//--- (end of YI2cPort implementation)
+//--- (end of generated code: YI2cPort implementation)
 
-//--- (YI2cPort functions)
-//--- (end of YI2cPort functions)
+//--- (generated code: YI2cPort functions)
+//--- (end of generated code: YI2cPort functions)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.cpp 40296 2020-05-05 07:56:00Z seb $
+ *  $Id: yocto_spiport.cpp 41171 2020-07-02 17:49:00Z mvuilleu $
  *
  *  Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -53,8 +53,80 @@
 using namespace YOCTOLIB_NAMESPACE;
 #endif
 
+YSpiSnoopingRecord::YSpiSnoopingRecord(const string& json):
+//--- (generated code: YSpiSnoopingRecord initialization)
+    _tim(0)
+    ,_dir(0)
+//--- (end of generated code: YSpiSnoopingRecord initialization)
+{
+    yJsonStateMachine j;
+    // Parse JSON data
+    j.src = json.c_str();
+    j.end = j.src + strlen(j.src);
+    j.st = YJSON_START;
+    if(yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_STRUCT) {
+        return ;
+    }
+    while(yJsonParse(&j) == YJSON_PARSE_AVAIL && j.st == YJSON_PARSE_MEMBNAME) {
+        if (!strcmp(j.token, "m")) {
+            string tmp;
+            if (yJsonParse(&j) != YJSON_PARSE_AVAIL) {
+                return ;
+            }
+            tmp = (string)j.token;
+            while(j.next == YJSON_PARSE_STRINGCONT && yJsonParse(&j) == YJSON_PARSE_AVAIL) {
+                tmp +=(string)j.token;
+            }
+            _dir = (tmp[0] == '<' ? 1 : 0);
+            _msg = tmp.substr(1);
+        } else if(!strcmp(j.token, "t")) {
+            if (yJsonParse(&j) != YJSON_PARSE_AVAIL) {
+                return;
+            }
+            _tim = atoi(j.token);;
+        } else {
+            yJsonSkip(&j, 1);
+        }
+    }
+}
+
+//--- (generated code: YSpiSnoopingRecord implementation)
+// static attributes
+
+
+/**
+ * Returns the elapsed time, in ms, since the beginning of the preceding message.
+ *
+ * @return the elapsed time, in ms, since the beginning of the preceding message.
+ */
+int YSpiSnoopingRecord::get_time(void)
+{
+    return _tim;
+}
+
+/**
+ * Returns the message direction (RX=0, TX=1).
+ *
+ * @return the message direction (RX=0, TX=1).
+ */
+int YSpiSnoopingRecord::get_direction(void)
+{
+    return _dir;
+}
+
+/**
+ * Returns the message content.
+ *
+ * @return the message content.
+ */
+string YSpiSnoopingRecord::get_message(void)
+{
+    return _msg;
+}
+//--- (end of generated code: YSpiSnoopingRecord implementation)
+
 YSpiPort::YSpiPort(const string& func): YFunction(func)
-//--- (YSpiPort initialization)
+//--- (generated code: YSpiPort initialization)
     ,_rxCount(RXCOUNT_INVALID)
     ,_txCount(TXCOUNT_INVALID)
     ,_errCount(ERRCOUNT_INVALID)
@@ -74,17 +146,17 @@ YSpiPort::YSpiPort(const string& func): YFunction(func)
     ,_valueCallbackSpiPort(NULL)
     ,_rxptr(0)
     ,_rxbuffptr(0)
-//--- (end of YSpiPort initialization)
+//--- (end of generated code: YSpiPort initialization)
 {
     _className="SpiPort";
 }
 
 YSpiPort::~YSpiPort()
 {
-//--- (YSpiPort cleanup)
-//--- (end of YSpiPort cleanup)
+//--- (generated code: YSpiPort cleanup)
+//--- (end of generated code: YSpiPort cleanup)
 }
-//--- (YSpiPort implementation)
+//--- (generated code: YSpiPort implementation)
 // static attributes
 const string YSpiPort::LASTMSG_INVALID = YAPI_INVALID_STRING;
 const string YSpiPort::CURRENTJOB_INVALID = YAPI_INVALID_STRING;
@@ -1601,6 +1673,46 @@ int YSpiPort::set_SS(int val)
     return this->sendCommand(YapiWrapper::ysprintf("S%d",val));
 }
 
+/**
+ * Retrieves messages (both direction) in the SPI port buffer, starting at current position.
+ *
+ * If no message is found, the search waits for one up to the specified maximum timeout
+ * (in milliseconds).
+ *
+ * @param maxWait : the maximum number of milliseconds to wait for a message if none is found
+ *         in the receive buffer.
+ *
+ * @return an array of YSpiSnoopingRecord objects containing the messages found, if any.
+ *
+ * On failure, throws an exception or returns an empty array.
+ */
+vector<YSpiSnoopingRecord> YSpiPort::snoopMessages(int maxWait)
+{
+    string url;
+    string msgbin;
+    vector<string> msgarr;
+    int msglen = 0;
+    vector<YSpiSnoopingRecord> res;
+    int idx = 0;
+
+    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&t=0", _rxptr,maxWait);
+    msgbin = this->_download(url);
+    msgarr = this->_json_get_array(msgbin);
+    msglen = (int)msgarr.size();
+    if (msglen == 0) {
+        return res;
+    }
+    // last element of array is the new position
+    msglen = msglen - 1;
+    _rxptr = atoi((msgarr[msglen]).c_str());
+    idx = 0;
+    while (idx < msglen) {
+        res.push_back(YSpiSnoopingRecord(msgarr[idx]));
+        idx = idx + 1;
+    }
+    return res;
+}
+
 YSpiPort *YSpiPort::nextSpiPort(void)
 {
     string  hwid;
@@ -1625,7 +1737,7 @@ YSpiPort *YSpiPort::FirstSpiPort(void)
     return YSpiPort::FindSpiPort(serial+"."+funcId);
 }
 
-//--- (end of YSpiPort implementation)
+//--- (end of generated code: YSpiPort implementation)
 
-//--- (YSpiPort functions)
-//--- (end of YSpiPort functions)
+//--- (generated code: YSpiPort functions)
+//--- (end of generated code: YSpiPort functions)

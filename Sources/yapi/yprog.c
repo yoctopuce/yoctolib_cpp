@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 33734 2018-12-14 15:56:25Z seb $
+ * $Id: yprog.c 41798 2020-09-08 08:36:57Z seb $
  *
  * Implementation of firmware upgrade functions
  *
@@ -98,7 +98,7 @@ void  yProgFree(void)
         }
         yLeaveCriticalSection(&fctx.cs);
         if (fuPending){
-            yApproximateSleep(1);
+            yApproximateSleep(0);
         }
     } while (fuPending);
 
@@ -1983,7 +1983,7 @@ static void* yFirmwareUpdate_thread(void* ctx)
             u_flash_res = uFlashDevice();
             if (u_flash_res != YPROG_DONE){
                 setOsGlobalProgress(40 + fctx.progress/2, fctx.errmsg);
-                yApproximateSleep(1);
+                yApproximateSleep(0);
             }
         } while (u_flash_res != YPROG_DONE);
         if (fctx.progress < 100) {

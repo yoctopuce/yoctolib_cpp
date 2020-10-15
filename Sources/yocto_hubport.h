@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_hubport.h 41109 2020-06-29 12:40:42Z seb $
+ *  $Id: yocto_hubport.h 42060 2020-10-14 10:02:12Z seb $
  *
  *  Declares yFindHubPort(), the high-level API for HubPort functions
  *
@@ -87,7 +87,7 @@ typedef enum {
 //--- (YHubPort declaration)
 /**
  * YHubPort Class: YoctoHub slave port control interface, available for instance in the
- * YoctoHub-Ethernet, the YoctoHub-Shield, the YoctoHub-Wireless-g or the YoctoHub-Wireless-n
+ * YoctoHub-Ethernet, the YoctoHub-GSM-3G-EU, the YoctoHub-Shield or the YoctoHub-Wireless-n
  *
  * The YHubPort class provides control over the power supply for slave ports
  * on a YoctoHub. It provide information about the device connected to it.

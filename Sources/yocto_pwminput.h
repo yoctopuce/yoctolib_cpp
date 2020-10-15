@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwminput.h 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_pwminput.h 41348 2020-08-10 15:12:57Z seb $
  *
  *  Declares yFindPwmInput(), the high-level API for PwmInput functions
  *
@@ -74,6 +74,7 @@ typedef enum {
     Y_PWMREPORTMODE_PWM_STATE = 7,
     Y_PWMREPORTMODE_PWM_FREQ_CPS = 8,
     Y_PWMREPORTMODE_PWM_FREQ_CPM = 9,
+    Y_PWMREPORTMODE_PWM_PERIODCOUNT = 10,
     Y_PWMREPORTMODE_INVALID = -1,
 } Y_PWMREPORTMODE_enum;
 #endif
@@ -84,6 +85,8 @@ typedef enum {
 #define Y_PULSECOUNTER_INVALID          (YAPI_INVALID_LONG)
 #define Y_PULSETIMER_INVALID            (YAPI_INVALID_LONG)
 #define Y_DEBOUNCEPERIOD_INVALID        (YAPI_INVALID_UINT)
+#define Y_BANDWIDTH_INVALID             (YAPI_INVALID_UINT)
+#define Y_EDGESPERPERIOD_INVALID        (YAPI_INVALID_UINT)
 //--- (end of YPwmInput definitions)
 
 //--- (YPwmInput declaration)
@@ -112,6 +115,8 @@ protected:
     s64             _pulseTimer;
     Y_PWMREPORTMODE_enum _pwmReportMode;
     int             _debouncePeriod;
+    int             _bandwidth;
+    int             _edgesPerPeriod;
     YPwmInputValueCallback _valueCallbackPwmInput;
     YPwmInputTimedReportCallback _timedReportCallbackPwmInput;
 
@@ -145,8 +150,11 @@ public:
     static const Y_PWMREPORTMODE_enum PWMREPORTMODE_PWM_STATE = Y_PWMREPORTMODE_PWM_STATE;
     static const Y_PWMREPORTMODE_enum PWMREPORTMODE_PWM_FREQ_CPS = Y_PWMREPORTMODE_PWM_FREQ_CPS;
     static const Y_PWMREPORTMODE_enum PWMREPORTMODE_PWM_FREQ_CPM = Y_PWMREPORTMODE_PWM_FREQ_CPM;
+    static const Y_PWMREPORTMODE_enum PWMREPORTMODE_PWM_PERIODCOUNT = Y_PWMREPORTMODE_PWM_PERIODCOUNT;
     static const Y_PWMREPORTMODE_enum PWMREPORTMODE_INVALID = Y_PWMREPORTMODE_INVALID;
     static const int DEBOUNCEPERIOD_INVALID = YAPI_INVALID_UINT;
+    static const int BANDWIDTH_INVALID = YAPI_INVALID_UINT;
+    static const int EDGESPERPERIOD_INVALID = YAPI_INVALID_UINT;
 
     /**
      * Changes the measuring unit for the measured quantity. That unit
@@ -251,8 +259,9 @@ public:
      * @return a value among Y_PWMREPORTMODE_PWM_DUTYCYCLE, Y_PWMREPORTMODE_PWM_FREQUENCY,
      * Y_PWMREPORTMODE_PWM_PULSEDURATION, Y_PWMREPORTMODE_PWM_EDGECOUNT, Y_PWMREPORTMODE_PWM_PULSECOUNT,
      * Y_PWMREPORTMODE_PWM_CPS, Y_PWMREPORTMODE_PWM_CPM, Y_PWMREPORTMODE_PWM_STATE,
-     * Y_PWMREPORTMODE_PWM_FREQ_CPS and Y_PWMREPORTMODE_PWM_FREQ_CPM corresponding to the parameter
-     * (frequency/duty cycle, pulse width, edges count) returned by the get_currentValue function and callbacks
+     * Y_PWMREPORTMODE_PWM_FREQ_CPS, Y_PWMREPORTMODE_PWM_FREQ_CPM and Y_PWMREPORTMODE_PWM_PERIODCOUNT
+     * corresponding to the parameter (frequency/duty cycle, pulse width, edges count) returned by the
+     * get_currentValue function and callbacks
      *
      * On failure, throws an exception or returns Y_PWMREPORTMODE_INVALID.
      */
@@ -271,8 +280,9 @@ public:
      * @param newval : a value among Y_PWMREPORTMODE_PWM_DUTYCYCLE, Y_PWMREPORTMODE_PWM_FREQUENCY,
      * Y_PWMREPORTMODE_PWM_PULSEDURATION, Y_PWMREPORTMODE_PWM_EDGECOUNT, Y_PWMREPORTMODE_PWM_PULSECOUNT,
      * Y_PWMREPORTMODE_PWM_CPS, Y_PWMREPORTMODE_PWM_CPM, Y_PWMREPORTMODE_PWM_STATE,
-     * Y_PWMREPORTMODE_PWM_FREQ_CPS and Y_PWMREPORTMODE_PWM_FREQ_CPM corresponding to the  parameter  type
-     * (frequency/duty cycle, pulse width, or edge count) returned by the get_currentValue function and callbacks
+     * Y_PWMREPORTMODE_PWM_FREQ_CPS, Y_PWMREPORTMODE_PWM_FREQ_CPM and Y_PWMREPORTMODE_PWM_PERIODCOUNT
+     * corresponding to the  parameter  type (frequency/duty cycle, pulse width, or edge count) returned
+     * by the get_currentValue function and callbacks
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
@@ -307,6 +317,48 @@ public:
     int             set_debouncePeriod(int newval);
     inline int      setDebouncePeriod(int newval)
     { return this->set_debouncePeriod(newval); }
+
+    /**
+     * Returns the input signal sampling rate, in kHz.
+     *
+     * @return an integer corresponding to the input signal sampling rate, in kHz
+     *
+     * On failure, throws an exception or returns Y_BANDWIDTH_INVALID.
+     */
+    int                 get_bandwidth(void);
+
+    inline int          bandwidth(void)
+    { return this->get_bandwidth(); }
+
+    /**
+     * Changes the input signal sampling rate, measured in kHz.
+     * A lower sampling frequency can be used to hide hide-frequency bounce effects,
+     * for instance on electromechanical contacts, but limits the measure resolution.
+     * Remember to call the saveToFlash()
+     * method of the module if the modification must be kept.
+     *
+     * @param newval : an integer corresponding to the input signal sampling rate, measured in kHz
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_bandwidth(int newval);
+    inline int      setBandwidth(int newval)
+    { return this->set_bandwidth(newval); }
+
+    /**
+     * Returns the number of edges detected per preiod. For a clean PWM signal, this should be exactly two,
+     * but in cas the signal is created by a mechanical contact with bounces, it can get higher.
+     *
+     * @return an integer corresponding to the number of edges detected per preiod
+     *
+     * On failure, throws an exception or returns Y_EDGESPERPERIOD_INVALID.
+     */
+    int                 get_edgesPerPeriod(void);
+
+    inline int          edgesPerPeriod(void)
+    { return this->get_edgesPerPeriod(); }
 
     /**
      * Retrieves a PWM input for a given identifier.

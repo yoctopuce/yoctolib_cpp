@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_anbutton.h 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_anbutton.h 42060 2020-10-14 10:02:12Z seb $
  *
  *  Declares yFindAnButton(), the high-level API for AnButton functions
  *
@@ -75,6 +75,14 @@ typedef enum {
     Y_ISPRESSED_INVALID = -1,
 } Y_ISPRESSED_enum;
 #endif
+#ifndef _Y_INPUTTYPE_ENUM
+#define _Y_INPUTTYPE_ENUM
+typedef enum {
+    Y_INPUTTYPE_ANALOG = 0,
+    Y_INPUTTYPE_DIGITAL4 = 1,
+    Y_INPUTTYPE_INVALID = -1,
+} Y_INPUTTYPE_enum;
+#endif
 #define Y_CALIBRATEDVALUE_INVALID       (YAPI_INVALID_UINT)
 #define Y_RAWVALUE_INVALID              (YAPI_INVALID_UINT)
 #define Y_CALIBRATIONMAX_INVALID        (YAPI_INVALID_UINT)
@@ -89,7 +97,7 @@ typedef enum {
 //--- (YAnButton declaration)
 /**
  * YAnButton Class: analog input control interface, available for instance in the Yocto-Buzzer, the
- * Yocto-Display, the Yocto-Knob or the Yocto-MaxiDisplay
+ * Yocto-Knob, the Yocto-MaxiBuzzer or the Yocto-MaxiDisplay
  *
  * The YAnButton class provide access to basic resistive inputs.
  * Such inputs can be used to measure the state
@@ -118,6 +126,7 @@ protected:
     s64             _lastTimeReleased;
     s64             _pulseCounter;
     s64             _pulseTimer;
+    Y_INPUTTYPE_enum _inputType;
     YAnButtonValueCallback _valueCallbackAnButton;
 
     friend YAnButton *yFindAnButton(const string& func);
@@ -149,6 +158,9 @@ public:
     static const s64 LASTTIMERELEASED_INVALID = YAPI_INVALID_LONG;
     static const s64 PULSECOUNTER_INVALID = YAPI_INVALID_LONG;
     static const s64 PULSETIMER_INVALID = YAPI_INVALID_LONG;
+    static const Y_INPUTTYPE_enum INPUTTYPE_ANALOG = Y_INPUTTYPE_ANALOG;
+    static const Y_INPUTTYPE_enum INPUTTYPE_DIGITAL4 = Y_INPUTTYPE_DIGITAL4;
+    static const Y_INPUTTYPE_enum INPUTTYPE_INVALID = Y_INPUTTYPE_INVALID;
 
     /**
      * Returns the current calibrated input value (between 0 and 1000, included).
@@ -364,6 +376,34 @@ public:
 
     inline s64          pulseTimer(void)
     { return this->get_pulseTimer(); }
+
+    /**
+     * Returns the decoding method applied to the input (analog or multiplexed binary switches).
+     *
+     * @return either Y_INPUTTYPE_ANALOG or Y_INPUTTYPE_DIGITAL4, according to the decoding method applied
+     * to the input (analog or multiplexed binary switches)
+     *
+     * On failure, throws an exception or returns Y_INPUTTYPE_INVALID.
+     */
+    Y_INPUTTYPE_enum    get_inputType(void);
+
+    inline Y_INPUTTYPE_enum inputType(void)
+    { return this->get_inputType(); }
+
+    /**
+     * Changes the decoding method applied to the input (analog or multiplexed binary switches).
+     * Remember to call the saveToFlash() method of the module if the modification must be kept.
+     *
+     * @param newval : either Y_INPUTTYPE_ANALOG or Y_INPUTTYPE_DIGITAL4, according to the decoding method
+     * applied to the input (analog or multiplexed binary switches)
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_inputType(Y_INPUTTYPE_enum newval);
+    inline int      setInputType(Y_INPUTTYPE_enum newval)
+    { return this->set_inputType(newval); }
 
     /**
      * Retrieves an analog input for a given identifier.

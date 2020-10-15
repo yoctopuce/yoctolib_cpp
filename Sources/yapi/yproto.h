@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 38460 2019-11-25 16:49:33Z seb $
+ * $Id: yproto.h 41930 2020-09-25 09:10:14Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -948,7 +948,8 @@ typedef struct{
     //yapi CS
     yCRITICAL_SECTION   updateDev_cs;
     yCRITICAL_SECTION   handleEv_cs;
-    yEvent              exitSleepEvent;
+    yEvent              yapiSleepWakeUpEvent;
+    yWakeUpCb           wakeUpCallback;
     // global information on all devices
     yCRITICAL_SECTION   generic_cs;
     yGenericDeviceSt    generic_infos[ALLOC_YDX_PER_HUB];
@@ -1019,6 +1020,7 @@ typedef struct{
 extern char  ytracefile[];
 extern yContextSt  *yContext;
 
+void WakeUpAllSleep(void);
 YRETCODE yapiPullDeviceLogEx(int devydx);
 YRETCODE yapiPullDeviceLog(const char *serial);
 YRETCODE yapiRequestOpen(YIOHDL_internal *iohdl, int tpchan, const char *device, const char *request, int reqlen, yapiRequestAsyncCallback callback, void *context, yapiRequestProgressCallback progress_cb, void *progress_ctx, char *errmsg);
