@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_compass.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_compass.cpp 42951 2020-12-14 09:43:29Z seb $
  *
  *  Implements yFindCompass(), the high-level API for Compass functions
  *
@@ -90,9 +90,9 @@ int YCompass::_parseAttr(YJSONObject *json_val)
 
 
 /**
- * Returns the measure update frequency, measured in Hz (Yocto-3D-V2 only).
+ * Returns the measure update frequency, measured in Hz.
  *
- * @return an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
+ * @return an integer corresponding to the measure update frequency, measured in Hz
  *
  * On failure, throws an exception or returns Y_BANDWIDTH_INVALID.
  */
@@ -119,12 +119,12 @@ int YCompass::get_bandwidth(void)
 }
 
 /**
- * Changes the measure update frequency, measured in Hz (Yocto-3D-V2 only). When the
+ * Changes the measure update frequency, measured in Hz. When the
  * frequency is lower, the device performs averaging.
  * Remember to call the saveToFlash()
  * method of the module if the modification must be kept.
  *
- * @param newval : an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
+ * @param newval : an integer corresponding to the measure update frequency, measured in Hz
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *

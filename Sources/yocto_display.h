@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.h 40196 2020-04-30 06:47:29Z mvuilleu $
+ * $Id: yocto_display.h 42084 2020-10-16 17:08:01Z mvuilleu $
  *
  * Declares yFindDisplay(), the high-level API for Display functions
  *
@@ -613,6 +613,7 @@ class YOCTO_CLASS_EXPORT YDisplay: public YFunction {
     int             _layerCount;
     string          _command;
     YDisplayValueCallback _valueCallbackDisplay;
+    vector<YDisplayLayer*> _allDisplayLayers;
 
     friend YDisplay *yFindDisplay(const string& func);
     friend YDisplay *yFirstDisplay(void);
@@ -623,7 +624,6 @@ class YOCTO_CLASS_EXPORT YDisplay: public YFunction {
     // Constructor is protected, use yFindDisplay factory function to instantiate
     YDisplay(const string& func);
     //--- (end of generated code: YDisplay attributes)
-    vector<YDisplayLayer*>  _allDisplayLayers;
     bool                    _recording;
     string                  _sequence;
 
@@ -1023,6 +1023,19 @@ public:
      */
     virtual int         swapLayerContent(int layerIdA,int layerIdB);
 
+    /**
+     * Returns a YDisplayLayer object that can be used to draw on the specified
+     * layer. The content is displayed only when the layer is active on the
+     * screen (and not masked by other overlapping layers).
+     *
+     * @param layerId : the identifier of the layer (a number in range 0..layerCount-1)
+     *
+     * @return an YDisplayLayer object
+     *
+     * On failure, throws an exception or returns NULL.
+     */
+    virtual YDisplayLayer* get_displayLayer(int layerId);
+
 
     inline static YDisplay *Find(string func)
     { return YDisplay::FindDisplay(func); }
@@ -1057,23 +1070,6 @@ public:
 #pragma option pop
 #endif
     //--- (end of generated code: YDisplay accessors declaration)
-
-
-
-
-
-    /**
-     * Returns a YDisplayLayer object that can be used to draw on the specified
-     * layer. The content is displayed only when the layer is active on the
-     * screen (and not masked by other overlapping layers).
-     *
-     * @param layerId : the identifier of the layer (a number in range 0..layerCount-1)
-     *
-     * @return an YDisplayLayer object
-     *
-     * On failure, throws an exception or returns NULL.
-     */
-    YDisplayLayer* get_displayLayer(unsigned layerId);
 
 
     int flushLayers(void);

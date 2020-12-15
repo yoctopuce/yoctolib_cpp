@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_tilt.h 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_tilt.h 42951 2020-12-14 09:43:29Z seb $
  *
  *  Declares yFindTilt(), the high-level API for Tilt functions
  *
@@ -121,9 +121,9 @@ public:
     static const Y_AXIS_enum AXIS_INVALID = Y_AXIS_INVALID;
 
     /**
-     * Returns the measure update frequency, measured in Hz (Yocto-3D-V2 only).
+     * Returns the measure update frequency, measured in Hz.
      *
-     * @return an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
+     * @return an integer corresponding to the measure update frequency, measured in Hz
      *
      * On failure, throws an exception or returns Y_BANDWIDTH_INVALID.
      */
@@ -133,12 +133,12 @@ public:
     { return this->get_bandwidth(); }
 
     /**
-     * Changes the measure update frequency, measured in Hz (Yocto-3D-V2 only). When the
+     * Changes the measure update frequency, measured in Hz. When the
      * frequency is lower, the device performs averaging.
      * Remember to call the saveToFlash()
      * method of the module if the modification must be kept.
      *
-     * @param newval : an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
+     * @param newval : an integer corresponding to the measure update frequency, measured in Hz
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *
@@ -214,6 +214,28 @@ public:
     using YSensor::registerTimedReportCallback;
 
     virtual int         _invokeTimedReportCallback(YMeasure value);
+
+    /**
+     * Performs a zero calibration for the tilt measurement (Yocto-Inclinometer only).
+     * When this method is invoked, a simple shift (translation)
+     * is applied so that the current position is reported as a zero angle.
+     * Be aware that this shift will also affect the measurement boundaries.
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         calibrateToZero(void);
+
+    /**
+     * Cancels any previous zero calibration for the tilt measurement (Yocto-Inclinometer only).
+     * This function restores the factory zero calibration.
+     *
+     * @return YAPI_SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         restoreZeroCalibration(void);
 
 
     inline static YTilt *Find(string func)

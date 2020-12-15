@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.h 26732 2017-03-09 17:12:22Z mvuilleu $
+ * $Id: ythread.h 42179 2020-10-26 11:56:31Z seb $
  *
  * OS-independent thread and synchronization library
  *
@@ -103,9 +103,10 @@ typedef struct {
 extern "C" {
 #endif
     
-int    yCreateDetachedThread(void* (*fun)(void *), void *arg);
-    
-int    yThreadCreate(yThread *yth,void* (*fun)(void *), void *arg);
+int    yCreateDetachedThreadNamed(const char* name, void* (*fun)(void *), void *arg);    
+int    yThreadCreateNamed(yThread *yth, const char* name, void* (*fun)(void *), void *arg);
+#define yCreateDetachedThread(fun, arg) yCreateDetachedThreadNamed(NULL, fun, arg)
+#define yThreadCreate(yth, fun, arg) yThreadCreateNamed(yth, NULL, fun, arg)
 int    yThreadIsRunning(yThread *yth);
 void   yThreadSignalStart(yThread *yth);
 void   yThreadSignalEnd(yThread *yth);

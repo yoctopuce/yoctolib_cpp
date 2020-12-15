@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 41748 2020-09-03 10:10:04Z seb $
+ * $Id: ytcp.c 42176 2020-10-26 10:43:45Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -3663,7 +3663,7 @@ int ySSDPStart(SSDPInfos* SSDP, ssdpHubDiscoveryCallback callback, char* errmsg)
         }
     }
     //yThreadCreate will not create a new thread if there is already one running
-    if (yThreadCreate(&SSDP->thread, ySSDP_thread, SSDP) < 0) {
+    if (yThreadCreateNamed(&SSDP->thread, "ssdp", ySSDP_thread, SSDP) < 0) {
         return YERRMSG(YAPI_IO_ERROR,"Unable to start helper thread");
     }
     SSDP->started = 1;

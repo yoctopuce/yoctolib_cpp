@@ -2,10 +2,10 @@
  *
  *  $Id: svn_id $
  *
- *  An example that show how to use a  yocto-MaxiBuzzer
+ *  An example that show how to use a  Yocto-MaxiBuzzer
  *
  *  You can find more information on our web site:
- *   yocto-MaxiBuzzer documentation:
+ *   Yocto-MaxiBuzzer documentation:
  *      https://www.yoctopuce.com/EN/products/yocto-maxibuzzer/doc.html
  *   C++ API Reference:
  *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
@@ -77,7 +77,7 @@ int main(int argc, const char * argv[])
   button2   = YAnButton::FindAnButton(serial + ".anButton2");
 
   cout << "press a test button or hit Ctrl-C" << endl;
-  while (1) {
+  while (button1->isOnline()) {
     int b1 = button1->isPressed();
     int b2 = button2->isPressed();
     if (b1 || b2 ) {

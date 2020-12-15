@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 40295 2020-05-05 07:37:33Z seb $
+ * $Id: ydef.h 42440 2020-11-14 10:55:58Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -138,7 +138,8 @@ typedef signed long long        s64;
 #if defined(__i386__)
 #define __32BITS__
 #elif defined(__x86_64__)
-#define OSX_API
+#define __64BITS__
+#elif defined(__arm64__)
 #define __64BITS__
 #else
 #error Unsupported MAC OS X architecture

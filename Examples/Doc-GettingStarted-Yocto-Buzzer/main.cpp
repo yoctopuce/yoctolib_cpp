@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 38820 2019-12-18 18:01:14Z seb $
+ *  $Id: main.cpp 42524 2020-11-17 10:03:41Z seb $
  *
  *  An example that show how to use a  Yocto-Buzzer
  *
@@ -77,6 +77,10 @@ int main(int argc, const char * argv[])
 
   cout << "press a test button or hit Ctrl-C" << endl;
   while (1) {
+    if (!button1->isOnline()) {
+      cout << "Module not connected (check identification and USB cable)" << endl;
+      break;
+    }
     int b1 = button1->isPressed();
     int b2 = button2->isPressed();
     if (b1 || b2 ) {

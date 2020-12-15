@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.h 40196 2020-04-30 06:47:29Z mvuilleu $
+ * $Id: yocto_gyro.h 42951 2020-12-14 09:43:29Z seb $
  *
  * Declares yFindGyro(), the high-level API for Gyro functions
  *
@@ -318,9 +318,9 @@ public:
     static const double ZVALUE_INVALID;
 
     /**
-     * Returns the measure update frequency, measured in Hz (Yocto-3D-V2 only).
+     * Returns the measure update frequency, measured in Hz.
      *
-     * @return an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
+     * @return an integer corresponding to the measure update frequency, measured in Hz
      *
      * On failure, throws an exception or returns Y_BANDWIDTH_INVALID.
      */
@@ -330,12 +330,12 @@ public:
     { return this->get_bandwidth(); }
 
     /**
-     * Changes the measure update frequency, measured in Hz (Yocto-3D-V2 only). When the
+     * Changes the measure update frequency, measured in Hz. When the
      * frequency is lower, the device performs averaging.
      * Remember to call the saveToFlash()
      * method of the module if the modification must be kept.
      *
-     * @param newval : an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
+     * @param newval : an integer corresponding to the measure update frequency, measured in Hz
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *

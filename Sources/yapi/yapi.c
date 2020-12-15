@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 41930 2020-09-25 09:10:14Z seb $
+ * $Id: yapi.c 42580 2020-11-19 09:02:42Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -3131,7 +3131,7 @@ static YRETCODE yapiRegisterHubEx(const char* url, int checkacces, char* errmsg)
                 thead_handler = yhelper_thread;
             }
             //yThreadCreate will not create a new thread if there is already one running
-            if (yThreadCreate(&yContext->nethub[i]->net_thread, thead_handler, (void*)yContext->nethub[i]) < 0) {
+            if (yThreadCreateNamed(&yContext->nethub[i]->net_thread, hubst->name,thead_handler, (void*)yContext->nethub[i]) < 0) {
                 yLeaveCriticalSection(&yContext->enum_cs);
                 return YERRMSG(YAPI_IO_ERROR, "Unable to start helper thread");
             }
@@ -3296,7 +3296,7 @@ static YRETCODE yapiTestHub_internal(const char* url, int mstimeout, char* errms
                     return (YRETCODE)res;
                 }
                 //yThreadCreate will not create a new thread if there is already one running
-                if (yThreadCreate(&hubst->net_thread, ws_thread, (void*)hubst) < 0) {
+                if (yThreadCreateNamed(&hubst->net_thread, hubst->name, ws_thread, (void*)hubst) < 0) {
                     yapiFreeHub(hubst);
                     return YERRMSG(YAPI_IO_ERROR, "Unable to start helper thread");
                 }
@@ -3677,7 +3677,7 @@ static YRETCODE yapiGetDeviceInfo_internal(YAPI_DEVICE devdesc, yDeviceSt* infos
         devHdlInfo(devhdl, infos);
     } else {
         // not a local device, get available information from white pages
-        infos->vendorid = 0x24e0;
+        infos->vendorid = YOCTO_VENDORID;
         infos->devrelease = 0;
         infos->nbinbterfaces = 1;
         memcpy((u8 *)infos->manufacturer, (u8 *)"Yoctopuce", 10);

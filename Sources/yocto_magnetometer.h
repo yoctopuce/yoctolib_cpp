@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_magnetometer.h 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_magnetometer.h 42951 2020-12-14 09:43:29Z seb $
  *
  *  Declares yFindMagnetometer(), the high-level API for Magnetometer functions
  *
@@ -116,9 +116,9 @@ public:
     static const double ZVALUE_INVALID;
 
     /**
-     * Returns the measure update frequency, measured in Hz (Yocto-3D-V2 only).
+     * Returns the measure update frequency, measured in Hz.
      *
-     * @return an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
+     * @return an integer corresponding to the measure update frequency, measured in Hz
      *
      * On failure, throws an exception or returns Y_BANDWIDTH_INVALID.
      */
@@ -128,12 +128,12 @@ public:
     { return this->get_bandwidth(); }
 
     /**
-     * Changes the measure update frequency, measured in Hz (Yocto-3D-V2 only). When the
+     * Changes the measure update frequency, measured in Hz. When the
      * frequency is lower, the device performs averaging.
      * Remember to call the saveToFlash()
      * method of the module if the modification must be kept.
      *
-     * @param newval : an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
+     * @param newval : an integer corresponding to the measure update frequency, measured in Hz
      *
      * @return YAPI_SUCCESS if the call succeeds.
      *

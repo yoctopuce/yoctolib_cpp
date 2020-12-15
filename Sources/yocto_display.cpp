@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 40196 2020-04-30 06:47:29Z mvuilleu $
+ * $Id: yocto_display.cpp 42084 2020-10-16 17:08:01Z mvuilleu $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -1392,6 +1392,36 @@ int YDisplay::swapLayerContent(int layerIdA,int layerIdB)
     return this->sendCommand(YapiWrapper::ysprintf("E%d,%d",layerIdA,layerIdB));
 }
 
+/**
+ * Returns a YDisplayLayer object that can be used to draw on the specified
+ * layer. The content is displayed only when the layer is active on the
+ * screen (and not masked by other overlapping layers).
+ *
+ * @param layerId : the identifier of the layer (a number in range 0..layerCount-1)
+ *
+ * @return an YDisplayLayer object
+ *
+ * On failure, throws an exception or returns NULL.
+ */
+YDisplayLayer* YDisplay::get_displayLayer(int layerId)
+{
+    int layercount = 0;
+    int idx = 0;
+    layercount = this->get_layerCount();
+    if (!((layerId >= 0) && (layerId < layercount))) {
+        _throw(YAPI_INVALID_ARGUMENT,"invalid DisplayLayer index");
+        return NULL;
+    }
+    if ((int)_allDisplayLayers.size() == 0) {
+        idx = 0;
+        while (idx < layercount) {
+            _allDisplayLayers.push_back(new YDisplayLayer( this,idx));
+            idx = idx + 1;
+        }
+    }
+    return _allDisplayLayers[layerId];
+}
+
 YDisplay *YDisplay::nextDisplay(void)
 {
     string  hwid;
@@ -1417,23 +1447,6 @@ YDisplay *YDisplay::FirstDisplay(void)
 }
 
 //--- (end of generated code: YDisplay implementation)
-
-
-YDisplayLayer* YDisplay::get_displayLayer(unsigned layerId)
-{
-    if(_allDisplayLayers.size()==0) {
-        unsigned nb_display_layer = this->get_layerCount();
-        for(unsigned i = 0; i < nb_display_layer; i++) {
-            _allDisplayLayers.push_back(new YDisplayLayer(this, i));
-        }
-    }
-    if(layerId >= _allDisplayLayers.size()) {
-        this->_throw(YAPI_INVALID_ARGUMENT, "Invalid layerId");
-        return NULL;
-    }
-    return _allDisplayLayers[layerId];
-}
-
 
 int YDisplay::flushLayers(void)
 {

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.c 33734 2018-12-14 15:56:25Z seb $
+ * $Id: ythread.c 42182 2020-10-26 13:03:06Z seb $
  *
  * OS-independent thread and synchronization library
  *
@@ -88,7 +88,7 @@ void   yCloseEvent(yEvent *ev)
 }
 
 
-static int    yCreateDetachedThreadEx(osThread *th_hdl, void* (*fun)(void *), void *arg)
+static int    yCreateDetachedThreadEx(osThread *th_hdl, const char * name, void* (*fun)(void *), void *arg)
 {
     *th_hdl = CreateThread(
         NULL,                   // default security attributes
@@ -226,7 +226,7 @@ void   yCloseEvent(yEvent *ev)
     pthread_mutex_destroy(&ev->mtx);
 }
 
-static int    yCreateDetachedThreadEx(osThread *th, void* (*fun)(void *), void *arg)
+static int    yCreateDetachedThreadEx(osThread *th, const char *name, void* (*fun)(void *), void *arg)
 {
     pthread_attr_t attr;
     int result;
@@ -239,6 +239,11 @@ static int    yCreateDetachedThreadEx(osThread *th, void* (*fun)(void *), void *
     } else {
         result = 0;
     }
+#if 0
+    if (name != NULL){
+       pthread_setname_np(*th, name);
+    }
+#endif
     pthread_attr_destroy(&attr);
 
     return result;
@@ -279,10 +284,10 @@ int    yThreadIndex(void)
 #endif
 
 
-int    yCreateDetachedThread(void* (*fun)(void *), void *arg)
+int    yCreateDetachedThreadNamed(const char* name, void* (*fun)(void *), void *arg)
 {
     osThread th_hdl;
-    if (yCreateDetachedThreadEx(&th_hdl, fun, arg) < 0) {
+    if (yCreateDetachedThreadEx(&th_hdl, name, fun, arg) < 0) {
         return -1;
     }
     yReleaseDetachedThreadEx(&th_hdl);
@@ -290,14 +295,14 @@ int    yCreateDetachedThread(void* (*fun)(void *), void *arg)
 }
 
 
-int    yThreadCreate(yThread *yth, void* (*fun)(void *), void *arg)
+int    yThreadCreateNamed(yThread *yth, const char* name, void* (*fun)(void *), void *arg)
 {
     if (yth->st == YTHREAD_RUNNING)
         return 0; // already started nothing to do
     if (yth->st == YTHREAD_NOT_STARTED) {
         yth->ctx = arg;
         yCreateEvent(&yth->ev);
-        if (yCreateDetachedThreadEx(&yth->th, fun, yth) < 0) {
+        if (yCreateDetachedThreadEx(&yth->th, name, fun, yth) < 0) {
             yCloseEvent(&yth->ev);
             return-1;
         }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_tilt.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_tilt.cpp 42951 2020-12-14 09:43:29Z seb $
  *
  *  Implements yFindTilt(), the high-level API for Tilt functions
  *
@@ -85,9 +85,9 @@ int YTilt::_parseAttr(YJSONObject *json_val)
 
 
 /**
- * Returns the measure update frequency, measured in Hz (Yocto-3D-V2 only).
+ * Returns the measure update frequency, measured in Hz.
  *
- * @return an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
+ * @return an integer corresponding to the measure update frequency, measured in Hz
  *
  * On failure, throws an exception or returns Y_BANDWIDTH_INVALID.
  */
@@ -114,12 +114,12 @@ int YTilt::get_bandwidth(void)
 }
 
 /**
- * Changes the measure update frequency, measured in Hz (Yocto-3D-V2 only). When the
+ * Changes the measure update frequency, measured in Hz. When the
  * frequency is lower, the device performs averaging.
  * Remember to call the saveToFlash()
  * method of the module if the modification must be kept.
  *
- * @param newval : an integer corresponding to the measure update frequency, measured in Hz (Yocto-3D-V2 only)
+ * @param newval : an integer corresponding to the measure update frequency, measured in Hz
  *
  * @return YAPI_SUCCESS if the call succeeds.
  *
@@ -284,6 +284,42 @@ int YTilt::_invokeTimedReportCallback(YMeasure value)
         YSensor::_invokeTimedReportCallback(value);
     }
     return 0;
+}
+
+/**
+ * Performs a zero calibration for the tilt measurement (Yocto-Inclinometer only).
+ * When this method is invoked, a simple shift (translation)
+ * is applied so that the current position is reported as a zero angle.
+ * Be aware that this shift will also affect the measurement boundaries.
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YTilt::calibrateToZero(void)
+{
+    double currentRawVal = 0.0;
+    vector<double> rawVals;
+    vector<double> refVals;
+    currentRawVal = this->get_currentRawValue();
+    rawVals.clear();
+    refVals.clear();
+    rawVals.push_back(currentRawVal);
+    refVals.push_back(0.0);
+    return this->calibrateFromPoints(rawVals, refVals);
+}
+
+/**
+ * Cancels any previous zero calibration for the tilt measurement (Yocto-Inclinometer only).
+ * This function restores the factory zero calibration.
+ *
+ * @return YAPI_SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YTilt::restoreZeroCalibration(void)
+{
+    return this->_setAttr("calibrationParam", "0");
 }
 
 YTilt *YTilt::nextTilt(void)
