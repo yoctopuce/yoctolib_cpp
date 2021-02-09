@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_relay.h 41109 2020-06-29 12:40:42Z seb $
+ *  $Id: yocto_relay.h 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Declares yFindRelay(), the high-level API for Relay functions
  *
@@ -171,10 +171,10 @@ public:
     /**
      * Returns the state of the relays (A for the idle position, B for the active position).
      *
-     * @return either Y_STATE_A or Y_STATE_B, according to the state of the relays (A for the idle
-     * position, B for the active position)
+     * @return either YRelay::STATE_A or YRelay::STATE_B, according to the state of the relays (A for the
+     * idle position, B for the active position)
      *
-     * On failure, throws an exception or returns Y_STATE_INVALID.
+     * On failure, throws an exception or returns YRelay::STATE_INVALID.
      */
     Y_STATE_enum        get_state(void);
 
@@ -184,10 +184,10 @@ public:
     /**
      * Changes the state of the relays (A for the idle position, B for the active position).
      *
-     * @param newval : either Y_STATE_A or Y_STATE_B, according to the state of the relays (A for the idle
-     * position, B for the active position)
+     * @param newval : either YRelay::STATE_A or YRelay::STATE_B, according to the state of the relays (A
+     * for the idle position, B for the active position)
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -199,11 +199,11 @@ public:
      * Returns the state of the relays at device startup (A for the idle position,
      * B for the active position, UNCHANGED to leave the relay state as is).
      *
-     * @return a value among Y_STATEATPOWERON_UNCHANGED, Y_STATEATPOWERON_A and Y_STATEATPOWERON_B
-     * corresponding to the state of the relays at device startup (A for the idle position,
+     * @return a value among YRelay::STATEATPOWERON_UNCHANGED, YRelay::STATEATPOWERON_A and
+     * YRelay::STATEATPOWERON_B corresponding to the state of the relays at device startup (A for the idle position,
      *         B for the active position, UNCHANGED to leave the relay state as is)
      *
-     * On failure, throws an exception or returns Y_STATEATPOWERON_INVALID.
+     * On failure, throws an exception or returns YRelay::STATEATPOWERON_INVALID.
      */
     Y_STATEATPOWERON_enum get_stateAtPowerOn(void);
 
@@ -216,11 +216,11 @@ public:
      * Remember to call the matching module saveToFlash()
      * method, otherwise this call will have no effect.
      *
-     * @param newval : a value among Y_STATEATPOWERON_UNCHANGED, Y_STATEATPOWERON_A and Y_STATEATPOWERON_B
-     * corresponding to the state of the relays at device startup (A for the idle position,
+     * @param newval : a value among YRelay::STATEATPOWERON_UNCHANGED, YRelay::STATEATPOWERON_A and
+     * YRelay::STATEATPOWERON_B corresponding to the state of the relays at device startup (A for the idle position,
      *         B for the active position, UNCHANGED to leave the relay state as is)
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -235,7 +235,7 @@ public:
      * @return an integer corresponding to the maximum time (ms) allowed for the relay to stay in state
      *         A before automatically switching back in to B state
      *
-     * On failure, throws an exception or returns Y_MAXTIMEONSTATEA_INVALID.
+     * On failure, throws an exception or returns YRelay::MAXTIMEONSTATEA_INVALID.
      */
     s64                 get_maxTimeOnStateA(void);
 
@@ -251,7 +251,7 @@ public:
      * @param newval : an integer corresponding to the maximum time (ms) allowed for the relay to stay in state A
      *         before automatically switching back in to B state
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -265,7 +265,7 @@ public:
      *
      * @return an integer
      *
-     * On failure, throws an exception or returns Y_MAXTIMEONSTATEB_INVALID.
+     * On failure, throws an exception or returns YRelay::MAXTIMEONSTATEB_INVALID.
      */
     s64                 get_maxTimeOnStateB(void);
 
@@ -282,7 +282,7 @@ public:
      * state B before
      *         automatically switching back in to A state
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -293,10 +293,10 @@ public:
     /**
      * Returns the output state of the relays, when used as a simple switch (single throw).
      *
-     * @return either Y_OUTPUT_OFF or Y_OUTPUT_ON, according to the output state of the relays, when used
-     * as a simple switch (single throw)
+     * @return either YRelay::OUTPUT_OFF or YRelay::OUTPUT_ON, according to the output state of the relays,
+     * when used as a simple switch (single throw)
      *
-     * On failure, throws an exception or returns Y_OUTPUT_INVALID.
+     * On failure, throws an exception or returns YRelay::OUTPUT_INVALID.
      */
     Y_OUTPUT_enum       get_output(void);
 
@@ -306,10 +306,10 @@ public:
     /**
      * Changes the output state of the relays, when used as a simple switch (single throw).
      *
-     * @param newval : either Y_OUTPUT_OFF or Y_OUTPUT_ON, according to the output state of the relays,
-     * when used as a simple switch (single throw)
+     * @param newval : either YRelay::OUTPUT_OFF or YRelay::OUTPUT_ON, according to the output state of the
+     * relays, when used as a simple switch (single throw)
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -325,7 +325,7 @@ public:
      * returned to idle position
      *         (state A), during a measured pulse generation
      *
-     * On failure, throws an exception or returns Y_PULSETIMER_INVALID.
+     * On failure, throws an exception or returns YRelay::PULSETIMER_INVALID.
      */
     s64                 get_pulseTimer(void);
 
@@ -342,7 +342,7 @@ public:
      *
      * @param ms_duration : pulse duration, in milliseconds
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -363,7 +363,7 @@ public:
      * @param ms_delay : waiting time before the pulse, in milliseconds
      * @param ms_duration : pulse duration, in milliseconds
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -376,7 +376,7 @@ public:
      * @return an integer corresponding to the number of milliseconds remaining before a pulse (delayedPulse() call)
      *         When there is no scheduled pulse, returns zero
      *
-     * On failure, throws an exception or returns Y_COUNTDOWN_INVALID.
+     * On failure, throws an exception or returns YRelay::COUNTDOWN_INVALID.
      */
     s64                 get_countdown(void);
 
@@ -396,7 +396,7 @@ public:
      *
      * This function does not require that the relay is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YRelay.isOnline() to test if the relay is
+     * Use the method isOnline() to test if the relay is
      * indeed online at a given time. In case of ambiguity when looking for
      * a relay by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
@@ -432,7 +432,7 @@ public:
     /**
      * Switch the relay to the opposite state.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -458,7 +458,7 @@ public:
 
     /**
      * Starts the enumeration of relays currently accessible.
-     * Use the method YRelay.nextRelay() to iterate on
+     * Use the method YRelay::nextRelay() to iterate on
      * next relays.
      *
      * @return a pointer to a YRelay object, corresponding to
@@ -489,7 +489,7 @@ public:
  *
  * This function does not require that the relay is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YRelay.isOnline() to test if the relay is
+ * Use the method isOnline() to test if the relay is
  * indeed online at a given time. In case of ambiguity when looking for
  * a relay by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -508,7 +508,7 @@ inline YRelay *yFindRelay(const string& func)
 { return YRelay::FindRelay(func);}
 /**
  * Starts the enumeration of relays currently accessible.
- * Use the method YRelay.nextRelay() to iterate on
+ * Use the method YRelay::nextRelay() to iterate on
  * next relays.
  *
  * @return a pointer to a YRelay object, corresponding to

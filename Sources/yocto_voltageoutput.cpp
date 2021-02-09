@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_voltageoutput.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_voltageoutput.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindVoltageOutput(), the high-level API for VoltageOutput functions
  *
@@ -95,7 +95,7 @@ int YVoltageOutput::_parseAttr(YJSONObject *json_val)
  *
  * @param newval : a floating point number corresponding to the output voltage, in V
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -120,7 +120,7 @@ int YVoltageOutput::set_currentVoltage(double newval)
  *
  * @return a floating point number corresponding to the output voltage set point, in V
  *
- * On failure, throws an exception or returns Y_CURRENTVOLTAGE_INVALID.
+ * On failure, throws an exception or returns YVoltageOutput::CURRENTVOLTAGE_INVALID.
  */
 double YVoltageOutput::get_currentVoltage(void)
 {
@@ -188,7 +188,7 @@ int YVoltageOutput::set_voltageTransition(const string& newval)
  *
  * @param newval : a floating point number corresponding to the output voltage at device start up
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -213,7 +213,7 @@ int YVoltageOutput::set_voltageAtStartUp(double newval)
  *
  * @return a floating point number corresponding to the selected voltage output at device startup, in V
  *
- * On failure, throws an exception or returns Y_VOLTAGEATSTARTUP_INVALID.
+ * On failure, throws an exception or returns YVoltageOutput::VOLTAGEATSTARTUP_INVALID.
  */
 double YVoltageOutput::get_voltageAtStartUp(void)
 {
@@ -250,7 +250,7 @@ double YVoltageOutput::get_voltageAtStartUp(void)
  *
  * This function does not require that the voltage output is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YVoltageOutput.isOnline() to test if the voltage output is
+ * Use the method isOnline() to test if the voltage output is
  * indeed online at a given time. In case of ambiguity when looking for
  * a voltage output by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -334,7 +334,7 @@ int YVoltageOutput::_invokeValueCallback(string value)
  *         (floating-point number, representing the end voltage in V)
  * @param ms_duration : total duration of the transition, in milliseconds
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  */
 int YVoltageOutput::voltageMove(double V_target,int ms_duration)
 {

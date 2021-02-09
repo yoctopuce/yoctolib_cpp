@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_magnetometer.h 42951 2020-12-14 09:43:29Z seb $
+ *  $Id: yocto_magnetometer.h 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Declares yFindMagnetometer(), the high-level API for Magnetometer functions
  *
@@ -120,7 +120,7 @@ public:
      *
      * @return an integer corresponding to the measure update frequency, measured in Hz
      *
-     * On failure, throws an exception or returns Y_BANDWIDTH_INVALID.
+     * On failure, throws an exception or returns YMagnetometer::BANDWIDTH_INVALID.
      */
     int                 get_bandwidth(void);
 
@@ -135,7 +135,7 @@ public:
      *
      * @param newval : an integer corresponding to the measure update frequency, measured in Hz
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -149,7 +149,7 @@ public:
      * @return a floating point number corresponding to the X component of the magnetic field, as a
      * floating point number
      *
-     * On failure, throws an exception or returns Y_XVALUE_INVALID.
+     * On failure, throws an exception or returns YMagnetometer::XVALUE_INVALID.
      */
     double              get_xValue(void);
 
@@ -162,7 +162,7 @@ public:
      * @return a floating point number corresponding to the Y component of the magnetic field, as a
      * floating point number
      *
-     * On failure, throws an exception or returns Y_YVALUE_INVALID.
+     * On failure, throws an exception or returns YMagnetometer::YVALUE_INVALID.
      */
     double              get_yValue(void);
 
@@ -175,7 +175,7 @@ public:
      * @return a floating point number corresponding to the Z component of the magnetic field, as a
      * floating point number
      *
-     * On failure, throws an exception or returns Y_ZVALUE_INVALID.
+     * On failure, throws an exception or returns YMagnetometer::ZVALUE_INVALID.
      */
     double              get_zValue(void);
 
@@ -195,7 +195,7 @@ public:
      *
      * This function does not require that the magnetometer is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YMagnetometer.isOnline() to test if the magnetometer is
+     * Use the method isOnline() to test if the magnetometer is
      * indeed online at a given time. In case of ambiguity when looking for
      * a magnetometer by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
@@ -264,7 +264,7 @@ public:
 
     /**
      * Starts the enumeration of magnetometers currently accessible.
-     * Use the method YMagnetometer.nextMagnetometer() to iterate on
+     * Use the method YMagnetometer::nextMagnetometer() to iterate on
      * next magnetometers.
      *
      * @return a pointer to a YMagnetometer object, corresponding to
@@ -295,7 +295,7 @@ public:
  *
  * This function does not require that the magnetometer is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YMagnetometer.isOnline() to test if the magnetometer is
+ * Use the method isOnline() to test if the magnetometer is
  * indeed online at a given time. In case of ambiguity when looking for
  * a magnetometer by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -314,7 +314,7 @@ inline YMagnetometer *yFindMagnetometer(const string& func)
 { return YMagnetometer::FindMagnetometer(func);}
 /**
  * Starts the enumeration of magnetometers currently accessible.
- * Use the method YMagnetometer.nextMagnetometer() to iterate on
+ * Use the method YMagnetometer::nextMagnetometer() to iterate on
  * next magnetometers.
  *
  * @return a pointer to a YMagnetometer object, corresponding to

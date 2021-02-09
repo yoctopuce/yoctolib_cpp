@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwmoutput.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_pwmoutput.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindPwmOutput(), the high-level API for PwmOutput functions
  *
@@ -116,9 +116,9 @@ int YPwmOutput::_parseAttr(YJSONObject *json_val)
 /**
  * Returns the state of the PWM generators.
  *
- * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the state of the PWM generators
+ * @return either YPwmOutput::ENABLED_FALSE or YPwmOutput::ENABLED_TRUE, according to the state of the PWM generators
  *
- * On failure, throws an exception or returns Y_ENABLED_INVALID.
+ * On failure, throws an exception or returns YPwmOutput::ENABLED_INVALID.
  */
 Y_ENABLED_enum YPwmOutput::get_enabled(void)
 {
@@ -145,9 +145,9 @@ Y_ENABLED_enum YPwmOutput::get_enabled(void)
 /**
  * Stops or starts the PWM.
  *
- * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE
+ * @param newval : either YPwmOutput::ENABLED_FALSE or YPwmOutput::ENABLED_TRUE
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -178,7 +178,7 @@ int YPwmOutput::set_enabled(Y_ENABLED_enum newval)
  *
  * @param newval : a floating point number corresponding to the PWM frequency
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -203,7 +203,7 @@ int YPwmOutput::set_frequency(double newval)
  *
  * @return a floating point number corresponding to the PWM frequency in Hz
  *
- * On failure, throws an exception or returns Y_FREQUENCY_INVALID.
+ * On failure, throws an exception or returns YPwmOutput::FREQUENCY_INVALID.
  */
 double YPwmOutput::get_frequency(void)
 {
@@ -236,7 +236,7 @@ double YPwmOutput::get_frequency(void)
  *
  * @param newval : a floating point number corresponding to the PWM period in milliseconds
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -261,7 +261,7 @@ int YPwmOutput::set_period(double newval)
  *
  * @return a floating point number corresponding to the PWM period in milliseconds
  *
- * On failure, throws an exception or returns Y_PERIOD_INVALID.
+ * On failure, throws an exception or returns YPwmOutput::PERIOD_INVALID.
  */
 double YPwmOutput::get_period(void)
 {
@@ -290,7 +290,7 @@ double YPwmOutput::get_period(void)
  *
  * @param newval : a floating point number corresponding to the PWM duty cycle, in per cents
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -315,7 +315,7 @@ int YPwmOutput::set_dutyCycle(double newval)
  *
  * @return a floating point number corresponding to the PWM duty cycle, in per cents
  *
- * On failure, throws an exception or returns Y_DUTYCYCLE_INVALID.
+ * On failure, throws an exception or returns YPwmOutput::DUTYCYCLE_INVALID.
  */
 double YPwmOutput::get_dutyCycle(void)
 {
@@ -345,7 +345,7 @@ double YPwmOutput::get_dutyCycle(void)
  *
  * @param newval : a floating point number corresponding to the PWM pulse length, in milliseconds
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -371,7 +371,7 @@ int YPwmOutput::set_pulseDuration(double newval)
  * @return a floating point number corresponding to the PWM pulse length in milliseconds, as a
  * floating point number
  *
- * On failure, throws an exception or returns Y_PULSEDURATION_INVALID.
+ * On failure, throws an exception or returns YPwmOutput::PULSEDURATION_INVALID.
  */
 double YPwmOutput::get_pulseDuration(void)
 {
@@ -436,10 +436,10 @@ int YPwmOutput::set_pwmTransition(const string& newval)
 /**
  * Returns the state of the PWM at device power on.
  *
- * @return either Y_ENABLEDATPOWERON_FALSE or Y_ENABLEDATPOWERON_TRUE, according to the state of the
- * PWM at device power on
+ * @return either YPwmOutput::ENABLEDATPOWERON_FALSE or YPwmOutput::ENABLEDATPOWERON_TRUE, according to
+ * the state of the PWM at device power on
  *
- * On failure, throws an exception or returns Y_ENABLEDATPOWERON_INVALID.
+ * On failure, throws an exception or returns YPwmOutput::ENABLEDATPOWERON_INVALID.
  */
 Y_ENABLEDATPOWERON_enum YPwmOutput::get_enabledAtPowerOn(void)
 {
@@ -467,10 +467,10 @@ Y_ENABLEDATPOWERON_enum YPwmOutput::get_enabledAtPowerOn(void)
  * Changes the state of the PWM at device power on. Remember to call the matching module saveToFlash()
  * method, otherwise this call will have no effect.
  *
- * @param newval : either Y_ENABLEDATPOWERON_FALSE or Y_ENABLEDATPOWERON_TRUE, according to the state
- * of the PWM at device power on
+ * @param newval : either YPwmOutput::ENABLEDATPOWERON_FALSE or YPwmOutput::ENABLEDATPOWERON_TRUE,
+ * according to the state of the PWM at device power on
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -496,7 +496,7 @@ int YPwmOutput::set_enabledAtPowerOn(Y_ENABLEDATPOWERON_enum newval)
  *
  * @param newval : a floating point number corresponding to the PWM duty cycle at device power on
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -522,7 +522,7 @@ int YPwmOutput::set_dutyCycleAtPowerOn(double newval)
  * @return a floating point number corresponding to the PWM generators duty cycle at device power on
  * as a floating point number between 0 and 100
  *
- * On failure, throws an exception or returns Y_DUTYCYCLEATPOWERON_INVALID.
+ * On failure, throws an exception or returns YPwmOutput::DUTYCYCLEATPOWERON_INVALID.
  */
 double YPwmOutput::get_dutyCycleAtPowerOn(void)
 {
@@ -559,7 +559,7 @@ double YPwmOutput::get_dutyCycleAtPowerOn(void)
  *
  * This function does not require that the PWM generator is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YPwmOutput.isOnline() to test if the PWM generator is
+ * Use the method isOnline() to test if the PWM generator is
  * indeed online at a given time. In case of ambiguity when looking for
  * a PWM generator by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -643,7 +643,7 @@ int YPwmOutput::_invokeValueCallback(string value)
  *         (floating-point number, representing the pulse duration in milliseconds)
  * @param ms_duration : total duration of the transition, in milliseconds
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -665,7 +665,7 @@ int YPwmOutput::pulseDurationMove(double ms_target,int ms_duration)
  *         (percentage, floating-point number between 0 and 100)
  * @param ms_duration : total duration of the transition, in milliseconds
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -689,7 +689,7 @@ int YPwmOutput::dutyCycleMove(double target,int ms_duration)
  * @param target      : new frequency at the end of the transition (floating-point number)
  * @param ms_duration : total duration of the transition, in milliseconds
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -713,7 +713,7 @@ int YPwmOutput::frequencyMove(double target,int ms_duration)
  * @param target      : phase shift at the end of the transition, in milliseconds (floating-point number)
  * @param ms_duration : total duration of the transition, in milliseconds
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -732,7 +732,7 @@ int YPwmOutput::phaseMove(double target,int ms_duration)
  *         (floating-point number, representing the pulse duration in milliseconds)
  * @param n_pulses  : desired pulse count
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -754,7 +754,7 @@ int YPwmOutput::triggerPulsesByDuration(double ms_target,int n_pulses)
  *         (percentage, floating-point number between 0 and 100)
  * @param n_pulses : desired pulse count
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -778,7 +778,7 @@ int YPwmOutput::triggerPulsesByDutyCycle(double target,int n_pulses)
  * @param target   : desired frequency for the generated pulses (floating-point number)
  * @param n_pulses : desired pulse count
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */

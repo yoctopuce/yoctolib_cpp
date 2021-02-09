@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multicellweighscale.cpp 41108 2020-06-29 12:29:07Z seb $
+ *  $Id: yocto_multicellweighscale.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindMultiCellWeighScale(), the high-level API for MultiCellWeighScale functions
  *
@@ -56,6 +56,7 @@ using namespace YOCTOLIB_NAMESPACE;
 YMultiCellWeighScale::YMultiCellWeighScale(const string& func): YSensor(func)
 //--- (YMultiCellWeighScale initialization)
     ,_cellCount(CELLCOUNT_INVALID)
+    ,_externalSense(EXTERNALSENSE_INVALID)
     ,_excitation(EXCITATION_INVALID)
     ,_tempAvgAdaptRatio(TEMPAVGADAPTRATIO_INVALID)
     ,_tempChgAdaptRatio(TEMPCHGADAPTRATIO_INVALID)
@@ -90,6 +91,9 @@ int YMultiCellWeighScale::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("cellCount")) {
         _cellCount =  json_val->getInt("cellCount");
+    }
+    if(json_val->has("externalSense")) {
+        _externalSense =  (Y_EXTERNALSENSE_enum)json_val->getInt("externalSense");
     }
     if(json_val->has("excitation")) {
         _excitation =  (Y_EXCITATION_enum)json_val->getInt("excitation");
@@ -126,7 +130,7 @@ int YMultiCellWeighScale::_parseAttr(YJSONObject *json_val)
  *
  * @param newval : a string corresponding to the measuring unit for the weight
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -151,7 +155,7 @@ int YMultiCellWeighScale::set_unit(const string& newval)
  *
  * @return an integer corresponding to the number of load cells in use
  *
- * On failure, throws an exception or returns Y_CELLCOUNT_INVALID.
+ * On failure, throws an exception or returns YMultiCellWeighScale::CELLCOUNT_INVALID.
  */
 int YMultiCellWeighScale::get_cellCount(void)
 {
@@ -181,7 +185,7 @@ int YMultiCellWeighScale::get_cellCount(void)
  *
  * @param newval : an integer corresponding to the number of load cells in use
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -202,12 +206,72 @@ int YMultiCellWeighScale::set_cellCount(int newval)
 }
 
 /**
+ * Returns true if entry 4 is used as external sense for 6-wires load cells.
+ *
+ * @return either YMultiCellWeighScale::EXTERNALSENSE_FALSE or YMultiCellWeighScale::EXTERNALSENSE_TRUE,
+ * according to true if entry 4 is used as external sense for 6-wires load cells
+ *
+ * On failure, throws an exception or returns YMultiCellWeighScale::EXTERNALSENSE_INVALID.
+ */
+Y_EXTERNALSENSE_enum YMultiCellWeighScale::get_externalSense(void)
+{
+    Y_EXTERNALSENSE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YMultiCellWeighScale::EXTERNALSENSE_INVALID;
+                }
+            }
+        }
+        res = _externalSense;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the configuration to tell if entry 4 is used as external sense for
+ * 6-wires load cells. Remember to call the saveToFlash() method of the
+ * module if the modification must be kept.
+ *
+ * @param newval : either YMultiCellWeighScale::EXTERNALSENSE_FALSE or
+ * YMultiCellWeighScale::EXTERNALSENSE_TRUE, according to the configuration to tell if entry 4 is used
+ * as external sense for
+ *         6-wires load cells
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YMultiCellWeighScale::set_externalSense(Y_EXTERNALSENSE_enum newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("externalSense", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
  * Returns the current load cell bridge excitation method.
  *
- * @return a value among Y_EXCITATION_OFF, Y_EXCITATION_DC and Y_EXCITATION_AC corresponding to the
- * current load cell bridge excitation method
+ * @return a value among YMultiCellWeighScale::EXCITATION_OFF, YMultiCellWeighScale::EXCITATION_DC and
+ * YMultiCellWeighScale::EXCITATION_AC corresponding to the current load cell bridge excitation method
  *
- * On failure, throws an exception or returns Y_EXCITATION_INVALID.
+ * On failure, throws an exception or returns YMultiCellWeighScale::EXCITATION_INVALID.
  */
 Y_EXCITATION_enum YMultiCellWeighScale::get_excitation(void)
 {
@@ -236,10 +300,11 @@ Y_EXCITATION_enum YMultiCellWeighScale::get_excitation(void)
  * Remember to call the saveToFlash() method of the module if the
  * modification must be kept.
  *
- * @param newval : a value among Y_EXCITATION_OFF, Y_EXCITATION_DC and Y_EXCITATION_AC corresponding
- * to the current load cell bridge excitation method
+ * @param newval : a value among YMultiCellWeighScale::EXCITATION_OFF,
+ * YMultiCellWeighScale::EXCITATION_DC and YMultiCellWeighScale::EXCITATION_AC corresponding to the
+ * current load cell bridge excitation method
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -270,7 +335,7 @@ int YMultiCellWeighScale::set_excitation(Y_EXCITATION_enum newval)
  *
  * @param newval : a floating point number corresponding to the averaged temperature update rate, in per mille
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -299,7 +364,7 @@ int YMultiCellWeighScale::set_tempAvgAdaptRatio(double newval)
  *
  * @return a floating point number corresponding to the averaged temperature update rate, in per mille
  *
- * On failure, throws an exception or returns Y_TEMPAVGADAPTRATIO_INVALID.
+ * On failure, throws an exception or returns YMultiCellWeighScale::TEMPAVGADAPTRATIO_INVALID.
  */
 double YMultiCellWeighScale::get_tempAvgAdaptRatio(void)
 {
@@ -333,7 +398,7 @@ double YMultiCellWeighScale::get_tempAvgAdaptRatio(void)
  *
  * @param newval : a floating point number corresponding to the temperature change update rate, in per mille
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -361,7 +426,7 @@ int YMultiCellWeighScale::set_tempChgAdaptRatio(double newval)
  *
  * @return a floating point number corresponding to the temperature change update rate, in per mille
  *
- * On failure, throws an exception or returns Y_TEMPCHGADAPTRATIO_INVALID.
+ * On failure, throws an exception or returns YMultiCellWeighScale::TEMPCHGADAPTRATIO_INVALID.
  */
 double YMultiCellWeighScale::get_tempChgAdaptRatio(void)
 {
@@ -390,7 +455,7 @@ double YMultiCellWeighScale::get_tempChgAdaptRatio(void)
  *
  * @return a floating point number corresponding to the current averaged temperature, used for thermal compensation
  *
- * On failure, throws an exception or returns Y_COMPTEMPAVG_INVALID.
+ * On failure, throws an exception or returns YMultiCellWeighScale::COMPTEMPAVG_INVALID.
  */
 double YMultiCellWeighScale::get_compTempAvg(void)
 {
@@ -420,7 +485,7 @@ double YMultiCellWeighScale::get_compTempAvg(void)
  * @return a floating point number corresponding to the current temperature variation, used for
  * thermal compensation
  *
- * On failure, throws an exception or returns Y_COMPTEMPCHG_INVALID.
+ * On failure, throws an exception or returns YMultiCellWeighScale::COMPTEMPCHG_INVALID.
  */
 double YMultiCellWeighScale::get_compTempChg(void)
 {
@@ -449,7 +514,7 @@ double YMultiCellWeighScale::get_compTempChg(void)
  *
  * @return a floating point number corresponding to the current current thermal compensation value
  *
- * On failure, throws an exception or returns Y_COMPENSATION_INVALID.
+ * On failure, throws an exception or returns YMultiCellWeighScale::COMPENSATION_INVALID.
  */
 double YMultiCellWeighScale::get_compensation(void)
 {
@@ -482,7 +547,7 @@ double YMultiCellWeighScale::get_compensation(void)
  *
  * @param newval : a floating point number corresponding to the zero tracking threshold value
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -509,7 +574,7 @@ int YMultiCellWeighScale::set_zeroTracking(double newval)
  *
  * @return a floating point number corresponding to the zero tracking threshold value
  *
- * On failure, throws an exception or returns Y_ZEROTRACKING_INVALID.
+ * On failure, throws an exception or returns YMultiCellWeighScale::ZEROTRACKING_INVALID.
  */
 double YMultiCellWeighScale::get_zeroTracking(void)
 {
@@ -584,7 +649,7 @@ int YMultiCellWeighScale::set_command(const string& newval)
  *
  * This function does not require that the multi-cell weighing scale sensor is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YMultiCellWeighScale.isOnline() to test if the multi-cell weighing scale sensor is
+ * Use the method isOnline() to test if the multi-cell weighing scale sensor is
  * indeed online at a given time. In case of ambiguity when looking for
  * a multi-cell weighing scale sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -699,7 +764,7 @@ int YMultiCellWeighScale::_invokeTimedReportCallback(YMeasure value)
  * so that the current signal corresponds to a zero weight. Remember to call the
  * saveToFlash() method of the module if the modification must be kept.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -715,7 +780,7 @@ int YMultiCellWeighScale::tare(void)
  * @param currWeight : reference weight presently on the load cell.
  * @param maxWeight : maximum weight to be expected on the load cell.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_humidity.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_humidity.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindHumidity(), the high-level API for Humidity functions
  *
@@ -97,7 +97,7 @@ int YHumidity::_parseAttr(YJSONObject *json_val)
  *
  * @param newval : a string corresponding to the primary unit for measuring humidity
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -122,7 +122,7 @@ int YHumidity::set_unit(const string& newval)
  *
  * @return a floating point number corresponding to the current relative humidity, in per cents
  *
- * On failure, throws an exception or returns Y_RELHUM_INVALID.
+ * On failure, throws an exception or returns YHumidity::RELHUM_INVALID.
  */
 double YHumidity::get_relHum(void)
 {
@@ -151,7 +151,7 @@ double YHumidity::get_relHum(void)
  *
  * @return a floating point number corresponding to the current absolute humidity, in grams per cubic meter of air
  *
- * On failure, throws an exception or returns Y_ABSHUM_INVALID.
+ * On failure, throws an exception or returns YHumidity::ABSHUM_INVALID.
  */
 double YHumidity::get_absHum(void)
 {
@@ -188,7 +188,7 @@ double YHumidity::get_absHum(void)
  *
  * This function does not require that the humidity sensor is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YHumidity.isOnline() to test if the humidity sensor is
+ * Use the method isOnline() to test if the humidity sensor is
  * indeed online at a given time. In case of ambiguity when looking for
  * a humidity sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,

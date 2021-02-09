@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_quadraturedecoder.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_quadraturedecoder.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindQuadratureDecoder(), the high-level API for QuadratureDecoder functions
  *
@@ -91,7 +91,7 @@ int YQuadratureDecoder::_parseAttr(YJSONObject *json_val)
  *
  * @param newval : a floating point number corresponding to the current expected position of the quadrature decoder
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -116,7 +116,7 @@ int YQuadratureDecoder::set_currentValue(double newval)
  *
  * @return a floating point number corresponding to the increments frequency, in Hz
  *
- * On failure, throws an exception or returns Y_SPEED_INVALID.
+ * On failure, throws an exception or returns YQuadratureDecoder::SPEED_INVALID.
  */
 double YQuadratureDecoder::get_speed(void)
 {
@@ -143,10 +143,10 @@ double YQuadratureDecoder::get_speed(void)
 /**
  * Returns the current activation state of the quadrature decoder.
  *
- * @return either Y_DECODING_OFF or Y_DECODING_ON, according to the current activation state of the
- * quadrature decoder
+ * @return either YQuadratureDecoder::DECODING_OFF or YQuadratureDecoder::DECODING_ON, according to the
+ * current activation state of the quadrature decoder
  *
- * On failure, throws an exception or returns Y_DECODING_INVALID.
+ * On failure, throws an exception or returns YQuadratureDecoder::DECODING_INVALID.
  */
 Y_DECODING_enum YQuadratureDecoder::get_decoding(void)
 {
@@ -175,10 +175,10 @@ Y_DECODING_enum YQuadratureDecoder::get_decoding(void)
  * Remember to call the saveToFlash()
  * method of the module if the modification must be kept.
  *
- * @param newval : either Y_DECODING_OFF or Y_DECODING_ON, according to the activation state of the
- * quadrature decoder
+ * @param newval : either YQuadratureDecoder::DECODING_OFF or YQuadratureDecoder::DECODING_ON, according
+ * to the activation state of the quadrature decoder
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -211,7 +211,7 @@ int YQuadratureDecoder::set_decoding(Y_DECODING_enum newval)
  *
  * This function does not require that the quadrature decoder is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YQuadratureDecoder.isOnline() to test if the quadrature decoder is
+ * Use the method isOnline() to test if the quadrature decoder is
  * indeed online at a given time. In case of ambiguity when looking for
  * a quadrature decoder by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,

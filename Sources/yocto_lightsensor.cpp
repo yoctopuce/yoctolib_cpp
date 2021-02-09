@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_lightsensor.cpp 42951 2020-12-14 09:43:29Z seb $
+ *  $Id: yocto_lightsensor.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindLightSensor(), the high-level API for LightSensor functions
  *
@@ -105,7 +105,7 @@ int YLightSensor::set_currentValue(double newval)
  * Remember to call the saveToFlash() method of the module if the
  * modification must be kept.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -119,11 +119,12 @@ int YLightSensor::calibrate(double calibratedVal)
 /**
  * Returns the type of light measure.
  *
- * @return a value among Y_MEASURETYPE_HUMAN_EYE, Y_MEASURETYPE_WIDE_SPECTRUM, Y_MEASURETYPE_INFRARED,
- * Y_MEASURETYPE_HIGH_RATE, Y_MEASURETYPE_HIGH_ENERGY and Y_MEASURETYPE_HIGH_RESOLUTION corresponding
- * to the type of light measure
+ * @return a value among YLightSensor::MEASURETYPE_HUMAN_EYE, YLightSensor::MEASURETYPE_WIDE_SPECTRUM,
+ * YLightSensor::MEASURETYPE_INFRARED, YLightSensor::MEASURETYPE_HIGH_RATE,
+ * YLightSensor::MEASURETYPE_HIGH_ENERGY and YLightSensor::MEASURETYPE_HIGH_RESOLUTION corresponding to
+ * the type of light measure
  *
- * On failure, throws an exception or returns Y_MEASURETYPE_INVALID.
+ * On failure, throws an exception or returns YLightSensor::MEASURETYPE_INVALID.
  */
 Y_MEASURETYPE_enum YLightSensor::get_measureType(void)
 {
@@ -154,11 +155,12 @@ Y_MEASURETYPE_enum YLightSensor::get_measureType(void)
  * Remember to call the saveToFlash() method of the module if the
  * modification must be kept.
  *
- * @param newval : a value among Y_MEASURETYPE_HUMAN_EYE, Y_MEASURETYPE_WIDE_SPECTRUM,
- * Y_MEASURETYPE_INFRARED, Y_MEASURETYPE_HIGH_RATE, Y_MEASURETYPE_HIGH_ENERGY and
- * Y_MEASURETYPE_HIGH_RESOLUTION corresponding to the light sensor type used in the device
+ * @param newval : a value among YLightSensor::MEASURETYPE_HUMAN_EYE,
+ * YLightSensor::MEASURETYPE_WIDE_SPECTRUM, YLightSensor::MEASURETYPE_INFRARED,
+ * YLightSensor::MEASURETYPE_HIGH_RATE, YLightSensor::MEASURETYPE_HIGH_ENERGY and
+ * YLightSensor::MEASURETYPE_HIGH_RESOLUTION corresponding to the light sensor type used in the device
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -191,7 +193,7 @@ int YLightSensor::set_measureType(Y_MEASURETYPE_enum newval)
  *
  * This function does not require that the light sensor is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YLightSensor.isOnline() to test if the light sensor is
+ * Use the method isOnline() to test if the light sensor is
  * indeed online at a given time. In case of ambiguity when looking for
  * a light sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,

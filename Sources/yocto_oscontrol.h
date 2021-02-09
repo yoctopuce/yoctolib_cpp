@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_oscontrol.h 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_oscontrol.h 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Declares yFindOsControl(), the high-level API for OsControl functions
  *
@@ -104,7 +104,7 @@ public:
      * @return an integer corresponding to the remaining number of seconds before the OS shutdown, or zero when no
      *         shutdown has been scheduled
      *
-     * On failure, throws an exception or returns Y_SHUTDOWNCOUNTDOWN_INVALID.
+     * On failure, throws an exception or returns YOsControl::SHUTDOWNCOUNTDOWN_INVALID.
      */
     int                 get_shutdownCountdown(void);
 
@@ -128,7 +128,7 @@ public:
      *
      * This function does not require that the OS control is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YOsControl.isOnline() to test if the OS control is
+     * Use the method isOnline() to test if the OS control is
      * indeed online at a given time. In case of ambiguity when looking for
      * OS control by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
@@ -166,7 +166,7 @@ public:
      *
      * @param secBeforeShutDown : number of seconds before shutdown
      *
-     * @return YAPI_SUCCESS when the call succeeds.
+     * @return YAPI::SUCCESS when the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -192,7 +192,7 @@ public:
 
     /**
      * Starts the enumeration of OS control currently accessible.
-     * Use the method YOsControl.nextOsControl() to iterate on
+     * Use the method YOsControl::nextOsControl() to iterate on
      * next OS control.
      *
      * @return a pointer to a YOsControl object, corresponding to
@@ -223,7 +223,7 @@ public:
  *
  * This function does not require that the OS control is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YOsControl.isOnline() to test if the OS control is
+ * Use the method isOnline() to test if the OS control is
  * indeed online at a given time. In case of ambiguity when looking for
  * OS control by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -242,7 +242,7 @@ inline YOsControl *yFindOsControl(const string& func)
 { return YOsControl::FindOsControl(func);}
 /**
  * Starts the enumeration of OS control currently accessible.
- * Use the method YOsControl.nextOsControl() to iterate on
+ * Use the method YOsControl::nextOsControl() to iterate on
  * next OS control.
  *
  * @return a pointer to a YOsControl object, corresponding to

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_power.cpp 41290 2020-07-24 10:02:23Z mvuilleu $
+ *  $Id: yocto_power.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindPower(), the high-level API for Power functions
  *
@@ -107,7 +107,7 @@ int YPower::_parseAttr(YJSONObject *json_val)
  * @return a floating point number corresponding to the power factor (the ratio between the real power consumed,
  *         measured in W, and the apparent power provided, measured in VA)
  *
- * On failure, throws an exception or returns Y_COSPHI_INVALID.
+ * On failure, throws an exception or returns YPower::COSPHI_INVALID.
  */
 double YPower::get_cosPhi(void)
 {
@@ -155,7 +155,7 @@ int YPower::set_meter(double newval)
  * integrating the power consumption over time,
  *         but only when positive
  *
- * On failure, throws an exception or returns Y_METER_INVALID.
+ * On failure, throws an exception or returns YPower::METER_INVALID.
  */
 double YPower::get_meter(void)
 {
@@ -187,7 +187,7 @@ double YPower::get_meter(void)
  * integrating the power consumption over time,
  *         but only when positive
  *
- * On failure, throws an exception or returns Y_DELIVEREDENERGYMETER_INVALID.
+ * On failure, throws an exception or returns YPower::DELIVEREDENERGYMETER_INVALID.
  */
 double YPower::get_deliveredEnergyMeter(void)
 {
@@ -219,7 +219,7 @@ double YPower::get_deliveredEnergyMeter(void)
  * integrating the power consumption over time,
  *         but only when negative
  *
- * On failure, throws an exception or returns Y_RECEIVEDENERGYMETER_INVALID.
+ * On failure, throws an exception or returns YPower::RECEIVEDENERGYMETER_INVALID.
  */
 double YPower::get_receivedEnergyMeter(void)
 {
@@ -248,7 +248,7 @@ double YPower::get_receivedEnergyMeter(void)
  *
  * @return an integer corresponding to the elapsed time since last energy counter reset, in seconds
  *
- * On failure, throws an exception or returns Y_METERTIMER_INVALID.
+ * On failure, throws an exception or returns YPower::METERTIMER_INVALID.
  */
 int YPower::get_meterTimer(void)
 {
@@ -285,7 +285,7 @@ int YPower::get_meterTimer(void)
  *
  * This function does not require that the electrical power sensor is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YPower.isOnline() to test if the electrical power sensor is
+ * Use the method isOnline() to test if the electrical power sensor is
  * indeed online at a given time. In case of ambiguity when looking for
  * a electrical power sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -398,7 +398,7 @@ int YPower::_invokeTimedReportCallback(YMeasure value)
 /**
  * Resets the energy counters.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */

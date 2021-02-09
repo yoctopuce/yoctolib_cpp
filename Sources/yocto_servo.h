@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_servo.h 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_servo.h 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Declares yFindServo(), the high-level API for Servo functions
  *
@@ -156,7 +156,7 @@ public:
      *
      * @return an integer corresponding to the current servo position
      *
-     * On failure, throws an exception or returns Y_POSITION_INVALID.
+     * On failure, throws an exception or returns YServo::POSITION_INVALID.
      */
     int                 get_position(void);
 
@@ -168,7 +168,7 @@ public:
      *
      * @param newval : an integer corresponding to immediately the servo driving position
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -179,9 +179,9 @@ public:
     /**
      * Returns the state of the RC servo motors.
      *
-     * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the state of the RC servo motors
+     * @return either YServo::ENABLED_FALSE or YServo::ENABLED_TRUE, according to the state of the RC servo motors
      *
-     * On failure, throws an exception or returns Y_ENABLED_INVALID.
+     * On failure, throws an exception or returns YServo::ENABLED_INVALID.
      */
     Y_ENABLED_enum      get_enabled(void);
 
@@ -191,9 +191,9 @@ public:
     /**
      * Stops or starts the RC servo motor.
      *
-     * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE
+     * @param newval : either YServo::ENABLED_FALSE or YServo::ENABLED_TRUE
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -206,7 +206,7 @@ public:
      *
      * @return an integer corresponding to the current range of use of the servo
      *
-     * On failure, throws an exception or returns Y_RANGE_INVALID.
+     * On failure, throws an exception or returns YServo::RANGE_INVALID.
      */
     int                 get_range(void);
 
@@ -224,7 +224,7 @@ public:
      *
      * @param newval : an integer corresponding to the range of use of the servo, specified in per cents
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -237,7 +237,7 @@ public:
      *
      * @return an integer corresponding to the duration in microseconds of a neutral pulse for the servo
      *
-     * On failure, throws an exception or returns Y_NEUTRAL_INVALID.
+     * On failure, throws an exception or returns YServo::NEUTRAL_INVALID.
      */
     int                 get_neutral(void);
 
@@ -255,7 +255,7 @@ public:
      * @param newval : an integer corresponding to the duration of the pulse corresponding to the neutral
      * position of the servo
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -278,7 +278,7 @@ public:
      * @param target      : new position at the end of the move
      * @param ms_duration : total duration of the move, in milliseconds
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -289,7 +289,7 @@ public:
      *
      * @return an integer corresponding to the servo position at device power up
      *
-     * On failure, throws an exception or returns Y_POSITIONATPOWERON_INVALID.
+     * On failure, throws an exception or returns YServo::POSITIONATPOWERON_INVALID.
      */
     int                 get_positionAtPowerOn(void);
 
@@ -302,7 +302,7 @@ public:
      *
      * @param newval : an integer
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -313,10 +313,10 @@ public:
     /**
      * Returns the servo signal generator state at power up.
      *
-     * @return either Y_ENABLEDATPOWERON_FALSE or Y_ENABLEDATPOWERON_TRUE, according to the servo signal
-     * generator state at power up
+     * @return either YServo::ENABLEDATPOWERON_FALSE or YServo::ENABLEDATPOWERON_TRUE, according to the
+     * servo signal generator state at power up
      *
-     * On failure, throws an exception or returns Y_ENABLEDATPOWERON_INVALID.
+     * On failure, throws an exception or returns YServo::ENABLEDATPOWERON_INVALID.
      */
     Y_ENABLEDATPOWERON_enum get_enabledAtPowerOn(void);
 
@@ -327,9 +327,9 @@ public:
      * Configure the servo signal generator state at power up. Remember to call the matching module saveToFlash()
      * method, otherwise this call will have no effect.
      *
-     * @param newval : either Y_ENABLEDATPOWERON_FALSE or Y_ENABLEDATPOWERON_TRUE
+     * @param newval : either YServo::ENABLEDATPOWERON_FALSE or YServo::ENABLEDATPOWERON_TRUE
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -350,7 +350,7 @@ public:
      *
      * This function does not require that the RC servo motor is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YServo.isOnline() to test if the RC servo motor is
+     * Use the method isOnline() to test if the RC servo motor is
      * indeed online at a given time. In case of ambiguity when looking for
      * a RC servo motor by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
@@ -403,7 +403,7 @@ public:
 
     /**
      * Starts the enumeration of RC servo motors currently accessible.
-     * Use the method YServo.nextServo() to iterate on
+     * Use the method YServo::nextServo() to iterate on
      * next RC servo motors.
      *
      * @return a pointer to a YServo object, corresponding to
@@ -434,7 +434,7 @@ public:
  *
  * This function does not require that the RC servo motor is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YServo.isOnline() to test if the RC servo motor is
+ * Use the method isOnline() to test if the RC servo motor is
  * indeed online at a given time. In case of ambiguity when looking for
  * a RC servo motor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -453,7 +453,7 @@ inline YServo *yFindServo(const string& func)
 { return YServo::FindServo(func);}
 /**
  * Starts the enumeration of RC servo motors currently accessible.
- * Use the method YServo.nextServo() to iterate on
+ * Use the method YServo::nextServo() to iterate on
  * next RC servo motors.
  *
  * @return a pointer to a YServo object, corresponding to

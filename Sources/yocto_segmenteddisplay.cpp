@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_segmenteddisplay.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_segmenteddisplay.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindSegmentedDisplay(), the high-level API for SegmentedDisplay functions
  *
@@ -89,7 +89,7 @@ int YSegmentedDisplay::_parseAttr(YJSONObject *json_val)
  *
  * @return a string corresponding to the text currently displayed on the screen
  *
- * On failure, throws an exception or returns Y_DISPLAYEDTEXT_INVALID.
+ * On failure, throws an exception or returns YSegmentedDisplay::DISPLAYEDTEXT_INVALID.
  */
 string YSegmentedDisplay::get_displayedText(void)
 {
@@ -118,7 +118,7 @@ string YSegmentedDisplay::get_displayedText(void)
  *
  * @param newval : a string corresponding to the text currently displayed on the screen
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -189,7 +189,7 @@ int YSegmentedDisplay::set_displayMode(Y_DISPLAYMODE_enum newval)
  *
  * This function does not require that the segmented display is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YSegmentedDisplay.isOnline() to test if the segmented display is
+ * Use the method isOnline() to test if the segmented display is
  * indeed online at a given time. In case of ambiguity when looking for
  * a segmented display by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,

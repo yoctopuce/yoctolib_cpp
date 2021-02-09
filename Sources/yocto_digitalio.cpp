@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_digitalio.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_digitalio.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -121,7 +121,7 @@ int YDigitalIO::_parseAttr(YJSONObject *json_val)
  * @return an integer corresponding to the digital IO port state as an integer with each bit
  *         representing a channel
  *
- * On failure, throws an exception or returns Y_PORTSTATE_INVALID.
+ * On failure, throws an exception or returns YDigitalIO::PORTSTATE_INVALID.
  */
 int YDigitalIO::get_portState(void)
 {
@@ -160,7 +160,7 @@ int YDigitalIO::get_portState(void)
  * @param newval : an integer corresponding to the state of all digital IO port's channels at once: the parameter
  *         is an integer where each bit represents a channel, with bit 0 matching channel #0
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -186,7 +186,7 @@ int YDigitalIO::set_portState(int newval)
  * @return an integer corresponding to the I/O direction of all channels of the port (bitmap): 0 makes
  * a bit an input, 1 makes it an output
  *
- * On failure, throws an exception or returns Y_PORTDIRECTION_INVALID.
+ * On failure, throws an exception or returns YDigitalIO::PORTDIRECTION_INVALID.
  */
 int YDigitalIO::get_portDirection(void)
 {
@@ -217,7 +217,7 @@ int YDigitalIO::get_portDirection(void)
  * @param newval : an integer corresponding to the I/O direction of all channels of the port (bitmap):
  * 0 makes a bit an input, 1 makes it an output
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -244,7 +244,7 @@ int YDigitalIO::set_portDirection(int newval)
  *
  * @return an integer corresponding to the electrical interface for each bit of the port
  *
- * On failure, throws an exception or returns Y_PORTOPENDRAIN_INVALID.
+ * On failure, throws an exception or returns YDigitalIO::PORTOPENDRAIN_INVALID.
  */
 int YDigitalIO::get_portOpenDrain(void)
 {
@@ -275,7 +275,7 @@ int YDigitalIO::get_portOpenDrain(void)
  *
  * @param newval : an integer corresponding to the electrical interface for each bit of the port
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -301,7 +301,7 @@ int YDigitalIO::set_portOpenDrain(int newval)
  *
  * @return an integer corresponding to the polarity of all the bits of the port
  *
- * On failure, throws an exception or returns Y_PORTPOLARITY_INVALID.
+ * On failure, throws an exception or returns YDigitalIO::PORTPOLARITY_INVALID.
  */
 int YDigitalIO::get_portPolarity(void)
 {
@@ -334,7 +334,7 @@ int YDigitalIO::get_portPolarity(void)
  * set to 0, the matching I/O works the regular,
  *         intuitive way; for each bit set to 1, the I/O works in reverse mode
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -361,7 +361,7 @@ int YDigitalIO::set_portPolarity(int newval)
  *
  * @return an integer corresponding to the port state diagnostics (Yocto-IO and Yocto-MaxiIO-V2 only)
  *
- * On failure, throws an exception or returns Y_PORTDIAGS_INVALID.
+ * On failure, throws an exception or returns YDigitalIO::PORTDIAGS_INVALID.
  */
 int YDigitalIO::get_portDiags(void)
 {
@@ -390,7 +390,7 @@ int YDigitalIO::get_portDiags(void)
  *
  * @return an integer corresponding to the number of bits (i.e
  *
- * On failure, throws an exception or returns Y_PORTSIZE_INVALID.
+ * On failure, throws an exception or returns YDigitalIO::PORTSIZE_INVALID.
  */
 int YDigitalIO::get_portSize(void)
 {
@@ -417,10 +417,10 @@ int YDigitalIO::get_portSize(void)
 /**
  * Returns the voltage source used to drive output bits.
  *
- * @return a value among Y_OUTPUTVOLTAGE_USB_5V, Y_OUTPUTVOLTAGE_USB_3V and Y_OUTPUTVOLTAGE_EXT_V
- * corresponding to the voltage source used to drive output bits
+ * @return a value among YDigitalIO::OUTPUTVOLTAGE_USB_5V, YDigitalIO::OUTPUTVOLTAGE_USB_3V and
+ * YDigitalIO::OUTPUTVOLTAGE_EXT_V corresponding to the voltage source used to drive output bits
  *
- * On failure, throws an exception or returns Y_OUTPUTVOLTAGE_INVALID.
+ * On failure, throws an exception or returns YDigitalIO::OUTPUTVOLTAGE_INVALID.
  */
 Y_OUTPUTVOLTAGE_enum YDigitalIO::get_outputVoltage(void)
 {
@@ -448,10 +448,10 @@ Y_OUTPUTVOLTAGE_enum YDigitalIO::get_outputVoltage(void)
  * Changes the voltage source used to drive output bits.
  * Remember to call the saveToFlash() method  to make sure the setting is kept after a reboot.
  *
- * @param newval : a value among Y_OUTPUTVOLTAGE_USB_5V, Y_OUTPUTVOLTAGE_USB_3V and
- * Y_OUTPUTVOLTAGE_EXT_V corresponding to the voltage source used to drive output bits
+ * @param newval : a value among YDigitalIO::OUTPUTVOLTAGE_USB_5V, YDigitalIO::OUTPUTVOLTAGE_USB_3V and
+ * YDigitalIO::OUTPUTVOLTAGE_EXT_V corresponding to the voltage source used to drive output bits
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -522,7 +522,7 @@ int YDigitalIO::set_command(const string& newval)
  *
  * This function does not require that the digital IO port is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YDigitalIO.isOnline() to test if the digital IO port is
+ * Use the method isOnline() to test if the digital IO port is
  * indeed online at a given time. In case of ambiguity when looking for
  * a digital IO port by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -604,7 +604,7 @@ int YDigitalIO::_invokeValueCallback(string value)
  * @param bitno : the bit number; lowest bit has index 0
  * @param bitstate : the state of the bit (1 or 0)
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -642,7 +642,7 @@ int YDigitalIO::get_bitState(int bitno)
  *
  * @param bitno : the bit number; lowest bit has index 0
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -658,7 +658,7 @@ int YDigitalIO::toggle_bitState(int bitno)
  * @param bitdirection : direction to set, 0 makes the bit an input, 1 makes it an output.
  *         Remember to call the   saveToFlash() method to make sure the setting is kept after a reboot.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -681,7 +681,7 @@ int YDigitalIO::set_bitDirection(int bitno,int bitdirection)
  *
  * @param bitno : the bit number; lowest bit has index 0
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -700,7 +700,7 @@ int YDigitalIO::get_bitDirection(int bitno)
  * in reverse mode.
  *         Remember to call the   saveToFlash() method to make sure the setting is kept after a reboot.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -723,7 +723,7 @@ int YDigitalIO::set_bitPolarity(int bitno,int bitpolarity)
  *
  * @param bitno : the bit number; lowest bit has index 0
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -742,7 +742,7 @@ int YDigitalIO::get_bitPolarity(int bitno)
  *         it an open-drain (open-collector) input/output. Remember to call the
  *         saveToFlash() method to make sure the setting is kept after a reboot.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -785,7 +785,7 @@ int YDigitalIO::get_bitOpenDrain(int bitno)
  * @param ms_duration : desired pulse duration in milliseconds. Be aware that the device time
  *         resolution is not guaranteed up to the millisecond.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -803,7 +803,7 @@ int YDigitalIO::pulse(int bitno,int ms_duration)
  * @param ms_duration : desired pulse duration in milliseconds. Be aware that the device time
  *         resolution is not guaranteed up to the millisecond.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */

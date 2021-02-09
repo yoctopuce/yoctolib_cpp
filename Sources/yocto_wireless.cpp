@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.cpp 40196 2020-04-30 06:47:29Z mvuilleu $
+ * $Id: yocto_wireless.cpp 43619 2021-01-29 09:14:45Z mvuilleu $
  *
  * Implements yFindWireless(), the high-level API for Wireless functions
  *
@@ -206,7 +206,7 @@ int YWireless::_parseAttr(YJSONObject *json_val)
  *
  * @return an integer corresponding to the link quality, expressed in percent
  *
- * On failure, throws an exception or returns Y_LINKQUALITY_INVALID.
+ * On failure, throws an exception or returns YWireless::LINKQUALITY_INVALID.
  */
 int YWireless::get_linkQuality(void)
 {
@@ -235,7 +235,7 @@ int YWireless::get_linkQuality(void)
  *
  * @return a string corresponding to the wireless network name (SSID)
  *
- * On failure, throws an exception or returns Y_SSID_INVALID.
+ * On failure, throws an exception or returns YWireless::SSID_INVALID.
  */
 string YWireless::get_ssid(void)
 {
@@ -265,7 +265,7 @@ string YWireless::get_ssid(void)
  * @return an integer corresponding to the 802.11 channel currently used, or 0 when the selected
  * network has not been found
  *
- * On failure, throws an exception or returns Y_CHANNEL_INVALID.
+ * On failure, throws an exception or returns YWireless::CHANNEL_INVALID.
  */
 int YWireless::get_channel(void)
 {
@@ -292,10 +292,11 @@ int YWireless::get_channel(void)
 /**
  * Returns the security algorithm used by the selected wireless network.
  *
- * @return a value among Y_SECURITY_UNKNOWN, Y_SECURITY_OPEN, Y_SECURITY_WEP, Y_SECURITY_WPA and
- * Y_SECURITY_WPA2 corresponding to the security algorithm used by the selected wireless network
+ * @return a value among YWireless::SECURITY_UNKNOWN, YWireless::SECURITY_OPEN, YWireless::SECURITY_WEP,
+ * YWireless::SECURITY_WPA and YWireless::SECURITY_WPA2 corresponding to the security algorithm used by
+ * the selected wireless network
  *
- * On failure, throws an exception or returns Y_SECURITY_INVALID.
+ * On failure, throws an exception or returns YWireless::SECURITY_INVALID.
  */
 Y_SECURITY_enum YWireless::get_security(void)
 {
@@ -324,7 +325,7 @@ Y_SECURITY_enum YWireless::get_security(void)
  *
  * @return a string corresponding to the latest status message from the wireless interface
  *
- * On failure, throws an exception or returns Y_MESSAGE_INVALID.
+ * On failure, throws an exception or returns YWireless::MESSAGE_INVALID.
  */
 string YWireless::get_message(void)
 {
@@ -387,25 +388,26 @@ int YWireless::set_wlanConfig(const string& newval)
 }
 
 /**
- * Returns the current state of the wireless interface. The state Y_WLANSTATE_DOWN means that the
- * network interface is
- * not connected to a network. The state Y_WLANSTATE_SCANNING means that the network interface is
- * scanning available
+ * Returns the current state of the wireless interface. The state YWireless::WLANSTATE_DOWN means that
+ * the network interface is
+ * not connected to a network. The state YWireless::WLANSTATE_SCANNING means that the network interface
+ * is scanning available
  * frequencies. During this stage, the device is not reachable, and the network settings are not yet
  * applied. The state
- * Y_WLANSTATE_CONNECTED means that the network settings have been successfully applied ant that the
- * device is reachable
+ * YWireless::WLANSTATE_CONNECTED means that the network settings have been successfully applied ant
+ * that the device is reachable
  * from the wireless network. If the device is configured to use ad-hoc or Soft AP mode, it means that
  * the wireless network
- * is up and that other devices can join the network. The state Y_WLANSTATE_REJECTED means that the
- * network interface has
+ * is up and that other devices can join the network. The state YWireless::WLANSTATE_REJECTED means
+ * that the network interface has
  * not been able to join the requested network. The description of the error can be obtain with the
  * get_message() method.
  *
- * @return a value among Y_WLANSTATE_DOWN, Y_WLANSTATE_SCANNING, Y_WLANSTATE_CONNECTED and
- * Y_WLANSTATE_REJECTED corresponding to the current state of the wireless interface
+ * @return a value among YWireless::WLANSTATE_DOWN, YWireless::WLANSTATE_SCANNING,
+ * YWireless::WLANSTATE_CONNECTED and YWireless::WLANSTATE_REJECTED corresponding to the current state
+ * of the wireless interface
  *
- * On failure, throws an exception or returns Y_WLANSTATE_INVALID.
+ * On failure, throws an exception or returns YWireless::WLANSTATE_INVALID.
  */
 Y_WLANSTATE_enum YWireless::get_wlanState(void)
 {
@@ -442,7 +444,7 @@ Y_WLANSTATE_enum YWireless::get_wlanState(void)
  *
  * This function does not require that the wireless LAN interface is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YWireless.isOnline() to test if the wireless LAN interface is
+ * Use the method isOnline() to test if the wireless LAN interface is
  * indeed online at a given time. In case of ambiguity when looking for
  * a wireless LAN interface by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -522,8 +524,8 @@ int YWireless::_invokeValueCallback(string value)
  * Triggers a scan of the wireless frequency and builds the list of available networks.
  * The scan forces a disconnection from the current network. At then end of the process, the
  * the network interface attempts to reconnect to the previous network. During the scan, the wlanState
- * switches to Y_WLANSTATE_DOWN, then to Y_WLANSTATE_SCANNING. When the scan is completed,
- * get_wlanState() returns either Y_WLANSTATE_DOWN or Y_WLANSTATE_SCANNING. At this
+ * switches to YWireless::WLANSTATE_DOWN, then to YWireless::WLANSTATE_SCANNING. When the scan is completed,
+ * get_wlanState() returns either YWireless::WLANSTATE_DOWN or YWireless::WLANSTATE_SCANNING. At this
  * point, the list of detected network can be retrieved with the get_detectedWlans() method.
  *
  * On failure, throws an exception or returns a negative error code.
@@ -544,7 +546,7 @@ int YWireless::startWlanScan(void)
  * @param ssid : the name of the network to connect to
  * @param securityKey : the network key, as a character string
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -570,7 +572,7 @@ int YWireless::joinNetwork(string ssid,string securityKey)
  * @param ssid : the name of the network to connect to
  * @param securityKey : the network key, as a character string
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -597,7 +599,7 @@ int YWireless::adhocNetwork(string ssid,string securityKey)
  * @param ssid : the name of the network to connect to
  * @param securityKey : the network key, as a character string
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_compass.h 42951 2020-12-14 09:43:29Z seb $
+ *  $Id: yocto_compass.h 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Declares yFindCompass(), the high-level API for Compass functions
  *
@@ -122,7 +122,7 @@ public:
      *
      * @return an integer corresponding to the measure update frequency, measured in Hz
      *
-     * On failure, throws an exception or returns Y_BANDWIDTH_INVALID.
+     * On failure, throws an exception or returns YCompass::BANDWIDTH_INVALID.
      */
     int                 get_bandwidth(void);
 
@@ -137,7 +137,7 @@ public:
      *
      * @param newval : an integer corresponding to the measure update frequency, measured in Hz
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -155,7 +155,7 @@ public:
      *
      * @return a floating point number corresponding to the magnetic heading, regardless of the configured bearing
      *
-     * On failure, throws an exception or returns Y_MAGNETICHEADING_INVALID.
+     * On failure, throws an exception or returns YCompass::MAGNETICHEADING_INVALID.
      */
     double              get_magneticHeading(void);
 
@@ -175,7 +175,7 @@ public:
      *
      * This function does not require that the compass function is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YCompass.isOnline() to test if the compass function is
+     * Use the method isOnline() to test if the compass function is
      * indeed online at a given time. In case of ambiguity when looking for
      * a compass function by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
@@ -244,7 +244,7 @@ public:
 
     /**
      * Starts the enumeration of compass functions currently accessible.
-     * Use the method YCompass.nextCompass() to iterate on
+     * Use the method YCompass::nextCompass() to iterate on
      * next compass functions.
      *
      * @return a pointer to a YCompass object, corresponding to
@@ -275,7 +275,7 @@ public:
  *
  * This function does not require that the compass function is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YCompass.isOnline() to test if the compass function is
+ * Use the method isOnline() to test if the compass function is
  * indeed online at a given time. In case of ambiguity when looking for
  * a compass function by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -294,7 +294,7 @@ inline YCompass *yFindCompass(const string& func)
 { return YCompass::FindCompass(func);}
 /**
  * Starts the enumeration of compass functions currently accessible.
- * Use the method YCompass.nextCompass() to iterate on
+ * Use the method YCompass::nextCompass() to iterate on
  * next compass functions.
  *
  * @return a pointer to a YCompass object, corresponding to

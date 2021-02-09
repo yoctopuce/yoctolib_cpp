@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 41779 2020-09-04 09:15:57Z seb $
+ * $Id: yocto_cellular.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -259,7 +259,7 @@ int YCellular::_parseAttr(YJSONObject *json_val)
  *
  * @return an integer corresponding to the link quality, expressed in percent
  *
- * On failure, throws an exception or returns Y_LINKQUALITY_INVALID.
+ * On failure, throws an exception or returns YCellular::LINKQUALITY_INVALID.
  */
 int YCellular::get_linkQuality(void)
 {
@@ -288,7 +288,7 @@ int YCellular::get_linkQuality(void)
  *
  * @return a string corresponding to the name of the cell operator currently in use
  *
- * On failure, throws an exception or returns Y_CELLOPERATOR_INVALID.
+ * On failure, throws an exception or returns YCellular::CELLOPERATOR_INVALID.
  */
 string YCellular::get_cellOperator(void)
 {
@@ -318,7 +318,7 @@ string YCellular::get_cellOperator(void)
  * @return a string corresponding to the unique identifier of the cellular antenna in use: MCC, MNC,
  * LAC and Cell ID
  *
- * On failure, throws an exception or returns Y_CELLIDENTIFIER_INVALID.
+ * On failure, throws an exception or returns YCellular::CELLIDENTIFIER_INVALID.
  */
 string YCellular::get_cellIdentifier(void)
 {
@@ -345,10 +345,11 @@ string YCellular::get_cellIdentifier(void)
 /**
  * Active cellular connection type.
  *
- * @return a value among Y_CELLTYPE_GPRS, Y_CELLTYPE_EGPRS, Y_CELLTYPE_WCDMA, Y_CELLTYPE_HSDPA,
- * Y_CELLTYPE_NONE, Y_CELLTYPE_CDMA, Y_CELLTYPE_LTE_M, Y_CELLTYPE_NB_IOT and Y_CELLTYPE_EC_GSM_IOT
+ * @return a value among YCellular::CELLTYPE_GPRS, YCellular::CELLTYPE_EGPRS, YCellular::CELLTYPE_WCDMA,
+ * YCellular::CELLTYPE_HSDPA, YCellular::CELLTYPE_NONE, YCellular::CELLTYPE_CDMA,
+ * YCellular::CELLTYPE_LTE_M, YCellular::CELLTYPE_NB_IOT and YCellular::CELLTYPE_EC_GSM_IOT
  *
- * On failure, throws an exception or returns Y_CELLTYPE_INVALID.
+ * On failure, throws an exception or returns YCellular::CELLTYPE_INVALID.
  */
 Y_CELLTYPE_enum YCellular::get_cellType(void)
 {
@@ -381,7 +382,7 @@ Y_CELLTYPE_enum YCellular::get_cellType(void)
  * @return a string corresponding to the International Mobile Subscriber Identity (MSI) that uniquely identifies
  *         the SIM card
  *
- * On failure, throws an exception or returns Y_IMSI_INVALID.
+ * On failure, throws an exception or returns YCellular::IMSI_INVALID.
  */
 string YCellular::get_imsi(void)
 {
@@ -410,7 +411,7 @@ string YCellular::get_imsi(void)
  *
  * @return a string corresponding to the latest status message from the wireless interface
  *
- * On failure, throws an exception or returns Y_MESSAGE_INVALID.
+ * On failure, throws an exception or returns YCellular::MESSAGE_INVALID.
  */
 string YCellular::get_message(void)
 {
@@ -443,7 +444,7 @@ string YCellular::get_message(void)
  *         the SIM card, or an empty string if none has been configured or if the code provided
  *         was rejected by the SIM card
  *
- * On failure, throws an exception or returns Y_PIN_INVALID.
+ * On failure, throws an exception or returns YCellular::PIN_INVALID.
  */
 string YCellular::get_pin(void)
 {
@@ -482,7 +483,7 @@ string YCellular::get_pin(void)
  *
  * @param newval : a string corresponding to the PIN code used by the module to access the SIM card
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -511,7 +512,7 @@ int YCellular::set_pin(const string& newval)
  *
  * @return a string corresponding to the type of protocol used over the serial line, as a string
  *
- * On failure, throws an exception or returns Y_RADIOCONFIG_INVALID.
+ * On failure, throws an exception or returns YCellular::RADIOCONFIG_INVALID.
  */
 string YCellular::get_radioConfig(void)
 {
@@ -548,7 +549,7 @@ string YCellular::get_radioConfig(void)
  *
  * @param newval : a string corresponding to the type of protocol used over the serial line
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -577,7 +578,7 @@ int YCellular::set_radioConfig(const string& newval)
  *         or an empty string if the SIM card will automatically choose among available
  *         cell operators
  *
- * On failure, throws an exception or returns Y_LOCKEDOPERATOR_INVALID.
+ * On failure, throws an exception or returns YCellular::LOCKEDOPERATOR_INVALID.
  */
 string YCellular::get_lockedOperator(void)
 {
@@ -610,7 +611,7 @@ string YCellular::get_lockedOperator(void)
  *
  * @param newval : a string corresponding to the name of the cell operator to be used
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -633,10 +634,10 @@ int YCellular::set_lockedOperator(const string& newval)
 /**
  * Returns true if the airplane mode is active (radio turned off).
  *
- * @return either Y_AIRPLANEMODE_OFF or Y_AIRPLANEMODE_ON, according to true if the airplane mode is
- * active (radio turned off)
+ * @return either YCellular::AIRPLANEMODE_OFF or YCellular::AIRPLANEMODE_ON, according to true if the
+ * airplane mode is active (radio turned off)
  *
- * On failure, throws an exception or returns Y_AIRPLANEMODE_INVALID.
+ * On failure, throws an exception or returns YCellular::AIRPLANEMODE_INVALID.
  */
 Y_AIRPLANEMODE_enum YCellular::get_airplaneMode(void)
 {
@@ -663,10 +664,10 @@ Y_AIRPLANEMODE_enum YCellular::get_airplaneMode(void)
 /**
  * Changes the activation state of airplane mode (radio turned off).
  *
- * @param newval : either Y_AIRPLANEMODE_OFF or Y_AIRPLANEMODE_ON, according to the activation state
- * of airplane mode (radio turned off)
+ * @param newval : either YCellular::AIRPLANEMODE_OFF or YCellular::AIRPLANEMODE_ON, according to the
+ * activation state of airplane mode (radio turned off)
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -690,10 +691,11 @@ int YCellular::set_airplaneMode(Y_AIRPLANEMODE_enum newval)
  * Returns the condition for enabling IP data services (GPRS).
  * When data services are disabled, SMS are the only mean of communication.
  *
- * @return a value among Y_ENABLEDATA_HOMENETWORK, Y_ENABLEDATA_ROAMING, Y_ENABLEDATA_NEVER and
- * Y_ENABLEDATA_NEUTRALITY corresponding to the condition for enabling IP data services (GPRS)
+ * @return a value among YCellular::ENABLEDATA_HOMENETWORK, YCellular::ENABLEDATA_ROAMING,
+ * YCellular::ENABLEDATA_NEVER and YCellular::ENABLEDATA_NEUTRALITY corresponding to the condition for
+ * enabling IP data services (GPRS)
  *
- * On failure, throws an exception or returns Y_ENABLEDATA_INVALID.
+ * On failure, throws an exception or returns YCellular::ENABLEDATA_INVALID.
  */
 Y_ENABLEDATA_enum YCellular::get_enableData(void)
 {
@@ -727,10 +729,11 @@ Y_ENABLEDATA_enum YCellular::get_enableData(void)
  * Remember to call the saveToFlash()
  * method of the module if the modification must be kept.
  *
- * @param newval : a value among Y_ENABLEDATA_HOMENETWORK, Y_ENABLEDATA_ROAMING, Y_ENABLEDATA_NEVER
- * and Y_ENABLEDATA_NEUTRALITY corresponding to the condition for enabling IP data services (GPRS)
+ * @param newval : a value among YCellular::ENABLEDATA_HOMENETWORK, YCellular::ENABLEDATA_ROAMING,
+ * YCellular::ENABLEDATA_NEVER and YCellular::ENABLEDATA_NEUTRALITY corresponding to the condition for
+ * enabling IP data services (GPRS)
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -756,7 +759,7 @@ int YCellular::set_enableData(Y_ENABLEDATA_enum newval)
  *
  * @return a string corresponding to the Access Point Name (APN) to be used, if needed
  *
- * On failure, throws an exception or returns Y_APN_INVALID.
+ * On failure, throws an exception or returns YCellular::APN_INVALID.
  */
 string YCellular::get_apn(void)
 {
@@ -788,7 +791,7 @@ string YCellular::get_apn(void)
  *
  * @param newval : a string
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -816,7 +819,7 @@ int YCellular::set_apn(const string& newval)
  * @return a string corresponding to an opaque string if APN authentication parameters have been configured
  *         in the device, or an empty string otherwise
  *
- * On failure, throws an exception or returns Y_APNSECRET_INVALID.
+ * On failure, throws an exception or returns YCellular::APNSECRET_INVALID.
  */
 string YCellular::get_apnSecret(void)
 {
@@ -861,7 +864,7 @@ int YCellular::set_apnSecret(const string& newval)
  *
  * @return an integer corresponding to the automated connectivity check interval, in seconds
  *
- * On failure, throws an exception or returns Y_PINGINTERVAL_INVALID.
+ * On failure, throws an exception or returns YCellular::PINGINTERVAL_INVALID.
  */
 int YCellular::get_pingInterval(void)
 {
@@ -892,7 +895,7 @@ int YCellular::get_pingInterval(void)
  *
  * @param newval : an integer corresponding to the automated connectivity check interval, in seconds
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -917,7 +920,7 @@ int YCellular::set_pingInterval(int newval)
  *
  * @return an integer corresponding to the number of bytes sent so far
  *
- * On failure, throws an exception or returns Y_DATASENT_INVALID.
+ * On failure, throws an exception or returns YCellular::DATASENT_INVALID.
  */
 int YCellular::get_dataSent(void)
 {
@@ -946,7 +949,7 @@ int YCellular::get_dataSent(void)
  *
  * @param newval : an integer corresponding to the value of the outgoing data counter
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -971,7 +974,7 @@ int YCellular::set_dataSent(int newval)
  *
  * @return an integer corresponding to the number of bytes received so far
  *
- * On failure, throws an exception or returns Y_DATARECEIVED_INVALID.
+ * On failure, throws an exception or returns YCellular::DATARECEIVED_INVALID.
  */
 int YCellular::get_dataReceived(void)
 {
@@ -1000,7 +1003,7 @@ int YCellular::get_dataReceived(void)
  *
  * @param newval : an integer corresponding to the value of the incoming data counter
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1071,7 +1074,7 @@ int YCellular::set_command(const string& newval)
  *
  * This function does not require that the cellular interface is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YCellular.isOnline() to test if the cellular interface is
+ * Use the method isOnline() to test if the cellular interface is
  * indeed online at a given time. In case of ambiguity when looking for
  * a cellular interface by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -1157,7 +1160,7 @@ int YCellular::_invokeValueCallback(string value)
  * @param puk : the SIM PUK code
  * @param newPin : new PIN code to configure into the SIM card
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1182,7 +1185,7 @@ int YCellular::sendPUK(string puk,string newPin)
  * @param username : APN username
  * @param password : APN password
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1194,7 +1197,7 @@ int YCellular::set_apnAuth(string username,string password)
 /**
  * Clear the transmitted data counters.
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */

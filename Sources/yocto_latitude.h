@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_latitude.h 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_latitude.h 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Declares yFindLatitude(), the high-level API for Latitude functions
  *
@@ -107,7 +107,7 @@ public:
      *
      * This function does not require that the latitude sensor is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YLatitude.isOnline() to test if the latitude sensor is
+     * Use the method isOnline() to test if the latitude sensor is
      * indeed online at a given time. In case of ambiguity when looking for
      * a latitude sensor by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
@@ -176,7 +176,7 @@ public:
 
     /**
      * Starts the enumeration of latitude sensors currently accessible.
-     * Use the method YLatitude.nextLatitude() to iterate on
+     * Use the method YLatitude::nextLatitude() to iterate on
      * next latitude sensors.
      *
      * @return a pointer to a YLatitude object, corresponding to
@@ -207,7 +207,7 @@ public:
  *
  * This function does not require that the latitude sensor is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YLatitude.isOnline() to test if the latitude sensor is
+ * Use the method isOnline() to test if the latitude sensor is
  * indeed online at a given time. In case of ambiguity when looking for
  * a latitude sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -226,7 +226,7 @@ inline YLatitude *yFindLatitude(const string& func)
 { return YLatitude::FindLatitude(func);}
 /**
  * Starts the enumeration of latitude sensors currently accessible.
- * Use the method YLatitude.nextLatitude() to iterate on
+ * Use the method YLatitude::nextLatitude() to iterate on
  * next latitude sensors.
  *
  * @return a pointer to a YLatitude object, corresponding to

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_watchdog.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_watchdog.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindWatchdog(), the high-level API for Watchdog functions
  *
@@ -137,10 +137,10 @@ int YWatchdog::_parseAttr(YJSONObject *json_val)
 /**
  * Returns the state of the watchdog (A for the idle position, B for the active position).
  *
- * @return either Y_STATE_A or Y_STATE_B, according to the state of the watchdog (A for the idle
- * position, B for the active position)
+ * @return either YWatchdog::STATE_A or YWatchdog::STATE_B, according to the state of the watchdog (A
+ * for the idle position, B for the active position)
  *
- * On failure, throws an exception or returns Y_STATE_INVALID.
+ * On failure, throws an exception or returns YWatchdog::STATE_INVALID.
  */
 Y_STATE_enum YWatchdog::get_state(void)
 {
@@ -167,10 +167,10 @@ Y_STATE_enum YWatchdog::get_state(void)
 /**
  * Changes the state of the watchdog (A for the idle position, B for the active position).
  *
- * @param newval : either Y_STATE_A or Y_STATE_B, according to the state of the watchdog (A for the
- * idle position, B for the active position)
+ * @param newval : either YWatchdog::STATE_A or YWatchdog::STATE_B, according to the state of the
+ * watchdog (A for the idle position, B for the active position)
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -194,11 +194,12 @@ int YWatchdog::set_state(Y_STATE_enum newval)
  * Returns the state of the watchdog at device startup (A for the idle position,
  * B for the active position, UNCHANGED to leave the relay state as is).
  *
- * @return a value among Y_STATEATPOWERON_UNCHANGED, Y_STATEATPOWERON_A and Y_STATEATPOWERON_B
- * corresponding to the state of the watchdog at device startup (A for the idle position,
+ * @return a value among YWatchdog::STATEATPOWERON_UNCHANGED, YWatchdog::STATEATPOWERON_A and
+ * YWatchdog::STATEATPOWERON_B corresponding to the state of the watchdog at device startup (A for the
+ * idle position,
  *         B for the active position, UNCHANGED to leave the relay state as is)
  *
- * On failure, throws an exception or returns Y_STATEATPOWERON_INVALID.
+ * On failure, throws an exception or returns YWatchdog::STATEATPOWERON_INVALID.
  */
 Y_STATEATPOWERON_enum YWatchdog::get_stateAtPowerOn(void)
 {
@@ -228,11 +229,12 @@ Y_STATEATPOWERON_enum YWatchdog::get_stateAtPowerOn(void)
  * Remember to call the matching module saveToFlash()
  * method, otherwise this call will have no effect.
  *
- * @param newval : a value among Y_STATEATPOWERON_UNCHANGED, Y_STATEATPOWERON_A and Y_STATEATPOWERON_B
- * corresponding to the state of the watchdog at device startup (A for the idle position,
+ * @param newval : a value among YWatchdog::STATEATPOWERON_UNCHANGED, YWatchdog::STATEATPOWERON_A and
+ * YWatchdog::STATEATPOWERON_B corresponding to the state of the watchdog at device startup (A for the
+ * idle position,
  *         B for the active position, UNCHANGED to leave the relay state as is)
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -259,7 +261,7 @@ int YWatchdog::set_stateAtPowerOn(Y_STATEATPOWERON_enum newval)
  * @return an integer corresponding to the maximum time (ms) allowed for the watchdog to stay in state
  *         A before automatically switching back in to B state
  *
- * On failure, throws an exception or returns Y_MAXTIMEONSTATEA_INVALID.
+ * On failure, throws an exception or returns YWatchdog::MAXTIMEONSTATEA_INVALID.
  */
 s64 YWatchdog::get_maxTimeOnStateA(void)
 {
@@ -292,7 +294,7 @@ s64 YWatchdog::get_maxTimeOnStateA(void)
  * @param newval : an integer corresponding to the maximum time (ms) allowed for the watchdog to stay in state A
  *         before automatically switching back in to B state
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -318,7 +320,7 @@ int YWatchdog::set_maxTimeOnStateA(s64 newval)
  *
  * @return an integer
  *
- * On failure, throws an exception or returns Y_MAXTIMEONSTATEB_INVALID.
+ * On failure, throws an exception or returns YWatchdog::MAXTIMEONSTATEB_INVALID.
  */
 s64 YWatchdog::get_maxTimeOnStateB(void)
 {
@@ -352,7 +354,7 @@ s64 YWatchdog::get_maxTimeOnStateB(void)
  * in state B before
  *         automatically switching back in to A state
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -375,10 +377,10 @@ int YWatchdog::set_maxTimeOnStateB(s64 newval)
 /**
  * Returns the output state of the watchdog, when used as a simple switch (single throw).
  *
- * @return either Y_OUTPUT_OFF or Y_OUTPUT_ON, according to the output state of the watchdog, when
- * used as a simple switch (single throw)
+ * @return either YWatchdog::OUTPUT_OFF or YWatchdog::OUTPUT_ON, according to the output state of the
+ * watchdog, when used as a simple switch (single throw)
  *
- * On failure, throws an exception or returns Y_OUTPUT_INVALID.
+ * On failure, throws an exception or returns YWatchdog::OUTPUT_INVALID.
  */
 Y_OUTPUT_enum YWatchdog::get_output(void)
 {
@@ -405,10 +407,10 @@ Y_OUTPUT_enum YWatchdog::get_output(void)
 /**
  * Changes the output state of the watchdog, when used as a simple switch (single throw).
  *
- * @param newval : either Y_OUTPUT_OFF or Y_OUTPUT_ON, according to the output state of the watchdog,
- * when used as a simple switch (single throw)
+ * @param newval : either YWatchdog::OUTPUT_OFF or YWatchdog::OUTPUT_ON, according to the output state
+ * of the watchdog, when used as a simple switch (single throw)
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -436,7 +438,7 @@ int YWatchdog::set_output(Y_OUTPUT_enum newval)
  * returned to idle position
  *         (state A), during a measured pulse generation
  *
- * On failure, throws an exception or returns Y_PULSETIMER_INVALID.
+ * On failure, throws an exception or returns YWatchdog::PULSETIMER_INVALID.
  */
 s64 YWatchdog::get_pulseTimer(void)
 {
@@ -482,7 +484,7 @@ int YWatchdog::set_pulseTimer(s64 newval)
  *
  * @param ms_duration : pulse duration, in milliseconds
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -537,7 +539,7 @@ int YWatchdog::set_delayedPulseTimer(YDelayedPulse newval)
  * @param ms_delay : waiting time before the pulse, in milliseconds
  * @param ms_duration : pulse duration, in milliseconds
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -555,7 +557,7 @@ int YWatchdog::delayedPulse(int ms_delay,int ms_duration)
  * @return an integer corresponding to the number of milliseconds remaining before a pulse (delayedPulse() call)
  *         When there is no scheduled pulse, returns zero
  *
- * On failure, throws an exception or returns Y_COUNTDOWN_INVALID.
+ * On failure, throws an exception or returns YWatchdog::COUNTDOWN_INVALID.
  */
 s64 YWatchdog::get_countdown(void)
 {
@@ -582,9 +584,10 @@ s64 YWatchdog::get_countdown(void)
 /**
  * Returns the watchdog running state at module power on.
  *
- * @return either Y_AUTOSTART_OFF or Y_AUTOSTART_ON, according to the watchdog running state at module power on
+ * @return either YWatchdog::AUTOSTART_OFF or YWatchdog::AUTOSTART_ON, according to the watchdog running
+ * state at module power on
  *
- * On failure, throws an exception or returns Y_AUTOSTART_INVALID.
+ * On failure, throws an exception or returns YWatchdog::AUTOSTART_INVALID.
  */
 Y_AUTOSTART_enum YWatchdog::get_autoStart(void)
 {
@@ -612,10 +615,10 @@ Y_AUTOSTART_enum YWatchdog::get_autoStart(void)
  * Changes the watchdog running state at module power on. Remember to call the
  * saveToFlash() method and then to reboot the module to apply this setting.
  *
- * @param newval : either Y_AUTOSTART_OFF or Y_AUTOSTART_ON, according to the watchdog running state
- * at module power on
+ * @param newval : either YWatchdog::AUTOSTART_OFF or YWatchdog::AUTOSTART_ON, according to the watchdog
+ * running state at module power on
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -638,9 +641,9 @@ int YWatchdog::set_autoStart(Y_AUTOSTART_enum newval)
 /**
  * Returns the watchdog running state.
  *
- * @return either Y_RUNNING_OFF or Y_RUNNING_ON, according to the watchdog running state
+ * @return either YWatchdog::RUNNING_OFF or YWatchdog::RUNNING_ON, according to the watchdog running state
  *
- * On failure, throws an exception or returns Y_RUNNING_INVALID.
+ * On failure, throws an exception or returns YWatchdog::RUNNING_INVALID.
  */
 Y_RUNNING_enum YWatchdog::get_running(void)
 {
@@ -667,9 +670,10 @@ Y_RUNNING_enum YWatchdog::get_running(void)
 /**
  * Changes the running state of the watchdog.
  *
- * @param newval : either Y_RUNNING_OFF or Y_RUNNING_ON, according to the running state of the watchdog
+ * @param newval : either YWatchdog::RUNNING_OFF or YWatchdog::RUNNING_ON, according to the running
+ * state of the watchdog
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -694,7 +698,7 @@ int YWatchdog::set_running(Y_RUNNING_enum newval)
  * must be called on a regular basis to prevent the watchdog to
  * trigger
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -711,7 +715,7 @@ int YWatchdog::resetWatchdog(void)
  * @return an integer corresponding to  the waiting duration before a reset is automatically triggered
  * by the watchdog, in milliseconds
  *
- * On failure, throws an exception or returns Y_TRIGGERDELAY_INVALID.
+ * On failure, throws an exception or returns YWatchdog::TRIGGERDELAY_INVALID.
  */
 s64 YWatchdog::get_triggerDelay(void)
 {
@@ -743,7 +747,7 @@ s64 YWatchdog::get_triggerDelay(void)
  * @param newval : an integer corresponding to the waiting delay before a reset is triggered by the watchdog,
  *         in milliseconds
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -768,7 +772,7 @@ int YWatchdog::set_triggerDelay(s64 newval)
  *
  * @return an integer corresponding to the duration of resets caused by the watchdog, in milliseconds
  *
- * On failure, throws an exception or returns Y_TRIGGERDURATION_INVALID.
+ * On failure, throws an exception or returns YWatchdog::TRIGGERDURATION_INVALID.
  */
 s64 YWatchdog::get_triggerDuration(void)
 {
@@ -799,7 +803,7 @@ s64 YWatchdog::get_triggerDuration(void)
  *
  * @param newval : an integer corresponding to the duration of resets caused by the watchdog, in milliseconds
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -832,7 +836,7 @@ int YWatchdog::set_triggerDuration(s64 newval)
  *
  * This function does not require that the watchdog is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YWatchdog.isOnline() to test if the watchdog is
+ * Use the method isOnline() to test if the watchdog is
  * indeed online at a given time. In case of ambiguity when looking for
  * a watchdog by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -911,7 +915,7 @@ int YWatchdog::_invokeValueCallback(string value)
 /**
  * Switch the relay to the opposite state.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupschedule.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_wakeupschedule.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindWakeUpSchedule(), the high-level API for WakeUpSchedule functions
  *
@@ -108,7 +108,7 @@ int YWakeUpSchedule::_parseAttr(YJSONObject *json_val)
  *
  * @return an integer corresponding to the minutes in the 00-29 interval of each hour scheduled for wake up
  *
- * On failure, throws an exception or returns Y_MINUTESA_INVALID.
+ * On failure, throws an exception or returns YWakeUpSchedule::MINUTESA_INVALID.
  */
 int YWakeUpSchedule::get_minutesA(void)
 {
@@ -139,7 +139,7 @@ int YWakeUpSchedule::get_minutesA(void)
  *
  * @param newval : an integer corresponding to the minutes in the 00-29 interval when a wake up must take place
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -164,7 +164,7 @@ int YWakeUpSchedule::set_minutesA(int newval)
  *
  * @return an integer corresponding to the minutes in the 30-59 interval of each hour scheduled for wake up
  *
- * On failure, throws an exception or returns Y_MINUTESB_INVALID.
+ * On failure, throws an exception or returns YWakeUpSchedule::MINUTESB_INVALID.
  */
 int YWakeUpSchedule::get_minutesB(void)
 {
@@ -195,7 +195,7 @@ int YWakeUpSchedule::get_minutesB(void)
  *
  * @param newval : an integer corresponding to the minutes in the 30-59 interval when a wake up must take place
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -220,7 +220,7 @@ int YWakeUpSchedule::set_minutesB(int newval)
  *
  * @return an integer corresponding to the hours scheduled for wake up
  *
- * On failure, throws an exception or returns Y_HOURS_INVALID.
+ * On failure, throws an exception or returns YWakeUpSchedule::HOURS_INVALID.
  */
 int YWakeUpSchedule::get_hours(void)
 {
@@ -251,7 +251,7 @@ int YWakeUpSchedule::get_hours(void)
  *
  * @param newval : an integer corresponding to the hours when a wake up must take place
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -276,7 +276,7 @@ int YWakeUpSchedule::set_hours(int newval)
  *
  * @return an integer corresponding to the days of the week scheduled for wake up
  *
- * On failure, throws an exception or returns Y_WEEKDAYS_INVALID.
+ * On failure, throws an exception or returns YWakeUpSchedule::WEEKDAYS_INVALID.
  */
 int YWakeUpSchedule::get_weekDays(void)
 {
@@ -307,7 +307,7 @@ int YWakeUpSchedule::get_weekDays(void)
  *
  * @param newval : an integer corresponding to the days of the week when a wake up must take place
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -332,7 +332,7 @@ int YWakeUpSchedule::set_weekDays(int newval)
  *
  * @return an integer corresponding to the days of the month scheduled for wake up
  *
- * On failure, throws an exception or returns Y_MONTHDAYS_INVALID.
+ * On failure, throws an exception or returns YWakeUpSchedule::MONTHDAYS_INVALID.
  */
 int YWakeUpSchedule::get_monthDays(void)
 {
@@ -363,7 +363,7 @@ int YWakeUpSchedule::get_monthDays(void)
  *
  * @param newval : an integer corresponding to the days of the month when a wake up must take place
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -388,7 +388,7 @@ int YWakeUpSchedule::set_monthDays(int newval)
  *
  * @return an integer corresponding to the months scheduled for wake up
  *
- * On failure, throws an exception or returns Y_MONTHS_INVALID.
+ * On failure, throws an exception or returns YWakeUpSchedule::MONTHS_INVALID.
  */
 int YWakeUpSchedule::get_months(void)
 {
@@ -419,7 +419,7 @@ int YWakeUpSchedule::get_months(void)
  *
  * @param newval : an integer corresponding to the months when a wake up must take place
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -444,7 +444,7 @@ int YWakeUpSchedule::set_months(int newval)
  *
  * @return an integer corresponding to the date/time (seconds) of the next wake up occurrence
  *
- * On failure, throws an exception or returns Y_NEXTOCCURENCE_INVALID.
+ * On failure, throws an exception or returns YWakeUpSchedule::NEXTOCCURENCE_INVALID.
  */
 s64 YWakeUpSchedule::get_nextOccurence(void)
 {
@@ -481,7 +481,7 @@ s64 YWakeUpSchedule::get_nextOccurence(void)
  *
  * This function does not require that the wake up schedule is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YWakeUpSchedule.isOnline() to test if the wake up schedule is
+ * Use the method isOnline() to test if the wake up schedule is
  * indeed online at a given time. In case of ambiguity when looking for
  * a wake up schedule by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -575,7 +575,7 @@ s64 YWakeUpSchedule::get_minutes(void)
  *
  * @param bitmap : Minutes 00-59 of each hour scheduled for wake up.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */

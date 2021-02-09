@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupmonitor.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_wakeupmonitor.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindWakeUpMonitor(), the high-level API for WakeUpMonitor functions
  *
@@ -105,7 +105,7 @@ int YWakeUpMonitor::_parseAttr(YJSONObject *json_val)
  *
  * @return an integer corresponding to the maximal wake up time (in seconds) before automatically going to sleep
  *
- * On failure, throws an exception or returns Y_POWERDURATION_INVALID.
+ * On failure, throws an exception or returns YWakeUpMonitor::POWERDURATION_INVALID.
  */
 int YWakeUpMonitor::get_powerDuration(void)
 {
@@ -137,7 +137,7 @@ int YWakeUpMonitor::get_powerDuration(void)
  * @param newval : an integer corresponding to the maximal wake up time (seconds) before automatically
  * going to sleep
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -162,7 +162,7 @@ int YWakeUpMonitor::set_powerDuration(int newval)
  *
  * @return an integer corresponding to the delay before the  next sleep period
  *
- * On failure, throws an exception or returns Y_SLEEPCOUNTDOWN_INVALID.
+ * On failure, throws an exception or returns YWakeUpMonitor::SLEEPCOUNTDOWN_INVALID.
  */
 int YWakeUpMonitor::get_sleepCountdown(void)
 {
@@ -191,7 +191,7 @@ int YWakeUpMonitor::get_sleepCountdown(void)
  *
  * @param newval : an integer corresponding to the delay before the next sleep period
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -216,7 +216,7 @@ int YWakeUpMonitor::set_sleepCountdown(int newval)
  *
  * @return an integer corresponding to the next scheduled wake up date/time (UNIX format)
  *
- * On failure, throws an exception or returns Y_NEXTWAKEUP_INVALID.
+ * On failure, throws an exception or returns YWakeUpMonitor::NEXTWAKEUP_INVALID.
  */
 s64 YWakeUpMonitor::get_nextWakeUp(void)
 {
@@ -245,7 +245,7 @@ s64 YWakeUpMonitor::get_nextWakeUp(void)
  *
  * @param newval : an integer corresponding to the days of the week when a wake up must take place
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -268,11 +268,12 @@ int YWakeUpMonitor::set_nextWakeUp(s64 newval)
 /**
  * Returns the latest wake up reason.
  *
- * @return a value among Y_WAKEUPREASON_USBPOWER, Y_WAKEUPREASON_EXTPOWER, Y_WAKEUPREASON_ENDOFSLEEP,
- * Y_WAKEUPREASON_EXTSIG1, Y_WAKEUPREASON_SCHEDULE1 and Y_WAKEUPREASON_SCHEDULE2 corresponding to the
- * latest wake up reason
+ * @return a value among YWakeUpMonitor::WAKEUPREASON_USBPOWER, YWakeUpMonitor::WAKEUPREASON_EXTPOWER,
+ * YWakeUpMonitor::WAKEUPREASON_ENDOFSLEEP, YWakeUpMonitor::WAKEUPREASON_EXTSIG1,
+ * YWakeUpMonitor::WAKEUPREASON_SCHEDULE1 and YWakeUpMonitor::WAKEUPREASON_SCHEDULE2 corresponding to
+ * the latest wake up reason
  *
- * On failure, throws an exception or returns Y_WAKEUPREASON_INVALID.
+ * On failure, throws an exception or returns YWakeUpMonitor::WAKEUPREASON_INVALID.
  */
 Y_WAKEUPREASON_enum YWakeUpMonitor::get_wakeUpReason(void)
 {
@@ -299,9 +300,10 @@ Y_WAKEUPREASON_enum YWakeUpMonitor::get_wakeUpReason(void)
 /**
  * Returns  the current state of the monitor.
  *
- * @return either Y_WAKEUPSTATE_SLEEPING or Y_WAKEUPSTATE_AWAKE, according to  the current state of the monitor
+ * @return either YWakeUpMonitor::WAKEUPSTATE_SLEEPING or YWakeUpMonitor::WAKEUPSTATE_AWAKE, according
+ * to  the current state of the monitor
  *
- * On failure, throws an exception or returns Y_WAKEUPSTATE_INVALID.
+ * On failure, throws an exception or returns YWakeUpMonitor::WAKEUPSTATE_INVALID.
  */
 Y_WAKEUPSTATE_enum YWakeUpMonitor::get_wakeUpState(void)
 {
@@ -376,7 +378,7 @@ s64 YWakeUpMonitor::get_rtcTime(void)
  *
  * This function does not require that the wake-up monitor is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YWakeUpMonitor.isOnline() to test if the wake-up monitor is
+ * Use the method isOnline() to test if the wake-up monitor is
  * indeed online at a given time. In case of ambiguity when looking for
  * a wake-up monitor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -466,7 +468,7 @@ int YWakeUpMonitor::wakeUp(void)
  *
  * @param secBeforeSleep : number of seconds before going into sleep mode,
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -491,7 +493,7 @@ int YWakeUpMonitor::sleep(int secBeforeSleep)
  * @param secUntilWakeUp : number of seconds before next wake up
  * @param secBeforeSleep : number of seconds before going into sleep mode
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -516,7 +518,7 @@ int YWakeUpMonitor::sleepFor(int secUntilWakeUp,int secBeforeSleep)
  * @param wakeUpTime : wake-up datetime (UNIX format)
  * @param secBeforeSleep : number of seconds before going into sleep mode
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -536,7 +538,7 @@ int YWakeUpMonitor::sleepUntil(int wakeUpTime,int secBeforeSleep)
 /**
  * Resets the sleep countdown.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *         On failure, throws an exception or returns a negative error code.
  */
 int YWakeUpMonitor::resetSleepCountDown(void)

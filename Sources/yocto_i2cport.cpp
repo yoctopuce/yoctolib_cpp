@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_i2cport.cpp 41171 2020-07-02 17:49:00Z mvuilleu $
+ *  $Id: yocto_i2cport.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindI2cPort(), the high-level API for I2cPort functions
  *
@@ -216,7 +216,7 @@ int YI2cPort::_parseAttr(YJSONObject *json_val)
  *
  * @return an integer corresponding to the total number of bytes received since last reset
  *
- * On failure, throws an exception or returns Y_RXCOUNT_INVALID.
+ * On failure, throws an exception or returns YI2cPort::RXCOUNT_INVALID.
  */
 int YI2cPort::get_rxCount(void)
 {
@@ -245,7 +245,7 @@ int YI2cPort::get_rxCount(void)
  *
  * @return an integer corresponding to the total number of bytes transmitted since last reset
  *
- * On failure, throws an exception or returns Y_TXCOUNT_INVALID.
+ * On failure, throws an exception or returns YI2cPort::TXCOUNT_INVALID.
  */
 int YI2cPort::get_txCount(void)
 {
@@ -274,7 +274,7 @@ int YI2cPort::get_txCount(void)
  *
  * @return an integer corresponding to the total number of communication errors detected since last reset
  *
- * On failure, throws an exception or returns Y_ERRCOUNT_INVALID.
+ * On failure, throws an exception or returns YI2cPort::ERRCOUNT_INVALID.
  */
 int YI2cPort::get_errCount(void)
 {
@@ -303,7 +303,7 @@ int YI2cPort::get_errCount(void)
  *
  * @return an integer corresponding to the total number of messages received since last reset
  *
- * On failure, throws an exception or returns Y_RXMSGCOUNT_INVALID.
+ * On failure, throws an exception or returns YI2cPort::RXMSGCOUNT_INVALID.
  */
 int YI2cPort::get_rxMsgCount(void)
 {
@@ -332,7 +332,7 @@ int YI2cPort::get_rxMsgCount(void)
  *
  * @return an integer corresponding to the total number of messages send since last reset
  *
- * On failure, throws an exception or returns Y_TXMSGCOUNT_INVALID.
+ * On failure, throws an exception or returns YI2cPort::TXMSGCOUNT_INVALID.
  */
 int YI2cPort::get_txMsgCount(void)
 {
@@ -361,7 +361,7 @@ int YI2cPort::get_txMsgCount(void)
  *
  * @return a string corresponding to the latest message fully received (for Line and Frame protocols)
  *
- * On failure, throws an exception or returns Y_LASTMSG_INVALID.
+ * On failure, throws an exception or returns YI2cPort::LASTMSG_INVALID.
  */
 string YI2cPort::get_lastMsg(void)
 {
@@ -390,7 +390,7 @@ string YI2cPort::get_lastMsg(void)
  *
  * @return a string corresponding to the name of the job file currently in use
  *
- * On failure, throws an exception or returns Y_CURRENTJOB_INVALID.
+ * On failure, throws an exception or returns YI2cPort::CURRENTJOB_INVALID.
  */
 string YI2cPort::get_currentJob(void)
 {
@@ -420,7 +420,7 @@ string YI2cPort::get_currentJob(void)
  *
  * @param newval : a string
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -445,7 +445,7 @@ int YI2cPort::set_currentJob(const string& newval)
  *
  * @return a string corresponding to the job file to use when the device is powered on
  *
- * On failure, throws an exception or returns Y_STARTUPJOB_INVALID.
+ * On failure, throws an exception or returns YI2cPort::STARTUPJOB_INVALID.
  */
 string YI2cPort::get_startupJob(void)
 {
@@ -476,7 +476,7 @@ string YI2cPort::get_startupJob(void)
  *
  * @param newval : a string corresponding to the job to use when the device is powered on
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -501,7 +501,7 @@ int YI2cPort::set_startupJob(const string& newval)
  *
  * @return an integer corresponding to the maximum number of tasks in a job that the device can handle
  *
- * On failure, throws an exception or returns Y_JOBMAXTASK_INVALID.
+ * On failure, throws an exception or returns YI2cPort::JOBMAXTASK_INVALID.
  */
 int YI2cPort::get_jobMaxTask(void)
 {
@@ -530,7 +530,7 @@ int YI2cPort::get_jobMaxTask(void)
  *
  * @return an integer corresponding to maximum size allowed for job files
  *
- * On failure, throws an exception or returns Y_JOBMAXSIZE_INVALID.
+ * On failure, throws an exception or returns YI2cPort::JOBMAXSIZE_INVALID.
  */
 int YI2cPort::get_jobMaxSize(void)
 {
@@ -600,7 +600,7 @@ int YI2cPort::set_command(const string& newval)
  *
  * @return a string corresponding to the type of protocol used to send I2C messages, as a string
  *
- * On failure, throws an exception or returns Y_PROTOCOL_INVALID.
+ * On failure, throws an exception or returns YI2cPort::PROTOCOL_INVALID.
  */
 string YI2cPort::get_protocol(void)
 {
@@ -636,7 +636,7 @@ string YI2cPort::get_protocol(void)
  *
  * @param newval : a string corresponding to the type of protocol used to send I2C messages
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -659,10 +659,10 @@ int YI2cPort::set_protocol(const string& newval)
 /**
  * Returns the voltage level used on the I2C bus.
  *
- * @return a value among Y_I2CVOLTAGELEVEL_OFF, Y_I2CVOLTAGELEVEL_3V3 and Y_I2CVOLTAGELEVEL_1V8
- * corresponding to the voltage level used on the I2C bus
+ * @return a value among YI2cPort::I2CVOLTAGELEVEL_OFF, YI2cPort::I2CVOLTAGELEVEL_3V3 and
+ * YI2cPort::I2CVOLTAGELEVEL_1V8 corresponding to the voltage level used on the I2C bus
  *
- * On failure, throws an exception or returns Y_I2CVOLTAGELEVEL_INVALID.
+ * On failure, throws an exception or returns YI2cPort::I2CVOLTAGELEVEL_INVALID.
  */
 Y_I2CVOLTAGELEVEL_enum YI2cPort::get_i2cVoltageLevel(void)
 {
@@ -691,10 +691,10 @@ Y_I2CVOLTAGELEVEL_enum YI2cPort::get_i2cVoltageLevel(void)
  * Remember to call the saveToFlash() method of the module if the
  * modification must be kept.
  *
- * @param newval : a value among Y_I2CVOLTAGELEVEL_OFF, Y_I2CVOLTAGELEVEL_3V3 and
- * Y_I2CVOLTAGELEVEL_1V8 corresponding to the voltage level used on the I2C bus
+ * @param newval : a value among YI2cPort::I2CVOLTAGELEVEL_OFF, YI2cPort::I2CVOLTAGELEVEL_3V3 and
+ * YI2cPort::I2CVOLTAGELEVEL_1V8 corresponding to the voltage level used on the I2C bus
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -724,7 +724,7 @@ int YI2cPort::set_i2cVoltageLevel(Y_I2CVOLTAGELEVEL_enum newval)
  * @return a string corresponding to the I2C port communication parameters, as a string such as
  *         "400kbps,2000ms,NoRestart"
  *
- * On failure, throws an exception or returns Y_I2CMODE_INVALID.
+ * On failure, throws an exception or returns YI2cPort::I2CMODE_INVALID.
  */
 string YI2cPort::get_i2cMode(void)
 {
@@ -760,7 +760,7 @@ string YI2cPort::get_i2cMode(void)
  * @param newval : a string corresponding to the I2C port communication parameters, with a string such as
  *         "400kbps,2000ms"
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -793,7 +793,7 @@ int YI2cPort::set_i2cMode(const string& newval)
  *
  * This function does not require that the I2C port is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YI2cPort.isOnline() to test if the I2C port is
+ * Use the method isOnline() to test if the I2C port is
  * indeed online at a given time. In case of ambiguity when looking for
  * an I2C port by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -1088,7 +1088,7 @@ string YI2cPort::queryHex(string hexString,int maxWait)
  * @param jobfile : name of the job file to save on the device filesystem
  * @param jsonDef : a string containing a JSON definition of the job
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1105,7 +1105,7 @@ int YI2cPort::uploadJob(string jobfile,string jsonDef)
  *
  * @param jobfile : name of the job file (on the device filesystem)
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1117,7 +1117,7 @@ int YI2cPort::selectJob(string jobfile)
 /**
  * Clears the serial port buffer and resets counters to zero.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1137,7 +1137,7 @@ int YI2cPort::reset(void)
  * @param slaveAddr : the 7-bit address of the slave device (without the direction bit)
  * @param buff : the binary buffer to be sent
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1182,7 +1182,7 @@ int YI2cPort::i2cSendBin(int slaveAddr,string buff)
  * @param slaveAddr : the 7-bit address of the slave device (without the direction bit)
  * @param values : a list of data bytes to be sent
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1355,7 +1355,7 @@ vector<int> YI2cPort::i2cSendAndReceiveArray(int slaveAddr,vector<int> values,in
  *
  * @param codes : the code stream to send
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1403,7 +1403,7 @@ int YI2cPort::writeStr(string codes)
  *
  * @param codes : the code stream to send
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1426,7 +1426,7 @@ int YI2cPort::writeLine(string codes)
  *
  * @param code : the byte to send
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1442,7 +1442,7 @@ int YI2cPort::writeByte(int code)
  *
  * @param hexString : a string of hexadecimal byte codes
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1466,7 +1466,7 @@ int YI2cPort::writeHex(string hexString)
  *
  * @param buff : the binary buffer to send
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1495,7 +1495,7 @@ int YI2cPort::writeBin(string buff)
  *
  * @param byteList : a list of byte codes
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */

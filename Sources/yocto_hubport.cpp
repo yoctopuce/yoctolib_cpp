@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_hubport.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_hubport.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindHubPort(), the high-level API for HubPort functions
  *
@@ -90,10 +90,10 @@ int YHubPort::_parseAttr(YJSONObject *json_val)
 /**
  * Returns true if the YoctoHub port is powered, false otherwise.
  *
- * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to true if the YoctoHub port is
- * powered, false otherwise
+ * @return either YHubPort::ENABLED_FALSE or YHubPort::ENABLED_TRUE, according to true if the YoctoHub
+ * port is powered, false otherwise
  *
- * On failure, throws an exception or returns Y_ENABLED_INVALID.
+ * On failure, throws an exception or returns YHubPort::ENABLED_INVALID.
  */
 Y_ENABLED_enum YHubPort::get_enabled(void)
 {
@@ -121,9 +121,10 @@ Y_ENABLED_enum YHubPort::get_enabled(void)
  * Changes the activation of the YoctoHub port. If the port is enabled, the
  * connected module is powered. Otherwise, port power is shut down.
  *
- * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the activation of the YoctoHub port
+ * @param newval : either YHubPort::ENABLED_FALSE or YHubPort::ENABLED_TRUE, according to the activation
+ * of the YoctoHub port
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -146,10 +147,10 @@ int YHubPort::set_enabled(Y_ENABLED_enum newval)
 /**
  * Returns the current state of the YoctoHub port.
  *
- * @return a value among Y_PORTSTATE_OFF, Y_PORTSTATE_OVRLD, Y_PORTSTATE_ON, Y_PORTSTATE_RUN and
- * Y_PORTSTATE_PROG corresponding to the current state of the YoctoHub port
+ * @return a value among YHubPort::PORTSTATE_OFF, YHubPort::PORTSTATE_OVRLD, YHubPort::PORTSTATE_ON,
+ * YHubPort::PORTSTATE_RUN and YHubPort::PORTSTATE_PROG corresponding to the current state of the YoctoHub port
  *
- * On failure, throws an exception or returns Y_PORTSTATE_INVALID.
+ * On failure, throws an exception or returns YHubPort::PORTSTATE_INVALID.
  */
 Y_PORTSTATE_enum YHubPort::get_portState(void)
 {
@@ -180,7 +181,7 @@ Y_PORTSTATE_enum YHubPort::get_portState(void)
  *
  * @return an integer corresponding to the current baud rate used by this YoctoHub port, in kbps
  *
- * On failure, throws an exception or returns Y_BAUDRATE_INVALID.
+ * On failure, throws an exception or returns YHubPort::BAUDRATE_INVALID.
  */
 int YHubPort::get_baudRate(void)
 {
@@ -217,7 +218,7 @@ int YHubPort::get_baudRate(void)
  *
  * This function does not require that the YoctoHub slave port is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YHubPort.isOnline() to test if the YoctoHub slave port is
+ * Use the method isOnline() to test if the YoctoHub slave port is
  * indeed online at a given time. In case of ambiguity when looking for
  * a YoctoHub slave port by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,

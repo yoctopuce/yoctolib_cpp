@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_colorledcluster.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_colorledcluster.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -105,7 +105,7 @@ int YColorLedCluster::_parseAttr(YJSONObject *json_val)
  *
  * @return an integer corresponding to the number of LEDs currently handled by the device
  *
- * On failure, throws an exception or returns Y_ACTIVELEDCOUNT_INVALID.
+ * On failure, throws an exception or returns YColorLedCluster::ACTIVELEDCOUNT_INVALID.
  */
 int YColorLedCluster::get_activeLedCount(void)
 {
@@ -136,7 +136,7 @@ int YColorLedCluster::get_activeLedCount(void)
  *
  * @param newval : an integer corresponding to the number of LEDs currently handled by the device
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -159,9 +159,10 @@ int YColorLedCluster::set_activeLedCount(int newval)
 /**
  * Returns the RGB LED type currently handled by the device.
  *
- * @return either Y_LEDTYPE_RGB or Y_LEDTYPE_RGBW, according to the RGB LED type currently handled by the device
+ * @return either YColorLedCluster::LEDTYPE_RGB or YColorLedCluster::LEDTYPE_RGBW, according to the RGB
+ * LED type currently handled by the device
  *
- * On failure, throws an exception or returns Y_LEDTYPE_INVALID.
+ * On failure, throws an exception or returns YColorLedCluster::LEDTYPE_INVALID.
  */
 Y_LEDTYPE_enum YColorLedCluster::get_ledType(void)
 {
@@ -190,10 +191,10 @@ Y_LEDTYPE_enum YColorLedCluster::get_ledType(void)
  * Remember to call the matching module
  * saveToFlash() method to save the setting permanently.
  *
- * @param newval : either Y_LEDTYPE_RGB or Y_LEDTYPE_RGBW, according to the RGB LED type currently
- * handled by the device
+ * @param newval : either YColorLedCluster::LEDTYPE_RGB or YColorLedCluster::LEDTYPE_RGBW, according to
+ * the RGB LED type currently handled by the device
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -218,7 +219,7 @@ int YColorLedCluster::set_ledType(Y_LEDTYPE_enum newval)
  *
  * @return an integer corresponding to the maximum number of LEDs that the device can handle
  *
- * On failure, throws an exception or returns Y_MAXLEDCOUNT_INVALID.
+ * On failure, throws an exception or returns YColorLedCluster::MAXLEDCOUNT_INVALID.
  */
 int YColorLedCluster::get_maxLedCount(void)
 {
@@ -247,7 +248,7 @@ int YColorLedCluster::get_maxLedCount(void)
  *
  * @return an integer corresponding to the maximum number of sequences that the device can handle
  *
- * On failure, throws an exception or returns Y_BLINKSEQMAXCOUNT_INVALID.
+ * On failure, throws an exception or returns YColorLedCluster::BLINKSEQMAXCOUNT_INVALID.
  */
 int YColorLedCluster::get_blinkSeqMaxCount(void)
 {
@@ -276,7 +277,7 @@ int YColorLedCluster::get_blinkSeqMaxCount(void)
  *
  * @return an integer corresponding to the maximum length of sequences
  *
- * On failure, throws an exception or returns Y_BLINKSEQMAXSIZE_INVALID.
+ * On failure, throws an exception or returns YColorLedCluster::BLINKSEQMAXSIZE_INVALID.
  */
 int YColorLedCluster::get_blinkSeqMaxSize(void)
 {
@@ -351,7 +352,7 @@ int YColorLedCluster::set_command(const string& newval)
  *
  * This function does not require that the RGB LED cluster is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YColorLedCluster.isOnline() to test if the RGB LED cluster is
+ * Use the method isOnline() to test if the RGB LED cluster is
  * indeed online at a given time. In case of ambiguity when looking for
  * a RGB LED cluster by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -440,7 +441,7 @@ int YColorLedCluster::sendCommand(string command)
  * @param count    :  affected LED count.
  * @param rgbValue :  new color.
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -458,7 +459,7 @@ int YColorLedCluster::set_rgbColor(int ledIndex,int count,int rgbValue)
  * @param count    :  affected LED count.
  * @param rgbValue :  new color.
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -476,7 +477,7 @@ int YColorLedCluster::set_rgbColorAtPowerOn(int ledIndex,int count,int rgbValue)
  * @param count    :  affected LED count.
  * @param hslValue :  new color.
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -495,7 +496,7 @@ int YColorLedCluster::set_hslColorAtPowerOn(int ledIndex,int count,int hslValue)
  * @param count    :  affected LED count.
  * @param hslValue :  new color.
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -513,7 +514,7 @@ int YColorLedCluster::set_hslColor(int ledIndex,int count,int hslValue)
  * @param rgbValue :  new color (0xRRGGBB).
  * @param delay    :  transition duration in ms
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -535,7 +536,7 @@ int YColorLedCluster::rgb_move(int ledIndex,int count,int rgbValue,int delay)
  * @param hslValue :  new color (0xHHSSLL).
  * @param delay    :  transition duration in ms
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -553,7 +554,7 @@ int YColorLedCluster::hsl_move(int ledIndex,int count,int hslValue,int delay)
  * @param rgbValue :  target color (0xRRGGBB)
  * @param delay    :  transition duration in ms
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -571,7 +572,7 @@ int YColorLedCluster::addRgbMoveToBlinkSeq(int seqIndex,int rgbValue,int delay)
  * @param hslValue : target color (0xHHSSLL)
  * @param delay    : transition duration in ms
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -589,7 +590,7 @@ int YColorLedCluster::addHslMoveToBlinkSeq(int seqIndex,int hslValue,int delay)
  *
  * @param seqIndex : sequence index.
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -606,7 +607,7 @@ int YColorLedCluster::addMirrorToBlinkSeq(int seqIndex)
  * @param seqIndex : sequence index.
  * @param linkSeqIndex : index of the sequence to chain.
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -622,7 +623,7 @@ int YColorLedCluster::addJumpToBlinkSeq(int seqIndex,int linkSeqIndex)
  *
  * @param seqIndex : sequence index.
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -642,7 +643,7 @@ int YColorLedCluster::addUnlinkToBlinkSeq(int seqIndex)
  * @param seqIndex :  sequence index.
  * @param offset   :  execution offset in ms.
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -662,7 +663,7 @@ int YColorLedCluster::linkLedToBlinkSeq(int ledIndex,int count,int seqIndex,int 
  * @param seqIndex :  sequence index.
  * @param offset   :  execution offset in ms.
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -682,7 +683,7 @@ int YColorLedCluster::linkLedToBlinkSeqAtPowerOn(int ledIndex,int count,int seqI
  * @param seqIndex :  sequence index.
  * @param periods  :  number of periods to show on LEDs.
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -697,7 +698,7 @@ int YColorLedCluster::linkLedToPeriodicBlinkSeq(int ledIndex,int count,int seqIn
  * @param ledIndex  :  index of the first affected LED.
  * @param count     :  affected LED count.
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -712,7 +713,7 @@ int YColorLedCluster::unlinkLedFromBlinkSeq(int ledIndex,int count)
  *
  * @param seqIndex :  index of the sequence to start.
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -727,7 +728,7 @@ int YColorLedCluster::startBlinkSeq(int seqIndex)
  *
  * @param seqIndex :  index of the sequence to stop.
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -742,7 +743,7 @@ int YColorLedCluster::stopBlinkSeq(int seqIndex)
  *
  * @param seqIndex :  index of the sequence to reset
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -760,7 +761,7 @@ int YColorLedCluster::resetBlinkSeq(int seqIndex)
  * @param seqIndex :  index of the sequence to reset.
  * @param autostart : 0 to keep the sequence turned off and 1 to start it automatically.
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -777,7 +778,7 @@ int YColorLedCluster::set_blinkSeqStateAtPowerOn(int seqIndex,int autostart)
  * @param seqIndex :  index of the sequence to start.
  * @param speed :     sequence running speed (-1000...1000).
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -791,7 +792,7 @@ int YColorLedCluster::set_blinkSeqSpeed(int seqIndex,int speed)
  * sequence binding for all LEDs. Warning: if some LEDs are linked to a sequence, the
  * method saveBlinkSeq() must also be called to save the sequence definition.
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -812,7 +813,7 @@ int YColorLedCluster::saveLedsState(void)
  *
  * @param seqIndex :  index of the sequence to start.
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -829,7 +830,7 @@ int YColorLedCluster::saveBlinkSeq(int seqIndex)
  * @param ledIndex : index of the first LED which should be updated
  * @param buff : the binary buffer to send
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -846,7 +847,7 @@ int YColorLedCluster::set_rgbColorBuffer(int ledIndex,string buff)
  * @param ledIndex : index of the first LED which should be updated
  * @param rgbList : a list of 24bit RGB codes, in the form 0xRRGGBB
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -881,7 +882,7 @@ int YColorLedCluster::set_rgbColorArray(int ledIndex,vector<int> rgbList)
  * @param rgbList : a list of target 24bit RGB codes, in the form 0xRRGGBB
  * @param delay   : transition duration in ms
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -915,7 +916,7 @@ int YColorLedCluster::rgbArrayOfs_move(int ledIndex,vector<int> rgbList,int dela
  * @param rgbList : a list of target 24bit RGB codes, in the form 0xRRGGBB
  * @param delay   : transition duration in ms
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -935,7 +936,7 @@ int YColorLedCluster::rgbArray_move(vector<int> rgbList,int delay)
  * @param ledIndex : index of the first LED which should be updated
  * @param buff : the binary buffer to send
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -952,7 +953,7 @@ int YColorLedCluster::set_hslColorBuffer(int ledIndex,string buff)
  * @param ledIndex : index of the first LED which should be updated
  * @param hslList : a list of 24bit HSL codes, in the form 0xHHSSLL
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -986,7 +987,7 @@ int YColorLedCluster::set_hslColorArray(int ledIndex,vector<int> hslList)
  * @param hslList : a list of target 24bit HSL codes, in the form 0xHHSSLL
  * @param delay   : transition duration in ms
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1007,7 +1008,7 @@ int YColorLedCluster::hslArray_move(vector<int> hslList,int delay)
  * @param hslList : a list of target 24bit HSL codes, in the form 0xHHSSLL
  * @param delay   : transition duration in ms
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */

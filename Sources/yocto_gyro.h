@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.h 42951 2020-12-14 09:43:29Z seb $
+ * $Id: yocto_gyro.h 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  * Declares yFindGyro(), the high-level API for Gyro functions
  *
@@ -107,7 +107,7 @@ public:
      *
      * This function does not require that the quaternion component is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YQt.isOnline() to test if the quaternion component is
+     * Use the method isOnline() to test if the quaternion component is
      * indeed online at a given time. In case of ambiguity when looking for
      * a quaternion component by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
@@ -176,7 +176,7 @@ public:
 
     /**
      * Starts the enumeration of quaternion components currently accessible.
-     * Use the method YQt.nextQt() to iterate on
+     * Use the method YQt::nextQt() to iterate on
      * next quaternion components.
      *
      * @return a pointer to a YQt object, corresponding to
@@ -207,7 +207,7 @@ public:
  *
  * This function does not require that the quaternion component is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YQt.isOnline() to test if the quaternion component is
+ * Use the method isOnline() to test if the quaternion component is
  * indeed online at a given time. In case of ambiguity when looking for
  * a quaternion component by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -226,7 +226,7 @@ inline YQt *yFindQt(const string& func)
 { return YQt::FindQt(func);}
 /**
  * Starts the enumeration of quaternion components currently accessible.
- * Use the method YQt.nextQt() to iterate on
+ * Use the method YQt::nextQt() to iterate on
  * next quaternion components.
  *
  * @return a pointer to a YQt object, corresponding to
@@ -322,7 +322,7 @@ public:
      *
      * @return an integer corresponding to the measure update frequency, measured in Hz
      *
-     * On failure, throws an exception or returns Y_BANDWIDTH_INVALID.
+     * On failure, throws an exception or returns YGyro::BANDWIDTH_INVALID.
      */
     int                 get_bandwidth(void);
 
@@ -337,7 +337,7 @@ public:
      *
      * @param newval : an integer corresponding to the measure update frequency, measured in Hz
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -351,7 +351,7 @@ public:
      * @return a floating point number corresponding to the angular velocity around the X axis of the
      * device, as a floating point number
      *
-     * On failure, throws an exception or returns Y_XVALUE_INVALID.
+     * On failure, throws an exception or returns YGyro::XVALUE_INVALID.
      */
     double              get_xValue(void);
 
@@ -364,7 +364,7 @@ public:
      * @return a floating point number corresponding to the angular velocity around the Y axis of the
      * device, as a floating point number
      *
-     * On failure, throws an exception or returns Y_YVALUE_INVALID.
+     * On failure, throws an exception or returns YGyro::YVALUE_INVALID.
      */
     double              get_yValue(void);
 
@@ -377,7 +377,7 @@ public:
      * @return a floating point number corresponding to the angular velocity around the Z axis of the
      * device, as a floating point number
      *
-     * On failure, throws an exception or returns Y_ZVALUE_INVALID.
+     * On failure, throws an exception or returns YGyro::ZVALUE_INVALID.
      */
     double              get_zValue(void);
 
@@ -397,7 +397,7 @@ public:
      *
      * This function does not require that the gyroscope is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YGyro.isOnline() to test if the gyroscope is
+     * Use the method isOnline() to test if the gyroscope is
      * indeed online at a given time. In case of ambiguity when looking for
      * a gyroscope by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
@@ -592,7 +592,7 @@ public:
 
     /**
      * Starts the enumeration of gyroscopes currently accessible.
-     * Use the method YGyro.nextGyro() to iterate on
+     * Use the method YGyro::nextGyro() to iterate on
      * next gyroscopes.
      *
      * @return a pointer to a YGyro object, corresponding to
@@ -623,7 +623,7 @@ public:
  *
  * This function does not require that the gyroscope is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YGyro.isOnline() to test if the gyroscope is
+ * Use the method isOnline() to test if the gyroscope is
  * indeed online at a given time. In case of ambiguity when looking for
  * a gyroscope by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -642,7 +642,7 @@ inline YGyro *yFindGyro(const string& func)
 { return YGyro::FindGyro(func);}
 /**
  * Starts the enumeration of gyroscopes currently accessible.
- * Use the method YGyro.nextGyro() to iterate on
+ * Use the method YGyro::nextGyro() to iterate on
  * next gyroscopes.
  *
  * @return a pointer to a YGyro object, corresponding to

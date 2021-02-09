@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_network.h 42060 2020-10-14 10:02:12Z seb $
+ *  $Id: yocto_network.h 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Declares yFindNetwork(), the high-level API for Network functions
  *
@@ -131,7 +131,7 @@ typedef enum {
 //--- (YNetwork declaration)
 /**
  * YNetwork Class: network interface control interface, available for instance in the
- * YoctoHub-Ethernet, the YoctoHub-GSM-3G-EU, the YoctoHub-GSM-3G-NA or the YoctoHub-Wireless-n
+ * YoctoHub-Ethernet, the YoctoHub-GSM-3G-NA, the YoctoHub-GSM-4G or the YoctoHub-Wireless-n
  *
  * YNetwork objects provide access to TCP/IP parameters of Yoctopuce
  * devices that include a built-in network interface.
@@ -248,10 +248,11 @@ public:
      * Level 5 (WWW_5) is reached when global connectivity is demonstrated by properly loading the
      * current time from an NTP server.
      *
-     * @return a value among Y_READINESS_DOWN, Y_READINESS_EXISTS, Y_READINESS_LINKED, Y_READINESS_LAN_OK
-     * and Y_READINESS_WWW_OK corresponding to the current established working mode of the network interface
+     * @return a value among YNetwork::READINESS_DOWN, YNetwork::READINESS_EXISTS,
+     * YNetwork::READINESS_LINKED, YNetwork::READINESS_LAN_OK and YNetwork::READINESS_WWW_OK corresponding to
+     * the current established working mode of the network interface
      *
-     * On failure, throws an exception or returns Y_READINESS_INVALID.
+     * On failure, throws an exception or returns YNetwork::READINESS_INVALID.
      */
     Y_READINESS_enum    get_readiness(void);
 
@@ -264,7 +265,7 @@ public:
      *
      * @return a string corresponding to the MAC address of the network interface
      *
-     * On failure, throws an exception or returns Y_MACADDRESS_INVALID.
+     * On failure, throws an exception or returns YNetwork::MACADDRESS_INVALID.
      */
     string              get_macAddress(void);
 
@@ -277,7 +278,7 @@ public:
      *
      * @return a string corresponding to the IP address currently in use by the device
      *
-     * On failure, throws an exception or returns Y_IPADDRESS_INVALID.
+     * On failure, throws an exception or returns YNetwork::IPADDRESS_INVALID.
      */
     string              get_ipAddress(void);
 
@@ -289,7 +290,7 @@ public:
      *
      * @return a string corresponding to the subnet mask currently used by the device
      *
-     * On failure, throws an exception or returns Y_SUBNETMASK_INVALID.
+     * On failure, throws an exception or returns YNetwork::SUBNETMASK_INVALID.
      */
     string              get_subnetMask(void);
 
@@ -301,7 +302,7 @@ public:
      *
      * @return a string corresponding to the IP address of the router on the device subnet (default gateway)
      *
-     * On failure, throws an exception or returns Y_ROUTER_INVALID.
+     * On failure, throws an exception or returns YNetwork::ROUTER_INVALID.
      */
     string              get_router(void);
 
@@ -325,7 +326,7 @@ public:
      *
      * @return a string corresponding to the IP configuration of the network interface
      *
-     * On failure, throws an exception or returns Y_IPCONFIG_INVALID.
+     * On failure, throws an exception or returns YNetwork::IPCONFIG_INVALID.
      */
     string              get_ipConfig(void);
 
@@ -341,7 +342,7 @@ public:
      *
      * @return a string corresponding to the IP address of the primary name server to be used by the module
      *
-     * On failure, throws an exception or returns Y_PRIMARYDNS_INVALID.
+     * On failure, throws an exception or returns YNetwork::PRIMARYDNS_INVALID.
      */
     string              get_primaryDNS(void);
 
@@ -355,7 +356,7 @@ public:
      *
      * @param newval : a string corresponding to the IP address of the primary name server to be used by the module
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -368,7 +369,7 @@ public:
      *
      * @return a string corresponding to the IP address of the secondary name server to be used by the module
      *
-     * On failure, throws an exception or returns Y_SECONDARYDNS_INVALID.
+     * On failure, throws an exception or returns YNetwork::SECONDARYDNS_INVALID.
      */
     string              get_secondaryDNS(void);
 
@@ -382,7 +383,7 @@ public:
      *
      * @param newval : a string corresponding to the IP address of the secondary name server to be used by the module
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -395,7 +396,7 @@ public:
      *
      * @return a string corresponding to the IP address of the NTP server to be used by the device
      *
-     * On failure, throws an exception or returns Y_NTPSERVER_INVALID.
+     * On failure, throws an exception or returns YNetwork::NTPSERVER_INVALID.
      */
     string              get_ntpServer(void);
 
@@ -409,7 +410,7 @@ public:
      *
      * @param newval : a string corresponding to the IP address of the NTP server to be used by the module
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -424,7 +425,7 @@ public:
      * @return a string corresponding to a hash string if a password has been set for "user" user,
      *         or an empty string otherwise
      *
-     * On failure, throws an exception or returns Y_USERPASSWORD_INVALID.
+     * On failure, throws an exception or returns YNetwork::USERPASSWORD_INVALID.
      */
     string              get_userPassword(void);
 
@@ -440,7 +441,7 @@ public:
      *
      * @param newval : a string corresponding to the password for the "user" user
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -455,7 +456,7 @@ public:
      * @return a string corresponding to a hash string if a password has been set for user "admin",
      *         or an empty string otherwise
      *
-     * On failure, throws an exception or returns Y_ADMINPASSWORD_INVALID.
+     * On failure, throws an exception or returns YNetwork::ADMINPASSWORD_INVALID.
      */
     string              get_adminPassword(void);
 
@@ -471,7 +472,7 @@ public:
      *
      * @param newval : a string corresponding to the password for the "admin" user
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -484,7 +485,7 @@ public:
      *
      * @return an integer corresponding to the TCP port used to serve the hub web UI
      *
-     * On failure, throws an exception or returns Y_HTTPPORT_INVALID.
+     * On failure, throws an exception or returns YNetwork::HTTPPORT_INVALID.
      */
     int                 get_httpPort(void);
 
@@ -500,7 +501,7 @@ public:
      *
      * @param newval : an integer corresponding to the the TCP port used to serve the hub web UI
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -513,7 +514,7 @@ public:
      *
      * @return a string corresponding to the HTML page to serve for the URL "/"" of the hub
      *
-     * On failure, throws an exception or returns Y_DEFAULTPAGE_INVALID.
+     * On failure, throws an exception or returns YNetwork::DEFAULTPAGE_INVALID.
      */
     string              get_defaultPage(void);
 
@@ -529,7 +530,7 @@ public:
      *
      * @param newval : a string corresponding to the default HTML page returned by the hub
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -541,11 +542,11 @@ public:
      * Returns the activation state of the multicast announce protocols to allow easy
      * discovery of the module in the network neighborhood (uPnP/Bonjour protocol).
      *
-     * @return either Y_DISCOVERABLE_FALSE or Y_DISCOVERABLE_TRUE, according to the activation state of
-     * the multicast announce protocols to allow easy
+     * @return either YNetwork::DISCOVERABLE_FALSE or YNetwork::DISCOVERABLE_TRUE, according to the
+     * activation state of the multicast announce protocols to allow easy
      *         discovery of the module in the network neighborhood (uPnP/Bonjour protocol)
      *
-     * On failure, throws an exception or returns Y_DISCOVERABLE_INVALID.
+     * On failure, throws an exception or returns YNetwork::DISCOVERABLE_INVALID.
      */
     Y_DISCOVERABLE_enum get_discoverable(void);
 
@@ -558,11 +559,11 @@ public:
      * Remember to call the saveToFlash()
      * method of the module if the modification must be kept.
      *
-     * @param newval : either Y_DISCOVERABLE_FALSE or Y_DISCOVERABLE_TRUE, according to the activation
-     * state of the multicast announce protocols to allow easy
+     * @param newval : either YNetwork::DISCOVERABLE_FALSE or YNetwork::DISCOVERABLE_TRUE, according to the
+     * activation state of the multicast announce protocols to allow easy
      *         discovery of the module in the network neighborhood (uPnP/Bonjour protocol)
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -579,7 +580,7 @@ public:
      * triggering an automated
      *         reboot to try to recover Internet connectivity
      *
-     * On failure, throws an exception or returns Y_WWWWATCHDOGDELAY_INVALID.
+     * On failure, throws an exception or returns YNetwork::WWWWATCHDOGDELAY_INVALID.
      */
     int                 get_wwwWatchdogDelay(void);
 
@@ -597,7 +598,7 @@ public:
      * before triggering an automated
      *         reboot to try to recover Internet connectivity
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -610,7 +611,7 @@ public:
      *
      * @return a string corresponding to the callback URL to notify of significant state changes
      *
-     * On failure, throws an exception or returns Y_CALLBACKURL_INVALID.
+     * On failure, throws an exception or returns YNetwork::CALLBACKURL_INVALID.
      */
     string              get_callbackUrl(void);
 
@@ -623,7 +624,7 @@ public:
      *
      * @param newval : a string corresponding to the callback URL to notify significant state changes
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -634,10 +635,11 @@ public:
     /**
      * Returns the HTTP method used to notify callbacks for significant state changes.
      *
-     * @return a value among Y_CALLBACKMETHOD_POST, Y_CALLBACKMETHOD_GET and Y_CALLBACKMETHOD_PUT
-     * corresponding to the HTTP method used to notify callbacks for significant state changes
+     * @return a value among YNetwork::CALLBACKMETHOD_POST, YNetwork::CALLBACKMETHOD_GET and
+     * YNetwork::CALLBACKMETHOD_PUT corresponding to the HTTP method used to notify callbacks for
+     * significant state changes
      *
-     * On failure, throws an exception or returns Y_CALLBACKMETHOD_INVALID.
+     * On failure, throws an exception or returns YNetwork::CALLBACKMETHOD_INVALID.
      */
     Y_CALLBACKMETHOD_enum get_callbackMethod(void);
 
@@ -649,10 +651,11 @@ public:
      * Remember to call the saveToFlash() method of the module if the
      * modification must be kept.
      *
-     * @param newval : a value among Y_CALLBACKMETHOD_POST, Y_CALLBACKMETHOD_GET and Y_CALLBACKMETHOD_PUT
-     * corresponding to the HTTP method used to notify callbacks for significant state changes
+     * @param newval : a value among YNetwork::CALLBACKMETHOD_POST, YNetwork::CALLBACKMETHOD_GET and
+     * YNetwork::CALLBACKMETHOD_PUT corresponding to the HTTP method used to notify callbacks for
+     * significant state changes
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -663,14 +666,16 @@ public:
     /**
      * Returns the encoding standard to use for representing notification values.
      *
-     * @return a value among Y_CALLBACKENCODING_FORM, Y_CALLBACKENCODING_JSON,
-     * Y_CALLBACKENCODING_JSON_ARRAY, Y_CALLBACKENCODING_CSV, Y_CALLBACKENCODING_YOCTO_API,
-     * Y_CALLBACKENCODING_JSON_NUM, Y_CALLBACKENCODING_EMONCMS, Y_CALLBACKENCODING_AZURE,
-     * Y_CALLBACKENCODING_INFLUXDB, Y_CALLBACKENCODING_MQTT, Y_CALLBACKENCODING_YOCTO_API_JZON,
-     * Y_CALLBACKENCODING_PRTG and Y_CALLBACKENCODING_INFLUXDB_V2 corresponding to the encoding standard
-     * to use for representing notification values
+     * @return a value among YNetwork::CALLBACKENCODING_FORM, YNetwork::CALLBACKENCODING_JSON,
+     * YNetwork::CALLBACKENCODING_JSON_ARRAY, YNetwork::CALLBACKENCODING_CSV,
+     * YNetwork::CALLBACKENCODING_YOCTO_API, YNetwork::CALLBACKENCODING_JSON_NUM,
+     * YNetwork::CALLBACKENCODING_EMONCMS, YNetwork::CALLBACKENCODING_AZURE,
+     * YNetwork::CALLBACKENCODING_INFLUXDB, YNetwork::CALLBACKENCODING_MQTT,
+     * YNetwork::CALLBACKENCODING_YOCTO_API_JZON, YNetwork::CALLBACKENCODING_PRTG and
+     * YNetwork::CALLBACKENCODING_INFLUXDB_V2 corresponding to the encoding standard to use for
+     * representing notification values
      *
-     * On failure, throws an exception or returns Y_CALLBACKENCODING_INVALID.
+     * On failure, throws an exception or returns YNetwork::CALLBACKENCODING_INVALID.
      */
     Y_CALLBACKENCODING_enum get_callbackEncoding(void);
 
@@ -682,14 +687,16 @@ public:
      * Remember to call the saveToFlash() method of the module if the
      * modification must be kept.
      *
-     * @param newval : a value among Y_CALLBACKENCODING_FORM, Y_CALLBACKENCODING_JSON,
-     * Y_CALLBACKENCODING_JSON_ARRAY, Y_CALLBACKENCODING_CSV, Y_CALLBACKENCODING_YOCTO_API,
-     * Y_CALLBACKENCODING_JSON_NUM, Y_CALLBACKENCODING_EMONCMS, Y_CALLBACKENCODING_AZURE,
-     * Y_CALLBACKENCODING_INFLUXDB, Y_CALLBACKENCODING_MQTT, Y_CALLBACKENCODING_YOCTO_API_JZON,
-     * Y_CALLBACKENCODING_PRTG and Y_CALLBACKENCODING_INFLUXDB_V2 corresponding to the encoding standard
-     * to use for representing notification values
+     * @param newval : a value among YNetwork::CALLBACKENCODING_FORM, YNetwork::CALLBACKENCODING_JSON,
+     * YNetwork::CALLBACKENCODING_JSON_ARRAY, YNetwork::CALLBACKENCODING_CSV,
+     * YNetwork::CALLBACKENCODING_YOCTO_API, YNetwork::CALLBACKENCODING_JSON_NUM,
+     * YNetwork::CALLBACKENCODING_EMONCMS, YNetwork::CALLBACKENCODING_AZURE,
+     * YNetwork::CALLBACKENCODING_INFLUXDB, YNetwork::CALLBACKENCODING_MQTT,
+     * YNetwork::CALLBACKENCODING_YOCTO_API_JZON, YNetwork::CALLBACKENCODING_PRTG and
+     * YNetwork::CALLBACKENCODING_INFLUXDB_V2 corresponding to the encoding standard to use for
+     * representing notification values
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -704,7 +711,7 @@ public:
      * @return a string corresponding to a hashed version of the notification callback credentials if set,
      *         or an empty string otherwise
      *
-     * On failure, throws an exception or returns Y_CALLBACKCREDENTIALS_INVALID.
+     * On failure, throws an exception or returns YNetwork::CALLBACKCREDENTIALS_INVALID.
      */
     string              get_callbackCredentials(void);
 
@@ -724,7 +731,7 @@ public:
      *
      * @param newval : a string corresponding to the credentials required to connect to the callback address
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -741,7 +748,7 @@ public:
      * @param username : username required to log to the callback
      * @param password : password required to log to the callback
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -752,7 +759,7 @@ public:
      *
      * @return an integer corresponding to the initial waiting time before first callback notifications, in seconds
      *
-     * On failure, throws an exception or returns Y_CALLBACKINITIALDELAY_INVALID.
+     * On failure, throws an exception or returns YNetwork::CALLBACKINITIALDELAY_INVALID.
      */
     int                 get_callbackInitialDelay(void);
 
@@ -766,7 +773,7 @@ public:
      * @param newval : an integer corresponding to the initial waiting time before first callback
      * notifications, in seconds
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -779,7 +786,7 @@ public:
      *
      * @return a string corresponding to the HTTP callback schedule strategy, as a text string
      *
-     * On failure, throws an exception or returns Y_CALLBACKSCHEDULE_INVALID.
+     * On failure, throws an exception or returns YNetwork::CALLBACKSCHEDULE_INVALID.
      */
     string              get_callbackSchedule(void);
 
@@ -793,7 +800,7 @@ public:
      *
      * @param newval : a string corresponding to the HTTP callback schedule strategy, as a text string
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -806,7 +813,7 @@ public:
      *
      * @return an integer corresponding to the minimum waiting time between two HTTP callbacks, in seconds
      *
-     * On failure, throws an exception or returns Y_CALLBACKMINDELAY_INVALID.
+     * On failure, throws an exception or returns YNetwork::CALLBACKMINDELAY_INVALID.
      */
     int                 get_callbackMinDelay(void);
 
@@ -819,7 +826,7 @@ public:
      *
      * @param newval : an integer corresponding to the minimum waiting time between two HTTP callbacks, in seconds
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -832,7 +839,7 @@ public:
      *
      * @return an integer corresponding to the waiting time between two HTTP callbacks when there is nothing new
      *
-     * On failure, throws an exception or returns Y_CALLBACKMAXDELAY_INVALID.
+     * On failure, throws an exception or returns YNetwork::CALLBACKMAXDELAY_INVALID.
      */
     int                 get_callbackMaxDelay(void);
 
@@ -846,7 +853,7 @@ public:
      * @param newval : an integer corresponding to the waiting time between two HTTP callbacks when there
      * is nothing new
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -862,7 +869,7 @@ public:
      * @return an integer corresponding to the current consumed by the module from Power-over-Ethernet
      * (PoE), in milliamps
      *
-     * On failure, throws an exception or returns Y_POECURRENT_INVALID.
+     * On failure, throws an exception or returns YNetwork::POECURRENT_INVALID.
      */
     int                 get_poeCurrent(void);
 
@@ -882,7 +889,7 @@ public:
      *
      * This function does not require that the network interface is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YNetwork.isOnline() to test if the network interface is
+     * Use the method isOnline() to test if the network interface is
      * indeed online at a given time. In case of ambiguity when looking for
      * a network interface by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
@@ -926,7 +933,7 @@ public:
      *         integer (e.g. 24 means 255.255.255.0)
      * @param fallbackRouter : fallback router IP address, to be used when no DHCP reply is received
      *
-     * @return YAPI_SUCCESS when the call succeeds.
+     * @return YAPI::SUCCESS when the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -938,7 +945,7 @@ public:
      * server, the module uses an IP of the network 169.254.0.0/16 (APIPA).
      * Remember to call the saveToFlash() method and then to reboot the module to apply this setting.
      *
-     * @return YAPI_SUCCESS when the call succeeds.
+     * @return YAPI::SUCCESS when the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -952,7 +959,7 @@ public:
      * @param subnetMaskLen : subnet mask length, as an integer (e.g. 24 means 255.255.255.0)
      * @param router : router IP address (default gateway)
      *
-     * @return YAPI_SUCCESS when the call succeeds.
+     * @return YAPI::SUCCESS when the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -975,7 +982,7 @@ public:
      * after the end of the current callback, regardless if the minimum time between
      * callbacks configured in the device.
      *
-     * @return YAPI_SUCCESS when the call succeeds.
+     * @return YAPI::SUCCESS when the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -990,7 +997,7 @@ public:
      *         when the callback should occur. For instance, if the periodicity is
      *         24h, an offset of 7 will make the callback occur each day at 7AM.
      *
-     * @return YAPI_SUCCESS when the call succeeds.
+     * @return YAPI::SUCCESS when the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -1016,7 +1023,7 @@ public:
 
     /**
      * Starts the enumeration of network interfaces currently accessible.
-     * Use the method YNetwork.nextNetwork() to iterate on
+     * Use the method YNetwork::nextNetwork() to iterate on
      * next network interfaces.
      *
      * @return a pointer to a YNetwork object, corresponding to
@@ -1047,7 +1054,7 @@ public:
  *
  * This function does not require that the network interface is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YNetwork.isOnline() to test if the network interface is
+ * Use the method isOnline() to test if the network interface is
  * indeed online at a given time. In case of ambiguity when looking for
  * a network interface by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -1066,7 +1073,7 @@ inline YNetwork *yFindNetwork(const string& func)
 { return YNetwork::FindNetwork(func);}
 /**
  * Starts the enumeration of network interfaces currently accessible.
- * Use the method YNetwork.nextNetwork() to iterate on
+ * Use the method YNetwork::nextNetwork() to iterate on
  * next network interfaces.
  *
  * @return a pointer to a YNetwork object, corresponding to

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_anbutton.cpp 42053 2020-10-14 09:46:00Z seb $
+ *  $Id: yocto_anbutton.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindAnButton(), the high-level API for AnButton functions
  *
@@ -128,7 +128,7 @@ int YAnButton::_parseAttr(YJSONObject *json_val)
  *
  * @return an integer corresponding to the current calibrated input value (between 0 and 1000, included)
  *
- * On failure, throws an exception or returns Y_CALIBRATEDVALUE_INVALID.
+ * On failure, throws an exception or returns YAnButton::CALIBRATEDVALUE_INVALID.
  */
 int YAnButton::get_calibratedValue(void)
 {
@@ -157,7 +157,7 @@ int YAnButton::get_calibratedValue(void)
  *
  * @return an integer corresponding to the current measured input value as-is (between 0 and 4095, included)
  *
- * On failure, throws an exception or returns Y_RAWVALUE_INVALID.
+ * On failure, throws an exception or returns YAnButton::RAWVALUE_INVALID.
  */
 int YAnButton::get_rawValue(void)
 {
@@ -184,9 +184,9 @@ int YAnButton::get_rawValue(void)
 /**
  * Tells if a calibration process is currently ongoing.
  *
- * @return either Y_ANALOGCALIBRATION_OFF or Y_ANALOGCALIBRATION_ON
+ * @return either YAnButton::ANALOGCALIBRATION_OFF or YAnButton::ANALOGCALIBRATION_ON
  *
- * On failure, throws an exception or returns Y_ANALOGCALIBRATION_INVALID.
+ * On failure, throws an exception or returns YAnButton::ANALOGCALIBRATION_INVALID.
  */
 Y_ANALOGCALIBRATION_enum YAnButton::get_analogCalibration(void)
 {
@@ -214,9 +214,9 @@ Y_ANALOGCALIBRATION_enum YAnButton::get_analogCalibration(void)
  * Starts or stops the calibration process. Remember to call the saveToFlash()
  * method of the module at the end of the calibration if the modification must be kept.
  *
- * @param newval : either Y_ANALOGCALIBRATION_OFF or Y_ANALOGCALIBRATION_ON
+ * @param newval : either YAnButton::ANALOGCALIBRATION_OFF or YAnButton::ANALOGCALIBRATION_ON
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -242,7 +242,7 @@ int YAnButton::set_analogCalibration(Y_ANALOGCALIBRATION_enum newval)
  * @return an integer corresponding to the maximal value measured during the calibration (between 0
  * and 4095, included)
  *
- * On failure, throws an exception or returns Y_CALIBRATIONMAX_INVALID.
+ * On failure, throws an exception or returns YAnButton::CALIBRATIONMAX_INVALID.
  */
 int YAnButton::get_calibrationMax(void)
 {
@@ -275,7 +275,7 @@ int YAnButton::get_calibrationMax(void)
  * and 4095, included), without actually
  *         starting the automated calibration
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -301,7 +301,7 @@ int YAnButton::set_calibrationMax(int newval)
  * @return an integer corresponding to the minimal value measured during the calibration (between 0
  * and 4095, included)
  *
- * On failure, throws an exception or returns Y_CALIBRATIONMIN_INVALID.
+ * On failure, throws an exception or returns YAnButton::CALIBRATIONMIN_INVALID.
  */
 int YAnButton::get_calibrationMin(void)
 {
@@ -334,7 +334,7 @@ int YAnButton::get_calibrationMin(void)
  * and 4095, included), without actually
  *         starting the automated calibration
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -360,7 +360,7 @@ int YAnButton::set_calibrationMin(int newval)
  * @return an integer corresponding to the sensibility for the input (between 1 and 1000) for
  * triggering user callbacks
  *
- * On failure, throws an exception or returns Y_SENSITIVITY_INVALID.
+ * On failure, throws an exception or returns YAnButton::SENSITIVITY_INVALID.
  */
 int YAnButton::get_sensitivity(void)
 {
@@ -395,7 +395,7 @@ int YAnButton::get_sensitivity(void)
  * @param newval : an integer corresponding to the sensibility for the input (between 1 and 1000) for
  * triggering user callbacks
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -418,10 +418,10 @@ int YAnButton::set_sensitivity(int newval)
 /**
  * Returns true if the input (considered as binary) is active (closed contact), and false otherwise.
  *
- * @return either Y_ISPRESSED_FALSE or Y_ISPRESSED_TRUE, according to true if the input (considered as
- * binary) is active (closed contact), and false otherwise
+ * @return either YAnButton::ISPRESSED_FALSE or YAnButton::ISPRESSED_TRUE, according to true if the
+ * input (considered as binary) is active (closed contact), and false otherwise
  *
- * On failure, throws an exception or returns Y_ISPRESSED_INVALID.
+ * On failure, throws an exception or returns YAnButton::ISPRESSED_INVALID.
  */
 Y_ISPRESSED_enum YAnButton::get_isPressed(void)
 {
@@ -453,7 +453,7 @@ Y_ISPRESSED_enum YAnButton::get_isPressed(void)
  * and the last time
  *         the input button was pressed (the input contact transitioned from open to closed)
  *
- * On failure, throws an exception or returns Y_LASTTIMEPRESSED_INVALID.
+ * On failure, throws an exception or returns YAnButton::LASTTIMEPRESSED_INVALID.
  */
 s64 YAnButton::get_lastTimePressed(void)
 {
@@ -485,7 +485,7 @@ s64 YAnButton::get_lastTimePressed(void)
  * and the last time
  *         the input button was released (the input contact transitioned from closed to open)
  *
- * On failure, throws an exception or returns Y_LASTTIMERELEASED_INVALID.
+ * On failure, throws an exception or returns YAnButton::LASTTIMERELEASED_INVALID.
  */
 s64 YAnButton::get_lastTimeReleased(void)
 {
@@ -516,7 +516,7 @@ s64 YAnButton::get_lastTimeReleased(void)
  *
  * @return an integer corresponding to the pulse counter value
  *
- * On failure, throws an exception or returns Y_PULSECOUNTER_INVALID.
+ * On failure, throws an exception or returns YAnButton::PULSECOUNTER_INVALID.
  */
 s64 YAnButton::get_pulseCounter(void)
 {
@@ -561,7 +561,7 @@ int YAnButton::set_pulseCounter(s64 newval)
  *
  * @return an integer corresponding to the timer of the pulses counter (ms)
  *
- * On failure, throws an exception or returns Y_PULSETIMER_INVALID.
+ * On failure, throws an exception or returns YAnButton::PULSETIMER_INVALID.
  */
 s64 YAnButton::get_pulseTimer(void)
 {
@@ -588,10 +588,11 @@ s64 YAnButton::get_pulseTimer(void)
 /**
  * Returns the decoding method applied to the input (analog or multiplexed binary switches).
  *
- * @return either Y_INPUTTYPE_ANALOG or Y_INPUTTYPE_DIGITAL4, according to the decoding method applied
- * to the input (analog or multiplexed binary switches)
+ * @return a value among YAnButton::INPUTTYPE_ANALOG_FAST, YAnButton::INPUTTYPE_DIGITAL4 and
+ * YAnButton::INPUTTYPE_ANALOG_SMOOTH corresponding to the decoding method applied to the input (analog
+ * or multiplexed binary switches)
  *
- * On failure, throws an exception or returns Y_INPUTTYPE_INVALID.
+ * On failure, throws an exception or returns YAnButton::INPUTTYPE_INVALID.
  */
 Y_INPUTTYPE_enum YAnButton::get_inputType(void)
 {
@@ -619,10 +620,11 @@ Y_INPUTTYPE_enum YAnButton::get_inputType(void)
  * Changes the decoding method applied to the input (analog or multiplexed binary switches).
  * Remember to call the saveToFlash() method of the module if the modification must be kept.
  *
- * @param newval : either Y_INPUTTYPE_ANALOG or Y_INPUTTYPE_DIGITAL4, according to the decoding method
- * applied to the input (analog or multiplexed binary switches)
+ * @param newval : a value among YAnButton::INPUTTYPE_ANALOG_FAST, YAnButton::INPUTTYPE_DIGITAL4 and
+ * YAnButton::INPUTTYPE_ANALOG_SMOOTH corresponding to the decoding method applied to the input (analog
+ * or multiplexed binary switches)
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -655,7 +657,7 @@ int YAnButton::set_inputType(Y_INPUTTYPE_enum newval)
  *
  * This function does not require that the analog input is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YAnButton.isOnline() to test if the analog input is
+ * Use the method isOnline() to test if the analog input is
  * indeed online at a given time. In case of ambiguity when looking for
  * an analog input by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -734,7 +736,7 @@ int YAnButton::_invokeValueCallback(string value)
 /**
  * Returns the pulse counter value as well as its timer.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */

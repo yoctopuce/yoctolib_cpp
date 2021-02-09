@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_current.h 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_current.h 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Declares yFindCurrent(), the high-level API for Current functions
  *
@@ -113,9 +113,9 @@ public:
     /**
      * Returns the activation state of this input.
      *
-     * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the activation state of this input
+     * @return either YCurrent::ENABLED_FALSE or YCurrent::ENABLED_TRUE, according to the activation state of this input
      *
-     * On failure, throws an exception or returns Y_ENABLED_INVALID.
+     * On failure, throws an exception or returns YCurrent::ENABLED_INVALID.
      */
     Y_ENABLED_enum      get_enabled(void);
 
@@ -130,10 +130,10 @@ public:
      * Remember to call the saveToFlash()
      * method of the module if the modification must be kept.
      *
-     * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the activation state of this
-     * voltage input
+     * @param newval : either YCurrent::ENABLED_FALSE or YCurrent::ENABLED_TRUE, according to the activation
+     * state of this voltage input
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -154,7 +154,7 @@ public:
      *
      * This function does not require that the current sensor is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YCurrent.isOnline() to test if the current sensor is
+     * Use the method isOnline() to test if the current sensor is
      * indeed online at a given time. In case of ambiguity when looking for
      * a current sensor by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
@@ -223,7 +223,7 @@ public:
 
     /**
      * Starts the enumeration of current sensors currently accessible.
-     * Use the method YCurrent.nextCurrent() to iterate on
+     * Use the method YCurrent::nextCurrent() to iterate on
      * next current sensors.
      *
      * @return a pointer to a YCurrent object, corresponding to
@@ -254,7 +254,7 @@ public:
  *
  * This function does not require that the current sensor is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YCurrent.isOnline() to test if the current sensor is
+ * Use the method isOnline() to test if the current sensor is
  * indeed online at a given time. In case of ambiguity when looking for
  * a current sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -273,7 +273,7 @@ inline YCurrent *yFindCurrent(const string& func)
 { return YCurrent::FindCurrent(func);}
 /**
  * Starts the enumeration of current sensors currently accessible.
- * Use the method YCurrent.nextCurrent() to iterate on
+ * Use the method YCurrent::nextCurrent() to iterate on
  * next current sensors.
  *
  * @return a pointer to a YCurrent object, corresponding to

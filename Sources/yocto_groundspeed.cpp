@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_groundspeed.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_groundspeed.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindGroundSpeed(), the high-level API for GroundSpeed functions
  *
@@ -84,7 +84,7 @@ YGroundSpeed::~YGroundSpeed()
  *
  * This function does not require that the ground speed sensor is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YGroundSpeed.isOnline() to test if the ground speed sensor is
+ * Use the method isOnline() to test if the ground speed sensor is
  * indeed online at a given time. In case of ambiguity when looking for
  * a ground speed sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,

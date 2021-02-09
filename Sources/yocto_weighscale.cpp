@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_weighscale.cpp 41112 2020-06-29 13:21:58Z seb $
+ *  $Id: yocto_weighscale.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindWeighScale(), the high-level API for WeighScale functions
  *
@@ -122,7 +122,7 @@ int YWeighScale::_parseAttr(YJSONObject *json_val)
  *
  * @param newval : a string corresponding to the measuring unit for the weight
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -145,10 +145,10 @@ int YWeighScale::set_unit(const string& newval)
 /**
  * Returns the current load cell bridge excitation method.
  *
- * @return a value among Y_EXCITATION_OFF, Y_EXCITATION_DC and Y_EXCITATION_AC corresponding to the
- * current load cell bridge excitation method
+ * @return a value among YWeighScale::EXCITATION_OFF, YWeighScale::EXCITATION_DC and
+ * YWeighScale::EXCITATION_AC corresponding to the current load cell bridge excitation method
  *
- * On failure, throws an exception or returns Y_EXCITATION_INVALID.
+ * On failure, throws an exception or returns YWeighScale::EXCITATION_INVALID.
  */
 Y_EXCITATION_enum YWeighScale::get_excitation(void)
 {
@@ -177,10 +177,10 @@ Y_EXCITATION_enum YWeighScale::get_excitation(void)
  * Remember to call the saveToFlash() method of the module if the
  * modification must be kept.
  *
- * @param newval : a value among Y_EXCITATION_OFF, Y_EXCITATION_DC and Y_EXCITATION_AC corresponding
- * to the current load cell bridge excitation method
+ * @param newval : a value among YWeighScale::EXCITATION_OFF, YWeighScale::EXCITATION_DC and
+ * YWeighScale::EXCITATION_AC corresponding to the current load cell bridge excitation method
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -211,7 +211,7 @@ int YWeighScale::set_excitation(Y_EXCITATION_enum newval)
  *
  * @param newval : a floating point number corresponding to the averaged temperature update rate, in per mille
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -240,7 +240,7 @@ int YWeighScale::set_tempAvgAdaptRatio(double newval)
  *
  * @return a floating point number corresponding to the averaged temperature update rate, in per mille
  *
- * On failure, throws an exception or returns Y_TEMPAVGADAPTRATIO_INVALID.
+ * On failure, throws an exception or returns YWeighScale::TEMPAVGADAPTRATIO_INVALID.
  */
 double YWeighScale::get_tempAvgAdaptRatio(void)
 {
@@ -274,7 +274,7 @@ double YWeighScale::get_tempAvgAdaptRatio(void)
  *
  * @param newval : a floating point number corresponding to the temperature change update rate, in per mille
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -302,7 +302,7 @@ int YWeighScale::set_tempChgAdaptRatio(double newval)
  *
  * @return a floating point number corresponding to the temperature change update rate, in per mille
  *
- * On failure, throws an exception or returns Y_TEMPCHGADAPTRATIO_INVALID.
+ * On failure, throws an exception or returns YWeighScale::TEMPCHGADAPTRATIO_INVALID.
  */
 double YWeighScale::get_tempChgAdaptRatio(void)
 {
@@ -331,7 +331,7 @@ double YWeighScale::get_tempChgAdaptRatio(void)
  *
  * @return a floating point number corresponding to the current averaged temperature, used for thermal compensation
  *
- * On failure, throws an exception or returns Y_COMPTEMPAVG_INVALID.
+ * On failure, throws an exception or returns YWeighScale::COMPTEMPAVG_INVALID.
  */
 double YWeighScale::get_compTempAvg(void)
 {
@@ -361,7 +361,7 @@ double YWeighScale::get_compTempAvg(void)
  * @return a floating point number corresponding to the current temperature variation, used for
  * thermal compensation
  *
- * On failure, throws an exception or returns Y_COMPTEMPCHG_INVALID.
+ * On failure, throws an exception or returns YWeighScale::COMPTEMPCHG_INVALID.
  */
 double YWeighScale::get_compTempChg(void)
 {
@@ -390,7 +390,7 @@ double YWeighScale::get_compTempChg(void)
  *
  * @return a floating point number corresponding to the current current thermal compensation value
  *
- * On failure, throws an exception or returns Y_COMPENSATION_INVALID.
+ * On failure, throws an exception or returns YWeighScale::COMPENSATION_INVALID.
  */
 double YWeighScale::get_compensation(void)
 {
@@ -423,7 +423,7 @@ double YWeighScale::get_compensation(void)
  *
  * @param newval : a floating point number corresponding to the zero tracking threshold value
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -450,7 +450,7 @@ int YWeighScale::set_zeroTracking(double newval)
  *
  * @return a floating point number corresponding to the zero tracking threshold value
  *
- * On failure, throws an exception or returns Y_ZEROTRACKING_INVALID.
+ * On failure, throws an exception or returns YWeighScale::ZEROTRACKING_INVALID.
  */
 double YWeighScale::get_zeroTracking(void)
 {
@@ -525,7 +525,7 @@ int YWeighScale::set_command(const string& newval)
  *
  * This function does not require that the weighing scale sensor is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YWeighScale.isOnline() to test if the weighing scale sensor is
+ * Use the method isOnline() to test if the weighing scale sensor is
  * indeed online at a given time. In case of ambiguity when looking for
  * a weighing scale sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -640,7 +640,7 @@ int YWeighScale::_invokeTimedReportCallback(YMeasure value)
  * so that the current signal corresponds to a zero weight. Remember to call the
  * saveToFlash() method of the module if the modification must be kept.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -656,7 +656,7 @@ int YWeighScale::tare(void)
  * @param currWeight : reference weight presently on the load cell.
  * @param maxWeight : maximum weight to be expected on the load cell.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -759,7 +759,7 @@ int YWeighScale::loadCompensationTable(int tableIndex,vector<double>& tempValues
  *         to apply for each of the temperature included in the first
  *         argument, index by index.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -779,7 +779,7 @@ int YWeighScale::set_offsetAvgCompensationTable(vector<double> tempValues,vector
  *         with the offset correction applied for each of the temperature
  *         included in the first argument, index by index.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -799,7 +799,7 @@ int YWeighScale::loadOffsetAvgCompensationTable(vector<double>& tempValues,vecto
  *         to apply for each of the temperature variation included in the first
  *         argument, index by index.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -819,7 +819,7 @@ int YWeighScale::set_offsetChgCompensationTable(vector<double> tempValues,vector
  *         with the offset correction applied for each of the temperature
  *         variation included in the first argument, index by index.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -839,7 +839,7 @@ int YWeighScale::loadOffsetChgCompensationTable(vector<double>& tempValues,vecto
  *         (in percents) to apply for each of the temperature included in the first
  *         argument, index by index.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -859,7 +859,7 @@ int YWeighScale::set_spanAvgCompensationTable(vector<double> tempValues,vector<d
  *         with the span correction applied for each of the temperature
  *         included in the first argument, index by index.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -879,7 +879,7 @@ int YWeighScale::loadSpanAvgCompensationTable(vector<double>& tempValues,vector<
  *         (in percents) to apply for each of the temperature variation included
  *         in the first argument, index by index.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -899,7 +899,7 @@ int YWeighScale::set_spanChgCompensationTable(vector<double> tempValues,vector<d
  *         with the span correction applied for each of variation of temperature
  *         included in the first argument, index by index.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */

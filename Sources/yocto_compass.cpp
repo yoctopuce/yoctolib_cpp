@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_compass.cpp 42951 2020-12-14 09:43:29Z seb $
+ *  $Id: yocto_compass.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindCompass(), the high-level API for Compass functions
  *
@@ -94,7 +94,7 @@ int YCompass::_parseAttr(YJSONObject *json_val)
  *
  * @return an integer corresponding to the measure update frequency, measured in Hz
  *
- * On failure, throws an exception or returns Y_BANDWIDTH_INVALID.
+ * On failure, throws an exception or returns YCompass::BANDWIDTH_INVALID.
  */
 int YCompass::get_bandwidth(void)
 {
@@ -126,7 +126,7 @@ int YCompass::get_bandwidth(void)
  *
  * @param newval : an integer corresponding to the measure update frequency, measured in Hz
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -173,7 +173,7 @@ Y_AXIS_enum YCompass::get_axis(void)
  *
  * @return a floating point number corresponding to the magnetic heading, regardless of the configured bearing
  *
- * On failure, throws an exception or returns Y_MAGNETICHEADING_INVALID.
+ * On failure, throws an exception or returns YCompass::MAGNETICHEADING_INVALID.
  */
 double YCompass::get_magneticHeading(void)
 {
@@ -210,7 +210,7 @@ double YCompass::get_magneticHeading(void)
  *
  * This function does not require that the compass function is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YCompass.isOnline() to test if the compass function is
+ * Use the method isOnline() to test if the compass function is
  * indeed online at a given time. In case of ambiguity when looking for
  * a compass function by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_audioin.h 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_audioin.h 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Declares yFindAudioIn(), the high-level API for AudioIn functions
  *
@@ -121,7 +121,7 @@ public:
      *
      * @return an integer corresponding to audio input gain, in per cents
      *
-     * On failure, throws an exception or returns Y_VOLUME_INVALID.
+     * On failure, throws an exception or returns YAudioIn::VOLUME_INVALID.
      */
     int                 get_volume(void);
 
@@ -135,7 +135,7 @@ public:
      *
      * @param newval : an integer corresponding to audio input gain, in per cents
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -146,9 +146,9 @@ public:
     /**
      * Returns the state of the mute function.
      *
-     * @return either Y_MUTE_FALSE or Y_MUTE_TRUE, according to the state of the mute function
+     * @return either YAudioIn::MUTE_FALSE or YAudioIn::MUTE_TRUE, according to the state of the mute function
      *
-     * On failure, throws an exception or returns Y_MUTE_INVALID.
+     * On failure, throws an exception or returns YAudioIn::MUTE_INVALID.
      */
     Y_MUTE_enum         get_mute(void);
 
@@ -159,9 +159,9 @@ public:
      * Changes the state of the mute function. Remember to call the matching module
      * saveToFlash() method to save the setting permanently.
      *
-     * @param newval : either Y_MUTE_FALSE or Y_MUTE_TRUE, according to the state of the mute function
+     * @param newval : either YAudioIn::MUTE_FALSE or YAudioIn::MUTE_TRUE, according to the state of the mute function
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -177,7 +177,7 @@ public:
      *
      * @return a string corresponding to the supported volume range
      *
-     * On failure, throws an exception or returns Y_VOLUMERANGE_INVALID.
+     * On failure, throws an exception or returns YAudioIn::VOLUMERANGE_INVALID.
      */
     string              get_volumeRange(void);
 
@@ -189,7 +189,7 @@ public:
      *
      * @return an integer corresponding to the detected input signal level
      *
-     * On failure, throws an exception or returns Y_SIGNAL_INVALID.
+     * On failure, throws an exception or returns YAudioIn::SIGNAL_INVALID.
      */
     int                 get_signal(void);
 
@@ -201,7 +201,7 @@ public:
      *
      * @return an integer corresponding to the number of seconds elapsed without detecting a signal
      *
-     * On failure, throws an exception or returns Y_NOSIGNALFOR_INVALID.
+     * On failure, throws an exception or returns YAudioIn::NOSIGNALFOR_INVALID.
      */
     int                 get_noSignalFor(void);
 
@@ -221,7 +221,7 @@ public:
      *
      * This function does not require that the audio input is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YAudioIn.isOnline() to test if the audio input is
+     * Use the method isOnline() to test if the audio input is
      * indeed online at a given time. In case of ambiguity when looking for
      * an audio input by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
@@ -274,7 +274,7 @@ public:
 
     /**
      * Starts the enumeration of audio inputs currently accessible.
-     * Use the method YAudioIn.nextAudioIn() to iterate on
+     * Use the method YAudioIn::nextAudioIn() to iterate on
      * next audio inputs.
      *
      * @return a pointer to a YAudioIn object, corresponding to
@@ -305,7 +305,7 @@ public:
  *
  * This function does not require that the audio input is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YAudioIn.isOnline() to test if the audio input is
+ * Use the method isOnline() to test if the audio input is
  * indeed online at a given time. In case of ambiguity when looking for
  * an audio input by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -324,7 +324,7 @@ inline YAudioIn *yFindAudioIn(const string& func)
 { return YAudioIn::FindAudioIn(func);}
 /**
  * Starts the enumeration of audio inputs currently accessible.
- * Use the method YAudioIn.nextAudioIn() to iterate on
+ * Use the method YAudioIn::nextAudioIn() to iterate on
  * next audio inputs.
  *
  * @return a pointer to a YAudioIn object, corresponding to

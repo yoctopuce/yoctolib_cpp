@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_arithmeticsensor.h 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_arithmeticsensor.h 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Declares yFindArithmeticSensor(), the high-level API for ArithmeticSensor functions
  *
@@ -112,7 +112,7 @@ public:
      *
      * @param newval : a string corresponding to the measuring unit for the arithmetic sensor
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -125,7 +125,7 @@ public:
      *
      * @return a string corresponding to a short informative description of the formula
      *
-     * On failure, throws an exception or returns Y_DESCRIPTION_INVALID.
+     * On failure, throws an exception or returns YArithmeticSensor::DESCRIPTION_INVALID.
      */
     string              get_description(void);
 
@@ -154,7 +154,7 @@ public:
      *
      * This function does not require that the arithmetic sensor is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YArithmeticSensor.isOnline() to test if the arithmetic sensor is
+     * Use the method isOnline() to test if the arithmetic sensor is
      * indeed online at a given time. In case of ambiguity when looking for
      * an arithmetic sensor by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
@@ -213,7 +213,7 @@ public:
      *
      * @return the current expression value if the call succeeds.
      *
-     * On failure, throws an exception or returns YAPI_INVALID_DOUBLE.
+     * On failure, throws an exception or returns YAPI::INVALID_DOUBLE.
      */
     virtual double      defineExpression(string expr,string descr);
 
@@ -240,7 +240,7 @@ public:
      * @param outputValues : array of floating point numbers, corresponding to the output value
      *         desired for each of the input value, index by index.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -256,7 +256,7 @@ public:
      * @param outputValues : array of floating point numbers, that is filled by the function
      *         output value for each of the input value, index by index.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -282,7 +282,7 @@ public:
 
     /**
      * Starts the enumeration of arithmetic sensors currently accessible.
-     * Use the method YArithmeticSensor.nextArithmeticSensor() to iterate on
+     * Use the method YArithmeticSensor::nextArithmeticSensor() to iterate on
      * next arithmetic sensors.
      *
      * @return a pointer to a YArithmeticSensor object, corresponding to
@@ -313,7 +313,7 @@ public:
  *
  * This function does not require that the arithmetic sensor is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YArithmeticSensor.isOnline() to test if the arithmetic sensor is
+ * Use the method isOnline() to test if the arithmetic sensor is
  * indeed online at a given time. In case of ambiguity when looking for
  * an arithmetic sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -332,7 +332,7 @@ inline YArithmeticSensor *yFindArithmeticSensor(const string& func)
 { return YArithmeticSensor::FindArithmeticSensor(func);}
 /**
  * Starts the enumeration of arithmetic sensors currently accessible.
- * Use the method YArithmeticSensor.nextArithmeticSensor() to iterate on
+ * Use the method YArithmeticSensor::nextArithmeticSensor() to iterate on
  * next arithmetic sensors.
  *
  * @return a pointer to a YArithmeticSensor object, corresponding to

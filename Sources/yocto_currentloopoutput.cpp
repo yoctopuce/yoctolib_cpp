@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_currentloopoutput.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_currentloopoutput.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindCurrentLoopOutput(), the high-level API for CurrentLoopOutput functions
  *
@@ -101,7 +101,7 @@ int YCurrentLoopOutput::_parseAttr(YJSONObject *json_val)
  *
  * @param newval : a floating point number corresponding to the current loop, the valid range is from 3 to 21mA
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -126,7 +126,7 @@ int YCurrentLoopOutput::set_current(double newval)
  *
  * @return a floating point number corresponding to the loop current set point in mA
  *
- * On failure, throws an exception or returns Y_CURRENT_INVALID.
+ * On failure, throws an exception or returns YCurrentLoopOutput::CURRENT_INVALID.
  */
 double YCurrentLoopOutput::get_current(void)
 {
@@ -194,7 +194,7 @@ int YCurrentLoopOutput::set_currentTransition(const string& newval)
  *
  * @param newval : a floating point number corresponding to the loop current at device start up
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -219,7 +219,7 @@ int YCurrentLoopOutput::set_currentAtStartUp(double newval)
  *
  * @return a floating point number corresponding to the current in the loop at device startup, in mA
  *
- * On failure, throws an exception or returns Y_CURRENTATSTARTUP_INVALID.
+ * On failure, throws an exception or returns YCurrentLoopOutput::CURRENTATSTARTUP_INVALID.
  */
 double YCurrentLoopOutput::get_currentAtStartUp(void)
 {
@@ -248,10 +248,10 @@ double YCurrentLoopOutput::get_currentAtStartUp(void)
  * is powered. NOPWR: the loop in not powered. LOWPWR: the loop is not
  * powered enough to maintain the current required (insufficient voltage).
  *
- * @return a value among Y_LOOPPOWER_NOPWR, Y_LOOPPOWER_LOWPWR and Y_LOOPPOWER_POWEROK corresponding
- * to the loop powerstate
+ * @return a value among YCurrentLoopOutput::LOOPPOWER_NOPWR, YCurrentLoopOutput::LOOPPOWER_LOWPWR and
+ * YCurrentLoopOutput::LOOPPOWER_POWEROK corresponding to the loop powerstate
  *
- * On failure, throws an exception or returns Y_LOOPPOWER_INVALID.
+ * On failure, throws an exception or returns YCurrentLoopOutput::LOOPPOWER_INVALID.
  */
 Y_LOOPPOWER_enum YCurrentLoopOutput::get_loopPower(void)
 {
@@ -288,7 +288,7 @@ Y_LOOPPOWER_enum YCurrentLoopOutput::get_loopPower(void)
  *
  * This function does not require that the 4-20mA output is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YCurrentLoopOutput.isOnline() to test if the 4-20mA output is
+ * Use the method isOnline() to test if the 4-20mA output is
  * indeed online at a given time. In case of ambiguity when looking for
  * a 4-20mA output by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -372,7 +372,7 @@ int YCurrentLoopOutput::_invokeValueCallback(string value)
  *         (floating-point number, representing the end current in mA)
  * @param ms_duration : total duration of the transition, in milliseconds
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  */
 int YCurrentLoopOutput::currentMove(double mA_target,int ms_duration)
 {

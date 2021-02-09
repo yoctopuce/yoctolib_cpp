@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_realtimeclock.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_realtimeclock.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *
@@ -98,7 +98,7 @@ int YRealTimeClock::_parseAttr(YJSONObject *json_val)
  * @return an integer corresponding to the current time in Unix format (number of elapsed seconds
  * since Jan 1st, 1970)
  *
- * On failure, throws an exception or returns Y_UNIXTIME_INVALID.
+ * On failure, throws an exception or returns YRealTimeClock::UNIXTIME_INVALID.
  */
 s64 YRealTimeClock::get_unixTime(void)
 {
@@ -127,7 +127,7 @@ s64 YRealTimeClock::get_unixTime(void)
  *
  * @param newval : an integer corresponding to the current time
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -152,7 +152,7 @@ int YRealTimeClock::set_unixTime(s64 newval)
  *
  * @return a string corresponding to the current time in the form "YYYY/MM/DD hh:mm:ss"
  *
- * On failure, throws an exception or returns Y_DATETIME_INVALID.
+ * On failure, throws an exception or returns YRealTimeClock::DATETIME_INVALID.
  */
 string YRealTimeClock::get_dateTime(void)
 {
@@ -181,7 +181,7 @@ string YRealTimeClock::get_dateTime(void)
  *
  * @return an integer corresponding to the number of seconds between current time and UTC time (time zone)
  *
- * On failure, throws an exception or returns Y_UTCOFFSET_INVALID.
+ * On failure, throws an exception or returns YRealTimeClock::UTCOFFSET_INVALID.
  */
 int YRealTimeClock::get_utcOffset(void)
 {
@@ -213,7 +213,7 @@ int YRealTimeClock::get_utcOffset(void)
  *
  * @param newval : an integer corresponding to the number of seconds between current time and UTC time (time zone)
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -236,10 +236,10 @@ int YRealTimeClock::set_utcOffset(int newval)
 /**
  * Returns true if the clock has been set, and false otherwise.
  *
- * @return either Y_TIMESET_FALSE or Y_TIMESET_TRUE, according to true if the clock has been set, and
- * false otherwise
+ * @return either YRealTimeClock::TIMESET_FALSE or YRealTimeClock::TIMESET_TRUE, according to true if
+ * the clock has been set, and false otherwise
  *
- * On failure, throws an exception or returns Y_TIMESET_INVALID.
+ * On failure, throws an exception or returns YRealTimeClock::TIMESET_INVALID.
  */
 Y_TIMESET_enum YRealTimeClock::get_timeSet(void)
 {
@@ -276,7 +276,7 @@ Y_TIMESET_enum YRealTimeClock::get_timeSet(void)
  *
  * This function does not require that the real-time clock is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YRealTimeClock.isOnline() to test if the real-time clock is
+ * Use the method isOnline() to test if the real-time clock is
  * indeed online at a given time. In case of ambiguity when looking for
  * a real-time clock by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,

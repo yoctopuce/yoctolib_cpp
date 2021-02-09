@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_led.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_led.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindLed(), the high-level API for Led functions
  *
@@ -90,9 +90,9 @@ int YLed::_parseAttr(YJSONObject *json_val)
 /**
  * Returns the current LED state.
  *
- * @return either Y_POWER_OFF or Y_POWER_ON, according to the current LED state
+ * @return either YLed::POWER_OFF or YLed::POWER_ON, according to the current LED state
  *
- * On failure, throws an exception or returns Y_POWER_INVALID.
+ * On failure, throws an exception or returns YLed::POWER_INVALID.
  */
 Y_POWER_enum YLed::get_power(void)
 {
@@ -119,9 +119,9 @@ Y_POWER_enum YLed::get_power(void)
 /**
  * Changes the state of the LED.
  *
- * @param newval : either Y_POWER_OFF or Y_POWER_ON, according to the state of the LED
+ * @param newval : either YLed::POWER_OFF or YLed::POWER_ON, according to the state of the LED
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -146,7 +146,7 @@ int YLed::set_power(Y_POWER_enum newval)
  *
  * @return an integer corresponding to the current LED intensity (in per cent)
  *
- * On failure, throws an exception or returns Y_LUMINOSITY_INVALID.
+ * On failure, throws an exception or returns YLed::LUMINOSITY_INVALID.
  */
 int YLed::get_luminosity(void)
 {
@@ -176,7 +176,7 @@ int YLed::get_luminosity(void)
  *
  * @param newval : an integer corresponding to the current LED intensity (in per cent)
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -199,10 +199,10 @@ int YLed::set_luminosity(int newval)
 /**
  * Returns the current LED signaling mode.
  *
- * @return a value among Y_BLINKING_STILL, Y_BLINKING_RELAX, Y_BLINKING_AWARE, Y_BLINKING_RUN,
- * Y_BLINKING_CALL and Y_BLINKING_PANIC corresponding to the current LED signaling mode
+ * @return a value among YLed::BLINKING_STILL, YLed::BLINKING_RELAX, YLed::BLINKING_AWARE,
+ * YLed::BLINKING_RUN, YLed::BLINKING_CALL and YLed::BLINKING_PANIC corresponding to the current LED signaling mode
  *
- * On failure, throws an exception or returns Y_BLINKING_INVALID.
+ * On failure, throws an exception or returns YLed::BLINKING_INVALID.
  */
 Y_BLINKING_enum YLed::get_blinking(void)
 {
@@ -229,10 +229,10 @@ Y_BLINKING_enum YLed::get_blinking(void)
 /**
  * Changes the current LED signaling mode.
  *
- * @param newval : a value among Y_BLINKING_STILL, Y_BLINKING_RELAX, Y_BLINKING_AWARE, Y_BLINKING_RUN,
- * Y_BLINKING_CALL and Y_BLINKING_PANIC corresponding to the current LED signaling mode
+ * @param newval : a value among YLed::BLINKING_STILL, YLed::BLINKING_RELAX, YLed::BLINKING_AWARE,
+ * YLed::BLINKING_RUN, YLed::BLINKING_CALL and YLed::BLINKING_PANIC corresponding to the current LED signaling mode
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -265,7 +265,7 @@ int YLed::set_blinking(Y_BLINKING_enum newval)
  *
  * This function does not require that the monochrome LED is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YLed.isOnline() to test if the monochrome LED is
+ * Use the method isOnline() to test if the monochrome LED is
  * indeed online at a given time. In case of ambiguity when looking for
  * a monochrome LED by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,

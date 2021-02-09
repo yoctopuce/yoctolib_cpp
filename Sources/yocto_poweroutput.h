@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_poweroutput.h 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_poweroutput.h 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Declares yFindPowerOutput(), the high-level API for PowerOutput functions
  *
@@ -115,10 +115,11 @@ public:
     /**
      * Returns the voltage on the power output featured by the module.
      *
-     * @return a value among Y_VOLTAGE_OFF, Y_VOLTAGE_OUT3V3, Y_VOLTAGE_OUT5V, Y_VOLTAGE_OUT4V7 and
-     * Y_VOLTAGE_OUT1V8 corresponding to the voltage on the power output featured by the module
+     * @return a value among YPowerOutput::VOLTAGE_OFF, YPowerOutput::VOLTAGE_OUT3V3,
+     * YPowerOutput::VOLTAGE_OUT5V, YPowerOutput::VOLTAGE_OUT4V7 and YPowerOutput::VOLTAGE_OUT1V8
+     * corresponding to the voltage on the power output featured by the module
      *
-     * On failure, throws an exception or returns Y_VOLTAGE_INVALID.
+     * On failure, throws an exception or returns YPowerOutput::VOLTAGE_INVALID.
      */
     Y_VOLTAGE_enum      get_voltage(void);
 
@@ -130,11 +131,12 @@ public:
      * module. Remember to call the saveToFlash() method of the module if the
      * modification must be kept.
      *
-     * @param newval : a value among Y_VOLTAGE_OFF, Y_VOLTAGE_OUT3V3, Y_VOLTAGE_OUT5V, Y_VOLTAGE_OUT4V7
-     * and Y_VOLTAGE_OUT1V8 corresponding to the voltage on the power output provided by the
+     * @param newval : a value among YPowerOutput::VOLTAGE_OFF, YPowerOutput::VOLTAGE_OUT3V3,
+     * YPowerOutput::VOLTAGE_OUT5V, YPowerOutput::VOLTAGE_OUT4V7 and YPowerOutput::VOLTAGE_OUT1V8
+     * corresponding to the voltage on the power output provided by the
      *         module
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -155,7 +157,7 @@ public:
      *
      * This function does not require that the power output is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YPowerOutput.isOnline() to test if the power output is
+     * Use the method isOnline() to test if the power output is
      * indeed online at a given time. In case of ambiguity when looking for
      * a power output by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
@@ -208,7 +210,7 @@ public:
 
     /**
      * Starts the enumeration of power output currently accessible.
-     * Use the method YPowerOutput.nextPowerOutput() to iterate on
+     * Use the method YPowerOutput::nextPowerOutput() to iterate on
      * next power output.
      *
      * @return a pointer to a YPowerOutput object, corresponding to
@@ -239,7 +241,7 @@ public:
  *
  * This function does not require that the power output is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YPowerOutput.isOnline() to test if the power output is
+ * Use the method isOnline() to test if the power output is
  * indeed online at a given time. In case of ambiguity when looking for
  * a power output by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -258,7 +260,7 @@ inline YPowerOutput *yFindPowerOutput(const string& func)
 { return YPowerOutput::FindPowerOutput(func);}
 /**
  * Starts the enumeration of power output currently accessible.
- * Use the method YPowerOutput.nextPowerOutput() to iterate on
+ * Use the method YPowerOutput::nextPowerOutput() to iterate on
  * next power output.
  *
  * @return a pointer to a YPowerOutput object, corresponding to

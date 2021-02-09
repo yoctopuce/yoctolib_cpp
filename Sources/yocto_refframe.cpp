@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_refframe.cpp 42951 2020-12-14 09:43:29Z seb $
+ *  $Id: yocto_refframe.cpp 43619 2021-01-29 09:14:45Z mvuilleu $
  *
  *  Implements yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -162,7 +162,7 @@ int YRefFrame::set_mountPos(int newval)
  *
  * @param newval : a floating point number corresponding to the reference bearing used by the compass
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -189,7 +189,7 @@ int YRefFrame::set_bearing(double newval)
  *
  * @return a floating point number corresponding to the reference bearing used by the compass
  *
- * On failure, throws an exception or returns Y_BEARING_INVALID.
+ * On failure, throws an exception or returns YRefFrame::BEARING_INVALID.
  */
 double YRefFrame::get_bearing(void)
 {
@@ -254,11 +254,12 @@ int YRefFrame::set_calibrationParam(const string& newval)
 /**
  * Returns the sensor fusion mode. Note that available sensor fusion modes depend on the sensor type.
  *
- * @return a value among Y_FUSIONMODE_NDOF, Y_FUSIONMODE_NDOF_FMC_OFF, Y_FUSIONMODE_M4G,
- * Y_FUSIONMODE_COMPASS, Y_FUSIONMODE_IMU, Y_FUSIONMODE_INCLIN_90DEG_1G8,
- * Y_FUSIONMODE_INCLIN_90DEG_3G6 and Y_FUSIONMODE_INCLIN_10DEG corresponding to the sensor fusion mode
+ * @return a value among YRefFrame::FUSIONMODE_NDOF, YRefFrame::FUSIONMODE_NDOF_FMC_OFF,
+ * YRefFrame::FUSIONMODE_M4G, YRefFrame::FUSIONMODE_COMPASS, YRefFrame::FUSIONMODE_IMU,
+ * YRefFrame::FUSIONMODE_INCLIN_90DEG_1G8, YRefFrame::FUSIONMODE_INCLIN_90DEG_3G6 and
+ * YRefFrame::FUSIONMODE_INCLIN_10DEG corresponding to the sensor fusion mode
  *
- * On failure, throws an exception or returns Y_FUSIONMODE_INVALID.
+ * On failure, throws an exception or returns YRefFrame::FUSIONMODE_INVALID.
  */
 Y_FUSIONMODE_enum YRefFrame::get_fusionMode(void)
 {
@@ -286,11 +287,12 @@ Y_FUSIONMODE_enum YRefFrame::get_fusionMode(void)
  * Change the sensor fusion mode. Note that available sensor fusion modes depend on the sensor type.
  * Remember to call the matching module saveToFlash() method to save the setting permanently.
  *
- * @param newval : a value among Y_FUSIONMODE_NDOF, Y_FUSIONMODE_NDOF_FMC_OFF, Y_FUSIONMODE_M4G,
- * Y_FUSIONMODE_COMPASS, Y_FUSIONMODE_IMU, Y_FUSIONMODE_INCLIN_90DEG_1G8,
- * Y_FUSIONMODE_INCLIN_90DEG_3G6 and Y_FUSIONMODE_INCLIN_10DEG
+ * @param newval : a value among YRefFrame::FUSIONMODE_NDOF, YRefFrame::FUSIONMODE_NDOF_FMC_OFF,
+ * YRefFrame::FUSIONMODE_M4G, YRefFrame::FUSIONMODE_COMPASS, YRefFrame::FUSIONMODE_IMU,
+ * YRefFrame::FUSIONMODE_INCLIN_90DEG_1G8, YRefFrame::FUSIONMODE_INCLIN_90DEG_3G6 and
+ * YRefFrame::FUSIONMODE_INCLIN_10DEG
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -323,7 +325,7 @@ int YRefFrame::set_fusionMode(Y_FUSIONMODE_enum newval)
  *
  * This function does not require that the reference frame is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YRefFrame.isOnline() to test if the reference frame is
+ * Use the method isOnline() to test if the reference frame is
  * indeed online at a given time. In case of ambiguity when looking for
  * a reference frame by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -404,13 +406,13 @@ int YRefFrame::_invokeValueCallback(string value)
  * in order to define the reference frame for the compass and the
  * pitch/roll tilt sensors.
  *
- * @return a value among the Y_MOUNTPOSITION enumeration
- *         (Y_MOUNTPOSITION_BOTTOM,   Y_MOUNTPOSITION_TOP,
- *         Y_MOUNTPOSITION_FRONT,    Y_MOUNTPOSITION_RIGHT,
- *         Y_MOUNTPOSITION_REAR,     Y_MOUNTPOSITION_LEFT),
+ * @return a value among the YRefFrame::MOUNTPOSITION enumeration
+ *         (YRefFrame::MOUNTPOSITION_BOTTOM,  YRefFrame::MOUNTPOSITION_TOP,
+ *         YRefFrame::MOUNTPOSITION_FRONT,    YRefFrame::MOUNTPOSITION_RIGHT,
+ *         YRefFrame::MOUNTPOSITION_REAR,     YRefFrame::MOUNTPOSITION_LEFT),
  *         corresponding to the installation in a box, on one of the six faces.
  *
- * On failure, throws an exception or returns Y_MOUNTPOSITION_INVALID.
+ * On failure, throws an exception or returns YRefFrame::MOUNTPOSITION_INVALID.
  */
 Y_MOUNTPOSITION YRefFrame::get_mountPosition(void)
 {
@@ -427,15 +429,15 @@ Y_MOUNTPOSITION YRefFrame::get_mountPosition(void)
  * in order to define the reference frame for the compass and the
  * pitch/roll tilt sensors.
  *
- * @return a value among the enumeration Y_MOUNTORIENTATION
- *         (Y_MOUNTORIENTATION_TWELVE, Y_MOUNTORIENTATION_THREE,
- *         Y_MOUNTORIENTATION_SIX,     Y_MOUNTORIENTATION_NINE)
+ * @return a value among the enumeration YRefFrame::MOUNTORIENTATION
+ *         (YRefFrame::MOUNTORIENTATION_TWELVE, YRefFrame::MOUNTORIENTATION_THREE,
+ *         YRefFrame::MOUNTORIENTATION_SIX,     YRefFrame::MOUNTORIENTATION_NINE)
  *         corresponding to the orientation of the "X" arrow on the device,
  *         as on a clock dial seen from an observer in the center of the box.
  *         On the bottom face, the 12H orientation points to the front, while
  *         on the top face, the 12H orientation points to the rear.
  *
- * On failure, throws an exception or returns Y_MOUNTORIENTATION_INVALID.
+ * On failure, throws an exception or returns YRefFrame::MOUNTORIENTATION_INVALID.
  */
 Y_MOUNTORIENTATION YRefFrame::get_mountOrientation(void)
 {
@@ -454,14 +456,14 @@ Y_MOUNTORIENTATION YRefFrame::get_mountOrientation(void)
  * and horizontally, you must select its reference orientation (parallel to
  * the earth surface) so that the measures are made relative to this position.
  *
- * @param position : a value among the Y_MOUNTPOSITION enumeration
- *         (Y_MOUNTPOSITION_BOTTOM,   Y_MOUNTPOSITION_TOP,
- *         Y_MOUNTPOSITION_FRONT,    Y_MOUNTPOSITION_RIGHT,
- *         Y_MOUNTPOSITION_REAR,     Y_MOUNTPOSITION_LEFT),
+ * @param position : a value among the YRefFrame::MOUNTPOSITION enumeration
+ *         (YRefFrame::MOUNTPOSITION_BOTTOM,  YRefFrame::MOUNTPOSITION_TOP,
+ *         YRefFrame::MOUNTPOSITION_FRONT,    YRefFrame::MOUNTPOSITION_RIGHT,
+ *         YRefFrame::MOUNTPOSITION_REAR,     YRefFrame::MOUNTPOSITION_LEFT),
  *         corresponding to the installation in a box, on one of the six faces.
- * @param orientation : a value among the enumeration Y_MOUNTORIENTATION
- *         (Y_MOUNTORIENTATION_TWELVE, Y_MOUNTORIENTATION_THREE,
- *         Y_MOUNTORIENTATION_SIX,     Y_MOUNTORIENTATION_NINE)
+ * @param orientation : a value among the enumeration YRefFrame::MOUNTORIENTATION
+ *         (YRefFrame::MOUNTORIENTATION_TWELVE, YRefFrame::MOUNTORIENTATION_THREE,
+ *         YRefFrame::MOUNTORIENTATION_SIX,     YRefFrame::MOUNTORIENTATION_NINE)
  *         corresponding to the orientation of the "X" arrow on the device,
  *         as on a clock dial seen from an observer in the center of the box.
  *         On the bottom face, the 12H orientation points to the front, while

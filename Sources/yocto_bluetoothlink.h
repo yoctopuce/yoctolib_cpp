@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_bluetoothlink.h 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_bluetoothlink.h 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Declares yFindBluetoothLink(), the high-level API for BluetoothLink functions
  *
@@ -155,7 +155,7 @@ public:
      * @return a string corresponding to the MAC-48 address of the bluetooth interface, which is unique on
      * the bluetooth network
      *
-     * On failure, throws an exception or returns Y_OWNADDRESS_INVALID.
+     * On failure, throws an exception or returns YBluetoothLink::OWNADDRESS_INVALID.
      */
     string              get_ownAddress(void);
 
@@ -171,7 +171,7 @@ public:
      *         the SIM card, or an empty string if none has been configured or if the code provided
      *         was rejected by the SIM card
      *
-     * On failure, throws an exception or returns Y_PAIRINGPIN_INVALID.
+     * On failure, throws an exception or returns YBluetoothLink::PAIRINGPIN_INVALID.
      */
     string              get_pairingPin(void);
 
@@ -185,7 +185,7 @@ public:
      *
      * @param newval : a string corresponding to the PIN code used by the module for bluetooth pairing
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -198,7 +198,7 @@ public:
      *
      * @return a string corresponding to the MAC-48 address of the remote device to connect to
      *
-     * On failure, throws an exception or returns Y_REMOTEADDRESS_INVALID.
+     * On failure, throws an exception or returns YBluetoothLink::REMOTEADDRESS_INVALID.
      */
     string              get_remoteAddress(void);
 
@@ -212,7 +212,7 @@ public:
      *
      * @param newval : a string corresponding to the MAC-48 address defining which remote device to connect to
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -225,7 +225,7 @@ public:
      *
      * @return a string corresponding to the bluetooth name the remote device, if found on the bluetooth network
      *
-     * On failure, throws an exception or returns Y_REMOTENAME_INVALID.
+     * On failure, throws an exception or returns YBluetoothLink::REMOTENAME_INVALID.
      */
     string              get_remoteName(void);
 
@@ -235,9 +235,10 @@ public:
     /**
      * Returns the state of the mute function.
      *
-     * @return either Y_MUTE_FALSE or Y_MUTE_TRUE, according to the state of the mute function
+     * @return either YBluetoothLink::MUTE_FALSE or YBluetoothLink::MUTE_TRUE, according to the state of the
+     * mute function
      *
-     * On failure, throws an exception or returns Y_MUTE_INVALID.
+     * On failure, throws an exception or returns YBluetoothLink::MUTE_INVALID.
      */
     Y_MUTE_enum         get_mute(void);
 
@@ -248,9 +249,10 @@ public:
      * Changes the state of the mute function. Remember to call the matching module
      * saveToFlash() method to save the setting permanently.
      *
-     * @param newval : either Y_MUTE_FALSE or Y_MUTE_TRUE, according to the state of the mute function
+     * @param newval : either YBluetoothLink::MUTE_FALSE or YBluetoothLink::MUTE_TRUE, according to the
+     * state of the mute function
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -263,7 +265,7 @@ public:
      *
      * @return an integer corresponding to the audio pre-amplifier volume, in per cents
      *
-     * On failure, throws an exception or returns Y_PREAMPLIFIER_INVALID.
+     * On failure, throws an exception or returns YBluetoothLink::PREAMPLIFIER_INVALID.
      */
     int                 get_preAmplifier(void);
 
@@ -277,7 +279,7 @@ public:
      *
      * @param newval : an integer corresponding to the audio pre-amplifier volume, in per cents
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -290,7 +292,7 @@ public:
      *
      * @return an integer corresponding to the connected headset volume, in per cents
      *
-     * On failure, throws an exception or returns Y_VOLUME_INVALID.
+     * On failure, throws an exception or returns YBluetoothLink::VOLUME_INVALID.
      */
     int                 get_volume(void);
 
@@ -302,7 +304,7 @@ public:
      *
      * @param newval : an integer corresponding to the connected headset volume, in per cents
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -313,10 +315,11 @@ public:
     /**
      * Returns the bluetooth link state.
      *
-     * @return a value among Y_LINKSTATE_DOWN, Y_LINKSTATE_FREE, Y_LINKSTATE_SEARCH, Y_LINKSTATE_EXISTS,
-     * Y_LINKSTATE_LINKED and Y_LINKSTATE_PLAY corresponding to the bluetooth link state
+     * @return a value among YBluetoothLink::LINKSTATE_DOWN, YBluetoothLink::LINKSTATE_FREE,
+     * YBluetoothLink::LINKSTATE_SEARCH, YBluetoothLink::LINKSTATE_EXISTS, YBluetoothLink::LINKSTATE_LINKED
+     * and YBluetoothLink::LINKSTATE_PLAY corresponding to the bluetooth link state
      *
-     * On failure, throws an exception or returns Y_LINKSTATE_INVALID.
+     * On failure, throws an exception or returns YBluetoothLink::LINKSTATE_INVALID.
      */
     Y_LINKSTATE_enum    get_linkState(void);
 
@@ -329,7 +332,7 @@ public:
      * @return an integer corresponding to the bluetooth receiver signal strength, in pourcents, or 0 if
      * no connection is established
      *
-     * On failure, throws an exception or returns Y_LINKQUALITY_INVALID.
+     * On failure, throws an exception or returns YBluetoothLink::LINKQUALITY_INVALID.
      */
     int                 get_linkQuality(void);
 
@@ -358,7 +361,7 @@ public:
      *
      * This function does not require that the Bluetooth sound controller is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YBluetoothLink.isOnline() to test if the Bluetooth sound controller is
+     * Use the method isOnline() to test if the Bluetooth sound controller is
      * indeed online at a given time. In case of ambiguity when looking for
      * a Bluetooth sound controller by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
@@ -394,7 +397,7 @@ public:
     /**
      * Attempt to connect to the previously selected remote device.
      *
-     * @return YAPI_SUCCESS when the call succeeds.
+     * @return YAPI::SUCCESS when the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -403,7 +406,7 @@ public:
     /**
      * Disconnect from the previously selected remote device.
      *
-     * @return YAPI_SUCCESS when the call succeeds.
+     * @return YAPI::SUCCESS when the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -429,7 +432,7 @@ public:
 
     /**
      * Starts the enumeration of Bluetooth sound controllers currently accessible.
-     * Use the method YBluetoothLink.nextBluetoothLink() to iterate on
+     * Use the method YBluetoothLink::nextBluetoothLink() to iterate on
      * next Bluetooth sound controllers.
      *
      * @return a pointer to a YBluetoothLink object, corresponding to
@@ -460,7 +463,7 @@ public:
  *
  * This function does not require that the Bluetooth sound controller is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YBluetoothLink.isOnline() to test if the Bluetooth sound controller is
+ * Use the method isOnline() to test if the Bluetooth sound controller is
  * indeed online at a given time. In case of ambiguity when looking for
  * a Bluetooth sound controller by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -479,7 +482,7 @@ inline YBluetoothLink *yFindBluetoothLink(const string& func)
 { return YBluetoothLink::FindBluetoothLink(func);}
 /**
  * Starts the enumeration of Bluetooth sound controllers currently accessible.
- * Use the method YBluetoothLink.nextBluetoothLink() to iterate on
+ * Use the method YBluetoothLink::nextBluetoothLink() to iterate on
  * next Bluetooth sound controllers.
  *
  * @return a pointer to a YBluetoothLink object, corresponding to

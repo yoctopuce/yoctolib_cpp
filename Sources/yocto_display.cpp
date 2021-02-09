@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 42084 2020-10-16 17:08:01Z mvuilleu $
+ * $Id: yocto_display.cpp 43619 2021-01-29 09:14:45Z mvuilleu $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -118,7 +118,7 @@ int YDisplayLayer::drawBitmap(int x,int y,int w,const std::vector<unsigned char>
  * and selects the most visible pen color. If you only want to erase the layer
  * content, use the method clear() instead.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -134,7 +134,7 @@ int YDisplayLayer::reset(void)
  * To reinitialize the layer attributes to defaults settings, use the method
  * reset() instead.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -151,7 +151,7 @@ int YDisplayLayer::clear(void)
  *
  * @param color : the desired pen color, as a 24-bit RGB value
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -170,7 +170,7 @@ int YDisplayLayer::selectColorPen(int color)
  *
  * @param graylevel : the desired gray level, from 0 to 255
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -185,7 +185,7 @@ int YDisplayLayer::selectGrayPen(int graylevel)
  * becomes transparent (as when the layer is empty), showing the other
  * layers beneath it.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -206,7 +206,7 @@ int YDisplayLayer::selectEraser(void)
  * @param mode : true to enable anti-aliasing, false to
  *         disable it.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -221,7 +221,7 @@ int YDisplayLayer::setAntialiasingMode(bool mode)
  * @param x : the distance from left of layer, in pixels
  * @param y : the distance from top of layer, in pixels
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -238,7 +238,7 @@ int YDisplayLayer::drawPixel(int x,int y)
  * @param x2 : the distance from left of layer to the right border of the rectangle, in pixels
  * @param y2 : the distance from top of layer to the bottom border of the rectangle, in pixels
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -255,7 +255,7 @@ int YDisplayLayer::drawRect(int x1,int y1,int x2,int y2)
  * @param x2 : the distance from left of layer to the right border of the rectangle, in pixels
  * @param y2 : the distance from top of layer to the bottom border of the rectangle, in pixels
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -271,7 +271,7 @@ int YDisplayLayer::drawBar(int x1,int y1,int x2,int y2)
  * @param y : the distance from top of layer to the center of the circle, in pixels
  * @param r : the radius of the circle, in pixels
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -287,7 +287,7 @@ int YDisplayLayer::drawCircle(int x,int y,int r)
  * @param y : the distance from top of layer to the center of the disc, in pixels
  * @param r : the radius of the disc, in pixels
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -306,7 +306,7 @@ int YDisplayLayer::drawDisc(int x,int y,int r)
  * @param fontname : the font file name, embedded fonts are 8x8.yfm, Small.yfm, Medium.yfm, Large.yfm
  * (not available on Yocto-MiniDisplay).
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -322,14 +322,18 @@ int YDisplayLayer::selectFont(string fontname)
  *
  * @param x : the distance from left of layer to the text anchor point, in pixels
  * @param y : the distance from top of layer to the text anchor point, in pixels
- * @param anchor : the text anchor point, chosen among the Y_ALIGN enumeration:
- *         Y_ALIGN_TOP_LEFT,    Y_ALIGN_CENTER_LEFT,    Y_ALIGN_BASELINE_LEFT,    Y_ALIGN_BOTTOM_LEFT,
- *         Y_ALIGN_TOP_CENTER,  Y_ALIGN_CENTER,         Y_ALIGN_BASELINE_CENTER,  Y_ALIGN_BOTTOM_CENTER,
- *         Y_ALIGN_TOP_DECIMAL, Y_ALIGN_CENTER_DECIMAL, Y_ALIGN_BASELINE_DECIMAL, Y_ALIGN_BOTTOM_DECIMAL,
- *         Y_ALIGN_TOP_RIGHT,   Y_ALIGN_CENTER_RIGHT,   Y_ALIGN_BASELINE_RIGHT,   Y_ALIGN_BOTTOM_RIGHT.
+ * @param anchor : the text anchor point, chosen among the YDisplayLayer::ALIGN enumeration:
+ *         YDisplayLayer::ALIGN_TOP_LEFT,         YDisplayLayer::ALIGN_CENTER_LEFT,
+ *         YDisplayLayer::ALIGN_BASELINE_LEFT,    YDisplayLayer::ALIGN_BOTTOM_LEFT,
+ *         YDisplayLayer::ALIGN_TOP_CENTER,       YDisplayLayer::ALIGN_CENTER,
+ *         YDisplayLayer::ALIGN_BASELINE_CENTER,  YDisplayLayer::ALIGN_BOTTOM_CENTER,
+ *         YDisplayLayer::ALIGN_TOP_DECIMAL,      YDisplayLayer::ALIGN_CENTER_DECIMAL,
+ *         YDisplayLayer::ALIGN_BASELINE_DECIMAL, YDisplayLayer::ALIGN_BOTTOM_DECIMAL,
+ *         YDisplayLayer::ALIGN_TOP_RIGHT,        YDisplayLayer::ALIGN_CENTER_RIGHT,
+ *         YDisplayLayer::ALIGN_BASELINE_RIGHT,   YDisplayLayer::ALIGN_BOTTOM_RIGHT.
  * @param text : the text string to draw
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -348,7 +352,7 @@ int YDisplayLayer::drawText(int x,int y,Y_ALIGN anchor,string text)
  * @param y : the distance from top of layer to the top of the image, in pixels
  * @param imagename : the GIF file name
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -373,7 +377,7 @@ int YDisplayLayer::drawImage(int x,int y,string imagename)
  * @param bgcol : the background gray level to use for zero bits (0 = black,
  *         255 = white), or -1 to leave the pixels unchanged
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -390,7 +394,7 @@ int YDisplayLayer::drawBitmap(int x,int y,int w,string bitmap,int bgcol)
  * @param x : the distance from left of layer, in pixels
  * @param y : the distance from top of layer, in pixels
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -407,7 +411,7 @@ int YDisplayLayer::moveTo(int x,int y)
  * @param x : the distance from left of layer to the end point of the line, in pixels
  * @param y : the distance from top of layer to the end point of the line, in pixels
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -425,7 +429,7 @@ int YDisplayLayer::lineTo(int x,int y)
  *
  * @param text : the message to display
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -442,7 +446,7 @@ int YDisplayLayer::consoleOut(string text)
  * @param x2 : the distance from left of layer to the right margin, in pixels
  * @param y2 : the distance from top of layer to the bottom margin, in pixels
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -458,7 +462,7 @@ int YDisplayLayer::setConsoleMargins(int x1,int y1,int x2,int y2)
  * @param bgcol : the background gray level to use when scrolling (0 = black,
  *         255 = white), or -1 for transparent
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -473,7 +477,7 @@ int YDisplayLayer::setConsoleBackground(int bgcol)
  * @param wordwrap : true to wrap only between words,
  *         false to wrap on the last column anyway.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -486,7 +490,7 @@ int YDisplayLayer::setConsoleWordWrap(bool wordwrap)
  * Blanks the console area within console margins, and resets the console pointer
  * to the upper left corner of the console.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -505,7 +509,7 @@ int YDisplayLayer::clearConsole(void)
  * @param scrollTime : number of milliseconds to use for smooth scrolling, or
  *         0 if the scrolling should be immediate.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -520,7 +524,7 @@ int YDisplayLayer::setLayerPosition(int x,int y,int scrollTime)
  * affect the drawing speed, since it postpones the rendering until all operations are
  * completed (double-buffering).
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -534,7 +538,7 @@ int YDisplayLayer::hide(void)
 /**
  * Shows the layer. Shows the layer again after a hide command.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -545,7 +549,7 @@ int YDisplayLayer::unhide(void)
 }
 
 /**
- * Gets parent YDisplay. Returns the parent YDisplay object of the current YDisplayLayer.
+ * Gets parent YDisplay. Returns the parent YDisplay object of the current YDisplayLayer::
  *
  * @return an YDisplay object
  */
@@ -559,7 +563,7 @@ YDisplay* YDisplayLayer::get_display(void)
  *
  * @return an integer corresponding to the display width, in pixels
  *
- * On failure, throws an exception or returns Y_DISPLAYWIDTH_INVALID.
+ * On failure, throws an exception or returns YDisplayLayer::DISPLAYWIDTH_INVALID.
  */
 int YDisplayLayer::get_displayWidth(void)
 {
@@ -571,7 +575,7 @@ int YDisplayLayer::get_displayWidth(void)
  *
  * @return an integer corresponding to the display height, in pixels
  *
- * On failure, throws an exception or returns Y_DISPLAYHEIGHT_INVALID.
+ * On failure, throws an exception or returns YDisplayLayer::DISPLAYHEIGHT_INVALID.
  */
 int YDisplayLayer::get_displayHeight(void)
 {
@@ -583,7 +587,7 @@ int YDisplayLayer::get_displayHeight(void)
  *
  * @return an integer corresponding to the width of the layers to draw on, in pixels
  *
- * On failure, throws an exception or returns Y_LAYERWIDTH_INVALID.
+ * On failure, throws an exception or returns YDisplayLayer::LAYERWIDTH_INVALID.
  */
 int YDisplayLayer::get_layerWidth(void)
 {
@@ -595,7 +599,7 @@ int YDisplayLayer::get_layerWidth(void)
  *
  * @return an integer corresponding to the height of the layers to draw on, in pixels
  *
- * On failure, throws an exception or returns Y_LAYERHEIGHT_INVALID.
+ * On failure, throws an exception or returns YDisplayLayer::LAYERHEIGHT_INVALID.
  */
 int YDisplayLayer::get_layerHeight(void)
 {
@@ -691,9 +695,10 @@ int YDisplay::_parseAttr(YJSONObject *json_val)
 /**
  * Returns true if the screen is powered, false otherwise.
  *
- * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to true if the screen is powered, false otherwise
+ * @return either YDisplay::ENABLED_FALSE or YDisplay::ENABLED_TRUE, according to true if the screen is
+ * powered, false otherwise
  *
- * On failure, throws an exception or returns Y_ENABLED_INVALID.
+ * On failure, throws an exception or returns YDisplay::ENABLED_INVALID.
  */
 Y_ENABLED_enum YDisplay::get_enabled(void)
 {
@@ -720,9 +725,10 @@ Y_ENABLED_enum YDisplay::get_enabled(void)
 /**
  * Changes the power state of the display.
  *
- * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the power state of the display
+ * @param newval : either YDisplay::ENABLED_FALSE or YDisplay::ENABLED_TRUE, according to the power
+ * state of the display
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -747,7 +753,7 @@ int YDisplay::set_enabled(Y_ENABLED_enum newval)
  *
  * @return a string corresponding to the name of the sequence to play when the displayed is powered on
  *
- * On failure, throws an exception or returns Y_STARTUPSEQ_INVALID.
+ * On failure, throws an exception or returns YDisplay::STARTUPSEQ_INVALID.
  */
 string YDisplay::get_startupSeq(void)
 {
@@ -778,7 +784,7 @@ string YDisplay::get_startupSeq(void)
  *
  * @param newval : a string corresponding to the name of the sequence to play when the displayed is powered on
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -803,7 +809,7 @@ int YDisplay::set_startupSeq(const string& newval)
  *
  * @return an integer corresponding to the luminosity of the  module informative LEDs (from 0 to 100)
  *
- * On failure, throws an exception or returns Y_BRIGHTNESS_INVALID.
+ * On failure, throws an exception or returns YDisplay::BRIGHTNESS_INVALID.
  */
 int YDisplay::get_brightness(void)
 {
@@ -834,7 +840,7 @@ int YDisplay::get_brightness(void)
  *
  * @param newval : an integer corresponding to the brightness of the display
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -857,10 +863,11 @@ int YDisplay::set_brightness(int newval)
 /**
  * Returns the currently selected display orientation.
  *
- * @return a value among Y_ORIENTATION_LEFT, Y_ORIENTATION_UP, Y_ORIENTATION_RIGHT and
- * Y_ORIENTATION_DOWN corresponding to the currently selected display orientation
+ * @return a value among YDisplay::ORIENTATION_LEFT, YDisplay::ORIENTATION_UP,
+ * YDisplay::ORIENTATION_RIGHT and YDisplay::ORIENTATION_DOWN corresponding to the currently selected
+ * display orientation
  *
- * On failure, throws an exception or returns Y_ORIENTATION_INVALID.
+ * On failure, throws an exception or returns YDisplay::ORIENTATION_INVALID.
  */
 Y_ORIENTATION_enum YDisplay::get_orientation(void)
 {
@@ -888,10 +895,10 @@ Y_ORIENTATION_enum YDisplay::get_orientation(void)
  * Changes the display orientation. Remember to call the saveToFlash()
  * method of the module if the modification must be kept.
  *
- * @param newval : a value among Y_ORIENTATION_LEFT, Y_ORIENTATION_UP, Y_ORIENTATION_RIGHT and
- * Y_ORIENTATION_DOWN corresponding to the display orientation
+ * @param newval : a value among YDisplay::ORIENTATION_LEFT, YDisplay::ORIENTATION_UP,
+ * YDisplay::ORIENTATION_RIGHT and YDisplay::ORIENTATION_DOWN corresponding to the display orientation
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -916,7 +923,7 @@ int YDisplay::set_orientation(Y_ORIENTATION_enum newval)
  *
  * @return an integer corresponding to the display width, in pixels
  *
- * On failure, throws an exception or returns Y_DISPLAYWIDTH_INVALID.
+ * On failure, throws an exception or returns YDisplay::DISPLAYWIDTH_INVALID.
  */
 int YDisplay::get_displayWidth(void)
 {
@@ -945,7 +952,7 @@ int YDisplay::get_displayWidth(void)
  *
  * @return an integer corresponding to the display height, in pixels
  *
- * On failure, throws an exception or returns Y_DISPLAYHEIGHT_INVALID.
+ * On failure, throws an exception or returns YDisplay::DISPLAYHEIGHT_INVALID.
  */
 int YDisplay::get_displayHeight(void)
 {
@@ -972,10 +979,10 @@ int YDisplay::get_displayHeight(void)
 /**
  * Returns the display type: monochrome, gray levels or full color.
  *
- * @return a value among Y_DISPLAYTYPE_MONO, Y_DISPLAYTYPE_GRAY and Y_DISPLAYTYPE_RGB corresponding to
- * the display type: monochrome, gray levels or full color
+ * @return a value among YDisplay::DISPLAYTYPE_MONO, YDisplay::DISPLAYTYPE_GRAY and
+ * YDisplay::DISPLAYTYPE_RGB corresponding to the display type: monochrome, gray levels or full color
  *
- * On failure, throws an exception or returns Y_DISPLAYTYPE_INVALID.
+ * On failure, throws an exception or returns YDisplay::DISPLAYTYPE_INVALID.
  */
 Y_DISPLAYTYPE_enum YDisplay::get_displayType(void)
 {
@@ -1004,7 +1011,7 @@ Y_DISPLAYTYPE_enum YDisplay::get_displayType(void)
  *
  * @return an integer corresponding to the width of the layers to draw on, in pixels
  *
- * On failure, throws an exception or returns Y_LAYERWIDTH_INVALID.
+ * On failure, throws an exception or returns YDisplay::LAYERWIDTH_INVALID.
  */
 int YDisplay::get_layerWidth(void)
 {
@@ -1033,7 +1040,7 @@ int YDisplay::get_layerWidth(void)
  *
  * @return an integer corresponding to the height of the layers to draw on, in pixels
  *
- * On failure, throws an exception or returns Y_LAYERHEIGHT_INVALID.
+ * On failure, throws an exception or returns YDisplay::LAYERHEIGHT_INVALID.
  */
 int YDisplay::get_layerHeight(void)
 {
@@ -1062,7 +1069,7 @@ int YDisplay::get_layerHeight(void)
  *
  * @return an integer corresponding to the number of available layers to draw on
  *
- * On failure, throws an exception or returns Y_LAYERCOUNT_INVALID.
+ * On failure, throws an exception or returns YDisplay::LAYERCOUNT_INVALID.
  */
 int YDisplay::get_layerCount(void)
 {
@@ -1137,7 +1144,7 @@ int YDisplay::set_command(const string& newval)
  *
  * This function does not require that the display is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YDisplay.isOnline() to test if the display is
+ * Use the method isOnline() to test if the display is
  * indeed online at a given time. In case of ambiguity when looking for
  * a display by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -1218,7 +1225,7 @@ int YDisplay::_invokeValueCallback(string value)
  * Using this function in a sequence will kill the sequence play-back. Don't use that
  * function to reset the display at sequence start-up.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1236,7 +1243,7 @@ int YDisplay::resetAll(void)
  * @param brightness : the new screen brightness
  * @param duration : duration of the brightness transition, in milliseconds.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1251,7 +1258,7 @@ int YDisplay::fade(int brightness,int duration)
  * The name used to store the sequence is specified when calling
  * saveSequence(), once the recording is complete.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1270,7 +1277,7 @@ int YDisplay::newSequence(void)
  *
  * @param sequenceName : the name of the newly created sequence
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1290,7 +1297,7 @@ int YDisplay::saveSequence(string sequenceName)
  *
  * @param sequenceName : the name of the newly created sequence
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1310,7 +1317,7 @@ int YDisplay::playSequence(string sequenceName)
  *
  * @param delay_ms : the duration to wait, in milliseconds
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1324,7 +1331,7 @@ int YDisplay::pauseSequence(int delay_ms)
  * Stops immediately any ongoing sequence replay.
  * The display is left as is.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1342,7 +1349,7 @@ int YDisplay::stopSequence(void)
  * @param pathname : path and name of the new file to create
  * @param content : binary buffer with the content to set
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1361,7 +1368,7 @@ int YDisplay::upload(string pathname,string content)
  * @param srcLayerId : the identifier of the source layer (a number in range 0..layerCount-1)
  * @param dstLayerId : the identifier of the destination layer (a number in range 0..layerCount-1)
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -1382,7 +1389,7 @@ int YDisplay::copyLayerContent(int srcLayerId,int dstLayerId)
  * @param layerIdA : the first layer (a number in range 0..layerCount-1)
  * @param layerIdB : the second layer (a number in range 0..layerCount-1)
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */

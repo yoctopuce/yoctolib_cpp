@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_steppermotor.h 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_steppermotor.h 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Declares yFindStepperMotor(), the high-level API for StepperMotor functions
  *
@@ -172,10 +172,11 @@ public:
     /**
      * Returns the motor working state.
      *
-     * @return a value among Y_MOTORSTATE_ABSENT, Y_MOTORSTATE_ALERT, Y_MOTORSTATE_HI_Z,
-     * Y_MOTORSTATE_STOP, Y_MOTORSTATE_RUN and Y_MOTORSTATE_BATCH corresponding to the motor working state
+     * @return a value among YStepperMotor::MOTORSTATE_ABSENT, YStepperMotor::MOTORSTATE_ALERT,
+     * YStepperMotor::MOTORSTATE_HI_Z, YStepperMotor::MOTORSTATE_STOP, YStepperMotor::MOTORSTATE_RUN and
+     * YStepperMotor::MOTORSTATE_BATCH corresponding to the motor working state
      *
-     * On failure, throws an exception or returns Y_MOTORSTATE_INVALID.
+     * On failure, throws an exception or returns YStepperMotor::MOTORSTATE_INVALID.
      */
     Y_MOTORSTATE_enum   get_motorState(void);
 
@@ -187,7 +188,7 @@ public:
      *
      * @return an integer corresponding to the stepper motor controller diagnostics, as a bitmap
      *
-     * On failure, throws an exception or returns Y_DIAGS_INVALID.
+     * On failure, throws an exception or returns YStepperMotor::DIAGS_INVALID.
      */
     int                 get_diags(void);
 
@@ -204,7 +205,7 @@ public:
      *
      * @param newval : a floating point number corresponding to the current logical motor position, measured in steps
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -218,7 +219,7 @@ public:
      *
      * @return a floating point number corresponding to the current logical motor position, measured in steps
      *
-     * On failure, throws an exception or returns Y_STEPPOS_INVALID.
+     * On failure, throws an exception or returns YStepperMotor::STEPPOS_INVALID.
      */
     double              get_stepPos(void);
 
@@ -231,7 +232,7 @@ public:
      *
      * @return a floating point number corresponding to current motor speed, measured in steps per second
      *
-     * On failure, throws an exception or returns Y_SPEED_INVALID.
+     * On failure, throws an exception or returns YStepperMotor::SPEED_INVALID.
      */
     double              get_speed(void);
 
@@ -244,7 +245,7 @@ public:
      * @param newval : a floating point number corresponding to the motor speed immediately reachable from
      * stop state, measured in steps per second
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -258,7 +259,7 @@ public:
      * @return a floating point number corresponding to the motor speed immediately reachable from stop
      * state, measured in steps per second
      *
-     * On failure, throws an exception or returns Y_PULLINSPEED_INVALID.
+     * On failure, throws an exception or returns YStepperMotor::PULLINSPEED_INVALID.
      */
     double              get_pullinSpeed(void);
 
@@ -271,7 +272,7 @@ public:
      * @param newval : a floating point number corresponding to the maximal motor acceleration, measured
      * in steps per second^2
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -284,7 +285,7 @@ public:
      *
      * @return a floating point number corresponding to the maximal motor acceleration, measured in steps per second^2
      *
-     * On failure, throws an exception or returns Y_MAXACCEL_INVALID.
+     * On failure, throws an exception or returns YStepperMotor::MAXACCEL_INVALID.
      */
     double              get_maxAccel(void);
 
@@ -296,7 +297,7 @@ public:
      *
      * @param newval : a floating point number corresponding to the maximal motor speed, measured in steps per second
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -309,7 +310,7 @@ public:
      *
      * @return a floating point number corresponding to the maximal motor speed, measured in steps per second
      *
-     * On failure, throws an exception or returns Y_MAXSPEED_INVALID.
+     * On failure, throws an exception or returns YStepperMotor::MAXSPEED_INVALID.
      */
     double              get_maxSpeed(void);
 
@@ -319,10 +320,11 @@ public:
     /**
      * Returns the stepping mode used to drive the motor.
      *
-     * @return a value among Y_STEPPING_MICROSTEP16, Y_STEPPING_MICROSTEP8, Y_STEPPING_MICROSTEP4,
-     * Y_STEPPING_HALFSTEP and Y_STEPPING_FULLSTEP corresponding to the stepping mode used to drive the motor
+     * @return a value among YStepperMotor::STEPPING_MICROSTEP16, YStepperMotor::STEPPING_MICROSTEP8,
+     * YStepperMotor::STEPPING_MICROSTEP4, YStepperMotor::STEPPING_HALFSTEP and
+     * YStepperMotor::STEPPING_FULLSTEP corresponding to the stepping mode used to drive the motor
      *
-     * On failure, throws an exception or returns Y_STEPPING_INVALID.
+     * On failure, throws an exception or returns YStepperMotor::STEPPING_INVALID.
      */
     Y_STEPPING_enum     get_stepping(void);
 
@@ -332,10 +334,12 @@ public:
     /**
      * Changes the stepping mode used to drive the motor.
      *
-     * @param newval : a value among Y_STEPPING_MICROSTEP16, Y_STEPPING_MICROSTEP8, Y_STEPPING_MICROSTEP4,
-     * Y_STEPPING_HALFSTEP and Y_STEPPING_FULLSTEP corresponding to the stepping mode used to drive the motor
+     * @param newval : a value among YStepperMotor::STEPPING_MICROSTEP16,
+     * YStepperMotor::STEPPING_MICROSTEP8, YStepperMotor::STEPPING_MICROSTEP4,
+     * YStepperMotor::STEPPING_HALFSTEP and YStepperMotor::STEPPING_FULLSTEP corresponding to the stepping
+     * mode used to drive the motor
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -348,7 +352,7 @@ public:
      *
      * @return an integer corresponding to the overcurrent alert and emergency stop threshold, measured in mA
      *
-     * On failure, throws an exception or returns Y_OVERCURRENT_INVALID.
+     * On failure, throws an exception or returns YStepperMotor::OVERCURRENT_INVALID.
      */
     int                 get_overcurrent(void);
 
@@ -360,7 +364,7 @@ public:
      *
      * @param newval : an integer corresponding to the overcurrent alert and emergency stop threshold, measured in mA
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -373,7 +377,7 @@ public:
      *
      * @return an integer corresponding to the torque regulation current when the motor is stopped, measured in mA
      *
-     * On failure, throws an exception or returns Y_TCURRSTOP_INVALID.
+     * On failure, throws an exception or returns YStepperMotor::TCURRSTOP_INVALID.
      */
     int                 get_tCurrStop(void);
 
@@ -386,7 +390,7 @@ public:
      * @param newval : an integer corresponding to the torque regulation current when the motor is
      * stopped, measured in mA
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -399,7 +403,7 @@ public:
      *
      * @return an integer corresponding to the torque regulation current when the motor is running, measured in mA
      *
-     * On failure, throws an exception or returns Y_TCURRRUN_INVALID.
+     * On failure, throws an exception or returns YStepperMotor::TCURRRUN_INVALID.
      */
     int                 get_tCurrRun(void);
 
@@ -412,7 +416,7 @@ public:
      * @param newval : an integer corresponding to the torque regulation current when the motor is
      * running, measured in mA
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -443,7 +447,7 @@ public:
      *
      * @return an integer corresponding to the current value of the signal generated on the auxiliary output
      *
-     * On failure, throws an exception or returns Y_AUXSIGNAL_INVALID.
+     * On failure, throws an exception or returns YStepperMotor::AUXSIGNAL_INVALID.
      */
     int                 get_auxSignal(void);
 
@@ -456,7 +460,7 @@ public:
      *
      * @param newval : an integer corresponding to the value of the signal generated on the auxiliary output
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -486,7 +490,7 @@ public:
      *
      * This function does not require that the stepper motor is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YStepperMotor.isOnline() to test if the stepper motor is
+     * Use the method isOnline() to test if the stepper motor is
      * indeed online at a given time. In case of ambiguity when looking for
      * a stepper motor by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
@@ -524,7 +528,7 @@ public:
     /**
      * Reinitialize the controller and clear all alert flags.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         reset(void);
@@ -534,7 +538,7 @@ public:
      *
      * @param speed : desired speed, in steps per second.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         findHomePosition(double speed);
@@ -546,7 +550,7 @@ public:
      * @param speed : desired speed, in steps per second. The minimal non-zero speed
      *         is 0.001 pulse per second.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         changeSpeed(double speed);
@@ -558,7 +562,7 @@ public:
      *
      * @param absPos : absolute position, measured in steps from the origin.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         moveTo(double absPos);
@@ -570,7 +574,7 @@ public:
      *
      * @param relPos : relative position, measured in steps from the current position.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         moveRel(double relPos);
@@ -583,7 +587,7 @@ public:
      * @param relPos : relative position, measured in steps from the current position.
      * @param maxSpeed : limit speed, in steps per second.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         moveRelSlow(double relPos,double maxSpeed);
@@ -593,7 +597,7 @@ public:
      *
      * @param waitMs : wait time, specified in milliseconds.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         pause(int waitMs);
@@ -601,7 +605,7 @@ public:
     /**
      * Stops the motor with an emergency alert, without taking any additional precaution.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         emergencyStop(void);
@@ -611,7 +615,7 @@ public:
      * The move occurs even if the system is still in alert mode (end switch depressed). Caution.
      * use this function with great care as it may cause mechanical damages !
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         alertStepOut(void);
@@ -623,7 +627,7 @@ public:
      *
      * @param dir : Value +1 or -1, according to the desired direction of the move
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         alertStepDir(int dir);
@@ -631,7 +635,7 @@ public:
     /**
      * Stops the motor smoothly as soon as possible, without waiting for ongoing move completion.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         abortAndBrake(void);
@@ -639,7 +643,7 @@ public:
     /**
      * Turn the controller into Hi-Z mode immediately, without waiting for ongoing move completion.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         abortAndHiZ(void);
@@ -664,7 +668,7 @@ public:
 
     /**
      * Starts the enumeration of stepper motors currently accessible.
-     * Use the method YStepperMotor.nextStepperMotor() to iterate on
+     * Use the method YStepperMotor::nextStepperMotor() to iterate on
      * next stepper motors.
      *
      * @return a pointer to a YStepperMotor object, corresponding to
@@ -695,7 +699,7 @@ public:
  *
  * This function does not require that the stepper motor is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YStepperMotor.isOnline() to test if the stepper motor is
+ * Use the method isOnline() to test if the stepper motor is
  * indeed online at a given time. In case of ambiguity when looking for
  * a stepper motor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -714,7 +718,7 @@ inline YStepperMotor *yFindStepperMotor(const string& func)
 { return YStepperMotor::FindStepperMotor(func);}
 /**
  * Starts the enumeration of stepper motors currently accessible.
- * Use the method YStepperMotor.nextStepperMotor() to iterate on
+ * Use the method YStepperMotor::nextStepperMotor() to iterate on
  * next stepper motors.
  *
  * @return a pointer to a YStepperMotor object, corresponding to

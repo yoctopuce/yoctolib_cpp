@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_buzzer.h 41109 2020-06-29 12:40:42Z seb $
+ *  $Id: yocto_buzzer.h 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Declares yFindBuzzer(), the high-level API for Buzzer functions
  *
@@ -117,7 +117,7 @@ public:
      *
      * @param newval : a floating point number corresponding to the frequency of the signal sent to the buzzer
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -130,7 +130,7 @@ public:
      *
      * @return a floating point number corresponding to the  frequency of the signal sent to the buzzer/speaker
      *
-     * On failure, throws an exception or returns Y_FREQUENCY_INVALID.
+     * On failure, throws an exception or returns YBuzzer::FREQUENCY_INVALID.
      */
     double              get_frequency(void);
 
@@ -142,7 +142,7 @@ public:
      *
      * @return an integer corresponding to the volume of the signal sent to the buzzer/speaker
      *
-     * On failure, throws an exception or returns Y_VOLUME_INVALID.
+     * On failure, throws an exception or returns YBuzzer::VOLUME_INVALID.
      */
     int                 get_volume(void);
 
@@ -155,7 +155,7 @@ public:
      *
      * @param newval : an integer corresponding to the volume of the signal sent to the buzzer/speaker
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -168,7 +168,7 @@ public:
      *
      * @return an integer corresponding to the current length of the playing sequence
      *
-     * On failure, throws an exception or returns Y_PLAYSEQSIZE_INVALID.
+     * On failure, throws an exception or returns YBuzzer::PLAYSEQSIZE_INVALID.
      */
     int                 get_playSeqSize(void);
 
@@ -180,7 +180,7 @@ public:
      *
      * @return an integer corresponding to the maximum length of the playing sequence
      *
-     * On failure, throws an exception or returns Y_PLAYSEQMAXSIZE_INVALID.
+     * On failure, throws an exception or returns YBuzzer::PLAYSEQMAXSIZE_INVALID.
      */
     int                 get_playSeqMaxSize(void);
 
@@ -195,7 +195,7 @@ public:
      *
      * @return an integer corresponding to the playing sequence signature
      *
-     * On failure, throws an exception or returns Y_PLAYSEQSIGNATURE_INVALID.
+     * On failure, throws an exception or returns YBuzzer::PLAYSEQSIGNATURE_INVALID.
      */
     int                 get_playSeqSignature(void);
 
@@ -224,7 +224,7 @@ public:
      *
      * This function does not require that the buzzer is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YBuzzer.isOnline() to test if the buzzer is
+     * Use the method isOnline() to test if the buzzer is
      * indeed online at a given time. In case of ambiguity when looking for
      * a buzzer by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
@@ -265,7 +265,7 @@ public:
      * @param freq    : desired frequency when the transition is completed, in Hz
      * @param msDelay : duration of the frequency transition, in milliseconds.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         addFreqMoveToPlaySeq(int freq,int msDelay);
@@ -276,7 +276,7 @@ public:
      * @param freq : pulse frequency, in Hz
      * @param msDuration : pulse duration, in milliseconds.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         addPulseToPlaySeq(int freq,int msDuration);
@@ -288,7 +288,7 @@ public:
      * @param volume    : desired volume when the transition is completed, as a percentage.
      * @param msDuration : duration of the volume transition, in milliseconds.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         addVolMoveToPlaySeq(int volume,int msDuration);
@@ -303,7 +303,7 @@ public:
      *
      * @param notes : notes to be played, as a text string.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         addNotesToPlaySeq(string notes);
@@ -313,7 +313,7 @@ public:
      * runs in loop until it is stopped by stopPlaySeq or an explicit
      * change. To play the sequence only once, use oncePlaySeq().
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         startPlaySeq(void);
@@ -321,7 +321,7 @@ public:
     /**
      * Stops the preprogrammed playing sequence and sets the frequency to zero.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         stopPlaySeq(void);
@@ -329,7 +329,7 @@ public:
     /**
      * Resets the preprogrammed playing sequence and sets the frequency to zero.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         resetPlaySeq(void);
@@ -337,7 +337,7 @@ public:
     /**
      * Starts the preprogrammed playing sequence and run it once only.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         oncePlaySeq(void);
@@ -345,7 +345,7 @@ public:
     /**
      * Saves the preprogrammed playing sequence to flash memory.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         savePlaySeq(void);
@@ -353,7 +353,7 @@ public:
     /**
      * Reloads the preprogrammed playing sequence from the flash memory.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         reloadPlaySeq(void);
@@ -364,7 +364,7 @@ public:
      * @param frequency : pulse frequency, in hertz
      * @param duration : pulse duration in milliseconds
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -376,7 +376,7 @@ public:
      * @param frequency : frequency to reach, in hertz. A frequency under 25Hz stops the buzzer.
      * @param duration :  pulse duration in milliseconds
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -388,7 +388,7 @@ public:
      * @param volume : volume to reach in %
      * @param duration : change duration in milliseconds
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -404,7 +404,7 @@ public:
      *
      * @param notes : notes to be played, as a text string.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         playNotes(string notes);
@@ -429,7 +429,7 @@ public:
 
     /**
      * Starts the enumeration of buzzers currently accessible.
-     * Use the method YBuzzer.nextBuzzer() to iterate on
+     * Use the method YBuzzer::nextBuzzer() to iterate on
      * next buzzers.
      *
      * @return a pointer to a YBuzzer object, corresponding to
@@ -460,7 +460,7 @@ public:
  *
  * This function does not require that the buzzer is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YBuzzer.isOnline() to test if the buzzer is
+ * Use the method isOnline() to test if the buzzer is
  * indeed online at a given time. In case of ambiguity when looking for
  * a buzzer by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -479,7 +479,7 @@ inline YBuzzer *yFindBuzzer(const string& func)
 { return YBuzzer::FindBuzzer(func);}
 /**
  * Starts the enumeration of buzzers currently accessible.
- * Use the method YBuzzer.nextBuzzer() to iterate on
+ * Use the method YBuzzer::nextBuzzer() to iterate on
  * next buzzers.
  *
  * @return a pointer to a YBuzzer object, corresponding to

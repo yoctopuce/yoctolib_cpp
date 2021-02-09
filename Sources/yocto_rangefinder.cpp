@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_rangefinder.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_rangefinder.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindRangeFinder(), the high-level API for RangeFinder functions
  *
@@ -112,7 +112,7 @@ int YRangeFinder::_parseAttr(YJSONObject *json_val)
  *
  * @param newval : a string corresponding to the measuring unit for the measured range
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -136,10 +136,11 @@ int YRangeFinder::set_unit(const string& newval)
  * Returns the range finder running mode. The rangefinder running mode
  * allows you to put priority on precision, speed or maximum range.
  *
- * @return a value among Y_RANGEFINDERMODE_DEFAULT, Y_RANGEFINDERMODE_LONG_RANGE,
- * Y_RANGEFINDERMODE_HIGH_ACCURACY and Y_RANGEFINDERMODE_HIGH_SPEED corresponding to the range finder running mode
+ * @return a value among YRangeFinder::RANGEFINDERMODE_DEFAULT,
+ * YRangeFinder::RANGEFINDERMODE_LONG_RANGE, YRangeFinder::RANGEFINDERMODE_HIGH_ACCURACY and
+ * YRangeFinder::RANGEFINDERMODE_HIGH_SPEED corresponding to the range finder running mode
  *
- * On failure, throws an exception or returns Y_RANGEFINDERMODE_INVALID.
+ * On failure, throws an exception or returns YRangeFinder::RANGEFINDERMODE_INVALID.
  */
 Y_RANGEFINDERMODE_enum YRangeFinder::get_rangeFinderMode(void)
 {
@@ -168,12 +169,13 @@ Y_RANGEFINDERMODE_enum YRangeFinder::get_rangeFinderMode(void)
  * precision, speed or maximum range.
  * Remember to call the saveToFlash() method of the module if the modification must be kept.
  *
- * @param newval : a value among Y_RANGEFINDERMODE_DEFAULT, Y_RANGEFINDERMODE_LONG_RANGE,
- * Y_RANGEFINDERMODE_HIGH_ACCURACY and Y_RANGEFINDERMODE_HIGH_SPEED corresponding to the rangefinder
- * running mode, allowing you to put priority on
+ * @param newval : a value among YRangeFinder::RANGEFINDERMODE_DEFAULT,
+ * YRangeFinder::RANGEFINDERMODE_LONG_RANGE, YRangeFinder::RANGEFINDERMODE_HIGH_ACCURACY and
+ * YRangeFinder::RANGEFINDERMODE_HIGH_SPEED corresponding to the rangefinder running mode, allowing you
+ * to put priority on
  *         precision, speed or maximum range
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -200,7 +202,7 @@ int YRangeFinder::set_rangeFinderMode(Y_RANGEFINDERMODE_enum newval)
  * @return an integer corresponding to the time frame used to measure the distance and estimate the measure
  *         reliability
  *
- * On failure, throws an exception or returns Y_TIMEFRAME_INVALID.
+ * On failure, throws an exception or returns YRangeFinder::TIMEFRAME_INVALID.
  */
 s64 YRangeFinder::get_timeFrame(void)
 {
@@ -234,7 +236,7 @@ s64 YRangeFinder::get_timeFrame(void)
  * @param newval : an integer corresponding to the time frame used to measure the distance and estimate the measure
  *         reliability
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -259,7 +261,7 @@ int YRangeFinder::set_timeFrame(s64 newval)
  *
  * @return an integer corresponding to a measure quality estimate, based on measured dispersion
  *
- * On failure, throws an exception or returns Y_QUALITY_INVALID.
+ * On failure, throws an exception or returns YRangeFinder::QUALITY_INVALID.
  */
 int YRangeFinder::get_quality(void)
 {
@@ -326,7 +328,7 @@ int YRangeFinder::set_hardwareCalibration(const string& newval)
  *
  * @return a floating point number corresponding to the current sensor temperature, as a floating point number
  *
- * On failure, throws an exception or returns Y_CURRENTTEMPERATURE_INVALID.
+ * On failure, throws an exception or returns YRangeFinder::CURRENTTEMPERATURE_INVALID.
  */
 double YRangeFinder::get_currentTemperature(void)
 {
@@ -401,7 +403,7 @@ int YRangeFinder::set_command(const string& newval)
  *
  * This function does not require that the range finder is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YRangeFinder.isOnline() to test if the range finder is
+ * Use the method isOnline() to test if the range finder is
  * indeed online at a given time. In case of ambiguity when looking for
  * a range finder by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -517,7 +519,7 @@ int YRangeFinder::_invokeTimedReportCallback(YMeasure value)
  * is required.
  *
  * @return a temperature, as a floating point number.
- *         On failure, throws an exception or return YAPI_INVALID_DOUBLE.
+ *         On failure, throws an exception or return YAPI::INVALID_DOUBLE.
  */
 double YRangeFinder::get_hardwareCalibrationTemperature(void)
 {
@@ -535,7 +537,7 @@ double YRangeFinder::get_hardwareCalibrationTemperature(void)
  * automatically at device startup, but it is recommended to start it again when the
  * temperature delta since the latest calibration exceeds 8°C.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *         On failure, throws an exception or returns a negative error code.
  */
 int YRangeFinder::triggerTemperatureCalibration(void)
@@ -549,7 +551,7 @@ int YRangeFinder::triggerTemperatureCalibration(void)
  * of a cover glass. Make sure to read the chapter about hardware calibration for details
  * on the calibration procedure for proper results.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *         On failure, throws an exception or returns a negative error code.
  */
 int YRangeFinder::triggerSpadCalibration(void)
@@ -566,7 +568,7 @@ int YRangeFinder::triggerSpadCalibration(void)
  * @param targetDist : true distance of the calibration target, in mm or inches, depending
  *         on the unit selected in the device
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *         On failure, throws an exception or returns a negative error code.
  */
 int YRangeFinder::triggerOffsetCalibration(double targetDist)
@@ -589,7 +591,7 @@ int YRangeFinder::triggerOffsetCalibration(double targetDist)
  * @param targetDist : true distance of the calibration target, in mm or inches, depending
  *         on the unit selected in the device
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *         On failure, throws an exception or returns a negative error code.
  */
 int YRangeFinder::triggerXTalkCalibration(double targetDist)
@@ -608,7 +610,7 @@ int YRangeFinder::triggerXTalkCalibration(double targetDist)
  * for cover glass, and restores factory settings.
  * Remember to call the saveToFlash() method of the module if the modification must be kept.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *         On failure, throws an exception or returns a negative error code.
  */
 int YRangeFinder::cancelCoverGlassCalibrations(void)

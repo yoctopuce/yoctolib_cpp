@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multisenscontroller.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_multisenscontroller.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindMultiSensController(), the high-level API for MultiSensController functions
  *
@@ -97,7 +97,7 @@ int YMultiSensController::_parseAttr(YJSONObject *json_val)
  *
  * @return an integer corresponding to the number of sensors to poll
  *
- * On failure, throws an exception or returns Y_NSENSORS_INVALID.
+ * On failure, throws an exception or returns YMultiSensController::NSENSORS_INVALID.
  */
 int YMultiSensController::get_nSensors(void)
 {
@@ -130,7 +130,7 @@ int YMultiSensController::get_nSensors(void)
  *
  * @param newval : an integer corresponding to the number of sensors to poll
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -155,7 +155,7 @@ int YMultiSensController::set_nSensors(int newval)
  *
  * @return an integer corresponding to the maximum configurable sensor count allowed on this device
  *
- * On failure, throws an exception or returns Y_MAXSENSORS_INVALID.
+ * On failure, throws an exception or returns YMultiSensController::MAXSENSORS_INVALID.
  */
 int YMultiSensController::get_maxSensors(void)
 {
@@ -182,10 +182,10 @@ int YMultiSensController::get_maxSensors(void)
 /**
  * Returns true when the device is in maintenance mode.
  *
- * @return either Y_MAINTENANCEMODE_FALSE or Y_MAINTENANCEMODE_TRUE, according to true when the device
- * is in maintenance mode
+ * @return either YMultiSensController::MAINTENANCEMODE_FALSE or
+ * YMultiSensController::MAINTENANCEMODE_TRUE, according to true when the device is in maintenance mode
  *
- * On failure, throws an exception or returns Y_MAINTENANCEMODE_INVALID.
+ * On failure, throws an exception or returns YMultiSensController::MAINTENANCEMODE_INVALID.
  */
 Y_MAINTENANCEMODE_enum YMultiSensController::get_maintenanceMode(void)
 {
@@ -214,10 +214,11 @@ Y_MAINTENANCEMODE_enum YMultiSensController::get_maintenanceMode(void)
  * This way, the device does not automatically restart when it cannot
  * communicate with one of the sensors.
  *
- * @param newval : either Y_MAINTENANCEMODE_FALSE or Y_MAINTENANCEMODE_TRUE, according to the device
- * mode to enable maintenance and to stop sensor polling
+ * @param newval : either YMultiSensController::MAINTENANCEMODE_FALSE or
+ * YMultiSensController::MAINTENANCEMODE_TRUE, according to the device mode to enable maintenance and
+ * to stop sensor polling
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -288,7 +289,7 @@ int YMultiSensController::set_command(const string& newval)
  *
  * This function does not require that the multi-sensor controller is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YMultiSensController.isOnline() to test if the multi-sensor controller is
+ * Use the method isOnline() to test if the multi-sensor controller is
  * indeed online at a given time. In case of ambiguity when looking for
  * a multi-sensor controller by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -375,7 +376,7 @@ int YMultiSensController::_invokeValueCallback(string value)
  *
  * @param addr : new address of the connected sensor
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *         On failure, throws an exception or returns a negative error code.
  */
 int YMultiSensController::setupAddress(int addr)

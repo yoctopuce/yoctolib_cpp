@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_arithmeticsensor.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_arithmeticsensor.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindArithmeticSensor(), the high-level API for ArithmeticSensor functions
  *
@@ -93,7 +93,7 @@ int YArithmeticSensor::_parseAttr(YJSONObject *json_val)
  *
  * @param newval : a string corresponding to the measuring unit for the arithmetic sensor
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -118,7 +118,7 @@ int YArithmeticSensor::set_unit(const string& newval)
  *
  * @return a string corresponding to a short informative description of the formula
  *
- * On failure, throws an exception or returns Y_DESCRIPTION_INVALID.
+ * On failure, throws an exception or returns YArithmeticSensor::DESCRIPTION_INVALID.
  */
 string YArithmeticSensor::get_description(void)
 {
@@ -193,7 +193,7 @@ int YArithmeticSensor::set_command(const string& newval)
  *
  * This function does not require that the arithmetic sensor is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YArithmeticSensor.isOnline() to test if the arithmetic sensor is
+ * Use the method isOnline() to test if the arithmetic sensor is
  * indeed online at a given time. In case of ambiguity when looking for
  * an arithmetic sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -313,7 +313,7 @@ int YArithmeticSensor::_invokeTimedReportCallback(YMeasure value)
  *
  * @return the current expression value if the call succeeds.
  *
- * On failure, throws an exception or returns YAPI_INVALID_DOUBLE.
+ * On failure, throws an exception or returns YAPI::INVALID_DOUBLE.
  */
 double YArithmeticSensor::defineExpression(string expr,string descr)
 {
@@ -377,7 +377,7 @@ string YArithmeticSensor::loadExpression(void)
  * @param outputValues : array of floating point numbers, corresponding to the output value
  *         desired for each of the input value, index by index.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -421,7 +421,7 @@ int YArithmeticSensor::defineAuxiliaryFunction(string name,vector<double> inputV
  * @param outputValues : array of floating point numbers, that is filled by the function
  *         output value for each of the input value, index by index.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */

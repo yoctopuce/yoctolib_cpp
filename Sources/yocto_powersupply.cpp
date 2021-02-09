@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_powersupply.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_powersupply.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindPowerSupply(), the high-level API for PowerSupply functions
  *
@@ -143,7 +143,7 @@ int YPowerSupply::_parseAttr(YJSONObject *json_val)
  *
  * @param newval : a floating point number corresponding to the voltage set point, in V
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -168,7 +168,7 @@ int YPowerSupply::set_voltageSetPoint(double newval)
  *
  * @return a floating point number corresponding to the voltage set point, in V
  *
- * On failure, throws an exception or returns Y_VOLTAGESETPOINT_INVALID.
+ * On failure, throws an exception or returns YPowerSupply::VOLTAGESETPOINT_INVALID.
  */
 double YPowerSupply::get_voltageSetPoint(void)
 {
@@ -197,7 +197,7 @@ double YPowerSupply::get_voltageSetPoint(void)
  *
  * @param newval : a floating point number corresponding to the current limit, in mA
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -222,7 +222,7 @@ int YPowerSupply::set_currentLimit(double newval)
  *
  * @return a floating point number corresponding to the current limit, in mA
  *
- * On failure, throws an exception or returns Y_CURRENTLIMIT_INVALID.
+ * On failure, throws an exception or returns YPowerSupply::CURRENTLIMIT_INVALID.
  */
 double YPowerSupply::get_currentLimit(void)
 {
@@ -249,9 +249,10 @@ double YPowerSupply::get_currentLimit(void)
 /**
  * Returns the power supply output switch state.
  *
- * @return either Y_POWEROUTPUT_OFF or Y_POWEROUTPUT_ON, according to the power supply output switch state
+ * @return either YPowerSupply::POWEROUTPUT_OFF or YPowerSupply::POWEROUTPUT_ON, according to the power
+ * supply output switch state
  *
- * On failure, throws an exception or returns Y_POWEROUTPUT_INVALID.
+ * On failure, throws an exception or returns YPowerSupply::POWEROUTPUT_INVALID.
  */
 Y_POWEROUTPUT_enum YPowerSupply::get_powerOutput(void)
 {
@@ -278,9 +279,10 @@ Y_POWEROUTPUT_enum YPowerSupply::get_powerOutput(void)
 /**
  * Changes the power supply output switch state.
  *
- * @param newval : either Y_POWEROUTPUT_OFF or Y_POWEROUTPUT_ON, according to the power supply output switch state
+ * @param newval : either YPowerSupply::POWEROUTPUT_OFF or YPowerSupply::POWEROUTPUT_ON, according to
+ * the power supply output switch state
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -303,9 +305,10 @@ int YPowerSupply::set_powerOutput(Y_POWEROUTPUT_enum newval)
 /**
  * Returns the output voltage control point.
  *
- * @return either Y_VOLTAGESENSE_INT or Y_VOLTAGESENSE_EXT, according to the output voltage control point
+ * @return either YPowerSupply::VOLTAGESENSE_INT or YPowerSupply::VOLTAGESENSE_EXT, according to the
+ * output voltage control point
  *
- * On failure, throws an exception or returns Y_VOLTAGESENSE_INVALID.
+ * On failure, throws an exception or returns YPowerSupply::VOLTAGESENSE_INVALID.
  */
 Y_VOLTAGESENSE_enum YPowerSupply::get_voltageSense(void)
 {
@@ -332,9 +335,10 @@ Y_VOLTAGESENSE_enum YPowerSupply::get_voltageSense(void)
 /**
  * Changes the voltage control point.
  *
- * @param newval : either Y_VOLTAGESENSE_INT or Y_VOLTAGESENSE_EXT, according to the voltage control point
+ * @param newval : either YPowerSupply::VOLTAGESENSE_INT or YPowerSupply::VOLTAGESENSE_EXT, according to
+ * the voltage control point
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -359,7 +363,7 @@ int YPowerSupply::set_voltageSense(Y_VOLTAGESENSE_enum newval)
  *
  * @return a floating point number corresponding to the measured output voltage, in V
  *
- * On failure, throws an exception or returns Y_MEASUREDVOLTAGE_INVALID.
+ * On failure, throws an exception or returns YPowerSupply::MEASUREDVOLTAGE_INVALID.
  */
 double YPowerSupply::get_measuredVoltage(void)
 {
@@ -388,7 +392,7 @@ double YPowerSupply::get_measuredVoltage(void)
  *
  * @return a floating point number corresponding to the measured output current, in mA
  *
- * On failure, throws an exception or returns Y_MEASUREDCURRENT_INVALID.
+ * On failure, throws an exception or returns YPowerSupply::MEASUREDCURRENT_INVALID.
  */
 double YPowerSupply::get_measuredCurrent(void)
 {
@@ -417,7 +421,7 @@ double YPowerSupply::get_measuredCurrent(void)
  *
  * @return a floating point number corresponding to the measured input voltage, in V
  *
- * On failure, throws an exception or returns Y_INPUTVOLTAGE_INVALID.
+ * On failure, throws an exception or returns YPowerSupply::INPUTVOLTAGE_INVALID.
  */
 double YPowerSupply::get_inputVoltage(void)
 {
@@ -446,7 +450,7 @@ double YPowerSupply::get_inputVoltage(void)
  *
  * @return a floating point number corresponding to the internal voltage, in V
  *
- * On failure, throws an exception or returns Y_VINT_INVALID.
+ * On failure, throws an exception or returns YPowerSupply::VINT_INVALID.
  */
 double YPowerSupply::get_vInt(void)
 {
@@ -475,7 +479,7 @@ double YPowerSupply::get_vInt(void)
  *
  * @return a floating point number corresponding to the LDO temperature, in Celsius
  *
- * On failure, throws an exception or returns Y_LDOTEMPERATURE_INVALID.
+ * On failure, throws an exception or returns YPowerSupply::LDOTEMPERATURE_INVALID.
  */
 double YPowerSupply::get_ldoTemperature(void)
 {
@@ -543,7 +547,7 @@ int YPowerSupply::set_voltageTransition(const string& newval)
  *
  * @param newval : a floating point number corresponding to the voltage set point at device start up
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -568,7 +572,7 @@ int YPowerSupply::set_voltageAtStartUp(double newval)
  *
  * @return a floating point number corresponding to the selected voltage set point at device startup, in V
  *
- * On failure, throws an exception or returns Y_VOLTAGEATSTARTUP_INVALID.
+ * On failure, throws an exception or returns YPowerSupply::VOLTAGEATSTARTUP_INVALID.
  */
 double YPowerSupply::get_voltageAtStartUp(void)
 {
@@ -598,7 +602,7 @@ double YPowerSupply::get_voltageAtStartUp(void)
  *
  * @param newval : a floating point number corresponding to the current limit at device start up
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -623,7 +627,7 @@ int YPowerSupply::set_currentAtStartUp(double newval)
  *
  * @return a floating point number corresponding to the selected current limit at device startup, in mA
  *
- * On failure, throws an exception or returns Y_CURRENTATSTARTUP_INVALID.
+ * On failure, throws an exception or returns YPowerSupply::CURRENTATSTARTUP_INVALID.
  */
 double YPowerSupply::get_currentAtStartUp(void)
 {
@@ -698,7 +702,7 @@ int YPowerSupply::set_command(const string& newval)
  *
  * This function does not require that the regulated power supply is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YPowerSupply.isOnline() to test if the regulated power supply is
+ * Use the method isOnline() to test if the regulated power supply is
  * indeed online at a given time. In case of ambiguity when looking for
  * a regulated power supply by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -782,7 +786,7 @@ int YPowerSupply::_invokeValueCallback(string value)
  *         (floating-point number, representing the end voltage in V)
  * @param ms_duration : total duration of the transition, in milliseconds
  *
- * @return YAPI_SUCCESS when the call succeeds.
+ * @return YAPI::SUCCESS when the call succeeds.
  */
 int YPowerSupply::voltageMove(double V_target,int ms_duration)
 {

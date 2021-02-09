@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.cpp 40196 2020-04-30 06:47:29Z mvuilleu $
+ * $Id: yocto_files.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  * Implements yFindFiles(), the high-level API for Files functions
  *
@@ -168,7 +168,7 @@ int YFiles::_parseAttr(YJSONObject *json_val)
  *
  * @return an integer corresponding to the number of files currently loaded in the filesystem
  *
- * On failure, throws an exception or returns Y_FILESCOUNT_INVALID.
+ * On failure, throws an exception or returns YFiles::FILESCOUNT_INVALID.
  */
 int YFiles::get_filesCount(void)
 {
@@ -197,7 +197,7 @@ int YFiles::get_filesCount(void)
  *
  * @return an integer corresponding to the free space for uploading new files to the filesystem, in bytes
  *
- * On failure, throws an exception or returns Y_FREESPACE_INVALID.
+ * On failure, throws an exception or returns YFiles::FREESPACE_INVALID.
  */
 int YFiles::get_freeSpace(void)
 {
@@ -234,7 +234,7 @@ int YFiles::get_freeSpace(void)
  *
  * This function does not require that the filesystem is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YFiles.isOnline() to test if the filesystem is
+ * Use the method isOnline() to test if the filesystem is
  * indeed online at a given time. In case of ambiguity when looking for
  * a filesystem by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -245,7 +245,7 @@ int YFiles::get_freeSpace(void)
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the filesystem, for instance
- *         YBUZZER2.files.
+ *         YRGBLED2.files.
  *
  * @return a YFiles object allowing you to drive the filesystem.
  */
@@ -322,7 +322,7 @@ string YFiles::sendCommand(string command)
  * Reinitialize the filesystem to its clean, unfragmented, empty state.
  * All files previously uploaded are permanently lost.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -411,7 +411,7 @@ string YFiles::download(string pathname)
  * @param pathname : path and name of the new file to create
  * @param content : binary buffer with the content to set
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -430,7 +430,7 @@ int YFiles::upload(string pathname,string content)
  *
  * @param pathname : path and name of the file to remove.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */

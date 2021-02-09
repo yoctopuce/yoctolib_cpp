@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_genericsensor.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_genericsensor.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -116,7 +116,7 @@ int YGenericSensor::_parseAttr(YJSONObject *json_val)
  *
  * @param newval : a string corresponding to the measuring unit for the measured value
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -142,7 +142,7 @@ int YGenericSensor::set_unit(const string& newval)
  * @return a floating point number corresponding to the current value of the electrical signal
  * measured by the sensor
  *
- * On failure, throws an exception or returns Y_SIGNALVALUE_INVALID.
+ * On failure, throws an exception or returns YGenericSensor::SIGNALVALUE_INVALID.
  */
 double YGenericSensor::get_signalValue(void)
 {
@@ -171,7 +171,7 @@ double YGenericSensor::get_signalValue(void)
  *
  * @return a string corresponding to the measuring unit of the electrical signal used by the sensor
  *
- * On failure, throws an exception or returns Y_SIGNALUNIT_INVALID.
+ * On failure, throws an exception or returns YGenericSensor::SIGNALUNIT_INVALID.
  */
 string YGenericSensor::get_signalUnit(void)
 {
@@ -200,7 +200,7 @@ string YGenericSensor::get_signalUnit(void)
  *
  * @return a string corresponding to the input signal range used by the sensor
  *
- * On failure, throws an exception or returns Y_SIGNALRANGE_INVALID.
+ * On failure, throws an exception or returns YGenericSensor::SIGNALRANGE_INVALID.
  */
 string YGenericSensor::get_signalRange(void)
 {
@@ -240,7 +240,7 @@ string YGenericSensor::get_signalRange(void)
  *
  * @param newval : a string corresponding to the input signal range used by the sensor
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -265,7 +265,7 @@ int YGenericSensor::set_signalRange(const string& newval)
  *
  * @return a string corresponding to the physical value range measured by the sensor
  *
- * On failure, throws an exception or returns Y_VALUERANGE_INVALID.
+ * On failure, throws an exception or returns YGenericSensor::VALUERANGE_INVALID.
  */
 string YGenericSensor::get_valueRange(void)
 {
@@ -302,7 +302,7 @@ string YGenericSensor::get_valueRange(void)
  * @param newval : a string corresponding to the output value range, corresponding to the physical value measured
  *         by the sensor
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -331,7 +331,7 @@ int YGenericSensor::set_valueRange(const string& newval)
  *
  * @param newval : a floating point number corresponding to the electric signal bias for zero shift adjustment
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -358,7 +358,7 @@ int YGenericSensor::set_signalBias(double newval)
  *
  * @return a floating point number corresponding to the electric signal bias for zero shift adjustment
  *
- * On failure, throws an exception or returns Y_SIGNALBIAS_INVALID.
+ * On failure, throws an exception or returns YGenericSensor::SIGNALBIAS_INVALID.
  */
 double YGenericSensor::get_signalBias(void)
 {
@@ -390,11 +390,12 @@ double YGenericSensor::get_signalBias(void)
  * The LOW_NOISE_FILTERED method combines a reduced frequency with the median filter
  * to get measures as stable as possible when working on a noisy signal.
  *
- * @return a value among Y_SIGNALSAMPLING_HIGH_RATE, Y_SIGNALSAMPLING_HIGH_RATE_FILTERED,
- * Y_SIGNALSAMPLING_LOW_NOISE, Y_SIGNALSAMPLING_LOW_NOISE_FILTERED and Y_SIGNALSAMPLING_HIGHEST_RATE
+ * @return a value among YGenericSensor::SIGNALSAMPLING_HIGH_RATE,
+ * YGenericSensor::SIGNALSAMPLING_HIGH_RATE_FILTERED, YGenericSensor::SIGNALSAMPLING_LOW_NOISE,
+ * YGenericSensor::SIGNALSAMPLING_LOW_NOISE_FILTERED and YGenericSensor::SIGNALSAMPLING_HIGHEST_RATE
  * corresponding to the electric signal sampling method to use
  *
- * On failure, throws an exception or returns Y_SIGNALSAMPLING_INVALID.
+ * On failure, throws an exception or returns YGenericSensor::SIGNALSAMPLING_INVALID.
  */
 Y_SIGNALSAMPLING_enum YGenericSensor::get_signalSampling(void)
 {
@@ -428,11 +429,12 @@ Y_SIGNALSAMPLING_enum YGenericSensor::get_signalSampling(void)
  * Remember to call the saveToFlash()
  * method of the module if the modification must be kept.
  *
- * @param newval : a value among Y_SIGNALSAMPLING_HIGH_RATE, Y_SIGNALSAMPLING_HIGH_RATE_FILTERED,
- * Y_SIGNALSAMPLING_LOW_NOISE, Y_SIGNALSAMPLING_LOW_NOISE_FILTERED and Y_SIGNALSAMPLING_HIGHEST_RATE
+ * @param newval : a value among YGenericSensor::SIGNALSAMPLING_HIGH_RATE,
+ * YGenericSensor::SIGNALSAMPLING_HIGH_RATE_FILTERED, YGenericSensor::SIGNALSAMPLING_LOW_NOISE,
+ * YGenericSensor::SIGNALSAMPLING_LOW_NOISE_FILTERED and YGenericSensor::SIGNALSAMPLING_HIGHEST_RATE
  * corresponding to the electric signal sampling method to use
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -455,9 +457,10 @@ int YGenericSensor::set_signalSampling(Y_SIGNALSAMPLING_enum newval)
 /**
  * Returns the activation state of this input.
  *
- * @return either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the activation state of this input
+ * @return either YGenericSensor::ENABLED_FALSE or YGenericSensor::ENABLED_TRUE, according to the
+ * activation state of this input
  *
- * On failure, throws an exception or returns Y_ENABLED_INVALID.
+ * On failure, throws an exception or returns YGenericSensor::ENABLED_INVALID.
  */
 Y_ENABLED_enum YGenericSensor::get_enabled(void)
 {
@@ -488,9 +491,10 @@ Y_ENABLED_enum YGenericSensor::get_enabled(void)
  * Remember to call the saveToFlash()
  * method of the module if the modification must be kept.
  *
- * @param newval : either Y_ENABLED_FALSE or Y_ENABLED_TRUE, according to the activation state of this input
+ * @param newval : either YGenericSensor::ENABLED_FALSE or YGenericSensor::ENABLED_TRUE, according to
+ * the activation state of this input
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -523,7 +527,7 @@ int YGenericSensor::set_enabled(Y_ENABLED_enum newval)
  *
  * This function does not require that the generic sensor is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YGenericSensor.isOnline() to test if the generic sensor is
+ * Use the method isOnline() to test if the generic sensor is
  * indeed online at a given time. In case of ambiguity when looking for
  * a generic sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -638,7 +642,7 @@ int YGenericSensor::_invokeTimedReportCallback(YMeasure value)
  * precisely as zero. Remember to call the saveToFlash()
  * method of the module if the modification must be kept.
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */

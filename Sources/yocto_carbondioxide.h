@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_carbondioxide.h 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_carbondioxide.h 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Declares yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *
@@ -110,7 +110,7 @@ public:
      *
      * @return an integer corresponding to the Automatic Baseline Calibration period, in hours
      *
-     * On failure, throws an exception or returns Y_ABCPERIOD_INVALID.
+     * On failure, throws an exception or returns YCarbonDioxide::ABCPERIOD_INVALID.
      */
     int                 get_abcPeriod(void);
 
@@ -126,7 +126,7 @@ public:
      *
      * @param newval : an integer corresponding to Automatic Baseline Calibration period, in hours
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -156,7 +156,7 @@ public:
      *
      * This function does not require that the CO2 sensor is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YCarbonDioxide.isOnline() to test if the CO2 sensor is
+     * Use the method isOnline() to test if the CO2 sensor is
      * indeed online at a given time. In case of ambiguity when looking for
      * a CO2 sensor by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
@@ -215,7 +215,7 @@ public:
      * time. Before starting a baseline calibration, make sure to put the sensor
      * in a standard environment (e.g. outside in fresh air) at around 400 ppm.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -235,7 +235,7 @@ public:
      * connected to the sensor. Please contact support@yoctopuce.com for more details
      * on the zero calibration procedure.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -263,7 +263,7 @@ public:
 
     /**
      * Starts the enumeration of CO2 sensors currently accessible.
-     * Use the method YCarbonDioxide.nextCarbonDioxide() to iterate on
+     * Use the method YCarbonDioxide::nextCarbonDioxide() to iterate on
      * next CO2 sensors.
      *
      * @return a pointer to a YCarbonDioxide object, corresponding to
@@ -294,7 +294,7 @@ public:
  *
  * This function does not require that the CO2 sensor is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YCarbonDioxide.isOnline() to test if the CO2 sensor is
+ * Use the method isOnline() to test if the CO2 sensor is
  * indeed online at a given time. In case of ambiguity when looking for
  * a CO2 sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -313,7 +313,7 @@ inline YCarbonDioxide *yFindCarbonDioxide(const string& func)
 { return YCarbonDioxide::FindCarbonDioxide(func);}
 /**
  * Starts the enumeration of CO2 sensors currently accessible.
- * Use the method YCarbonDioxide.nextCarbonDioxide() to iterate on
+ * Use the method YCarbonDioxide::nextCarbonDioxide() to iterate on
  * next CO2 sensors.
  *
  * @return a pointer to a YCarbonDioxide object, corresponding to

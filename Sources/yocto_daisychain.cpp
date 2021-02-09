@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_daisychain.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_daisychain.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindDaisyChain(), the high-level API for DaisyChain functions
  *
@@ -90,11 +90,11 @@ int YDaisyChain::_parseAttr(YJSONObject *json_val)
 /**
  * Returns the state of the daisy-link between modules.
  *
- * @return a value among Y_DAISYSTATE_READY, Y_DAISYSTATE_IS_CHILD, Y_DAISYSTATE_FIRMWARE_MISMATCH,
- * Y_DAISYSTATE_CHILD_MISSING and Y_DAISYSTATE_CHILD_LOST corresponding to the state of the daisy-link
- * between modules
+ * @return a value among YDaisyChain::DAISYSTATE_READY, YDaisyChain::DAISYSTATE_IS_CHILD,
+ * YDaisyChain::DAISYSTATE_FIRMWARE_MISMATCH, YDaisyChain::DAISYSTATE_CHILD_MISSING and
+ * YDaisyChain::DAISYSTATE_CHILD_LOST corresponding to the state of the daisy-link between modules
  *
- * On failure, throws an exception or returns Y_DAISYSTATE_INVALID.
+ * On failure, throws an exception or returns YDaisyChain::DAISYSTATE_INVALID.
  */
 Y_DAISYSTATE_enum YDaisyChain::get_daisyState(void)
 {
@@ -123,7 +123,7 @@ Y_DAISYSTATE_enum YDaisyChain::get_daisyState(void)
  *
  * @return an integer corresponding to the number of child nodes currently detected
  *
- * On failure, throws an exception or returns Y_CHILDCOUNT_INVALID.
+ * On failure, throws an exception or returns YDaisyChain::CHILDCOUNT_INVALID.
  */
 int YDaisyChain::get_childCount(void)
 {
@@ -152,7 +152,7 @@ int YDaisyChain::get_childCount(void)
  *
  * @return an integer corresponding to the number of child nodes expected in normal conditions
  *
- * On failure, throws an exception or returns Y_REQUIREDCHILDCOUNT_INVALID.
+ * On failure, throws an exception or returns YDaisyChain::REQUIREDCHILDCOUNT_INVALID.
  */
 int YDaisyChain::get_requiredChildCount(void)
 {
@@ -185,7 +185,7 @@ int YDaisyChain::get_requiredChildCount(void)
  *
  * @param newval : an integer corresponding to the number of child nodes expected in normal conditions
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -218,7 +218,7 @@ int YDaisyChain::set_requiredChildCount(int newval)
  *
  * This function does not require that the module chain is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YDaisyChain.isOnline() to test if the module chain is
+ * Use the method isOnline() to test if the module chain is
  * indeed online at a given time. In case of ambiguity when looking for
  * a module chain by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,

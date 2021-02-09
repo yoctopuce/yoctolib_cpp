@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_audioout.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_audioout.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindAudioOut(), the high-level API for AudioOut functions
  *
@@ -101,7 +101,7 @@ int YAudioOut::_parseAttr(YJSONObject *json_val)
  *
  * @return an integer corresponding to audio output volume, in per cents
  *
- * On failure, throws an exception or returns Y_VOLUME_INVALID.
+ * On failure, throws an exception or returns YAudioOut::VOLUME_INVALID.
  */
 int YAudioOut::get_volume(void)
 {
@@ -132,7 +132,7 @@ int YAudioOut::get_volume(void)
  *
  * @param newval : an integer corresponding to audio output volume, in per cents
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -155,9 +155,9 @@ int YAudioOut::set_volume(int newval)
 /**
  * Returns the state of the mute function.
  *
- * @return either Y_MUTE_FALSE or Y_MUTE_TRUE, according to the state of the mute function
+ * @return either YAudioOut::MUTE_FALSE or YAudioOut::MUTE_TRUE, according to the state of the mute function
  *
- * On failure, throws an exception or returns Y_MUTE_INVALID.
+ * On failure, throws an exception or returns YAudioOut::MUTE_INVALID.
  */
 Y_MUTE_enum YAudioOut::get_mute(void)
 {
@@ -185,9 +185,9 @@ Y_MUTE_enum YAudioOut::get_mute(void)
  * Changes the state of the mute function. Remember to call the matching module
  * saveToFlash() method to save the setting permanently.
  *
- * @param newval : either Y_MUTE_FALSE or Y_MUTE_TRUE, according to the state of the mute function
+ * @param newval : either YAudioOut::MUTE_FALSE or YAudioOut::MUTE_TRUE, according to the state of the mute function
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -215,7 +215,7 @@ int YAudioOut::set_mute(Y_MUTE_enum newval)
  *
  * @return a string corresponding to the supported volume range
  *
- * On failure, throws an exception or returns Y_VOLUMERANGE_INVALID.
+ * On failure, throws an exception or returns YAudioOut::VOLUMERANGE_INVALID.
  */
 string YAudioOut::get_volumeRange(void)
 {
@@ -244,7 +244,7 @@ string YAudioOut::get_volumeRange(void)
  *
  * @return an integer corresponding to the detected output current level
  *
- * On failure, throws an exception or returns Y_SIGNAL_INVALID.
+ * On failure, throws an exception or returns YAudioOut::SIGNAL_INVALID.
  */
 int YAudioOut::get_signal(void)
 {
@@ -273,7 +273,7 @@ int YAudioOut::get_signal(void)
  *
  * @return an integer corresponding to the number of seconds elapsed without detecting a signal
  *
- * On failure, throws an exception or returns Y_NOSIGNALFOR_INVALID.
+ * On failure, throws an exception or returns YAudioOut::NOSIGNALFOR_INVALID.
  */
 int YAudioOut::get_noSignalFor(void)
 {
@@ -310,7 +310,7 @@ int YAudioOut::get_noSignalFor(void)
  *
  * This function does not require that the audio output is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YAudioOut.isOnline() to test if the audio output is
+ * Use the method isOnline() to test if the audio output is
  * indeed online at a given time. In case of ambiguity when looking for
  * an audio output by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,

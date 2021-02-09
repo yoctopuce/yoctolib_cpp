@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.h 42060 2020-10-14 10:02:12Z seb $
+ * $Id: yocto_files.h 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  * Declares yFindFiles(), the high-level API for Files functions
  *
@@ -126,8 +126,8 @@ public:
 
 //--- (generated code: YFiles declaration)
 /**
- * YFiles Class: filesystem control interface, available for instance in the Yocto-Buzzer, the
- * Yocto-Color-V2, the YoctoHub-Ethernet or the YoctoHub-Wireless-n
+ * YFiles Class: filesystem control interface, available for instance in the Yocto-Color-V2, the
+ * Yocto-Serial, the YoctoHub-Ethernet or the YoctoHub-Wireless-n
  *
  * The YFiles class is used to access the filesystem embedded on
  * some Yoctopuce devices. This filesystem makes it
@@ -170,7 +170,7 @@ public:
      *
      * @return an integer corresponding to the number of files currently loaded in the filesystem
      *
-     * On failure, throws an exception or returns Y_FILESCOUNT_INVALID.
+     * On failure, throws an exception or returns YFiles::FILESCOUNT_INVALID.
      */
     int                 get_filesCount(void);
 
@@ -182,7 +182,7 @@ public:
      *
      * @return an integer corresponding to the free space for uploading new files to the filesystem, in bytes
      *
-     * On failure, throws an exception or returns Y_FREESPACE_INVALID.
+     * On failure, throws an exception or returns YFiles::FREESPACE_INVALID.
      */
     int                 get_freeSpace(void);
 
@@ -202,7 +202,7 @@ public:
      *
      * This function does not require that the filesystem is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YFiles.isOnline() to test if the filesystem is
+     * Use the method isOnline() to test if the filesystem is
      * indeed online at a given time. In case of ambiguity when looking for
      * a filesystem by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
@@ -213,7 +213,7 @@ public:
      * call registerHub() at application initialization time.
      *
      * @param func : a string that uniquely characterizes the filesystem, for instance
-     *         YBUZZER2.files.
+     *         YRGBLED2.files.
      *
      * @return a YFiles object allowing you to drive the filesystem.
      */
@@ -241,7 +241,7 @@ public:
      * Reinitialize the filesystem to its clean, unfragmented, empty state.
      * All files previously uploaded are permanently lost.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -291,7 +291,7 @@ public:
      * @param pathname : path and name of the new file to create
      * @param content : binary buffer with the content to set
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -307,7 +307,7 @@ public:
      *
      * @param pathname : path and name of the file to remove.
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -333,7 +333,7 @@ public:
 
     /**
      * Starts the enumeration of filesystems currently accessible.
-     * Use the method YFiles.nextFiles() to iterate on
+     * Use the method YFiles::nextFiles() to iterate on
      * next filesystems.
      *
      * @return a pointer to a YFiles object, corresponding to
@@ -364,7 +364,7 @@ public:
  *
  * This function does not require that the filesystem is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YFiles.isOnline() to test if the filesystem is
+ * Use the method isOnline() to test if the filesystem is
  * indeed online at a given time. In case of ambiguity when looking for
  * a filesystem by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -375,7 +375,7 @@ public:
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the filesystem, for instance
- *         YBUZZER2.files.
+ *         YRGBLED2.files.
  *
  * @return a YFiles object allowing you to drive the filesystem.
  */
@@ -383,7 +383,7 @@ inline YFiles *yFindFiles(const string& func)
 { return YFiles::FindFiles(func);}
 /**
  * Starts the enumeration of filesystems currently accessible.
- * Use the method YFiles.nextFiles() to iterate on
+ * Use the method YFiles::nextFiles() to iterate on
  * next filesystems.
  *
  * @return a pointer to a YFiles object, corresponding to

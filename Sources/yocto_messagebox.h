@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.h 42060 2020-10-14 10:02:12Z seb $
+ * $Id: yocto_messagebox.h 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  * Declares yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -198,7 +198,7 @@ public:
      *
      * @param val : the text to be sent in the message
      *
-     * @return YAPI_SUCCESS when the call succeeds.
+     * @return YAPI::SUCCESS when the call succeeds.
      */
     virtual int         addText(string val);
 
@@ -208,7 +208,7 @@ public:
      *
      * @param val : an array of special unicode characters
      *
-     * @return YAPI_SUCCESS when the call succeeds.
+     * @return YAPI::SUCCESS when the call succeeds.
      */
     virtual int         addUnicodeData(vector<int> val);
 
@@ -240,7 +240,7 @@ public:
      * Sends the SMS to the recipient. Messages of more than 160 characters are supported
      * using SMS concatenation.
      *
-     * @return YAPI_SUCCESS when the call succeeds.
+     * @return YAPI::SUCCESS when the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -312,7 +312,7 @@ public:
      *
      * @return an integer corresponding to the number of message storage slots currently in use
      *
-     * On failure, throws an exception or returns Y_SLOTSINUSE_INVALID.
+     * On failure, throws an exception or returns YMessageBox::SLOTSINUSE_INVALID.
      */
     int                 get_slotsInUse(void);
 
@@ -324,7 +324,7 @@ public:
      *
      * @return an integer corresponding to the total number of message storage slots on the SIM card
      *
-     * On failure, throws an exception or returns Y_SLOTSCOUNT_INVALID.
+     * On failure, throws an exception or returns YMessageBox::SLOTSCOUNT_INVALID.
      */
     int                 get_slotsCount(void);
 
@@ -341,7 +341,7 @@ public:
      *
      * @return an integer corresponding to the number of SMS units sent so far
      *
-     * On failure, throws an exception or returns Y_PDUSENT_INVALID.
+     * On failure, throws an exception or returns YMessageBox::PDUSENT_INVALID.
      */
     int                 get_pduSent(void);
 
@@ -353,7 +353,7 @@ public:
      *
      * @param newval : an integer corresponding to the value of the outgoing SMS units counter
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -366,7 +366,7 @@ public:
      *
      * @return an integer corresponding to the number of SMS units received so far
      *
-     * On failure, throws an exception or returns Y_PDURECEIVED_INVALID.
+     * On failure, throws an exception or returns YMessageBox::PDURECEIVED_INVALID.
      */
     int                 get_pduReceived(void);
 
@@ -378,7 +378,7 @@ public:
      *
      * @param newval : an integer corresponding to the value of the incoming SMS units counter
      *
-     * @return YAPI_SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -408,7 +408,7 @@ public:
      *
      * This function does not require that the SMS message box interface is online at the time
      * it is invoked. The returned object is nevertheless valid.
-     * Use the method YMessageBox.isOnline() to test if the SMS message box interface is
+     * Use the method isOnline() to test if the SMS message box interface is
      * indeed online at a given time. In case of ambiguity when looking for
      * a SMS message box interface by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
@@ -462,7 +462,7 @@ public:
     /**
      * Clear the SMS units counters.
      *
-     * @return YAPI_SUCCESS when the call succeeds.
+     * @return YAPI::SUCCESS when the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -479,7 +479,7 @@ public:
      *         national number, or in international format starting with a plus sign
      * @param message : the text to be sent in the message
      *
-     * @return YAPI_SUCCESS when the call succeeds.
+     * @return YAPI::SUCCESS when the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -497,7 +497,7 @@ public:
      *         national number, or in international format starting with a plus sign
      * @param message : the text to be sent in the message
      *
-     * @return YAPI_SUCCESS when the call succeeds.
+     * @return YAPI::SUCCESS when the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -509,7 +509,7 @@ public:
      * @param recipient : a text string with the recipient phone number, either as a
      *         national number, or in international format starting with a plus sign
      *
-     * @return YAPI_SUCCESS when the call succeeds.
+     * @return YAPI::SUCCESS when the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
@@ -545,7 +545,7 @@ public:
 
     /**
      * Starts the enumeration of SMS message box interfaces currently accessible.
-     * Use the method YMessageBox.nextMessageBox() to iterate on
+     * Use the method YMessageBox::nextMessageBox() to iterate on
      * next SMS message box interfaces.
      *
      * @return a pointer to a YMessageBox object, corresponding to
@@ -576,7 +576,7 @@ public:
  *
  * This function does not require that the SMS message box interface is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YMessageBox.isOnline() to test if the SMS message box interface is
+ * Use the method isOnline() to test if the SMS message box interface is
  * indeed online at a given time. In case of ambiguity when looking for
  * a SMS message box interface by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -595,7 +595,7 @@ inline YMessageBox *yFindMessageBox(const string& func)
 { return YMessageBox::FindMessageBox(func);}
 /**
  * Starts the enumeration of SMS message box interfaces currently accessible.
- * Use the method YMessageBox.nextMessageBox() to iterate on
+ * Use the method YMessageBox::nextMessageBox() to iterate on
  * next SMS message box interfaces.
  *
  * @return a pointer to a YMessageBox object, corresponding to

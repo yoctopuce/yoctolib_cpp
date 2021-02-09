@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_motor.cpp 40195 2020-04-29 21:14:12Z mvuilleu $
+ *  $Id: yocto_motor.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
  *
  *  Implements yFindMotor(), the high-level API for Motor functions
  *
@@ -130,10 +130,11 @@ int YMotor::_parseAttr(YJSONObject *json_val)
  * When an error condition occurred (LOVOLT, HICURR, HIHEAT, FAILSF), the controller
  * status must be explicitly reset using the resetStatus function.
  *
- * @return a value among Y_MOTORSTATUS_IDLE, Y_MOTORSTATUS_BRAKE, Y_MOTORSTATUS_FORWD,
- * Y_MOTORSTATUS_BACKWD, Y_MOTORSTATUS_LOVOLT, Y_MOTORSTATUS_HICURR, Y_MOTORSTATUS_HIHEAT and Y_MOTORSTATUS_FAILSF
+ * @return a value among YMotor::MOTORSTATUS_IDLE, YMotor::MOTORSTATUS_BRAKE, YMotor::MOTORSTATUS_FORWD,
+ * YMotor::MOTORSTATUS_BACKWD, YMotor::MOTORSTATUS_LOVOLT, YMotor::MOTORSTATUS_HICURR,
+ * YMotor::MOTORSTATUS_HIHEAT and YMotor::MOTORSTATUS_FAILSF
  *
- * On failure, throws an exception or returns Y_MOTORSTATUS_INVALID.
+ * On failure, throws an exception or returns YMotor::MOTORSTATUS_INVALID.
  */
 Y_MOTORSTATUS_enum YMotor::get_motorStatus(void)
 {
@@ -182,7 +183,7 @@ int YMotor::set_motorStatus(Y_MOTORSTATUS_enum newval)
  *
  * @param newval : a floating point number corresponding to immediately the power sent to the motor
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -208,7 +209,7 @@ int YMotor::set_drivingForce(double newval)
  * @return a floating point number corresponding to the power sent to the motor, as a percentage
  * between -100% and +100%
  *
- * On failure, throws an exception or returns Y_DRIVINGFORCE_INVALID.
+ * On failure, throws an exception or returns YMotor::DRIVINGFORCE_INVALID.
  */
 double YMotor::get_drivingForce(void)
 {
@@ -240,7 +241,7 @@ double YMotor::get_drivingForce(void)
  * @param newval : a floating point number corresponding to immediately the braking force applied to
  * the motor (in percents)
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -266,7 +267,7 @@ int YMotor::set_brakingForce(double newval)
  *
  * @return a floating point number corresponding to the braking force applied to the motor, as a percentage
  *
- * On failure, throws an exception or returns Y_BRAKINGFORCE_INVALID.
+ * On failure, throws an exception or returns YMotor::BRAKINGFORCE_INVALID.
  */
 double YMotor::get_brakingForce(void)
 {
@@ -303,7 +304,7 @@ double YMotor::get_brakingForce(void)
  * controller automatically switches to error state
  *         and prevents further current draw
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -332,7 +333,7 @@ int YMotor::set_cutOffVoltage(double newval)
  * automatically switches to error state
  *         and prevents further current draw
  *
- * On failure, throws an exception or returns Y_CUTOFFVOLTAGE_INVALID.
+ * On failure, throws an exception or returns YMotor::CUTOFFVOLTAGE_INVALID.
  */
 double YMotor::get_cutOffVoltage(void)
 {
@@ -363,7 +364,7 @@ double YMotor::get_cutOffVoltage(void)
  * @return an integer corresponding to the current threshold (in mA) above which the controller automatically
  *         switches to error state
  *
- * On failure, throws an exception or returns Y_OVERCURRENTLIMIT_INVALID.
+ * On failure, throws an exception or returns YMotor::OVERCURRENTLIMIT_INVALID.
  */
 int YMotor::get_overCurrentLimit(void)
 {
@@ -398,7 +399,7 @@ int YMotor::get_overCurrentLimit(void)
  * controller automatically
  *         switches to error state
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -427,7 +428,7 @@ int YMotor::set_overCurrentLimit(int newval)
  *
  * @param newval : a floating point number corresponding to the PWM frequency used to control the motor
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -452,7 +453,7 @@ int YMotor::set_frequency(double newval)
  *
  * @return a floating point number corresponding to the PWM frequency used to control the motor
  *
- * On failure, throws an exception or returns Y_FREQUENCY_INVALID.
+ * On failure, throws an exception or returns YMotor::FREQUENCY_INVALID.
  */
 double YMotor::get_frequency(void)
 {
@@ -484,7 +485,7 @@ double YMotor::get_frequency(void)
  * frequency to help
  *         it start up
  *
- * On failure, throws an exception or returns Y_STARTERTIME_INVALID.
+ * On failure, throws an exception or returns YMotor::STARTERTIME_INVALID.
  */
 int YMotor::get_starterTime(void)
 {
@@ -517,7 +518,7 @@ int YMotor::get_starterTime(void)
  * at low frequency to help
  *         it start up
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -547,7 +548,7 @@ int YMotor::set_starterTime(int newval)
  * autonomously without
  *         receiving any instruction from the control process
  *
- * On failure, throws an exception or returns Y_FAILSAFETIMEOUT_INVALID.
+ * On failure, throws an exception or returns YMotor::FAILSAFETIMEOUT_INVALID.
  */
 int YMotor::get_failSafeTimeout(void)
 {
@@ -583,7 +584,7 @@ int YMotor::get_failSafeTimeout(void)
  * run autonomously without
  *         receiving any instruction from the control process
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -654,7 +655,7 @@ int YMotor::set_command(const string& newval)
  *
  * This function does not require that the motor is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method YMotor.isOnline() to test if the motor is
+ * Use the method isOnline() to test if the motor is
  * indeed online at a given time. In case of ambiguity when looking for
  * a motor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
@@ -756,7 +757,7 @@ int YMotor::resetStatus(void)
  * @param targetPower : desired motor power, in percents (between -100% and +100%)
  * @param delay : duration (in ms) of the transition
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
@@ -771,7 +772,7 @@ int YMotor::drivingForceMove(double targetPower,int delay)
  * @param targetPower : desired braking force, in percents
  * @param delay : duration (in ms) of the transition
  *
- * @return YAPI_SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
