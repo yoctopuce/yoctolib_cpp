@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 42580 2020-11-19 09:02:42Z seb $
+ * $Id: yapi.c 43968 2021-02-23 09:09:49Z web $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -51,7 +51,51 @@
 
 #ifdef LINUX_API
 #include <sys/utsname.h>
+#include <unistd.h>
+
+int write_text_file(const char *filename, const char *content, int contentlen, char* errmsg)
+{
+    int res =0;
+    FILE *f;
+
+    if (YFOPEN(&f, filename, "w") != 0) {
+        int err = errno;
+        YSPRINTF(errmsg,YOCTO_ERRMSG_LEN, "Unable to open file %s (%s)", filename, strerror(err));
+        if(err == EACCES){
+            return YAPI_UNAUTHORIZED;
+        } else {
+            return YAPI_IO_ERROR;
+        }
+    }
+    if (fwrite(content, 1, contentlen, f) <=0) {
+        YSPRINTF(errmsg,YOCTO_ERRMSG_LEN, "Unable to write to file %s", filename);
+        res = YAPI_IO_ERROR;
+    }
+    fclose(f);
+    return res;
+}
+
 #endif
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiAddUdevRulesForYocto(int force, char *errmsg)
+{
+#ifdef LINUX_API
+#define UDEV_RULE "# udev rules to allow write access to all users for Yoctopuce USB devices\nSUBSYSTEM==\"usb\", ATTR{idVendor}==\"24e0\", MODE=\"0666\"\n"
+    const char *filename = "/etc/udev/rules.d/51-yoctopuce.rules";
+    if (force == 0 && access(filename, F_OK) == 0) {
+        // file already present
+        return YAPI_SUCCESS;
+    }
+
+
+    return write_text_file( filename,
+                            UDEV_RULE,
+                            YSTRLEN(UDEV_RULE),
+                            errmsg);
+#else
+    return YERRMSG(YAPI_NOT_SUPPORTED,"Only available on Linux");
+#endif
+}
 
 
 static YRETCODE yapiUpdateDeviceList_internal(u32 forceupdate, char* errmsg);
@@ -1680,7 +1724,7 @@ static int yNetHubEnum(HubSt* hub, int forceupdate, char* errmsg)
         } else {
             // the hub does not send ping notification -> we will to a request and potentially
             // get a tcp timeout if the hub is not reachable
-            res = yNetHubEnumEx(hub, &enus, errmsg);       
+            res = yNetHubEnumEx(hub, &enus, errmsg);
         }
     } else {
         // if the hub is optional we will not trigger an error but
@@ -3160,7 +3204,7 @@ static YRETCODE yapiRegisterHubEx(const char* url, int checkacces, char* errmsg)
                 if (res == YAPI_NOT_SUPPORTED) {
                     if (YSTRNCMP(url, "http://", 7) == 0) {
                         return res;
-                        
+
                     } else if (YSTRNCMP(url, "ws://", 5) == 0) {
                         url += 5;
                     }

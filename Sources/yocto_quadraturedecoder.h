@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_quadraturedecoder.h 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_quadraturedecoder.h 44023 2021-02-25 09:23:38Z web $
  *
  *  Declares yFindQuadratureDecoder(), the high-level API for QuadratureDecoder functions
  *
@@ -66,6 +66,8 @@ typedef void (*YQuadratureDecoderTimedReportCallback)(YQuadratureDecoder *func, 
 typedef enum {
     Y_DECODING_OFF = 0,
     Y_DECODING_ON = 1,
+    Y_DECODING_DIV2 = 2,
+    Y_DECODING_DIV4 = 3,
     Y_DECODING_INVALID = -1,
 } Y_DECODING_enum;
 #endif
@@ -110,6 +112,8 @@ public:
     static const double SPEED_INVALID;
     static const Y_DECODING_enum DECODING_OFF = Y_DECODING_OFF;
     static const Y_DECODING_enum DECODING_ON = Y_DECODING_ON;
+    static const Y_DECODING_enum DECODING_DIV2 = Y_DECODING_DIV2;
+    static const Y_DECODING_enum DECODING_DIV4 = Y_DECODING_DIV4;
     static const Y_DECODING_enum DECODING_INVALID = Y_DECODING_INVALID;
 
     /**
@@ -141,8 +145,9 @@ public:
     /**
      * Returns the current activation state of the quadrature decoder.
      *
-     * @return either YQuadratureDecoder::DECODING_OFF or YQuadratureDecoder::DECODING_ON, according to the
-     * current activation state of the quadrature decoder
+     * @return a value among YQuadratureDecoder::DECODING_OFF, YQuadratureDecoder::DECODING_ON,
+     * YQuadratureDecoder::DECODING_DIV2 and YQuadratureDecoder::DECODING_DIV4 corresponding to the current
+     * activation state of the quadrature decoder
      *
      * On failure, throws an exception or returns YQuadratureDecoder::DECODING_INVALID.
      */
@@ -156,8 +161,9 @@ public:
      * Remember to call the saveToFlash()
      * method of the module if the modification must be kept.
      *
-     * @param newval : either YQuadratureDecoder::DECODING_OFF or YQuadratureDecoder::DECODING_ON, according
-     * to the activation state of the quadrature decoder
+     * @param newval : a value among YQuadratureDecoder::DECODING_OFF, YQuadratureDecoder::DECODING_ON,
+     * YQuadratureDecoder::DECODING_DIV2 and YQuadratureDecoder::DECODING_DIV4 corresponding to the
+     * activation state of the quadrature decoder
      *
      * @return YAPI::SUCCESS if the call succeeds.
      *

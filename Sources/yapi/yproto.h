@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 41930 2020-09-25 09:10:14Z seb $
+ * $Id: yproto.h 43965 2021-02-22 17:32:20Z web $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -1104,6 +1104,7 @@ int  yUsbSendMeta(const char *str, USB_Meta_Pkt *pkt, int len, char *errmsg);
 int  yUSBGetBooloader(const char *serial, const char * name,  yInterfaceSt *iface,char *errmsg);
 
 // Misc helper
+int write_text_file(const char *filename, const char *content, int contentlen, char* errmsg);
 int handleNetNotification(HubSt *hub);
 u32 yapiGetCNonce(u32 nc);
 YRETCODE  yapiHTTPRequestSyncStartEx_internal(YIOHDL *iohdl, int tcpchan, const char *device, const char *request, int requestsize, char **reply, int *replysize, yapiRequestProgressCallback progress_cb, void *progress_ctx, char *errmsg);

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yjni.c 32916 2018-11-02 11:07:34Z seb $
+ * $Id: yjni.c 44028 2021-02-25 10:40:53Z web $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -75,6 +75,23 @@ JNIEXPORT jstring JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_getAPIVersion(
 
     return (*env)->NewStringUTF(env, version);
 }
+
+
+/*
+ * Class:     com_yoctopuce_YoctoAPI_YJniWrapper
+ * Method:    addUdevRule
+ * Signature: (I)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_addUdevRule(JNIEnv *env, jclass thisObj, jint force)
+{
+    char errmsg[YOCTO_ERRMSG_LEN];
+    if (yapiAddUdevRulesForYocto(force, errmsg) < 0) {
+        return (*env)->NewStringUTF(env, "errmsg");
+    }
+    return (*env)->NewStringUTF(env, "");
+}
+
+
 
 
 /*

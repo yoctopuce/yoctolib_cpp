@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_quadraturedecoder.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_quadraturedecoder.cpp 44023 2021-02-25 09:23:38Z web $
  *
  *  Implements yFindQuadratureDecoder(), the high-level API for QuadratureDecoder functions
  *
@@ -143,8 +143,9 @@ double YQuadratureDecoder::get_speed(void)
 /**
  * Returns the current activation state of the quadrature decoder.
  *
- * @return either YQuadratureDecoder::DECODING_OFF or YQuadratureDecoder::DECODING_ON, according to the
- * current activation state of the quadrature decoder
+ * @return a value among YQuadratureDecoder::DECODING_OFF, YQuadratureDecoder::DECODING_ON,
+ * YQuadratureDecoder::DECODING_DIV2 and YQuadratureDecoder::DECODING_DIV4 corresponding to the current
+ * activation state of the quadrature decoder
  *
  * On failure, throws an exception or returns YQuadratureDecoder::DECODING_INVALID.
  */
@@ -175,8 +176,9 @@ Y_DECODING_enum YQuadratureDecoder::get_decoding(void)
  * Remember to call the saveToFlash()
  * method of the module if the modification must be kept.
  *
- * @param newval : either YQuadratureDecoder::DECODING_OFF or YQuadratureDecoder::DECODING_ON, according
- * to the activation state of the quadrature decoder
+ * @param newval : a value among YQuadratureDecoder::DECODING_OFF, YQuadratureDecoder::DECODING_ON,
+ * YQuadratureDecoder::DECODING_DIV2 and YQuadratureDecoder::DECODING_DIV4 corresponding to the
+ * activation state of the quadrature decoder
  *
  * @return YAPI::SUCCESS if the call succeeds.
  *
@@ -188,7 +190,7 @@ int YQuadratureDecoder::set_decoding(Y_DECODING_enum newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        rest_val = (newval>0 ? "1" : "0");
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
         res = _setAttr("decoding", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);

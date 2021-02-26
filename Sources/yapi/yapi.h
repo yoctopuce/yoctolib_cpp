@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h 41930 2020-09-25 09:10:14Z seb $
+ * $Id: yapi.h 43968 2021-02-23 09:09:49Z web $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -1097,6 +1097,30 @@ void YAPI_FUNCTION_EXPORT yapiRegisterHubDiscoveryCallback(yapiHubDiscoveryCallb
 
  ***************************************************************************/
 YRETCODE YAPI_FUNCTION_EXPORT yapiTriggerHubDiscovery(char *errmsg);
+
+
+
+/*****************************************************************************
+ Function:
+   YRETCODE YAPI_FUNCTION_EXPORT yapiAddUdevRulesForYocto(char *errmsg);
+
+ Description:
+    Create a Udev rules that allow all users to access Yoctopuce Devices. After
+    running this command the host NEED TO BE REBOOTED in order to force UDEV to
+    reload all rules. Note:This function is available only on Linux.
+
+ Parameters:
+   force      : if !=0 the function will overwrite any previous configuration
+   errmsg     : a pointer to a buffer of YOCTO_ERRMSG_LEN bytes to store any error message
+
+ Returns:
+   check the result with the YISERR(retcode)
+   on ERROR   : return the YRETCODE
+
+ Remarks:
+
+ ***************************************************************************/
+YRETCODE YAPI_FUNCTION_EXPORT yapiAddUdevRulesForYocto(int  force, char *errmsg);
 
 
 

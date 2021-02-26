@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 43619 2021-01-29 09:14:45Z mvuilleu $
+ * $Id: yocto_api.cpp 44025 2021-02-25 09:38:14Z web $
  *
  * High-level programming interface, common to all modules
  *
@@ -2668,6 +2668,37 @@ int YAPIContext::GetDeviceListValidity(void)
     int res = 0;
     res = yapiGetNetDevListValidity();
     return res;
+}
+
+/**
+ * Adds a UDEV rule which authorizes all users to access Yoctopuce modules
+ * connected to the USB ports. This function works only under Linux. The process that
+ * calls this method must have root privileges because this method changes the Linux configuration.
+ *
+ * @param force : if true, overwrites any existing rule.
+ *
+ * @return an empty string if the rule has been added.
+ *
+ * On failure, returns a string that starts with "error:".
+ */
+string YAPIContext::AddUdevRule(bool force)
+{
+    string msg;
+    int res = 0;
+    int c_force = 0;
+    char errmsg[YOCTO_ERRMSG_LEN];
+    if (force) {
+        c_force = 1;
+    } else {
+        c_force = 0;
+    }
+    res = yapiAddUdevRulesForYocto(c_force, errmsg);
+    if (res < 0) {
+        msg = "error: " + string(errmsg);
+    } else {
+        msg = "";
+    }
+    return msg;
 }
 
 /**

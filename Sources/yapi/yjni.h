@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yjni.h 21719 2015-10-09 14:44:06Z seb $
+ * $Id: yjni.h 44027 2021-02-25 10:06:43Z web $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -52,6 +52,14 @@ extern "C" {
  */
 JNIEXPORT jstring JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_getAPIVersion
   (JNIEnv *, jclass);
+
+/*
+ * Class:     com_yoctopuce_YoctoAPI_YJniWrapper
+ * Method:    addUdevRule
+ * Signature: (I)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_addUdevRule
+   (JNIEnv *, jclass, jint );
 
 /*
  * Class:     com_yoctopuce_YoctoAPI_YJniWrapper
