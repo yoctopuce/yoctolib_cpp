@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 41798 2020-09-08 08:36:57Z seb $
+ * $Id: yprog.c 44069 2021-03-01 11:00:54Z web $
  *
  * Implementation of firmware upgrade functions
  *
@@ -727,11 +727,21 @@ static int uSendCmd(u8 cmd,FLASH_DEVICE_STATE nextState)
     return 1;
 }
 
+#ifndef MICROCHIP_API
+#define FULL_ERRMSG fullmsg
+#define SET_FLASH_ERRMSG(dst, len, short_msg, long_msg) YSPRINTF(dst, len, "%s (%s)",  (short_msg), (long_msg))
+#else
+#define FULL_ERRMSG NULL
+#define SET_FLASH_ERRMSG(dst, len, short_msg, long_msg) YSTRCPY(dst, len, (short_msg))
+#endif
+
 static int uFlashZone()
 {
     u16         datasize;
     char msg[FLASH_ERRMSG_LEN];
-
+#ifndef MICROCHIP_API
+    char fullmsg[YOCTO_ERRMSG_LEN];
+#endif
     switch(fctx.zst){
         case FLASH_ZONE_START:
             if(fctx.currzone == fctx.bynHead.v6.ROM_nb_zone + fctx.bynHead.v6.FLA_nb_zone){
@@ -785,8 +795,8 @@ static int uFlashZone()
             datasize = firm_pkt.prog.pkt.size*3;
             uGetFirmware(fctx.zOfs, firm_pkt.prog.pkt.data, datasize);
             //dbglog("Flash zone %d:0x%x  0x%x(%d /%d)\n", fctx.currzone, fctx.zOfs, fctx.bz.addr_page, fctx.stepB, firm_dev.pr_blk_size);
-            if(ypSendBootloaderCmd(&firm_dev,&firm_pkt,NULL)<0){
-                YSTRCPY(fctx.errmsg,FLASH_ERRMSG_LEN,"ProgPkt");
+            if(ypSendBootloaderCmd(&firm_dev,&firm_pkt, FULL_ERRMSG)<0){
+                SET_FLASH_ERRMSG(fctx.errmsg,FLASH_ERRMSG_LEN,"ProgPkt", FULL_ERRMSG);
                 return -1;
             }
 
@@ -802,12 +812,12 @@ static int uFlashZone()
             }
             break;
         case FLASH_ZONE_RECV_OK:
-            if(ypGetBootloaderReply(&firm_dev, &firm_pkt,NULL)<0){
+            if(ypGetBootloaderReply(&firm_dev, &firm_pkt, FULL_ERRMSG)<0){
                 if((s32)(fctx.timeout - ytime()) < 0) {
 #if defined(DEBUG_FIRMWARE) && !defined(MICROCHIP_API)
                     dbglog("Bootlaoder did not send confirmation for Zone %x Block %x\n",fctx.currzone,fctx.bz.addr_page);
 #endif
-                    YSTRCPY(fctx.errmsg,FLASH_ERRMSG_LEN,"ProgDead");
+                    SET_FLASH_ERRMSG(fctx.errmsg, FLASH_ERRMSG_LEN, "ProgPkt", FULL_ERRMSG);
                     return -1;
                 }
                 return 0;

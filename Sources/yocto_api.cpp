@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 44025 2021-02-25 09:38:14Z web $
+ * $Id: yocto_api.cpp 44114 2021-03-03 17:47:55Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -9498,7 +9498,7 @@ int YDataLogger::set_clearHistory(Y_CLEARHISTORY_enum newval)
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the data logger, for instance
- *         RX420MA1.dataLogger.
+ *         LIGHTMK3.dataLogger.
  *
  * @return a YDataLogger object allowing you to drive the data logger.
  */
