@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_quadraturedecoder.h 44023 2021-02-25 09:23:38Z web $
+ *  $Id: yocto_quadraturedecoder.h 44609 2021-04-19 13:06:52Z mvuilleu $
  *
  *  Declares yFindQuadratureDecoder(), the high-level API for QuadratureDecoder functions
  *
@@ -66,12 +66,11 @@ typedef void (*YQuadratureDecoderTimedReportCallback)(YQuadratureDecoder *func, 
 typedef enum {
     Y_DECODING_OFF = 0,
     Y_DECODING_ON = 1,
-    Y_DECODING_DIV2 = 2,
-    Y_DECODING_DIV4 = 3,
     Y_DECODING_INVALID = -1,
 } Y_DECODING_enum;
 #endif
 #define Y_SPEED_INVALID                 (YAPI_INVALID_DOUBLE)
+#define Y_EDGEPERCYCLE_INVALID          (YAPI_INVALID_UINT)
 //--- (end of YQuadratureDecoder definitions)
 
 //--- (YQuadratureDecoder declaration)
@@ -92,6 +91,7 @@ protected:
     // Attributes (function value cache)
     double          _speed;
     Y_DECODING_enum _decoding;
+    int             _edgePerCycle;
     YQuadratureDecoderValueCallback _valueCallbackQuadratureDecoder;
     YQuadratureDecoderTimedReportCallback _timedReportCallbackQuadratureDecoder;
 
@@ -112,9 +112,8 @@ public:
     static const double SPEED_INVALID;
     static const Y_DECODING_enum DECODING_OFF = Y_DECODING_OFF;
     static const Y_DECODING_enum DECODING_ON = Y_DECODING_ON;
-    static const Y_DECODING_enum DECODING_DIV2 = Y_DECODING_DIV2;
-    static const Y_DECODING_enum DECODING_DIV4 = Y_DECODING_DIV4;
     static const Y_DECODING_enum DECODING_INVALID = Y_DECODING_INVALID;
+    static const int EDGEPERCYCLE_INVALID = YAPI_INVALID_UINT;
 
     /**
      * Changes the current expected position of the quadrature decoder.
@@ -131,9 +130,9 @@ public:
     { return this->set_currentValue(newval); }
 
     /**
-     * Returns the increments frequency, in Hz.
+     * Returns the cycle frequency, in Hz.
      *
-     * @return a floating point number corresponding to the increments frequency, in Hz
+     * @return a floating point number corresponding to the cycle frequency, in Hz
      *
      * On failure, throws an exception or returns YQuadratureDecoder::SPEED_INVALID.
      */
@@ -145,9 +144,8 @@ public:
     /**
      * Returns the current activation state of the quadrature decoder.
      *
-     * @return a value among YQuadratureDecoder::DECODING_OFF, YQuadratureDecoder::DECODING_ON,
-     * YQuadratureDecoder::DECODING_DIV2 and YQuadratureDecoder::DECODING_DIV4 corresponding to the current
-     * activation state of the quadrature decoder
+     * @return either YQuadratureDecoder::DECODING_OFF or YQuadratureDecoder::DECODING_ON, according to the
+     * current activation state of the quadrature decoder
      *
      * On failure, throws an exception or returns YQuadratureDecoder::DECODING_INVALID.
      */
@@ -161,9 +159,8 @@ public:
      * Remember to call the saveToFlash()
      * method of the module if the modification must be kept.
      *
-     * @param newval : a value among YQuadratureDecoder::DECODING_OFF, YQuadratureDecoder::DECODING_ON,
-     * YQuadratureDecoder::DECODING_DIV2 and YQuadratureDecoder::DECODING_DIV4 corresponding to the
-     * activation state of the quadrature decoder
+     * @param newval : either YQuadratureDecoder::DECODING_OFF or YQuadratureDecoder::DECODING_ON, according
+     * to the activation state of the quadrature decoder
      *
      * @return YAPI::SUCCESS if the call succeeds.
      *
@@ -172,6 +169,33 @@ public:
     int             set_decoding(Y_DECODING_enum newval);
     inline int      setDecoding(Y_DECODING_enum newval)
     { return this->set_decoding(newval); }
+
+    /**
+     * Returns the edge count per full cycle configuration setting.
+     *
+     * @return an integer corresponding to the edge count per full cycle configuration setting
+     *
+     * On failure, throws an exception or returns YQuadratureDecoder::EDGEPERCYCLE_INVALID.
+     */
+    int                 get_edgePerCycle(void);
+
+    inline int          edgePerCycle(void)
+    { return this->get_edgePerCycle(); }
+
+    /**
+     * Changes the edge count per full cycle configuration setting.
+     * Remember to call the saveToFlash()
+     * method of the module if the modification must be kept.
+     *
+     * @param newval : an integer corresponding to the edge count per full cycle configuration setting
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_edgePerCycle(int newval);
+    inline int      setEdgePerCycle(int newval)
+    { return this->set_edgePerCycle(newval); }
 
     /**
      * Retrieves a quadrature decoder for a given identifier.

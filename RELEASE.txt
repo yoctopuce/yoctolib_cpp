@@ -1,4 +1,3 @@
-CPP v1.10.44175
+CPP v1.10.44885
 
-- Add Yocto-CO2-V2 forced calibration method
-- Improve error reporting during firmware update
+- Fix Cmake compilation on macOS

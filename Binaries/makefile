@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: makefile 40172 2020-04-28 16:43:22Z seb $
+#  $Id: makefile 44842 2021-05-03 06:24:14Z web $
 #
 #  makefile for C++ library
 #  - - - - - - - - - License information: - - - - - - - - -
@@ -179,7 +179,7 @@ ALL_OBJS64		= $(YAPI_OBJS64) $(YOCTO_API_OBJS64)
 
 ALL_OBJS_DLL64	= $(YAPI_OBJS_DLL64) $(YOCTO_API_OBJS_DLL64)
 
-CC32 = "$(VCINSTALLDIR)\bin\cl"
+CC32 = cl
 
 {$(YAPI_DIR)\}.c{$(OBJDIR32)\}.obj:
 	$(CC32) $(CFLAGS) /nologo /Zl /Fo$@ /c $<

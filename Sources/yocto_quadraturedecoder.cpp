@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_quadraturedecoder.cpp 44023 2021-02-25 09:23:38Z web $
+ *  $Id: yocto_quadraturedecoder.cpp 44609 2021-04-19 13:06:52Z mvuilleu $
  *
  *  Implements yFindQuadratureDecoder(), the high-level API for QuadratureDecoder functions
  *
@@ -57,6 +57,7 @@ YQuadratureDecoder::YQuadratureDecoder(const string& func): YSensor(func)
 //--- (YQuadratureDecoder initialization)
     ,_speed(SPEED_INVALID)
     ,_decoding(DECODING_INVALID)
+    ,_edgePerCycle(EDGEPERCYCLE_INVALID)
     ,_valueCallbackQuadratureDecoder(NULL)
     ,_timedReportCallbackQuadratureDecoder(NULL)
 //--- (end of YQuadratureDecoder initialization)
@@ -80,6 +81,9 @@ int YQuadratureDecoder::_parseAttr(YJSONObject *json_val)
     }
     if(json_val->has("decoding")) {
         _decoding =  (Y_DECODING_enum)json_val->getInt("decoding");
+    }
+    if(json_val->has("edgePerCycle")) {
+        _edgePerCycle =  json_val->getInt("edgePerCycle");
     }
     return YSensor::_parseAttr(json_val);
 }
@@ -112,9 +116,9 @@ int YQuadratureDecoder::set_currentValue(double newval)
 }
 
 /**
- * Returns the increments frequency, in Hz.
+ * Returns the cycle frequency, in Hz.
  *
- * @return a floating point number corresponding to the increments frequency, in Hz
+ * @return a floating point number corresponding to the cycle frequency, in Hz
  *
  * On failure, throws an exception or returns YQuadratureDecoder::SPEED_INVALID.
  */
@@ -143,9 +147,8 @@ double YQuadratureDecoder::get_speed(void)
 /**
  * Returns the current activation state of the quadrature decoder.
  *
- * @return a value among YQuadratureDecoder::DECODING_OFF, YQuadratureDecoder::DECODING_ON,
- * YQuadratureDecoder::DECODING_DIV2 and YQuadratureDecoder::DECODING_DIV4 corresponding to the current
- * activation state of the quadrature decoder
+ * @return either YQuadratureDecoder::DECODING_OFF or YQuadratureDecoder::DECODING_ON, according to the
+ * current activation state of the quadrature decoder
  *
  * On failure, throws an exception or returns YQuadratureDecoder::DECODING_INVALID.
  */
@@ -176,9 +179,8 @@ Y_DECODING_enum YQuadratureDecoder::get_decoding(void)
  * Remember to call the saveToFlash()
  * method of the module if the modification must be kept.
  *
- * @param newval : a value among YQuadratureDecoder::DECODING_OFF, YQuadratureDecoder::DECODING_ON,
- * YQuadratureDecoder::DECODING_DIV2 and YQuadratureDecoder::DECODING_DIV4 corresponding to the
- * activation state of the quadrature decoder
+ * @param newval : either YQuadratureDecoder::DECODING_OFF or YQuadratureDecoder::DECODING_ON, according
+ * to the activation state of the quadrature decoder
  *
  * @return YAPI::SUCCESS if the call succeeds.
  *
@@ -190,8 +192,64 @@ int YQuadratureDecoder::set_decoding(Y_DECODING_enum newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        rest_val = (newval>0 ? "1" : "0");
         res = _setAttr("decoding", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the edge count per full cycle configuration setting.
+ *
+ * @return an integer corresponding to the edge count per full cycle configuration setting
+ *
+ * On failure, throws an exception or returns YQuadratureDecoder::EDGEPERCYCLE_INVALID.
+ */
+int YQuadratureDecoder::get_edgePerCycle(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YQuadratureDecoder::EDGEPERCYCLE_INVALID;
+                }
+            }
+        }
+        res = _edgePerCycle;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the edge count per full cycle configuration setting.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
+ *
+ * @param newval : an integer corresponding to the edge count per full cycle configuration setting
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YQuadratureDecoder::set_edgePerCycle(int newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        res = _setAttr("edgePerCycle", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;

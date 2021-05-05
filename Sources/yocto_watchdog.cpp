@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_watchdog.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_watchdog.cpp 44548 2021-04-13 09:56:42Z mvuilleu $
  *
  *  Implements yFindWatchdog(), the high-level API for Watchdog functions
  *
@@ -67,6 +67,7 @@ YWatchdog::YWatchdog(const string& func): YFunction(func)
     ,_running(RUNNING_INVALID)
     ,_triggerDelay(TRIGGERDELAY_INVALID)
     ,_triggerDuration(TRIGGERDURATION_INVALID)
+    ,_lastTrigger(LASTTRIGGER_INVALID)
     ,_valueCallbackWatchdog(NULL)
     ,_firm(0)
 //--- (end of YWatchdog initialization)
@@ -129,6 +130,9 @@ int YWatchdog::_parseAttr(YJSONObject *json_val)
     }
     if(json_val->has("triggerDuration")) {
         _triggerDuration =  json_val->getLong("triggerDuration");
+    }
+    if(json_val->has("lastTrigger")) {
+        _lastTrigger =  json_val->getInt("lastTrigger");
     }
     return YFunction::_parseAttr(json_val);
 }
@@ -818,6 +822,35 @@ int YWatchdog::set_triggerDuration(s64 newval)
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the number of seconds spent since the last output power-up event.
+ *
+ * @return an integer corresponding to the number of seconds spent since the last output power-up event
+ *
+ * On failure, throws an exception or returns YWatchdog::LASTTRIGGER_INVALID.
+ */
+int YWatchdog::get_lastTrigger(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YWatchdog::LASTTRIGGER_INVALID;
+                }
+            }
+        }
+        res = _lastTrigger;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
     yLeaveCriticalSection(&_this_cs);
     return res;

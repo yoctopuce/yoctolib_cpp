@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_watchdog.h 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_watchdog.h 44548 2021-04-13 09:56:42Z mvuilleu $
  *
  *  Declares yFindWatchdog(), the high-level API for Watchdog functions
  *
@@ -123,6 +123,7 @@ typedef enum {
 #define Y_COUNTDOWN_INVALID             (YAPI_INVALID_LONG)
 #define Y_TRIGGERDELAY_INVALID          (YAPI_INVALID_LONG)
 #define Y_TRIGGERDURATION_INVALID       (YAPI_INVALID_LONG)
+#define Y_LASTTRIGGER_INVALID           (YAPI_INVALID_UINT)
 //--- (end of YWatchdog definitions)
 
 //--- (YWatchdog declaration)
@@ -158,6 +159,7 @@ protected:
     Y_RUNNING_enum  _running;
     s64             _triggerDelay;
     s64             _triggerDuration;
+    int             _lastTrigger;
     YWatchdogValueCallback _valueCallbackWatchdog;
     int             _firm;
 
@@ -198,6 +200,7 @@ public:
     static const Y_RUNNING_enum RUNNING_INVALID = Y_RUNNING_INVALID;
     static const s64 TRIGGERDELAY_INVALID = YAPI_INVALID_LONG;
     static const s64 TRIGGERDURATION_INVALID = YAPI_INVALID_LONG;
+    static const int LASTTRIGGER_INVALID = YAPI_INVALID_UINT;
 
     /**
      * Returns the state of the watchdog (A for the idle position, B for the active position).
@@ -536,6 +539,18 @@ public:
     int             set_triggerDuration(s64 newval);
     inline int      setTriggerDuration(s64 newval)
     { return this->set_triggerDuration(newval); }
+
+    /**
+     * Returns the number of seconds spent since the last output power-up event.
+     *
+     * @return an integer corresponding to the number of seconds spent since the last output power-up event
+     *
+     * On failure, throws an exception or returns YWatchdog::LASTTRIGGER_INVALID.
+     */
+    int                 get_lastTrigger(void);
+
+    inline int          lastTrigger(void)
+    { return this->get_lastTrigger(); }
 
     /**
      * Retrieves a watchdog for a given identifier.
