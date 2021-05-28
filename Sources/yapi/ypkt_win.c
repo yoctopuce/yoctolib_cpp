@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_win.c 41930 2020-09-25 09:10:14Z seb $
+ * $Id: ypkt_win.c 44962 2021-05-10 08:32:59Z web $
  *
  * OS-specific USB packet layer, Windows version
  *
@@ -478,7 +478,8 @@ int yyyUSBGetInterfaces(yInterfaceSt** ifaces, int* nbifaceDetect, char* errmsg)
         HALLOG("Unable to unallocated Device Info Table  (%d)", GetLastError());
     }
     // save enumeration result to prevent later USB packets to redetect serial
-    if (yContext->prevEnum) yFree(yContext->prevEnum);
+    if (yContext->prevEnum)
+        yFree(yContext->prevEnum);
     yContext->prevEnumCnt = *nbifaceDetect;
     if (*nbifaceDetect > 0) {
         yContext->prevEnum = (yInterfaceSt*)yMalloc(*nbifaceDetect * sizeof(yInterfaceSt));

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ymemory.c 33697 2018-12-14 07:15:11Z martinm $
+ * $Id: ymemory.c 44962 2021-05-10 08:32:59Z web $
  *
  * Basic memory check function to prevent memory leak
  *
@@ -38,7 +38,7 @@
  *********************************************************************/
 
 #define __FILE_ID__  "ymemory"
- // do not use microsoft secure string
+// do not use microsoft secure string
 #define _CRT_SECURE_NO_DEPRECATE
 #define YMEMORY_ALLOW_MALLOC
 #include "yproto.h"
@@ -267,116 +267,115 @@ void  ySafeMemoryStop(void)
 
 
 // return the min of strlen and maxlen
-static unsigned ystrnlen(const char *src,unsigned maxlen)
+static unsigned ystrnlen(const char* src, unsigned maxlen)
 {
     unsigned len;
-    for (len=0 ; *src && len < maxlen ;len++,src++);
+    for (len = 0; *src && len < maxlen; len++, src++);
     return len;
 }
 
-YRETCODE ystrcpy_s(char *dst, unsigned dstsize,const char *src)
+YRETCODE ystrcpy_s(char* dst, unsigned dstsize, const char* src)
 {
-
-    return ystrncpy_s(dst,dstsize,src,dstsize);
+    return ystrncpy_s(dst, dstsize, src, dstsize);
 }
 
 
-char* ystrdup_s(const char *src)
+char* ystrdup_s(const char* src)
 {
     int len = YSTRLEN(src);
-    char *tmp = yMalloc(len+1);
+    char* tmp = yMalloc(len+1);
     memcpy(tmp, src, len + 1);
     return tmp;
 }
 
 
-YRETCODE ystrcat_s(char *dst, unsigned dstsize,const char *src)
+YRETCODE ystrcat_s(char* dst, unsigned dstsize, const char* src)
 {
     return ystrncat_s(dst, dstsize, src, dstsize);
 }
 
-int ysprintf_s(char *dst, unsigned dstsize,const char *fmt ,...)
+int ysprintf_s(char* dst, unsigned dstsize, const char* fmt, ...)
 {
     int len;
     va_list args;
-    va_start( args, fmt );
-    len = yvsprintf_s(dst,dstsize,fmt,args);
+    va_start(args, fmt);
+    len = yvsprintf_s(dst, dstsize, fmt, args);
     va_end(args);
     return len;
 }
 
-YRETCODE ystrncpy_s(char *dst,unsigned dstsize,const char *src,unsigned arglen)
+YRETCODE ystrncpy_s(char* dst, unsigned dstsize, const char* src, unsigned arglen)
 {
     unsigned len;
 
-    if (dst==NULL){
+    if (dst == NULL) {
         YPANIC;
         return YAPI_INVALID_ARGUMENT;
     }
-    if (src==NULL){
+    if (src == NULL) {
         YPANIC;
         return YAPI_INVALID_ARGUMENT;
     }
-    if(dstsize ==0){
+    if (dstsize == 0) {
         YPANIC;
         return YAPI_INVALID_ARGUMENT;
     }
-    len = ystrnlen(src,arglen);
-    if(len+1 > dstsize){
+    len = ystrnlen(src, arglen);
+    if (len + 1 > dstsize) {
         YPANIC;
-        dst[0]=0;
+        dst[0] = 0;
         return YAPI_INVALID_ARGUMENT;
-    }else{
-        memcpy(dst,src,len);
-        dst[len]=0;
+    } else {
+        memcpy(dst, src, len);
+        dst[len] = 0;
     }
     return YAPI_SUCCESS;
 }
 
 
-YRETCODE ystrncat_s(char *dst, unsigned dstsize,const char *src,unsigned len)
+YRETCODE ystrncat_s(char* dst, unsigned dstsize, const char* src, unsigned len)
 {
     unsigned dstlen;
-    if (dst==NULL){
+    if (dst == NULL) {
         YPANIC;
         return YAPI_INVALID_ARGUMENT;
     }
-    if (src==NULL){
+    if (src == NULL) {
         YPANIC;
         return YAPI_INVALID_ARGUMENT;
     }
     dstlen = ystrnlen(dst, dstsize);
-    if(dstlen+1 > dstsize){
+    if (dstlen + 1 > dstsize) {
         YPANIC;
         return YAPI_INVALID_ARGUMENT;
     }
-    return ystrncpy_s(dst+dstlen, dstsize-dstlen, src, len);
+    return ystrncpy_s(dst + dstlen, dstsize - dstlen, src, len);
 }
 
 
-int yvsprintf_s (char *dst, unsigned dstsize, const char * fmt, va_list arg )
+int yvsprintf_s(char* dst, unsigned dstsize, const char* fmt, va_list arg)
 {
     int len;
 #if defined(_MSC_VER) && (_MSC_VER <= MSC_VS2003)
     len = _vsnprintf(dst,dstsize,fmt,arg);
 #else
-    len = vsnprintf(dst,dstsize,fmt,arg);
+    len = vsnprintf(dst, dstsize, fmt, arg);
 #endif
-    if(len <0 || len >=(long)dstsize){
+    if (len < 0 || len >= (long)dstsize) {
         YPANIC;
-        dst[dstsize-1]=0;
+        dst[dstsize - 1] = 0;
         return YAPI_INVALID_ARGUMENT;
     }
     return len;
 }
 
-int ymemfind(const u8 *haystack, u32 haystack_len, const u8 *needle, u32 needle_len)
+int ymemfind(const u8* haystack, u32 haystack_len, const u8* needle, u32 needle_len)
 {
     u32 abspos = 0;
     u32 needle_pos = 0;
 
     do {
-        while (needle_pos < needle_len && (abspos + needle_pos)<haystack_len && needle[needle_pos] == haystack[abspos + needle_pos]) {
+        while (needle_pos < needle_len && (abspos + needle_pos) < haystack_len && needle[needle_pos] == haystack[abspos + needle_pos]) {
             needle_pos++;
         }
         if (needle_pos == needle_len) {
@@ -388,5 +387,3 @@ int ymemfind(const u8 *haystack, u32 haystack_len, const u8 *needle, u32 needle_
     } while (abspos + needle_len < haystack_len);
     return -1;
 }
-
-

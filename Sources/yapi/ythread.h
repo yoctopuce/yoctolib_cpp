@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.h 42179 2020-10-26 11:56:31Z seb $
+ * $Id: ythread.h 44962 2021-05-10 08:32:59Z web $
  *
  * OS-independent thread and synchronization library
  *
@@ -67,19 +67,19 @@ typedef struct {
 
 #endif
 
-void   yCreateEvent(yEvent *ev);
-void   yCreateManualEvent(yEvent *event,int initialState);
-void   ySetEvent(yEvent* ev);
-void   yResetEvent(yEvent *ev);
-int    yWaitForEvent(yEvent *ev,int time);
-void   yCloseEvent(yEvent *ev);
+void yCreateEvent(yEvent* ev);
+void yCreateManualEvent(yEvent* event, int initialState);
+void ySetEvent(yEvent* ev);
+void yResetEvent(yEvent* ev);
+int yWaitForEvent(yEvent* ev, int time);
+void yCloseEvent(yEvent* ev);
 
 
 /*********************************************************************
  * THREAD FUNCTION 
  *********************************************************************/
 #ifdef WIN32
-typedef HANDLE      osThread;
+typedef HANDLE osThread;
 #else
 typedef pthread_t   osThread;
 #endif
@@ -93,32 +93,30 @@ typedef enum {
 
 
 typedef struct {
-	void 			*ctx;
-	yEvent 			ev;
-	YTHREAD_STATE 	st;
-	osThread   		th;
+    void* ctx;
+    yEvent ev;
+    YTHREAD_STATE st;
+    osThread th;
 } yThread;
 
 #ifdef  __cplusplus
 extern "C" {
 #endif
-    
-int    yCreateDetachedThreadNamed(const char* name, void* (*fun)(void *), void *arg);    
-int    yThreadCreateNamed(yThread *yth, const char* name, void* (*fun)(void *), void *arg);
+
+int yCreateDetachedThreadNamed(const char* name, void* (*fun)(void*), void* arg);
+int yThreadCreateNamed(yThread* yth, const char* name, void* (*fun)(void*), void* arg);
 #define yCreateDetachedThread(fun, arg) yCreateDetachedThreadNamed(NULL, fun, arg)
 #define yThreadCreate(yth, fun, arg) yThreadCreateNamed(yth, NULL, fun, arg)
-int    yThreadIsRunning(yThread *yth);
-void   yThreadSignalStart(yThread *yth);
-void   yThreadSignalEnd(yThread *yth);
-void   yThreadRequestEnd(yThread *yth);
-int    yThreadMustEnd(yThread *yth);
-void   yThreadKill(yThread *yth);
-int    yThreadIndex(void);
+int yThreadIsRunning(yThread* yth);
+void yThreadSignalStart(yThread* yth);
+void yThreadSignalEnd(yThread* yth);
+void yThreadRequestEnd(yThread* yth);
+int yThreadMustEnd(yThread* yth);
+void yThreadKill(yThread* yth);
+int yThreadIndex(void);
 
 #ifdef  __cplusplus
 }
 #endif
-    
+
 #endif
-
-

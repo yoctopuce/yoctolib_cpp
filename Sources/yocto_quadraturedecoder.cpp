@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_quadraturedecoder.cpp 44609 2021-04-19 13:06:52Z mvuilleu $
+ *  $Id: yocto_quadraturedecoder.cpp 45292 2021-05-25 23:27:54Z mvuilleu $
  *
  *  Implements yFindQuadratureDecoder(), the high-level API for QuadratureDecoder functions
  *
@@ -57,7 +57,7 @@ YQuadratureDecoder::YQuadratureDecoder(const string& func): YSensor(func)
 //--- (YQuadratureDecoder initialization)
     ,_speed(SPEED_INVALID)
     ,_decoding(DECODING_INVALID)
-    ,_edgePerCycle(EDGEPERCYCLE_INVALID)
+    ,_edgesPerCycle(EDGESPERCYCLE_INVALID)
     ,_valueCallbackQuadratureDecoder(NULL)
     ,_timedReportCallbackQuadratureDecoder(NULL)
 //--- (end of YQuadratureDecoder initialization)
@@ -82,8 +82,8 @@ int YQuadratureDecoder::_parseAttr(YJSONObject *json_val)
     if(json_val->has("decoding")) {
         _decoding =  (Y_DECODING_enum)json_val->getInt("decoding");
     }
-    if(json_val->has("edgePerCycle")) {
-        _edgePerCycle =  json_val->getInt("edgePerCycle");
+    if(json_val->has("edgesPerCycle")) {
+        _edgesPerCycle =  json_val->getInt("edgesPerCycle");
     }
     return YSensor::_parseAttr(json_val);
 }
@@ -207,9 +207,9 @@ int YQuadratureDecoder::set_decoding(Y_DECODING_enum newval)
  *
  * @return an integer corresponding to the edge count per full cycle configuration setting
  *
- * On failure, throws an exception or returns YQuadratureDecoder::EDGEPERCYCLE_INVALID.
+ * On failure, throws an exception or returns YQuadratureDecoder::EDGESPERCYCLE_INVALID.
  */
-int YQuadratureDecoder::get_edgePerCycle(void)
+int YQuadratureDecoder::get_edgesPerCycle(void)
 {
     int res = 0;
     yEnterCriticalSection(&_this_cs);
@@ -218,11 +218,11 @@ int YQuadratureDecoder::get_edgePerCycle(void)
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
-                    return YQuadratureDecoder::EDGEPERCYCLE_INVALID;
+                    return YQuadratureDecoder::EDGESPERCYCLE_INVALID;
                 }
             }
         }
-        res = _edgePerCycle;
+        res = _edgesPerCycle;
     } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
@@ -242,14 +242,14 @@ int YQuadratureDecoder::get_edgePerCycle(void)
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YQuadratureDecoder::set_edgePerCycle(int newval)
+int YQuadratureDecoder::set_edgesPerCycle(int newval)
 {
     string rest_val;
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
         char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
-        res = _setAttr("edgePerCycle", rest_val);
+        res = _setAttr("edgesPerCycle", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_quadraturedecoder.h 44609 2021-04-19 13:06:52Z mvuilleu $
+ *  $Id: yocto_quadraturedecoder.h 45292 2021-05-25 23:27:54Z mvuilleu $
  *
  *  Declares yFindQuadratureDecoder(), the high-level API for QuadratureDecoder functions
  *
@@ -70,7 +70,7 @@ typedef enum {
 } Y_DECODING_enum;
 #endif
 #define Y_SPEED_INVALID                 (YAPI_INVALID_DOUBLE)
-#define Y_EDGEPERCYCLE_INVALID          (YAPI_INVALID_UINT)
+#define Y_EDGESPERCYCLE_INVALID         (YAPI_INVALID_UINT)
 //--- (end of YQuadratureDecoder definitions)
 
 //--- (YQuadratureDecoder declaration)
@@ -91,7 +91,7 @@ protected:
     // Attributes (function value cache)
     double          _speed;
     Y_DECODING_enum _decoding;
-    int             _edgePerCycle;
+    int             _edgesPerCycle;
     YQuadratureDecoderValueCallback _valueCallbackQuadratureDecoder;
     YQuadratureDecoderTimedReportCallback _timedReportCallbackQuadratureDecoder;
 
@@ -113,7 +113,7 @@ public:
     static const Y_DECODING_enum DECODING_OFF = Y_DECODING_OFF;
     static const Y_DECODING_enum DECODING_ON = Y_DECODING_ON;
     static const Y_DECODING_enum DECODING_INVALID = Y_DECODING_INVALID;
-    static const int EDGEPERCYCLE_INVALID = YAPI_INVALID_UINT;
+    static const int EDGESPERCYCLE_INVALID = YAPI_INVALID_UINT;
 
     /**
      * Changes the current expected position of the quadrature decoder.
@@ -175,12 +175,12 @@ public:
      *
      * @return an integer corresponding to the edge count per full cycle configuration setting
      *
-     * On failure, throws an exception or returns YQuadratureDecoder::EDGEPERCYCLE_INVALID.
+     * On failure, throws an exception or returns YQuadratureDecoder::EDGESPERCYCLE_INVALID.
      */
-    int                 get_edgePerCycle(void);
+    int                 get_edgesPerCycle(void);
 
-    inline int          edgePerCycle(void)
-    { return this->get_edgePerCycle(); }
+    inline int          edgesPerCycle(void)
+    { return this->get_edgesPerCycle(); }
 
     /**
      * Changes the edge count per full cycle configuration setting.
@@ -193,9 +193,9 @@ public:
      *
      * On failure, throws an exception or returns a negative error code.
      */
-    int             set_edgePerCycle(int newval);
-    inline int      setEdgePerCycle(int newval)
-    { return this->set_edgePerCycle(newval); }
+    int             set_edgesPerCycle(int newval);
+    inline int      setEdgesPerCycle(int newval)
+    { return this->set_edgesPerCycle(newval); }
 
     /**
      * Retrieves a quadrature decoder for a given identifier.

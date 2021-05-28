@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yjson.h 27182 2017-04-20 16:25:41Z seb $
+ * $Id: yjson.h 44977 2021-05-10 10:45:03Z web $
  *
  * Simple JSON parser (actually a slightly enhanced lexer)
  *
@@ -77,21 +77,20 @@ extern const char* yJsonStateStr[];
 #endif
 
 
-
 typedef struct {
-    _FAR const char *src;               // pointer to source buffer to parse (initialized by caller)
-    _FAR const char *end;               // pointer to end of source data (initialized by caller)
-    yJsonState  st;                     // current state (initialized by caller)
-    yJsonState  next;                   // next state (when returning with parse_avail)
-    yJsonState  stack[YJSON_MAX_DEPTH]; // state stack for handling nested structures
-    int         depth;                  // state stack depth
-    char        token[62];              // parse buffer, also used to return tokens
-    char        *pt;                    // pointer in token buffer
-    int         skipcnt;                // number of items to skip
-    int         skipdepth;              // stack depth at which skipping started
+    _FAR const char* src;              // pointer to source buffer to parse (initialized by caller)
+    _FAR const char* end;              // pointer to end of source data (initialized by caller)
+    yJsonState st;                     // current state (initialized by caller)
+    yJsonState next;                   // next state (when returning with parse_avail)
+    yJsonState stack[YJSON_MAX_DEPTH]; // state stack for handling nested structures
+    int depth;                         // state stack depth
+    char token[62];                    // parse buffer, also used to return tokens
+    char* pt;                          // pointer in token buffer
+    int skipcnt;                       // number of items to skip
+    int skipdepth;                     // stack depth at which skipping started
 #ifndef YAPI_IN_YDEVICE
-    _FAR const char *state_start;       // pointer to the start of the current state
-    _FAR const char *state_end;         // pointer to end of of the current state
+    _FAR const char* state_start;      // pointer to the start of the current state
+    _FAR const char* state_end;        // pointer to end of of the current state
 #endif
 } yJsonStateMachine;
 
@@ -104,10 +103,10 @@ typedef enum {
 } yJsonRetCode;
 
 // Parse JSON input stream until more data is needed or a token is returned
-yJsonRetCode yJsonParse(yJsonStateMachine *j);
+yJsonRetCode yJsonParse(yJsonStateMachine* j);
 
 // Mark next n JSON items in stream to be skipped (including content, in case items are containers)
-void         yJsonSkip(yJsonStateMachine *j, int nitems);
+void yJsonSkip(yJsonStateMachine* j, int nitems);
 
 #if 0
 
@@ -141,5 +140,3 @@ void         yJsonSkip(yJsonStateMachine *j, int nitems);
 }
 #endif
 #endif
-
-

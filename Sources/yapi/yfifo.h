@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yfifo.h 33858 2018-12-24 11:57:29Z seb $
+ * $Id: yfifo.h 44972 2021-05-10 10:37:52Z web $
  *
   * Declaration of a generic fifo queue
  *
@@ -59,11 +59,11 @@
 typedef struct {
     u16 buffsize;
     u16 datasize;
-    u8 *buff;
-    u8 *head;
-    u8 *tail;
+    u8* buff;
+    u8* head;
+    u8* tail;
 #ifdef YFIFO_USE_MUTEX
-	yCRITICAL_SECTION cs;
+    yCRITICAL_SECTION cs;
 #endif
 #ifdef DEBUG_FIFO
 	const char* fileid;
@@ -81,41 +81,41 @@ typedef struct {
 void 	yFifoInitEx(const char* fileid,int line, yFifoBuf *buf, u8 *buffer, u16 bufflen);
 #define yFifoInit(fifo,buffer,len)  yFifoInitEx(__FILE_ID__,__LINE__,fifo,buffer,len);
 #else
-void 	yFifoInitEx(yFifoBuf *buf, u8 *buffer, u16 bufflen);
+void yFifoInitEx(yFifoBuf* buf, u8* buffer, u16 bufflen);
 #define yFifoInit(fifo,buffer,len)  yFifoInitEx(fifo,buffer,len);
 #endif
 
 #ifdef MICROCHIP_API
 #define yFifoCleanup(fifo) memset(fifo, 0, sizeof(yFifoBuf))
 #else
-void yFifoCleanup(yFifoBuf *buf);
+void yFifoCleanup(yFifoBuf* buf);
 #endif
 
 // Ex version do not have muxtex
-void yFifoEmptyEx(yFifoBuf *buf);
-u16  yPushFifoEx(yFifoBuf *buf, const u8 *data, u16 datalen);
-u16  yPopFifoEx(yFifoBuf *buf, u8 *data, u16 datalen);
-u16  yPeekFifoEx(yFifoBuf *buf, u8 *data, u16 datalen, u16 startofs);
-u16  yPeekContinuousFifoEx(yFifoBuf *buf, u8 **ptr, u16 startofs);
-u16  ySeekFifoEx(yFifoBuf *buf, const u8* pattern, u16 patlen,  u16 startofs, u16 searchlen, u8 bTextCompare);
-u16  yFifoGetUsedEx(yFifoBuf *buf);
-u16  yFifoGetFreeEx(yFifoBuf *buf);
-u16  yForceFifo(yFifoBuf *buf, const u8 *data, u16 datalen, u32 *absCounter);
+void yFifoEmptyEx(yFifoBuf* buf);
+u16 yPushFifoEx(yFifoBuf* buf, const u8* data, u16 datalen);
+u16 yPopFifoEx(yFifoBuf* buf, u8* data, u16 datalen);
+u16 yPeekFifoEx(yFifoBuf* buf, u8* data, u16 datalen, u16 startofs);
+u16 yPeekContinuousFifoEx(yFifoBuf* buf, u8** ptr, u16 startofs);
+u16 ySeekFifoEx(yFifoBuf* buf, const u8* pattern, u16 patlen, u16 startofs, u16 searchlen, u8 bTextCompare);
+u16 yFifoGetUsedEx(yFifoBuf* buf);
+u16 yFifoGetFreeEx(yFifoBuf* buf);
+u16 yForceFifo(yFifoBuf* buf, const u8* data, u16 datalen, u32* absCounter);
 
 #ifdef YFIFO_USE_MUTEX
 // mutex non-Ex function call yFifoEnterCs and yFifoLeaveCs
 // before calling Ex version
 
-void yFifoEnterCS(yFifoBuf *buf);
-void yFifoLeaveCS(yFifoBuf *buf);
-void yFifoEmpty(yFifoBuf *buf);
-u16  yPushFifo(yFifoBuf *buf, const u8 *data, u16 datalen);
-u16  yPopFifo(yFifoBuf *buf, u8 *data, u16 datalen);
-u16  yPeekFifo(yFifoBuf *buf, u8 *data, u16 datalen, u16 startofs);
-u16  yPeekContinuousFifo(yFifoBuf *buf, u8 **ptr,u16 startofs);
-u16  ySeekFifo(yFifoBuf *buf, const u8* pattern, u16 patlen,  u16 startofs, u16 searchlen, u8 bTextCompare);
-u16  yFifoGetUsed(yFifoBuf *buf);
-u16  yFifoGetFree(yFifoBuf *buf);
+void yFifoEnterCS(yFifoBuf* buf);
+void yFifoLeaveCS(yFifoBuf* buf);
+void yFifoEmpty(yFifoBuf* buf);
+u16 yPushFifo(yFifoBuf* buf, const u8* data, u16 datalen);
+u16 yPopFifo(yFifoBuf* buf, u8* data, u16 datalen);
+u16 yPeekFifo(yFifoBuf* buf, u8* data, u16 datalen, u16 startofs);
+u16 yPeekContinuousFifo(yFifoBuf* buf, u8** ptr, u16 startofs);
+u16 ySeekFifo(yFifoBuf* buf, const u8* pattern, u16 patlen, u16 startofs, u16 searchlen, u8 bTextCompare);
+u16 yFifoGetUsed(yFifoBuf* buf);
+u16 yFifoGetFree(yFifoBuf* buf);
 
 #else
 // no mutex -> map function to Ex version
@@ -132,7 +132,7 @@ u16  yFifoGetFree(yFifoBuf *buf);
 #endif
 
 // Misc functions needed in yapi, hubs and devices
-void yxtoa(u32 x, char *buf, u16 len);
-void decodePubVal(Notification_funydx funInfo, const char *funcval, char *buffer);
+void yxtoa(u32 x, char* buf, u16 len);
+void decodePubVal(Notification_funydx funInfo, const char* funcval, char* buffer);
 
 #endif

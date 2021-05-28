@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.c 35122 2019-04-11 20:38:55Z mvuilleu $
+ * $Id: ykey.c 44978 2021-05-10 10:48:11Z web $
  *
  * Implementation of standard key computations
  *
@@ -51,22 +51,22 @@
 static char btohexa_low_high(u8 b)
 {
     b >>= 4;
-    return (b>9u) ? b+'a'-10 : b+'0';
+    return (b > 9u) ? b + 'a' - 10 : b + '0';
 }
 
 static char btohexa_low_low(u8 b)
 {
     b &= 0x0F;
-    return (b>9u) ? b+'a'-10 : b+'0';
+    return (b > 9u) ? b + 'a' - 10 : b + '0';
 }
 
-void bin2str(char *to, const u8 *p, u16 len, u8 addnull)
+void bin2str(char* to, const u8* p, u16 len, u8 addnull)
 {
     for (; len--; p++) {
-    	*to++ = btohexa_low_high(*p);
-    	*to++ = btohexa_low_low(*p);
+        *to++ = btohexa_low_high(*p);
+        *to++ = btohexa_low_low(*p);
     }
-    if(addnull) *to = '\0';
+    if (addnull) *to = '\0';
 }
 
 #if !defined(MICROCHIP_API) || defined(HTTP_ON_NET)
@@ -74,7 +74,7 @@ void bin2str(char *to, const u8 *p, u16 len, u8 addnull)
 //#define DEBUG_HTTP_AUTHENTICATION
 
 // compute the ha1 (in binary form)
-void ComputeAuthHA1(u8 *ha1, const char *user, const char *pass, const char *realm)
+void ComputeAuthHA1(u8* ha1, const char* user, const char* pass, const char* realm)
 {
     HASH_SUM ctx;
 
@@ -95,14 +95,14 @@ void ComputeAuthHA1(u8 *ha1, const char *user, const char *pass, const char *rea
 }
 
 // compute the ha2 (in binary form)
-void ComputeAuthHA2(u8 *ha2, const char *method, const char *uri)
+void ComputeAuthHA2(u8* ha2, const char* method, const char* uri)
 {
     HASH_SUM ctx;
 
     MD5Initialize(&ctx);
     MD5AddData(&ctx, (u8*)method, YSTRLEN(method));
-    MD5AddData(&ctx, (u8*)":",  1);
-    MD5AddData(&ctx, (u8*)uri,    YSTRLEN(uri));
+    MD5AddData(&ctx, (u8*)":", 1);
+    MD5AddData(&ctx, (u8*)uri, YSTRLEN(uri));
     MD5Calculate(&ctx, ha2);
 #ifdef DEBUG_HTTP_AUTHENTICATION
     {
@@ -115,29 +115,29 @@ void ComputeAuthHA2(u8 *ha2, const char *method, const char *uri)
 
 
 // Return stringified MD5 hash for the specified parameters
-void ComputeAuthResponse(char *buf, const u8 *ha1, const char *nonce, const char *nc,  const char *cnonce, const u8* ha2)
+void ComputeAuthResponse(char* buf, const u8* ha1, const char* nonce, const char* nc, const char* cnonce, const u8* ha2)
 {
-    u8       hash[HTTP_AUTH_MD5_SIZE];
-    char     tmpha[HTTP_AUTH_MD5_STRLEN+1];
+    u8 hash[HTTP_AUTH_MD5_SIZE];
+    char tmpha[HTTP_AUTH_MD5_STRLEN + 1];
     HASH_SUM ctx;
 
     MD5Initialize(&ctx);
     // convert ha1 into str before using it
-    bin2str(tmpha, ha1, HTTP_AUTH_MD5_SIZE,1);
-    MD5AddData(&ctx, (u8*)tmpha,  HTTP_AUTH_MD5_STRLEN);
-    MD5AddData(&ctx, (u8*)":",  1);
-    MD5AddData(&ctx, (u8*)nonce,  YSTRLEN(nonce));
-    MD5AddData(&ctx, (u8*)":",  1);
-    if(nc && cnonce) {
-        MD5AddData(&ctx, (u8*)nc,     YSTRLEN(nc));
-        MD5AddData(&ctx, (u8*)":",  1);
-        MD5AddData(&ctx, (u8*)cnonce, YSTRLEN(cnonce));
-        MD5AddData(&ctx, (u8*)":auth:",  6);
-    }
-    bin2str(tmpha, ha2, HTTP_AUTH_MD5_SIZE,1);
+    bin2str(tmpha, ha1, HTTP_AUTH_MD5_SIZE, 1);
     MD5AddData(&ctx, (u8*)tmpha, HTTP_AUTH_MD5_STRLEN);
-    MD5Calculate(&ctx,hash);
-    bin2str(buf, hash, HTTP_AUTH_MD5_SIZE,1);
+    MD5AddData(&ctx, (u8*)":", 1);
+    MD5AddData(&ctx, (u8*)nonce, YSTRLEN(nonce));
+    MD5AddData(&ctx, (u8*)":", 1);
+    if (nc && cnonce) {
+        MD5AddData(&ctx, (u8*)nc, YSTRLEN(nc));
+        MD5AddData(&ctx, (u8*)":", 1);
+        MD5AddData(&ctx, (u8*)cnonce, YSTRLEN(cnonce));
+        MD5AddData(&ctx, (u8*)":auth:", 6);
+    }
+    bin2str(tmpha, ha2, HTTP_AUTH_MD5_SIZE, 1);
+    MD5AddData(&ctx, (u8*)tmpha, HTTP_AUTH_MD5_STRLEN);
+    MD5Calculate(&ctx, hash);
+    bin2str(buf, hash, HTTP_AUTH_MD5_SIZE, 1);
 #ifdef DEBUG_HTTP_AUTHENTICATION
     {
         char     tmpha1[HTTP_AUTH_MD5_STRLEN + 1];
@@ -155,10 +155,10 @@ void ComputeAuthResponse(char *buf, const u8 *ha1, const char *nonce, const char
 
 
 // Return stringified sha1 hash for the specified parameters
-int CheckWSAuth(u32 nonce, const u8 *ha1, const u8 *to_verify, u8 *out)
+int CheckWSAuth(u32 nonce, const u8* ha1, const u8* to_verify, u8* out)
 {
-    char     tmpbuff[HTTP_AUTH_MD5_STRLEN + 8 + 1];
-    const u8 * sha1;
+    char tmpbuff[HTTP_AUTH_MD5_STRLEN + 8 + 1];
+    const u8* sha1;
     int res;
 
     // convert ha1 into str before using it
@@ -170,7 +170,7 @@ int CheckWSAuth(u32 nonce, const u8 *ha1, const u8 *to_verify, u8 *out)
 #ifdef CPU_BIG_ENDIAN
     nonce = INTEL_U32(nonce);
 #endif
-    bin2str(tmpbuff + HTTP_AUTH_MD5_STRLEN, (u8*) &nonce, 4, 1);
+    bin2str(tmpbuff + HTTP_AUTH_MD5_STRLEN, (u8*)&nonce, 4, 1);
 #ifdef DEBUG_HTTP_AUTHENTICATION
     dbglog("full=%s\n", tmpbuff);
 #endif
@@ -181,7 +181,7 @@ int CheckWSAuth(u32 nonce, const u8 *ha1, const u8 *to_verify, u8 *out)
     if (to_verify == NULL) {
         return 0;
     }
-    res = memcmp(sha1, to_verify, 20)==0;
+    res = memcmp(sha1, to_verify, 20) == 0;
     return res;
 }
 
@@ -189,75 +189,75 @@ int CheckWSAuth(u32 nonce, const u8 *ha1, const u8 *to_verify, u8 *out)
 // - Request is patched in place to null-terminate each field.
 // - If return value is 0, at least method,realm and qop are set to non-NULL value
 // - qop is set to an empty string if not specified in thq authenticate header
-int yParseWWWAuthenticate(char *replybuf, int replysize, char **method, char **realm, char **qop, char **nonce, char **opaque)
+int yParseWWWAuthenticate(char* replybuf, int replysize, char** method, char** realm, char** qop, char** nonce, char** opaque)
 {
-    int     pos = 0;
-    char    *p=replybuf, *start;
+    int pos = 0;
+    char *p = replybuf, *start;
 
-    while(pos < replysize) {
-        while(pos < replysize && replybuf[pos] != '\r') pos++;
-        if(pos < replysize && replybuf[++pos] == '\n') pos++;
+    while (pos < replysize) {
+        while (pos < replysize && replybuf[pos] != '\r') pos++;
+        if (pos < replysize && replybuf[++pos] == '\n') pos++;
         // new line, look for authorization header (always at least 25 chars)
-        if(pos+25 >= replysize) return -1;
-        if(YSTRNICMP(replybuf+pos, "WWW-Authenticate:", 17) != 0) continue;
+        if (pos + 25 >= replysize) return -1;
+        if (YSTRNICMP(replybuf+pos, "WWW-Authenticate:", 17) != 0) continue;
         // header found, keep a pointer to content and make sure it is complete
         pos += 17;
         p = replybuf + pos;
-        while(pos < replysize && replybuf[pos] != '\r') pos++;
+        while (pos < replysize && replybuf[pos] != '\r') pos++;
         break;
     }
-    if(pos >= replysize) return -1;
+    if (pos >= replysize) return -1;
     replybuf[pos] = 0;
     // we now have a full null-terminated authentication header to parse at p
-    while(*p == ' ') p++;
+    while (*p == ' ') p++;
     start = p;
-    while(*p && *p != ' ') p++;
+    while (*p && *p != ' ') p++;
     // we expect at least a realm after the method name
-    if(!*p) return -1;
+    if (!*p) return -1;
     // method found, followed by something. Set default realm and qop to an empty string
     *method = start;
-    *realm  = replybuf+pos;
-    *qop    = replybuf+pos;
+    *realm = replybuf + pos;
+    *qop = replybuf + pos;
     // null-terminate the method name, and proceed to named parameters
     *p++ = 0;
-    while(*p) {
-        while(*p == ' ' || *p == ',') p++;
-        if(!*p) break;
-        if(YSTRNICMP(p,"realm=\"",7) == 0) {
+    while (*p) {
+        while (*p == ' ' || *p == ',') p++;
+        if (!*p) break;
+        if (YSTRNICMP(p, "realm=\"", 7) == 0) {
             p += 7;
             start = p;
-            while(*p && *p != '\"') p++;
-            if(!*p) return -1;
+            while (*p && *p != '\"') p++;
+            if (!*p) return -1;
             *p++ = 0; // replace quote by NUL
             *realm = start;
-        } else if(YSTRNICMP(p,"qop=\"",5) == 0) {
+        } else if (YSTRNICMP(p, "qop=\"", 5) == 0) {
             p += 5;
             start = p;
-            while(*p && *p != '\"') p++;
-            if(!*p) return -1;
+            while (*p && *p != '\"') p++;
+            if (!*p) return -1;
             *p++ = 0; // replace quote by NUL
             *qop = start;
-        } else if(YSTRNICMP(p,"nonce=\"",7) == 0) {
+        } else if (YSTRNICMP(p, "nonce=\"", 7) == 0) {
             p += 7;
             start = p;
-            while(*p && *p != '\"') p++;
-            if(!*p) return -1;
+            while (*p && *p != '\"') p++;
+            if (!*p) return -1;
             *p++ = 0; // replace quote by NUL
             *nonce = start;
-        } else if(YSTRNICMP(p,"opaque=\"",8) == 0) {
+        } else if (YSTRNICMP(p, "opaque=\"", 8) == 0) {
             p += 8;
             start = p;
-            while(*p && *p != '\"') p++;
-            if(!*p) return -1;
+            while (*p && *p != '\"') p++;
+            if (!*p) return -1;
             *p++ = 0; // replace quote by NUL
             *opaque = start;
         } else {
             // skip unknown tag
-            while(*p && *p != ',') p++;
+            while (*p && *p != ',') p++;
         }
     }
     // if no non-empty realm has been specified, the authentication header is not valid
-    if(!**realm) return -1;
+    if (!**realm) return -1;
 
     return 0;
 }
@@ -266,13 +266,13 @@ extern u32 yapiGetCNonce(u32 nc);
 
 // Write an authorization header in the buffer provided
 // method and uri can be provided in the same memory zone as destination if needed
-void yDigestAuthorization(char *buf, int bufsize, const char *user, const char *realm, const u8 *ha1,
-                          const char *nonce, const char *opaque, u32 *nc, const char *method, const char *uri)
+void yDigestAuthorization(char* buf, int bufsize, const char* user, const char* realm, const u8* ha1,
+                          const char* nonce, const char* opaque, u32* nc, const char* method, const char* uri)
 {
-    u32     cnonce;
-    char    ncbuf[9], cnoncebuf[9];
-    u8      ha2[HTTP_AUTH_MD5_SIZE];
-    int     len;
+    u32 cnonce;
+    char ncbuf[9], cnoncebuf[9];
+    u8 ha2[HTTP_AUTH_MD5_SIZE];
+    int len;
 
     ComputeAuthHA2(ha2, method, uri);
     YSTRCPY(buf, bufsize, "Authorization: Digest username=\"");
@@ -283,11 +283,11 @@ void yDigestAuthorization(char *buf, int bufsize, const char *user, const char *
     YSTRCAT(buf, bufsize, nonce);
     YSTRCAT(buf, bufsize, "\", uri=\"");
     YSTRCAT(buf, bufsize, uri);
-    if(nc) {
+    if (nc) {
         (*nc)++;
         cnonce = yapiGetCNonce(*nc);
-        yxtoa(*nc, ncbuf, sizeof(ncbuf)-1);
-        yxtoa(cnonce, cnoncebuf, sizeof(cnoncebuf)-1);
+        yxtoa(*nc, ncbuf, sizeof(ncbuf) - 1);
+        yxtoa(cnonce, cnoncebuf, sizeof(cnoncebuf) - 1);
         len = (int)strlen(buf);
         buf += len;
         bufsize -= len;
@@ -300,8 +300,8 @@ void yDigestAuthorization(char *buf, int bufsize, const char *user, const char *
     len = (int)strlen(buf);
     buf += len;
     bufsize -= len;
-    ComputeAuthResponse(buf, ha1, nonce, (nc?ncbuf:NULL), (nc?cnoncebuf:NULL), ha2);
-    if(opaque) {
+    ComputeAuthResponse(buf, ha1, nonce, (nc ? ncbuf : NULL), (nc ? cnoncebuf : NULL), ha2);
+    if (opaque) {
         len = (int)strlen(buf);
         buf += len;
         bufsize -= len;
@@ -319,21 +319,21 @@ typedef struct {
     u32 outer[5];
     u32 shau[5];
     u32 shaw[80];
-    u8  res[32];
+    u8 res[32];
 } WPA_CALC_STATE;
 
-static WPA_CALC_STATE wpak = { -1 };
+static WPA_CALC_STATE wpak = {-1};
 
-const u32 sha1_init[5] = { 0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0 };
+const u32 sha1_init[5] = {0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0};
 
-static void initshaw(const char *s, u16 ofs, u8 pad, u16 xinit)
+static void initshaw(const char* s, u16 ofs, u8 pad, u16 xinit)
 {
     int ii, j = -1, k = 0;
     int n = (int)strlen(s);
 
-    for(ii = 0; ii < 64; ii++) {
+    for (ii = 0; ii < 64; ii++) {
         int i = ofs + ii;
-        u8  c = 0;
+        u8 c = 0;
         if (i < n) {
             c = s[i];
         } else if (pad) {
@@ -352,16 +352,16 @@ static void initshaw(const char *s, u16 ofs, u8 pad, u16 xinit)
         k -= 8;
         wpak.shaw[j] |= ((u32)c << k);
     }
-    if(pad) {
-        if(pad == 0x80) {
-            if(n <= ofs+55) {
+    if (pad) {
+        if (pad == 0x80) {
+            if (n <= ofs + 55) {
                 wpak.shaw[15] = 8 * n;
             }
         } else {
             wpak.shaw[15] = 8 * (n + 68);
         }
     }
-    if(xinit) {
+    if (xinit) {
         u32 xdw = ((u32)xinit << 16) | xinit;
         for (j = 0; j < 16; j++) {
             wpak.shaw[j] ^= xdw;
@@ -369,7 +369,7 @@ static void initshaw(const char *s, u16 ofs, u8 pad, u16 xinit)
     }
 }
 
-static void itershaw(const u32 *s)
+static void itershaw(const u32* s)
 {
     u32 a, b, c, d, e, t;
     int k;
@@ -392,7 +392,7 @@ static void itershaw(const u32 *s)
         a = t;
     }
     for (k = 20; k < 40; k++) {
-        t = ((a << 5) | (a >> 27)) + e + wpak.shaw[k] + 0x6ED9EBA1 + (b^c^d);
+        t = ((a << 5) | (a >> 27)) + e + wpak.shaw[k] + 0x6ED9EBA1 + (b ^ c ^ d);
         e = d;
         d = c;
         c = (b << 30) | (b >> 2);
@@ -408,7 +408,7 @@ static void itershaw(const u32 *s)
         a = t;
     }
     for (k = 60; k < 80; k++) {
-        t = ((a << 5) | (a >> 27)) + e + wpak.shaw[k] + 0xCA62C1D6 + (b^c^d);
+        t = ((a << 5) | (a >> 27)) + e + wpak.shaw[k] + 0xCA62C1D6 + (b ^ c ^ d);
         e = d;
         d = c;
         c = (b << 30) | (b >> 2);
@@ -422,31 +422,31 @@ static void itershaw(const u32 *s)
     wpak.shaw[4] = s[4] + e;
 }
 
-u8  *ySHA1(const char *text)
+u8* ySHA1(const char* text)
 {
     int ofs = 0, n = (int)strlen(text);
 
-    memcpy((u8 *)wpak.shau, (u8 *)sha1_init, sizeof(wpak.shau));
+    memcpy((u8*)wpak.shau, (u8*)sha1_init, sizeof(wpak.shau));
     do {
         initshaw(text, ofs, 0x80, 0);
         itershaw(wpak.shau);
-        memcpy((u8 *)wpak.shau, (u8 *)wpak.shaw, sizeof(wpak.shau));
+        memcpy((u8*)wpak.shau, (u8*)wpak.shaw, sizeof(wpak.shau));
         ofs += 64;
-    } while(n > ofs-9);
+    } while (n > ofs - 9);
 #ifndef CPU_BIG_ENDIAN
-    for(ofs = 0; ofs < 5; ofs++) {
+    for (ofs = 0; ofs < 5; ofs++) {
         wpak.shau[ofs] = ntohl(wpak.shau[ofs]);
     }
 #endif
 
-    return (u8 *)wpak.shau;
+    return (u8*)wpak.shau;
 }
 
 #endif
 
 #if !defined(MICROCHIP_API) || defined(MRF24)
 
-void yInitPsk(const char *pass, const char *ssid)
+void yInitPsk(const char* pass, const char* ssid)
 {
     // precompute part of sha used in the loops
     initshaw(pass, 0, 0, 0x3636);
@@ -464,12 +464,12 @@ void yInitPsk(const char *pass, const char *ssid)
     initshaw(ssid, 0, 1, 0);
 }
 
-int yIterPsk(u8 *res, const char *ssid)
+int yIterPsk(u8* res, const char* ssid)
 {
     int k;
 
-    if(wpak.iter < 0) return -1;
-    if(wpak.iter >= 8192) return 0;
+    if (wpak.iter < 0) return -1;
+    if (wpak.iter >= 8192) return 0;
     itershaw(wpak.inner);
     wpak.shaw[5] = 0x80000000;
     for (k = 6; k < 15; k++) {
@@ -484,16 +484,16 @@ int yIterPsk(u8 *res, const char *ssid)
     wpak.shau[4] ^= wpak.shaw[4];
     wpak.iter++;
     // after 4096 loops, move to 2nd half of sha1
-    if((wpak.iter & 4095) == 0) {
-        for(k = 0; k < 5 && wpak.pos < 32; k++) {
+    if ((wpak.iter & 4095) == 0) {
+        for (k = 0; k < 5 && wpak.pos < 32; k++) {
             wpak.res[wpak.pos++] = (wpak.shau[k] >> 24) & 0xff;
             wpak.res[wpak.pos++] = (wpak.shau[k] >> 16) & 0xff;
             wpak.res[wpak.pos++] = (wpak.shau[k] >> 8) & 0xff;
             wpak.res[wpak.pos++] = wpak.shau[k] & 0xff;
         }
-        if(wpak.iter == 4096) {
+        if (wpak.iter == 4096) {
             memset(wpak.shau, 0, sizeof(wpak.shau));
-            initshaw(ssid, 0,2, 0);
+            initshaw(ssid, 0, 2, 0);
         } else {
             // done
             memcpy(res, wpak.res, 32);
@@ -541,7 +541,7 @@ static void byteReverse(unsigned char *buf, unsigned longs) {
 
 // Start MD5 accumulation.  Set bit count to 0 and buffer to mysterious
 // initialization constants.
-void MD5Initialize(HASH_SUM *ctx)
+void MD5Initialize(HASH_SUM* ctx)
 {
     ctx->buf[0] = 0x67452301;
     ctx->buf[1] = 0xefcdab89;
@@ -635,19 +635,19 @@ static void MD5Transform(u32 buf[4], u32 const in[16])
     buf[3] += d;
 }
 
-void MD5AddData(HASH_SUM *ctx,  const u8 *buf, u32 len)
+void MD5AddData(HASH_SUM* ctx, const u8* buf, u32 len)
 {
     u32 t;
 
     t = ctx->bits[0];
-    if ((ctx->bits[0] = t + ((u32) len << 3)) < t)
+    if ((ctx->bits[0] = t + ((u32)len << 3)) < t)
         ctx->bits[1]++;
     ctx->bits[1] += len >> 29;
 
     t = (t >> 3) & 0x3f;
 
     if (t) {
-        unsigned char *p = (unsigned char *) ctx->in + t;
+        unsigned char* p = (unsigned char*)ctx->in + t;
 
         t = 64 - t;
         if (len < t) {
@@ -656,7 +656,7 @@ void MD5AddData(HASH_SUM *ctx,  const u8 *buf, u32 len)
         }
         memcpy(p, buf, t);
         byteReverse(ctx->in, 16);
-        MD5Transform(ctx->buf, (u32 *) ctx->in);
+        MD5Transform(ctx->buf, (u32*)ctx->in);
         buf += t;
         len -= t;
     }
@@ -664,7 +664,7 @@ void MD5AddData(HASH_SUM *ctx,  const u8 *buf, u32 len)
     while (len >= 64) {
         memcpy(ctx->in, buf, 64);
         byteReverse(ctx->in, 16);
-        MD5Transform(ctx->buf, (u32 *) ctx->in);
+        MD5Transform(ctx->buf, (u32*)ctx->in);
         buf += 64;
         len -= 64;
     }
@@ -672,10 +672,10 @@ void MD5AddData(HASH_SUM *ctx,  const u8 *buf, u32 len)
     memcpy(ctx->in, buf, len);
 }
 
-void MD5Calculate(HASH_SUM *ctx, u8 digest[16])
+void MD5Calculate(HASH_SUM* ctx, u8 digest[16])
 {
     unsigned count;
-    unsigned char *p;
+    unsigned char* p;
 
     count = (ctx->bits[0] >> 3) & 0x3F;
 
@@ -685,7 +685,7 @@ void MD5Calculate(HASH_SUM *ctx, u8 digest[16])
     if (count < 8) {
         memset(p, 0, count);
         byteReverse(ctx->in, 16);
-        MD5Transform(ctx->buf, (u32 *) ctx->in);
+        MD5Transform(ctx->buf, (u32*)ctx->in);
         memset(ctx->in, 0, 56);
     } else {
         memset(p, 0, count - 8);
@@ -695,10 +695,9 @@ void MD5Calculate(HASH_SUM *ctx, u8 digest[16])
     ctx->in32[14] = ctx->bits[0];
     ctx->in32[15] = ctx->bits[1];
 
-    MD5Transform(ctx->buf, (u32 *) ctx->in);
+    MD5Transform(ctx->buf, (u32*)ctx->in);
     byteReverse((unsigned char *) ctx->buf, 4);
     memcpy(digest, ctx->buf, 16);
-    memset((char *) ctx, 0, sizeof(*ctx));
+    memset((char*)ctx, 0, sizeof(*ctx));
 }
 #endif
-

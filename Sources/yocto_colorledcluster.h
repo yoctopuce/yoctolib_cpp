@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_colorledcluster.h 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_colorledcluster.h 44921 2021-05-06 08:03:05Z mvuilleu $
  *
  *  Declares yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -64,6 +64,7 @@ typedef void (*YColorLedClusterValueCallback)(YColorLedCluster *func, const stri
 typedef enum {
     Y_LEDTYPE_RGB = 0,
     Y_LEDTYPE_RGBW = 1,
+    Y_LEDTYPE_WS2811 = 2,
     Y_LEDTYPE_INVALID = -1,
 } Y_LEDTYPE_enum;
 #endif
@@ -121,6 +122,7 @@ public:
     static const int ACTIVELEDCOUNT_INVALID = YAPI_INVALID_UINT;
     static const Y_LEDTYPE_enum LEDTYPE_RGB = Y_LEDTYPE_RGB;
     static const Y_LEDTYPE_enum LEDTYPE_RGBW = Y_LEDTYPE_RGBW;
+    static const Y_LEDTYPE_enum LEDTYPE_WS2811 = Y_LEDTYPE_WS2811;
     static const Y_LEDTYPE_enum LEDTYPE_INVALID = Y_LEDTYPE_INVALID;
     static const int MAXLEDCOUNT_INVALID = YAPI_INVALID_UINT;
     static const int BLINKSEQMAXCOUNT_INVALID = YAPI_INVALID_UINT;
@@ -157,8 +159,8 @@ public:
     /**
      * Returns the RGB LED type currently handled by the device.
      *
-     * @return either YColorLedCluster::LEDTYPE_RGB or YColorLedCluster::LEDTYPE_RGBW, according to the RGB
-     * LED type currently handled by the device
+     * @return a value among YColorLedCluster::LEDTYPE_RGB, YColorLedCluster::LEDTYPE_RGBW and
+     * YColorLedCluster::LEDTYPE_WS2811 corresponding to the RGB LED type currently handled by the device
      *
      * On failure, throws an exception or returns YColorLedCluster::LEDTYPE_INVALID.
      */
@@ -172,8 +174,8 @@ public:
      * Remember to call the matching module
      * saveToFlash() method to save the setting permanently.
      *
-     * @param newval : either YColorLedCluster::LEDTYPE_RGB or YColorLedCluster::LEDTYPE_RGBW, according to
-     * the RGB LED type currently handled by the device
+     * @param newval : a value among YColorLedCluster::LEDTYPE_RGB, YColorLedCluster::LEDTYPE_RGBW and
+     * YColorLedCluster::LEDTYPE_WS2811 corresponding to the RGB LED type currently handled by the device
      *
      * @return YAPI::SUCCESS if the call succeeds.
      *

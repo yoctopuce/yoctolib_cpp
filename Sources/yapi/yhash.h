@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.h 29739 2018-01-25 17:03:29Z seb $
+ * $Id: yhash.h 44961 2021-05-10 08:19:31Z web $
  *
  * Simple hash tables and device/function information store
  *
@@ -174,13 +174,17 @@ typedef enum {
     USB_URL,
     IP_URL,
     NAME_URL
-} yAsbUrlType;
+} yAbsUrlType;
 
 typedef enum {
-    PROTO_AUTO = 0,
+    PROTO_LEGACY = 0,
+    PROTO_AUTO,
     PROTO_HTTP,
-    PROTO_WEBSOCKET
-} yAsbUrlProto;
+    PROTO_WEBSOCKET,
+    PROTO_SECURE_HTTP,
+    PROTO_SECURE_WEBSOCKET,
+    PROTO_UNKNOWN
+} yAbsUrlProto;
 
 
 
@@ -221,7 +225,7 @@ char  *yHashGetStrPtr(yHash yhash);
 #ifndef MICROCHIP_API
 yUrlRef yHashUrlFromRef(yUrlRef urlref, const char *rootUrl);
 yUrlRef yHashUrl(const char *host, const char *rootUrl, u8 testonly, char *errmsg);
-yAsbUrlType  yHashGetUrlPort(yUrlRef urlref, char *url, u16 *port, yAsbUrlProto *proto, yStrRef *user, yStrRef *password, yStrRef *subdomain);
+yAbsUrlType  yHashGetUrlPort(yUrlRef urlref, char *url, u16 *port, yAbsUrlProto *proto, yStrRef *user, yStrRef *password, yStrRef *subdomain);
 int yHashSameHub(yUrlRef url_a, yUrlRef url_b);
 void  yHashFree(void);
 #endif
