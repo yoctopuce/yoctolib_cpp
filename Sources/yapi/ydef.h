@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 42440 2020-11-14 10:55:58Z seb $
+ * $Id: ydef.h 45542 2021-06-14 08:22:38Z web $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -392,7 +392,8 @@ typedef enum {
     YAPI_DOUBLE_ACCES     = -11,    // you have two process that try to access to the same device
     YAPI_UNAUTHORIZED     = -12,    // unauthorized access to password-protected device
     YAPI_RTC_NOT_READY    = -13,    // real-time clock has not been initialized (or time was lost)
-    YAPI_FILE_NOT_FOUND   = -14     // the file is not found
+    YAPI_FILE_NOT_FOUND   = -14,    // the file is not found
+    YAPI_SSL_ERROR        = -15     // Error reported by mbedSSL
 } YRETCODE;
 
 #define YISERR(retcode)   ((retcode) < 0)

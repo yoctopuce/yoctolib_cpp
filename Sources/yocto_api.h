@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 45292 2021-05-25 23:27:54Z mvuilleu $
+ * $Id: yocto_api.h 45552 2021-06-14 13:52:43Z web $
  *
  * High-level programming interface, common to all modules
  *
@@ -654,6 +654,7 @@ public:
     static const int UNAUTHORIZED          = -12;     // unauthorized access to password-protected device
     static const int RTC_NOT_READY         = -13;     // real-time clock has not been initialized (or time was lost)
     static const int FILE_NOT_FOUND        = -14;     // the file is not found
+    static const int SSL_ERROR             = -15;     // Error reported by mbedSSL
 //--- (end of generated code: YFunction return codes)
 
 

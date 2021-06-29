@@ -1,4 +1,4 @@
-CPP v1.10.45511
+CPP v1.10.45664
 
-- Add CMakeLists.txt project to examples
 - Fix wrong error message when an host is unreachable.
+- Fix YAPI::TestHub return value that was not YAPI.SUCCESS on success. Now the method work as documented

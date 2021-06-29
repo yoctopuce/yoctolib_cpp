@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 45462 2021-06-07 13:48:21Z web $
+ * $Id: yapi.c 45661 2021-06-29 06:54:39Z web $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -3448,13 +3448,13 @@ static int pingURLOnhub(HubSt* hubst, const char* request, int mstimeout, char* 
             res = yReqIsEof(req, errmsg);
             if (YISERR(res)) {
                 // any specific error during select
-                yReqClose(req);
-                yReqFree(req);
-                return res;
+                break;
             }
-            if (res == 1 && jstate == YJSON_NEED_INPUT) {
-                // connection close before end of result
-                res = YERR(YAPI_IO_ERROR);
+            if (res == 1) {
+                // remote connection close change res to Succes and
+                // test json parsing status bellow to detect early close
+                res = YAPI_SUCCESS;
+                break;
             }
             if (yapiGetTickCount() >= globalTimeout) {
                 res = YERR(YAPI_TIMEOUT);
