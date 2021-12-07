@@ -41,7 +41,7 @@ int main(int argc, const char * argv[])
     time_t secs = (time_t)(record.at(0));
     struct tm *timeinfo = localtime(&secs);
     strftime(buffer, 80, "%Y-%m-%dT%H:%M:", timeinfo);
-    sprintf(buffer+strlen(buffer), "%03.3f", fmod(record.at(0),60));
+    sprintf(buffer + strlen(buffer), "%03.3f", fmod(record.at(0), 60));
     line = string(buffer);
     for (size_t idx = 1; idx < record.size(); idx++) {
       sprintf(buffer, ";%.3f", record.at(idx));

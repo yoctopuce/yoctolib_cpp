@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 45292 2021-05-25 23:27:54Z mvuilleu $
+ * $Id: yocto_api.cpp 47294 2021-11-15 14:05:00Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -48,6 +48,12 @@
 #else
 #include <unistd.h>
 #define yySleep(ms)          usleep(ms*1000)
+#endif
+
+#if defined(_MSC_VER) && (_MSC_VER < 1900)
+#define yyisnan(x)           _isnan(x)
+#else
+#define yyisnan(x)           std::isnan(x)
 #endif
 
 #include <string.h>
@@ -1641,16 +1647,26 @@ int YDataStream::_parseStream(string sdata)
     if (_isAvg) {
         while (idx + 3 < (int)udat.size()) {
             dat.clear();
-            dat.push_back(this->_decodeVal(udat[idx + 2] + (((udat[idx + 3]) << (16)))));
-            dat.push_back(this->_decodeAvg(udat[idx] + (((((udat[idx + 1]) ^ (0x8000))) << (16))), 1));
-            dat.push_back(this->_decodeVal(udat[idx + 4] + (((udat[idx + 5]) << (16)))));
+            if ((udat[idx] == 65535) && (udat[idx + 1] == 65535)) {
+                dat.push_back(NAN);
+                dat.push_back(NAN);
+                dat.push_back(NAN);
+            } else {
+                dat.push_back(this->_decodeVal(udat[idx + 2] + (((udat[idx + 3]) << (16)))));
+                dat.push_back(this->_decodeAvg(udat[idx] + (((((udat[idx + 1]) ^ (0x8000))) << (16))), 1));
+                dat.push_back(this->_decodeVal(udat[idx + 4] + (((udat[idx + 5]) << (16)))));
+            }
             idx = idx + 6;
             _values.push_back(dat);
         }
     } else {
         while (idx + 1 < (int)udat.size()) {
             dat.clear();
-            dat.push_back(this->_decodeAvg(udat[idx] + (((((udat[idx + 1]) ^ (0x8000))) << (16))), 1));
+            if ((udat[idx] == 65535) && (udat[idx + 1] == 65535)) {
+                dat.push_back(NAN);
+            } else {
+                dat.push_back(this->_decodeAvg(udat[idx] + (((((udat[idx + 1]) ^ (0x8000))) << (16))), 1));
+            }
             _values.push_back(dat);
             idx = idx + 2;
         }
@@ -2264,6 +2280,7 @@ int YDataSet::processMore(int progress,string data)
     double tim = 0.0;
     double itv = 0.0;
     double fitv = 0.0;
+    double avgv = 0.0;
     double end_ = 0.0;
     int nCols = 0;
     int minCol = 0;
@@ -2314,10 +2331,11 @@ int YDataSet::processMore(int progress,string data)
         } else {
             end_ = tim + itv;
         }
-        if ((end_ > _startTimeMs) && ((_endTimeMs == 0) || (tim < _endTimeMs))) {
+        avgv = dataRows[ii][avgCol];
+        if ((end_ > _startTimeMs) && ((_endTimeMs == 0) || (tim < _endTimeMs)) && !(yyisnan(avgv))) {
             _measures.push_back(YMeasure(tim / 1000, end_ / 1000,
             dataRows[ii][minCol],
-            dataRows[ii][avgCol],dataRows[ii][maxCol]));
+            avgv,dataRows[ii][maxCol]));
         }
         tim = end_;
     }
@@ -3317,21 +3335,22 @@ vector<string> YFunction::_json_get_array(const string& json)
     j.src = json_cstr = json.c_str();
     j.end = j.src + strlen(j.src);
     j.st = YJSON_START;
-    if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_ARRAY) {
-        this->_throw(YAPI_IO_ERROR, "JSON structure expected");
+    int parse_res = yJsonParse(&j);
+    if (parse_res != YJSON_PARSE_AVAIL || j.st != YJSON_PARSE_ARRAY) {
+        this->_throw(YAPI_IO_ERROR, "JSON array expected");
         return res;
     }
     int depth = j.depth;
     do {
         last = j.src;
-        while (yJsonParse(&j) == YJSON_PARSE_AVAIL) {
+        while ((parse_res=yJsonParse(&j)) == YJSON_PARSE_AVAIL) {
             if (j.next == YJSON_PARSE_STRINGCONT || j.depth > depth) {
                 continue;
             }
             break;
         }
         if (j.st == YJSON_PARSE_ERROR) {
-            this->_throw(YAPI_IO_ERROR, "invalid JSON structure");
+            this->_throw(YAPI_IO_ERROR, "invalid JSON array");
             return res;
         }
 
@@ -3345,7 +3364,11 @@ vector<string> YFunction::_json_get_array(const string& json)
             string item = json.substr(location, length);
             res.push_back(item);
         }
-    } while (j.st != YJSON_PARSE_ARRAY);
+    } while (parse_res == YJSON_PARSE_AVAIL && j.st != YJSON_PARSE_ARRAY);
+    if (j.st != YJSON_PARSE_ARRAY) {
+        this->_throw(YAPI_IO_ERROR, "missing closing tag in JSON array");
+        return res;
+    }
     return res;
 }
 
@@ -4746,13 +4769,17 @@ string YAPI::_hexStr2Bin(const string& hex_str)
 
 s64 YAPI::_hexStr2Long(const string& hex_str)
 {
-    size_t len = hex_str.length() / 2;
+    size_t len = hex_str.length();
     const char* p = hex_str.c_str();
     s64 res = 0;
-    for (size_t i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i+=2) {
         u8 b = 0;
         int j;
-        for (j = 0; j < 2; j++) {
+        int nbdigit = 2;
+        if ((len-i) < 2) {
+            nbdigit = (int)(len - i);
+        }
+        for (j = 0; j < nbdigit; j++) {
             b <<= 4;
             if (*p >= 'a' && *p <= 'f') {
                 b += 10 + *p - 'a';
@@ -4763,7 +4790,7 @@ s64 YAPI::_hexStr2Long(const string& hex_str)
             }
             p++;
         }
-        res = res*16 + b;
+        res = (res << 8) + b;
     }
     return res;
 }
@@ -5078,7 +5105,8 @@ YRETCODE YAPI::TestHub(const string& url, int mstimeout, string& errmsg)
 
 
 /**
- * Setup the Yoctopuce library to use modules connected on a given machine. The
+ * Setup the Yoctopuce library to use modules connected on a given machine. Idealy this
+ * call will be made once at the begining of your application.  The
  * parameter will determine how the API will work. Use the following values:
  *
  * <b>usb</b>: When the usb keyword is used, the API will work with
@@ -5111,7 +5139,9 @@ YRETCODE YAPI::TestHub(const string& url, int mstimeout, string& errmsg)
  *
  * http://username:password@address:port
  *
- * You can call <i>RegisterHub</i> several times to connect to several machines.
+ * You can call <i>RegisterHub</i> several times to connect to several machines. On
+ * the other hand, it is useless and even counterproductive to call <i>RegisterHub</i>
+ * with to same address multiple times during the life of the application.
  *
  * @param url : a string containing either "usb","callback" or the
  *         root URL of the hub to monitor
@@ -5270,6 +5300,11 @@ YRETCODE YAPI::UpdateDeviceList(string& errmsg)
 YRETCODE YAPI::HandleEvents(string& errmsg)
 {
     YRETCODE res;
+
+    if (!YAPI::_apiInitialized) {
+        YRETCODE res = YAPI::InitAPI(0, errmsg);
+        if (YISERR(res)) return res;
+    }
 
     // prevent reentrance into this function
     yEnterCriticalSection(&_handleEvent_CS);
@@ -9498,7 +9533,7 @@ int YDataLogger::set_clearHistory(Y_CLEARHISTORY_enum newval)
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the data logger, for instance
- *         RX420MA1.dataLogger.
+ *         LIGHTMK4.dataLogger.
  *
  * @return a YDataLogger object allowing you to drive the data logger.
  */

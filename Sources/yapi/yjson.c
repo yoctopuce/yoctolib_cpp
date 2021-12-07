@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yjson.c 44977 2021-05-10 10:45:03Z web $
+ * $Id: yjson.c 47425 2021-11-23 11:15:35Z seb $
  *
  * Simple JSON parser (actually a slightly enhanced lexer)
  *
@@ -361,11 +361,15 @@ done:
             goto skip;
         }
         if (j->skipcnt > 0) {
-            if (st == YJSON_PARSE_STRUCT || st == YJSON_PARSE_ARRAY) {
-                j->skipdepth = j->depth - 1;
-            }
             j->skipcnt--;
-            goto skip;
+            if (st == YJSON_PARSE_STRUCT || st == YJSON_PARSE_ARRAY) {
+                if (j->token[0] == '{' || j->token[0] == '[') {
+                    j->skipdepth = j->depth - 1;
+                    goto skip;
+                }
+            } else {
+                goto skip;
+            }
         }
     }
     j->st = st;
@@ -378,122 +382,3 @@ void yJsonSkip(yJsonStateMachine* j, int nitems)
 {
     j->skipcnt += nitems;
 }
-
-#if 0
-void yJsonInitEx(yJsonStateMachineEx *j, const char *jzon, int jzon_len, const char *ref, int ref_len)
-{
-
-    memset(j, 0, sizeof(yJsonStateMachineEx));
-    j->jzon.src = jzon;
-    j->jzon.end = jzon + jzon_len;
-    j->jzon.st = YJSON_START;
-    if (ref) {
-        j->ref.src = ref;
-        j->ref.end = ref + ref_len;
-        j->ref.st = YJSON_START;
-    }
-    j->sst = JZON_PARSE_SYNCRO;
-}
-
-
-yJsonRetCode yJsonParseEx(yJsonStateMachineEx *j)
-{
-    yJsonRetCode  ref_res;
-    if (j->ref.src == NULL) {
-        ref_res = yJsonParse(&j->jzon);
-        j->st = j->jzon.st;
-        j->next = j->jzon.next;
-        memcpy(j->token, j->jzon.token, sizeof(j->token));
-        return ref_res;
-    }
-
-    switch (j->sst) {
-    case JZON_PARSE_SYNCRO:
-        ref_res = yJsonParse(&j->ref);
-        if (ref_res != YJSON_PARSE_AVAIL) {
-            return ref_res;
-        }
-        ref_res = yJsonParse(&j->jzon);
-        if (ref_res != YJSON_PARSE_AVAIL) {
-            return ref_res;
-        }
-        switch (j->ref.st) {
-        case YJSON_PARSE_STRUCT:
-            if (j->jzon.st == YJSON_PARSE_ARRAY) {
-                j->sst = JZON_PARSE_ONLY_REF;
-            }
-            j->sst_stack[j->depth++] = j->sst;
-            // no break on purpose
-        case YJSON_PARSE_MEMBNAME:
-            j->st = j->ref.st;
-            j->next = j->ref.next;
-            memcpy(j->token, j->ref.token, sizeof(j->token));
-            break;
-        case YJSON_PARSE_STRING:
-            // skip value with potential continuation
-            while (j->ref.next == YJSON_PARSE_STRINGCONT && yJsonParse(&j->ref) == YJSON_PARSE_AVAIL);
-            if (j->jzon.next == YJSON_PARSE_STRINGCONT) {
-                j->sst = JZON_PARSE_ONLY_YZON;
-            }
-            //no break on purpose
-        default:
-            j->st = j->jzon.st;
-            j->next = j->jzon.next;
-            memcpy(j->token, j->jzon.token, sizeof(j->token));
-            if (j->next == YJSON_PARSE_DONE) {
-                j->sst = j->sst_stack[j->depth - 1];
-            }
-            break;
-        }
-        break;
-    case JZON_PARSE_ONLY_REF:
-        ref_res = yJsonParse(&j->ref);
-        if (ref_res != YJSON_PARSE_AVAIL) {
-            return -1;
-        }
-        j->st = j->ref.st;
-        j->next = j->ref.next;
-        memcpy(j->token, j->ref.token, sizeof(j->token));
-        if (j->ref.st == YJSON_PARSE_MEMBNAME) {
-            j->sst = JZON_PARSE_SYNCRO;
-        }
-        break;
-    case JZON_PARSE_ONLY_YZON:
-        ref_res = yJsonParse(&j->jzon);
-        if (ref_res != YJSON_PARSE_AVAIL) {
-            return -1;
-        }
-        j->st = j->jzon.st;
-        j->next = j->jzon.next;
-        memcpy(j->token, j->jzon.token, sizeof(j->token));
-        if (j->jzon.next != YJSON_PARSE_STRINGCONT) {
-            j->sst = JZON_PARSE_SYNCRO;
-        }
-        break;
-    }
-
-    return YJSON_PARSE_AVAIL;
-}
-
-
-void yJsonSkipEx(yJsonStateMachineEx *j, int nitems)
-{
-    if (j->ref.src == NULL) {
-        j->jzon.skipcnt += nitems;
-        return;
-    }
-    switch (j->sst) {
-    case JZON_PARSE_SYNCRO:
-        j->ref.skipcnt += nitems;
-        j->jzon.skipcnt += nitems;
-        break;
-
-    case JZON_PARSE_ONLY_REF:
-        j->ref.skipcnt += nitems;
-        break;
-    case JZON_PARSE_ONLY_YZON:
-        j->jzon.skipcnt += nitems;
-        break;
-    }
-}
-#endif

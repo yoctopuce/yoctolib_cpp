@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yfifo.c 44972 2021-05-10 10:37:52Z web $
+ * $Id: yfifo.c 45874 2021-08-05 13:25:20Z mvuilleu $
  *
  * Implementation of a generic fifo queue
  *
@@ -436,7 +436,7 @@ u16 yFifoGetFree(yFifoBuf* buf)
 
 #endif
 
-#ifndef REDUCE_COMMON_CODE
+#if !defined(REDUCE_COMMON_CODE) && !defined(REDUCE_LOG_CODE)
 void yxtoa(u32 x, char* buf, u16 len)
 {
     buf[len] = 0;
@@ -461,16 +461,25 @@ void decodePubVal(Notification_funydx funInfo, const char* funcval, char* buffer
     float floatVal;
     int i;
 
-    if (funInfo.v2.typeV2 == NOTIFY_V2_6RAWBYTES || funInfo.v2.typeV2 == NOTIFY_V2_TYPEDDATA) {
+    if (funInfo.v2.typeV2 == NOTIFY_V2_TYPEDDATA
+#ifndef REDUCE_RAWNOTIF_CODE
+            || funInfo.v2.typeV2 == NOTIFY_V2_6RAWBYTES
+#endif
+        ) {
+#ifndef REDUCE_RAWNOTIF_CODE
         if (funInfo.v2.typeV2 == NOTIFY_V2_6RAWBYTES) {
             funcValType = PUBVAL_6RAWBYTES;
         } else {
             funcValType = *p++;
         }
+#else
+        funcValType = *p++;
+#endif
         switch (funcValType) {
         case PUBVAL_LEGACY:
             // fallback to legacy handling, just in case
             break;
+#ifndef REDUCE_RAWNOTIF_CODE
         case PUBVAL_1RAWBYTE:
         case PUBVAL_2RAWBYTES:
         case PUBVAL_3RAWBYTES:
@@ -487,6 +496,7 @@ void decodePubVal(Notification_funydx funInfo, const char* funcval, char* buffer
             }
             buffer[2 * i] = 0;
             return;
+#endif
         case PUBVAL_C_LONG:
         case PUBVAL_YOCTO_FLOAT_E3:
             // 32bit integer in little endian format or Yoctopuce 10-3 format

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 45452 2021-06-04 07:54:08Z web $
+ * $Id: ytcp.c 47551 2021-12-03 08:01:44Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -927,6 +927,31 @@ static int yTcpCheckReqTimeout(struct _RequestSt* req, char* errmsg)
 }
 
 
+static int copyHostHeader(char *dst, int dstsize, const char* hostname,char *errmsg)
+{
+    const char* field = "Host: ";
+    int field_len = YSTRLEN(field);
+    if (dstsize < field_len) {
+        return YERR(YAPI_IO_ERROR);
+    }
+    YSTRCPY(dst, dstsize, field);
+    dst += field_len;
+    dstsize -= field_len;
+
+    if (dstsize < YSTRLEN(hostname)) {
+        return YERR(YAPI_IO_ERROR);
+    }
+    YSTRCPY(dst, dstsize, hostname);
+    dst += YSTRLEN(hostname);
+    dstsize -= YSTRLEN(hostname);
+
+    if (dstsize < HTTP_crlf_len) {
+        return YERR(YAPI_IO_ERROR);
+    }
+    YSTRCPY(dst, dstsize, HTTP_crlf);
+    return field_len + YSTRLEN(hostname) + HTTP_crlf_len;
+}
+
 /********************************************************************************
 * HTTP request functions (HTTP request that DO NOT use WebSocket)
 *******************************************************************************/
@@ -935,13 +960,13 @@ static int yTcpCheckReqTimeout(struct _RequestSt* req, char* errmsg)
 // access mutex taken by caller
 static int yHTTPOpenReqEx(struct _RequestSt* req, u64 mstimout, char* errmsg)
 {
-    char buffer[YOCTO_HOSTNAME_NAME], *p, *last, *end;
+    char hostname[YOCTO_HOSTNAME_NAME], *p, *last, *end;
     u32 ip;
     int res;
 
     YASSERT(req->proto == PROTO_HTTP);
 
-    switch (yHashGetUrlPort(req->hub->url, buffer, NULL, NULL, NULL, NULL, NULL)) {
+    switch (yHashGetUrlPort(req->hub->url, hostname, NULL, NULL, NULL, NULL, NULL)) {
     case NAME_URL:
         ip = resolveDNSCache(req->hub->url, errmsg);
         if (ip == 0) {
@@ -950,7 +975,7 @@ static int yHTTPOpenReqEx(struct _RequestSt* req, u64 mstimout, char* errmsg)
         }
         break;
     case IP_URL:
-        ip = inet_addr(buffer);
+        ip = inet_addr(hostname);
         break;
     default:
         res = YERRMSG(YAPI_IO_ERROR, "not an IP hub");
@@ -1022,6 +1047,13 @@ static int yHTTPOpenReqEx(struct _RequestSt* req, u64 mstimout, char* errmsg)
         end = auth + strlen(auth);
     }
     yLeaveCriticalSection(&req->hub->access);
+    res = copyHostHeader(end, (int)(req->headerbuf + req->headerbufsize - end), hostname, errmsg);
+    if (YISERR(res)) {
+        yTcpClose(req->http.skt);
+        req->http.skt = INVALID_SOCKET;
+        return res;
+    }
+    end += res;
     if (req->flags & TCPREQ_KEEPALIVE) {
         YSTRCPY(end, (int)(req->headerbuf + req->headerbufsize - end), "\r\n");
     } else {
@@ -1307,12 +1339,18 @@ retry:
     if (start + mstimeout == yapiGetTickCount()) {
         return YERRMSG(YAPI_IO_ERROR, "Unable to queue request (WebSocket)");
     }
-    if (count) {
-        yApproximateSleep(100);
-    }
 
     if (req->hub->ws.base_state != WS_BASE_CONNECTED) {
+        if (req->hub->mandatory  && req->hub->state < NET_HUB_TOCLOSE) {
+            // mandatory hub retry until timeout unless we are trying to close the connection
+            yApproximateSleep(500);
+            goto retry;
+        }
         return YERRMSG(YAPI_IO_ERROR, "Hub is not ready (WebSocket)");
+    }
+
+    if (count) {
+        yApproximateSleep(100);
     }
 
     yEnterCriticalSection(&hub->ws.chan[tcpchan].access);
@@ -1851,7 +1889,7 @@ int yReqHasPending(struct _HubSt* hub)
 *******************************************************************************/
 
 static const char* ws_header_start = " HTTP/1.1\r\nSec-WebSocket-Version: 13\r\nUser-Agent: Yoctopuce\r\nSec-WebSocket-Key: ";
-static const char* ws_header_end = "\r\nConnection: keep-alive, Upgrade\r\nUpgrade: websocket\r\n\r\n";
+static const char* ws_header_end = "\r\nConnection: keep-alive, Upgrade\r\nUpgrade: websocket\r\nHost: ";
 
 #define YRand32() rand()
 
@@ -2136,7 +2174,7 @@ static int ws_parseIncomingFrame(HubSt* hub, u8* buffer, int pktlen, char* errms
 #ifdef DEBUG_WEBSOCKET
     u64 reltime = yapiGetTickCount() - hub->ws.connectionTime;
 #endif
-
+    yStrRef serial;
     YASSERT(pktlen > 0);
     strym.encaps = buffer[0];
     buffer++;
@@ -2292,6 +2330,12 @@ static int ws_parseIncomingFrame(HubSt* hub, u8* buffer, int pktlen, char* errms
                 }
                 YSTRCPY(hub->ws.serial, YOCTO_SERIAL_LEN, meta->announce.serial);
                 WSLOG("hub(%s) Announce: %s (v%d / %x)\n", hub->name, meta->announce.serial, meta->announce.version, hub->ws.remoteNounce);
+                serial = yHashPutStr(meta->announce.serial);
+                if (checkForSameHubAccess(hub, serial, errmsg) < 0) {
+                    // fatal error do not try to reconnect
+                    hub->state = NET_HUB_TOCLOSE;
+                    return YAPI_DOUBLE_ACCES;
+                }
                 hub->ws.nounce = YRand32();
                 hub->ws.base_state = WS_BASE_AUTHENTICATING;
                 hub->ws.connectionTime = yapiGetTickCount();
@@ -2658,7 +2702,7 @@ static int ws_processRequests(HubSt* hub, char* errmsg)
 */
 static int ws_openBaseSocket(HubSt* basehub, int first_notification_connection, int mstimout, char* errmsg)
 {
-    char buffer[YOCTO_HOSTNAME_NAME];
+    char hostname[YOCTO_HOSTNAME_NAME];
     u32 ip;
     yStrRef user, pass, subdomain;
     int res, request_len;
@@ -2684,7 +2728,7 @@ static int ws_openBaseSocket(HubSt* basehub, int first_notification_connection, 
     wshub->skt = INVALID_SOCKET;
     wshub->s_next_async_id = 48;
 
-    switch (yHashGetUrlPort(basehub->url, buffer, NULL, NULL, &user, &pass, &subdomain)) {
+    switch (yHashGetUrlPort(basehub->url, hostname, NULL, NULL, &user, &pass, &subdomain)) {
     case NAME_URL:
         ip = resolveDNSCache(basehub->url, errmsg);
         if (ip == 0) {
@@ -2692,7 +2736,7 @@ static int ws_openBaseSocket(HubSt* basehub, int first_notification_connection, 
         }
         break;
     case IP_URL:
-        ip = inet_addr(buffer);
+        ip = inet_addr(hostname);
         break;
     default:
         return YERRMSG(YAPI_IO_ERROR, "not an IP hub");
@@ -2747,8 +2791,19 @@ static int ws_openBaseSocket(HubSt* basehub, int first_notification_connection, 
         wshub->skt = INVALID_SOCKET;
         return res;
     }
-
     res = yTcpWrite(wshub->skt, ws_header_end, YSTRLEN(ws_header_end), errmsg);
+    if (YISERR(res)) {
+        yTcpClose(wshub->skt);
+        wshub->skt = INVALID_SOCKET;
+        return res;
+    }
+    res = yTcpWrite(wshub->skt, hostname, YSTRLEN(hostname), errmsg);
+    if (YISERR(res)) {
+        yTcpClose(wshub->skt);
+        wshub->skt = INVALID_SOCKET;
+        return res;
+    }
+    res = yTcpWrite(wshub->skt, HTTP_crlfcrlf, HTTP_crlfcrlf_len, errmsg);
     if (YISERR(res)) {
         yTcpClose(wshub->skt);
         wshub->skt = INVALID_SOCKET;

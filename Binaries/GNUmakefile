@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 42443 2020-11-14 13:37:46Z seb $
+#  $Id: GNUmakefile 46886 2021-10-25 06:47:13Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -233,21 +233,30 @@ STRIP_OSX = strip
 
 
 
+EXPORT_YAPI_I386    = $(YAPI_DIR_I386)libyapi-i386.so
+EXPORT_YAPI_X64     = $(YAPI_DIR_X64)libyapi-amd64.so
+EXPORT_YAPI_ARMEL   = $(YAPI_DIR_ARMHF)libyapi-armel.so
+EXPORT_YAPI_ARMHF   = $(YAPI_DIR_ARMHF)libyapi-armhf.so
+EXPORT_YAPI_AARCH64 = $(YAPI_DIR_AARCH64)libyapi-aarch64.so
+EXPORT_YAPI_MIPS    = $(YAPI_DIR_MIPS)libyapi-mips.so
+EXPORT_YAPI_MIPSEL  = $(YAPI_DIR_MIPSEL)libyapi-mipsel.so
+
+
 
 #define all tragets
-LIBS_YAPI_I386    = $(YAPI_DIR_I386)libyapi-static.a $(YAPI_DIR_I386)libyapi.so.1.0.1
+LIBS_YAPI_I386    = $(YAPI_DIR_I386)libyapi-static.a $(YAPI_DIR_I386)libyapi.so.1.0.1 $(EXPORT_YAPI_I386)
 LIBS_I386    = $(DIR_I386)libyocto-static.a $(DIR_I386)libyocto.so.1.0.1 $(LIBS_YAPI_I386)
-LIBS_YAPI_X64     = $(YAPI_DIR_X64)libyapi-static.a $(YAPI_DIR_X64)libyapi.so.1.0.1
+LIBS_YAPI_X64     = $(YAPI_DIR_X64)libyapi-static.a $(YAPI_DIR_X64)libyapi.so.1.0.1 $(EXPORT_YAPI_X64)
 LIBS_X64     = $(DIR_X64)libyocto-static.a $(DIR_X64)libyocto.so.1.0.1 $(LIBS_YAPI_X64)
-LIBS_YAPI_ARMEL   = $(YAPI_DIR_ARMEL)libyapi-static.a $(YAPI_DIR_ARMEL)libyapi.so.1.0.1
+LIBS_YAPI_ARMEL   = $(YAPI_DIR_ARMEL)libyapi-static.a $(YAPI_DIR_ARMEL)libyapi.so.1.0.1 $(EXPORT_YAPI_ARMEL)
 LIBS_ARMEL   = $(DIR_ARMEL)libyocto-static.a $(DIR_ARMEL)libyocto.so.1.0.1 $(LIBS_YAPI_ARMEL)
-LIBS_YAPI_ARMHF   = $(YAPI_DIR_ARMHF)libyapi-static.a $(YAPI_DIR_ARMHF)libyapi.so.1.0.1
+LIBS_YAPI_ARMHF   = $(YAPI_DIR_ARMHF)libyapi-static.a $(YAPI_DIR_ARMHF)libyapi.so.1.0.1 $(EXPORT_YAPI_ARMHF)
 LIBS_ARMHF   = $(DIR_ARMHF)libyocto-static.a $(DIR_ARMHF)libyocto.so.1.0.1 $(LIBS_YAPI_ARMHF)
-LIBS_YAPI_AARCH64 = $(YAPI_DIR_AARCH64)libyapi-static.a $(YAPI_DIR_AARCH64)libyapi.so.1.0.1
+LIBS_YAPI_AARCH64 = $(YAPI_DIR_AARCH64)libyapi-static.a $(YAPI_DIR_AARCH64)libyapi.so.1.0.1 $(EXPORT_YAPI_AARCH64)
 LIBS_AARCH64 = $(DIR_AARCH64)libyocto-static.a $(DIR_AARCH64)libyocto.so.1.0.1 $(LIBS_YAPI_AARCH64)
-LIBS_YAPI_MIPS    = $(YAPI_DIR_MIPS)libyapi-static.a $(YAPI_DIR_MIPS)libyapi.so.1.0.1
+LIBS_YAPI_MIPS    = $(YAPI_DIR_MIPS)libyapi-static.a $(YAPI_DIR_MIPS)libyapi.so.1.0.1 $(EXPORT_YAPI_MIPS)
 LIBS_MIPS    = $(DIR_MIPS)libyocto-static.a $(DIR_MIPS)libyocto.so.1.0.1 $(LIBS_YAPI_MIPS)
-LIBS_YAPI_MIPSEL  = $(YAPI_DIR_MIPSEL)libyapi-static.a $(YAPI_DIR_MIPSEL)libyapi.so.1.0.1
+LIBS_YAPI_MIPSEL  = $(YAPI_DIR_MIPSEL)libyapi-static.a $(YAPI_DIR_MIPSEL)libyapi.so.1.0.1 $(EXPORT_YAPI_MIPSEL)
 LIBS_MIPSEL  = $(DIR_MIPSEL)libyocto-static.a $(DIR_MIPSEL)libyocto.so.1.0.1 $(LIBS_YAPI_MIPSEL)
 LIBS_OSX     = $(DIR_OSX)libyocto-static.a  $(YAPI_DIR_OSX)libyapi-static.a $(DIR_OSX)libyocto.dylib $(YAPI_DIR_OSX)libyapi.dylib
 LIBS_OSX32     = $(YAPI_DIR_OSX32)libyapi.dylib
@@ -287,6 +296,7 @@ YOCTO_API_OBJS_STAT = yocto_api.o\
 	yocto_hubport.o \
 	yocto_humidity.o \
 	yocto_i2cport.o \
+	yocto_inputchain.o \
 	yocto_latitude.o \
 	yocto_led.o \
 	yocto_lightsensor.o \
@@ -536,7 +546,7 @@ $(DIR_I386)libyocto.so.1.0.1: $(OBJDIR_I386) $(ALL_OBJS_DYN_I386) $(ALL_H)
 	@echo linking $@
 	@$(CPP_I386) $(OPTS_I386) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_I386) $(LINKWITH_I386)
 
-$(YAPI_DIR_I386)libyapi.so.1.0.1: $(OBJDIR_I386) $(YAPI_DIR_I386) $(YAPI_OBJS_DYN_I386) $(ALL_H)
+$(EXPORT_YAPI_I386) $(YAPI_DIR_I386)libyapi.so.1.0.1: $(OBJDIR_I386) $(YAPI_DIR_I386) $(YAPI_OBJS_DYN_I386) $(ALL_H)
 	@echo linking $@
 ifdef JAVA_HOME
 	@echo java_home set to $(JAVA_HOME)
@@ -564,7 +574,7 @@ $(DIR_X64)libyocto.so.1.0.1: $(OBJDIR_X64) $(ALL_OBJS_DYN_X64) $(ALL_H)
 	@echo linking $@
 	@$(CPP_X64) $(OPTS_X64) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_X64) $(LINKWITH_X64)
 
-$(YAPI_DIR_X64)libyapi.so.1.0.1: $(OBJDIR_X64) $(YAPI_DIR_X64) $(YAPI_OBJS_DYN_X64) $(ALL_H)
+$(EXPORT_YAPI_X64) $(YAPI_DIR_X64)libyapi.so.1.0.1: $(OBJDIR_X64) $(YAPI_DIR_X64) $(YAPI_OBJS_DYN_X64) $(ALL_H)
 	@echo linking $@
 ifdef JAVA_HOME
 	@echo java_home set to $(JAVA_HOME)
@@ -592,7 +602,7 @@ $(DIR_ARMEL)libyocto.so.1.0.1: $(OBJDIR_ARMEL) $(ALL_OBJS_DYN_ARMEL) $(ALL_H)
 	@echo linking $@
 	@$(CPP_ARMEL) $(OPTS_ARMEL) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_ARMEL) $(LINKWITH_ARMEL)
 
-$(YAPI_DIR_ARMEL)libyapi.so.1.0.1: $(OBJDIR_ARMEL) $(YAPI_DIR_ARMEL) $(YAPI_OBJS_DYN_ARMEL) $(ALL_H)
+$(EXPORT_YAPI_ARMEL) $(YAPI_DIR_ARMEL)libyapi.so.1.0.1: $(OBJDIR_ARMEL) $(YAPI_DIR_ARMEL) $(YAPI_OBJS_DYN_ARMEL) $(ALL_H)
 	@echo linking $@
 ifdef JAVA_HOME
 	@echo java_home set to $(JAVA_HOME)
@@ -619,7 +629,7 @@ $(DIR_ARMHF)libyocto.so.1.0.1: $(OBJDIR_ARMHF) $(ALL_OBJS_DYN_ARMHF) $(ALL_H)
 	@echo linking $@
 	@$(CPP_ARMHF) $(OPTS_ARMHF) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_ARMHF) $(LINKWITH_ARMHF)
 
-$(YAPI_DIR_ARMHF)libyapi.so.1.0.1: $(OBJDIR_ARMHF) $(YAPI_DIR_ARMHF) $(YAPI_OBJS_DYN_ARMHF) $(ALL_H)
+$(EXPORT_YAPI_ARMHF) $(YAPI_DIR_ARMHF)libyapi.so.1.0.1: $(OBJDIR_ARMHF) $(YAPI_DIR_ARMHF) $(YAPI_OBJS_DYN_ARMHF) $(ALL_H)
 	@echo linking $@
 ifdef JAVA_HOME
 	@echo java_home set to $(JAVA_HOME)
@@ -647,7 +657,7 @@ $(DIR_AARCH64)libyocto.so.1.0.1: $(OBJDIR_AARCH64) $(ALL_OBJS_DYN_AARCH64) $(ALL
 	@echo linking $@
 	@$(CPP_AARCH64) $(OPTS_AARCH64) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_AARCH64) $(LINKWITH_AARCH64)
 
-$(YAPI_DIR_AARCH64)libyapi.so.1.0.1: $(OBJDIR_AARCH64) $(YAPI_DIR_AARCH64) $(YAPI_OBJS_DYN_AARCH64) $(ALL_H)
+$(EXPORT_YAPI_AARCH64) $(YAPI_DIR_AARCH64)libyapi.so.1.0.1: $(OBJDIR_AARCH64) $(YAPI_DIR_AARCH64) $(YAPI_OBJS_DYN_AARCH64) $(ALL_H)
 	@echo linking $@
 ifdef JAVA_HOME
 	@echo java_home set to $(JAVA_HOME)
@@ -675,7 +685,7 @@ $(DIR_MIPS)libyocto.so.1.0.1: $(OBJDIR_MIPS) $(ALL_OBJS_DYN_MIPS) $(ALL_H)
 	@echo linking $@
 	@$(CPP_MIPS) $(OPTS_MIPS) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_MIPS) $(LINKWITH_MIPS)
 
-$(YAPI_DIR_MIPS)libyapi.so.1.0.1: $(OBJDIR_MIPS) $(YAPI_DIR_MIPS) $(YAPI_OBJS_DYN_MIPS) $(ALL_H)
+$(EXPORT_YAPI_MIPS) $(YAPI_DIR_MIPS)libyapi.so.1.0.1: $(OBJDIR_MIPS) $(YAPI_DIR_MIPS) $(YAPI_OBJS_DYN_MIPS) $(ALL_H)
 	@echo linking $@
 ifdef JAVA_HOME
 	@echo java_home set to $(JAVA_HOME)
@@ -702,7 +712,7 @@ $(DIR_MIPSEL)libyocto.so.1.0.1: $(OBJDIR_MIPSEL) $(ALL_OBJS_DYN_MIPSEL) $(ALL_H)
 	@echo linking $@
 	@$(CPP_MIPSEL) $(OPTS_MIPSEL) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_MIPSEL) $(LINKWITH_MIPSEL)
 
-$(YAPI_DIR_MIPSEL)libyapi.so.1.0.1: $(OBJDIR_MIPSEL) $(YAPI_DIR_MIPSEL) $(YAPI_OBJS_DYN_MIPSEL) $(ALL_H)
+$(EXPORT_YAPI_MIPSEL) $(YAPI_DIR_MIPSEL)libyapi.so.1.0.1: $(OBJDIR_MIPSEL) $(YAPI_DIR_MIPSEL) $(YAPI_OBJS_DYN_MIPSEL) $(ALL_H)
 	@echo linking $@
 ifdef JAVA_HOME
 	@echo java_home set to $(JAVA_HOME)
@@ -844,27 +854,6 @@ default: osx
 release: release_osx
 
 endif
-
-libyapi-i386.so : OPTS_DYN = $(OPTS_JAVA)
-libyapi-i386.so: $(YAPI_DIR_I386)libyapi.so.1.0.1
-	cp $< $@
-
-libyapi-amd64.so : OPTS_DYN = $(OPTS_JAVA)
-libyapi-amd64.so: $(YAPI_DIR_X64)libyapi.so.1.0.1
-	cp $< $@
-
-libyapi-armel.so : OPTS_DYN = $(OPTS_JAVA)
-libyapi-armel.so: $(YAPI_DIR_ARMEL)libyapi.so.1.0.1
-	cp $< $@
-
-libyapi-armhf.so : OPTS_DYN = $(OPTS_JAVA)
-libyapi-armhf.so:  $(YAPI_DIR_ARMHF)libyapi.so.1.0.1
-	cp $< $@
-
-libyapi-aarch64.so : OPTS_DYN = $(OPTS_JAVA)
-libyapi-aarch64.so: $(YAPI_DIR_AARCH64)libyapi.so.1.0.1
-	cp $< $@
-
 
 check_java : 
 ifdef JAVA_HOME

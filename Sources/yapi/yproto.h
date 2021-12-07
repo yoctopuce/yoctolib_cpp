@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 44962 2021-05-10 08:32:59Z web $
+ * $Id: yproto.h 47551 2021-12-03 08:01:44Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -549,6 +549,7 @@ typedef struct _uwp_enum_item {
 } uwp_enum_item;
 #endif
 
+#define YOCTO_MAX_URL_LEN           256
 #define NBMAX_NET_HUB               32
 #define NBMAX_USB_DEVICE_CONNECTED  256
 #define WIN_DEVICE_PATH_LEN         512
@@ -860,6 +861,10 @@ typedef struct _HubSt {
 #define TCPREQ_KEEPALIVE       1
 #define TCPREQ_IN_USE          2
 
+#define HTTP_crlf                             "\r\n"
+#define HTTP_crlfcrlf                         "\r\n\r\n"
+#define HTTP_crlf_len                         2
+#define HTTP_crlfcrlf_len                     4
 
 typedef struct _HTTPReqSt {
     YSOCKET skt; // socket used to talk to the device
@@ -1123,6 +1128,7 @@ int  yUsbSendMeta(const char *str, USB_Meta_Pkt *pkt, int len, char *errmsg);
 int yUSBGetBooloader(const char* serial, const char* name, yInterfaceSt* iface, char* errmsg);
 
 // Misc helper
+int checkForSameHubAccess(HubSt* hub, yStrRef serial, char* errmsg);
 int write_text_file(const char* filename, const char* content, int contentlen, char* errmsg);
 int handleNetNotification(HubSt* hub);
 u32 yapiGetCNonce(u32 nc);

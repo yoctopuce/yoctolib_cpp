@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_realtimeclock.h 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_realtimeclock.h 45843 2021-08-04 07:51:59Z mvuilleu $
  *
  *  Declares yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *
@@ -75,7 +75,7 @@ typedef enum {
 //--- (YRealTimeClock declaration)
 /**
  * YRealTimeClock Class: real-time clock control interface, available for instance in the
- * YoctoHub-GSM-3G-EU, the YoctoHub-GSM-3G-NA, the YoctoHub-GSM-4G or the YoctoHub-Wireless-n
+ * YoctoHub-GSM-2G, the YoctoHub-GSM-3G-EU, the YoctoHub-GSM-4G or the YoctoHub-Wireless-n
  *
  * The YRealTimeClock class provide access to the embedded real-time clock available on some Yoctopuce
  * devices. It can provide current date and time, even after a power outage
@@ -221,7 +221,7 @@ public:
      * call registerHub() at application initialization time.
      *
      * @param func : a string that uniquely characterizes the real-time clock, for instance
-     *         YHUBGSM3.realTimeClock.
+     *         YHUBGSM1.realTimeClock.
      *
      * @return a YRealTimeClock object allowing you to drive the real-time clock.
      */
@@ -305,7 +305,7 @@ public:
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the real-time clock, for instance
- *         YHUBGSM3.realTimeClock.
+ *         YHUBGSM1.realTimeClock.
  *
  * @return a YRealTimeClock object allowing you to drive the real-time clock.
  */

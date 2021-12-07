@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_quadraturedecoder.cpp 45292 2021-05-25 23:27:54Z mvuilleu $
+ *  $Id: yocto_quadraturedecoder.cpp 45843 2021-08-04 07:51:59Z mvuilleu $
  *
  *  Implements yFindQuadratureDecoder(), the high-level API for QuadratureDecoder functions
  *
@@ -282,7 +282,7 @@ int YQuadratureDecoder::set_edgesPerCycle(int newval)
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the quadrature decoder, for instance
- *         YPWMRX01.quadratureDecoder.
+ *         YMXBTN01.quadratureDecoder1.
  *
  * @return a YQuadratureDecoder object allowing you to drive the quadrature decoder.
  */

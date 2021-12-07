@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 45552 2021-06-14 13:52:43Z web $
+ * $Id: yocto_api.h 46595 2021-09-24 16:42:28Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -818,7 +818,8 @@ public:
      */
     static  YRETCODE    TestHub(const string& url, int mstimeout, string& errmsg);
     /**
-     * Setup the Yoctopuce library to use modules connected on a given machine. The
+     * Setup the Yoctopuce library to use modules connected on a given machine. Idealy this
+     * call will be made once at the begining of your application.  The
      * parameter will determine how the API will work. Use the following values:
      *
      * <b>usb</b>: When the usb keyword is used, the API will work with
@@ -851,7 +852,9 @@ public:
      *
      * http://username:password@address:port
      *
-     * You can call <i>RegisterHub</i> several times to connect to several machines.
+     * You can call <i>RegisterHub</i> several times to connect to several machines. On
+     * the other hand, it is useless and even counterproductive to call <i>RegisterHub</i>
+     * with to same address multiple times during the life of the application.
      *
      * @param url : a string containing either "usb","callback" or the
      *         root URL of the hub to monitor
@@ -3835,7 +3838,8 @@ inline void yRegisterCalibrationHandler(int calibrationType, yCalibrationHandler
 { YAPI::RegisterCalibrationHandler(calibrationType, calibrationHandler); }
 
 /**
- * Setup the Yoctopuce library to use modules connected on a given machine. The
+ * Setup the Yoctopuce library to use modules connected on a given machine. Idealy this
+ * call will be made once at the begining of your application.  The
  * parameter will determine how the API will work. Use the following values:
  *
  * <b>usb</b>: When the usb keyword is used, the API will work with
@@ -3868,7 +3872,9 @@ inline void yRegisterCalibrationHandler(int calibrationType, yCalibrationHandler
  *
  * http://username:password@address:port
  *
- * You can call <i>RegisterHub</i> several times to connect to several machines.
+ * You can call <i>RegisterHub</i> several times to connect to several machines. On
+ * the other hand, it is useless and even counterproductive to call <i>RegisterHub</i>
+ * with to same address multiple times during the life of the application.
  *
  * @param url : a string containing either "usb","callback" or the
  *         root URL of the hub to monitor
@@ -4294,7 +4300,7 @@ public:
      * call registerHub() at application initialization time.
      *
      * @param func : a string that uniquely characterizes the data logger, for instance
-     *         RX420MA1.dataLogger.
+     *         LIGHTMK4.dataLogger.
      *
      * @return a YDataLogger object allowing you to drive the data logger.
      */
@@ -4405,7 +4411,7 @@ public:
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the data logger, for instance
- *         RX420MA1.dataLogger.
+ *         LIGHTMK4.dataLogger.
  *
  * @return a YDataLogger object allowing you to drive the data logger.
  */

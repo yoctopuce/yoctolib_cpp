@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 45661 2021-06-29 06:54:39Z web $
+ * $Id: yapi.c 47554 2021-12-03 08:32:19Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -459,15 +459,16 @@ static int wpSafeCheckOverwrite(yUrlRef registeredUrl, HubSt* hub, yUrlRef devUr
         dbglog("unregister same device connected by USB ( 0x%X vs 0x%X) \n",devUrl,hub->url);
 #endif
         return 1;
-    } else {
-        if (registeredUrl != devUrl) {
-            if (devUrl == hub->url) {
+    } else if (registeredUrl != devUrl) {
+
+        if (devUrl == hub->url) {
 #ifdef DEBUG_WP
-                dbglog("unregister same device connected by a VirtualHub (0x%X vs 0x%X) \n",devUrl,hub->url);
+            dbglog("unregister same device connected by a VirtualHub (0x%X vs 0x%X) \n", devUrl, hub->url);
 #endif
-                return 1;
-            }
+            return 1;
         }
+
+        
     }
     return 0;
 }
@@ -678,6 +679,77 @@ YRETCODE yapiPullDeviceLog(const char* serial)
     return yapiPullDeviceLogEx(devydx);
 }
 
+static int sprintfURL(char* out, int maxlen, yUrlRef url)
+{
+    char host[YOCTO_HOSTNAME_NAME];
+    u16  port;
+    yAbsUrlProto proto;
+    yStrRef user, password, subdomain;
+    const char* protoStr = "";
+    const char* userStr = "";
+    const char* subdomainStr = "";
+    const char* sep1 = "";
+    const char* sep2 = "";
+    const char* passStr = "";
+
+    yHashGetUrlPort(url, host, &port, &proto, &user, &password, &subdomain);
+
+    switch (proto) {
+    case PROTO_LEGACY:
+        break;
+    case PROTO_AUTO:
+        protoStr = "auto://";
+        break;
+    case PROTO_HTTP:
+        protoStr = "http://";
+        break;
+    case PROTO_WEBSOCKET:
+        protoStr = "ws://";
+        break;
+    case PROTO_SECURE_HTTP:
+        protoStr = "https://";
+        break;
+    case PROTO_SECURE_WEBSOCKET:
+        protoStr = "wss://";
+        break;
+    case PROTO_UNKNOWN:
+        protoStr = "unk://";
+        break;
+    }
+    if (user != INVALID_HASH_IDX) {
+        sep2 = "@";
+        userStr = yHashGetStrPtr(user);
+    }
+    if (password != INVALID_HASH_IDX) {
+        passStr = ":XXXX";
+    }
+    if (subdomain != INVALID_HASH_IDX) {
+        sep2 = "/";
+        subdomainStr = yHashGetStrPtr(subdomain);
+    }
+    return YSPRINTF(out, maxlen, "%s%s%s%s%s:%d%s%s", protoStr,userStr,passStr,sep1,host, port,sep2,subdomainStr);
+}
+
+
+int checkForSameHubAccess(HubSt* hub, yStrRef serial, char* errmsg)
+{
+    int i;
+    int res = YAPI_SUCCESS;
+
+    for (i = 0; i < NBMAX_NET_HUB; i++) {
+        if (yContext->nethub[i] == NULL) {
+            continue;
+        }
+        if (yContext->nethub[i]->serial == serial ) {
+            char buffer[YOCTO_MAX_URL_LEN];
+            sprintfURL(buffer, YOCTO_MAX_URL_LEN, yContext->nethub[i]->url);
+            YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Hub %s is alread registered with URL %s", yHashGetStrPtr(serial), buffer);
+            return YAPI_DOUBLE_ACCES;
+        }
+    }
+    return res;
+}
+
 
 /*****************************************************************************
   Function:
@@ -721,8 +793,16 @@ void wpSafeRegister(HubSt* hub, u8 devYdx, yStrRef serialref, yStrRef lnameref, 
     dbglog("device : %x (%d)\n",deviceid,beacon);
 #endif
 
-    if (registeredUrl != INVALID_HASH_IDX && wpSafeCheckOverwrite(registeredUrl, hub, devUrl)) {
-        wpSafeUnregister(serialref);
+    if (registeredUrl != INVALID_HASH_IDX) {
+
+        if (wpSafeCheckOverwrite(registeredUrl, hub, devUrl)) {
+            wpSafeUnregister(serialref);
+        } else {
+#ifdef DEBUG_WP
+            dbglog("SAFE WP: drop register %s(0x%X)\n", yHashGetStrPtr(serialref), serialref);
+#endif
+            return;
+        }
     }
     wpRegister(-1, serialref, lnameref, productref, deviceid, devUrl, beacon);
     ypRegister(YSTRREF_MODULE_STRING, serialref, YSTRREF_mODULE_STRING, lnameref, YOCTO_AKA_YFUNCTION, -1, NULL);
@@ -813,6 +893,10 @@ void wpSafeUpdate(HubSt* hub, u8 devYdx, yStrRef serialref, yStrRef lnameref, yU
 
 void wpSafeUnregister(yStrRef serialref)
 {
+
+#ifdef DEBUG_WP
+    dbglog("Safe unregister %s\n", yHashGetStrPtr(serialref));
+#endif
     wpPreventUnregister();
     if (wpMarkForUnregister(serialref)) {
         // Forward high-level notification to API user before deleting data
@@ -1936,6 +2020,11 @@ static HubSt* yapiAllocHub(const char* url, char* errmsg)
             dbglog("Warning: unable to parse info.json (%s)\n", errmsg);
             memset(&hub->info, 0, sizeof(hub->info));
             hub->proto = PROTO_LEGACY;
+        } else {
+            yStrRef serial = yHashPutStr(hub->info.serial);
+            if (checkForSameHubAccess(hub, serial, errmsg) < 0) {
+                return NULL;
+            }
         }
     }
 
@@ -3297,10 +3386,10 @@ static YRETCODE yapiRegisterHubEx(const char* url, int checkacces, char* errmsg)
         }
     } else {
         HubSt* hubst = NULL;
-        char urlbuff[256];
+        char urlbuff[YOCTO_MAX_URL_LEN];
         int firstfree;
         void* (*thead_handler)(void*);
-        YSTRCPY(urlbuff, 256, url);
+        YSTRCPY(urlbuff, YOCTO_MAX_URL_LEN, url);
     retry:
         hubst = yapiAllocHub(urlbuff, errmsg);
         if (hubst == NULL) {
@@ -4795,32 +4884,43 @@ static void skipJsonStruct(yJsonStateMachine* j)
 
 static void skipJsonArray(yJsonStateMachine* j)
 {
+    int continue_to_parse;
 #ifdef DEBUG_JSON_PARSE
-    dbglog("skip  %s(%d):%s\n", yJsonStateStr[j->st], j->st, j->token);
+    dbglog("skip  %s(%d):%s depth=%d\n", yJsonStateStr[j->st], j->st, j->token, j->depth);
 #endif
-    yJsonParse(j);
+    int depth = j->depth;
+    int tmp;
     do {
 #ifdef DEBUG_JSON_PARSE
         dbglog("... %s(%d):%s\n", yJsonStateStr[j->st], j->st, j->token);
 #endif
         yJsonSkip(j, 1);
-    } while (yJsonParse(j) == YJSON_PARSE_AVAIL && j->st != YJSON_PARSE_ARRAY);
+        tmp = yJsonParse(j);
+        continue_to_parse = 0;
+        if (tmp == YJSON_PARSE_AVAIL && (j->st != YJSON_PARSE_ARRAY || j->depth > depth)) {
+            continue_to_parse = 1;
+        }
+#ifdef DEBUG_JSON_PARSE
+        dbglog("... %s(%d):%s depth=%d\n", yJsonStateStr[j->st], j->st, j->token, j->depth);
+#endif
+    } while (continue_to_parse);
 }
 
 
 static const char* yapiJsonValueParseStruct(yJsonStateMachine* j, const char* path, int* result, char* errmsg)
 {
-    int len = 0;
     const char* p = path;
+    char buffer[64];
+    char *d = buffer;
 
-    while (*p && *p != '|') {
-        p++;
-        len++;
+    while (*p && *p != '|' && (d-buffer <= 63)) {
+        *d++ = *p++;
     }
+    *d = 0;
 
     while (yJsonParse(j) == YJSON_PARSE_AVAIL) {
         if (j->st == YJSON_PARSE_MEMBNAME) {
-            if (YSTRNCMP(path, j->token, len) == 0) {
+            if (YSTRCMP(buffer, j->token) == 0) {
                 if (*p) {
 #ifdef DEBUG_JSON_PARSE
                     dbglog("recurse %s %s(%d):%s\n", j->token, yJsonStateStr[j->st], j->st, j->token);

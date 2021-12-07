@@ -119,6 +119,7 @@
 <ClCompile Include="..\..\..\Sources\yocto_hubport.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_humidity.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_i2cport.cpp" />
+<ClCompile Include="..\..\..\Sources\yocto_inputchain.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_latitude.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_led.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_lightsensor.cpp" />
@@ -206,6 +207,7 @@
 <ClInclude Include="..\..\..\Sources\yocto_hubport.h" />
 <ClInclude Include="..\..\..\Sources\yocto_humidity.h" />
 <ClInclude Include="..\..\..\Sources\yocto_i2cport.h" />
+<ClInclude Include="..\..\..\Sources\yocto_inputchain.h" />
 <ClInclude Include="..\..\..\Sources\yocto_latitude.h" />
 <ClInclude Include="..\..\..\Sources\yocto_led.h" />
 <ClInclude Include="..\..\..\Sources\yocto_lightsensor.h" />
