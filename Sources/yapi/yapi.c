@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 47554 2021-12-03 08:32:19Z seb $
+ * $Id: yapi.c 47659 2021-12-13 16:41:02Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -793,7 +793,7 @@ void wpSafeRegister(HubSt* hub, u8 devYdx, yStrRef serialref, yStrRef lnameref, 
     dbglog("device : %x (%d)\n",deviceid,beacon);
 #endif
 
-    if (registeredUrl != INVALID_HASH_IDX) {
+    if (registeredUrl != INVALID_HASH_IDX && registeredUrl != devUrl) {
 
         if (wpSafeCheckOverwrite(registeredUrl, hub, devUrl)) {
             wpSafeUnregister(serialref);
