@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 3.8)
 
 
 project(YoctoLib VERSION 1.0.1 DESCRIPTION "Yoctopuce C++ library")
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+SET(CMAKE_INSTALL_PREFIX "/usr")
+endif()
+include(GNUInstallDirs)
 
 
 set(YoctoLibHSources
@@ -167,7 +171,6 @@ target_link_libraries(YoctoLib PRIVATE yapi)
 target_include_directories (YoctoLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(YoctoLib PROPERTIES SOVERSION 1)
 set_target_properties(YoctoLib PROPERTIES LIBRARY_OUTPUT_NAME yocto)
-install(TARGETS YoctoLib DESTINATION lib)
-install(FILES ${YoctoLibHSources} DESTINATION include)
-install(FILES yapi/yapi.h yapi/ydef.h DESTINATION include/yapi)
-
+install(TARGETS YoctoLib DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(FILES ${YoctoLibHSources} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES yapi/yapi.h yapi/ydef.h yapi/yversion.h yapi/yjson.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/yapi)

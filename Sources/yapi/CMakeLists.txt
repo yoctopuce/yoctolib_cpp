@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 3.8)
 
 project(yapi VERSION 1.0.1 DESCRIPTION "Yoctopuce YAPI library")
 
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+SET(CMAKE_INSTALL_PREFIX "/usr")
+endif()
+include(GNUInstallDirs)
+
+
 set(YAPI_C_FILES
 	yapi.c
 	ystream.c
@@ -39,6 +45,7 @@ if (APPLE)
 endif()
 
 set_target_properties(yapi PROPERTIES SOVERSION 1)
-install(TARGETS yapi DESTINATION lib)
-install(FILES yapi.h ydef.h DESTINATION include/yapi)
+install(TARGETS yapi DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(FILES yapi.h ydef.h yversion.h yjson.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/yapi)
+
 
