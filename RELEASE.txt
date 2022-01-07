@@ -1,3 +1,4 @@
-CPP v1.10.47660
+CPP v1.10.47899
 
-- Fix missing plug event (bug introduced with revision 47582)
+- Add install target in CMakeLists.txt
+- Fix reconnexion isssue with WebSocket

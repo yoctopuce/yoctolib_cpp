@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 47551 2021-12-03 08:01:44Z seb $
+ * $Id: yproto.h 47719 2021-12-17 10:00:43Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -1073,7 +1073,7 @@ void yyyPacketShutdown(yInterfaceSt* iface);
 //some early declarations
 void wpSafeRegister(HubSt* hub, u8 devYdx, yStrRef serialref, yStrRef lnameref, yStrRef productref, u16 deviceid, yUrlRef devUrl, s8 beacon);
 void wpSafeUpdate(HubSt* hub, u8 devYdx, yStrRef serialref, yStrRef lnameref, yUrlRef devUrl, s8 beacon);
-void wpSafeUnregister(yStrRef serialref);
+void wpSafeUnregister(yUrlRef eventUrl, yStrRef serialref);
 
 void ypUpdateUSB(const char* serial, const char* funcid, const char* funcname, int funclass, int funydx, const char* funcval);
 void ypUpdateYdx(int devydx, Notification_funydx funInfo, const char* funcval);

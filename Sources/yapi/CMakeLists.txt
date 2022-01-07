@@ -1,3 +1,13 @@
+cmake_minimum_required(VERSION 3.8)
+
+project(yapi VERSION 1.0.1 DESCRIPTION "Yoctopuce YAPI library")
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+SET(CMAKE_INSTALL_PREFIX "/usr")
+endif()
+include(GNUInstallDirs)
+
+
 set(YAPI_C_FILES
 	yapi.c
 	ystream.c
@@ -15,7 +25,7 @@ set(YAPI_C_FILES
 	ypkt_lin.c
 )
 
-add_library (yapi  ${YAPI_C_FILES})
+add_library (yapi ${YAPI_C_FILES})
 
 # add pthread usb-1.0 library only on linux
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
@@ -33,3 +43,9 @@ if (APPLE)
 	endif()
 	target_link_libraries(yapi ${IOKIT_FRAMEWORK} ${CORE_FRAMEWORK})
 endif()
+
+set_target_properties(yapi PROPERTIES SOVERSION 1)
+install(TARGETS yapi DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(FILES yapi.h ydef.h yversion.h yjson.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/yapi)
+
+

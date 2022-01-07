@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 44990 2021-05-10 14:53:32Z web $
+ * $Id: yhash.c 47719 2021-12-17 10:00:43Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -470,6 +470,38 @@ yUrlRef yHashUrlFromRef(yUrlRef urlref, const char* rootUrl)
         return INVALID_HASH_IDX;
     }
     return yHashPut((const u8*)&huburl, sizeof(huburl), 0);
+}
+
+
+/**
+* compare two yUrlRef to see if they come frome the same Hub or USB.
+return: the 1 if both urlref come from the same hub
+*/
+yUrlRef yHashCmpUrlRef(yUrlRef urlref, yUrlRef urlref2)
+{
+    yAbsUrl huburl;
+    yAbsUrl huburl2;
+
+    yHashGetBuf(urlref, (u8*)&huburl, sizeof(huburl));
+    yHashGetBuf(urlref2, (u8*)&huburl2, sizeof(huburl2));
+
+    if (huburl.proto != huburl2.proto) {
+        return 0;
+    }
+
+    if (huburl.byname.domaine != huburl2.byname.domaine) {
+        return 0;
+    }
+    if (huburl.byname.host != huburl2.byname.host) {
+        return 0;
+    }
+    if (huburl.byname.port != huburl2.byname.port) {
+        return 0;
+    }
+    if (huburl.user != huburl2.user || huburl.password != huburl2.password || huburl.subdomain != huburl2.subdomain) {
+        return 0;
+    }
+    return 1;
 }
 
 

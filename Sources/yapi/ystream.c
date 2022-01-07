@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 44962 2021-05-10 08:32:59Z web $
+ * $Id: ystream.c 47719 2021-12-17 10:00:43Z seb $
  *
  * USB stream implementation
  *
@@ -213,7 +213,7 @@ int vdbglogf(const char* fileid, int line, const char* fmt, va_list args)
     if (yContext && yContext->log)
         yContext->log(buffer, len);
 
-#if 0
+#if 1
     buffer[len] = 0;
     printf("%s", buffer);
 #endif
@@ -2240,7 +2240,7 @@ static void enuUpdateDStatus(void)
             }
             dbglog("Device %s unplugged\n", p->infos.serial);
             devStopEnum(PUSH_LOCATION p);
-            wpSafeUnregister(serialref);
+            wpSafeUnregister(yHashUrlUSB(serialref),serialref);
             break;
 
         case YENU_RESTART:
@@ -2264,7 +2264,7 @@ static void enuUpdateDStatus(void)
             }
             devStopEnum(PUSH_LOCATION p);
             if (YISERR(res)) {
-                wpSafeUnregister(serialref);
+                wpSafeUnregister(yHashUrlUSB(serialref), serialref);
             }
             break;
         case YENU_START:
@@ -2292,7 +2292,7 @@ static void enuUpdateDStatus(void)
                     }
                     devStopEnum(PUSH_LOCATION p);
                     if (updateWP) {
-                        wpSafeUnregister(serialref);
+                        wpSafeUnregister(yHashUrlUSB(serialref), serialref);
                     }
                 } else {
 #ifdef DEBUG_DEV_ENUM
@@ -2560,7 +2560,7 @@ int yUsbFree(yContextSt* ctx, char* errmsg)
             yStrRef serialref = yHashTestStr(p->infos.serial);
             p->dStatus = YDEV_UNPLUGGED;
             StopDevice(p,NULL);
-            wpSafeUnregister(serialref);
+            wpSafeUnregister(yHashUrlUSB(serialref), serialref);
             if (csTaken)
                 yLeaveCriticalSection(&p->acces_state);
         }

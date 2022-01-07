@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 47551 2021-12-03 08:01:44Z seb $
+ * $Id: ytcp.c 47711 2021-12-16 09:53:40Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -1336,7 +1336,7 @@ static int yWSOpenReqEx(struct _RequestSt* req, int tcpchan, u64 mstimeout, char
     YASSERT(tcpchan < MAX_ASYNC_TCPCHAN);
 
 retry:
-    if (start + mstimeout == yapiGetTickCount()) {
+    if (start + mstimeout < yapiGetTickCount()) {
         return YERRMSG(YAPI_IO_ERROR, "Unable to queue request (WebSocket)");
     }
 

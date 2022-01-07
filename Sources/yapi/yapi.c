@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 47659 2021-12-13 16:41:02Z seb $
+ * $Id: yapi.c 47891 2022-01-03 17:32:22Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -685,15 +685,28 @@ static int sprintfURL(char* out, int maxlen, yUrlRef url)
     u16  port;
     yAbsUrlProto proto;
     yStrRef user, password, subdomain;
-    const char* protoStr = "";
+    const char* protoStr;
     const char* userStr = "";
     const char* subdomainStr = "";
     const char* sep1 = "";
     const char* sep2 = "";
     const char* passStr = "";
+    const char* type = "";
 
-    yHashGetUrlPort(url, host, &port, &proto, &user, &password, &subdomain);
+    yAbsUrlType urltype = yHashGetUrlPort(url, host, &port, &proto, &user, &password, &subdomain);
+    switch (urltype) {
+    case IP_URL:
+        type = "ipurl ";
+        break;
+    case USB_URL:
+        type = "usburl ";
+        break;
+    case NAME_URL:
+        type = "nameurl ";
+        break;
+    }
 
+    protoStr = "auto://";
     switch (proto) {
     case PROTO_LEGACY:
         break;
@@ -727,7 +740,7 @@ static int sprintfURL(char* out, int maxlen, yUrlRef url)
         sep2 = "/";
         subdomainStr = yHashGetStrPtr(subdomain);
     }
-    return YSPRINTF(out, maxlen, "%s%s%s%s%s:%d%s%s", protoStr,userStr,passStr,sep1,host, port,sep2,subdomainStr);
+    return YSPRINTF(out, maxlen, "%s%s%s%s%s%s:%d%s%s",type, protoStr,userStr,passStr,sep1,host, port,sep2,subdomainStr);
 }
 
 
@@ -737,13 +750,13 @@ int checkForSameHubAccess(HubSt* hub, yStrRef serial, char* errmsg)
     int res = YAPI_SUCCESS;
 
     for (i = 0; i < NBMAX_NET_HUB; i++) {
-        if (yContext->nethub[i] == NULL) {
+        if (yContext->nethub[i] == NULL || yContext->nethub[i] == hub) {
             continue;
         }
         if (yContext->nethub[i]->serial == serial ) {
             char buffer[YOCTO_MAX_URL_LEN];
             sprintfURL(buffer, YOCTO_MAX_URL_LEN, yContext->nethub[i]->url);
-            YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Hub %s is alread registered with URL %s", yHashGetStrPtr(serial), buffer);
+            YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Hub %s is already registered with URL %s", yHashGetStrPtr(serial), buffer);
             return YAPI_DOUBLE_ACCES;
         }
     }
@@ -796,7 +809,7 @@ void wpSafeRegister(HubSt* hub, u8 devYdx, yStrRef serialref, yStrRef lnameref, 
     if (registeredUrl != INVALID_HASH_IDX && registeredUrl != devUrl) {
 
         if (wpSafeCheckOverwrite(registeredUrl, hub, devUrl)) {
-            wpSafeUnregister(serialref);
+            wpSafeUnregister(registeredUrl, serialref);
         } else {
 #ifdef DEBUG_WP
             dbglog("SAFE WP: drop register %s(0x%X)\n", yHashGetStrPtr(serialref), serialref);
@@ -891,12 +904,29 @@ void wpSafeUpdate(HubSt* hub, u8 devYdx, yStrRef serialref, yStrRef lnameref, yU
 }
 
 
-void wpSafeUnregister(yStrRef serialref)
+/**
+ * Unregister a device from white pages. eventUrl is INVALID_HASH_IDX for USB
+ */
+void wpSafeUnregister(yUrlRef eventUrl, yStrRef serialref)
 {
+    yUrlRef registeredUrl = wpGetDeviceUrlRef(serialref);
 
-#ifdef DEBUG_WP
-    dbglog("Safe unregister %s\n", yHashGetStrPtr(serialref));
+#if 0
+    char buffer[YOCTO_MAX_URL_LEN];
+    char buffer2[YOCTO_MAX_URL_LEN];
+    sprintfURL(buffer, YOCTO_MAX_URL_LEN, registeredUrl);
+    sprintfURL(buffer2, YOCTO_MAX_URL_LEN, eventUrl);
+    dbglog("unregister event for %s (registerd from:%s event from :%s)\n", yHashGetStrPtr(serialref), buffer, buffer2);
 #endif
+
+
+    if (registeredUrl != INVALID_HASH_IDX && !yHashCmpUrlRef(registeredUrl,eventUrl)) {
+#if 0
+        dbglog("Skip unregister event for %s (registerd from:%s event from :%s)\n", yHashGetStrPtr(serialref), buffer, buffer2);
+#endif
+        return;
+    }
+
     wpPreventUnregister();
     if (wpMarkForUnregister(serialref)) {
         // Forward high-level notification to API user before deleting data
@@ -932,7 +962,7 @@ static void parseNetWpEntry(ENU_CONTEXT* enus)
     }
 }
 
-static void unregisterNetDevice(yStrRef serialref)
+static void unregisterNetDevice(HubSt* hub, yStrRef serialref)
 {
     int devydx;
 
@@ -943,7 +973,7 @@ static void unregisterNetDevice(yStrRef serialref)
         yReqFree(yContext->tcpreq[devydx]);
         yContext->tcpreq[devydx] = NULL;
     }
-    wpSafeUnregister(serialref);
+    wpSafeUnregister(hub->url, serialref);
 }
 
 static void ypUpdateNet(ENU_CONTEXT* enus)
@@ -1815,7 +1845,7 @@ static int yNetHubEnum(HubSt* hub, int forceupdate, char* errmsg)
 
     for (i = 0; i < enus.nbKnownDevices; i++) {
         if (enus.knownDevices[i] != INVALID_HASH_IDX) {
-            unregisterNetDevice(knownDevices[i]);
+            unregisterNetDevice(hub, knownDevices[i]);
         }
     }
     if (hub->state == NET_HUB_ESTABLISHED) {
@@ -2131,16 +2161,15 @@ static void unregisterNetHub(yUrlRef huburl)
                 yApproximateSleep(10);
             }
             yThreadKill(&hub->net_thread);
+            nbKnownDevices = wpGetAllDevUsingHubUrl(huburl, knownDevices, 128);
+            for (i = 0; i < nbKnownDevices; i++) {
+                if (knownDevices[i] != INVALID_HASH_IDX) {
+                    unregisterNetDevice(hub, knownDevices[i]);
+                }
+            }
             yapiFreeHub(hub);
             yContext->nethub[i] = NULL;
             break;
-        }
-    }
-
-    nbKnownDevices = wpGetAllDevUsingHubUrl(huburl, knownDevices, 128);
-    for (i = 0; i < nbKnownDevices; i++) {
-        if (knownDevices[i] != INVALID_HASH_IDX) {
-            unregisterNetDevice(knownDevices[i]);
         }
     }
 }
@@ -3041,7 +3070,7 @@ int handleNetNotification(HubSt* hub)
 #endif
         hub->devListExpires = 0;
         if (*p == '0') {
-            unregisterNetDevice(yHashPutStr(children));
+            unregisterNetDevice(hub, yHashPutStr(children));
         }
         break;
     case NOTIFY_NETPKT_LOG:

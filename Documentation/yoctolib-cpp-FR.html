@@ -6,7 +6,7 @@
 <style type="text/css">
 /*********************************************************************
  *
- * $Id: yoctolib-cpp-FR.html 47630 2021-12-10 17:04:48Z mvuilleu $
+ * $Id: yoctolib-cpp-FR.html 47772 2021-12-21 14:33:06Z martinm $
  *
  * Searchable documentation browser for Yoctopuce Library
  *
@@ -4821,33 +4821,33 @@ function Drag_stopMouseCapture()
     for (var clname in doc)
      { var  matchfound=false;
        var container = wdg(clname+"List");
-       if (!container["originalDisplay"]) container["originalDisplay"]=null;
-       if (container["originalDisplay"]==null) container["originalDisplay"] = container.style.display;
-       values = value.split(' ');
-       for (var method in doc[clname])
-
-         { var it  = wdg(clname+'.'+method);
-           var match = fctMatch(clname,method,values);
+       if  (container) 
+         { if (!container["originalDisplay"]) container["originalDisplay"]=null;       
+           if (container["originalDisplay"]==null) container["originalDisplay"] = container.style.display;
+           values = value.split(' ');
+           for (var method in doc[clname])
+             { var it  = wdg(clname+'.'+method);
+               var match = fctMatch(clname,method,values);
                if (match)
                  {  if (it) it.style.display="block";
                      matchfound=true;
                     if (firstindex=='') {firstindex=clname; firstname = method;}
                  }
-              else
+               else
                  { if (it) it.style.display="none";
                  }
+             }
+           if  (matchfound)
+            { wdg(clname+"List").style.display='';
+              wdg(clname).src=minusimage;
+              wdg(clname).style.visibility='visible';
+            }
+           else
+            { wdg(clname+"List").style.display='none';
+              wdg(clname).style.visibility='hidden';
+              wdg(clname).src=plusimage;
+            }
          }
-
-      if  (matchfound)
-          { wdg(clname+"List").style.display='';
-            wdg(clname).src=minusimage;
-            wdg(clname).style.visibility='visible';
-          }
-         else
-          { wdg(clname+"List").style.display='none';
-            wdg(clname).style.visibility='hidden';
-            wdg(clname).src=plusimage;
-          }
      }
     Show(firstindex,firstname);
   }

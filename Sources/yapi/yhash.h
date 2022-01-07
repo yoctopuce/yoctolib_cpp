@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.h 44961 2021-05-10 08:19:31Z web $
+ * $Id: yhash.h 47719 2021-12-17 10:00:43Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -224,6 +224,7 @@ u16   yHashGetStrLen(yHash yhash);
 char  *yHashGetStrPtr(yHash yhash);
 #ifndef MICROCHIP_API
 yUrlRef yHashUrlFromRef(yUrlRef urlref, const char *rootUrl);
+yUrlRef yHashCmpUrlRef(yUrlRef urlref, yUrlRef urlref2);
 yUrlRef yHashUrl(const char *host, const char *rootUrl, u8 testonly, char *errmsg);
 yAbsUrlType  yHashGetUrlPort(yUrlRef urlref, char *url, u16 *port, yAbsUrlProto *proto, yStrRef *user, yStrRef *password, yStrRef *subdomain);
 int yHashSameHub(yUrlRef url_a, yUrlRef url_b);
