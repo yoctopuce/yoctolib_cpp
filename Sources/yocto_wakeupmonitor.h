@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupmonitor.h 47630 2021-12-10 17:04:48Z mvuilleu $
+ *  $Id: yocto_wakeupmonitor.h 48183 2022-01-20 10:26:11Z mvuilleu $
  *
  *  Declares yFindWakeUpMonitor(), the high-level API for WakeUpMonitor functions
  *
@@ -88,7 +88,7 @@ typedef enum {
 //--- (YWakeUpMonitor declaration)
 /**
  * YWakeUpMonitor Class: wake-up monitor control interface, available for instance in the
- * YoctoHub-GSM-2G, the YoctoHub-GSM-4G, the YoctoHub-Wireless-g or the YoctoHub-Wireless-n
+ * YoctoHub-GSM-4G, the YoctoHub-Wireless-SR, the YoctoHub-Wireless-g or the YoctoHub-Wireless-n
  *
  * The YWakeUpMonitor class handles globally all wake-up sources, as well
  * as automated sleep mode.
@@ -278,7 +278,7 @@ public:
      * call registerHub() at application initialization time.
      *
      * @param func : a string that uniquely characterizes the wake-up monitor, for instance
-     *         YHUBGSM1.wakeUpMonitor.
+     *         YHUBGSM5.wakeUpMonitor.
      *
      * @return a YWakeUpMonitor object allowing you to drive the wake-up monitor.
      */
@@ -415,7 +415,7 @@ public:
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the wake-up monitor, for instance
- *         YHUBGSM1.wakeUpMonitor.
+ *         YHUBGSM5.wakeUpMonitor.
  *
  * @return a YWakeUpMonitor object allowing you to drive the wake-up monitor.
  */

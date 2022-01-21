@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ * $Id: yocto_messagebox.cpp 48014 2022-01-12 08:06:41Z seb $
  *
  * Implements yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -775,7 +775,7 @@ string YSms::encodeTimeStamp(string exp)
                 n = n - 1;
                 v2 = 4 * ((u8)res[n]) + v1;
                 if (((u8)expasc[i-3]) == 45) {
-                    v2 += 128;
+                    v2 = v2 + 128;
                 }
                 res[n] = (char)(v2);
             }

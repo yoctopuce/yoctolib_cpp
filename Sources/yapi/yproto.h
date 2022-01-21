@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 47719 2021-12-17 10:00:43Z seb $
+ * $Id: yproto.h 47923 2022-01-07 10:43:12Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -258,7 +258,6 @@ int ymemfind(const u8* haystack, u32 haystack_len, const u8* needle, u32 needle_
 //#define DEBUG_DUMP_PKT
 //#define DEBUG_USB_TRAFIC
 //#define TRACE_NET_HUB
-//#define DEBUG_TRACE_FILE "c:\\tmp\\tracefile.txt"
 //#define DEBUG_TCP
 //#define DEBUG_WEBSOCKET
 //#define TRACE_REQUESTS

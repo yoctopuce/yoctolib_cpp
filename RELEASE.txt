@@ -1,4 +1,4 @@
-CPP v1.10.47899
+CPP v1.10.48220
 
-- Add install target in CMakeLists.txt
+- Fix search feature in HTML documentation
 - Fix reconnexion isssue with WebSocket
