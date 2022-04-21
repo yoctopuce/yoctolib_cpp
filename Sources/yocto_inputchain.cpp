@@ -57,6 +57,7 @@ YInputChain::YInputChain(const string& func): YFunction(func)
 //--- (YInputChain initialization)
     ,_expectedNodes(EXPECTEDNODES_INVALID)
     ,_detectedNodes(DETECTEDNODES_INVALID)
+    ,_loopbackTest(LOOPBACKTEST_INVALID)
     ,_refreshRate(REFRESHRATE_INVALID)
     ,_bitChain1(BITCHAIN1_INVALID)
     ,_bitChain2(BITCHAIN2_INVALID)
@@ -104,6 +105,9 @@ int YInputChain::_parseAttr(YJSONObject *json_val)
     }
     if(json_val->has("detectedNodes")) {
         _detectedNodes =  json_val->getInt("detectedNodes");
+    }
+    if(json_val->has("loopbackTest")) {
+        _loopbackTest =  (Y_LOOPBACKTEST_enum)json_val->getInt("loopbackTest");
     }
     if(json_val->has("refreshRate")) {
         _refreshRate =  json_val->getInt("refreshRate");
@@ -219,6 +223,66 @@ int YInputChain::get_detectedNodes(void)
     } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the activation state of the exhaustive chain connectivity test.
+ * The connectivity test requires a cable connecting the end of the chain
+ * to the loopback test connector.
+ *
+ * @return either YInputChain::LOOPBACKTEST_OFF or YInputChain::LOOPBACKTEST_ON, according to the
+ * activation state of the exhaustive chain connectivity test
+ *
+ * On failure, throws an exception or returns YInputChain::LOOPBACKTEST_INVALID.
+ */
+Y_LOOPBACKTEST_enum YInputChain::get_loopbackTest(void)
+{
+    Y_LOOPBACKTEST_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YInputChain::LOOPBACKTEST_INVALID;
+                }
+            }
+        }
+        res = _loopbackTest;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the activation state of the exhaustive chain connectivity test.
+ * The connectivity test requires a cable connecting the end of the chain
+ * to the loopback test connector.
+ *
+ * @param newval : either YInputChain::LOOPBACKTEST_OFF or YInputChain::LOOPBACKTEST_ON, according to
+ * the activation state of the exhaustive chain connectivity test
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YInputChain::set_loopbackTest(Y_LOOPBACKTEST_enum newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("loopbackTest", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
     }
     yLeaveCriticalSection(&_this_cs);
     return res;

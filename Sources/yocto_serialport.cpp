@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ * $Id: yocto_serialport.cpp 48954 2022-03-14 09:55:13Z seb $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -1552,6 +1552,23 @@ string YSerialPort::readHex(int nBytes)
         ofs = ofs + 1;
     }
     return res;
+}
+
+/**
+ * Emits a BREAK condition on the serial interface. When the specified
+ * duration is 0, the BREAK signal will be exactly one character wide.
+ * When the duration is between 1 and 100, the BREAK condition will
+ * be hold for the specified number of milliseconds.
+ *
+ * @param duration : 0 for a standard BREAK, or duration between 1 and 100 ms
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YSerialPort::sendBreak(int duration)
+{
+    return this->sendCommand(YapiWrapper::ysprintf("B%d",duration));
 }
 
 /**

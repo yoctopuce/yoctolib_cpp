@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 47891 2022-01-03 17:32:22Z seb $
+ * $Id: yapi.c 48684 2022-02-24 10:48:19Z mvuilleu $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -2132,7 +2132,7 @@ static void yapiFreeHub(HubSt* hub)
 
 static void unregisterNetHub(yUrlRef huburl)
 {
-    int i;
+    int i,j;
     u64 timeref;
     int nbKnownDevices;
     yStrRef knownDevices[128];
@@ -2162,9 +2162,9 @@ static void unregisterNetHub(yUrlRef huburl)
             }
             yThreadKill(&hub->net_thread);
             nbKnownDevices = wpGetAllDevUsingHubUrl(huburl, knownDevices, 128);
-            for (i = 0; i < nbKnownDevices; i++) {
-                if (knownDevices[i] != INVALID_HASH_IDX) {
-                    unregisterNetDevice(hub, knownDevices[i]);
+            for (j = 0; j < nbKnownDevices; j++) {
+                if (knownDevices[j] != INVALID_HASH_IDX) {
+                    unregisterNetDevice(hub, knownDevices[j]);
                 }
             }
             yapiFreeHub(hub);

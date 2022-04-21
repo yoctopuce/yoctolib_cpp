@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_network.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_network.cpp 48692 2022-02-24 22:30:52Z mvuilleu $
  *
  *  Implements yFindNetwork(), the high-level API for Network functions
  *
@@ -60,6 +60,7 @@ YNetwork::YNetwork(const string& func): YFunction(func)
     ,_ipAddress(IPADDRESS_INVALID)
     ,_subnetMask(SUBNETMASK_INVALID)
     ,_router(ROUTER_INVALID)
+    ,_currentDNS(CURRENTDNS_INVALID)
     ,_ipConfig(IPCONFIG_INVALID)
     ,_primaryDNS(PRIMARYDNS_INVALID)
     ,_secondaryDNS(SECONDARYDNS_INVALID)
@@ -96,6 +97,7 @@ const string YNetwork::MACADDRESS_INVALID = YAPI_INVALID_STRING;
 const string YNetwork::IPADDRESS_INVALID = YAPI_INVALID_STRING;
 const string YNetwork::SUBNETMASK_INVALID = YAPI_INVALID_STRING;
 const string YNetwork::ROUTER_INVALID = YAPI_INVALID_STRING;
+const string YNetwork::CURRENTDNS_INVALID = YAPI_INVALID_STRING;
 const string YNetwork::IPCONFIG_INVALID = YAPI_INVALID_STRING;
 const string YNetwork::PRIMARYDNS_INVALID = YAPI_INVALID_STRING;
 const string YNetwork::SECONDARYDNS_INVALID = YAPI_INVALID_STRING;
@@ -123,6 +125,9 @@ int YNetwork::_parseAttr(YJSONObject *json_val)
     }
     if(json_val->has("router")) {
         _router =  json_val->getString("router");
+    }
+    if(json_val->has("currentDNS")) {
+        _currentDNS =  json_val->getString("currentDNS");
     }
     if(json_val->has("ipConfig")) {
         _ipConfig =  json_val->getString("ipConfig");
@@ -339,6 +344,35 @@ string YNetwork::get_router(void)
             }
         }
         res = _router;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the IP address of the DNS server currently used by the device.
+ *
+ * @return a string corresponding to the IP address of the DNS server currently used by the device
+ *
+ * On failure, throws an exception or returns YNetwork::CURRENTDNS_INVALID.
+ */
+string YNetwork::get_currentDNS(void)
+{
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::CURRENTDNS_INVALID;
+                }
+            }
+        }
+        res = _currentDNS;
     } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;

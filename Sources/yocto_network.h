@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_network.h 48183 2022-01-20 10:26:11Z mvuilleu $
+ *  $Id: yocto_network.h 49385 2022-04-06 00:49:27Z mvuilleu $
  *
  *  Declares yFindNetwork(), the high-level API for Network functions
  *
@@ -110,6 +110,7 @@ typedef enum {
 #define Y_IPADDRESS_INVALID             (YAPI_INVALID_STRING)
 #define Y_SUBNETMASK_INVALID            (YAPI_INVALID_STRING)
 #define Y_ROUTER_INVALID                (YAPI_INVALID_STRING)
+#define Y_CURRENTDNS_INVALID            (YAPI_INVALID_STRING)
 #define Y_IPCONFIG_INVALID              (YAPI_INVALID_STRING)
 #define Y_PRIMARYDNS_INVALID            (YAPI_INVALID_STRING)
 #define Y_SECONDARYDNS_INVALID          (YAPI_INVALID_STRING)
@@ -131,7 +132,7 @@ typedef enum {
 //--- (YNetwork declaration)
 /**
  * YNetwork Class: network interface control interface, available for instance in the
- * YoctoHub-Ethernet, the YoctoHub-GSM-4G, the YoctoHub-Wireless-g or the YoctoHub-Wireless-n
+ * YoctoHub-Ethernet, the YoctoHub-GSM-4G, the YoctoHub-Wireless-SR or the YoctoHub-Wireless-n
  *
  * YNetwork objects provide access to TCP/IP parameters of Yoctopuce
  * devices that include a built-in network interface.
@@ -149,6 +150,7 @@ protected:
     string          _ipAddress;
     string          _subnetMask;
     string          _router;
+    string          _currentDNS;
     string          _ipConfig;
     string          _primaryDNS;
     string          _secondaryDNS;
@@ -194,6 +196,7 @@ public:
     static const string IPADDRESS_INVALID;
     static const string SUBNETMASK_INVALID;
     static const string ROUTER_INVALID;
+    static const string CURRENTDNS_INVALID;
     static const string IPCONFIG_INVALID;
     static const string PRIMARYDNS_INVALID;
     static const string SECONDARYDNS_INVALID;
@@ -308,6 +311,18 @@ public:
 
     inline string       router(void)
     { return this->get_router(); }
+
+    /**
+     * Returns the IP address of the DNS server currently used by the device.
+     *
+     * @return a string corresponding to the IP address of the DNS server currently used by the device
+     *
+     * On failure, throws an exception or returns YNetwork::CURRENTDNS_INVALID.
+     */
+    string              get_currentDNS(void);
+
+    inline string       currentDNS(void)
+    { return this->get_currentDNS(); }
 
     /**
      * Returns the IP configuration of the network interface.

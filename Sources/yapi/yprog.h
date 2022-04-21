@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.h 44962 2021-05-10 08:32:59Z web $
+ * $Id: yprog.h 49256 2022-04-01 08:09:27Z seb $
  *
  * Declaration of firmware upgrade functions
  *
@@ -41,14 +41,14 @@
 #define YPROG_H
 #include "ydef.h"
 
-#ifdef MICROCHIP_API
+#ifdef EMBEDDED_API
 typedef int ProgIface;
 #else
 #include "yproto.h"
 typedef yInterfaceSt ProgIface;
 #endif
 
-#if !defined(MICROCHIP_API) || (defined(YHUB) && defined(FLASH_FIRMW_FIRSTPAGE))
+#if !defined(EMBEDDED_API) || (defined(YHUB) && defined(FLASH_FIRMW_FIRSTPAGE))
 #define PROG_SUBDEV
 #endif
 
@@ -173,7 +173,7 @@ typedef struct {
     u16 devid_rev;
     u32 startconfig;
     u32 endofconfig;
-#ifndef MICROCHIP_API
+#ifndef EMBEDDED_API
     u16 ext_jedec_id;
     u16 ext_page_size;
     u16 ext_total_pages;
@@ -205,12 +205,12 @@ int ypGetBootloaderReply(BootloaderSt* dev, USB_Packet* pkt, char* errmsg);
 int ypBootloaderShutdown(BootloaderSt* dev);
 int IsValidBynHead(const byn_head_multi* head, u32 size, u16 flags, char* errmsg);
 
-#ifndef MICROCHIP_API
+#ifndef EMBEDDED_API
 const char* prog_GetCPUName(BootloaderSt* dev);
 int ValidateBynCompat(const byn_head_multi* head, u32 size, const char* serial, u16 flags, BootloaderSt* dev, char* errmsg);
 int IsValidBynFile(const byn_head_multi* head, u32 size, const char* serial, u16 flags, char* errmsg);
 int BlockingRead(BootloaderSt* dev, USB_Packet* pkt, int maxwait, char* errmsg);
-int SendDataPacket(BootloaderSt* dev, int program, u32 address, u8* data, int nbinstr, char* errmsg);
+int SendDataPacket(BootloaderSt* dev, int program, u32 address, u8* data, int size, char* errmsg);
 #endif
 
 //#define DEBUG_FIRMWARE
@@ -227,7 +227,7 @@ typedef enum {
 
 typedef enum {
     FLASH_FIND_DEV = 0,
-#ifndef MICROCHIP_API
+#ifndef EMBEDDED_API
     FLASH_CONNECT,
 #endif
     FLASH_GET_INFO,
@@ -238,7 +238,7 @@ typedef enum {
     FLASH_GET_INFO_BFOR_REBOOT,
     FLASH_REBOOT,
     FLASH_REBOOT_VALIDATE,
-#ifndef MICROCHIP_API
+#ifndef EMBEDDED_API
     FLASH_AUTOFLASH,
 #endif
     FLASH_SUCCEEDED,
@@ -271,7 +271,7 @@ typedef enum {
 #define PROG_IN_ERROR 0x8000
 
 typedef struct {
-#ifndef MICROCHIP_API
+#if !defined(EMBEDDED_API)
     u8* firmware;
     yCRITICAL_SECTION cs;
 #endif

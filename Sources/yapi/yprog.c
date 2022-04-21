@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 44962 2021-05-10 08:32:59Z web $
+ * $Id: yprog.c 49268 2022-04-02 11:54:42Z web $
  *
  * Implementation of firmware upgrade functions
  *
@@ -42,7 +42,7 @@
 #ifdef YAPI_IN_YDEVICE
 #include "Yocto/yocto.h"
 #endif
-#ifdef MICROCHIP_API
+#ifdef EMBEDDED_API
 #include <Yocto/yapi_ext.h>
 #else
 #include "yproto.h"
@@ -114,81 +114,7 @@ void yProgFree(void)
 
 #endif
 
-#ifdef MICROCHIP_API
-static
-#endif
-const char* prog_GetCPUName(BootloaderSt* dev)
-{
-    const char* res = "";
-    switch (dev->devid_family) {
-    case FAMILY_PIC24FJ256DA210:
-        switch (dev->devid_model) {
-#ifndef MICROCHIP_API
-        case PIC24FJ128DA206:
-            return "PIC24FJ128DA206";
-        case PIC24FJ128DA106:
-            return "PIC24FJ128DA106";
-        case PIC24FJ128DA210:
-            return "PIC24FJ128DA210";
-        case PIC24FJ128DA110:
-            return "PIC24FJ128DA110";
-        case PIC24FJ256DA206:
-            return "PIC24FJ256DA206";
-        case PIC24FJ256DA106:
-            return "PIC24FJ256DA106";
-        case PIC24FJ256DA210:
-            return "PIC24FJ256DA210";
-        case PIC24FJ256DA110:
-            return "PIC24FJ256DA110";
-        default:
-            res = "Unknown CPU model(family PIC24FJ256DA210)";
-            break;
-#else
-            case PIC24FJ256DA206 :
-                return "PIC24FJ256DA206";
-            default: ;
-#endif
-        }
-        break;
-    case FAMILY_PIC24FJ64GB004:
-        switch (dev->devid_model) {
-#ifndef MICROCHIP_API
-        case PIC24FJ32GB002:
-            return "PIC24FJ32GB002";
-        case PIC24FJ64GB002:
-            return "PIC24FJ64GB002";
-        case PIC24FJ32GB004:
-            return "PIC24FJ32GB004";
-        case PIC24FJ64GB004:
-            return "PIC24FJ64GB004";
-        default:
-            res = "Unknown CPU model(family PIC24FJ64GB004)";
-            break;
-#else
-            case PIC24FJ64GB002 :
-                return "PIC24FJ64GB002";
-			default:
-				break;
-#endif
-        }
-        break;
-    }
-    return res;
-}
-
-
-//used by yprogrammer
-static int checkHardwareCompat(BootloaderSt* dev, const char* pictype)
-{
-    const char* cpuname = prog_GetCPUName(dev);
-    if (YSTRICMP(cpuname, pictype) != 0) {
-        return 0;
-    }
-    return 1;
-}
-
-
-#ifdef MICROCHIP_API
+#ifdef EMBEDDED_API
 
 int IsValidBynHead(const byn_head_multi *head, u32 size, u16 flags, char *errmsg)
 {
@@ -238,6 +164,36 @@ int IsValidBynHead(const byn_head_multi *head, u32 size, u16 flags, char *errmsg
 }
 
 #else
+
+const char* prog_GetCPUName(BootloaderSt* dev)
+{
+    const char* res = "Unknown CPU model";
+
+    switch (dev->devid_family) {
+    case FAMILY_PIC24FJ256DA210:
+        if (dev->devid_model == PIC24FJ256DA206) {
+            res = "PIC24FJ256DA206";
+        }
+        break;
+    case FAMILY_PIC24FJ64GB004:
+        if (dev->devid_model == PIC24FJ64GB002) {
+            return "PIC24FJ64GB002";
+        }
+        break;
+    case FAMILY_TM4C123:
+        if (dev->devid_model == YCPU_TM4C123GH6PM) {
+            return "TM4C123GH6PM";
+        }
+        break;
+    case FAMILY_MSP432E4:
+        if (dev->devid_model == YCPU_MSP432E401Y) {
+            return "MSP432E401Y";
+        }
+        break;
+    }
+    return res;
+}
+
 
 int IsValidBynHead(const byn_head_multi* head, u32 size, u16 flags, char* errmsg)
 {
@@ -316,14 +272,24 @@ int ValidateBynCompat(const byn_head_multi* head, u32 size, const char* serial, 
     if (serial && YSTRNCMP(head->h.serial, serial, YOCTO_BASE_SERIAL_LEN) != 0) {
         return YERRMSG(YAPI_INVALID_ARGUMENT, "This BYN file is not designed for your device");
     }
-    if (dev && !checkHardwareCompat(dev, head->h.pictype)) {
-        return YERRMSG(YAPI_INVALID_ARGUMENT, "This BYN file is not designed for your device");
+    if (dev) {
+        if (dev->devid_family != FAMILY_PIC24FJ64GB004 && dev->devid_family != FAMILY_PIC24FJ256DA210) {
+            return YERRMSG(YAPI_VERSION_MISMATCH, "This device is too recent, please use V2 of the VirtualHub or Yoctopuce library");
+        }
     }
+#ifndef EMBEDDED_API
+    if (dev) {
+        const char* cpuname = prog_GetCPUName(dev);
+        if (YSTRICMP(cpuname, head->h.pictype) != 0) {
+            return YERRMSG(YAPI_INVALID_ARGUMENT, "This BYN file is not designed for your device");
+        }
+    }
+#endif
     return 0;
 }
 
-#ifndef MICROCHIP_API
-// user by yprogrammer
+#ifndef EMBEDDED_API
+
 int IsValidBynFile(const byn_head_multi* head, u32 size, const char* serial, u16 flags, char* errmsg)
 {
     HASH_SUM ctx;
@@ -381,7 +347,7 @@ void decode_byn_zone(byn_zone *zone)
 #endif
 
 
-#if !defined(MICROCHIP_API)
+#if !defined(EMBEDDED_API)
 // Return 1 if the communication channel to the device is busy
 // Return 0 if there is no ongoing transaction with the device
 int ypIsSendBootloaderBusy(BootloaderSt* dev)
@@ -416,7 +382,7 @@ int ypGetBootloaderReply(BootloaderSt* dev, USB_Packet* pkt, char* errmsg)
 #endif
 
 
-#if !defined(MICROCHIP_API)
+#if !defined(EMBEDDED_API)
 //pool a packet form usb for a specific device
 int BlockingRead(BootloaderSt* dev, USB_Packet* pkt, int maxwait, char* errmsg)
 {
@@ -594,7 +560,7 @@ static void osProgLogProgressEx(const char* fileid, int line, int prog, const ch
 
 #endif
 
-#ifdef MICROCHIP_API
+#ifdef EMBEDDED_API
 #define uGetBootloader(serial,ifaceptr)   yGetBootloaderPort(serial,ifaceptr)
 #else
 #define uGetBootloader(serial,ifaceptr)   yUSBGetBooloader(serial, NULL, ifaceptr,NULL)
@@ -652,7 +618,7 @@ static int uGetDeviceInfo(void)
             firm_dev.devid_rev = DECODE_U16(firm_pkt.prog.pktinfo.devidh);
             firm_dev.startconfig = DECODE_U32(firm_pkt.prog.pktinfo.config_start);
             firm_dev.endofconfig = DECODE_U32(firm_pkt.prog.pktinfo.config_stop);
-#ifndef MICROCHIP_API
+#ifndef EMBEDDED_API
             firm_dev.ext_jedec_id = 0xffff;
             firm_dev.ext_page_size = 0xffff;
             firm_dev.ext_total_pages = 0;
@@ -662,7 +628,7 @@ static int uGetDeviceInfo(void)
             uLogProgress("Device info retrieved");
             fctx.stepB = 0;
             fctx.stepA = FLASH_VALIDATE_BYN;
-#ifndef MICROCHIP_API
+#ifndef EMBEDDED_API
         } else if (firm_pkt.prog.pkt.type == PROG_INFO_EXT) {
 #ifdef DEBUG_FIRMWARE
             ulog("PROG_INFO_EXT received\n");
@@ -717,7 +683,7 @@ static int uSendCmd(u8 cmd, FLASH_DEVICE_STATE nextState)
     return 1;
 }
 
-#ifndef MICROCHIP_API
+#ifndef EMBEDDED_API
 #define FULL_ERRMSG fullmsg
 #define SET_FLASH_ERRMSG(dst, len, short_msg, long_msg) YSPRINTF(dst, len, "%s (%s)",  (short_msg), (long_msg))
 #else
@@ -729,7 +695,7 @@ static int uFlashZone()
 {
     u16 datasize;
     char msg[FLASH_ERRMSG_LEN];
-#ifndef MICROCHIP_API
+#ifndef EMBEDDED_API
     char fullmsg[YOCTO_ERRMSG_LEN];
 #endif
     switch (fctx.zst) {
@@ -743,7 +709,7 @@ static int uFlashZone()
         uGetFirmwareBynZone(fctx.zOfs, &fctx.bz);
         YSTRCPY(msg, FLASH_ERRMSG_LEN, "Flash zone");
 #if defined(DEBUG_FIRMWARE)
-#ifdef MICROCHIP_API
+#ifdef EMBEDDED_API
             {
                 char *p = msg + 10;
                 *p++ = ' ';
@@ -804,7 +770,7 @@ static int uFlashZone()
     case FLASH_ZONE_RECV_OK:
         if (ypGetBootloaderReply(&firm_dev, &firm_pkt, FULL_ERRMSG) < 0) {
             if ((s32)(fctx.timeout - ytime()) < 0) {
-#if defined(DEBUG_FIRMWARE) && !defined(MICROCHIP_API)
+#if defined(DEBUG_FIRMWARE) && !defined(EMBEDDED_API)
                     dbglog("Bootlaoder did not send confirmation for Zone %x Block %x\n",fctx.currzone,fctx.bz.addr_page);
 #endif
                 SET_FLASH_ERRMSG(fctx.errmsg, FLASH_ERRMSG_LEN, "ProgPkt", FULL_ERRMSG);
@@ -836,7 +802,7 @@ static int uFlashZone()
 }
 
 
-#ifndef MICROCHIP_API
+#ifndef EMBEDDED_API
 
 static void uSendReboot(u16 signature, FLASH_DEVICE_STATE nextState)
 {
@@ -1062,7 +1028,7 @@ YPROG_RESULT uFlashDevice(void)
     case FLASH_FIND_DEV:
         uLogProgress("Wait for device");
         if (uGetBootloader(fctx.bynHead.h.serial, &firm_dev.iface) < 0) {
-#ifndef MICROCHIP_API
+#ifndef EMBEDDED_API
             if ((s32)(fctx.timeout - ytime()) >= 0) {
                 return YPROG_WAITING;
             }
@@ -1076,18 +1042,18 @@ YPROG_RESULT uFlashDevice(void)
         fctx.progress = 2;
         uLogProgress("Device detected");
 
-#if defined(DEBUG_FIRMWARE) && defined(MICROCHIP_API)
+#if defined(DEBUG_FIRMWARE) && defined(EMBEDDED_API)
         ulog("Bootloader ");
         ulog(fctx.bynHead.h.serial);
         ulog(" on port ");
-#ifdef MICROCHIP_API
+#ifdef EMBEDDED_API
         ulogU16(firm_dev.iface);
 #else
         ulogU16(firm_dev.iface.deviceid);
 #endif
         ulog("\n");
 #endif
-#ifndef MICROCHIP_API
+#ifndef EMBEDDED_API
         fctx.stepA = FLASH_CONNECT;
         // no break on purpose
     case FLASH_CONNECT:
@@ -1154,7 +1120,7 @@ YPROG_RESULT uFlashDevice(void)
         }
         fctx.progress = 3;
         fctx.stepA = FLASH_ERASE;
-#ifndef MICROCHIP_API
+#ifndef EMBEDDED_API
         if (firm_dev.ext_total_pages) {
             fctx.flashPage = firm_dev.first_code_page;
         }
@@ -1167,7 +1133,7 @@ YPROG_RESULT uFlashDevice(void)
     case FLASH_ERASE:
         fctx.zst = FLASH_ZONE_START;
         fctx.stepB = 0;
-#ifdef MICROCHIP_API
+#ifdef EMBEDDED_API
         res = uSendCmd(PROG_ERASE,FLASH_WAIT_ERASE);
 #else
         if (firm_dev.ext_total_pages) {
@@ -1194,7 +1160,7 @@ YPROG_RESULT uFlashDevice(void)
         break;
     case FLASH_WAIT_ERASE:
         if (fctx.stepB == 0) {
-#ifndef MICROCHIP_API
+#ifndef EMBEDDED_API
             if (firm_dev.ext_total_pages) {
                 if (ypIsSendBootloaderBusy(&firm_dev)) {
                     return YPROG_WAITING;
@@ -1208,7 +1174,7 @@ YPROG_RESULT uFlashDevice(void)
 #endif
             fctx.stepB = ytime();
         } else {
-#ifndef MICROCHIP_API
+#ifndef EMBEDDED_API
             if (firm_dev.ext_total_pages) {
                 if (ypGetBootloaderReply(&firm_dev, &firm_pkt,NULL) < 0) {
                     if ((u32)(ytime() - fctx.stepB) < 2000u) {
@@ -1245,7 +1211,7 @@ YPROG_RESULT uFlashDevice(void)
         }
         break;
     case FLASH_DOFLASH:
-#ifdef MICROCHIP_API
+#ifdef EMBEDDED_API
         res = uFlashZone();
 #else
         if (firm_dev.ext_total_pages) {
@@ -1284,7 +1250,7 @@ YPROG_RESULT uFlashDevice(void)
         ulog("Send reboot\n");
 #endif
 
-#ifdef MICROCHIP_API
+#ifdef EMBEDDED_API
         res = ypBootloaderShutdown(&firm_dev);
         if (res < 0) {
 #ifdef DEBUG_FIRMWARE
@@ -1313,11 +1279,11 @@ YPROG_RESULT uFlashDevice(void)
             if ((s32)(fctx.timeout - ytime()) >= 0) {
                 return YPROG_WAITING;
             }
-#if defined(DEBUG_FIRMWARE) && defined(MICROCHIP_API)
+#if defined(DEBUG_FIRMWARE) && defined(EMBEDDED_API)
             ulog("Bootloader ");
             ulog(fctx.bynHead.h.serial);
             ulog(" on port ");
-#ifdef MICROCHIP_API
+#ifdef EMBEDDED_API
             ulogU16(firm_dev.iface);
 #else
             ulogU16(firm_dev.iface.deviceid);
@@ -1336,7 +1302,7 @@ YPROG_RESULT uFlashDevice(void)
             fctx.stepA = FLASH_DISCONNECT;
         }
         break;
-#ifndef MICROCHIP_API
+#ifndef EMBEDDED_API
     case FLASH_AUTOFLASH:
         fctx.progress = 98;
         uSendReboot(START_AUTOFLASHER_SIGN, FLASH_SUCCEEDED);
@@ -1355,7 +1321,7 @@ YPROG_RESULT uFlashDevice(void)
 #ifdef DEBUG_FIRMWARE
         ulog("Flash disconnect\n");
 #endif
-#ifndef MICROCHIP_API
+#ifndef EMBEDDED_API
         yyyPacketShutdown(&firm_dev.iface);
 #endif
         fctx.stepA = FLASH_DONE;
@@ -1367,7 +1333,7 @@ YPROG_RESULT uFlashDevice(void)
 }
 
 
-#ifndef MICROCHIP_API
+#ifndef EMBEDDED_API
 
 typedef int (*yprogTcpReqCb)(void* ctx, const char* buffer, u32 len, char* errmsg);
 

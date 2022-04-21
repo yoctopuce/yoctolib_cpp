@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 46886 2021-10-25 06:47:13Z seb $
+#  $Id: GNUmakefile 49349 2022-04-05 07:38:11Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -258,8 +258,8 @@ LIBS_YAPI_MIPS    = $(YAPI_DIR_MIPS)libyapi-static.a $(YAPI_DIR_MIPS)libyapi.so.
 LIBS_MIPS    = $(DIR_MIPS)libyocto-static.a $(DIR_MIPS)libyocto.so.1.0.1 $(LIBS_YAPI_MIPS)
 LIBS_YAPI_MIPSEL  = $(YAPI_DIR_MIPSEL)libyapi-static.a $(YAPI_DIR_MIPSEL)libyapi.so.1.0.1 $(EXPORT_YAPI_MIPSEL)
 LIBS_MIPSEL  = $(DIR_MIPSEL)libyocto-static.a $(DIR_MIPSEL)libyocto.so.1.0.1 $(LIBS_YAPI_MIPSEL)
-LIBS_OSX     = $(DIR_OSX)libyocto-static.a  $(YAPI_DIR_OSX)libyapi-static.a $(DIR_OSX)libyocto.dylib $(YAPI_DIR_OSX)libyapi.dylib
-LIBS_OSX32     = $(YAPI_DIR_OSX32)libyapi.dylib
+LIBS_OSX     = $(YAPI_DIR_OSX)libyapi.dylib $(DIR_OSX)libyocto-static.a  $(YAPI_DIR_OSX)libyapi-static.a $(DIR_OSX)libyocto.dylib
+LIBS_OSX32    = $(YAPI_DIR_OSX32)libyapi.dylib
 
 
 
@@ -739,26 +739,28 @@ $(DIR_OSX)libyocto.dylib: $(DIR_OSX) $(ALL_OBJS_DYN_OSX) $(ALL_H)
 	@echo linking $@
 	@$(CPP_OSX)  -m64 -dynamiclib -Wl,-reexport_framework,IOKit,-reexport_framework,CoreFoundation,-headerpad_max_install_names,-undefined,dynamic_lookup,-compatibility_version,1.0,-current_version,1.0,-install_name,/usr/local/lib/libyocto.dylib -o $@ $(ALL_OBJS_DYN_OSX)
 
-$(YAPI_DIR_OSX)libyapi.dylib : OPTS_DYN = $(OPTS_JAVA)
-$(YAPI_DIR_OSX)libyapi.dylib: $(DIR_OSX) $(YAPI_OBJS_DYN_OSX) $(ALL_H)
-	@echo linking $@
+
+OSX_DYLIB_AS = xcode_as/yapi/build/Release/libyapi.dylib
+
+.PHONY: $(OSX_DYLIB_AS)
+$(OSX_DYLIB_AS):
 ifdef JAVA_HOME
 	@echo java_home set to $(JAVA_HOME)
 endif
-	@$(CC_OSX) -m64 -dynamiclib -Wl,-reexport_framework,IOKit,-reexport_framework,CoreFoundation,-headerpad_max_install_names,-undefined,dynamic_lookup,-compatibility_version,1.0,-current_version,1.0,-install_name,/usr/local/lib/libyapi.dylib -o $@ $(YAPI_OBJS_DYN_OSX)
+	@echo "build yapi.dylib from xcode project (phony)"
+	xcodebuild -project xcode_as/yapi/yapi.xcodeproj
 
-$(DIR_OSX)test: $(OBJDIR_OSX) $(YAPI_DIR_OSX) ALL_OBJS_STAT_OSX) $(ALL_H) $(TEST_SRC)
+$(YAPI_DIR_OSX)libyapi.dylib: $(YAPI_DIR_OSX) $(OSX_DYLIB_AS)
+	cp -R $(OSX_DYLIB_AS) $(YAPI_DIR_OSX)
+
+
+$(DIR_OSX)test: $(OBJDIR_OSX) $(YAPI_DIR_OSX) $(ALL_OBJS_STAT_OSX) $(ALL_H) $(TEST_SRC)
 	@rm -rf $@
 	@echo linking $@
 	@$(CPP_OSX) $(OPTS_OSX) $(INC_PATH) -o $@ $(TEST_SRC) $(ALL_OBJS_STAT_OSX) $(LINKWITH_OSX)
 
-$(YAPI_DIR_OSX32)libyapi.dylib : OPTS_DYN = $(OPTS_JAVA)
-$(YAPI_DIR_OSX32)libyapi.dylib: $(OBJDIR_OSX32) $(YAPI_DIR_OSX32) $(YAPI_OBJS_DYN_OSX32) $(ALL_H)
-	@echo linking $@
-ifdef JAVA_HOME
-	@echo java_home set to $(JAVA_HOME)
-endif
-	@$(CC_OSX32) -m32 -dynamiclib -Wl,-reexport_framework,IOKit,-reexport_framework,CoreFoundation,-headerpad_max_install_names,-undefined,dynamic_lookup,-compatibility_version,1.0,-current_version,1.0,-install_name,/usr/local/lib/libyapi.dylib -o $@ $(YAPI_OBJS_DYN_OSX32)
+
+
 
 i386: $(LIBS_I386)
 

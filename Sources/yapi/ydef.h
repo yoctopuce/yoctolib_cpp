@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 45542 2021-06-14 08:22:38Z web $
+ * $Id: ydef.h 49252 2022-04-01 07:07:23Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -107,6 +107,7 @@ typedef signed long long        s64;
 #elif defined(__C30__)
 // Microchip C30
 #define MICROCHIP_API
+#define EMBEDDED_API
 #define __16BITS__
 
 typedef unsigned char           u8;
@@ -872,7 +873,6 @@ typedef union {
 
 #define YSSDP_PORT 1900
 #define YSSDP_MCAST_ADDR_STR  "239.255.255.250"
-#define YSSDP_MCAST_ADDR (0xFAFFFFEF)
 #define YSSDP_URN_YOCTOPUCE "urn:yoctopuce-com:device:hub:1"
 
 // prototype of the async request completion callback
@@ -1033,21 +1033,17 @@ typedef union {
 
 //device identifications PIC24FJ256DA210 family
 #define FAMILY_PIC24FJ256DA210 0X41
-#define PIC24FJ128DA206     0x08
-#define PIC24FJ128DA106     0x09
-#define PIC24FJ128DA210     0x0A
-#define PIC24FJ128DA110     0x0B
 #define PIC24FJ256DA206     0x0C
-#define PIC24FJ256DA106     0x0D
-#define PIC24FJ256DA210     0x0E
-#define PIC24FJ256DA110     0x0F
 
 //device identifications PIC24FJ64GB004 family
 #define FAMILY_PIC24FJ64GB004 0x42
-#define PIC24FJ32GB002      0x03
 #define PIC24FJ64GB002      0x07
-#define PIC24FJ32GB004      0x0B
-#define PIC24FJ64GB004      0x0F
+
+//device identifications for Texas chips
+#define FAMILY_TM4C123      0x05
+#define FAMILY_MSP432E4     0x0C
+#define YCPU_MSP432E401Y    0X01
+#define YCPU_TM4C123GH6PM   0X01
 
 // Spansion Flash JEDEC id
 #define JEDEC_SPANSION_4MB  0x16

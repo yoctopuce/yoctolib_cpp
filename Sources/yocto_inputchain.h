@@ -61,6 +61,14 @@ class YInputChain; // forward declaration
 typedef void (*YInputChainValueCallback)(YInputChain *func, const string& functionValue);
 typedef void (*YEventCallback)(YInputChain *inputChain,  int timestamp, const string& eventType, const string& eventData, const string& eventChange);
 
+#ifndef _Y_LOOPBACKTEST_ENUM
+#define _Y_LOOPBACKTEST_ENUM
+typedef enum {
+    Y_LOOPBACKTEST_OFF = 0,
+    Y_LOOPBACKTEST_ON = 1,
+    Y_LOOPBACKTEST_INVALID = -1,
+} Y_LOOPBACKTEST_enum;
+#endif
 #define Y_EXPECTEDNODES_INVALID         (YAPI_INVALID_UINT)
 #define Y_DETECTEDNODES_INVALID         (YAPI_INVALID_UINT)
 #define Y_REFRESHRATE_INVALID           (YAPI_INVALID_UINT)
@@ -94,6 +102,7 @@ static void yInternalEventCallback(YInputChain *inputChain, const string& value)
     // Attributes (function value cache)
     int             _expectedNodes;
     int             _detectedNodes;
+    Y_LOOPBACKTEST_enum _loopbackTest;
     int             _refreshRate;
     string          _bitChain1;
     string          _bitChain2;
@@ -127,6 +136,9 @@ public:
 
     static const int EXPECTEDNODES_INVALID = YAPI_INVALID_UINT;
     static const int DETECTEDNODES_INVALID = YAPI_INVALID_UINT;
+    static const Y_LOOPBACKTEST_enum LOOPBACKTEST_OFF = Y_LOOPBACKTEST_OFF;
+    static const Y_LOOPBACKTEST_enum LOOPBACKTEST_ON = Y_LOOPBACKTEST_ON;
+    static const Y_LOOPBACKTEST_enum LOOPBACKTEST_INVALID = Y_LOOPBACKTEST_INVALID;
     static const int REFRESHRATE_INVALID = YAPI_INVALID_UINT;
     static const string BITCHAIN1_INVALID;
     static const string BITCHAIN2_INVALID;
@@ -176,6 +188,37 @@ public:
 
     inline int          detectedNodes(void)
     { return this->get_detectedNodes(); }
+
+    /**
+     * Returns the activation state of the exhaustive chain connectivity test.
+     * The connectivity test requires a cable connecting the end of the chain
+     * to the loopback test connector.
+     *
+     * @return either YInputChain::LOOPBACKTEST_OFF or YInputChain::LOOPBACKTEST_ON, according to the
+     * activation state of the exhaustive chain connectivity test
+     *
+     * On failure, throws an exception or returns YInputChain::LOOPBACKTEST_INVALID.
+     */
+    Y_LOOPBACKTEST_enum get_loopbackTest(void);
+
+    inline Y_LOOPBACKTEST_enum loopbackTest(void)
+    { return this->get_loopbackTest(); }
+
+    /**
+     * Changes the activation state of the exhaustive chain connectivity test.
+     * The connectivity test requires a cable connecting the end of the chain
+     * to the loopback test connector.
+     *
+     * @param newval : either YInputChain::LOOPBACKTEST_OFF or YInputChain::LOOPBACKTEST_ON, according to
+     * the activation state of the exhaustive chain connectivity test
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_loopbackTest(Y_LOOPBACKTEST_enum newval);
+    inline int      setLoopbackTest(Y_LOOPBACKTEST_enum newval)
+    { return this->set_loopbackTest(newval); }
 
     /**
      * Returns the desired refresh rate, measured in Hz.

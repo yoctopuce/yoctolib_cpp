@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multisenscontroller.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_multisenscontroller.cpp 49501 2022-04-21 07:09:25Z mvuilleu $
  *
  *  Implements yFindMultiSensController(), the high-level API for MultiSensController functions
  *
@@ -58,6 +58,7 @@ YMultiSensController::YMultiSensController(const string& func): YFunction(func)
     ,_nSensors(NSENSORS_INVALID)
     ,_maxSensors(MAXSENSORS_INVALID)
     ,_maintenanceMode(MAINTENANCEMODE_INVALID)
+    ,_lastAddressDetected(LASTADDRESSDETECTED_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackMultiSensController(NULL)
 //--- (end of YMultiSensController initialization)
@@ -84,6 +85,9 @@ int YMultiSensController::_parseAttr(YJSONObject *json_val)
     }
     if(json_val->has("maintenanceMode")) {
         _maintenanceMode =  (Y_MAINTENANCEMODE_enum)json_val->getInt("maintenanceMode");
+    }
+    if(json_val->has("lastAddressDetected")) {
+        _lastAddressDetected =  json_val->getInt("lastAddressDetected");
     }
     if(json_val->has("command")) {
         _command =  json_val->getString("command");
@@ -126,7 +130,7 @@ int YMultiSensController::get_nSensors(void)
  * saveToFlash() method of the module if the
  * modification must be kept. It is recommended to restart the
  * device with  module->reboot() after modifying
- * (and saving) this settings
+ * (and saving) this settings.
  *
  * @param newval : an integer corresponding to the number of sensors to poll
  *
@@ -233,6 +237,38 @@ int YMultiSensController::set_maintenanceMode(Y_MAINTENANCEMODE_enum newval)
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the I2C address of the most recently detected sensor. This method can
+ * be used to in case of I2C communication error to determine what is the
+ * last sensor that can be reached, or after a call to setupAddress
+ * to make sure that the address change was properly processed.
+ *
+ * @return an integer corresponding to the I2C address of the most recently detected sensor
+ *
+ * On failure, throws an exception or returns YMultiSensController::LASTADDRESSDETECTED_INVALID.
+ */
+int YMultiSensController::get_lastAddressDetected(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YMultiSensController::LASTADDRESSDETECTED_INVALID;
+                }
+            }
+        }
+        res = _lastAddressDetected;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
     }
     yLeaveCriticalSection(&_this_cs);
     return res;
@@ -369,9 +405,10 @@ int YMultiSensController::_invokeValueCallback(string value)
  * Configures the I2C address of the only sensor connected to the device.
  * It is recommended to put the the device in maintenance mode before
  * changing sensor addresses.  This method is only intended to work with a single
- * sensor connected to the device, if several sensors are connected, the result
+ * sensor connected to the device. If several sensors are connected, the result
  * is unpredictable.
- * Note that the device is probably expecting to find a string of sensors with specific
+ *
+ * Note that the device is expecting to find a sensor or a string of sensors with specific
  * addresses. Check the device documentation to find out which addresses should be used.
  *
  * @param addr : new address of the connected sensor
@@ -382,8 +419,46 @@ int YMultiSensController::_invokeValueCallback(string value)
 int YMultiSensController::setupAddress(int addr)
 {
     string cmd;
+    int res = 0;
     cmd = YapiWrapper::ysprintf("A%d",addr);
-    return this->set_command(cmd);
+    res = this->set_command(cmd);
+    if (!(res == YAPI_SUCCESS)) {
+        _throw(YAPI_IO_ERROR,"unable to trigger address change");
+        return YAPI_IO_ERROR;
+    }
+    {string ignore_error; YAPI::Sleep(1500, ignore_error);};
+    res = this->get_lastAddressDetected();
+    if (!(res > 0)) {
+        _throw(YAPI_IO_ERROR,"IR sensor not found");
+        return YAPI_IO_ERROR;
+    }
+    if (!(res == addr)) {
+        _throw(YAPI_IO_ERROR,"address change failed");
+        return YAPI_IO_ERROR;
+    }
+    return YAPI_SUCCESS;
+}
+
+/**
+ * Triggers the I2C address detection procedure for the only sensor connected to the device.
+ * This method is only intended to work with a single sensor connected to the device.
+ * If several sensors are connected, the result is unpredictable.
+ *
+ * @return the I2C address of the detected sensor, or 0 if none is found
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YMultiSensController::get_sensorAddress(void)
+{
+    int res = 0;
+    res = this->set_command("a");
+    if (!(res == YAPI_SUCCESS)) {
+        _throw(YAPI_IO_ERROR,"unable to trigger address detection");
+        return res;
+    }
+    {string ignore_error; YAPI::Sleep(1000, ignore_error);};
+    res = this->get_lastAddressDetected();
+    return res;
 }
 
 YMultiSensController *YMultiSensController::nextMultiSensController(void)
