@@ -59,7 +59,7 @@ namespace YOCTOLIB_NAMESPACE
 class YInputChain; // forward declaration
 
 typedef void (*YInputChainValueCallback)(YInputChain *func, const string& functionValue);
-typedef void (*YEventCallback)(YInputChain *inputChain,  int timestamp, const string& eventType, const string& eventData, const string& eventChange);
+typedef void (*YEventCallback)(YInputChain *inputChain, int timestamp, const string& eventType, const string& eventData, const string& eventChange);
 
 #ifndef _Y_LOOPBACKTEST_ENUM
 #define _Y_LOOPBACKTEST_ENUM
@@ -96,7 +96,7 @@ class YOCTO_CLASS_EXPORT YInputChain: public YFunction {
 #endif
 //--- (end of YInputChain declaration)
 protected:
-static void yInternalEventCallback(YInputChain *inputChain, const string& value);
+    static void yInternalEventCallback(YInputChain *obj, const string& value);
 
     //--- (YInputChain attributes)
     // Attributes (function value cache)

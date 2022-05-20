@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 48954 2022-03-14 09:55:13Z seb $
+ * $Id: yocto_serialport.cpp 49818 2022-05-19 09:57:42Z seb $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -145,6 +145,8 @@ YSerialPort::YSerialPort(const string& func): YFunction(func)
     ,_valueCallbackSerialPort(NULL)
     ,_rxptr(0)
     ,_rxbuffptr(0)
+    ,_eventCallback(NULL)
+    ,_eventPos(0)
 //--- (end of generated code: YSerialPort initialization)
 {
     _className="SerialPort";
@@ -156,6 +158,11 @@ YSerialPort::~YSerialPort()
 //--- (end of generated code: YSerialPort cleanup)
 }
 //--- (generated code: YSerialPort implementation)
+void YSerialPort::yInternalEventCallback(YSerialPort *obj, const string& value)
+{
+    obj->_internalEventHandler(value);
+}
+
 // static attributes
 const string YSerialPort::LASTMSG_INVALID = YAPI_INVALID_STRING;
 const string YSerialPort::CURRENTJOB_INVALID = YAPI_INVALID_STRING;
@@ -674,8 +681,8 @@ int YSerialPort::set_protocol(const string& newval)
  *
  * @return a value among YSerialPort::VOLTAGELEVEL_OFF, YSerialPort::VOLTAGELEVEL_TTL3V,
  * YSerialPort::VOLTAGELEVEL_TTL3VR, YSerialPort::VOLTAGELEVEL_TTL5V, YSerialPort::VOLTAGELEVEL_TTL5VR,
- * YSerialPort::VOLTAGELEVEL_RS232, YSerialPort::VOLTAGELEVEL_RS485 and YSerialPort::VOLTAGELEVEL_TTL1V8
- * corresponding to the voltage level used on the serial line
+ * YSerialPort::VOLTAGELEVEL_RS232, YSerialPort::VOLTAGELEVEL_RS485, YSerialPort::VOLTAGELEVEL_TTL1V8 and
+ * YSerialPort::VOLTAGELEVEL_SDI12 corresponding to the voltage level used on the serial line
  *
  * On failure, throws an exception or returns YSerialPort::VOLTAGELEVEL_INVALID.
  */
@@ -712,8 +719,8 @@ Y_VOLTAGELEVEL_enum YSerialPort::get_voltageLevel(void)
  *
  * @param newval : a value among YSerialPort::VOLTAGELEVEL_OFF, YSerialPort::VOLTAGELEVEL_TTL3V,
  * YSerialPort::VOLTAGELEVEL_TTL3VR, YSerialPort::VOLTAGELEVEL_TTL5V, YSerialPort::VOLTAGELEVEL_TTL5VR,
- * YSerialPort::VOLTAGELEVEL_RS232, YSerialPort::VOLTAGELEVEL_RS485 and YSerialPort::VOLTAGELEVEL_TTL1V8
- * corresponding to the voltage type used on the serial line
+ * YSerialPort::VOLTAGELEVEL_RS232, YSerialPort::VOLTAGELEVEL_RS485, YSerialPort::VOLTAGELEVEL_TTL1V8 and
+ * YSerialPort::VOLTAGELEVEL_SDI12 corresponding to the voltage type used on the serial line
  *
  * @return YAPI::SUCCESS if the call succeeds.
  *
@@ -1649,6 +1656,65 @@ vector<YSnoopingRecord> YSerialPort::snoopMessages(int maxWait)
         idx = idx + 1;
     }
     return res;
+}
+
+/**
+ * Registers a callback function to be called each time that a message is sent or
+ * received by the serial port.
+ *
+ * @param callback : the callback function to call, or a NULL pointer.
+ *         The callback function should take four arguments:
+ *         the YSerialPort object that emitted the event, and
+ *         the SnoopingRecord object that describes the message
+ *         sent or received.
+ *         On failure, throws an exception or returns a negative error code.
+ */
+int YSerialPort::registerSnoopingCallback(YSnoopingCallback callback)
+{
+    if (callback != NULL) {
+        this->registerValueCallback(yInternalEventCallback);
+    } else {
+        this->registerValueCallback((YSerialPortValueCallback) NULL);
+    }
+    // register user callback AFTER the internal pseudo-event,
+    // to make sure we start with future events only
+    _eventCallback = callback;
+    return 0;
+}
+
+int YSerialPort::_internalEventHandler(string advstr)
+{
+    string url;
+    string msgbin;
+    vector<string> msgarr;
+    int msglen = 0;
+    int idx = 0;
+    if (!(_eventCallback != NULL)) {
+        // first simulated event, use it only to initialize reference values
+        _eventPos = 0;
+    }
+
+    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=0&t=0",_eventPos);
+    msgbin = this->_download(url);
+    msgarr = this->_json_get_array(msgbin);
+    msglen = (int)msgarr.size();
+    if (msglen == 0) {
+        return YAPI_SUCCESS;
+    }
+    // last element of array is the new position
+    msglen = msglen - 1;
+    if (!(_eventCallback != NULL)) {
+        // first simulated event, use it only to initialize reference values
+        _eventPos = atoi((msgarr[msglen]).c_str());
+        return YAPI_SUCCESS;
+    }
+    _eventPos = atoi((msgarr[msglen]).c_str());
+    idx = 0;
+    while (idx < msglen) {
+        _eventCallback(this, YSnoopingRecord(msgarr[idx]));
+        idx = idx + 1;
+    }
+    return YAPI_SUCCESS;
 }
 
 /**

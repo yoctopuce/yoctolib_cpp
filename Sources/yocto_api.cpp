@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 47294 2021-11-15 14:05:00Z seb $
+ * $Id: yocto_api.cpp 49750 2022-05-13 07:10:42Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -1384,9 +1384,7 @@ int YFirmwareUpdate::_processMore(int newupdate)
 }
 
 /**
- * Returns a list of all the modules in "firmware update" mode. Only devices
- * connected over USB are listed. For devices connected to a YoctoHub, you
- * must connect yourself to the YoctoHub web interface.
+ * Returns a list of all the modules in "firmware update" mode.
  *
  * @return an array of strings containing the serial numbers of devices in "firmware update" mode.
  */

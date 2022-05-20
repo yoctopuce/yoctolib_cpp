@@ -84,9 +84,9 @@ YInputChain::~YInputChain()
 //--- (end of YInputChain cleanup)
 }
 //--- (YInputChain implementation)
-void YInputChain::yInternalEventCallback(YInputChain *inputChain, const string& value)
+void YInputChain::yInternalEventCallback(YInputChain *obj, const string& value)
 {
-    inputChain->_internalEventHandler(value);
+    obj->_internalEventHandler(value);
 }
 
 // static attributes

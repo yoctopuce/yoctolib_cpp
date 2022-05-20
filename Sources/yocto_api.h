@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 46595 2021-09-24 16:42:28Z mvuilleu $
+ * $Id: yocto_api.h 49750 2022-05-13 07:10:42Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -1132,9 +1132,7 @@ public:
     virtual int         _processMore(int newupdate);
 
     /**
-     * Returns a list of all the modules in "firmware update" mode. Only devices
-     * connected over USB are listed. For devices connected to a YoctoHub, you
-     * must connect yourself to the YoctoHub web interface.
+     * Returns a list of all the modules in "firmware update" mode.
      *
      * @return an array of strings containing the serial numbers of devices in "firmware update" mode.
      */

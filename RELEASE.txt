@@ -1,3 +1,4 @@
-CPP v1.10.49504
+CPP v1.10.49822
 
-- Improve MultiSensController class (add support for reading sensor address)
+- Add support for registerSnoopingCallback in YSerialPort
+- Add SDI12 levels

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.h 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_spiport.h 49744 2022-05-11 15:13:45Z mvuilleu $
  *
  *  Declares yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -70,6 +70,7 @@ typedef enum {
     Y_VOLTAGELEVEL_RS232 = 5,
     Y_VOLTAGELEVEL_RS485 = 6,
     Y_VOLTAGELEVEL_TTL1V8 = 7,
+    Y_VOLTAGELEVEL_SDI12 = 8,
     Y_VOLTAGELEVEL_INVALID = -1,
 } Y_VOLTAGELEVEL_enum;
 #endif
@@ -237,6 +238,7 @@ public:
     static const Y_VOLTAGELEVEL_enum VOLTAGELEVEL_RS232 = Y_VOLTAGELEVEL_RS232;
     static const Y_VOLTAGELEVEL_enum VOLTAGELEVEL_RS485 = Y_VOLTAGELEVEL_RS485;
     static const Y_VOLTAGELEVEL_enum VOLTAGELEVEL_TTL1V8 = Y_VOLTAGELEVEL_TTL1V8;
+    static const Y_VOLTAGELEVEL_enum VOLTAGELEVEL_SDI12 = Y_VOLTAGELEVEL_SDI12;
     static const Y_VOLTAGELEVEL_enum VOLTAGELEVEL_INVALID = Y_VOLTAGELEVEL_INVALID;
     static const string SPIMODE_INVALID;
     static const Y_SSPOLARITY_enum SSPOLARITY_ACTIVE_LOW = Y_SSPOLARITY_ACTIVE_LOW;
@@ -446,8 +448,8 @@ public:
      *
      * @return a value among YSpiPort::VOLTAGELEVEL_OFF, YSpiPort::VOLTAGELEVEL_TTL3V,
      * YSpiPort::VOLTAGELEVEL_TTL3VR, YSpiPort::VOLTAGELEVEL_TTL5V, YSpiPort::VOLTAGELEVEL_TTL5VR,
-     * YSpiPort::VOLTAGELEVEL_RS232, YSpiPort::VOLTAGELEVEL_RS485 and YSpiPort::VOLTAGELEVEL_TTL1V8
-     * corresponding to the voltage level used on the serial line
+     * YSpiPort::VOLTAGELEVEL_RS232, YSpiPort::VOLTAGELEVEL_RS485, YSpiPort::VOLTAGELEVEL_TTL1V8 and
+     * YSpiPort::VOLTAGELEVEL_SDI12 corresponding to the voltage level used on the serial line
      *
      * On failure, throws an exception or returns YSpiPort::VOLTAGELEVEL_INVALID.
      */
@@ -467,8 +469,8 @@ public:
      *
      * @param newval : a value among YSpiPort::VOLTAGELEVEL_OFF, YSpiPort::VOLTAGELEVEL_TTL3V,
      * YSpiPort::VOLTAGELEVEL_TTL3VR, YSpiPort::VOLTAGELEVEL_TTL5V, YSpiPort::VOLTAGELEVEL_TTL5VR,
-     * YSpiPort::VOLTAGELEVEL_RS232, YSpiPort::VOLTAGELEVEL_RS485 and YSpiPort::VOLTAGELEVEL_TTL1V8
-     * corresponding to the voltage type used on the serial line
+     * YSpiPort::VOLTAGELEVEL_RS232, YSpiPort::VOLTAGELEVEL_RS485, YSpiPort::VOLTAGELEVEL_TTL1V8 and
+     * YSpiPort::VOLTAGELEVEL_SDI12 corresponding to the voltage type used on the serial line
      *
      * @return YAPI::SUCCESS if the call succeeds.
      *

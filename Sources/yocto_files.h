@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.h 49385 2022-04-06 00:49:27Z mvuilleu $
+ * $Id: yocto_files.h 49755 2022-05-13 09:48:35Z mvuilleu $
  *
  * Declares yFindFiles(), the high-level API for Files functions
  *
@@ -126,7 +126,7 @@ public:
 
 //--- (generated code: YFiles declaration)
 /**
- * YFiles Class: filesystem control interface, available for instance in the Yocto-Color-V2, the
+ * YFiles Class: filesystem control interface, available for instance in the Yocto-MaxiBuzzer, the
  * Yocto-SPI, the YoctoHub-Ethernet or the YoctoHub-GSM-4G
  *
  * The YFiles class is used to access the filesystem embedded on
@@ -213,7 +213,7 @@ public:
      * call registerHub() at application initialization time.
      *
      * @param func : a string that uniquely characterizes the filesystem, for instance
-     *         YRGBLED2.files.
+     *         YMAXBUZ1.files.
      *
      * @return a YFiles object allowing you to drive the filesystem.
      */
@@ -375,7 +375,7 @@ public:
  * call registerHub() at application initialization time.
  *
  * @param func : a string that uniquely characterizes the filesystem, for instance
- *         YRGBLED2.files.
+ *         YMAXBUZ1.files.
  *
  * @return a YFiles object allowing you to drive the filesystem.
  */
