@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.h 49744 2022-05-11 15:13:45Z mvuilleu $
+ *  $Id: yocto_spiport.h 49903 2022-05-25 14:18:36Z mvuilleu $
  *
  *  Declares yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -203,6 +203,7 @@ protected:
     int             _rxptr;
     string          _rxbuff;
     int             _rxbuffptr;
+    int             _eventPos;
 
     friend YSpiPort *yFindSpiPort(const string& func);
     friend YSpiPort *yFirstSpiPort(void);

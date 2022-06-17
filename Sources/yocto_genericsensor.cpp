@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_genericsensor.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_genericsensor.cpp 49903 2022-05-25 14:18:36Z mvuilleu $
  *
  *  Implements yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -392,8 +392,8 @@ double YGenericSensor::get_signalBias(void)
  *
  * @return a value among YGenericSensor::SIGNALSAMPLING_HIGH_RATE,
  * YGenericSensor::SIGNALSAMPLING_HIGH_RATE_FILTERED, YGenericSensor::SIGNALSAMPLING_LOW_NOISE,
- * YGenericSensor::SIGNALSAMPLING_LOW_NOISE_FILTERED and YGenericSensor::SIGNALSAMPLING_HIGHEST_RATE
- * corresponding to the electric signal sampling method to use
+ * YGenericSensor::SIGNALSAMPLING_LOW_NOISE_FILTERED, YGenericSensor::SIGNALSAMPLING_HIGHEST_RATE and
+ * YGenericSensor::SIGNALSAMPLING_AC corresponding to the electric signal sampling method to use
  *
  * On failure, throws an exception or returns YGenericSensor::SIGNALSAMPLING_INVALID.
  */
@@ -431,8 +431,8 @@ Y_SIGNALSAMPLING_enum YGenericSensor::get_signalSampling(void)
  *
  * @param newval : a value among YGenericSensor::SIGNALSAMPLING_HIGH_RATE,
  * YGenericSensor::SIGNALSAMPLING_HIGH_RATE_FILTERED, YGenericSensor::SIGNALSAMPLING_LOW_NOISE,
- * YGenericSensor::SIGNALSAMPLING_LOW_NOISE_FILTERED and YGenericSensor::SIGNALSAMPLING_HIGHEST_RATE
- * corresponding to the electric signal sampling method to use
+ * YGenericSensor::SIGNALSAMPLING_LOW_NOISE_FILTERED, YGenericSensor::SIGNALSAMPLING_HIGHEST_RATE and
+ * YGenericSensor::SIGNALSAMPLING_AC corresponding to the electric signal sampling method to use
  *
  * @return YAPI::SUCCESS if the call succeeds.
  *

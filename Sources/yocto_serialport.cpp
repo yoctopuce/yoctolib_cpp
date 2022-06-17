@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 49818 2022-05-19 09:57:42Z seb $
+ * $Id: yocto_serialport.cpp 49903 2022-05-25 14:18:36Z mvuilleu $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -145,8 +145,8 @@ YSerialPort::YSerialPort(const string& func): YFunction(func)
     ,_valueCallbackSerialPort(NULL)
     ,_rxptr(0)
     ,_rxbuffptr(0)
-    ,_eventCallback(NULL)
     ,_eventPos(0)
+    ,_eventCallback(NULL)
 //--- (end of generated code: YSerialPort initialization)
 {
     _className="SerialPort";
@@ -1153,6 +1153,7 @@ int YSerialPort::selectJob(string jobfile)
  */
 int YSerialPort::reset(void)
 {
+    _eventPos = 0;
     _rxptr = 0;
     _rxbuffptr = 0;
     _rxbuff = string(0, (char)0);
@@ -1660,12 +1661,15 @@ vector<YSnoopingRecord> YSerialPort::snoopMessages(int maxWait)
 
 /**
  * Registers a callback function to be called each time that a message is sent or
- * received by the serial port.
+ * received by the serial port. The callback is invoked only during the execution of
+ * ySleep or yHandleEvents. This provides control over the time when
+ * the callback is triggered. For good responsiveness, remember to call one of these
+ * two functions periodically. To unregister a callback, pass a NULL pointer as argument.
  *
  * @param callback : the callback function to call, or a NULL pointer.
  *         The callback function should take four arguments:
  *         the YSerialPort object that emitted the event, and
- *         the SnoopingRecord object that describes the message
+ *         the YSnoopingRecord object that describes the message
  *         sent or received.
  *         On failure, throws an exception or returns a negative error code.
  */

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.cpp 49744 2022-05-11 15:13:45Z mvuilleu $
+ *  $Id: yocto_spiport.cpp 49903 2022-05-25 14:18:36Z mvuilleu $
  *
  *  Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -146,6 +146,7 @@ YSpiPort::YSpiPort(const string& func): YFunction(func)
     ,_valueCallbackSpiPort(NULL)
     ,_rxptr(0)
     ,_rxbuffptr(0)
+    ,_eventPos(0)
 //--- (end of generated code: YSpiPort initialization)
 {
     _className="SpiPort";
@@ -1255,6 +1256,7 @@ int YSpiPort::selectJob(string jobfile)
  */
 int YSpiPort::reset(void)
 {
+    _eventPos = 0;
     _rxptr = 0;
     _rxbuffptr = 0;
     _rxbuff = string(0, (char)0);

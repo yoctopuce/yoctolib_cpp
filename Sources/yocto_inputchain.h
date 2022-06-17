@@ -470,7 +470,10 @@ public:
 
     /**
      * Registers a callback function to be called each time that an event is detected on the
-     * input chain.
+     * input chain.The callback is invoked only during the execution of
+     * ySleep or yHandleEvents. This provides control over the time when
+     * the callback is triggered. For good responsiveness, remember to call one of these
+     * two functions periodically. To unregister a callback, pass a NULL pointer as argument.
      *
      * @param callback : the callback function to call, or a NULL pointer.
      *         The callback function should take four arguments:

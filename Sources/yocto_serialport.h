@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.h 49744 2022-05-11 15:13:45Z mvuilleu $
+ * $Id: yocto_serialport.h 49903 2022-05-25 14:18:36Z mvuilleu $
  *
  * Declares yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -192,8 +192,8 @@ protected:
     int             _rxptr;
     string          _rxbuff;
     int             _rxbuffptr;
-    YSnoopingCallback _eventCallback;
     int             _eventPos;
+    YSnoopingCallback _eventCallback;
 
     friend YSerialPort *yFindSerialPort(const string& func);
     friend YSerialPort *yFirstSerialPort(void);
@@ -875,12 +875,15 @@ public:
 
     /**
      * Registers a callback function to be called each time that a message is sent or
-     * received by the serial port.
+     * received by the serial port. The callback is invoked only during the execution of
+     * ySleep or yHandleEvents. This provides control over the time when
+     * the callback is triggered. For good responsiveness, remember to call one of these
+     * two functions periodically. To unregister a callback, pass a NULL pointer as argument.
      *
      * @param callback : the callback function to call, or a NULL pointer.
      *         The callback function should take four arguments:
      *         the YSerialPort object that emitted the event, and
-     *         the SnoopingRecord object that describes the message
+     *         the YSnoopingRecord object that describes the message
      *         sent or received.
      *         On failure, throws an exception or returns a negative error code.
      */

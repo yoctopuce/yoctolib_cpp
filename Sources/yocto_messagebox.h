@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.h 43580 2021-01-26 17:46:01Z mvuilleu $
+ * $Id: yocto_messagebox.h 50137 2022-06-16 07:39:44Z seb $
  *
  * Declares yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -444,6 +444,8 @@ public:
     virtual int         nextMsgRef(void);
 
     virtual int         clearSIMSlot(int slot);
+
+    virtual string      _AT(string cmd);
 
     virtual YSms        fetchPdu(int slot);
 
