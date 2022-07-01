@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.h 43580 2021-01-26 17:46:01Z mvuilleu $
+ * $Id: yocto_cellular.h 50281 2022-06-30 07:21:14Z mvuilleu $
  *
  * Declares yFindCellular(), the high-level API for Cellular functions
  *
@@ -801,6 +801,16 @@ public:
      * @return a string containing the corresponding cell operator brand name.
      */
     virtual string      decodePLMN(string mccmnc);
+
+    /**
+     * Returns the list available radio communication profiles, as a string array
+     * (YoctoHub-GSM-4G only).
+     * Each string is a made of a numerical ID, followed by a colon,
+     * followed by the profile description.
+     *
+     * @return a list of string describing available radio communication profiles.
+     */
+    virtual vector<string> get_communicationProfiles(void);
 
 
     inline static YCellular *Find(string func)

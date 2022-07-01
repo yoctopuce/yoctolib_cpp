@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ * $Id: yocto_cellular.cpp 50281 2022-06-30 07:21:14Z mvuilleu $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -5849,6 +5849,48 @@ string YCellular::imm_decodePLMN(string mccmnc)
 string YCellular::decodePLMN(string mccmnc)
 {
     return this->imm_decodePLMN(mccmnc);
+}
+
+/**
+ * Returns the list available radio communication profiles, as a string array
+ * (YoctoHub-GSM-4G only).
+ * Each string is a made of a numerical ID, followed by a colon,
+ * followed by the profile description.
+ *
+ * @return a list of string describing available radio communication profiles.
+ */
+vector<string> YCellular::get_communicationProfiles(void)
+{
+    string profiles;
+    vector<string> lines;
+    int nlines = 0;
+    int idx = 0;
+    string line;
+    int cpos = 0;
+    int profno = 0;
+    vector<string> res;
+
+    profiles = this->_AT("+UMNOPROF=?");
+    lines = _strsplit(profiles,'\n');
+    nlines = (int)lines.size();
+    if (!(nlines > 0)) {
+        _throw(YAPI_IO_ERROR,"fail to retrieve profile list");
+        return res;
+    }
+    res.clear();
+    idx = 0;
+    while (idx < nlines) {
+        line = lines[idx];
+        cpos = _ystrpos(line, ":");
+        if (cpos > 0) {
+            profno = atoi(((line).substr( 0, cpos)).c_str());
+            if (profno > 0) {
+                res.push_back(line);
+            }
+        }
+        idx = idx + 1;
+    }
+    return res;
 }
 
 YCellular *YCellular::nextCellular(void)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_colorledcluster.h 45843 2021-08-04 07:51:59Z mvuilleu $
+ *  $Id: yocto_colorledcluster.h 50281 2022-06-30 07:21:14Z mvuilleu $
  *
  *  Declares yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -70,6 +70,7 @@ typedef enum {
 #endif
 #define Y_ACTIVELEDCOUNT_INVALID        (YAPI_INVALID_UINT)
 #define Y_MAXLEDCOUNT_INVALID           (YAPI_INVALID_UINT)
+#define Y_DYNAMICLEDCOUNT_INVALID       (YAPI_INVALID_UINT)
 #define Y_BLINKSEQMAXCOUNT_INVALID      (YAPI_INVALID_UINT)
 #define Y_BLINKSEQMAXSIZE_INVALID       (YAPI_INVALID_UINT)
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
@@ -100,6 +101,7 @@ protected:
     int             _activeLedCount;
     Y_LEDTYPE_enum  _ledType;
     int             _maxLedCount;
+    int             _dynamicLedCount;
     int             _blinkSeqMaxCount;
     int             _blinkSeqMaxSize;
     string          _command;
@@ -125,6 +127,7 @@ public:
     static const Y_LEDTYPE_enum LEDTYPE_WS2811 = Y_LEDTYPE_WS2811;
     static const Y_LEDTYPE_enum LEDTYPE_INVALID = Y_LEDTYPE_INVALID;
     static const int MAXLEDCOUNT_INVALID = YAPI_INVALID_UINT;
+    static const int DYNAMICLEDCOUNT_INVALID = YAPI_INVALID_UINT;
     static const int BLINKSEQMAXCOUNT_INVALID = YAPI_INVALID_UINT;
     static const int BLINKSEQMAXSIZE_INVALID = YAPI_INVALID_UINT;
     static const string COMMAND_INVALID;
@@ -196,6 +199,19 @@ public:
 
     inline int          maxLedCount(void)
     { return this->get_maxLedCount(); }
+
+    /**
+     * Returns the maximum number of LEDs that can perform autonomous transitions and sequences.
+     *
+     * @return an integer corresponding to the maximum number of LEDs that can perform autonomous
+     * transitions and sequences
+     *
+     * On failure, throws an exception or returns YColorLedCluster::DYNAMICLEDCOUNT_INVALID.
+     */
+    int                 get_dynamicLedCount(void);
+
+    inline int          dynamicLedCount(void)
+    { return this->get_dynamicLedCount(); }
 
     /**
      * Returns the maximum number of sequences that the device can handle.
