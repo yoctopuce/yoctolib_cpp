@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_genericsensor.cpp 49903 2022-05-25 14:18:36Z mvuilleu $
+ *  $Id: yocto_genericsensor.cpp 50689 2022-08-17 14:37:15Z mvuilleu $
  *
  *  Implements yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -85,7 +85,7 @@ const double YGenericSensor::SIGNALBIAS_INVALID = YAPI_INVALID_DOUBLE;
 int YGenericSensor::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("signalValue")) {
-        _signalValue =  floor(json_val->getDouble("signalValue") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _signalValue =  floor(json_val->getDouble("signalValue") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("signalUnit")) {
         _signalUnit =  json_val->getString("signalUnit");
@@ -97,7 +97,7 @@ int YGenericSensor::_parseAttr(YJSONObject *json_val)
         _valueRange =  json_val->getString("valueRange");
     }
     if(json_val->has("signalBias")) {
-        _signalBias =  floor(json_val->getDouble("signalBias") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _signalBias =  floor(json_val->getDouble("signalBias") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("signalSampling")) {
         _signalSampling =  (Y_SIGNALSAMPLING_enum)json_val->getInt("signalSampling");

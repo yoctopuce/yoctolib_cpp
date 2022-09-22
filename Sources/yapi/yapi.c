@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 48684 2022-02-24 10:48:19Z mvuilleu $
+ * $Id: yapi.c 50952 2022-09-19 14:36:34Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -2114,7 +2114,7 @@ static void yapiFreeHub(HubSt* hub)
         for (tcpchan = 0; tcpchan < MAX_ASYNC_TCPCHAN; tcpchan++) {
             yDeleteCriticalSection(&hub->ws.chan[tcpchan].access);
         }
-        yFifoCleanup(&hub->ws.mainfifo);
+        ws_cleanup(hub);
         yFree(hub->ws.fifo_buffer);
     }
     yDeleteCriticalSection(&hub->access);
@@ -3654,7 +3654,10 @@ static YRETCODE yapiTestHub_internal(const char* url, int mstimeout, char* errms
                 hubst->state = NET_HUB_TOCLOSE;
                 yThreadRequestEnd(&hubst->net_thread);
                 yDringWakeUpSocket(&hubst->wuce, 0, errmsg);
-                // wait for the helper thread to stop monitoring these devices
+                  // wait for the helper thread to stop monitoring these devices
+                while (yThreadIsRunning(&hubst->net_thread) && (yapiGetTickCount() < timeout)) {
+                    yApproximateSleep(10);
+                }
                 yThreadKill(&hubst->net_thread);
             } else {
                 res = pingURLOnhub(hubst, "GET /api/module/firmwareRelease.json \r\n\r\n", mstimeout, errmsg);

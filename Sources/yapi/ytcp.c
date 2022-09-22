@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 47711 2021-12-16 09:53:40Z seb $
+ * $Id: ytcp.c 50952 2022-09-19 14:36:34Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -2824,6 +2824,10 @@ static void ws_closeBaseSocket(struct _WSNetHubSt* base_req)
     yFifoEmpty(&base_req->mainfifo);
 }
 
+void ws_cleanup(struct _HubSt* basehub)
+{
+    ws_closeBaseSocket(&basehub->ws);
+}
 
 /*
 *   select used by background thread

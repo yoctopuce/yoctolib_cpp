@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 49750 2022-05-13 07:10:42Z seb $
+ * $Id: yocto_api.h 50906 2022-09-15 07:42:28Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -317,10 +317,10 @@ typedef struct{
 }yapiDataEvent;
 
 typedef enum {
-    STRING,
-    NUMBER,
-    ARRAY,
-    OBJECT
+    YSTRING,
+    YNUMBER,
+    YARRAY,
+    YOBJECT
 } YJSONType;
 
 typedef enum {

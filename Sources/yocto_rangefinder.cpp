@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_rangefinder.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_rangefinder.cpp 50689 2022-08-17 14:37:15Z mvuilleu $
  *
  *  Implements yFindRangeFinder(), the high-level API for RangeFinder functions
  *
@@ -94,7 +94,7 @@ int YRangeFinder::_parseAttr(YJSONObject *json_val)
         _hardwareCalibration =  json_val->getString("hardwareCalibration");
     }
     if(json_val->has("currentTemperature")) {
-        _currentTemperature =  floor(json_val->getDouble("currentTemperature") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _currentTemperature =  floor(json_val->getDouble("currentTemperature") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("command")) {
         _command =  json_val->getString("command");

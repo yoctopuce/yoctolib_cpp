@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_accelerometer.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_accelerometer.cpp 50689 2022-08-17 14:37:15Z mvuilleu $
  *
  *  Implements yFindAccelerometer(), the high-level API for Accelerometer functions
  *
@@ -84,13 +84,13 @@ int YAccelerometer::_parseAttr(YJSONObject *json_val)
         _bandwidth =  json_val->getInt("bandwidth");
     }
     if(json_val->has("xValue")) {
-        _xValue =  floor(json_val->getDouble("xValue") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _xValue =  floor(json_val->getDouble("xValue") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("yValue")) {
-        _yValue =  floor(json_val->getDouble("yValue") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _yValue =  floor(json_val->getDouble("yValue") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("zValue")) {
-        _zValue =  floor(json_val->getDouble("zValue") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _zValue =  floor(json_val->getDouble("zValue") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("gravityCancellation")) {
         _gravityCancellation =  (Y_GRAVITYCANCELLATION_enum)json_val->getInt("gravityCancellation");

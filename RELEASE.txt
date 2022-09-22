@@ -1,3 +1,6 @@
-CPP v1.10.50357
+CPP v1.10.51008
 
-- Add support for retrieving communication profiles list on YoctoHub-GSM-4G
+- Remove "SIM ICCID select" profile from list returned by get_communicationProfiles
+- Rename some definitions in yocto_api.h to prevent conflict with other libraries
+- Optimize float computations on measureVal for all libraries
+- Fix potiential socket leak on Linux

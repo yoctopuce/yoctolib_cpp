@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 49750 2022-05-13 07:10:42Z seb $
+ * $Id: yocto_api.cpp 50906 2022-09-15 07:42:28Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -219,11 +219,11 @@ string YJSONContent::FormatError(const string& errmsg, int cur_pos)
 }
 
 
-YJSONArray::YJSONArray(const string& data, int start, int stop) : YJSONContent(data, start, stop, ARRAY)
+YJSONArray::YJSONArray(const string& data, int start, int stop) : YJSONContent(data, start, stop, YARRAY)
 { }
 
 
-YJSONArray::YJSONArray() : YJSONContent(ARRAY)
+YJSONArray::YJSONArray() : YJSONContent(YARRAY)
 { }
 
 YJSONArray::YJSONArray(YJSONArray* ref) : YJSONContent(ref)
@@ -231,22 +231,22 @@ YJSONArray::YJSONArray(YJSONArray* ref) : YJSONContent(ref)
     for (unsigned i = 0; i < ref->_arrayValue.size(); i++) {
         YJSONType type = ref->_arrayValue[i]->getJSONType();
         switch (type) {
-        case ARRAY: {
+        case YARRAY: {
             YJSONArray* tmp = new YJSONArray((YJSONArray*)ref->_arrayValue[i]);
             _arrayValue.push_back(tmp);
         }
         break;
-        case NUMBER: {
+        case YNUMBER: {
             YJSONNumber* tmp = new YJSONNumber((YJSONNumber*)ref->_arrayValue[i]);
             _arrayValue.push_back(tmp);
         }
         break;
-        case STRING: {
+        case YSTRING: {
             YJSONString* tmp = new YJSONString((YJSONString*)ref->_arrayValue[i]);
             _arrayValue.push_back(tmp);
         }
         break;
-        case OBJECT: {
+        case YOBJECT: {
             YJSONObject* tmp = new YJSONObject((YJSONObject*)ref->_arrayValue[i]);
             _arrayValue.push_back(tmp);
         }
@@ -415,10 +415,10 @@ string YJSONArray::toString()
 }
 
 
-YJSONString::YJSONString(const string& data, int start, int stop) : YJSONContent(data, start, stop, STRING)
+YJSONString::YJSONString(const string& data, int start, int stop) : YJSONContent(data, start, stop, YSTRING)
 { }
 
-YJSONString::YJSONString() : YJSONContent(STRING)
+YJSONString::YJSONString() : YJSONContent(YSTRING)
 { }
 
 YJSONString::YJSONString(YJSONString* ref) : YJSONContent(ref)
@@ -524,7 +524,7 @@ void YJSONString::setContent(const string& value)
 }
 
 
-YJSONNumber::YJSONNumber(const string& data, int start, int stop) : YJSONContent(data, start, stop, NUMBER), _intValue(0), _doubleValue(0), _isFloat(false)
+YJSONNumber::YJSONNumber(const string& data, int start, int stop) : YJSONContent(data, start, stop, YNUMBER), _intValue(0), _doubleValue(0), _isFloat(false)
 { }
 
 YJSONNumber::YJSONNumber(YJSONNumber* ref) : YJSONContent(ref)
@@ -612,10 +612,10 @@ string YJSONNumber::toString()
 }
 
 
-YJSONObject::YJSONObject(const string& data) : YJSONContent(data, 0, (int)data.length(), OBJECT)
+YJSONObject::YJSONObject(const string& data) : YJSONContent(data, 0, (int)data.length(), YOBJECT)
 { }
 
-YJSONObject::YJSONObject(const string& data, int start, int len) : YJSONContent(data, start, len, OBJECT)
+YJSONObject::YJSONObject(const string& data, int start, int len) : YJSONContent(data, start, len, YOBJECT)
 { }
 
 YJSONObject::YJSONObject(YJSONObject* ref) : YJSONContent(ref)
@@ -625,16 +625,16 @@ YJSONObject::YJSONObject(YJSONObject* ref) : YJSONContent(ref)
         _keys.push_back(key);
         YJSONType type = ref->_parsed[key]->getJSONType();
         switch (type) {
-        case ARRAY:
+        case YARRAY:
             _parsed[key] = new YJSONArray((YJSONArray*)ref->_parsed[key]);
             break;
-        case NUMBER:
+        case YNUMBER:
             _parsed[key] = new YJSONNumber((YJSONNumber*)ref->_parsed[key]);
             break;
-        case STRING:
+        case YSTRING:
             _parsed[key] = new YJSONString((YJSONString*)ref->_parsed[key]);
             break;
-        case OBJECT:
+        case YOBJECT:
             _parsed[key] = new YJSONObject((YJSONObject*)ref->_parsed[key]);
             break;
         }
@@ -893,21 +893,21 @@ void YJSONObject::convert(YJSONObject* reference, YJSONArray* newArray)
         YJSONType type = item->getJSONType();
         if (type == reference_item->getJSONType()) {
             switch (type) {
-            case ARRAY:
+            case YARRAY:
                 _parsed[key] = new YJSONArray((YJSONArray*)item);
                 break;
-            case NUMBER:
+            case YNUMBER:
                 _parsed[key] = new YJSONNumber((YJSONNumber*)item);
                 break;
-            case STRING:
+            case YSTRING:
                 _parsed[key] = new YJSONString((YJSONString*)item);
                 break;
-            case OBJECT:
+            case YOBJECT:
                 _parsed[key] = new YJSONObject((YJSONObject*)item);
                 break;
             }
             _keys.push_back(key);
-        } else if (type == ARRAY && reference_item->getJSONType() == OBJECT) {
+        } else if (type == YARRAY && reference_item->getJSONType() == YOBJECT) {
             YJSONObject* jobj = new YJSONObject(item->_data, item->_data_start, reference_item->_data_boundary);
             jobj->convert((YJSONObject*)reference_item, (YJSONArray*)item);
             _parsed[key] = jobj;
@@ -7840,16 +7840,16 @@ int YSensor::_parseAttr(YJSONObject *json_val)
         _unit =  json_val->getString("unit");
     }
     if(json_val->has("currentValue")) {
-        _currentValue =  floor(json_val->getDouble("currentValue") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _currentValue =  floor(json_val->getDouble("currentValue") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("lowestValue")) {
-        _lowestValue =  floor(json_val->getDouble("lowestValue") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _lowestValue =  floor(json_val->getDouble("lowestValue") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("highestValue")) {
-        _highestValue =  floor(json_val->getDouble("highestValue") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _highestValue =  floor(json_val->getDouble("highestValue") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("currentRawValue")) {
-        _currentRawValue =  floor(json_val->getDouble("currentRawValue") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _currentRawValue =  floor(json_val->getDouble("currentRawValue") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("logFrequency")) {
         _logFrequency =  json_val->getString("logFrequency");
@@ -7864,7 +7864,7 @@ int YSensor::_parseAttr(YJSONObject *json_val)
         _calibrationParam =  json_val->getString("calibrationParam");
     }
     if(json_val->has("resolution")) {
-        _resolution =  floor(json_val->getDouble("resolution") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _resolution =  floor(json_val->getDouble("resolution") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("sensorState")) {
         _sensorState =  json_val->getInt("sensorState");

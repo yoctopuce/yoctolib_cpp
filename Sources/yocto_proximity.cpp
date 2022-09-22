@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_proximity.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_proximity.cpp 50689 2022-08-17 14:37:15Z mvuilleu $
  *
  *  Implements yFindProximity(), the high-level API for Proximity functions
  *
@@ -85,7 +85,7 @@ const double YProximity::SIGNALVALUE_INVALID = YAPI_INVALID_DOUBLE;
 int YProximity::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("signalValue")) {
-        _signalValue =  floor(json_val->getDouble("signalValue") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _signalValue =  floor(json_val->getDouble("signalValue") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("detectionThreshold")) {
         _detectionThreshold =  json_val->getInt("detectionThreshold");

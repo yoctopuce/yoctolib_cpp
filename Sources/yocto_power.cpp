@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_power.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_power.cpp 50689 2022-08-17 14:37:15Z mvuilleu $
  *
  *  Implements yFindPower(), the high-level API for Power functions
  *
@@ -82,16 +82,16 @@ const double YPower::RECEIVEDENERGYMETER_INVALID = YAPI_INVALID_DOUBLE;
 int YPower::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("cosPhi")) {
-        _cosPhi =  floor(json_val->getDouble("cosPhi") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _cosPhi =  floor(json_val->getDouble("cosPhi") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("meter")) {
-        _meter =  floor(json_val->getDouble("meter") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _meter =  floor(json_val->getDouble("meter") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("deliveredEnergyMeter")) {
-        _deliveredEnergyMeter =  floor(json_val->getDouble("deliveredEnergyMeter") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _deliveredEnergyMeter =  floor(json_val->getDouble("deliveredEnergyMeter") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("receivedEnergyMeter")) {
-        _receivedEnergyMeter =  floor(json_val->getDouble("receivedEnergyMeter") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _receivedEnergyMeter =  floor(json_val->getDouble("receivedEnergyMeter") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("meterTimer")) {
         _meterTimer =  json_val->getInt("meterTimer");

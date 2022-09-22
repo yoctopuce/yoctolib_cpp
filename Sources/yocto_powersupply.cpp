@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_powersupply.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_powersupply.cpp 50689 2022-08-17 14:37:15Z mvuilleu $
  *
  *  Implements yFindPowerSupply(), the high-level API for PowerSupply functions
  *
@@ -96,10 +96,10 @@ const string YPowerSupply::COMMAND_INVALID = YAPI_INVALID_STRING;
 int YPowerSupply::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("voltageSetPoint")) {
-        _voltageSetPoint =  floor(json_val->getDouble("voltageSetPoint") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _voltageSetPoint =  floor(json_val->getDouble("voltageSetPoint") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("currentLimit")) {
-        _currentLimit =  floor(json_val->getDouble("currentLimit") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _currentLimit =  floor(json_val->getDouble("currentLimit") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("powerOutput")) {
         _powerOutput =  (Y_POWEROUTPUT_enum)json_val->getInt("powerOutput");
@@ -108,28 +108,28 @@ int YPowerSupply::_parseAttr(YJSONObject *json_val)
         _voltageSense =  (Y_VOLTAGESENSE_enum)json_val->getInt("voltageSense");
     }
     if(json_val->has("measuredVoltage")) {
-        _measuredVoltage =  floor(json_val->getDouble("measuredVoltage") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _measuredVoltage =  floor(json_val->getDouble("measuredVoltage") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("measuredCurrent")) {
-        _measuredCurrent =  floor(json_val->getDouble("measuredCurrent") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _measuredCurrent =  floor(json_val->getDouble("measuredCurrent") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("inputVoltage")) {
-        _inputVoltage =  floor(json_val->getDouble("inputVoltage") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _inputVoltage =  floor(json_val->getDouble("inputVoltage") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("vInt")) {
-        _vInt =  floor(json_val->getDouble("vInt") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _vInt =  floor(json_val->getDouble("vInt") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("ldoTemperature")) {
-        _ldoTemperature =  floor(json_val->getDouble("ldoTemperature") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _ldoTemperature =  floor(json_val->getDouble("ldoTemperature") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("voltageTransition")) {
         _voltageTransition =  json_val->getString("voltageTransition");
     }
     if(json_val->has("voltageAtStartUp")) {
-        _voltageAtStartUp =  floor(json_val->getDouble("voltageAtStartUp") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _voltageAtStartUp =  floor(json_val->getDouble("voltageAtStartUp") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("currentAtStartUp")) {
-        _currentAtStartUp =  floor(json_val->getDouble("currentAtStartUp") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _currentAtStartUp =  floor(json_val->getDouble("currentAtStartUp") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("command")) {
         _command =  json_val->getString("command");

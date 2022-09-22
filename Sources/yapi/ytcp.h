@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.h 44962 2021-05-10 08:32:59Z web $
+ * $Id: ytcp.h 50952 2022-09-19 14:36:34Z seb $
  *
  *  Declaration of a client TCP stack
  *
@@ -123,7 +123,7 @@ int yReqHasPending(struct _HubSt* hub);
 
 
 void* ws_thread(void* ctx);
-
+void ws_cleanup(struct _HubSt* basehub);
 
 #include "ythread.h"
 

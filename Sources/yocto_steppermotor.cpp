@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_steppermotor.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_steppermotor.cpp 50689 2022-08-17 14:37:15Z mvuilleu $
  *
  *  Implements yFindStepperMotor(), the high-level API for StepperMotor functions
  *
@@ -104,16 +104,16 @@ int YStepperMotor::_parseAttr(YJSONObject *json_val)
         _stepPos =  json_val->getDouble("stepPos") / 16.0;
     }
     if(json_val->has("speed")) {
-        _speed =  floor(json_val->getDouble("speed") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _speed =  floor(json_val->getDouble("speed") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("pullinSpeed")) {
-        _pullinSpeed =  floor(json_val->getDouble("pullinSpeed") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _pullinSpeed =  floor(json_val->getDouble("pullinSpeed") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("maxAccel")) {
-        _maxAccel =  floor(json_val->getDouble("maxAccel") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _maxAccel =  floor(json_val->getDouble("maxAccel") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("maxSpeed")) {
-        _maxSpeed =  floor(json_val->getDouble("maxSpeed") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _maxSpeed =  floor(json_val->getDouble("maxSpeed") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("stepping")) {
         _stepping =  (Y_STEPPING_enum)json_val->getInt("stepping");

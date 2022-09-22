@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_realtimeclock.h 48183 2022-01-20 10:26:11Z mvuilleu $
+ *  $Id: yocto_realtimeclock.h 50595 2022-07-28 07:54:15Z mvuilleu $
  *
  *  Declares yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *
@@ -67,6 +67,14 @@ typedef enum {
     Y_TIMESET_INVALID = -1,
 } Y_TIMESET_enum;
 #endif
+#ifndef _Y_DISABLEHOSTSYNC_ENUM
+#define _Y_DISABLEHOSTSYNC_ENUM
+typedef enum {
+    Y_DISABLEHOSTSYNC_FALSE = 0,
+    Y_DISABLEHOSTSYNC_TRUE = 1,
+    Y_DISABLEHOSTSYNC_INVALID = -1,
+} Y_DISABLEHOSTSYNC_enum;
+#endif
 #define Y_UNIXTIME_INVALID              (YAPI_INVALID_LONG)
 #define Y_DATETIME_INVALID              (YAPI_INVALID_STRING)
 #define Y_UTCOFFSET_INVALID             (YAPI_INVALID_INT)
@@ -95,6 +103,7 @@ protected:
     string          _dateTime;
     int             _utcOffset;
     Y_TIMESET_enum  _timeSet;
+    Y_DISABLEHOSTSYNC_enum _disableHostSync;
     YRealTimeClockValueCallback _valueCallbackRealTimeClock;
 
     friend YRealTimeClock *yFindRealTimeClock(const string& func);
@@ -117,6 +126,9 @@ public:
     static const Y_TIMESET_enum TIMESET_FALSE = Y_TIMESET_FALSE;
     static const Y_TIMESET_enum TIMESET_TRUE = Y_TIMESET_TRUE;
     static const Y_TIMESET_enum TIMESET_INVALID = Y_TIMESET_INVALID;
+    static const Y_DISABLEHOSTSYNC_enum DISABLEHOSTSYNC_FALSE = Y_DISABLEHOSTSYNC_FALSE;
+    static const Y_DISABLEHOSTSYNC_enum DISABLEHOSTSYNC_TRUE = Y_DISABLEHOSTSYNC_TRUE;
+    static const Y_DISABLEHOSTSYNC_enum DISABLEHOSTSYNC_INVALID = Y_DISABLEHOSTSYNC_INVALID;
 
     /**
      * Returns the current time in Unix format (number of elapsed seconds since Jan 1st, 1970).
@@ -196,6 +208,37 @@ public:
 
     inline Y_TIMESET_enum timeSet(void)
     { return this->get_timeSet(); }
+
+    /**
+     * Returns true if the automatic clock synchronization with host has been disabled,
+     * and false otherwise.
+     *
+     * @return either YRealTimeClock::DISABLEHOSTSYNC_FALSE or YRealTimeClock::DISABLEHOSTSYNC_TRUE,
+     * according to true if the automatic clock synchronization with host has been disabled,
+     *         and false otherwise
+     *
+     * On failure, throws an exception or returns YRealTimeClock::DISABLEHOSTSYNC_INVALID.
+     */
+    Y_DISABLEHOSTSYNC_enum get_disableHostSync(void);
+
+    inline Y_DISABLEHOSTSYNC_enum disableHostSync(void)
+    { return this->get_disableHostSync(); }
+
+    /**
+     * Changes the automatic clock synchronization with host working state.
+     * To disable automatic synchronization, set the value to true.
+     * To enable automatic synchronization (default), set the value to false.
+     *
+     * @param newval : either YRealTimeClock::DISABLEHOSTSYNC_FALSE or YRealTimeClock::DISABLEHOSTSYNC_TRUE,
+     * according to the automatic clock synchronization with host working state
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_disableHostSync(Y_DISABLEHOSTSYNC_enum newval);
+    inline int      setDisableHostSync(Y_DISABLEHOSTSYNC_enum newval)
+    { return this->set_disableHostSync(newval); }
 
     /**
      * Retrieves a real-time clock for a given identifier.

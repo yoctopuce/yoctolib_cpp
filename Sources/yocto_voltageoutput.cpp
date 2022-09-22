@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_voltageoutput.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_voltageoutput.cpp 50689 2022-08-17 14:37:15Z mvuilleu $
  *
  *  Implements yFindVoltageOutput(), the high-level API for VoltageOutput functions
  *
@@ -78,13 +78,13 @@ const double YVoltageOutput::VOLTAGEATSTARTUP_INVALID = YAPI_INVALID_DOUBLE;
 int YVoltageOutput::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("currentVoltage")) {
-        _currentVoltage =  floor(json_val->getDouble("currentVoltage") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _currentVoltage =  floor(json_val->getDouble("currentVoltage") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("voltageTransition")) {
         _voltageTransition =  json_val->getString("voltageTransition");
     }
     if(json_val->has("voltageAtStartUp")) {
-        _voltageAtStartUp =  floor(json_val->getDouble("voltageAtStartUp") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _voltageAtStartUp =  floor(json_val->getDouble("voltageAtStartUp") / 65.536 + 0.5) / 1000.0;
     }
     return YFunction::_parseAttr(json_val);
 }

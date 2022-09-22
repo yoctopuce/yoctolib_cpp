@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwminput.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_pwminput.cpp 50689 2022-08-17 14:37:15Z mvuilleu $
  *
  *  Implements yFindPwmInput(), the high-level API for PwmInput functions
  *
@@ -87,16 +87,16 @@ const double YPwmInput::PERIOD_INVALID = YAPI_INVALID_DOUBLE;
 int YPwmInput::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("dutyCycle")) {
-        _dutyCycle =  floor(json_val->getDouble("dutyCycle") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _dutyCycle =  floor(json_val->getDouble("dutyCycle") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("pulseDuration")) {
-        _pulseDuration =  floor(json_val->getDouble("pulseDuration") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _pulseDuration =  floor(json_val->getDouble("pulseDuration") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("frequency")) {
-        _frequency =  floor(json_val->getDouble("frequency") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _frequency =  floor(json_val->getDouble("frequency") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("period")) {
-        _period =  floor(json_val->getDouble("period") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _period =  floor(json_val->getDouble("period") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("pulseCounter")) {
         _pulseCounter =  json_val->getLong("pulseCounter");

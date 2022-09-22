@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_realtimeclock.cpp 48183 2022-01-20 10:26:11Z mvuilleu $
+ *  $Id: yocto_realtimeclock.cpp 50595 2022-07-28 07:54:15Z mvuilleu $
  *
  *  Implements yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *
@@ -59,6 +59,7 @@ YRealTimeClock::YRealTimeClock(const string& func): YFunction(func)
     ,_dateTime(DATETIME_INVALID)
     ,_utcOffset(UTCOFFSET_INVALID)
     ,_timeSet(TIMESET_INVALID)
+    ,_disableHostSync(DISABLEHOSTSYNC_INVALID)
     ,_valueCallbackRealTimeClock(NULL)
 //--- (end of YRealTimeClock initialization)
 {
@@ -87,6 +88,9 @@ int YRealTimeClock::_parseAttr(YJSONObject *json_val)
     }
     if(json_val->has("timeSet")) {
         _timeSet =  (Y_TIMESET_enum)json_val->getInt("timeSet");
+    }
+    if(json_val->has("disableHostSync")) {
+        _disableHostSync =  (Y_DISABLEHOSTSYNC_enum)json_val->getInt("disableHostSync");
     }
     return YFunction::_parseAttr(json_val);
 }
@@ -258,6 +262,66 @@ Y_TIMESET_enum YRealTimeClock::get_timeSet(void)
     } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns true if the automatic clock synchronization with host has been disabled,
+ * and false otherwise.
+ *
+ * @return either YRealTimeClock::DISABLEHOSTSYNC_FALSE or YRealTimeClock::DISABLEHOSTSYNC_TRUE,
+ * according to true if the automatic clock synchronization with host has been disabled,
+ *         and false otherwise
+ *
+ * On failure, throws an exception or returns YRealTimeClock::DISABLEHOSTSYNC_INVALID.
+ */
+Y_DISABLEHOSTSYNC_enum YRealTimeClock::get_disableHostSync(void)
+{
+    Y_DISABLEHOSTSYNC_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YRealTimeClock::DISABLEHOSTSYNC_INVALID;
+                }
+            }
+        }
+        res = _disableHostSync;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the automatic clock synchronization with host working state.
+ * To disable automatic synchronization, set the value to true.
+ * To enable automatic synchronization (default), set the value to false.
+ *
+ * @param newval : either YRealTimeClock::DISABLEHOSTSYNC_FALSE or YRealTimeClock::DISABLEHOSTSYNC_TRUE,
+ * according to the automatic clock synchronization with host working state
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YRealTimeClock::set_disableHostSync(Y_DISABLEHOSTSYNC_enum newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("disableHostSync", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
     }
     yLeaveCriticalSection(&_this_cs);
     return res;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multicellweighscale.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_multicellweighscale.cpp 50689 2022-08-17 14:37:15Z mvuilleu $
  *
  *  Implements yFindMultiCellWeighScale(), the high-level API for MultiCellWeighScale functions
  *
@@ -99,22 +99,22 @@ int YMultiCellWeighScale::_parseAttr(YJSONObject *json_val)
         _excitation =  (Y_EXCITATION_enum)json_val->getInt("excitation");
     }
     if(json_val->has("tempAvgAdaptRatio")) {
-        _tempAvgAdaptRatio =  floor(json_val->getDouble("tempAvgAdaptRatio") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _tempAvgAdaptRatio =  floor(json_val->getDouble("tempAvgAdaptRatio") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("tempChgAdaptRatio")) {
-        _tempChgAdaptRatio =  floor(json_val->getDouble("tempChgAdaptRatio") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _tempChgAdaptRatio =  floor(json_val->getDouble("tempChgAdaptRatio") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("compTempAvg")) {
-        _compTempAvg =  floor(json_val->getDouble("compTempAvg") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _compTempAvg =  floor(json_val->getDouble("compTempAvg") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("compTempChg")) {
-        _compTempChg =  floor(json_val->getDouble("compTempChg") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _compTempChg =  floor(json_val->getDouble("compTempChg") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("compensation")) {
-        _compensation =  floor(json_val->getDouble("compensation") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _compensation =  floor(json_val->getDouble("compensation") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("zeroTracking")) {
-        _zeroTracking =  floor(json_val->getDouble("zeroTracking") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _zeroTracking =  floor(json_val->getDouble("zeroTracking") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("command")) {
         _command =  json_val->getString("command");

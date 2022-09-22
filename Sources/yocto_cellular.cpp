@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 50281 2022-06-30 07:21:14Z mvuilleu $
+ * $Id: yocto_cellular.cpp 50494 2022-07-19 16:08:56Z mvuilleu $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -5884,7 +5884,7 @@ vector<string> YCellular::get_communicationProfiles(void)
         cpos = _ystrpos(line, ":");
         if (cpos > 0) {
             profno = atoi(((line).substr( 0, cpos)).c_str());
-            if (profno > 0) {
+            if (profno > 1) {
                 res.push_back(line);
             }
         }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_refframe.cpp 43619 2021-01-29 09:14:45Z mvuilleu $
+ *  $Id: yocto_refframe.cpp 50689 2022-08-17 14:37:15Z mvuilleu $
  *
  *  Implements yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -94,7 +94,7 @@ int YRefFrame::_parseAttr(YJSONObject *json_val)
         _mountPos =  json_val->getInt("mountPos");
     }
     if(json_val->has("bearing")) {
-        _bearing =  floor(json_val->getDouble("bearing") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _bearing =  floor(json_val->getDouble("bearing") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("calibrationParam")) {
         _calibrationParam =  json_val->getString("calibrationParam");

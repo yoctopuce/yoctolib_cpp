@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwmoutput.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_pwmoutput.cpp 50689 2022-08-17 14:37:15Z mvuilleu $
  *
  *  Implements yFindPwmOutput(), the high-level API for PwmOutput functions
  *
@@ -89,16 +89,16 @@ int YPwmOutput::_parseAttr(YJSONObject *json_val)
         _enabled =  (Y_ENABLED_enum)json_val->getInt("enabled");
     }
     if(json_val->has("frequency")) {
-        _frequency =  floor(json_val->getDouble("frequency") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _frequency =  floor(json_val->getDouble("frequency") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("period")) {
-        _period =  floor(json_val->getDouble("period") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _period =  floor(json_val->getDouble("period") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("dutyCycle")) {
-        _dutyCycle =  floor(json_val->getDouble("dutyCycle") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _dutyCycle =  floor(json_val->getDouble("dutyCycle") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("pulseDuration")) {
-        _pulseDuration =  floor(json_val->getDouble("pulseDuration") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _pulseDuration =  floor(json_val->getDouble("pulseDuration") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("pwmTransition")) {
         _pwmTransition =  json_val->getString("pwmTransition");
@@ -107,7 +107,7 @@ int YPwmOutput::_parseAttr(YJSONObject *json_val)
         _enabledAtPowerOn =  (Y_ENABLEDATPOWERON_enum)json_val->getInt("enabledAtPowerOn");
     }
     if(json_val->has("dutyCycleAtPowerOn")) {
-        _dutyCycleAtPowerOn =  floor(json_val->getDouble("dutyCycleAtPowerOn") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _dutyCycleAtPowerOn =  floor(json_val->getDouble("dutyCycleAtPowerOn") / 65.536 + 0.5) / 1000.0;
     }
     return YFunction::_parseAttr(json_val);
 }

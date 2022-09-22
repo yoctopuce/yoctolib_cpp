@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_gps.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_gps.cpp 50689 2022-08-17 14:37:15Z mvuilleu $
  *
  *  Implements yFindGps(), the high-level API for Gps functions
  *
@@ -106,7 +106,7 @@ int YGps::_parseAttr(YJSONObject *json_val)
         _satPerConst =  json_val->getLong("satPerConst");
     }
     if(json_val->has("gpsRefreshRate")) {
-        _gpsRefreshRate =  floor(json_val->getDouble("gpsRefreshRate") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _gpsRefreshRate =  floor(json_val->getDouble("gpsRefreshRate") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("coordSystem")) {
         _coordSystem =  (Y_COORDSYSTEM_enum)json_val->getInt("coordSystem");
@@ -121,16 +121,16 @@ int YGps::_parseAttr(YJSONObject *json_val)
         _longitude =  json_val->getString("longitude");
     }
     if(json_val->has("dilution")) {
-        _dilution =  floor(json_val->getDouble("dilution") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _dilution =  floor(json_val->getDouble("dilution") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("altitude")) {
-        _altitude =  floor(json_val->getDouble("altitude") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _altitude =  floor(json_val->getDouble("altitude") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("groundSpeed")) {
-        _groundSpeed =  floor(json_val->getDouble("groundSpeed") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _groundSpeed =  floor(json_val->getDouble("groundSpeed") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("direction")) {
-        _direction =  floor(json_val->getDouble("direction") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _direction =  floor(json_val->getDouble("direction") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("unixTime")) {
         _unixTime =  json_val->getLong("unixTime");

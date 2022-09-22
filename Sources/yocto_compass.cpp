@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_compass.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_compass.cpp 50689 2022-08-17 14:37:15Z mvuilleu $
  *
  *  Implements yFindCompass(), the high-level API for Compass functions
  *
@@ -83,7 +83,7 @@ int YCompass::_parseAttr(YJSONObject *json_val)
         _axis =  (Y_AXIS_enum) json_val->getInt("axis");
     }
     if(json_val->has("magneticHeading")) {
-        _magneticHeading =  floor(json_val->getDouble("magneticHeading") * 1000.0 / 65536.0 + 0.5) / 1000.0;
+        _magneticHeading =  floor(json_val->getDouble("magneticHeading") / 65.536 + 0.5) / 1000.0;
     }
     return YSensor::_parseAttr(json_val);
 }
