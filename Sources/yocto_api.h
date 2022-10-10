@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 50906 2022-09-15 07:42:28Z seb $
+ * $Id: yocto_api.h 51265 2022-10-10 07:03:22Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -2981,6 +2981,17 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         set_allSettings(string settings);
+
+    /**
+     * Adds a file to the uploaded data at the next HTTP callback.
+     * This function only affects the next HTTP callback and only works in
+     * HTTP callback mode.
+     *
+     * @param filename : the name of the file to upload at the next HTTP callback
+     *
+     * @return nothing.
+     */
+    virtual int         addFileToHTTPCallback(string filename);
 
     /**
      * Returns the unique hardware identifier of the module.

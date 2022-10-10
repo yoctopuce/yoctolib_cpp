@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 50906 2022-09-15 07:42:28Z seb $
+ * $Id: yocto_api.cpp 51266 2022-10-10 09:18:25Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -7387,6 +7387,26 @@ int YModule::set_allSettings(string settings)
     }
     this->clearCache();
     return res;
+}
+
+/**
+ * Adds a file to the uploaded data at the next HTTP callback.
+ * This function only affects the next HTTP callback and only works in
+ * HTTP callback mode.
+ *
+ * @param filename : the name of the file to upload at the next HTTP callback
+ *
+ * @return nothing.
+ */
+int YModule::addFileToHTTPCallback(string filename)
+{
+    string content;
+
+    content = this->_download("@YCB+" + filename);
+    if ((int)(content).size() == 0) {
+        return YAPI_NOT_SUPPORTED;
+    }
+    return YAPI_SUCCESS;
 }
 
 /**

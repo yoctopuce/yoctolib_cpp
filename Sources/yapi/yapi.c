@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 50952 2022-09-19 14:36:34Z seb $
+ * $Id: yapi.c 51207 2022-10-04 10:17:41Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -4353,6 +4353,9 @@ YRETCODE yapiRequestOpen(YIOHDL_internal* iohdl, int tcpchan, const char* device
     // compute request timeout
     len = (reqlen < YOCTO_SERIAL_LEN + 32 ? reqlen : YOCTO_SERIAL_LEN + 32);
     if (memcmp(request, "GET ", 4) == 0) {
+        if (ymemfind((u8*)request + 4, len, (u8*)"/@YCB+", 6) >= 0) {
+            return YERRMSG(YAPI_NOT_SUPPORTED, "Preloading of URL is only supported for HTTP callback.");
+        }
         if (ymemfind((u8*)request + 4, len, (u8*)"/testcb.txt", 11) >= 0) {
             mstimeout = YIO_1_MINUTE_TCP_TIMEOUT;
         } else if (ymemfind((u8*)request + 4, len, (u8*)"/logger.json", 12) >= 0) {
