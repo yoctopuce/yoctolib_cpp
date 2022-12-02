@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 47923 2022-01-07 10:43:12Z seb $
+ * $Id: ystream.c 51576 2022-11-14 08:35:08Z seb $
  *
  * USB stream implementation
  *
@@ -1783,7 +1783,7 @@ static void yDispatchNotice(yPrivDeviceSt* dev, USB_Notify_Pkt* notify, int pkts
         {
             yStrRef serialref = yHashPutStr(notify->head.serial);
             yStrRef lnameref = yHashPutStr(notify->namenot.name);
-            wpSafeUpdate(NULL, MAX_YDX_PER_HUB, serialref, lnameref, yHashUrlUSB(serialref), notify->namenot.beacon);
+            ywpSafeUpdate(FAKE_USB_HUB, MAX_YDX_PER_HUB, serialref, lnameref, notify->namenot.beacon);
             if (yContext->rawNotificationCb) {
                 yContext->rawNotificationCb(notify);
             }
@@ -2226,7 +2226,6 @@ static void enuUpdateDStatus(void)
     char errmsg[YOCTO_ERRMSG_LEN];
     int res, updateWP;
     yStrRef lnameref, prodref;
-    yUrlRef usb;
     u8 beacon;
     u16 deviceid;
 
@@ -2244,7 +2243,7 @@ static void enuUpdateDStatus(void)
             }
             dbglog("Device %s unplugged\n", p->infos.serial);
             devStopEnum(PUSH_LOCATION p);
-            wpSafeUnregister(yHashUrlUSB(serialref),serialref);
+            ywpSafeUnregister(FAKE_USB_HUB,serialref);
             break;
 
         case YENU_RESTART:
@@ -2268,7 +2267,7 @@ static void enuUpdateDStatus(void)
             }
             devStopEnum(PUSH_LOCATION p);
             if (YISERR(res)) {
-                wpSafeUnregister(yHashUrlUSB(serialref), serialref);
+                ywpSafeUnregister(FAKE_USB_HUB, serialref);
             }
             break;
         case YENU_START:
@@ -2296,7 +2295,7 @@ static void enuUpdateDStatus(void)
                     }
                     devStopEnum(PUSH_LOCATION p);
                     if (updateWP) {
-                        wpSafeUnregister(yHashUrlUSB(serialref), serialref);
+                        ywpSafeUnregister(FAKE_USB_HUB, serialref);
                     }
                 } else {
 #ifdef DEBUG_DEV_ENUM
@@ -2308,9 +2307,8 @@ static void enuUpdateDStatus(void)
                     prodref = yHashPutStr(p->infos.productname);
                     beacon = p->infos.beacon;
                     deviceid = p->infos.deviceid;
-                    usb = yHashUrlUSB(serialref);
                     devStopEnum(PUSH_LOCATION p);
-                    wpSafeRegister(NULL, MAX_YDX_PER_HUB, serialref, lnameref, prodref, deviceid, usb, beacon);
+                    ywpSafeRegister(FAKE_USB_HUB, MAX_YDX_PER_HUB, serialref, lnameref, prodref, deviceid, beacon);
                 }
             } else {
 #ifdef DEBUG_DEV_ENUM_VERBOSE
@@ -2564,7 +2562,7 @@ int yUsbFree(yContextSt* ctx, char* errmsg)
             yStrRef serialref = yHashTestStr(p->infos.serial);
             p->dStatus = YDEV_UNPLUGGED;
             StopDevice(p,NULL);
-            wpSafeUnregister(yHashUrlUSB(serialref), serialref);
+            ywpSafeUnregister(FAKE_USB_HUB, serialref);
             if (csTaken)
                 yLeaveCriticalSection(&p->acces_state);
         }

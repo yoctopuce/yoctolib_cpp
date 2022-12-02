@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 50952 2022-09-19 14:36:34Z seb $
+ * $Id: ytcp.c 52014 2022-12-01 10:52:52Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -306,8 +306,7 @@ u32 yResolveDNS(const char* name, char* errmsg)
 
     struct addrinfo *infos, *p;
     if (getaddrinfo(name,NULL,NULL, &infos) != 0) {
-        dbglog("Unable to resolve host name %s\n", name);
-        yNetSetErr();
+        ysprintf_s(errmsg, YOCTO_ERRMSG_LEN,"Unable to resolve host name %s", name);
         return 0;
     }
 
@@ -323,29 +322,49 @@ u32 yResolveDNS(const char* name, char* errmsg)
 }
 
 
-#define YDNS_CACHE_SIZE 16
+#define YDNS_CACHE_SIZE 32
 #define YDNS_CACHE_VALIDITY 600000u //10 minutes
 
 typedef struct {
-    yUrlRef url;
+    char * name;
     u32 ip;
     u64 time;
 } DnsCache;
 
 DnsCache dnsCache[YDNS_CACHE_SIZE];
 
+static int isStrAnIpV4(const char* hostname)
+{
+    u64 part_len;
+    int iptest = 0;
+    const char* p = strchr(hostname, '.');
+    if (!p) {
+        return 0;
+    }
+    part_len = p - hostname;
+    if (part_len <= 3) {
+        char buffer[4];
+        memcpy(buffer, hostname, (int)part_len);
+        buffer[part_len] = 0;
+        iptest = atoi(buffer);
+    }
+    if (iptest && iptest < 256 && strlen(hostname) < 16) {
+        // this is probably an ip
+        return 1;
+    }
+    return 0;
+}
 
-static u32 resolveDNSCache(yUrlRef url, char* errmsg)
+static u32 resolveDNSCache(const char *host, char* errmsg)
 {
     int i, firstFree = -1;
-    char buffer[YOCTO_HOSTNAME_NAME];
     u32 ip;
 
     for (i = 0; i < YDNS_CACHE_SIZE; i++) {
-        if (dnsCache[i].url == url) {
+        if (dnsCache[i].name && strcmp(dnsCache[i].name, host) == 0) {
             break;
         }
-        if (firstFree < 0 && dnsCache[i].url == INVALID_HASH_IDX) {
+        if (firstFree < 0 && dnsCache[i].name == NULL) {
             firstFree = i;
         }
     }
@@ -355,10 +374,13 @@ static u32 resolveDNSCache(yUrlRef url, char* errmsg)
         }
         firstFree = i;
     }
-    yHashGetUrlPort(url, buffer, NULL, NULL, NULL, NULL, NULL);
-    ip = yResolveDNS(buffer, errmsg);
+    if (isStrAnIpV4(host)) {
+        ip = inet_addr(host);
+    } else {
+        ip = yResolveDNS(host, errmsg);
+    }
     if (ip != 0 && firstFree < YDNS_CACHE_SIZE) {
-        dnsCache[firstFree].url = url;
+        dnsCache[firstFree].name = ystrdup_s(host);
         dnsCache[firstFree].ip = ip;
         dnsCache[firstFree].time = yapiGetTickCount();
     }
@@ -372,7 +394,6 @@ static u32 resolveDNSCache(yUrlRef url, char* errmsg)
 
 int yTcpInit(char* errmsg)
 {
-    int i;
 #ifdef WINDOWS_API
     // Initialize Winsock 2.2
     WSADATA wsaData;
@@ -382,18 +403,24 @@ int yTcpInit(char* errmsg)
     }
 #endif
     TCPLOG("yTcpInit\n");
-    for (i = 0; i < YDNS_CACHE_SIZE; i++) {
-        dnsCache[i].url = INVALID_HASH_IDX;
-    }
+    memset(dnsCache, 0, sizeof(dnsCache));
     return YAPI_SUCCESS;
 }
 
 void yTcpShutdown(void)
 {
+    int i;
     TCPLOG("yTcpShutdown\n");
 #ifdef PERF_TCP_FUNCTIONS
     dumpYTcpPerf();
 #endif
+    for (i = 0; i < YDNS_CACHE_SIZE; i++) {
+        if (dnsCache[i].name) {
+            yFree(dnsCache[i].name);
+            dnsCache[i].name = NULL;
+        }
+    }
+
 #ifdef WINDOWS_API
     WSACleanup();
 #endif
@@ -423,7 +450,7 @@ static int yTcpOpen(YSOCKET* newskt, u32 ip, u16 port, u64 mstimeout, char* errm
 #endif
 #endif
 
-    TCPLOG("yTcpOpen %p [dst=%x:%d %dms]\n", newskt, ip, port, mstimeout);
+    TCPLOG("yTcpOpen %p(socket) [dst=%x:%d %dms]\n", newskt, ip, port, mstimeout);
 
     YPERF_TCP_ENTER(TCPOpen_socket);
     *newskt = INVALID_SOCKET;
@@ -480,13 +507,17 @@ static int yTcpOpen(YSOCKET* newskt, u32 ip, u16 port, u64 mstimeout, char* errm
         yclosesocket(skt);
         return yNetSetErr();
     }
-    if (FD_ISSET(skt, &exceptfds)) {
+    if (FD_ISSET(skt, &exceptfds) || !FD_ISSET(skt, &writefds)) {
         yclosesocket(skt);
-        return YERRMSG(YAPI_IO_ERROR, "Unable to connect to server");
-    }
-    if (!FD_ISSET(skt, &writefds)) {
-        yclosesocket(skt);
-        return YERRMSG(YAPI_IO_ERROR, "Unable to connect to server");
+        if (errmsg) {
+            unsigned char bytes[4];
+            bytes[0] = ip & 0xFF;
+            bytes[1] = (ip >> 8) & 0xFF;
+            bytes[2] = (ip >> 16) & 0xFF;
+            bytes[3] = (ip >> 24) & 0xFF;
+            YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Unable to connect to %d.%d.%d.%d:%d", bytes[0], bytes[1], bytes[2], bytes[3], port);
+        }
+        return YAPI_IO_ERROR;
     }
     YPERF_TCP_LEAVE(TCPOpen_connect);
     if (iResult == SOCKET_ERROR) {
@@ -704,7 +735,7 @@ static int yTcpRead(YSOCKET skt, u8* buffer, int len, char* errmsg)
     return iResult;
 }
 
-static u32 decodeHex(const char* p, int nbdigit)
+u32 decodeHex(const char* p, int nbdigit)
 {
     u32 ret = 0;
     int i;
@@ -725,6 +756,57 @@ static u32 decodeHex(const char* p, int nbdigit)
 }
 
 
+static int yTcpDownloadEx(const char* url, const char* default_host, int default_port,  u8** out_buffer, u32 mstimeout, char* errmsg)
+{
+    int len, domlen;
+    const char* end, * p;
+    const char* pos, * posplus;
+    const char *host = default_host;
+    const char* path = NULL;
+    int portno = default_port;
+
+    if (YSTRNCMP(url, "http://", 7) == 0) {
+        url += 7;
+        portno = DEFAULT_HTTP_PORT;
+    } else if (YSTRNCMP(url, "https://", 8) == 0) {
+        if(errmsg) {
+            YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Redirection to HTTPS is not supported");
+        }
+        return YAPI_NOT_SUPPORTED;
+    }
+    // search for any authentication info
+    p = url;
+    while(*p && *p != '@' && *p != '/') {
+        p++;
+    }
+    if (*p == '@') {
+        url = ++p;
+    }
+    end = url + strlen(url);
+    p = strchr(url, '/');
+    if (p) {
+        len = (int)(end - p);
+        if (len > 1) {
+            path = ystrndup_s(p, len);
+        }
+        end = p;
+    }
+    pos = strchr(url, ':');
+    posplus = pos + 1;
+    if (pos && pos < end) {
+        len = (int)(end - posplus);
+        if (len < 7) {
+            char buffer[8];
+            memcpy(buffer, posplus, len);
+            buffer[len] = '\0';
+            portno = atoi(buffer);
+        }
+        end = pos;
+    }
+    domlen = (int)(end - url);
+    host = ystrndup_s(url, domlen);
+    return yTcpDownload(host, portno, path, out_buffer,  mstimeout, errmsg);
+}
 int yTcpDownload(const char* host, int port, const char* url, u8** out_buffer, u32 mstimeout, char* errmsg)
 {
     YSOCKET skt;
@@ -881,7 +963,28 @@ exit:
                     yFree(replybuf);
                 }
             }
-
+        } else if (replysize >12 && YSTRNCMP((char*)replybuf, "HTTP/1.1 30", 11) == 0) {
+            int end_header = ymemfind(replybuf, res, (u8*)"\r\n\r\n", 4);
+            int loc_ofs = ymemfind(replybuf, res, (u8*)"Location:", 9);
+            if (loc_ofs > 0 && end_header > 0 && loc_ofs < replysize && end_header < replysize && loc_ofs < end_header) {
+                int data_ofs = loc_ofs + 9;
+                int end_line_ofs = ymemfind(replybuf + data_ofs, end_header - data_ofs, (u8*)"\r\n", 2);
+                if (end_line_ofs > 0) {
+                    char redirect_buff[512];
+                    char* d = redirect_buff;
+                    char* start = (char*)replybuf + data_ofs;
+                    char* end = (char*)replybuf + data_ofs+ end_line_ofs;
+                    //left trim
+                    while (*start == ' ' && start < end) {
+                        start++;
+                    }
+                    while (*start != ' ' && start < end && (start - end) < 511) {
+                        *d++ = *start++;
+                    }
+                    *d = 0;
+                    return yTcpDownloadEx(redirect_buff, host, port, out_buffer, mstimeout, errmsg);
+                }
+            }
         }
     }
     return res;
@@ -960,28 +1063,18 @@ static int copyHostHeader(char *dst, int dstsize, const char* hostname,char *err
 // access mutex taken by caller
 static int yHTTPOpenReqEx(struct _RequestSt* req, u64 mstimout, char* errmsg)
 {
-    char hostname[YOCTO_HOSTNAME_NAME], *p, *last, *end;
+    char *p, *last;
+    char first_line[4096];
+    int avail = sizeof(first_line);
+    char* d;
     u32 ip;
     int res;
 
-    YASSERT(req->proto == PROTO_HTTP);
-
-    switch (yHashGetUrlPort(req->hub->url, hostname, NULL, NULL, NULL, NULL, NULL)) {
-    case NAME_URL:
-        ip = resolveDNSCache(req->hub->url, errmsg);
-        if (ip == 0) {
-            YPERF_TCP_LEAVE(tmp1);
-            return YAPI_IO_ERROR;
-        }
-        break;
-    case IP_URL:
-        ip = inet_addr(hostname);
-        break;
-    default:
-        res = YERRMSG(YAPI_IO_ERROR, "not an IP hub");
-        req->http.skt = INVALID_SOCKET;
-        TCPLOG("yTcpOpenReqEx error%p[%x]\n", req, req->http.skt);
-        return res;
+    YASSERT(req->proto == PROTO_HTTP); 
+    ip = resolveDNSCache(req->hub->host, errmsg);
+    if (ip == 0) {
+        YPERF_TCP_LEAVE(tmp1);
+        return YAPI_IO_ERROR;
     }
     TCPLOG("yTcpOpenReqEx %p [%x:%x %d]\n", req, req->http.skt, req->http.reuseskt, mstimout);
 
@@ -1006,61 +1099,110 @@ static int yHTTPOpenReqEx(struct _RequestSt* req, u64 mstimout, char* errmsg)
         }
     }
 
-    p = req->headerbuf;
-    //skip first line
-    while (*p && *p != '\r') p++;
-    end = p;
-    last = p;
 
+    // we need to parse the first line and format it correctly
+    
+    //copy method (GET or POST) 
+    d = first_line;
+    p = req->headerbuf;
+    while (avail && *p && *p != ' ') {
+        *d++ = *p++;
+        avail--;
+    }
+
+    if (avail) {
+        *d++ = ' ';
+        avail--;
+    }
+
+    // add potential subdomain
+    if (req->hub->subdomain[0]) {
+        int sub_len = YSTRLEN(req->hub->subdomain);
+        if (sub_len + 1 < avail) {
+            memcpy(d, req->hub->subdomain, sub_len);
+            avail -= sub_len;
+            d += sub_len;
+        }
+    }
+
+    //copy request (/api.json....)
+    p++; //skip space between 
+    while (avail && *p && *p != ' ' && *p != '\r') {
+        *d++ = *p++;
+        avail--;
+    }
+    
+    if (avail) {
+        *d++ = ' ';
+        avail--;
+    }
+
+    if (req->hub->info.use_pure_http &&  avail >= 8) {
+        memcpy(d, "HTTP/1.1",8);
+        avail -= 8;
+        d += 8;
+    }
+
+    //skip end of first line
+    while (*p && *p != '\r') p++;
+    last = p;
+    // copy usefull header (Content-Type)
     while (*p == '\r' && *(p + 1) == '\n' && *(p + 2) != '\r') {
         p += 2;
         while (*p && *p != '\r') p++;
         if (YSTRNCMP(last, "\r\nContent-Type", strlen("\r\nContent-Type")) == 0) {
             unsigned len = (unsigned)(p - last);
-            if (last != end) {
-                memcpy(end, last, len);
+            if ((unsigned)avail > len) {
+                memcpy(d, last, len);
+                d += len;
+                avail -= len;
             }
-            end += len;
         }
         last = p;
     }
-    *end++ = '\r';
-    *end++ = '\n';
+    if (avail >= 2) {
+        *d++ = '\r';
+        *d++ = '\n';
+        avail -= 2;
+    }
     // insert authorization header in needed
     yEnterCriticalSection(&req->hub->access);
-    if (req->hub->http.s_user && req->hub->http.s_realm) {
-        char *method = req->headerbuf, *uri;
-        char* auth = end;
+    if (req->hub->user && req->hub->http.s_realm) {
+        int auth_len;
+        char method[8];
+        char uri[4096];
+        const char* s;
+        char *m = method, * u = uri;
         // null-terminate method and URI for digest computation
-        // ReSharper disable once CppPossiblyErroneousEmptyStatements
-        for (uri = method; *uri != ' '; uri++);
-        *uri++ = 0;
-        // ReSharper disable once CppPossiblyErroneousEmptyStatements
-        for (p = uri; *p != ' '; p++);
-        *p = 0;
-        yDigestAuthorization(auth, (int)(req->headerbuf + req->headerbufsize - auth), req->hub->http.s_user, req->hub->http.s_realm, req->hub->http.s_ha1,
+        for (s = first_line; *s != ' ' && (m - method) < (sizeof(method)-1); s++) {
+            *m++ = *s;
+        }
+        *m = 0;
+        s++;
+        for (; *s != ' ' && (u - uri) < (sizeof(uri) - 1); s++) {
+            *u++ = *s;
+        }
+        *u = 0;
+        auth_len = yDigestAuthorization(d, avail, req->hub->user, req->hub->http.s_realm, req->hub->http.s_ha1,
                              req->hub->http.s_nonce, req->hub->http.s_opaque, &req->hub->http.nc, method, uri);
-        // restore space separator after method and URI
-        *--uri = ' ';
-        *p = ' ';
-        // prepare to complete request
-        end = auth + strlen(auth);
+        d += auth_len;
+        avail -= auth_len;
     }
     yLeaveCriticalSection(&req->hub->access);
-    res = copyHostHeader(end, (int)(req->headerbuf + req->headerbufsize - end), hostname, errmsg);
+    res = copyHostHeader(d, avail, req->hub->host, errmsg);
     if (YISERR(res)) {
         yTcpClose(req->http.skt);
         req->http.skt = INVALID_SOCKET;
         return res;
     }
-    end += res;
+    d += res;
     if (req->flags & TCPREQ_KEEPALIVE) {
-        YSTRCPY(end, (int)(req->headerbuf + req->headerbufsize - end), "\r\n");
+        YSTRCPY(d, avail, "\r\n");
     } else {
-        YSTRCPY(end, (int)(req->headerbuf + req->headerbufsize - end), "Connection: close\r\n\r\n");
+        YSTRCPY(d, avail, "Connection: close\r\n\r\n");
     }
     //write header
-    res = yTcpWrite(req->http.skt, req->headerbuf, (int)strlen(req->headerbuf), errmsg);
+    res = yTcpWrite(req->http.skt, first_line, (int)strlen(first_line), errmsg);
     if (YISERR(res)) {
         yTcpClose(req->http.skt);
         req->http.skt = INVALID_SOCKET;
@@ -1187,8 +1329,6 @@ static int yHTTPMultiSelectReq(struct _RequestSt** reqs, int size, u64 ms, WakeU
                     req->replybufsize = newsize;
                 }
                 res = yTcpRead(req->http.skt, req->replybuf + req->replysize, req->replybufsize - req->replysize, errmsg);
-                //dbglog("check %x:%x:%X\n", check, check2, size);
-
                 req->read_tm = yapiGetTickCount();
                 if (res < 0) {
                     // any connection closed by peer ends up with YAPI_NO_MORE_DATA
@@ -1218,7 +1358,7 @@ static int yHTTPMultiSelectReq(struct _RequestSt** reqs, int size, u64 ms, WakeU
                                 // authentication required, process authentication headers
                                 char *method = NULL, *realm = NULL, *qop = NULL, *nonce = NULL, *opaque = NULL;
 
-                                if (!req->hub->http.s_user || req->retryCount++ > 3) {
+                                if (!req->hub->user || req->retryCount++ > 3) {
                                     // No credential provided, give up immediately
                                     req->replypos = 0;
                                     req->replysize = 0;
@@ -1235,8 +1375,8 @@ static int yHTTPMultiSelectReq(struct _RequestSt** reqs, int size, u64 ms, WakeU
                                         yDupSet(&req->hub->http.s_realm, realm);
                                         yDupSet(&req->hub->http.s_nonce, nonce);
                                         yDupSet(&req->hub->http.s_opaque, opaque);
-                                        if (req->hub->http.s_user && req->hub->http.s_pwd) {
-                                            ComputeAuthHA1(req->hub->http.s_ha1, req->hub->http.s_user, req->hub->http.s_pwd, req->hub->http.s_realm);
+                                        if (req->hub->user && req->hub->password) {
+                                            ComputeAuthHA1(req->hub->http.s_ha1, req->hub->user, req->hub->password, req->hub->http.s_realm);
                                         }
                                         req->hub->http.nc = 0;
                                         yLeaveCriticalSection(&req->hub->access);
@@ -1444,7 +1584,7 @@ static void yWSCloseReq(struct _RequestSt* req)
         res = yWaitForEvent(&req->finished, 5000);
         yEnterCriticalSection(&req->access);
         if (!res) {
-            dbglog("hub(%s) websocket close without ack\n", req->hub->name);
+            dbglog("hub(%s) websocket close without ack\n", req->hub->host);
         }
     }
     req->ws.state = REQ_CLOSED_BY_BOTH;
@@ -1557,7 +1697,7 @@ struct _RequestSt* yReqAlloc(struct _HubSt* hub)
     struct _RequestSt* req = yMalloc(sizeof(struct _RequestSt));
     memset(req, 0, sizeof(struct _RequestSt));
     req->proto = hub->proto;
-    TCPLOG("yTcpInitReq %p[%x:%x]\n", req, hub->url, req->proto);
+    TCPLOG("yTcpInitReq %p[%s:%x]\n", req, hub->host, req->proto);
     req->replybufsize = 1500;
     req->replybuf = (u8*)yMalloc(req->replybufsize);
     yInitializeCriticalSection(&req->access);
@@ -1620,7 +1760,7 @@ int yReqOpen(struct _RequestSt* req, int wait_for_start, int tcpchan, const char
                 break;
             }
         }
-        if (i > 3) {
+        if (i > 3 && !req->hub->info.use_pure_http) {
             if (request[i - 3] == '&' && request[i - 2] == '.' && request[i - 1] == ' ') {
                 req->flags |= TCPREQ_KEEPALIVE;
             }
@@ -2115,13 +2255,11 @@ static int ws_sendAuthenticationMeta(HubSt* hub, char* errmsg)
 #else
     meta_out.auth.version = USB_META_WS_PROTO_V1;
 #endif
-    if (hub->ws.user != INVALID_HASH_IDX && hub->ws.pass != INVALID_HASH_IDX) {
+    if (hub->user && hub->password) {
         u8 ha1[16];
-        const char* user = yHashGetStrPtr(hub->ws.user);
-        const char* pass = yHashGetStrPtr(hub->ws.pass);
         meta_out.auth.flags = USB_META_WS_AUTH_FLAGS_VALID;
         meta_out.auth.nonce = INTEL_U32(hub->ws.nounce);
-        ComputeAuthHA1(ha1, user, pass, hub->ws.serial);
+        ComputeAuthHA1(ha1, hub->user, hub->password, hub->ws.serial);
         CheckWSAuth(hub->ws.remoteNounce, ha1, NULL, meta_out.auth.sha1);
     }
     return ws_sendFrame(hub,YSTREAM_META, 0, (const u8*)&meta_out, USB_META_WS_AUTHENTICATION_SIZE, errmsg);
@@ -2297,7 +2435,7 @@ static int ws_parseIncomingFrame(HubSt* hub, u8* buffer, int pktlen, char* errms
                 // since state changes to CLOSED_BY_BOTH immediately after
                 int res = ws_sendFrame(hub, YSTREAM_TCP_CLOSE, strym.tcpchan, NULL, 0, errmsg);
                 if (res < 0) {
-                    dbglog("WS: req(%s:%p) unable to ack remote close (%d/%s)\n", req->hub->name, req, res, errmsg);
+                    dbglog("WS: req(%s:%p) unable to ack remote close (%d/%s)\n", req->hub->host, req, res, errmsg);
                 }
                 yEnterCriticalSection(&req->access);
                 req->ws.flags &= ~WS_FLG_NEED_API_CLOSE;
@@ -2362,14 +2500,14 @@ static int ws_parseIncomingFrame(HubSt* hub, u8* buffer, int pktlen, char* errms
                 if ((flags & USB_META_WS_AUTH_FLAGS_RW) != 0) {
                     hub->rw_access = 1;
                 }
-                if (hub->ws.user != INVALID_HASH_IDX) {
-                    user = yHashGetStrPtr(hub->ws.user);
+                if (hub->user) {
+                    user = hub->user;
                 } else {
                     user = "";
                 }
 
-                if (hub->ws.pass != INVALID_HASH_IDX) {
-                    pass = yHashGetStrPtr(hub->ws.pass);
+                if (hub->password) {
+                    pass = hub->password;
                 } else {
                     pass = "";
                 }
@@ -2387,7 +2525,7 @@ static int ws_parseIncomingFrame(HubSt* hub, u8* buffer, int pktlen, char* errms
                         return YAPI_UNAUTHORIZED;
                     }
                 } else {
-                    if (hub->ws.user == INVALID_HASH_IDX) {
+                    if (hub->user == NULL) {
                         hub->ws.base_state = WS_BASE_CONNECTED;
                         hub->state = NET_HUB_ESTABLISHED;
                         hub->retryCount = 0;
@@ -2571,7 +2709,7 @@ static int ws_processRequests(HubSt* hub, char* errmsg)
             if (req->ws.flags & WS_FLG_NEED_API_CLOSE) {
                 int res = ws_sendFrame(hub, YSTREAM_TCP_CLOSE, tcpchan, NULL, 0, errmsg);
                 if (res < 0) {
-                    dbglog("req(%s:%p) unable to ack remote close (%d/%s)\n", req->hub->name, req, res, errmsg);
+                    dbglog("req(%s:%p) unable to ack remote close (%d/%s)\n", req->hub->host, req, res, errmsg);
                 }
                 yEnterCriticalSection(&req->access);
                 req->ws.flags &= ~WS_FLG_NEED_API_CLOSE;
@@ -2702,12 +2840,9 @@ static int ws_processRequests(HubSt* hub, char* errmsg)
 */
 static int ws_openBaseSocket(HubSt* basehub, int first_notification_connection, int mstimout, char* errmsg)
 {
-    char hostname[YOCTO_HOSTNAME_NAME];
     u32 ip;
-    yStrRef user, pass, subdomain;
     int res, request_len;
     char request[256];
-    char subdomain_buf[32];
     struct _WSNetHubSt* wshub = &basehub->ws;
 
     wshub->base_state = 0;
@@ -2727,35 +2862,16 @@ static int ws_openBaseSocket(HubSt* basehub, int first_notification_connection, 
 
     wshub->skt = INVALID_SOCKET;
     wshub->s_next_async_id = 48;
-
-    switch (yHashGetUrlPort(basehub->url, hostname, NULL, NULL, &user, &pass, &subdomain)) {
-    case NAME_URL:
-        ip = resolveDNSCache(basehub->url, errmsg);
-        if (ip == 0) {
-            return YAPI_IO_ERROR;
-        }
-        break;
-    case IP_URL:
-        ip = inet_addr(hostname);
-        break;
-    default:
-        return YERRMSG(YAPI_IO_ERROR, "not an IP hub");
+    ip = resolveDNSCache(basehub->host, errmsg);
+    if (ip == 0) {
+        return YAPI_IO_ERROR;
     }
     if (basehub->proto != PROTO_WEBSOCKET && basehub->proto != PROTO_SECURE_WEBSOCKET) {
         return YERRMSG(YAPI_IO_ERROR, "not a WebSocket url");
     }
-    if (subdomain == INVALID_HASH_IDX) {
-        subdomain_buf[0] = 0;
-    } else {
-        YSPRINTF(subdomain_buf, 32, "/%s", yHashGetStrPtr(subdomain));
-    }
 
     WSLOG("hub(%s) try to open WS connection at %d\n", basehub->name, basehub->notifAbsPos);
-    if (first_notification_connection) {
-        YSPRINTF(request, 256, "GET %s/not.byn", subdomain_buf);
-    } else {
-        YSPRINTF(request, 256, "GET %s/not.byn?abs=%u", subdomain_buf, basehub->notifAbsPos);
-    }
+    YSPRINTF(request, 256, "GET %s/not.byn?abs=%u", basehub->subdomain, basehub->notifAbsPos);
 
     res = yTcpOpen(&wshub->skt, ip, basehub->portno, mstimout, errmsg);
     if (YISERR(res)) {
@@ -2766,8 +2882,6 @@ static int ws_openBaseSocket(HubSt* basehub, int first_notification_connection, 
     }
     wshub->bws_open_tm = yapiGetTickCount();
     wshub->bws_timeout_tm = mstimout;
-    wshub->user = user;
-    wshub->pass = pass;
     //write header
     request_len = YSTRLEN(request);
 
@@ -2797,7 +2911,7 @@ static int ws_openBaseSocket(HubSt* basehub, int first_notification_connection, 
         wshub->skt = INVALID_SOCKET;
         return res;
     }
-    res = yTcpWrite(wshub->skt, hostname, YSTRLEN(hostname), errmsg);
+    res = yTcpWrite(wshub->skt, basehub->host, YSTRLEN(basehub->host), errmsg);
     if (YISERR(res)) {
         yTcpClose(wshub->skt);
         wshub->skt = INVALID_SOCKET;

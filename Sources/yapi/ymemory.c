@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ymemory.c 44962 2021-05-10 08:32:59Z web $
+ * $Id: ymemory.c 51576 2022-11-14 08:35:08Z seb $
  *
  * Basic memory check function to prevent memory leak
  *
@@ -288,6 +288,13 @@ char* ystrdup_s(const char* src)
     return tmp;
 }
 
+char* ystrndup_s(const char* src, unsigned len)
+{
+    char* tmp = yMalloc(len + 1);
+    memcpy(tmp, src, len);
+    tmp[len] = 0;
+    return tmp;
+}
 
 YRETCODE ystrcat_s(char* dst, unsigned dstsize, const char* src)
 {

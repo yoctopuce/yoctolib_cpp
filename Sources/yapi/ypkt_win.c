@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_win.c 44962 2021-05-10 08:32:59Z web $
+ * $Id: ypkt_win.c 51520 2022-11-07 10:03:28Z seb $
  *
  * OS-specific USB packet layer, Windows version
  *
@@ -102,7 +102,7 @@ static void yWinPushEx(u32 line, yInterfaceSt *iface, pktQueue  *q, DWORD err)
 #endif
 
 
-static u32 decodeHex(const char* p, int nbdigit)
+static u32 usbDecodeHex(const char* p, int nbdigit)
 {
     u32 ret = 0;
     int i;
@@ -160,13 +160,13 @@ void DecodeHardwareid(char* str, u32* vendorid, u32* deviceid, u32* release, u32
     *vendorid = *deviceid = *release = *iface = 0;
     while (token_start != token_stop) {
         if (YSTRNICMP(token_start, "VID_", 4) == 0) {
-            *vendorid = decodeHex(token_start + 4, 4);
+            *vendorid = usbDecodeHex(token_start + 4, 4);
         } else if (YSTRNICMP(token_start, "PID_", 4) == 0) {
-            *deviceid = decodeHex(token_start + 4, 4);
+            *deviceid = usbDecodeHex(token_start + 4, 4);
         } else if (YSTRNICMP(token_start, "REV_", 4) == 0) {
-            *release = decodeHex(token_start + 4, 4);
+            *release = usbDecodeHex(token_start + 4, 4);
         } else if (YSTRNICMP(token_start, "MI_", 3) == 0) {
-            *iface = decodeHex(token_start + 3, 2);
+            *iface = usbDecodeHex(token_start + 3, 2);
         }
         token_start = findDelim(token_stop, delim, 2, FIRST_NOT_OF);
         token_stop = findDelim(token_start, delim, 2, FIRST_OF);

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 47923 2022-01-07 10:43:12Z seb $
+ * $Id: yproto.h 51576 2022-11-14 08:35:08Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -238,6 +238,7 @@ typedef struct {
 #define YSPRINTF                            ysprintf_s
 #define YVSPRINTF                           yvsprintf_s
 char* ystrdup_s(const char* src);
+char* ystrndup_s(const char* src, unsigned len);
 YRETCODE ystrcpy_s(char* dst, unsigned dstsize, const char* src);
 YRETCODE ystrncpy_s(char* dst, unsigned dstsize, const char* src, unsigned len);
 YRETCODE ystrcat_s(char* dst, unsigned dstsize, const char* src);
@@ -748,9 +749,7 @@ typedef struct _HTTPNetHubSt {
     // the following fields are used by hub net enum and notification helper thread
     u64 lastTraffic; // time of the last data received on the notification socket (in ms)
     // the following fields are used for authentication to the hub, and require mutex access
-    char* s_user;
     char* s_realm;
-    char* s_pwd;
     char* s_nonce;
     char* s_opaque;
     u8 s_ha1[16]; // computed when realm is received if pwd is not NULL
@@ -784,8 +783,6 @@ typedef struct _WSNetHubSt {
     int remoteVersion;
     u32 remoteNounce;
     u32 nounce;
-    yStrRef user;
-    yStrRef pass;
     int s_next_async_id;
     YSOCKET skt;
     yFifoBuf mainfifo;
@@ -803,8 +800,19 @@ typedef struct _WSNetHubSt {
     struct _RequestSt* openRequests;
 } WSNetHub;
 
+typedef enum {
+    PROTO_LEGACY = 0,
+    PROTO_AUTO,
+    PROTO_SECURE,
+    PROTO_HTTP,
+    PROTO_WEBSOCKET,
+    PROTO_SECURE_HTTP,
+    PROTO_SECURE_WEBSOCKET,
+    PROTO_UNKNOWN
+} yHubProto;
+
 typedef struct _HubInfoPortSt {
-    yAbsUrlProto proto;
+    yHubProto proto;
     int port;
 } HubInfoPortSt;
 
@@ -815,24 +823,28 @@ typedef struct _HubInfoSt {
     char serial[YOCTO_SERIAL_LEN];
     HubInfoPortSt ports[NB_PROTO_IN_INFO_JSON];
     int next_port;
+    int use_pure_http;
 } HubInfoSt;
 
 
 #define INCOMPATIBLE_JZON_ENCODING 1
 
 typedef struct _HubSt {
-    yUrlRef url; // hub base URL, or INVALID_HASH_IDX if unused
+    char* host;
+    yHubProto proto;
+    char* user;
+    char* password;
+    char* subdomain; // empty string if no domain are set
     HubInfoSt info; // infos form info.json
     // misc flag that are mapped to int for efficiency and thread safety
     int rw_access;
     int send_ping;
     int mandatory;
     int writeProtected; // admin password detected
+    u64 notConLastAlive;
     yStrRef serial;
     WakeUpSocket wuce;
     yThread net_thread;
-    char* name;
-    yAbsUrlProto proto;
     u16 portno;
     NET_HUB_STATE state;
     yFifoBuf not_fifo; // notification fifo
@@ -854,6 +866,7 @@ typedef struct _HubSt {
     // implementations specific struct
     HTTPNetHub http;
     WSNetHub ws;
+    yStrRef devices[ALLOC_YDX_PER_HUB];
 } HubSt;
 
 
@@ -919,7 +932,7 @@ typedef struct _RequestSt {
     u64 read_tm; // timestamp of the last received packet (must be reset if we reuse the socket)
     u64 timeout_tm; // the maximum time to live of this connection
     u32 flags; // flags for keep alive and no expiration
-    yAbsUrlProto proto; // the type of protocol used for this request (same information as the one contained in the hub url)
+    yHubProto proto; // the type of protocol used for this request (same information as the one contained in the hub url)
     yapiRequestAsyncCallback callback;
     void* context;
     RequestProgress progressCb;
@@ -965,6 +978,7 @@ typedef struct _YIOHDL_internal {
 extern u64 YctxDeviceListValidityMs;
 extern u32 YctxNetworkTimeout;
 
+#define FAKE_USB_HUB ((HubSt* )((u8*)NULL+1))
 
 // structure that contain information about the API
 typedef struct {
@@ -1011,6 +1025,7 @@ typedef struct {
     FUpdateContext fuCtx;
     // OS specifics variables
     yInterfaceSt* setupedIfaceCache[SETUPED_IFACE_CACHE_SIZE];
+    yStrRef usbdevices[ALLOC_YDX_PER_HUB];
 #if defined(WINDOWS_API)
     HANDLE apiLock;
     HANDLE nameLock;
@@ -1070,9 +1085,11 @@ void yyyPacketShutdown(yInterfaceSt* iface);
 ******************************************************************************/
 
 //some early declarations
-void wpSafeRegister(HubSt* hub, u8 devYdx, yStrRef serialref, yStrRef lnameref, yStrRef productref, u16 deviceid, yUrlRef devUrl, s8 beacon);
-void wpSafeUpdate(HubSt* hub, u8 devYdx, yStrRef serialref, yStrRef lnameref, yUrlRef devUrl, s8 beacon);
-void wpSafeUnregister(yUrlRef eventUrl, yStrRef serialref);
+void ywpSafeRegister(HubSt* hub, u8 devYdx, yStrRef serialref, yStrRef lnameref, yStrRef productref, u16 deviceid, s8 beacon);
+void ywpSafeUpdate(HubSt* hub, u8 devYdx, yStrRef serialref, yStrRef lnameref, s8 beacon);
+void ywpSafeUnregister(HubSt* hub, yStrRef serialref);
+HubSt* ywpGetDeviceHub(yStrRef serialref);
+int ywpGetDeviceUrl(YAPI_DEVICE devdesc, char* roothubserial, char* request, int requestsize, int* neededsize);
 
 void ypUpdateUSB(const char* serial, const char* funcid, const char* funcname, int funclass, int funydx, const char* funcval);
 void ypUpdateYdx(int devydx, Notification_funydx funInfo, const char* funcval);
@@ -1137,6 +1154,5 @@ void yFunctionUpdate(YAPI_FUNCTION fundescr, const char* value);
 void yFunctionTimedUpdate(YAPI_FUNCTION fundescr, u64 deviceTime, u64 freq, const u8* report, u32 len);
 int yapiJsonGetPath_internal(const char* path, const char* json_data, int json_size, int withHTTPheader, const char** output, char* errmsg);
 void request_pending_logs(HubSt* hub);
-HubSt* getNethubFromURL(yUrlRef url); // from yapi.c
-
+u32 decodeHex(const char* p, int nbdigit);
 #endif

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.h 47719 2021-12-17 10:00:43Z seb $
+ * $Id: yhash.h 51576 2022-11-14 08:35:08Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -170,48 +170,8 @@ extern yBlkHdl yYpListHead;
 #define YMAX_HUB_URL_DEEP           7
 #define YOCTO_HOSTNAME_NAME         (HASH_BUF_SIZE*2+2)
 
-typedef enum {
-    USB_URL,
-    IP_URL,
-    NAME_URL
-} yAbsUrlType;
-
-typedef enum {
-    PROTO_LEGACY = 0,
-    PROTO_AUTO,
-    PROTO_HTTP,
-    PROTO_WEBSOCKET,
-    PROTO_SECURE_HTTP,
-    PROTO_SECURE_WEBSOCKET,
-    PROTO_UNKNOWN
-} yAbsUrlProto;
 
 
-
-typedef struct{
-    union{
-        struct{
-            yStrRef   host;
-            yStrRef   domaine;
-            u16       port;
-        } byname;
-        struct{
-            yStrRef   ip;
-            yHash     invalid;
-            u16       port;
-        } byip;
-        struct{
-            yHash     invalid1;
-            yHash     invalid2;
-            yStrRef   serial;
-        } byusb;
-    };
-    u16 proto;
-    yStrRef user;
-    yStrRef password;
-    yStrRef subdomain;
-    yStrRef path[YMAX_HUB_URL_DEEP];
-} yAbsUrl;
 
 void  yHashInit(void);
 yHash yHashPutBuf(const u8 *buf, u16 len);
@@ -223,15 +183,8 @@ void  yHashGetStr(yHash yhash, char *destbuf, u16 bufsize);
 u16   yHashGetStrLen(yHash yhash);
 char  *yHashGetStrPtr(yHash yhash);
 #ifndef MICROCHIP_API
-yUrlRef yHashUrlFromRef(yUrlRef urlref, const char *rootUrl);
-yUrlRef yHashCmpUrlRef(yUrlRef urlref, yUrlRef urlref2);
-yUrlRef yHashUrl(const char *host, const char *rootUrl, u8 testonly, char *errmsg);
-yAbsUrlType  yHashGetUrlPort(yUrlRef urlref, char *url, u16 *port, yAbsUrlProto *proto, yStrRef *user, yStrRef *password, yStrRef *subdomain);
-int yHashSameHub(yUrlRef url_a, yUrlRef url_b);
 void  yHashFree(void);
 #endif
-yUrlRef yHashUrlUSB(yHash serial);
-yUrlRef yHashUrlAPI(void);
 u16     yBlkListLength(yBlkHdl hdl);
 yBlkHdl yBlkListSeek(yBlkHdl hdl, u16 pos);
 int     wpRegister(int devYdx, yStrRef serial, yStrRef logicalName, yStrRef productName, u16 productId, yUrlRef devUrl, s8 beacon);
@@ -256,11 +209,6 @@ YAPI_DEVICE wpSearchByNameHash(yStrRef strref);
 u16     wpEntryCount(void);
 YAPI_DEVICE wpSearchEx(yStrRef strref);
 YAPI_DEVICE wpSearch(const char *device_str);
-YAPI_DEVICE wpSearchByUrl(const char *host, const char *rootUrl);
-int     wpGetAllDevUsingHubUrl( yUrlRef hubUrl, yStrRef *buffer,int sizeInStrRef);
-
-yUrlRef wpGetDeviceUrlRef(YAPI_DEVICE devdesc);
-int     wpGetDeviceUrl(YAPI_DEVICE devdesc, char *roothubserial, char *request, int requestsize, int *neededsize);
 YAPI_FUNCTION ypSearch(const char *class_str, const char *func_str);
 int     ypGetFunctions(const char *class_str, YAPI_DEVICE devdesc, YAPI_FUNCTION prevfundesc,
                        YAPI_FUNCTION *buffer,int maxsize,int *neededsize);

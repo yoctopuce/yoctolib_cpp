@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 51265 2022-10-10 07:03:22Z seb $
+ * $Id: yocto_api.h 51740 2022-11-23 16:53:35Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -1236,6 +1236,7 @@ protected:
     vector<double>  _calraw;
     vector<double>  _calref;
     vector< vector<double> > _values;
+    bool            _isLoaded;
     //--- (end of generated code: YDataStream attributes)
 
     yCalibrationHandler _calhdl;
@@ -1256,7 +1257,13 @@ public:
 
     virtual int         _parseStream(string sdata);
 
+    virtual bool        _wasLoaded(void);
+
     virtual string      _get_url(void);
+
+    virtual string      _get_baseurl(void);
+
+    virtual string      _get_urlsuffix(void);
 
     virtual int         loadStream(void);
 
@@ -1578,6 +1585,7 @@ protected:
     string          _hardwareId;
     string          _functionId;
     string          _unit;
+    int             _bulkLoad;
     double          _startTimeMs;
     double          _endTimeMs;
     int             _progress;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 51266 2022-10-10 09:18:25Z seb $
+ * $Id: yocto_api.cpp 51936 2022-11-30 08:13:11Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -942,6 +942,7 @@ YDataStream::YDataStream(YFunction* parent):
     ,_avgVal(0.0)
     ,_maxVal(0.0)
     ,_caltyp(0)
+    ,_isLoaded(0)
 //--- (end of generated code: YDataStream initialization)
 {
     _parent = parent;
@@ -966,6 +967,7 @@ YDataStream::YDataStream(YFunction* parent, YDataSet& dataset, const vector<int>
     ,_avgVal(0.0)
     ,_maxVal(0.0)
     ,_caltyp(0)
+    ,_isLoaded(0)
 //--- (end of generated code: YDataStream initialization)
 {
     _parent = parent;
@@ -986,6 +988,7 @@ YDataStream::~YDataStream()
 YDataSet::YDataSet(YFunction* parent, const string& functionId, const string& unit, double startTime, double endTime):
     //--- (generated code: YDataSet initialization)
     _parent(NULL)
+    ,_bulkLoad(0)
     ,_startTimeMs(0.0)
     ,_endTimeMs(0.0)
     ,_progress(0)
@@ -1008,6 +1011,7 @@ YDataSet::YDataSet(YFunction* parent, const string& functionId, const string& un
 YDataSet::YDataSet(YFunction* parent):
     //--- (generated code: YDataSet initialization)
     _parent(NULL)
+    ,_bulkLoad(0)
     ,_startTimeMs(0.0)
     ,_endTimeMs(0.0)
     ,_progress(0)
@@ -1046,6 +1050,11 @@ int YDataSet::_parse(const string& json)
                 return YAPI_NOT_SUPPORTED;
             }
             _unit = _parent->_parseString(j);
+        } else if (!strcmp(j.token, "bulk")) {
+            if (yJsonParse(&j) != YJSON_PARSE_AVAIL) {
+                return YAPI_NOT_SUPPORTED;
+            }
+            _bulkLoad = atoi(_parent->_parseString(j).c_str());
         } else if (!strcmp(j.token, "calib")) {
             if (yJsonParse(&j) != YJSON_PARSE_AVAIL) {
                 return YAPI_NOT_SUPPORTED;
@@ -1634,6 +1643,9 @@ int YDataStream::_parseStream(string sdata)
     int idx = 0;
     vector<int> udat;
     vector<double> dat;
+    if (_isLoaded && !(_isClosed)) {
+        return YAPI_SUCCESS;
+    }
     if ((int)(sdata).size() == 0) {
         _nRows = 0;
         return YAPI_SUCCESS;
@@ -1671,7 +1683,13 @@ int YDataStream::_parseStream(string sdata)
     }
 
     _nRows = (int)_values.size();
+    _isLoaded = true;
     return YAPI_SUCCESS;
+}
+
+bool YDataStream::_wasLoaded(void)
+{
+    return _isLoaded;
 }
 
 string YDataStream::_get_url(void)
@@ -1679,6 +1697,21 @@ string YDataStream::_get_url(void)
     string url;
     url = YapiWrapper::ysprintf("logger.json?id=%s&run=%d&utc=%u",
     _functionId.c_str(),_runNo,_utcStamp);
+    return url;
+}
+
+string YDataStream::_get_baseurl(void)
+{
+    string url;
+    url = YapiWrapper::ysprintf("logger.json?id=%s&run=%d&utc=",
+    _functionId.c_str(),_runNo);
+    return url;
+}
+
+string YDataStream::_get_urlsuffix(void)
+{
+    string url;
+    url = YapiWrapper::ysprintf("%u",_utcStamp);
     return url;
 }
 
@@ -2174,9 +2207,11 @@ int YDataSet::loadSummary(string data)
         } else {
             // stream that are partially in the dataset
             // we need to parse data to filter value outside the dataset
-            url =  _streams[ii]->_get_url();
-            data = _parent->_download(url);
-            _streams[ii]->_parseStream(data);
+            if (!( _streams[ii]->_wasLoaded())) {
+                url =  _streams[ii]->_get_url();
+                data = _parent->_download(url);
+                _streams[ii]->_parseStream(data);
+            }
             dataRows =  _streams[ii]->get_dataRows();
             if ((int)dataRows.size() == 0) {
                 return this->get_progress();
@@ -2227,8 +2262,10 @@ int YDataSet::loadSummary(string data)
                     if (previewMaxVal < maxVal) {
                         previewMaxVal = maxVal;
                     }
-                    previewTotalAvg = previewTotalAvg + (avgVal * mitv);
-                    previewTotalTime = previewTotalTime + mitv;
+                    if (!(yyisnan(avgVal))) {
+                        previewTotalAvg = previewTotalAvg + (avgVal * mitv);
+                        previewTotalTime = previewTotalTime + mitv;
+                    }
                 }
                 tim = end_;
                 m_pos = m_pos + 1;
@@ -2285,6 +2322,15 @@ int YDataSet::processMore(int progress,string data)
     int avgCol = 0;
     int maxCol = 0;
     bool firstMeasure = 0;
+    string baseurl;
+    string url;
+    string suffix;
+    vector<string> suffixes;
+    int idx = 0;
+    string bulkFile;
+    vector<string> streamStr;
+    int urlIdx = 0;
+    string streamBin;
 
     if (progress != _progress) {
         return _progress;
@@ -2293,7 +2339,9 @@ int YDataSet::processMore(int progress,string data)
         return this->loadSummary(data);
     }
     stream = _streams[_progress];
-    stream->_parseStream(data);
+    if (!(stream->_wasLoaded())) {
+        stream->_parseStream(data);
+    }
     dataRows = stream->get_dataRows();
     _progress = _progress + 1;
     if ((int)dataRows.size() == 0) {
@@ -2336,6 +2384,40 @@ int YDataSet::processMore(int progress,string data)
             avgv,dataRows[ii][maxCol]));
         }
         tim = end_;
+    }
+    // Perform bulk preload to speed-up network transfer
+    if ((_bulkLoad > 0) && (_progress < (int)_streams.size())) {
+        stream = _streams[_progress];
+        if (stream->_wasLoaded()) {
+            return this->get_progress();
+        }
+        baseurl = stream->_get_baseurl();
+        url = stream->_get_url();
+        suffix = stream->_get_urlsuffix();
+        suffixes.push_back(suffix);
+        idx = _progress+1;
+        while ((idx < (int)_streams.size()) && ((int)suffixes.size() < _bulkLoad)) {
+            stream = _streams[idx];
+            if (!(stream->_wasLoaded()) && (stream->_get_baseurl() == baseurl)) {
+                suffix = stream->_get_urlsuffix();
+                suffixes.push_back(suffix);
+                url = url + "," + suffix;
+            }
+            idx = idx + 1;
+        }
+        bulkFile = _parent->_download(url);
+        streamStr = _parent->_json_get_array(bulkFile);
+        urlIdx = 0;
+        idx = _progress;
+        while ((idx < (int)_streams.size()) && (urlIdx < (int)suffixes.size()) && (urlIdx < (int)streamStr.size())) {
+            stream = _streams[idx];
+            if ((stream->_get_baseurl() == baseurl) && (stream->_get_urlsuffix() == suffixes[urlIdx])) {
+                streamBin = streamStr[urlIdx];
+                stream->_parseStream(streamBin);
+                urlIdx = urlIdx + 1;
+            }
+            idx = idx + 1;
+        }
     }
     return this->get_progress();
 }
@@ -2485,6 +2567,10 @@ int YDataSet::loadMore(void)
             return 100;
         } else {
             stream = _streams[_progress];
+            if (stream->_wasLoaded()) {
+                // Do not reload stream if it was already loaded
+                return this->processMore(_progress, "");
+            }
             url = stream->_get_url();
         }
     }
@@ -4294,34 +4380,34 @@ YRETCODE YDevice::requestAPI(YJSONObject*& apires, string& errmsg)
     j.st = YJSON_HTTP_START;
     if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_HTTP_READ_CODE) {
         errmsg = "Failed to parse HTTP header";
+        yLeaveCriticalSection(&_lock);
         if (!YAPI::ExceptionsDisabled) {
             throw YAPI_Exception(YAPI_IO_ERROR, errmsg);
         }
-        yLeaveCriticalSection(&_lock);
         return YAPI_IO_ERROR;
     }
     if (string(j.token) != "200") {
         errmsg = string("Unexpected HTTP return code: ") + j.token;
+        yLeaveCriticalSection(&_lock);
         if (!YAPI::ExceptionsDisabled) {
             throw YAPI_Exception(YAPI_IO_ERROR, errmsg);
         }
-        yLeaveCriticalSection(&_lock);
         return YAPI_IO_ERROR;
     }
     if (yJsonParse(&j) != YJSON_PARSE_AVAIL || j.st != YJSON_HTTP_READ_MSG) {
         errmsg = "Unexpected HTTP header format";
+        yLeaveCriticalSection(&_lock);
         if (!YAPI::ExceptionsDisabled) {
             throw YAPI_Exception(YAPI_IO_ERROR, errmsg);
         }
-        yLeaveCriticalSection(&_lock);
         return YAPI_IO_ERROR;
     }
     if (yJsonParse(&j) != YJSON_PARSE_AVAIL || (j.st != YJSON_PARSE_STRUCT && j.st != YJSON_PARSE_ARRAY)) {
         errmsg = "Unexpected JSON reply format";
+        yLeaveCriticalSection(&_lock);
         if (!YAPI::ExceptionsDisabled) {
             throw YAPI_Exception(YAPI_IO_ERROR, errmsg);
         }
-        yLeaveCriticalSection(&_lock);
         return YAPI_IO_ERROR;
     }
     // we know for sure that the last character parsed was a '{' or '['

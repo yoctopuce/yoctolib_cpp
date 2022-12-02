@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.c 44978 2021-05-10 10:48:11Z web $
+ * $Id: ykey.c 51520 2022-11-07 10:03:28Z seb $
  *
  * Implementation of standard key computations
  *
@@ -266,10 +266,11 @@ extern u32 yapiGetCNonce(u32 nc);
 
 // Write an authorization header in the buffer provided
 // method and uri can be provided in the same memory zone as destination if needed
-void yDigestAuthorization(char* buf, int bufsize, const char* user, const char* realm, const u8* ha1,
+int yDigestAuthorization(char* buf, int bufsize, const char* user, const char* realm, const u8* ha1,
                           const char* nonce, const char* opaque, u32* nc, const char* method, const char* uri)
 {
     u32 cnonce;
+    const char *org_buf = buf;
     char ncbuf[9], cnoncebuf[9];
     u8 ha2[HTTP_AUTH_MD5_SIZE];
     int len;
@@ -309,6 +310,7 @@ void yDigestAuthorization(char* buf, int bufsize, const char* user, const char* 
         YSTRCAT(buf, bufsize, opaque);
     }
     YSTRCAT(buf, bufsize, "\"\r\n");
+    return  (int)strlen(org_buf);
 }
 
 // State variables used during key computation

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 49268 2022-04-02 11:54:42Z web $
+ * $Id: yprog.c 51576 2022-11-14 08:35:08Z seb $
  *
  * Implementation of firmware upgrade functions
  *
@@ -1792,14 +1792,9 @@ static void* yFirmwareUpdate_thread(void* ctx)
     setOsGlobalProgress(5, "Enter firmware update mode");
     dev = wpSearch(yContext->fuCtx.serial);
     if (dev != -1) {
-        yUrlRef url;
-        int urlres = wpGetDeviceUrl(dev, hubserial, subpath, 256, NULL);
-        if (urlres < 0) {
-            setOsGlobalProgress(YAPI_IO_ERROR, NULL);
-            goto exit_and_free;
-        }
-        url = wpGetDeviceUrlRef(dev);
-        if (yHashGetUrlPort(url, NULL, NULL, NULL, NULL, NULL, NULL) == USB_URL) {
+        HubSt* hub;
+        hub = ywpGetDeviceHub((yStrRef)dev);
+        if (hub == FAKE_USB_HUB) {
             // USB connected device -> reboot it in bootloader
             type = FLASH_USB;
             YSPRINTF(buffer, sizeof(buffer), reboot_req, subpath);
@@ -2020,7 +2015,7 @@ static void* yFirmwareUpdate_thread(void* ctx)
         }
         dev = wpSearch(yContext->fuCtx.serial);
         if (dev != -1) {
-            wpGetDeviceUrl(dev, hubserial, subpath, 256, NULL);
+            ywpGetDeviceUrl(dev, hubserial, subpath, 256, NULL);
             YSPRINTF(buffer, sizeof(buffer), get_api_fmt, subpath);
             res = yapiHTTPRequestSyncStartEx_internal(&iohdl, 0, hubserial, buffer, YSTRLEN(buffer), &reply, &replysize, NULL, NULL, tmp_errmsg);
             if (res >= 0) {
