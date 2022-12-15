@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 52014 2022-12-01 10:52:52Z seb $
+ * $Id: yapi.c 52316 2022-12-13 10:46:01Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -4512,10 +4512,27 @@ static int yapiRequestOpenUSB(YIOHDL_internal* iohdl, HubSt* hub, YAPI_DEVICE de
     if (res != YAPI_SUCCESS) {
         return res;
     }
-    if (reqlen >= 10 && reqlen <= (int)sizeof(buffer) && !memcmp(request + reqlen - 7, "&. \r\n\r\n", 7)) {
-        memcpy(buffer, request, reqlen - 7);
-        memcpy(buffer + reqlen - 7, " \r\n\r\n", 5);
-        reqlen -= 2;
+    if (reqlen >= 10 && reqlen <= (int)sizeof(buffer) && request[0] == 'G' && request[1] == 'E' && request[2] == 'T' && request[3] == ' ') {
+        int i = 4;
+        const char* p;
+        char* d;
+        memcpy(buffer, request, 4);
+        p = request + 4;
+        d = buffer + 4;
+        while (i < reqlen && *p != ' ' && *p != '\r') {
+            *d++ = *p++;
+            i++;
+        }
+        if (*(d - 2) == '&' && *(d - 1) == '.') {
+            // remove short sign
+            d -= 2;
+            i -= 2;
+        }
+        if (i +5 < sizeof(buffer)) {
+            memcpy(d, " \r\n\r\n", 5);
+            i += 5;
+        }
+        reqlen = i;
         request = buffer;
     }
     res = (YRETCODE)yUsbWrite(iohdl, request, reqlen, errmsg);
@@ -4668,6 +4685,8 @@ YRETCODE yapiRequestOpen(YIOHDL_internal* iohdl, int tcpchan, const char* device
         } else if (ymemfind((u8*)request + 4, len, (u8*)"/files.json", 11) >= 0) {
             mstimeout = YIO_1_MINUTE_TCP_TIMEOUT;
         } else if (ymemfind((u8*)request + 4, len, (u8*)"/flash.json", 11) >= 0) {
+            mstimeout = YIO_10_MINUTES_TCP_TIMEOUT;
+        } else if (ymemfind((u8*)request + 4, len, (u8*)"/Yv4wI.js", 9) >= 0) {
             mstimeout = YIO_10_MINUTES_TCP_TIMEOUT;
         }
     } else {

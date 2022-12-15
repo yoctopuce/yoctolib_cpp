@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 51576 2022-11-14 08:35:08Z seb $
+ * $Id: yprog.c 52356 2022-12-14 09:57:58Z seb $
  *
  * Implementation of firmware upgrade functions
  *
@@ -1793,6 +1793,11 @@ static void* yFirmwareUpdate_thread(void* ctx)
     dev = wpSearch(yContext->fuCtx.serial);
     if (dev != -1) {
         HubSt* hub;
+        int urlres = ywpGetDeviceUrl(dev, hubserial, subpath, 256, NULL);
+        if (urlres < 0) {
+            setOsGlobalProgress(YAPI_IO_ERROR, NULL);
+            goto exit_and_free;
+        }
         hub = ywpGetDeviceHub((yStrRef)dev);
         if (hub == FAKE_USB_HUB) {
             // USB connected device -> reboot it in bootloader

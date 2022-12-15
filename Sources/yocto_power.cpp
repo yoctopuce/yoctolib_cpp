@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_power.cpp 50689 2022-08-17 14:37:15Z mvuilleu $
+ *  $Id: yocto_power.cpp 52318 2022-12-13 10:58:18Z seb $
  *
  *  Implements yFindPower(), the high-level API for Power functions
  *
@@ -148,12 +148,14 @@ int YPower::set_meter(double newval)
 }
 
 /**
- * Returns the energy counter, maintained by the wattmeter by integrating the power consumption over time,
- * but only when positive. Note that this counter is reset at each start of the device.
+ * Returns the energy counter, maintained by the wattmeter by integrating the
+ * power consumption over time. This is the sum of forward and backwad energy transfers,
+ * if you are insterested in only one direction, use  get_receivedEnergyMeter() or
+ * get_deliveredEnergyMeter(). Note that this counter is reset at each start of the device.
  *
  * @return a floating point number corresponding to the energy counter, maintained by the wattmeter by
- * integrating the power consumption over time,
- *         but only when positive
+ * integrating the
+ *         power consumption over time
  *
  * On failure, throws an exception or returns YPower::METER_INVALID.
  */

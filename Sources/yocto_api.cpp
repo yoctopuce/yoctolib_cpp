@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 51936 2022-11-30 08:13:11Z seb $
+ * $Id: yocto_api.cpp 52308 2022-12-12 14:48:45Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -4074,6 +4074,11 @@ YModule *YFunction::get_module(void)
     string errmsg, serial, funcId, funcName, funcValue;
 
     yEnterCriticalSection(&_this_cs);
+    if (_serial != "") {
+        serial = _serial;
+        yLeaveCriticalSection(&_this_cs);
+        return yFindModule(serial + ".module");
+    }
     fundescr = YapiWrapper::getFunction(_className, _func, errmsg);
     if (!YISERR(fundescr)) {
         if (!YISERR(YapiWrapper::getFunctionInfo(fundescr, devdescr, serial, funcId, funcName, funcValue, errmsg))) {
