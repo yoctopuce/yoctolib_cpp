@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_anbutton.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_anbutton.cpp 52567 2022-12-25 12:00:14Z seb $
  *
  *  Implements yFindAnButton(), the high-level API for AnButton functions
  *
@@ -285,7 +285,7 @@ int YAnButton::set_calibrationMax(int newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("calibrationMax", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -344,7 +344,7 @@ int YAnButton::set_calibrationMin(int newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("calibrationMin", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -405,7 +405,7 @@ int YAnButton::set_sensitivity(int newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("sensitivity", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -546,7 +546,7 @@ int YAnButton::set_pulseCounter(s64 newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%u", (u32)newval); rest_val = string(buf);
         res = _setAttr("pulseCounter", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -634,7 +634,7 @@ int YAnButton::set_inputType(Y_INPUTTYPE_enum newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("inputType", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);

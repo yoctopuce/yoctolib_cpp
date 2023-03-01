@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_genericsensor.cpp 50689 2022-08-17 14:37:15Z mvuilleu $
+ *  $Id: yocto_genericsensor.cpp 52567 2022-12-25 12:00:14Z seb $
  *
  *  Implements yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -341,7 +341,7 @@ int YGenericSensor::set_signalBias(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("signalBias", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -444,7 +444,7 @@ int YGenericSensor::set_signalSampling(Y_SIGNALSAMPLING_enum newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("signalSampling", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);

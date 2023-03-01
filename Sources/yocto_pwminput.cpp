@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwminput.cpp 50689 2022-08-17 14:37:15Z mvuilleu $
+ *  $Id: yocto_pwminput.cpp 52567 2022-12-25 12:00:14Z seb $
  *
  *  Implements yFindPwmInput(), the high-level API for PwmInput functions
  *
@@ -303,7 +303,7 @@ int YPwmInput::set_pulseCounter(s64 newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%u", (u32)newval); rest_val = string(buf);
         res = _setAttr("pulseCounter", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -404,7 +404,7 @@ int YPwmInput::set_pwmReportMode(Y_PWMREPORTMODE_enum newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("pwmReportMode", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -459,7 +459,7 @@ int YPwmInput::set_debouncePeriod(int newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("debouncePeriod", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -517,7 +517,7 @@ int YPwmInput::set_bandwidth(int newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("bandwidth", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);

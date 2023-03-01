@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_carbondioxide.h 44175 2021-03-11 11:27:12Z mvuilleu $
+ *  $Id: yocto_carbondioxide.h 52567 2022-12-25 12:00:14Z seb $
  *
  *  Declares yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *

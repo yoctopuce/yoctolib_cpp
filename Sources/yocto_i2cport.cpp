@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_i2cport.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_i2cport.cpp 52943 2023-01-26 15:46:47Z mvuilleu $
  *
  *  Implements yFindI2cPort(), the high-level API for I2cPort functions
  *
@@ -45,6 +45,7 @@
 #include <stdlib.h>
 
 #include "yocto_i2cport.h"
+#include "yapi/yproto.h"
 #include "yapi/yjson.h"
 #include "yapi/yapi.h"
 #define  __FILE_ID__  "i2cport"
@@ -704,7 +705,7 @@ int YI2cPort::set_i2cVoltageLevel(Y_I2CVOLTAGELEVEL_enum newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("i2cVoltageLevel", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -993,16 +994,29 @@ int YI2cPort::read_tell(void)
  */
 int YI2cPort::read_avail(void)
 {
-    string buff;
-    int bufflen = 0;
+    string availPosStr;
+    int atPos = 0;
     int res = 0;
+    string databin;
 
-    buff = this->_download(YapiWrapper::ysprintf("rxcnt.bin?pos=%d",_rxptr));
-    bufflen = (int)(buff).size() - 1;
-    while ((bufflen > 0) && (((u8)buff[bufflen]) != 64)) {
-        bufflen = bufflen - 1;
-    }
-    res = atoi(((buff).substr( 0, bufflen)).c_str());
+    databin = this->_download(YapiWrapper::ysprintf("rxcnt.bin?pos=%d",_rxptr));
+    availPosStr = databin;
+    atPos = _ystrpos(availPosStr, "@");
+    res = atoi(((availPosStr).substr( 0, atPos)).c_str());
+    return res;
+}
+
+int YI2cPort::end_tell(void)
+{
+    string availPosStr;
+    int atPos = 0;
+    int res = 0;
+    string databin;
+
+    databin = this->_download(YapiWrapper::ysprintf("rxcnt.bin?pos=%d",_rxptr));
+    availPosStr = databin;
+    atPos = _ystrpos(availPosStr, "@");
+    res = atoi(((availPosStr).substr( atPos+1, (int)(availPosStr).length()-atPos-1)).c_str());
     return res;
 }
 
@@ -1020,13 +1034,22 @@ int YI2cPort::read_avail(void)
  */
 string YI2cPort::queryLine(string query,int maxWait)
 {
+    int prevpos = 0;
     string url;
     string msgbin;
     vector<string> msgarr;
     int msglen = 0;
     string res;
+    if ((int)(query).length() <= 80) {
+        // fast query
+        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=!%s", maxWait,this->_escapeAttr(query).c_str());
+    } else {
+        // long query
+        prevpos = this->end_tell();
+        this->_upload("txdata", query + "\r\n");
+        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&pos=%d", maxWait,prevpos);
+    }
 
-    url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=!%s", maxWait,this->_escapeAttr(query).c_str());
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);
     msglen = (int)msgarr.size();
@@ -1058,13 +1081,22 @@ string YI2cPort::queryLine(string query,int maxWait)
  */
 string YI2cPort::queryHex(string hexString,int maxWait)
 {
+    int prevpos = 0;
     string url;
     string msgbin;
     vector<string> msgarr;
     int msglen = 0;
     string res;
+    if ((int)(hexString).length() <= 80) {
+        // fast query
+        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=$%s", maxWait,hexString.c_str());
+    } else {
+        // long query
+        prevpos = this->end_tell();
+        this->_upload("txdata", YAPI::_hexStr2Bin(hexString));
+        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&pos=%d", maxWait,prevpos);
+    }
 
-    url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=$%s", maxWait,hexString.c_str());
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);
     msglen = (int)msgarr.size();
@@ -1241,6 +1273,11 @@ string YI2cPort::i2cSendAndReceiveBin(int slaveAddr,string buff,int rcvCount)
     string msg;
     string reply;
     string rcvbytes;
+    rcvbytes = string(0, (char)0);
+    if (!(rcvCount<=512)) {
+        _throw(YAPI_INVALID_ARGUMENT,"Cannot read more than 512 bytes");
+        return rcvbytes;
+    }
     msg = YapiWrapper::ysprintf("@%02x:",slaveAddr);
     nBytes = (int)(buff).size();
     idx = 0;
@@ -1250,13 +1287,22 @@ string YI2cPort::i2cSendAndReceiveBin(int slaveAddr,string buff,int rcvCount)
         idx = idx + 1;
     }
     idx = 0;
+    if (rcvCount > 54) {
+        while (rcvCount - idx > 255) {
+            msg = YapiWrapper::ysprintf("%sxx*FF",msg.c_str());
+            idx = idx + 255;
+        }
+        if (rcvCount - idx > 2) {
+            msg = YapiWrapper::ysprintf("%sxx*%02X", msg.c_str(),(rcvCount - idx));
+            idx = rcvCount;
+        }
+    }
     while (idx < rcvCount) {
         msg = YapiWrapper::ysprintf("%sxx",msg.c_str());
         idx = idx + 1;
     }
 
     reply = this->queryLine(msg,1000);
-    rcvbytes = string(0, (char)0);
     if (!((int)(reply).length() > 0)) {
         _throw(YAPI_IO_ERROR,"No response from I2C device");
         return rcvbytes;
@@ -1298,6 +1344,11 @@ vector<int> YI2cPort::i2cSendAndReceiveArray(int slaveAddr,vector<int> values,in
     string reply;
     string rcvbytes;
     vector<int> res;
+    res.clear();
+    if (!(rcvCount<=512)) {
+        _throw(YAPI_INVALID_ARGUMENT,"Cannot read more than 512 bytes");
+        return res;
+    }
     msg = YapiWrapper::ysprintf("@%02x:",slaveAddr);
     nBytes = (int)values.size();
     idx = 0;
@@ -1307,6 +1358,16 @@ vector<int> YI2cPort::i2cSendAndReceiveArray(int slaveAddr,vector<int> values,in
         idx = idx + 1;
     }
     idx = 0;
+    if (rcvCount > 54) {
+        while (rcvCount - idx > 255) {
+            msg = YapiWrapper::ysprintf("%sxx*FF",msg.c_str());
+            idx = idx + 255;
+        }
+        if (rcvCount - idx > 2) {
+            msg = YapiWrapper::ysprintf("%sxx*%02X", msg.c_str(),(rcvCount - idx));
+            idx = rcvCount;
+        }
+    }
     while (idx < rcvCount) {
         msg = YapiWrapper::ysprintf("%sxx",msg.c_str());
         idx = idx + 1;

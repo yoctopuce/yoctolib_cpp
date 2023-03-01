@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_dualpower.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_dualpower.cpp 52567 2022-12-25 12:00:14Z seb $
  *
  *  Implements yFindDualPower(), the high-level API for DualPower functions
  *
@@ -167,7 +167,7 @@ int YDualPower::set_powerControl(Y_POWERCONTROL_enum newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("powerControl", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_lightsensor.cpp 45292 2021-05-25 23:27:54Z mvuilleu $
+ *  $Id: yocto_lightsensor.cpp 52567 2022-12-25 12:00:14Z seb $
  *
  *  Implements yFindLightSensor(), the high-level API for LightSensor functions
  *
@@ -86,7 +86,7 @@ int YLightSensor::set_currentValue(double newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
         res = _setAttr("currentValue", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -112,7 +112,7 @@ int YLightSensor::set_currentValue(double newval)
 int YLightSensor::calibrate(double calibratedVal)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%" FMTs64, (s64)floor(calibratedVal * 65536.0 + 0.5)); rest_val = string(buf);
+    char buf[32]; SAFE_SPRINTF(buf, 32, "%" FMTs64, (s64)floor(calibratedVal * 65536.0 + 0.5)); rest_val = string(buf);
     return _setAttr("currentValue", rest_val);
 }
 
@@ -170,7 +170,7 @@ int YLightSensor::set_measureType(Y_MEASURETYPE_enum newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("measureType", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);

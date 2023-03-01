@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_magnetometer.cpp 50689 2022-08-17 14:37:15Z mvuilleu $
+ *  $Id: yocto_magnetometer.cpp 52567 2022-12-25 12:00:14Z seb $
  *
  *  Implements yFindMagnetometer(), the high-level API for Magnetometer functions
  *
@@ -142,7 +142,7 @@ int YMagnetometer::set_bandwidth(int newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("bandwidth", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);

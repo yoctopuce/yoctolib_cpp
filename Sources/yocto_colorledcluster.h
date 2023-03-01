@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_colorledcluster.h 50281 2022-06-30 07:21:14Z mvuilleu $
+ *  $Id: yocto_colorledcluster.h 52567 2022-12-25 12:00:14Z seb $
  *
  *  Declares yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *

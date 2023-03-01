@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multisenscontroller.h 49501 2022-04-21 07:09:25Z mvuilleu $
+ *  $Id: yocto_multisenscontroller.h 52567 2022-12-25 12:00:14Z seb $
  *
  *  Declares yFindMultiSensController(), the high-level API for MultiSensController functions
  *

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 51576 2022-11-14 08:35:08Z seb $
+ * $Id: ystream.c 53298 2023-02-28 09:40:01Z seb $
  *
  * USB stream implementation
  *
@@ -267,7 +267,7 @@ int wcstombs_s(size_t *pReturnValue, char *mbstr, size_t sizeInBytes, const wcha
  Whitepage and Yellowpage wrapper for USB devices
  ****************************************************************************/
 
-void ypUpdateUSB(const char* serial, const char* funcid, const char* funcname, int funclass, int funydx, const char* funcval)
+static void ypUpdateUSB(const char* serial, const char* funcid, const char* funcname, int funclass, int funydx, const char* funcval)
 {
     char funcid_cstr[YOCTO_FUNCTION_LEN];
     char categ[YOCTO_FUNCTION_LEN];
@@ -294,6 +294,18 @@ void ypUpdateUSB(const char* serial, const char* funcid, const char* funcname, i
     }
 }
 
+void ypUpdateTCP(const char* serial, const char* funcid, const char* funcname, int funclass, int funydx, const char* funcval)
+{
+    int devydx;
+    yStrRef serialref;
+
+    serialref = yHashPutStr(serial);
+    devydx = wpGetDevYdx(serialref);
+    if (devydx >= 0) {
+        ypUpdateUSB(serial, funcid, funcname, funclass, funydx, funcval);
+    }
+}
+
 void ypUpdateYdx(int devydx, Notification_funydx funInfo, const char* funcval)
 {
     YAPI_FUNCTION fundesc;
@@ -308,17 +320,6 @@ void ypUpdateYdx(int devydx, Notification_funydx funInfo, const char* funcval)
     }
 }
 
-void ypUpdateHybrid(const char* serial, Notification_funydx funInfo, const char* funcval)
-{
-    int devydx;
-    yStrRef serialref;
-
-    serialref = yHashPutStr(serial);
-    devydx = wpGetDevYdx(serialref);
-    if (devydx >= 0) {
-        ypUpdateYdx(devydx, funInfo, funcval);
-    }
-}
 
 /*****************************************************************************
   THEAD / CONCURENCY RELATED FUNCTIONS

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_i2cport.h 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_i2cport.h 52848 2023-01-20 15:49:48Z mvuilleu $
  *
  *  Declares yFindI2cPort(), the high-level API for I2cPort functions
  *
@@ -582,6 +582,8 @@ public:
      * @return the number of bytes available to read
      */
     virtual int         read_avail(void);
+
+    virtual int         end_tell(void);
 
     /**
      * Sends a text line query to the serial port, and reads the reply, if any.

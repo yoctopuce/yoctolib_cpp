@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_servo.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_servo.cpp 52567 2022-12-25 12:00:14Z seb $
  *
  *  Implements yFindServo(), the high-level API for Servo functions
  *
@@ -157,7 +157,7 @@ int YServo::set_position(int newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("position", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -271,7 +271,7 @@ int YServo::set_range(int newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("range", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -331,7 +331,7 @@ int YServo::set_neutral(int newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("neutral", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -369,7 +369,7 @@ int YServo::set_move(YMove newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buff[64]; sprintf(buff,"%d:%d",newval.target,newval.ms); rest_val = string(buff);
+        char buff[64]; SAFE_SPRINTF(buff, 64, "%d:%d",newval.target,newval.ms); rest_val = string(buff);
         res = _setAttr("move", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -392,7 +392,7 @@ int YServo::set_move(YMove newval)
 int YServo::move(int target,int ms_duration)
 {
     string rest_val;
-    char buff[64]; sprintf(buff,"%d:%d",target,ms_duration); rest_val = string(buff);
+    char buff[64]; SAFE_SPRINTF(buff, 64, "%d:%d",target,ms_duration); rest_val = string(buff);
     return _setAttr("move", rest_val);
 }
 
@@ -441,7 +441,7 @@ int YServo::set_positionAtPowerOn(int newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("positionAtPowerOn", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_realtimeclock.h 50595 2022-07-28 07:54:15Z mvuilleu $
+ *  $Id: yocto_realtimeclock.h 52567 2022-12-25 12:00:14Z seb $
  *
  *  Declares yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *

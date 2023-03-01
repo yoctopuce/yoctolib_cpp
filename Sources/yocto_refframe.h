@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_refframe.h 43619 2021-01-29 09:14:45Z mvuilleu $
+ *  $Id: yocto_refframe.h 52567 2022-12-25 12:00:14Z seb $
  *
  *  Declares yFindRefFrame(), the high-level API for RefFrame functions
  *

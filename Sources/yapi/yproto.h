@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 51576 2022-11-14 08:35:08Z seb $
+ * $Id: yproto.h 53298 2023-02-28 09:40:01Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -1091,9 +1091,8 @@ void ywpSafeUnregister(HubSt* hub, yStrRef serialref);
 HubSt* ywpGetDeviceHub(yStrRef serialref);
 int ywpGetDeviceUrl(YAPI_DEVICE devdesc, char* roothubserial, char* request, int requestsize, int* neededsize);
 
-void ypUpdateUSB(const char* serial, const char* funcid, const char* funcname, int funclass, int funydx, const char* funcval);
+void ypUpdateTCP(const char* serial, const char* funcid, const char* funcname, int funclass, int funydx, const char* funcval);
 void ypUpdateYdx(int devydx, Notification_funydx funInfo, const char* funcval);
-void ypUpdateHybrid(const char* serial, Notification_funydx funInfo, const char* funcval);
 
 /*****************************************************************
  * yStream API with cycling logic and yyPacket API

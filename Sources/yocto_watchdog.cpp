@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_watchdog.cpp 44548 2021-04-13 09:56:42Z mvuilleu $
+ *  $Id: yocto_watchdog.cpp 52567 2022-12-25 12:00:14Z seb $
  *
  *  Implements yFindWatchdog(), the high-level API for Watchdog functions
  *
@@ -248,7 +248,7 @@ int YWatchdog::set_stateAtPowerOn(Y_STATEATPOWERON_enum newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("stateAtPowerOn", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -308,7 +308,7 @@ int YWatchdog::set_maxTimeOnStateA(s64 newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%u", (u32)newval); rest_val = string(buf);
         res = _setAttr("maxTimeOnStateA", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -368,7 +368,7 @@ int YWatchdog::set_maxTimeOnStateB(s64 newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%u", (u32)newval); rest_val = string(buf);
         res = _setAttr("maxTimeOnStateB", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -472,7 +472,7 @@ int YWatchdog::set_pulseTimer(s64 newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%u", (u32)newval); rest_val = string(buf);
         res = _setAttr("pulseTimer", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -495,7 +495,7 @@ int YWatchdog::set_pulseTimer(s64 newval)
 int YWatchdog::pulse(int ms_duration)
 {
     string rest_val;
-    char buf[32]; sprintf(buf, "%u", (u32)ms_duration); rest_val = string(buf);
+    char buf[32]; SAFE_SPRINTF(buf, 32, "%u", (u32)ms_duration); rest_val = string(buf);
     return _setAttr("pulseTimer", rest_val);
 }
 
@@ -527,7 +527,7 @@ int YWatchdog::set_delayedPulseTimer(YDelayedPulse newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buff[64]; sprintf(buff,"%d:%d",newval.target,newval.ms); rest_val = string(buff);
+        char buff[64]; SAFE_SPRINTF(buff, 64, "%d:%d",newval.target,newval.ms); rest_val = string(buff);
         res = _setAttr("delayedPulseTimer", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -550,7 +550,7 @@ int YWatchdog::set_delayedPulseTimer(YDelayedPulse newval)
 int YWatchdog::delayedPulse(int ms_delay,int ms_duration)
 {
     string rest_val;
-    char buff[64]; sprintf(buff,"%d:%d",ms_delay,ms_duration); rest_val = string(buff);
+    char buff[64]; SAFE_SPRINTF(buff, 64, "%d:%d",ms_delay,ms_duration); rest_val = string(buff);
     return _setAttr("delayedPulseTimer", rest_val);
 }
 
@@ -761,7 +761,7 @@ int YWatchdog::set_triggerDelay(s64 newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%u", (u32)newval); rest_val = string(buf);
         res = _setAttr("triggerDelay", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -817,7 +817,7 @@ int YWatchdog::set_triggerDuration(s64 newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%u", (u32)newval); rest_val = string(buf);
         res = _setAttr("triggerDuration", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);

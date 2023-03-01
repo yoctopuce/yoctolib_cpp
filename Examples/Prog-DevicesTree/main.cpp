@@ -214,5 +214,4 @@ int main(int argc, const char * argv[])
     YAPI::Sleep(1000, errmsg);   // traps others events
     showNetwork();
   }
-  YAPI::FreeAPI();
 }

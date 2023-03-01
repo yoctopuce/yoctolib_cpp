@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.cpp 49903 2022-05-25 14:18:36Z mvuilleu $
+ *  $Id: yocto_spiport.cpp 52892 2023-01-25 10:13:30Z seb $
  *
  *  Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -45,6 +45,7 @@
 #include <stdlib.h>
 
 #include "yocto_spiport.h"
+#include "yapi/yproto.h"
 #include "yapi/yjson.h"
 #include "yapi/yapi.h"
 #define  __FILE_ID__  "spiport"
@@ -723,7 +724,7 @@ int YSpiPort::set_voltageLevel(Y_VOLTAGELEVEL_enum newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("voltageLevel", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -1126,16 +1127,29 @@ int YSpiPort::read_tell(void)
  */
 int YSpiPort::read_avail(void)
 {
-    string buff;
-    int bufflen = 0;
+    string availPosStr;
+    int atPos = 0;
     int res = 0;
+    string databin;
 
-    buff = this->_download(YapiWrapper::ysprintf("rxcnt.bin?pos=%d",_rxptr));
-    bufflen = (int)(buff).size() - 1;
-    while ((bufflen > 0) && (((u8)buff[bufflen]) != 64)) {
-        bufflen = bufflen - 1;
-    }
-    res = atoi(((buff).substr( 0, bufflen)).c_str());
+    databin = this->_download(YapiWrapper::ysprintf("rxcnt.bin?pos=%d",_rxptr));
+    availPosStr = databin;
+    atPos = _ystrpos(availPosStr, "@");
+    res = atoi(((availPosStr).substr( 0, atPos)).c_str());
+    return res;
+}
+
+int YSpiPort::end_tell(void)
+{
+    string availPosStr;
+    int atPos = 0;
+    int res = 0;
+    string databin;
+
+    databin = this->_download(YapiWrapper::ysprintf("rxcnt.bin?pos=%d",_rxptr));
+    availPosStr = databin;
+    atPos = _ystrpos(availPosStr, "@");
+    res = atoi(((availPosStr).substr( atPos+1, (int)(availPosStr).length()-atPos-1)).c_str());
     return res;
 }
 
@@ -1153,13 +1167,22 @@ int YSpiPort::read_avail(void)
  */
 string YSpiPort::queryLine(string query,int maxWait)
 {
+    int prevpos = 0;
     string url;
     string msgbin;
     vector<string> msgarr;
     int msglen = 0;
     string res;
+    if ((int)(query).length() <= 80) {
+        // fast query
+        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=!%s", maxWait,this->_escapeAttr(query).c_str());
+    } else {
+        // long query
+        prevpos = this->end_tell();
+        this->_upload("txdata", query + "\r\n");
+        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&pos=%d", maxWait,prevpos);
+    }
 
-    url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=!%s", maxWait,this->_escapeAttr(query).c_str());
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);
     msglen = (int)msgarr.size();
@@ -1191,13 +1214,22 @@ string YSpiPort::queryLine(string query,int maxWait)
  */
 string YSpiPort::queryHex(string hexString,int maxWait)
 {
+    int prevpos = 0;
     string url;
     string msgbin;
     vector<string> msgarr;
     int msglen = 0;
     string res;
+    if ((int)(hexString).length() <= 80) {
+        // fast query
+        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=$%s", maxWait,hexString.c_str());
+    } else {
+        // long query
+        prevpos = this->end_tell();
+        this->_upload("txdata", YAPI::_hexStr2Bin(hexString));
+        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&pos=%d", maxWait,prevpos);
+    }
 
-    url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=$%s", maxWait,hexString.c_str());
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);
     msglen = (int)msgarr.size();

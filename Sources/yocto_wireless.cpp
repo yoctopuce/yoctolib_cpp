@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.cpp 43619 2021-01-29 09:14:45Z mvuilleu $
+ * $Id: yocto_wireless.cpp 52565 2022-12-24 15:19:59Z seb $
  *
  * Implements yFindWireless(), the high-level API for Wireless functions
  *
@@ -45,6 +45,7 @@
 #include <stdlib.h>
 
 #include "yocto_wireless.h"
+#include "yapi/yproto.h"
 #include "yapi/yjson.h"
 #include "yapi/yapi.h"
 #define  __FILE_ID__  "wireless"

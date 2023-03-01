@@ -19,9 +19,7 @@
 #include <Windows.h>
 #include <tchar.h>
 #include <iphlpapi.h>
-#if !defined(snprintf)
-#define snprintf _snprintf
-#endif
+#define SAFE_SPRINTF sprintf_s
 #define strdup _strdup
 
 #else
@@ -41,7 +39,7 @@ typedef int SOCKET;
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
 #include <stdio.h>
-
+#define SAFE_SPRINTF snprintf
 #endif
 
 #include <iostream>
@@ -154,8 +152,7 @@ static int ParseArguments(int argc, char *argv[])
   if(install) {
     char allargs[1024];
     char *p = allargs;
-
-    sprintf(allargs, " -d -p %d -f %s", Globalp.portno, Globalp.freq);
+    SAFE_SPRINTF(allargs, 1024, " -d -p %d -f %s", Globalp.portno, Globalp.freq);
     if(Globalp.encodeNMEA) {
       strcat(allargs, " -n");
     }

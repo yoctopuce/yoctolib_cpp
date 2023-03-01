@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multisenscontroller.cpp 49501 2022-04-21 07:09:25Z mvuilleu $
+ *  $Id: yocto_multisenscontroller.cpp 52567 2022-12-25 12:00:14Z seb $
  *
  *  Implements yFindMultiSensController(), the high-level API for MultiSensController functions
  *
@@ -144,7 +144,7 @@ int YMultiSensController::set_nSensors(int newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("nSensors", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);

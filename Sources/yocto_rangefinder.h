@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_rangefinder.h 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_rangefinder.h 52848 2023-01-20 15:49:48Z mvuilleu $
  *
  *  Declares yFindRangeFinder(), the high-level API for RangeFinder functions
  *
@@ -340,7 +340,7 @@ public:
 
     /**
      * Triggers the photon detector hardware calibration.
-     * This function is part of the calibration procedure to compensate for the the effect
+     * This function is part of the calibration procedure to compensate for the effect
      * of a cover glass. Make sure to read the chapter about hardware calibration for details
      * on the calibration procedure for proper results.
      *
@@ -365,7 +365,7 @@ public:
 
     /**
      * Triggers the hardware cross-talk calibration of the distance sensor.
-     * This function is part of the calibration procedure to compensate for the the effect
+     * This function is part of the calibration procedure to compensate for the effect
      * of a cover glass. Make sure to read the chapter about hardware calibration for details
      * on the calibration procedure for proper results.
      *

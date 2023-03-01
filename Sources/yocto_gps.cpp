@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_gps.cpp 50689 2022-08-17 14:37:15Z mvuilleu $
+ *  $Id: yocto_gps.cpp 52567 2022-12-25 12:00:14Z seb $
  *
  *  Implements yFindGps(), the high-level API for Gps functions
  *
@@ -317,7 +317,7 @@ int YGps::set_coordSystem(Y_COORDSYSTEM_enum newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("coordSystem", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -381,7 +381,7 @@ int YGps::set_constellation(Y_CONSTELLATION_enum newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("constellation", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -678,7 +678,7 @@ int YGps::set_utcOffset(int newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("utcOffset", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.cpp 50144 2022-06-17 06:59:52Z seb $
+ * $Id: yocto_messagebox.cpp 52567 2022-12-25 12:00:14Z seb $
  *
  * Implements yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -45,6 +45,7 @@
 #include <stdlib.h>
 
 #include "yocto_messagebox.h"
+#include "yapi/yproto.h"
 #include "yapi/yjson.h"
 #include "yapi/yapi.h"
 #define  __FILE_ID__  "messagebox"
@@ -1489,7 +1490,7 @@ int YMessageBox::set_pduSent(int newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("pduSent", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -1543,7 +1544,7 @@ int YMessageBox::set_pduReceived(int newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("pduReceived", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);

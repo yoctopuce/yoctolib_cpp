@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 52316 2022-12-13 10:46:01Z seb $
+ * $Id: yapi.c 53298 2023-02-28 09:40:01Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -3259,7 +3259,7 @@ int handleNetNotification(HubSt* hub)
         testPing = ySeekFifo(&(hub->not_fifo), (u8*)&netstop, 1, 0, 1, 0);
         if (testPing == 0) {
 #ifdef DEBUG_NET_NOTIFICATION
-            YSPRINTF(Dbuffer,1024,"HUB: %X->%s will send ping notification\n",hub->url,hub->name);
+            YSPRINTF(Dbuffer,1024,"HUB: %s will send ping notification\n",hub->host);
             dumpNotif(Dbuffer);
 #endif
             hub->send_ping = 1;
@@ -3316,7 +3316,7 @@ int handleNetNotification(HubSt* hub)
                      serial,funcid,name,abspos);
             dumpNotif(Dbuffer);
 #endif
-        ypUpdateUSB(serial, funcid, name, -1, -1,NULL);
+        ypUpdateTCP(serial, funcid, name, -1, -1,NULL);
         break;
     case NOTIFY_NETPKT_FUNCVAL:
         funcid = p;
@@ -3336,7 +3336,7 @@ int handleNetNotification(HubSt* hub)
                 serial,funcid,value,abspos);
             dumpNotif(Dbuffer);
 #endif
-        ypUpdateUSB(serial, funcid,NULL, -1, -1, value);
+            ypUpdateTCP(serial, funcid,NULL, -1, -1, value);
         break;
     case NOTIFY_NETPKT_FUNCNAMEYDX:
         funcid = p;
@@ -3369,7 +3369,7 @@ int handleNetNotification(HubSt* hub)
                      serial,funcid,name,funydx,abspos);
             dumpNotif(Dbuffer);
 #endif
-        ypUpdateUSB(serial, funcid, name, funclass, funydx,NULL);
+            ypUpdateTCP(serial, funcid, name, funclass, funydx, NULL);
         break;
     case NOTIFY_NETPKT_CHILD:
         children = p;
@@ -3514,7 +3514,7 @@ static void* yhelper_thread(void* ctx)
                     dbglog("TRACE(%s): notification socket open\n",hub->host);
 #endif
 #ifdef DEBUG_NET_NOTIFICATION
-                    YSPRINTF(Dbuffer,1024,"HUB: %X->%s started\n",hub->url,hub->name);
+                    YSPRINTF(Dbuffer,1024,"HUB: %s started\n",hub->host);
                     dumpNotif(Dbuffer);
 #endif
                     hub->state = NET_HUB_TRYING;
@@ -3632,7 +3632,7 @@ static void* yhelper_thread(void* ctx)
                             yLeaveCriticalSection(&hub->access);
                         }
 #ifdef DEBUG_NET_NOTIFICATION
-                        YSPRINTF(Dbuffer, 1024, "Network hub %X->%s has closed the connection for notification\n", hub->url, hub->name);
+                        YSPRINTF(Dbuffer, 1024, "Network hub %s has closed the connection for notification\n", hub->host);
                         dumpNotif(Dbuffer);
 #endif
                     }
@@ -3864,11 +3864,12 @@ static YRETCODE yapiRegisterHubEx(const char* url, int checkacces, char* errmsg)
 static int pingURLOnhub(HubSt* hubst, const char* request, int mstimeout, char* errmsg)
 {
     yJsonStateMachine j;
-    u8 buffer[1500];
+    u8 *buffer;
     int res;
     yJsonRetCode jstate = YJSON_NEED_INPUT;
     u64 globalTimeout;
     RequestSt* req;
+    int replysize;
 
     globalTimeout = yapiGetTickCount() + mstimeout;
 
@@ -3877,57 +3878,42 @@ static int pingURLOnhub(HubSt* hubst, const char* request, int mstimeout, char* 
         yReqFree(req);
         return res;
     }
+    res = (YRETCODE)yReqIsEof(req, errmsg);
+    while (res == 0 && globalTimeout > yapiGetTickCount()) {
+        res = (YRETCODE)yReqSelect(req, globalTimeout- yapiGetTickCount(), errmsg);
+        if (YISERR(res)) {
+            yReqClose(req);
+            return res;
+        }
+        res = (YRETCODE)yReqIsEof(req, errmsg);
+    }
+    if (YISERR(res) && res != YAPI_NO_MORE_DATA) {
+        yReqClose(req);
+        return res;
+    }
+    replysize = yReqGet(req, (u8**)&buffer);
+    replysize = unpackHTTPRequest(buffer, replysize);
     // init yjson parser
     memset(&j, 0, sizeof(j));
     j.st = YJSON_HTTP_START;
-    while (jstate == YJSON_NEED_INPUT) {
-        res = yReqSelect(req, 500, errmsg);
-        if (YISERR(res)) {
-            break;
-        }
-        res = yReqRead(req, buffer, sizeof(buffer));
-        while (res > 0) {
-            j.src = (char*)buffer;
-            j.end = (char*)buffer + res;
-            // parse all we can on this buffer
-            jstate = yJsonParse(&j);
-            while (jstate == YJSON_PARSE_AVAIL) {
-                jstate = yJsonParse(&j);
-            }
-            res = yReqRead(req, buffer, sizeof(buffer));
-        }
-        if (res <= 0) {
-            res = yReqIsEof(req, errmsg);
-            if (YISERR(res)) {
-                // any specific error during select
-                break;
-            }
-            if (res == 1) {
-                // remote connection close change res to Succes and
-                // test json parsing status bellow to detect early close
-                res = YAPI_SUCCESS;
-                break;
-            }
-            if (yapiGetTickCount() >= globalTimeout) {
-                res = YERR(YAPI_TIMEOUT);
-            }
-        }
+    j.src = (char*)buffer;
+    j.end = (char*)buffer + replysize;
+    // parse all we can on this buffer
+    jstate = yJsonParse(&j);
+    while (jstate == YJSON_PARSE_AVAIL) {
+        jstate = yJsonParse(&j);
     }
-    yReqClose(req);
     yReqFree(req);
-
-    if (res == YAPI_SUCCESS) {
-        switch (jstate) {
-        case YJSON_NEED_INPUT:
-            return YERRMSG(YAPI_IO_ERROR, "Remote host has close the connection");
-        case YJSON_PARSE_AVAIL:
-        case YJSON_FAILED:
-            return YERRMSG(YAPI_IO_ERROR, "Invalid json data");
-        case YJSON_SUCCESS:
-            break;
-        }
+    switch (jstate) {
+    case YJSON_NEED_INPUT:
+        return YERRMSG(YAPI_IO_ERROR, "Remote host has close the connection");
+    case YJSON_PARSE_AVAIL:
+    case YJSON_FAILED:
+        return YERRMSG(YAPI_IO_ERROR, "Invalid json data");
+    case YJSON_SUCCESS:
+        break;
     }
-    return res;
+    return YAPI_SUCCESS;
 }
 
 static YRETCODE yapiTestHub_internal(const char* url, int mstimeout, char* errmsg)
@@ -4367,7 +4353,6 @@ static YRETCODE yapiGetDevicePath_internal(YAPI_DEVICE devdesc, char* rootdevice
 static YRETCODE yapiGetDevicePathEx_internal(const char* serial, char* rootdevice, char* request, int requestsize, int* neededsize, char* errmsg)
 {
     YAPI_DEVICE devdescr;
-    char host[YOCTO_HOSTNAME_NAME];
     char buffer[512];
     HubSt* hub;
 
@@ -4410,7 +4395,7 @@ static YRETCODE yapiGetDevicePathEx_internal(const char* serial, char* rootdevic
                 prefix = "ws";
                 break;
             }
-            len = YSPRINTF(request, requestsize, "%s://%s:%d%s", prefix, host, hub->portno, buffer);
+            len = YSPRINTF(request, requestsize, "%s://%s:%d%s%s", prefix, hub->host, hub->portno, hub->subdomain, buffer);
             *neededsize = len + 1;
         }
         if (rootdevice && YSTRCMP(rootdevice, serial) == 0) {
@@ -4800,6 +4785,22 @@ static int yapiRequestWaitEndWS(YIOHDL_internal* iohdl, char** reply, int* reply
 }
 
 
+static void yapiRequestClose(YIOHDL_internal* arg)
+{
+
+    if (arg->type == YIO_USB) {
+        yUsbClose(arg, NULL);
+    }
+    else if (arg->type == YIO_TCP) {
+        RequestSt* tcpreq = yContext->tcpreq[arg->tcpreqidx];
+        yReqClose(tcpreq);
+    }
+    else {
+        yReqClose(arg->ws);
+        yReqFree(arg->ws);
+    }
+}
+
 YRETCODE yapiHTTPRequestSyncStartEx_internal(YIOHDL* iohdl, int tcpchan, const char* device, const char* request, int requestsize, char** reply, int* replysize, yapiRequestProgressCallback progress_cb, void* progress_ctx, char* errmsg)
 {
     YRETCODE res;
@@ -4832,7 +4833,20 @@ YRETCODE yapiHTTPRequestSyncStartEx_internal(YIOHDL* iohdl, int tcpchan, const c
             yFree(internalio);
             return YERR(YAPI_INVALID_ARGUMENT);
         }
-
+        if (res == YAPI_SUCCESS) {
+            int pos;
+            if (*replysize == 0) {
+                yapiRequestClose(internalio);
+                yFree(internalio);
+                return YERRMSG(YAPI_IO_ERROR,"Returned an empty HTTP response");
+            }
+            pos = ymemfind((u8*)(*reply), *replysize, (u8*)"\r\n\r\n", 4) < 0;
+            if (pos < 0) {
+                yapiRequestClose(internalio);
+                yFree(internalio);
+                return YERRMSG(YAPI_IO_ERROR, "Invalid HTTP header");
+            }
+        }
         yEnterCriticalSection(&yContext->io_cs);
         *iohdl = internalio;
         internalio->next = yContext->yiohdl_first;
@@ -4879,16 +4893,7 @@ YRETCODE yapiHTTPRequestSyncDone_internal(YIOHDL* iohdl, char* errmsg)
     }
     yLeaveCriticalSection(&yContext->io_cs);
 
-
-    if (arg->type == YIO_USB) {
-        yUsbClose(arg, errmsg);
-    } else if (arg->type == YIO_TCP) {
-        RequestSt* tcpreq = yContext->tcpreq[arg->tcpreqidx];
-        yReqClose(tcpreq);
-    } else {
-        yReqClose(arg->ws);
-        yReqFree(arg->ws);
-    }
+    yapiRequestClose(arg);
     yFree(arg);
     memset((u8*)iohdl, 0, YIOHDL_SIZE);
     return YAPI_SUCCESS;
@@ -5378,6 +5383,10 @@ static int yapiJsonDecodeString_internal(const char* json_string, char* output)
     char* p = output;
     int maxsize = YSTRLEN(json_string);
 
+    if (maxsize == 0) {
+        *p = 0;
+        return 0;
+    }
     j.src = json_string;
     j.end = j.src + maxsize;
     j.st = YJSON_START;

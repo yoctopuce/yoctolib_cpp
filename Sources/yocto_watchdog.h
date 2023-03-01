@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_watchdog.h 44548 2021-04-13 09:56:42Z mvuilleu $
+ *  $Id: yocto_watchdog.h 52567 2022-12-25 12:00:14Z seb $
  *
  *  Declares yFindWatchdog(), the high-level API for Watchdog functions
  *

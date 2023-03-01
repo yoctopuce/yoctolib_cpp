@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_quadraturedecoder.h 45843 2021-08-04 07:51:59Z mvuilleu $
+ *  $Id: yocto_quadraturedecoder.h 52567 2022-12-25 12:00:14Z seb $
  *
  *  Declares yFindQuadratureDecoder(), the high-level API for QuadratureDecoder functions
  *

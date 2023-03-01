@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: makefile 46595 2021-09-24 16:42:28Z mvuilleu $
+#  $Id: makefile 53283 2023-02-17 09:13:21Z seb $
 #
 #  makefile for C++ library
 #  - - - - - - - - - License information: - - - - - - - - -
@@ -42,17 +42,23 @@
 WINDOWS_SDK_32 = $(WINDOWSSDKDIR)
 
 LINKWITH32 =  /LIBPATH:"$(VCINSTALLDIR)lib" /LIBPATH:"$(VCINSTALLDIR)atlmfc\lib" /LIBPATH:"$(WINDOWS_SDK_32)lib"
-
 !IF !EXISTS(c:\Program Files\Microsoft SDKs\Windows\v7.1\)
+!IF EXISTS("$(VCINSTALLDIR)bin\x86_amd64\cl.exe")
+CC64 = "$(VCINSTALLDIR)bin\x86_amd64\cl.exe"
 WINDOWS_SDK_64 = $(WINDOWSSDKDIR)
-CC64 = "$(VCINSTALLDIR)bin\x86_amd64\cl"
-LINKER64 = "$(VCINSTALLDIR)bin\x86_amd64\link"
+LINKER64 = "$(VCINSTALLDIR)bin\x86_amd64\link.exe"
 LINKWITH64 = /MACHINE:X64 /LIBPATH:"$(VCINSTALLDIR)lib\amd64" /LIBPATH:"$(VCINSTALLDIR)atlmfc\lib\amd64" /LIBPATH:"$(WINDOWS_SDK_64)Lib\$(WINDOWSSDKLIBVERSION)ucrt\x64" /LIBPATH:"$(WINDOWS_SDK_64)\Lib\$(WINDOWSSDKLIBVERSION)um\x64"
+!ELSE
+CC64 = "cl"
+LINKER64 = "link"
+!ENDIF
 !ELSE
 WINDOWS_SDK_64 = c:\Program Files\Microsoft SDKs\Windows\v7.1
 CC64 = "$(VCINSTALLDIR)bin\amd64\cl"
 LINKWITH64 =  /LIBPATH:"$(VCINSTALLDIR)lib\amd64" /LIBPATH:"$(VCINSTALLDIR)atlmfc\lib\amd64" /LIBPATH:"$(WINDOWS_SDK_64)\lib\x64"
 !ENDIF
+
+
 
 
 !IFDEF JAVA_HOME
@@ -224,9 +230,18 @@ b64:   $(OBJDIR64) $(OBJDIR_DLL64) $(YAPIOUT64) $(OUTDIR64)\yocto-static.lib $(O
 
 all:  b32 b64
 
+win64:  b64
+
+win32:  b32
+
 yapi:  $(OBJDIR32) $(OBJDIR_DLL32) $(YAPIOUT32) $(YAPIOUT32)\yapi.dll $(OBJDIR64) $(OBJDIR_DLL64) $(YAPIOUT64) $(YAPIOUT64)\yapi.dll
 
 release :  all clean_obj
+
+release_win64 :  b64 clean_obj64
+
+release_win32 :  b32 clean_obj32
+
 
 $(OBJDIR32) $(OBJDIR_DLL32) $(YAPIOUT32) $(OBJDIR64) $(OBJDIR_DLL64) $(YAPIOUT64):
 	IF NOT EXIST $@ mkdir $@

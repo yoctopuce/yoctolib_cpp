@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_power.h 52318 2022-12-13 10:58:18Z seb $
+ *  $Id: yocto_power.h 52567 2022-12-25 12:00:14Z seb $
  *
  *  Declares yFindPower(), the high-level API for Power functions
  *

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_colorled.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_colorled.cpp 52567 2022-12-25 12:00:14Z seb $
  *
  *  Implements yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -176,7 +176,7 @@ int YColorLed::set_rgbColor(int newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"0x%06x",newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "0x%06x",newval); rest_val = string(buf);
         res = _setAttr("rgbColor", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -230,7 +230,7 @@ int YColorLed::set_hslColor(int newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"0x%06x",newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "0x%06x",newval); rest_val = string(buf);
         res = _setAttr("hslColor", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -268,7 +268,7 @@ int YColorLed::set_rgbMove(YMove newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buff[64]; sprintf(buff,"%d:%d",newval.target,newval.ms); rest_val = string(buff);
+        char buff[64]; SAFE_SPRINTF(buff, 64, "%d:%d",newval.target,newval.ms); rest_val = string(buff);
         res = _setAttr("rgbMove", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -291,7 +291,7 @@ int YColorLed::set_rgbMove(YMove newval)
 int YColorLed::rgbMove(int rgb_target,int ms_duration)
 {
     string rest_val;
-    char buff[64]; sprintf(buff,"%d:%d",rgb_target,ms_duration); rest_val = string(buff);
+    char buff[64]; SAFE_SPRINTF(buff, 64, "%d:%d",rgb_target,ms_duration); rest_val = string(buff);
     return _setAttr("rgbMove", rest_val);
 }
 
@@ -323,7 +323,7 @@ int YColorLed::set_hslMove(YMove newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buff[64]; sprintf(buff,"%d:%d",newval.target,newval.ms); rest_val = string(buff);
+        char buff[64]; SAFE_SPRINTF(buff, 64, "%d:%d",newval.target,newval.ms); rest_val = string(buff);
         res = _setAttr("hslMove", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -346,7 +346,7 @@ int YColorLed::set_hslMove(YMove newval)
 int YColorLed::hslMove(int hsl_target,int ms_duration)
 {
     string rest_val;
-    char buff[64]; sprintf(buff,"%d:%d",hsl_target,ms_duration); rest_val = string(buff);
+    char buff[64]; SAFE_SPRINTF(buff, 64, "%d:%d",hsl_target,ms_duration); rest_val = string(buff);
     return _setAttr("hslMove", rest_val);
 }
 
@@ -397,7 +397,7 @@ int YColorLed::set_rgbColorAtPowerOn(int newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf,"0x%06x",newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "0x%06x",newval); rest_val = string(buf);
         res = _setAttr("rgbColorAtPowerOn", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);

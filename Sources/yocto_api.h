@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 51740 2022-11-23 16:53:35Z mvuilleu $
+ * $Id: yocto_api.h 53258 2023-02-16 11:16:45Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -87,6 +87,12 @@ namespace YOCTOLIB_NAMESPACE
 s64 yatoi(const char *c);
 int _ystrpos(const string& haystack, const string& needle);
 vector<string> _strsplit(const string& str, char delimiter);
+
+#ifdef WINDOWS_API
+#define SAFE_SPRINTF         sprintf_s
+#else
+#define SAFE_SPRINTF         snprintf
+#endif
 
 //--- (generated code: YFunction definitions)
 class YFunction; // forward declaration
@@ -829,9 +835,15 @@ public:
      *
      * <b><i>x.x.x.x</i></b> or <b><i>hostname</i></b>: The API will use the devices connected to the
      * host with the given IP address or hostname. That host can be a regular computer
-     * running a VirtualHub, or a networked YoctoHub such as YoctoHub-Ethernet or
+     * running a <i>native VirtualHub</i>, a <i>VirtualHub for web</i> hosted on a server,
+     * or a networked YoctoHub such as YoctoHub-Ethernet or
      * YoctoHub-Wireless. If you want to use the VirtualHub running on you local
-     * computer, use the IP address 127.0.0.1.
+     * computer, use the IP address 127.0.0.1. If the given IP is unresponsive, yRegisterHub
+     * will not return until a time-out defined by ySetNetworkTimeout has elapsed.
+     * However, it is possible to preventively test a connection  with yTestHub.
+     * If you cannot afford a network time-out, you can use the non blocking yPregisterHub
+     * function that will establish the connection as soon as it is available.
+     *
      *
      * <b>callback</b>: that keyword make the API run in "<i>HTTP Callback</i>" mode.
      * This a special mode allowing to take control of Yoctopuce devices
@@ -870,7 +882,8 @@ public:
      * Fault-tolerant alternative to yRegisterHub(). This function has the same
      * purpose and same arguments as yRegisterHub(), but does not trigger
      * an error when the selected hub is not available at the time of the function call.
-     * This makes it possible to register a network hub independently of the current
+     * If the connexion cannot be established immediately, a background task will automatically
+     * perform periodic retries. This makes it possible to register a network hub independently of the current
      * connectivity, and to try to contact it only when a device is actively needed.
      *
      * @param url : a string containing either "usb","callback" or the
@@ -1699,7 +1712,7 @@ public:
     virtual int         get_progress(void);
 
     /**
-     * Loads the the next block of measures from the dataLogger, and updates
+     * Loads the next block of measures from the dataLogger, and updates
      * the progress indicator.
      *
      * @return an integer in the range 0 to 100 (percentage of completion),
@@ -3866,9 +3879,15 @@ inline void yRegisterCalibrationHandler(int calibrationType, yCalibrationHandler
  *
  * <b><i>x.x.x.x</i></b> or <b><i>hostname</i></b>: The API will use the devices connected to the
  * host with the given IP address or hostname. That host can be a regular computer
- * running a VirtualHub, or a networked YoctoHub such as YoctoHub-Ethernet or
+ * running a <i>native VirtualHub</i>, a <i>VirtualHub for web</i> hosted on a server,
+ * or a networked YoctoHub such as YoctoHub-Ethernet or
  * YoctoHub-Wireless. If you want to use the VirtualHub running on you local
- * computer, use the IP address 127.0.0.1.
+ * computer, use the IP address 127.0.0.1. If the given IP is unresponsive, yRegisterHub
+ * will not return until a time-out defined by ySetNetworkTimeout has elapsed.
+ * However, it is possible to preventively test a connection  with yTestHub.
+ * If you cannot afford a network time-out, you can use the non blocking yPregisterHub
+ * function that will establish the connection as soon as it is available.
+ *
  *
  * <b>callback</b>: that keyword make the API run in "<i>HTTP Callback</i>" mode.
  * This a special mode allowing to take control of Yoctopuce devices
@@ -3908,7 +3927,8 @@ inline YRETCODE yRegisterHub(const string& url, string& errmsg)
  * Fault-tolerant alternative to yRegisterHub(). This function has the same
  * purpose and same arguments as yRegisterHub(), but does not trigger
  * an error when the selected hub is not available at the time of the function call.
- * This makes it possible to register a network hub independently of the current
+ * If the connexion cannot be established immediately, a background task will automatically
+ * perform periodic retries. This makes it possible to register a network hub independently of the current
  * connectivity, and to try to contact it only when a device is actively needed.
  *
  * @param url : a string containing either "usb","callback" or the

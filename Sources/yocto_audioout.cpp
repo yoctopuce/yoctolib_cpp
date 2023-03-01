@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_audioout.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_audioout.cpp 52567 2022-12-25 12:00:14Z seb $
  *
  *  Implements yFindAudioOut(), the high-level API for AudioOut functions
  *
@@ -142,7 +142,7 @@ int YAudioOut::set_volume(int newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("volume", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_realtimeclock.cpp 50595 2022-07-28 07:54:15Z mvuilleu $
+ *  $Id: yocto_realtimeclock.cpp 52567 2022-12-25 12:00:14Z seb $
  *
  *  Implements yFindRealTimeClock(), the high-level API for RealTimeClock functions
  *
@@ -141,7 +141,7 @@ int YRealTimeClock::set_unixTime(s64 newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%u", (u32)newval); rest_val = string(buf);
         res = _setAttr("unixTime", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -227,7 +227,7 @@ int YRealTimeClock::set_utcOffset(int newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("utcOffset", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 51576 2022-11-14 08:35:08Z seb $
+ * $Id: yhash.c 53298 2023-02-28 09:40:01Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -451,16 +451,15 @@ static void wpExecuteUnregisterUnsec(void)
         if (WP(hdl).flags & YWP_MARK_FOR_UNREGISTER) {
 #ifdef  DEBUG_WP
             {
-                char host[YOCTO_HOSTNAME_NAME];
-                u16  port;
-                yAbsUrlType type = yHashGetUrlPort( WP(hdl).url,host,&port,NULL,NULL,NULL,NULL);
-                switch(type){
-                case USB_URL:
-                    dbglog("WP: unregister %s(0x%X) form USB\n",yHashGetStrPtr(WP(hdl).serial),WP(hdl).serial);
-                    break;
-                default:
-                    dbglog("WP: unregister %s(0x%X) from %s:%u\n",yHashGetStrPtr(WP(hdl).serial),WP(hdl).serial,host,port);
-                }
+              HubSt *hub = ywpGetDeviceHub(WP(hdl).serial);
+              if (hub == FAKE_USB_HUB) {
+                  dbglog("WP: unregister %s(0x%X) form USB\n", yHashGetStrPtr(WP(hdl).serial), WP(hdl).serial);
+              }
+              else if (hub == NULL) {
+                  dbglog("WP: unregister %s(0x%X) form ???\n", yHashGetStrPtr(WP(hdl).serial), WP(hdl).serial);
+              }else {
+                  dbglog("WP: unregister %s(0x%X) from %s:%u\n", yHashGetStrPtr(WP(hdl).serial), WP(hdl).serial, hub->host, hub->portno);
+              }
             }
 #endif
 
@@ -564,7 +563,9 @@ int wpRegister(int devYdx, yStrRef serial, yStrRef logicalName, yStrRef productN
     hdl = yWpListHead;
     while (hdl != INVALID_BLK_HDL) {
         YASSERT(WP(hdl).blkId == YBLKID_WPENTRY);
-        if (WP(hdl).serial == serial) break;
+        if (WP(hdl).serial == serial) {
+            break;
+        }
         prev = hdl;
         hdl = WP(prev).nextPtr;
     }
@@ -582,7 +583,7 @@ int wpRegister(int devYdx, yStrRef serial, yStrRef logicalName, yStrRef productN
                 nextDevYdx++;
             }
         }
-        //dbglog("wpRegister serial=%X devYdx=%d\n", serial, devYdx);
+        //dbglog("wpRegister serial=%X(%s) devYdx=%d\n", serial,yHashGetStrPtr(serial), devYdx);
         initDevYdxInfos(devYdx, serial);
 #endif
         YASSERT(devYdx < NB_MAX_DEVICES);
@@ -635,18 +636,17 @@ int wpRegister(int devYdx, yStrRef serial, yStrRef logicalName, yStrRef productN
     }
 
 #ifdef DEBUG_WP
-    {
-        char host[YOCTO_HOSTNAME_NAME];
-        u16  port;
-        yAbsUrlType type = yHashGetUrlPort(devUrl,host,&port, NULL, NULL, NULL, NULL);
-        switch(type){
-        case USB_URL:
-            dbglog("WP: register %s(0x%X) form USB (res=%d)\n",yHashGetStrPtr(serial),serial,changed);
-            break;
-        default:
-            dbglog("WP: register %s(0x%X) from %s:%u (res=%d)\n",yHashGetStrPtr(serial),serial,host,port,changed);
-        }
+   {
+        HubSt* registeredHub = ywpGetDeviceHub(serial);
+          if (registeredHub == FAKE_USB_HUB) {
+              dbglog("WP: register %s(0x%X) form USB (res=%d)\n", yHashGetStrPtr(serial), serial,changed);
+          } else if (registeredHub==NULL){
+              dbglog("WP: register %s(0x%X) form ??? (res=%d)\n", yHashGetStrPtr(serial), serial, changed);
+          } else {
+              dbglog("WP: register %s(0x%X) from %s:%u  (res=%d)\n", yHashGetStrPtr(serial), serial, registeredHub->host, registeredHub->portno,changed);
+          }
     }
+
 #endif
 
     yLeaveCriticalSection(&yWpMutex);
@@ -723,20 +723,15 @@ int wpMarkForUnregister(yStrRef serial)
 
 #ifdef  DEBUG_WP
     {
-        char host[YOCTO_HOSTNAME_NAME];
-        u16  port;
-            if (retval) {
-                yAbsUrlType type = yHashGetUrlPort( WP(hdl).url,host,&port, NULL, NULL, NULL, NULL);
-            switch(type){
-            case USB_URL:
-                dbglog("WP: mark for unregister %s(0x%X) form USB\n",yHashGetStrPtr(serial),serial);
-                break;
-            default:
-                dbglog("WP: mark for unregister %s(0x%X) from %s:%u\n",yHashGetStrPtr(serial),serial,host,port);
-            }
-        }else{
-            dbglog("WP: mark for unregister %s(0x%X) witch is unregistered!\n",yHashGetStrPtr(serial),serial);
-        }
+        HubSt* registeredHub = ywpGetDeviceHub(serial);
+          if (registeredHub == FAKE_USB_HUB) {
+              dbglog("WP: mark for unregister %s(0x%X) form USB\n", yHashGetStrPtr(serial), serial);
+          } else if (registeredHub==NULL) {
+              dbglog("WP: mark for unregister %s(0x%X) from???????\n", yHashGetStrPtr(serial), serial);
+          } else {
+              dbglog("WP: mark for unregister %s(0x%X) from %s:%u\n", yHashGetStrPtr(serial), serial, registeredHub->host, registeredHub->portno);
+          }
+    
     }
 #endif
 
@@ -870,6 +865,8 @@ int ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, 
     const u16* funcValWords = (const u16*)funcVal;
 
     yEnterCriticalSection(&yYpMutex);
+
+    //dbglog("ypRegister %s:%s.%s\n", yHashGetStrPtr(categ), yHashGetStrPtr(serial), yHashGetStrPtr(funcId));
 
     // locate category node
     hdl = yYpListHead;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 52014 2022-12-01 10:52:52Z seb $
+ * $Id: ytcp.c 53010 2023-02-02 09:06:50Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -1069,6 +1069,13 @@ static int yHTTPOpenReqEx(struct _RequestSt* req, u64 mstimout, char* errmsg)
     char* d;
     u32 ip;
     int res;
+    const char *contentType = "\r\nContent-Type";
+    int contentTypeLen = (int)strlen(contentType);
+    const char* multipart = "multipart/form-data";
+    int multipartLen = (int)strlen(multipart);
+    const char* xupload = "x-upload";
+    int xuploadLen = (int)strlen(xupload);
+
 
     YASSERT(req->proto == PROTO_HTTP); 
     ip = resolveDNSCache(req->hub->host, errmsg);
@@ -1143,22 +1150,55 @@ static int yHTTPOpenReqEx(struct _RequestSt* req, u64 mstimout, char* errmsg)
         d += 8;
     }
 
-    //skip end of first line
+    // skip end of first line
     while (*p && *p != '\r') p++;
     last = p;
-    // copy usefull header (Content-Type)
+    // Search for Content-Type header: it must be preserved as it may countain a boundary
+    // 
+    // VirtualHub-4web quirk: we have to switch from "multipart/form-data" to "x-upload"
+    // to bypass PHP own processing of uploads. The exact value has anyway always be 
+    // ignored by VirtualHub and YoctoHubs, as long as a boundary is defined.
     while (*p == '\r' && *(p + 1) == '\n' && *(p + 2) != '\r') {
         p += 2;
         while (*p && *p != '\r') p++;
-        if (YSTRNCMP(last, "\r\nContent-Type", strlen("\r\nContent-Type")) == 0) {
+        if (YSTRNCMP(last, contentType, contentTypeLen) == 0) {
             unsigned len = (unsigned)(p - last);
             if ((unsigned)avail > len) {
+                // there is enough space to insert header, check if we need to change it
+                char* v = last + contentTypeLen;
+                while (v < p && *v != ':') v++;
+                v++;
+                while (v < p && *v == ' ') v++;
+                len = (unsigned)(v - last);
                 memcpy(d, last, len);
+                d += len;
+                avail -= len;
+                if (YSTRNCMP(v, multipart, multipartLen) == 0) {
+                    // replace multipart/form-data by x-upload
+                    v += multipartLen;
+                    memcpy(d, xupload, xuploadLen);
+                    d += xuploadLen;
+                    avail -= xuploadLen;
+                }
+                len = (unsigned)(p - v);
+                memcpy(d, v, len);
                 d += len;
                 avail -= len;
             }
         }
         last = p;
+    }
+    // VirtualHub-4web quirk: insert content-length if needed (often required by PHP)
+    if (req->bodysize > 0) {
+        char contentLength[40];
+        int contentLengthLen;
+        YSPRINTF(contentLength, sizeof(contentLength), "\r\nContent-Length: %d", req->bodysize);
+        contentLengthLen = (int) strlen(contentLength);
+        if (avail >= contentLengthLen) {
+            memcpy(d, contentLength, contentLengthLen);
+            d += contentLengthLen;
+            avail -= contentLengthLen;
+        }
     }
     if (avail >= 2) {
         *d++ = '\r';
@@ -1789,7 +1829,7 @@ int yReqOpen(struct _RequestSt* req, int wait_for_start, int tcpchan, const char
     }
     // Build a request buffer with at least a terminal NUL but
     // include space for Connection: close and Authorization: headers
-    minlen = reqlen + 400;
+    minlen = reqlen + 500;
     if (req->headerbufsize < minlen) {
         if (req->headerbuf)
             yFree(req->headerbuf);

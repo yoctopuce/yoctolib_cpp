@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.h 49903 2022-05-25 14:18:36Z mvuilleu $
+ *  $Id: yocto_spiport.h 52848 2023-01-20 15:49:48Z mvuilleu $
  *
  *  Declares yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -685,6 +685,8 @@ public:
      * @return the number of bytes available to read
      */
     virtual int         read_avail(void);
+
+    virtual int         end_tell(void);
 
     /**
      * Sends a text line query to the serial port, and reads the reply, if any.

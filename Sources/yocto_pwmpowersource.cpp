@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwmpowersource.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_pwmpowersource.cpp 52567 2022-12-25 12:00:14Z seb $
  *
  *  Implements yFindPwmPowerSource(), the high-level API for PwmPowerSource functions
  *
@@ -132,7 +132,7 @@ int YPwmPowerSource::set_powerMode(Y_POWERMODE_enum newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("powerMode", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);

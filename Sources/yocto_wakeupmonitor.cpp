@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupmonitor.cpp 48183 2022-01-20 10:26:11Z mvuilleu $
+ *  $Id: yocto_wakeupmonitor.cpp 52567 2022-12-25 12:00:14Z seb $
  *
  *  Implements yFindWakeUpMonitor(), the high-level API for WakeUpMonitor functions
  *
@@ -147,7 +147,7 @@ int YWakeUpMonitor::set_powerDuration(int newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("powerDuration", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -201,7 +201,7 @@ int YWakeUpMonitor::set_sleepCountdown(int newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("sleepCountdown", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -255,7 +255,7 @@ int YWakeUpMonitor::set_nextWakeUp(s64 newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%u", (u32)newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%u", (u32)newval); rest_val = string(buf);
         res = _setAttr("nextWakeUp", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
@@ -333,7 +333,7 @@ int YWakeUpMonitor::set_wakeUpState(Y_WAKEUPSTATE_enum newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("wakeUpState", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);

@@ -1,6 +1,13 @@
-CPP v1.10.52382
+CPP v1.10.53327
 
-- Fix wrong MODBUS holding register base address in examples
-- Fix get_module() method that was not working during removal callback
-- Fix firmware update
-- Fix error 404 returned by USB device when used directly from the API
+- Improvements for serialPort, spiPort and I2cPort
+- Improve handling of IO error
+- Update makefile to work with Visual Studio 2022
+- Fix a few typos in the doc
+- Fix compilation warning with Xcode 14
+- Fix get_url() method of YModule object that was not working with GatewayHub
+- Fix handling of file uploads to VirtualHub-4web
+- Fix compilation warning
+- Fix module->get_url function (broken since version 51576, nov 2022)
+- Fix TestHub that was not working with VirtualHub4Web
+- Fix rare enumeration issue when using VirtualHub or YoctoHub

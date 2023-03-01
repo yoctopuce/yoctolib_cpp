@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_carbondioxide.cpp 44175 2021-03-11 11:27:12Z mvuilleu $
+ *  $Id: yocto_carbondioxide.cpp 52567 2022-12-25 12:00:14Z seb $
  *
  *  Implements yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *
@@ -135,7 +135,7 @@ int YCarbonDioxide::set_abcPeriod(int newval)
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        char buf[32]; sprintf(buf, "%d", newval); rest_val = string(buf);
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("abcPeriod", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
