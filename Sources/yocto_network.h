@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_network.h 52567 2022-12-25 12:00:14Z seb $
+ *  $Id: yocto_network.h 53420 2023-03-06 10:38:51Z mvuilleu $
  *
  *  Declares yFindNetwork(), the high-level API for Network functions
  *
@@ -106,6 +106,14 @@ typedef enum {
     Y_CALLBACKENCODING_INVALID = -1,
 } Y_CALLBACKENCODING_enum;
 #endif
+#ifndef _Y_CALLBACKTEMPLATE_ENUM
+#define _Y_CALLBACKTEMPLATE_ENUM
+typedef enum {
+    Y_CALLBACKTEMPLATE_OFF = 0,
+    Y_CALLBACKTEMPLATE_ON = 1,
+    Y_CALLBACKTEMPLATE_INVALID = -1,
+} Y_CALLBACKTEMPLATE_enum;
+#endif
 #define Y_MACADDRESS_INVALID            (YAPI_INVALID_STRING)
 #define Y_IPADDRESS_INVALID             (YAPI_INVALID_STRING)
 #define Y_SUBNETMASK_INVALID            (YAPI_INVALID_STRING)
@@ -164,6 +172,7 @@ protected:
     string          _callbackUrl;
     Y_CALLBACKMETHOD_enum _callbackMethod;
     Y_CALLBACKENCODING_enum _callbackEncoding;
+    Y_CALLBACKTEMPLATE_enum _callbackTemplate;
     string          _callbackCredentials;
     int             _callbackInitialDelay;
     string          _callbackSchedule;
@@ -228,6 +237,9 @@ public:
     static const Y_CALLBACKENCODING_enum CALLBACKENCODING_PRTG = Y_CALLBACKENCODING_PRTG;
     static const Y_CALLBACKENCODING_enum CALLBACKENCODING_INFLUXDB_V2 = Y_CALLBACKENCODING_INFLUXDB_V2;
     static const Y_CALLBACKENCODING_enum CALLBACKENCODING_INVALID = Y_CALLBACKENCODING_INVALID;
+    static const Y_CALLBACKTEMPLATE_enum CALLBACKTEMPLATE_OFF = Y_CALLBACKTEMPLATE_OFF;
+    static const Y_CALLBACKTEMPLATE_enum CALLBACKTEMPLATE_ON = Y_CALLBACKTEMPLATE_ON;
+    static const Y_CALLBACKTEMPLATE_enum CALLBACKTEMPLATE_INVALID = Y_CALLBACKTEMPLATE_INVALID;
     static const string CALLBACKCREDENTIALS_INVALID;
     static const int CALLBACKINITIALDELAY_INVALID = YAPI_INVALID_UINT;
     static const string CALLBACKSCHEDULE_INVALID;
@@ -718,6 +730,39 @@ public:
     int             set_callbackEncoding(Y_CALLBACKENCODING_enum newval);
     inline int      setCallbackEncoding(Y_CALLBACKENCODING_enum newval)
     { return this->set_callbackEncoding(newval); }
+
+    /**
+     * Returns the activation state of the custom template file to customize callback
+     * format. If the custom callback template is disabled, it will be ignored even
+     * if present on the YoctoHub.
+     *
+     * @return either YNetwork::CALLBACKTEMPLATE_OFF or YNetwork::CALLBACKTEMPLATE_ON, according to the
+     * activation state of the custom template file to customize callback
+     *         format
+     *
+     * On failure, throws an exception or returns YNetwork::CALLBACKTEMPLATE_INVALID.
+     */
+    Y_CALLBACKTEMPLATE_enum get_callbackTemplate(void);
+
+    inline Y_CALLBACKTEMPLATE_enum callbackTemplate(void)
+    { return this->get_callbackTemplate(); }
+
+    /**
+     * Enable the use of a template file to customize callbacks format.
+     * When the custom callback template file is enabled, the template file
+     * will be loaded for each callback in order to build the data to post to the
+     * server. If template file does not exist on the YoctoHub, the callback will
+     * fail with an error message indicating the name of the expected template file.
+     *
+     * @param newval : either YNetwork::CALLBACKTEMPLATE_OFF or YNetwork::CALLBACKTEMPLATE_ON
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_callbackTemplate(Y_CALLBACKTEMPLATE_enum newval);
+    inline int      setCallbackTemplate(Y_CALLBACKTEMPLATE_enum newval)
+    { return this->set_callbackTemplate(newval); }
 
     /**
      * Returns a hashed version of the notification callback credentials if set,

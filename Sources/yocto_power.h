@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_power.h 52567 2022-12-25 12:00:14Z seb $
+ *  $Id: yocto_power.h 53420 2023-03-06 10:38:51Z mvuilleu $
  *
  *  Declares yFindPower(), the high-level API for Power functions
  *
@@ -61,6 +61,7 @@ class YPower; // forward declaration
 typedef void (*YPowerValueCallback)(YPower *func, const string& functionValue);
 class YMeasure; // forward declaration
 typedef void (*YPowerTimedReportCallback)(YPower *func, YMeasure measure);
+#define Y_POWERFACTOR_INVALID           (YAPI_INVALID_DOUBLE)
 #define Y_COSPHI_INVALID                (YAPI_INVALID_DOUBLE)
 #define Y_METER_INVALID                 (YAPI_INVALID_DOUBLE)
 #define Y_DELIVEREDENERGYMETER_INVALID  (YAPI_INVALID_DOUBLE)
@@ -85,6 +86,7 @@ class YOCTO_CLASS_EXPORT YPower: public YSensor {
 protected:
     //--- (YPower attributes)
     // Attributes (function value cache)
+    double          _powerFactor;
     double          _cosPhi;
     double          _meter;
     double          _deliveredEnergyMeter;
@@ -107,6 +109,7 @@ public:
     virtual ~YPower();
     //--- (YPower accessors declaration)
 
+    static const double POWERFACTOR_INVALID;
     static const double COSPHI_INVALID;
     static const double METER_INVALID;
     static const double DELIVEREDENERGYMETER_INVALID;
@@ -114,11 +117,25 @@ public:
     static const int METERTIMER_INVALID = YAPI_INVALID_UINT;
 
     /**
-     * Returns the power factor (the ratio between the real power consumed,
-     * measured in W, and the apparent power provided, measured in VA).
+     * Returns the power factor (PF), i.e. ratio between the active power consumed (in W)
+     * and the apparent power provided (VA).
      *
-     * @return a floating point number corresponding to the power factor (the ratio between the real power consumed,
-     *         measured in W, and the apparent power provided, measured in VA)
+     * @return a floating point number corresponding to the power factor (PF), i.e
+     *
+     * On failure, throws an exception or returns YPower::POWERFACTOR_INVALID.
+     */
+    double              get_powerFactor(void);
+
+    inline double       powerFactor(void)
+    { return this->get_powerFactor(); }
+
+    /**
+     * Returns the Displacement Power factor (DPF), i.e. cosine of the phase shift between
+     * the voltage and current fundamentals.
+     * On the Yocto-Watt (V1), the value returned by this method correponds to the
+     * power factor as this device is cannot estimate the true DPF.
+     *
+     * @return a floating point number corresponding to the Displacement Power factor (DPF), i.e
      *
      * On failure, throws an exception or returns YPower::COSPHI_INVALID.
      */

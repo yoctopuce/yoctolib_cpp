@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_network.cpp 52567 2022-12-25 12:00:14Z seb $
+ *  $Id: yocto_network.cpp 53420 2023-03-06 10:38:51Z mvuilleu $
  *
  *  Implements yFindNetwork(), the high-level API for Network functions
  *
@@ -74,6 +74,7 @@ YNetwork::YNetwork(const string& func): YFunction(func)
     ,_callbackUrl(CALLBACKURL_INVALID)
     ,_callbackMethod(CALLBACKMETHOD_INVALID)
     ,_callbackEncoding(CALLBACKENCODING_INVALID)
+    ,_callbackTemplate(CALLBACKTEMPLATE_INVALID)
     ,_callbackCredentials(CALLBACKCREDENTIALS_INVALID)
     ,_callbackInitialDelay(CALLBACKINITIALDELAY_INVALID)
     ,_callbackSchedule(CALLBACKSCHEDULE_INVALID)
@@ -167,6 +168,9 @@ int YNetwork::_parseAttr(YJSONObject *json_val)
     }
     if(json_val->has("callbackEncoding")) {
         _callbackEncoding =  (Y_CALLBACKENCODING_enum)json_val->getInt("callbackEncoding");
+    }
+    if(json_val->has("callbackTemplate")) {
+        _callbackTemplate =  (Y_CALLBACKTEMPLATE_enum)json_val->getInt("callbackTemplate");
     }
     if(json_val->has("callbackCredentials")) {
         _callbackCredentials =  json_val->getString("callbackCredentials");
@@ -1153,6 +1157,68 @@ int YNetwork::set_callbackEncoding(Y_CALLBACKENCODING_enum newval)
     try {
         char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("callbackEncoding", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the activation state of the custom template file to customize callback
+ * format. If the custom callback template is disabled, it will be ignored even
+ * if present on the YoctoHub.
+ *
+ * @return either YNetwork::CALLBACKTEMPLATE_OFF or YNetwork::CALLBACKTEMPLATE_ON, according to the
+ * activation state of the custom template file to customize callback
+ *         format
+ *
+ * On failure, throws an exception or returns YNetwork::CALLBACKTEMPLATE_INVALID.
+ */
+Y_CALLBACKTEMPLATE_enum YNetwork::get_callbackTemplate(void)
+{
+    Y_CALLBACKTEMPLATE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::CALLBACKTEMPLATE_INVALID;
+                }
+            }
+        }
+        res = _callbackTemplate;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Enable the use of a template file to customize callbacks format.
+ * When the custom callback template file is enabled, the template file
+ * will be loaded for each callback in order to build the data to post to the
+ * server. If template file does not exist on the YoctoHub, the callback will
+ * fail with an error message indicating the name of the expected template file.
+ *
+ * @param newval : either YNetwork::CALLBACKTEMPLATE_OFF or YNetwork::CALLBACKTEMPLATE_ON
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YNetwork::set_callbackTemplate(Y_CALLBACKTEMPLATE_enum newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("callbackTemplate", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;

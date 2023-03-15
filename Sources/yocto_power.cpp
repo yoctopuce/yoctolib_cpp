@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_power.cpp 52567 2022-12-25 12:00:14Z seb $
+ *  $Id: yocto_power.cpp 53420 2023-03-06 10:38:51Z mvuilleu $
  *
  *  Implements yFindPower(), the high-level API for Power functions
  *
@@ -55,6 +55,7 @@ using namespace YOCTOLIB_NAMESPACE;
 
 YPower::YPower(const string& func): YSensor(func)
 //--- (YPower initialization)
+    ,_powerFactor(POWERFACTOR_INVALID)
     ,_cosPhi(COSPHI_INVALID)
     ,_meter(METER_INVALID)
     ,_deliveredEnergyMeter(DELIVEREDENERGYMETER_INVALID)
@@ -74,6 +75,7 @@ YPower::~YPower()
 }
 //--- (YPower implementation)
 // static attributes
+const double YPower::POWERFACTOR_INVALID = YAPI_INVALID_DOUBLE;
 const double YPower::COSPHI_INVALID = YAPI_INVALID_DOUBLE;
 const double YPower::METER_INVALID = YAPI_INVALID_DOUBLE;
 const double YPower::DELIVEREDENERGYMETER_INVALID = YAPI_INVALID_DOUBLE;
@@ -81,6 +83,9 @@ const double YPower::RECEIVEDENERGYMETER_INVALID = YAPI_INVALID_DOUBLE;
 
 int YPower::_parseAttr(YJSONObject *json_val)
 {
+    if(json_val->has("powerFactor")) {
+        _powerFactor =  floor(json_val->getDouble("powerFactor") / 65.536 + 0.5) / 1000.0;
+    }
     if(json_val->has("cosPhi")) {
         _cosPhi =  floor(json_val->getDouble("cosPhi") / 65.536 + 0.5) / 1000.0;
     }
@@ -101,11 +106,46 @@ int YPower::_parseAttr(YJSONObject *json_val)
 
 
 /**
- * Returns the power factor (the ratio between the real power consumed,
- * measured in W, and the apparent power provided, measured in VA).
+ * Returns the power factor (PF), i.e. ratio between the active power consumed (in W)
+ * and the apparent power provided (VA).
  *
- * @return a floating point number corresponding to the power factor (the ratio between the real power consumed,
- *         measured in W, and the apparent power provided, measured in VA)
+ * @return a floating point number corresponding to the power factor (PF), i.e
+ *
+ * On failure, throws an exception or returns YPower::POWERFACTOR_INVALID.
+ */
+double YPower::get_powerFactor(void)
+{
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YPower::POWERFACTOR_INVALID;
+                }
+            }
+        }
+        res = _powerFactor;
+        if (res == YPower::POWERFACTOR_INVALID) {
+            res = _cosPhi;
+        }
+        res = floor(res * 1000+0.5) / 1000;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the Displacement Power factor (DPF), i.e. cosine of the phase shift between
+ * the voltage and current fundamentals.
+ * On the Yocto-Watt (V1), the value returned by this method correponds to the
+ * power factor as this device is cannot estimate the true DPF.
+ *
+ * @return a floating point number corresponding to the Displacement Power factor (DPF), i.e
  *
  * On failure, throws an exception or returns YPower::COSPHI_INVALID.
  */
