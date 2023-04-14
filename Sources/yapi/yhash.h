@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.h 51576 2022-11-14 08:35:08Z seb $
+ * $Id: yhash.h 53990 2023-04-12 14:46:53Z mvuilleu $
  *
  * Simple hash tables and device/function information store
  *
@@ -212,8 +212,8 @@ YAPI_DEVICE wpSearch(const char *device_str);
 YAPI_FUNCTION ypSearch(const char *class_str, const char *func_str);
 int     ypGetFunctions(const char *class_str, YAPI_DEVICE devdesc, YAPI_FUNCTION prevfundesc,
                        YAPI_FUNCTION *buffer,int maxsize,int *neededsize);
-int     ypGetFunctionInfo(YAPI_FUNCTION fundesc, char *serial, char *funcId, char *baseType, char *funcName, char *funcVal);
 #endif
+int     ypGetFunctionInfo(YAPI_FUNCTION fundesc, char *serial, char *funcId, char *baseType, char *funcName, char *funcVal);
 int     ypGetFunctionsEx(yStrRef categref, YAPI_DEVICE devdesc, YAPI_FUNCTION prevfundesc, YAPI_FUNCTION *buffer, int maxsize, int *neededsize);
 int     wpGetDeviceInfo(YAPI_DEVICE devdesc, u16 *deviceid, char *productname, char *serial, char *logicalname, u8 *beacon);
 int     ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, int funClass, int funYdx, const char *funcVal);

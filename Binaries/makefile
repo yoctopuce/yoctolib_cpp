@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: makefile 53283 2023-02-17 09:13:21Z seb $
+#  $Id: makefile 53836 2023-04-04 09:03:31Z mvuilleu $
 #
 #  makefile for C++ library
 #  - - - - - - - - - License information: - - - - - - - - -
@@ -113,6 +113,7 @@ YOCTO_API_OBJS = 	$(OD)\yocto_api.obj\
 	$(OD)\yocto_hubport.obj \
 	$(OD)\yocto_humidity.obj \
 	$(OD)\yocto_i2cport.obj \
+	$(OD)\yocto_inputcapture.obj \
 	$(OD)\yocto_inputchain.obj \
 	$(OD)\yocto_latitude.obj \
 	$(OD)\yocto_led.obj \

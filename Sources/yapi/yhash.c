@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 53298 2023-02-28 09:40:01Z seb $
+ * $Id: yhash.c 53990 2023-04-12 14:46:53Z mvuilleu $
  *
  * Simple hash tables and device/function information store
  *
@@ -1437,6 +1437,7 @@ int ypGetFunctions(const char* class_str, YAPI_DEVICE devdesc, YAPI_FUNCTION pre
     return nbreturned;
 }
 
+#endif
 
 // This function should only be called after seizing ypMutex
 static yBlkHdl functionSearch(YAPI_FUNCTION fundesc)
@@ -1511,9 +1512,6 @@ int ypGetFunctionInfo(YAPI_FUNCTION fundesc, char* serial, char* funcId, char* b
 
     return (hdl == INVALID_BLK_HDL ? -1 : 0);
 }
-
-#endif
-
 
 int ypGetFunctionsEx(yStrRef categref, YAPI_DEVICE devdesc, YAPI_FUNCTION prevfundesc,
                      YAPI_FUNCTION* buffer, int maxsize, int* neededsize)

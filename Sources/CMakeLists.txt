@@ -40,6 +40,7 @@ set(YoctoLibHSources
 	yocto_hubport.h
 	yocto_humidity.h
 	yocto_i2cport.h
+	yocto_inputcapture.h
 	yocto_inputchain.h
 	yocto_latitude.h
 	yocto_led.h
@@ -117,6 +118,7 @@ set(YoctoLibCppSources
 	yocto_hubport.cpp
 	yocto_humidity.cpp
 	yocto_i2cport.cpp
+	yocto_inputcapture.cpp
 	yocto_inputchain.cpp
 	yocto_latitude.cpp
 	yocto_led.cpp

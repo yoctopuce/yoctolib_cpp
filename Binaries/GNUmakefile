@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 52668 2023-01-09 09:46:24Z web $
+#  $Id: GNUmakefile 53836 2023-04-04 09:03:31Z mvuilleu $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -296,6 +296,7 @@ YOCTO_API_OBJS_STAT = yocto_api.o\
 	yocto_hubport.o \
 	yocto_humidity.o \
 	yocto_i2cport.o \
+	yocto_inputcapture.o \
 	yocto_inputchain.o \
 	yocto_latitude.o \
 	yocto_led.o \
