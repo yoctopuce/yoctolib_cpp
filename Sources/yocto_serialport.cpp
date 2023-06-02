@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 52892 2023-01-25 10:13:30Z seb $
+ * $Id: yocto_serialport.cpp 54278 2023-04-28 10:10:10Z seb $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -1032,7 +1032,7 @@ int YSerialPort::read_avail(void)
     databin = this->_download(YapiWrapper::ysprintf("rxcnt.bin?pos=%d",_rxptr));
     availPosStr = databin;
     atPos = _ystrpos(availPosStr, "@");
-    res = atoi(((availPosStr).substr( 0, atPos)).c_str());
+    res = atoi(((availPosStr).substr(0, atPos)).c_str());
     return res;
 }
 
@@ -1046,7 +1046,7 @@ int YSerialPort::end_tell(void)
     databin = this->_download(YapiWrapper::ysprintf("rxcnt.bin?pos=%d",_rxptr));
     availPosStr = databin;
     atPos = _ystrpos(availPosStr, "@");
-    res = atoi(((availPosStr).substr( atPos+1, (int)(availPosStr).length()-atPos-1)).c_str());
+    res = atoi(((availPosStr).substr(atPos+1, (int)(availPosStr).length()-atPos-1)).c_str());
     return res;
 }
 
@@ -1311,7 +1311,7 @@ int YSerialPort::writeHex(string hexString)
     buff = string(bufflen, (char)0);
     idx = 0;
     while (idx < bufflen) {
-        hexb = (int)YAPI::_hexStr2Long((hexString).substr( 2 * idx, 2));
+        hexb = (int)YAPI::_hexStr2Long((hexString).substr(2 * idx, 2));
         buff[idx] = (char)(hexb);
         idx = idx + 1;
     }
@@ -1458,7 +1458,7 @@ string YSerialPort::readStr(int nChars)
         bufflen = bufflen - 1;
     }
     _rxptr = endpos;
-    res = (buff).substr( 0, bufflen);
+    res = (buff).substr(0, bufflen);
     return res;
 }
 
@@ -1641,7 +1641,7 @@ int YSerialPort::get_CTS(void)
 
     buff = this->_download("cts.txt");
     if (!((int)(buff).size() == 1)) {
-        _throw(YAPI_IO_ERROR,"invalid CTS reply");
+        _throw(YAPI_IO_ERROR, "invalid CTS reply");
         return YAPI_IO_ERROR;
     }
     res = ((u8)buff[0]) - 48;
@@ -1836,7 +1836,7 @@ vector<int> YSerialPort::queryMODBUS(int slaveNo,vector<int> pduBytes)
     msgs = this->_download(url);
     reps = this->_json_get_array(msgs);
     if (!((int)reps.size() > 1)) {
-        _throw(YAPI_IO_ERROR,"no reply from MODBUS slave");
+        _throw(YAPI_IO_ERROR, "no reply from MODBUS slave");
         return res;
     }
     if ((int)reps.size() > 1) {
@@ -1851,19 +1851,19 @@ vector<int> YSerialPort::queryMODBUS(int slaveNo,vector<int> pduBytes)
         if (res[0] != funCode) {
             i = res[1];
             if (!(i > 1)) {
-                _throw(YAPI_NOT_SUPPORTED,"MODBUS error: unsupported function code");
+                _throw(YAPI_NOT_SUPPORTED, "MODBUS error: unsupported function code");
                 return res;
             }
             if (!(i > 2)) {
-                _throw(YAPI_INVALID_ARGUMENT,"MODBUS error: illegal data address");
+                _throw(YAPI_INVALID_ARGUMENT, "MODBUS error: illegal data address");
                 return res;
             }
             if (!(i > 3)) {
-                _throw(YAPI_INVALID_ARGUMENT,"MODBUS error: illegal data value");
+                _throw(YAPI_INVALID_ARGUMENT, "MODBUS error: illegal data value");
                 return res;
             }
             if (!(i > 4)) {
-                _throw(YAPI_INVALID_ARGUMENT,"MODBUS error: failed to execute function");
+                _throw(YAPI_INVALID_ARGUMENT, "MODBUS error: failed to execute function");
                 return res;
             }
         }
@@ -2004,7 +2004,7 @@ vector<int> YSerialPort::modbusReadRegisters(int slaveNo,int pduAddr,int nWords)
     int idx = 0;
     int val = 0;
     if (!(nWords<=256)) {
-        _throw(YAPI_INVALID_ARGUMENT,"Cannot read more than 256 words");
+        _throw(YAPI_INVALID_ARGUMENT, "Cannot read more than 256 words");
         return res;
     }
     pdu.push_back(0x03);

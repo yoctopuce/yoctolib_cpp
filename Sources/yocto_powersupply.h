@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_powersupply.h 52567 2022-12-25 12:00:14Z seb $
+ *  $Id: yocto_powersupply.h 54768 2023-05-26 06:46:41Z seb $
  *
  *  Declares yFindPowerSupply(), the high-level API for PowerSupply functions
  *
@@ -67,21 +67,11 @@ typedef enum {
     Y_POWEROUTPUT_INVALID = -1,
 } Y_POWEROUTPUT_enum;
 #endif
-#ifndef _Y_VOLTAGESENSE_ENUM
-#define _Y_VOLTAGESENSE_ENUM
-typedef enum {
-    Y_VOLTAGESENSE_INT = 0,
-    Y_VOLTAGESENSE_EXT = 1,
-    Y_VOLTAGESENSE_INVALID = -1,
-} Y_VOLTAGESENSE_enum;
-#endif
 #define Y_VOLTAGESETPOINT_INVALID       (YAPI_INVALID_DOUBLE)
 #define Y_CURRENTLIMIT_INVALID          (YAPI_INVALID_DOUBLE)
 #define Y_MEASUREDVOLTAGE_INVALID       (YAPI_INVALID_DOUBLE)
 #define Y_MEASUREDCURRENT_INVALID       (YAPI_INVALID_DOUBLE)
 #define Y_INPUTVOLTAGE_INVALID          (YAPI_INVALID_DOUBLE)
-#define Y_VINT_INVALID                  (YAPI_INVALID_DOUBLE)
-#define Y_LDOTEMPERATURE_INVALID        (YAPI_INVALID_DOUBLE)
 #define Y_VOLTAGETRANSITION_INVALID     (YAPI_INVALID_STRING)
 #define Y_VOLTAGEATSTARTUP_INVALID      (YAPI_INVALID_DOUBLE)
 #define Y_CURRENTATSTARTUP_INVALID      (YAPI_INVALID_DOUBLE)
@@ -107,12 +97,9 @@ protected:
     double          _voltageSetPoint;
     double          _currentLimit;
     Y_POWEROUTPUT_enum _powerOutput;
-    Y_VOLTAGESENSE_enum _voltageSense;
     double          _measuredVoltage;
     double          _measuredCurrent;
     double          _inputVoltage;
-    double          _vInt;
-    double          _ldoTemperature;
     string          _voltageTransition;
     double          _voltageAtStartUp;
     double          _currentAtStartUp;
@@ -138,14 +125,9 @@ public:
     static const Y_POWEROUTPUT_enum POWEROUTPUT_OFF = Y_POWEROUTPUT_OFF;
     static const Y_POWEROUTPUT_enum POWEROUTPUT_ON = Y_POWEROUTPUT_ON;
     static const Y_POWEROUTPUT_enum POWEROUTPUT_INVALID = Y_POWEROUTPUT_INVALID;
-    static const Y_VOLTAGESENSE_enum VOLTAGESENSE_INT = Y_VOLTAGESENSE_INT;
-    static const Y_VOLTAGESENSE_enum VOLTAGESENSE_EXT = Y_VOLTAGESENSE_EXT;
-    static const Y_VOLTAGESENSE_enum VOLTAGESENSE_INVALID = Y_VOLTAGESENSE_INVALID;
     static const double MEASUREDVOLTAGE_INVALID;
     static const double MEASUREDCURRENT_INVALID;
     static const double INPUTVOLTAGE_INVALID;
-    static const double VINT_INVALID;
-    static const double LDOTEMPERATURE_INVALID;
     static const string VOLTAGETRANSITION_INVALID;
     static const double VOLTAGEATSTARTUP_INVALID;
     static const double CURRENTATSTARTUP_INVALID;
@@ -229,33 +211,6 @@ public:
     { return this->set_powerOutput(newval); }
 
     /**
-     * Returns the output voltage control point.
-     *
-     * @return either YPowerSupply::VOLTAGESENSE_INT or YPowerSupply::VOLTAGESENSE_EXT, according to the
-     * output voltage control point
-     *
-     * On failure, throws an exception or returns YPowerSupply::VOLTAGESENSE_INVALID.
-     */
-    Y_VOLTAGESENSE_enum get_voltageSense(void);
-
-    inline Y_VOLTAGESENSE_enum voltageSense(void)
-    { return this->get_voltageSense(); }
-
-    /**
-     * Changes the voltage control point.
-     *
-     * @param newval : either YPowerSupply::VOLTAGESENSE_INT or YPowerSupply::VOLTAGESENSE_EXT, according to
-     * the voltage control point
-     *
-     * @return YAPI::SUCCESS if the call succeeds.
-     *
-     * On failure, throws an exception or returns a negative error code.
-     */
-    int             set_voltageSense(Y_VOLTAGESENSE_enum newval);
-    inline int      setVoltageSense(Y_VOLTAGESENSE_enum newval)
-    { return this->set_voltageSense(newval); }
-
-    /**
      * Returns the measured output voltage, in V.
      *
      * @return a floating point number corresponding to the measured output voltage, in V
@@ -290,30 +245,6 @@ public:
 
     inline double       inputVoltage(void)
     { return this->get_inputVoltage(); }
-
-    /**
-     * Returns the internal voltage, in V.
-     *
-     * @return a floating point number corresponding to the internal voltage, in V
-     *
-     * On failure, throws an exception or returns YPowerSupply::VINT_INVALID.
-     */
-    double              get_vInt(void);
-
-    inline double       vInt(void)
-    { return this->get_vInt(); }
-
-    /**
-     * Returns the LDO temperature, in Celsius.
-     *
-     * @return a floating point number corresponding to the LDO temperature, in Celsius
-     *
-     * On failure, throws an exception or returns YPowerSupply::LDOTEMPERATURE_INVALID.
-     */
-    double              get_ldoTemperature(void);
-
-    inline double       ldoTemperature(void)
-    { return this->get_ldoTemperature(); }
 
     string              get_voltageTransition(void);
 

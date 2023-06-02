@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 53010 2023-02-02 09:06:50Z seb $
+ * $Id: ytcp.c 54099 2023-04-18 08:02:26Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -1078,7 +1078,7 @@ static int yHTTPOpenReqEx(struct _RequestSt* req, u64 mstimout, char* errmsg)
 
 
     YASSERT(req->proto == PROTO_HTTP); 
-    ip = resolveDNSCache(req->hub->host, errmsg);
+    ip = resolveDNSCache(req->hub->url.host, errmsg);
     if (ip == 0) {
         YPERF_TCP_LEAVE(tmp1);
         return YAPI_IO_ERROR;
@@ -1096,7 +1096,7 @@ static int yHTTPOpenReqEx(struct _RequestSt* req, u64 mstimout, char* errmsg)
         req->http.reuseskt = INVALID_SOCKET;
     } else {
         req->http.reuseskt = INVALID_SOCKET;
-        res = yTcpOpen(&req->http.skt, ip, req->hub->portno, mstimout, errmsg);
+        res = yTcpOpen(&req->http.skt, ip, req->hub->url.portno, mstimout, errmsg);
         if (YISERR(res)) {
             // yTcpOpen has reset the socket to INVALID
             yTcpClose(req->http.skt);
@@ -1123,10 +1123,10 @@ static int yHTTPOpenReqEx(struct _RequestSt* req, u64 mstimout, char* errmsg)
     }
 
     // add potential subdomain
-    if (req->hub->subdomain[0]) {
-        int sub_len = YSTRLEN(req->hub->subdomain);
+    if (req->hub->url.subdomain[0]) {
+        int sub_len = YSTRLEN(req->hub->url.subdomain);
         if (sub_len + 1 < avail) {
-            memcpy(d, req->hub->subdomain, sub_len);
+            memcpy(d, req->hub->url.subdomain, sub_len);
             avail -= sub_len;
             d += sub_len;
         }
@@ -1207,7 +1207,7 @@ static int yHTTPOpenReqEx(struct _RequestSt* req, u64 mstimout, char* errmsg)
     }
     // insert authorization header in needed
     yEnterCriticalSection(&req->hub->access);
-    if (req->hub->user && req->hub->http.s_realm) {
+    if (req->hub->url.user && req->hub->http.s_realm) {
         int auth_len;
         char method[8];
         char uri[4096];
@@ -1223,13 +1223,13 @@ static int yHTTPOpenReqEx(struct _RequestSt* req, u64 mstimout, char* errmsg)
             *u++ = *s;
         }
         *u = 0;
-        auth_len = yDigestAuthorization(d, avail, req->hub->user, req->hub->http.s_realm, req->hub->http.s_ha1,
+        auth_len = yDigestAuthorization(d, avail, req->hub->url.user, req->hub->http.s_realm, req->hub->http.s_ha1,
                              req->hub->http.s_nonce, req->hub->http.s_opaque, &req->hub->http.nc, method, uri);
         d += auth_len;
         avail -= auth_len;
     }
     yLeaveCriticalSection(&req->hub->access);
-    res = copyHostHeader(d, avail, req->hub->host, errmsg);
+    res = copyHostHeader(d, avail, req->hub->url.host, errmsg);
     if (YISERR(res)) {
         yTcpClose(req->http.skt);
         req->http.skt = INVALID_SOCKET;
@@ -1398,7 +1398,7 @@ static int yHTTPMultiSelectReq(struct _RequestSt** reqs, int size, u64 ms, WakeU
                                 // authentication required, process authentication headers
                                 char *method = NULL, *realm = NULL, *qop = NULL, *nonce = NULL, *opaque = NULL;
 
-                                if (!req->hub->user || req->retryCount++ > 3) {
+                                if (!req->hub->url.user || req->retryCount++ > 3) {
                                     // No credential provided, give up immediately
                                     req->replypos = 0;
                                     req->replysize = 0;
@@ -1415,8 +1415,8 @@ static int yHTTPMultiSelectReq(struct _RequestSt** reqs, int size, u64 ms, WakeU
                                         yDupSet(&req->hub->http.s_realm, realm);
                                         yDupSet(&req->hub->http.s_nonce, nonce);
                                         yDupSet(&req->hub->http.s_opaque, opaque);
-                                        if (req->hub->user && req->hub->password) {
-                                            ComputeAuthHA1(req->hub->http.s_ha1, req->hub->user, req->hub->password, req->hub->http.s_realm);
+                                        if (req->hub->url.user && req->hub->url.password) {
+                                            ComputeAuthHA1(req->hub->http.s_ha1, req->hub->url.user, req->hub->url.password, req->hub->http.s_realm);
                                         }
                                         req->hub->http.nc = 0;
                                         yLeaveCriticalSection(&req->hub->access);
@@ -1601,7 +1601,7 @@ static void yWSCloseReq(struct _RequestSt* req)
     HubSt* hub = req->hub;
     u64 duration;
     duration = yapiGetTickCount() - req->open_tm;
-    WSLOG("req(%s:%p) close req after %"FMTu64"ms (%"FMTu64"ms) with %d bytes errcode = %d\n", req->hub->name, req, duration, (req->write_tm - req->open_tm), req->replysize, req->errcode);
+    WSLOG("req(%s:%p) close req after %"FMTu64"ms (%"FMTu64"ms) with %d bytes errcode = %d\n", req->hub->url.org_url, req, duration, (req->write_tm - req->open_tm), req->replysize, req->errcode);
 #endif
 
     YASSERT(req->proto == PROTO_LEGACY || req->proto == PROTO_WEBSOCKET);
@@ -1624,7 +1624,7 @@ static void yWSCloseReq(struct _RequestSt* req)
         res = yWaitForEvent(&req->finished, 5000);
         yEnterCriticalSection(&req->access);
         if (!res) {
-            dbglog("hub(%s) websocket close without ack\n", req->hub->host);
+            dbglog("hub(%s) websocket close without ack\n", req->hub->url.host);
         }
     }
     req->ws.state = REQ_CLOSED_BY_BOTH;
@@ -1640,7 +1640,7 @@ static void yWSRemoveReq(struct _RequestSt* req)
 #ifdef DEBUG_WEBSOCKET
     u64 duration;
     duration = yapiGetTickCount() - req->open_tm;
-    WSLOG("req(%s:%p) remove req after %"FMTu64"ms (%"FMTu64"ms) with %d bytes errcode = %d\n", req->hub->name, req, duration, (req->write_tm - req->open_tm), req->replysize, req->errcode);
+    WSLOG("req(%s:%p) remove req after %"FMTu64"ms (%"FMTu64"ms) with %d bytes errcode = %d\n", req->hub->url.org_url, req, duration, (req->write_tm - req->open_tm), req->replysize, req->errcode);
 #endif
     tcpchan = req->ws.channel;
     YASSERT(tcpchan < MAX_ASYNC_TCPCHAN);
@@ -1736,7 +1736,7 @@ struct _RequestSt* yReqAlloc(struct _HubSt* hub)
 {
     struct _RequestSt* req = yMalloc(sizeof(struct _RequestSt));
     memset(req, 0, sizeof(struct _RequestSt));
-    req->proto = hub->proto;
+    req->proto = hub->url.proto;
     TCPLOG("yTcpInitReq %p[%s:%x]\n", req, hub->host, req->proto);
     req->replybufsize = 1500;
     req->replybuf = (u8*)yMalloc(req->replybufsize);
@@ -2035,7 +2035,7 @@ int yReqHasPending(struct _HubSt* hub)
     int i;
     RequestSt* req = NULL;
 
-    if (hub->proto == PROTO_HTTP) {
+    if (hub->url.proto == PROTO_HTTP) {
         for (i = 0; i < ALLOC_YDX_PER_HUB; i++) {
             req = yContext->tcpreq[i];
             if (req && yReqIsAsync(req)) {
@@ -2295,11 +2295,11 @@ static int ws_sendAuthenticationMeta(HubSt* hub, char* errmsg)
 #else
     meta_out.auth.version = USB_META_WS_PROTO_V1;
 #endif
-    if (hub->user && hub->password) {
+    if (hub->url.user && hub->url.password) {
         u8 ha1[16];
         meta_out.auth.flags = USB_META_WS_AUTH_FLAGS_VALID;
         meta_out.auth.nonce = INTEL_U32(hub->ws.nounce);
-        ComputeAuthHA1(ha1, hub->user, hub->password, hub->ws.serial);
+        ComputeAuthHA1(ha1, hub->url.user, hub->url.password, hub->ws.serial);
         CheckWSAuth(hub->ws.remoteNounce, ha1, NULL, meta_out.auth.sha1);
     }
     return ws_sendFrame(hub,YSTREAM_META, 0, (const u8*)&meta_out, USB_META_WS_AUTHENTICATION_SIZE, errmsg);
@@ -2352,7 +2352,6 @@ static int ws_parseIncomingFrame(HubSt* hub, u8* buffer, int pktlen, char* errms
 #ifdef DEBUG_WEBSOCKET
     u64 reltime = yapiGetTickCount() - hub->ws.connectionTime;
 #endif
-    yStrRef serial;
     YASSERT(pktlen > 0);
     strym.encaps = buffer[0];
     buffer++;
@@ -2418,7 +2417,7 @@ static int ws_parseIncomingFrame(HubSt* hub, u8* buffer, int pktlen, char* errms
             //dumpReqQueue("recv",hub, strym.tcpchan);
             return YAPI_IO_ERROR;
         }
-        WSLOG("req(%s:%p) close async %d\n", req->hub->name, req, req->ws.asyncId);
+        WSLOG("req(%s:%p) close async %d\n", req->hub->url.org_url, req, req->ws.asyncId);
         yEnterCriticalSection(&req->access);
         req->ws.state = REQ_CLOSED_BY_BOTH;
         ws_appendTCPData(req, buffer, pktlen);
@@ -2475,13 +2474,13 @@ static int ws_parseIncomingFrame(HubSt* hub, u8* buffer, int pktlen, char* errms
                 // since state changes to CLOSED_BY_BOTH immediately after
                 int res = ws_sendFrame(hub, YSTREAM_TCP_CLOSE, strym.tcpchan, NULL, 0, errmsg);
                 if (res < 0) {
-                    dbglog("WS: req(%s:%p) unable to ack remote close (%d/%s)\n", req->hub->host, req, res, errmsg);
+                    dbglog("WS: req(%s:%p) unable to ack remote close (%d/%s)\n", req->hub->url.host, req, res, errmsg);
                 }
                 yEnterCriticalSection(&req->access);
                 req->ws.flags &= ~WS_FLG_NEED_API_CLOSE;
                 yLeaveCriticalSection(&req->access);
             }
-            WSLOG("req(%s:%p) close %d\n", req->hub->name, req, req->replysize);
+            WSLOG("req(%s:%p) close %d\n", req->hub->url.org_url, req, req->replysize);
             yEnterCriticalSection(&req->access);
             req->ws.state = REQ_CLOSED_BY_BOTH;
             yLeaveCriticalSection(&req->access);
@@ -2507,9 +2506,9 @@ static int ws_parseIncomingFrame(HubSt* hub, u8* buffer, int pktlen, char* errms
                     hub->ws.tcpMaxWindowSize = maxtcpws;
                 }
                 YSTRCPY(hub->ws.serial, YOCTO_SERIAL_LEN, meta->announce.serial);
-                WSLOG("hub(%s) Announce: %s (v%d / %x)\n", hub->name, meta->announce.serial, meta->announce.version, hub->ws.remoteNounce);
-                serial = yHashPutStr(meta->announce.serial);
-                if (checkForSameHubAccess(hub, serial, errmsg) < 0) {
+                WSLOG("hub(%s) Announce: %s (v%d / %x)\n", hub->url.org_url, meta->announce.serial, meta->announce.version, hub->ws.remoteNounce);
+                hub->serial = yHashPutStr(meta->announce.serial);
+                if (checkForSameHubAccess(hub, hub->serial, errmsg) < 0) {
                     // fatal error do not try to reconnect
                     hub->state = NET_HUB_TOCLOSE;
                     return YAPI_DOUBLE_ACCES;
@@ -2540,14 +2539,14 @@ static int ws_parseIncomingFrame(HubSt* hub, u8* buffer, int pktlen, char* errms
                 if ((flags & USB_META_WS_AUTH_FLAGS_RW) != 0) {
                     hub->rw_access = 1;
                 }
-                if (hub->user) {
-                    user = hub->user;
+                if (hub->url.user) {
+                    user = hub->url.user;
                 } else {
                     user = "";
                 }
 
-                if (hub->password) {
-                    pass = hub->password;
+                if (hub->url.password) {
+                    pass = hub->url.password;
                 } else {
                     pass = "";
                 }
@@ -2559,18 +2558,20 @@ static int ws_parseIncomingFrame(HubSt* hub, u8* buffer, int pktlen, char* errms
                         hub->state = NET_HUB_ESTABLISHED;
                         hub->retryCount = 0;
                         hub->attemptDelay = 500;
-                        WSLOG("hub(%s): connected as %s\n", hub->name, user);
+                        hub->errcode = YAPI_SUCCESS;
+                        WSLOG("hub(%s): connected as %s\n", hub->url.org_url, user);
                     } else {
                         YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Authentication as %s failed (%s:%d)", user, __FILE_ID__, __LINE__);
                         return YAPI_UNAUTHORIZED;
                     }
                 } else {
-                    if (hub->user == NULL) {
+                    if (hub->url.user == NULL || hub->url.password==NULL || hub->url.password[0] ==0) {
                         hub->ws.base_state = WS_BASE_CONNECTED;
                         hub->state = NET_HUB_ESTABLISHED;
                         hub->retryCount = 0;
                         hub->attemptDelay = 500;
-                        WSLOG("hub(%s): connected\n", hub->name);
+                        hub->errcode = YAPI_SUCCESS;
+                        WSLOG("hub(%s): connected\n", hub->url.org_url);
                     } else {
                         if (YSTRCMP(user, "admin") == 0 && !hub->rw_access) {
                             YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Authentication as %s failed", user);
@@ -2731,7 +2732,6 @@ static int ws_processRequests(HubSt* hub, char* errmsg)
     int res;
 
     if (hub->state != NET_HUB_ESTABLISHED) {
-        WSLOG("Skip request process until hub is connected\n");
         return YAPI_SUCCESS;
     }
 
@@ -2749,7 +2749,7 @@ static int ws_processRequests(HubSt* hub, char* errmsg)
             if (req->ws.flags & WS_FLG_NEED_API_CLOSE) {
                 int res = ws_sendFrame(hub, YSTREAM_TCP_CLOSE, tcpchan, NULL, 0, errmsg);
                 if (res < 0) {
-                    dbglog("req(%s:%p) unable to ack remote close (%d/%s)\n", req->hub->host, req, res, errmsg);
+                    dbglog("req(%s:%p) unable to ack remote close (%d/%s)\n", req->hub->url.host, req, res, errmsg);
                 }
                 yEnterCriticalSection(&req->access);
                 req->ws.flags &= ~WS_FLG_NEED_API_CLOSE;
@@ -2839,7 +2839,7 @@ static int ws_processRequests(HubSt* hub, char* errmsg)
                     }
                     tmp_data[datalen] = req->ws.asyncId;
                     res = ws_sendFrame(hub, stream, tcpchan, tmp_data, datalen + 1, errmsg);
-                    WSLOG("req(%s:%p) sent async close chan%d:%d\n", req->hub->name, req, tcpchan, req->ws.asyncId);
+                    WSLOG("req(%s:%p) sent async close chan%d:%d\n", req->hub->url.org_url, req, tcpchan, req->ws.asyncId);
                     //dumpReqQueue("as_c", req->hub, tcpchan);
                     req->ws.last_write_tm = yapiGetTickCount();
                 } else {
@@ -2902,18 +2902,18 @@ static int ws_openBaseSocket(HubSt* basehub, int first_notification_connection, 
 
     wshub->skt = INVALID_SOCKET;
     wshub->s_next_async_id = 48;
-    ip = resolveDNSCache(basehub->host, errmsg);
+    ip = resolveDNSCache(basehub->url.host, errmsg);
     if (ip == 0) {
         return YAPI_IO_ERROR;
     }
-    if (basehub->proto != PROTO_WEBSOCKET && basehub->proto != PROTO_SECURE_WEBSOCKET) {
+    if (basehub->url.proto != PROTO_WEBSOCKET && basehub->url.proto != PROTO_SECURE_WEBSOCKET) {
         return YERRMSG(YAPI_IO_ERROR, "not a WebSocket url");
     }
 
-    WSLOG("hub(%s) try to open WS connection at %d\n", basehub->name, basehub->notifAbsPos);
-    YSPRINTF(request, 256, "GET %s/not.byn?abs=%u", basehub->subdomain, basehub->notifAbsPos);
+    WSLOG("hub(%s) try to open WS connection at %d\n", basehub->url.org_url, basehub->notifAbsPos);
+    YSPRINTF(request, 256, "GET %s/not.byn?abs=%u", basehub->url.subdomain, basehub->notifAbsPos);
 
-    res = yTcpOpen(&wshub->skt, ip, basehub->portno, mstimout, errmsg);
+    res = yTcpOpen(&wshub->skt, ip, basehub->url.portno, mstimout, errmsg);
     if (YISERR(res)) {
         // yTcpOpen has reset the socket to INVALID
         yTcpClose(wshub->skt);
@@ -2951,7 +2951,7 @@ static int ws_openBaseSocket(HubSt* basehub, int first_notification_connection, 
         wshub->skt = INVALID_SOCKET;
         return res;
     }
-    res = yTcpWrite(wshub->skt, basehub->host, YSTRLEN(basehub->host), errmsg);
+    res = yTcpWrite(wshub->skt, basehub->url.host, YSTRLEN(basehub->url.host), errmsg);
     if (YISERR(res)) {
         yTcpClose(wshub->skt);
         wshub->skt = INVALID_SOCKET;
@@ -3058,8 +3058,8 @@ static void ws_threadUpdateRetryCount(HubSt* hub)
         hub->attemptDelay = 8000;
     hub->retryCount++;
 #ifdef DEBUG_WEBSOCKET
-    dbglog("WS: hub(%s): IO error on ws_thread:(%d) %s\n", hub->name, hub->errcode, hub->errmsg);
-    dbglog("WS: hub(%s): retry in %dms (%d retries)\n", hub->name, hub->attemptDelay, hub->retryCount);
+    dbglog("WS: hub(%s): IO error on ws_thread:(%d) %s\n", hub->url.org_url, hub->errcode, hub->errmsg);
+    dbglog("WS: hub(%s): retry in %dms (%d retries)\n", hub->url.org_url, hub->attemptDelay, hub->retryCount);
 #endif
 }
 
@@ -3081,11 +3081,11 @@ void* ws_thread(void* ctx)
 
 
     yThreadSignalStart(thread);
-    WSLOG("hub(%s) start thread \n", hub->name);
+    WSLOG("hub(%s) start thread \n", hub->url.org_url);
 
     while (!yThreadMustEnd(thread) && hub->state != NET_HUB_TOCLOSE) {
 
-        WSLOG("hub(%s) try to open base socket (%d/%dms/%d)\n", hub->name, hub->retryCount, hub->attemptDelay, hub->state);
+        WSLOG("hub(%s) try to open base socket (%d/%dms/%d)\n", hub->url.org_url, hub->retryCount, hub->attemptDelay, hub->state);
         if (hub->retryCount > 0) {
             u64 timeout = yapiGetTickCount() + hub->attemptDelay;
             do {
@@ -3105,7 +3105,7 @@ void* ws_thread(void* ctx)
             ws_threadUpdateRetryCount(hub);
             continue;
         }
-        WSLOG("hub(%s) base socket opened (skt=%x)\n", hub->name, hub->ws.skt);
+        WSLOG("hub(%s) base socket opened (skt=%x)\n", hub->url.org_url, hub->ws.skt);
         hub->state = NET_HUB_TRYING;
         hub->ws.base_state = WS_BASE_HEADER_SENT;
         hub->ws.connectionTime = 0;
@@ -3256,7 +3256,7 @@ void* ws_thread(void* ctx)
                                 YSTRCPY(errmsg, YOCTO_ERRMSG_LEN, "WebSocket connection close received");
                                 hub->ws.base_state = WS_BASE_OFFLINE;
 #ifdef DEBUG_WEBSOCKET
-                                dbglog("WS: IO error on base socket of %s(%X): %s\n", hub->name, hub->url, errmsg);
+                                dbglog("WS: IO error on base socket of %s: %s\n", hub->url.org_url, errmsg);
 #endif
                             } else {
                                 // unhandled packet
@@ -3291,7 +3291,7 @@ void* ws_thread(void* ctx)
                         request_pending_logs(hub);
                         res = ws_parseIncomingFrame(hub, (u8*)buffer, buffer_ofs + pktlen, errmsg);
                         if (YISERR(res)) {
-                            WSLOG("hub(%s) ws_parseIncomingFrame error %d:%s\n", hub->name, res, errmsg);
+                            WSLOG("hub(%s) ws_parseIncomingFrame error %d:%s\n", hub->url.org_url, res, errmsg);
                             break;
                         }
                         buffer_ofs = 0;
@@ -3302,13 +3302,13 @@ void* ws_thread(void* ctx)
                 } while (!need_more_data && !YISERR(res));
             }
             if (hub->send_ping && ((u64)(yapiGetTickCount() - hub->ws.lastTraffic)) > NET_HUB_NOT_CONNECTION_TIMEOUT) {
-                WSLOG("PING: network hub %s(%x) didn't respond for too long (%d)\n", hub->name, hub->url, res);
+                WSLOG("PING: network hub %s didn't respond for too long (%d)\n", hub->url.org_url,res);
                 continue_processing = 0;
                 closeAllReq(hub, res, errmsg);
             } else if (!YISERR(res)) {
                 res = ws_processRequests(hub, errmsg);
                 if (YISERR(res)) {
-                    WSLOG("hub(%s) ws_processRequests error %d:%s\n", hub->name, res, errmsg);
+                    WSLOG("hub(%s) ws_processRequests error %d:%s\n", hub->url.org_url, res, errmsg);
                 }
             }
 
@@ -3319,24 +3319,24 @@ void* ws_thread(void* ctx)
             }
         } while (continue_processing);
         if (YISERR(res)) {
-            WSLOG("WS: hub(%s) IO error %d:%s\n", hub->name, res, errmsg);
+            WSLOG("WS: hub(%s) IO error %d:%s\n", hub->url.org_url, res, errmsg);
             yEnterCriticalSection(&hub->access);
             hub->errcode = ySetErr(res, hub->errmsg, errmsg, NULL, 0);
             yLeaveCriticalSection(&hub->access);
             closeAllReq(hub, res, errmsg);
-            if (res == YAPI_UNAUTHORIZED) {
+            if (res == YAPI_UNAUTHORIZED || res == YAPI_DOUBLE_ACCES) {
                 hub->state = NET_HUB_TOCLOSE;
             } else {
                 ws_threadUpdateRetryCount(hub);
             }
         }
-        WSLOG("hub(%s) close base socket %d:%s\n", hub->name, res, errmsg);
+        WSLOG("hub(%s) close base socket %d:%s\n", hub->url.org_url, res, errmsg);
         ws_closeBaseSocket(&hub->ws);
         if (hub->state != NET_HUB_TOCLOSE) {
             hub->state = NET_HUB_DISCONNECTED;
         }
     }
-    WSLOG("hub(%s) exit thread \n", hub->name);
+    WSLOG("hub(%s) exit thread \n", hub->url.org_url);
     hub->state = NET_HUB_CLOSED;
     yThreadSignalEnd(thread);
     return NULL;

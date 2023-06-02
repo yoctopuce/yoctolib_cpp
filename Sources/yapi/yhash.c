@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 53990 2023-04-12 14:46:53Z mvuilleu $
+ * $Id: yhash.c 54723 2023-05-23 12:18:15Z mvuilleu $
  *
  * Simple hash tables and device/function information store
  *
@@ -1057,7 +1057,7 @@ int ypRegisterByYdx(u8 devYdx, Notification_funydx funInfo, const char* funcVal,
 
 // return -1 on error
 // WARNING: funcVal MUST BE WORD-ALIGNED
-int ypGetAttributesByYdx(u8 devYdx, u8 funYdx, yStrRef* serial, yStrRef* logicalName, yStrRef* funcId, yStrRef* funcName, Notification_funydx* funcInfo, char* funcVal)
+int ypGetAttributesByYdx(u8 devYdx, u8 funYdx, yStrRef* serial, yStrRef* logicalName, yStrRef* funcId, yStrRef* funcName, u8* baseclass, Notification_funydx* funcInfo, char* funcVal)
 {
     yBlkHdl hdl;
     u16 i;
@@ -1068,9 +1068,20 @@ int ypGetAttributesByYdx(u8 devYdx, u8 funYdx, yStrRef* serial, yStrRef* logical
 
     // Ignore unknown devYdx
     if (devYdxPtr[devYdx] != INVALID_BLK_HDL) {
+        hdl = devYdxPtr[devYdx];
+        if (serial) {
+            *serial = WP(hdl).serial;
+        }
         if (logicalName) {
-            hdl = devYdxPtr[devYdx];
             *logicalName = WP(hdl).name;
+        }
+        if (funYdx == 15) {
+            // special case: return module funcId, and exit
+            if (funcId) {
+                *funcId = YSTRREF_mODULE_STRING;
+            }
+            yLeaveCriticalSection(&yYpMutex);
+            return 0;
         }
         hdl = funYdxPtr[devYdx];
         while (hdl != INVALID_BLK_HDL && funYdx >= 6) {
@@ -1087,6 +1098,9 @@ int ypGetAttributesByYdx(u8 devYdx, u8 funYdx, yStrRef* serial, yStrRef* logical
             hdl = YA(hdl).entries[funYdx];
             if (hdl != INVALID_BLK_HDL) {
                 YASSERT(YP(hdl).blkId >= YBLKID_YPENTRY && YP(hdl).blkId <= YBLKID_YPENTRYEND);
+                if (baseclass) {
+                    *baseclass = YP(hdl).blkId - YBLKID_YPENTRY;
+                }
                 if (serial) {
                     *serial = YP(hdl).serialNum;
                 }
@@ -1112,7 +1126,6 @@ int ypGetAttributesByYdx(u8 devYdx, u8 funYdx, yStrRef* serial, yStrRef* logical
     yLeaveCriticalSection(&yYpMutex);
     return res;
 }
-
 
 void ypGetCategory(yBlkHdl hdl, char* name, yBlkHdl* entries)
 {
@@ -1206,6 +1219,75 @@ static void ypUnregister(yStrRef serial)
     }
 
     yLeaveCriticalSection(&yYpMutex);
+}
+
+int ypSearchByDevYdx(u8 devYdx, yStrRef strref)
+{
+    yBlkHdl yahdl;
+    int     byName = -1;
+    int     i, funYdx = 0;
+
+    yEnterCriticalSection(&yYpMutex);
+    yahdl = funYdxPtr[devYdx];
+    while (yahdl != INVALID_BLK_HDL) {
+        YASSERT(YA(yahdl).blkId == YBLKID_YPARRAY);
+        for (i = 0; i < 6; i++) {
+            yBlkHdl hdl = YA(yahdl).entries[i];
+            if (hdl == INVALID_BLK_HDL) {
+                yahdl = INVALID_BLK_HDL;
+                break;
+            }
+            if (YP(hdl).funcId == strref) {
+                funYdx = funYdx + i;
+                break;
+            }
+            if (YP(hdl).funcName == strref) {
+                byName = funYdx + i;
+            }
+        }
+        if (i < 6) break;
+        funYdx += 6;
+        yahdl = YA(yahdl).nextPtr;
+    }
+    yLeaveCriticalSection(&yYpMutex);
+    if (yahdl == INVALID_BLK_HDL) {
+        return byName;
+    }
+
+    return funYdx;
+}
+
+int ypFunctionCount(u8 devYdx)
+{
+    yBlkHdl hdl, nexthdl;
+    int     res = 0;
+    u16     i;
+    
+    yEnterCriticalSection(&yYpMutex);
+
+    if (devYdxPtr[devYdx] != INVALID_BLK_HDL) {
+        hdl = funYdxPtr[devYdx];
+        while (hdl != INVALID_BLK_HDL && res < 15) {
+            if (YA(hdl).blkId != YBLKID_YPARRAY) {
+                yLeaveCriticalSection(&yYpMutex);
+                return res; // discard invalid block silently
+            }
+            nexthdl = YA(hdl).nextPtr;            
+            if(nexthdl != INVALID_BLK_HDL) {
+                res += 6;                
+            } else {
+                for(i = 0; i < 6; i++) {
+                    if(YA(hdl).entries[i] == INVALID_BLK_HDL) break;
+                    res++;
+                }
+            }
+            hdl = nexthdl;
+        }
+    }
+
+    yLeaveCriticalSection(&yYpMutex);
+
+    return res;
 }
 
 #ifndef MICROCHIP_API

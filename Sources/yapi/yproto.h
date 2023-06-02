@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 53298 2023-02-28 09:40:01Z seb $
+ * $Id: yproto.h 54296 2023-05-01 13:02:44Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -826,15 +826,23 @@ typedef struct _HubInfoSt {
     int use_pure_http;
 } HubInfoSt;
 
-
-#define INCOMPATIBLE_JZON_ENCODING 1
-
-typedef struct _HubSt {
+typedef struct _HubUrlSt {
+    char* org_url;
     char* host;
-    yHubProto proto;
     char* user;
     char* password;
     char* subdomain; // empty string if no domain are set
+    yHubProto proto;
+    u16 portno;
+} HubURLSt;
+
+#define INCOMPATIBLE_JZON_ENCODING 1
+#define DISABLED_HUB 2
+#define MAX_KNOW_URLS_SIZE 8
+
+typedef struct _HubSt {
+    HubURLSt url;
+    char* know_urls[MAX_KNOW_URLS_SIZE];
     HubInfoSt info; // infos form info.json
     // misc flag that are mapped to int for efficiency and thread safety
     int rw_access;
@@ -845,7 +853,6 @@ typedef struct _HubSt {
     yStrRef serial;
     WakeUpSocket wuce;
     yThread net_thread;
-    u16 portno;
     NET_HUB_STATE state;
     yFifoBuf not_fifo; // notification fifo
     u8 not_buffer[1024]; // buffer for the fifo
@@ -867,6 +874,8 @@ typedef struct _HubSt {
     HTTPNetHub http;
     WSNetHub ws;
     yStrRef devices[ALLOC_YDX_PER_HUB];
+    int netTimeout;
+    u64 creation_time;
 } HubSt;
 
 
@@ -1026,6 +1035,8 @@ typedef struct {
     // OS specifics variables
     yInterfaceSt* setupedIfaceCache[SETUPED_IFACE_CACHE_SIZE];
     yStrRef usbdevices[ALLOC_YDX_PER_HUB];
+    int usb_global_err;
+    char usb_global_err_msg[YOCTO_ERRMSG_LEN];
 #if defined(WINDOWS_API)
     HANDLE apiLock;
     HANDLE nameLock;

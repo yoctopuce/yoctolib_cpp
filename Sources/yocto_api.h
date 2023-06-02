@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 53689 2023-03-22 11:17:15Z mvuilleu $
+ * $Id: yocto_api.h 54649 2023-05-22 10:09:20Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -93,6 +93,7 @@ vector<string> _strsplit(const string& str, char delimiter);
 #else
 #define SAFE_SPRINTF         snprintf
 #endif
+class YHub;
 
 //--- (generated code: YFunction definitions)
 class YFunction; // forward declaration
@@ -484,10 +485,17 @@ protected:
     // Attributes (function value cache)
     u64             _defaultCacheValidity;
     //--- (end of generated code: YAPIContext attributes)
+    std::map<int, YHub*> _yhub_cache;
+
+    YHub* _findYHubFromCache(int ref);
+
+    void _addYHubToCache( int ref, YHub* obj);
+    void _ClearCache();
 
 public:
     YAPIContext();
     ~YAPIContext();
+
     //--- (generated code: YAPIContext accessors declaration)
 
 
@@ -575,6 +583,10 @@ public:
      */
     virtual u64         GetCacheValidity(void);
 
+    virtual YHub*       nextHubInUseInternal(int hubref);
+
+    virtual YHub*       getYHubObj(int hubref);
+
 #ifdef __BORLANDC__
 #pragma option pop
 #endif
@@ -622,6 +634,7 @@ public:
     static  s64         _hexStr2Long(const string& str);
     static  string      _flattenJsonStruct(string jsonbuffer);
     static  string      _checkFirmware(const string& serial, const string& rev, const string& path);
+  
 
     static  bool        ExceptionsDisabled;
     static  const string      INVALID_STRING;
@@ -701,7 +714,7 @@ public:
      *
      * @return YAPI::SUCCESS when the call succeeds.
      *
-     * On failure, throws an exception or returns a negative error code.
+     * On failure returns a negative error code.
      */
     static  YRETCODE    InitAPI(int mode, string& errmsg);
 
@@ -739,8 +752,7 @@ public:
      * Re-enables the use of exceptions for runtime error handling.
      * Be aware than when exceptions are enabled, every function that fails
      * triggers an exception. If the exception is not caught by the user code,
-     * it  either fires the debugger or aborts (i.e. crash) the program.
-     * On failure, throws an exception or returns a negative error code.
+     * it either fires the debugger or aborts (i.e. crash) the program.
      */
     static  void        EnableExceptions(void);
 
@@ -792,7 +804,7 @@ public:
      * @param errmsg : a string passed by reference to receive any error message.
      *
      * @return YAPI::SUCCESS when the call succeeds.
-     *         On failure, throws an exception or returns a negative error code.
+     *         On failure returns a negative error code.
      */
 	static  YRETCODE    TriggerHubDiscovery(string& errmsg);
 
@@ -874,7 +886,7 @@ public:
      *
      * @return YAPI::SUCCESS when the call succeeds.
      *
-     * On failure, throws an exception or returns a negative error code.
+     * On failure returns a negative error code.
      */
     static  YRETCODE    RegisterHub(const string& url, string& errmsg);
 
@@ -892,7 +904,7 @@ public:
      *
      * @return YAPI::SUCCESS when the call succeeds.
      *
-     * On failure, throws an exception or returns a negative error code.
+     * On failure returns a negative error code.
      */
     static  YRETCODE    PreregisterHub(const string& url, string& errmsg);
 
@@ -920,7 +932,7 @@ public:
      *
      * @return YAPI::SUCCESS when the call succeeds.
      *
-     * On failure, throws an exception or returns a negative error code.
+     * On failure returns a negative error code.
      */
     static  YRETCODE    UpdateDeviceList(string& errmsg);
     /**
@@ -938,7 +950,7 @@ public:
      *
      * @return YAPI::SUCCESS when the call succeeds.
      *
-     * On failure, throws an exception or returns a negative error code.
+     * On failure returns a negative error code.
      */
     static  YRETCODE    HandleEvents(string& errmsg);
     /**
@@ -958,7 +970,7 @@ public:
      *
      * @return YAPI::SUCCESS when the call succeeds.
      *
-     * On failure, throws an exception or returns a negative error code.
+     * On failure returns a negative error code.
      */
     static  YRETCODE    Sleep(unsigned ms_duration, string& errmsg);
     /**
@@ -1081,8 +1093,15 @@ public:
     {
         return YAPI::_yapiContext.GetCacheValidity();
     }
+    inline static YHub* nextHubInUseInternal(int hubref)
+    {
+        return YAPI::_yapiContext.nextHubInUseInternal(hubref);
+    }
+    inline static YHub* getYHubObj(int hubref)
+    {
+        return YAPI::_yapiContext.getYHubObj(hubref);
+    }
 //--- (end of generated code: YAPIContext yapiwrapper)
-
 
 };
 
@@ -1935,6 +1954,178 @@ public:
     string      getHubSerial(void);
 
 };
+
+
+//--- (generated code: YHub declaration)
+/**
+ * YHub Class: Hub Interface
+ *
+ *
+ */
+class YOCTO_CLASS_EXPORT YHub {
+#ifdef __BORLANDC__
+#pragma option push -w-8022
+#endif
+//--- (end of generated code: YHub declaration)
+protected:
+
+//--- (generated code: YHub attributes)
+    // Attributes (function value cache)
+    YAPIContext*    _ctx;
+    int             _hubref;
+    void*           _userData;
+    //--- (end of generated code: YHub attributes)
+    YHub();
+
+public:
+    YHub(YAPIContext* ctx, int ref);
+
+     virtual ~YHub();
+
+    //--- (generated code: YHub accessors declaration)
+
+
+    virtual string      _getStrAttr(string attrName);
+
+    virtual int         _getIntAttr(string attrName);
+
+    virtual void        _setIntAttr(string attrName,int value);
+
+    /**
+     * Returns the URL that has been used first to register this hub.
+     */
+    virtual string      get_registeredUrl(void);
+
+    /**
+     * Returns all known URLs that have been used to register this hub.
+     * URLs are pointing to the same hub when the devices connected
+     * are sharing the same serial number.
+     */
+    virtual vector<string> get_knownUrls(void);
+
+    /**
+     * Returns the URL currently in use to communicate with this hub.
+     */
+    virtual string      get_connectionUrl(void);
+
+    /**
+     * Returns the hub serial number, if the hub was already connected once.
+     */
+    virtual string      get_serialNumber(void);
+
+    /**
+     * Tells if this hub is still registered within the API.
+     *
+     * @return true if the hub has not been unregistered.
+     */
+    virtual bool        isInUse(void);
+
+    /**
+     * Tells if there is an active communication channel with this hub.
+     *
+     * @return true if the hub is currently connected.
+     */
+    virtual bool        isOnline(void);
+
+    /**
+     * Tells if write access on this hub is blocked. Return true if it
+     * is not possible to change attributes on this hub
+     *
+     * @return true if it is not possible to change attributes on this hub.
+     */
+    virtual bool        isReadOnly(void);
+
+    /**
+     * Modifies tthe network connection delay for this hub.
+     * The default value is inherited from ySetNetworkTimeout
+     * at the time when the hub is registered, but it can be updated
+     * afterwards for each specific hub if necessary.
+     *
+     * @param networkMsTimeout : the network connection delay in milliseconds.
+     * @noreturn
+     */
+    virtual void        set_networkTimeout(int networkMsTimeout);
+
+    /**
+     * Returns the network connection delay for this hub.
+     * The default value is inherited from ySetNetworkTimeout
+     * at the time when the hub is registered, but it can be updated
+     * afterwards for each specific hub if necessary.
+     *
+     * @return the network connection delay in milliseconds.
+     */
+    virtual int         get_networkTimeout(void);
+
+    /**
+     * Returns the numerical error code of the latest error with the hub.
+     * This method is mostly useful when using the Yoctopuce library with
+     * exceptions disabled.
+     *
+     * @return a number corresponding to the code of the latest error that occurred while
+     *         using the hub object
+     */
+    virtual int         get_errorType(void);
+
+    /**
+     * Returns the error message of the latest error with the hub.
+     * This method is mostly useful when using the Yoctopuce library with
+     * exceptions disabled.
+     *
+     * @return a string corresponding to the latest error message that occured while
+     *         using the hub object
+     */
+    virtual string      get_errorMessage(void);
+
+    /**
+     * Returns the value of the userData attribute, as previously stored
+     * using method set_userData.
+     * This attribute is never touched directly by the API, and is at
+     * disposal of the caller to store a context.
+     *
+     * @return the object stored previously by the caller.
+     */
+    virtual void*       get_userData(void);
+
+    /**
+     * Stores a user context provided as argument in the userData
+     * attribute of the function.
+     * This attribute is never touched by the API, and is at
+     * disposal of the caller to store a context.
+     *
+     * @param data : any kind of object to be stored
+     * @noreturn
+     */
+    virtual void        set_userData(void* data);
+
+    /**
+     * Starts the enumeration of hubs currently in use by the API.
+     * Use the method YHub::nextHubInUse() to iterate on the
+     * next hubs.
+     *
+     * @return a pointer to a YHub object, corresponding to
+     *         the first hub currently in use by the API, or a
+     *         NULL pointer if none has been registered.
+     */
+    static YHub*        FirstHubInUse(void);
+
+    /**
+     * Continues the module enumeration started using YHub::FirstHubInUse().
+     * Caution: You can't make any assumption about the order of returned hubs.
+     *
+     * @return a pointer to a YHub object, corresponding to
+     *         the next hub currenlty in use, or a NULL pointer
+     *         if there are no more hubs to enumerate.
+     */
+    virtual YHub*       nextHubInUse(void);
+
+#ifdef __BORLANDC__
+#pragma option pop
+#endif
+    //--- (end of generated code: YHub accessors declaration)
+
+};
+
+
 
 //--- (generated code: YFunction declaration)
 /**
@@ -3750,7 +3941,7 @@ inline string yGetAPIVersion()
  *
  * @return YAPI::SUCCESS when the call succeeds.
  *
- * On failure, throws an exception or returns a negative error code.
+ * On failure returns a negative error code.
  */
 inline YRETCODE yInitAPI(int mode, string& errmsg)
 { return YAPI::InitAPI(mode,errmsg); }
@@ -3791,8 +3982,7 @@ inline void yDisableExceptions(void)
  * Re-enables the use of exceptions for runtime error handling.
  * Be aware than when exceptions are enabled, every function that fails
  * triggers an exception. If the exception is not caught by the user code,
- * it  either fires the debugger or aborts (i.e. crash) the program.
- * On failure, throws an exception or returns a negative error code.
+ * it either fires the debugger or aborts (i.e. crash) the program.
  */
 inline void yEnableExceptions(void)
 { YAPI::EnableExceptions(); }
@@ -3855,7 +4045,7 @@ inline void yRegisterHubDiscoveryCallback(YHubDiscoveryCallback hubDiscoveryCall
  * @param errmsg : a string passed by reference to receive any error message.
  *
  * @return YAPI::SUCCESS when the call succeeds.
- *         On failure, throws an exception or returns a negative error code.
+ *         On failure returns a negative error code.
  */
 inline YRETCODE yTriggerHubDiscovery(string& errmsg)
 {
@@ -3919,7 +4109,7 @@ inline void yRegisterCalibrationHandler(int calibrationType, yCalibrationHandler
  *
  * @return YAPI::SUCCESS when the call succeeds.
  *
- * On failure, throws an exception or returns a negative error code.
+ * On failure returns a negative error code.
  */
 inline YRETCODE yRegisterHub(const string& url, string& errmsg)
 { return YAPI::RegisterHub(url,errmsg); }
@@ -3938,7 +4128,7 @@ inline YRETCODE yRegisterHub(const string& url, string& errmsg)
  *
  * @return YAPI::SUCCESS when the call succeeds.
  *
- * On failure, throws an exception or returns a negative error code.
+ * On failure returns a negative error code.
  */
 inline YRETCODE yPreregisterHub(const string& url, string& errmsg)
 { return YAPI::PreregisterHub(url,errmsg); }
@@ -3986,7 +4176,7 @@ inline YRETCODE yTestHub(const string& url, int mstimeout, string& errmsg)
  *
  * @return YAPI::SUCCESS when the call succeeds.
  *
- * On failure, throws an exception or returns a negative error code.
+ * On failure returns a negative error code.
  */
 inline YRETCODE yUpdateDeviceList(string& errmsg)
 { return YAPI::UpdateDeviceList(errmsg); }
@@ -4006,7 +4196,7 @@ inline YRETCODE yUpdateDeviceList(string& errmsg)
  *
  * @return YAPI::SUCCESS when the call succeeds.
  *
- * On failure, throws an exception or returns a negative error code.
+ * On failure returns a negative error code.
  */
 inline YRETCODE yHandleEvents(string& errmsg)
 { return YAPI::HandleEvents(errmsg); }
@@ -4028,7 +4218,7 @@ inline YRETCODE yHandleEvents(string& errmsg)
  *
  * @return YAPI::SUCCESS when the call succeeds.
  *
- * On failure, throws an exception or returns a negative error code.
+ * On failure returns a negative error code.
  */
 inline YRETCODE ySleep(unsigned ms_duration, string& errmsg)
 { return YAPI::Sleep(ms_duration, errmsg); }

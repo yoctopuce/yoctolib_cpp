@@ -1,3 +1,4 @@
-CPP v1.10.54037
+CPP v1.10.54821
 
-- Add YInputCapture class
+- Add support for YHub class
+- Fix documentation of YAPI class

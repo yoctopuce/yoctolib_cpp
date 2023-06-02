@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 52567 2022-12-25 12:00:14Z seb $
+ * $Id: yocto_cellular.cpp 54278 2023-04-28 10:10:10Z seb $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -1170,7 +1170,7 @@ int YCellular::sendPUK(string puk,string newPin)
     string gsmMsg;
     gsmMsg = this->get_message();
     if (!((gsmMsg).substr(0, 13) == "Enter SIM PUK")) {
-        _throw(YAPI_INVALID_ARGUMENT,"PUK not expected at this time");
+        _throw(YAPI_INVALID_ARGUMENT, "PUK not expected at this time");
         return YAPI_INVALID_ARGUMENT;
     }
     if (newPin == "") {
@@ -1241,19 +1241,19 @@ string YCellular::_AT(string cmd)
     cmdLen = (int)(cmd).length();
     chrPos = _ystrpos(cmd, "#");
     while (chrPos >= 0) {
-        cmd = YapiWrapper::ysprintf("%s%c23%s", (cmd).substr( 0, chrPos).c_str(), 37,(cmd).substr( chrPos+1, cmdLen-chrPos-1).c_str());
+        cmd = YapiWrapper::ysprintf("%s%c23%s", (cmd).substr(0, chrPos).c_str(), 37,(cmd).substr(chrPos+1, cmdLen-chrPos-1).c_str());
         cmdLen = cmdLen + 2;
         chrPos = _ystrpos(cmd, "#");
     }
     chrPos = _ystrpos(cmd, "+");
     while (chrPos >= 0) {
-        cmd = YapiWrapper::ysprintf("%s%c2B%s", (cmd).substr( 0, chrPos).c_str(), 37,(cmd).substr( chrPos+1, cmdLen-chrPos-1).c_str());
+        cmd = YapiWrapper::ysprintf("%s%c2B%s", (cmd).substr(0, chrPos).c_str(), 37,(cmd).substr(chrPos+1, cmdLen-chrPos-1).c_str());
         cmdLen = cmdLen + 2;
         chrPos = _ystrpos(cmd, "+");
     }
     chrPos = _ystrpos(cmd, "=");
     while (chrPos >= 0) {
-        cmd = YapiWrapper::ysprintf("%s%c3D%s", (cmd).substr( 0, chrPos).c_str(), 37,(cmd).substr( chrPos+1, cmdLen-chrPos-1).c_str());
+        cmd = YapiWrapper::ysprintf("%s%c3D%s", (cmd).substr(0, chrPos).c_str(), 37,(cmd).substr(chrPos+1, cmdLen-chrPos-1).c_str());
         cmdLen = cmdLen + 2;
         chrPos = _ystrpos(cmd, "=");
     }
@@ -1273,8 +1273,8 @@ string YCellular::_AT(string cmd)
         if (((u8)buff[idx]) == 64) {
             // continuation detected
             suffixlen = bufflen - idx;
-            cmd = YapiWrapper::ysprintf("at.txt?cmd=%s",(buffstr).substr( buffstrlen - suffixlen, suffixlen).c_str());
-            buffstr = (buffstr).substr( 0, buffstrlen - suffixlen);
+            cmd = YapiWrapper::ysprintf("at.txt?cmd=%s",(buffstr).substr(buffstrlen - suffixlen, suffixlen).c_str());
+            buffstr = (buffstr).substr(0, buffstrlen - suffixlen);
             waitMore = waitMore - 1;
         } else {
             // request complete
@@ -1307,14 +1307,14 @@ vector<string> YCellular::get_availableOperators(void)
     idx = _ystrpos(cops, "(");
     while (idx >= 0) {
         slen = slen - (idx+1);
-        cops = (cops).substr( idx+1, slen);
+        cops = (cops).substr(idx+1, slen);
         idx = _ystrpos(cops, "\"");
         if (idx > 0) {
             slen = slen - (idx+1);
-            cops = (cops).substr( idx+1, slen);
+            cops = (cops).substr(idx+1, slen);
             idx = _ystrpos(cops, "\"");
             if (idx > 0) {
-                res.push_back((cops).substr( 0, idx));
+                res.push_back((cops).substr(0, idx));
             }
         }
         idx = _ystrpos(cops, "(");
@@ -5875,7 +5875,7 @@ vector<string> YCellular::get_communicationProfiles(void)
     lines = _strsplit(profiles,'\n');
     nlines = (int)lines.size();
     if (!(nlines > 0)) {
-        _throw(YAPI_IO_ERROR,"fail to retrieve profile list");
+        _throw(YAPI_IO_ERROR, "fail to retrieve profile list");
         return res;
     }
     res.clear();
@@ -5884,7 +5884,7 @@ vector<string> YCellular::get_communicationProfiles(void)
         line = lines[idx];
         cpos = _ystrpos(line, ":");
         if (cpos > 0) {
-            profno = atoi(((line).substr( 0, cpos)).c_str());
+            profno = atoi(((line).substr(0, cpos)).c_str());
             if (profno > 1) {
                 res.push_back(line);
             }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_powersupply.cpp 52567 2022-12-25 12:00:14Z seb $
+ *  $Id: yocto_powersupply.cpp 54768 2023-05-26 06:46:41Z seb $
  *
  *  Implements yFindPowerSupply(), the high-level API for PowerSupply functions
  *
@@ -58,12 +58,9 @@ YPowerSupply::YPowerSupply(const string& func): YFunction(func)
     ,_voltageSetPoint(VOLTAGESETPOINT_INVALID)
     ,_currentLimit(CURRENTLIMIT_INVALID)
     ,_powerOutput(POWEROUTPUT_INVALID)
-    ,_voltageSense(VOLTAGESENSE_INVALID)
     ,_measuredVoltage(MEASUREDVOLTAGE_INVALID)
     ,_measuredCurrent(MEASUREDCURRENT_INVALID)
     ,_inputVoltage(INPUTVOLTAGE_INVALID)
-    ,_vInt(VINT_INVALID)
-    ,_ldoTemperature(LDOTEMPERATURE_INVALID)
     ,_voltageTransition(VOLTAGETRANSITION_INVALID)
     ,_voltageAtStartUp(VOLTAGEATSTARTUP_INVALID)
     ,_currentAtStartUp(CURRENTATSTARTUP_INVALID)
@@ -86,8 +83,6 @@ const double YPowerSupply::CURRENTLIMIT_INVALID = YAPI_INVALID_DOUBLE;
 const double YPowerSupply::MEASUREDVOLTAGE_INVALID = YAPI_INVALID_DOUBLE;
 const double YPowerSupply::MEASUREDCURRENT_INVALID = YAPI_INVALID_DOUBLE;
 const double YPowerSupply::INPUTVOLTAGE_INVALID = YAPI_INVALID_DOUBLE;
-const double YPowerSupply::VINT_INVALID = YAPI_INVALID_DOUBLE;
-const double YPowerSupply::LDOTEMPERATURE_INVALID = YAPI_INVALID_DOUBLE;
 const string YPowerSupply::VOLTAGETRANSITION_INVALID = YAPI_INVALID_STRING;
 const double YPowerSupply::VOLTAGEATSTARTUP_INVALID = YAPI_INVALID_DOUBLE;
 const double YPowerSupply::CURRENTATSTARTUP_INVALID = YAPI_INVALID_DOUBLE;
@@ -104,9 +99,6 @@ int YPowerSupply::_parseAttr(YJSONObject *json_val)
     if(json_val->has("powerOutput")) {
         _powerOutput =  (Y_POWEROUTPUT_enum)json_val->getInt("powerOutput");
     }
-    if(json_val->has("voltageSense")) {
-        _voltageSense =  (Y_VOLTAGESENSE_enum)json_val->getInt("voltageSense");
-    }
     if(json_val->has("measuredVoltage")) {
         _measuredVoltage =  floor(json_val->getDouble("measuredVoltage") / 65.536 + 0.5) / 1000.0;
     }
@@ -115,12 +107,6 @@ int YPowerSupply::_parseAttr(YJSONObject *json_val)
     }
     if(json_val->has("inputVoltage")) {
         _inputVoltage =  floor(json_val->getDouble("inputVoltage") / 65.536 + 0.5) / 1000.0;
-    }
-    if(json_val->has("vInt")) {
-        _vInt =  floor(json_val->getDouble("vInt") / 65.536 + 0.5) / 1000.0;
-    }
-    if(json_val->has("ldoTemperature")) {
-        _ldoTemperature =  floor(json_val->getDouble("ldoTemperature") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("voltageTransition")) {
         _voltageTransition =  json_val->getString("voltageTransition");
@@ -303,62 +289,6 @@ int YPowerSupply::set_powerOutput(Y_POWEROUTPUT_enum newval)
 }
 
 /**
- * Returns the output voltage control point.
- *
- * @return either YPowerSupply::VOLTAGESENSE_INT or YPowerSupply::VOLTAGESENSE_EXT, according to the
- * output voltage control point
- *
- * On failure, throws an exception or returns YPowerSupply::VOLTAGESENSE_INVALID.
- */
-Y_VOLTAGESENSE_enum YPowerSupply::get_voltageSense(void)
-{
-    Y_VOLTAGESENSE_enum res;
-    yEnterCriticalSection(&_this_cs);
-    try {
-        if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
-                {
-                    yLeaveCriticalSection(&_this_cs);
-                    return YPowerSupply::VOLTAGESENSE_INVALID;
-                }
-            }
-        }
-        res = _voltageSense;
-    } catch (std::exception &) {
-        yLeaveCriticalSection(&_this_cs);
-        throw;
-    }
-    yLeaveCriticalSection(&_this_cs);
-    return res;
-}
-
-/**
- * Changes the voltage control point.
- *
- * @param newval : either YPowerSupply::VOLTAGESENSE_INT or YPowerSupply::VOLTAGESENSE_EXT, according to
- * the voltage control point
- *
- * @return YAPI::SUCCESS if the call succeeds.
- *
- * On failure, throws an exception or returns a negative error code.
- */
-int YPowerSupply::set_voltageSense(Y_VOLTAGESENSE_enum newval)
-{
-    string rest_val;
-    int res;
-    yEnterCriticalSection(&_this_cs);
-    try {
-        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
-        res = _setAttr("voltageSense", rest_val);
-    } catch (std::exception &) {
-         yLeaveCriticalSection(&_this_cs);
-         throw;
-    }
-    yLeaveCriticalSection(&_this_cs);
-    return res;
-}
-
-/**
  * Returns the measured output voltage, in V.
  *
  * @return a floating point number corresponding to the measured output voltage, in V
@@ -437,64 +367,6 @@ double YPowerSupply::get_inputVoltage(void)
             }
         }
         res = _inputVoltage;
-    } catch (std::exception &) {
-        yLeaveCriticalSection(&_this_cs);
-        throw;
-    }
-    yLeaveCriticalSection(&_this_cs);
-    return res;
-}
-
-/**
- * Returns the internal voltage, in V.
- *
- * @return a floating point number corresponding to the internal voltage, in V
- *
- * On failure, throws an exception or returns YPowerSupply::VINT_INVALID.
- */
-double YPowerSupply::get_vInt(void)
-{
-    double res = 0.0;
-    yEnterCriticalSection(&_this_cs);
-    try {
-        if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
-                {
-                    yLeaveCriticalSection(&_this_cs);
-                    return YPowerSupply::VINT_INVALID;
-                }
-            }
-        }
-        res = _vInt;
-    } catch (std::exception &) {
-        yLeaveCriticalSection(&_this_cs);
-        throw;
-    }
-    yLeaveCriticalSection(&_this_cs);
-    return res;
-}
-
-/**
- * Returns the LDO temperature, in Celsius.
- *
- * @return a floating point number corresponding to the LDO temperature, in Celsius
- *
- * On failure, throws an exception or returns YPowerSupply::LDOTEMPERATURE_INVALID.
- */
-double YPowerSupply::get_ldoTemperature(void)
-{
-    double res = 0.0;
-    yEnterCriticalSection(&_this_cs);
-    try {
-        if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
-                {
-                    yLeaveCriticalSection(&_this_cs);
-                    return YPowerSupply::LDOTEMPERATURE_INVALID;
-                }
-            }
-        }
-        res = _ldoTemperature;
     } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;

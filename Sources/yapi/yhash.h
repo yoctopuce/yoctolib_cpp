@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.h 53990 2023-04-12 14:46:53Z mvuilleu $
+ * $Id: yhash.h 54352 2023-05-03 13:45:35Z mvuilleu $
  *
  * Simple hash tables and device/function information store
  *
@@ -205,6 +205,8 @@ void    wpAllowUnregisterEx(void);
 int     wpMarkForUnregister(yStrRef serial);
 int     wpGetDevYdx(yStrRef serial);
 YAPI_DEVICE wpSearchByNameHash(yStrRef strref);
+int     ypSearchByDevYdx(u8 devYdx, yStrRef strref);
+int     ypFunctionCount(u8 devYdx);
 #ifndef MICROCHIP_API
 u16     wpEntryCount(void);
 YAPI_DEVICE wpSearchEx(yStrRef strref);
@@ -220,7 +222,7 @@ int     ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcNa
 // WARNING: funcVal MUST BE WORD-ALIGNED
 int     ypRegisterByYdx(u8 devYdx, Notification_funydx funInfo, const char *funcVal, YAPI_FUNCTION *fundesc);
 // WARNING: funcVal MUST BE WORD-ALIGNED
-int     ypGetAttributesByYdx(u8 devYdx, u8 funYdx, yStrRef *serial, yStrRef *logicalName, yStrRef *funcId, yStrRef *funcName, Notification_funydx *funcInfo, char *funcVal);
+int     ypGetAttributesByYdx(u8 devYdx, u8 funYdx, yStrRef *serial, yStrRef *logicalName, yStrRef *funcId, yStrRef *funcName, u8 *baseclass, Notification_funydx *funcInfo, char *funcVal);
 void    ypGetCategory(yBlkHdl hdl, char *name, yBlkHdl *entries);
 int     ypGetAttributes(yBlkHdl hdl, yStrRef *serial, yStrRef *funcId, yStrRef *funcName, Notification_funydx *funcInfo, char *funcVal);
 int     ypGetType(yBlkHdl hdl);

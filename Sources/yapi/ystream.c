@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 53298 2023-02-28 09:40:01Z seb $
+ * $Id: ystream.c 54099 2023-04-18 08:02:26Z seb $
  *
  * USB stream implementation
  *
@@ -2544,7 +2544,11 @@ int yUsbInit(yContextSt* ctx, char* errmsg)
 #ifdef PERF_YHUB_FUNCTIONS
     memset(&yUsbPerf,0,sizeof(yUsbPerfMonSt));
 #endif
-    return yyyUSB_init(ctx, errmsg);
+    ctx->usb_global_err = yyyUSB_init(ctx, errmsg);
+    if (ctx->usb_global_err < 0) {
+        YSTRCPY(ctx->usb_global_err_msg, YOCTO_ERRMSG_LEN, errmsg);
+    }
+    return ctx->usb_global_err;
 }
 
 

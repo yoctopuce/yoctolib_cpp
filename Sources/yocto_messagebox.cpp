@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.cpp 52567 2022-12-25 12:00:14Z seb $
+ * $Id: yocto_messagebox.cpp 54278 2023-04-28 10:10:10Z seb $
  *
  * Implements yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -705,7 +705,7 @@ string YSms::decodeAddress(string addr,int ofs,int siz)
         }
         // remove padding digit if needed
         if (((((u8)addr[ofs+siz])) >> (4)) == 15) {
-            res = (res).substr( 0, (int)(res).length()-1);
+            res = (res).substr(0, (int)(res).length()-1);
         }
         return res;
     }
@@ -749,7 +749,7 @@ string YSms::encodeTimeStamp(string exp)
     }
     if ((exp).substr(4, 1) == "-" || (exp).substr(4, 1) == "/") {
         // ignore century
-        exp = (exp).substr( 2, explen-2);
+        exp = (exp).substr(2, explen-2);
         explen = (int)(exp).length();
     }
     expasc = exp;
@@ -1740,19 +1740,19 @@ string YMessageBox::_AT(string cmd)
     cmdLen = (int)(cmd).length();
     chrPos = _ystrpos(cmd, "#");
     while (chrPos >= 0) {
-        cmd = YapiWrapper::ysprintf("%s%c23%s", (cmd).substr( 0, chrPos).c_str(), 37,(cmd).substr( chrPos+1, cmdLen-chrPos-1).c_str());
+        cmd = YapiWrapper::ysprintf("%s%c23%s", (cmd).substr(0, chrPos).c_str(), 37,(cmd).substr(chrPos+1, cmdLen-chrPos-1).c_str());
         cmdLen = cmdLen + 2;
         chrPos = _ystrpos(cmd, "#");
     }
     chrPos = _ystrpos(cmd, "+");
     while (chrPos >= 0) {
-        cmd = YapiWrapper::ysprintf("%s%c2B%s", (cmd).substr( 0, chrPos).c_str(), 37,(cmd).substr( chrPos+1, cmdLen-chrPos-1).c_str());
+        cmd = YapiWrapper::ysprintf("%s%c2B%s", (cmd).substr(0, chrPos).c_str(), 37,(cmd).substr(chrPos+1, cmdLen-chrPos-1).c_str());
         cmdLen = cmdLen + 2;
         chrPos = _ystrpos(cmd, "+");
     }
     chrPos = _ystrpos(cmd, "=");
     while (chrPos >= 0) {
-        cmd = YapiWrapper::ysprintf("%s%c3D%s", (cmd).substr( 0, chrPos).c_str(), 37,(cmd).substr( chrPos+1, cmdLen-chrPos-1).c_str());
+        cmd = YapiWrapper::ysprintf("%s%c3D%s", (cmd).substr(0, chrPos).c_str(), 37,(cmd).substr(chrPos+1, cmdLen-chrPos-1).c_str());
         cmdLen = cmdLen + 2;
         chrPos = _ystrpos(cmd, "=");
     }
@@ -1772,8 +1772,8 @@ string YMessageBox::_AT(string cmd)
         if (((u8)buff[idx]) == 64) {
             // continuation detected
             suffixlen = bufflen - idx;
-            cmd = YapiWrapper::ysprintf("at.txt?cmd=%s",(buffstr).substr( buffstrlen - suffixlen, suffixlen).c_str());
-            buffstr = (buffstr).substr( 0, buffstrlen - suffixlen);
+            cmd = YapiWrapper::ysprintf("at.txt?cmd=%s",(buffstr).substr(buffstrlen - suffixlen, suffixlen).c_str());
+            buffstr = (buffstr).substr(0, buffstrlen - suffixlen);
             waitMore = waitMore - 1;
         } else {
             // request complete
