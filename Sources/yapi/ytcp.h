@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.h 50952 2022-09-19 14:36:34Z seb $
+ * $Id: ytcp.h 55393 2023-06-29 08:31:54Z seb $
  *
  *  Declaration of a client TCP stack
  *
@@ -136,9 +136,7 @@ typedef struct {
 } os_ifaces;
 
 #ifdef YAPI_IN_YDEVICE
-extern os_ifaces detectedIfaces[];
-extern int nbDetectedIfaces;
-int yDetectNetworkInterfaces(u32 only_ip);
+int yDetectNetworkInterfaces(u32 only_ip, os_ifaces *interfaces, int max_nb_interfaces);
 #endif
 
 #define SSDP_UUID_LEN   48

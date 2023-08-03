@@ -1,4 +1,5 @@
-CPP v1.10.54852
+CPP v1.10.55826
 
-- Add support for YHub class
-- Fix documentation of YAPI class
+- Add implicitly init api in yapi::SetDeviceListValidity, YAPI::GetDeviceListValidity, YAPI::AddUdevRule, YAPI::SetNetworkTimeout, YAPI::GetNetworkTimeout,  YAPI::SetCacheValidity and  YAPI::GetCacheValidity methods
+- Add Support for YSDI12Port class
+- Allow CMake installation prefix to be modified from the command line

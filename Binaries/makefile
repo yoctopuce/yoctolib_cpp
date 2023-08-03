@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: makefile 53836 2023-04-04 09:03:31Z mvuilleu $
+#  $Id: makefile 55593 2023-07-25 09:26:47Z seb $
 #
 #  makefile for C++ library
 #  - - - - - - - - - License information: - - - - - - - - -
@@ -140,6 +140,7 @@ YOCTO_API_OBJS = 	$(OD)\yocto_api.obj\
 	$(OD)\yocto_realtimeclock.obj \
 	$(OD)\yocto_refframe.obj \
 	$(OD)\yocto_relay.obj \
+	$(OD)\yocto_sdi12port.obj \
 	$(OD)\yocto_segmenteddisplay.obj \
 	$(OD)\yocto_serialport.obj \
 	$(OD)\yocto_servo.obj \

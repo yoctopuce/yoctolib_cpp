@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.h 50137 2022-06-16 07:39:44Z seb $
+ * $Id: yocto_messagebox.h 55573 2023-07-25 06:25:12Z mvuilleu $
  *
  * Declares yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -61,6 +61,7 @@ typedef void (*YMessageBoxValueCallback)(YMessageBox *func, const string& functi
 #define Y_SLOTSBITMAP_INVALID           (YAPI_INVALID_STRING)
 #define Y_PDUSENT_INVALID               (YAPI_INVALID_UINT)
 #define Y_PDURECEIVED_INVALID           (YAPI_INVALID_UINT)
+#define Y_OBEY_INVALID                  (YAPI_INVALID_STRING)
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 //--- (end of generated code: YMessageBox definitions)
 
@@ -276,6 +277,7 @@ protected:
     string          _slotsBitmap;
     int             _pduSent;
     int             _pduReceived;
+    string          _obey;
     string          _command;
     YMessageBoxValueCallback _valueCallbackMessageBox;
     int             _nextMsgRef;
@@ -305,6 +307,7 @@ public:
     static const string SLOTSBITMAP_INVALID;
     static const int PDUSENT_INVALID = YAPI_INVALID_UINT;
     static const int PDURECEIVED_INVALID = YAPI_INVALID_UINT;
+    static const string OBEY_INVALID;
     static const string COMMAND_INVALID;
 
     /**
@@ -385,6 +388,45 @@ public:
     int             set_pduReceived(int newval);
     inline int      setPduReceived(int newval)
     { return this->set_pduReceived(newval); }
+
+    /**
+     * Returns the phone number authorized to send remote management commands.
+     * When a phone number is specified, the hub will take contre of all incoming
+     * SMS messages: it will execute commands coming from the authorized number,
+     * and delete all messages once received (whether authorized or not).
+     * If you need to receive SMS messages using your own software, leave this
+     * attribute empty.
+     *
+     * @return a string corresponding to the phone number authorized to send remote management commands
+     *
+     * On failure, throws an exception or returns YMessageBox::OBEY_INVALID.
+     */
+    string              get_obey(void);
+
+    inline string       obey(void)
+    { return this->get_obey(); }
+
+    /**
+     * Changes the phone number authorized to send remote management commands.
+     * The phone number usually starts with a '+' and does not include spacers.
+     * When a phone number is specified, the hub will take contre of all incoming
+     * SMS messages: it will execute commands coming from the authorized number,
+     * and delete all messages once received (whether authorized or not).
+     * If you need to receive SMS messages using your own software, leave this
+     * attribute empty. Remember to call the saveToFlash() method of the
+     * module if the modification must be kept.
+     *
+     * This feature is only available since YoctoHub-GSM-4G.
+     *
+     * @param newval : a string corresponding to the phone number authorized to send remote management commands
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_obey(const string& newval);
+    inline int      setObey(const string& newval)
+    { return this->set_obey(newval); }
 
     string              get_command(void);
 

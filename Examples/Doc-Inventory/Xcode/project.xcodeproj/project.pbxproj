@@ -79,6 +79,7 @@
 		B8A727A817E0CD3A005739a25184 /* yocto_realtimeclock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057203e7d6c /* yocto_realtimeclock.cpp */; };
 		B8A727A817E0CD3A0057ece67af2 /* yocto_refframe.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00579ca83ab4 /* yocto_refframe.cpp */; };
 		B8A727A817E0CD3A0057bc117afc /* yocto_relay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057d6b289fc /* yocto_relay.cpp */; };
+		B8A727A817E0CD3A0057bd294cfd /* yocto_sdi12port.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005722e6e618 /* yocto_sdi12port.cpp */; };
 		B8A727A817E0CD3A0057b6735e96 /* yocto_segmenteddisplay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057d10a6b56 /* yocto_segmenteddisplay.cpp */; };
 		B8A727A817E0CD3A00574b766e53 /* yocto_serialport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00579b89b70e /* yocto_serialport.cpp */; };
 		B8A727A817E0CD3A00576df8d92d /* yocto_servo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005775b2a2d /* yocto_servo.cpp */; };
@@ -253,6 +254,8 @@
 		B8A727A817E0CD3A00571fbf7136 /* yocto_refframe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_refframe.h; path = ../../../Sources/yocto_refframe.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057d6b289fc /* yocto_relay.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_relay.cpp; path = ../../../Sources/yocto_relay.cpp; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057b38dab8e /* yocto_relay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_relay.h; path = ../../../Sources/yocto_relay.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005722e6e618 /* yocto_sdi12port.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_sdi12port.cpp; path = ../../../Sources/yocto_sdi12port.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057c5f761b /* yocto_sdi12port.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_sdi12port.h; path = ../../../Sources/yocto_sdi12port.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057d10a6b56 /* yocto_segmenteddisplay.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_segmenteddisplay.cpp; path = ../../../Sources/yocto_segmenteddisplay.cpp; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057f57f4bac /* yocto_segmenteddisplay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_segmenteddisplay.h; path = ../../../Sources/yocto_segmenteddisplay.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00579b89b70e /* yocto_serialport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_serialport.cpp; path = ../../../Sources/yocto_serialport.cpp; sourceTree = "<group>"; };
@@ -419,6 +422,8 @@
 				B8A727A817E0CD3A00571fbf7136 /* yocto_refframe.h */,
 				B8A727A817E0CD3A0057d6b289fc /* yocto_relay.cpp */,
 				B8A727A817E0CD3A0057b38dab8e /* yocto_relay.h */,
+				B8A727A817E0CD3A005722e6e618 /* yocto_sdi12port.cpp */,
+				B8A727A817E0CD3A0057c5f761b /* yocto_sdi12port.h */,
 				B8A727A817E0CD3A0057d10a6b56 /* yocto_segmenteddisplay.cpp */,
 				B8A727A817E0CD3A0057f57f4bac /* yocto_segmenteddisplay.h */,
 				B8A727A817E0CD3A00579b89b70e /* yocto_serialport.cpp */,
@@ -635,6 +640,7 @@
 				B8A727A817E0CD3A005739a25184 /* yocto_realtimeclock.cpp in Sources */,
 				B8A727A817E0CD3A0057ece67af2 /* yocto_refframe.cpp in Sources */,
 				B8A727A817E0CD3A0057bc117afc /* yocto_relay.cpp in Sources */,
+				B8A727A817E0CD3A0057bd294cfd /* yocto_sdi12port.cpp in Sources */,
 				B8A727A817E0CD3A0057b6735e96 /* yocto_segmenteddisplay.cpp in Sources */,
 				B8A727A817E0CD3A00574b766e53 /* yocto_serialport.cpp in Sources */,
 				B8A727A817E0CD3A00576df8d92d /* yocto_servo.cpp in Sources */,

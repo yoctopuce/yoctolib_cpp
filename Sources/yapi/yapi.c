@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 54437 2023-05-08 07:02:48Z seb $
+ * $Id: yapi.c 55723 2023-07-28 17:54:16Z mvuilleu $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -427,7 +427,12 @@ static int yParseHubURL(HubURLSt *hub, const char *url, char *errmsg)
         hub->portno = atoi(buffer);
         end = pos;
     } else {
-        hub->portno = YOCTO_DEFAULT_PORT;
+        if (hub->proto == PROTO_HTTP && hub->subdomain[0]) {
+            //http proto + subdomain + no port sepcified -> Vhub4Web -> Use port 80 instead of 4444
+            hub->portno = 80;
+        } else {
+            hub->portno = YOCTO_DEFAULT_PORT;
+        }
     }
     //dbglog("port=%d\n", hub->portno);
     domlen = (int)(end - url);
@@ -1269,7 +1274,7 @@ static void ypUpdateNet(ENU_CONTEXT *enus)
 static void disable_jzon(HubSt *hub)
 {
     if ((hub->flags & INCOMPATIBLE_JZON_ENCODING) == 0) {
-        dbglog("Disable JZON encoding for hub %\n", hub->url.host);
+        dbglog("Disable JZON encoding for hub %s\n", hub->url.host);
     }
     hub->flags |= INCOMPATIBLE_JZON_ENCODING;
 }
@@ -3856,7 +3861,7 @@ static YRETCODE yapiRegisterHubEx(const char *url, int checkacces, char *errmsg)
         hubst = yGetHubFromURL(url);
         if (hubst) {
             for (i = 0; i < MAX_KNOW_URLS_SIZE; i++) {
-                if (hubst->know_urls[i]==NULL || YSTRCMP(hubst->know_urls[i], url) == 0) {
+                if (hubst->know_urls[i] == NULL || YSTRCMP(hubst->know_urls[i], url) == 0) {
                     break;
                 }
             }

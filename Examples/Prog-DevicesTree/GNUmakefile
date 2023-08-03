@@ -126,7 +126,7 @@ $(DIR_OSX)demo: main.cpp $(YOCTO_API_DIR)*  $(DIR_OSX)
 
 xcode4:
 	@mkdir -p Xcode/build/Release
-	xcodebuild -project Xcode/project.xcodeproj -UseModernBuildSystem=NO
+	xcodebuild -project Xcode/project.xcodeproj
 
 cleanxcode4:
 	@rm -rf  Xcode/build

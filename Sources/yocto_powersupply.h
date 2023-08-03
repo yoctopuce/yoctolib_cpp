@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_powersupply.h 54768 2023-05-26 06:46:41Z seb $
+ *  $Id: yocto_powersupply.h 55573 2023-07-25 06:25:12Z mvuilleu $
  *
  *  Declares yFindPowerSupply(), the high-level API for PowerSupply functions
  *
@@ -67,14 +67,22 @@ typedef enum {
     Y_POWEROUTPUT_INVALID = -1,
 } Y_POWEROUTPUT_enum;
 #endif
-#define Y_VOLTAGESETPOINT_INVALID       (YAPI_INVALID_DOUBLE)
+#ifndef _Y_POWEROUTPUTATSTARTUP_ENUM
+#define _Y_POWEROUTPUTATSTARTUP_ENUM
+typedef enum {
+    Y_POWEROUTPUTATSTARTUP_OFF = 0,
+    Y_POWEROUTPUTATSTARTUP_ON = 1,
+    Y_POWEROUTPUTATSTARTUP_INVALID = -1,
+} Y_POWEROUTPUTATSTARTUP_enum;
+#endif
+#define Y_VOLTAGELIMIT_INVALID          (YAPI_INVALID_DOUBLE)
 #define Y_CURRENTLIMIT_INVALID          (YAPI_INVALID_DOUBLE)
 #define Y_MEASUREDVOLTAGE_INVALID       (YAPI_INVALID_DOUBLE)
 #define Y_MEASUREDCURRENT_INVALID       (YAPI_INVALID_DOUBLE)
 #define Y_INPUTVOLTAGE_INVALID          (YAPI_INVALID_DOUBLE)
 #define Y_VOLTAGETRANSITION_INVALID     (YAPI_INVALID_STRING)
-#define Y_VOLTAGEATSTARTUP_INVALID      (YAPI_INVALID_DOUBLE)
-#define Y_CURRENTATSTARTUP_INVALID      (YAPI_INVALID_DOUBLE)
+#define Y_VOLTAGELIMITATSTARTUP_INVALID (YAPI_INVALID_DOUBLE)
+#define Y_CURRENTLIMITATSTARTUP_INVALID (YAPI_INVALID_DOUBLE)
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 //--- (end of YPowerSupply definitions)
 
@@ -83,8 +91,8 @@ typedef enum {
  * YPowerSupply Class: regulated power supply control interface
  *
  * The YPowerSupply class allows you to drive a Yoctopuce power supply.
- * It can be use to change the voltage set point,
- * the current limit and the enable/disable the output.
+ * It can be use to change the voltage and current limits, and to enable/disable
+ * the output.
  */
 class YOCTO_CLASS_EXPORT YPowerSupply: public YFunction {
 #ifdef __BORLANDC__
@@ -94,15 +102,16 @@ class YOCTO_CLASS_EXPORT YPowerSupply: public YFunction {
 protected:
     //--- (YPowerSupply attributes)
     // Attributes (function value cache)
-    double          _voltageSetPoint;
+    double          _voltageLimit;
     double          _currentLimit;
     Y_POWEROUTPUT_enum _powerOutput;
     double          _measuredVoltage;
     double          _measuredCurrent;
     double          _inputVoltage;
     string          _voltageTransition;
-    double          _voltageAtStartUp;
-    double          _currentAtStartUp;
+    double          _voltageLimitAtStartUp;
+    double          _currentLimitAtStartUp;
+    Y_POWEROUTPUTATSTARTUP_enum _powerOutputAtStartUp;
     string          _command;
     YPowerSupplyValueCallback _valueCallbackPowerSupply;
 
@@ -120,7 +129,7 @@ public:
     virtual ~YPowerSupply();
     //--- (YPowerSupply accessors declaration)
 
-    static const double VOLTAGESETPOINT_INVALID;
+    static const double VOLTAGELIMIT_INVALID;
     static const double CURRENTLIMIT_INVALID;
     static const Y_POWEROUTPUT_enum POWEROUTPUT_OFF = Y_POWEROUTPUT_OFF;
     static const Y_POWEROUTPUT_enum POWEROUTPUT_ON = Y_POWEROUTPUT_ON;
@@ -129,34 +138,37 @@ public:
     static const double MEASUREDCURRENT_INVALID;
     static const double INPUTVOLTAGE_INVALID;
     static const string VOLTAGETRANSITION_INVALID;
-    static const double VOLTAGEATSTARTUP_INVALID;
-    static const double CURRENTATSTARTUP_INVALID;
+    static const double VOLTAGELIMITATSTARTUP_INVALID;
+    static const double CURRENTLIMITATSTARTUP_INVALID;
+    static const Y_POWEROUTPUTATSTARTUP_enum POWEROUTPUTATSTARTUP_OFF = Y_POWEROUTPUTATSTARTUP_OFF;
+    static const Y_POWEROUTPUTATSTARTUP_enum POWEROUTPUTATSTARTUP_ON = Y_POWEROUTPUTATSTARTUP_ON;
+    static const Y_POWEROUTPUTATSTARTUP_enum POWEROUTPUTATSTARTUP_INVALID = Y_POWEROUTPUTATSTARTUP_INVALID;
     static const string COMMAND_INVALID;
 
     /**
-     * Changes the voltage set point, in V.
+     * Changes the voltage limit, in V.
      *
-     * @param newval : a floating point number corresponding to the voltage set point, in V
+     * @param newval : a floating point number corresponding to the voltage limit, in V
      *
      * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
-    int             set_voltageSetPoint(double newval);
-    inline int      setVoltageSetPoint(double newval)
-    { return this->set_voltageSetPoint(newval); }
+    int             set_voltageLimit(double newval);
+    inline int      setVoltageLimit(double newval)
+    { return this->set_voltageLimit(newval); }
 
     /**
-     * Returns the voltage set point, in V.
+     * Returns the voltage limit, in V.
      *
-     * @return a floating point number corresponding to the voltage set point, in V
+     * @return a floating point number corresponding to the voltage limit, in V
      *
-     * On failure, throws an exception or returns YPowerSupply::VOLTAGESETPOINT_INVALID.
+     * On failure, throws an exception or returns YPowerSupply::VOLTAGELIMIT_INVALID.
      */
-    double              get_voltageSetPoint(void);
+    double              get_voltageLimit(void);
 
-    inline double       voltageSetPoint(void)
-    { return this->get_voltageSetPoint(); }
+    inline double       voltageLimit(void)
+    { return this->get_voltageLimit(); }
 
     /**
      * Changes the current limit, in mA.
@@ -265,21 +277,21 @@ public:
      *
      * On failure, throws an exception or returns a negative error code.
      */
-    int             set_voltageAtStartUp(double newval);
-    inline int      setVoltageAtStartUp(double newval)
-    { return this->set_voltageAtStartUp(newval); }
+    int             set_voltageLimitAtStartUp(double newval);
+    inline int      setVoltageLimitAtStartUp(double newval)
+    { return this->set_voltageLimitAtStartUp(newval); }
 
     /**
-     * Returns the selected voltage set point at device startup, in V.
+     * Returns the selected voltage limit at device startup, in V.
      *
-     * @return a floating point number corresponding to the selected voltage set point at device startup, in V
+     * @return a floating point number corresponding to the selected voltage limit at device startup, in V
      *
-     * On failure, throws an exception or returns YPowerSupply::VOLTAGEATSTARTUP_INVALID.
+     * On failure, throws an exception or returns YPowerSupply::VOLTAGELIMITATSTARTUP_INVALID.
      */
-    double              get_voltageAtStartUp(void);
+    double              get_voltageLimitAtStartUp(void);
 
-    inline double       voltageAtStartUp(void)
-    { return this->get_voltageAtStartUp(); }
+    inline double       voltageLimitAtStartUp(void)
+    { return this->get_voltageLimitAtStartUp(); }
 
     /**
      * Changes the current limit at device start up. Remember to call the matching
@@ -291,21 +303,49 @@ public:
      *
      * On failure, throws an exception or returns a negative error code.
      */
-    int             set_currentAtStartUp(double newval);
-    inline int      setCurrentAtStartUp(double newval)
-    { return this->set_currentAtStartUp(newval); }
+    int             set_currentLimitAtStartUp(double newval);
+    inline int      setCurrentLimitAtStartUp(double newval)
+    { return this->set_currentLimitAtStartUp(newval); }
 
     /**
      * Returns the selected current limit at device startup, in mA.
      *
      * @return a floating point number corresponding to the selected current limit at device startup, in mA
      *
-     * On failure, throws an exception or returns YPowerSupply::CURRENTATSTARTUP_INVALID.
+     * On failure, throws an exception or returns YPowerSupply::CURRENTLIMITATSTARTUP_INVALID.
      */
-    double              get_currentAtStartUp(void);
+    double              get_currentLimitAtStartUp(void);
 
-    inline double       currentAtStartUp(void)
-    { return this->get_currentAtStartUp(); }
+    inline double       currentLimitAtStartUp(void)
+    { return this->get_currentLimitAtStartUp(); }
+
+    /**
+     * Returns the power supply output switch state.
+     *
+     * @return either YPowerSupply::POWEROUTPUTATSTARTUP_OFF or YPowerSupply::POWEROUTPUTATSTARTUP_ON,
+     * according to the power supply output switch state
+     *
+     * On failure, throws an exception or returns YPowerSupply::POWEROUTPUTATSTARTUP_INVALID.
+     */
+    Y_POWEROUTPUTATSTARTUP_enum get_powerOutputAtStartUp(void);
+
+    inline Y_POWEROUTPUTATSTARTUP_enum powerOutputAtStartUp(void)
+    { return this->get_powerOutputAtStartUp(); }
+
+    /**
+     * Changes the power supply output switch state at device start up. Remember to call the matching
+     * module saveToFlash() method, otherwise this call has no effect.
+     *
+     * @param newval : either YPowerSupply::POWEROUTPUTATSTARTUP_OFF or
+     * YPowerSupply::POWEROUTPUTATSTARTUP_ON, according to the power supply output switch state at device start up
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_powerOutputAtStartUp(Y_POWEROUTPUTATSTARTUP_enum newval);
+    inline int      setPowerOutputAtStartUp(Y_POWEROUTPUTATSTARTUP_enum newval)
+    { return this->set_powerOutputAtStartUp(newval); }
 
     string              get_command(void);
 

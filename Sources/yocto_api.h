@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 54649 2023-05-22 10:09:20Z seb $
+ * $Id: yocto_api.h 55091 2023-06-15 07:20:00Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -674,6 +674,7 @@ public:
     static const int RTC_NOT_READY         = -13;     // real-time clock has not been initialized (or time was lost)
     static const int FILE_NOT_FOUND        = -14;     // the file is not found
     static const int SSL_ERROR             = -15;     // Error reported by mbedSSL
+
 //--- (end of generated code: YFunction return codes)
 
 
@@ -1009,6 +1010,10 @@ public:
      */
     inline static void SetDeviceListValidity(int deviceListValidity)
     {
+        if (!YAPI::_apiInitialized) {
+            string errmsg;
+            YAPI::InitAPI(0, errmsg);
+        }
         YAPI::_yapiContext.SetDeviceListValidity(deviceListValidity);
     }
     /**
@@ -1019,6 +1024,10 @@ public:
      */
     inline static int GetDeviceListValidity(void)
     {
+        if (!YAPI::_apiInitialized) {
+            string errmsg;
+            YAPI::InitAPI(0, errmsg);
+        }
         return YAPI::_yapiContext.GetDeviceListValidity();
     }
     /**
@@ -1034,6 +1043,10 @@ public:
      */
     inline static string AddUdevRule(bool force)
     {
+        if (!YAPI::_apiInitialized) {
+            string errmsg;
+            YAPI::InitAPI(0, errmsg);
+        }
         return YAPI::_yapiContext.AddUdevRule(force);
     }
     /**
@@ -1048,6 +1061,10 @@ public:
      */
     inline static void SetNetworkTimeout(int networkMsTimeout)
     {
+        if (!YAPI::_apiInitialized) {
+            string errmsg;
+            YAPI::InitAPI(0, errmsg);
+        }
         YAPI::_yapiContext.SetNetworkTimeout(networkMsTimeout);
     }
     /**
@@ -1061,6 +1078,10 @@ public:
      */
     inline static int GetNetworkTimeout(void)
     {
+        if (!YAPI::_apiInitialized) {
+            string errmsg;
+            YAPI::InitAPI(0, errmsg);
+        }
         return YAPI::_yapiContext.GetNetworkTimeout();
     }
     /**
@@ -1078,6 +1099,10 @@ public:
      */
     inline static void SetCacheValidity(u64 cacheValidityMs)
     {
+        if (!YAPI::_apiInitialized) {
+            string errmsg;
+            YAPI::InitAPI(0, errmsg);
+        }
         YAPI::_yapiContext.SetCacheValidity(cacheValidityMs);
     }
     /**
@@ -1091,14 +1116,26 @@ public:
      */
     inline static u64 GetCacheValidity(void)
     {
+        if (!YAPI::_apiInitialized) {
+            string errmsg;
+            YAPI::InitAPI(0, errmsg);
+        }
         return YAPI::_yapiContext.GetCacheValidity();
     }
     inline static YHub* nextHubInUseInternal(int hubref)
     {
+        if (!YAPI::_apiInitialized) {
+            string errmsg;
+            YAPI::InitAPI(0, errmsg);
+        }
         return YAPI::_yapiContext.nextHubInUseInternal(hubref);
     }
     inline static YHub* getYHubObj(int hubref)
     {
+        if (!YAPI::_apiInitialized) {
+            string errmsg;
+            YAPI::InitAPI(0, errmsg);
+        }
         return YAPI::_yapiContext.getYHubObj(hubref);
     }
 //--- (end of generated code: YAPIContext yapiwrapper)

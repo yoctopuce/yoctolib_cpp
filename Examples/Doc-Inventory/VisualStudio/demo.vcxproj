@@ -146,6 +146,7 @@
 <ClCompile Include="..\..\..\Sources\yocto_realtimeclock.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_refframe.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_relay.cpp" />
+<ClCompile Include="..\..\..\Sources\yocto_sdi12port.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_segmenteddisplay.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_serialport.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_servo.cpp" />
@@ -235,6 +236,7 @@
 <ClInclude Include="..\..\..\Sources\yocto_realtimeclock.h" />
 <ClInclude Include="..\..\..\Sources\yocto_refframe.h" />
 <ClInclude Include="..\..\..\Sources\yocto_relay.h" />
+<ClInclude Include="..\..\..\Sources\yocto_sdi12port.h" />
 <ClInclude Include="..\..\..\Sources\yocto_segmenteddisplay.h" />
 <ClInclude Include="..\..\..\Sources\yocto_serialport.h" />
 <ClInclude Include="..\..\..\Sources\yocto_servo.h" />

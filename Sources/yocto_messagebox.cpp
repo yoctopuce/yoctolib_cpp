@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.cpp 54278 2023-04-28 10:10:10Z seb $
+ * $Id: yocto_messagebox.cpp 55573 2023-07-25 06:25:12Z mvuilleu $
  *
  * Implements yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -1322,6 +1322,7 @@ YMessageBox::YMessageBox(const string& func): YFunction(func)
     ,_slotsBitmap(SLOTSBITMAP_INVALID)
     ,_pduSent(PDUSENT_INVALID)
     ,_pduReceived(PDURECEIVED_INVALID)
+    ,_obey(OBEY_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackMessageBox(NULL)
     ,_nextMsgRef(0)
@@ -1340,6 +1341,7 @@ YMessageBox::~YMessageBox()
 //--- (generated code: YMessageBox implementation)
 // static attributes
 const string YMessageBox::SLOTSBITMAP_INVALID = YAPI_INVALID_STRING;
+const string YMessageBox::OBEY_INVALID = YAPI_INVALID_STRING;
 const string YMessageBox::COMMAND_INVALID = YAPI_INVALID_STRING;
 
 int YMessageBox::_parseAttr(YJSONObject *json_val)
@@ -1358,6 +1360,9 @@ int YMessageBox::_parseAttr(YJSONObject *json_val)
     }
     if(json_val->has("pduReceived")) {
         _pduReceived =  json_val->getInt("pduReceived");
+    }
+    if(json_val->has("obey")) {
+        _obey =  json_val->getString("obey");
     }
     if(json_val->has("command")) {
         _command =  json_val->getString("command");
@@ -1546,6 +1551,74 @@ int YMessageBox::set_pduReceived(int newval)
     try {
         char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("pduReceived", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the phone number authorized to send remote management commands.
+ * When a phone number is specified, the hub will take contre of all incoming
+ * SMS messages: it will execute commands coming from the authorized number,
+ * and delete all messages once received (whether authorized or not).
+ * If you need to receive SMS messages using your own software, leave this
+ * attribute empty.
+ *
+ * @return a string corresponding to the phone number authorized to send remote management commands
+ *
+ * On failure, throws an exception or returns YMessageBox::OBEY_INVALID.
+ */
+string YMessageBox::get_obey(void)
+{
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YMessageBox::OBEY_INVALID;
+                }
+            }
+        }
+        res = _obey;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the phone number authorized to send remote management commands.
+ * The phone number usually starts with a '+' and does not include spacers.
+ * When a phone number is specified, the hub will take contre of all incoming
+ * SMS messages: it will execute commands coming from the authorized number,
+ * and delete all messages once received (whether authorized or not).
+ * If you need to receive SMS messages using your own software, leave this
+ * attribute empty. Remember to call the saveToFlash() method of the
+ * module if the modification must be kept.
+ *
+ * This feature is only available since YoctoHub-GSM-4G.
+ *
+ * @param newval : a string corresponding to the phone number authorized to send remote management commands
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YMessageBox::set_obey(const string& newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("obey", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
