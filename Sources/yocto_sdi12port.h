@@ -215,9 +215,9 @@ public:
 
     virtual vector< vector<string> > get_typeMeasure(void);
 
-    virtual void        parseInfoStr(string infoStr);
+    virtual void        _parseInfoStr(string infoStr);
 
-    virtual void        queryValueInfo(void);
+    virtual void        _queryValueInfo(void);
 
 #ifdef __BORLANDC__
 #pragma option pop
@@ -891,18 +891,92 @@ public:
      */
     virtual string      querySdi12(string sensorAddr,string cmd,int maxWait);
 
+    /**
+     * Sends a discovery command to the bus, and reads the sensor information reply.
+     * This function is intended to be used when the serial port is configured for 'SDI-12' protocol.
+     * This function work when only one sensor is connected.
+     *
+     * @return the reply returned by the sensor, as a YSdi12Sensor object.
+     *
+     * On failure, throws an exception or returns an empty string.
+     */
     virtual YSdi12Sensor discoverSingleSensor(void);
 
+    /**
+     * Sends a discovery command to the bus, and reads all sensors information reply.
+     * This function is intended to be used when the serial port is configured for 'SDI-12' protocol.
+     *
+     * @return all the information from every connected sensor, as an array of YSdi12Sensor object.
+     *
+     * On failure, throws an exception or returns an empty string.
+     */
     virtual vector<YSdi12Sensor> discoverAllSensors(void);
 
+    /**
+     * Sends a mesurement command to the SDI-12 bus, and reads the sensor immediate reply.
+     * The supported commands are:
+     * M: Measurement start control
+     * M1...M9: Additional measurement start command
+     * D: Measurement reading control
+     * This function is intended to be used when the serial port is configured for 'SDI-12' protocol.
+     *
+     * @param sensorAddr : the sensor address, as a string
+     * @param measCmd : the SDI12 query to send (without address and exclamation point)
+     * @param maxWait : the maximum timeout to wait for a reply from sensor, in millisecond
+     *
+     * @return the reply returned by the sensor, without newline, as a list of float.
+     *
+     * On failure, throws an exception or returns an empty string.
+     */
     virtual vector<double> readSensor(string sensorAddr,string measCmd,int maxWait);
 
+    /**
+     * Changes the address of the selected sensor, and returns the sensor information with the new address.
+     * This function is intended to be used when the serial port is configured for 'SDI-12' protocol.
+     *
+     * @param oldAddress : Actual sensor address, as a string
+     * @param newAddress : New sensor address, as a string
+     *
+     * @return the sensor address and information , as a YSdi12Sensor object.
+     *
+     * On failure, throws an exception or returns an empty string.
+     */
     virtual YSdi12Sensor changeAddress(string oldAddress,string newAddress);
 
+    /**
+     * Sends a information command to the bus, and reads sensors information selected.
+     * This function is intended to be used when the serial port is configured for 'SDI-12' protocol.
+     *
+     * @param sensorAddr : Sensor address, as a string
+     *
+     * @return the reply returned by the sensor, as a YSdi12Port object.
+     *
+     * On failure, throws an exception or returns an empty string.
+     */
     virtual YSdi12Sensor getSensorInformation(string sensorAddr);
 
+    /**
+     * Sends a information command to the bus, and reads sensors information selected.
+     * This function is intended to be used when the serial port is configured for 'SDI-12' protocol.
+     *
+     * @param sensorAddr : Sensor address, as a string
+     *
+     * @return the reply returned by the sensor, as a YSdi12Port object.
+     *
+     * On failure, throws an exception or returns an empty string.
+     */
     virtual vector<double> readConcurrentMeasurements(string sensorAddr);
 
+    /**
+     * Sends a information command to the bus, and reads sensors information selected.
+     * This function is intended to be used when the serial port is configured for 'SDI-12' protocol.
+     *
+     * @param sensorAddr : Sensor address, as a string
+     *
+     * @return the reply returned by the sensor, as a YSdi12Port object.
+     *
+     * On failure, throws an exception or returns an empty string.
+     */
     virtual int         requestConcurrentMeasurements(string sensorAddr);
 
     /**

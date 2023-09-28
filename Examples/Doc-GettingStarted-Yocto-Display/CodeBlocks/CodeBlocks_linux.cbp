@@ -140,11 +140,13 @@
 <Unit filename="..\..\..\Sources\yocto_anbutton.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_display.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_files.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_quadraturedecoder.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 
 
 <Unit filename="..\..\..\Sources\yocto_anbutton.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_display.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_files.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_quadraturedecoder.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 
         <Extensions>
             <code_completion />

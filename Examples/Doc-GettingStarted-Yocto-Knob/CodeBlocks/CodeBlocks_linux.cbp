@@ -138,9 +138,11 @@
         </Unit>
 
 <Unit filename="..\..\..\Sources\yocto_anbutton.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_quadraturedecoder.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 
 
 <Unit filename="..\..\..\Sources\yocto_anbutton.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
+<Unit filename="..\..\..\Sources\yocto_quadraturedecoder.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 
         <Extensions>
             <code_completion />

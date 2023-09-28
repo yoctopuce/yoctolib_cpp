@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 54649 2023-05-22 10:09:20Z seb $
+ * $Id: yocto_api.cpp 56058 2023-08-15 07:38:35Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -7120,7 +7120,7 @@ int YModule::set_allSettingsAndFiles(string settings)
         res = this->_get_json_path(down, "res");
         res = this->_decode_json_string(res);
         if (!(res == "ok")) {
-            _throw(YAPI_IO_ERROR, "format failed");
+            _throw((YRETCODE)(YAPI_IO_ERROR), "format failed");
             return YAPI_IO_ERROR;
         }
         json_files = this->_get_json_path(json, "files");
@@ -7140,7 +7140,7 @@ int YModule::set_allSettingsAndFiles(string settings)
     // Apply settings a second time for file-dependent settings and dynamic sensor nodes
     globalres = this->set_allSettings(json_api);
     if (!(fuperror == 0)) {
-        _throw(YAPI_IO_ERROR, "Error during file upload");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "Error during file upload");
         return YAPI_IO_ERROR;
     }
     return globalres;
@@ -9097,7 +9097,7 @@ int YSensor::startDataLogger(void)
 
     res = this->_download("api/dataLogger/recording?recording=1");
     if (!((int)(res).size() > 0)) {
-        _throw(YAPI_IO_ERROR, "unable to start datalogger");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "unable to start datalogger");
         return YAPI_IO_ERROR;
     }
     return YAPI_SUCCESS;
@@ -9114,7 +9114,7 @@ int YSensor::stopDataLogger(void)
 
     res = this->_download("api/dataLogger/recording?recording=0");
     if (!((int)(res).size() > 0)) {
-        _throw(YAPI_IO_ERROR, "unable to stop datalogger");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "unable to stop datalogger");
         return YAPI_IO_ERROR;
     }
     return YAPI_SUCCESS;

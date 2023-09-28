@@ -133,11 +133,14 @@ int YInputCaptureData::_decodeSnapBin(string sdata)
     int ms = 0;
     int recSize = 0;
     int count = 0;
+    int mult1 = 0;
+    int mult2 = 0;
+    int mult3 = 0;
     double v = 0.0;
 
     buffSize = (int)(sdata).size();
     if (!(buffSize >= 24)) {
-        _throw(YAPI_INVALID_ARGUMENT, "Invalid snapshot data (too short)");
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "Invalid snapshot data (too short)");
         return YAPI_INVALID_ARGUMENT;
     }
     _fmt = ((u8)sdata[0]);
@@ -145,19 +148,19 @@ int YInputCaptureData::_decodeSnapBin(string sdata)
     _var2size = ((u8)sdata[2]) - 48;
     _var3size = ((u8)sdata[3]) - 48;
     if (!(_fmt == 83)) {
-        _throw(YAPI_INVALID_ARGUMENT, "Unsupported snapshot format");
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "Unsupported snapshot format");
         return YAPI_INVALID_ARGUMENT;
     }
     if (!((_var1size >= 2) && (_var1size <= 4))) {
-        _throw(YAPI_INVALID_ARGUMENT, "Invalid sample size");
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "Invalid sample size");
         return YAPI_INVALID_ARGUMENT;
     }
     if (!((_var2size >= 0) && (_var1size <= 4))) {
-        _throw(YAPI_INVALID_ARGUMENT, "Invalid sample size");
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "Invalid sample size");
         return YAPI_INVALID_ARGUMENT;
     }
     if (!((_var3size >= 0) && (_var1size <= 4))) {
-        _throw(YAPI_INVALID_ARGUMENT, "Invalid sample size");
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "Invalid sample size");
         return YAPI_INVALID_ARGUMENT;
     }
     if (_var2size == 0) {
@@ -198,11 +201,31 @@ int YInputCaptureData::_decodeSnapBin(string sdata)
             recOfs = recOfs + 1;
         }
     }
+    if (((recOfs) & (1)) == 1) {
+        // align to next word
+        recOfs = recOfs + 1;
+    }
+    mult1 = 1;
+    mult2 = 1;
+    mult3 = 1;
+    if (recOfs < _recOfs) {
+        // load optional value multiplier
+        mult1 = this->_decodeU16(sdata, _recOfs);
+        recOfs = recOfs + 2;
+        if (_var2size > 0) {
+            mult2 = this->_decodeU16(sdata, _recOfs);
+            recOfs = recOfs + 2;
+        }
+        if (_var3size > 0) {
+            mult3 = this->_decodeU16(sdata, _recOfs);
+            recOfs = recOfs + 2;
+        }
+    }
     recOfs = _recOfs;
     count = _nRecs;
     while ((count > 0) && (recOfs + _var1size <= buffSize)) {
         v = this->_decodeVal(sdata, recOfs, _var1size) / 1000.0;
-        _var1samples.push_back(v);
+        _var1samples.push_back(v*mult1);
         recOfs = recOfs + recSize;
     }
     if (_var2size > 0) {
@@ -210,7 +233,7 @@ int YInputCaptureData::_decodeSnapBin(string sdata)
         count = _nRecs;
         while ((count > 0) && (recOfs + _var2size <= buffSize)) {
             v = this->_decodeVal(sdata, recOfs, _var2size) / 1000.0;
-            _var2samples.push_back(v);
+            _var2samples.push_back(v*mult2);
             recOfs = recOfs + recSize;
         }
     }
@@ -219,7 +242,7 @@ int YInputCaptureData::_decodeSnapBin(string sdata)
         count = _nRecs;
         while ((count > 0) && (recOfs + _var3size <= buffSize)) {
             v = this->_decodeVal(sdata, recOfs, _var3size) / 1000.0;
-            _var3samples.push_back(v);
+            _var3samples.push_back(v*mult3);
             recOfs = recOfs + recSize;
         }
     }
@@ -339,7 +362,7 @@ string YInputCaptureData::get_serie1Unit(void)
 string YInputCaptureData::get_serie2Unit(void)
 {
     if (!(_nVars >= 2)) {
-        _throw(YAPI_INVALID_ARGUMENT, "There is no serie 2 in this capture data");
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "There is no serie 2 in this capture data");
         return "";
     }
     return _var2unit;
@@ -355,7 +378,7 @@ string YInputCaptureData::get_serie2Unit(void)
 string YInputCaptureData::get_serie3Unit(void)
 {
     if (!(_nVars >= 3)) {
-        _throw(YAPI_INVALID_ARGUMENT, "There is no serie 3 in this capture data");
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "There is no serie 3 in this capture data");
         return "";
     }
     return _var3unit;
@@ -389,7 +412,7 @@ vector<double> YInputCaptureData::get_serie1Values(void)
 vector<double> YInputCaptureData::get_serie2Values(void)
 {
     if (!(_nVars >= 2)) {
-        _throw(YAPI_INVALID_ARGUMENT, "There is no serie 2 in this capture data");
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "There is no serie 2 in this capture data");
         return _var2samples;
     }
     return _var2samples;
@@ -408,7 +431,7 @@ vector<double> YInputCaptureData::get_serie2Values(void)
 vector<double> YInputCaptureData::get_serie3Values(void)
 {
     if (!(_nVars >= 3)) {
-        _throw(YAPI_INVALID_ARGUMENT, "There is no serie 3 in this capture data");
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "There is no serie 3 in this capture data");
         return _var3samples;
     }
     return _var3samples;

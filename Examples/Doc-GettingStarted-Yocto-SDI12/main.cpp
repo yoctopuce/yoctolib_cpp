@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 55591 2023-07-25 09:07:42Z seb $
+ *  $Id: main.cpp 56134 2023-08-16 17:30:19Z mvuilleu $
  *
  *  An example that show how to use a  Yocto-SDI12
  *
@@ -76,7 +76,7 @@ int main(int argc, const char * argv[])
   // of the Yocto-SDI12 as well if used
   vector<double> valSensor = sdi12Port->readSensor(singleSensor.get_sensorAddress(), "M",
                              5000);
-  for (size_t i = 0; i < valSensor.size(); i++) {
+  for (unsigned i = 0; i < valSensor.size(); i++) {
     if (singleSensor.get_measureCount() > 1) {
       printf("%s %-8.2f%-8s (%s) \n", singleSensor.get_measureSymbol(i).c_str(), valSensor[i],
              singleSensor.get_measureUnit(i).c_str(), singleSensor.get_measureDescription(i).c_str());

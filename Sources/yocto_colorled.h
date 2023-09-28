@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_colorled.h 52567 2022-12-25 12:00:14Z seb $
+ *  $Id: yocto_colorled.h 56017 2023-08-14 08:47:38Z mvuilleu $
  *
  *  Declares yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -178,9 +178,9 @@ public:
     { return this->get_hslColor(); }
 
     /**
-     * Changes the current color of the LED, using a color HSL. Encoding is done as follows: 0xHHSSLL.
+     * Changes the current color of the LED, using a specific HSL color. Encoding is done as follows: 0xHHSSLL.
      *
-     * @param newval : an integer corresponding to the current color of the LED, using a color HSL
+     * @param newval : an integer corresponding to the current color of the LED, using a specific HSL color
      *
      * @return YAPI::SUCCESS if the call succeeds.
      *
@@ -285,12 +285,12 @@ public:
     { return this->get_blinkSeqMaxSize(); }
 
     /**
-     * Return the blinking sequence signature. Since blinking
+     * Returns the blinking sequence signature. Since blinking
      * sequences cannot be read from the device, this can be used
      * to detect if a specific blinking sequence is already
      * programmed.
      *
-     * @return an integer
+     * @return an integer corresponding to the blinking sequence signature
      *
      * On failure, throws an exception or returns YColorLed::BLINKSEQSIGNATURE_INVALID.
      */

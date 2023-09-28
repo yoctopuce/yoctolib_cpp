@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 54278 2023-04-28 10:10:10Z seb $
+ * $Id: yocto_serialport.cpp 56058 2023-08-15 07:38:35Z mvuilleu $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -1641,7 +1641,7 @@ int YSerialPort::get_CTS(void)
 
     buff = this->_download("cts.txt");
     if (!((int)(buff).size() == 1)) {
-        _throw(YAPI_IO_ERROR, "invalid CTS reply");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "invalid CTS reply");
         return YAPI_IO_ERROR;
     }
     res = ((u8)buff[0]) - 48;
@@ -1836,7 +1836,7 @@ vector<int> YSerialPort::queryMODBUS(int slaveNo,vector<int> pduBytes)
     msgs = this->_download(url);
     reps = this->_json_get_array(msgs);
     if (!((int)reps.size() > 1)) {
-        _throw(YAPI_IO_ERROR, "no reply from MODBUS slave");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "no reply from MODBUS slave");
         return res;
     }
     if ((int)reps.size() > 1) {
@@ -1851,19 +1851,19 @@ vector<int> YSerialPort::queryMODBUS(int slaveNo,vector<int> pduBytes)
         if (res[0] != funCode) {
             i = res[1];
             if (!(i > 1)) {
-                _throw(YAPI_NOT_SUPPORTED, "MODBUS error: unsupported function code");
+                _throw((YRETCODE)(YAPI_NOT_SUPPORTED), "MODBUS error: unsupported function code");
                 return res;
             }
             if (!(i > 2)) {
-                _throw(YAPI_INVALID_ARGUMENT, "MODBUS error: illegal data address");
+                _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "MODBUS error: illegal data address");
                 return res;
             }
             if (!(i > 3)) {
-                _throw(YAPI_INVALID_ARGUMENT, "MODBUS error: illegal data value");
+                _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "MODBUS error: illegal data value");
                 return res;
             }
             if (!(i > 4)) {
-                _throw(YAPI_INVALID_ARGUMENT, "MODBUS error: failed to execute function");
+                _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "MODBUS error: failed to execute function");
                 return res;
             }
         }
@@ -2004,7 +2004,7 @@ vector<int> YSerialPort::modbusReadRegisters(int slaveNo,int pduAddr,int nWords)
     int idx = 0;
     int val = 0;
     if (!(nWords<=256)) {
-        _throw(YAPI_INVALID_ARGUMENT, "Cannot read more than 256 words");
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "Cannot read more than 256 words");
         return res;
     }
     pdu.push_back(0x03);

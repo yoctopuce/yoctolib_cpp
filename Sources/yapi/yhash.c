@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 54723 2023-05-23 12:18:15Z mvuilleu $
+ * $Id: yhash.c 56399 2023-09-05 15:11:32Z mvuilleu $
  *
  * Simple hash tables and device/function information store
  *
@@ -987,7 +987,8 @@ int ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, 
             }
             YA(yahdl).entries[cnt] = hdl;
         }
-        if (funcVal != NULL) {
+        // MVS 5.9.2023: funInfo not provided, can only update legacy notifications
+        if (funcVal != NULL && YP(hdl).funInfo.v2.typeV2 == PUBVAL_LEGACY) {
             for (i = 0; i < YOCTO_PUBVAL_SIZE / 2; i++) {
                 if (YP(hdl).funcValWords[i] != funcValWords[i]) {
                     changed = 1;

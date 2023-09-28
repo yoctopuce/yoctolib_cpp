@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_anbutton.cpp 52567 2022-12-25 12:00:14Z seb $
+ *  $Id: yocto_anbutton.cpp 56268 2023-08-25 17:43:56Z mvuilleu $
  *
  *  Implements yFindAnButton(), the high-level API for AnButton functions
  *
@@ -588,9 +588,9 @@ s64 YAnButton::get_pulseTimer(void)
 /**
  * Returns the decoding method applied to the input (analog or multiplexed binary switches).
  *
- * @return a value among YAnButton::INPUTTYPE_ANALOG_FAST, YAnButton::INPUTTYPE_DIGITAL4 and
- * YAnButton::INPUTTYPE_ANALOG_SMOOTH corresponding to the decoding method applied to the input (analog
- * or multiplexed binary switches)
+ * @return a value among YAnButton::INPUTTYPE_ANALOG_FAST, YAnButton::INPUTTYPE_DIGITAL4,
+ * YAnButton::INPUTTYPE_ANALOG_SMOOTH and YAnButton::INPUTTYPE_DIGITAL_FAST corresponding to the
+ * decoding method applied to the input (analog or multiplexed binary switches)
  *
  * On failure, throws an exception or returns YAnButton::INPUTTYPE_INVALID.
  */
@@ -620,9 +620,9 @@ Y_INPUTTYPE_enum YAnButton::get_inputType(void)
  * Changes the decoding method applied to the input (analog or multiplexed binary switches).
  * Remember to call the saveToFlash() method of the module if the modification must be kept.
  *
- * @param newval : a value among YAnButton::INPUTTYPE_ANALOG_FAST, YAnButton::INPUTTYPE_DIGITAL4 and
- * YAnButton::INPUTTYPE_ANALOG_SMOOTH corresponding to the decoding method applied to the input (analog
- * or multiplexed binary switches)
+ * @param newval : a value among YAnButton::INPUTTYPE_ANALOG_FAST, YAnButton::INPUTTYPE_DIGITAL4,
+ * YAnButton::INPUTTYPE_ANALOG_SMOOTH and YAnButton::INPUTTYPE_DIGITAL_FAST corresponding to the
+ * decoding method applied to the input (analog or multiplexed binary switches)
  *
  * @return YAPI::SUCCESS if the call succeeds.
  *

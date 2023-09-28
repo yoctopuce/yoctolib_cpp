@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_temperature.cpp 54278 2023-04-28 10:10:10Z seb $
+ *  $Id: yocto_temperature.cpp 56058 2023-08-15 07:38:35Z mvuilleu $
  *
  *  Implements yFindTemperature(), the high-level API for Temperature functions
  *
@@ -482,17 +482,17 @@ int YTemperature::set_thermistorResponseTable(vector<double> tempValues,vector<d
     double idxres = 0.0;
     siz = (int)tempValues.size();
     if (!(siz >= 2)) {
-        _throw(YAPI_INVALID_ARGUMENT, "thermistor response table must have at least two points");
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "thermistor response table must have at least two points");
         return YAPI_INVALID_ARGUMENT;
     }
     if (!(siz == (int)resValues.size())) {
-        _throw(YAPI_INVALID_ARGUMENT, "table sizes mismatch");
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "table sizes mismatch");
         return YAPI_INVALID_ARGUMENT;
     }
 
     res = this->set_command("Z");
     if (!(res==YAPI_SUCCESS)) {
-        _throw(YAPI_IO_ERROR, "unable to reset thermistor parameters");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "unable to reset thermistor parameters");
         return YAPI_IO_ERROR;
     }
     // add records in growing resistance value
@@ -515,7 +515,7 @@ int YTemperature::set_thermistorResponseTable(vector<double> tempValues,vector<d
         if (found > 0) {
             res = this->set_command(YapiWrapper::ysprintf("m%d:%d", (int) floor(1000*curr+0.5),(int) floor(1000*currTemp+0.5)));
             if (!(res==YAPI_SUCCESS)) {
-                _throw(YAPI_IO_ERROR, "unable to reset thermistor parameters");
+                _throw((YRETCODE)(YAPI_IO_ERROR), "unable to reset thermistor parameters");
                 return YAPI_IO_ERROR;
             }
             prev = curr;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_arithmeticsensor.cpp 54278 2023-04-28 10:10:10Z seb $
+ *  $Id: yocto_arithmeticsensor.cpp 56058 2023-08-15 07:38:35Z mvuilleu $
  *
  *  Implements yFindArithmeticSensor(), the high-level API for ArithmeticSensor functions
  *
@@ -331,7 +331,7 @@ double YArithmeticSensor::defineExpression(string expr,string descr)
     data = this->_uploadEx(fname, content);
     diags = data;
     if (!((diags).substr(0, 8) == "Result: ")) {
-        _throw(YAPI_INVALID_ARGUMENT, diags);
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), diags);
         return YAPI_INVALID_DOUBLE;
     }
     resval = atof(((diags).substr(8, (int)(diags).length()-8)).c_str());
@@ -391,11 +391,11 @@ int YArithmeticSensor::defineAuxiliaryFunction(string name,vector<double> inputV
     string fname;
     siz = (int)inputValues.size();
     if (!(siz > 1)) {
-        _throw(YAPI_INVALID_ARGUMENT, "auxiliary function must be defined by at least two points");
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "auxiliary function must be defined by at least two points");
         return YAPI_INVALID_ARGUMENT;
     }
     if (!(siz == (int)outputValues.size())) {
-        _throw(YAPI_INVALID_ARGUMENT, "table sizes mismatch");
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "table sizes mismatch");
         return YAPI_INVALID_ARGUMENT;
     }
     defstr = "";
@@ -435,7 +435,7 @@ int YArithmeticSensor::loadAuxiliaryFunction(string name,vector<double>& inputVa
     defbin = this->_download(fname);
     siz = (int)(defbin).size();
     if (!(siz > 0)) {
-        _throw(YAPI_INVALID_ARGUMENT, "auxiliary function does not exist");
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "auxiliary function does not exist");
         return YAPI_INVALID_ARGUMENT;
     }
     inputValues.clear();

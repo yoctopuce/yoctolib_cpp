@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.c 51520 2022-11-07 10:03:28Z seb $
+ * $Id: ykey.c 56516 2023-09-11 16:47:06Z seb $
  *
  * Implementation of standard key computations
  *
@@ -674,7 +674,7 @@ void MD5AddData(HASH_SUM* ctx, const u8* buf, u32 len)
     memcpy(ctx->in, buf, len);
 }
 
-void MD5Calculate(HASH_SUM* ctx, u8 digest[16])
+void MD5Calculate(HASH_SUM* ctx, u8 *digest)
 {
     unsigned count;
     unsigned char* p;

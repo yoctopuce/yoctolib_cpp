@@ -69,7 +69,7 @@ YInputChain::YInputChain(const string& func): YFunction(func)
     ,_watchdogPeriod(WATCHDOGPERIOD_INVALID)
     ,_chainDiags(CHAINDIAGS_INVALID)
     ,_valueCallbackInputChain(NULL)
-    ,_eventCallback(NULL)
+    ,_stateChangeCallback(NULL)
     ,_prevPos(0)
     ,_eventPos(0)
     ,_eventStamp(0)
@@ -799,7 +799,7 @@ string YInputChain::get_lastEvents(void)
  *         the type of event and a character string with the event data.
  *         On failure, throws an exception or returns a negative error code.
  */
-int YInputChain::registerEventCallback(YEventCallback callback)
+int YInputChain::registerStateChangeCallback(YStateChangeCallback callback)
 {
     if (callback != NULL) {
         this->registerValueCallback(yInternalEventCallback);
@@ -808,7 +808,7 @@ int YInputChain::registerEventCallback(YEventCallback callback)
     }
     // register user callback AFTER the internal pseudo-event,
     // to make sure we start with future events only
-    _eventCallback = callback;
+    _stateChangeCallback = callback;
     return 0;
 }
 
@@ -840,7 +840,7 @@ int YInputChain::_internalEventHandler(string cbpos)
     if (newPos < _eventPos) {
         return YAPI_SUCCESS;
     }
-    if (!(_eventCallback != NULL)) {
+    if (!(_stateChangeCallback != NULL)) {
         // first simulated event, use it to initialize reference values
         _eventPos = newPos;
         _eventChains.clear();
@@ -860,7 +860,7 @@ int YInputChain::_internalEventHandler(string cbpos)
     eventArr = _strsplit(contentStr,'\n');
     arrLen = (int)eventArr.size();
     if (!(arrLen > 0)) {
-        _throw(YAPI_IO_ERROR, "fail to download events");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "fail to download events");
         return YAPI_IO_ERROR;
     }
     // last element of array is the new position preceeded by '@'
@@ -892,7 +892,7 @@ int YInputChain::_internalEventHandler(string cbpos)
                         _eventChains[chainIdx] = evtData;
                     }
                 }
-                _eventCallback(this, evtStamp, evtType, evtData, evtChange);
+                _stateChangeCallback(this, evtStamp, evtType, evtData, evtChange);
             }
         }
         arrPos = arrPos + 1;

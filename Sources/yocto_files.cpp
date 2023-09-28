@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.cpp 54278 2023-04-28 10:10:10Z seb $
+ * $Id: yocto_files.cpp 56043 2023-08-14 15:22:27Z mvuilleu $
  *
  * Implements yFindFiles(), the high-level API for Files functions
  *
@@ -334,7 +334,7 @@ int YFiles::format_fs(void)
     json = this->sendCommand("format");
     res = this->_json_get_key(json, "res");
     if (!(res == "ok")) {
-        _throw(YAPI_IO_ERROR, "format failed");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "format failed");
         return YAPI_IO_ERROR;
     }
     return YAPI_SUCCESS;
@@ -442,7 +442,7 @@ int YFiles::remove(string pathname)
     json = this->sendCommand(YapiWrapper::ysprintf("del&f=%s",pathname.c_str()));
     res  = this->_json_get_key(json, "res");
     if (!(res == "ok")) {
-        _throw(YAPI_IO_ERROR, "unable to remove file");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "unable to remove file");
         return YAPI_IO_ERROR;
     }
     return YAPI_SUCCESS;

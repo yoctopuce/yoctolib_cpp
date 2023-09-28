@@ -67,6 +67,7 @@ set(YoctoLibHSources
 	yocto_realtimeclock.h
 	yocto_refframe.h
 	yocto_relay.h
+	yocto_rfidreader.h
 	yocto_sdi12port.h
 	yocto_segmenteddisplay.h
 	yocto_serialport.h
@@ -146,6 +147,7 @@ set(YoctoLibCppSources
 	yocto_realtimeclock.cpp
 	yocto_refframe.cpp
 	yocto_relay.cpp
+	yocto_rfidreader.cpp
 	yocto_sdi12port.cpp
 	yocto_segmenteddisplay.cpp
 	yocto_serialport.cpp

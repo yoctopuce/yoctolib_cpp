@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 49252 2022-04-01 07:07:23Z seb $
+ * $Id: ydef.h 56114 2023-08-16 09:30:43Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -394,7 +394,10 @@ typedef enum {
     YAPI_UNAUTHORIZED     = -12,    // unauthorized access to password-protected device
     YAPI_RTC_NOT_READY    = -13,    // real-time clock has not been initialized (or time was lost)
     YAPI_FILE_NOT_FOUND   = -14,    // the file is not found
-    YAPI_SSL_ERROR        = -15     // Error reported by mbedSSL
+    YAPI_SSL_ERROR        = -15,    // Error reported by mbedSSL
+    YAPI_RFID_SOFT_ERROR  = -16,    // Recoverable error with RFID tag (eg. tag out of reach), check YRfidStatus for details
+    YAPI_RFID_HARD_ERROR  = -17,    // Serious RFID error (eg. write-protected, out-of-boundary), check YRfidStatus for details
+    YAPI_BUFFER_TOO_SMALL = -18     // The buffer provided is too small
 } YRETCODE;
 
 #define YISERR(retcode)   ((retcode) < 0)

@@ -20,12 +20,14 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -95,6 +97,7 @@
 <ClCompile Include="..\..\..\Sources\yocto_anbutton.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_display.cpp" />
 <ClCompile Include="..\..\..\Sources\yocto_files.cpp" />
+<ClCompile Include="..\..\..\Sources\yocto_quadraturedecoder.cpp" />
 
     <ClCompile Include="..\main.cpp" />
   </ItemGroup>
@@ -116,6 +119,7 @@
 <ClInclude Include="..\..\..\Sources\yocto_anbutton.h" />
 <ClInclude Include="..\..\..\Sources\yocto_display.h" />
 <ClInclude Include="..\..\..\Sources\yocto_files.h" />
+<ClInclude Include="..\..\..\Sources\yocto_quadraturedecoder.h" />
 
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

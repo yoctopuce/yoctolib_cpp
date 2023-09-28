@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 55723 2023-07-28 17:54:16Z mvuilleu $
+ * $Id: yapi.c 56399 2023-09-05 15:11:32Z mvuilleu $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -1615,7 +1615,7 @@ static int yEnuJson(ENU_CONTEXT *enus, yJsonStateMachine *j)
         break;
     case ENU_YP_ADVERTISEDVALUE:
         NETENUMLOG("set advertised value to %s\n", j->token);
-        YSTRNCPY(enus->advertisedValue, YOCTO_PUBVAL_LEN, j->token, YOCTO_PUBVAL_SIZE);
+        YSTRNCPY(enus->advertisedValue, YOCTO_PUBVAL_LEN, j->token, YOCTO_PUBVAL_LEN);
         enus->state = ENU_YP_ENTRY;
         break;
     case ENU_YP_INDEX:
@@ -1999,7 +1999,7 @@ static int yEnuJZon(ENU_CONTEXT *enus, yJsonStateMachine *j, yJsonStateMachine *
                 break;
             case YP_ADV_VAL:
                 NETENUMLOG("set advertised value to %s\n", z->token);
-                YSTRNCPY(enus->advertisedValue, YOCTO_PUBVAL_LEN, z->token, YOCTO_PUBVAL_SIZE);
+                YSTRNCPY(enus->advertisedValue, YOCTO_PUBVAL_LEN, z->token, YOCTO_PUBVAL_LEN);
                 enus->yp_state = YP_INDEX;
                 break;
             case YP_INDEX:
@@ -3363,7 +3363,7 @@ int handleNetNotification(HubSt *hub)
         testPing = ySeekFifo(&(hub->not_fifo), (u8*)&netstop, 1, 0, 1, 0);
         if (testPing == 0) {
 #ifdef DEBUG_NET_NOTIFICATION
-            YSPRINTF(Dbuffer,1024,"HUB: %s will send ping notification\n",hub->host);
+            YSPRINTF(Dbuffer,1024,"HUB: %s will send ping notification\n",hub->url.host);
             dumpNotif(Dbuffer);
 #endif
             hub->send_ping = 1;
@@ -3618,7 +3618,7 @@ static void* yhelper_thread(void *ctx)
                     dbglog("TRACE(%s): notification socket open\n",hub->host);
 #endif
 #ifdef DEBUG_NET_NOTIFICATION
-                    YSPRINTF(Dbuffer,1024,"HUB: %s started\n",hub->host);
+                    YSPRINTF(Dbuffer,1024,"HUB: %s started\n",hub->url.host);
                     dumpNotif(Dbuffer);
 #endif
                     hub->state = NET_HUB_TRYING;
@@ -3736,7 +3736,7 @@ static void* yhelper_thread(void *ctx)
                             yLeaveCriticalSection(&hub->access);
                         }
 #ifdef DEBUG_NET_NOTIFICATION
-                        YSPRINTF(Dbuffer, 1024, "Network hub %s has closed the connection for notification\n", hub->host);
+                        YSPRINTF(Dbuffer, 1024, "Network hub %s has closed the connection for notification\n", hub->url.host);
                         dumpNotif(Dbuffer);
 #endif
                     }

@@ -21,11 +21,11 @@ visual:
 
 visualstudioclean:
 	del /Q /F VisualStudioDllExample\debug
-	rmdir VisualStudioDllExample\debug
+	rmdir /s /q VisualStudioDllExample\debug
 	del /Q /F VisualStudioDllExample\YoctopuceDll\debug
-	rmdir VisualStudioDllExample\YoctopuceDll\debug
+	rmdir /s /q VisualStudioDllExample\YoctopuceDll\debug
 	del /Q /F VisualStudioDllExample\UseYoctopuceDll\debug
-	rmdir VisualStudioDllExample\UseYoctopuceDll\debug
+	rmdir /s /q VisualStudioDllExample\UseYoctopuceDll\debug
 
 release: Binary_Windows\demo.exe visual cleanobj visualstudioclean
 

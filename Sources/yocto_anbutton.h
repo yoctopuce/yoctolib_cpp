@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_anbutton.h 52567 2022-12-25 12:00:14Z seb $
+ *  $Id: yocto_anbutton.h 56268 2023-08-25 17:43:56Z mvuilleu $
  *
  *  Declares yFindAnButton(), the high-level API for AnButton functions
  *
@@ -81,6 +81,7 @@ typedef enum {
     Y_INPUTTYPE_ANALOG_FAST = 0,
     Y_INPUTTYPE_DIGITAL4 = 1,
     Y_INPUTTYPE_ANALOG_SMOOTH = 2,
+    Y_INPUTTYPE_DIGITAL_FAST = 3,
     Y_INPUTTYPE_INVALID = -1,
 } Y_INPUTTYPE_enum;
 #endif
@@ -162,6 +163,7 @@ public:
     static const Y_INPUTTYPE_enum INPUTTYPE_ANALOG_FAST = Y_INPUTTYPE_ANALOG_FAST;
     static const Y_INPUTTYPE_enum INPUTTYPE_DIGITAL4 = Y_INPUTTYPE_DIGITAL4;
     static const Y_INPUTTYPE_enum INPUTTYPE_ANALOG_SMOOTH = Y_INPUTTYPE_ANALOG_SMOOTH;
+    static const Y_INPUTTYPE_enum INPUTTYPE_DIGITAL_FAST = Y_INPUTTYPE_DIGITAL_FAST;
     static const Y_INPUTTYPE_enum INPUTTYPE_INVALID = Y_INPUTTYPE_INVALID;
 
     /**
@@ -382,9 +384,9 @@ public:
     /**
      * Returns the decoding method applied to the input (analog or multiplexed binary switches).
      *
-     * @return a value among YAnButton::INPUTTYPE_ANALOG_FAST, YAnButton::INPUTTYPE_DIGITAL4 and
-     * YAnButton::INPUTTYPE_ANALOG_SMOOTH corresponding to the decoding method applied to the input (analog
-     * or multiplexed binary switches)
+     * @return a value among YAnButton::INPUTTYPE_ANALOG_FAST, YAnButton::INPUTTYPE_DIGITAL4,
+     * YAnButton::INPUTTYPE_ANALOG_SMOOTH and YAnButton::INPUTTYPE_DIGITAL_FAST corresponding to the
+     * decoding method applied to the input (analog or multiplexed binary switches)
      *
      * On failure, throws an exception or returns YAnButton::INPUTTYPE_INVALID.
      */
@@ -397,9 +399,9 @@ public:
      * Changes the decoding method applied to the input (analog or multiplexed binary switches).
      * Remember to call the saveToFlash() method of the module if the modification must be kept.
      *
-     * @param newval : a value among YAnButton::INPUTTYPE_ANALOG_FAST, YAnButton::INPUTTYPE_DIGITAL4 and
-     * YAnButton::INPUTTYPE_ANALOG_SMOOTH corresponding to the decoding method applied to the input (analog
-     * or multiplexed binary switches)
+     * @param newval : a value among YAnButton::INPUTTYPE_ANALOG_FAST, YAnButton::INPUTTYPE_DIGITAL4,
+     * YAnButton::INPUTTYPE_ANALOG_SMOOTH and YAnButton::INPUTTYPE_DIGITAL_FAST corresponding to the
+     * decoding method applied to the input (analog or multiplexed binary switches)
      *
      * @return YAPI::SUCCESS if the call succeeds.
      *

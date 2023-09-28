@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 55091 2023-06-15 07:20:00Z seb $
+ * $Id: yocto_api.h 56393 2023-09-05 08:36:51Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -674,6 +674,9 @@ public:
     static const int RTC_NOT_READY         = -13;     // real-time clock has not been initialized (or time was lost)
     static const int FILE_NOT_FOUND        = -14;     // the file is not found
     static const int SSL_ERROR             = -15;     // Error reported by mbedSSL
+    static const int RFID_SOFT_ERROR       = -16;     // Recoverable error with RFID tag (eg. tag out of reach), check YRfidStatus for details
+    static const int RFID_HARD_ERROR       = -17;     // Serious RFID error (eg. write-protected, out-of-boundary), check YRfidStatus for details
+    static const int BUFFER_TOO_SMALL      = -18;     // The buffer provided is too small
 
 //--- (end of generated code: YFunction return codes)
 
@@ -2745,12 +2748,13 @@ public:
     string          functionValue(int functionIndex);
 
     /**
-     * Retrieves the type of the <i>n</i>th function on the module.
+     * Retrieves the type of the <i>n</i>th function on the module. Yoctopuce functions type names match
+     * their class names without the <i>Y</i> prefix, for instance <i>Relay</i>, <i>Temperature</i> etc..
      *
      * @param functionIndex : the index of the function for which the information is desired, starting at
      * 0 for the first function.
      *
-     * @return a string corresponding to the type of the function
+     * @return a string corresponding to the type of the function.
      *
      * On failure, throws an exception or returns an empty string.
      */

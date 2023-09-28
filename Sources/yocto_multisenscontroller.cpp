@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multisenscontroller.cpp 54278 2023-04-28 10:10:10Z seb $
+ *  $Id: yocto_multisenscontroller.cpp 56058 2023-08-15 07:38:35Z mvuilleu $
  *
  *  Implements yFindMultiSensController(), the high-level API for MultiSensController functions
  *
@@ -423,17 +423,17 @@ int YMultiSensController::setupAddress(int addr)
     cmd = YapiWrapper::ysprintf("A%d",addr);
     res = this->set_command(cmd);
     if (!(res == YAPI_SUCCESS)) {
-        _throw(YAPI_IO_ERROR, "unable to trigger address change");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "unable to trigger address change");
         return YAPI_IO_ERROR;
     }
     {string ignore_error; YAPI::Sleep(1500, ignore_error);};
     res = this->get_lastAddressDetected();
     if (!(res > 0)) {
-        _throw(YAPI_IO_ERROR, "IR sensor not found");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "IR sensor not found");
         return YAPI_IO_ERROR;
     }
     if (!(res == addr)) {
-        _throw(YAPI_IO_ERROR, "address change failed");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "address change failed");
         return YAPI_IO_ERROR;
     }
     return YAPI_SUCCESS;
@@ -453,7 +453,7 @@ int YMultiSensController::get_sensorAddress(void)
     int res = 0;
     res = this->set_command("a");
     if (!(res == YAPI_SUCCESS)) {
-        _throw(YAPI_IO_ERROR, "unable to trigger address detection");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "unable to trigger address detection");
         return res;
     }
     {string ignore_error; YAPI::Sleep(1000, ignore_error);};

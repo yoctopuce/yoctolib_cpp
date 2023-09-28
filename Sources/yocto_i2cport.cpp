@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_i2cport.cpp 54278 2023-04-28 10:10:10Z seb $
+ *  $Id: yocto_i2cport.cpp 56058 2023-08-15 07:38:35Z mvuilleu $
  *
  *  Implements yFindI2cPort(), the high-level API for I2cPort functions
  *
@@ -1191,17 +1191,17 @@ int YI2cPort::i2cSendBin(int slaveAddr,string buff)
 
     reply = this->queryLine(msg,1000);
     if (!((int)(reply).length() > 0)) {
-        _throw(YAPI_IO_ERROR, "No response from I2C device");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "No response from I2C device");
         return YAPI_IO_ERROR;
     }
     idx = _ystrpos(reply, "[N]!");
     if (!(idx < 0)) {
-        _throw(YAPI_IO_ERROR, "No I2C ACK received");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "No I2C ACK received");
         return YAPI_IO_ERROR;
     }
     idx = _ystrpos(reply, "!");
     if (!(idx < 0)) {
-        _throw(YAPI_IO_ERROR, "I2C protocol error");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "I2C protocol error");
         return YAPI_IO_ERROR;
     }
     return YAPI_SUCCESS;
@@ -1236,17 +1236,17 @@ int YI2cPort::i2cSendArray(int slaveAddr,vector<int> values)
 
     reply = this->queryLine(msg,1000);
     if (!((int)(reply).length() > 0)) {
-        _throw(YAPI_IO_ERROR, "No response from I2C device");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "No response from I2C device");
         return YAPI_IO_ERROR;
     }
     idx = _ystrpos(reply, "[N]!");
     if (!(idx < 0)) {
-        _throw(YAPI_IO_ERROR, "No I2C ACK received");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "No I2C ACK received");
         return YAPI_IO_ERROR;
     }
     idx = _ystrpos(reply, "!");
     if (!(idx < 0)) {
-        _throw(YAPI_IO_ERROR, "I2C protocol error");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "I2C protocol error");
         return YAPI_IO_ERROR;
     }
     return YAPI_SUCCESS;
@@ -1275,7 +1275,7 @@ string YI2cPort::i2cSendAndReceiveBin(int slaveAddr,string buff,int rcvCount)
     string rcvbytes;
     rcvbytes = string(0, (char)0);
     if (!(rcvCount<=512)) {
-        _throw(YAPI_INVALID_ARGUMENT, "Cannot read more than 512 bytes");
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "Cannot read more than 512 bytes");
         return rcvbytes;
     }
     msg = YapiWrapper::ysprintf("@%02x:",slaveAddr);
@@ -1304,17 +1304,17 @@ string YI2cPort::i2cSendAndReceiveBin(int slaveAddr,string buff,int rcvCount)
 
     reply = this->queryLine(msg,1000);
     if (!((int)(reply).length() > 0)) {
-        _throw(YAPI_IO_ERROR, "No response from I2C device");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "No response from I2C device");
         return rcvbytes;
     }
     idx = _ystrpos(reply, "[N]!");
     if (!(idx < 0)) {
-        _throw(YAPI_IO_ERROR, "No I2C ACK received");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "No I2C ACK received");
         return rcvbytes;
     }
     idx = _ystrpos(reply, "!");
     if (!(idx < 0)) {
-        _throw(YAPI_IO_ERROR, "I2C protocol error");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "I2C protocol error");
         return rcvbytes;
     }
     reply = (reply).substr((int)(reply).length()-2*rcvCount, 2*rcvCount);
@@ -1346,7 +1346,7 @@ vector<int> YI2cPort::i2cSendAndReceiveArray(int slaveAddr,vector<int> values,in
     vector<int> res;
     res.clear();
     if (!(rcvCount<=512)) {
-        _throw(YAPI_INVALID_ARGUMENT, "Cannot read more than 512 bytes");
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "Cannot read more than 512 bytes");
         return res;
     }
     msg = YapiWrapper::ysprintf("@%02x:",slaveAddr);
@@ -1375,17 +1375,17 @@ vector<int> YI2cPort::i2cSendAndReceiveArray(int slaveAddr,vector<int> values,in
 
     reply = this->queryLine(msg,1000);
     if (!((int)(reply).length() > 0)) {
-        _throw(YAPI_IO_ERROR, "No response from I2C device");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "No response from I2C device");
         return res;
     }
     idx = _ystrpos(reply, "[N]!");
     if (!(idx < 0)) {
-        _throw(YAPI_IO_ERROR, "No I2C ACK received");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "No I2C ACK received");
         return res;
     }
     idx = _ystrpos(reply, "!");
     if (!(idx < 0)) {
-        _throw(YAPI_IO_ERROR, "I2C protocol error");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "I2C protocol error");
         return res;
     }
     reply = (reply).substr((int)(reply).length()-2*rcvCount, 2*rcvCount);

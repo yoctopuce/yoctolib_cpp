@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupschedule.cpp 52567 2022-12-25 12:00:14Z seb $
+ *  $Id: yocto_wakeupschedule.cpp 56230 2023-08-21 15:20:59Z mvuilleu $
  *
  *  Implements yFindWakeUpSchedule(), the high-level API for WakeUpSchedule functions
  *
@@ -61,6 +61,7 @@ YWakeUpSchedule::YWakeUpSchedule(const string& func): YFunction(func)
     ,_weekDays(WEEKDAYS_INVALID)
     ,_monthDays(MONTHDAYS_INVALID)
     ,_months(MONTHS_INVALID)
+    ,_secondsBefore(SECONDSBEFORE_INVALID)
     ,_nextOccurence(NEXTOCCURENCE_INVALID)
     ,_valueCallbackWakeUpSchedule(NULL)
 //--- (end of YWakeUpSchedule initialization)
@@ -95,6 +96,9 @@ int YWakeUpSchedule::_parseAttr(YJSONObject *json_val)
     }
     if(json_val->has("months")) {
         _months =  json_val->getInt("months");
+    }
+    if(json_val->has("secondsBefore")) {
+        _secondsBefore =  json_val->getInt("secondsBefore");
     }
     if(json_val->has("nextOccurence")) {
         _nextOccurence =  json_val->getLong("nextOccurence");
@@ -431,6 +435,66 @@ int YWakeUpSchedule::set_months(int newval)
     try {
         char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("months", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the number of seconds to anticipate wake-up time to allow
+ * the system to power-up.
+ *
+ * @return an integer corresponding to the number of seconds to anticipate wake-up time to allow
+ *         the system to power-up
+ *
+ * On failure, throws an exception or returns YWakeUpSchedule::SECONDSBEFORE_INVALID.
+ */
+int YWakeUpSchedule::get_secondsBefore(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YWakeUpSchedule::SECONDSBEFORE_INVALID;
+                }
+            }
+        }
+        res = _secondsBefore;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the number of seconds to anticipate wake-up time to allow
+ * the system to power-up.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
+ *
+ * @param newval : an integer corresponding to the number of seconds to anticipate wake-up time to allow
+ *         the system to power-up
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YWakeUpSchedule::set_secondsBefore(int newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
+        res = _setAttr("secondsBefore", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;

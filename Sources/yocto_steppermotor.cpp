@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_steppermotor.cpp 54278 2023-04-28 10:10:10Z seb $
+ *  $Id: yocto_steppermotor.cpp 56058 2023-08-15 07:38:35Z mvuilleu $
  *
  *  Implements yFindStepperMotor(), the high-level API for StepperMotor functions
  *
@@ -953,12 +953,12 @@ int YStepperMotor::sendCommand(string command)
     res = ((u8)retBin[0]);
     if (res < 58) {
         if (!(res == 48)) {
-            _throw(YAPI_DEVICE_BUSY, "Motor command pipeline is full, try again later");
+            _throw((YRETCODE)(YAPI_DEVICE_BUSY), "Motor command pipeline is full, try again later");
             return YAPI_DEVICE_BUSY;
         }
     } else {
         if (!(res == 48)) {
-            _throw(YAPI_IO_ERROR, "Motor command failed permanently");
+            _throw((YRETCODE)(YAPI_IO_ERROR), "Motor command failed permanently");
             return YAPI_IO_ERROR;
         }
     }
@@ -1100,7 +1100,7 @@ int YStepperMotor::alertStepOut(void)
 int YStepperMotor::alertStepDir(int dir)
 {
     if (!(dir != 0)) {
-        _throw(YAPI_INVALID_ARGUMENT, "direction must be +1 or -1");
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "direction must be +1 or -1");
         return YAPI_INVALID_ARGUMENT;
     }
     if (dir > 0) {

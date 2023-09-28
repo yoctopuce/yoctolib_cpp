@@ -28,6 +28,7 @@
 		B8A727A817E0CD3A0057e1763680 /* yocto_anbutton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057913876c6 /* yocto_anbutton.cpp */; };
 		B8A727A817E0CD3A00577d2723ef /* yocto_display.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00575993eaea /* yocto_display.cpp */; };
 		B8A727A817E0CD3A0057cbb32679 /* yocto_files.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057a110d579 /* yocto_files.cpp */; };
+		B8A727A817E0CD3A0057fceb7e8b /* yocto_quadraturedecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005767e8c50e /* yocto_quadraturedecoder.cpp */; };
 
 /* End PBXBuildFile section */
 
@@ -83,6 +84,8 @@
 		B8A727A817E0CD3A00574a4904e2 /* yocto_display.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_display.h; path = ../../../Sources/yocto_display.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057a110d579 /* yocto_files.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_files.cpp; path = ../../../Sources/yocto_files.cpp; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057d52bc1a9 /* yocto_files.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_files.h; path = ../../../Sources/yocto_files.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005767e8c50e /* yocto_quadraturedecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_quadraturedecoder.cpp; path = ../../../Sources/yocto_quadraturedecoder.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057c85baabf /* yocto_quadraturedecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_quadraturedecoder.h; path = ../../../Sources/yocto_quadraturedecoder.h; sourceTree = "<group>"; };
 
 		B8FE65001472686800FD11A2 /* project */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = project; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -113,6 +116,8 @@
 				B8A727A817E0CD3A00574a4904e2 /* yocto_display.h */,
 				B8A727A817E0CD3A0057a110d579 /* yocto_files.cpp */,
 				B8A727A817E0CD3A0057d52bc1a9 /* yocto_files.h */,
+				B8A727A817E0CD3A005767e8c50e /* yocto_quadraturedecoder.cpp */,
+				B8A727A817E0CD3A0057c85baabf /* yocto_quadraturedecoder.h */,
 
 			);
 			name = Yoctopuce;
@@ -244,6 +249,7 @@
 				B8A727A817E0CD3A0057e1763680 /* yocto_anbutton.cpp in Sources */,
 				B8A727A817E0CD3A00577d2723ef /* yocto_display.cpp in Sources */,
 				B8A727A817E0CD3A0057cbb32679 /* yocto_files.cpp in Sources */,
+				B8A727A817E0CD3A0057fceb7e8b /* yocto_quadraturedecoder.cpp in Sources */,
 
 			);
 			runOnlyForDeploymentPostprocessing = 0;

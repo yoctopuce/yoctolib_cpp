@@ -132,7 +132,7 @@ YSdi12Sensor::YSdi12Sensor(YSdi12Port *sdi12Port,const string& json):
 //--- (end of generated code: YSdi12Sensor initialization)
 {
     _sdi12Port = sdi12Port;
-    parseInfoStr(json);
+    _parseInfoStr(json);
 }
 
 //--- (generated code: YSdi12Sensor implementation)
@@ -204,7 +204,7 @@ vector< vector<string> > YSdi12Sensor::get_typeMeasure(void)
     return _valuesDesc;
 }
 
-void YSdi12Sensor::parseInfoStr(string infoStr)
+void YSdi12Sensor::_parseInfoStr(string infoStr)
 {
     string errmsg;
 
@@ -224,52 +224,52 @@ void YSdi12Sensor::parseInfoStr(string infoStr)
             _model = (infoStr).substr(11, 6);
             _ver = (infoStr).substr(17, 3);
             _sn = (infoStr).substr(20, (int)(infoStr).length()-20);
-            this->queryValueInfo();
         }
     }
 }
 
-void YSdi12Sensor::queryValueInfo(void)
+void YSdi12Sensor::_queryValueInfo(void)
 {
     vector< vector<string> > val;
-
     vector<string> data;
     string infoNbVal;
     string cmd;
     string infoVal;
+    string value;
     int nbVal = 0;
     int k = 0;
     int i = 0;
     int j = 0;
+    vector<string> listVal;
 
     k = 0;
     while (k < 10) {
         infoNbVal = _sdi12Port->querySdi12(_addr, YapiWrapper::ysprintf("IM%d",k), 5000);
         if ((int)(infoNbVal).length() > 1) {
-            nbVal = atoi(((infoNbVal).substr(4, (int)(infoNbVal).length()-4)).c_str());
+            value = (infoNbVal).substr(4, (int)(infoNbVal).length()-4);
+            nbVal = atoi((value).c_str());
             if (nbVal != 0) {
+                val.clear();
                 i = 0;
                 while (i < nbVal) {
                     cmd = YapiWrapper::ysprintf("IM%d_00%d", k,i+1);
                     infoVal = _sdi12Port->querySdi12(_addr, cmd, 5000);
-                    vector<string> listVal;
-                    listVal.clear();
-                    data.clear();
-                    listVal.push_back(YapiWrapper::ysprintf("M%d",k));
-                    listVal.push_back(YapiWrapper::ysprintf("%d",i+1));
                     data = _strsplit(infoVal,';');
                     data = _strsplit(data[0],',');
+                    listVal.clear();
+                    listVal.push_back(YapiWrapper::ysprintf("M%d",k));
+                    listVal.push_back(YapiWrapper::ysprintf("%d",i+1));
                     j = 0;
                     while (j < (int)data.size()) {
                         listVal.push_back(data[j]);
-                        j= j +1;
+                        j = j + 1;
                     }
                     val.push_back(listVal);
-                    i= i +1;
+                    i = i + 1;
                 }
             }
         }
-        k = k+1;
+        k = k + 1;
     }
     _valuesDesc = val;
 }
@@ -1746,19 +1746,29 @@ string YSdi12Port::querySdi12(string sensorAddr,string cmd,int maxWait)
     vector<string> msgarr;
     int msglen = 0;
     string res;
+    cmdChar  = "";
 
     pattern = sensorAddr;
-    cmdChar = (cmd).substr(0, 1);
-    if (cmdChar == "M" || cmdChar == "D") {
-        pattern = YapiWrapper::ysprintf("%s:.*",sensorAddr.c_str());
+    if ((int)(cmd).length() > 0) {
+        cmdChar = (cmd).substr(0, 1);
+    }
+    if (sensorAddr == "?") {
+        pattern = "..*";
     } else {
-        pattern = YapiWrapper::ysprintf("%s.*",sensorAddr.c_str());
+        if (cmdChar == "M" || cmdChar == "D") {
+            pattern = YapiWrapper::ysprintf("%s:.*",sensorAddr.c_str());
+        } else {
+            pattern = YapiWrapper::ysprintf("%s.*",sensorAddr.c_str());
+        }
     }
     pattern = this->_escapeAttr(pattern);
     fullCmd = this->_escapeAttr(YapiWrapper::ysprintf("+%s%s!", sensorAddr.c_str(),cmd.c_str()));
     url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=%s&pat=%s", maxWait, fullCmd.c_str(),pattern.c_str());
 
     msgbin = this->_download(url);
+    if ((int)(msgbin).size()<2) {
+        return "";
+    }
     msgarr = this->_json_get_array(msgbin);
     msglen = (int)msgarr.size();
     if (msglen == 0) {
@@ -1774,27 +1784,46 @@ string YSdi12Port::querySdi12(string sensorAddr,string cmd,int maxWait)
     return res;
 }
 
+/**
+ * Sends a discovery command to the bus, and reads the sensor information reply.
+ * This function is intended to be used when the serial port is configured for 'SDI-12' protocol.
+ * This function work when only one sensor is connected.
+ *
+ * @return the reply returned by the sensor, as a YSdi12Sensor object.
+ *
+ * On failure, throws an exception or returns an empty string.
+ */
 YSdi12Sensor YSdi12Port::discoverSingleSensor(void)
 {
     string resStr;
 
-    resStr = this->querySdi12("?","!",5000);
+    resStr = this->querySdi12("?","",5000);
     if (resStr == "") {
         return YSdi12Sensor( this,"ERSensor Not Found");
     }
 
-    return getSensorInformation(resStr);
+    return this->getSensorInformation(resStr);
 }
 
+/**
+ * Sends a discovery command to the bus, and reads all sensors information reply.
+ * This function is intended to be used when the serial port is configured for 'SDI-12' protocol.
+ *
+ * @return all the information from every connected sensor, as an array of YSdi12Sensor object.
+ *
+ * On failure, throws an exception or returns an empty string.
+ */
 vector<YSdi12Sensor> YSdi12Port::discoverAllSensors(void)
 {
-    vector<YSdi12Sensor> addr;
+    vector<YSdi12Sensor> sensors;
     vector<string> idSens;
     string res;
     int i = 0;
     string lettreMin;
     string lettreMaj;
 
+    // 1. Search for sensors present
+    idSens.clear();
     i = 0 ;
     while (i < 10) {
         res = this->querySdi12(YapiWrapper::ysprintf("%d",i),"!",500);
@@ -1820,14 +1849,32 @@ vector<YSdi12Sensor> YSdi12Port::discoverAllSensors(void)
         }
         i = i +1;
     }
+    // 2. Query existing sensors information
     i = 0;
+    sensors.clear();
     while (i < (int)idSens.size()) {
-        addr.push_back(getSensorInformation(idSens[i]));
+        sensors.push_back(this->getSensorInformation(idSens[i]));
         i = i + 1;
     }
-    return addr;
+    return sensors;
 }
 
+/**
+ * Sends a mesurement command to the SDI-12 bus, and reads the sensor immediate reply.
+ * The supported commands are:
+ * M: Measurement start control
+ * M1...M9: Additional measurement start command
+ * D: Measurement reading control
+ * This function is intended to be used when the serial port is configured for 'SDI-12' protocol.
+ *
+ * @param sensorAddr : the sensor address, as a string
+ * @param measCmd : the SDI12 query to send (without address and exclamation point)
+ * @param maxWait : the maximum timeout to wait for a reply from sensor, in millisecond
+ *
+ * @return the reply returned by the sensor, without newline, as a list of float.
+ *
+ * On failure, throws an exception or returns an empty string.
+ */
 vector<double> YSdi12Port::readSensor(string sensorAddr,string measCmd,int maxWait)
 {
     string resStr;
@@ -1845,16 +1892,26 @@ vector<double> YSdi12Port::readSensor(string sensorAddr,string measCmd,int maxWa
     }
     valdouble = atof((split[1]).c_str());
     res.push_back(valdouble);
-
     i = 1;
-    while (i< (int)tab.size()) {
+    while (i < (int)tab.size()) {
         valdouble = atof((tab[i]).c_str());
         res.push_back(valdouble);
-        i = i+1;
+        i = i + 1;
     }
     return res;
 }
 
+/**
+ * Changes the address of the selected sensor, and returns the sensor information with the new address.
+ * This function is intended to be used when the serial port is configured for 'SDI-12' protocol.
+ *
+ * @param oldAddress : Actual sensor address, as a string
+ * @param newAddress : New sensor address, as a string
+ *
+ * @return the sensor address and information , as a YSdi12Sensor object.
+ *
+ * On failure, throws an exception or returns an empty string.
+ */
 YSdi12Sensor YSdi12Port::changeAddress(string oldAddress,string newAddress)
 {
     YSdi12Sensor addr;
@@ -1864,18 +1921,40 @@ YSdi12Sensor YSdi12Port::changeAddress(string oldAddress,string newAddress)
     return addr;
 }
 
+/**
+ * Sends a information command to the bus, and reads sensors information selected.
+ * This function is intended to be used when the serial port is configured for 'SDI-12' protocol.
+ *
+ * @param sensorAddr : Sensor address, as a string
+ *
+ * @return the reply returned by the sensor, as a YSdi12Port object.
+ *
+ * On failure, throws an exception or returns an empty string.
+ */
 YSdi12Sensor YSdi12Port::getSensorInformation(string sensorAddr)
 {
-    vector<string> id;
     string res;
+    YSdi12Sensor sensor;
 
     res = this->querySdi12(sensorAddr,"I",1000);
     if (res == "") {
         return YSdi12Sensor(this ,"ERSensor Not Found");
     }
-    return YSdi12Sensor(this ,res);
+    sensor = YSdi12Sensor(this ,res);
+    sensor._queryValueInfo();
+    return sensor;
 }
 
+/**
+ * Sends a information command to the bus, and reads sensors information selected.
+ * This function is intended to be used when the serial port is configured for 'SDI-12' protocol.
+ *
+ * @param sensorAddr : Sensor address, as a string
+ *
+ * @return the reply returned by the sensor, as a YSdi12Port object.
+ *
+ * On failure, throws an exception or returns an empty string.
+ */
 vector<double> YSdi12Port::readConcurrentMeasurements(string sensorAddr)
 {
     vector<double> res;
@@ -1884,6 +1963,16 @@ vector<double> YSdi12Port::readConcurrentMeasurements(string sensorAddr)
     return res;
 }
 
+/**
+ * Sends a information command to the bus, and reads sensors information selected.
+ * This function is intended to be used when the serial port is configured for 'SDI-12' protocol.
+ *
+ * @param sensorAddr : Sensor address, as a string
+ *
+ * @return the reply returned by the sensor, as a YSdi12Port object.
+ *
+ * On failure, throws an exception or returns an empty string.
+ */
 int YSdi12Port::requestConcurrentMeasurements(string sensorAddr)
 {
     int timewait = 0;

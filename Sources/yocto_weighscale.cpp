@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_weighscale.cpp 54278 2023-04-28 10:10:10Z seb $
+ *  $Id: yocto_weighscale.cpp 56058 2023-08-15 07:38:35Z mvuilleu $
  *
  *  Implements yFindWeighScale(), the high-level API for WeighScale functions
  *
@@ -677,17 +677,17 @@ int YWeighScale::setCompensationTable(int tableIndex,vector<double> tempValues,v
     double idxTemp = 0.0;
     siz = (int)tempValues.size();
     if (!(siz != 1)) {
-        _throw(YAPI_INVALID_ARGUMENT, "thermal compensation table must have at least two points");
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "thermal compensation table must have at least two points");
         return YAPI_INVALID_ARGUMENT;
     }
     if (!(siz == (int)compValues.size())) {
-        _throw(YAPI_INVALID_ARGUMENT, "table sizes mismatch");
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "table sizes mismatch");
         return YAPI_INVALID_ARGUMENT;
     }
 
     res = this->set_command(YapiWrapper::ysprintf("%dZ",tableIndex));
     if (!(res==YAPI_SUCCESS)) {
-        _throw(YAPI_IO_ERROR, "unable to reset thermal compensation table");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "unable to reset thermal compensation table");
         return YAPI_IO_ERROR;
     }
     // add records in growing temperature value
@@ -710,7 +710,7 @@ int YWeighScale::setCompensationTable(int tableIndex,vector<double> tempValues,v
         if (found > 0) {
             res = this->set_command(YapiWrapper::ysprintf("%dm%d:%d", tableIndex, (int) floor(1000*curr+0.5),(int) floor(1000*currComp+0.5)));
             if (!(res==YAPI_SUCCESS)) {
-                _throw(YAPI_IO_ERROR, "unable to set thermal compensation table");
+                _throw((YRETCODE)(YAPI_IO_ERROR), "unable to set thermal compensation table");
                 return YAPI_IO_ERROR;
             }
             prev = curr;

@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 55593 2023-07-25 09:26:47Z seb $
+#  $Id: GNUmakefile 56043 2023-08-14 15:22:27Z mvuilleu $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -323,6 +323,7 @@ YOCTO_API_OBJS_STAT = yocto_api.o\
 	yocto_realtimeclock.o \
 	yocto_refframe.o \
 	yocto_relay.o \
+	yocto_rfidreader.o \
 	yocto_sdi12port.o \
 	yocto_segmenteddisplay.o \
 	yocto_serialport.o \
