@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 56399 2023-09-05 15:11:32Z mvuilleu $
+ * $Id: yapi.c 57075 2023-10-12 06:53:27Z mvuilleu $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -3872,6 +3872,7 @@ static YRETCODE yapiRegisterHubEx(const char *url, int checkacces, char *errmsg)
 #ifdef TRACE_NET_HUB
             dbglog("Hub already registred as %s (new =%s)\n", hubst->url.org_url, url);
 #endif
+            yLeaveCriticalSection(&yContext->enum_cs);
             return YAPI_SUCCESS;
         }
         yLeaveCriticalSection(&yContext->enum_cs);
