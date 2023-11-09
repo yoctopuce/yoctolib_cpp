@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 57075 2023-10-12 06:53:27Z mvuilleu $
+ * $Id: ytcp.c 57627 2023-11-03 09:37:28Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -915,7 +915,7 @@ exit:
                     if (c == ':') {
                         int parse_val = 0;
                         p++;
-                        if (YSTRCMP(buffer, "Transfer-Encoding") == 0) {
+                        if (YSTRICMP(buffer, "Transfer-Encoding") == 0) {
                             parse_val = 1;
                         }
                         pt = buffer;

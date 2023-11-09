@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 57075 2023-10-12 06:53:27Z mvuilleu $
+ * $Id: yapi.c 57649 2023-11-06 07:29:15Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -1655,7 +1655,7 @@ static u32 unpackHTTPRequest(u8 *data, u32 datalen)
             if (c == ':') {
                 int parse_val = 0;
                 p++;
-                if (YSTRCMP(buffer, "Transfer-Encoding") == 0) {
+                if (YSTRICMP(buffer, "Transfer-Encoding") == 0) {
                     parse_val = 1;
                 }
                 pt = buffer;
@@ -2418,6 +2418,28 @@ static int yhubUseBestProto(HubSt *hub, char *errmsg)
     return YAPI_SUCCESS;
 }
 
+static int LoadInfoJson(HubSt* hub, char *errmsg)
+{
+    // look for info.json file
+    char info_url[128];
+    u8 *info_data;
+    int res;
+    YSPRINTF(info_url, 512, "%s/info.json", hub->url.subdomain);
+    res = yTcpDownload(hub->url.host, hub->url.portno, info_url, &info_data, YIO_DEFAULT_TCP_TIMEOUT, errmsg);
+    if (res >= 0) {
+        res = parseInfoJSon(hub, info_data, res, errmsg);
+        if (res < 0) {
+            dbglog("Warning: unable to parse info.json (%s)\n", errmsg);
+            memset(&hub->info, 0, sizeof(hub->info));
+            if (hub->url.proto == PROTO_AUTO) {
+                hub->url.proto = PROTO_LEGACY;
+            }
+            return YAPI_IO_ERROR;
+        }
+    }
+    return res;
+}
+
 // initialize NetHubSt structure. no IO in this function
 static HubSt* yapiAllocHub(const char *url, int *error_code, char *errmsg)
 {
@@ -2451,34 +2473,20 @@ static HubSt* yapiAllocHub(const char *url, int *error_code, char *errmsg)
         return NULL;
     }
     if (hub->url.proto == PROTO_AUTO || hub->url.proto == PROTO_HTTP) {
-        // look for info.json file
-        char info_url[128];
-        u8 *info_data;
-        int res;
-        YSPRINTF(info_url, 512, "%s/info.json", hub->url.subdomain);
-        res = yTcpDownload(hub->url.host, hub->url.portno, info_url, &info_data, YIO_DEFAULT_TCP_TIMEOUT, errmsg);
+        int res = LoadInfoJson(hub, errmsg);
         if (res == YAPI_NOT_SUPPORTED) {
             // in case the request is redirected to an https url
             return NULL;
         }
         if (res >= 0) {
-            res = parseInfoJSon(hub, info_data, res, errmsg);
-            if (res < 0) {
-                dbglog("Warning: unable to parse info.json (%s)\n", errmsg);
-                memset(&hub->info, 0, sizeof(hub->info));
-                if (hub->url.proto == PROTO_AUTO) {
-                    hub->url.proto = PROTO_LEGACY;
+            yStrRef serial = yHashPutStr(hub->info.serial);
+            if ((res = checkForSameHubAccess(hub, serial, errmsg)) < 0) {
+                if (error_code) {
+                    *error_code = res;
                 }
-            } else {
-                yStrRef serial = yHashPutStr(hub->info.serial);
-                if ((res = checkForSameHubAccess(hub, serial, errmsg)) < 0) {
-                    if (error_code) {
-                        *error_code = res;
-                    }
-                    yFreeParsedURL(&hub->url);
-                    yFree(hub);
-                    return NULL;
-                }
+                yFreeParsedURL(&hub->url);
+                yFree(hub);
+                return NULL;
             }
         }
     }
@@ -2510,7 +2518,7 @@ static HubSt* yapiAllocHub(const char *url, int *error_code, char *errmsg)
         hub->ws.lastTraffic = yapiGetTickCount();
     }
 #ifdef TRACE_NET_HUB
-    dbglog("HUB %p: %s allocated \n",hub, hub->host);
+    dbglog("HUB %p: %s allocated \n",hub, hub->url.org_url);
 #endif
     return hub;
 }
@@ -2518,7 +2526,7 @@ static HubSt* yapiAllocHub(const char *url, int *error_code, char *errmsg)
 static void yapiFreeHub(HubSt *hub)
 {
 #ifdef TRACE_NET_HUB
-    dbglog("HUB: %s Deleted \n",hub->host);
+    dbglog("HUB: %s Deleted \n",hub->url.org_url);
 #endif
     yFreeWakeUpSocket(&hub->wuce);
     if (hub->url.proto == PROTO_HTTP) {
@@ -2561,7 +2569,7 @@ static void unregisterNetHub(HubSt *refhub)
 
 
 #ifdef TRACE_NET_HUB
-    dbglog("HUB: unregister %s\n", hub->host);
+    dbglog("HUB: unregister %s\n", refhub->url.org_url);
 #endif
     timeref = yapiGetTickCount();
 
@@ -3588,8 +3596,11 @@ static void* yhelper_thread(void *ctx)
             now = yapiGetTickCount();
             if ((u64)(now - hub->lastAttempt) > hub->attemptDelay) {
                 char request[256];
+                if (!hub->info.serial[0]) {
+                    LoadInfoJson(hub, errmsg);
+                }
 #ifdef TRACE_NET_HUB
-                dbglog("TRACE(%s): try to open notification socket at %d\n",hub->host, hub->notifAbsPos);
+                dbglog("TRACE(%s): try to open notification socket at %d\n",hub->url.org_url, hub->notifAbsPos);
 #endif
                 // reset fifo
                 yFifoEmpty(&(hub->not_fifo));
@@ -3610,12 +3621,12 @@ static void* yhelper_thread(void *ctx)
                     yLeaveCriticalSection(&hub->access);
 
 #ifdef TRACE_NET_HUB
-                    dbglog("TRACE(%s): unable to open notification socket(%s)\n",hub->host,errmsg);
-                    dbglog("TRACE(%s): retry in %dms (%d retries)\n",hub->host,hub->attemptDelay,hub->retryCount);
+                    dbglog("TRACE(%s): unable to open notification socket(%s)\n",hub->url.org_url,errmsg);
+                    dbglog("TRACE(%s): retry in %dms (%d retries)\n",hub->url.org_url,hub->attemptDelay,hub->retryCount);
 #endif
                 } else {
 #ifdef TRACE_NET_HUB
-                    dbglog("TRACE(%s): notification socket open\n",hub->host);
+                    dbglog("TRACE(%s): notification socket open\n",hub->url.org_url);
 #endif
 #ifdef DEBUG_NET_NOTIFICATION
                     YSPRINTF(Dbuffer,1024,"HUB: %s started\n",hub->url.host);
@@ -3696,7 +3707,7 @@ static void* yhelper_thread(void *ctx)
                             if (hub->send_ping && ((u64)(yapiGetTickCount() - hub->http.lastTraffic)) > NET_HUB_NOT_CONNECTION_TIMEOUT) {
 #ifdef TRACE_NET_HUB
 
-                                dbglog("network hub %s didn't respond for too long (%d)\n", hub->host, res);
+                                dbglog("network hub %s didn't respond for too long (%d)\n", hub->url.org_url, res);
 #endif
                                 // hub did not send data for too long. Close the connection and bring it back.
                                 yReqClose(req);
@@ -4218,7 +4229,7 @@ static YRETCODE yapiTestHub_internal(const char *url, int mstimeout, char *errms
         HubSt *hubst = yapiAllocHub(url, &res, errmsg);
         if (hubst) {
 #ifdef TRACE_NET_HUB
-            dbglog("HUB: test %s \n", hubst->host);
+            dbglog("HUB: test %s \n", hubst->url.org_url);
 #endif
             if (hubst->url.proto != PROTO_HTTP) {
                 u64 timeout;

@@ -34,12 +34,17 @@ int main(int argc, const char * argv[])
   string errmsg;
 
   cout << "Waiting for hubs to signal themselves..." << endl;
-
+#if 0
+  if (YAPI::PreregisterHub("172.17.16.129:4444", errmsg) != YAPI::SUCCESS) {
+      cerr << "RegisterHub error : " << errmsg << endl;
+      return 1;
+  }
+#else
   if (YAPI::RegisterHub("net", errmsg) != YAPI::SUCCESS) {
     cerr << "RegisterHub error : " << errmsg << endl;
     return 1;
   }
-
+#endif
   // each time a new device is connected/discovered
   // arrivalCallback will be called.
   YAPI::RegisterDeviceArrivalCallback(arrivalCallback);
