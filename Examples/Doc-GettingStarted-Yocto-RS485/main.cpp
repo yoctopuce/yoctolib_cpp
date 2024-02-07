@@ -1,13 +1,13 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 52208 2022-12-07 08:17:21Z mvuilleu $
+ *  $Id: main.cpp 52593 2023-01-03 15:21:36Z seb $
  *
  *  An example that show how to use a  Yocto-RS485
  *
  *  You can find more information on our web site:
  *   Yocto-RS485 documentation:
  *      https://www.yoctopuce.com/EN/products/yocto-rs485/doc.html
- *   C++ API Reference:
+ *   C++ V2 API Reference:
  *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
  *
  *********************************************************************/

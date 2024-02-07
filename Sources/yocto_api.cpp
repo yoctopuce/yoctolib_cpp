@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 56058 2023-08-15 07:38:35Z mvuilleu $
+ * $Id: yocto_api.cpp 59222 2024-02-05 15:50:11Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -1355,7 +1355,7 @@ int YFirmwareUpdate::_processMore(int newupdate)
         _progress = ((_progress_c * 9) / (10));
         _progress_msg = string(errmsg);
     } else {
-        if (((int)(_settings).size() != 0)) {
+        if (((int)(_settings).size() != 0) && ( _progress_c != 101)) {
             _progress_msg = "restoring settings";
             m = YModule::FindModule(_serial + ".module");
             if (!(m->isOnline())) {
@@ -2801,6 +2801,95 @@ string YAPIContext::AddUdevRule(bool force)
         msg = "";
     }
     return msg;
+}
+
+/**
+ * Download the TLS/SSL certificate from the hub. This function allows to download a TLS/SSL certificate to add it
+ * to the list of trusted certificates using the AddTrustedCertificates method.
+ *
+ * @param url : the root URL of the VirtualHub V2 or HTTP server.
+ * @param mstimeout : the number of milliseconds available to download the certificate.
+ *
+ * @return a string containing the certificate. In case of error, returns a string starting with "error:".
+ */
+string YAPIContext::DownloadHostCertificate(string url,u64 mstimeout)
+{
+    char errmsg[YOCTO_ERRMSG_LEN];
+    char smallbuff[4096];
+    char *bigbuff;
+    int buffsize = 0;
+    int fullsize = 0;
+    int res = 0;
+    string certifcate;
+    fullsize = 0;
+    res = yapiGetRemoteCertificate(url.c_str(), mstimeout, smallbuff, 4096, &fullsize, errmsg);
+    if (res < 0) {
+        if (res == YAPI_BUFFER_TOO_SMALL) {
+            fullsize = fullsize * 2;
+            buffsize = fullsize;
+            bigbuff = (char *)malloc(buffsize);
+            res = yapiGetRemoteCertificate(url.c_str(), mstimeout, bigbuff, buffsize, &fullsize, errmsg);
+            if (res < 0) {
+                certifcate = "error:" + string(errmsg);
+            } else {
+                certifcate = string(bigbuff, fullsize);
+            }
+            free(bigbuff);
+        } else {
+            certifcate = "error:" + string(errmsg);
+        }
+        return certifcate;
+    } else {
+        certifcate = string(smallbuff, fullsize);
+    }
+    return certifcate;
+}
+
+/**
+ * Adds a TLS/SSL certificate to the list of trusted certificates. By default, the library
+ * library will reject TLS/SSL connections to servers whose certificate is not known. This function
+ * function allows to add a list of known certificates. It is also possible to disable the verification
+ * using the SetNetworkSecurityOptions method.
+ *
+ * @param certificate : a string containing one or more certificates.
+ *
+ * @return an empty string if the certificate has been added correctly.
+ *         In case of error, returns a string starting with "error:".
+ */
+string YAPIContext::AddTrustedCertificates(string certificate)
+{
+    char errmsg[YOCTO_ERRMSG_LEN];
+    int size = 0;
+    int res = 0;
+    // null char must be inclued
+    size = (int)(certificate).length() + 1;
+    res = yapiAddSSLCertificateCli(certificate.c_str(), size, errmsg);
+    if (res < 0) {
+        return string(errmsg);
+    } else {
+        return "";
+    }
+}
+
+/**
+ * Enables or disables certain TLS/SSL certificate checks.
+ *
+ * @param options: The options: YAPI::NO_TRUSTED_CA_CHECK,
+ *         YAPI::NO_EXPIRATION_CHECK, YAPI::NO_HOSTNAME_CHECK.
+ *
+ * @return an empty string if the options are taken into account.
+ *         On error, returns a string beginning with "error:".
+ */
+string YAPIContext::SetNetworkSecurityOptions(int options)
+{
+    char errmsg[YOCTO_ERRMSG_LEN];
+    int res = 0;
+    res = yapiSetNetworkSecurityOptions(options, errmsg);
+    if (res < 0) {
+        return string(errmsg);
+    } else {
+        return "";
+    }
 }
 
 /**
@@ -6808,8 +6897,10 @@ void YModule::_startStopDevLog(string serial,bool start)
  * Registers a device log callback function. This callback will be called each time
  * that a module sends a new log message. Mostly useful to debug a Yoctopuce module.
  *
- * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
- *         arguments: the module object that emitted the log message, and the character string containing the log.
+ * @param callback : the callback function to call, or a NULL pointer.
+ *         The callback function should take two
+ *         arguments: the module object that emitted the log message,
+ *         and the character string containing the log.
  *         On failure, throws an exception or returns a negative error code.
  */
 int YModule::registerLogCallback(YModuleLogCallback callback)
@@ -9247,7 +9338,7 @@ int YSensor::loadCalibrationPoints(vector<double>& rawValues,vector<double>& ref
     // Load function parameters if not yet loaded
     yEnterCriticalSection(&_this_cs);
     try {
-        if (_scale == 0) {
+        if ((_scale == 0) || (_cacheExpiration <= YAPI::GetTickCount())) {
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);

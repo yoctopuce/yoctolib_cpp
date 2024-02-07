@@ -500,7 +500,7 @@ public:
 class YRfidReader; // forward declaration
 
 typedef void (*YRfidReaderValueCallback)(YRfidReader *func, const string& functionValue);
-typedef void (*YEventCallback)(YRfidReader *obj, int timestamp, const string& eventType, const string& eventData);
+typedef void (*YEventCallback)(YRfidReader *obj, double timestamp, const string& eventType, const string& eventData);
 
 #define Y_NTAGS_INVALID                 (YAPI_INVALID_UINT)
 #define Y_REFRESHRATE_INVALID           (YAPI_INVALID_UINT)
@@ -658,7 +658,7 @@ public:
      * @param status : an RfidStatus object that will contain
      *         the detailled status of the operation
      *
-     * @return YAPI::SUCCESS if the call succeeds.
+     * @return a YRfidTagInfo object.
      *
      * On failure, throws an exception or returns an empty YRfidTagInfo objact.
      * When it happens, you can get more information from the status object.

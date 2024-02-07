@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupschedule.h 56230 2023-08-21 15:20:59Z mvuilleu $
+ *  $Id: yocto_wakeupschedule.h 56252 2023-08-23 10:06:05Z seb $
  *
  *  Declares yFindWakeUpSchedule(), the high-level API for WakeUpSchedule functions
  *

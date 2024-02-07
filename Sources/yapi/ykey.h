@@ -1,35 +1,35 @@
 /*********************************************************************
  *
- * $Id: ykey.h 51520 2022-11-07 10:03:28Z seb $
+ * $Id: ykey.h 58466 2023-12-12 11:12:09Z seb $
  *
  * Declaration of standard key computations
  *
- * - - - - - - - - - License information: - - - - - - - - - 
+ * - - - - - - - - - License information: - - - - - - - - -
  *
  *  Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.
  *
  *  Yoctopuce Sarl (hereafter Licensor) grants to you a perpetual
  *  non-exclusive license to use, modify, copy and integrate this
- *  file into your software for the sole purpose of interfacing 
- *  with Yoctopuce products. 
+ *  file into your software for the sole purpose of interfacing
+ *  with Yoctopuce products.
  *
- *  You may reproduce and distribute copies of this file in 
+ *  You may reproduce and distribute copies of this file in
  *  source or object form, as long as the sole purpose of this
- *  code is to interface with Yoctopuce products. You must retain 
+ *  code is to interface with Yoctopuce products. You must retain
  *  this notice in the distributed source file.
  *
  *  You should refer to Yoctopuce General Terms and Conditions
- *  for additional information regarding your rights and 
+ *  for additional information regarding your rights and
  *  obligations.
  *
  *  THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" WITHOUT
- *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING 
- *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS 
+ *  WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
+ *  WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, FITNESS
  *  FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO
  *  EVENT SHALL LICENSOR BE LIABLE FOR ANY INCIDENTAL, SPECIAL,
- *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, 
- *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR 
- *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT 
+ *  INDIRECT OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA,
+ *  COST OF PROCUREMENT OF SUBSTITUTE GOODS, TECHNOLOGY OR
+ *  SERVICES, ANY CLAIMS BY THIRD PARTIES (INCLUDING BUT NOT
  *  LIMITED TO ANY DEFENSE THEREOF), ANY CLAIMS FOR INDEMNITY OR
  *  CONTRIBUTION, OR OTHER SIMILAR COSTS, WHETHER ASSERTED ON THE
  *  BASIS OF CONTRACT, TORT (INCLUDING NEGLIGENCE), BREACH OF
@@ -85,5 +85,29 @@ void MD5Initialize(HASH_SUM* theSum);
 void MD5AddData(HASH_SUM* theSum, const u8* data, u32 len);
 void MD5Calculate(HASH_SUM* theSum, u8* result);
 #endif
+
+#define swaps(w)   ((((w)&0xff00)>>8) + (((w)&0xff)<<8))
+#define swapl(dw)  (swaps(((dw)&0xffff0000)>>16) + (swaps((dw)&0xffff)<<16))
+#define NETMASK_LOW(len)            swapl(((u32)1 << (32-len))-1)
+#define NETMASK_HIGH(len)           swapl(0-((u32)1 << (32-len)))
+
+#ifndef IPV4_ONLY
+void setIPv6Mask(IPvX_ADDR* addr, u16 nbits);
+void setIPv4Mask(IPvX_ADDR* addr, u16 nbits);
+void setIPv4Val(IPvX_ADDR* addr, u32 ipval);
+u32 getIPv4Val(const IPvX_ADDR* addr);
+int isIPEmpty(const IPvX_ADDR* addr);
+int isIPv4(const IPvX_ADDR* addr);
+u16 IPvXAddrLen(const IPvX_ADDR* addr);
+#else
+#define setIPv4Mask(ipaddr,nbits)   (ipaddr)->v4.addr.Val = NETMASK_HIGH((nbits))
+#define setIPv4Val(ipaddr,ipval)    (ipaddr)->v4.addr.Val = (ipval)
+#define getIPv4Val(ipaddr)          ((ipaddr)->v4.addr.Val)
+#define isIPEmpty(ipaddr)           ((ipaddr)->v4.addr.Val == 0)
+#define isIPv4(addr)                1
+#endif
+
+char* u16toa(u16 val, char* buff);
+char* iptoa(const IPvX_ADDR* addr, char* buff);
 
 #endif

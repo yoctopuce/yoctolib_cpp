@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 56399 2023-09-05 15:11:32Z mvuilleu $
+ * $Id: yhash.c 59229 2024-02-06 08:32:54Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -37,17 +37,17 @@
  *
  *********************************************************************/
 
-#define __FILE_ID__  "yhash"
-#include "yhash.h"
-#include <string.h>
+#include "ydef_private.h"
+#define __FILE_ID__     MK_FILEID('H','S','H')
+#define __FILENAME__   "yhash"
 
-#ifdef MICROCHIP_API
-__eds__ __attribute__((far, __section__(".yfar1"))) YHashSlot yHashTable[NB_MAX_HASH_ENTRIES];
-#include <Yocto/yapi_ext.h>
-#else
+#include "yhash.h"
+#include "ymemory.h"
+
+#include "yproto.h"
+
 #include <stdio.h>
 #include <stdlib.h>
-#include "yproto.h"
 #ifdef WINDOWS_API
 #include <Windows.h>
 #endif
@@ -57,7 +57,6 @@ yCRITICAL_SECTION yHashMutex;
 yCRITICAL_SECTION yFreeMutex;
 yCRITICAL_SECTION yWpMutex;
 yCRITICAL_SECTION yYpMutex;
-#endif
 
 //#define DEBUG_YHASH
 #ifdef DEBUG_YHASH
@@ -66,19 +65,15 @@ yCRITICAL_SECTION yYpMutex;
 #define HLOGF(x)
 #endif
 
-#ifndef MICROCHIP_API
 static u16 usedDevYdx[NB_MAX_DEVICES / 16];
 static u16 nextDevYdx = 0;
-#endif
 static u8 nextCatYdx = 1;
 static u16 nextHashEntry = 256;
 
 static yBlkHdl devYdxPtr[NB_MAX_DEVICES];
 static yBlkHdl funYdxPtr[NB_MAX_DEVICES];
 
-#ifndef MICROCHIP_API
 char SerialNumberStr[YOCTO_SERIAL_LEN] = "";
-#endif
 yStrRef SerialRef = INVALID_HASH_IDX;
 
 yBlkHdl yWpListHead = INVALID_BLK_HDL;
@@ -106,7 +101,7 @@ static yBlkHdl yBlkAlloc(void)
         freeBlks = BLK(freeBlks).nextPtr;
     } else {
         yEnterCriticalSection(&yHashMutex);
-        YASSERT(nextHashEntry < NB_MAX_HASH_ENTRIES);
+        YASSERT(nextHashEntry < NB_MAX_HASH_ENTRIES, nextHashEntry);
         res = ((nextHashEntry++) << 1) + 1;
         yLeaveCriticalSection(&yHashMutex);
         BLK(res).blkId = 0;
@@ -198,7 +193,6 @@ void yHashInit(void)
         devYdxPtr[i] = INVALID_BLK_HDL;
     for (i = 0; i < NB_MAX_DEVICES; i++)
         funYdxPtr[i] = INVALID_BLK_HDL;
-#ifndef MICROCHIP_API
     nextDevYdx = 0;
     nextCatYdx = 1;
     nextHashEntry = 256;
@@ -210,7 +204,6 @@ void yHashInit(void)
     yInitializeCriticalSection(&yFreeMutex);
     yInitializeCriticalSection(&yWpMutex);
     yInitializeCriticalSection(&yYpMutex);
-#endif
 
     // Always init hast table with empty string and Module string
     // This ensures they always get the same magic hash value
@@ -227,11 +220,7 @@ void yHashInit(void)
         // This should never ever happen, something is really weird
         // No log is possible here (called within yapiInitAPI), so
         // the best we can do to help debugging is a tight loop.
-#ifdef MICROCHIP_API
-		while(1);
-#else
         YPANIC;
-#endif
     }
     SerialRef = yHashPutStr(SerialNumberStr);
 
@@ -242,7 +231,6 @@ void yHashInit(void)
     YC(yYpListHead).entries = INVALID_BLK_HDL;
 }
 
-#ifndef MICROCHIP_API
 void yHashFree(void)
 {
     HLOGF(("yHashFree\n"));
@@ -251,7 +239,6 @@ void yHashFree(void)
     yDeleteCriticalSection(&yWpMutex);
     yDeleteCriticalSection(&yYpMutex);
 }
-#endif
 
 static yHash yHashPut(const u8* buf, u16 len, u8 testonly)
 {
@@ -287,7 +274,7 @@ static yHash yHashPut(const u8* buf, u16 len, u8 testonly)
         } while (yhash != -1);
         // not found in chain
         if (testonly) goto exit_error;
-        YASSERT(nextHashEntry < NB_MAX_HASH_ENTRIES);
+        YASSERT(nextHashEntry < NB_MAX_HASH_ENTRIES, nextHashEntry);
         yhash = nextHashEntry++;
     } else {
         // first entry not allocated
@@ -350,17 +337,9 @@ void yHashGetBuf(yHash yhash, u8* destbuf, u16 bufsize)
     __eds__ u8* p;
 
     HLOGF(("yHashGetBuf(0x%x)\n",yhash));
-    YASSERT(yhash >= 0);
-#ifdef MICROCHIP_API
-    if(yhash >= nextHashEntry || yHashTable[yhash].next == 0) {
-        // should never happen !
-        memset(destbuf, 0, bufsize);
-        return;
-    }
-#else
-    YASSERT(yhash < nextHashEntry);
-    YASSERT(yHashTable[yhash].next != 0); // 0 means unallocated, -1 means end of chain
-#endif
+    YASSERT(yhash >= 0, yhash);
+    YASSERT(yhash < nextHashEntry, yhash);
+    YASSERT(yHashTable[yhash].next != 0, yHashTable[yhash].next); // 0 means unallocated, -1 means end of chain
     if (bufsize > HASH_BUF_SIZE) bufsize = HASH_BUF_SIZE;
     p = yHashTable[yhash].buff;
     while (bufsize-- > 0) {
@@ -375,56 +354,23 @@ void yHashGetStr(yHash yhash, char* destbuf, u16 bufsize)
     destbuf[bufsize - 1] = 0;
 }
 
-#ifdef MICROCHIP_API
-// safe since this is a single-thread environment
-static char shared_hashbuf[HASH_BUF_SIZE+1];
-#endif
-
 u16 yHashGetStrLen(yHash yhash)
 {
-#ifdef MICROCHIP_API
-    u16  i;
-#endif
 
     HLOGF(("yHashGetStrLen(0x%x)\n",yhash));
-    YASSERT(yhash >= 0);
-#ifdef MICROCHIP_API
-    if(yhash >= nextHashEntry || yHashTable[yhash].next == 0) {
-        // should never happen
-        return 0;
-    }
-    for(i = 0; i < HASH_BUF_SIZE; i++) {
-        if(!yHashTable[yhash].buff[i]) break;
-    }
-    return i;
-#else
-    YASSERT(yhash < nextHashEntry);
-    YASSERT(yHashTable[yhash].next != 0); // 0 means unallocated
+    YASSERT(yhash >= 0, yhash);
+    YASSERT(yhash < nextHashEntry, yhash);
+    YASSERT(yHashTable[yhash].next != 0, yHashTable[yhash].next); // 0 means unallocated
     return (u16)YSTRLEN((char *)yHashTable[yhash].buff);
-#endif
 }
 
-char* yHashGetStrPtr(yHash yhash)
+const char* yHashGetStrPtr(yHash yhash)
 {
-#ifdef MICROCHIP_API
-    u16  i;
-#endif
-
     HLOGF(("yHashGetStrPtr(0x%x)\n",yhash));
-    YASSERT(yhash >= 0);
-    YASSERT(yhash < nextHashEntry);
-    YASSERT(yHashTable[yhash].next != 0); // 0 means unallocated
-#ifdef MICROCHIP_API
-    for(i = 0; i < HASH_BUF_SIZE; i++) {
-        char c = yHashTable[yhash].buff[i];
-        if(!c) break;
-        shared_hashbuf[i] = c;
-    }
-    shared_hashbuf[i] = 0;
-    return shared_hashbuf;
-#else
-    return (char*)yHashTable[yhash].buff;
-#endif
+    YASSERT(yhash >= 0, yhash);
+    YASSERT(yhash < nextHashEntry, yhash);
+    YASSERT(yHashTable[yhash].next != 0, yHashTable[yhash].next); // 0 means unallocated
+    return (const char*)yHashTable[yhash].buff;
 }
 
 // =======================================================================
@@ -446,7 +392,7 @@ static void wpExecuteUnregisterUnsec(void)
 
     hdl = yWpListHead;
     while (hdl != INVALID_BLK_HDL) {
-        YASSERT(WP(hdl).blkId == YBLKID_WPENTRY);
+        YASSERT(WP(hdl).blkId == YBLKID_WPENTRY, WP(hdl).blkId);
         next = WP(hdl).nextPtr;
         if (WP(hdl).flags & YWP_MARK_FOR_UNREGISTER) {
 #ifdef  DEBUG_WP
@@ -475,21 +421,19 @@ static void wpExecuteUnregisterUnsec(void)
             devYdx = WP(hdl).devYdx;
             funHdl = funYdxPtr[devYdx];
             while (funHdl != INVALID_BLK_HDL) {
-                YASSERT(YA(funHdl).blkId == YBLKID_YPARRAY);
+                YASSERT(YA(funHdl).blkId == YBLKID_YPARRAY, YA(funHdl).blkId);
                 nextHdl = YA(funHdl).nextPtr;
                 yBlkFree(funHdl);
                 funHdl = nextHdl;
             }
             funYdxPtr[devYdx] = INVALID_BLK_HDL;
             devYdxPtr[devYdx] = INVALID_BLK_HDL;
-#ifndef MICROCHIP_API
             if ((unsigned)nextDevYdx > devYdx) {
                 nextDevYdx = devYdx;
             }
             usedDevYdx[devYdx >> 4] &= ~ (u16)(1 << (devYdx & 15));
             //dbglog("wpUnregister serial=%X devYdx=%d (next=%d)\n", WP(hdl).serial, devYdx, nextDevYdx);
             freeDevYdxInfos(devYdx);
-#endif
             yBlkFree(hdl);
         } else {
             prev = hdl;
@@ -503,7 +447,7 @@ static void wpExecuteUnregisterUnsec(void)
 void wpPreventUnregisterEx(void)
 {
     yEnterCriticalSection(&yWpMutex);
-    YASSERT(wpLockCount < 128);
+    YASSERT(wpLockCount < 128, wpLockCount);
     wpLockCount++;
     yLeaveCriticalSection(&yWpMutex);
 }
@@ -511,7 +455,7 @@ void wpPreventUnregisterEx(void)
 void wpAllowUnregisterEx(void)
 {
     yEnterCriticalSection(&yWpMutex);
-    YASSERT(wpLockCount > 0);
+    YASSERT(wpLockCount > 0, wpLockCount);
     wpLockCount--;
     if (wpSomethingUnregistered && !wpLockCount) {
         wpExecuteUnregisterUnsec();
@@ -559,10 +503,9 @@ int wpRegister(int devYdx, yStrRef serial, yStrRef logicalName, yStrRef productN
 
     yEnterCriticalSection(&yWpMutex);
 
-    //YASSERT(devUrl != INVALID_HASH_IDX);
     hdl = yWpListHead;
     while (hdl != INVALID_BLK_HDL) {
-        YASSERT(WP(hdl).blkId == YBLKID_WPENTRY);
+        YASSERT(WP(hdl).blkId == YBLKID_WPENTRY, WP(hdl).blkId);
         if (WP(hdl).serial == serial) {
             break;
         }
@@ -572,9 +515,8 @@ int wpRegister(int devYdx, yStrRef serial, yStrRef logicalName, yStrRef productN
     if (hdl == INVALID_BLK_HDL) {
         hdl = yBlkAlloc();
         changed = 3;
-#ifndef MICROCHIP_API
         if (devYdx == -1) devYdx = nextDevYdx;
-        YASSERT(!(usedDevYdx[devYdx>>4] & (1 << (devYdx&15))));
+        YASSERT(!(usedDevYdx[devYdx>>4] & (1 << (devYdx&15))), devYdx);
         usedDevYdx[devYdx >> 4] |= 1 << (devYdx & 15);
         if (nextDevYdx == devYdx) {
             nextDevYdx++;
@@ -585,8 +527,7 @@ int wpRegister(int devYdx, yStrRef serial, yStrRef logicalName, yStrRef productN
         }
         //dbglog("wpRegister serial=%X(%s) devYdx=%d\n", serial,yHashGetStrPtr(serial), devYdx);
         initDevYdxInfos(devYdx, serial);
-#endif
-        YASSERT(devYdx < NB_MAX_DEVICES);
+        YASSERT(devYdx < NB_MAX_DEVICES, devYdx);
         devYdxPtr[devYdx] = hdl;
         WP(hdl).devYdx = (u8)devYdx;
         WP(hdl).blkId = YBLKID_WPENTRY;
@@ -601,18 +542,6 @@ int wpRegister(int devYdx, yStrRef serial, yStrRef logicalName, yStrRef productN
         } else {
             WP(prev).nextPtr = hdl;
         }
-#ifdef MICROCHIP_API
-    } else if(devYdx != -1 && WP(hdl).devYdx != devYdx) {
-        // allow change of devYdx based on hub role
-        u16 oldDevYdx = WP(hdl).devYdx;
-        if(oldDevYdx < NB_MAX_DEVICES) {
-            funYdxPtr[devYdx] = funYdxPtr[oldDevYdx];
-            funYdxPtr[oldDevYdx] = INVALID_BLK_HDL;
-            devYdxPtr[devYdx] = hdl;
-        }
-        devYdxPtr[oldDevYdx] = INVALID_BLK_HDL;
-        WP(hdl).devYdx  = (u8)devYdx;
-#endif
     }
     if (logicalName != INVALID_HASH_IDX) {
         if (WP(hdl).name != logicalName) {
@@ -752,7 +681,7 @@ int wpGetDevYdx(yStrRef serial)
     yEnterCriticalSection(&yWpMutex);
     hdl = yWpListHead;
     while (hdl != INVALID_BLK_HDL) {
-        YASSERT(WP(hdl).blkId == YBLKID_WPENTRY);
+        YASSERT(WP(hdl).blkId == YBLKID_WPENTRY, WP(hdl).blkId);
         if (WP(hdl).serial == serial) {
             res = WP(hdl).devYdx;
             break;
@@ -774,7 +703,7 @@ YAPI_DEVICE wpSearchEx(yStrRef strref)
     yEnterCriticalSection(&yWpMutex);
     hdl = yWpListHead;
     while (hdl != INVALID_BLK_HDL) {
-        YASSERT(WP(hdl).blkId == YBLKID_WPENTRY);
+        YASSERT(WP(hdl).blkId == YBLKID_WPENTRY, WP(hdl).blkId);
         if (WP(hdl).serial == strref) {
             res = strref;
             break;
@@ -810,7 +739,7 @@ YAPI_DEVICE wpSearchByNameHash(yStrRef strref)
     yEnterCriticalSection(&yWpMutex);
     hdl = yWpListHead;
     while (hdl != INVALID_BLK_HDL) {
-        YASSERT(WP(hdl).blkId == YBLKID_WPENTRY);
+        YASSERT(WP(hdl).blkId == YBLKID_WPENTRY, WP(hdl).blkId);
         if (WP(hdl).name == strref) {
             res = WP(hdl).serial;
             break;
@@ -830,7 +759,7 @@ int wpGetDeviceInfo(YAPI_DEVICE devdesc, u16* deviceid, char* productname, char*
 
     hdl = yWpListHead;
     while (hdl != INVALID_BLK_HDL) {
-        YASSERT(WP(hdl).blkId == YBLKID_WPENTRY);
+        YASSERT(WP(hdl).blkId == YBLKID_WPENTRY, WP(hdl).blkId);
         if (WP(hdl).serial == (u16)devdesc) {
             // entry found
             if (deviceid) *deviceid = WP(hdl).devid;
@@ -871,7 +800,7 @@ int ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, 
     // locate category node
     hdl = yYpListHead;
     while (hdl != INVALID_BLK_HDL) {
-        YASSERT(YC(hdl).blkId == YBLKID_YPCATEG);
+        YASSERT(YC(hdl).blkId == YBLKID_YPCATEG, YC(hdl).blkId);
         if (YC(hdl).name == categ) break;
         prev = hdl;
         hdl = YC(prev).nextPtr;
@@ -894,7 +823,7 @@ int ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, 
     prev = INVALID_BLK_HDL;
     hdl = YC(cat_hdl).entries;
     while (hdl != INVALID_BLK_HDL) {
-        YASSERT(YP(hdl).blkId >= YBLKID_YPENTRY && YP(hdl).blkId <= YBLKID_YPENTRYEND);
+        YASSERT(YP(hdl).blkId >= YBLKID_YPENTRY && YP(hdl).blkId <= YBLKID_YPENTRYEND, YP(hdl).blkId);
         if (YP(hdl).serialNum == serial && YP(hdl).funcId == funcId) break;
         prev = hdl;
         hdl = YP(prev).nextPtr;
@@ -941,7 +870,7 @@ int ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, 
             prev = INVALID_BLK_HDL;
             yahdl = funYdxPtr[devYdx];
             while (yahdl != INVALID_BLK_HDL) {
-                YASSERT(YA(yahdl).blkId == YBLKID_YPARRAY);
+                YASSERT(YA(yahdl).blkId == YBLKID_YPARRAY, YA(yahdl).blkId);
                 if (cnt < 6) break;
                 if (cnt < 255) {
                     // known funYdx
@@ -1027,10 +956,10 @@ int ypRegisterByYdx(u8 devYdx, Notification_funydx funInfo, const char* funcVal,
         }
         // Ignore unknown funYdx
         if (hdl != INVALID_BLK_HDL) {
-            YASSERT(YA(hdl).blkId == YBLKID_YPARRAY);
+            YASSERT(YA(hdl).blkId == YBLKID_YPARRAY, YA(hdl).blkId);
             hdl = YA(hdl).entries[funYdx];
             if (hdl != INVALID_BLK_HDL) {
-                YASSERT(YP(hdl).blkId >= YBLKID_YPENTRY && YP(hdl).blkId <= YBLKID_YPENTRYEND);
+                YASSERT(YP(hdl).blkId >= YBLKID_YPENTRY && YP(hdl).blkId <= YBLKID_YPENTRYEND, YP(hdl).blkId);
                 if (funcVal) {
                     // apply value change
                     for (i = 0; i < YOCTO_PUBVAL_SIZE / 2; i++) {
@@ -1095,10 +1024,10 @@ int ypGetAttributesByYdx(u8 devYdx, u8 funYdx, yStrRef* serial, yStrRef* logical
         }
         // Ignore unknown funYdx
         if (hdl != INVALID_BLK_HDL) {
-            YASSERT(YA(hdl).blkId == YBLKID_YPARRAY);
+            YASSERT(YA(hdl).blkId == YBLKID_YPARRAY, YA(hdl).blkId);
             hdl = YA(hdl).entries[funYdx];
             if (hdl != INVALID_BLK_HDL) {
-                YASSERT(YP(hdl).blkId >= YBLKID_YPENTRY && YP(hdl).blkId <= YBLKID_YPENTRYEND);
+                YASSERT(YP(hdl).blkId >= YBLKID_YPENTRY && YP(hdl).blkId <= YBLKID_YPENTRYEND, YP(hdl).blkId);
                 if (baseclass) {
                     *baseclass = YP(hdl).blkId - YBLKID_YPENTRY;
                 }
@@ -1195,12 +1124,12 @@ static void ypUnregister(yStrRef serial)
     // scan all category nodes
     cat_hdl = yYpListHead;
     while (cat_hdl != INVALID_BLK_HDL) {
-        YASSERT(YC(cat_hdl).blkId == YBLKID_YPCATEG);
+        YASSERT(YC(cat_hdl).blkId == YBLKID_YPCATEG, YC(cat_hdl).blkId);
         hdl = YC(cat_hdl).entries;
         prev = INVALID_BLK_HDL;
         // scan all yp entries
         while (hdl != INVALID_BLK_HDL) {
-            YASSERT(YP(hdl).blkId >= YBLKID_YPENTRY && YP(hdl).blkId <= YBLKID_YPENTRYEND);
+            YASSERT(YP(hdl).blkId >= YBLKID_YPENTRY && YP(hdl).blkId <= YBLKID_YPENTRYEND, YP(hdl).blkId);
             next = YP(hdl).nextPtr;
             if (YP(hdl).serialNum == serial) {
                 // entry found, remove it
@@ -1231,7 +1160,7 @@ int ypSearchByDevYdx(u8 devYdx, yStrRef strref)
     yEnterCriticalSection(&yYpMutex);
     yahdl = funYdxPtr[devYdx];
     while (yahdl != INVALID_BLK_HDL) {
-        YASSERT(YA(yahdl).blkId == YBLKID_YPARRAY);
+        YASSERT(YA(yahdl).blkId == YBLKID_YPARRAY, YA(yahdl).blkId);
         for (i = 0; i < 6; i++) {
             yBlkHdl hdl = YA(yahdl).entries[i];
             if (hdl == INVALID_BLK_HDL) {
@@ -1291,7 +1220,6 @@ int ypFunctionCount(u8 devYdx)
     return res;
 }
 
-#ifndef MICROCHIP_API
 
 YAPI_FUNCTION ypSearch(const char* class_str, const char* func_or_name)
 {
@@ -1318,7 +1246,7 @@ YAPI_FUNCTION ypSearch(const char* class_str, const char* func_or_name)
         yEnterCriticalSection(&yYpMutex);
         cat_hdl = yYpListHead;
         while (cat_hdl != INVALID_BLK_HDL) {
-            YASSERT(YC(cat_hdl).blkId == YBLKID_YPCATEG);
+            YASSERT(YC(cat_hdl).blkId == YBLKID_YPCATEG, YC(cat_hdl).blkId);
             if (YC(cat_hdl).name == categref) break;
             cat_hdl = YC(cat_hdl).nextPtr;
         }
@@ -1349,7 +1277,7 @@ YAPI_FUNCTION ypSearch(const char* class_str, const char* func_or_name)
             // search by pure logical name within abstract basetype
             hdl = INVALID_BLK_HDL;
             for (cat_hdl = yYpListHead; cat_hdl != INVALID_BLK_HDL; cat_hdl = YC(cat_hdl).nextPtr) {
-                YASSERT(YC(cat_hdl).blkId == YBLKID_YPCATEG);
+                YASSERT(YC(cat_hdl).blkId == YBLKID_YPCATEG, YC(cat_hdl).blkId);
                 hdl = YC(cat_hdl).entries;
                 while (hdl != INVALID_BLK_HDL) {
                     // check functions matching abstract baseclass, skip others
@@ -1393,7 +1321,7 @@ YAPI_FUNCTION ypSearch(const char* class_str, const char* func_or_name)
         yEnterCriticalSection(&yWpMutex);
         hdl = yWpListHead;
         while (hdl != INVALID_BLK_HDL) {
-            YASSERT(WP(hdl).blkId == YBLKID_WPENTRY);
+            YASSERT(WP(hdl).blkId == YBLKID_WPENTRY, WP(hdl).blkId);
             if (WP(hdl).serial == devref) break;
             if (WP(hdl).name == devref) byname = hdl;
             hdl = WP(hdl).nextPtr;
@@ -1426,7 +1354,7 @@ YAPI_FUNCTION ypSearch(const char* class_str, const char* func_or_name)
     } else {
         // search by pure logical name within abstract basetype
         for (cat_hdl = yYpListHead; cat_hdl != INVALID_BLK_HDL; cat_hdl = YC(cat_hdl).nextPtr) {
-            YASSERT(YC(cat_hdl).blkId == YBLKID_YPCATEG);
+            YASSERT(YC(cat_hdl).blkId == YBLKID_YPCATEG, YC(cat_hdl).blkId);
             hdl = YC(cat_hdl).entries;
             while (hdl != INVALID_BLK_HDL) {
                 // check functions matching abstract baseclass, skip others
@@ -1478,7 +1406,7 @@ int ypGetFunctions(const char* class_str, YAPI_DEVICE devdesc, YAPI_FUNCTION pre
     }
     yEnterCriticalSection(&yYpMutex);
     for (cat_hdl = yYpListHead; cat_hdl != INVALID_BLK_HDL; cat_hdl = YC(cat_hdl).nextPtr) {
-        YASSERT(YC(cat_hdl).blkId == YBLKID_YPCATEG);
+        YASSERT(YC(cat_hdl).blkId == YBLKID_YPCATEG, YC(cat_hdl).blkId);
         if (categref == INVALID_HASH_IDX) {
             // search any type of function, but skip Module
             if (YC(cat_hdl).name == YSTRREF_MODULE_STRING) continue;
@@ -1520,7 +1448,6 @@ int ypGetFunctions(const char* class_str, YAPI_DEVICE devdesc, YAPI_FUNCTION pre
     return nbreturned;
 }
 
-#endif
 
 // This function should only be called after seizing ypMutex
 static yBlkHdl functionSearch(YAPI_FUNCTION fundesc)
@@ -1541,7 +1468,7 @@ static yBlkHdl functionSearch(YAPI_FUNCTION fundesc)
 
     cat_hdl = yYpListHead;
     while (cat_hdl != INVALID_BLK_HDL) {
-        YASSERT(YC(cat_hdl).blkId == YBLKID_YPCATEG);
+        YASSERT(YC(cat_hdl).blkId == YBLKID_YPCATEG, YC(cat_hdl).blkId);
         if (YC(cat_hdl).name == categref) break;
         cat_hdl = YC(cat_hdl).nextPtr;
     }
@@ -1610,7 +1537,7 @@ int ypGetFunctionsEx(yStrRef categref, YAPI_DEVICE devdesc, YAPI_FUNCTION prevfu
     }
     yEnterCriticalSection(&yYpMutex);
     for (cat_hdl = yYpListHead; cat_hdl != INVALID_BLK_HDL; cat_hdl = YC(cat_hdl).nextPtr) {
-        YASSERT(YC(cat_hdl).blkId == YBLKID_YPCATEG);
+        YASSERT(YC(cat_hdl).blkId == YBLKID_YPCATEG, YC(cat_hdl).blkId);
         if (categref == INVALID_HASH_IDX) {
             // search any type of function, but skip Module
             if (YC(cat_hdl).name == YSTRREF_MODULE_STRING) continue;
@@ -1683,57 +1610,6 @@ s16 ypFindBootloaders(yStrRef* serials, u16 maxSerials)
 
     return res;
 }
-
-#ifdef MICROCHIP_API
-int ypGetBootDevHdl(const char *serial)
-{
-    yBlkHdl cat_hdl, hdl;
-    yStrRef serialRef;
-    char    funcid[9];
-    s16     devYdx;
-
-    serialRef = yHashTestStr(serial);
-    if(serialRef == INVALID_HASH_IDX)
-        return -1; // unknown serial
-
-    // search for the category node
-    yEnterCriticalSection(&yYpMutex);
-    cat_hdl = yYpListHead;
-    while(cat_hdl != INVALID_BLK_HDL) {
-        if(YC(cat_hdl).name == YSTRREF_HUBPORT_STRING) break;
-        cat_hdl = YC(cat_hdl).nextPtr;
-    }
-    yLeaveCriticalSection(&yYpMutex);
-    if(cat_hdl == INVALID_BLK_HDL)
-        return -2; // no hubPort registered so far
-
-    yEnterCriticalSection(&yYpMutex);
-    hdl = YC(cat_hdl).entries;
-    while(hdl != INVALID_BLK_HDL) {
-        if(YP(hdl).funcName == serialRef &&
-           YP(hdl).funcValWords[0] == WORD_TEXT_PR &&
-           YP(hdl).funcValWords[1] == WORD_TEXT_OG) {
-            break;
-        }
-        hdl = YP(hdl).nextPtr;
-    }
-    yLeaveCriticalSection(&yYpMutex);
-    if(hdl == INVALID_BLK_HDL)
-        return -3; // serial not connected in PROG mode
-
-    yHashGetStr(YP(hdl).funcId, funcid, sizeof(funcid));
-    if(funcid[7] <'1' || funcid[7] > '4')
-        return -3; // invalid function id
-    devYdx = wpGetDevYdx(YP(hdl).serialNum);
-    if(devYdx == hubDevYdx) {
-        // The 3 root ports use devhdl 0-2
-        return funcid[7] - '1';
-    }
-
-    // ports on shield use hub devYdx+(1..4)
-    return devYdx + funcid[7] - '0';
-}
-#endif
 
 
 // Network notification format: 7x7bit (mapped to 7 chars in range 32..159)

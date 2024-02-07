@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yfifo.h 44972 2021-05-10 10:37:52Z web $
+ * $Id: yfifo.h 49591 2022-04-28 12:47:10Z mvuilleu $
  *
   * Declaration of a generic fifo queue
  *
@@ -40,7 +40,7 @@
 #define YFIFO_H
 #include "ydef.h"
 
-#ifndef MICROCHIP_API
+#if !defined(MICROCHIP_API) && (defined(FREERTOS_API) || !defined(TEXAS_API))
 #define YFIFO_USE_MUTEX
 #endif
 
@@ -79,7 +79,7 @@ typedef struct {
 
 #ifdef DEBUG_FIFO
 void 	yFifoInitEx(const char* fileid,int line, yFifoBuf *buf, u8 *buffer, u16 bufflen);
-#define yFifoInit(fifo,buffer,len)  yFifoInitEx(__FILE_ID__,__LINE__,fifo,buffer,len);
+#define yFifoInit(fifo,buffer,len)  yFifoInitEx(__FILENAME__,__LINE__,fifo,buffer,len);
 #else
 void yFifoInitEx(yFifoBuf* buf, u8* buffer, u16 bufflen);
 #define yFifoInit(fifo,buffer,len)  yFifoInitEx(fifo,buffer,len);
@@ -100,6 +100,8 @@ u16 yPeekContinuousFifoEx(yFifoBuf* buf, u8** ptr, u16 startofs);
 u16 ySeekFifoEx(yFifoBuf* buf, const u8* pattern, u16 patlen, u16 startofs, u16 searchlen, u8 bTextCompare);
 u16 yFifoGetUsedEx(yFifoBuf* buf);
 u16 yFifoGetFreeEx(yFifoBuf* buf);
+u16 yForceFifoEx(yFifoBuf* buf, const u8* data, u16 datalen);
+
 u16 yForceFifo(yFifoBuf* buf, const u8* data, u16 datalen, u32* absCounter);
 
 #ifdef YFIFO_USE_MUTEX

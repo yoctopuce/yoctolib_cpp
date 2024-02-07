@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_magnetometer.cpp 52567 2022-12-25 12:00:14Z seb $
+ *  $Id: yocto_magnetometer.cpp 52570 2022-12-26 09:27:54Z seb $
  *
  *  Implements yFindMagnetometer(), the high-level API for Magnetometer functions
  *

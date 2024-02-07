@@ -1,13 +1,13 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 56134 2023-08-16 17:30:19Z mvuilleu $
+ *  $Id: svn_id $
  *
  *  An example that show how to use a  Yocto-SDI12
  *
  *  You can find more information on our web site:
  *   Yocto-SDI12 documentation:
  *      https://www.yoctopuce.com/EN/products/yocto-sdi12/doc.html
- *   C++ API Reference:
+ *   C++ V2 API Reference:
  *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
  *
  *********************************************************************/

@@ -1,13 +1,13 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 38820 2019-12-18 18:01:14Z seb $
+ *  $Id: main.cpp 55933 2023-08-08 08:09:22Z seb $
  *
  *  An example that show how to use a  Yocto-Volt
  *
  *  You can find more information on our web site:
  *   Yocto-Volt documentation:
  *      https://www.yoctopuce.com/EN/products/yocto-volt/doc.html
- *   C++ API Reference:
+ *   C++ V2 API Reference:
  *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
  *
  *********************************************************************/

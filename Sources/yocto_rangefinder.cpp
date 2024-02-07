@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_rangefinder.cpp 52848 2023-01-20 15:49:48Z mvuilleu $
+ *  $Id: yocto_rangefinder.cpp 53034 2023-02-02 10:16:55Z seb $
  *
  *  Implements yFindRangeFinder(), the high-level API for RangeFinder functions
  *

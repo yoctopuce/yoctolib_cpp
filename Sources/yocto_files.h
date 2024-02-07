@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.h 54767 2023-05-26 06:45:48Z seb $
+ * $Id: yocto_files.h 54774 2023-05-26 08:51:38Z seb $
  *
  * Declares yFindFiles(), the high-level API for Files functions
  *

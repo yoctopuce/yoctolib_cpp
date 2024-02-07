@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_i2cport.h 52848 2023-01-20 15:49:48Z mvuilleu $
+ *  $Id: yocto_i2cport.h 58920 2024-01-12 09:39:03Z seb $
  *
  *  Declares yFindI2cPort(), the high-level API for I2cPort functions
  *
@@ -100,6 +100,7 @@ class YOCTO_CLASS_EXPORT YI2cSnoopingRecord {
     //--- (generated code: YI2cSnoopingRecord attributes)
     // Attributes (function value cache)
     int             _tim;
+    int             _pos;
     int             _dir;
     string          _msg;
     //--- (end of generated code: YI2cSnoopingRecord attributes)
@@ -122,6 +123,13 @@ public:
      * @return the elapsed time, in ms, since the beginning of the preceding message.
      */
     virtual int         get_time(void);
+
+    /**
+     * Returns the absolute position of the message end.
+     *
+     * @return the absolute position of the message end.
+     */
+    virtual int         get_pos(void);
 
     /**
      * Returns the message direction (RX=0, TX=1).

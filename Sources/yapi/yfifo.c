@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yfifo.c 45874 2021-08-05 13:25:20Z mvuilleu $
+ * $Id: yfifo.c 49591 2022-04-28 12:47:10Z mvuilleu $
  *
  * Implementation of a generic fifo queue
  *
@@ -36,16 +36,20 @@
  *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
-#define __FILE_ID__  "yfifo"
 
-#include "ydef.h"
+#include "ydef_private.h"
+#define __FILE_ID__     MK_FILEID('F','I','F')
+#define __FILENAME__   "yfifo"
 
-#if defined(MICROCHIP_API)
-#include "api.h"
+#if defined(EMBEDDED_API)
+#include "yocto.h"
 #else
-#include "yfifo.h"
-#include "yproto.h"
+//#include "yproto.h"
 #endif
+#include <string.h>
+#include "yfifo.h"
+#include "ymemory.h"
+
 
 void yFifoInitEx(
 #ifdef DEBUG_FIFO
@@ -126,7 +130,7 @@ u16 yPushFifoEx(yFifoBuf* buf, const u8* data, u16 datalen)
         // max 64byte long)
         return 0;
     }
-    //append data to our fifo buffer    
+    //append data to our fifo buffer
     if (fifoTail + datalen <= fifoEnd) {
         memcpy(fifoTail, data, datalen);
         fifoTail += datalen;
@@ -212,7 +216,7 @@ u16 yPopFifo(yFifoBuf* buf, u8* data, u16 datalen)
 #endif
 
 
-static u16 yForceFifoEx(yFifoBuf* buf, const u8* data, u16 datalen)
+u16 yForceFifoEx(yFifoBuf* buf, const u8* data, u16 datalen)
 {
     u16 buffsize = buf->buffsize;
     u16 freespace = buffsize - buf->datasize;
@@ -504,7 +508,7 @@ void decodePubVal(Notification_funydx funInfo, const char* funcval, char* buffer
             numVal += (s32)*p++ << 8;
             numVal += (s32)*p++ << 16;
             numVal += (s32)*p++ << 24;
-#ifdef MICROCHIP_API
+#ifdef EMBEDDED_API
                 if(funcValType == PUBVAL_C_LONG) {
                     s32toa(numVal, buffer);
                 } else {
@@ -529,7 +533,7 @@ void decodePubVal(Notification_funydx funInfo, const char* funcval, char* buffer
         case PUBVAL_C_FLOAT:
             // 32bit (short) float
             memcpy(&floatVal, p, sizeof(floatVal));
-#ifdef MICROCHIP_API
+#ifdef EMBEDDED_API
                 dectoa(floatVal*1000.0, buffer, YOCTO_PUBVAL_LEN-1, 1);
 #else
             {

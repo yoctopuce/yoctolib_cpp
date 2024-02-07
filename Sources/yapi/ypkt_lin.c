@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_lin.c 39066 2020-01-03 15:49:30Z seb $
+ * $Id: ypkt_lin.c 49591 2022-04-28 12:47:10Z mvuilleu $
  *
  * OS-specific USB packet layer, Linux version
  *
@@ -37,7 +37,10 @@
  *
  *********************************************************************/
 
-#define __FILE_ID__  "ypkt_lin"
+#include "ydef_private.h"
+#define __FILE_ID__     MK_FILEID('P','K','T')
+#define __FILENAME__   "ypkt_lin"
+
 #include "yapi.h"
 #ifdef LINUX_API
 #include "yproto.h"
@@ -323,7 +326,7 @@ int yyyUSB_stop(yContextSt *ctx,char *errmsg)
         ctx->usb_thread_state = USB_THREAD_MUST_STOP;
         pthread_join(ctx->usb_thread,NULL);
     }
-    YASSERT(ctx->usb_thread_state == USB_THREAD_STOPED);
+    YASSERT(ctx->usb_thread_state == USB_THREAD_STOPED, ctx->usb_thread_state);
 
     libusb_exit(ctx->libusb);
     yReleaseGlobalAccess(ctx);
@@ -568,7 +571,7 @@ static void wr_callback(struct libusb_transfer *transfer)
         HALLOG("CBwr:drop invalid ypkt wr_callback (iface is null)\n");
         return;
     }
-    YASSERT(transfer == lintr->tr);
+    YASSERT(transfer == lintr->tr, (u8*)transfer-(u8*)NULL);
 
     switch(transfer->status) {
     case LIBUSB_TRANSFER_COMPLETED:

@@ -1,13 +1,13 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 48374 2022-01-28 15:44:48Z mvuilleu $
+ *  $Id: main.cpp 52593 2023-01-03 15:21:36Z seb $
  *
  *  An example that show how to use a  Yocto-I2C
  *
  *  You can find more information on our web site:
  *   Yocto-I2C documentation:
  *      https://www.yoctopuce.com/EN/products/yocto-i2c/doc.html
- *   C++ API Reference:
+ *   C++ V2 API Reference:
  *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
  *
  *********************************************************************/

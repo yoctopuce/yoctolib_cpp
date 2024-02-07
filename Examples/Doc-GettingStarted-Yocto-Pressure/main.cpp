@@ -1,13 +1,13 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 44692 2021-04-26 12:17:53Z seb $
+ *  $Id: main.cpp 44664 2021-04-23 09:45:05Z seb $
  *
  *  An example that show how to use a  Yocto-Pressure
  *
  *  You can find more information on our web site:
  *   Yocto-Pressure documentation:
  *      https://www.yoctopuce.com/EN/products/yocto-pressure/doc.html
- *   C++ API Reference:
+ *   C++ V2 API Reference:
  *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
  *
  *********************************************************************/

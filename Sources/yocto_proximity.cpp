@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_proximity.cpp 52567 2022-12-25 12:00:14Z seb $
+ *  $Id: yocto_proximity.cpp 52570 2022-12-26 09:27:54Z seb $
  *
  *  Implements yFindProximity(), the high-level API for Proximity functions
  *

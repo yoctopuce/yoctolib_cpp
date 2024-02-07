@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 54296 2023-05-01 13:02:44Z seb $
+ * $Id: yproto.h 59193 2024-02-05 10:07:10Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -40,7 +40,7 @@
 #ifndef  YPROTO_H
 #define  YPROTO_H
 
-#include "ydef.h"
+#include "ydef_private.h"
 #ifdef WINDOWS_API
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x400
@@ -171,7 +171,6 @@ typedef struct {
  ****************************************************************************/
 
 #include "yfifo.h"
-#include "yhash.h"
 #include "ykey.h"
 #include <stdlib.h>
 #include <stdarg.h>
@@ -185,14 +184,14 @@ typedef struct {
 
 #include "ymemory.h"
 #ifdef YSAFE_MEMORY
-#define yMalloc(size)                   ySafeMalloc(__FILE_ID__,__LINE__,size)
-#define yFree(ptr)                      {ySafeFree(__FILE_ID__,__LINE__,ptr);ptr=NULL;}
-#define yTracePtr(ptr)                  ySafeTrace(__FILE_ID__,__LINE__,ptr)
+#define yMalloc(size)                   ySafeMalloc(__FILENAME__,__LINE__,size)
+#define yFree(ptr)                      {ySafeFree(__FILENAME__,__LINE__,ptr);ptr=NULL;}
+#define yTracePtr(ptr)                  ySafeTrace(__FILENAME__,__LINE__,ptr)
 #ifndef YMEMORY_ALLOW_MALLOC
 #undef malloc
 #undef free
-#define malloc(size)                    yForbiden_malloc(size)
-#define free(ptr)                       yForbiden_free(ptr)
+#define malloc(size)                    yForbiden_SafeMalloc(size)
+#define free(ptr)                       yForbiden_SafeFree(ptr)
 #endif
 #else
 #define yMalloc(size)                   malloc(size)
@@ -237,8 +236,6 @@ typedef struct {
 #define YSTRNCPY(dst,dstsize,src,len)       ystrncpy_s(dst,dstsize,src,len)
 #define YSPRINTF                            ysprintf_s
 #define YVSPRINTF                           yvsprintf_s
-char* ystrdup_s(const char* src);
-char* ystrndup_s(const char* src, unsigned len);
 YRETCODE ystrcpy_s(char* dst, unsigned dstsize, const char* src);
 YRETCODE ystrncpy_s(char* dst, unsigned dstsize, const char* src, unsigned len);
 YRETCODE ystrcat_s(char* dst, unsigned dstsize, const char* src);
@@ -393,7 +390,7 @@ int vdbglogf(const char* fileid, int line, const char* fmt, va_list args);
 int dbglogf(const char* fileid, int line, const char* fmt, ...);
 #if defined(_MSC_VER)
 #if (_MSC_VER > MSC_VS2003)
-#define dbglog(...)      dbglogf(__FILE_ID__,__LINE__, __VA_ARGS__)
+#define dbglog(...)      dbglogf(__FILENAME__,__LINE__, __VA_ARGS__)
 #else
 __forceinline int __dbglog(const char* fmt,...) {
     int len;
@@ -407,7 +404,7 @@ __forceinline int __dbglog(const char* fmt,...) {
 #define dbglog __dbglog
 #endif
 #else
-#define dbglog(args...)  dbglogf(__FILE_ID__,__LINE__, ## args)
+#define dbglog(args...)  dbglogf(__FILENAME__,__LINE__, ## args)
 #endif
 
 
@@ -415,9 +412,6 @@ __forceinline int __dbglog(const char* fmt,...) {
 void dumpAnyPacket(char *prefix,int ifaceno,USB_Packet *pkt);
 #endif
 
-
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
 
 /*****************************************************************************
  MISC DEFINITION
@@ -437,26 +431,18 @@ void dumpAnyPacket(char *prefix,int ifaceno,USB_Packet *pkt);
 int YFOPEN(FILE** f, const char *filename, const char *mode);
 #endif
 
-#if 0
-#if defined(WINDOWS_API) && (_MSC_VER)
-#define YDEBUG_BREAK { __debugbreak();}
-#else
-#define YDEBUG_BREAK  {__asm__("int3");}
-#endif
-#else
-#define YDEBUG_BREAK {}
-#endif
 
-#define YPANIC                  {dbglog("YPANIC:%s:%d\n",__FILE_ID__ , __LINE__);YDEBUG_BREAK}
-#define YASSERT(x)              if(!(x)){dbglog("ASSERT FAILED:%s:%d\n",__FILE_ID__ , __LINE__);YDEBUG_BREAK}
 #define YPROPERR(call)          {int tmpres=(call); if(YISERR(tmpres)) {return (YRETCODE)tmpres;}}
-#define YERR(code)              ySetErr(code,errmsg,NULL,__FILE_ID__,__LINE__)
-#define YERRTO(code,buffer)     ySetErr(code,buffer,NULL,__FILE_ID__,__LINE__)
-#define YERRMSG(code,message)   ySetErr(code,errmsg,message,__FILE_ID__,__LINE__)
+#define YERR(code)              ySetErr(code,errmsg,NULL,__FILENAME__,__LINE__)
+#define YERRTO(code,buffer)     ySetErr(code,buffer,NULL,__FILENAME__,__LINE__)
+#define YERRMSG(code,message)   ySetErr(code,errmsg,message,__FILENAME__,__LINE__)
 #define YERRMSGSILENT(code,message)   ySetErr(code, errmsg, message, NULL, 0)
-#define YERRMSGTO(code,message,buffer)   ySetErr(code,buffer,message,__FILE_ID__,__LINE__)
+
+#define YERRMSGTO(code,message,buffer)   ySetErr(code,buffer,message,__FILENAME__,__LINE__)
+
 int ySetErr(int code, char* outmsg, const char* erreur, const char* file, u32 line);
 int FusionErrmsg(int code, char* errmsg, const char* generr, const char* detailerr);
+u32 decodeHex(const char* p, int nbdigit);
 
 
 /*****************************************************************************
@@ -777,14 +763,13 @@ typedef struct _WSChanSt {
 typedef struct _WSNetHubSt {
     enum WS_BASE_STATE base_state;
     enum WS_BASE_STATE strym_state;
-    char serial[YOCTO_SERIAL_LEN];
     char websocket_key[32];
     int websocket_key_len;
     int remoteVersion;
     u32 remoteNounce;
     u32 nounce;
     int s_next_async_id;
-    YSOCKET skt;
+    YSOCKET_MULTI skt;
     yFifoBuf mainfifo;
     u64 bws_open_tm;
     u64 bws_timeout_tm;
@@ -850,7 +835,7 @@ typedef struct _HubSt {
     int mandatory;
     int writeProtected; // admin password detected
     u64 notConLastAlive;
-    yStrRef serial;
+    yStrRef serial_hash;
     WakeUpSocket wuce;
     yThread net_thread;
     NET_HUB_STATE state;
@@ -888,8 +873,8 @@ typedef struct _HubSt {
 #define HTTP_crlfcrlf_len                     4
 
 typedef struct _HTTPReqSt {
-    YSOCKET skt; // socket used to talk to the device
-    YSOCKET reuseskt; // socket to reuse for next query, when keep alive is true
+    YSOCKET_MULTI skt; // socket used to talk to the device
+    YSOCKET_MULTI reuseskt; // socket to reuse for next query, when keep alive is true
 } HTTPReqSt;
 
 typedef enum {
@@ -1009,6 +994,7 @@ typedef struct {
     yCRITICAL_SECTION io_cs;
     YIOHDL_internal* yiohdl_first;
     u32 io_counter;
+    u32 sslCertOptions;
     // network discovery info
     HubSt* nethub[NBMAX_NET_HUB];
     RequestSt* tcpreq[ALLOC_YDX_PER_HUB]; // indexed by our own DevYdx
@@ -1073,7 +1059,7 @@ void WakeUpAllSleep(void);
 YRETCODE yapiPullDeviceLogEx(int devydx);
 YRETCODE yapiPullDeviceLog(const char* serial);
 YRETCODE yapiRequestOpen(YIOHDL_internal* iohdl, int tpchan, const char* device, const char* request, int reqlen, yapiRequestAsyncCallback callback, void* context, yapiRequestProgressCallback progress_cb, void* progress_ctx, char* errmsg);
-
+int LoadInfoJson(HubSt* hub, char* errmsg);
 /*****************************************************************
  * PLATFORM SPECIFIC USB code
 *****************************************************************/
@@ -1165,4 +1151,13 @@ void yFunctionTimedUpdate(YAPI_FUNCTION fundescr, u64 deviceTime, u64 freq, cons
 int yapiJsonGetPath_internal(const char* path, const char* json_data, int json_size, int withHTTPheader, const char** output, char* errmsg);
 void request_pending_logs(HubSt* hub);
 u32 decodeHex(const char* p, int nbdigit);
+
+#if defined(WINDOWS_API)
+#define ylocaltime               localtime_s
+#define ygmtime                  gmtime_s
+#else
+int ylocaltime(struct tm* _out, const time_t* time);
+int ygmtime(struct tm* _out, const time_t* time);
+#endif
+
 #endif

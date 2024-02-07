@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_network.cpp 53886 2023-04-05 08:06:39Z mvuilleu $
+ *  $Id: yocto_network.cpp 54332 2023-05-02 08:35:37Z seb $
  *
  *  Implements yFindNetwork(), the high-level API for Network functions
  *
@@ -68,6 +68,7 @@ YNetwork::YNetwork(const string& func): YFunction(func)
     ,_userPassword(USERPASSWORD_INVALID)
     ,_adminPassword(ADMINPASSWORD_INVALID)
     ,_httpPort(HTTPPORT_INVALID)
+    ,_httpsPort(HTTPSPORT_INVALID)
     ,_defaultPage(DEFAULTPAGE_INVALID)
     ,_discoverable(DISCOVERABLE_INVALID)
     ,_wwwWatchdogDelay(WWWWATCHDOGDELAY_INVALID)
@@ -150,6 +151,9 @@ int YNetwork::_parseAttr(YJSONObject *json_val)
     }
     if(json_val->has("httpPort")) {
         _httpPort =  json_val->getInt("httpPort");
+    }
+    if(json_val->has("httpsPort")) {
+        _httpsPort =  json_val->getInt("httpsPort");
     }
     if(json_val->has("defaultPage")) {
         _defaultPage =  json_val->getString("defaultPage");
@@ -788,6 +792,62 @@ int YNetwork::set_httpPort(int newval)
     try {
         char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("httpPort", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the secure TCP port used to serve the hub web UI.
+ *
+ * @return an integer corresponding to the secure TCP port used to serve the hub web UI
+ *
+ * On failure, throws an exception or returns YNetwork::HTTPSPORT_INVALID.
+ */
+int YNetwork::get_httpsPort(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::HTTPSPORT_INVALID;
+                }
+            }
+        }
+        res = _httpsPort;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the secure TCP port used to serve the hub web UI. The default value is port 4443,
+ * which is the default for all Web servers. When you change this parameter, remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
+ *
+ * @param newval : an integer corresponding to the secure TCP port used to serve the hub web UI
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YNetwork::set_httpsPort(int newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
+        res = _setAttr("httpsPort", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;

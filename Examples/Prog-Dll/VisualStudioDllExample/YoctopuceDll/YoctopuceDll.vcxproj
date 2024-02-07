@@ -48,7 +48,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;YOCTOPUCEDLL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NO_YSSL;WIN32;_DEBUG;_WINDOWS;_USRDLL;YOCTOPUCEDLL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -84,6 +84,7 @@
     <ClInclude Include="..\..\..\..\Sources\yapi\ymemory.h" />
     <ClInclude Include="..\..\..\..\Sources\yapi\yprog.h" />
     <ClInclude Include="..\..\..\..\Sources\yapi\yproto.h" />
+    <ClInclude Include="..\..\..\..\Sources\yapi\yssl.h" />
     <ClInclude Include="..\..\..\..\Sources\yapi\ytcp.h" />
     <ClInclude Include="..\..\..\..\Sources\yapi\ythread.h" />
     <ClInclude Include="..\..\..\..\Sources\yapi\yversion.h" />
@@ -148,6 +149,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Sources\yapi\yprog.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Sources\yapi\yssl.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Sources\yapi\ystream.c">
@@ -261,9 +265,6 @@
     <ClCompile Include="YoctopuceDll.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="..\..\..\..\Sources\yapi\yapiresource.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

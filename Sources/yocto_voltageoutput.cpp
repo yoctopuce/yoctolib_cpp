@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_voltageoutput.cpp 52567 2022-12-25 12:00:14Z seb $
+ *  $Id: yocto_voltageoutput.cpp 52570 2022-12-26 09:27:54Z seb $
  *
  *  Implements yFindVoltageOutput(), the high-level API for VoltageOutput functions
  *

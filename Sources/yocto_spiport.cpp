@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.cpp 54278 2023-04-28 10:10:10Z seb $
+ *  $Id: yocto_spiport.cpp 58920 2024-01-12 09:39:03Z seb $
  *
  *  Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -57,6 +57,7 @@ using namespace YOCTOLIB_NAMESPACE;
 YSpiSnoopingRecord::YSpiSnoopingRecord(const string& json):
 //--- (generated code: YSpiSnoopingRecord initialization)
     _tim(0)
+    ,_pos(0)
     ,_dir(0)
 //--- (end of generated code: YSpiSnoopingRecord initialization)
 {
@@ -85,6 +86,11 @@ YSpiSnoopingRecord::YSpiSnoopingRecord(const string& json):
                 return;
             }
             _tim = atoi(j.token);;
+        } else if(!strcmp(j.token, "p")) {
+            if (yJsonParse(&j) != YJSON_PARSE_AVAIL) {
+                return;
+            }
+            _pos = atoi(j.token);;
         } else {
             yJsonSkip(&j, 1);
         }
@@ -103,6 +109,16 @@ YSpiSnoopingRecord::YSpiSnoopingRecord(const string& json):
 int YSpiSnoopingRecord::get_time(void)
 {
     return _tim;
+}
+
+/**
+ * Returns the absolute position of the message end.
+ *
+ * @return the absolute position of the message end.
+ */
+int YSpiSnoopingRecord::get_pos(void)
+{
+    return _pos;
 }
 
 /**

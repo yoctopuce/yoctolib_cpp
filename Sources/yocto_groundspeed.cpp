@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_groundspeed.cpp 43580 2021-01-26 17:46:01Z mvuilleu $
+ *  $Id: yocto_groundspeed.cpp 44049 2021-02-26 10:57:40Z web $
  *
  *  Implements yFindGroundSpeed(), the high-level API for GroundSpeed functions
  *

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwmoutput.cpp 52567 2022-12-25 12:00:14Z seb $
+ *  $Id: yocto_pwmoutput.cpp 58920 2024-01-12 09:39:03Z seb $
  *
  *  Implements yFindPwmOutput(), the high-level API for PwmOutput functions
  *
@@ -61,6 +61,7 @@ YPwmOutput::YPwmOutput(const string& func): YFunction(func)
     ,_dutyCycle(DUTYCYCLE_INVALID)
     ,_pulseDuration(PULSEDURATION_INVALID)
     ,_pwmTransition(PWMTRANSITION_INVALID)
+    ,_invertedOutput(INVERTEDOUTPUT_INVALID)
     ,_enabledAtPowerOn(ENABLEDATPOWERON_INVALID)
     ,_dutyCycleAtPowerOn(DUTYCYCLEATPOWERON_INVALID)
     ,_valueCallbackPwmOutput(NULL)
@@ -102,6 +103,9 @@ int YPwmOutput::_parseAttr(YJSONObject *json_val)
     }
     if(json_val->has("pwmTransition")) {
         _pwmTransition =  json_val->getString("pwmTransition");
+    }
+    if(json_val->has("invertedOutput")) {
+        _invertedOutput =  (Y_INVERTEDOUTPUT_enum)json_val->getInt("invertedOutput");
     }
     if(json_val->has("enabledAtPowerOn")) {
         _enabledAtPowerOn =  (Y_ENABLEDATPOWERON_enum)json_val->getInt("enabledAtPowerOn");
@@ -425,6 +429,64 @@ int YPwmOutput::set_pwmTransition(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("pwmTransition", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns true if the output signal is configured as inverted, and false otherwise.
+ *
+ * @return either YPwmOutput::INVERTEDOUTPUT_FALSE or YPwmOutput::INVERTEDOUTPUT_TRUE, according to true
+ * if the output signal is configured as inverted, and false otherwise
+ *
+ * On failure, throws an exception or returns YPwmOutput::INVERTEDOUTPUT_INVALID.
+ */
+Y_INVERTEDOUTPUT_enum YPwmOutput::get_invertedOutput(void)
+{
+    Y_INVERTEDOUTPUT_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YPwmOutput::INVERTEDOUTPUT_INVALID;
+                }
+            }
+        }
+        res = _invertedOutput;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the inversion mode of the output signal.
+ * Remember to call the matching module saveToFlash() method if you want
+ * the change to be kept after power cycle.
+ *
+ * @param newval : either YPwmOutput::INVERTEDOUTPUT_FALSE or YPwmOutput::INVERTEDOUTPUT_TRUE, according
+ * to the inversion mode of the output signal
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YPwmOutput::set_invertedOutput(Y_INVERTEDOUTPUT_enum newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("invertedOutput", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;

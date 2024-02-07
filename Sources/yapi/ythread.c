@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.c 44962 2021-05-10 08:32:59Z web $
+ * $Id: ythread.c 57040 2023-10-10 08:55:54Z mvuilleu $
  *
  * OS-independent thread and synchronization library
  *
@@ -37,9 +37,11 @@
  *
  *********************************************************************/
 
-#include "ythread.h"
-#define __FILE_ID__  "ythread"
+#include "ydef_private.h"
+#define __FILE_ID__     MK_FILEID('T','H','R')
+#define __FILENAME__   "ythread"
 
+#include "ythread.h"
 
 #ifdef WINDOWS_API
 
@@ -141,10 +143,12 @@ int yThreadIndex(void)
     }
 }
 
-#else
+#else /* not WINDOWS_API */
+
 #include <sys/time.h>
 #include <pthread.h>
 #include <errno.h>
+
 
 static pthread_once_t yInitKeyOnce = PTHREAD_ONCE_INIT;
 static pthread_key_t yTsdKey;
@@ -154,7 +158,6 @@ static void initTsdKey()
 {
     pthread_key_create(&yTsdKey, NULL);
 }
-
 void yCreateEvent(yEvent *ev)
 {
     pthread_cond_init(&ev->cond, NULL);
@@ -282,7 +285,6 @@ int    yThreadIndex(void)
 
 #endif
 
-
 int yCreateDetachedThreadNamed(const char* name, void* (*fun)(void*), void* arg)
 {
     osThread th_hdl;
@@ -361,42 +363,35 @@ void yThreadKill(yThread* yth)
     }
 }
 
-
 #ifdef DEBUG_CRITICAL_SECTION
 
-//#include "yproto.h"
-/* printf example */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_DB_CS 128
-
-
-
-
 static u32 nbycs = 0;
 
 #ifdef __arm__
-#define CS_BREAK {while(1);}
+#define CS_BREAK        { while(1); }
+#elif defined(WINDOWS_API) && (_MSC_VER)
+#define CS_BREAK        { _asm {int 3}}
 #else
-#if defined(WINDOWS_API) && (_MSC_VER)
-#define CS_BREAK { _asm {int 3}}
-#else
-#define CS_BREAK  {__asm__("int3");}
-#endif
+#define CS_BREAK        {__asm__("int3");}
 #endif
 
-#define CS_ASSERT(x)   if(!(x)){printf("ASSERT FAILED:%s:%d (%s:%d)\n",__FILE__ , __LINE__,fileid,lineno);dump_YCS(csptr);CS_BREAK}
-#define CS_TRACK_NO    24
+#define CS_ASSERT(x)    if(!(x)){ printf("ASSERT FAILED:%s:%d (%s:%d)\n", __FILENAME__, __LINE__, fileid, lineno); dump_YCS(csptr); CS_BREAK}
+#define CS_TRACK_NO     8888
 
 #ifdef WINDOWS_API
 
 static CRITICAL_SECTION CS_CS;
-
+static int dbg_cs_initialsed = 0;
 void yInitDebugCS()
 {
-    InitializeCriticalSection(&CS_CS);
+    if (dbg_cs_initialsed == 0) {
+        InitializeCriticalSection(&CS_CS);
+    }
+    dbg_cs_initialsed++;
 }
 
 void yFreeDebugCS()
@@ -416,8 +411,8 @@ static void yLeaveDebugCS()
     LeaveCriticalSection(&CS_CS);
 }
 
+#else /* not WINDOWS_API */
 
-#else
 static pthread_mutex_t CS_CS;
 
 void yInitDebugCS()
@@ -443,8 +438,7 @@ static void yLeaveDebugCS()
     pthread_mutex_unlock(&CS_CS);
 }
 
-#endif
-
+#endif //ifdef WINDOWS_API
 
 static const char* YCS_STATE_STR[] = {
      "UNALLOCATED",
@@ -460,7 +454,6 @@ static const char* YCS_ACTION_STR[] = {
      "RELEASE",
      "DELETE "
 };
-
 static void dump_YCS(yCRITICAL_SECTION *csptr)
 {
     int i;
@@ -475,7 +468,7 @@ static void dump_YCS(yCRITICAL_SECTION *csptr)
     } else {
         state_str = "INVALID";
     }
-    printf("%p:%02x: state=%s lock=%d\n", ycs, ycs->no, state_str, ycs->lock);
+    //fixme printf("%p:%02x: state=%s lock=%d\n", ycs, ycs->no, state_str, ycs->lock);
     for (i = 0; i < YCS_NB_TRACE; i++) {
         u32 action = ycs->last_actions[i].action;
         const char* action_str = "INVALID";
@@ -486,11 +479,10 @@ static void dump_YCS(yCRITICAL_SECTION *csptr)
         if (file_str == NULL) {
             file_str = "NULL";
         }
-        printf(" - %s on %s:%d  (th=%d)\n", action_str,
-            file_str, ycs->last_actions[i].lineno, ycs->last_actions[i].thread);
+        //fixme printf(" - %s on %s:%d  (th=%d)\n", action_str,
+            //file_str, ycs->last_actions[i].lineno, ycs->last_actions[i].thread);
     }
 }
-
 
 static void pushCSAction(int threadid, const char* fileid, int lineno, yCRITICAL_SECTION_ST *csptr, YCS_ACTION action)
 {
@@ -512,30 +504,19 @@ void yDbgInitializeCriticalSection(const char* fileid, int lineno, yCRITICAL_SEC
     (*csptr)->no = nbycs++;
     yLeaveDebugCS();
     if ((*csptr)->no == CS_TRACK_NO || CS_TRACK_NO < 0) {
-        printf("NEW CS on %s:%d:%p (%d)\n", fileid, lineno, (*csptr), (*csptr)->no);
+        //printf("NEW CS on %s:%d:%p (%d)\n", fileid, lineno, (*csptr), (*csptr)->no);
     }
 
     (*csptr)->state = YCS_ALLOCATED;
     pushCSAction(threadid, fileid, lineno, (*csptr), YCS_INIT);
-#if MICROCHIP_API
-    (*csptr)->cs = 0;
-    res = 0;
-#elif defined(WINDOWS_API)
+#if defined(WINDOWS_API)
     res = 0;
     InitializeCriticalSection(&((*csptr)->cs));
 #else
     res = pthread_mutex_init(&((*csptr)->cs), NULL);
 #endif
-//EnterCriticalSection(&((*csptr)->cs));
-//LeaveCriticalSection(&((*csptr)->cs));
-#if 0
     CS_ASSERT(res == 0);
-    res = pthread_mutex_lock(&((*csptr)->cs));
-    CS_ASSERT(res == 0);
-    res = pthread_mutex_unlock(&((*csptr)->cs));
-#endif
-    CS_ASSERT(res == 0);
-    }
+}
 
 
 void yDbgEnterCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION *csptr)
@@ -547,12 +528,10 @@ void yDbgEnterCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION 
     CS_ASSERT((*csptr)->state == YCS_ALLOCATED);
 
     if ((*csptr)->no == CS_TRACK_NO || CS_TRACK_NO < 0) {
-        printf("enter CS on %s:%d:%p (%d)\n", fileid, lineno, (*csptr), (*csptr)->no);
+        //printf("enter CS on %s:%d:%p (%d)\n", fileid, lineno, (*csptr), (*csptr)->no);
 }
 
-#if MICROCHIP_API
-    (*csptr)->cs = 1;
-#elif defined(WINDOWS_API)
+#if defined(WINDOWS_API)
     res = 0;
     EnterCriticalSection(&((*csptr)->cs));
 #else
@@ -574,15 +553,11 @@ int yDbgTryEnterCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTIO
     CS_ASSERT((*csptr)->state == YCS_ALLOCATED);
 
     if ((*csptr)->no == CS_TRACK_NO || CS_TRACK_NO < 0) {
-        printf("enter CS on %s:%d:%p (%d)\n", fileid, lineno, (*csptr), (*csptr)->no);
+        //printf("enter CS on %s:%d:%p (%d)\n", fileid, lineno, (*csptr), (*csptr)->no);
     }
 
 
-#if MICROCHIP_API
-    if ((*csptr)->cs)
-        return 0;
-    (*csptr)->cs = 1;
-#elif defined(WINDOWS_API)
+#if defined(WINDOWS_API)
     res = TryEnterCriticalSection(&((*csptr)->cs));
     if (res == 0)
         return 0;
@@ -597,7 +572,7 @@ int yDbgTryEnterCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTIO
     (*csptr)->lock++;
     pushCSAction(threadid, fileid, lineno, (*csptr), YCS_LOCKTRY);
     return 1;
-    }
+}
 
 
 void yDbgLeaveCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION *csptr)
@@ -610,16 +585,13 @@ void yDbgLeaveCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION 
     CS_ASSERT((*csptr)->state == YCS_ALLOCATED);
     CS_ASSERT((*csptr)->lock == 1);
     if ((*csptr)->no == CS_TRACK_NO || CS_TRACK_NO < 0) {
-        printf("leave CS on %s:%d:%p (%d)\n", fileid, lineno, (*csptr), (*csptr)->no);
+        //printf("leave CS on %s:%d:%p (%d)\n", fileid, lineno, (*csptr), (*csptr)->no);
     }
 
     (*csptr)->lock--;
     pushCSAction(threadid, fileid, lineno, (*csptr), YCS_RELEASE);
 
-#if MICROCHIP_API
-    (*csptr)->cs = 0;
-    res = 0;
-#elif defined(WINDOWS_API)
+#if defined(WINDOWS_API)
     res = 0;
     LeaveCriticalSection(&((*csptr)->cs));
 #else
@@ -639,13 +611,10 @@ void yDbgDeleteCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION
     CS_ASSERT((*csptr)->lock == 0);
 
     if ((*csptr)->no == CS_TRACK_NO || CS_TRACK_NO < 0) {
-        printf("delete CS on %s:%d:%p (%p)\n", fileid, lineno, (*csptr), &((*csptr)->cs));
+        //printf("delete CS on %s:%d:%p (%p)\n", fileid, lineno, (*csptr), &((*csptr)->cs));
     }
 
-#if MICROCHIP_API
-    (*csptr)->cs = 0xCA;
-    res = 0;
-#elif defined(WINDOWS_API)
+#if defined(WINDOWS_API)
     res = 0;
     DeleteCriticalSection(&((*csptr)->cs));
 #else
@@ -656,7 +625,7 @@ void yDbgDeleteCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION
     pushCSAction(threadid, fileid, lineno, (*csptr), YCS_DELETE);
 }
 
-#elif !defined(MICROCHIP_API)
+#else /* not DEBUG_CRITICAL_SECTION */
 
 #include <stdio.h>
 #include <stdlib.h>

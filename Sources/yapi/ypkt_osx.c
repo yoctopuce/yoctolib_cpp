@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_osx.c 44962 2021-05-10 08:32:59Z web $
+ * $Id: ypkt_osx.c 49591 2022-04-28 12:47:10Z mvuilleu $
  *
  * OS-specific USB packet layer, Mac OS X version
  *
@@ -37,7 +37,10 @@
  *
  *********************************************************************/
 
-#define __FILE_ID__ "ypkt_osx"
+#include "ydef_private.h"
+#define __FILE_ID__     MK_FILEID('P','K','T')
+#define __FILENAME__   "ypkt_osx"
+
 #include "yapi.h"
 #ifdef OSX_API
 #include "yproto.h"
@@ -229,6 +232,7 @@ int yyyUSB_init(yContextSt *ctx,char *errmsg)
 
 int yyyUSB_stop(yContextSt *ctx,char *errmsg)
 {
+    USB_THREAD_STATE state;
     stopHIDManager(&ctx->hid);
 
     if(get_usb_thread_state(ctx) == USB_THREAD_RUNNING){
@@ -236,7 +240,8 @@ int yyyUSB_stop(yContextSt *ctx,char *errmsg)
         CFRunLoopStop(ctx->usb_run_loop);
     }
     pthread_join(ctx->usb_thread,NULL);
-    YASSERT(get_usb_thread_state(ctx) == USB_THREAD_STOPED);
+    state = get_usb_thread_state(ctx);
+    YASSERT(state == USB_THREAD_STOPED, state);
 
     yReleaseGlobalAccess(ctx);
     yDeleteCriticalSection(&ctx->parano_cs);
@@ -538,7 +543,7 @@ void yyyPacketShutdown(yInterfaceSt  *iface)
             break;
         }
     }
-    YASSERT(i<SETUPED_IFACE_CACHE_SIZE);
+    YASSERT(i < SETUPED_IFACE_CACHE_SIZE, i);
     if(iface->devref!=NULL){
         IOHIDDeviceRegisterInputReportCallback(iface->devref,              // IOHIDDeviceRef for the HID device
                                                (u8*) &iface->tmprxpkt,   // pointer to the report data (uint8_t's)

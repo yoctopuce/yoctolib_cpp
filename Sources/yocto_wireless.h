@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.h 43619 2021-01-29 09:14:45Z mvuilleu $
+ * $Id: yocto_wireless.h 44049 2021-02-26 10:57:40Z web $
  *
  * Declares yFindWireless(), the high-level API for Wireless functions
  *

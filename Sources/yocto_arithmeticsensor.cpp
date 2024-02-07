@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_arithmeticsensor.cpp 56058 2023-08-15 07:38:35Z mvuilleu $
+ *  $Id: yocto_arithmeticsensor.cpp 56106 2023-08-16 09:14:54Z seb $
  *
  *  Implements yFindArithmeticSensor(), the high-level API for ArithmeticSensor functions
  *

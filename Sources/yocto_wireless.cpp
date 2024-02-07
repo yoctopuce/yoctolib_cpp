@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.cpp 52565 2022-12-24 15:19:59Z seb $
+ * $Id: yocto_wireless.cpp 52570 2022-12-26 09:27:54Z seb $
  *
  * Implements yFindWireless(), the high-level API for Wireless functions
  *

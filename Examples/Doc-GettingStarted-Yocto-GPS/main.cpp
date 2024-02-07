@@ -1,13 +1,13 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 38820 2019-12-18 18:01:14Z seb $
+ *  $Id: main.cpp 46880 2021-10-21 09:08:05Z seb $
  *
  *  An example that show how to use a  Yocto-GPS
  *
  *  You can find more information on our web site:
  *   Yocto-GPS documentation:
  *      https://www.yoctopuce.com/EN/products/yocto-gps/doc.html
- *   C++ API Reference:
+ *   C++ V2 API Reference:
  *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
  *
  *********************************************************************/

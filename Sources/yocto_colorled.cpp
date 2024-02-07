@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_colorled.cpp 56017 2023-08-14 08:47:38Z mvuilleu $
+ *  $Id: yocto_colorled.cpp 56106 2023-08-16 09:14:54Z seb $
  *
  *  Implements yFindColorLed(), the high-level API for ColorLed functions
  *

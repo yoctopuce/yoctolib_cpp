@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 56114 2023-08-16 09:30:43Z seb $
+ * $Id: ydef.h 58816 2024-01-08 10:56:15Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -107,7 +107,6 @@ typedef signed long long        s64;
 #elif defined(__C30__)
 // Microchip C30
 #define MICROCHIP_API
-#define EMBEDDED_API
 #define __16BITS__
 
 typedef unsigned char           u8;
@@ -207,11 +206,56 @@ typedef int64_t                 s64;
 #include <pthread.h>
 #include <errno.h>
 
+#elif defined(__arm__)
+
+#include <stdint.h>
+#include <stdbool.h>
+typedef uint8_t                 u8;
+typedef int8_t                  s8;
+typedef uint16_t                u16;
+typedef int16_t                 s16;
+typedef uint32_t                u32;
+typedef int32_t                 s32;
+typedef uint64_t                u64;
+typedef int64_t                 s64;
+#define VARIABLE_SIZE           0
+#ifdef FREERTOS_API
+#include <pthread.h>
+#include <errno.h>
+#endif
+
 #else
 #warning UNSUPPORTED ARCHITECTURE, please edit yocto_def.h !
 #endif
-// end of LINUX_API
 
+typedef union {
+    u8          v[4];
+    u32         Val;
+} u32_val;
+
+// Basic IPv4 address
+#define IP_ADDR u32_val
+
+typedef union _IPvX_ADDR {
+#ifndef IPV4_ONLY
+    struct {
+        u16     addr[8];
+    } v6;
+    struct {
+        u16     pad[6];
+        IP_ADDR addr;
+    } v4;
+#else
+    struct {
+        IP_ADDR addr;
+    } v4;
+#endif
+} IPvX_ADDR;
+
+// end of LINUX_API
+#if defined(MICROCHIP_API) || defined(TEXAS_API)
+#define EMBEDDED_API
+#endif
 
 typedef u32   yTime;            /* measured in milliseconds */
 typedef u32   u31;              /* shorter unsigned integers */
@@ -234,11 +278,14 @@ typedef s8              YTRNKIO;
 #if defined(WINDOWS_API)
 #if defined(__64BITS__)
 typedef u64             YSOCKET;
+#define INVALID_YSOCKET 0xffffffffffffffff
 #else
 typedef u32             YSOCKET;
+#define INVALID_YSOCKET 0xffffffff
 #endif
 #else
 typedef int             YSOCKET;
+#define INVALID_YSOCKET -1
 #endif
 typedef s32             YUSBIO;
 typedef s32             YUSBDEV;
@@ -276,7 +323,9 @@ typedef void *YIOHDL;
 #define U8(x)   ((u8)(x))
 #define U16(x)  ((u16)(x))
 #define U32(x)  ((u32)(x))
+#ifndef U64
 #define U64(x)  ((u64)(x))
+#endif
 
 #define U8ADDR(x)  ((u8 *)&(x))
 #define U16ADDR(x) ((u16 *)&(x))
@@ -290,13 +339,8 @@ typedef void *YIOHDL;
 #define _FAR
 #endif
 
-#if defined(MICROCHIP_API) || defined(VIRTUAL_HUB)
-#define YAPI_IN_YDEVICE
-#define YSTATIC
-#else
-#define YSTATIC static
-#endif
-
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
 
 //#define DEBUG_CRITICAL_SECTION
 
@@ -306,6 +350,13 @@ typedef void *YIOHDL;
 #include <ws2tcpip.h>
 #include <WinBase.h>
 #endif
+#ifdef FREERTOS_API
+// Critical sections on FreeRTOS
+#include <FreeRTOS.h>
+#include <semphr.h>
+#endif
+
+
 typedef enum  {
     YCS_UNALLOCATED=0,
     YCS_ALLOCATED=1,
@@ -336,6 +387,9 @@ typedef struct {
     volatile int                 lock;
 #if defined(WINDOWS_API)
     CRITICAL_SECTION             cs;
+#elif defined(FREERTOS_API)
+    SemaphoreHandle_t            handle;
+    StaticSemaphore_t            buffer;
 #else
     pthread_mutex_t              cs;
 #endif
@@ -352,30 +406,45 @@ int yDbgTryEnterCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTIO
 void yDbgLeaveCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION *cs);
 void yDbgDeleteCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION *cs);
 
-#define yInitializeCriticalSection(cs)  yDbgInitializeCriticalSection(__FILE_ID__,__LINE__,cs)
-#define yEnterCriticalSection(cs)       yDbgEnterCriticalSection(__FILE_ID__,__LINE__,cs)
-#define yTryEnterCriticalSection(cs)    yDbgTryEnterCriticalSection(__FILE_ID__,__LINE__,cs)
-#define yLeaveCriticalSection(cs)       yDbgLeaveCriticalSection(__FILE_ID__,__LINE__,cs)
-#define yDeleteCriticalSection(cs)      yDbgDeleteCriticalSection(__FILE_ID__,__LINE__,cs)
+#define DECLARE_CRITICALSECTION(decl) decl;
+#define yInitializeCriticalSection(cs)  yDbgInitializeCriticalSection(__FILENAME__,__LINE__,cs)
+#define yEnterCriticalSection(cs)       yDbgEnterCriticalSection(__FILENAME__,__LINE__,cs)
+#define yTryEnterCriticalSection(cs)    yDbgTryEnterCriticalSection(__FILENAME__,__LINE__,cs)
+#define yLeaveCriticalSection(cs)       yDbgLeaveCriticalSection(__FILENAME__,__LINE__,cs)
+#define yDeleteCriticalSection(cs)      yDbgDeleteCriticalSection(__FILENAME__,__LINE__,cs)
 
 #else
-#if defined(MICROCHIP_API)
-#define yCRITICAL_SECTION               u8
+
+#if defined(MICROCHIP_API) || defined(BOOTLOADER_API) || (defined(TEXAS_API) && !defined(FREERTOS_API))
+
+// No thread, no critical section
+#define DECLARE_CRITICALSECTION(decl)
 #define yInitializeCriticalSection(cs)
 #define yEnterCriticalSection(cs)
 #define yTryEnterCriticalSection(cs)    1
 #define yLeaveCriticalSection(cs)
 #define yDeleteCriticalSection(cs)
+
+#elif defined(FREERTOS_API)
+
+// Critical sections on FreeRTOS
+#include "yfreertos.h"
+
 #else
 
+// Critical sections on a real OS
 typedef void* yCRITICAL_SECTION;
+
+#define DECLARE_CRITICALSECTION(decl) decl;
 void yInitializeCriticalSection(yCRITICAL_SECTION *cs);
 void yEnterCriticalSection(yCRITICAL_SECTION *cs);
 int yTryEnterCriticalSection(yCRITICAL_SECTION *cs);
 void yLeaveCriticalSection(yCRITICAL_SECTION *cs);
 void yDeleteCriticalSection(yCRITICAL_SECTION *cs);
+
 #endif
-#endif
+
+#endif // #ifdef DEBUG_CRITICAL_SECTION
 
 
 typedef enum {
@@ -397,20 +466,25 @@ typedef enum {
     YAPI_SSL_ERROR        = -15,    // Error reported by mbedSSL
     YAPI_RFID_SOFT_ERROR  = -16,    // Recoverable error with RFID tag (eg. tag out of reach), check YRfidStatus for details
     YAPI_RFID_HARD_ERROR  = -17,    // Serious RFID error (eg. write-protected, out-of-boundary), check YRfidStatus for details
-    YAPI_BUFFER_TOO_SMALL = -18     // The buffer provided is too small
+    YAPI_BUFFER_TOO_SMALL = -18,    // The buffer provided is too small
+    YAPI_DNS_ERROR        = -19,    // Error during name resolutions (invalid hostname or dns communication error)
+    YAPI_SSL_UNK_CERT     = -20     // The certificate is not correctly signed by the trusted CA
 } YRETCODE;
 
 #define YISERR(retcode)   ((retcode) < 0)
 
 // Yoctopuce arbitrary constants
-#define YOCTO_API_VERSION_STR       "1.10"
-#define YOCTO_API_VERSION_BCD       0x0110
+#define YOCTO_API_VERSION_STR       "2.0"
+#define YOCTO_API_VERSION_BCD       0x0200
 #include "yversion.h"
 #define YOCTO_DEFAULT_PORT          4444
+#define YOCTO_DEFAULT_HTTPS_PORT    4443
 #define YOCTO_VXI_PORT              4445
 #define YOCTO_VENDORID              0x24e0
 #define YOCTO_DEVID_FACTORYBOOT     1
 #define YOCTO_DEVID_BOOTLOADER      2
+#define TI_VENDORID                 0x1CBE
+#define TI_DEVID                    0x00FF
 #define YOCTO_DEVID_HIGHEST         0xfefe
 #define YAPI_HASH_BUF_SIZE          28
 #define YOCTO_CALIB_TYPE_OFS        30
@@ -896,9 +970,12 @@ typedef void (*yapiRequestProgressCallback)(void *context, u32 acked, u32 totalb
 #define PROG_VERIF       4 // program the device
 #define PROG_INFO        5 // get device info
 #define PROG_INFO_EXT    6 // get extended device info (flash bootloader only)
+#define PROG_INFO_TI     7 // get extended device info (for Texas chip)
 
+
+#define INSTR_LEN                   3
 #define MAX_BYTE_IN_PACKET          (60)
-#define MAX_INSTR_IN_PACKET         (MAX_BYTE_IN_PACKET/3)
+#define MAX_INSTR_IN_PACKET         (MAX_BYTE_IN_PACKET/INSTR_LEN)
 
 #define ERASE_BLOCK_SIZE_INSTR      512               // the minimal erase size in nb instr
 #define PROGRAM_BLOCK_SIZE_INSTR    64                // the minimal program size in nb instr
@@ -906,7 +983,25 @@ typedef void (*yapiRequestProgressCallback)(void *context, u32 acked, u32 totalb
 #define ERASE_BLOCK_SIZE_BADDR      (ERASE_BLOCK_SIZE_INSTR*2)
 #define PROGRAM_BLOCK_SIZE_BADDR    (PROGRAM_BLOCK_SIZE_INSTR*2)
 
+// for MSP432E we use dword as instruction length. This is not a limitation of th CPU it's just
+// an implement choice to match at best the microchip architecture
+#define MSP432E_INSTR_LEN                   4
+#define MSP432E_MAX_INSTR_IN_PACKET         (MAX_BYTE_IN_PACKET/MSP432E_INSTR_LEN)
+#define MSP432E_ERASE_BLOCK_SIZE_INSTR      0x1000            // the minimal erase size in nb instr
+#define MSP432E_PROGRAM_BLOCK_SIZE_INSTR    32                // the minimal program size in nb instr
+#define MSP432E_ERASE_BLOCK_SIZE_BADDR      (MSP432E_ERASE_BLOCK_SIZE_INSTR * MSP432E_INSTR_LEN)  // 16KB
+#define MSP432E_PROGRAM_BLOCK_SIZE_BADDR    (MSP432E_PROGRAM_BLOCK_SIZE_INSTR * MSP432E_INSTR_LEN)    // we can write 32 dword in one operation
 
+// for TM4C123 we use dword as instruction length. This is not a limitation of th CPU it's just
+// an implement choice to match at best the microchip architecture
+#define TM4C123_INSTR_LEN                   4
+#define TM4C123_MAX_INSTR_IN_PACKET         (MAX_BYTE_IN_PACKET/TM4C123_INSTR_LEN)
+#define TM4C123_ERASE_BLOCK_SIZE_INSTR      0x1000            // the minimal erase size in nb instr
+#define TM4C123_PROGRAM_BLOCK_SIZE_INSTR    32                // the minimal program size in nb instr
+#define TM4C123_ERASE_BLOCK_SIZE_BADDR      (TM4C123_ERASE_BLOCK_SIZE_INSTR * TM4C123_INSTR_LEN)  // 16KB
+#define TM4C123_PROGRAM_BLOCK_SIZE_BADDR    (TM4C123_PROGRAM_BLOCK_SIZE_INSTR * TM4C123_INSTR_LEN)    // we can write 32 dword in one operation
+
+// For Texas chips address and size of memory are count in BYTES (not in instructions of words)
 typedef union {
     u8  raw[64];
     u16 words[32];
@@ -920,7 +1015,10 @@ typedef union {
 #endif
         u8  addres_high;
         u16 adress_low;
-        u8  data[MAX_BYTE_IN_PACKET];
+        union {
+            u8  data[MAX_BYTE_IN_PACKET];
+            u32 data32[MSP432E_MAX_INSTR_IN_PACKET];
+        };
     } pkt;
     struct {
 #ifndef CPU_BIG_ENDIAN
@@ -1053,6 +1151,14 @@ typedef union {
 #define JEDEC_SPANSION_8MB  0x17
 
 #define YESC                (27u)
+
+
+#define Y_IS_TEXAS(devid_family)    (devid_family != FAMILY_PIC24FJ256DA210 && devid_family != FAMILY_PIC24FJ64GB004)
+
+#if defined(MICROCHIP_API) || defined(FREERTOS_API) || defined(VIRTUAL_HUB)
+#define YAPI_IN_YDEVICE
+#endif
+
 
 #ifdef  __cplusplus
 }

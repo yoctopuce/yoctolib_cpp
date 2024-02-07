@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupmonitor.h 52567 2022-12-25 12:00:14Z seb $
+ *  $Id: yocto_wakeupmonitor.h 48191 2022-01-20 12:04:58Z web $
  *
  *  Declares yFindWakeUpMonitor(), the high-level API for WakeUpMonitor functions
  *

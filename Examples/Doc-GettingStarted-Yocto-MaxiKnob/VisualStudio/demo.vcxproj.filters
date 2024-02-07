@@ -1,0 +1,436 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\..\..\Sources\yapi\yapi.c">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\yfifo.c">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\yhash.c">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\yjson.c">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ykey.c">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ymemory.c">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ypkt_lin.c">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ypkt_osx.c">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ypkt_win.c">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\yprog.c">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ystream.c">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ytcp.c">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ythread.c">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\yssl.c">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_rsa.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_se.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_slot_management.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_storage.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_its_file.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ripemd160.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\rsa.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\rsa_internal.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\sha1.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\sha256.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\sha512.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_cache.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_ciphersuites.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_cli.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_cookie.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_msg.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_srv.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_ticket.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_keys.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\threading.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\timing.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\version.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\version_features.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509_create.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509_crl.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509_crt.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509_csr.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509write_crt.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509write_csr.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\xtea.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\aes.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\aesni.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\arc4.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\aria.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\asn1parse.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\asn1write.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\base64.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\bignum.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\blowfish.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\camellia.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ccm.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\certs.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\chacha20.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\chachapoly.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\cipher.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\cipher_wrap.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\cmac.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ctr_drbg.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\debug.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\des.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\dhm.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ecdh.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ecdsa.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ecjpake.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ecp.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ecp_curves.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\entropy.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\entropy_poll.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\error.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\gcm.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\havege.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\hkdf.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\hmac_drbg.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\md.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\md2.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\md4.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\md5.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\memory_buffer_alloc.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\net_sockets.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\nist_kw.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\oid.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\padlock.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pem.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pk.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pk_wrap.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pkcs5.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pkcs11.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pkcs12.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pkparse.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pkwrite.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\platform.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\platform_util.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\poly1305.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_client.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_driver_wrappers.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_ecp.c">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_api.cpp">
+      <Filter>YoctoLib</Filter>
+    </ClCompile>
+    
+<ClCompile Include="..\..\..\Sources\yocto_anbutton.cpp"><Filter>YoctoLib</Filter></ClCompile>
+<ClCompile Include="..\..\..\Sources\yocto_buzzer.cpp"><Filter>YoctoLib</Filter></ClCompile>
+<ClCompile Include="..\..\..\Sources\yocto_colorledcluster.cpp"><Filter>YoctoLib</Filter></ClCompile>
+<ClCompile Include="..\..\..\Sources\yocto_files.cpp"><Filter>YoctoLib</Filter></ClCompile>
+<ClCompile Include="..\..\..\Sources\yocto_quadraturedecoder.cpp"><Filter>YoctoLib</Filter></ClCompile>
+
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\Sources\yapi\yapi.h">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\ydef.h">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\ydef_private.h">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yfifo.h">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yhash.h">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yjson.h">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\ykey.h">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\ymemory.h">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yprog.h">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yproto.h">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\ytcp.h">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\ythread.h">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yversion.h">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_api.h">
+      <Filter>YoctoLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yssl.h">
+      <Filter>YoctoLib\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_ecp.h">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_invasive.h">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_its.h">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_random_impl.h">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_rsa.h">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_se.h">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_service_integration.h">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_slot_management.h">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_storage.h">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\ssl_invasive.h">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_keys.h">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\check_crypto_config.h">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\common.h">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_core.h">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_driver_wrappers.h">
+      <Filter>YoctoLib\yapi\mbedtls</Filter>
+    </ClInclude>
+    
+<ClInclude Include="..\..\..\Sources\yocto_anbutton.h"><Filter>YoctoLib</Filter></ClInclude>
+<ClInclude Include="..\..\..\Sources\yocto_buzzer.h"><Filter>YoctoLib</Filter></ClInclude>
+<ClInclude Include="..\..\..\Sources\yocto_colorledcluster.h"><Filter>YoctoLib</Filter></ClInclude>
+<ClInclude Include="..\..\..\Sources\yocto_files.h"><Filter>YoctoLib</Filter></ClInclude>
+<ClInclude Include="..\..\..\Sources\yocto_quadraturedecoder.h"><Filter>YoctoLib</Filter></ClInclude>
+
+
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="YoctoLib">
+      <UniqueIdentifier>{c5677cb8-b34e-4a0f-856d-c75ab4464776}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="YoctoLib\yapi">
+      <UniqueIdentifier>{1283baed-bac9-4f1a-ae90-1db7af49dd2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="YoctoLib\yapi\mbedtls">
+      <UniqueIdentifier>{51ad8fe4-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

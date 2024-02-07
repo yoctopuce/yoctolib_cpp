@@ -57,6 +57,7 @@ using namespace YOCTOLIB_NAMESPACE;
 YSdi12SnoopingRecord::YSdi12SnoopingRecord(const string& json):
 //--- (generated code: YSdi12SnoopingRecord initialization)
     _tim(0)
+    ,_pos(0)
     ,_dir(0)
 //--- (end of generated code: YSdi12SnoopingRecord initialization)
 {
@@ -85,6 +86,11 @@ YSdi12SnoopingRecord::YSdi12SnoopingRecord(const string& json):
                 return;
             }
             _tim = atoi(j.token);;
+        } else if(!strcmp(j.token, "p")) {
+            if (yJsonParse(&j) != YJSON_PARSE_AVAIL) {
+                return;
+            }
+            _pos = atoi(j.token);;
         } else {
             yJsonSkip(&j, 1);
         }
@@ -103,6 +109,16 @@ YSdi12SnoopingRecord::YSdi12SnoopingRecord(const string& json):
 int YSdi12SnoopingRecord::get_time(void)
 {
     return _tim;
+}
+
+/**
+ * Returns the absolute position of the message end.
+ *
+ * @return the absolute position of the message end.
+ */
+int YSdi12SnoopingRecord::get_pos(void)
+{
+    return _pos;
 }
 
 /**
@@ -139,61 +155,131 @@ YSdi12Sensor::YSdi12Sensor(YSdi12Port *sdi12Port,const string& json):
 // static attributes
 
 
+/**
+ * Returns the sensor address.
+ *
+ * @return the sensor address.
+ */
 string YSdi12Sensor::get_sensorAddress(void)
 {
     return _addr;
 }
 
+/**
+ * Returns the compatible SDI-12 version of the sensor.
+ *
+ * @return the compatible SDI-12 version of the sensor.
+ */
 string YSdi12Sensor::get_sensorProtocol(void)
 {
     return _proto;
 }
 
+/**
+ * Returns the sensor vendor identification.
+ *
+ * @return the sensor vendor identification.
+ */
 string YSdi12Sensor::get_sensorVendor(void)
 {
     return _mfg;
 }
 
+/**
+ * Returns the sensor model number.
+ *
+ * @return the sensor model number.
+ */
 string YSdi12Sensor::get_sensorModel(void)
 {
     return _model;
 }
 
+/**
+ * Returns the sensor version.
+ *
+ * @return the sensor version.
+ */
 string YSdi12Sensor::get_sensorVersion(void)
 {
     return _ver;
 }
 
+/**
+ * Returns the sensor serial number.
+ *
+ * @return the sensor serial number.
+ */
 string YSdi12Sensor::get_sensorSerial(void)
 {
     return _sn;
 }
 
+/**
+ * Returns the number of sensor measurements.
+ *
+ * @return the number of sensor measurements.
+ */
 int YSdi12Sensor::get_measureCount(void)
 {
     return (int)_valuesDesc.size();
 }
 
+/**
+ * Returns the sensor measurement command.
+ *
+ * @param measureIndex : measurement index
+ *
+ * @return the sensor measurement command.
+ */
 string YSdi12Sensor::get_measureCommand(int measureIndex)
 {
     return _valuesDesc[measureIndex][0];
 }
 
+/**
+ * Returns sensor measurement position.
+ *
+ * @param measureIndex : measurement index
+ *
+ * @return the sensor measurement command.
+ */
 int YSdi12Sensor::get_measurePosition(int measureIndex)
 {
     return atoi((_valuesDesc[measureIndex][2]).c_str());
 }
 
+/**
+ * Returns the measured value symbol.
+ *
+ * @param measureIndex : measurement index
+ *
+ * @return the sensor measurement command.
+ */
 string YSdi12Sensor::get_measureSymbol(int measureIndex)
 {
     return _valuesDesc[measureIndex][3];
 }
 
+/**
+ * Returns the unit of the measured value.
+ *
+ * @param measureIndex : measurement index
+ *
+ * @return the sensor measurement command.
+ */
 string YSdi12Sensor::get_measureUnit(int measureIndex)
 {
     return _valuesDesc[measureIndex][4];
 }
 
+/**
+ * Returns the description of the measured value.
+ *
+ * @param measureIndex : measurement index
+ *
+ * @return the sensor measurement command.
+ */
 string YSdi12Sensor::get_measureDescription(int measureIndex)
 {
     return _valuesDesc[measureIndex][5];
@@ -241,8 +327,10 @@ void YSdi12Sensor::_queryValueInfo(void)
     int i = 0;
     int j = 0;
     vector<string> listVal;
+    int size = 0;
 
     k = 0;
+    size = 4;
     while (k < 10) {
         infoNbVal = _sdi12Port->querySdi12(_addr, YapiWrapper::ysprintf("IM%d",k), 5000);
         if ((int)(infoNbVal).length() > 1) {
@@ -260,6 +348,9 @@ void YSdi12Sensor::_queryValueInfo(void)
                     listVal.push_back(YapiWrapper::ysprintf("M%d",k));
                     listVal.push_back(YapiWrapper::ysprintf("%d",i+1));
                     j = 0;
+                    while ((int)data.size() < size) {
+                        data.push_back("");
+                    }
                     while (j < (int)data.size()) {
                         listVal.push_back(data[j]);
                         j = j + 1;

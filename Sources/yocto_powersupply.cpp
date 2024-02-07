@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_powersupply.cpp 55573 2023-07-25 06:25:12Z mvuilleu $
+ *  $Id: yocto_powersupply.cpp 55635 2023-07-26 09:20:02Z seb $
  *
  *  Implements yFindPowerSupply(), the high-level API for PowerSupply functions
  *

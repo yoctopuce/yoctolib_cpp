@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_win.c 51520 2022-11-07 10:03:28Z seb $
+ * $Id: ypkt_win.c 57978 2023-11-22 10:09:09Z mvuilleu $
  *
  * OS-specific USB packet layer, Windows version
  *
@@ -37,7 +37,10 @@
  *
  *********************************************************************/
 
-#define __FILE_ID__  "ypkt_win"
+#include "ydef_private.h"
+#define __FILE_ID__     MK_FILEID('P','K','T')
+#define __FILENAME__   "ypkt_win"
+
 #include "yapi.h"
 #include <stdio.h>
 #if defined(WINDOWS_API) && !defined(WINCE)
@@ -62,9 +65,9 @@ static int yWinSetErrEx(u32 line, yInterfaceSt* iface, DWORD err, const char* ms
     if (errmsg == NULL)
         return YAPI_IO_ERROR;
     if (iface) {
-        YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "%s:%d(%s:%d): %s(%d)", iface->serial, iface->ifaceno, __FILE_ID__, line, msg, (u32)err);
+        YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "%s:%d(%s:%d): %s(%d)", iface->serial, iface->ifaceno, __FILENAME__, line, msg, (u32)err);
     } else {
-        YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "%s:%d: %s(%d)", __FILE_ID__, line, msg, (u32)err);
+        YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "%s:%d: %s(%d)", __FILENAME__, line, msg, (u32)err);
     }
     len = YSTRLEN(errmsg);
     FormatMessageA(
@@ -86,7 +89,7 @@ static void yWinPushEx(u32 line, yInterfaceSt *iface, pktQueue  *q, DWORD err)
     int len;
     char errmsg[YOCTO_ERRMSG_LEN];
 
-    YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "%s:%d(%s:%d): (%d)", iface->serial, iface->ifaceno, __FILE_ID__, line, (u32)err);
+    YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "%s:%d(%s:%d): (%d)", iface->serial, iface->ifaceno, __FILENAME__, line, (u32)err);
     len = YSTRLEN(errmsg);
     FormatMessageA(
         FORMAT_MESSAGE_FROM_SYSTEM |
@@ -100,27 +103,6 @@ static void yWinPushEx(u32 line, yInterfaceSt *iface, pktQueue  *q, DWORD err)
 }
 
 #endif
-
-
-static u32 usbDecodeHex(const char* p, int nbdigit)
-{
-    u32 ret = 0;
-    int i;
-    for (i = nbdigit - 1; i >= 0; i--, p++) {
-        u32 digit;
-        if (*p >= 'a' && *p <= 'f') {
-            digit = 10 + *p - 'a';
-        } else if (*p >= 'A' && *p <= 'F') {
-            digit = 10 + *p - 'A';
-        } else if (*p >= '0' && *p <= '9') {
-            digit = *p - '0';
-        } else {
-            return 0;
-        }
-        ret += digit << (4 * i);
-    }
-    return ret;
-}
 
 
 #define FIRST_OF        1
@@ -160,13 +142,13 @@ void DecodeHardwareid(char* str, u32* vendorid, u32* deviceid, u32* release, u32
     *vendorid = *deviceid = *release = *iface = 0;
     while (token_start != token_stop) {
         if (YSTRNICMP(token_start, "VID_", 4) == 0) {
-            *vendorid = usbDecodeHex(token_start + 4, 4);
+            *vendorid = decodeHex(token_start + 4, 4);
         } else if (YSTRNICMP(token_start, "PID_", 4) == 0) {
-            *deviceid = usbDecodeHex(token_start + 4, 4);
+            *deviceid = decodeHex(token_start + 4, 4);
         } else if (YSTRNICMP(token_start, "REV_", 4) == 0) {
-            *release = usbDecodeHex(token_start + 4, 4);
+            *release = decodeHex(token_start + 4, 4);
         } else if (YSTRNICMP(token_start, "MI_", 3) == 0) {
-            *iface = usbDecodeHex(token_start + 3, 2);
+            *iface = decodeHex(token_start + 3, 2);
         }
         token_start = findDelim(token_stop, delim, 2, FIRST_NOT_OF);
         token_stop = findDelim(token_start, delim, 2, FIRST_OF);
@@ -572,16 +554,16 @@ static int OpenReadHandles(yInterfaceSt* iface)
 
 static void CloseReadHandles(yInterfaceSt* iface)
 {
-    DWORD readed;
+    DWORD nread;
 
     if (iface->rdpending && iface->rdHDL != INVALID_HANDLE_VALUE) {
         if (CancelIo(iface->rdHDL) == 0) {
             HALLOG("CancelIo failed with %d\n", GetLastError());
         } else {
-            if (GetOverlappedResult(iface->rdHDL, &iface->rdOL, &readed, TRUE)) {
+            if (GetOverlappedResult(iface->rdHDL, &iface->rdOL, &nread, TRUE)) {
                 //finished
-                if (readed != sizeof(OS_USB_Packet)) {
-                    HALLOG("invalid packet size read %d  %d\n", iface->ifaceno, readed);
+                if (nread != sizeof(OS_USB_Packet)) {
+                    HALLOG("invalid packet size read %d  %d\n", iface->ifaceno, nread);
                 } else {
                     yPktQueuePushD2H(iface, &iface->tmpd2hpkt.pkt, NULL);
                 }
@@ -607,14 +589,14 @@ static void CloseReadHandles(yInterfaceSt* iface)
 
 static int StartReadIO(yInterfaceSt* iface, char* errmsg)
 {
-    DWORD readed;
+    DWORD nread;
     u32 retrycount = 0;
 retry:
-    YASSERT(iface->rdpending == 0);
+    YASSERT(iface->rdpending == 0, iface->rdpending);
     memset(&iface->rdOL, 0, sizeof(iface->rdOL));
     //check if we need that : if(!SetEvent(iface->rdEV)) return yWinSetErr(errmsg);
     iface->rdOL.hEvent = iface->EV[YWIN_EVENT_READ];
-    if (!ReadFile(iface->rdHDL, &iface->tmpd2hpkt, sizeof(OS_USB_Packet), &readed, &iface->rdOL)) {
+    if (!ReadFile(iface->rdHDL, &iface->tmpd2hpkt, sizeof(OS_USB_Packet), &nread, &iface->rdOL)) {
         u32 error = GetLastError();
         if (error != ERROR_IO_PENDING) {
             return yWinSetErrEx(__LINE__, iface, error, "", errmsg);
@@ -634,7 +616,7 @@ retry:
 //Look if we have new packet arrived
 static int yyyyRead(yInterfaceSt* iface, char* errmsg)
 {
-    DWORD readed;
+    DWORD nread;
     int res;
     int retrycount = 1;
 retry:
@@ -656,10 +638,10 @@ retry:
             return res;
         }
     }
-    if (GetOverlappedResult(iface->rdHDL, &iface->rdOL, &readed, 0)) {
+    if (GetOverlappedResult(iface->rdHDL, &iface->rdOL, &nread, 0)) {
         iface->rdpending = 0;
-        if (readed != sizeof(OS_USB_Packet)) {
-            HALLOG("drop invalid packet on %s:%d (invalid size %d)\n", iface->serial, iface->ifaceno, readed);
+        if (nread != sizeof(OS_USB_Packet)) {
+            HALLOG("drop invalid packet on %s:%d (invalid size %d)\n", iface->serial, iface->ifaceno, nread);
         } else {
             yPktQueuePushD2H(iface, &iface->tmpd2hpkt.pkt, NULL);
         }
@@ -858,7 +840,7 @@ int yyySetup(yInterfaceSt* iface, char* errmsg)
     yPktQueueInit(&iface->rxQueue);
     yPktQueueInit(&iface->txQueue);
     memset(&iface->io_thread, 0, sizeof(yThread));
-    if (yThreadCreate(&iface->io_thread, yyyUsbIoThread, (void*)iface) < 0) {
+    if (yThreadCreateNamed(&iface->io_thread, "yusb", yyyUsbIoThread, (void*)iface) < 0) {
         return YERRMSG(YAPI_IO_ERROR, "Unable to start USB IO thread");
     }
     return YAPI_SUCCESS;

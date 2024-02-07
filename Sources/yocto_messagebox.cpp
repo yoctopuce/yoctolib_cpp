@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.cpp 55573 2023-07-25 06:25:12Z mvuilleu $
+ * $Id: yocto_messagebox.cpp 55635 2023-07-26 09:20:02Z seb $
  *
  * Implements yFindMessageBox(), the high-level API for MessageBox functions
  *

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_gps.cpp 52567 2022-12-25 12:00:14Z seb $
+ *  $Id: yocto_gps.cpp 52570 2022-12-26 09:27:54Z seb $
  *
  *  Implements yFindGps(), the high-level API for Gps functions
  *

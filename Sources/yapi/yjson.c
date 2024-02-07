@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yjson.c 47425 2021-11-23 11:15:35Z seb $
+ * $Id: yjson.c 49591 2022-04-28 12:47:10Z mvuilleu $
  *
  * Simple JSON parser (actually a slightly enhanced lexer)
  *
@@ -36,7 +36,11 @@
  *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
-#define __FILE_ID__  "yjson"
+
+#include "ydef_private.h"
+#define __FILE_ID__     MK_FILEID('J','S','N')
+#define __FILENAME__   "yjson"
+
 #include <string.h>
 #include "yjson.h"
 

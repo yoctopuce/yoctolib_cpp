@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwmpowersource.h 52567 2022-12-25 12:00:14Z seb $
+ *  $Id: yocto_pwmpowersource.h 44049 2021-02-26 10:57:40Z web $
  *
  *  Declares yFindPwmPowerSource(), the high-level API for PwmPowerSource functions
  *

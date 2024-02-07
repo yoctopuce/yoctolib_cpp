@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h 54436 2023-05-08 07:01:09Z seb $
+ * $Id: yapi.h 57685 2023-11-07 09:55:37Z mvuilleu $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -125,6 +125,16 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int type, char* errmsg);
 #define Y_DETECT_ALL   (Y_DETECT_USB | Y_DETECT_NET)
 
 #define Y_DEFAULT_PKT_RESEND_DELAY 50
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPIEx(int detect_type, const char* certfile, const char* keyfile, char* errmsg);
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiSetSSLCertificateSrv(const char* certfile, const char* keyfile, char* errmsg);
+YRETCODE YAPI_FUNCTION_EXPORT yapiAddSSLCertificateCli(const char* cert, int cert_len, char* errmsg);
+#define YSSL_NO_TRUSTED_CA_CHECK     1
+#define YSSL_NO_EXPIRATION_CHECK     2
+#define YSSL_NO_HOSTNAME_CHECK       4
+YRETCODE YAPI_FUNCTION_EXPORT yapiSetNetworkSecurityOptions(u32 options, char *errmsg);
+YRETCODE YAPI_FUNCTION_EXPORT yapiGetRemoteCertificate(const char* rooturl, u64 mstimout, char* buffer, int maxsize, int* neededsize, char* errmsg);
 
 
 /*****************************************************************************
@@ -1128,7 +1138,7 @@ int YAPI_FUNCTION_EXPORT yapiGetNextHubRef(int ref);
 int YAPI_FUNCTION_EXPORT yapiGetHubStrAttr(int ref, const char* attrname, char *outval, int buffersize, int* fullsize);
 /*
  * yapiGetHubStrAttr_internal return the string attribute for a hub.
- *  ref is allways >0. form 0 ot NBMAX_NET_HUB it's an network hub. NBMAX_NET_HUB is
+ *  ref is always >0. form 0 ot NBMAX_NET_HUB it's an network hub. NBMAX_NET_HUB is
  *  reserved for USB.
  *  returns a negative number on error or the value.
  */
@@ -1136,7 +1146,7 @@ int YAPI_FUNCTION_EXPORT yapiGetHubStrAttr(int ref, const char* attrname, char *
 int YAPI_FUNCTION_EXPORT yapiGetHubIntAttr(int ref, const char* attrname);
 /*
  * yapiGetHubStrAttr_internal return the string attribute for a hub.
- *  ref is allways >0. form 0 ot NBMAX_NET_HUB it's an network hub. NBMAX_NET_HUB is
+ *  ref is always >0. form 0 ot NBMAX_NET_HUB it's an network hub. NBMAX_NET_HUB is
  *  reserved for USB.
  *  returns a negative number on error or 0.
  */

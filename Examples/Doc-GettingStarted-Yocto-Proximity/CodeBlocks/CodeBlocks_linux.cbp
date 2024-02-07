@@ -1,154 +1,520 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <CodeBlocks_project_file>
-	<FileVersion major="1" minor="6" />
-	<Project>
-		<Option title="CodeBlocks" />
-		<Option pch_mode="2" />
-		<Option compiler="gcc" />
-		<Option virtualFolders="YoctoLibrary\;YoctoLibrary\yapi\;" />
-		<Build>
-			<Target title="Debug">
-				<Option output="bin/Debug/CodeBlocks" prefix_auto="1" extension_auto="1" />
-				<Option object_output="obj/Debug/" />
-				<Option type="1" />
-				<Option compiler="gcc" />
-				<Compiler>
-					<Add option="-g" />
-					<Add directory="../../../Sources" />
-				</Compiler>
-				<Linker>
-					<Add library="pthread" />
-					<Add library="usb-1.0" />
-				</Linker>
-			</Target>
-			<Target title="Release">
-				<Option output="bin/Release/CodeBlocks" prefix_auto="1" extension_auto="1" />
-				<Option object_output="obj/Release/" />
-				<Option type="1" />
-				<Option compiler="gcc" />
-				<Compiler>
-					<Add option="-O2" />
-                    <Add directory="../../../Sources" />
-				</Compiler>
-				<Linker>
-					<Add option="-s" />
-                    <Add library="pthread" />
-                    <Add library="usb-1.0" />
-				</Linker>
-			</Target>
-		</Build>
-		<Compiler>
-			<Add option="-Wall" />
-			<Add option="-fexceptions" />
-		</Compiler>
-		<Unit filename="..\main.cpp" />
-		<Unit filename="..\..\..\Sources\yapi\yapi.c">
-			<Option compilerVar="CC" />
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-		<Unit filename="..\..\..\Sources\yapi\yapi.h">
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-		<Unit filename="..\..\..\Sources\yapi\ydef.h">
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-		<Unit filename="..\..\..\Sources\yapi\yfifo.c">
-			<Option compilerVar="CC" />
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-		<Unit filename="..\..\..\Sources\yapi\yfifo.h">
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-		<Unit filename="..\..\..\Sources\yapi\yhash.c">
-			<Option compilerVar="CC" />
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-		<Unit filename="..\..\..\Sources\yapi\yhash.h">
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-		<Unit filename="..\..\..\Sources\yapi\yjson.c">
-			<Option compilerVar="CC" />
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-		<Unit filename="..\..\..\Sources\yapi\yjson.h">
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-		<Unit filename="..\..\..\Sources\yapi\ymemory.c">
-			<Option compilerVar="CC" />
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-		<Unit filename="..\..\..\Sources\yapi\ymemory.h">
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-		<Unit filename="..\..\..\Sources\yapi\ypkt_lin.c">
-			<Option compilerVar="CC" />
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-		<Unit filename="..\..\..\Sources\yapi\ypkt_osx.c">
-			<Option compilerVar="CC" />
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-		<Unit filename="..\..\..\Sources\yapi\ypkt_win.c">
-			<Option compilerVar="CC" />
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-		<Unit filename="..\..\..\Sources\yapi\yprog.c">
-			<Option compilerVar="CC" />
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-		<Unit filename="..\..\..\Sources\yapi\yprog.h">
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-		<Unit filename="..\..\..\Sources\yapi\yproto.h">
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-		<Unit filename="..\..\..\Sources\yapi\ystream.c">
-			<Option compilerVar="CC" />
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-		<Unit filename="..\..\..\Sources\yapi\ytcp.c">
-			<Option compilerVar="CC" />
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-		<Unit filename="..\..\..\Sources\yapi\ytcp.h">
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-        <Unit filename="..\..\..\Sources\yapi\ykey.c">
-            <Option compilerVar="CC" />
-            <Option virtualFolder="YoctoLibrary\yapi\" />
-        </Unit>
-        <Unit filename="..\..\..\Sources\yapi\ykey.h">
-            <Option virtualFolder="YoctoLibrary\yapi\" />
-        </Unit>
-		<Unit filename="..\..\..\Sources\yapi\ythread.c">
-			<Option compilerVar="CC" />
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-		<Unit filename="..\..\..\Sources\yapi\ythread.h">
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-		<Unit filename="..\..\..\Sources\yapi\yversion.h">
-			<Option virtualFolder="YoctoLibrary\yapi\" />
-		</Unit>
-        <Unit filename="..\..\..\Sources\yocto_api.h">
-            <Option virtualFolder="YoctoLibrary\" />
-        </Unit>
-        <Unit filename="..\..\..\Sources\yocto_api.cpp">
-            <Option virtualFolder="YoctoLibrary\" />
-        </Unit>
-
+   <FileVersion major="1" minor="6" />
+   <Project>
+      <Option title="CodeBlocks" />
+      <Option pch_mode="2" />
+      <Option compiler="gcc" />
+      <Option virtualFolders="YoctoLibrary/;YoctoLibrary/yapi/;YoctoLibrary/yapi/mbedtls/;" />
+      <Build>
+         <Target title="Debug">
+            <Option output="bin/Debug/CodeBlocks" prefix_auto="1" extension_auto="1" />
+            <Option object_output="obj/Debug/" />
+            <Option type="1" />
+            <Option compiler="gcc" />
+            <Compiler>
+               <Add option="-g" />
+               <Add directory="../../../Sources" />
+               <Add directory="../../../Sources/yapi/mbedtls/include" />
+            </Compiler>
+            <Linker>
+               <Add library="pthread" />
+               <Add library="usb-1.0" />
+            </Linker>
+         </Target>
+         <Target title="Release">
+            <Option output="bin/Release/CodeBlocks" prefix_auto="1" extension_auto="1" />
+            <Option object_output="obj/Release/" />
+            <Option type="1" />
+            <Option compiler="gcc" />
+            <Compiler>
+               <Add option="-O2" />
+               <Add directory="../../../Sources" />
+               <Add directory="../../../Sources/yapi/mbedtls/include" />
+            </Compiler>
+            <Linker>
+               <Add option="-s" />
+               <Add library="pthread" />
+               <Add library="usb-1.0" />
+            </Linker>
+         </Target>
+      </Build>
+      <Compiler>
+         <Add option="-Wall" />
+         <Add option="-fexceptions" />
+      </Compiler>
+      <Unit filename="..\main.cpp" />
+      <Unit filename="..\..\..\Sources\yapi\yapi.c">
+         <Option compilerVar="CC" />
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\yapi.h">
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\ydef.h">
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\yfifo.c">
+         <Option compilerVar="CC" />
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\yfifo.h">
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\yhash.c">
+         <Option compilerVar="CC" />
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\yhash.h">
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\yjson.c">
+         <Option compilerVar="CC" />
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\yjson.h">
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\ymemory.c">
+         <Option compilerVar="CC" />
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\ymemory.h">
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\ypkt_lin.c">
+         <Option compilerVar="CC" />
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\ypkt_osx.c">
+         <Option compilerVar="CC" />
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\ypkt_win.c">
+         <Option compilerVar="CC" />
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\yprog.c">
+         <Option compilerVar="CC" />
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\yprog.h">
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\yproto.h">
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\ystream.c">
+         <Option compilerVar="CC" />
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\ytcp.c">
+         <Option compilerVar="CC" />
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\ytcp.h">
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\yssl.c">
+         <Option compilerVar="CC" />
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\yssl.h">
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\ykey.c">
+         <Option compilerVar="CC" />
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\ykey.h">
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\ythread.c">
+         <Option compilerVar="CC" />
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\ythread.h">
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yapi\yversion.h">
+         <Option virtualFolder="YoctoLibrary\yapi\" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/aes.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/aesni.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/arc4.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/aria.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/asn1parse.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/asn1write.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/base64.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/bignum.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/blowfish.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/camellia.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/ccm.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/chacha20.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/chachapoly.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/cipher.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/cipher_wrap.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/cmac.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/ctr_drbg.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/des.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/dhm.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/ecdh.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/ecdsa.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/ecjpake.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/ecp.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/ecp_curves.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/entropy.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/entropy_poll.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/error.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/gcm.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/havege.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/hkdf.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/hmac_drbg.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/md.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/md2.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/md4.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/md5.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/memory_buffer_alloc.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/nist_kw.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/oid.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/padlock.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/pem.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/pk.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/pk_wrap.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/pkcs12.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/pkcs5.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/pkparse.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/pkwrite.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/platform.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/platform_util.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/poly1305.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_client.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_driver_wrappers.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_ecp.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_rsa.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_se.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_slot_management.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_storage.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_its_file.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/ripemd160.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/rsa.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/rsa_internal.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/sha1.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/sha256.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/sha512.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/threading.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/timing.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/version.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/version_features.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/xtea.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/certs.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/pkcs11.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/x509.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/x509_create.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/x509_crl.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/x509_crt.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/x509_csr.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/x509write_crt.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/x509write_csr.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/debug.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/net_sockets.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_cache.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_ciphersuites.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_cli.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_cookie.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_msg.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_srv.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_ticket.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_tls.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_tls13_keys.c">
+         <Option virtualFolder="YoctoLibrary/yapi/mbedtls" />
+         <Option comilerVar="CC" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yocto_api.h">
+         <Option virtualFolder="YoctoLibrary\" />
+      </Unit>
+      <Unit filename="..\..\..\Sources\yocto_api.cpp">
+         <Option virtualFolder="YoctoLibrary\" />
+      </Unit>
+      
 <Unit filename="..\..\..\Sources\yocto_lightsensor.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_proximity.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_datalogger.h"><Option virtualFolder="YoctoLibrary\" /></Unit>
 
-
+      
 <Unit filename="..\..\..\Sources\yocto_lightsensor.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_proximity.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 <Unit filename="..\..\..\Sources\yocto_datalogger.cpp"><Option virtualFolder="YoctoLibrary\" /></Unit>
 
-        <Extensions>
-            <code_completion />
-            <debugger />
-        </Extensions>
-    </Project>
+      <Extensions>
+         <code_completion />
+         <debugger />
+      </Extensions>
+   </Project>
 </CodeBlocks_project_file>
+

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_lightsensor.h 52567 2022-12-25 12:00:14Z seb $
+ *  $Id: yocto_lightsensor.h 45306 2021-05-26 08:04:16Z web $
  *
  *  Declares yFindLightSensor(), the high-level API for LightSensor functions
  *

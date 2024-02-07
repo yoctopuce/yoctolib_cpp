@@ -1,13 +1,4 @@
 @ECHO OFF
-if NOT "%VCToolsInstallDir%"=="" goto compile
-if "%VCINSTALLDIR%"=="" call "%VS150COMNTOOLS%vsvars32.bat"
-if "%VCINSTALLDIR%"=="" call "%VS140COMNTOOLS%vsvars32.bat"
-if "%VCINSTALLDIR%"=="" call "%VS100COMNTOOLS%vsvars32.bat"
-if "%VCINSTALLDIR%"=="" call "%VS110COMNTOOLS%vsvars32.bat"
-if "%VCINSTALLDIR%"=="" call "%VS120COMNTOOLS%vsvars32.bat"
-if "%VCINSTALLDIR%"=="" call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat"
-if "%VCINSTALLDIR%"=="" call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Professional\Common7\Tools\VsDevCmd.bat"
-if "%VCINSTALLDIR%"=="" call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Entreprise\Common7\Tools\VsDevCmd.bat"
 
 :compile
 echo.
@@ -15,7 +6,7 @@ echo Build yapi static and dynamic libray for C++
 echo ============================================
 
 cd Binaries\
-call nmake /nologo %1
+call make.bat %1
 IF ERRORLEVEL 1 goto error
 cd ..\
 echo done
@@ -32,7 +23,7 @@ goto error
 :BuildDir
 echo build %~1 %~2
 cd %~1
-call nmake /nologo %~2
+call make.bat %~2
 IF ERRORLEVEL 1 set failled=%failled% %~1
 cd ..\..\
 echo done

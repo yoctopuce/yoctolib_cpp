@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.c 56516 2023-09-11 16:47:06Z seb $
+ * $Id: ykey.c 58619 2023-12-19 10:48:56Z seb $
  *
  * Implementation of standard key computations
  *
@@ -36,17 +36,25 @@
  *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
-#define __FILE_ID__  "ydef"
+
+#include "ydef_private.h"
+#define __FILE_ID__     MK_FILEID('Y','K','Y')
+#define __FILENAME__   "ykey"
+
 #include "ykey.h"
 
 #ifdef MICROCHIP_API
-#include "Yocto/yocto.h"
+#include "yocto.h"
 #include "Yocto/yapi_ext.h"
 #define ntohl(dw) swapl(dw)
 #else
 #include <string.h>
-#include "yproto.h"
+#ifndef WINDOWS_API
+#include <arpa/inet.h>
 #endif
+#endif
+#include "ymemory.h"
+#include "yfifo.h"
 
 static char btohexa_low_high(u8 b)
 {
@@ -324,7 +332,7 @@ typedef struct {
     u8 res[32];
 } WPA_CALC_STATE;
 
-static WPA_CALC_STATE wpak = {-1};
+static WPA_CALC_STATE wpak;
 
 const u32 sha1_init[5] = {0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0};
 
@@ -470,7 +478,6 @@ int yIterPsk(u8* res, const char* ssid)
 {
     int k;
 
-    if (wpak.iter < 0) return -1;
     if (wpak.iter >= 8192) return 0;
     itershaw(wpak.inner);
     wpak.shaw[5] = 0x80000000;
@@ -703,3 +710,181 @@ void MD5Calculate(HASH_SUM* ctx, u8 *digest)
     memset((char*)ctx, 0, sizeof(*ctx));
 }
 #endif
+
+
+#ifndef IPV4_ONLY
+void setIPv6Mask(IPvX_ADDR* addr, u16 nbits)
+{
+    u16 i, nbytes = nbits >> 4;
+
+    for (i = 0; i < nbytes; i++) {
+        addr->v6.addr[i] = 0xffff;
+    }
+    nbits &= 0xf;
+    if (nbits) {
+        addr->v6.addr[i++] = swaps((1u << nbits) - 1);
+    }
+    while (i < 8) {
+        addr->v6.addr[i++] = 0;
+    }
+}
+
+void setIPv4Mask(IPvX_ADDR* addr, u16 nbits)
+{
+    setIPv4Val(addr, NETMASK_HIGH(nbits));
+}
+
+void YSAFECODE(setIPv4Val)(IPvX_ADDR* addr, u32 ipval)
+{
+    memset((u8*)addr->v4.pad, 0, 10);
+    addr->v4.pad[5] = 0xffff;
+    addr->v4.addr.Val = ipval;
+}
+
+u32 getIPv4Val(const IPvX_ADDR* addr)
+{
+    return addr->v4.addr.Val;
+}
+
+int isIPv4(const IPvX_ADDR* addr)
+{
+    u16 i;
+
+    if (addr->v4.pad[5] != 0xffff) return 0;
+    for (i = 0; i < 5; i++) {
+        if (addr->v4.pad[i]) return 0;
+    }
+    return 1;
+}
+
+int isIPEmpty(const IPvX_ADDR* addr)
+{
+    u16 i;
+
+    if (isIPv4(addr) && addr->v4.addr.Val == 0) {
+        return 1;
+    }
+    for (i = 8; i > 0;) {
+        if (addr->v6.addr[--i]) return 0;
+    }
+    return 1;
+}
+
+u16 IPvXAddrLen(const IPvX_ADDR* addr)
+{
+    char buff[40];
+
+    iptoa(addr, buff);
+
+    return ystrlen(buff);
+}
+
+
+#endif
+
+
+
+static const u16 decPow[4] = {10, 100, 1000, 10000};
+
+ char* YSAFECODE(u16toa)(u16 val, char* buff)
+{
+    u16 i, printed = 0, digit, divisor;
+
+    if (val > 9) {
+        for (i = 0; i < 4u; i++) {
+            divisor = decPow[3 - i];
+            if (val >= divisor) {
+                digit = val / divisor;
+                *buff++ = '0' + digit;
+                val -= digit * divisor;
+                printed = 1;
+            } else if (printed) {
+                *buff++ = '0';
+            }
+        }
+    }
+    *buff++ = '0' + val;
+    *buff = 0;
+    return buff;
+}
+
+char* YSAFECODE(iptoa)(const IPvX_ADDR* addr, char* buff)
+{
+#ifndef IPV4_ONLY
+    u16 i, nz, maxnz, zend;
+
+    // Detect IPv4 addresses
+    if (isIPv4(addr)) {
+        IP_ADDR v4 = addr->v4.addr;
+        for (i = 0; i < 3; i++) {
+            buff = u16toa(v4.v[i], buff);
+            *buff++ = '.';
+        }
+        buff = u16toa(v4.v[3], buff);
+        return buff;
+    }
+    // Handle IPv6 address (find best possible representation)
+    zend = 0;
+    maxnz = 0;
+    nz = 0;
+    for (i = 0; i < 8; i++) {
+        u16 w = addr->v6.addr[i];
+        if (w) {
+            if (nz > maxnz) {
+                maxnz = nz;
+                zend = i;
+                nz = 0;
+            }
+        } else {
+            nz++;
+        }
+    }
+    if (nz > maxnz) {
+        maxnz = nz;
+        zend = 8;
+    }
+    for (i = 0; i < 8; i++) {
+        char wbuff[4];
+        u16 w = swaps(addr->v6.addr[i]);
+        u16 pos = 4;
+
+        if (maxnz > 1) {
+            if (i < zend && i >= zend - maxnz) {
+                if (i == zend - maxnz) {
+                    *buff++ = ':';
+                    if (zend == 8) {
+                        *buff++ = ':';
+                        break;
+                    }
+                }
+                continue;
+            }
+        }
+        if (w == 0) {
+            wbuff[--pos] = '0';
+        } else {
+            while (w > 0) {
+                wbuff[--pos] = btohexa_low_low((u8)w);
+                w >>= 4;
+            }
+        }
+        if (i > 0) {
+            *buff++ = ':';
+        }
+        while (pos < 4) {
+            *buff++ = wbuff[pos++];
+        }
+    }
+    *buff = 0;
+#else
+    u16  i;
+    IP_ADDR v4 = addr->v4.addr;
+    for (i = 0; i < 3; i++) {
+        buff = u16toa(v4.v[i], buff);
+        *buff++ = '.';
+    }
+    buff = u16toa(v4.v[3], buff);
+#endif
+
+    return buff;
+}

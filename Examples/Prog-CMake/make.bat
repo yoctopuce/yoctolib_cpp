@@ -1,1 +1,4 @@
-@echo "This example has to be compiled manually using CMake"
+rmdir /q /s windows
+mkdir windows
+cmake -S . -B windows
+cmake --build windows

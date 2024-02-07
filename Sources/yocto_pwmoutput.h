@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwmoutput.h 52567 2022-12-25 12:00:14Z seb $
+ *  $Id: yocto_pwmoutput.h 58920 2024-01-12 09:39:03Z seb $
  *
  *  Declares yFindPwmOutput(), the high-level API for PwmOutput functions
  *
@@ -67,6 +67,14 @@ typedef enum {
     Y_ENABLED_INVALID = -1,
 } Y_ENABLED_enum;
 #endif
+#ifndef _Y_INVERTEDOUTPUT_ENUM
+#define _Y_INVERTEDOUTPUT_ENUM
+typedef enum {
+    Y_INVERTEDOUTPUT_FALSE = 0,
+    Y_INVERTEDOUTPUT_TRUE = 1,
+    Y_INVERTEDOUTPUT_INVALID = -1,
+} Y_INVERTEDOUTPUT_enum;
+#endif
 #ifndef _Y_ENABLEDATPOWERON_ENUM
 #define _Y_ENABLEDATPOWERON_ENUM
 typedef enum {
@@ -105,6 +113,7 @@ protected:
     double          _dutyCycle;
     double          _pulseDuration;
     string          _pwmTransition;
+    Y_INVERTEDOUTPUT_enum _invertedOutput;
     Y_ENABLEDATPOWERON_enum _enabledAtPowerOn;
     double          _dutyCycleAtPowerOn;
     YPwmOutputValueCallback _valueCallbackPwmOutput;
@@ -131,6 +140,9 @@ public:
     static const double DUTYCYCLE_INVALID;
     static const double PULSEDURATION_INVALID;
     static const string PWMTRANSITION_INVALID;
+    static const Y_INVERTEDOUTPUT_enum INVERTEDOUTPUT_FALSE = Y_INVERTEDOUTPUT_FALSE;
+    static const Y_INVERTEDOUTPUT_enum INVERTEDOUTPUT_TRUE = Y_INVERTEDOUTPUT_TRUE;
+    static const Y_INVERTEDOUTPUT_enum INVERTEDOUTPUT_INVALID = Y_INVERTEDOUTPUT_INVALID;
     static const Y_ENABLEDATPOWERON_enum ENABLEDATPOWERON_FALSE = Y_ENABLEDATPOWERON_FALSE;
     static const Y_ENABLEDATPOWERON_enum ENABLEDATPOWERON_TRUE = Y_ENABLEDATPOWERON_TRUE;
     static const Y_ENABLEDATPOWERON_enum ENABLEDATPOWERON_INVALID = Y_ENABLEDATPOWERON_INVALID;
@@ -281,6 +293,35 @@ public:
     int             set_pwmTransition(const string& newval);
     inline int      setPwmTransition(const string& newval)
     { return this->set_pwmTransition(newval); }
+
+    /**
+     * Returns true if the output signal is configured as inverted, and false otherwise.
+     *
+     * @return either YPwmOutput::INVERTEDOUTPUT_FALSE or YPwmOutput::INVERTEDOUTPUT_TRUE, according to true
+     * if the output signal is configured as inverted, and false otherwise
+     *
+     * On failure, throws an exception or returns YPwmOutput::INVERTEDOUTPUT_INVALID.
+     */
+    Y_INVERTEDOUTPUT_enum get_invertedOutput(void);
+
+    inline Y_INVERTEDOUTPUT_enum invertedOutput(void)
+    { return this->get_invertedOutput(); }
+
+    /**
+     * Changes the inversion mode of the output signal.
+     * Remember to call the matching module saveToFlash() method if you want
+     * the change to be kept after power cycle.
+     *
+     * @param newval : either YPwmOutput::INVERTEDOUTPUT_FALSE or YPwmOutput::INVERTEDOUTPUT_TRUE, according
+     * to the inversion mode of the output signal
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_invertedOutput(Y_INVERTEDOUTPUT_enum newval);
+    inline int      setInvertedOutput(Y_INVERTEDOUTPUT_enum newval)
+    { return this->set_invertedOutput(newval); }
 
     /**
      * Returns the state of the PWM at device power on.

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ymemory.c 51576 2022-11-14 08:35:08Z seb $
+ * $Id: ymemory.c 51581 2022-11-14 11:00:14Z seb $
  *
  * Basic memory check function to prevent memory leak
  *
@@ -37,21 +37,27 @@
  *
  *********************************************************************/
 
-#define __FILE_ID__  "ymemory"
-// do not use microsoft secure string
+ // do not use microsoft secure string
 #define _CRT_SECURE_NO_DEPRECATE
 #define YMEMORY_ALLOW_MALLOC
-#include "yproto.h"
+#include "ydef_private.h"
 
+#define __FILE_ID__     MK_FILEID('M','E','M')
+#define __FILENAME__   "ymemory"
+
+#ifndef YAPI_IN_YDEVICE
+#include "yproto.h"
+#endif
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 #ifdef WINDOWS_API
 #include <time.h>
 #else
 #include <sys/time.h>
 #endif
-
+#include "ymemory.h"
 
 #ifdef YSAFE_MEMORY
 typedef  enum{
@@ -279,10 +285,11 @@ YRETCODE ystrcpy_s(char* dst, unsigned dstsize, const char* src)
     return ystrncpy_s(dst, dstsize, src, dstsize);
 }
 
+#ifndef EMBEDDED_API
 
 char* ystrdup_s(const char* src)
 {
-    int len = YSTRLEN(src);
+    int len = (int)strlen(src);
     char* tmp = yMalloc(len+1);
     memcpy(tmp, src, len + 1);
     return tmp;
@@ -295,20 +302,11 @@ char* ystrndup_s(const char* src, unsigned len)
     tmp[len] = 0;
     return tmp;
 }
+#endif
 
 YRETCODE ystrcat_s(char* dst, unsigned dstsize, const char* src)
 {
     return ystrncat_s(dst, dstsize, src, dstsize);
-}
-
-int ysprintf_s(char* dst, unsigned dstsize, const char* fmt, ...)
-{
-    int len;
-    va_list args;
-    va_start(args, fmt);
-    len = yvsprintf_s(dst, dstsize, fmt, args);
-    va_end(args);
-    return len;
 }
 
 YRETCODE ystrncpy_s(char* dst, unsigned dstsize, const char* src, unsigned arglen)
@@ -359,23 +357,6 @@ YRETCODE ystrncat_s(char* dst, unsigned dstsize, const char* src, unsigned len)
     return ystrncpy_s(dst + dstlen, dstsize - dstlen, src, len);
 }
 
-
-int yvsprintf_s(char* dst, unsigned dstsize, const char* fmt, va_list arg)
-{
-    int len;
-#if defined(_MSC_VER) && (_MSC_VER <= MSC_VS2003)
-    len = _vsnprintf(dst,dstsize,fmt,arg);
-#else
-    len = vsnprintf(dst, dstsize, fmt, arg);
-#endif
-    if (len < 0 || len >= (long)dstsize) {
-        YPANIC;
-        dst[dstsize - 1] = 0;
-        return YAPI_INVALID_ARGUMENT;
-    }
-    return len;
-}
-
 int ymemfind(const u8* haystack, u32 haystack_len, const u8* needle, u32 needle_len)
 {
     u32 abspos = 0;
@@ -394,3 +375,44 @@ int ymemfind(const u8* haystack, u32 haystack_len, const u8* needle, u32 needle_
     } while (abspos + needle_len < haystack_len);
     return -1;
 }
+
+#ifdef FREERTOS_API
+void *yCallocOrigin(size_t nmemb, size_t xSize, uint32_t origin )
+{
+    void *res = pvPortMallocOrigin(nmemb * xSize, origin);
+    if (res!=NULL){
+        memset(res, 0, nmemb*xSize);
+    }
+    return res;
+}
+#endif
+
+#if !defined(EMBEDDED_API)
+
+int yvsprintf_s(char* dst, unsigned dstsize, const char* fmt, va_list arg)
+{
+    int len;
+#if defined(_MSC_VER) && (_MSC_VER <= MSC_VS2003)
+    len = _vsnprintf(dst,dstsize,fmt,arg);
+#else
+    len = vsnprintf(dst, dstsize, fmt, arg);
+#endif
+    if (len < 0 || len >= (long)dstsize) {
+        YPANIC;
+        dst[dstsize - 1] = 0;
+        return YAPI_INVALID_ARGUMENT;
+    }
+    return len;
+}
+
+int ysprintf_s(char* dst, unsigned dstsize, const char* fmt, ...)
+{
+    int len;
+    va_list args;
+    va_start(args, fmt);
+    len = yvsprintf_s(dst, dstsize, fmt, args);
+    va_end(args);
+    return len;
+}
+
+#endif

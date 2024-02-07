@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.8)
 
 
-project(YoctoLib VERSION 1.0.1 DESCRIPTION "Yoctopuce C++ library")
+project(YoctoLib VERSION 1.0.1 DESCRIPTION "Yoctopuce C++ V2 library")
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 SET(CMAKE_INSTALL_PREFIX "/usr")
 endif()
@@ -75,6 +75,7 @@ set(YoctoLibHSources
 	yocto_spiport.h
 	yocto_steppermotor.h
 	yocto_temperature.h
+	yocto_threshold.h
 	yocto_tilt.h
 	yocto_tvoc.h
 	yocto_voc.h
@@ -155,6 +156,7 @@ set(YoctoLibCppSources
 	yocto_spiport.cpp
 	yocto_steppermotor.cpp
 	yocto_temperature.cpp
+	yocto_threshold.cpp
 	yocto_tilt.cpp
 	yocto_tvoc.cpp
 	yocto_voc.cpp

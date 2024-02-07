@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_buzzer.h 52567 2022-12-25 12:00:14Z seb $
+ *  $Id: yocto_buzzer.h 45930 2021-08-12 07:31:00Z web $
  *
  *  Declares yFindBuzzer(), the high-level API for Buzzer functions
  *

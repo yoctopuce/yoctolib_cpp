@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 56043 2023-08-14 15:22:27Z mvuilleu $
+#  $Id: GNUmakefile 58020 2023-11-23 15:55:01Z mvuilleu $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -39,18 +39,31 @@
 #
 # ********************************************************************
 
+ifeq ($(OS),Windows_NT)
+UNAME := Windows
+ARCH  := "windows"
+CCS_INSTALL_DIR ?= c:/ti/ccs930
+XDCTOOLS ?= $(CCS_INSTALL_DIR)/xdctools_3_60_02_34_core/bin/
+RM = $(XDCTOOLS)rm
+MKDIR = $(XDCTOOLS)mkdir
+else
 UNAME := $(shell uname)
 ARCH  := $(shell uname -m| sed -e s/i.86/i386/ -e s/arm.*/arm/)
+RM = rm
+MKDIR = mkdir
+endif
 
 
 MIPS_TARGET_ROOT = $(TARGET_MIPS)
 MIPSEL_TARGET_ROOT = $(TARGET_MIPSEL)
 
-TEST_SRC = ../Examples/Prog-FirmwareUpdate/main.cpp
+TEST_SRC = ../Examples/Doc-Inventory/main.cpp
 
 #C++ output directories
-DIR_I386 = linux/32bits/
-DIR_X64 = linux/64bits/
+DIR_WIN32 = windows/
+DIR_WIN64 = windows/amd64/
+DIR_I386 = linux/i386/
+DIR_X64 = linux/x86_64/
 DIR_ARMEL = linux/armel/
 DIR_ARMHF = linux/armhf/
 DIR_AARCH64 = linux/aarch64/
@@ -60,6 +73,8 @@ DIR_OSX = osx/
 DIR_OSX32 = osx32/
 
 #C lowlevel output directories
+YAPI_DIR_WIN32 =  windows/yapi/
+YAPI_DIR_WIN64 =  windows/yapi/amd64/
 YAPI_DIR_I386 = $(DIR_I386)yapi/
 YAPI_DIR_X64 = $(DIR_X64)yapi/
 YAPI_DIR_ARMEL = $(DIR_ARMEL)yapi/
@@ -71,6 +86,8 @@ YAPI_DIR_OSX = $(DIR_OSX)yapi/
 YAPI_DIR_OSX32 = $(DIR_OSX32)yapi/
 
 # temp obj directories
+OBJDIR_WIN32 = $(DIR_WIN32)objs/
+OBJDIR_WIN64 = $(DIR_WIN64)objs/
 OBJDIR_I386 = $(DIR_I386)objs/
 OBJDIR_X64 = $(DIR_X64)objs/
 OBJDIR_ARMEL = $(DIR_ARMEL)objs/
@@ -82,7 +99,13 @@ OBJDIR_OSX = $(DIR_OSX)objs/
 OBJDIR_OSX32 = $(DIR_OSX32)objs/
 
 
+DEF_SSL_GCC  = -DNO_YSSL
+
+
+
 #CC compiler for each arch
+CC_WIN32 = cl
+CC_WIN64 = cl
 CC_I386 = gcc
 CC_X64 = gcc
 ifdef TOOLCHAIN_QARM
@@ -107,6 +130,8 @@ CC_OSX32 = gcc
 
 
 #CPP compiler for each arch
+CPP_WIN32 = cl
+CPP_WIN64 = cl
 CPP_I386 = g++
 CPP_X64 = g++
 ifdef TOOLCHAIN_QARM
@@ -129,9 +154,11 @@ CPP_MIPSEL = mipsel-openwrt-linux-g++
 CPP_OSX = g++
 CPP_OSX32 = g++
 
+RC = rc
+
 #generic flags
-OPTS_DBG = -g -Wall
-OPTS_PROD = -g -Wall
+OPTS_DBG = -g -Wall $(DEF_FLAGS_GCC)
+OPTS_PROD = -g -Wall $(DEF_FLAGS_GCC)
 OPTS_STAT =
 OPTS_DYN = -fPIC
 
@@ -140,11 +167,21 @@ ifdef JAVA_HOME
 OPTS_DYN = $(OPTS_JAVA)
 endif
 
+
+OPTS_DBG_WIN = $(DEF_FLAGS_WIN)
+OPTS_PROD_WIN = /nologo  $(DEF_FLAGS_WIN)
+OPTS_STAT_WIN =  /Zl
+OPTS_DYN_WIN = /D GENERATE_DLL /W3 /WX- /O2 /Oi /Oy- /Gy /GL /MT
+
+OPTS_WIN32 =
+OPTS_WIN64 =
+
+
 # most compatible ARMEL options, using soft-float
 ifdef TOOLCHAIN_QARM
-OPTS_ARMEL = -I$(STAGING_QARM)/usr/include/ -O2 -mfloat-abi=soft -march=armv5 -marm -DBUILD_ARMEL
+OPTS_ARMEL = -I$(STAGING_QARM)/usr/include/ -O2 -mfloat-abi=soft -march=armv5 -marm -DBUILD_ARMEL -DNO_YSSL
 else
-OPTS_ARMEL = -mfloat-abi=soft -march=armv5 -DBUILD_ARMEL -D_XOPEN_SOURCE=500 -D_BSD_SOURCE
+OPTS_ARMEL = -mfloat-abi=soft -march=armv5 -DBUILD_ARMEL -D_XOPEN_SOURCE=500 -D_BSD_SOURCE -DNO_YSSL
 endif
 ifdef TOOLCHAIN_ARMHF
 # reduced ARMHF options to run properly on raspian-thing, but still be compatible with hard-floats VFP
@@ -157,10 +194,10 @@ OPTS_AARCH64 = -I$(STAGING_AARCH64)/usr/include/ $(OPTS_DBG) -march=native -DBUI
 else
 OPTS_AARCH64 = -march=native -DBUILD_AARCH64
 endif
-OPTS_MIPS = -DCPU_BIG_ENDIAN -I$(MIPS_TARGET_ROOT)/usr/include/
-OPTS_MIPSEL = -I$(MIPSEL_TARGET_ROOT)/usr/include/
+OPTS_MIPS = -DCPU_BIG_ENDIAN -I$(MIPS_TARGET_ROOT)/usr/include/ -DNO_YSSL
+OPTS_MIPSEL = -I$(MIPSEL_TARGET_ROOT)/usr/include/ -DNO_YSSL
 
-OPTS_X64 = -m64 -D_GNU_SOURCE
+OPTS_X64 = -m64 -g -Wall -D_GNU_SOURCE
 OPTS_I386 = -m32 -D_GNU_SOURCE -march=i586
 #osx specific flags
 OPTS_OSX =
@@ -168,6 +205,8 @@ OPTS_OSX32 = -m32
 
 
 #link optionsfor each arch
+LINKWITH_WIN32 = "Advapi32.lib"
+LINKWITH_WIN64 = "Advapi32.lib"
 LINKWITH_I386 = -lm -lpthread -lusb-1.0
 LINKWITH_X64 = -lm -lpthread -lusb-1.0
 ifdef TOOLCHAIN_QARM
@@ -189,6 +228,8 @@ LINKWITH_MIPS = -L$(MIPS_TARGET_ROOT)/usr/lib/ -lm -lpthread -lusb-1.0
 LINKWITH_MIPSEL = -L$(MIPSEL_TARGET_ROOT)/usr/lib/ -lm -lpthread -lusb-1.0
 LINKWITH_OSX =
 
+YAPI_LINKWITH_WIN32 = "Advapi32.lib"
+YAPI_LINKWITH_WIN64 = "Advapi32.lib"
 YAPI_LINKWITH_I386 = -lpthread -lusb-1.0
 YAPI_LINKWITH_X64 = -lpthread -lusb-1.0
 ifdef TOOLCHAIN_QARM
@@ -214,6 +255,8 @@ YAPI_LINKWITH_OSX32 =
 
 
 #striper for each arch :-)
+STRIP_WIN32 = $(XDCTOOLS)strip
+STRIP_WIN64 = $(XDCTOOLS)strip
 STRIP_I386 = strip
 STRIP_X64 = strip
 ifdef TOOLCHAIN_QARM
@@ -232,34 +275,27 @@ STRIP_MIPSEL = mipsel-openwrt-linux-strip
 STRIP_OSX = strip
 
 
-
-EXPORT_YAPI_I386    = $(YAPI_DIR_I386)libyapi-i386.so
-EXPORT_YAPI_X64     = $(YAPI_DIR_X64)libyapi-amd64.so
-EXPORT_YAPI_ARMEL   = $(YAPI_DIR_ARMHF)libyapi-armel.so
-EXPORT_YAPI_ARMHF   = $(YAPI_DIR_ARMHF)libyapi-armhf.so
-EXPORT_YAPI_AARCH64 = $(YAPI_DIR_AARCH64)libyapi-aarch64.so
-EXPORT_YAPI_MIPS    = $(YAPI_DIR_MIPS)libyapi-mips.so
-EXPORT_YAPI_MIPSEL  = $(YAPI_DIR_MIPSEL)libyapi-mipsel.so
-
-
-
 #define all tragets
-LIBS_YAPI_I386    = $(YAPI_DIR_I386)libyapi-static.a $(YAPI_DIR_I386)libyapi.so.1.0.1 $(EXPORT_YAPI_I386)
-LIBS_I386    = $(DIR_I386)libyocto-static.a $(DIR_I386)libyocto.so.1.0.1 $(LIBS_YAPI_I386)
-LIBS_YAPI_X64     = $(YAPI_DIR_X64)libyapi-static.a $(YAPI_DIR_X64)libyapi.so.1.0.1 $(EXPORT_YAPI_X64)
-LIBS_X64     = $(DIR_X64)libyocto-static.a $(DIR_X64)libyocto.so.1.0.1 $(LIBS_YAPI_X64)
-LIBS_YAPI_ARMEL   = $(YAPI_DIR_ARMEL)libyapi-static.a $(YAPI_DIR_ARMEL)libyapi.so.1.0.1 $(EXPORT_YAPI_ARMEL)
-LIBS_ARMEL   = $(DIR_ARMEL)libyocto-static.a $(DIR_ARMEL)libyocto.so.1.0.1 $(LIBS_YAPI_ARMEL)
-LIBS_YAPI_ARMHF   = $(YAPI_DIR_ARMHF)libyapi-static.a $(YAPI_DIR_ARMHF)libyapi.so.1.0.1 $(EXPORT_YAPI_ARMHF)
-LIBS_ARMHF   = $(DIR_ARMHF)libyocto-static.a $(DIR_ARMHF)libyocto.so.1.0.1 $(LIBS_YAPI_ARMHF)
-LIBS_YAPI_AARCH64 = $(YAPI_DIR_AARCH64)libyapi-static.a $(YAPI_DIR_AARCH64)libyapi.so.1.0.1 $(EXPORT_YAPI_AARCH64)
-LIBS_AARCH64 = $(DIR_AARCH64)libyocto-static.a $(DIR_AARCH64)libyocto.so.1.0.1 $(LIBS_YAPI_AARCH64)
-LIBS_YAPI_MIPS    = $(YAPI_DIR_MIPS)libyapi-static.a $(YAPI_DIR_MIPS)libyapi.so.1.0.1 $(EXPORT_YAPI_MIPS)
-LIBS_MIPS    = $(DIR_MIPS)libyocto-static.a $(DIR_MIPS)libyocto.so.1.0.1 $(LIBS_YAPI_MIPS)
-LIBS_YAPI_MIPSEL  = $(YAPI_DIR_MIPSEL)libyapi-static.a $(YAPI_DIR_MIPSEL)libyapi.so.1.0.1 $(EXPORT_YAPI_MIPSEL)
-LIBS_MIPSEL  = $(DIR_MIPSEL)libyocto-static.a $(DIR_MIPSEL)libyocto.so.1.0.1 $(LIBS_YAPI_MIPSEL)
-LIBS_OSX     = $(YAPI_DIR_OSX)libyapi.dylib $(DIR_OSX)libyocto-static.a  $(YAPI_DIR_OSX)libyapi-static.a $(DIR_OSX)libyocto.dylib
-LIBS_OSX32    = $(YAPI_DIR_OSX32)libyapi.dylib
+LIBS_YAPI_WIN32   = $(YAPI_DIR_WIN32)yapi-static.lib $(YAPI_DIR_WIN32)yapi.dll
+LIBS_WIN32        = $(DIR_WIN32)yocto-static.lib $(DIR_WIN32)yocto.dll $(LIBS_YAPI_WIN32)
+LIBS_YAPI_WIN64   = $(YAPI_DIR_WIN64)yapi-static.lib $(YAPI_DIR_WIN64)yapi.dll
+LIBS_WIN64        = $(DIR_WIN64)yocto-static.lib $(DIR_WIN64)yocto.dll $(LIBS_YAPI_WIN64)
+LIBS_YAPI_I386    = $(YAPI_DIR_I386)libyapi-static.a $(YAPI_DIR_I386)libyapi.so.1.0.1
+LIBS_I386         = $(DIR_I386)libyocto-static.a $(DIR_I386)libyocto.so.1.0.1 $(LIBS_YAPI_I386)
+LIBS_YAPI_X64     = $(YAPI_DIR_X64)libyapi-static.a $(YAPI_DIR_X64)libyapi.so.1.0.1
+LIBS_X64          = $(DIR_X64)libyocto-static.a $(DIR_X64)libyocto.so.1.0.1 $(LIBS_YAPI_X64)
+LIBS_YAPI_ARMEL   = $(YAPI_DIR_ARMEL)libyapi-static.a $(YAPI_DIR_ARMEL)libyapi.so.1.0.1
+LIBS_ARMEL        = $(DIR_ARMEL)libyocto-static.a $(DIR_ARMEL)libyocto.so.1.0.1 $(LIBS_YAPI_ARMEL)
+LIBS_YAPI_ARMHF   = $(YAPI_DIR_ARMHF)libyapi-static.a $(YAPI_DIR_ARMHF)libyapi.so.1.0.1
+LIBS_ARMHF        = $(DIR_ARMHF)libyocto-static.a $(DIR_ARMHF)libyocto.so.1.0.1 $(LIBS_YAPI_ARMHF)
+LIBS_YAPI_AARCH64 = $(YAPI_DIR_AARCH64)libyapi-static.a $(YAPI_DIR_AARCH64)libyapi.so.1.0.1
+LIBS_AARCH64      = $(DIR_AARCH64)libyocto-static.a $(DIR_AARCH64)libyocto.so.1.0.1 $(LIBS_YAPI_AARCH64)
+LIBS_YAPI_MIPS    = $(YAPI_DIR_MIPS)libyapi-static.a $(YAPI_DIR_MIPS)libyapi.so.1.0.1
+LIBS_MIPS         = $(DIR_MIPS)libyocto-static.a $(DIR_MIPS)libyocto.so.1.0.1 $(LIBS_YAPI_MIPS)
+LIBS_YAPI_MIPSEL  = $(YAPI_DIR_MIPSEL)libyapi-static.a $(YAPI_DIR_MIPSEL)libyapi.so.1.0.1
+LIBS_MIPSEL       = $(DIR_MIPSEL)libyocto-static.a $(DIR_MIPSEL)libyocto.so.1.0.1 $(LIBS_YAPI_MIPSEL)
+LIBS_OSX          = $(DIR_OSX)libyocto-static.a  $(YAPI_DIR_OSX)libyapi-static.a $(DIR_OSX)libyocto.dylib $(YAPI_DIR_OSX)libyapi.dylib
+LIBS_OSX32        = $(YAPI_DIR_OSX32)libyapi.dylib
 
 
 
@@ -331,6 +367,7 @@ YOCTO_API_OBJS_STAT = yocto_api.o\
 	yocto_spiport.o \
 	yocto_steppermotor.o \
 	yocto_temperature.o \
+	yocto_threshold.o \
 	yocto_tilt.o \
 	yocto_tvoc.o \
 	yocto_voc.o \
@@ -345,59 +382,113 @@ YOCTO_API_OBJS_STAT = yocto_api.o\
 #-- yocto_patch_stop --
 
 
+include mbedtls.inc
+
 YOCTO_API_OBJS_DYN  = $(patsubst %.o, %_dyn.o,$(YOCTO_API_OBJS_STAT))
 
 YAPI_SOURCES_DIR    = $(SOURCES_DIR)yapi/
 
-YAPI_OBJS_STAT = yapi.o ystream.o yprog.o yfifo.o ykey.o yhash.o yjson.o ytcp.o ymemory.o ythread.o yjni.o
+YAPI_OBJS_STAT = yapi.o ystream.o yprog.o yfifo.o ykey.o yhash.o yjson.o ytcp.o ymemory.o ythread.o yjni.o yssl.o
 YAPI_OBJS_DYN   = $(patsubst %.o, %_dyn.o,$(YAPI_OBJS_STAT))
 
+MBEDTLS_DIR           = $(YAPI_SOURCES_DIR)mbedtls/
+MBEDTLS_INCLUDE_DIR   = $(MBEDTLS_DIR)include/
+MBEDTLS_SOURCES_DIR  = $(MBEDTLS_DIR)library/
+
+MBEDTSL_OBJS_STAT = $(OBJS_CRYPTO) $(OBJS_X509) $(OBJS_TLS)
+MBEDTSL_OBJS_DYN   = $(patsubst %.o, %_dyn.o,$(MBEDTSL_OBJS_STAT))
 
 ALL_OBJS_STAT   = $(YAPI_OBJS_STAT) $(YOCTO_API_OBJS_STAT)
 ALL_OBJS_DYN    = $(YAPI_OBJS_DYN)  $(YOCTO_API_OBJS_DYN)
 
 #create a new definitions for each platform using macro
-ALL_OBJS_STAT_I386    = $(patsubst %.o, $(OBJDIR_I386)%.o, $(ALL_OBJS_STAT) ypkt_lin.o)
-ALL_OBJS_STAT_X64    = $(patsubst %.o, $(OBJDIR_X64)%.o, $(ALL_OBJS_STAT) ypkt_lin.o)
+ALL_OBJS_STAT_WIN32    = $(patsubst %.o, $(OBJDIR_WIN32)%.obj, $(ALL_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_win.o)
+ALL_OBJS_STAT_WIN64    = $(patsubst %.o, $(OBJDIR_WIN64)%.obj, $(ALL_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_win.o)
+ALL_OBJS_STAT_I386    = $(patsubst %.o, $(OBJDIR_I386)%.o, $(ALL_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_lin.o)
+ALL_OBJS_STAT_X64    = $(patsubst %.o, $(OBJDIR_X64)%.o, $(ALL_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_lin.o)
 ALL_OBJS_STAT_ARMEL = $(patsubst %.o, $(OBJDIR_ARMEL)%.o, $(ALL_OBJS_STAT) ypkt_lin.o)
-ALL_OBJS_STAT_ARMHF = $(patsubst %.o, $(OBJDIR_ARMHF)%.o, $(ALL_OBJS_STAT) ypkt_lin.o)
-ALL_OBJS_STAT_AARCH64 = $(patsubst %.o, $(OBJDIR_AARCH64)%.o, $(ALL_OBJS_STAT) ypkt_lin.o)
+ALL_OBJS_STAT_ARMHF = $(patsubst %.o, $(OBJDIR_ARMHF)%.o, $(ALL_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_lin.o)
+ALL_OBJS_STAT_AARCH64 = $(patsubst %.o, $(OBJDIR_AARCH64)%.o, $(ALL_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_lin.o)
 ALL_OBJS_STAT_MIPS = $(patsubst %.o, $(OBJDIR_MIPS)%.o, $(ALL_OBJS_STAT) ypkt_lin.o)
 ALL_OBJS_STAT_MIPSEL = $(patsubst %.o, $(OBJDIR_MIPSEL)%.o, $(ALL_OBJS_STAT) ypkt_lin.o)
-ALL_OBJS_STAT_OSX   = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(ALL_OBJS_STAT) ypkt_osx.o)
-ALL_OBJS_DYN_I386     = $(patsubst %.o, $(OBJDIR_I386)%.o, $(ALL_OBJS_DYN) ypkt_lin_dyn.o)
-ALL_OBJS_DYN_X64     = $(patsubst %.o, $(OBJDIR_X64)%.o, $(ALL_OBJS_DYN) ypkt_lin_dyn.o)
+ALL_OBJS_STAT_OSX   = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(ALL_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_osx.o)
+
+ALL_OBJS_DYN_WIN32    = $(patsubst %.o, $(OBJDIR_WIN32)%.obj, $(ALL_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_win_dyn.o)
+ALL_OBJS_DYN_WIN64    = $(patsubst %.o, $(OBJDIR_WIN64)%.obj, $(ALL_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_win_dyn.o)
+ALL_OBJS_DYN_I386     = $(patsubst %.o, $(OBJDIR_I386)%.o, $(ALL_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_lin_dyn.o)
+ALL_OBJS_DYN_X64     = $(patsubst %.o, $(OBJDIR_X64)%.o, $(ALL_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_lin_dyn.o)
 ALL_OBJS_DYN_ARMEL  = $(patsubst %.o, $(OBJDIR_ARMEL)%.o, $(ALL_OBJS_DYN) ypkt_lin_dyn.o)
-ALL_OBJS_DYN_ARMHF  = $(patsubst %.o, $(OBJDIR_ARMHF)%.o, $(ALL_OBJS_DYN) ypkt_lin_dyn.o)
-ALL_OBJS_DYN_AARCH64  = $(patsubst %.o, $(OBJDIR_AARCH64)%.o, $(ALL_OBJS_DYN) ypkt_lin_dyn.o)
+ALL_OBJS_DYN_ARMHF  = $(patsubst %.o, $(OBJDIR_ARMHF)%.o, $(ALL_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_lin_dyn.o)
+ALL_OBJS_DYN_AARCH64  = $(patsubst %.o, $(OBJDIR_AARCH64)%.o, $(ALL_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_lin_dyn.o)
 ALL_OBJS_DYN_MIPS  = $(patsubst %.o, $(OBJDIR_MIPS)%.o, $(ALL_OBJS_DYN) ypkt_lin_dyn.o)
 ALL_OBJS_DYN_MIPSEL  = $(patsubst %.o, $(OBJDIR_MIPSEL)%.o, $(ALL_OBJS_DYN) ypkt_lin_dyn.o)
-ALL_OBJS_DYN_OSX    = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(ALL_OBJS_DYN) ypkt_osx_dyn.o)
+ALL_OBJS_DYN_OSX    = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(ALL_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_osx_dyn.o)
 
-YAPI_OBJS_STAT_I386  = $(patsubst %.o, $(OBJDIR_I386)%.o, $(YAPI_OBJS_STAT) ypkt_lin.o)
-YAPI_OBJS_STAT_X64  = $(patsubst %.o, $(OBJDIR_X64)%.o, $(YAPI_OBJS_STAT) ypkt_lin.o)
+YAPI_OBJS_STAT_WIN32  = $(patsubst %.o, $(OBJDIR_WIN32)%.obj, $(YAPI_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_win.o)
+YAPI_OBJS_STAT_WIN64  = $(patsubst %.o, $(OBJDIR_WIN64)%.obj, $(YAPI_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_win.o)
+YAPI_OBJS_STAT_I386  = $(patsubst %.o, $(OBJDIR_I386)%.o, $(YAPI_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_lin.o)
+YAPI_OBJS_STAT_X64  = $(patsubst %.o, $(OBJDIR_X64)%.o, $(YAPI_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_lin.o)
 YAPI_OBJS_STAT_ARMEL = $(patsubst %.o, $(OBJDIR_ARMEL)%.o, $(YAPI_OBJS_STAT) ypkt_lin.o)
-YAPI_OBJS_STAT_ARMHF = $(patsubst %.o, $(OBJDIR_ARMHF)%.o, $(YAPI_OBJS_STAT) ypkt_lin.o)
-YAPI_OBJS_STAT_AARCH64 = $(patsubst %.o, $(OBJDIR_AARCH64)%.o, $(YAPI_OBJS_STAT) ypkt_lin.o)
+YAPI_OBJS_STAT_ARMHF = $(patsubst %.o, $(OBJDIR_ARMHF)%.o, $(YAPI_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_lin.o)
+YAPI_OBJS_STAT_AARCH64 = $(patsubst %.o, $(OBJDIR_AARCH64)%.o, $(YAPI_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_lin.o)
 YAPI_OBJS_STAT_MIPS = $(patsubst %.o, $(OBJDIR_MIPS)%.o, $(YAPI_OBJS_STAT) ypkt_lin.o)
 YAPI_OBJS_STAT_MIPSEL = $(patsubst %.o, $(OBJDIR_MIPSEL)%.o, $(YAPI_OBJS_STAT) ypkt_lin.o)
-YAPI_OBJS_STAT_OSX  = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(YAPI_OBJS_STAT) ypkt_osx.o)
-YAPI_OBJS_DYN_I386 = $(patsubst %.o, $(OBJDIR_I386)%.o, $(YAPI_OBJS_DYN) ypkt_lin_dyn.o)
-YAPI_OBJS_DYN_X64 = $(patsubst %.o, $(OBJDIR_X64)%.o, $(YAPI_OBJS_DYN) ypkt_lin_dyn.o)
+YAPI_OBJS_STAT_OSX  = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(YAPI_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_osx.o)
+
+YAPI_OBJS_DYN_WIN32  = $(patsubst %.o, $(OBJDIR_WIN32)%.obj, $(YAPI_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_win.o)
+YAPI_OBJS_DYN_WIN64  = $(patsubst %.o, $(OBJDIR_WIN64)%.obj, $(YAPI_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_win.o)
+YAPI_OBJS_DYN_I386 = $(patsubst %.o, $(OBJDIR_I386)%.o, $(YAPI_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_lin_dyn.o)
+YAPI_OBJS_DYN_X64 = $(patsubst %.o, $(OBJDIR_X64)%.o, $(YAPI_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_lin_dyn.o)
 YAPI_OBJS_DYN_ARMEL = $(patsubst %.o, $(OBJDIR_ARMEL)%.o, $(YAPI_OBJS_DYN) ypkt_lin_dyn.o)
-YAPI_OBJS_DYN_ARMHF = $(patsubst %.o, $(OBJDIR_ARMHF)%.o, $(YAPI_OBJS_DYN) ypkt_lin_dyn.o)
-YAPI_OBJS_DYN_AARCH64 = $(patsubst %.o, $(OBJDIR_AARCH64)%.o, $(YAPI_OBJS_DYN) ypkt_lin_dyn.o)
+YAPI_OBJS_DYN_ARMHF = $(patsubst %.o, $(OBJDIR_ARMHF)%.o, $(YAPI_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_lin_dyn.o)
+YAPI_OBJS_DYN_AARCH64 = $(patsubst %.o, $(OBJDIR_AARCH64)%.o, $(YAPI_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_lin_dyn.o)
 YAPI_OBJS_DYN_MIPS = $(patsubst %.o, $(OBJDIR_MIPS)%.o, $(YAPI_OBJS_DYN) ypkt_lin_dyn.o)
 YAPI_OBJS_DYN_MIPSEL = $(patsubst %.o, $(OBJDIR_MIPSEL)%.o, $(YAPI_OBJS_DYN) ypkt_lin_dyn.o)
-YAPI_OBJS_DYN_OSX = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(YAPI_OBJS_DYN) ypkt_osx_dyn.o)
-YAPI_OBJS_DYN_OSX32 = $(patsubst %.o, $(OBJDIR_OSX32)%.o, $(YAPI_OBJS_DYN) ypkt_osx_dyn.o)
+YAPI_OBJS_DYN_OSX = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(YAPI_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_osx_dyn.o)
+YAPI_OBJS_DYN_OSX32 = $(patsubst %.o, $(OBJDIR_OSX32)%.o, $(YAPI_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_osx_dyn.o)
 
-VPATH       = $(YAPI_SOURCES_DIR) $(SOURCES_DIR)
-INC_PATH    = $(patsubst %,-I%,$(subst :, ,$(VPATH)))
+VPATH       = $(YAPI_SOURCES_DIR) $(SOURCES_DIR) $(MBEDTLS_SOURCES_DIR)
+INCLUDES    = $(YAPI_SOURCES_DIR) $(SOURCES_DIR) $(MBEDTLS_INCLUDE_DIR)
 
-ALL_H       = $(wildcard $(patsubst %,%*.h,$(subst :, ,$(YAPI_SOURCES_DIR) $(SOURCES_DIR))))
+INC_PATH    = $(patsubst %,-I%,$(subst :, ,$(INCLUDES)))
+INC_PATH_WIN = $(patsubst %,/I %,$(subst :, ,$(INCLUDES)))
+
+
+ALL_H       = $(wildcard $(patsubst %,%*.h,$(subst :, ,$(YAPI_SOURCES_DIR) $(SOURCES_DIR)  $(MBEDTLS_INCLUDE_DIR))))
 
 fwd: default
+
+# WINDOW 32bits
+$(OBJDIR_WIN32)%.obj: %.c $(ALL_H)
+	@$(CC_WIN32) $(OPTS_WIN32) $(OPTS_PROD_WIN) $(OPTS_STAT_WIN) $(INC_PATH_WIN) /Fo$@ /c $<
+
+$(OBJDIR_WIN32)%.obj: %.cpp $(ALL_H)
+	@$(CPP_WIN32) $(OPTS_WIN32) $(OPTS_PROD_WIN) $(OPTS_STAT_WIN) $(INC_PATH_WIN) /EHsc /Fo$@ /c $<
+
+$(OBJDIR_WIN32)%_dyn.obj: %.c $(ALL_H)
+	@$(CC_WIN32) $(OPTS_WIN32) $(OPTS_PROD_WIN) $(OPTS_DYN_WIN) $(INC_PATH_WIN) /Fo$@ /c $<
+
+$(OBJDIR_WIN32)%_dyn.obj: %.cpp $(ALL_H)
+	@$(CPP_WIN32) $(OPTS_WIN32) $(OPTS_PROD_WIN) $(OPTS_DYN_WIN) $(INC_PATH_WIN) /EHsc /Fo$@ /c $<
+
+$(OBJDIR_WIN32)%.res: %.rc
+	$(RC) /fo $@ $<
+
+# WINDOW 64bits
+$(OBJDIR_WIN64)%.obj: %.c $(ALL_H)
+	@$(CC_WIN64) $(OPTS_WIN64) $(OPTS_PROD_WIN) $(OPTS_STAT_WIN) $(INC_PATH_WIN) /Fo$@ /c $<
+
+$(OBJDIR_WIN64)%.obj: %.cpp $(ALL_H)
+	@$(CPP_WIN64) $(OPTS_WIN64) $(OPTS_PROD_WIN) $(OPTS_STAT_WIN) $(INC_PATH_WIN) /EHsc /Fo$@ /c $<
+
+$(OBJDIR_WIN64)%_dyn.obj: %.c $(ALL_H)
+	@$(CC_WIN64) $(OPTS_WIN64) $(OPTS_PROD_WIN) $(OPTS_DYN_WIN) $(INC_PATH_WIN) /Fo$@ /c $<
+
+$(OBJDIR_WIN64)%_dyn.obj: %.cpp $(ALL_H)
+	@$(CPP_WIN64) $(OPTS_WIN64) $(OPTS_PROD_WIN) $(OPTS_DYN_WIN) $(INC_PATH_WIN) /EHsc /Fo$@ /c $<
+
+$(OBJDIR_WIN64)%.res: %.rc
+	$(RC) /fo $@ $<
 
 #generic compilation rules
 $(OBJDIR_I386)%.o: %.c $(ALL_H)
@@ -532,16 +623,71 @@ $(OBJDIR_OSX32)%_dyn.o: %.c $(ALL_H)
 	@echo compiling $@
 	@$(CC_OSX32) $(OPTS_OSX32) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
 
-fwd: default
+# WINDOW 32 LIBRARY RULES
+$(DIR_WIN32)yocto-static.lib: $(OBJDIR_WIN32) $(ALL_OBJS_STAT_WIN32) $(ALL_H)
+	@$(RM) -rf $@
+	@echo building lib ($@)
+	@lib /OUT:$@ $(ALL_OBJS_STAT_WIN32)
+
+$(YAPI_DIR_WIN32)yapi-static.lib: $(OBJDIR_WIN32) $(YAPI_DIR_WIN32) $(YAPI_OBJS_STAT_WIN32) $(ALL_H)
+	@$(RM) -rf $@
+	@echo building lib ($@)
+	@lib /OUT:$@ $(YAPI_OBJS_STAT_WIN32)
+
+$(DIR_WIN32)yocto.dll: $(OBJDIR_WIN32) $(ALL_OBJS_DYN_WIN32) $(OBJDIR_WIN32)winresource.res  $(ALL_H)
+	@echo building dll $@
+	@$(CPP_WIN32) $(ALL_OBJS_DYN_WIN32) $(OBJDIR_WIN32)winresource.res OleAut32.lib /nologo /Fe$@ /Fa(R) /link /DLL $(LINKWITH_WIN32)
+
+$(YAPI_DIR_WIN32)yapi.dll: $(OBJDIR_WIN32) $(YAPI_DIR_WIN32) $(YAPI_OBJS_DYN_WIN32) $(OBJDIR_WIN32)yapiresource.res $(ALL_H)
+	@echo building dll $@
+ifdef JAVA_HOME
+	@echo java_home set to $(JAVA_HOME)
+endif
+	@$(CC_WIN32) $(YAPI_OBJS_DYN_WIN32) $(OBJDIR_WIN32)yapiresource.res /W3 /WX- /O2 /Oi /Oy- /MT /Gy /GL /nologo /Fe$@ /Fa(R) /link /DLL $(LINKWITH_WIN32) /DEF:$(YAPI_SOURCES_DIR)yapi.def
+
+$(DIR_WIN32)test.exe: $(OBJDIR_WIN32) $(YAPI_DIR_WIN32) $(ALL_OBJS_STAT_WIN32) $(ALL_H) $(TEST_SRC)
+	@$(RM) -rf $@
+	@echo linking $@
+	@echo $(ARCH)
+	@$(CPP_WIN32) $(OPTS_WIN32) $(INC_PATH_WIN) /EHsc /Fe$@ $(TEST_SRC) $(ALL_OBJS_STAT_WIN32)  /link  $(LINKWITH_WIN32)
+
+
+# WINDOW 64 LIBRARY RULES
+$(DIR_WIN64)yocto-static.lib: $(OBJDIR_WIN64) $(ALL_OBJS_STAT_WIN64) $(ALL_H)
+	@$(RM) -rf $@
+	@echo building lib ($@)
+	@lib /OUT:$@ $(ALL_OBJS_STAT_WIN64)
+
+$(YAPI_DIR_WIN64)yapi-static.lib: $(OBJDIR_WIN64) $(YAPI_DIR_WIN64) $(YAPI_OBJS_STAT_WIN64) $(ALL_H)
+	@$(RM) -rf $@
+	@echo building lib ($@)
+	@lib /OUT:$@ $(YAPI_OBJS_STAT_WIN64)
+
+$(DIR_WIN64)yocto.dll: $(OBJDIR_WIN64) $(ALL_OBJS_DYN_WIN64) $(OBJDIR_WIN64)winresource64.res $(ALL_H)
+	@echo building dll $@
+	@$(CPP_WIN64) $(ALL_OBJS_DYN_WIN64) $(OBJDIR_WIN64)winresource64.res /nologo /Fe$@ /Fa(R) /link  /MACHINE:X64  /DLL  $(LINKWITH_WIN64)
+
+$(YAPI_DIR_WIN64)yapi.dll: $(OBJDIR_WIN64) $(YAPI_DIR_WIN64) $(YAPI_OBJS_DYN_WIN64) $(OBJDIR_WIN64)yapiresource64.res  $(ALL_H)
+	@echo building dll $@
+ifdef JAVA_HOME
+	@echo java_home set to $(JAVA_HOME)
+endif
+	@$(CC_WIN64) $(YAPI_OBJS_DYN_WIN64) $(OBJDIR_WIN64)yapiresource64.res /W3 /WX- /O2 /Oi /Oy- /MT /Gy /GL /nologo /Fe$@ /Fa(R) /link  /MACHINE:X64  /DLL $(LINKWITH_WIN64)
+
+$(DIR_WIN64)test.exe: $(OBJDIR_WIN64) $(YAPI_DIR_WIN64) $(ALL_OBJS_STAT_WIN64) $(ALL_H) $(TEST_SRC)
+	@$(RM) -rf $@
+	@echo linking $@
+	@$(CPP_WIN64) $(OPTS_WIN64) $(INC_PATH_WIN)  /Fe$@ $(TEST_SRC) $(ALL_OBJS_STAT_WIN64) $(LINKWITH_WIN64)
+
 
 # INTEL 386 LIBRARY RULES
 $(DIR_I386)libyocto-static.a: $(OBJDIR_I386) $(ALL_OBJS_STAT_I386) $(ALL_H)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@ar rcs $@  $(ALL_OBJS_STAT_I386)
 
 $(YAPI_DIR_I386)libyapi-static.a: $(OBJDIR_I386) $(YAPI_DIR_I386) $(YAPI_OBJS_STAT_I386) $(ALL_H)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@ar rcs $@  $(YAPI_OBJS_STAT_I386)
 
@@ -549,7 +695,7 @@ $(DIR_I386)libyocto.so.1.0.1: $(OBJDIR_I386) $(ALL_OBJS_DYN_I386) $(ALL_H)
 	@echo linking $@
 	@$(CPP_I386) $(OPTS_I386) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_I386) $(LINKWITH_I386)
 
-$(EXPORT_YAPI_I386) $(YAPI_DIR_I386)libyapi.so.1.0.1: $(OBJDIR_I386) $(YAPI_DIR_I386) $(YAPI_OBJS_DYN_I386) $(ALL_H)
+$(YAPI_DIR_I386)libyapi.so.1.0.1: $(OBJDIR_I386) $(YAPI_DIR_I386) $(YAPI_OBJS_DYN_I386) $(ALL_H)
 	@echo linking $@
 ifdef JAVA_HOME
 	@echo java_home set to $(JAVA_HOME)
@@ -558,18 +704,18 @@ endif
 	@$(STRIP_I386) $@
 
 $(DIR_I386)test: $(OBJDIR_I386) $(YAPI_DIR_I386) $(ALL_OBJS_STAT_I386) $(ALL_H) $(TEST_SRC)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@$(CPP_I386) $(OPTS_I386) $(INC_PATH) -o $@ $(TEST_SRC) $(ALL_OBJS_STAT_I386) $(LINKWITH_I386)
 
 # INTEL X64 LIBRARY RULES
 $(DIR_X64)libyocto-static.a: $(OBJDIR_X64) $(ALL_OBJS_STAT_X64) $(ALL_H)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@ar rcs $@  $(ALL_OBJS_STAT_X64)
 
 $(YAPI_DIR_X64)libyapi-static.a: $(OBJDIR_X64) $(YAPI_DIR_X64) $(YAPI_OBJS_STAT_X64) $(ALL_H)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@ar rcs $@  $(YAPI_OBJS_STAT_X64)
 
@@ -577,7 +723,7 @@ $(DIR_X64)libyocto.so.1.0.1: $(OBJDIR_X64) $(ALL_OBJS_DYN_X64) $(ALL_H)
 	@echo linking $@
 	@$(CPP_X64) $(OPTS_X64) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_X64) $(LINKWITH_X64)
 
-$(EXPORT_YAPI_X64) $(YAPI_DIR_X64)libyapi.so.1.0.1: $(OBJDIR_X64) $(YAPI_DIR_X64) $(YAPI_OBJS_DYN_X64) $(ALL_H)
+$(YAPI_DIR_X64)libyapi.so.1.0.1: $(OBJDIR_X64) $(YAPI_DIR_X64) $(YAPI_OBJS_DYN_X64) $(ALL_H)
 	@echo linking $@
 ifdef JAVA_HOME
 	@echo java_home set to $(JAVA_HOME)
@@ -586,18 +732,18 @@ endif
 	@$(STRIP_X64) $@
 
 $(DIR_X64)test: $(OBJDIR_X64) $(YAPI_DIR_X64) $(ALL_OBJS_STAT_X64) $(ALL_H) $(TEST_SRC)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@$(CPP_X64) $(OPTS_X64) $(INC_PATH) -o $@ $(TEST_SRC) $(ALL_OBJS_STAT_X64) $(LINKWITH_X64)
 
 # ARM SOFT FLOAT LIBRARY RULES
 $(DIR_ARMEL)libyocto-static.a: $(OBJDIR_ARMEL) $(ALL_OBJS_STAT_ARMEL) $(ALL_H)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@ar rcs $@  $(ALL_OBJS_STAT_ARMEL)
 
 $(YAPI_DIR_ARMEL)libyapi-static.a: $(OBJDIR_ARMEL) $(YAPI_DIR_ARMEL) $(YAPI_OBJS_STAT_ARMEL) $(ALL_H)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@ar rcs $@  $(YAPI_OBJS_STAT_ARMEL)
 
@@ -605,7 +751,7 @@ $(DIR_ARMEL)libyocto.so.1.0.1: $(OBJDIR_ARMEL) $(ALL_OBJS_DYN_ARMEL) $(ALL_H)
 	@echo linking $@
 	@$(CPP_ARMEL) $(OPTS_ARMEL) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_ARMEL) $(LINKWITH_ARMEL)
 
-$(EXPORT_YAPI_ARMEL) $(YAPI_DIR_ARMEL)libyapi.so.1.0.1: $(OBJDIR_ARMEL) $(YAPI_DIR_ARMEL) $(YAPI_OBJS_DYN_ARMEL) $(ALL_H)
+$(YAPI_DIR_ARMEL)libyapi.so.1.0.1: $(OBJDIR_ARMEL) $(YAPI_DIR_ARMEL) $(YAPI_OBJS_DYN_ARMEL) $(ALL_H)
 	@echo linking $@
 ifdef JAVA_HOME
 	@echo java_home set to $(JAVA_HOME)
@@ -613,18 +759,18 @@ endif
 	@$(CC_ARMEL) $(OPTS_ARMEL) -shared -Wl,-soname,$(@F) -o $@ $(YAPI_OBJS_DYN_ARMEL) $(YAPI_LINKWITH_ARMEL)
 
 $(DIR_ARMEL)test: $(OBJDIR_ARMEL) $(YAPI_DIR_ARMEL) $(ALL_OBJS_STAT_ARMEL) $(ALL_H) $(TEST_SRC)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@$(CPP_ARMEL) $(OPTS_ARMEL) $(INC_PATH) -o $@ $(TEST_SRC) $(ALL_OBJS_STAT_ARMEL) $(LINKWITH_ARMEL)
 
 # ARM HARD FLOAT LIBRARY RULES
 $(DIR_ARMHF)libyocto-static.a: $(OBJDIR_ARMHF) $(ALL_OBJS_STAT_ARMHF) $(ALL_H)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@ar rcs $@  $(ALL_OBJS_STAT_ARMHF)
 
 $(YAPI_DIR_ARMHF)libyapi-static.a: $(OBJDIR_ARMHF) $(YAPI_DIR_ARMHF) $(YAPI_OBJS_STAT_ARMHF) $(ALL_H)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@ar rcs $@  $(YAPI_OBJS_STAT_ARMHF)
 
@@ -632,7 +778,7 @@ $(DIR_ARMHF)libyocto.so.1.0.1: $(OBJDIR_ARMHF) $(ALL_OBJS_DYN_ARMHF) $(ALL_H)
 	@echo linking $@
 	@$(CPP_ARMHF) $(OPTS_ARMHF) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_ARMHF) $(LINKWITH_ARMHF)
 
-$(EXPORT_YAPI_ARMHF) $(YAPI_DIR_ARMHF)libyapi.so.1.0.1: $(OBJDIR_ARMHF) $(YAPI_DIR_ARMHF) $(YAPI_OBJS_DYN_ARMHF) $(ALL_H)
+$(YAPI_DIR_ARMHF)libyapi.so.1.0.1: $(OBJDIR_ARMHF) $(YAPI_DIR_ARMHF) $(YAPI_OBJS_DYN_ARMHF) $(ALL_H)
 	@echo linking $@
 ifdef JAVA_HOME
 	@echo java_home set to $(JAVA_HOME)
@@ -641,18 +787,18 @@ endif
 	@$(STRIP_ARMHF) $@
 
 $(DIR_ARMHF)test: $(OBJDIR_ARMHF) $(YAPI_DIR_ARMHF) $(ALL_OBJS_STAT_ARMHF) $(ALL_H) $(TEST_SRC)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@$(CPP_ARMHF) $(OPTS_ARMHF) $(INC_PATH) -o $@ $(TEST_SRC) $(ALL_OBJS_STAT_ARMHF) $(LINKWITH_ARMHF)
 
 # AARCH64 LIBRARY RULES
 $(DIR_AARCH64)libyocto-static.a: $(OBJDIR_AARCH64) $(ALL_OBJS_STAT_AARCH64) $(ALL_H)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@ar rcs $@  $(ALL_OBJS_STAT_AARCH64)
 
 $(YAPI_DIR_AARCH64)libyapi-static.a: $(OBJDIR_AARCH64) $(YAPI_DIR_AARCH64) $(YAPI_OBJS_STAT_AARCH64) $(ALL_H)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@ar rcs $@  $(YAPI_OBJS_STAT_AARCH64)
 
@@ -660,7 +806,7 @@ $(DIR_AARCH64)libyocto.so.1.0.1: $(OBJDIR_AARCH64) $(ALL_OBJS_DYN_AARCH64) $(ALL
 	@echo linking $@
 	@$(CPP_AARCH64) $(OPTS_AARCH64) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_AARCH64) $(LINKWITH_AARCH64)
 
-$(EXPORT_YAPI_AARCH64) $(YAPI_DIR_AARCH64)libyapi.so.1.0.1: $(OBJDIR_AARCH64) $(YAPI_DIR_AARCH64) $(YAPI_OBJS_DYN_AARCH64) $(ALL_H)
+$(YAPI_DIR_AARCH64)libyapi.so.1.0.1: $(OBJDIR_AARCH64) $(YAPI_DIR_AARCH64) $(YAPI_OBJS_DYN_AARCH64) $(ALL_H)
 	@echo linking $@
 ifdef JAVA_HOME
 	@echo java_home set to $(JAVA_HOME)
@@ -669,18 +815,18 @@ endif
 	@$(STRIP_AARCH64) $@
 
 $(DIR_AARCH64)test: $(OBJDIR_AARCH64) $(YAPI_DIR_AARCH64) $(ALL_OBJS_STAT_AARCH64) $(ALL_H) $(TEST_SRC)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@$(CPP_AARCH64) $(OPTS_AARCH64) $(INC_PATH) -o $@ $(TEST_SRC) $(ALL_OBJS_STAT_AARCH64) $(LINKWITH_AARCH64)
 
 # MIPS LIBRARY RULES
 $(DIR_MIPS)libyocto-static.a: $(OBJDIR_MIPS) $(ALL_OBJS_STAT_MIPS) $(ALL_H)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@ar rcs $@  $(ALL_OBJS_STAT_MIPS)
 
 $(YAPI_DIR_MIPS)libyapi-static.a: $(OBJDIR_MIPS) $(YAPI_DIR_MIPS) $(YAPI_OBJS_STAT_MIPS) $(ALL_H)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@ar rcs $@  $(YAPI_OBJS_STAT_MIPS)
 
@@ -688,7 +834,7 @@ $(DIR_MIPS)libyocto.so.1.0.1: $(OBJDIR_MIPS) $(ALL_OBJS_DYN_MIPS) $(ALL_H)
 	@echo linking $@
 	@$(CPP_MIPS) $(OPTS_MIPS) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_MIPS) $(LINKWITH_MIPS)
 
-$(EXPORT_YAPI_MIPS) $(YAPI_DIR_MIPS)libyapi.so.1.0.1: $(OBJDIR_MIPS) $(YAPI_DIR_MIPS) $(YAPI_OBJS_DYN_MIPS) $(ALL_H)
+$(YAPI_DIR_MIPS)libyapi.so.1.0.1: $(OBJDIR_MIPS) $(YAPI_DIR_MIPS) $(YAPI_OBJS_DYN_MIPS) $(ALL_H)
 	@echo linking $@
 ifdef JAVA_HOME
 	@echo java_home set to $(JAVA_HOME)
@@ -696,18 +842,18 @@ endif
 	@$(CC_MIPS) $(OPTS_MIPS) -shared -Wl,-soname,$(@F) -o $@ $(YAPI_OBJS_DYN_MIPS) $(YAPI_LINKWITH_MIPS)
 
 $(DIR_MIPS)test: $(OBJDIR_MIPS) $(YAPI_DIR_MIPS) $ALL_OBJS_STAT_MIPS) $(ALL_H) $(TEST_SRC)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@$(CPP_MIPS) $(OPTS_MIPS) $(INC_PATH) -o $@ $(TEST_SRC) $(ALL_OBJS_STAT_MIPS) $(LINKWITH_MIPS)
 
 # MIPSEL LIBRARY RULES
 $(DIR_MIPSEL)libyocto-static.a: $(OBJDIR_MIPSEL) $(ALL_OBJS_STAT_MIPSEL) $(ALL_H)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@ar rcs $@  $(ALL_OBJS_STAT_MIPSEL)
 
 $(YAPI_DIR_MIPSEL)libyapi-static.a: $(OBJDIR_MIPSEL) $(YAPI_DIR_MIPSEL) $(YAPI_OBJS_STAT_MIPSEL) $(ALL_H)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@ar rcs $@  $(YAPI_OBJS_STAT_MIPSEL)
 
@@ -715,7 +861,7 @@ $(DIR_MIPSEL)libyocto.so.1.0.1: $(OBJDIR_MIPSEL) $(ALL_OBJS_DYN_MIPSEL) $(ALL_H)
 	@echo linking $@
 	@$(CPP_MIPSEL) $(OPTS_MIPSEL) -shared -Wl,-soname,$(@F) -o $@ $(ALL_OBJS_DYN_MIPSEL) $(LINKWITH_MIPSEL)
 
-$(EXPORT_YAPI_MIPSEL) $(YAPI_DIR_MIPSEL)libyapi.so.1.0.1: $(OBJDIR_MIPSEL) $(YAPI_DIR_MIPSEL) $(YAPI_OBJS_DYN_MIPSEL) $(ALL_H)
+$(YAPI_DIR_MIPSEL)libyapi.so.1.0.1: $(OBJDIR_MIPSEL) $(YAPI_DIR_MIPSEL) $(YAPI_OBJS_DYN_MIPSEL) $(ALL_H)
 	@echo linking $@
 ifdef JAVA_HOME
 	@echo java_home set to $(JAVA_HOME)
@@ -723,18 +869,18 @@ endif
 	@$(CC_MIPSEL) $(OPTS_MIPSEL) -shared -Wl,-soname,$(@F) -o $@ $(YAPI_OBJS_DYN_MIPSEL) $(YAPI_LINKWITH_MIPSEL)
 
 $(DIR_MIPSEL)test: $(OBJDIR_MIPSEL) $(YAPI_DIR_MIPSEL) $ALL_OBJS_STAT_MIPSEL) $(ALL_H) $(TEST_SRC)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@$(CPP_MIPSEL) $(OPTS_MIPSEL) $(INC_PATH) -o $@ $(TEST_SRC) $(ALL_OBJS_STAT_MIPSEL) $(LINKWITH_MIPSEL)
 
 # OSX LIBRARY RULES
 $(DIR_OSX)libyocto-static.a: $(OBJDIR_OSX) $(ALL_OBJS_STAT_OSX) $(ALL_H)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@ar rcs $@  $(ALL_OBJS_STAT_OSX)
 
 $(YAPI_DIR_OSX)libyapi-static.a: $(OBJDIR_OSX) $(YAPI_DIR_OSX) $(YAPI_OBJS_STAT_OSX) $(ALL_H)
-	@rm -rf $@
+	@$(RM) -rf $@
 	@echo linking $@
 	@ar rcs $@  $(YAPI_OBJS_STAT_OSX)
 
@@ -742,52 +888,65 @@ $(DIR_OSX)libyocto.dylib: $(DIR_OSX) $(ALL_OBJS_DYN_OSX) $(ALL_H)
 	@echo linking $@
 	@$(CPP_OSX)  -m64 -dynamiclib -Wl,-reexport_framework,IOKit,-reexport_framework,CoreFoundation,-headerpad_max_install_names,-compatibility_version,1.0,-current_version,1.0,-install_name,/usr/local/lib/libyocto.dylib -o $@ $(ALL_OBJS_DYN_OSX)
 
-
-OSX_DYLIB_AS = xcode_as/yapi/build/Release/libyapi.dylib
-
-.PHONY: $(OSX_DYLIB_AS)
-$(OSX_DYLIB_AS):
+$(YAPI_DIR_OSX)libyapi.dylib : OPTS_DYN = $(OPTS_JAVA)
+$(YAPI_DIR_OSX)libyapi.dylib: $(DIR_OSX) $(YAPI_OBJS_DYN_OSX) $(ALL_H)
+	@echo linking $@
 ifdef JAVA_HOME
 	@echo java_home set to $(JAVA_HOME)
 endif
-	@echo "build yapi.dylib from xcode project (phony)"
-	xcodebuild -project xcode_as/yapi/yapi.xcodeproj
+	@$(CC_OSX) -m64 -dynamiclib -Wl,-reexport_framework,IOKit,-reexport_framework,CoreFoundation,-headerpad_max_install_names,-compatibility_version,1.0,-current_version,1.0,-install_name,/usr/local/lib/libyapi.dylib -o $@ $(YAPI_OBJS_DYN_OSX)
 
-$(YAPI_DIR_OSX)libyapi.dylib: $(YAPI_DIR_OSX) $(OSX_DYLIB_AS)
-	cp -R $(OSX_DYLIB_AS) $(YAPI_DIR_OSX)
-
-
-$(DIR_OSX)test: $(OBJDIR_OSX) $(YAPI_DIR_OSX) $(ALL_OBJS_STAT_OSX) $(ALL_H) $(TEST_SRC)
-	@rm -rf $@
+$(DIR_OSX)test: $(OBJDIR_OSX) $(YAPI_DIR_OSX) ALL_OBJS_STAT_OSX) $(ALL_H) $(TEST_SRC)
+	@$(RM) -rf $@
 	@echo linking $@
 	@$(CPP_OSX) $(OPTS_OSX) $(INC_PATH) -o $@ $(TEST_SRC) $(ALL_OBJS_STAT_OSX) $(LINKWITH_OSX)
 
+$(YAPI_DIR_OSX32)libyapi.dylib : OPTS_DYN = $(OPTS_JAVA)
+$(YAPI_DIR_OSX32)libyapi.dylib: $(OBJDIR_OSX32) $(YAPI_DIR_OSX32) $(YAPI_OBJS_DYN_OSX32) $(ALL_H)
+	@echo linking $@
+ifdef JAVA_HOME
+	@echo java_home set to $(JAVA_HOME)
+endif
+	@$(CC_OSX32) -m32 -dynamiclib -Wl,-reexport_framework,IOKit,-reexport_framework,CoreFoundation,-headerpad_max_install_names,-compatibility_version,1.0,-current_version,1.0,-install_name,/usr/local/lib/libyapi.dylib -o $@ $(YAPI_OBJS_DYN_OSX32)
 
+win32: $(LIBS_WIN32)
 
+release_win32: $(LIBS_WIN32)
+	@$(MAKE) clean_obj_win32
+
+win64: $(LIBS_WIN64)
+
+release_win64: $(LIBS_WIN64)
+	@$(MAKE) clean_obj_win64
 
 i386: $(LIBS_I386)
 
-release_i386: $(LIBS_I386) clean_obj_i386
+release_i386: $(LIBS_I386)
+	@$(MAKE) clean_obj_i386
 
 x64: $(LIBS_X64)
 
-release_x64: $(LIBS_X64) clean_obj_x64
+release_x64: $(LIBS_X64)
+	@$(MAKE) clean_obj_x64
 
 armel: $(LIBS_ARMEL)
 
-release_armel: $(LIBS_ARMEL) clean_obj_armel
+release_armel: $(LIBS_ARMEL)
+	@$(MAKE) clean_obj_armel
 
 yapi_armel: $(LIBS_YAPI_ARMEL)
 
 armhf: $(LIBS_ARMHF)
 
-release_armhf: $(LIBS_ARMHF) clean_obj_armhf
+release_armhf: $(LIBS_ARMHF)
+	@$(MAKE) clean_obj_armhf
 
 yapi_armhf: $(LIBS_YAPI_ARMHF)
 
 aarch64: $(LIBS_AARCH64)
 
-release_aarch64: $(LIBS_AARCH64) clean_obj_aarch64
+release_aarch64: $(LIBS_AARCH64)
+	@$(MAKE) clean_obj_aarch64
 
 yapi_aarch64: $(LIBS_YAPI_AARCH64)
 
@@ -795,13 +954,15 @@ mips : export STAGING_DIR = $(STAGING_MIPS)
 mips: $(LIBS_MIPS)
 
 release_mips : export STAGING_DIR = $(STAGING_MIPS)
-release_mips: $(LIBS_MIPS) clean_obj_mips
+release_mips: $(LIBS_MIPS)
+	@$(MAKE) clean_obj_mips
 
 mipsel : export STAGING_DIR = $(STAGING_MIPSEL)
 mipsel: $(LIBS_MIPSEL)
 
 release_mipsel : export STAGING_DIR = $(STAGING_MIPSEL)
-release_mipsel: $(LIBS_MIPSEL) clean_obj_mipsel
+release_mipsel: $(LIBS_MIPSEL)
+	@$(MAKE) clean_obj_mipsel
 
 $(YAPI_DIR_OSX)/yapi.bundle:
 	xcodebuild -project xcode/yapi/yapi.xcodeproj
@@ -853,14 +1014,46 @@ endif
 endif
 endif
 else
+
+ifeq ($(OS),Windows_NT)
+#windows
+default: win32
+
+release: release_win32
+
+
+test: $(DIR_WIN32)test.exe
+
+else
 #mac os
 default: osx
 
 release: release_osx
-
+endif
 endif
 
-check_java : 
+libyapi-i386.so : OPTS_DYN = $(OPTS_JAVA)
+libyapi-i386.so: $(YAPI_DIR_I386)libyapi.so.1.0.1
+	cp $< $@
+
+libyapi-amd64.so : OPTS_DYN = $(OPTS_JAVA)
+libyapi-amd64.so: $(YAPI_DIR_X64)libyapi.so.1.0.1
+	cp $< $@
+
+libyapi-armel.so : OPTS_DYN = $(OPTS_JAVA)
+libyapi-armel.so: $(YAPI_DIR_ARMEL)libyapi.so.1.0.1
+	cp $< $@
+
+libyapi-armhf.so : OPTS_DYN = $(OPTS_JAVA)
+libyapi-armhf.so:  $(YAPI_DIR_ARMHF)libyapi.so.1.0.1
+	cp $< $@
+
+libyapi-aarch64.so : OPTS_DYN = $(OPTS_JAVA)
+libyapi-aarch64.so: $(YAPI_DIR_AARCH64)libyapi.so.1.0.1
+	cp $< $@
+
+
+check_java :
 ifdef JAVA_HOME
 	@echo java_home set to $(JAVA_HOME)
 else
@@ -868,65 +1061,77 @@ else
 	exit 1
 endif
 
-$(DIR_I386) $(DIR_X64) $(DIR_ARMEL) $(DIR_ARMHF) $(DIR_AARCH64) $(DIR_MIPS) $(DIR_MIPSEL) $(DIR_OSX) $(DIR_OSX32) \
-$(YAPI_DIR_I386) $(YAPI_DIR_X64) $(YAPI_DIR_ARMEL) $(YAPI_DIR_ARMHF) $(YAPI_DIR_AARCH64) $(YAPI_DIR_MIPS) $(YAPI_DIR_MIPSEL) $(YAPI_DIR_OSX) $(YAPI_DIR_OSX32) \
-$(OBJDIR_I386) $(OBJDIR_X64) $(OBJDIR_ARMEL) $(OBJDIR_ARMHF) $(OBJDIR_AARCH64) $(OBJDIR_MIPS) $(OBJDIR_MIPSEL) $(OBJDIR_OSX) $(OBJDIR_OSX32) :
-	@mkdir -p $@
+$(DIR_WIN32) $(DIR_WIN64) $(DIR_I386) $(DIR_X64) $(DIR_ARMEL) $(DIR_ARMHF) $(DIR_AARCH64) $(DIR_MIPS) $(DIR_MIPSEL) $(DIR_OSX) $(DIR_OSX32) \
+$(YAPI_DIR_WIN32) $(YAPI_DIR_WIN64) $(YAPI_DIR_I386) $(YAPI_DIR_X64) $(YAPI_DIR_ARMEL) $(YAPI_DIR_ARMHF) $(YAPI_DIR_AARCH64) $(YAPI_DIR_MIPS) $(YAPI_DIR_MIPSEL) $(YAPI_DIR_OSX) $(YAPI_DIR_OSX32) \
+$(OBJDIR_WIN32) $(OBJDIR_WIN64) $(OBJDIR_I386) $(OBJDIR_X64) $(OBJDIR_ARMEL) $(OBJDIR_ARMHF) $(OBJDIR_AARCH64) $(OBJDIR_MIPS) $(OBJDIR_MIPSEL) $(OBJDIR_OSX) $(OBJDIR_OSX32) :
+	@$(MKDIR) -p $@
+
+clean_obj_win32:
+	@$(RM) -rf $(OBJDIR_WIN32)
+
+clean_obj_win64:
+	@$(RM) -rf $(OBJDIR_WIN64)
 
 clean_obj_i386:
-	@rm -rf $(OBJDIR_I386)
+	@$(RM) -rf $(OBJDIR_I386)
 
 clean_obj_x64:
-	@rm -rf $(OBJDIR_X64)
+	@$(RM) -rf $(OBJDIR_X64)
 
 clean_obj_armel:
-	@rm -rf $(OBJDIR_ARMEL)
+	@$(RM) -rf $(OBJDIR_ARMEL)
 
 clean_obj_armhf:
-	@rm -rf $(OBJDIR_ARMHF)
+	@$(RM) -rf $(OBJDIR_ARMHF)
 
 clean_obj_aarch64:
-	@rm -rf $(OBJDIR_AARCH64)
+	@$(RM) -rf $(OBJDIR_AARCH64)
 
 clean_obj_mips:
-	@rm -rf $(OBJDIR_MIPS)
+	@$(RM) -rf $(OBJDIR_MIPS)
 
 clean_obj_mipsel:
-	@rm -rf $(OBJDIR_MIPSEL)
+	@$(RM) -rf $(OBJDIR_MIPSEL)
 
 clean_obj_osx:
-	@rm -rf $(OBJDIR_OSX)
+	@$(RM) -rf $(OBJDIR_OSX)
 
 clean_obj_osx32:
-	@rm -rf $(OBJDIR_OSX)
+	@$(RM) -rf $(OBJDIR_OSX)
 
 clean_i386: clean_obj_i386
-	@rm -rf $(DIR_I386)
+	@$(RM) -rf $(DIR_I386)
 
 clean_x64: clean_obj_x64
-	@rm -rf $(DIR_X64)
+	@$(RM) -rf $(DIR_X64)
+
+clean_win32: clean_obj_win32
+	@$(RM) -rf $(DIR_WIN32)
+
+clean_win64: clean_obj_win64
+	@$(RM) -rf $(DIR_WIN64)
 
 clean_armel: clean_obj_armel
-	@rm -rf $(DIR_ARMEL)
+	@$(RM) -rf $(DIR_ARMEL)
 
 clean_armhf: clean_obj_armhf
-	@rm -rf $(DIR_ARMHF)
+	@$(RM) -rf $(DIR_ARMHF)
 
 clean_aarch64: clean_obj_aarch64
-	@rm -rf $(DIR_AARCH64)
+	@$(RM) -rf $(DIR_AARCH64)
 
 clean_mips: clean_obj_mips
-	@rm -rf $(DIR_MIPS)
+	@$(RM) -rf $(DIR_MIPS)
 
 clean_mipsel: clean_obj_mipsel
-	@rm -rf $(DIR_MIPSEL)
+	@$(RM) -rf $(DIR_MIPSEL)
 
 clean_osx: clean_obj_osx
-	@rm -rf $(DIR_OSX)
+	@$(RM) -rf $(DIR_OSX)
 
 clean_osx32: clean_obj_osx32
-	@rm -rf $(DIR_OSX32)
+	@$(RM) -rf $(DIR_OSX32)
 
-clean clean_all: clean_i386 clean_x64 clean_armel clean_armhf clean_mips clean_mipsel clean_osx clean_osx32 clean_aarch64
+clean clean_all: clean_win32 clean_win64 clean_i386 clean_x64 clean_armel clean_armhf clean_mips clean_mipsel clean_osx clean_osx32 clean_aarch64
 	echo clean
 

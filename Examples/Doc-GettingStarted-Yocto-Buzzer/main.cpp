@@ -1,13 +1,13 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 42524 2020-11-17 10:03:41Z seb $
+ *  $Id: main.cpp 46880 2021-10-21 09:08:05Z seb $
  *
  *  An example that show how to use a  Yocto-Buzzer
  *
  *  You can find more information on our web site:
  *   Yocto-Buzzer documentation:
  *      https://www.yoctopuce.com/EN/products/yocto-buzzer/doc.html
- *   C++ API Reference:
+ *   C++ V2 API Reference:
  *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
  *
  *********************************************************************/

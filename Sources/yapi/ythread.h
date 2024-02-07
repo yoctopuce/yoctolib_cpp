@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.h 44962 2021-05-10 08:32:59Z web $
+ * $Id: ythread.h 49088 2022-03-17 11:11:53Z seb $
  *
  * OS-independent thread and synchronization library
  *
@@ -54,17 +54,20 @@
 #include <windows.h>
 #endif
 typedef HANDLE yEvent;
+#elif defined(FREERTOS_API)
+#include "event_groups.h"
+typedef struct {
+    EventGroupHandle_t handle;
+    StaticEventGroup_t buffer;
+} yEvent;
 #else
 #include <pthread.h>
-
-
 typedef struct {
     pthread_cond_t   cond;
     pthread_mutex_t  mtx;
     int              verif;
     int              autoreset;
 } yEvent;
-
 #endif
 
 void yCreateEvent(yEvent* ev);

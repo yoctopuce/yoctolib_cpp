@@ -1,13 +1,13 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 55617 2023-07-26 08:07:01Z seb $
+ *  $Id: svn_id $
  *
  *  An example that show how to use a  Yocto-MaxiKnob
  *
  *  You can find more information on our web site:
  *   Yocto-MaxiKnob documentation:
  *      https://www.yoctopuce.com/EN/products/yocto-maxiknob/doc.html
- *   C++ API Reference:
+ *   C++ V2 API Reference:
  *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
  *
  *********************************************************************/

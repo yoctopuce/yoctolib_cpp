@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yjni.c 44028 2021-02-25 10:40:53Z web $
+ * $Id: yjni.c 56623 2023-09-20 07:47:56Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -36,15 +36,18 @@
  *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
-#define __FILE_ID__  "yjni"
+
+#include "ydef_private.h"
+#define __FILE_ID__     MK_FILEID('J','N','I')
+#define __FILENAME__   "yjni"
 
 #include "yapi.h"
 #include "yproto.h"
+
+#ifdef YAPI_WITH_JNI
 #include "yhash.h"
 #include "yjson.h"
 #include "yprog.h"
-
-#ifdef YAPI_WITH_JNI
 
 #include <jni.h>
 #include <stdio.h>
@@ -90,9 +93,6 @@ JNIEXPORT jstring JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_addUdevRule(JN
     }
     return (*env)->NewStringUTF(env, "");
 }
-
-
-
 
 /*
  * Class:     com_yoctopuce_YoctoAPI_YJniWrapper

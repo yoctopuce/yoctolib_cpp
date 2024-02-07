@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_i2cport.cpp 56058 2023-08-15 07:38:35Z mvuilleu $
+ *  $Id: yocto_i2cport.cpp 58920 2024-01-12 09:39:03Z seb $
  *
  *  Implements yFindI2cPort(), the high-level API for I2cPort functions
  *
@@ -57,6 +57,7 @@ using namespace YOCTOLIB_NAMESPACE;
 YI2cSnoopingRecord::YI2cSnoopingRecord(const string& json):
 //--- (generated code: YI2cSnoopingRecord initialization)
     _tim(0)
+    ,_pos(0)
     ,_dir(0)
 //--- (end of generated code: YI2cSnoopingRecord initialization)
 {
@@ -85,6 +86,11 @@ YI2cSnoopingRecord::YI2cSnoopingRecord(const string& json):
                 return;
             }
             _tim = atoi(j.token);;
+        } else if(!strcmp(j.token, "p")) {
+            if (yJsonParse(&j) != YJSON_PARSE_AVAIL) {
+                return;
+            }
+            _pos = atoi(j.token);;
         } else {
             yJsonSkip(&j, 1);
         }
@@ -103,6 +109,16 @@ YI2cSnoopingRecord::YI2cSnoopingRecord(const string& json):
 int YI2cSnoopingRecord::get_time(void)
 {
     return _tim;
+}
+
+/**
+ * Returns the absolute position of the message end.
+ *
+ * @return the absolute position of the message end.
+ */
+int YI2cSnoopingRecord::get_pos(void)
+{
+    return _pos;
 }
 
 /**

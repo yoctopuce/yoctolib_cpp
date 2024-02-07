@@ -106,6 +106,7 @@ class YOCTO_CLASS_EXPORT YSdi12SnoopingRecord {
     //--- (generated code: YSdi12SnoopingRecord attributes)
     // Attributes (function value cache)
     int             _tim;
+    int             _pos;
     int             _dir;
     string          _msg;
     //--- (end of generated code: YSdi12SnoopingRecord attributes)
@@ -128,6 +129,13 @@ public:
      * @return the elapsed time, in ms, since the beginning of the preceding message.
      */
     virtual int         get_time(void);
+
+    /**
+     * Returns the absolute position of the message end.
+     *
+     * @return the absolute position of the message end.
+     */
+    virtual int         get_pos(void);
 
     /**
      * Returns the message direction (RX=0, TX=1).
@@ -189,28 +197,98 @@ public:
     //--- (generated code: YSdi12Sensor accessors declaration)
 
 
+    /**
+     * Returns the sensor address.
+     *
+     * @return the sensor address.
+     */
     virtual string      get_sensorAddress(void);
 
+    /**
+     * Returns the compatible SDI-12 version of the sensor.
+     *
+     * @return the compatible SDI-12 version of the sensor.
+     */
     virtual string      get_sensorProtocol(void);
 
+    /**
+     * Returns the sensor vendor identification.
+     *
+     * @return the sensor vendor identification.
+     */
     virtual string      get_sensorVendor(void);
 
+    /**
+     * Returns the sensor model number.
+     *
+     * @return the sensor model number.
+     */
     virtual string      get_sensorModel(void);
 
+    /**
+     * Returns the sensor version.
+     *
+     * @return the sensor version.
+     */
     virtual string      get_sensorVersion(void);
 
+    /**
+     * Returns the sensor serial number.
+     *
+     * @return the sensor serial number.
+     */
     virtual string      get_sensorSerial(void);
 
+    /**
+     * Returns the number of sensor measurements.
+     *
+     * @return the number of sensor measurements.
+     */
     virtual int         get_measureCount(void);
 
+    /**
+     * Returns the sensor measurement command.
+     *
+     * @param measureIndex : measurement index
+     *
+     * @return the sensor measurement command.
+     */
     virtual string      get_measureCommand(int measureIndex);
 
+    /**
+     * Returns sensor measurement position.
+     *
+     * @param measureIndex : measurement index
+     *
+     * @return the sensor measurement command.
+     */
     virtual int         get_measurePosition(int measureIndex);
 
+    /**
+     * Returns the measured value symbol.
+     *
+     * @param measureIndex : measurement index
+     *
+     * @return the sensor measurement command.
+     */
     virtual string      get_measureSymbol(int measureIndex);
 
+    /**
+     * Returns the unit of the measured value.
+     *
+     * @param measureIndex : measurement index
+     *
+     * @return the sensor measurement command.
+     */
     virtual string      get_measureUnit(int measureIndex);
 
+    /**
+     * Returns the description of the measured value.
+     *
+     * @param measureIndex : measurement index
+     *
+     * @return the sensor measurement command.
+     */
     virtual string      get_measureDescription(int measureIndex);
 
     virtual vector< vector<string> > get_typeMeasure(void);

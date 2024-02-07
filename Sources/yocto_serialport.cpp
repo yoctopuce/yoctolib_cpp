@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 56058 2023-08-15 07:38:35Z mvuilleu $
+ * $Id: yocto_serialport.cpp 58920 2024-01-12 09:39:03Z seb $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -57,6 +57,7 @@ using namespace YOCTOLIB_NAMESPACE;
 YSnoopingRecord::YSnoopingRecord(const string& json):
 //--- (generated code: YSnoopingRecord initialization)
     _tim(0)
+    ,_pos(0)
     ,_dir(0)
 //--- (end of generated code: YSnoopingRecord initialization)
 {
@@ -85,6 +86,11 @@ YSnoopingRecord::YSnoopingRecord(const string& json):
                 return;
             }
             _tim = atoi(j.token);;
+        } else if(!strcmp(j.token, "p")) {
+            if (yJsonParse(&j) != YJSON_PARSE_AVAIL) {
+                return;
+            }
+            _pos = atoi(j.token);;
         } else {
             yJsonSkip(&j, 1);
         }
@@ -103,6 +109,16 @@ YSnoopingRecord::YSnoopingRecord(const string& json):
 int YSnoopingRecord::get_time(void)
 {
     return _tim;
+}
+
+/**
+ * Returns the absolute position of the message end.
+ *
+ * @return the absolute position of the message end.
+ */
+int YSnoopingRecord::get_pos(void)
+{
+    return _pos;
 }
 
 /**

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 54099 2023-04-18 08:02:26Z seb $
+ * $Id: ystream.c 57978 2023-11-22 10:09:09Z mvuilleu $
  *
  * USB stream implementation
  *
@@ -37,10 +37,16 @@
  *
  *********************************************************************/
 
-#define __FILE_ID__  "ystream"
-#include "yproto.h"
-#include "yhash.h"
+#include "ydef_private.h"
+#define __FILE_ID__     MK_FILEID('S','T','M')
+#define __FILENAME__   "ystream"
 
+#include "yproto.h"
+#ifdef YAPI_IN_YDEVICE
+#include "privhash.h"
+#else
+#include "yhash.h"
+#endif
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -112,6 +118,8 @@ int ySetErr(int code, char* outmsg, const char* erreur, const char* file, u32 li
         case YAPI_RTC_NOT_READY: msg = "Real-time clock has not been initialized";
             break;
         case YAPI_FILE_NOT_FOUND: msg = "File is not found";
+            break;
+        case YAPI_SSL_ERROR: msg = "Error with SSL/TLS";
             break;
         default: msg = "Unknown error";
             break;
@@ -262,6 +270,42 @@ int wcstombs_s(size_t *pReturnValue, char *mbstr, size_t sizeInBytes, const wcha
 }
 #endif
 
+u32 decodeHex(const char* p, int nbdigit)
+{
+    u32 ret = 0;
+    int i;
+    for (i = nbdigit - 1; i >= 0; i--, p++) {
+        u32 digit;
+        if (*p >= 'a' && *p <= 'f') {
+            digit = 10 + *p - 'a';
+        } else if (*p >= 'A' && *p <= 'F') {
+            digit = 10 + *p - 'A';
+        } else if (*p >= '0' && *p <= '9') {
+            digit = *p - '0';
+        } else {
+            return 0;
+        }
+        ret += digit << (4 * i);
+    }
+    return ret;
+}
+
+#ifndef WINDOWS_API
+#include <time.h>
+int ylocaltime(struct tm *_out,const time_t *time)
+{
+    struct tm *tmp = localtime(time);
+    memcpy(_out,tmp,sizeof(struct tm));
+    return 0;
+}
+
+int ygmtime(struct tm *_out,const time_t *time)
+{
+    struct tm *tmp = gmtime(time);
+    memcpy(_out,tmp,sizeof(struct tm));
+    return 0;
+}
+#endif
 
 /*****************************************************************************
  Whitepage and Yellowpage wrapper for USB devices
@@ -1136,7 +1180,7 @@ YRETCODE yPktQueuePushD2H(yInterfaceSt* iface, const USB_Packet* pkt, char* errm
         }
         yLeaveCriticalSection(&iface->rxQueue.cs);
         if (mustdump) {
-            yPktQueueDup(&iface->rxQueue, __FILE_ID__, __LINE__);
+            yPktQueueDup(&iface->rxQueue, __FILENAME__, __LINE__);
         }
     }
 #endif
@@ -1286,7 +1330,7 @@ static int yyWaitOnlyConfPkt(yInterfaceSt* iface, u8 cmdtowait, pktItem** rpkt, 
         if (tmp != NULL) {
             if (tmp->pkt.confpkt.head.pkt == YPKT_CONF && tmp->pkt.confpkt.head.stream == cmdtowait) {
                 //conf packet has bee received
-                YASSERT(tmp->pkt.confpkt.head.size >= sizeof(USB_Conf_Pkt));
+                YASSERT(tmp->pkt.confpkt.head.size >= sizeof(USB_Conf_Pkt), tmp->pkt.confpkt.head.size);
                 *rpkt = tmp;
                 if (dropcount)
                     dbglog("drop %d pkt on iface %d\n", dropcount, iface->ifaceno);
@@ -1434,7 +1478,7 @@ static int yPacketSetup(yPrivDeviceSt* dev, char* errmsg)
             res = YAPI_VERSION_MISMATCH;
             goto error;
         }
-        YASSERT(rpkt->pkt.confpkt.conf.reset.ifaceno < NBMAX_INTERFACE_PER_DEV);
+        YASSERT(rpkt->pkt.confpkt.conf.reset.ifaceno < NBMAX_INTERFACE_PER_DEV, rpkt->pkt.confpkt.conf.reset.ifaceno);
         if (rpkt->pkt.confpkt.conf.reset.nbifaces != 1) {
             res = YERRMSG(YAPI_VERSION_MISMATCH, "Multiples USB interface are no more supported");
             goto error;
@@ -1519,7 +1563,7 @@ again:
 #endif
             return YAPI_SUCCESS;
         } else {
-            yPktQueueDup(&iface->rxQueue, nextpktno, __FILE_ID__, __LINE__);
+            yPktQueueDup(&iface->rxQueue, nextpktno, __FILENAME__, __LINE__);
             yFree(item);
             return YERRMSG(YAPI_IO_ERROR, "Missing Packet");
         }
@@ -1623,7 +1667,7 @@ static int yStreamReceived(yPrivDeviceSt* dev, u8* stream, u8** data, u8* size, 
     }
 
     yshead = (YSTREAM_Head*)&dev->currxpkt->pkt.data[dev->curxofs];
-    YASSERT(dev->curxofs + sizeof(YSTREAM_Head) + yshead->size <= USB_PKT_SIZE);
+    YASSERT(dev->curxofs + sizeof(YSTREAM_Head) + yshead->size <= USB_PKT_SIZE, dev->curxofs + sizeof(YSTREAM_Head) + yshead->size);
     *stream = yshead->stream;
     *size = yshead->size;
     *data = &dev->currxpkt->pkt.data[dev->curxofs + sizeof(YSTREAM_Head)];
@@ -1722,7 +1766,7 @@ static void yDispatchNotice(yPrivDeviceSt* dev, USB_Notify_Pkt* notify, int pkts
         // create a new null-terminated small notification that we can use and forward
         char buff[sizeof(Notification_small) + YOCTO_PUBVAL_SIZE + 2];
         Notification_small* smallnot = (Notification_small*)buff;
-        memset(smallnot->pubval, 0,YOCTO_PUBVAL_SIZE + 2);
+        memset(buff, 0, sizeof(buff));
 
         if (notify->smallpubvalnot.funInfo.v2.isSmall == 0) {
             // convert tiny notification to samll notification
@@ -1731,18 +1775,6 @@ static void yDispatchNotice(yPrivDeviceSt* dev, USB_Notify_Pkt* notify, int pkts
             smallnot->funInfo.v2.typeV2 = notify->tinypubvalnot.funInfo.v2.typeV2;
             smallnot->funInfo.v2.isSmall = 1;
             smallnot->devydx = wpGetDevYdx(yHashPutStr(dev->infos.serial));
-        } else {
-#ifndef __BORLANDC__
-            YASSERT(0);
-#endif
-            // Assert added on 2015-02-25, remove code below when confirmed dead code
-            memcpy(smallnot->pubval, notify->smallpubvalnot.pubval, pktsize - sizeof(Notification_small));
-            smallnot->funInfo.raw = notify->smallpubvalnot.funInfo.raw;
-            if (dev->devYdxMap) {
-                smallnot->devydx = dev->devYdxMap[notify->smallpubvalnot.devydx];
-            } else {
-                smallnot->devydx = 255;
-            }
         }
 #ifdef DEBUG_NOTIFICATION
         if(smallnot->funInfo.v2.typeV2 == NOTIFY_V2_LEGACY) {
@@ -1816,8 +1848,8 @@ static void yDispatchNotice(yPrivDeviceSt* dev, USB_Notify_Pkt* notify, int pkts
         YSTRCPY(notDev->infos.firmware, YOCTO_FIRMWARE_LEN, notify->firmwarenot.firmware);
         FROM_SAFE_U16(notify->firmwarenot.deviceid, deviceid);
         FROM_SAFE_U16(notify->firmwarenot.vendorid, vendorid);
-        YASSERT(notDev->infos.deviceid == deviceid);
-        YASSERT(notDev->infos.vendorid == vendorid);
+        YASSERT(notDev->infos.deviceid == deviceid, notDev->infos.deviceid);
+        YASSERT(notDev->infos.vendorid == vendorid, notDev->infos.vendorid);
         break;
     case NOTIFY_PKT_FUNCNAME:
         notify->funcnameydxnot.funydx = -1;
@@ -2827,7 +2859,7 @@ int yUsbWrite(YIOHDL_internal* ioghdl, const char* buffer, int writelen, char* e
 int yUsbReadNonBlock(YIOHDL_internal* ioghdl, char* buffer, int len, char* errmsg)
 {
     yPrivDeviceSt* p;
-    u16 readed;
+    u16 nread;
     int res;
 
     YPERF_ENTER(yUsbReadNonBlock);
@@ -2858,17 +2890,17 @@ int yUsbReadNonBlock(YIOHDL_internal* ioghdl, char* buffer, int len, char* errms
         len = HTTP_RAW_BUFF_SIZE;
     }
     //get all available data
-    readed = yPopFifo(&p->http_fifo, (u8*)buffer, (u16)len);
+    nread = yPopFifo(&p->http_fifo, (u8*)buffer, (u16)len);
     YPROPERR(devPauseIO(PUSH_LOCATION p,errmsg));
     YPERF_LEAVE(yUsbReadNonBlock);
-    return readed;
+    return nread;
 }
 
 
 int yUsbReadBlock(YIOHDL_internal* ioghdl, char* buffer, int len, u64 blockUntil, char* errmsg)
 {
     yPrivDeviceSt* p;
-    u16 readed, avail;
+    u16 nread, avail;
     int res;
 
     YPERF_ENTER(yUsbReadBlock);
@@ -2899,10 +2931,10 @@ int yUsbReadBlock(YIOHDL_internal* ioghdl, char* buffer, int len, u64 blockUntil
         len = HTTP_RAW_BUFF_SIZE;
     }
     //get all available data
-    readed = yPopFifo(&p->http_fifo, (u8*)buffer, (u16)len);
+    nread = yPopFifo(&p->http_fifo, (u8*)buffer, (u16)len);
     YPROPERR(devPauseIO(PUSH_LOCATION p,errmsg));
     YPERF_LEAVE(yUsbReadBlock);
-    return readed;
+    return nread;
 }
 
 

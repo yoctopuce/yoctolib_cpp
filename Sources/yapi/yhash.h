@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.h 54352 2023-05-03 13:45:35Z mvuilleu $
+ * $Id: yhash.h 59229 2024-02-06 08:32:54Z seb $
  *
  * Simple hash tables and device/function information store
  *
@@ -46,18 +46,17 @@ extern "C" {
 
 #include "ydef.h"
 
+#ifdef YAPI_IN_YDEVICE
+#error Old yHash implementation should not be used in devices
+#endif
+
 //#define DEBUG_WP_LOCK
 //#define DEBUG_WP
 
 #define HASH_BUF_SIZE 28
 #define HASH_BUF_POW   5 /* HASH_BUF_POW = log_2(HASH_BUF_SIZE+2+2) */
-#ifdef MICROCHIP_API
-#define NB_MAX_HASH_ENTRIES 1023     /* keep hash table size <32KB on Yocto-Hub */
-#define NB_MAX_DEVICES        80     /* base hub + up to 15 shields (up to 4 slave ports) */
-#else
 #define NB_MAX_HASH_ENTRIES 8192
 #define NB_MAX_DEVICES       256
-#endif
 
 #define YSTRREF_EMPTY_STRING   0x00ff /* yStrRef value for the empty string    */
 #define YSTRREF_MODULE_STRING  0x0020 /* yStrRef value for the string 'Module' */
@@ -90,15 +89,15 @@ typedef enum {
 #define YBLKID_YPENTRYEND (YBLKID_YPENTRY+YOCTO_N_BASECLASSES-1)
 
 typedef struct {
-    u8          devYdx;
-    u8          blkId;
-    yBlkHdl     nextPtr;
-    yStrRef     serial;
-    yStrRef     name;
-    yStrRef     product;
-    u16         devid;
-    yUrlRef     url;
-    u16         flags;
+    u8 devYdx;
+    u8 blkId;
+    yBlkHdl nextPtr;
+    yStrRef serial;
+    yStrRef name;
+    yStrRef product;
+    u16 devid;
+    yUrlRef url;
+    u16 flags;
 } yWhitePageEntry;
 
 // WP entry flags
@@ -106,59 +105,65 @@ typedef struct {
 #define YWP_BEACON_ON           0x01
 
 typedef struct {
-    u8          posYdx;
-    u8          blkId;
-    yBlkHdl     nextPtr;
-    yBlkHdl     entries[6];
+    u8 posYdx;
+    u8 blkId;
+    yBlkHdl nextPtr;
+    yBlkHdl entries[6];
 } yYellowPageArray;
 
 typedef struct {
     Notification_funydx funInfo;
-    u8          blkId;
-    yBlkHdl     nextPtr;
+    u8 blkId;
+    yBlkHdl nextPtr;
+
     union {
-      struct {
+        struct {
 #ifndef CPU_BIG_ENDIAN
-        yStrRef serialNum;
-        yStrRef funcId;
+            yStrRef serialNum;
+            yStrRef funcId;
 #else
         yStrRef funcId;
         yStrRef serialNum;
 #endif
-      };
-      YAPI_FUNCTION hwId;
+        };
+
+        YAPI_FUNCTION hwId;
     };
-    yStrRef     funcName;
+
+    yStrRef funcName;
+
     union {
-        char    funcVal[YOCTO_PUBVAL_SIZE];
-        u16     funcValWords[YOCTO_PUBVAL_SIZE/2];
+        char funcVal[YOCTO_PUBVAL_SIZE];
+        u16 funcValWords[YOCTO_PUBVAL_SIZE / 2];
     };
 } yYellowPageEntry;
 
 typedef struct {
-    u8          catYdx;
-    u8          blkId;
-    yBlkHdl     nextPtr;
-    yStrRef     name;
-    yBlkHdl     entries;
+    u8 catYdx;
+    u8 blkId;
+    yBlkHdl nextPtr;
+    yStrRef name;
+    yBlkHdl entries;
 } yYellowPageCateg;
 
-typedef union{
+typedef union {
     struct {
-        u16     hash;
-        yHash   next;
-        u8      buff[HASH_BUF_SIZE];
+        u16 hash;
+        yHash next;
+        u8 buff[HASH_BUF_SIZE];
     };
+
     union {
         struct {
-            u8      ydx;
-            u8      blkId;
+            u8 ydx;
+            u8 blkId;
             yBlkHdl nextPtr;
         };
-        yWhitePageEntry     wpEntry;
-        yYellowPageEntry    ypEntry;
-        yYellowPageCateg    ypCateg;
-        yYellowPageArray    ypArray;
+
+        yWhitePageEntry wpEntry;
+        yYellowPageEntry ypEntry;
+        yYellowPageCateg ypCateg;
+        yYellowPageArray ypArray;
     } blk[2];
 } YHashSlot;
 
@@ -170,9 +175,6 @@ extern yBlkHdl yYpListHead;
 #define YMAX_HUB_URL_DEEP           7
 #define YOCTO_HOSTNAME_NAME         (HASH_BUF_SIZE*2+2)
 
-
-
-
 void  yHashInit(void);
 yHash yHashPutBuf(const u8 *buf, u16 len);
 yHash yHashPutStr(const char *str);
@@ -181,58 +183,52 @@ yHash yHashTestStr(const char *str);
 void  yHashGetBuf(yHash yhash, u8 *destbuf, u16 bufsize);
 void  yHashGetStr(yHash yhash, char *destbuf, u16 bufsize);
 u16   yHashGetStrLen(yHash yhash);
-char  *yHashGetStrPtr(yHash yhash);
-#ifndef MICROCHIP_API
-void  yHashFree(void);
-#endif
-u16     yBlkListLength(yBlkHdl hdl);
+const char  *yHashGetStrPtr(yHash yhash);
+void yHashFree(void);
+u16 yBlkListLength(yBlkHdl hdl);
 yBlkHdl yBlkListSeek(yBlkHdl hdl, u16 pos);
-int     wpRegister(int devYdx, yStrRef serial, yStrRef logicalName, yStrRef productName, u16 productId, yUrlRef devUrl, s8 beacon);
+int wpRegister(int devYdx, yStrRef serial, yStrRef logicalName, yStrRef productName, u16 productId, yUrlRef devUrl, s8 beacon);
 yStrRef wpGetAttribute(yBlkHdl hdl, yWPAttribute attridx);
-void    wpGetSerial(yBlkHdl hdl, char *serial);
-void    wpGetLogicalName(yBlkHdl hdl, char *logicalName);
+void wpGetSerial(yBlkHdl hdl, char* serial);
+void wpGetLogicalName(yBlkHdl hdl, char* logicalName);
 #ifdef DEBUG_WP_LOCK
 void    wpPreventUnregisterDbg(const char *file, u32 line);
 void    wpAllowUnregisterDbg(const char *file, u32 line);
-#define wpPreventUnregister()   wpPreventUnregisterDbg(__FILE__,__LINE__)
-#define wpAllowUnregister()     wpAllowUnregisterDbg(__FILE__,__LINE__)
+#define wpPreventUnregister()   wpPreventUnregisterDbg(__FILENAME__,__LINE__)
+#define wpAllowUnregister()     wpAllowUnregisterDbg(__FILENAME__,__LINE__)
 #else
-void    wpPreventUnregisterEx(void);
-void    wpAllowUnregisterEx(void);
+void wpPreventUnregisterEx(void);
+void wpAllowUnregisterEx(void);
 #define wpPreventUnregister()   wpPreventUnregisterEx()
 #define wpAllowUnregister()     wpAllowUnregisterEx()
 #endif
-int     wpMarkForUnregister(yStrRef serial);
-int     wpGetDevYdx(yStrRef serial);
+int wpMarkForUnregister(yStrRef serial);
+int wpGetDevYdx(yStrRef serial);
 YAPI_DEVICE wpSearchByNameHash(yStrRef strref);
 int     ypSearchByDevYdx(u8 devYdx, yStrRef strref);
 int     ypFunctionCount(u8 devYdx);
-#ifndef MICROCHIP_API
-u16     wpEntryCount(void);
+u16 wpEntryCount(void);
 YAPI_DEVICE wpSearchEx(yStrRef strref);
 YAPI_DEVICE wpSearch(const char *device_str);
 YAPI_FUNCTION ypSearch(const char *class_str, const char *func_str);
 int     ypGetFunctions(const char *class_str, YAPI_DEVICE devdesc, YAPI_FUNCTION prevfundesc,
                        YAPI_FUNCTION *buffer,int maxsize,int *neededsize);
-#endif
-int     ypGetFunctionInfo(YAPI_FUNCTION fundesc, char *serial, char *funcId, char *baseType, char *funcName, char *funcVal);
-int     ypGetFunctionsEx(yStrRef categref, YAPI_DEVICE devdesc, YAPI_FUNCTION prevfundesc, YAPI_FUNCTION *buffer, int maxsize, int *neededsize);
-int     wpGetDeviceInfo(YAPI_DEVICE devdesc, u16 *deviceid, char *productname, char *serial, char *logicalname, u8 *beacon);
-int     ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, int funClass, int funYdx, const char *funcVal);
+int ypGetFunctionInfo(YAPI_FUNCTION fundesc, char* serial, char* funcId, char* baseType, char* funcName, char* funcVal);
+int ypGetFunctionsEx(yStrRef categref, YAPI_DEVICE devdesc, YAPI_FUNCTION prevfundesc, YAPI_FUNCTION* buffer, int maxsize, int* neededsize);
+int wpGetDeviceInfo(YAPI_DEVICE devdesc, u16* deviceid, char* productname, char* serial, char* logicalname, u8* beacon);
+int ypRegister(yStrRef categ, yStrRef serial, yStrRef funcId, yStrRef funcName, int funClass, int funYdx, const char* funcVal);
 // WARNING: funcVal MUST BE WORD-ALIGNED
-int     ypRegisterByYdx(u8 devYdx, Notification_funydx funInfo, const char *funcVal, YAPI_FUNCTION *fundesc);
+int ypRegisterByYdx(u8 devYdx, Notification_funydx funInfo, const char* funcVal, YAPI_FUNCTION* fundesc);
 // WARNING: funcVal MUST BE WORD-ALIGNED
-int     ypGetAttributesByYdx(u8 devYdx, u8 funYdx, yStrRef *serial, yStrRef *logicalName, yStrRef *funcId, yStrRef *funcName, u8 *baseclass, Notification_funydx *funcInfo, char *funcVal);
-void    ypGetCategory(yBlkHdl hdl, char *name, yBlkHdl *entries);
-int     ypGetAttributes(yBlkHdl hdl, yStrRef *serial, yStrRef *funcId, yStrRef *funcName, Notification_funydx *funcInfo, char *funcVal);
-int     ypGetType(yBlkHdl hdl);
-int     ypGetBootDevHdl(const char *serial);
-s16     ypFindBootloaders(yStrRef *serials, u16 maxSerials);
-int     decodeNetFuncValV2(const u8 *p, Notification_funydx *funInfo, char *funcVal);
+int ypGetAttributesByYdx(u8 devYdx, u8 funYdx, yStrRef* serial, yStrRef* logicalName, yStrRef* funcId, yStrRef* funcName, u8 *baseclass, Notification_funydx* funcInfo, char* funcVal);
+void ypGetCategory(yBlkHdl hdl, char* name, yBlkHdl* entries);
+int ypGetAttributes(yBlkHdl hdl, yStrRef* serial, yStrRef* funcId, yStrRef* funcName, Notification_funydx* funcInfo, char* funcVal);
+int ypGetType(yBlkHdl hdl);
+int ypGetBootDevHdl(const char* serial);
+s16 ypFindBootloaders(yStrRef* serials, u16 maxSerials);
+int decodeNetFuncValV2(const u8* p, Notification_funydx* funInfo, char* funcVal);
 
 #ifdef  __cplusplus
 }
 #endif
 #endif
-
-

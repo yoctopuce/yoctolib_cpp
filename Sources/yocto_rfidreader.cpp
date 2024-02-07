@@ -982,7 +982,7 @@ vector<string> YRfidReader::get_tagIdList(void)
  * @param status : an RfidStatus object that will contain
  *         the detailled status of the operation
  *
- * @return YAPI::SUCCESS if the call succeeds.
+ * @return a YRfidTagInfo object.
  *
  * On failure, throws an exception or returns an empty YRfidTagInfo objact.
  * When it happens, you can get more information from the status object.
@@ -1456,7 +1456,7 @@ string YRfidReader::get_lastEvents(void)
 {
     string content;
 
-    content = this->_download("events.txt");
+    content = this->_download("events.txt?pos=0");
     return content;
 }
 
@@ -1491,15 +1491,11 @@ int YRfidReader::_internalEventHandler(string cbVal)
 {
     int cbPos = 0;
     int cbDPos = 0;
-    int cbNtags = 0;
-    int searchTags = 0;
     string url;
     string content;
     string contentStr;
-    vector<string> currentTags;
     vector<string> eventArr;
     int arrLen = 0;
-    vector<int> lastEvents;
     string lenStr;
     int arrPos = 0;
     string eventStr;
@@ -1507,13 +1503,14 @@ int YRfidReader::_internalEventHandler(string cbVal)
     string hexStamp;
     int typePos = 0;
     int dataPos = 0;
-    int evtStamp = 0;
+    int intStamp = 0;
+    string binMStamp;
+    int msStamp = 0;
+    double evtStamp = 0.0;
     string evtType;
     string evtData;
-    int tagIdx = 0;
     // detect possible power cycle of the reader to clear event pointer
     cbPos = atoi((cbVal).c_str());
-    cbNtags = ((cbPos) % (1000));
     cbPos = ((cbPos) / (1000));
     cbDPos = ((cbPos - _prevCbPos) & (0x7ffff));
     _prevCbPos = cbPos;
@@ -1523,102 +1520,69 @@ int YRfidReader::_internalEventHandler(string cbVal)
     if (!(_eventCallback != NULL)) {
         return YAPI_SUCCESS;
     }
-    // load all events since previous call
-    url = YapiWrapper::ysprintf("events.txt?pos=%d",_eventPos);
-
-    content = this->_download(url);
-    contentStr = content;
-    eventArr = _strsplit(contentStr,'\n');
-    arrLen = (int)eventArr.size();
-    if (!(arrLen > 0)) {
-        _throw((YRETCODE)(YAPI_IO_ERROR), "fail to download events");
-        return YAPI_IO_ERROR;
-    }
-    // last element of array is the new position preceeded by '@'
-    arrLen = arrLen - 1;
-    lenStr = eventArr[arrLen];
-    lenStr = (lenStr).substr(1, (int)(lenStr).length()-1);
-    // update processed event position pointer
-    _eventPos = atoi((lenStr).c_str());
     if (_isFirstCb) {
         // first emulated value callback caused by registerValueCallback:
-        // attempt to retrieve arrivals of all tags present to emulate arrival
+        // retrieve arrivals of all tags currently present to emulate arrival
         _isFirstCb = false;
         _eventStamp = 0;
-        if (cbNtags == 0) {
-            return YAPI_SUCCESS;
+        content = this->_download("events.txt");
+        contentStr = content;
+        eventArr = _strsplit(contentStr,'\n');
+        arrLen = (int)eventArr.size();
+        if (!(arrLen > 0)) {
+            _throw((YRETCODE)(YAPI_IO_ERROR), "fail to download events");
+            return YAPI_IO_ERROR;
         }
-        currentTags = this->get_tagIdList();
-        cbNtags = (int)currentTags.size();
-        searchTags = cbNtags;
-        lastEvents.clear();
-        arrPos = arrLen - 1;
-        while ((arrPos >= 0) && (searchTags > 0)) {
-            eventStr = eventArr[arrPos];
-            typePos = _ystrpos(eventStr, ":")+1;
-            if (typePos > 8) {
-                dataPos = _ystrpos(eventStr, "=")+1;
-                evtType = (eventStr).substr(typePos, 1);
-                if ((dataPos > 10) && evtType == "+") {
-                    evtData = (eventStr).substr(dataPos, (int)(eventStr).length()-dataPos);
-                    tagIdx = searchTags - 1;
-                    while (tagIdx >= 0) {
-                        if (evtData == currentTags[tagIdx]) {
-                            lastEvents.push_back(0+arrPos);
-                            currentTags[tagIdx] = "";
-                            while ((searchTags > 0) && currentTags[searchTags-1] == "") {
-                                searchTags = searchTags - 1;
-                            }
-                            tagIdx = -1;
-                        }
-                        tagIdx = tagIdx - 1;
-                    }
-                }
-            }
-            arrPos = arrPos - 1;
-        }
-        // If we have any remaining tags without a known arrival event,
-        // create a pseudo callback with timestamp zero
-        tagIdx = 0;
-        while (tagIdx < searchTags) {
-            evtData = currentTags[tagIdx];
-            if (!(evtData == "")) {
-                _eventCallback(this, 0, "+", evtData);
-            }
-            tagIdx = tagIdx + 1;
-        }
+        // first element of array is the new position preceeded by '@'
+        arrPos = 1;
+        lenStr = eventArr[0];
+        lenStr = (lenStr).substr(1, (int)(lenStr).length()-1);
+        // update processed event position pointer
+        _eventPos = atoi((lenStr).c_str());
     } else {
-        // regular callback
-        lastEvents.clear();
-        arrPos = arrLen - 1;
-        while (arrPos >= 0) {
-            lastEvents.push_back(0+arrPos);
-            arrPos = arrPos - 1;
+        // load all events since previous call
+        url = YapiWrapper::ysprintf("events.txt?pos=%d",_eventPos);
+        content = this->_download(url);
+        contentStr = content;
+        eventArr = _strsplit(contentStr,'\n');
+        arrLen = (int)eventArr.size();
+        if (!(arrLen > 0)) {
+            _throw((YRETCODE)(YAPI_IO_ERROR), "fail to download events");
+            return YAPI_IO_ERROR;
         }
+        // last element of array is the new position preceeded by '@'
+        arrPos = 0;
+        arrLen = arrLen - 1;
+        lenStr = eventArr[arrLen];
+        lenStr = (lenStr).substr(1, (int)(lenStr).length()-1);
+        // update processed event position pointer
+        _eventPos = atoi((lenStr).c_str());
     }
-    // now generate callbacks for each selected event
-    arrLen = (int)lastEvents.size();
-    arrPos = arrLen - 1;
-    while (arrPos >= 0) {
-        tagIdx = lastEvents[arrPos];
-        eventStr = eventArr[tagIdx];
+    // now generate callbacks for each real event
+    while (arrPos < arrLen) {
+        eventStr = eventArr[arrPos];
         eventLen = (int)(eventStr).length();
-        if (eventLen >= 1) {
+        typePos = _ystrpos(eventStr, ":")+1;
+        if ((eventLen >= 14) && (typePos > 10)) {
             hexStamp = (eventStr).substr(0, 8);
-            evtStamp = (int)YAPI::_hexStr2Long(hexStamp);
-            typePos = _ystrpos(eventStr, ":")+1;
-            if ((evtStamp >= _eventStamp) && (typePos > 8)) {
-                _eventStamp = evtStamp;
+            intStamp = (int)YAPI::_hexStr2Long(hexStamp);
+            if (intStamp >= _eventStamp) {
+                _eventStamp = intStamp;
+                binMStamp = (eventStr).substr(8, 2);
+                msStamp = (((u8)binMStamp[0])-64) * 32 + ((u8)binMStamp[1]);
+                evtStamp = intStamp + (0.001 * msStamp);
                 dataPos = _ystrpos(eventStr, "=")+1;
                 evtType = (eventStr).substr(typePos, 1);
                 evtData = "";
                 if (dataPos > 10) {
                     evtData = (eventStr).substr(dataPos, eventLen-dataPos);
                 }
-                _eventCallback(this, evtStamp, evtType, evtData);
+                if (_eventCallback != NULL) {
+                    _eventCallback(this, evtStamp, evtType, evtData);
+                }
             }
         }
-        arrPos = arrPos - 1;
+        arrPos = arrPos + 1;
     }
     return YAPI_SUCCESS;
 }

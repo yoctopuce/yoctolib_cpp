@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 57649 2023-11-06 07:29:15Z seb $
+ * $Id: yapi.c 59193 2024-02-05 10:07:10Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -36,17 +36,25 @@
  *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
+
+#include "ydef_private.h"
+#define __FILE_ID__     MK_FILEID('Y','A','P')
+#define __FILENAME__   "yapi"
 // ReSharper disable CppClangTidyClangDiagnosticImplicitIntConversion
 // ReSharper disable CppClangTidyBugproneNarrowingConversions
 // ReSharper disable CommentTypo
 // ReSharper disable CppLocalVariableMayBeConst
 // ReSharper disable CppParameterMayBeConstPtrOrRef
-#define __FILE_ID__  "yapi"
 #include "yapi.h"
 #include "yproto.h"
+#ifdef YAPI_IN_YDEVICE
+#include "privhash.h"
+#else
 #include "yhash.h"
+#endif
 #include "yjson.h"
 #include "yprog.h"
+#include "yssl.h"
 
 #ifdef WINDOWS_API
 #include <time.h>
@@ -105,6 +113,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiAddUdevRulesForYocto(int force, char *errmsg)
 
 static YRETCODE yapiUpdateDeviceList_internal(u32 forceupdate, char *errmsg);
 static void yapiUnregisterHub_internal(const char *url);
+static void yapiCleanupDisabledHub(void);
 static YRETCODE yapiPreregisterHub_internal(const char *url, char *errmsg);
 static YRETCODE yapiHandleEvents_internal(char *errmsg);
 static YRETCODE yapiHTTPRequestAsyncEx_internal(int tcpchan, const char *device, const char *request, int len, yapiRequestAsyncCallback callback, void *context, char *errmsg);
@@ -337,10 +346,10 @@ static void yFreeParsedURL(HubURLSt *hub)
     }
 }
 
-static int yParseHubURL(HubURLSt *hub, const char *url, char *errmsg)
+static int yParseHubURL(HubURLSt* hub, const char* url, char* errmsg)
 {
     int len, domlen;
-    const char *end, *p;
+    const char *end, *p, *endv6;
     const char *pos, *posplus;
     char buffer[8];
 
@@ -412,7 +421,13 @@ static int yParseHubURL(HubURLSt *hub, const char *url, char *errmsg)
         }
         end = p;
     }
+    endv6 = strchr(url, ']');
     pos = strchr(url, ':');
+    if (endv6 && pos && endv6 < end && endv6>url) {
+        // ipv6 URL
+        hub->host = ystrndup_s(url, (int)(endv6 + 1 - url));
+        pos = strchr(endv6, ':');
+    }
     posplus = pos + 1;
     if (pos && pos < end) {
         len = (int)(end - posplus);
@@ -428,16 +443,26 @@ static int yParseHubURL(HubURLSt *hub, const char *url, char *errmsg)
         end = pos;
     } else {
         if (hub->proto == PROTO_HTTP && hub->subdomain[0]) {
-            //http proto + subdomain + no port sepcified -> Vhub4Web -> Use port 80 instead of 4444
+            //http proto + subdomain + no port specified -> Vhub4Web -> Use port 80 instead of 4444
             hub->portno = 80;
-        } else {
-            hub->portno = YOCTO_DEFAULT_PORT;
+        } else if (hub->proto == PROTO_SECURE_HTTP && hub->subdomain[0]) {
+            //http proto + subdomain + no port specified -> Vhub4Web -> Use port 443 instead of 4444
+            hub->portno = 443;
+        }
+        else {
+            if (hub->proto == PROTO_SECURE_HTTP || hub->proto == PROTO_SECURE_WEBSOCKET || hub->proto == PROTO_SECURE) {
+                hub->portno = YOCTO_DEFAULT_HTTPS_PORT;
+            } else {
+                hub->portno = YOCTO_DEFAULT_PORT;
+            }
         }
     }
     //dbglog("port=%d\n", hub->portno);
-    domlen = (int)(end - url);
-    hub->host = ystrndup_s(url, domlen);
-    //dbglog("domain(host)=%s\n", hub->host);
+    if (hub->host == NULL) {
+        domlen = (int)(end - url);
+        hub->host = ystrndup_s(url, domlen);
+        //dbglog("domain(host)=%s\n", hub->host);
+    }
     return YAPI_SUCCESS;
 }
 
@@ -609,7 +634,7 @@ typedef struct {
 void initDevYdxInfos(int devYdx, yStrRef serial)
 {
     yGenericDeviceSt *gen = yContext->generic_infos + devYdx;
-    YASSERT(devYdx < ALLOC_YDX_PER_HUB);
+    YASSERT(devYdx < ALLOC_YDX_PER_HUB, devYdx);
     yEnterCriticalSection(&yContext->generic_cs);
     memset(gen, 0, sizeof(yGenericDeviceSt));
     gen->serial = serial;
@@ -619,7 +644,7 @@ void initDevYdxInfos(int devYdx, yStrRef serial)
 void freeDevYdxInfos(int devYdx)
 {
     yGenericDeviceSt *gen = yContext->generic_infos + devYdx;
-    YASSERT(devYdx < ALLOC_YDX_PER_HUB);
+    YASSERT(devYdx < ALLOC_YDX_PER_HUB, devYdx);
     yEnterCriticalSection(&yContext->generic_cs);
     gen->serial = YSTRREF_EMPTY_STRING;
     yLeaveCriticalSection(&yContext->generic_cs);
@@ -768,7 +793,11 @@ YRETCODE yapiPullDeviceLogEx(int devydx)
         if (hub->url.proto != PROTO_HTTP) {
             res = yapiRequestOpenWS(&iohdl, hub, dev, 0, request, reqlen, YIO_10_MINUTES_TCP_TIMEOUT, logResult, (void*)gen, NULL, NULL, errmsg);
         } else {
-            res = yapiRequestOpenHTTP(&iohdl, hub, dev, request, reqlen, 0, YIO_10_MINUTES_TCP_TIMEOUT, logResult, (void*)gen, errmsg);
+            if (hub->url.proto != PROTO_HTTP && hub->url.proto != PROTO_SECURE_HTTP) {
+                res = yapiRequestOpenWS(&iohdl, hub, dev, 0, request, reqlen, YIO_10_MINUTES_TCP_TIMEOUT, logResult, (void*)gen, NULL, NULL, errmsg);
+            } else {
+                res = yapiRequestOpenHTTP(&iohdl, hub, dev, request, reqlen, 0, YIO_10_MINUTES_TCP_TIMEOUT, logResult, (void*)gen, errmsg);
+            }
         }
     }
 
@@ -864,23 +893,23 @@ int checkForSameHubAccess(HubSt *hub, yStrRef serial, char *errmsg)
     char buffer[YOCTO_MAX_URL_LEN];
 
     for (i = 0; i < NBMAX_NET_HUB; i++) {
-        yStrRef hub_serial_ref;
         if (yContext->nethub[i] == NULL || yContext->nethub[i] == hub || (yContext->nethub[i]->flags & DISABLED_HUB)) {
             continue;
         }
-        hub_serial_ref = yContext->nethub[i]->serial;
-        if (hub_serial_ref == serial) {
+        if (yContext->nethub[i]->serial_hash == serial) {
             int j;
             sprintfURL(buffer, YOCTO_MAX_URL_LEN, &yContext->nethub[i]->url, 1);
             if (errmsg) {
-                YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Hub %s is already registered with URL %s", yHashGetStrPtr(serial), buffer);
+                char serialbuf[32];
+                yHashGetStr(serial, serialbuf, sizeof(serialbuf));
+                YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Hub %s is already registered with URL %s", serialbuf, buffer);
             }
 #ifdef TRACE_NET_HUB
-            dbglog("Hub % s is already registered with URL % s(%d)\n", yHashGetStrPtr(serial), buffer, i);
+            dbglog("Hub %s is already registered with URL %s(%d)\n", yHashGetStrPtr(serial), buffer, i);
 #endif
+            hub->flags |= DISABLED_HUB;
             for (j = 0; yContext->nethub[i]->know_urls[j] && j < MAX_KNOW_URLS_SIZE; j++) {
                 if (YSTRCMP(hub->url.org_url, yContext->nethub[i]->know_urls[j])) {
-                    hub->flags |= DISABLED_HUB;
                     if (yContext->nethub[i]->creation_time < hub->creation_time) {
                         yContext->nethub[i]->mandatory = hub->mandatory;
                     }
@@ -889,7 +918,6 @@ int checkForSameHubAccess(HubSt *hub, yStrRef serial, char *errmsg)
             }
             if (j < MAX_KNOW_URLS_SIZE) {
                 yContext->nethub[i]->know_urls[j] = YSTRDUP(hub->url.org_url);
-                hub->flags |= DISABLED_HUB;
                 if (yContext->nethub[i]->creation_time < hub->creation_time) {
                     yContext->nethub[i]->mandatory = hub->mandatory;
                 }
@@ -1038,7 +1066,7 @@ static int ywpSafeCheckOverwrite(HubSt *registeredHub, HubSt *hub, yStrRef seria
 #endif
         return 1;
     } else if (registeredHub != hub) {
-        if (hub->serial == serial) {
+        if (hub->serial_hash == serial) {
 #ifdef DEBUG_WP
             dbglog("unregister same device connected by a VirtualHub (0x%X vs 0x%X) \n", devUrl, hub->host);
 #endif
@@ -1189,9 +1217,9 @@ int ywpGetDeviceUrl(YAPI_DEVICE devdesc, char *roothubserial, char *request, int
     }
     // extract root device serial
     if (!request) requestsize = 0;
-    if (hub != FAKE_USB_HUB && hub->serial != (yStrRef)devdesc) {
+    if (hub != FAKE_USB_HUB && hub->serial_hash != (yStrRef)devdesc) {
         if (roothubserial) {
-            yHashGetStr(hub->serial, roothubserial, YOCTO_SERIAL_LEN);
+            yHashGetStr(hub->serial_hash, roothubserial, YOCTO_SERIAL_LEN);
         }
         if (requestsize > 10) {
             memcpy(request, "/bySerial/", 10);
@@ -1485,15 +1513,16 @@ static int yEnuJson(ENU_CONTEXT *enus, yJsonStateMachine *j)
     case ENU_WP_DEVURL:
         NETENUMLOG("set url to %s\n", j->token);
         if (YSTRCMP(j->token, "/api") == 0) {
-            if (enus->hub->serial != enus->serial) {
-                enus->hub->serial = enus->serial;
+            if (enus->hub->serial_hash != enus->serial) {
+                enus->hub->serial_hash = enus->serial;
+                YSTRCPY(enus->hub->info.serial, YOCTO_SERIAL_LEN, yHashGetStrPtr(enus->serial));
                 if (checkForSameHubAccess(enus->hub, enus->serial, NULL) < 0) {
                     // fatal error do not try to reconnect
                     return YAPI_DOUBLE_ACCES;
                 }
             }
         }
-        enus->hubref = enus->hub->serial;
+        enus->hubref = enus->hub->serial_hash;
         enus->state = ENU_WP_ENTRY;
         break;
     case ENU_WP_BEACON:
@@ -1703,7 +1732,7 @@ static u32 unpackHTTPRequest(u8 *data, u32 datalen)
 
             } while (chunklen);
             newdatalen = (u32)(w - newdata);
-            YASSERT(newdatalen < datalen);
+            YASSERT(newdatalen < datalen, newdatalen);
             memcpy(data, newdata, newdatalen);
             yFree(newdata);
             return (int)newdatalen;
@@ -1910,14 +1939,15 @@ static int yEnuJZon(ENU_CONTEXT *enus, yJsonStateMachine *j, yJsonStateMachine *
                 break;
             case WP_NET_URL:
                 NETENUMLOG("set url to %s\n", z->token);
-                if (YSTRCMP(z->token, "/api") == 0 && enus->hub->serial != enus->serial) {
-                    enus->hub->serial = enus->serial;
+                if (YSTRCMP(z->token, "/api") == 0 && enus->hub->serial_hash != enus->serial) {
+                    enus->hub->serial_hash = enus->serial;
+                    YSTRCPY(enus->hub->info.serial, YOCTO_SERIAL_LEN, yHashGetStrPtr(enus->serial));
                     if (checkForSameHubAccess(enus->hub, enus->serial, NULL) < 0) {
                         // fatal error do not try to reconnect
                         return YAPI_DOUBLE_ACCES;
                     }
                 }
-                enus->hubref = enus->hub->serial;
+                enus->hubref = enus->hub->serial_hash;
                 enus->wp_state = WP_BEACON;
                 break;
             case WP_BEACON:
@@ -2073,7 +2103,7 @@ static int yNetHubEnumEx(HubSt *hub, ENU_CONTEXT *enus, char *errmsg)
 {
     u8 *buffer;
     u32 buffer_size, avail;
-    int unpackedBufferSize;
+    u32 unpackedBufferSize;
     u32 response_size;
     u8 *p;
     int res;
@@ -2345,8 +2375,8 @@ static int parseInfoJSon(HubSt *hub, u8 *info_data, int len, char *errmsg)
     }
     return YAPI_SUCCESS;
 }
-#if 0
-static const char* protoStr(yAbsUrlProto proto)
+
+static const char* protoStr(yHubProto proto)
 {
     switch (proto) {
     case PROTO_LEGACY:
@@ -2368,7 +2398,6 @@ static const char* protoStr(yAbsUrlProto proto)
         return "Unknown";
     }
 }
-#endif
 
 
 static int yhubUseBestProto(HubSt *hub, char *errmsg)
@@ -2379,16 +2408,25 @@ static int yhubUseBestProto(HubSt *hub, char *errmsg)
         switch (cur_proto) {
         case PROTO_LEGACY:
             hub->url.proto = PROTO_WEBSOCKET;
-            break;;
+            break;
         case PROTO_WEBSOCKET:
+        case PROTO_SECURE_WEBSOCKET:
         case PROTO_HTTP:
+        case PROTO_SECURE_HTTP:
             break;
         default:
-            return YERR(YAPI_NOT_SUPPORTED);
+            return YERRMSG(YAPI_NOT_SUPPORTED,"Protocol not supported. Upgrade VirtualHub or Hub Firmware.");
         }
     } else {
-        int done = 0;
-        if (cur_proto != PROTO_HTTP && cur_proto != PROTO_WEBSOCKET) {
+        if(hub->info.use_pure_http) {
+            // For VirtualHub-4web we use the first entry available regardless of the protocol and the port set
+            // by the user. In this sernario info.json has the most accurate value. Note: redirection from http to
+            // https has already be done by the http redirect mechanism during the download of info.json
+            // Note 2 : Websocket are not supported by VirtualHub-4web
+            if (cur_proto == PROTO_WEBSOCKET || cur_proto == PROTO_SECURE_WEBSOCKET) {
+                return YERRMSG(YAPI_NOT_SUPPORTED, "Websocket protocol is not supported by VirtualHub-4web.");
+            }
+            int done = 0;
             // if use as specifiec the proto in the URL do not try to guess the best proto and best port.
             while (!done && hub->info.next_port < NB_PROTO_IN_INFO_JSON) {
                 yHubProto proto = hub->info.ports[hub->info.next_port].proto;
@@ -2396,47 +2434,109 @@ static int yhubUseBestProto(HubSt *hub, char *errmsg)
                 hub->info.next_port++;
 
                 switch (proto) {
-                case PROTO_WEBSOCKET:
                 case PROTO_HTTP:
-                    //dbglog("Hub %s will use %s proto on port %d\n", hub->name, protoStr(proto), port);
+                    dbglog("Hub %s will use %s proto on port %d\n", hub->url.host, protoStr(proto), port);
                     hub->url.proto = proto;
                     hub->url.portno = port;
                     done = 1;
                     break;
+
+#ifndef NO_YSSL
+                case PROTO_SECURE_HTTP:
+                    dbglog("Hub %s will use %s proto on port %d\n", hub->url.host, protoStr(proto), port);
+                    hub->url.proto = proto;
+                    hub->url.portno = port;
+                    done = 1;
+                    break;
+#endif
                 default:
-#if 0
+#if 1
                     dbglog("Skip proto %s port %d\n", protoStr(proto), port);
 #endif
                     break;
                 }
             }
-            if (hub->info.next_port >= NB_PROTO_IN_INFO_JSON) {
-                return YERRMSG(YAPI_NOT_SUPPORTED, "No more proto in info.json");
+        } else {
+            int done = 0;
+            if (cur_proto != PROTO_HTTP && cur_proto != PROTO_WEBSOCKET) {
+                // if use as specifiec the proto in the URL do not try to guess the best proto and best port.
+                while (!done && hub->info.next_port < NB_PROTO_IN_INFO_JSON) {
+                    yHubProto proto = hub->info.ports[hub->info.next_port].proto;
+                    int port = hub->info.ports[hub->info.next_port].port;
+                    hub->info.next_port++;
+
+                    switch (proto) {
+                    case PROTO_WEBSOCKET:
+                    case PROTO_HTTP:
+                        dbglog("Hub %s will use %s proto on port %d\n", hub->url.host, protoStr(proto), port);
+                        hub->url.proto = proto;
+                        hub->url.portno = port;
+                        done = 1;
+                        break;
+
+#ifndef NO_YSSL
+                    case PROTO_SECURE_WEBSOCKET:
+                    case PROTO_SECURE_HTTP:
+#endif
+                        dbglog("Hub %s will use %s proto on port %d\n", hub->url.host, protoStr(proto), port);
+                        hub->url.proto = proto;
+                        hub->url.portno = port;
+                        done = 1;
+                        break;
+                    default:
+#if 1
+                        dbglog("Skip proto %s port %d\n", protoStr(proto), port);
+#endif
+                        break;
+                    }
+                }
             }
         }
+        if (hub->info.next_port >= NB_PROTO_IN_INFO_JSON) {
+            return YERRMSG(YAPI_NOT_SUPPORTED, "No compatible protocole in info.json. Upgrade VirtualHub or Hub Firmware");
+        }
+    
     }
     return YAPI_SUCCESS;
 }
-
-static int LoadInfoJson(HubSt* hub, char *errmsg)
+// return YAPI_NOT_SUPPORTED for very old hub that does not support info.json (HTTP 404)
+int LoadInfoJson(HubSt* hub, char *errmsg)
 {
     // look for info.json file
     char info_url[128];
     u8 *info_data;
-    int res;
+    int res, retry;
+    int use_ssl_socket = 0;
+    u16 port = hub->url.portno;
     YSPRINTF(info_url, 512, "%s/info.json", hub->url.subdomain);
-    res = yTcpDownload(hub->url.host, hub->url.portno, info_url, &info_data, YIO_DEFAULT_TCP_TIMEOUT, errmsg);
-    if (res >= 0) {
-        res = parseInfoJSon(hub, info_data, res, errmsg);
-        if (res < 0) {
-            dbglog("Warning: unable to parse info.json (%s)\n", errmsg);
-            memset(&hub->info, 0, sizeof(hub->info));
-            if (hub->url.proto == PROTO_AUTO) {
-                hub->url.proto = PROTO_LEGACY;
-            }
-            return YAPI_IO_ERROR;
-        }
+    if (hub->url.proto == PROTO_SECURE || hub->url.proto == PROTO_SECURE_HTTP || hub->url.proto == PROTO_SECURE_WEBSOCKET) {
+        use_ssl_socket = 1;
     }
+    do {
+        retry = 0;
+        res = yTcpDownload(hub->url.host, port, use_ssl_socket, info_url, &info_data, hub->netTimeout, errmsg);
+        if (res >= 0) {
+            res = parseInfoJSon(hub, info_data, res, errmsg);
+            if (res < 0) {
+                dbglog("Warning: unable to parse info.json (%s)\n", errmsg);
+                memset(&hub->info, 0, sizeof(hub->info));
+                if (hub->url.proto == PROTO_AUTO) {
+                    hub->url.proto = PROTO_LEGACY;
+                }
+                return res;
+            }
+        }
+        else {
+            if (hub->url.proto == PROTO_SECURE && port == YOCTO_DEFAULT_HTTPS_PORT) {
+                port = 443;
+                retry = 1;
+            }
+            else if (hub->url.proto == PROTO_AUTO && port == YOCTO_DEFAULT_PORT) {
+                port = 80;
+                retry = 1;
+            }
+        }
+    } while (retry);    
     return res;
 }
 
@@ -2449,7 +2549,7 @@ static HubSt* yapiAllocHub(const char *url, int *error_code, char *errmsg)
     hub = yMalloc(sizeof(HubSt));
     memset(hub, 0, sizeof(HubSt));
     memset(hub->devYdxMap, 255, sizeof(hub->devYdxMap));
-    hub->serial = INVALID_HASH_IDX;
+    hub->serial_hash = INVALID_HASH_IDX;
     hub->netTimeout = YctxNetworkTimeout;
     hub->creation_time = yapiGetTickCount();
     for (i = 0; i < ALLOC_YDX_PER_HUB; i++) {
@@ -2463,19 +2563,10 @@ static HubSt* yapiAllocHub(const char *url, int *error_code, char *errmsg)
         }
         return NULL;
     }
-    if (hub->url.proto == PROTO_SECURE || hub->url.proto == PROTO_SECURE_HTTP || hub->url.proto == PROTO_SECURE_WEBSOCKET) {
-        res = YERRMSG(YAPI_NOT_SUPPORTED, "SSL/TLS is not supported. Upgrade your library to v2.x");
-        if (error_code) {
-            *error_code = res;
-        }
-        yFreeParsedURL(&hub->url);
-        yFree(hub);
-        return NULL;
-    }
-    if (hub->url.proto == PROTO_AUTO || hub->url.proto == PROTO_HTTP) {
+    if (hub->url.proto == PROTO_AUTO || hub->url.proto == PROTO_SECURE || hub->url.proto == PROTO_HTTP || hub->url.proto == PROTO_SECURE_HTTP) {
         int res = LoadInfoJson(hub, errmsg);
         if (res == YAPI_NOT_SUPPORTED) {
-            // in case the request is redirected to an https url
+            // in case the request is redirected to a https url
             return NULL;
         }
         if (res >= 0) {
@@ -2488,6 +2579,13 @@ static HubSt* yapiAllocHub(const char *url, int *error_code, char *errmsg)
                 yFree(hub);
                 return NULL;
             }
+        } else if(res == YAPI_SSL_ERROR) {
+            if (error_code) {
+                *error_code = res;
+            }
+            yFreeParsedURL(&hub->url);
+            yFree(hub);
+            return NULL;
         }
     }
     res = yhubUseBestProto(hub, errmsg);
@@ -2504,7 +2602,7 @@ static HubSt* yapiAllocHub(const char *url, int *error_code, char *errmsg)
     yFifoInit(&(hub->not_fifo), hub->not_buffer, sizeof(hub->not_buffer));
     yInitializeCriticalSection(&hub->access);
 
-    if (hub->url.proto == PROTO_HTTP) {
+    if (hub->url.proto == PROTO_HTTP || hub->url.proto == PROTO_SECURE_HTTP) {
         hub->http.lastTraffic = yapiGetTickCount();
     } else {
         int tcpchan;
@@ -2518,9 +2616,10 @@ static HubSt* yapiAllocHub(const char *url, int *error_code, char *errmsg)
         hub->ws.lastTraffic = yapiGetTickCount();
     }
 #ifdef TRACE_NET_HUB
-    dbglog("HUB %p: %s allocated \n",hub, hub->url.org_url);
+    dbglog("HUB %p: %s allocated (port=%d) \n",hub, hub->url.org_url, hub->url.portno);
 #endif
     return hub;
+    
 }
 
 static void yapiFreeHub(HubSt *hub)
@@ -2529,7 +2628,7 @@ static void yapiFreeHub(HubSt *hub)
     dbglog("HUB: %s Deleted \n",hub->url.org_url);
 #endif
     yFreeWakeUpSocket(&hub->wuce);
-    if (hub->url.proto == PROTO_HTTP) {
+    if (hub->url.proto == PROTO_HTTP || hub->url.proto == PROTO_SECURE_HTTP) {
         if (hub->http.s_realm)
             yFree(hub->http.s_realm);
         if (hub->http.s_nonce)
@@ -2676,13 +2775,45 @@ typedef union {
 u64 YctxDeviceListValidityMs = DEFAULT_NET_DEVLIST_VALIDITY_MS;
 u32 YctxNetworkTimeout = YIO_DEFAULT_TCP_TIMEOUT;
 
-static YRETCODE yapiInitAPI_internal(int detect_type, char *errmsg)
+YRETCODE YAPI_FUNCTION_EXPORT yapiSetNetworkSecurityOptions(u32 options, char* errmsg)
+{
+    if (!yContext) {
+        return YERR(YAPI_NOT_INITIALIZED);
+    }
+    yContext->sslCertOptions = options;
+    return YAPI_SUCCESS;
+}
+
+static YRETCODE yapiSetSSLCertificateSrv_internal(const char* certificate, const char* privatekey, char* errmsg)
+{
+    if (!yContext) {
+        return YERR(YAPI_NOT_INITIALIZED);
+    }
+
+#ifndef NO_YSSL
+    int res = yTcpSetSrvCertificateSSL(certificate, privatekey, errmsg);
+    if (YISERR(res)) {
+        return (YRETCODE)res;
+    }
+    return YAPI_SUCCESS;
+#else
+    return YERRMSG(YAPI_NOT_SUPPORTED, "SSL support is not activated.");
+#endif
+}
+
+
+static YRETCODE yapiInitAPI_internal(int detect_type, const char* certificate, const char* privatekey, char* errmsg)
 {
     test_compile test;
     int i;
     yContextSt *ctx;
+    int res;
 #ifdef PERF_API_FUNCTIONS
     memset(&yApiPerf,0,sizeof(yApiPerf));
+#endif
+
+#ifdef _WIN64
+#pragma message("yapi is compiled in 64 bits")
 #endif
 
     if (yContext != NULL)
@@ -2763,18 +2894,18 @@ static YRETCODE yapiInitAPI_internal(int detect_type, char *errmsg)
         }
     }
 
-
-    if (YISERR(yTcpInit(errmsg))) {
+    res = yTcpInitMulti(errmsg);
+    if (YISERR(res)) {
         deleteAllCS(ctx);
         yFree(ctx);
-        return YAPI_IO_ERROR;
+        return (YRETCODE)res;
     }
 
     yCreateEvent(&ctx->yapiSleepWakeUpEvent);
 
     if (detect_type & Y_DETECT_NET) {
         if (YISERR(ySSDPStart(&ctx->SSDP, ssdpEntryUpdate, errmsg))) {
-            yTcpShutdown();
+            yTcpShutdownMulti();
             yCloseEvent(&yContext->yapiSleepWakeUpEvent);
             deleteAllCS(ctx);
             yFree(ctx);
@@ -2826,7 +2957,32 @@ static YRETCODE yapiInitAPI_internal(int detect_type, char *errmsg)
     dbglog("ofs=%d instead of 118\n",siz);
 #endif
 
+    if (certificate || privatekey) {
+        int res = yapiSetSSLCertificateSrv_internal(certificate, privatekey, errmsg);
+        if (res < 0) {
+            yapiFreeAPI();
+        }
+        return res;
+    }
+
     return YAPI_SUCCESS;
+}
+
+static YRETCODE yapiAddSSLCertificateCli_internal(const char* cert, int len, char* errmsg)
+{
+#ifndef NO_YSSL
+    int res;
+    if (!yContext) {
+        YPROPERR(yapiInitAPI_internal(0, NULL, NULL, errmsg));
+    }
+    res = yTcpAddClientCertificateSSL((u8*)cert, len, errmsg);
+    if (YISERR(res)) {
+        return (YRETCODE)res;
+    }
+    return YAPI_SUCCESS;
+#else
+    return YERRMSG(YAPI_NOT_SUPPORTED, "SSL support is not activated.");
+#endif
 }
 
 static int yTcpTrafficPending(void);
@@ -2871,7 +3027,7 @@ static void yapiFreeAPI_internal(void)
     }
 
     yHashFree();
-    yTcpShutdown();
+    yTcpShutdownMulti();
     yCloseEvent(&yContext->yapiSleepWakeUpEvent);
 
     yLeaveCriticalSection(&yContext->updateDev_cs);
@@ -2888,6 +3044,31 @@ static void yapiFreeAPI_internal(void)
     yContext = NULL;
 }
 
+static int yapiGetRemoteCertificate_internal(const char* url, u64 timeout, char* buffer, int maxsize, int* neededsize, char* errmsg)
+{
+#ifndef NO_YSSL
+    int freeApi = 0;
+    HubURLSt urlst;
+    int res;
+    if (!yContext) {
+        YPROPERR(yapiInitAPI_internal(0, NULL, NULL, errmsg));
+        freeApi = 1;
+    }
+    memset(&urlst, 0, sizeof(HubURLSt));
+    res = yParseHubURL(&urlst, url, errmsg);
+    if (res < 0) {
+        return res;
+    }
+    res = yTcpDownloadSSLCert(urlst.host, urlst.portno, timeout, (u8*)buffer, (u32)maxsize, (u32*)neededsize, errmsg);
+    yFreeParsedURL(&urlst);
+    if (freeApi) {
+        yapiFreeAPI_internal();
+    }
+    return res;
+#else
+    return YERRMSG(YAPI_NOT_SUPPORTED, "SSL support is not activated.");
+#endif
+}
 
 static void yapiSetNetworkTimeout_internal(int mstimeout)
 {
@@ -2921,7 +3102,7 @@ static void yapiRegisterLogFunction_internal(yapiLogFunction logfun)
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     if (!yContext) {
-        yapiInitAPI_internal(0, errmsg);
+        yapiInitAPI_internal(0, NULL, NULL, errmsg);
     }
     if (yContext) {
         yEnterCriticalSection(&yContext->enum_cs);
@@ -2935,7 +3116,7 @@ static void yapiRegisterDeviceLogCallback_internal(yapiDeviceLogCallback logCall
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     if (!yContext) {
-        yapiInitAPI_internal(0, errmsg);
+        yapiInitAPI_internal(0, NULL, NULL, errmsg);
     }
     if (yContext) {
         yEnterCriticalSection(&yContext->enum_cs);
@@ -2966,7 +3147,7 @@ static void yapiRegisterDeviceArrivalCallback_internal(yapiDeviceUpdateCallback 
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     if (!yContext) {
-        yapiInitAPI_internal(0, errmsg);
+        yapiInitAPI_internal(0, NULL, NULL, errmsg);
     }
     if (yContext) {
         yEnterCriticalSection(&yContext->enum_cs);
@@ -2996,7 +3177,7 @@ static void yapiRegisterDeviceRemovalCallback_internal(yapiDeviceUpdateCallback 
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     if (!yContext) {
-        yapiInitAPI_internal(0, errmsg);
+        yapiInitAPI_internal(0, NULL, NULL, errmsg);
     }
     if (yContext) {
         yEnterCriticalSection(&yContext->enum_cs);
@@ -3010,7 +3191,7 @@ static void yapiRegisterDeviceChangeCallback_internal(yapiDeviceUpdateCallback c
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     if (!yContext) {
-        yapiInitAPI_internal(0, errmsg);
+        yapiInitAPI_internal(0, NULL, NULL, errmsg);
     }
     if (yContext) {
         yContext->changeCallback = changeCallback;
@@ -3022,7 +3203,7 @@ static void yapiRegisterBeaconCallback_internal(yapiBeaconCallback beaconCallbac
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     if (!yContext) {
-        yapiInitAPI_internal(0, errmsg);
+        yapiInitAPI_internal(0, NULL, NULL, errmsg);
     }
     if (yContext) {
         yContext->beaconCallback = beaconCallback;
@@ -3034,7 +3215,7 @@ static void yapiRegisterDeviceConfigChangeCallback_internal(yapiDeviceUpdateCall
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     if (!yContext) {
-        yapiInitAPI_internal(0, errmsg);
+        yapiInitAPI_internal(0, NULL, NULL, errmsg);
     }
     if (yContext) {
         yContext->confChangeCallback = configChangeCallback;
@@ -3046,7 +3227,7 @@ static void yapiRegisterFunctionUpdateCallback_internal(yapiFunctionUpdateCallba
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     if (!yContext) {
-        yapiInitAPI_internal(0, errmsg);
+        yapiInitAPI_internal(0, NULL, NULL, errmsg);
     }
     if (yContext) {
         yContext->functionCallback = updateCallback;
@@ -3057,7 +3238,7 @@ static void yapiRegisterTimedReportCallback_internal(yapiTimedReportCallback tim
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     if (!yContext) {
-        yapiInitAPI_internal(0, errmsg);
+        yapiInitAPI_internal(0, NULL, NULL, errmsg);
     }
     if (yContext) {
         yContext->timedReportCallback = timedReportCallback;
@@ -3097,9 +3278,9 @@ static void wpUpdateTCP(HubSt *hub, const char *serial, const char *name, u8 bea
         return;
     }
 
-    if (hub->serial != serialref) {
+    if (hub->serial_hash != serialref) {
         // Insert device into white pages
-        devurl = hub->serial;
+        devurl = hub->serial_hash;
     } else {
         devurl = INVALID_HASH_IDX;
     }
@@ -3352,7 +3533,7 @@ int handleNetNotification(HubSt *hub)
 
     // full packet at start of fifo
     size = end - NOTIFY_NETPKT_START_LEN;
-    YASSERT(NOTIFY_NETPKT_MAX_LEN > size);
+    YASSERT(NOTIFY_NETPKT_MAX_LEN > size, size);
     yPopFifo(&(hub->not_fifo),NULL,NOTIFY_NETPKT_START_LEN);
     yPopFifo(&(hub->not_fifo), (u8*)buffer, size + 1);
     buffer[size] = 0;
@@ -3597,7 +3778,19 @@ static void* yhelper_thread(void *ctx)
             if ((u64)(now - hub->lastAttempt) > hub->attemptDelay) {
                 char request[256];
                 if (!hub->info.serial[0]) {
-                    LoadInfoJson(hub, errmsg);
+                    int load_res = LoadInfoJson(hub, errmsg);
+                    // YAPI_NOT_SUPPORTED -> old hub that does not support info.json
+                    if (load_res < 0 && load_res != YAPI_NOT_SUPPORTED) {
+                        hub->attemptDelay = 500 << hub->retryCount;
+                        if (hub->attemptDelay > 8000)
+                            hub->attemptDelay = 8000;
+                        hub->lastAttempt = yapiGetTickCount();
+                        hub->retryCount++;
+                        yEnterCriticalSection(&hub->access);
+                        hub->errcode = ySetErr(load_res, hub->errmsg, errmsg, NULL, 0);
+                        yLeaveCriticalSection(&hub->access);
+                        continue;
+                    }
                 }
 #ifdef TRACE_NET_HUB
                 dbglog("TRACE(%s): try to open notification socket at %d\n",hub->url.org_url, hub->notifAbsPos);
@@ -3624,6 +3817,11 @@ static void* yhelper_thread(void *ctx)
                     dbglog("TRACE(%s): unable to open notification socket(%s)\n",hub->url.org_url,errmsg);
                     dbglog("TRACE(%s): retry in %dms (%d retries)\n",hub->url.org_url,hub->attemptDelay,hub->retryCount);
 #endif
+                    if (res == YAPI_SSL_UNK_CERT || res == YAPI_SSL_ERROR) {
+                        // invalid certificate -> no need to retry
+                        setNotificationConnectionOFF(hub);
+                        hub->state = NET_HUB_TOCLOSE;
+                    }
                 } else {
 #ifdef TRACE_NET_HUB
                     dbglog("TRACE(%s): notification socket open\n",hub->url.org_url);
@@ -3830,7 +4028,7 @@ static YRETCODE yapiRegisterHubEx(const char *url, int checkacces, char *errmsg)
     int res;
 
     if (!yContext) {
-        YPROPERR(yapiInitAPI_internal(0,errmsg));
+        YPROPERR(yapiInitAPI_internal(0, NULL, NULL, errmsg));
     }
 
     if (YSTRICMP(url, "usb") == 0) {
@@ -3899,6 +4097,12 @@ static YRETCODE yapiRegisterHubEx(const char *url, int checkacces, char *errmsg)
         if (checkacces) {
             hubst->mandatory = 1;
         }
+#ifdef NO_YSSL
+        if (hubst->url.proto == PROTO_SECURE_HTTP || hubst->url.proto == PROTO_SECURE_WEBSOCKET) {
+            yapiFreeHub(hubst);
+            return YERRMSG(YAPI_NOT_SUPPORTED, "SSL support is not activated.");
+        }
+#endif
         //look if we already know this
         yEnterCriticalSection(&yContext->enum_cs);
 
@@ -3919,9 +4123,9 @@ static YRETCODE yapiRegisterHubEx(const char *url, int checkacces, char *errmsg)
                 yLeaveCriticalSection(&yContext->enum_cs);
                 return (YRETCODE)res;
             }
-            if (hubst->url.proto == PROTO_WEBSOCKET) {
+            if (hubst->url.proto == PROTO_WEBSOCKET || hubst->url.proto == PROTO_SECURE_WEBSOCKET) {
                 thead_handler = ws_thread;
-            } else if (hubst->url.proto == PROTO_HTTP) {
+            } else if (hubst->url.proto == PROTO_HTTP || hubst->url.proto == PROTO_SECURE_HTTP) {
                 thead_handler = yhelper_thread;
             } else {
                 yLeaveCriticalSection(&yContext->enum_cs);
@@ -3948,7 +4152,7 @@ static YRETCODE yapiRegisterHubEx(const char *url, int checkacces, char *errmsg)
             }
             if (!isNotificationConnectionON(hubst)) {
                 yEnterCriticalSection(&hubst->access);
-                res = YERRMSGSILENT(yContext->nethub[i]->errcode, yContext->nethub[i]->errmsg);
+                res = YERRMSGSILENT(hubst->errcode, hubst->errmsg);
                 yLeaveCriticalSection(&hubst->access);
                 if (!YISERR(res)) {
                     return YERRMSG(YAPI_IO_ERROR, "hub not ready");
@@ -3970,18 +4174,21 @@ static YRETCODE yapiRegisterHubEx(const char *url, int checkacces, char *errmsg)
             res = yNetHubEnum(hubst, 1, errmsg);
             yLeaveCriticalSection(&yContext->updateDev_cs);
             if (YISERR(res)) {
-                yapiUnregisterHub_internal(url);
+                yEnterCriticalSection(&yContext->enum_cs);
+                unregisterNetHub(hubst);
+                yapiCleanupDisabledHub();
+                yLeaveCriticalSection(&yContext->enum_cs);
                 if (res == YAPI_DOUBLE_ACCES) {
                     return YAPI_SUCCESS;
                 }
-            } else if (hubst->url.proto == PROTO_HTTP) {
+            } else if (hubst->url.proto == PROTO_HTTP || hubst->url.proto == PROTO_SECURE_HTTP) {
                 // for HTTP test admin pass if the hub require it
                 if (hubst->writeProtected && hubst->url.user && strcmp(hubst->url.user, "admin") == 0) {
                     YIOHDL iohdl;
                     const char *request = "GET /api/module/serial?serial=&. ";
                     char *reply = NULL;
                     int replysize = 0;
-                    int tmpres = yapiHTTPRequestSyncStartEx_internal(&iohdl, 0, yHashGetStrPtr(hubst->serial), request, YSTRLEN(request), &reply, &replysize, NULL, NULL, errmsg);
+                    int tmpres = yapiHTTPRequestSyncStartEx_internal(&iohdl, 0, hubst->info.serial, request, YSTRLEN(request), &reply, &replysize, NULL, NULL, errmsg);
                     if (tmpres == YAPI_UNAUTHORIZED) {
                         return tmpres;
                     }
@@ -4076,11 +4283,15 @@ static int yapiGetHubStrAttr_internal(int ref, const char *attrname, char *outva
             return 0;
         }
         if (YSTRCMP(attrname, "serialNumber") == 0) {
-            yHashGetStr(hub->serial, outval, 1024);
-            return YSTRLEN(outval);
+            if (hub->info.serial[0]) {
+                YSTRCPY(outval, buffersize, hub->info.serial);
+                return YSTRLEN(hub->info.serial);
+            }
+            *outval = 0;
+            return 0;
         }
         if (YSTRCMP(attrname, "errorMessage") == 0) {
-            YSTRCPY(outval, 1024, hub->errmsg);
+            YSTRCPY(outval, buffersize, hub->errmsg);
             return YSTRLEN(hub->errmsg);
         }
     }
@@ -4211,7 +4422,7 @@ static YRETCODE yapiTestHub_internal(const char *url, int mstimeout, char *errms
     int res;
 
     if (!yContext) {
-        YPROPERR(yapiInitAPI_internal(0,errmsg));
+        YPROPERR(yapiInitAPI_internal(0, NULL, NULL, errmsg));
         freeApi = 1;
     }
 
@@ -4231,7 +4442,7 @@ static YRETCODE yapiTestHub_internal(const char *url, int mstimeout, char *errms
 #ifdef TRACE_NET_HUB
             dbglog("HUB: test %s \n", hubst->url.org_url);
 #endif
-            if (hubst->url.proto != PROTO_HTTP) {
+            if (hubst->url.proto != PROTO_HTTP && hubst->url.proto != PROTO_SECURE_HTTP) {
                 u64 timeout;
                 if (YISERR(res = yStartWakeUpSocket(&hubst->wuce, errmsg))) {
                     yapiFreeHub(hubst);
@@ -4309,7 +4520,6 @@ static void yapiCleanupDisabledHub(void)
                 dbglog("cleanup disabled hub %i\n", i);
                 unregisterNetHub(yContext->nethub[i]);
                 yContext->nethub[i] = NULL;
-                continue;
             }
         }
     }
@@ -4331,7 +4541,7 @@ static void yapiUnregisterHub_internal(const char *url)
             yContext->detecttype ^= Y_DETECT_NET;
         }
     } else {
-        // compute an hashed url
+        // compute a hashed url
         HubSt *hub = yGetHubFromURL(url);
         if (hub == NULL) {
             return;
@@ -4963,7 +5173,7 @@ YRETCODE yapiRequestOpen(YIOHDL_internal *iohdl, int tcpchan, const char *device
     } else {
         mstimeout = hub->netTimeout;
     }
-    YASSERT(iohdl != NULL);
+    YASSERT(iohdl != NULL, 0);
     memset(iohdl, 0, sizeof(YIOHDL_internal));
     // compute request timeout
     len = (reqlen < YOCTO_SERIAL_LEN + 32 ? reqlen : YOCTO_SERIAL_LEN + 32);
@@ -4996,10 +5206,10 @@ YRETCODE yapiRequestOpen(YIOHDL_internal *iohdl, int tcpchan, const char *device
     }
     if (hub == FAKE_USB_HUB) {
         return yapiRequestOpenUSB(iohdl, NULL, dev, request, reqlen, mstimeout, callback, context, errmsg);
-    } else {
-        if (hub->url.proto == PROTO_WEBSOCKET) {
+    }else{
+        if (hub->url.proto == PROTO_WEBSOCKET || hub->url.proto == PROTO_SECURE_WEBSOCKET) {
             return yapiRequestOpenWS(iohdl, hub, dev, tcpchan, request, reqlen, mstimeout, callback, context, progress_cb, progress_ctx, errmsg);
-        } else if (hub->url.proto == PROTO_HTTP) {
+        } else if (hub->url.proto == PROTO_HTTP || hub->url.proto == PROTO_SECURE_HTTP) {
             return yapiRequestOpenHTTP(iohdl, hub, dev, request, reqlen, 2 * hub->netTimeout, mstimeout, callback, context, errmsg);
         } else {
             return YERRMSG(YAPI_NOT_SUPPORTED, "Unsuported hub protocol");
@@ -5289,7 +5499,7 @@ static void yapiRegisterHubDiscoveryCallback_internal(yapiHubDiscoveryCallback h
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     if (!yContext) {
-        yapiInitAPI_internal(0, errmsg);
+        yapiInitAPI_internal(0, NULL, NULL, errmsg);
     }
     if (yContext) {
         yContext->hubDiscoveryCallback = hubDiscoveryCallback;
@@ -5405,11 +5615,9 @@ static YRETCODE yapiGetBootloaders_internal(char *buffer, int buffersize, int *f
     for (i = 0; i < NBMAX_NET_HUB; i++) {
         if (yContext->nethub[i]) {
             char bootloaders[4 * YOCTO_SERIAL_LEN];
-            char hubserial[YOCTO_SERIAL_LEN];
             int j;
             char *serial;
-            yHashGetStr(yContext->nethub[i]->serial, hubserial, YOCTO_SERIAL_LEN);
-            res = yNetHubGetBootloaders(hubserial, bootloaders, errmsg);
+            res = yNetHubGetBootloaders(yContext->nethub[i]->info.serial, bootloaders, errmsg);
             if (YISERR(res)) {
                 return res;
             }
@@ -5481,13 +5689,9 @@ static int yapiGetSubdevices_internal(const char *serial, char *buffer, int buff
     buffersize--; // reserve space for \0
     size = total = 0;
     for (i = 0; i < NBMAX_NET_HUB; i++) {
-        char hubserial[YOCTO_SERIAL_LEN];
-
         if (yContext->nethub[i] == NULL)
             continue;
-
-        yHashGetStr(yContext->nethub[i]->serial, hubserial, YOCTO_SERIAL_LEN);
-        if (YSTRCMP(serial, hubserial) == 0) {
+        if (YSTRCMP(serial, yContext->nethub[i]->info.serial) == 0) {
             yStrRef knownDevices[128];
             int j, nbKnownDevices;
             nbKnownDevices = ywpGetAllDevUsingNetHub(yContext->nethub[i], knownDevices, 128);
@@ -5495,7 +5699,7 @@ static int yapiGetSubdevices_internal(const char *serial, char *buffer, int buff
             if (buffersize > total) {
                 int isfirst = 1;
                 for (j = 0; j < nbKnownDevices; j++) {
-                    if (knownDevices[j] == yContext->nethub[i]->serial)
+                    if (knownDevices[j] == yContext->nethub[i]->serial_hash)
                         continue;
                     if (!isfirst)
                         *p++ = ',';
@@ -5646,7 +5850,7 @@ static const char* yapiJsonValueParseArray(yJsonStateMachine *j, const char *pat
         p++;
         len++;
     }
-    YASSERT(len < 16);
+    YASSERT(len < 16, len);
     memcpy(buffer, path, len);
     buffer[len] = 0;
     index = atoi(buffer);
@@ -5872,7 +6076,7 @@ static YRETCODE yapiGetAllJsonKeys_internal(const char *json_buffer, char *buffe
         *d = 0;
         YSTRCAT(d, 1024-len, "\"");
         len++;
-        YASSERT(len == YSTRLEN(tmpbuf));
+        YASSERT(len == YSTRLEN(tmpbuf), len);
         sep = ",";
         if (buffersize > totalsize + len) {
             memcpy(buffer + totalsize, tmpbuf, len);
@@ -6118,7 +6322,44 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPI(int detect_type, char *errmsg)
 {
     YRETCODE res;
     YDLL_CALL_ENTER(trcInitAPI);
-    res = yapiInitAPI_internal(detect_type, errmsg);
+    res = yapiInitAPI_internal(detect_type, NULL, NULL, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPIEx(int detect_type, const char* certfile, const char* keyfile, char* errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcInitAPIEx);
+    res = yapiInitAPI_internal(detect_type, certfile, keyfile, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiSetSSLCertificateSrv(const char* certfile, const char* keyfile, char* errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcSSLEx);
+    res = yapiSetSSLCertificateSrv_internal(certfile, keyfile, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiGetRemoteCertificate(const char* rooturl, u64 timeout, char* buffer, int maxsize, int* neededsize, char* errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcSSLGet);
+    res = yapiGetRemoteCertificate_internal(rooturl, timeout, buffer, maxsize, neededsize, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+YRETCODE YAPI_FUNCTION_EXPORT yapiAddSSLCertificateCli(const char* cert, int cert_len, char* errmsg)
+{
+    YRETCODE res;
+    YDLL_CALL_ENTER(trcSSLAddEx);
+    res = yapiAddSSLCertificateCli_internal(cert, cert_len, errmsg);
     YDLL_CALL_LEAVE(res);
     return res;
 }

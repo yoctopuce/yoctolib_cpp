@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.h 49256 2022-04-01 08:09:27Z seb $
+ * $Id: yprog.h 57827 2023-11-10 17:21:24Z mvuilleu $
  *
  * Declaration of firmware upgrade functions
  *
@@ -162,14 +162,16 @@ typedef struct {
     flashzone flash[MAX_FLASH_ZONES_PER_FILES];
 } newmemzones;
 
+#define IS_TEXAS_FAMILY(devid_family)    ((devid_family) != FAMILY_PIC24FJ256DA210 && (devid_family) != FAMILY_PIC24FJ64GB004)
+
 typedef struct {
     ProgIface iface;
     u32 pr_blk_size;
     u32 er_blk_size;
     u32 last_addr;
     u32 settings_addr;
-    u8 devid_family;
-    u8 devid_model;
+    u8  devid_family;
+    u8  devid_model;
     u16 devid_rev;
     u32 startconfig;
     u32 endofconfig;
@@ -221,7 +223,7 @@ typedef enum {
 } YPROG_RESULT;
 
 
-#define MAX_FIRMWARE_LEN  0x100000ul
+#define MAX_FIRMWARE_LEN  0x200000ul
 #define INVALID_FIRMWARE  0xfffffffful
 #define FLASH_NB_REBOOT_RETRY  1
 
@@ -253,6 +255,18 @@ typedef enum {
     FLASH_ZONE_RECV_OK
 } FLASH_ZONE_STATE;
 
+// Progress value at the end of each state
+#define PROGRESS_FLASH_FIND_DEV 2
+#define PROGRESS_FLASH_CONNECT 2
+#define PROGRESS_FLASH_GET_INFO 2
+#define PROGRESS_FLASH_VALIDATE_BYN 3
+#define PROGRESS_FLASH_ERASE 31
+#define PROGRESS_FLASH_DOFLASH 85
+#define PROGRESS_FLASH_REBOOT 95
+#define PROGRESS_FLASH_REBOOT_VALIDATE 98
+#define PROGRESS_FLASH_AUTOFLASH 98
+#define PROGRESS_FLASH_SUCCEEDED 100
+
 
 #define BLOCK_FLASH_TIMEOUT       4000u
 #define PROG_GET_INFO_TIMEOUT    10000u
@@ -261,7 +275,7 @@ typedef enum {
 #define YPROG_BOOTLOADER_TIMEOUT 20000u
 #define YPROG_FORCE_FW_UPDATE    1u
 
-#ifdef MICROCHIP_API
+#ifdef EMBEDDED_API
 #define FLASH_ERRMSG_LEN        56
 #else
 #define FLASH_ERRMSG_LEN        YOCTO_ERRMSG_LEN

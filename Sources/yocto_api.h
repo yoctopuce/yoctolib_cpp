@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 56393 2023-09-05 08:36:51Z seb $
+ * $Id: yocto_api.h 58129 2023-11-30 08:14:33Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -535,6 +535,41 @@ public:
     virtual string      AddUdevRule(bool force);
 
     /**
+     * Download the TLS/SSL certificate from the hub. This function allows to download a TLS/SSL certificate to add it
+     * to the list of trusted certificates using the AddTrustedCertificates method.
+     *
+     * @param url : the root URL of the VirtualHub V2 or HTTP server.
+     * @param mstimeout : the number of milliseconds available to download the certificate.
+     *
+     * @return a string containing the certificate. In case of error, returns a string starting with "error:".
+     */
+    virtual string      DownloadHostCertificate(string url,u64 mstimeout);
+
+    /**
+     * Adds a TLS/SSL certificate to the list of trusted certificates. By default, the library
+     * library will reject TLS/SSL connections to servers whose certificate is not known. This function
+     * function allows to add a list of known certificates. It is also possible to disable the verification
+     * using the SetNetworkSecurityOptions method.
+     *
+     * @param certificate : a string containing one or more certificates.
+     *
+     * @return an empty string if the certificate has been added correctly.
+     *         In case of error, returns a string starting with "error:".
+     */
+    virtual string      AddTrustedCertificates(string certificate);
+
+    /**
+     * Enables or disables certain TLS/SSL certificate checks.
+     *
+     * @param options: The options: YAPI::NO_TRUSTED_CA_CHECK,
+     *         YAPI::NO_EXPIRATION_CHECK, YAPI::NO_HOSTNAME_CHECK.
+     *
+     * @return an empty string if the options are taken into account.
+     *         On error, returns a string beginning with "error:".
+     */
+    virtual string      SetNetworkSecurityOptions(int options);
+
+    /**
      * Modifies the network connection delay for yRegisterHub() and yUpdateDeviceList().
      * This delay impacts only the YoctoHubs and VirtualHub
      * which are accessible through the network. By default, this delay is of 20000 milliseconds,
@@ -657,6 +692,8 @@ public:
     static const u32 RESEND_MISSING_PKT = 4;
     static const u32 DETECT_ALL  = (Y_DETECT_USB | Y_DETECT_NET);
 
+
+
 //--- (generated code: YFunction return codes)
     static const int SUCCESS               = 0;       // everything worked all right
     static const int NOT_INITIALIZED       = -1;      // call yInitAPI() first !
@@ -677,6 +714,13 @@ public:
     static const int RFID_SOFT_ERROR       = -16;     // Recoverable error with RFID tag (eg. tag out of reach), check YRfidStatus for details
     static const int RFID_HARD_ERROR       = -17;     // Serious RFID error (eg. write-protected, out-of-boundary), check YRfidStatus for details
     static const int BUFFER_TOO_SMALL      = -18;     // The buffer provided is too small
+    static const int DNS_ERROR             = -19;     // Error during name resolutions (invalid hostname or dns communication error)
+    static const int SSL_UNK_CERT          = -20;     // The certificate is not correctly signed by the trusted CA
+
+    // TLS / SSL definitions
+    static const u32 NO_TRUSTED_CA_CHECK   = 1;       // Disables certificate checking
+    static const u32 NO_EXPIRATION_CHECK   = 2;       // Disables certificate expiration date checking
+    static const u32 NO_HOSTNAME_CHECK     = 4;       // Disable hostname checking
 
 //--- (end of generated code: YFunction return codes)
 
@@ -1051,6 +1095,59 @@ public:
             YAPI::InitAPI(0, errmsg);
         }
         return YAPI::_yapiContext.AddUdevRule(force);
+    }
+    /**
+     * Download the TLS/SSL certificate from the hub. This function allows to download a TLS/SSL certificate to add it
+     * to the list of trusted certificates using the AddTrustedCertificates method.
+     *
+     * @param url : the root URL of the VirtualHub V2 or HTTP server.
+     * @param mstimeout : the number of milliseconds available to download the certificate.
+     *
+     * @return a string containing the certificate. In case of error, returns a string starting with "error:".
+     */
+    inline static string DownloadHostCertificate(string url,u64 mstimeout)
+    {
+        if (!YAPI::_apiInitialized) {
+            string errmsg;
+            YAPI::InitAPI(0, errmsg);
+        }
+        return YAPI::_yapiContext.DownloadHostCertificate(url, mstimeout);
+    }
+    /**
+     * Adds a TLS/SSL certificate to the list of trusted certificates. By default, the library
+     * library will reject TLS/SSL connections to servers whose certificate is not known. This function
+     * function allows to add a list of known certificates. It is also possible to disable the verification
+     * using the SetNetworkSecurityOptions method.
+     *
+     * @param certificate : a string containing one or more certificates.
+     *
+     * @return an empty string if the certificate has been added correctly.
+     *         In case of error, returns a string starting with "error:".
+     */
+    inline static string AddTrustedCertificates(string certificate)
+    {
+        if (!YAPI::_apiInitialized) {
+            string errmsg;
+            YAPI::InitAPI(0, errmsg);
+        }
+        return YAPI::_yapiContext.AddTrustedCertificates(certificate);
+    }
+    /**
+     * Enables or disables certain TLS/SSL certificate checks.
+     *
+     * @param options: The options: YAPI::NO_TRUSTED_CA_CHECK,
+     *         YAPI::NO_EXPIRATION_CHECK, YAPI::NO_HOSTNAME_CHECK.
+     *
+     * @return an empty string if the options are taken into account.
+     *         On error, returns a string beginning with "error:".
+     */
+    inline static string SetNetworkSecurityOptions(int options)
+    {
+        if (!YAPI::_apiInitialized) {
+            string errmsg;
+            YAPI::InitAPI(0, errmsg);
+        }
+        return YAPI::_yapiContext.SetNetworkSecurityOptions(options);
     }
     /**
      * Modifies the network connection delay for yRegisterHub() and yUpdateDeviceList().
@@ -3089,8 +3186,10 @@ public:
      * Registers a device log callback function. This callback will be called each time
      * that a module sends a new log message. Mostly useful to debug a Yoctopuce module.
      *
-     * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
-     *         arguments: the module object that emitted the log message, and the character string containing the log.
+     * @param callback : the callback function to call, or a NULL pointer.
+     *         The callback function should take two
+     *         arguments: the module object that emitted the log message,
+     *         and the character string containing the log.
      *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         registerLogCallback(YModuleLogCallback callback);

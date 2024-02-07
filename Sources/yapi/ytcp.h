@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.h 55393 2023-06-29 08:31:54Z seb $
+ * $Id: ytcp.h 58332 2023-12-07 08:36:47Z seb $
  *
  *  Declaration of a client TCP stack
  *
@@ -78,8 +78,9 @@ extern "C" {
 #else
 #define SOCK_ERR    (errno)
 #endif
+#define REPORT_ERR(msg) if(errmsg){ YSPRINTF(errmsg,YOCTO_ERRMSG_LEN,"%s (%s:%d / errno=%d)",(msg), __FILENAME__, __LINE__, SOCK_ERR);errmsg[YOCTO_ERRMSG_LEN-1]='\0';}
 
-#define yNetSetErr()  yNetSetErrEx(__FILE_ID__, __LINE__,SOCK_ERR,errmsg)
+#define yNetSetErr()  yNetSetErrEx(__FILENAME__, __LINE__,SOCK_ERR,errmsg)
 
 int yNetSetErrEx(const char* fileid, u32 line, unsigned err, char* errmsg);
 
@@ -102,12 +103,53 @@ int yStartWakeUpSocket(WakeUpSocket* wuce, char* errmsg);
 int yDringWakeUpSocket(WakeUpSocket* wuce, u8 signal, char* errmsg);
 int yConsumeWakeUpSocket(WakeUpSocket* wuce, char* errmsg);
 void yFreeWakeUpSocket(WakeUpSocket* wuce);
-int yTcpDownload(const char* host, int port, const char* url, u8** out_buffer, u32 mstimeout, char* errmsg);
+int yTcpDownload(const char* host, int port, int usessl, const char* url, u8** out_buffer, u32 mstimeout, char* errmsg);
 
-int yTcpInit(char* errmsg);
-void yTcpShutdown(void);
-u32 yResolveDNS(const char* name, char* errmsg);
+int yResolveDNS(const char* name, IPvX_ADDR* addr, char* errmsg);
 
+int yTcpOpenBasic(YSOCKET* newskt, const char* host, u16 port, u64 mstimeout, char* errmsg);
+int yTcpOpenBasicEx(YSOCKET* newskt, const IPvX_ADDR* ip, u16 port, u64 mstimeout, char* errmsg);
+void yTcpCloseBasic(YSOCKET skt);
+int yTcpReadBasic(YSOCKET skt, u8* buffer, int len, char* errmsg);
+u32 yTcpGetRcvBufSizeBasic(YSOCKET skt);
+int yTcpWriteBasic(YSOCKET skt, const u8* buffer, int len, char* errmsg);
+int yTcpCheckSocketStillValidBasic(YSOCKET skt, char* errmsg);
+
+#include "yssl.h"
+//#define DUMP_YSOCKET_MULTI_TRAFFIC
+
+
+typedef struct {
+    int secure_socket;
+
+    union {
+        YSOCKET basic;
+        YSSL_SOCKET secure;
+    };
+#ifdef DUMP_YSOCKET_MULTI_TRAFFIC
+    u64 creation_tm; 
+#endif
+} YSOCKET_MULTI_ST, *YSOCKET_MULTI;
+
+#define INVALID_SOCKET_MULTI NULL
+
+
+int yTcpInitMulti(char* errmsg);
+int yTcpOpenMulti(YSOCKET_MULTI* newskt, const char* host, u16 port, int useSSL, u64 mstimeout, char* errmsg);
+int yTcpAcceptMulti(YSOCKET_MULTI* newskt, YSOCKET sock, int useSSL, char* errmsg);
+void yTcpCloseMulti(YSOCKET_MULTI skt);
+YSOCKET yTcpFdSetMulti(YSOCKET_MULTI skt, void* set, YSOCKET sktmax);
+int yTcpFdIsSetMulti(YSOCKET_MULTI skt, void* set);
+int yTcpCheckSocketStillValidMulti(YSOCKET_MULTI skt, char* errmsg);
+int yTcpReadMulti(YSOCKET_MULTI skt, u8* buffer, int len, char* errmsg);
+u32 yTcpGetRcvBufSizeMulti(YSOCKET_MULTI sock);
+int yTcpWriteMulti(YSOCKET_MULTI skt, const u8* buffer, int len, char* errmsg);
+void yTcpShutdownMulti(void);
+
+int yUdpOpenMulti(YSOCKET_MULTI* newskt, IPvX_ADDR* local_ip, u16 local_port, char* errmsg);
+int yUdpWriteMulti(YSOCKET_MULTI skt, IPvX_ADDR* dest_ip, u16 dest_port, const u8* buffer, int len, char* errmsg);
+int yUdpReadMulti(YSOCKET_MULTI skt, u8* buffer, int len, IPvX_ADDR* dest_ip, u16* dest_port, char* errmsg);
+int yUdpRegisterMCAST(YSOCKET_MULTI skt,  IPvX_ADDR *mcastAddr);
 
 struct _RequestSt* yReqAlloc(struct _HubSt* hub);
 int yReqOpen(struct _RequestSt* tcpreq, int wait_for_start, int tcpchan, const char* request, int reqlen, u64 mstimeout, yapiRequestAsyncCallback callback, void* context, yapiRequestProgressCallback progress_cb, void* progress_ctx, char* errmsg);
