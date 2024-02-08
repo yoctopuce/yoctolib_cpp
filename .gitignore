@@ -1,0 +1,7 @@
+/Binaries/linux/
+/Binaries/windows/
+/Binaries/osx
+/Binaries/osx32
+Binary_Linux
+Binary_OSX
+Binary_Windows

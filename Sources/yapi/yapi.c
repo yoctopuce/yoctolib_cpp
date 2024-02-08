@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 59193 2024-02-05 10:07:10Z seb $
+ * $Id: yapi.c 59265 2024-02-07 08:26:31Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -1515,7 +1515,7 @@ static int yEnuJson(ENU_CONTEXT *enus, yJsonStateMachine *j)
         if (YSTRCMP(j->token, "/api") == 0) {
             if (enus->hub->serial_hash != enus->serial) {
                 enus->hub->serial_hash = enus->serial;
-                YSTRCPY(enus->hub->info.serial, YOCTO_SERIAL_LEN, yHashGetStrPtr(enus->serial));
+                yHashGetStr(enus->serial,enus->hub->info.serial, YOCTO_SERIAL_LEN);
                 if (checkForSameHubAccess(enus->hub, enus->serial, NULL) < 0) {
                     // fatal error do not try to reconnect
                     return YAPI_DOUBLE_ACCES;
@@ -1941,7 +1941,7 @@ static int yEnuJZon(ENU_CONTEXT *enus, yJsonStateMachine *j, yJsonStateMachine *
                 NETENUMLOG("set url to %s\n", z->token);
                 if (YSTRCMP(z->token, "/api") == 0 && enus->hub->serial_hash != enus->serial) {
                     enus->hub->serial_hash = enus->serial;
-                    YSTRCPY(enus->hub->info.serial, YOCTO_SERIAL_LEN, yHashGetStrPtr(enus->serial));
+                    yHashGetStr(enus->serial, enus->hub->info.serial, YOCTO_SERIAL_LEN);
                     if (checkForSameHubAccess(enus->hub, enus->serial, NULL) < 0) {
                         // fatal error do not try to reconnect
                         return YAPI_DOUBLE_ACCES;
