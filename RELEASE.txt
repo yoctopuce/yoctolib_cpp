@@ -1,5 +1,3 @@
-CPPV2 v2.0.59348
+CPPV2 v2.0.59414
 
-- New API 2.0 (backward compatible)
-- Add support for TLS/SSL
-- Add support for IPv6
+- Fix missing file on release
