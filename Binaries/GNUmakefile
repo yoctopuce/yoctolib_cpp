@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 58020 2023-11-23 15:55:01Z mvuilleu $
+#  $Id: GNUmakefile 59479 2024-02-26 09:26:58Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -888,13 +888,18 @@ $(DIR_OSX)libyocto.dylib: $(DIR_OSX) $(ALL_OBJS_DYN_OSX) $(ALL_H)
 	@echo linking $@
 	@$(CPP_OSX)  -m64 -dynamiclib -Wl,-reexport_framework,IOKit,-reexport_framework,CoreFoundation,-headerpad_max_install_names,-compatibility_version,1.0,-current_version,1.0,-install_name,/usr/local/lib/libyocto.dylib -o $@ $(ALL_OBJS_DYN_OSX)
 
-$(YAPI_DIR_OSX)libyapi.dylib : OPTS_DYN = $(OPTS_JAVA)
-$(YAPI_DIR_OSX)libyapi.dylib: $(DIR_OSX) $(YAPI_OBJS_DYN_OSX) $(ALL_H)
-	@echo linking $@
+OSX_DYLIB_AS = xcode/yapi/build/Release/libyapi.dylib
+
+.PHONY: $(OSX_DYLIB_AS)
+$(OSX_DYLIB_AS):
 ifdef JAVA_HOME
 	@echo java_home set to $(JAVA_HOME)
 endif
-	@$(CC_OSX) -m64 -dynamiclib -Wl,-reexport_framework,IOKit,-reexport_framework,CoreFoundation,-headerpad_max_install_names,-compatibility_version,1.0,-current_version,1.0,-install_name,/usr/local/lib/libyapi.dylib -o $@ $(YAPI_OBJS_DYN_OSX)
+	@echo "build yapi.dylib from xcode project (phony)"
+	xcodebuild -project xcode/yapi/yapi.xcodeproj
+
+$(YAPI_DIR_OSX)libyapi.dylib: $(YAPI_DIR_OSX) $(OSX_DYLIB_AS)
+	cp -R $(OSX_DYLIB_AS) $(YAPI_DIR_OSX)
 
 $(DIR_OSX)test: $(OBJDIR_OSX) $(YAPI_DIR_OSX) ALL_OBJS_STAT_OSX) $(ALL_H) $(TEST_SRC)
 	@$(RM) -rf $@

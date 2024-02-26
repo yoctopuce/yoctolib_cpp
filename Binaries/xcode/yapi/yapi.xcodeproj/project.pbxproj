@@ -3,10 +3,100 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 55;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		496E92E02B8C8B5500345028 /* ssl_cookie.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92762B8C8B5200345028 /* ssl_cookie.c */; };
+		496E92E12B8C8B5500345028 /* arc4.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92772B8C8B5200345028 /* arc4.c */; };
+		496E92E22B8C8B5500345028 /* pk_wrap.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92792B8C8B5200345028 /* pk_wrap.c */; };
+		496E92E32B8C8B5500345028 /* pkwrite.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E927A2B8C8B5200345028 /* pkwrite.c */; };
+		496E92E42B8C8B5500345028 /* hmac_drbg.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E927B2B8C8B5200345028 /* hmac_drbg.c */; };
+		496E92E52B8C8B5500345028 /* ecdsa.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E927C2B8C8B5200345028 /* ecdsa.c */; };
+		496E92E62B8C8B5500345028 /* camellia.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E927D2B8C8B5200345028 /* camellia.c */; };
+		496E92E72B8C8B5500345028 /* cmac.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E927E2B8C8B5200345028 /* cmac.c */; };
+		496E92E92B8C8B5500345028 /* poly1305.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92802B8C8B5200345028 /* poly1305.c */; };
+		496E92EA2B8C8B5500345028 /* entropy_poll.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92812B8C8B5200345028 /* entropy_poll.c */; };
+		496E92EB2B8C8B5500345028 /* ssl_cli.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92822B8C8B5200345028 /* ssl_cli.c */; };
+		496E92EC2B8C8B5500345028 /* memory_buffer_alloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92832B8C8B5200345028 /* memory_buffer_alloc.c */; };
+		496E92ED2B8C8B5500345028 /* certs.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92842B8C8B5200345028 /* certs.c */; };
+		496E92EE2B8C8B5500345028 /* chacha20.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92852B8C8B5200345028 /* chacha20.c */; };
+		496E92EF2B8C8B5500345028 /* pem.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92862B8C8B5200345028 /* pem.c */; };
+		496E92F02B8C8B5500345028 /* net_sockets.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92872B8C8B5200345028 /* net_sockets.c */; };
+		496E92F12B8C8B5500345028 /* pkcs11.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92882B8C8B5200345028 /* pkcs11.c */; };
+		496E92F22B8C8B5500345028 /* psa_crypto.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92892B8C8B5200345028 /* psa_crypto.c */; };
+		496E92F32B8C8B5500345028 /* psa_crypto_ecp.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E928A2B8C8B5200345028 /* psa_crypto_ecp.c */; };
+		496E92F42B8C8B5500345028 /* chachapoly.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E928B2B8C8B5200345028 /* chachapoly.c */; };
+		496E92F52B8C8B5500345028 /* ssl_msg.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E928C2B8C8B5200345028 /* ssl_msg.c */; };
+		496E92F62B8C8B5500345028 /* pkcs12.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E928D2B8C8B5300345028 /* pkcs12.c */; };
+		496E92F72B8C8B5500345028 /* havege.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E928E2B8C8B5300345028 /* havege.c */; };
+		496E92F82B8C8B5500345028 /* x509_crl.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92912B8C8B5300345028 /* x509_crl.c */; };
+		496E92F92B8C8B5500345028 /* x509write_crt.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92942B8C8B5300345028 /* x509write_crt.c */; };
+		496E92FA2B8C8B5500345028 /* ecp.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92952B8C8B5300345028 /* ecp.c */; };
+		496E92FB2B8C8B5500345028 /* nist_kw.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92962B8C8B5300345028 /* nist_kw.c */; };
+		496E92FC2B8C8B5500345028 /* sha1.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92972B8C8B5300345028 /* sha1.c */; };
+		496E92FD2B8C8B5500345028 /* x509_csr.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92982B8C8B5300345028 /* x509_csr.c */; };
+		496E92FE2B8C8B5500345028 /* md4.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E929A2B8C8B5300345028 /* md4.c */; };
+		496E92FF2B8C8B5500345028 /* pk.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E929B2B8C8B5300345028 /* pk.c */; };
+		496E93002B8C8B5500345028 /* x509_crt.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E929C2B8C8B5300345028 /* x509_crt.c */; };
+		496E93012B8C8B5500345028 /* timing.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E929D2B8C8B5300345028 /* timing.c */; };
+		496E93022B8C8B5500345028 /* pkparse.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E929E2B8C8B5300345028 /* pkparse.c */; };
+		496E93032B8C8B5500345028 /* threading.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E929F2B8C8B5300345028 /* threading.c */; };
+		496E93042B8C8B5500345028 /* bignum.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92A02B8C8B5300345028 /* bignum.c */; };
+		496E93052B8C8B5500345028 /* cipher_wrap.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92A12B8C8B5300345028 /* cipher_wrap.c */; };
+		496E93062B8C8B5500345028 /* psa_crypto_se.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92A22B8C8B5300345028 /* psa_crypto_se.c */; };
+		496E93072B8C8B5500345028 /* version_features.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92A42B8C8B5300345028 /* version_features.c */; };
+		496E93082B8C8B5500345028 /* ccm.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92A52B8C8B5300345028 /* ccm.c */; };
+		496E93092B8C8B5500345028 /* ssl_ticket.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92A62B8C8B5300345028 /* ssl_ticket.c */; };
+		496E930A2B8C8B5500345028 /* xtea.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92A72B8C8B5300345028 /* xtea.c */; };
+		496E930B2B8C8B5500345028 /* x509_create.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92A82B8C8B5300345028 /* x509_create.c */; };
+		496E930C2B8C8B5500345028 /* ssl_srv.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92A92B8C8B5400345028 /* ssl_srv.c */; };
+		496E930D2B8C8B5500345028 /* platform_util.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92AB2B8C8B5400345028 /* platform_util.c */; };
+		496E930E2B8C8B5500345028 /* des.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92AC2B8C8B5400345028 /* des.c */; };
+		496E930F2B8C8B5500345028 /* psa_crypto_slot_management.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92AD2B8C8B5400345028 /* psa_crypto_slot_management.c */; };
+		496E93102B8C8B5500345028 /* pkcs5.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92AE2B8C8B5400345028 /* pkcs5.c */; };
+		496E93112B8C8B5500345028 /* md2.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92AF2B8C8B5400345028 /* md2.c */; };
+		496E93122B8C8B5500345028 /* aria.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92B02B8C8B5400345028 /* aria.c */; };
+		496E93132B8C8B5500345028 /* blowfish.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92B12B8C8B5400345028 /* blowfish.c */; };
+		496E93142B8C8B5500345028 /* psa_crypto_storage.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92B32B8C8B5400345028 /* psa_crypto_storage.c */; };
+		496E93152B8C8B5500345028 /* psa_crypto_client.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92B42B8C8B5400345028 /* psa_crypto_client.c */; };
+		496E93162B8C8B5500345028 /* padlock.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92B52B8C8B5400345028 /* padlock.c */; };
+		496E93172B8C8B5500345028 /* ssl_cache.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92B62B8C8B5400345028 /* ssl_cache.c */; };
+		496E93182B8C8B5500345028 /* ripemd160.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92B72B8C8B5400345028 /* ripemd160.c */; };
+		496E93192B8C8B5500345028 /* gcm.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92B82B8C8B5400345028 /* gcm.c */; };
+		496E931B2B8C8B5500345028 /* rsa_internal.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92BA2B8C8B5400345028 /* rsa_internal.c */; };
+		496E931C2B8C8B5500345028 /* dhm.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92BB2B8C8B5400345028 /* dhm.c */; };
+		496E931D2B8C8B5500345028 /* ssl_tls.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92BC2B8C8B5400345028 /* ssl_tls.c */; };
+		496E931E2B8C8B5500345028 /* aes.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92BD2B8C8B5400345028 /* aes.c */; };
+		496E931F2B8C8B5500345028 /* platform.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92BF2B8C8B5400345028 /* platform.c */; };
+		496E93202B8C8B5500345028 /* asn1write.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92C02B8C8B5400345028 /* asn1write.c */; };
+		496E93212B8C8B5500345028 /* cipher.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92C12B8C8B5400345028 /* cipher.c */; };
+		496E93222B8C8B5500345028 /* error.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92C22B8C8B5400345028 /* error.c */; };
+		496E93232B8C8B5500345028 /* ecp_curves.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92C32B8C8B5400345028 /* ecp_curves.c */; };
+		496E93242B8C8B5500345028 /* ecdh.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92C42B8C8B5400345028 /* ecdh.c */; };
+		496E93252B8C8B5500345028 /* x509.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92C52B8C8B5400345028 /* x509.c */; };
+		496E93262B8C8B5500345028 /* x509write_csr.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92C62B8C8B5400345028 /* x509write_csr.c */; };
+		496E93272B8C8B5500345028 /* psa_crypto_rsa.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92C72B8C8B5400345028 /* psa_crypto_rsa.c */; };
+		496E93282B8C8B5500345028 /* aesni.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92C82B8C8B5400345028 /* aesni.c */; };
+		496E93292B8C8B5500345028 /* sha512.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92C92B8C8B5400345028 /* sha512.c */; };
+		496E932A2B8C8B5500345028 /* hkdf.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92CA2B8C8B5500345028 /* hkdf.c */; };
+		496E932B2B8C8B5500345028 /* md.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92CB2B8C8B5500345028 /* md.c */; };
+		496E932C2B8C8B5500345028 /* version.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92CC2B8C8B5500345028 /* version.c */; };
+		496E932D2B8C8B5500345028 /* psa_crypto_driver_wrappers.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92CD2B8C8B5500345028 /* psa_crypto_driver_wrappers.c */; };
+		496E932E2B8C8B5500345028 /* ctr_drbg.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92CE2B8C8B5500345028 /* ctr_drbg.c */; };
+		496E932F2B8C8B5500345028 /* debug.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92D02B8C8B5500345028 /* debug.c */; };
+		496E93302B8C8B5500345028 /* ssl_ciphersuites.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92D12B8C8B5500345028 /* ssl_ciphersuites.c */; };
+		496E93312B8C8B5500345028 /* entropy.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92D42B8C8B5500345028 /* entropy.c */; };
+		496E93322B8C8B5500345028 /* sha256.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92D52B8C8B5500345028 /* sha256.c */; };
+		496E93332B8C8B5500345028 /* base64.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92D62B8C8B5500345028 /* base64.c */; };
+		496E93342B8C8B5500345028 /* ssl_tls13_keys.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92D72B8C8B5500345028 /* ssl_tls13_keys.c */; };
+		496E93352B8C8B5500345028 /* asn1parse.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92D82B8C8B5500345028 /* asn1parse.c */; };
+		496E93362B8C8B5500345028 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92D92B8C8B5500345028 /* md5.c */; };
+		496E93372B8C8B5500345028 /* oid.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92DB2B8C8B5500345028 /* oid.c */; };
+		496E93382B8C8B5500345028 /* rsa.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92DC2B8C8B5500345028 /* rsa.c */; };
+		496E93392B8C8B5500345028 /* ecjpake.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92DD2B8C8B5500345028 /* ecjpake.c */; };
+		496E933A2B8C8B5500345028 /* psa_its_file.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E92DE2B8C8B5500345028 /* psa_its_file.c */; };
+		496E933D2B8C8D4900345028 /* yssl.c in Sources */ = {isa = PBXBuildFile; fileRef = 496E933B2B8C8D4900345028 /* yssl.c */; };
 		B8AF94D51B9F3418003FA33E /* yapi.c in Sources */ = {isa = PBXBuildFile; fileRef = B8AF94BC1B9F3418003FA33E /* yapi.c */; };
 		B8AF94D61B9F3418003FA33E /* yfifo.c in Sources */ = {isa = PBXBuildFile; fileRef = B8AF94BF1B9F3418003FA33E /* yfifo.c */; };
 		B8AF94D71B9F3418003FA33E /* yhash.c in Sources */ = {isa = PBXBuildFile; fileRef = B8AF94C11B9F3418003FA33E /* yhash.c */; };
@@ -23,7 +113,113 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		B8AF94B21B9F33E1003FA33E /* yapi.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = yapi.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
+		496E92762B8C8B5200345028 /* ssl_cookie.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ssl_cookie.c; path = ../../../Sources/yapi/mbedtls/library/ssl_cookie.c; sourceTree = "<group>"; };
+		496E92772B8C8B5200345028 /* arc4.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = arc4.c; path = ../../../Sources/yapi/mbedtls/library/arc4.c; sourceTree = "<group>"; };
+		496E92782B8C8B5200345028 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = config.h; path = ../../../Sources/yapi/mbedtls/include/mbedtls/config.h; sourceTree = "<group>"; };
+		496E92792B8C8B5200345028 /* pk_wrap.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pk_wrap.c; path = ../../../Sources/yapi/mbedtls/library/pk_wrap.c; sourceTree = "<group>"; };
+		496E927A2B8C8B5200345028 /* pkwrite.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pkwrite.c; path = ../../../Sources/yapi/mbedtls/library/pkwrite.c; sourceTree = "<group>"; };
+		496E927B2B8C8B5200345028 /* hmac_drbg.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = hmac_drbg.c; path = ../../../Sources/yapi/mbedtls/library/hmac_drbg.c; sourceTree = "<group>"; };
+		496E927C2B8C8B5200345028 /* ecdsa.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ecdsa.c; path = ../../../Sources/yapi/mbedtls/library/ecdsa.c; sourceTree = "<group>"; };
+		496E927D2B8C8B5200345028 /* camellia.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = camellia.c; path = ../../../Sources/yapi/mbedtls/library/camellia.c; sourceTree = "<group>"; };
+		496E927E2B8C8B5200345028 /* cmac.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cmac.c; path = ../../../Sources/yapi/mbedtls/library/cmac.c; sourceTree = "<group>"; };
+		496E92802B8C8B5200345028 /* poly1305.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = poly1305.c; path = ../../../Sources/yapi/mbedtls/library/poly1305.c; sourceTree = "<group>"; };
+		496E92812B8C8B5200345028 /* entropy_poll.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = entropy_poll.c; path = ../../../Sources/yapi/mbedtls/library/entropy_poll.c; sourceTree = "<group>"; };
+		496E92822B8C8B5200345028 /* ssl_cli.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ssl_cli.c; path = ../../../Sources/yapi/mbedtls/library/ssl_cli.c; sourceTree = "<group>"; };
+		496E92832B8C8B5200345028 /* memory_buffer_alloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = memory_buffer_alloc.c; path = ../../../Sources/yapi/mbedtls/library/memory_buffer_alloc.c; sourceTree = "<group>"; };
+		496E92842B8C8B5200345028 /* certs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = certs.c; path = ../../../Sources/yapi/mbedtls/library/certs.c; sourceTree = "<group>"; };
+		496E92852B8C8B5200345028 /* chacha20.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = chacha20.c; path = ../../../Sources/yapi/mbedtls/library/chacha20.c; sourceTree = "<group>"; };
+		496E92862B8C8B5200345028 /* pem.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pem.c; path = ../../../Sources/yapi/mbedtls/library/pem.c; sourceTree = "<group>"; };
+		496E92872B8C8B5200345028 /* net_sockets.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = net_sockets.c; path = ../../../Sources/yapi/mbedtls/library/net_sockets.c; sourceTree = "<group>"; };
+		496E92882B8C8B5200345028 /* pkcs11.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pkcs11.c; path = ../../../Sources/yapi/mbedtls/library/pkcs11.c; sourceTree = "<group>"; };
+		496E92892B8C8B5200345028 /* psa_crypto.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = psa_crypto.c; path = ../../../Sources/yapi/mbedtls/library/psa_crypto.c; sourceTree = "<group>"; };
+		496E928A2B8C8B5200345028 /* psa_crypto_ecp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = psa_crypto_ecp.c; path = ../../../Sources/yapi/mbedtls/library/psa_crypto_ecp.c; sourceTree = "<group>"; };
+		496E928B2B8C8B5200345028 /* chachapoly.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = chachapoly.c; path = ../../../Sources/yapi/mbedtls/library/chachapoly.c; sourceTree = "<group>"; };
+		496E928C2B8C8B5200345028 /* ssl_msg.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ssl_msg.c; path = ../../../Sources/yapi/mbedtls/library/ssl_msg.c; sourceTree = "<group>"; };
+		496E928D2B8C8B5300345028 /* pkcs12.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pkcs12.c; path = ../../../Sources/yapi/mbedtls/library/pkcs12.c; sourceTree = "<group>"; };
+		496E928E2B8C8B5300345028 /* havege.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = havege.c; path = ../../../Sources/yapi/mbedtls/library/havege.c; sourceTree = "<group>"; };
+		496E928F2B8C8B5300345028 /* ssl_tls13_keys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ssl_tls13_keys.h; path = ../../../Sources/yapi/mbedtls/library/ssl_tls13_keys.h; sourceTree = "<group>"; };
+		496E92902B8C8B5300345028 /* ssl_invasive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ssl_invasive.h; path = ../../../Sources/yapi/mbedtls/library/ssl_invasive.h; sourceTree = "<group>"; };
+		496E92912B8C8B5300345028 /* x509_crl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = x509_crl.c; path = ../../../Sources/yapi/mbedtls/library/x509_crl.c; sourceTree = "<group>"; };
+		496E92922B8C8B5300345028 /* psa_crypto_se.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = psa_crypto_se.h; path = ../../../Sources/yapi/mbedtls/library/psa_crypto_se.h; sourceTree = "<group>"; };
+		496E92932B8C8B5300345028 /* psa_crypto_random_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = psa_crypto_random_impl.h; path = ../../../Sources/yapi/mbedtls/library/psa_crypto_random_impl.h; sourceTree = "<group>"; };
+		496E92942B8C8B5300345028 /* x509write_crt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = x509write_crt.c; path = ../../../Sources/yapi/mbedtls/library/x509write_crt.c; sourceTree = "<group>"; };
+		496E92952B8C8B5300345028 /* ecp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ecp.c; path = ../../../Sources/yapi/mbedtls/library/ecp.c; sourceTree = "<group>"; };
+		496E92962B8C8B5300345028 /* nist_kw.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = nist_kw.c; path = ../../../Sources/yapi/mbedtls/library/nist_kw.c; sourceTree = "<group>"; };
+		496E92972B8C8B5300345028 /* sha1.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sha1.c; path = ../../../Sources/yapi/mbedtls/library/sha1.c; sourceTree = "<group>"; };
+		496E92982B8C8B5300345028 /* x509_csr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = x509_csr.c; path = ../../../Sources/yapi/mbedtls/library/x509_csr.c; sourceTree = "<group>"; };
+		496E92992B8C8B5300345028 /* check_crypto_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = check_crypto_config.h; path = ../../../Sources/yapi/mbedtls/library/check_crypto_config.h; sourceTree = "<group>"; };
+		496E929A2B8C8B5300345028 /* md4.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = md4.c; path = ../../../Sources/yapi/mbedtls/library/md4.c; sourceTree = "<group>"; };
+		496E929B2B8C8B5300345028 /* pk.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pk.c; path = ../../../Sources/yapi/mbedtls/library/pk.c; sourceTree = "<group>"; };
+		496E929C2B8C8B5300345028 /* x509_crt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = x509_crt.c; path = ../../../Sources/yapi/mbedtls/library/x509_crt.c; sourceTree = "<group>"; };
+		496E929D2B8C8B5300345028 /* timing.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = timing.c; path = ../../../Sources/yapi/mbedtls/library/timing.c; sourceTree = "<group>"; };
+		496E929E2B8C8B5300345028 /* pkparse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pkparse.c; path = ../../../Sources/yapi/mbedtls/library/pkparse.c; sourceTree = "<group>"; };
+		496E929F2B8C8B5300345028 /* threading.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = threading.c; path = ../../../Sources/yapi/mbedtls/library/threading.c; sourceTree = "<group>"; };
+		496E92A02B8C8B5300345028 /* bignum.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = bignum.c; path = ../../../Sources/yapi/mbedtls/library/bignum.c; sourceTree = "<group>"; };
+		496E92A12B8C8B5300345028 /* cipher_wrap.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cipher_wrap.c; path = ../../../Sources/yapi/mbedtls/library/cipher_wrap.c; sourceTree = "<group>"; };
+		496E92A22B8C8B5300345028 /* psa_crypto_se.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = psa_crypto_se.c; path = ../../../Sources/yapi/mbedtls/library/psa_crypto_se.c; sourceTree = "<group>"; };
+		496E92A32B8C8B5300345028 /* psa_crypto_service_integration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = psa_crypto_service_integration.h; path = ../../../Sources/yapi/mbedtls/library/psa_crypto_service_integration.h; sourceTree = "<group>"; };
+		496E92A42B8C8B5300345028 /* version_features.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = version_features.c; path = ../../../Sources/yapi/mbedtls/library/version_features.c; sourceTree = "<group>"; };
+		496E92A52B8C8B5300345028 /* ccm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ccm.c; path = ../../../Sources/yapi/mbedtls/library/ccm.c; sourceTree = "<group>"; };
+		496E92A62B8C8B5300345028 /* ssl_ticket.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ssl_ticket.c; path = ../../../Sources/yapi/mbedtls/library/ssl_ticket.c; sourceTree = "<group>"; };
+		496E92A72B8C8B5300345028 /* xtea.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xtea.c; path = ../../../Sources/yapi/mbedtls/library/xtea.c; sourceTree = "<group>"; };
+		496E92A82B8C8B5300345028 /* x509_create.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = x509_create.c; path = ../../../Sources/yapi/mbedtls/library/x509_create.c; sourceTree = "<group>"; };
+		496E92A92B8C8B5400345028 /* ssl_srv.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ssl_srv.c; path = ../../../Sources/yapi/mbedtls/library/ssl_srv.c; sourceTree = "<group>"; };
+		496E92AA2B8C8B5400345028 /* psa_crypto_rsa.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = psa_crypto_rsa.h; path = ../../../Sources/yapi/mbedtls/library/psa_crypto_rsa.h; sourceTree = "<group>"; };
+		496E92AB2B8C8B5400345028 /* platform_util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = platform_util.c; path = ../../../Sources/yapi/mbedtls/library/platform_util.c; sourceTree = "<group>"; };
+		496E92AC2B8C8B5400345028 /* des.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = des.c; path = ../../../Sources/yapi/mbedtls/library/des.c; sourceTree = "<group>"; };
+		496E92AD2B8C8B5400345028 /* psa_crypto_slot_management.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = psa_crypto_slot_management.c; path = ../../../Sources/yapi/mbedtls/library/psa_crypto_slot_management.c; sourceTree = "<group>"; };
+		496E92AE2B8C8B5400345028 /* pkcs5.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pkcs5.c; path = ../../../Sources/yapi/mbedtls/library/pkcs5.c; sourceTree = "<group>"; };
+		496E92AF2B8C8B5400345028 /* md2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = md2.c; path = ../../../Sources/yapi/mbedtls/library/md2.c; sourceTree = "<group>"; };
+		496E92B02B8C8B5400345028 /* aria.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = aria.c; path = ../../../Sources/yapi/mbedtls/library/aria.c; sourceTree = "<group>"; };
+		496E92B12B8C8B5400345028 /* blowfish.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = blowfish.c; path = ../../../Sources/yapi/mbedtls/library/blowfish.c; sourceTree = "<group>"; };
+		496E92B22B8C8B5400345028 /* psa_crypto_driver_wrappers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = psa_crypto_driver_wrappers.h; path = ../../../Sources/yapi/mbedtls/library/psa_crypto_driver_wrappers.h; sourceTree = "<group>"; };
+		496E92B32B8C8B5400345028 /* psa_crypto_storage.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = psa_crypto_storage.c; path = ../../../Sources/yapi/mbedtls/library/psa_crypto_storage.c; sourceTree = "<group>"; };
+		496E92B42B8C8B5400345028 /* psa_crypto_client.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = psa_crypto_client.c; path = ../../../Sources/yapi/mbedtls/library/psa_crypto_client.c; sourceTree = "<group>"; };
+		496E92B52B8C8B5400345028 /* padlock.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = padlock.c; path = ../../../Sources/yapi/mbedtls/library/padlock.c; sourceTree = "<group>"; };
+		496E92B62B8C8B5400345028 /* ssl_cache.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ssl_cache.c; path = ../../../Sources/yapi/mbedtls/library/ssl_cache.c; sourceTree = "<group>"; };
+		496E92B72B8C8B5400345028 /* ripemd160.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ripemd160.c; path = ../../../Sources/yapi/mbedtls/library/ripemd160.c; sourceTree = "<group>"; };
+		496E92B82B8C8B5400345028 /* gcm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = gcm.c; path = ../../../Sources/yapi/mbedtls/library/gcm.c; sourceTree = "<group>"; };
+		496E92BA2B8C8B5400345028 /* rsa_internal.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = rsa_internal.c; path = ../../../Sources/yapi/mbedtls/library/rsa_internal.c; sourceTree = "<group>"; };
+		496E92BB2B8C8B5400345028 /* dhm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = dhm.c; path = ../../../Sources/yapi/mbedtls/library/dhm.c; sourceTree = "<group>"; };
+		496E92BC2B8C8B5400345028 /* ssl_tls.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ssl_tls.c; path = ../../../Sources/yapi/mbedtls/library/ssl_tls.c; sourceTree = "<group>"; };
+		496E92BD2B8C8B5400345028 /* aes.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = aes.c; path = ../../../Sources/yapi/mbedtls/library/aes.c; sourceTree = "<group>"; };
+		496E92BE2B8C8B5400345028 /* psa_crypto_its.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = psa_crypto_its.h; path = ../../../Sources/yapi/mbedtls/library/psa_crypto_its.h; sourceTree = "<group>"; };
+		496E92BF2B8C8B5400345028 /* platform.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = platform.c; path = ../../../Sources/yapi/mbedtls/library/platform.c; sourceTree = "<group>"; };
+		496E92C02B8C8B5400345028 /* asn1write.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = asn1write.c; path = ../../../Sources/yapi/mbedtls/library/asn1write.c; sourceTree = "<group>"; };
+		496E92C12B8C8B5400345028 /* cipher.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cipher.c; path = ../../../Sources/yapi/mbedtls/library/cipher.c; sourceTree = "<group>"; };
+		496E92C22B8C8B5400345028 /* error.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = error.c; path = ../../../Sources/yapi/mbedtls/library/error.c; sourceTree = "<group>"; };
+		496E92C32B8C8B5400345028 /* ecp_curves.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ecp_curves.c; path = ../../../Sources/yapi/mbedtls/library/ecp_curves.c; sourceTree = "<group>"; };
+		496E92C42B8C8B5400345028 /* ecdh.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ecdh.c; path = ../../../Sources/yapi/mbedtls/library/ecdh.c; sourceTree = "<group>"; };
+		496E92C52B8C8B5400345028 /* x509.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = x509.c; path = ../../../Sources/yapi/mbedtls/library/x509.c; sourceTree = "<group>"; };
+		496E92C62B8C8B5400345028 /* x509write_csr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = x509write_csr.c; path = ../../../Sources/yapi/mbedtls/library/x509write_csr.c; sourceTree = "<group>"; };
+		496E92C72B8C8B5400345028 /* psa_crypto_rsa.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = psa_crypto_rsa.c; path = ../../../Sources/yapi/mbedtls/library/psa_crypto_rsa.c; sourceTree = "<group>"; };
+		496E92C82B8C8B5400345028 /* aesni.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = aesni.c; path = ../../../Sources/yapi/mbedtls/library/aesni.c; sourceTree = "<group>"; };
+		496E92C92B8C8B5400345028 /* sha512.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sha512.c; path = ../../../Sources/yapi/mbedtls/library/sha512.c; sourceTree = "<group>"; };
+		496E92CA2B8C8B5500345028 /* hkdf.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = hkdf.c; path = ../../../Sources/yapi/mbedtls/library/hkdf.c; sourceTree = "<group>"; };
+		496E92CB2B8C8B5500345028 /* md.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = md.c; path = ../../../Sources/yapi/mbedtls/library/md.c; sourceTree = "<group>"; };
+		496E92CC2B8C8B5500345028 /* version.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = version.c; path = ../../../Sources/yapi/mbedtls/library/version.c; sourceTree = "<group>"; };
+		496E92CD2B8C8B5500345028 /* psa_crypto_driver_wrappers.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = psa_crypto_driver_wrappers.c; path = ../../../Sources/yapi/mbedtls/library/psa_crypto_driver_wrappers.c; sourceTree = "<group>"; };
+		496E92CE2B8C8B5500345028 /* ctr_drbg.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ctr_drbg.c; path = ../../../Sources/yapi/mbedtls/library/ctr_drbg.c; sourceTree = "<group>"; };
+		496E92CF2B8C8B5500345028 /* psa_crypto_storage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = psa_crypto_storage.h; path = ../../../Sources/yapi/mbedtls/library/psa_crypto_storage.h; sourceTree = "<group>"; };
+		496E92D02B8C8B5500345028 /* debug.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = debug.c; path = ../../../Sources/yapi/mbedtls/library/debug.c; sourceTree = "<group>"; };
+		496E92D12B8C8B5500345028 /* ssl_ciphersuites.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ssl_ciphersuites.c; path = ../../../Sources/yapi/mbedtls/library/ssl_ciphersuites.c; sourceTree = "<group>"; };
+		496E92D22B8C8B5500345028 /* psa_crypto_slot_management.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = psa_crypto_slot_management.h; path = ../../../Sources/yapi/mbedtls/library/psa_crypto_slot_management.h; sourceTree = "<group>"; };
+		496E92D32B8C8B5500345028 /* psa_crypto_core.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = psa_crypto_core.h; path = ../../../Sources/yapi/mbedtls/library/psa_crypto_core.h; sourceTree = "<group>"; };
+		496E92D42B8C8B5500345028 /* entropy.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = entropy.c; path = ../../../Sources/yapi/mbedtls/library/entropy.c; sourceTree = "<group>"; };
+		496E92D52B8C8B5500345028 /* sha256.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sha256.c; path = ../../../Sources/yapi/mbedtls/library/sha256.c; sourceTree = "<group>"; };
+		496E92D62B8C8B5500345028 /* base64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = base64.c; path = ../../../Sources/yapi/mbedtls/library/base64.c; sourceTree = "<group>"; };
+		496E92D72B8C8B5500345028 /* ssl_tls13_keys.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ssl_tls13_keys.c; path = ../../../Sources/yapi/mbedtls/library/ssl_tls13_keys.c; sourceTree = "<group>"; };
+		496E92D82B8C8B5500345028 /* asn1parse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = asn1parse.c; path = ../../../Sources/yapi/mbedtls/library/asn1parse.c; sourceTree = "<group>"; };
+		496E92D92B8C8B5500345028 /* md5.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = md5.c; path = ../../../Sources/yapi/mbedtls/library/md5.c; sourceTree = "<group>"; };
+		496E92DA2B8C8B5500345028 /* psa_crypto_invasive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = psa_crypto_invasive.h; path = ../../../Sources/yapi/mbedtls/library/psa_crypto_invasive.h; sourceTree = "<group>"; };
+		496E92DB2B8C8B5500345028 /* oid.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = oid.c; path = ../../../Sources/yapi/mbedtls/library/oid.c; sourceTree = "<group>"; };
+		496E92DC2B8C8B5500345028 /* rsa.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = rsa.c; path = ../../../Sources/yapi/mbedtls/library/rsa.c; sourceTree = "<group>"; };
+		496E92DD2B8C8B5500345028 /* ecjpake.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ecjpake.c; path = ../../../Sources/yapi/mbedtls/library/ecjpake.c; sourceTree = "<group>"; };
+		496E92DE2B8C8B5500345028 /* psa_its_file.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = psa_its_file.c; path = ../../../Sources/yapi/mbedtls/library/psa_its_file.c; sourceTree = "<group>"; };
+		496E92DF2B8C8B5500345028 /* psa_crypto_ecp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = psa_crypto_ecp.h; path = ../../../Sources/yapi/mbedtls/library/psa_crypto_ecp.h; sourceTree = "<group>"; };
+		496E933B2B8C8D4900345028 /* yssl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = yssl.c; path = ../../../../Sources/yapi/yssl.c; sourceTree = "<group>"; };
+		496E933C2B8C8D4900345028 /* yssl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yssl.h; path = ../../../../Sources/yapi/yssl.h; sourceTree = "<group>"; };
+		B8333E4C27F2FF6300C09EB4 /* libyapi.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libyapi.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		B8AF94B61B9F33E1003FA33E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B8AF94BC1B9F3418003FA33E /* yapi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = yapi.c; path = ../../../../Sources/yapi/yapi.c; sourceTree = "<group>"; };
 		B8AF94BD1B9F3418003FA33E /* yapi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yapi.h; path = ../../../../Sources/yapi/yapi.h; sourceTree = "<group>"; };
@@ -63,6 +259,118 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		496E92752B8C8ABC00345028 /* mbedtls */ = {
+			isa = PBXGroup;
+			children = (
+				496E92BD2B8C8B5400345028 /* aes.c */,
+				496E92C82B8C8B5400345028 /* aesni.c */,
+				496E92772B8C8B5200345028 /* arc4.c */,
+				496E92B02B8C8B5400345028 /* aria.c */,
+				496E92D82B8C8B5500345028 /* asn1parse.c */,
+				496E92C02B8C8B5400345028 /* asn1write.c */,
+				496E92D62B8C8B5500345028 /* base64.c */,
+				496E92A02B8C8B5300345028 /* bignum.c */,
+				496E92B12B8C8B5400345028 /* blowfish.c */,
+				496E927D2B8C8B5200345028 /* camellia.c */,
+				496E92A52B8C8B5300345028 /* ccm.c */,
+				496E92842B8C8B5200345028 /* certs.c */,
+				496E92852B8C8B5200345028 /* chacha20.c */,
+				496E928B2B8C8B5200345028 /* chachapoly.c */,
+				496E92992B8C8B5300345028 /* check_crypto_config.h */,
+				496E92A12B8C8B5300345028 /* cipher_wrap.c */,
+				496E92C12B8C8B5400345028 /* cipher.c */,
+				496E927E2B8C8B5200345028 /* cmac.c */,
+				496E92782B8C8B5200345028 /* config.h */,
+				496E92CE2B8C8B5500345028 /* ctr_drbg.c */,
+				496E92D02B8C8B5500345028 /* debug.c */,
+				496E92AC2B8C8B5400345028 /* des.c */,
+				496E92BB2B8C8B5400345028 /* dhm.c */,
+				496E92C42B8C8B5400345028 /* ecdh.c */,
+				496E927C2B8C8B5200345028 /* ecdsa.c */,
+				496E92DD2B8C8B5500345028 /* ecjpake.c */,
+				496E92C32B8C8B5400345028 /* ecp_curves.c */,
+				496E92952B8C8B5300345028 /* ecp.c */,
+				496E92812B8C8B5200345028 /* entropy_poll.c */,
+				496E92D42B8C8B5500345028 /* entropy.c */,
+				496E92C22B8C8B5400345028 /* error.c */,
+				496E92B82B8C8B5400345028 /* gcm.c */,
+				496E928E2B8C8B5300345028 /* havege.c */,
+				496E92CA2B8C8B5500345028 /* hkdf.c */,
+				496E927B2B8C8B5200345028 /* hmac_drbg.c */,
+				496E92CB2B8C8B5500345028 /* md.c */,
+				496E92AF2B8C8B5400345028 /* md2.c */,
+				496E929A2B8C8B5300345028 /* md4.c */,
+				496E92D92B8C8B5500345028 /* md5.c */,
+				496E92832B8C8B5200345028 /* memory_buffer_alloc.c */,
+				496E92872B8C8B5200345028 /* net_sockets.c */,
+				496E92962B8C8B5300345028 /* nist_kw.c */,
+				496E92DB2B8C8B5500345028 /* oid.c */,
+				496E92B52B8C8B5400345028 /* padlock.c */,
+				496E92862B8C8B5200345028 /* pem.c */,
+				496E92792B8C8B5200345028 /* pk_wrap.c */,
+				496E929B2B8C8B5300345028 /* pk.c */,
+				496E92AE2B8C8B5400345028 /* pkcs5.c */,
+				496E92882B8C8B5200345028 /* pkcs11.c */,
+				496E928D2B8C8B5300345028 /* pkcs12.c */,
+				496E929E2B8C8B5300345028 /* pkparse.c */,
+				496E927A2B8C8B5200345028 /* pkwrite.c */,
+				496E92AB2B8C8B5400345028 /* platform_util.c */,
+				496E92BF2B8C8B5400345028 /* platform.c */,
+				496E92802B8C8B5200345028 /* poly1305.c */,
+				496E92B42B8C8B5400345028 /* psa_crypto_client.c */,
+				496E92D32B8C8B5500345028 /* psa_crypto_core.h */,
+				496E92CD2B8C8B5500345028 /* psa_crypto_driver_wrappers.c */,
+				496E92B22B8C8B5400345028 /* psa_crypto_driver_wrappers.h */,
+				496E928A2B8C8B5200345028 /* psa_crypto_ecp.c */,
+				496E92DF2B8C8B5500345028 /* psa_crypto_ecp.h */,
+				496E92DA2B8C8B5500345028 /* psa_crypto_invasive.h */,
+				496E92BE2B8C8B5400345028 /* psa_crypto_its.h */,
+				496E92932B8C8B5300345028 /* psa_crypto_random_impl.h */,
+				496E92C72B8C8B5400345028 /* psa_crypto_rsa.c */,
+				496E92AA2B8C8B5400345028 /* psa_crypto_rsa.h */,
+				496E92A22B8C8B5300345028 /* psa_crypto_se.c */,
+				496E92922B8C8B5300345028 /* psa_crypto_se.h */,
+				496E92A32B8C8B5300345028 /* psa_crypto_service_integration.h */,
+				496E92AD2B8C8B5400345028 /* psa_crypto_slot_management.c */,
+				496E92D22B8C8B5500345028 /* psa_crypto_slot_management.h */,
+				496E92B32B8C8B5400345028 /* psa_crypto_storage.c */,
+				496E92CF2B8C8B5500345028 /* psa_crypto_storage.h */,
+				496E92892B8C8B5200345028 /* psa_crypto.c */,
+				496E92DE2B8C8B5500345028 /* psa_its_file.c */,
+				496E92B72B8C8B5400345028 /* ripemd160.c */,
+				496E92BA2B8C8B5400345028 /* rsa_internal.c */,
+				496E92DC2B8C8B5500345028 /* rsa.c */,
+				496E92972B8C8B5300345028 /* sha1.c */,
+				496E92D52B8C8B5500345028 /* sha256.c */,
+				496E92C92B8C8B5400345028 /* sha512.c */,
+				496E92B62B8C8B5400345028 /* ssl_cache.c */,
+				496E92D12B8C8B5500345028 /* ssl_ciphersuites.c */,
+				496E92822B8C8B5200345028 /* ssl_cli.c */,
+				496E92762B8C8B5200345028 /* ssl_cookie.c */,
+				496E92902B8C8B5300345028 /* ssl_invasive.h */,
+				496E928C2B8C8B5200345028 /* ssl_msg.c */,
+				496E92A92B8C8B5400345028 /* ssl_srv.c */,
+				496E92A62B8C8B5300345028 /* ssl_ticket.c */,
+				496E92BC2B8C8B5400345028 /* ssl_tls.c */,
+				496E92D72B8C8B5500345028 /* ssl_tls13_keys.c */,
+				496E928F2B8C8B5300345028 /* ssl_tls13_keys.h */,
+				496E929F2B8C8B5300345028 /* threading.c */,
+				496E929D2B8C8B5300345028 /* timing.c */,
+				496E92A42B8C8B5300345028 /* version_features.c */,
+				496E92CC2B8C8B5500345028 /* version.c */,
+				496E92A82B8C8B5300345028 /* x509_create.c */,
+				496E92912B8C8B5300345028 /* x509_crl.c */,
+				496E929C2B8C8B5300345028 /* x509_crt.c */,
+				496E92982B8C8B5300345028 /* x509_csr.c */,
+				496E92C52B8C8B5400345028 /* x509.c */,
+				496E92942B8C8B5300345028 /* x509write_crt.c */,
+				496E92C62B8C8B5400345028 /* x509write_csr.c */,
+				496E92A72B8C8B5300345028 /* xtea.c */,
+			);
+			name = mbedtls;
+			path = ..;
+			sourceTree = "<group>";
+		};
 		B8AF94A91B9F33E1003FA33E = {
 			isa = PBXGroup;
 			children = (
@@ -74,7 +382,7 @@
 		B8AF94B31B9F33E1003FA33E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				B8AF94B21B9F33E1003FA33E /* yapi.bundle */,
+				B8333E4C27F2FF6300C09EB4 /* libyapi.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -82,6 +390,7 @@
 		B8AF94B41B9F33E1003FA33E /* yapi */ = {
 			isa = PBXGroup;
 			children = (
+				496E92752B8C8ABC00345028 /* mbedtls */,
 				B8AF94BC1B9F3418003FA33E /* yapi.c */,
 				B8AF94BD1B9F3418003FA33E /* yapi.h */,
 				B8AF94BE1B9F3418003FA33E /* ydef.h */,
@@ -104,6 +413,8 @@
 				B8AF94CF1B9F3418003FA33E /* ystream.c */,
 				B8AF94D01B9F3418003FA33E /* ytcp.c */,
 				B8AF94D11B9F3418003FA33E /* ytcp.h */,
+				496E933B2B8C8D4900345028 /* yssl.c */,
+				496E933C2B8C8D4900345028 /* yssl.h */,
 				B8AF94D21B9F3418003FA33E /* ythread.c */,
 				B8AF94D31B9F3418003FA33E /* ythread.h */,
 				B8AF94D41B9F3418003FA33E /* yversion.h */,
@@ -137,8 +448,8 @@
 			);
 			name = yapi;
 			productName = yapi;
-			productReference = B8AF94B21B9F33E1003FA33E /* yapi.bundle */;
-			productType = "com.apple.product-type.bundle";
+			productReference = B8333E4C27F2FF6300C09EB4 /* libyapi.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
 		};
 /* End PBXNativeTarget section */
 
@@ -146,20 +457,22 @@
 		B8AF94AA1B9F33E1003FA33E /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0640;
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1420;
 				ORGANIZATIONNAME = Yoctopuce;
 				TargetAttributes = {
 					B8AF94B11B9F33E1003FA33E = {
-						CreatedOnToolsVersion = 6.4;
+						CreatedOnToolsVersion = 13.2.1;
 					};
 				};
 			};
 			buildConfigurationList = B8AF94AD1B9F33E1003FA33E /* Build configuration list for PBXProject "yapi" */;
-			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			compatibilityVersion = "Xcode 13.0";
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = B8AF94A91B9F33E1003FA33E;
 			productRefGroup = B8AF94B31B9F33E1003FA33E /* Products */;
@@ -186,19 +499,109 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				496E93162B8C8B5500345028 /* padlock.c in Sources */,
+				496E92E02B8C8B5500345028 /* ssl_cookie.c in Sources */,
+				496E92F22B8C8B5500345028 /* psa_crypto.c in Sources */,
 				B8AF94DA1B9F3418003FA33E /* ymemory.c in Sources */,
+				496E931D2B8C8B5500345028 /* ssl_tls.c in Sources */,
+				496E93322B8C8B5500345028 /* sha256.c in Sources */,
+				496E93182B8C8B5500345028 /* ripemd160.c in Sources */,
+				496E92EC2B8C8B5500345028 /* memory_buffer_alloc.c in Sources */,
 				B8AF94D91B9F3418003FA33E /* ykey.c in Sources */,
+				496E93002B8C8B5500345028 /* x509_crt.c in Sources */,
 				B8AF94D71B9F3418003FA33E /* yhash.c in Sources */,
+				496E93302B8C8B5500345028 /* ssl_ciphersuites.c in Sources */,
+				496E93212B8C8B5500345028 /* cipher.c in Sources */,
+				496E932F2B8C8B5500345028 /* debug.c in Sources */,
+				496E93092B8C8B5500345028 /* ssl_ticket.c in Sources */,
+				496E92FA2B8C8B5500345028 /* ecp.c in Sources */,
+				496E92F12B8C8B5500345028 /* pkcs11.c in Sources */,
+				496E93392B8C8B5500345028 /* ecjpake.c in Sources */,
+				496E93382B8C8B5500345028 /* rsa.c in Sources */,
 				B8AF94DF1B9F3418003FA33E /* ystream.c in Sources */,
 				B8AF94D51B9F3418003FA33E /* yapi.c in Sources */,
 				B8AF94DC1B9F3418003FA33E /* ypkt_osx.c in Sources */,
+				496E92FE2B8C8B5500345028 /* md4.c in Sources */,
+				496E93052B8C8B5500345028 /* cipher_wrap.c in Sources */,
+				496E931E2B8C8B5500345028 /* aes.c in Sources */,
 				B8AF94D61B9F3418003FA33E /* yfifo.c in Sources */,
+				496E933D2B8C8D4900345028 /* yssl.c in Sources */,
 				B8AF94DB1B9F3418003FA33E /* ypkt_lin.c in Sources */,
+				496E932B2B8C8B5500345028 /* md.c in Sources */,
+				496E93372B8C8B5500345028 /* oid.c in Sources */,
+				496E93142B8C8B5500345028 /* psa_crypto_storage.c in Sources */,
+				496E93242B8C8B5500345028 /* ecdh.c in Sources */,
+				496E930B2B8C8B5500345028 /* x509_create.c in Sources */,
+				496E932C2B8C8B5500345028 /* version.c in Sources */,
+				496E931C2B8C8B5500345028 /* dhm.c in Sources */,
+				496E933A2B8C8B5500345028 /* psa_its_file.c in Sources */,
+				496E932A2B8C8B5500345028 /* hkdf.c in Sources */,
+				496E93272B8C8B5500345028 /* psa_crypto_rsa.c in Sources */,
+				496E93362B8C8B5500345028 /* md5.c in Sources */,
+				496E93222B8C8B5500345028 /* error.c in Sources */,
+				496E930A2B8C8B5500345028 /* xtea.c in Sources */,
+				496E92F72B8C8B5500345028 /* havege.c in Sources */,
+				496E93012B8C8B5500345028 /* timing.c in Sources */,
+				496E92FF2B8C8B5500345028 /* pk.c in Sources */,
+				496E92E32B8C8B5500345028 /* pkwrite.c in Sources */,
+				496E93042B8C8B5500345028 /* bignum.c in Sources */,
+				496E93172B8C8B5500345028 /* ssl_cache.c in Sources */,
+				496E93112B8C8B5500345028 /* md2.c in Sources */,
+				496E92F62B8C8B5500345028 /* pkcs12.c in Sources */,
+				496E92F52B8C8B5500345028 /* ssl_msg.c in Sources */,
+				496E93312B8C8B5500345028 /* entropy.c in Sources */,
+				496E93252B8C8B5500345028 /* x509.c in Sources */,
+				496E92E92B8C8B5500345028 /* poly1305.c in Sources */,
+				496E92FC2B8C8B5500345028 /* sha1.c in Sources */,
+				496E93132B8C8B5500345028 /* blowfish.c in Sources */,
+				496E93202B8C8B5500345028 /* asn1write.c in Sources */,
+				496E92F82B8C8B5500345028 /* x509_crl.c in Sources */,
 				B8AF94DE1B9F3418003FA33E /* yprog.c in Sources */,
+				496E92E42B8C8B5500345028 /* hmac_drbg.c in Sources */,
+				496E92E12B8C8B5500345028 /* arc4.c in Sources */,
+				496E93072B8C8B5500345028 /* version_features.c in Sources */,
+				496E932E2B8C8B5500345028 /* ctr_drbg.c in Sources */,
+				496E92F42B8C8B5500345028 /* chachapoly.c in Sources */,
+				496E92ED2B8C8B5500345028 /* certs.c in Sources */,
+				496E93262B8C8B5500345028 /* x509write_csr.c in Sources */,
+				496E93192B8C8B5500345028 /* gcm.c in Sources */,
+				496E92EB2B8C8B5500345028 /* ssl_cli.c in Sources */,
+				496E92EA2B8C8B5500345028 /* entropy_poll.c in Sources */,
+				496E92E72B8C8B5500345028 /* cmac.c in Sources */,
+				496E931F2B8C8B5500345028 /* platform.c in Sources */,
+				496E93022B8C8B5500345028 /* pkparse.c in Sources */,
+				496E92FB2B8C8B5500345028 /* nist_kw.c in Sources */,
+				496E93102B8C8B5500345028 /* pkcs5.c in Sources */,
+				496E93282B8C8B5500345028 /* aesni.c in Sources */,
+				496E931B2B8C8B5500345028 /* rsa_internal.c in Sources */,
+				496E932D2B8C8B5500345028 /* psa_crypto_driver_wrappers.c in Sources */,
+				496E92F92B8C8B5500345028 /* x509write_crt.c in Sources */,
+				496E930E2B8C8B5500345028 /* des.c in Sources */,
 				B8AF94DD1B9F3418003FA33E /* ypkt_win.c in Sources */,
+				496E93062B8C8B5500345028 /* psa_crypto_se.c in Sources */,
+				496E92EE2B8C8B5500345028 /* chacha20.c in Sources */,
+				496E92F02B8C8B5500345028 /* net_sockets.c in Sources */,
+				496E930C2B8C8B5500345028 /* ssl_srv.c in Sources */,
 				B8AF94D81B9F3418003FA33E /* yjson.c in Sources */,
+				496E93342B8C8B5500345028 /* ssl_tls13_keys.c in Sources */,
 				B8AF94E01B9F3418003FA33E /* ytcp.c in Sources */,
+				496E93122B8C8B5500345028 /* aria.c in Sources */,
+				496E93352B8C8B5500345028 /* asn1parse.c in Sources */,
+				496E93082B8C8B5500345028 /* ccm.c in Sources */,
+				496E92E22B8C8B5500345028 /* pk_wrap.c in Sources */,
+				496E93032B8C8B5500345028 /* threading.c in Sources */,
+				496E92F32B8C8B5500345028 /* psa_crypto_ecp.c in Sources */,
+				496E92FD2B8C8B5500345028 /* x509_csr.c in Sources */,
+				496E93292B8C8B5500345028 /* sha512.c in Sources */,
 				B8AF94E11B9F3418003FA33E /* ythread.c in Sources */,
+				496E92E52B8C8B5500345028 /* ecdsa.c in Sources */,
+				496E92EF2B8C8B5500345028 /* pem.c in Sources */,
+				496E93152B8C8B5500345028 /* psa_crypto_client.c in Sources */,
+				496E93232B8C8B5500345028 /* ecp_curves.c in Sources */,
+				496E930F2B8C8B5500345028 /* psa_crypto_slot_management.c in Sources */,
+				496E930D2B8C8B5500345028 /* platform_util.c in Sources */,
+				496E93332B8C8B5500345028 /* base64.c in Sources */,
+				496E92E62B8C8B5500345028 /* camellia.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -209,23 +612,43 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -233,15 +656,17 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
-				MTL_ENABLE_DEBUG_INFO = YES;
+				HEADER_SEARCH_PATHS = "../../../Sources/yapi/mbedtls/include/**";
+				MACOSX_DEPLOYMENT_TARGET = 12.1;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 			};
@@ -251,33 +676,55 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				HEADER_SEARCH_PATHS = "../../../Sources/yapi/mbedtls/include/**";
+				MACOSX_DEPLOYMENT_TARGET = 12.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -285,26 +732,26 @@
 		B8AF94BA1B9F33E1003FA33E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
-				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = yapi/Info.plist;
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				WRAPPER_EXTENSION = bundle;
 			};
 			name = Debug;
 		};
 		B8AF94BB1B9F33E1003FA33E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
-				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = yapi/Info.plist;
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				WRAPPER_EXTENSION = bundle;
 			};
 			name = Release;
 		};
@@ -327,6 +774,7 @@
 				B8AF94BB1B9F33E1003FA33E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

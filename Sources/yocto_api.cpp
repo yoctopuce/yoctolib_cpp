@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 59222 2024-02-05 15:50:11Z seb $
+ * $Id: yocto_api.cpp 59503 2024-02-26 11:04:41Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -8892,11 +8892,10 @@ double YSensor::get_resolution(void)
 }
 
 /**
- * Returns the sensor health state code, which is zero when there is an up-to-date measure
+ * Returns the sensor state code, which is zero when there is an up-to-date measure
  * available or a positive code if the sensor is not able to provide a measure right now.
  *
- * @return an integer corresponding to the sensor health state code, which is zero when there is an
- * up-to-date measure
+ * @return an integer corresponding to the sensor state code, which is zero when there is an up-to-date measure
  *         available or a positive code if the sensor is not able to provide a measure right now
  *
  * On failure, throws an exception or returns YSensor::SENSORSTATE_INVALID.

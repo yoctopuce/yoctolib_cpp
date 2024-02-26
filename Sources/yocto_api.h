@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 58129 2023-11-30 08:14:33Z seb $
+ * $Id: yocto_api.h 59503 2024-02-26 11:04:41Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -3781,11 +3781,10 @@ public:
     { return this->get_resolution(); }
 
     /**
-     * Returns the sensor health state code, which is zero when there is an up-to-date measure
+     * Returns the sensor state code, which is zero when there is an up-to-date measure
      * available or a positive code if the sensor is not able to provide a measure right now.
      *
-     * @return an integer corresponding to the sensor health state code, which is zero when there is an
-     * up-to-date measure
+     * @return an integer corresponding to the sensor state code, which is zero when there is an up-to-date measure
      *         available or a positive code if the sensor is not able to provide a measure right now
      *
      * On failure, throws an exception or returns YSensor.SENSORSTATE_INVALID.
@@ -4436,7 +4435,7 @@ inline YModule *yFirstModule(void)
  * sensors. Recording can happen automatically, without requiring a permanent
  * connection to a computer.
  * The YDataLogger class controls the global parameters of the internal data
- * logger. Recording control (start/stop) as well as data retreival is done at
+ * logger. Recording control (start/stop) as well as data retrieval is done at
  * sensor objects level.
  */
 class YOCTO_CLASS_EXPORT YDataLogger: public YFunction {

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 59265 2024-02-07 08:26:31Z seb $
+ * $Id: yapi.c 59502 2024-02-26 11:03:15Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -416,11 +416,15 @@ static int yParseHubURL(HubURLSt* hub, const char* url, char* errmsg)
     if (p) {
         len = (int)(end - p);
         if (len > 1) {
+            if (*(end - 1) == '/') {
+                len--;
+            }
             hub->subdomain = ystrndup_s(p, len);
             //dbglog("subdomain=%s\n", hub->subdomain);
         }
         end = p;
     }
+
     endv6 = strchr(url, ']');
     pos = strchr(url, ':');
     if (endv6 && pos && endv6 < end && endv6>url) {
@@ -1256,6 +1260,7 @@ int ywpGetDeviceUrl(YAPI_DEVICE devdesc, char *roothubserial, char *request, int
 static void parseNetWpEntry(ENU_CONTEXT *enus)
 {
     int i;
+
 
     for (i = 0; i < enus->nbKnownDevices; i++) {
         if (enus->knownDevices[i] != INVALID_HASH_IDX &&

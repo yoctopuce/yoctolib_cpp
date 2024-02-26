@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.cpp 58920 2024-01-12 09:39:03Z seb $
+ *  $Id: yocto_spiport.cpp 59503 2024-02-26 11:04:41Z seb $
  *
  *  Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -931,7 +931,7 @@ int YSpiPort::set_shiftSampling(Y_SHIFTSAMPLING_enum newval)
 }
 
 /**
- * Retrieves a SPI port for a given identifier.
+ * Retrieves an SPI port for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -945,7 +945,7 @@ int YSpiPort::set_shiftSampling(Y_SHIFTSAMPLING_enum newval)
  * it is invoked. The returned object is nevertheless valid.
  * Use the method isOnline() to test if the SPI port is
  * indeed online at a given time. In case of ambiguity when looking for
- * a SPI port by logical name, no error is notified: the first instance
+ * an SPI port by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *

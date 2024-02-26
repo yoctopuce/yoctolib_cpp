@@ -649,7 +649,7 @@ public:
     { return this->set_serialMode(newval); }
 
     /**
-     * Retrieves a SDI12 port for a given identifier.
+     * Retrieves an SDI12 port for a given identifier.
      * The identifier can be specified using several formats:
      * <ul>
      * <li>FunctionLogicalName</li>
@@ -663,7 +663,7 @@ public:
      * it is invoked. The returned object is nevertheless valid.
      * Use the method isOnline() to test if the SDI12 port is
      * indeed online at a given time. In case of ambiguity when looking for
-     * a SDI12 port by logical name, no error is notified: the first instance
+     * an SDI12 port by logical name, no error is notified: the first instance
      * found is returned. The search is performed first by hardware name,
      * then by logical name.
      *
@@ -1079,11 +1079,11 @@ public:
     /**
      * Continues the enumeration of SDI12 ports started using yFirstSdi12Port().
      * Caution: You can't make any assumption about the returned SDI12 ports order.
-     * If you want to find a specific a SDI12 port, use Sdi12Port.findSdi12Port()
+     * If you want to find a specific an SDI12 port, use Sdi12Port.findSdi12Port()
      * and a hardwareID or a logical name.
      *
      * @return a pointer to a YSdi12Port object, corresponding to
-     *         a SDI12 port currently online, or a NULL pointer
+     *         an SDI12 port currently online, or a NULL pointer
      *         if there are no more SDI12 ports to enumerate.
      */
            YSdi12Port      *nextSdi12Port(void);
@@ -1111,7 +1111,7 @@ public:
 //--- (generated code: YSdi12Port functions declaration)
 
 /**
- * Retrieves a SDI12 port for a given identifier.
+ * Retrieves an SDI12 port for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -1125,7 +1125,7 @@ public:
  * it is invoked. The returned object is nevertheless valid.
  * Use the method isOnline() to test if the SDI12 port is
  * indeed online at a given time. In case of ambiguity when looking for
- * a SDI12 port by logical name, no error is notified: the first instance
+ * an SDI12 port by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *

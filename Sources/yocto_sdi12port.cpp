@@ -1033,7 +1033,7 @@ int YSdi12Port::set_serialMode(const string& newval)
 }
 
 /**
- * Retrieves a SDI12 port for a given identifier.
+ * Retrieves an SDI12 port for a given identifier.
  * The identifier can be specified using several formats:
  * <ul>
  * <li>FunctionLogicalName</li>
@@ -1047,7 +1047,7 @@ int YSdi12Port::set_serialMode(const string& newval)
  * it is invoked. The returned object is nevertheless valid.
  * Use the method isOnline() to test if the SDI12 port is
  * indeed online at a given time. In case of ambiguity when looking for
- * a SDI12 port by logical name, no error is notified: the first instance
+ * an SDI12 port by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
