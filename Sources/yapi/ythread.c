@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.c 57040 2023-10-10 08:55:54Z mvuilleu $
+ * $Id: ythread.c 59661 2024-03-08 09:26:51Z seb $
  *
  * OS-independent thread and synchronization library
  *
@@ -154,7 +154,7 @@ static pthread_once_t yInitKeyOnce = PTHREAD_ONCE_INIT;
 static pthread_key_t yTsdKey;
 static unsigned yNextThreadIdx = 1;
 
-static void initTsdKey()
+static void initTsdKey(void)
 {
     pthread_key_create(&yTsdKey, NULL);
 }

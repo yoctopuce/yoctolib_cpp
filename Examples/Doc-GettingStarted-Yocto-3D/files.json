@@ -1,0 +1,18 @@
+{
+    "main": "main.cpp",
+    "other_files": [],
+    "ylib": [
+        "yocto_accelerometer",
+        "yocto_compass",
+        "yocto_gyro",
+        "yocto_magnetometer",
+        "yocto_refframe",
+        "yocto_tilt",
+        "yocto_api"
+    ],
+    "skip": false,
+    "xcode": true,
+    "vstudio": true,
+    "gnu": true,
+    "cb": true
+}

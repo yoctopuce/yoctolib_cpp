@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 59479 2024-02-26 09:26:58Z seb $
+#  $Id: GNUmakefile 59586 2024-03-01 08:17:36Z build $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -198,15 +198,15 @@ OPTS_MIPS = -DCPU_BIG_ENDIAN -I$(MIPS_TARGET_ROOT)/usr/include/ -DNO_YSSL
 OPTS_MIPSEL = -I$(MIPSEL_TARGET_ROOT)/usr/include/ -DNO_YSSL
 
 OPTS_X64 = -m64 -g -Wall -D_GNU_SOURCE
-OPTS_I386 = -m32 -D_GNU_SOURCE -march=i586
+OPTS_I386 = -m32 -mpclmul -msse2 -maes -D_GNU_SOURCE -march=i586
 #osx specific flags
 OPTS_OSX =
 OPTS_OSX32 = -m32
 
 
 #link optionsfor each arch
-LINKWITH_WIN32 = "Advapi32.lib"
-LINKWITH_WIN64 = "Advapi32.lib"
+LINKWITH_WIN32 = "Advapi32.lib" "bcrypt.lib"
+LINKWITH_WIN64 = "Advapi32.lib" "bcrypt.lib"
 LINKWITH_I386 = -lm -lpthread -lusb-1.0
 LINKWITH_X64 = -lm -lpthread -lusb-1.0
 ifdef TOOLCHAIN_QARM
@@ -382,7 +382,119 @@ YOCTO_API_OBJS_STAT = yocto_api.o\
 #-- yocto_patch_stop --
 
 
-include mbedtls.inc
+
+
+#-- mbedtls_patch_start --
+MBEDTLS_OBJS_STAT = \
+	aes.o \
+	aesce.o \
+	aesni.o \
+	aria.o \
+	asn1parse.o \
+	asn1write.o \
+	base64.o \
+	bignum.o \
+	bignum_core.o \
+	bignum_mod.o \
+	bignum_mod_raw.o \
+	camellia.o \
+	ccm.o \
+	chacha20.o \
+	chachapoly.o \
+	cipher.o \
+	cipher_wrap.o \
+	cmac.o \
+	constant_time.o \
+	ctr_drbg.o \
+	debug.o \
+	des.o \
+	dhm.o \
+	ecdh.o \
+	ecdsa.o \
+	ecjpake.o \
+	ecp.o \
+	ecp_curves.o \
+	ecp_curves_new.o \
+	entropy.o \
+	entropy_poll.o \
+	error.o \
+	gcm.o \
+	hkdf.o \
+	hmac_drbg.o \
+	lmots.o \
+	lms.o \
+	md.o \
+	md5.o \
+	memory_buffer_alloc.o \
+	mps_reader.o \
+	mps_trace.o \
+	net_sockets.o \
+	nist_kw.o \
+	oid.o \
+	padlock.o \
+	pem.o \
+	pk.o \
+	pkcs12.o \
+	pkcs5.o \
+	pkcs7.o \
+	pkparse.o \
+	pkwrite.o \
+	pk_wrap.o \
+	platform.o \
+	platform_util.o \
+	poly1305.o \
+	psa_crypto.o \
+	psa_crypto_aead.o \
+	psa_crypto_cipher.o \
+	psa_crypto_client.o \
+	psa_crypto_driver_wrappers_no_static.o \
+	psa_crypto_ecp.o \
+	psa_crypto_ffdh.o \
+	psa_crypto_hash.o \
+	psa_crypto_mac.o \
+	psa_crypto_pake.o \
+	psa_crypto_rsa.o \
+	psa_crypto_se.o \
+	psa_crypto_slot_management.o \
+	psa_crypto_storage.o \
+	psa_its_file.o \
+	psa_util.o \
+	ripemd160.o \
+	rsa.o \
+	rsa_alt_helpers.o \
+	sha1.o \
+	sha256.o \
+	sha3.o \
+	sha512.o \
+	ssl_cache.o \
+	ssl_ciphersuites.o \
+	ssl_client.o \
+	ssl_cookie.o \
+	ssl_debug_helpers_generated.o \
+	ssl_msg.o \
+	ssl_ticket.o \
+	ssl_tls.o \
+	ssl_tls12_client.o \
+	ssl_tls12_server.o \
+	ssl_tls13_client.o \
+	ssl_tls13_generic.o \
+	ssl_tls13_keys.o \
+	ssl_tls13_server.o \
+	threading.o \
+	timing.o \
+	version.o \
+	version_features.o \
+	x509.o \
+	x509write.o \
+	x509write_crt.o \
+	x509write_csr.o \
+	x509_create.o \
+	x509_crl.o \
+	x509_crt.o \
+
+#-- mbedtls_patch_stop --
+
+
 
 YOCTO_API_OBJS_DYN  = $(patsubst %.o, %_dyn.o,$(YOCTO_API_OBJS_STAT))
 
@@ -395,57 +507,56 @@ MBEDTLS_DIR           = $(YAPI_SOURCES_DIR)mbedtls/
 MBEDTLS_INCLUDE_DIR   = $(MBEDTLS_DIR)include/
 MBEDTLS_SOURCES_DIR  = $(MBEDTLS_DIR)library/
 
-MBEDTSL_OBJS_STAT = $(OBJS_CRYPTO) $(OBJS_X509) $(OBJS_TLS)
-MBEDTSL_OBJS_DYN   = $(patsubst %.o, %_dyn.o,$(MBEDTSL_OBJS_STAT))
+MBEDTLS_OBJS_DYN   = $(patsubst %.o, %_dyn.o,$(MBEDTLS_OBJS_STAT))
 
 ALL_OBJS_STAT   = $(YAPI_OBJS_STAT) $(YOCTO_API_OBJS_STAT)
 ALL_OBJS_DYN    = $(YAPI_OBJS_DYN)  $(YOCTO_API_OBJS_DYN)
 
 #create a new definitions for each platform using macro
-ALL_OBJS_STAT_WIN32    = $(patsubst %.o, $(OBJDIR_WIN32)%.obj, $(ALL_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_win.o)
-ALL_OBJS_STAT_WIN64    = $(patsubst %.o, $(OBJDIR_WIN64)%.obj, $(ALL_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_win.o)
-ALL_OBJS_STAT_I386    = $(patsubst %.o, $(OBJDIR_I386)%.o, $(ALL_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_lin.o)
-ALL_OBJS_STAT_X64    = $(patsubst %.o, $(OBJDIR_X64)%.o, $(ALL_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_lin.o)
+ALL_OBJS_STAT_WIN32    = $(patsubst %.o, $(OBJDIR_WIN32)%.obj, $(ALL_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_win.o)
+ALL_OBJS_STAT_WIN64    = $(patsubst %.o, $(OBJDIR_WIN64)%.obj, $(ALL_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_win.o)
+ALL_OBJS_STAT_I386    = $(patsubst %.o, $(OBJDIR_I386)%.o, $(ALL_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_lin.o)
+ALL_OBJS_STAT_X64    = $(patsubst %.o, $(OBJDIR_X64)%.o, $(ALL_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_lin.o)
 ALL_OBJS_STAT_ARMEL = $(patsubst %.o, $(OBJDIR_ARMEL)%.o, $(ALL_OBJS_STAT) ypkt_lin.o)
-ALL_OBJS_STAT_ARMHF = $(patsubst %.o, $(OBJDIR_ARMHF)%.o, $(ALL_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_lin.o)
-ALL_OBJS_STAT_AARCH64 = $(patsubst %.o, $(OBJDIR_AARCH64)%.o, $(ALL_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_lin.o)
+ALL_OBJS_STAT_ARMHF = $(patsubst %.o, $(OBJDIR_ARMHF)%.o, $(ALL_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_lin.o)
+ALL_OBJS_STAT_AARCH64 = $(patsubst %.o, $(OBJDIR_AARCH64)%.o, $(ALL_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_lin.o)
 ALL_OBJS_STAT_MIPS = $(patsubst %.o, $(OBJDIR_MIPS)%.o, $(ALL_OBJS_STAT) ypkt_lin.o)
 ALL_OBJS_STAT_MIPSEL = $(patsubst %.o, $(OBJDIR_MIPSEL)%.o, $(ALL_OBJS_STAT) ypkt_lin.o)
-ALL_OBJS_STAT_OSX   = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(ALL_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_osx.o)
+ALL_OBJS_STAT_OSX   = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(ALL_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_osx.o)
 
-ALL_OBJS_DYN_WIN32    = $(patsubst %.o, $(OBJDIR_WIN32)%.obj, $(ALL_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_win_dyn.o)
-ALL_OBJS_DYN_WIN64    = $(patsubst %.o, $(OBJDIR_WIN64)%.obj, $(ALL_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_win_dyn.o)
-ALL_OBJS_DYN_I386     = $(patsubst %.o, $(OBJDIR_I386)%.o, $(ALL_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_lin_dyn.o)
-ALL_OBJS_DYN_X64     = $(patsubst %.o, $(OBJDIR_X64)%.o, $(ALL_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_lin_dyn.o)
+ALL_OBJS_DYN_WIN32    = $(patsubst %.o, $(OBJDIR_WIN32)%.obj, $(ALL_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_win_dyn.o)
+ALL_OBJS_DYN_WIN64    = $(patsubst %.o, $(OBJDIR_WIN64)%.obj, $(ALL_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_win_dyn.o)
+ALL_OBJS_DYN_I386     = $(patsubst %.o, $(OBJDIR_I386)%.o, $(ALL_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_lin_dyn.o)
+ALL_OBJS_DYN_X64     = $(patsubst %.o, $(OBJDIR_X64)%.o, $(ALL_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_lin_dyn.o)
 ALL_OBJS_DYN_ARMEL  = $(patsubst %.o, $(OBJDIR_ARMEL)%.o, $(ALL_OBJS_DYN) ypkt_lin_dyn.o)
-ALL_OBJS_DYN_ARMHF  = $(patsubst %.o, $(OBJDIR_ARMHF)%.o, $(ALL_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_lin_dyn.o)
-ALL_OBJS_DYN_AARCH64  = $(patsubst %.o, $(OBJDIR_AARCH64)%.o, $(ALL_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_lin_dyn.o)
+ALL_OBJS_DYN_ARMHF  = $(patsubst %.o, $(OBJDIR_ARMHF)%.o, $(ALL_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_lin_dyn.o)
+ALL_OBJS_DYN_AARCH64  = $(patsubst %.o, $(OBJDIR_AARCH64)%.o, $(ALL_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_lin_dyn.o)
 ALL_OBJS_DYN_MIPS  = $(patsubst %.o, $(OBJDIR_MIPS)%.o, $(ALL_OBJS_DYN) ypkt_lin_dyn.o)
 ALL_OBJS_DYN_MIPSEL  = $(patsubst %.o, $(OBJDIR_MIPSEL)%.o, $(ALL_OBJS_DYN) ypkt_lin_dyn.o)
-ALL_OBJS_DYN_OSX    = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(ALL_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_osx_dyn.o)
+ALL_OBJS_DYN_OSX    = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(ALL_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_osx_dyn.o)
 
-YAPI_OBJS_STAT_WIN32  = $(patsubst %.o, $(OBJDIR_WIN32)%.obj, $(YAPI_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_win.o)
-YAPI_OBJS_STAT_WIN64  = $(patsubst %.o, $(OBJDIR_WIN64)%.obj, $(YAPI_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_win.o)
-YAPI_OBJS_STAT_I386  = $(patsubst %.o, $(OBJDIR_I386)%.o, $(YAPI_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_lin.o)
-YAPI_OBJS_STAT_X64  = $(patsubst %.o, $(OBJDIR_X64)%.o, $(YAPI_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_lin.o)
+YAPI_OBJS_STAT_WIN32  = $(patsubst %.o, $(OBJDIR_WIN32)%.obj, $(YAPI_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_win.o)
+YAPI_OBJS_STAT_WIN64  = $(patsubst %.o, $(OBJDIR_WIN64)%.obj, $(YAPI_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_win.o)
+YAPI_OBJS_STAT_I386  = $(patsubst %.o, $(OBJDIR_I386)%.o, $(YAPI_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_lin.o)
+YAPI_OBJS_STAT_X64  = $(patsubst %.o, $(OBJDIR_X64)%.o, $(YAPI_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_lin.o)
 YAPI_OBJS_STAT_ARMEL = $(patsubst %.o, $(OBJDIR_ARMEL)%.o, $(YAPI_OBJS_STAT) ypkt_lin.o)
-YAPI_OBJS_STAT_ARMHF = $(patsubst %.o, $(OBJDIR_ARMHF)%.o, $(YAPI_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_lin.o)
-YAPI_OBJS_STAT_AARCH64 = $(patsubst %.o, $(OBJDIR_AARCH64)%.o, $(YAPI_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_lin.o)
+YAPI_OBJS_STAT_ARMHF = $(patsubst %.o, $(OBJDIR_ARMHF)%.o, $(YAPI_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_lin.o)
+YAPI_OBJS_STAT_AARCH64 = $(patsubst %.o, $(OBJDIR_AARCH64)%.o, $(YAPI_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_lin.o)
 YAPI_OBJS_STAT_MIPS = $(patsubst %.o, $(OBJDIR_MIPS)%.o, $(YAPI_OBJS_STAT) ypkt_lin.o)
 YAPI_OBJS_STAT_MIPSEL = $(patsubst %.o, $(OBJDIR_MIPSEL)%.o, $(YAPI_OBJS_STAT) ypkt_lin.o)
-YAPI_OBJS_STAT_OSX  = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(YAPI_OBJS_STAT) $(MBEDTSL_OBJS_STAT) ypkt_osx.o)
+YAPI_OBJS_STAT_OSX  = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(YAPI_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_osx.o)
 
-YAPI_OBJS_DYN_WIN32  = $(patsubst %.o, $(OBJDIR_WIN32)%.obj, $(YAPI_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_win.o)
-YAPI_OBJS_DYN_WIN64  = $(patsubst %.o, $(OBJDIR_WIN64)%.obj, $(YAPI_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_win.o)
-YAPI_OBJS_DYN_I386 = $(patsubst %.o, $(OBJDIR_I386)%.o, $(YAPI_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_lin_dyn.o)
-YAPI_OBJS_DYN_X64 = $(patsubst %.o, $(OBJDIR_X64)%.o, $(YAPI_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_lin_dyn.o)
+YAPI_OBJS_DYN_WIN32  = $(patsubst %.o, $(OBJDIR_WIN32)%.obj, $(YAPI_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_win.o)
+YAPI_OBJS_DYN_WIN64  = $(patsubst %.o, $(OBJDIR_WIN64)%.obj, $(YAPI_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_win.o)
+YAPI_OBJS_DYN_I386 = $(patsubst %.o, $(OBJDIR_I386)%.o, $(YAPI_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_lin_dyn.o)
+YAPI_OBJS_DYN_X64 = $(patsubst %.o, $(OBJDIR_X64)%.o, $(YAPI_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_lin_dyn.o)
 YAPI_OBJS_DYN_ARMEL = $(patsubst %.o, $(OBJDIR_ARMEL)%.o, $(YAPI_OBJS_DYN) ypkt_lin_dyn.o)
-YAPI_OBJS_DYN_ARMHF = $(patsubst %.o, $(OBJDIR_ARMHF)%.o, $(YAPI_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_lin_dyn.o)
-YAPI_OBJS_DYN_AARCH64 = $(patsubst %.o, $(OBJDIR_AARCH64)%.o, $(YAPI_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_lin_dyn.o)
+YAPI_OBJS_DYN_ARMHF = $(patsubst %.o, $(OBJDIR_ARMHF)%.o, $(YAPI_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_lin_dyn.o)
+YAPI_OBJS_DYN_AARCH64 = $(patsubst %.o, $(OBJDIR_AARCH64)%.o, $(YAPI_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_lin_dyn.o)
 YAPI_OBJS_DYN_MIPS = $(patsubst %.o, $(OBJDIR_MIPS)%.o, $(YAPI_OBJS_DYN) ypkt_lin_dyn.o)
 YAPI_OBJS_DYN_MIPSEL = $(patsubst %.o, $(OBJDIR_MIPSEL)%.o, $(YAPI_OBJS_DYN) ypkt_lin_dyn.o)
-YAPI_OBJS_DYN_OSX = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(YAPI_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_osx_dyn.o)
-YAPI_OBJS_DYN_OSX32 = $(patsubst %.o, $(OBJDIR_OSX32)%.o, $(YAPI_OBJS_DYN) $(MBEDTSL_OBJS_DYN) ypkt_osx_dyn.o)
+YAPI_OBJS_DYN_OSX = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(YAPI_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_osx_dyn.o)
+YAPI_OBJS_DYN_OSX32 = $(patsubst %.o, $(OBJDIR_OSX32)%.o, $(YAPI_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_osx_dyn.o)
 
 VPATH       = $(YAPI_SOURCES_DIR) $(SOURCES_DIR) $(MBEDTLS_SOURCES_DIR)
 INCLUDES    = $(YAPI_SOURCES_DIR) $(SOURCES_DIR) $(MBEDTLS_INCLUDE_DIR)

@@ -1,0 +1,14 @@
+{
+    "main": "main.cpp",
+    "other_files": [],
+    "ylib": [
+        "yocto_multisenscontroller",
+        "yocto_temperature",
+        "yocto_api"
+    ],
+    "skip": false,
+    "xcode": true,
+    "vstudio": true,
+    "gnu": true,
+    "cb": true
+}

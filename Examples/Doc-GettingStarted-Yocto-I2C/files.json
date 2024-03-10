@@ -1,0 +1,16 @@
+{
+    "main": "main.cpp",
+    "other_files": [],
+    "ylib": [
+        "yocto_files",
+        "yocto_genericsensor",
+        "yocto_i2cport",
+        "yocto_poweroutput",
+        "yocto_api"
+    ],
+    "skip": false,
+    "xcode": true,
+    "vstudio": true,
+    "gnu": true,
+    "cb": true
+}

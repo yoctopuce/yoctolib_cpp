@@ -1,7 +1,6 @@
 #include <iostream>
 
 #include "yocto_api.h"
-#include "yocto_anbutton.h"
 
 using namespace std;
 

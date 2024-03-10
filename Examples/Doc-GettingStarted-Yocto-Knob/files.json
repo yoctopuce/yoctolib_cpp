@@ -1,0 +1,14 @@
+{
+    "main": "main.cpp",
+    "other_files": [],
+    "ylib": [
+        "yocto_anbutton",
+        "yocto_quadraturedecoder",
+        "yocto_api"
+    ],
+    "skip": false,
+    "xcode": true,
+    "vstudio": true,
+    "gnu": true,
+    "cb": true
+}

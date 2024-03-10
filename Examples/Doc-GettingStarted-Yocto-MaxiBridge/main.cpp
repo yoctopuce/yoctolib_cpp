@@ -1,13 +1,13 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 38864 2019-12-19 14:50:03Z seb $
+ *  $Id: main.cpp 59576 2024-02-29 09:36:30Z seb $
  *
  *  An example that show how to use a  Yocto-MaxiBridge
  *
  *  You can find more information on our web site:
  *   Yocto-MaxiBridge documentation:
  *      https://www.yoctopuce.com/EN/products/yocto-maxibridge/doc.html
- *   C++ API Reference:
+ *   C++ V2 API Reference:
  *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
  *
  *********************************************************************/

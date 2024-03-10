@@ -13,21 +13,21 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6C7B0CCA-1BD8-485B-9DB3-E10E40B9FE94}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>demo</RootNamespace>
+    <RootNamespace>Doc-GettingStarted-Yocto-PWM-Rx</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -45,7 +45,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\..\Sources;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\Sources;..\..\..\Sources\yapi\mbedtls\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -59,6 +59,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);bcrypt.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -76,26 +77,47 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);bcrypt.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_pwminput.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_quadraturedecoder.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_api.cpp" />
+    <ClCompile Include="..\..\..\Sources\yapi\yapi.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\yfifo.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\yhash.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\yjson.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\ykey.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\ymemory.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\yprog.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\ystream.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\ytcp.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\ythread.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\ypkt_lin.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\ypkt_win.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\ypkt_osx.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\yssl.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\aes.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\aesce.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\aesni.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\arc4.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\aria.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\asn1parse.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\asn1write.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\base64.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\bignum.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\blowfish.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\bignum_core.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\bignum_mod.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\bignum_mod_raw.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\camellia.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ccm.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\certs.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\chacha20.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\chachapoly.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\cipher.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\cipher_wrap.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\cmac.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\constant_time.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ctr_drbg.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\debug.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\des.c" />
@@ -105,27 +127,29 @@
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ecjpake.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ecp.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ecp_curves.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ecp_curves_new.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\entropy.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\entropy_poll.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\error.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\gcm.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\havege.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\hkdf.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\hmac_drbg.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\lmots.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\lms.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\md.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\md2.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\md4.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\md5.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\memory_buffer_alloc.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\mps_reader.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\mps_trace.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\net_sockets.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\nist_kw.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\oid.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\padlock.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pem.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pk.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pkcs11.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pkcs12.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pkcs5.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pkcs7.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pkparse.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pkwrite.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pk_wrap.c" />
@@ -133,98 +157,125 @@
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\platform_util.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\poly1305.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_aead.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_cipher.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_client.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_driver_wrappers.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_driver_wrappers_no_static.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_ecp.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_ffdh.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_hash.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_mac.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_pake.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_rsa.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_se.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_slot_management.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_storage.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_its_file.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_util.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ripemd160.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\rsa.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\rsa_internal.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\rsa_alt_helpers.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\sha1.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\sha256.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\sha3.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\sha512.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_cache.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_ciphersuites.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_cli.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_client.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_cookie.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_debug_helpers_generated.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_msg.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_srv.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_ticket.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls12_client.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls12_server.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_client.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_generic.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_keys.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_server.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\threading.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\timing.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\version.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\version_features.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509write.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509write_crt.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509write_csr.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509_create.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509_crl.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509_crt.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509_csr.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\xtea.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\yapi.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\yfifo.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\yhash.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\yjson.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\ymemory.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\ypkt_lin.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\ypkt_osx.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\ypkt_win.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\yprog.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\yssl.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\ystream.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\ytcp.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\ythread.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\ykey.c" />
-    <ClCompile Include="..\..\..\Sources\yocto_api.cpp" />
-    
-<ClCompile Include="..\..\..\Sources\yocto_pwminput.cpp" />
-<ClCompile Include="..\..\..\Sources\yocto_quadraturedecoder.cpp" />
-<ClCompile Include="..\..\..\Sources\yocto_datalogger.cpp" />
 
-    <ClCompile Include="..\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\check_crypto_config.h" />
-    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\common.h" />
-    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_core.h" />
-    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_driver_wrappers.h" />
-    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_ecp.h" />
-    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_invasive.h" />
-    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_its.h" />
-    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_random_impl.h" />
-    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_rsa.h" />
-    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_se.h" />
-    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_service_integration.h" />
-    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_slot_management.h" />
-    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_storage.h" />
-    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\ssl_invasive.h" />
-    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_keys.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_pwminput.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_quadraturedecoder.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_api.h" />
     <ClInclude Include="..\..\..\Sources\yapi\yapi.h" />
     <ClInclude Include="..\..\..\Sources\yapi\ydef.h" />
-    <ClInclude Include="..\..\..\Sources\yapi\ydef_private.h" />
     <ClInclude Include="..\..\..\Sources\yapi\yfifo.h" />
     <ClInclude Include="..\..\..\Sources\yapi\yhash.h" />
     <ClInclude Include="..\..\..\Sources\yapi\yjson.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\ykey.h" />
     <ClInclude Include="..\..\..\Sources\yapi\ymemory.h" />
     <ClInclude Include="..\..\..\Sources\yapi\yprog.h" />
     <ClInclude Include="..\..\..\Sources\yapi\yproto.h" />
-    <ClInclude Include="..\..\..\Sources\yapi\yssl.h" />
     <ClInclude Include="..\..\..\Sources\yapi\ytcp.h" />
     <ClInclude Include="..\..\..\Sources\yapi\ythread.h" />
     <ClInclude Include="..\..\..\Sources\yapi\yversion.h" />
-    <ClInclude Include="..\..\..\Sources\yapi\ykey.h" />
-    <ClInclude Include="..\..\..\Sources\yocto_api.h" />
-    
-<ClInclude Include="..\..\..\Sources\yocto_pwminput.h" />
-<ClInclude Include="..\..\..\Sources\yocto_quadraturedecoder.h" />
-<ClInclude Include="..\..\..\Sources\yocto_datalogger.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\yssl.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\aesce.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\aesni.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\alignment.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\base64_internal.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\bignum_core.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\bignum_mod.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\bignum_mod_raw.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\bignum_mod_raw_invasive.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\bn_mul.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\check_crypto_config.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\cipher_wrap.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\common.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\constant_time_impl.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\constant_time_internal.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\ecp_internal_alt.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\ecp_invasive.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\entropy_poll.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\lmots.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\md_psa.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\md_wrap.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\mps_common.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\mps_error.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\mps_reader.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\mps_trace.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\padlock.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\pkwrite.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\pk_internal.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\pk_wrap.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_aead.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_cipher.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_core.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_core_common.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_driver_wrappers.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_driver_wrappers_no_static.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_ecp.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_ffdh.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_hash.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_invasive.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_its.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_mac.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_pake.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_random_impl.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_rsa.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_se.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_slot_management.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_storage.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\psa_util_internal.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\rsa_alt_helpers.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\ssl_client.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\ssl_debug_helpers.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\ssl_misc.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_invasive.h" />
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_keys.h" />
 
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

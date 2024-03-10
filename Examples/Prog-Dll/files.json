@@ -1,0 +1,10 @@
+{
+	"main":"main.cpp",
+	"other_files":[],
+	"ylib":["yocto_api"],
+	"skip":true,
+	"xcode":false,
+	"vstudio":false,
+	"gnu":false,
+	"cb":false
+}

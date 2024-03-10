@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yssl.c 57978 2023-11-22 10:09:09Z mvuilleu $
+ * $Id: yssl.c 59574 2024-02-29 09:31:28Z seb $
  *
  * Implementation of a client TCP stack with SSL
  *
@@ -42,6 +42,7 @@
 #define __FILENAME__   "yssl"
 
 #ifndef NO_YSSL
+#include "mbedtls/build_info.h"
 #include "mbedtls/ssl.h"
 #include "mbedtls/debug.h"
 #include "mbedtls/net_sockets.h"
@@ -247,7 +248,8 @@ int yssl_generate_certificate(const char* keyfile, const char* certfile,
     mbedtls_pk_init(&key);
     mbedtls_x509write_crt_init(&crt);
 
-    int ret = mbedtls_pk_parse_keyfile(&key, keyfile, NULL);
+    int ret = mbedtls_pk_parse_keyfile(&key, keyfile, NULL,
+         mbedtls_ctr_drbg_random, &ctr_drbg);
     if (ret != 0) {
         return FMT_MBEDTLS_ERR(ret);
     }
@@ -310,7 +312,6 @@ int yssl_generate_certificate(const char* keyfile, const char* certfile,
     return ret;
 }
 
-
 static void yssl_mutex_init(mbedtls_threading_mutex_t* mutex)
 {
     yInitializeCriticalSection(&mutex->mutex);
@@ -332,7 +333,6 @@ static int yssl_mutex_unlock(mbedtls_threading_mutex_t* mutex)
     yLeaveCriticalSection(&mutex->mutex);
     return 0;
 }
-
 
 int yTcpInitSSL(char* errmsg)
 {
@@ -356,8 +356,6 @@ int yTcpInitSSL(char* errmsg)
     mbedtls_x509_crt_init(&srvcert);
     mbedtls_ctr_drbg_init(&ctr_drbg);
     mbedtls_pk_init(&pkey);
-    
-
     SSLLOG("Seeding the random number generator...\n");
     mbedtls_entropy_init(&entropy);
     ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func,
@@ -391,7 +389,8 @@ int yTcpSetSrvCertificateSSL(const char* certfile, const char* keyfile, char* er
         fclose(fd);
 
         mbedtls_pk_free(&pkey);
-        ret = mbedtls_pk_parse_keyfile(&pkey, keyfile, NULL);
+        ret = mbedtls_pk_parse_keyfile(&pkey, keyfile, NULL,
+            mbedtls_ctr_drbg_random, &ctr_drbg);
         if (ret < 0) {
             return FMT_MBEDTLS_ERR(ret);
         }

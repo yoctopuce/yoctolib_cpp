@@ -1,0 +1,15 @@
+{
+    "main": "main.cpp",
+    "other_files": [],
+    "ylib": [
+        "yocto_colorled",
+        "yocto_colorledcluster",
+        "yocto_files",
+        "yocto_api"
+    ],
+    "skip": false,
+    "xcode": true,
+    "vstudio": true,
+    "gnu": true,
+    "cb": true
+}

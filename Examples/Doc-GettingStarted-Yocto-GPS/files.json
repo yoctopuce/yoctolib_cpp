@@ -1,0 +1,17 @@
+{
+    "main": "main.cpp",
+    "other_files": [],
+    "ylib": [
+        "yocto_altitude",
+        "yocto_gps",
+        "yocto_groundspeed",
+        "yocto_latitude",
+        "yocto_longitude",
+        "yocto_api"
+    ],
+    "skip": false,
+    "xcode": true,
+    "vstudio": true,
+    "gnu": true,
+    "cb": true
+}

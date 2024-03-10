@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 59502 2024-02-26 11:03:15Z seb $
+ * $Id: yapi.c 59591 2024-03-04 08:18:18Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -5002,12 +5002,10 @@ static int yapiRequestOpenUSB(YIOHDL_internal *iohdl, HubSt *hub, YAPI_DEVICE de
     YRETCODE res;
     int firsttime = 1;
     u64 timeout;
-    int count = 0;
 
     yHashGetStr(dev & 0xffff, buffer, YOCTO_SERIAL_LEN);
     timeout = yapiGetTickCount() + YAPI_BLOCKING_USBOPEN_REQUEST_TIMEOUT;
     do {
-        count++;
         res = (YRETCODE)yUsbOpen(iohdl, buffer, errmsg);
         if (res != YAPI_DEVICE_BUSY) break;
         yapiHandleEvents_internal(errmsg);
