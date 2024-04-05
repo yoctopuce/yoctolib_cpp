@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_network.cpp 54332 2023-05-02 08:35:37Z seb $
+ *  $Id: yocto_network.cpp 60214 2024-03-26 13:01:50Z mvuilleu $
  *
  *  Implements yFindNetwork(), the high-level API for Network functions
  *
@@ -69,6 +69,7 @@ YNetwork::YNetwork(const string& func): YFunction(func)
     ,_adminPassword(ADMINPASSWORD_INVALID)
     ,_httpPort(HTTPPORT_INVALID)
     ,_httpsPort(HTTPSPORT_INVALID)
+    ,_securityMode(SECURITYMODE_INVALID)
     ,_defaultPage(DEFAULTPAGE_INVALID)
     ,_discoverable(DISCOVERABLE_INVALID)
     ,_wwwWatchdogDelay(WWWWATCHDOGDELAY_INVALID)
@@ -154,6 +155,9 @@ int YNetwork::_parseAttr(YJSONObject *json_val)
     }
     if(json_val->has("httpsPort")) {
         _httpsPort =  json_val->getInt("httpsPort");
+    }
+    if(json_val->has("securityMode")) {
+        _securityMode =  (Y_SECURITYMODE_enum)json_val->getInt("securityMode");
     }
     if(json_val->has("defaultPage")) {
         _defaultPage =  json_val->getString("defaultPage");
@@ -848,6 +852,78 @@ int YNetwork::set_httpsPort(int newval)
     try {
         char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("httpsPort", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the security level chosen to prevent unauthorized access to the server.
+ *
+ * @return a value among YNetwork::SECURITYMODE_UNDEFINED, YNetwork::SECURITYMODE_LEGACY,
+ * YNetwork::SECURITYMODE_MIXED and YNetwork::SECURITYMODE_SECURE corresponding to the security level
+ * chosen to prevent unauthorized access to the server
+ *
+ * On failure, throws an exception or returns YNetwork::SECURITYMODE_INVALID.
+ */
+Y_SECURITYMODE_enum YNetwork::get_securityMode(void)
+{
+    Y_SECURITYMODE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YNetwork::SECURITYMODE_INVALID;
+                }
+            }
+        }
+        res = _securityMode;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the security level used to prevent unauthorized access to the server.
+ * The value UNDEFINED causes the security configuration wizard to be
+ * displayed the next time you log on to the Web console.
+ * The value LEGACY offers unencrypted HTTP access by default, and
+ * is designed to provide compatibility with legacy applications that do not
+ * handle password or do not support HTTPS. But it should
+ * only be used when system security is guaranteed by other means, such as the
+ * use of a firewall.
+ * The value MIXED requires the configuration of passwords, and allows
+ * access via both HTTP (unencrypted) and HTTPS (encrypted), while requiring
+ * the Yoctopuce API to be tolerant of certificate characteristics.
+ * The value SECURE requires the configuration of passwords and the
+ * use of secure communications in all cases.
+ * When you change this parameter, remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
+ *
+ * @param newval : a value among YNetwork::SECURITYMODE_UNDEFINED, YNetwork::SECURITYMODE_LEGACY,
+ * YNetwork::SECURITYMODE_MIXED and YNetwork::SECURITYMODE_SECURE corresponding to the security level
+ * used to prevent unauthorized access to the server
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YNetwork::set_securityMode(Y_SECURITYMODE_enum newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
+        res = _setAttr("securityMode", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
@@ -1631,13 +1707,13 @@ int YNetwork::get_poeCurrent(void)
 /**
  * Retrieves a network interface for a given identifier.
  * The identifier can be specified using several formats:
- * <ul>
- * <li>FunctionLogicalName</li>
- * <li>ModuleSerialNumber.FunctionIdentifier</li>
- * <li>ModuleSerialNumber.FunctionLogicalName</li>
- * <li>ModuleLogicalName.FunctionIdentifier</li>
- * <li>ModuleLogicalName.FunctionLogicalName</li>
- * </ul>
+ *
+ * - FunctionLogicalName
+ * - ModuleSerialNumber.FunctionIdentifier
+ * - ModuleSerialNumber.FunctionLogicalName
+ * - ModuleLogicalName.FunctionIdentifier
+ * - ModuleLogicalName.FunctionLogicalName
+ *
  *
  * This function does not require that the network interface is online at the time
  * it is invoked. The returned object is nevertheless valid.

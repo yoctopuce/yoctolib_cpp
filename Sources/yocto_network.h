@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_network.h 54332 2023-05-02 08:35:37Z seb $
+ *  $Id: yocto_network.h 60214 2024-03-26 13:01:50Z mvuilleu $
  *
  *  Declares yFindNetwork(), the high-level API for Network functions
  *
@@ -69,6 +69,16 @@ typedef enum {
     Y_READINESS_WWW_OK = 4,
     Y_READINESS_INVALID = -1,
 } Y_READINESS_enum;
+#endif
+#ifndef _Y_SECURITYMODE_ENUM
+#define _Y_SECURITYMODE_ENUM
+typedef enum {
+    Y_SECURITYMODE_UNDEFINED = 0,
+    Y_SECURITYMODE_LEGACY = 1,
+    Y_SECURITYMODE_MIXED = 2,
+    Y_SECURITYMODE_SECURE = 3,
+    Y_SECURITYMODE_INVALID = -1,
+} Y_SECURITYMODE_enum;
 #endif
 #ifndef _Y_DISCOVERABLE_ENUM
 #define _Y_DISCOVERABLE_ENUM
@@ -168,6 +178,7 @@ protected:
     string          _adminPassword;
     int             _httpPort;
     int             _httpsPort;
+    Y_SECURITYMODE_enum _securityMode;
     string          _defaultPage;
     Y_DISCOVERABLE_enum _discoverable;
     int             _wwwWatchdogDelay;
@@ -216,6 +227,11 @@ public:
     static const string ADMINPASSWORD_INVALID;
     static const int HTTPPORT_INVALID = YAPI_INVALID_UINT;
     static const int HTTPSPORT_INVALID = YAPI_INVALID_UINT;
+    static const Y_SECURITYMODE_enum SECURITYMODE_UNDEFINED = Y_SECURITYMODE_UNDEFINED;
+    static const Y_SECURITYMODE_enum SECURITYMODE_LEGACY = Y_SECURITYMODE_LEGACY;
+    static const Y_SECURITYMODE_enum SECURITYMODE_MIXED = Y_SECURITYMODE_MIXED;
+    static const Y_SECURITYMODE_enum SECURITYMODE_SECURE = Y_SECURITYMODE_SECURE;
+    static const Y_SECURITYMODE_enum SECURITYMODE_INVALID = Y_SECURITYMODE_INVALID;
     static const string DEFAULTPAGE_INVALID;
     static const Y_DISCOVERABLE_enum DISCOVERABLE_FALSE = Y_DISCOVERABLE_FALSE;
     static const Y_DISCOVERABLE_enum DISCOVERABLE_TRUE = Y_DISCOVERABLE_TRUE;
@@ -565,6 +581,49 @@ public:
     int             set_httpsPort(int newval);
     inline int      setHttpsPort(int newval)
     { return this->set_httpsPort(newval); }
+
+    /**
+     * Returns the security level chosen to prevent unauthorized access to the server.
+     *
+     * @return a value among YNetwork::SECURITYMODE_UNDEFINED, YNetwork::SECURITYMODE_LEGACY,
+     * YNetwork::SECURITYMODE_MIXED and YNetwork::SECURITYMODE_SECURE corresponding to the security level
+     * chosen to prevent unauthorized access to the server
+     *
+     * On failure, throws an exception or returns YNetwork::SECURITYMODE_INVALID.
+     */
+    Y_SECURITYMODE_enum get_securityMode(void);
+
+    inline Y_SECURITYMODE_enum securityMode(void)
+    { return this->get_securityMode(); }
+
+    /**
+     * Changes the security level used to prevent unauthorized access to the server.
+     * The value UNDEFINED causes the security configuration wizard to be
+     * displayed the next time you log on to the Web console.
+     * The value LEGACY offers unencrypted HTTP access by default, and
+     * is designed to provide compatibility with legacy applications that do not
+     * handle password or do not support HTTPS. But it should
+     * only be used when system security is guaranteed by other means, such as the
+     * use of a firewall.
+     * The value MIXED requires the configuration of passwords, and allows
+     * access via both HTTP (unencrypted) and HTTPS (encrypted), while requiring
+     * the Yoctopuce API to be tolerant of certificate characteristics.
+     * The value SECURE requires the configuration of passwords and the
+     * use of secure communications in all cases.
+     * When you change this parameter, remember to call the saveToFlash()
+     * method of the module if the modification must be kept.
+     *
+     * @param newval : a value among YNetwork::SECURITYMODE_UNDEFINED, YNetwork::SECURITYMODE_LEGACY,
+     * YNetwork::SECURITYMODE_MIXED and YNetwork::SECURITYMODE_SECURE corresponding to the security level
+     * used to prevent unauthorized access to the server
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_securityMode(Y_SECURITYMODE_enum newval);
+    inline int      setSecurityMode(Y_SECURITYMODE_enum newval)
+    { return this->set_securityMode(newval); }
 
     /**
      * Returns the HTML page to serve for the URL "/"" of the hub.
@@ -971,13 +1030,13 @@ public:
     /**
      * Retrieves a network interface for a given identifier.
      * The identifier can be specified using several formats:
-     * <ul>
-     * <li>FunctionLogicalName</li>
-     * <li>ModuleSerialNumber.FunctionIdentifier</li>
-     * <li>ModuleSerialNumber.FunctionLogicalName</li>
-     * <li>ModuleLogicalName.FunctionIdentifier</li>
-     * <li>ModuleLogicalName.FunctionLogicalName</li>
-     * </ul>
+     *
+     * - FunctionLogicalName
+     * - ModuleSerialNumber.FunctionIdentifier
+     * - ModuleSerialNumber.FunctionLogicalName
+     * - ModuleLogicalName.FunctionIdentifier
+     * - ModuleLogicalName.FunctionLogicalName
+     *
      *
      * This function does not require that the network interface is online at the time
      * it is invoked. The returned object is nevertheless valid.
@@ -1136,13 +1195,13 @@ public:
 /**
  * Retrieves a network interface for a given identifier.
  * The identifier can be specified using several formats:
- * <ul>
- * <li>FunctionLogicalName</li>
- * <li>ModuleSerialNumber.FunctionIdentifier</li>
- * <li>ModuleSerialNumber.FunctionLogicalName</li>
- * <li>ModuleLogicalName.FunctionIdentifier</li>
- * <li>ModuleLogicalName.FunctionLogicalName</li>
- * </ul>
+ *
+ * - FunctionLogicalName
+ * - ModuleSerialNumber.FunctionIdentifier
+ * - ModuleSerialNumber.FunctionLogicalName
+ * - ModuleLogicalName.FunctionIdentifier
+ * - ModuleLogicalName.FunctionLogicalName
+ *
  *
  * This function does not require that the network interface is online at the time
  * it is invoked. The returned object is nevertheless valid.

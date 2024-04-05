@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_anbutton.cpp 56388 2023-09-04 15:26:27Z web $
+ *  $Id: yocto_anbutton.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
  *
  *  Implements yFindAnButton(), the high-level API for AnButton functions
  *
@@ -647,13 +647,13 @@ int YAnButton::set_inputType(Y_INPUTTYPE_enum newval)
 /**
  * Retrieves an analog input for a given identifier.
  * The identifier can be specified using several formats:
- * <ul>
- * <li>FunctionLogicalName</li>
- * <li>ModuleSerialNumber.FunctionIdentifier</li>
- * <li>ModuleSerialNumber.FunctionLogicalName</li>
- * <li>ModuleLogicalName.FunctionIdentifier</li>
- * <li>ModuleLogicalName.FunctionLogicalName</li>
- * </ul>
+ *
+ * - FunctionLogicalName
+ * - ModuleSerialNumber.FunctionIdentifier
+ * - ModuleSerialNumber.FunctionLogicalName
+ * - ModuleLogicalName.FunctionIdentifier
+ * - ModuleLogicalName.FunctionLogicalName
+ *
  *
  * This function does not require that the analog input is online at the time
  * it is invoked. The returned object is nevertheless valid.

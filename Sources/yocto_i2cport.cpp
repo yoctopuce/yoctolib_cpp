@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_i2cport.cpp 58920 2024-01-12 09:39:03Z seb $
+ *  $Id: yocto_i2cport.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
  *
  *  Implements yFindI2cPort(), the high-level API for I2cPort functions
  *
@@ -800,13 +800,13 @@ int YI2cPort::set_i2cMode(const string& newval)
 /**
  * Retrieves an I2C port for a given identifier.
  * The identifier can be specified using several formats:
- * <ul>
- * <li>FunctionLogicalName</li>
- * <li>ModuleSerialNumber.FunctionIdentifier</li>
- * <li>ModuleSerialNumber.FunctionLogicalName</li>
- * <li>ModuleLogicalName.FunctionIdentifier</li>
- * <li>ModuleLogicalName.FunctionLogicalName</li>
- * </ul>
+ *
+ * - FunctionLogicalName
+ * - ModuleSerialNumber.FunctionIdentifier
+ * - ModuleSerialNumber.FunctionLogicalName
+ * - ModuleLogicalName.FunctionIdentifier
+ * - ModuleLogicalName.FunctionLogicalName
+ *
  *
  * This function does not require that the I2C port is online at the time
  * it is invoked. The returned object is nevertheless valid.
@@ -1602,12 +1602,13 @@ int YI2cPort::writeArray(vector<int> byteList)
  *
  * @param maxWait : the maximum number of milliseconds to wait for a message if none is found
  *         in the receive buffer.
+ * @param maxMsg : the maximum number of messages to be returned by the function; up to 254.
  *
  * @return an array of YI2cSnoopingRecord objects containing the messages found, if any.
  *
  * On failure, throws an exception or returns an empty array.
  */
-vector<YI2cSnoopingRecord> YI2cPort::snoopMessages(int maxWait)
+vector<YI2cSnoopingRecord> YI2cPort::snoopMessagesEx(int maxWait,int maxMsg)
 {
     string url;
     string msgbin;
@@ -1616,7 +1617,7 @@ vector<YI2cSnoopingRecord> YI2cPort::snoopMessages(int maxWait)
     vector<YI2cSnoopingRecord> res;
     int idx = 0;
 
-    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&t=0", _rxptr,maxWait);
+    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&t=0&len=%d", _rxptr, maxWait,maxMsg);
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);
     msglen = (int)msgarr.size();
@@ -1632,6 +1633,24 @@ vector<YI2cSnoopingRecord> YI2cPort::snoopMessages(int maxWait)
         idx = idx + 1;
     }
     return res;
+}
+
+/**
+ * Retrieves messages (both direction) in the I2C port buffer, starting at current position.
+ *
+ * If no message is found, the search waits for one up to the specified maximum timeout
+ * (in milliseconds).
+ *
+ * @param maxWait : the maximum number of milliseconds to wait for a message if none is found
+ *         in the receive buffer.
+ *
+ * @return an array of YI2cSnoopingRecord objects containing the messages found, if any.
+ *
+ * On failure, throws an exception or returns an empty array.
+ */
+vector<YI2cSnoopingRecord> YI2cPort::snoopMessages(int maxWait)
+{
+    return this->snoopMessagesEx(maxWait, 255);
 }
 
 YI2cPort *YI2cPort::nextI2cPort(void)

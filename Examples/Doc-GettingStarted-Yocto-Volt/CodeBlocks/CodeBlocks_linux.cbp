@@ -189,14 +189,6 @@
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/bignum_mod.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/bignum_mod_raw.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
       <Unit filename="../../../Sources/yapi/mbedtls/library/camellia.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
@@ -265,10 +257,6 @@
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ecp_curves_new.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
       <Unit filename="../../../Sources/yapi/mbedtls/library/entropy.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
@@ -306,18 +294,6 @@
          <Option  compilerVar="CC" />
       </Unit>
       <Unit filename="../../../Sources/yapi/mbedtls/library/md5.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/memory_buffer_alloc.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/mps_reader.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/mps_trace.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
@@ -425,10 +401,6 @@
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_se.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
       <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_slot_management.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
@@ -510,22 +482,6 @@
          <Option  compilerVar="CC" />
       </Unit>
       <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_tls12_server.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_tls13_client.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_tls13_generic.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_tls13_keys.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_tls13_server.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>

@@ -1,7 +1,7 @@
 {
 	"main":"main.cpp",
 	"other_files":[],
-	"ylib":["yocto_api"],
+	"ylib":["yocto_api","yocto_display"],
 	"skip":false,
 	"xcode":true,
 	"vstudio":true,

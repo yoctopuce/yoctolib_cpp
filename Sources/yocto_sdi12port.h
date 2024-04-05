@@ -160,21 +160,22 @@ public:
 //--- (generated code: YSdi12SnoopingRecord definitions)
 //--- (end of generated code: YSdi12SnoopingRecord definitions)
 
-//--- (generated code: YSdi12Sensor declaration)
+//--- (generated code: YSdi12SensorInfo declaration)
 /**
- * YSdi12Sensor Class: Description of a discovered SDI12 sensor, returned by
+ * YSdi12SensorInfo Class: Description of a discovered SDI12 sensor, returned by
  * sdi12Port.discoverSingleSensor and sdi12Port.discoverAllSensors methods
  *
  *
  */
-class YOCTO_CLASS_EXPORT YSdi12Sensor {
+class YOCTO_CLASS_EXPORT YSdi12SensorInfo {
 #ifdef __BORLANDC__
 #pragma option push -w-8022
 #endif
-//--- (end of generated code: YSdi12Sensor declaration)
-    //--- (generated code: YSdi12Sensor attributes)
+//--- (end of generated code: YSdi12SensorInfo declaration)
+    //--- (generated code: YSdi12SensorInfo attributes)
     // Attributes (function value cache)
     YSdi12Port*     _sdi12Port;
+    bool            _isValid;
     string          _addr;
     string          _proto;
     string          _mfg;
@@ -182,20 +183,29 @@ class YOCTO_CLASS_EXPORT YSdi12Sensor {
     string          _ver;
     string          _sn;
     vector< vector<string> > _valuesDesc;
-    //--- (end of generated code: YSdi12Sensor attributes)
-    //--- (generated code: YSdi12Sensor constructor)
+    //--- (end of generated code: YSdi12SensorInfo attributes)
+    //--- (generated code: YSdi12SensorInfo constructor)
 
-    //--- (end of generated code: YSdi12Sensor constructor)
-    //--- (generated code: YSdi12Sensor initialization)
-    //--- (end of generated code: YSdi12Sensor initialization)
+    //--- (end of generated code: YSdi12SensorInfo constructor)
+    //--- (generated code: YSdi12SensorInfo initialization)
+    //--- (end of generated code: YSdi12SensorInfo initialization)
 
 public:
-    YSdi12Sensor(YSdi12Port *sdi12Port, const string& json);
-    YSdi12Sensor(): _sdi12Port(NULL) {};
-    virtual ~YSdi12Sensor(){};
+    YSdi12SensorInfo(YSdi12Port *sdi12Port, const string& json);
+    YSdi12SensorInfo(): _sdi12Port(NULL) {};
+    virtual ~YSdi12SensorInfo(){};
 
-    //--- (generated code: YSdi12Sensor accessors declaration)
+    virtual void        _throw(YRETCODE errcode,string msg);
 
+    //--- (generated code: YSdi12SensorInfo accessors declaration)
+
+
+    /**
+     * Returns the sensor state.
+     *
+     * @return the sensor state.
+     */
+    virtual bool        isValid(void);
 
     /**
      * Returns the sensor address.
@@ -241,6 +251,8 @@ public:
 
     /**
      * Returns the number of sensor measurements.
+     * This function only works if the sensor is in version 1.4 SDI-12
+     * and supports metadata commands.
      *
      * @return the number of sensor measurements.
      */
@@ -248,46 +260,61 @@ public:
 
     /**
      * Returns the sensor measurement command.
+     * This function only works if the sensor is in version 1.4 SDI-12
+     * and supports metadata commands.
      *
      * @param measureIndex : measurement index
      *
      * @return the sensor measurement command.
+     *         On failure, throws an exception or returns an empty string.
      */
     virtual string      get_measureCommand(int measureIndex);
 
     /**
      * Returns sensor measurement position.
+     * This function only works if the sensor is in version 1.4 SDI-12
+     * and supports metadata commands.
      *
      * @param measureIndex : measurement index
      *
      * @return the sensor measurement command.
+     *         On failure, throws an exception or returns 0.
      */
     virtual int         get_measurePosition(int measureIndex);
 
     /**
      * Returns the measured value symbol.
+     * This function only works if the sensor is in version 1.4 SDI-12
+     * and supports metadata commands.
      *
      * @param measureIndex : measurement index
      *
      * @return the sensor measurement command.
+     *         On failure, throws an exception or returns an empty string.
      */
     virtual string      get_measureSymbol(int measureIndex);
 
     /**
      * Returns the unit of the measured value.
+     * This function only works if the sensor is in version 1.4 SDI-12
+     * and supports metadata commands.
      *
      * @param measureIndex : measurement index
      *
      * @return the sensor measurement command.
+     *         On failure, throws an exception or returns an empty string.
      */
     virtual string      get_measureUnit(int measureIndex);
 
     /**
      * Returns the description of the measured value.
+     * This function only works if the sensor is in version 1.4 SDI-12
+     * and supports metadata commands.
      *
      * @param measureIndex : measurement index
      *
      * @return the sensor measurement command.
+     *         On failure, throws an exception or returns an empty string.
      */
     virtual string      get_measureDescription(int measureIndex);
 
@@ -300,7 +327,7 @@ public:
 #ifdef __BORLANDC__
 #pragma option pop
 #endif
-    //--- (end of generated code: YSdi12Sensor accessors declaration)
+    //--- (end of generated code: YSdi12SensorInfo accessors declaration)
 };
 
 //--- (generated code: YSdi12Port declaration)
@@ -651,13 +678,13 @@ public:
     /**
      * Retrieves an SDI12 port for a given identifier.
      * The identifier can be specified using several formats:
-     * <ul>
-     * <li>FunctionLogicalName</li>
-     * <li>ModuleSerialNumber.FunctionIdentifier</li>
-     * <li>ModuleSerialNumber.FunctionLogicalName</li>
-     * <li>ModuleLogicalName.FunctionIdentifier</li>
-     * <li>ModuleLogicalName.FunctionLogicalName</li>
-     * </ul>
+     *
+     * - FunctionLogicalName
+     * - ModuleSerialNumber.FunctionIdentifier
+     * - ModuleSerialNumber.FunctionLogicalName
+     * - ModuleLogicalName.FunctionIdentifier
+     * - ModuleLogicalName.FunctionLogicalName
+     *
      *
      * This function does not require that the SDI12 port is online at the time
      * it is invoked. The returned object is nevertheless valid.
@@ -974,21 +1001,21 @@ public:
      * This function is intended to be used when the serial port is configured for 'SDI-12' protocol.
      * This function work when only one sensor is connected.
      *
-     * @return the reply returned by the sensor, as a YSdi12Sensor object.
+     * @return the reply returned by the sensor, as a YSdi12SensorInfo object.
      *
      * On failure, throws an exception or returns an empty string.
      */
-    virtual YSdi12Sensor discoverSingleSensor(void);
+    virtual YSdi12SensorInfo discoverSingleSensor(void);
 
     /**
      * Sends a discovery command to the bus, and reads all sensors information reply.
      * This function is intended to be used when the serial port is configured for 'SDI-12' protocol.
      *
-     * @return all the information from every connected sensor, as an array of YSdi12Sensor object.
+     * @return all the information from every connected sensor, as an array of YSdi12SensorInfo object.
      *
      * On failure, throws an exception or returns an empty string.
      */
-    virtual vector<YSdi12Sensor> discoverAllSensors(void);
+    virtual vector<YSdi12SensorInfo> discoverAllSensors(void);
 
     /**
      * Sends a mesurement command to the SDI-12 bus, and reads the sensor immediate reply.
@@ -1015,11 +1042,11 @@ public:
      * @param oldAddress : Actual sensor address, as a string
      * @param newAddress : New sensor address, as a string
      *
-     * @return the sensor address and information , as a YSdi12Sensor object.
+     * @return the sensor address and information , as a YSdi12SensorInfo object.
      *
      * On failure, throws an exception or returns an empty string.
      */
-    virtual YSdi12Sensor changeAddress(string oldAddress,string newAddress);
+    virtual YSdi12SensorInfo changeAddress(string oldAddress,string newAddress);
 
     /**
      * Sends a information command to the bus, and reads sensors information selected.
@@ -1031,7 +1058,7 @@ public:
      *
      * On failure, throws an exception or returns an empty string.
      */
-    virtual YSdi12Sensor getSensorInformation(string sensorAddr);
+    virtual YSdi12SensorInfo getSensorInformation(string sensorAddr);
 
     /**
      * Sends a information command to the bus, and reads sensors information selected.
@@ -1056,6 +1083,22 @@ public:
      * On failure, throws an exception or returns an empty string.
      */
     virtual int         requestConcurrentMeasurements(string sensorAddr);
+
+    /**
+     * Retrieves messages (both direction) in the SDI12 port buffer, starting at current position.
+     *
+     * If no message is found, the search waits for one up to the specified maximum timeout
+     * (in milliseconds).
+     *
+     * @param maxWait : the maximum number of milliseconds to wait for a message if none is found
+     *         in the receive buffer.
+     * @param maxMsg : the maximum number of messages to be returned by the function; up to 254.
+     *
+     * @return an array of YSdi12SnoopingRecord objects containing the messages found, if any.
+     *
+     * On failure, throws an exception or returns an empty array.
+     */
+    virtual vector<YSdi12SnoopingRecord> snoopMessagesEx(int maxWait,int maxMsg);
 
     /**
      * Retrieves messages (both direction) in the SDI12 port buffer, starting at current position.
@@ -1113,13 +1156,13 @@ public:
 /**
  * Retrieves an SDI12 port for a given identifier.
  * The identifier can be specified using several formats:
- * <ul>
- * <li>FunctionLogicalName</li>
- * <li>ModuleSerialNumber.FunctionIdentifier</li>
- * <li>ModuleSerialNumber.FunctionLogicalName</li>
- * <li>ModuleLogicalName.FunctionIdentifier</li>
- * <li>ModuleLogicalName.FunctionLogicalName</li>
- * </ul>
+ *
+ * - FunctionLogicalName
+ * - ModuleSerialNumber.FunctionIdentifier
+ * - ModuleSerialNumber.FunctionLogicalName
+ * - ModuleLogicalName.FunctionIdentifier
+ * - ModuleLogicalName.FunctionLogicalName
+ *
  *
  * This function does not require that the SDI12 port is online at the time
  * it is invoked. The returned object is nevertheless valid.

@@ -455,7 +455,7 @@ static const unsigned char result_key_test_data[MAX_TESTS][32] =
 
 int mbedtls_pkcs5_self_test(int verbose)
 {
-    int ret, i;
+    int ret = 0, i;
     unsigned char key[64];
 
     for (i = 0; i < MAX_TESTS; i++) {

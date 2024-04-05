@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.cpp 59503 2024-02-26 11:04:41Z seb $
+ *  $Id: yocto_spiport.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
  *
  *  Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -933,13 +933,13 @@ int YSpiPort::set_shiftSampling(Y_SHIFTSAMPLING_enum newval)
 /**
  * Retrieves an SPI port for a given identifier.
  * The identifier can be specified using several formats:
- * <ul>
- * <li>FunctionLogicalName</li>
- * <li>ModuleSerialNumber.FunctionIdentifier</li>
- * <li>ModuleSerialNumber.FunctionLogicalName</li>
- * <li>ModuleLogicalName.FunctionIdentifier</li>
- * <li>ModuleLogicalName.FunctionLogicalName</li>
- * </ul>
+ *
+ * - FunctionLogicalName
+ * - ModuleSerialNumber.FunctionIdentifier
+ * - ModuleSerialNumber.FunctionLogicalName
+ * - ModuleLogicalName.FunctionIdentifier
+ * - ModuleLogicalName.FunctionLogicalName
+ *
  *
  * This function does not require that the SPI port is online at the time
  * it is invoked. The returned object is nevertheless valid.
@@ -1736,12 +1736,13 @@ int YSpiPort::set_SS(int val)
  *
  * @param maxWait : the maximum number of milliseconds to wait for a message if none is found
  *         in the receive buffer.
+ * @param maxMsg : the maximum number of messages to be returned by the function; up to 254.
  *
  * @return an array of YSpiSnoopingRecord objects containing the messages found, if any.
  *
  * On failure, throws an exception or returns an empty array.
  */
-vector<YSpiSnoopingRecord> YSpiPort::snoopMessages(int maxWait)
+vector<YSpiSnoopingRecord> YSpiPort::snoopMessagesEx(int maxWait,int maxMsg)
 {
     string url;
     string msgbin;
@@ -1750,7 +1751,7 @@ vector<YSpiSnoopingRecord> YSpiPort::snoopMessages(int maxWait)
     vector<YSpiSnoopingRecord> res;
     int idx = 0;
 
-    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&t=0", _rxptr,maxWait);
+    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&t=0&len=%d", _rxptr, maxWait,maxMsg);
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);
     msglen = (int)msgarr.size();
@@ -1766,6 +1767,24 @@ vector<YSpiSnoopingRecord> YSpiPort::snoopMessages(int maxWait)
         idx = idx + 1;
     }
     return res;
+}
+
+/**
+ * Retrieves messages (both direction) in the SPI port buffer, starting at current position.
+ *
+ * If no message is found, the search waits for one up to the specified maximum timeout
+ * (in milliseconds).
+ *
+ * @param maxWait : the maximum number of milliseconds to wait for a message if none is found
+ *         in the receive buffer.
+ *
+ * @return an array of YSpiSnoopingRecord objects containing the messages found, if any.
+ *
+ * On failure, throws an exception or returns an empty array.
+ */
+vector<YSpiSnoopingRecord> YSpiPort::snoopMessages(int maxWait)
+{
+    return this->snoopMessagesEx(maxWait, 255);
 }
 
 YSpiPort *YSpiPort::nextSpiPort(void)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: main.cpp 60131 2024-03-25 08:10:06Z seb $
  *
  *  An example that show how to use a  Yocto-MaxiKnob
  *

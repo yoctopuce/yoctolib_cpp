@@ -1,13 +1,13 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: main.cpp 59991 2024-03-18 17:25:52Z seb $
  *
- *  An example that show how to use a  Yocto-SDI12
+ *  An example that shows how to use a  Yocto-SDI12
  *
  *  You can find more information on our web site:
  *   Yocto-SDI12 documentation:
  *      https://www.yoctopuce.com/EN/products/yocto-sdi12/doc.html
- *   C++ V2 API Reference:
+ *   C++ API Reference:
  *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
  *
  *********************************************************************/
@@ -64,7 +64,7 @@ int main(int argc, const char * argv[])
   }
   sdi12Port->reset();
 
-  YSdi12Sensor singleSensor = sdi12Port->discoverSingleSensor();
+  YSdi12SensorInfo singleSensor = sdi12Port->discoverSingleSensor();
   printf("%-30s %s \n", "Sensor address :", singleSensor.get_sensorAddress().c_str());
   printf("%-30s %s \n", "Sensor SDI-12 compatibility : ",
          singleSensor.get_sensorProtocol().c_str());

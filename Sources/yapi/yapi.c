@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 59591 2024-03-04 08:18:18Z seb $
+ * $Id: yapi.c 60025 2024-03-19 08:55:39Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -2530,8 +2530,9 @@ int LoadInfoJson(HubSt* hub, char *errmsg)
                 }
                 return res;
             }
-        }
-        else {
+        } else if (res == YAPI_SSL_UNK_CERT) {
+            return res;
+        } else {
             if (hub->url.proto == PROTO_SECURE && port == YOCTO_DEFAULT_HTTPS_PORT) {
                 port = 443;
                 retry = 1;
@@ -2584,7 +2585,7 @@ static HubSt* yapiAllocHub(const char *url, int *error_code, char *errmsg)
                 yFree(hub);
                 return NULL;
             }
-        } else if(res == YAPI_SSL_ERROR) {
+        } else if(res == YAPI_SSL_UNK_CERT) {
             if (error_code) {
                 *error_code = res;
             }

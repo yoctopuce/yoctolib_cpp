@@ -5,28 +5,50 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6C7B0CCA-1BD8-485B-9DB3-E10E40B9FE94}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Doc-GettingStarted-Yocto-SPI</RootNamespace>
+    <ProjectName>Doc-GettingStarted-Yocto-SPI</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -35,7 +57,13 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -43,7 +71,15 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>..\..\..\Sources;..\..\..\Sources\yapi\mbedtls\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>..\..\..\Sources;..\..\..\Sources\yapi\mbedtls\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>..\..\..\Sources;..\..\..\Sources\yapi\mbedtls\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>..\..\..\Sources;..\..\..\Sources\yapi\mbedtls\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
@@ -61,6 +97,23 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);bcrypt.lib</AdditionalDependencies>
     </Link>
+
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);bcrypt.lib</AdditionalDependencies>
+    </Link>
+
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -79,6 +132,26 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);bcrypt.lib</AdditionalDependencies>
     </Link>
+
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);bcrypt.lib</AdditionalDependencies>
+    </Link>
+
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\main.cpp" />
@@ -110,8 +183,6 @@
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\base64.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\bignum.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\bignum_core.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\bignum_mod.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\bignum_mod_raw.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\camellia.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ccm.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\chacha20.c" />
@@ -129,7 +200,6 @@
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ecjpake.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ecp.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ecp_curves.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ecp_curves_new.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\entropy.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\entropy_poll.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\error.c" />
@@ -140,9 +210,6 @@
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\lms.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\md.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\md5.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\memory_buffer_alloc.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\mps_reader.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\mps_trace.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\net_sockets.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\nist_kw.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\oid.c" />
@@ -169,7 +236,6 @@
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_mac.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_pake.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_rsa.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_se.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_slot_management.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_storage.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_its_file.c" />
@@ -191,10 +257,6 @@
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls12_client.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls12_server.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_client.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_generic.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_keys.c" />
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_server.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\threading.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\timing.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\version.c" />

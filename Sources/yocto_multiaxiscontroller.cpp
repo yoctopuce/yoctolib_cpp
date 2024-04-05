@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multiaxiscontroller.cpp 56106 2023-08-16 09:14:54Z seb $
+ *  $Id: yocto_multiaxiscontroller.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
  *
  *  Implements yFindMultiAxisController(), the high-level API for MultiAxisController functions
  *
@@ -215,13 +215,13 @@ int YMultiAxisController::set_command(const string& newval)
 /**
  * Retrieves a multi-axis controller for a given identifier.
  * The identifier can be specified using several formats:
- * <ul>
- * <li>FunctionLogicalName</li>
- * <li>ModuleSerialNumber.FunctionIdentifier</li>
- * <li>ModuleSerialNumber.FunctionLogicalName</li>
- * <li>ModuleLogicalName.FunctionIdentifier</li>
- * <li>ModuleLogicalName.FunctionLogicalName</li>
- * </ul>
+ *
+ * - FunctionLogicalName
+ * - ModuleSerialNumber.FunctionIdentifier
+ * - ModuleSerialNumber.FunctionLogicalName
+ * - ModuleLogicalName.FunctionIdentifier
+ * - ModuleLogicalName.FunctionLogicalName
+ *
  *
  * This function does not require that the multi-axis controller is online at the time
  * it is invoked. The returned object is nevertheless valid.

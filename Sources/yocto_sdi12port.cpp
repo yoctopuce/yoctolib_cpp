@@ -97,6 +97,11 @@ YSdi12SnoopingRecord::YSdi12SnoopingRecord(const string& json):
     }
 }
 
+void YSdi12SensorInfo::_throw(YRETCODE errcode,string msg)
+{
+    _sdi12Port->_throw(errcode,msg);
+}
+
 //--- (generated code: YSdi12SnoopingRecord implementation)
 // static attributes
 
@@ -142,25 +147,36 @@ string YSdi12SnoopingRecord::get_message(void)
 }
 //--- (end of generated code: YSdi12SnoopingRecord implementation)
 
-YSdi12Sensor::YSdi12Sensor(YSdi12Port *sdi12Port,const string& json):
-//--- (generated code: YSdi12Sensor initialization)
+YSdi12SensorInfo::YSdi12SensorInfo(YSdi12Port *sdi12Port,const string& json):
+//--- (generated code: YSdi12SensorInfo initialization)
     _sdi12Port(NULL)
-//--- (end of generated code: YSdi12Sensor initialization)
+    ,_isValid(0)
+//--- (end of generated code: YSdi12SensorInfo initialization)
 {
     _sdi12Port = sdi12Port;
     _parseInfoStr(json);
 }
 
-//--- (generated code: YSdi12Sensor implementation)
+//--- (generated code: YSdi12SensorInfo implementation)
 // static attributes
 
+
+/**
+ * Returns the sensor state.
+ *
+ * @return the sensor state.
+ */
+bool YSdi12SensorInfo::isValid(void)
+{
+    return _isValid;
+}
 
 /**
  * Returns the sensor address.
  *
  * @return the sensor address.
  */
-string YSdi12Sensor::get_sensorAddress(void)
+string YSdi12SensorInfo::get_sensorAddress(void)
 {
     return _addr;
 }
@@ -170,7 +186,7 @@ string YSdi12Sensor::get_sensorAddress(void)
  *
  * @return the compatible SDI-12 version of the sensor.
  */
-string YSdi12Sensor::get_sensorProtocol(void)
+string YSdi12SensorInfo::get_sensorProtocol(void)
 {
     return _proto;
 }
@@ -180,7 +196,7 @@ string YSdi12Sensor::get_sensorProtocol(void)
  *
  * @return the sensor vendor identification.
  */
-string YSdi12Sensor::get_sensorVendor(void)
+string YSdi12SensorInfo::get_sensorVendor(void)
 {
     return _mfg;
 }
@@ -190,7 +206,7 @@ string YSdi12Sensor::get_sensorVendor(void)
  *
  * @return the sensor model number.
  */
-string YSdi12Sensor::get_sensorModel(void)
+string YSdi12SensorInfo::get_sensorModel(void)
 {
     return _model;
 }
@@ -200,7 +216,7 @@ string YSdi12Sensor::get_sensorModel(void)
  *
  * @return the sensor version.
  */
-string YSdi12Sensor::get_sensorVersion(void)
+string YSdi12SensorInfo::get_sensorVersion(void)
 {
     return _ver;
 }
@@ -210,87 +226,124 @@ string YSdi12Sensor::get_sensorVersion(void)
  *
  * @return the sensor serial number.
  */
-string YSdi12Sensor::get_sensorSerial(void)
+string YSdi12SensorInfo::get_sensorSerial(void)
 {
     return _sn;
 }
 
 /**
  * Returns the number of sensor measurements.
+ * This function only works if the sensor is in version 1.4 SDI-12
+ * and supports metadata commands.
  *
  * @return the number of sensor measurements.
  */
-int YSdi12Sensor::get_measureCount(void)
+int YSdi12SensorInfo::get_measureCount(void)
 {
     return (int)_valuesDesc.size();
 }
 
 /**
  * Returns the sensor measurement command.
+ * This function only works if the sensor is in version 1.4 SDI-12
+ * and supports metadata commands.
  *
  * @param measureIndex : measurement index
  *
  * @return the sensor measurement command.
+ *         On failure, throws an exception or returns an empty string.
  */
-string YSdi12Sensor::get_measureCommand(int measureIndex)
+string YSdi12SensorInfo::get_measureCommand(int measureIndex)
 {
+    if (!(measureIndex < (int)_valuesDesc.size())) {
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "Invalid measure index");
+        return "";
+    }
     return _valuesDesc[measureIndex][0];
 }
 
 /**
  * Returns sensor measurement position.
+ * This function only works if the sensor is in version 1.4 SDI-12
+ * and supports metadata commands.
  *
  * @param measureIndex : measurement index
  *
  * @return the sensor measurement command.
+ *         On failure, throws an exception or returns 0.
  */
-int YSdi12Sensor::get_measurePosition(int measureIndex)
+int YSdi12SensorInfo::get_measurePosition(int measureIndex)
 {
+    if (!(measureIndex < (int)_valuesDesc.size())) {
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "Invalid measure index");
+        return 0;
+    }
     return atoi((_valuesDesc[measureIndex][2]).c_str());
 }
 
 /**
  * Returns the measured value symbol.
+ * This function only works if the sensor is in version 1.4 SDI-12
+ * and supports metadata commands.
  *
  * @param measureIndex : measurement index
  *
  * @return the sensor measurement command.
+ *         On failure, throws an exception or returns an empty string.
  */
-string YSdi12Sensor::get_measureSymbol(int measureIndex)
+string YSdi12SensorInfo::get_measureSymbol(int measureIndex)
 {
+    if (!(measureIndex < (int)_valuesDesc.size())) {
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "Invalid measure index");
+        return "";
+    }
     return _valuesDesc[measureIndex][3];
 }
 
 /**
  * Returns the unit of the measured value.
+ * This function only works if the sensor is in version 1.4 SDI-12
+ * and supports metadata commands.
  *
  * @param measureIndex : measurement index
  *
  * @return the sensor measurement command.
+ *         On failure, throws an exception or returns an empty string.
  */
-string YSdi12Sensor::get_measureUnit(int measureIndex)
+string YSdi12SensorInfo::get_measureUnit(int measureIndex)
 {
+    if (!(measureIndex < (int)_valuesDesc.size())) {
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "Invalid measure index");
+        return "";
+    }
     return _valuesDesc[measureIndex][4];
 }
 
 /**
  * Returns the description of the measured value.
+ * This function only works if the sensor is in version 1.4 SDI-12
+ * and supports metadata commands.
  *
  * @param measureIndex : measurement index
  *
  * @return the sensor measurement command.
+ *         On failure, throws an exception or returns an empty string.
  */
-string YSdi12Sensor::get_measureDescription(int measureIndex)
+string YSdi12SensorInfo::get_measureDescription(int measureIndex)
 {
+    if (!(measureIndex < (int)_valuesDesc.size())) {
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "Invalid measure index");
+        return "";
+    }
     return _valuesDesc[measureIndex][5];
 }
 
-vector< vector<string> > YSdi12Sensor::get_typeMeasure(void)
+vector< vector<string> > YSdi12SensorInfo::get_typeMeasure(void)
 {
     return _valuesDesc;
 }
 
-void YSdi12Sensor::_parseInfoStr(string infoStr)
+void YSdi12SensorInfo::_parseInfoStr(string infoStr)
 {
     string errmsg;
 
@@ -303,6 +356,7 @@ void YSdi12Sensor::_parseInfoStr(string infoStr)
             _model = errmsg;
             _ver = errmsg;
             _sn = errmsg;
+            _isValid = false;
         } else {
             _addr = (infoStr).substr(0, 1);
             _proto = (infoStr).substr(1, 2);
@@ -310,11 +364,12 @@ void YSdi12Sensor::_parseInfoStr(string infoStr)
             _model = (infoStr).substr(11, 6);
             _ver = (infoStr).substr(17, 3);
             _sn = (infoStr).substr(20, (int)(infoStr).length()-20);
+            _isValid = true;
         }
     }
 }
 
-void YSdi12Sensor::_queryValueInfo(void)
+void YSdi12SensorInfo::_queryValueInfo(void)
 {
     vector< vector<string> > val;
     vector<string> data;
@@ -364,7 +419,7 @@ void YSdi12Sensor::_queryValueInfo(void)
     }
     _valuesDesc = val;
 }
-//--- (end of generated code: YSdi12Sensor implementation)
+//--- (end of generated code: YSdi12SensorInfo implementation)
 
 YSdi12Port::YSdi12Port(const string& func): YFunction(func)
 //--- (generated code: YSdi12Port initialization)
@@ -1035,13 +1090,13 @@ int YSdi12Port::set_serialMode(const string& newval)
 /**
  * Retrieves an SDI12 port for a given identifier.
  * The identifier can be specified using several formats:
- * <ul>
- * <li>FunctionLogicalName</li>
- * <li>ModuleSerialNumber.FunctionIdentifier</li>
- * <li>ModuleSerialNumber.FunctionLogicalName</li>
- * <li>ModuleLogicalName.FunctionIdentifier</li>
- * <li>ModuleLogicalName.FunctionLogicalName</li>
- * </ul>
+ *
+ * - FunctionLogicalName
+ * - ModuleSerialNumber.FunctionIdentifier
+ * - ModuleSerialNumber.FunctionLogicalName
+ * - ModuleLogicalName.FunctionIdentifier
+ * - ModuleLogicalName.FunctionLogicalName
+ *
  *
  * This function does not require that the SDI12 port is online at the time
  * it is invoked. The returned object is nevertheless valid.
@@ -1880,17 +1935,17 @@ string YSdi12Port::querySdi12(string sensorAddr,string cmd,int maxWait)
  * This function is intended to be used when the serial port is configured for 'SDI-12' protocol.
  * This function work when only one sensor is connected.
  *
- * @return the reply returned by the sensor, as a YSdi12Sensor object.
+ * @return the reply returned by the sensor, as a YSdi12SensorInfo object.
  *
  * On failure, throws an exception or returns an empty string.
  */
-YSdi12Sensor YSdi12Port::discoverSingleSensor(void)
+YSdi12SensorInfo YSdi12Port::discoverSingleSensor(void)
 {
     string resStr;
 
     resStr = this->querySdi12("?","",5000);
     if (resStr == "") {
-        return YSdi12Sensor( this,"ERSensor Not Found");
+        return YSdi12SensorInfo( this,"ERSensor Not Found");
     }
 
     return this->getSensorInformation(resStr);
@@ -1900,13 +1955,13 @@ YSdi12Sensor YSdi12Port::discoverSingleSensor(void)
  * Sends a discovery command to the bus, and reads all sensors information reply.
  * This function is intended to be used when the serial port is configured for 'SDI-12' protocol.
  *
- * @return all the information from every connected sensor, as an array of YSdi12Sensor object.
+ * @return all the information from every connected sensor, as an array of YSdi12SensorInfo object.
  *
  * On failure, throws an exception or returns an empty string.
  */
-vector<YSdi12Sensor> YSdi12Port::discoverAllSensors(void)
+vector<YSdi12SensorInfo> YSdi12Port::discoverAllSensors(void)
 {
-    vector<YSdi12Sensor> sensors;
+    vector<YSdi12SensorInfo> sensors;
     vector<string> idSens;
     string res;
     int i = 0;
@@ -1999,13 +2054,13 @@ vector<double> YSdi12Port::readSensor(string sensorAddr,string measCmd,int maxWa
  * @param oldAddress : Actual sensor address, as a string
  * @param newAddress : New sensor address, as a string
  *
- * @return the sensor address and information , as a YSdi12Sensor object.
+ * @return the sensor address and information , as a YSdi12SensorInfo object.
  *
  * On failure, throws an exception or returns an empty string.
  */
-YSdi12Sensor YSdi12Port::changeAddress(string oldAddress,string newAddress)
+YSdi12SensorInfo YSdi12Port::changeAddress(string oldAddress,string newAddress)
 {
-    YSdi12Sensor addr;
+    YSdi12SensorInfo addr;
 
     this->querySdi12(oldAddress, "A" + newAddress,1000);
     addr = this->getSensorInformation(newAddress);
@@ -2022,16 +2077,16 @@ YSdi12Sensor YSdi12Port::changeAddress(string oldAddress,string newAddress)
  *
  * On failure, throws an exception or returns an empty string.
  */
-YSdi12Sensor YSdi12Port::getSensorInformation(string sensorAddr)
+YSdi12SensorInfo YSdi12Port::getSensorInformation(string sensorAddr)
 {
     string res;
-    YSdi12Sensor sensor;
+    YSdi12SensorInfo sensor;
 
     res = this->querySdi12(sensorAddr,"I",1000);
     if (res == "") {
-        return YSdi12Sensor(this ,"ERSensor Not Found");
+        return YSdi12SensorInfo(this ,"ERSensor Not Found");
     }
-    sensor = YSdi12Sensor(this ,res);
+    sensor = YSdi12SensorInfo(this ,res);
     sensor._queryValueInfo();
     return sensor;
 }
@@ -2083,12 +2138,13 @@ int YSdi12Port::requestConcurrentMeasurements(string sensorAddr)
  *
  * @param maxWait : the maximum number of milliseconds to wait for a message if none is found
  *         in the receive buffer.
+ * @param maxMsg : the maximum number of messages to be returned by the function; up to 254.
  *
  * @return an array of YSdi12SnoopingRecord objects containing the messages found, if any.
  *
  * On failure, throws an exception or returns an empty array.
  */
-vector<YSdi12SnoopingRecord> YSdi12Port::snoopMessages(int maxWait)
+vector<YSdi12SnoopingRecord> YSdi12Port::snoopMessagesEx(int maxWait,int maxMsg)
 {
     string url;
     string msgbin;
@@ -2097,7 +2153,7 @@ vector<YSdi12SnoopingRecord> YSdi12Port::snoopMessages(int maxWait)
     vector<YSdi12SnoopingRecord> res;
     int idx = 0;
 
-    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&t=0", _rxptr,maxWait);
+    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&t=0&len=%d", _rxptr, maxWait,maxMsg);
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);
     msglen = (int)msgarr.size();
@@ -2113,6 +2169,24 @@ vector<YSdi12SnoopingRecord> YSdi12Port::snoopMessages(int maxWait)
         idx = idx + 1;
     }
     return res;
+}
+
+/**
+ * Retrieves messages (both direction) in the SDI12 port buffer, starting at current position.
+ *
+ * If no message is found, the search waits for one up to the specified maximum timeout
+ * (in milliseconds).
+ *
+ * @param maxWait : the maximum number of milliseconds to wait for a message if none is found
+ *         in the receive buffer.
+ *
+ * @return an array of YSdi12SnoopingRecord objects containing the messages found, if any.
+ *
+ * On failure, throws an exception or returns an empty array.
+ */
+vector<YSdi12SnoopingRecord> YSdi12Port::snoopMessages(int maxWait)
+{
+    return this->snoopMessagesEx(maxWait, 255);
 }
 
 YSdi12Port *YSdi12Port::nextSdi12Port(void)

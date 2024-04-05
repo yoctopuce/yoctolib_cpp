@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef_private.h 58619 2023-12-19 10:48:56Z seb $
+ * $Id: ydef_private.h 60355 2024-04-04 07:54:54Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -44,6 +44,13 @@ extern "C" {
 #endif
 
 #include "ydef.h"
+
+typedef struct {
+    u32 flags;
+    u32 ip;
+    u32 netmask;
+    char ipa[128];
+} os_ifaces;
 
 #if defined(WINDOWS_API)
     #if defined(__64BITS__)

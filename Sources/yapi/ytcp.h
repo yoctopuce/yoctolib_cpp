@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.h 58332 2023-12-07 08:36:47Z seb $
+ * $Id: ytcp.h 60355 2024-04-04 07:54:54Z seb $
  *
  *  Declaration of a client TCP stack
  *
@@ -46,7 +46,7 @@
 extern "C" {
 #endif
 
-#include "ydef.h"
+#include "ydef_private.h"
 
 
 #ifdef WINDOWS_API
@@ -171,12 +171,6 @@ void ws_cleanup(struct _HubSt* basehub);
 
 #define OS_IFACE_CAN_MCAST 1
 
-typedef struct {
-    u32 flags;
-    u32 ip;
-    u32 netmask;
-} os_ifaces;
-
 #ifdef YAPI_IN_YDEVICE
 int yDetectNetworkInterfaces(u32 only_ip, os_ifaces *interfaces, int max_nb_interfaces);
 #endif
@@ -197,7 +191,7 @@ typedef struct {
 // will be called on discover, refresh, and expiration
 typedef void (*ssdpHubDiscoveryCallback)(const char* serial, const char* urlToRegister, const char* urlToUnregister);
 
-#define NB_SSDP_CACHE_ENTRY 64
+#define NB_SSDP_CACHE_ENTRY 128
 #define NB_OS_IFACES 8
 
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupschedule.cpp 56252 2023-08-23 10:06:05Z seb $
+ *  $Id: yocto_wakeupschedule.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
  *
  *  Implements yFindWakeUpSchedule(), the high-level API for WakeUpSchedule functions
  *
@@ -535,13 +535,13 @@ s64 YWakeUpSchedule::get_nextOccurence(void)
 /**
  * Retrieves a wake up schedule for a given identifier.
  * The identifier can be specified using several formats:
- * <ul>
- * <li>FunctionLogicalName</li>
- * <li>ModuleSerialNumber.FunctionIdentifier</li>
- * <li>ModuleSerialNumber.FunctionLogicalName</li>
- * <li>ModuleLogicalName.FunctionIdentifier</li>
- * <li>ModuleLogicalName.FunctionLogicalName</li>
- * </ul>
+ *
+ * - FunctionLogicalName
+ * - ModuleSerialNumber.FunctionIdentifier
+ * - ModuleSerialNumber.FunctionLogicalName
+ * - ModuleLogicalName.FunctionIdentifier
+ * - ModuleLogicalName.FunctionLogicalName
+ *
  *
  * This function does not require that the wake up schedule is online at the time
  * it is invoked. The returned object is nevertheless valid.

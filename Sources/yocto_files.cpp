@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.cpp 56106 2023-08-16 09:14:54Z seb $
+ * $Id: yocto_files.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
  *
  * Implements yFindFiles(), the high-level API for Files functions
  *
@@ -225,13 +225,13 @@ int YFiles::get_freeSpace(void)
 /**
  * Retrieves a filesystem for a given identifier.
  * The identifier can be specified using several formats:
- * <ul>
- * <li>FunctionLogicalName</li>
- * <li>ModuleSerialNumber.FunctionIdentifier</li>
- * <li>ModuleSerialNumber.FunctionLogicalName</li>
- * <li>ModuleLogicalName.FunctionIdentifier</li>
- * <li>ModuleLogicalName.FunctionLogicalName</li>
- * </ul>
+ *
+ * - FunctionLogicalName
+ * - ModuleSerialNumber.FunctionIdentifier
+ * - ModuleSerialNumber.FunctionLogicalName
+ * - ModuleLogicalName.FunctionIdentifier
+ * - ModuleLogicalName.FunctionLogicalName
+ *
  *
  * This function does not require that the filesystem is online at the time
  * it is invoked. The returned object is nevertheless valid.

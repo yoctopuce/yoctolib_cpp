@@ -136,7 +136,11 @@ int YRfidTagInfo::get_tagBlockSize(void)
 }
 
 /**
- * Returns the index of the first usable storage block on the RFID tag.
+ * Returns the index of the block available for data storage on the RFID tag.
+ * Some tags have special block used to configure the tag behavior, these
+ * blocks must be handled with precaution. However, the  block return by
+ * get_tagFirstBlock() can be locked, use get_tagLockState()
+ * to find out  which block are locked.
  *
  * @return the index of the first usable storage block on the RFID tag
  */
@@ -146,7 +150,9 @@ int YRfidTagInfo::get_tagFirstBlock(void)
 }
 
 /**
- * Returns the index of the last usable storage block on the RFID tag.
+ * Returns the index of the last last black available for data storage on the RFID tag,
+ * However, this block can be locked, use get_tagLockState() to find out
+ * which block are locked.
  *
  * @return the index of the last usable storage block on the RFID tag
  */
@@ -414,10 +420,10 @@ void YRfidStatus::imm_init(string tagId,int errCode,int errBlk,int fab,int lab)
             errMsg = "Block is not available";
         }
         if (errCode == YRfidStatus::BLOCK_ALREADY_LOCKED) {
-            errMsg = "Block is already locked and thus cannot be locked again.";
+            errMsg = "Block / byte is already locked and thus cannot be locked again.";
         }
         if (errCode == YRfidStatus::BLOCK_LOCKED) {
-            errMsg = "Block is locked and its content cannot be changed";
+            errMsg = "Block / byte is locked and its content cannot be changed";
         }
         if (errCode == YRfidStatus::BLOCK_NOT_SUCESSFULLY_PROGRAMMED) {
             errMsg = "Block was not successfully programmed";
@@ -674,6 +680,9 @@ void YRfidStatus::imm_init(string tagId,int errCode,int errBlk,int fab,int lab)
         if (errCode == YRfidStatus::BAD_PASSWORD_FORMAT) {
             errMsg = "Bad password format or type";
         }
+        if (errCode == YRfidStatus::RADIO_IS_OFF) {
+            errMsg = "Radio is OFF (refreshRate=0).";
+        }
         if (errBlk >= 0) {
             errMsg = YapiWrapper::ysprintf("%s (block %d)", errMsg.c_str(),errBlk);
         }
@@ -790,7 +799,8 @@ int YRfidReader::get_refreshRate(void)
  * Changes the present tag list refresh rate, measured in Hz. The reader will do
  * its best to respect it. Note that the reader cannot detect tag arrival or removal
  * while it is  communicating with a tag.  Maximum frequency is limited to 100Hz,
- * but in real life it will be difficult to do better than 50Hz.
+ * but in real life it will be difficult to do better than 50Hz.  A zero value
+ * will power off the device radio.
  * Remember to call the saveToFlash() method of the module if the
  * modification must be kept.
  *
@@ -819,13 +829,13 @@ int YRfidReader::set_refreshRate(int newval)
 /**
  * Retrieves a RFID reader for a given identifier.
  * The identifier can be specified using several formats:
- * <ul>
- * <li>FunctionLogicalName</li>
- * <li>ModuleSerialNumber.FunctionIdentifier</li>
- * <li>ModuleSerialNumber.FunctionLogicalName</li>
- * <li>ModuleLogicalName.FunctionIdentifier</li>
- * <li>ModuleLogicalName.FunctionLogicalName</li>
- * </ul>
+ *
+ * - FunctionLogicalName
+ * - ModuleSerialNumber.FunctionIdentifier
+ * - ModuleSerialNumber.FunctionLogicalName
+ * - ModuleLogicalName.FunctionIdentifier
+ * - ModuleLogicalName.FunctionLogicalName
+ *
  *
  * This function does not require that the RFID reader is online at the time
  * it is invoked. The returned object is nevertheless valid.
@@ -953,7 +963,7 @@ int YRfidReader::reset(void)
 /**
  * Returns the list of RFID tags currently detected by the reader.
  *
- * @return a list of strings, corresponding to each tag identifier.
+ * @return a list of strings, corresponding to each tag identifier (UID).
  *
  * On failure, throws an exception or returns an empty list.
  */
@@ -1148,7 +1158,8 @@ vector<bool> YRfidReader::get_tagSpecialBlocks(string tagId,int firstBlock,int n
  * number of bytes is larger than the RFID tag block size. By default
  * firstBlock cannot be a special block, and any special block encountered
  * in the middle of the read operation will be skipped automatically.
- * If you rather want to read special blocks, use EnableRawAccess option.
+ * If you rather want to read special blocks, use the EnableRawAccess
+ * field from the options parameter.
  *
  * @param tagId : identifier of the tag to use
  * @param firstBlock : block number where read should start
@@ -1189,7 +1200,8 @@ string YRfidReader::tagReadHex(string tagId,int firstBlock,int nBytes,YRfidOptio
  * is larger than the RFID tag block size.  By default
  * firstBlock cannot be a special block, and any special block encountered
  * in the middle of the read operation will be skipped automatically.
- * If you rather want to read special blocks, use EnableRawAccess option.
+ * If you rather want to read special blocks, use the EnableRawAccess
+ * field frrm the options parameter.
  *
  * @param tagId : identifier of the tag to use
  * @param firstBlock : block number where read should start
@@ -1216,7 +1228,8 @@ string YRfidReader::tagReadBin(string tagId,int firstBlock,int nBytes,YRfidOptio
  * is larger than the RFID tag block size.  By default
  * firstBlock cannot be a special block, and any special block encountered
  * in the middle of the read operation will be skipped automatically.
- * If you rather want to read special blocks, use EnableRawAccess option.
+ * If you rather want to read special blocks, use the EnableRawAccess
+ * field from the options parameter.
  *
  * @param tagId : identifier of the tag to use
  * @param firstBlock : block number where read should start
@@ -1254,7 +1267,8 @@ vector<int> YRfidReader::tagReadArray(string tagId,int firstBlock,int nBytes,YRf
  * is larger than the RFID tag block size.  By default
  * firstBlock cannot be a special block, and any special block encountered
  * in the middle of the read operation will be skipped automatically.
- * If you rather want to read special blocks, use EnableRawAccess option.
+ * If you rather want to read special blocks, use the EnableRawAccess
+ * field from the options parameter.
  *
  * @param tagId : identifier of the tag to use
  * @param firstBlock : block number where read should start
@@ -1281,8 +1295,10 @@ string YRfidReader::tagReadStr(string tagId,int firstBlock,int nChars,YRfidOptio
  * number of bytes to write is larger than the RFID tag block size.
  * By default firstBlock cannot be a special block, and any special block
  * encountered in the middle of the write operation will be skipped
- * automatically. If you rather want to rewrite special blocks as well,
- * use EnableRawAccess option.
+ * automatically. The last data block affected by the operation will
+ * be automatically padded with zeros if neccessary.  If you rather want
+ * to rewrite special blocks as well,
+ * use the EnableRawAccess field from the options parameter.
  *
  * @param tagId : identifier of the tag to use
  * @param firstBlock : block number where write should start
@@ -1325,8 +1341,10 @@ int YRfidReader::tagWriteBin(string tagId,int firstBlock,string buff,YRfidOption
  * number of bytes to write is larger than the RFID tag block size.
  * By default firstBlock cannot be a special block, and any special block
  * encountered in the middle of the write operation will be skipped
- * automatically. If you rather want to rewrite special blocks as well,
- * use EnableRawAccess option.
+ * automatically. The last data block affected by the operation will
+ * be automatically padded with zeros if neccessary.
+ * If you rather want to rewrite special blocks as well,
+ * use the EnableRawAccess field from the options parameter.
  *
  * @param tagId : identifier of the tag to use
  * @param firstBlock : block number where write should start
@@ -1366,8 +1384,10 @@ int YRfidReader::tagWriteArray(string tagId,int firstBlock,vector<int> byteList,
  * number of bytes to write is larger than the RFID tag block size.
  * By default firstBlock cannot be a special block, and any special block
  * encountered in the middle of the write operation will be skipped
- * automatically. If you rather want to rewrite special blocks as well,
- * use EnableRawAccess option.
+ * automatically. The last data block affected by the operation will
+ * be automatically padded with zeros if neccessary.
+ * If you rather want to rewrite special blocks as well,
+ * use the EnableRawAccess field from the options parameter.
  *
  * @param tagId : identifier of the tag to use
  * @param firstBlock : block number where write should start
@@ -1417,10 +1437,16 @@ int YRfidReader::tagWriteHex(string tagId,int firstBlock,string hexString,YRfidO
  * Writes data provided as an ASCII string to an RFID tag memory.
  * The write operation may span accross multiple blocks if the
  * number of bytes to write is larger than the RFID tag block size.
+ * Note that only the characters présent  in  the provided string
+ * will be written, there is no notion of string length. If your
+ * string data have variable length, you'll have to encode the
+ * string length yourself.
  * By default firstBlock cannot be a special block, and any special block
  * encountered in the middle of the write operation will be skipped
- * automatically. If you rather want to rewrite special blocks as well,
- * use EnableRawAccess option.
+ * automatically. The last data block affected by the operation will
+ * be automatically padded with zeros if neccessary.
+ * If you rather want to rewrite special blocks as well,
+ * use the EnableRawAccess field from the options parameter.
  *
  * @param tagId : identifier of the tag to use
  * @param firstBlock : block number where write should start
@@ -1442,6 +1468,186 @@ int YRfidReader::tagWriteStr(string tagId,int firstBlock,string text,YRfidOption
     buff = text;
 
     return this->tagWriteBin(tagId, firstBlock, buff, options, status);
+}
+
+/**
+ * Reads an RFID tag AFI byte (ISO 15693 only).
+ *
+ * @param tagId : identifier of the tag to use
+ * @param options : an YRfidOptions object with the optional
+ *         command execution parameters, such as security key
+ *         if required
+ * @param status : an RfidStatus object that will contain
+ *         the detailled status of the operation
+ *
+ * @return the AFI value (0...255)
+ *
+ * On failure, throws an exception or returns a negative error code. When it
+ * happens, you can get more information from the status object.
+ */
+int YRfidReader::tagGetAFI(string tagId,YRfidOptions options,YRfidStatus& status)
+{
+    string optstr;
+    string url;
+    string json;
+    int res = 0;
+    optstr = options.imm_getParams();
+    url = YapiWrapper::ysprintf("rfid.json?a=rdsf&t=%s&b=0%s",tagId.c_str(),optstr.c_str());
+
+    json = this->_download(url);
+    this->_chkerror(tagId, json, status);
+    if (status.get_yapiError() == YAPI_SUCCESS) {
+        res = atoi((this->_json_get_key(json, "res")).c_str());
+    } else {
+        res = status.get_yapiError();
+    }
+    return res;
+}
+
+/**
+ * Change an RFID tag AFI byte (ISO 15693 only).
+ *
+ * @param tagId : identifier of the tag to use
+ * @param afi : the AFI value to write (0...255)
+ * @param options : an YRfidOptions object with the optional
+ *         command execution parameters, such as security key
+ *         if required
+ * @param status : an RfidStatus object that will contain
+ *         the detailled status of the operation
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code. When it
+ * happens, you can get more information from the status object.
+ */
+int YRfidReader::tagSetAFI(string tagId,int afi,YRfidOptions options,YRfidStatus& status)
+{
+    string optstr;
+    string url;
+    string json;
+    optstr = options.imm_getParams();
+    url = YapiWrapper::ysprintf("rfid.json?a=wrsf&t=%s&b=0&v=%d%s",tagId.c_str(),afi,optstr.c_str());
+
+    json = this->_download(url);
+    return this->_chkerror(tagId, json, status);
+}
+
+/**
+ * Locks the RFID tag AFI byte (ISO 15693 only).
+ * This operation is definitive and irreversible.
+ *
+ * @param tagId : identifier of the tag to use
+ * @param options : an YRfidOptions object with the optional
+ *         command execution parameters, such as security key
+ *         if required
+ * @param status : an RfidStatus object that will contain
+ *         the detailled status of the operation
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code. When it
+ * happens, you can get more information from the status object.
+ */
+int YRfidReader::tagLockAFI(string tagId,YRfidOptions options,YRfidStatus& status)
+{
+    string optstr;
+    string url;
+    string json;
+    optstr = options.imm_getParams();
+    url = YapiWrapper::ysprintf("rfid.json?a=lksf&t=%s&b=0%s",tagId.c_str(),optstr.c_str());
+
+    json = this->_download(url);
+    return this->_chkerror(tagId, json, status);
+}
+
+/**
+ * Reads an RFID tag DSFID byte (ISO 15693 only).
+ *
+ * @param tagId : identifier of the tag to use
+ * @param options : an YRfidOptions object with the optional
+ *         command execution parameters, such as security key
+ *         if required
+ * @param status : an RfidStatus object that will contain
+ *         the detailled status of the operation
+ *
+ * @return the DSFID value (0...255)
+ *
+ * On failure, throws an exception or returns a negative error code. When it
+ * happens, you can get more information from the status object.
+ */
+int YRfidReader::tagGetDSFID(string tagId,YRfidOptions options,YRfidStatus& status)
+{
+    string optstr;
+    string url;
+    string json;
+    int res = 0;
+    optstr = options.imm_getParams();
+    url = YapiWrapper::ysprintf("rfid.json?a=rdsf&t=%s&b=1%s",tagId.c_str(),optstr.c_str());
+
+    json = this->_download(url);
+    this->_chkerror(tagId, json, status);
+    if (status.get_yapiError() == YAPI_SUCCESS) {
+        res = atoi((this->_json_get_key(json, "res")).c_str());
+    } else {
+        res = status.get_yapiError();
+    }
+    return res;
+}
+
+/**
+ * Change an RFID tag DSFID byte (ISO 15693 only).
+ *
+ * @param tagId : identifier of the tag to use
+ * @param dsfid : the DSFID value to write (0...255)
+ * @param options : an YRfidOptions object with the optional
+ *         command execution parameters, such as security key
+ *         if required
+ * @param status : an RfidStatus object that will contain
+ *         the detailled status of the operation
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code. When it
+ * happens, you can get more information from the status object.
+ */
+int YRfidReader::tagSetDSFID(string tagId,int dsfid,YRfidOptions options,YRfidStatus& status)
+{
+    string optstr;
+    string url;
+    string json;
+    optstr = options.imm_getParams();
+    url = YapiWrapper::ysprintf("rfid.json?a=wrsf&t=%s&b=1&v=%d%s",tagId.c_str(),dsfid,optstr.c_str());
+
+    json = this->_download(url);
+    return this->_chkerror(tagId, json, status);
+}
+
+/**
+ * Locks the RFID tag DSFID byte (ISO 15693 only).
+ * This operation is definitive and irreversible.
+ *
+ * @param tagId : identifier of the tag to use
+ * @param options : an YRfidOptions object with the optional
+ *         command execution parameters, such as security key
+ *         if required
+ * @param status : an RfidStatus object that will contain
+ *         the detailled status of the operation
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code. When it
+ * happens, you can get more information from the status object.
+ */
+int YRfidReader::tagLockDSFID(string tagId,YRfidOptions options,YRfidStatus& status)
+{
+    string optstr;
+    string url;
+    string json;
+    optstr = options.imm_getParams();
+    url = YapiWrapper::ysprintf("rfid.json?a=lksf&t=%s&b=1%s",tagId.c_str(),optstr.c_str());
+
+    json = this->_download(url);
+    return this->_chkerror(tagId, json, status);
 }
 
 /**

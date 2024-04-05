@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multisenscontroller.cpp 56106 2023-08-16 09:14:54Z seb $
+ *  $Id: yocto_multisenscontroller.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
  *
  *  Implements yFindMultiSensController(), the high-level API for MultiSensController functions
  *
@@ -315,13 +315,13 @@ int YMultiSensController::set_command(const string& newval)
 /**
  * Retrieves a multi-sensor controller for a given identifier.
  * The identifier can be specified using several formats:
- * <ul>
- * <li>FunctionLogicalName</li>
- * <li>ModuleSerialNumber.FunctionIdentifier</li>
- * <li>ModuleSerialNumber.FunctionLogicalName</li>
- * <li>ModuleLogicalName.FunctionIdentifier</li>
- * <li>ModuleLogicalName.FunctionLogicalName</li>
- * </ul>
+ *
+ * - FunctionLogicalName
+ * - ModuleSerialNumber.FunctionIdentifier
+ * - ModuleSerialNumber.FunctionLogicalName
+ * - ModuleLogicalName.FunctionIdentifier
+ * - ModuleLogicalName.FunctionLogicalName
+ *
  *
  * This function does not require that the multi-sensor controller is online at the time
  * it is invoked. The returned object is nevertheless valid.

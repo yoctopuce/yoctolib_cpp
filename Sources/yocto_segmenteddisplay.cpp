@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_segmenteddisplay.cpp 52570 2022-12-26 09:27:54Z seb $
+ *  $Id: yocto_segmenteddisplay.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
  *
  *  Implements yFindSegmentedDisplay(), the high-level API for SegmentedDisplay functions
  *
@@ -179,13 +179,13 @@ int YSegmentedDisplay::set_displayMode(Y_DISPLAYMODE_enum newval)
 /**
  * Retrieves a segmented display for a given identifier.
  * The identifier can be specified using several formats:
- * <ul>
- * <li>FunctionLogicalName</li>
- * <li>ModuleSerialNumber.FunctionIdentifier</li>
- * <li>ModuleSerialNumber.FunctionLogicalName</li>
- * <li>ModuleLogicalName.FunctionIdentifier</li>
- * <li>ModuleLogicalName.FunctionLogicalName</li>
- * </ul>
+ *
+ * - FunctionLogicalName
+ * - ModuleSerialNumber.FunctionIdentifier
+ * - ModuleSerialNumber.FunctionLogicalName
+ * - ModuleLogicalName.FunctionIdentifier
+ * - ModuleLogicalName.FunctionLogicalName
+ *
  *
  * This function does not require that the segmented display is online at the time
  * it is invoked. The returned object is nevertheless valid.

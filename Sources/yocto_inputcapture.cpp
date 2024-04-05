@@ -210,14 +210,14 @@ int YInputCaptureData::_decodeSnapBin(string sdata)
     mult3 = 1;
     if (recOfs < _recOfs) {
         // load optional value multiplier
-        mult1 = this->_decodeU16(sdata, _recOfs);
+        mult1 = this->_decodeU16(sdata, recOfs);
         recOfs = recOfs + 2;
         if (_var2size > 0) {
-            mult2 = this->_decodeU16(sdata, _recOfs);
+            mult2 = this->_decodeU16(sdata, recOfs);
             recOfs = recOfs + 2;
         }
         if (_var3size > 0) {
-            mult3 = this->_decodeU16(sdata, _recOfs);
+            mult3 = this->_decodeU16(sdata, recOfs);
             recOfs = recOfs + 2;
         }
     }
@@ -948,13 +948,13 @@ double YInputCapture::get_condValueAtStartup(void)
 /**
  * Retrieves an instant snapshot trigger for a given identifier.
  * The identifier can be specified using several formats:
- * <ul>
- * <li>FunctionLogicalName</li>
- * <li>ModuleSerialNumber.FunctionIdentifier</li>
- * <li>ModuleSerialNumber.FunctionLogicalName</li>
- * <li>ModuleLogicalName.FunctionIdentifier</li>
- * <li>ModuleLogicalName.FunctionLogicalName</li>
- * </ul>
+ *
+ * - FunctionLogicalName
+ * - ModuleSerialNumber.FunctionIdentifier
+ * - ModuleSerialNumber.FunctionLogicalName
+ * - ModuleLogicalName.FunctionIdentifier
+ * - ModuleLogicalName.FunctionLogicalName
+ *
  *
  * This function does not require that the instant snapshot trigger is online at the time
  * it is invoked. The returned object is nevertheless valid.

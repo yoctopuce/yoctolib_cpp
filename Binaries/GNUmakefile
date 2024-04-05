@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 59586 2024-03-01 08:17:36Z build $
+#  $Id: GNUmakefile 60044 2024-03-20 10:45:18Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -395,8 +395,6 @@ MBEDTLS_OBJS_STAT = \
 	base64.o \
 	bignum.o \
 	bignum_core.o \
-	bignum_mod.o \
-	bignum_mod_raw.o \
 	camellia.o \
 	ccm.o \
 	chacha20.o \
@@ -414,7 +412,6 @@ MBEDTLS_OBJS_STAT = \
 	ecjpake.o \
 	ecp.o \
 	ecp_curves.o \
-	ecp_curves_new.o \
 	entropy.o \
 	entropy_poll.o \
 	error.o \
@@ -425,9 +422,6 @@ MBEDTLS_OBJS_STAT = \
 	lms.o \
 	md.o \
 	md5.o \
-	memory_buffer_alloc.o \
-	mps_reader.o \
-	mps_trace.o \
 	net_sockets.o \
 	nist_kw.o \
 	oid.o \
@@ -454,7 +448,6 @@ MBEDTLS_OBJS_STAT = \
 	psa_crypto_mac.o \
 	psa_crypto_pake.o \
 	psa_crypto_rsa.o \
-	psa_crypto_se.o \
 	psa_crypto_slot_management.o \
 	psa_crypto_storage.o \
 	psa_its_file.o \
@@ -476,10 +469,6 @@ MBEDTLS_OBJS_STAT = \
 	ssl_tls.o \
 	ssl_tls12_client.o \
 	ssl_tls12_server.o \
-	ssl_tls13_client.o \
-	ssl_tls13_generic.o \
-	ssl_tls13_keys.o \
-	ssl_tls13_server.o \
 	threading.o \
 	timing.o \
 	version.o \

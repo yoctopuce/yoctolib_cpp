@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 58920 2024-01-12 09:39:03Z seb $
+ * $Id: yocto_serialport.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -830,13 +830,13 @@ int YSerialPort::set_serialMode(const string& newval)
 /**
  * Retrieves a serial port for a given identifier.
  * The identifier can be specified using several formats:
- * <ul>
- * <li>FunctionLogicalName</li>
- * <li>ModuleSerialNumber.FunctionIdentifier</li>
- * <li>ModuleSerialNumber.FunctionLogicalName</li>
- * <li>ModuleLogicalName.FunctionIdentifier</li>
- * <li>ModuleLogicalName.FunctionLogicalName</li>
- * </ul>
+ *
+ * - FunctionLogicalName
+ * - ModuleSerialNumber.FunctionIdentifier
+ * - ModuleSerialNumber.FunctionLogicalName
+ * - ModuleLogicalName.FunctionIdentifier
+ * - ModuleLogicalName.FunctionLogicalName
+ *
  *
  * This function does not require that the serial port is online at the time
  * it is invoked. The returned object is nevertheless valid.
@@ -1674,13 +1674,14 @@ int YSerialPort::get_CTS(void)
  *
  * @param maxWait : the maximum number of milliseconds to wait for a message if none is found
  *         in the receive buffer.
+ * @param maxMsg : the maximum number of messages to be returned by the function; up to 254.
  *
  * @return an array of YSnoopingRecord objects containing the messages found, if any.
  *         Binary messages are converted to hexadecimal representation.
  *
  * On failure, throws an exception or returns an empty array.
  */
-vector<YSnoopingRecord> YSerialPort::snoopMessages(int maxWait)
+vector<YSnoopingRecord> YSerialPort::snoopMessagesEx(int maxWait,int maxMsg)
 {
     string url;
     string msgbin;
@@ -1689,7 +1690,7 @@ vector<YSnoopingRecord> YSerialPort::snoopMessages(int maxWait)
     vector<YSnoopingRecord> res;
     int idx = 0;
 
-    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&t=0", _rxptr,maxWait);
+    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&t=0&len=%d", _rxptr, maxWait,maxMsg);
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);
     msglen = (int)msgarr.size();
@@ -1705,6 +1706,27 @@ vector<YSnoopingRecord> YSerialPort::snoopMessages(int maxWait)
         idx = idx + 1;
     }
     return res;
+}
+
+/**
+ * Retrieves messages (both direction) in the serial port buffer, starting at current position.
+ * This function will only compare and return printable characters in the message strings.
+ * Binary protocols are handled as hexadecimal strings.
+ *
+ * If no message is found, the search waits for one up to the specified maximum timeout
+ * (in milliseconds).
+ *
+ * @param maxWait : the maximum number of milliseconds to wait for a message if none is found
+ *         in the receive buffer.
+ *
+ * @return an array of YSnoopingRecord objects containing the messages found, if any.
+ *         Binary messages are converted to hexadecimal representation.
+ *
+ * On failure, throws an exception or returns an empty array.
+ */
+vector<YSnoopingRecord> YSerialPort::snoopMessages(int maxWait)
+{
+    return this->snoopMessagesEx(maxWait, 255);
 }
 
 /**

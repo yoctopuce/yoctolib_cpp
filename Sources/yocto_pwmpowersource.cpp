@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwmpowersource.cpp 52570 2022-12-26 09:27:54Z seb $
+ *  $Id: yocto_pwmpowersource.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
  *
  *  Implements yFindPwmPowerSource(), the high-level API for PwmPowerSource functions
  *
@@ -145,13 +145,13 @@ int YPwmPowerSource::set_powerMode(Y_POWERMODE_enum newval)
 /**
  * Retrieves a PWM generator power source for a given identifier.
  * The identifier can be specified using several formats:
- * <ul>
- * <li>FunctionLogicalName</li>
- * <li>ModuleSerialNumber.FunctionIdentifier</li>
- * <li>ModuleSerialNumber.FunctionLogicalName</li>
- * <li>ModuleLogicalName.FunctionIdentifier</li>
- * <li>ModuleLogicalName.FunctionLogicalName</li>
- * </ul>
+ *
+ * - FunctionLogicalName
+ * - ModuleSerialNumber.FunctionIdentifier
+ * - ModuleSerialNumber.FunctionLogicalName
+ * - ModuleLogicalName.FunctionIdentifier
+ * - ModuleLogicalName.FunctionLogicalName
+ *
  *
  * This function does not require that the PWM generator power source is online at the time
  * it is invoked. The returned object is nevertheless valid.

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.h 57635 2023-11-03 10:25:43Z seb $
+ * $Id: yocto_cellular.h 59978 2024-03-18 15:04:46Z mvuilleu $
  *
  * Declares yFindCellular(), the high-level API for Cellular functions
  *
@@ -207,7 +207,7 @@ public:
 //--- (generated code: YCellular declaration)
 /**
  * YCellular Class: cellular interface control interface, available for instance in the
- * YoctoHub-GSM-2G, the YoctoHub-GSM-3G-EU, the YoctoHub-GSM-3G-NA or the YoctoHub-GSM-4G.
+ * YoctoHub-GSM-2G, the YoctoHub-GSM-3G-EU, the YoctoHub-GSM-3G-NA or the YoctoHub-GSM-4G
  *
  * The YCellular class provides control over cellular network parameters
  * and status for devices that are GSM-enabled.
@@ -676,13 +676,13 @@ public:
     /**
      * Retrieves a cellular interface for a given identifier.
      * The identifier can be specified using several formats:
-     * <ul>
-     * <li>FunctionLogicalName</li>
-     * <li>ModuleSerialNumber.FunctionIdentifier</li>
-     * <li>ModuleSerialNumber.FunctionLogicalName</li>
-     * <li>ModuleLogicalName.FunctionIdentifier</li>
-     * <li>ModuleLogicalName.FunctionLogicalName</li>
-     * </ul>
+     *
+     * - FunctionLogicalName
+     * - ModuleSerialNumber.FunctionIdentifier
+     * - ModuleSerialNumber.FunctionLogicalName
+     * - ModuleLogicalName.FunctionIdentifier
+     * - ModuleLogicalName.FunctionLogicalName
+     *
      *
      * This function does not require that the cellular interface is online at the time
      * it is invoked. The returned object is nevertheless valid.
@@ -853,13 +853,13 @@ public:
 /**
  * Retrieves a cellular interface for a given identifier.
  * The identifier can be specified using several formats:
- * <ul>
- * <li>FunctionLogicalName</li>
- * <li>ModuleSerialNumber.FunctionIdentifier</li>
- * <li>ModuleSerialNumber.FunctionLogicalName</li>
- * <li>ModuleLogicalName.FunctionIdentifier</li>
- * <li>ModuleLogicalName.FunctionLogicalName</li>
- * </ul>
+ *
+ * - FunctionLogicalName
+ * - ModuleSerialNumber.FunctionIdentifier
+ * - ModuleSerialNumber.FunctionLogicalName
+ * - ModuleLogicalName.FunctionIdentifier
+ * - ModuleLogicalName.FunctionLogicalName
+ *
  *
  * This function does not require that the cellular interface is online at the time
  * it is invoked. The returned object is nevertheless valid.

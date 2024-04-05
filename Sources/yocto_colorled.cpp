@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_colorled.cpp 56106 2023-08-16 09:14:54Z seb $
+ *  $Id: yocto_colorled.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
  *
  *  Implements yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -538,13 +538,13 @@ int YColorLed::set_command(const string& newval)
 /**
  * Retrieves an RGB LED for a given identifier.
  * The identifier can be specified using several formats:
- * <ul>
- * <li>FunctionLogicalName</li>
- * <li>ModuleSerialNumber.FunctionIdentifier</li>
- * <li>ModuleSerialNumber.FunctionLogicalName</li>
- * <li>ModuleLogicalName.FunctionIdentifier</li>
- * <li>ModuleLogicalName.FunctionLogicalName</li>
- * </ul>
+ *
+ * - FunctionLogicalName
+ * - ModuleSerialNumber.FunctionIdentifier
+ * - ModuleSerialNumber.FunctionLogicalName
+ * - ModuleLogicalName.FunctionIdentifier
+ * - ModuleLogicalName.FunctionLogicalName
+ *
  *
  * This function does not require that the RGB LED is online at the time
  * it is invoked. The returned object is nevertheless valid.

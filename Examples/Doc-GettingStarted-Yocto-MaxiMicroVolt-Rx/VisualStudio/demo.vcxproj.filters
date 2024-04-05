@@ -89,12 +89,6 @@
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\bignum_core.c">
       <Filter>Yoctopuce\yapi\MbedTLS</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\bignum_mod.c">
-      <Filter>Yoctopuce\yapi\MbedTLS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\bignum_mod_raw.c">
-      <Filter>Yoctopuce\yapi\MbedTLS</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\camellia.c">
       <Filter>Yoctopuce\yapi\MbedTLS</Filter>
     </ClCompile>
@@ -146,9 +140,6 @@
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ecp_curves.c">
       <Filter>Yoctopuce\yapi\MbedTLS</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ecp_curves_new.c">
-      <Filter>Yoctopuce\yapi\MbedTLS</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\entropy.c">
       <Filter>Yoctopuce\yapi\MbedTLS</Filter>
     </ClCompile>
@@ -177,15 +168,6 @@
       <Filter>Yoctopuce\yapi\MbedTLS</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\md5.c">
-      <Filter>Yoctopuce\yapi\MbedTLS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\memory_buffer_alloc.c">
-      <Filter>Yoctopuce\yapi\MbedTLS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\mps_reader.c">
-      <Filter>Yoctopuce\yapi\MbedTLS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\mps_trace.c">
       <Filter>Yoctopuce\yapi\MbedTLS</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\net_sockets.c">
@@ -266,9 +248,6 @@
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_rsa.c">
       <Filter>Yoctopuce\yapi\MbedTLS</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_se.c">
-      <Filter>Yoctopuce\yapi\MbedTLS</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\psa_crypto_slot_management.c">
       <Filter>Yoctopuce\yapi\MbedTLS</Filter>
     </ClCompile>
@@ -330,18 +309,6 @@
       <Filter>Yoctopuce\yapi\MbedTLS</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls12_server.c">
-      <Filter>Yoctopuce\yapi\MbedTLS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_client.c">
-      <Filter>Yoctopuce\yapi\MbedTLS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_generic.c">
-      <Filter>Yoctopuce\yapi\MbedTLS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_keys.c">
-      <Filter>Yoctopuce\yapi\MbedTLS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_server.c">
       <Filter>Yoctopuce\yapi\MbedTLS</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\threading.c">

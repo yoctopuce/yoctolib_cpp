@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 59193 2024-02-05 10:07:10Z seb $
+ * $Id: yproto.h 60327 2024-04-03 09:39:15Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -536,7 +536,7 @@ typedef struct _uwp_enum_item {
 #endif
 
 #define YOCTO_MAX_URL_LEN           256
-#define NBMAX_NET_HUB               32
+#define NBMAX_NET_HUB               128
 #define NBMAX_USB_DEVICE_CONNECTED  256
 #define WIN_DEVICE_PATH_LEN         512
 #define HTTP_RAW_BUFF_SIZE          (8*1024)

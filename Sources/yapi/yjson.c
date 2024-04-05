@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yjson.c 49591 2022-04-28 12:47:10Z mvuilleu $
+ * $Id: yjson.c 60252 2024-03-27 20:26:53Z mvuilleu $
  *
  * Simple JSON parser (actually a slightly enhanced lexer)
  *
@@ -365,6 +365,9 @@ done:
             goto skip;
         }
         if (j->skipcnt > 0) {
+            if (j->next == YJSON_PARSE_STRINGCONT || j->next == YJSON_PARSE_STRINGCONTQ) {
+                goto skip;
+            }
             j->skipcnt--;
             if (st == YJSON_PARSE_STRUCT || st == YJSON_PARSE_ARRAY) {
                 if (j->token[0] == '{' || j->token[0] == '[') {

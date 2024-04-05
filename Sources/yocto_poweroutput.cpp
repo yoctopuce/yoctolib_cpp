@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_poweroutput.cpp 52570 2022-12-26 09:27:54Z seb $
+ *  $Id: yocto_poweroutput.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
  *
  *  Implements yFindPowerOutput(), the high-level API for PowerOutput functions
  *
@@ -143,13 +143,13 @@ int YPowerOutput::set_voltage(Y_VOLTAGE_enum newval)
 /**
  * Retrieves a power output for a given identifier.
  * The identifier can be specified using several formats:
- * <ul>
- * <li>FunctionLogicalName</li>
- * <li>ModuleSerialNumber.FunctionIdentifier</li>
- * <li>ModuleSerialNumber.FunctionLogicalName</li>
- * <li>ModuleLogicalName.FunctionIdentifier</li>
- * <li>ModuleLogicalName.FunctionLogicalName</li>
- * </ul>
+ *
+ * - FunctionLogicalName
+ * - ModuleSerialNumber.FunctionIdentifier
+ * - ModuleSerialNumber.FunctionLogicalName
+ * - ModuleLogicalName.FunctionIdentifier
+ * - ModuleLogicalName.FunctionLogicalName
+ *
  *
  * This function does not require that the power output is online at the time
  * it is invoked. The returned object is nevertheless valid.

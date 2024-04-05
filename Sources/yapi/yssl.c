@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yssl.c 59574 2024-02-29 09:31:28Z seb $
+ * $Id: yssl.c 60355 2024-04-04 07:54:54Z seb $
  *
  * Implementation of a client TCP stack with SSL
  *
@@ -58,7 +58,9 @@
 #include "ytcp.h"
 #include "yssl.h"
 
+
 #ifndef NO_YSSL
+#include "mbedtls/platform.h"
 
 #ifdef WINDOWS_API
 #define SOCK_ERR    (WSAGetLastError())
@@ -70,11 +72,11 @@
 
 #define FMT_MBEDTLS_ERR(errno) format_mbedtls_err(__FILENAME__, __LINE__, errno, errmsg)
 
-static int format_mbedtls_err(const char* fileid, int lineno, int err, char* errmsg)
+static int format_mbedtls_err(const char *fileid, int lineno, int err, char *errmsg)
 {
     int errcode = YAPI_SSL_ERROR;
     int ofs;
-    const char* clearmsg;
+    const char *clearmsg;
 
 #ifdef DEBUG_SSL
     dbglogf(fileid, lineno, "mbedtls error %d (%s)\n", err, errmsg);
@@ -135,7 +137,7 @@ static int format_mbedtls_err(const char* fileid, int lineno, int err, char* err
         mbedtls_strerror(err, errmsg + ofs, YOCTO_ERRMSG_LEN - ofs);
         return YAPI_SSL_ERROR;
     }
-    YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "%s:%d:%s", fileid, lineno,clearmsg);
+    YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "%s:%d:%s", fileid, lineno, clearmsg);
     return errcode;
 }
 
@@ -153,13 +155,13 @@ static void my_debug(void* ctx, int level, const char* file, int line, const cha
 
 #endif
 
-int yssl_generate_private_key(const char* keyfile, u32 nbits, char* errmsg)
+int yssl_generate_private_key(const char *keyfile, u32 nbits, char *errmsg)
 {
     int ret;
     mbedtls_pk_context key;
-    FILE* fd;
+    FILE *fd;
     unsigned char output_buf[16000];
-    unsigned char* c = output_buf;
+    unsigned char *c = output_buf;
     size_t len = 0;
 
     mbedtls_pk_init(&key);
@@ -197,13 +199,13 @@ int yssl_generate_private_key(const char* keyfile, u32 nbits, char* errmsg)
 }
 
 
-int yssl_write_certificate(void* crt_void, const char* certfilename, char* errmsg)
+int yssl_write_certificate(void *crt_void, const char *certfilename, char *errmsg)
 {
     int ret;
-    FILE* fd;
+    FILE *fd;
     unsigned char buffer[4096];
     size_t len = 0;
-    mbedtls_x509write_cert* crt = crt_void;
+    mbedtls_x509write_cert *crt = crt_void;
 
     memset(buffer, 0, 4096);
     ret = mbedtls_x509write_crt_pem(crt, buffer, 4096, mbedtls_ctr_drbg_random, &ctr_drbg);
@@ -227,11 +229,32 @@ int yssl_write_certificate(void* crt_void, const char* certfilename, char* errms
     return YAPI_SUCCESS;
 }
 
+static mbedtls_x509_san_list* alloc_san_obj(const char *host)
+{
+    uint8_t ipv6[16] = {0};
+    size_t ip_addr_len;
+    mbedtls_x509_san_list *san_ptr = yMalloc(sizeof(mbedtls_x509_san_list));
+    memset(san_ptr, 0, sizeof(mbedtls_x509_san_list));
+    ip_addr_len = mbedtls_x509_crt_parse_cn_inet_pton(host, ipv6);
+    if (ip_addr_len != 0) {
+        san_ptr->node.type = MBEDTLS_X509_SAN_IP_ADDRESS;
+        san_ptr->node.san.unstructured_name.len = ip_addr_len;
+        san_ptr->node.san.unstructured_name.p = (unsigned char*)yMalloc(san_ptr->node.san.unstructured_name.len);
+        memcpy(san_ptr->node.san.unstructured_name.p, ipv6, ip_addr_len);
+    } else {
+        san_ptr->node.type = MBEDTLS_X509_SAN_DNS_NAME;
+        san_ptr->node.san.unstructured_name.len = strlen(host);
+        san_ptr->node.san.unstructured_name.p = (unsigned char*)yMalloc(san_ptr->node.san.unstructured_name.len);
+        memcpy(san_ptr->node.san.unstructured_name.p, host, san_ptr->node.san.unstructured_name.len);
+    }
+    return san_ptr;
+}
 
-int yssl_generate_certificate(const char* keyfile, const char* certfile,
-                              const char* country, const char* state,
-                              const char* organisation, const char* common_name,
-                              time_t expiration, char* errmsg)
+int yssl_generate_certificate(const char *keyfile, const char *certfile,
+                              const char *country, const char *state,
+                              const char *organisation, const char *common_name,
+                              const os_ifaces *ifaces, int nbiface,
+                              time_t expiration, char *errmsg)
 {
     mbedtls_pk_context key;
     mbedtls_x509write_cert crt;
@@ -242,14 +265,17 @@ int yssl_generate_certificate(const char* keyfile, const char* certfile,
     time_t rawtime;
     char from[16];
     char to[16];
-    const char* fmt = "%Y%m%d%H%M%S";
+    int i;
+    const char *fmt = "%Y%m%d%H%M%S";
+    mbedtls_x509_san_list *san_list = alloc_san_obj("localhost");
+    mbedtls_x509_san_list *san_p = san_list;
 
 
     mbedtls_pk_init(&key);
     mbedtls_x509write_crt_init(&crt);
 
     int ret = mbedtls_pk_parse_keyfile(&key, keyfile, NULL,
-         mbedtls_ctr_drbg_random, &ctr_drbg);
+                                       mbedtls_ctr_drbg_random, &ctr_drbg);
     if (ret != 0) {
         return FMT_MBEDTLS_ERR(ret);
     }
@@ -266,12 +292,36 @@ int yssl_generate_certificate(const char* keyfile, const char* certfile,
     mbedtls_x509write_crt_set_issuer_key(&crt, &key);
 
     YSPRINTF(subject_name, 1024, "C=%s,ST=%s,O=%s",
-             country, state, organisation, common_name
+             country, state, organisation
     );
 
     if (common_name) {
         YSTRCAT(subject_name, 1024, ",CN=");
         YSTRCAT(subject_name, 1024, common_name);
+    }
+    san_p->next = alloc_san_obj("::1");
+    san_p = san_p->next;
+    san_p->next = alloc_san_obj("127.0.0.1");
+    for (i = 0; i < nbiface; i++) {
+        unsigned char bytes[4];
+        char buffer[128];
+        san_p = san_p->next;
+        bytes[0] = ifaces[i].ip & 0xFF;
+        bytes[1] = (ifaces[i].ip >> 8) & 0xFF;
+        bytes[2] = (ifaces[i].ip >> 16) & 0xFF;
+        bytes[3] = (ifaces[i].ip >> 24) & 0xFF;
+        YSPRINTF(buffer, 125, "%d.%d.%d.%d", bytes[0], bytes[1], bytes[2], bytes[3]);
+        san_p->next = alloc_san_obj(buffer);
+    }
+    ret = mbedtls_x509write_crt_set_subject_alternative_name(&crt, san_list);
+    if (ret != 0) {
+        return FMT_MBEDTLS_ERR(ret);
+    }
+    while (san_list) {
+        san_p = san_list->next;
+        yFree(san_list->node.san.unstructured_name.p);
+        yFree(san_list);
+        san_list = san_p;
     }
     ret = mbedtls_x509write_crt_set_subject_name(&crt, subject_name);
     if (ret != 0) {
@@ -312,31 +362,34 @@ int yssl_generate_certificate(const char* keyfile, const char* certfile,
     return ret;
 }
 
-static void yssl_mutex_init(mbedtls_threading_mutex_t* mutex)
+static void yssl_mutex_init(mbedtls_threading_mutex_t *mutex)
 {
     yInitializeCriticalSection(&mutex->mutex);
 }
 
-static void yssl_mutex_free(mbedtls_threading_mutex_t* mutex)
+static void yssl_mutex_free(mbedtls_threading_mutex_t *mutex)
 {
     yDeleteCriticalSection(&mutex->mutex);
 }
 
-static int yssl_mutex_lock(mbedtls_threading_mutex_t* mutex)
+static int yssl_mutex_lock(mbedtls_threading_mutex_t *mutex)
 {
     yEnterCriticalSection(&mutex->mutex);
     return 0;
 }
 
-static int yssl_mutex_unlock(mbedtls_threading_mutex_t* mutex)
+static int yssl_mutex_unlock(mbedtls_threading_mutex_t *mutex)
 {
     yLeaveCriticalSection(&mutex->mutex);
     return 0;
 }
 
-int yTcpInitSSL(char* errmsg)
+int yTcpInitSSL(char *errmsg)
 {
     int ret;
+#if defined(MBEDTLS_SSL_PROTO_TLS1_3)
+    psa_status_t status;
+#endif
     SSLLOG("Init OpenSSL\n");
 
 
@@ -363,6 +416,12 @@ int yTcpInitSSL(char* errmsg)
     if (ret != 0) {
         return FMT_MBEDTLS_ERR(ret);
     }
+#if defined(MBEDTLS_SSL_PROTO_TLS1_3)
+    status = psa_crypto_init();
+    if (status != PSA_SUCCESS) {
+        return YERRMSG(YAPI_SSL_ERROR, "Failed to initialize PSA Crypto");
+    }
+#endif
 #ifdef ADD_DEFAULT_X509_CERTS
     ret = mbedtls_x509_crt_parse(&cachain, (const unsigned char*)SSL_CA_PEM,
         sizeof(SSL_CA_PEM));
@@ -376,10 +435,10 @@ int yTcpInitSSL(char* errmsg)
 
 
 // must be called after TcpInitSSL
-int yTcpSetSrvCertificateSSL(const char* certfile, const char* keyfile, char* errmsg)
+int yTcpSetSrvCertificateSSL(const char *certfile, const char *keyfile, char *errmsg)
 {
     int ret;
-    FILE* fd;
+    FILE *fd;
 
     /* Load certificate and private key files, and check consistency */
     if (keyfile) {
@@ -390,7 +449,7 @@ int yTcpSetSrvCertificateSSL(const char* certfile, const char* keyfile, char* er
 
         mbedtls_pk_free(&pkey);
         ret = mbedtls_pk_parse_keyfile(&pkey, keyfile, NULL,
-            mbedtls_ctr_drbg_random, &ctr_drbg);
+                                       mbedtls_ctr_drbg_random, &ctr_drbg);
         if (ret < 0) {
             return FMT_MBEDTLS_ERR(ret);
         }
@@ -419,9 +478,10 @@ int yTcpSetSrvCertificateSSL(const char* certfile, const char* keyfile, char* er
 
     return YAPI_SUCCESS;
 }
-int yTcpAddClientCertificateSSL(const u8* cert, u32 cert_len, char* errmsg)
+
+int yTcpAddClientCertificateSSL(const u8 *cert, u32 cert_len, char *errmsg)
 {
-    
+
     int ret = mbedtls_x509_crt_parse(&cachain, (const unsigned char*)cert, cert_len);
     if (ret != 0) {
         return FMT_MBEDTLS_ERR(ret);
@@ -429,11 +489,11 @@ int yTcpAddClientCertificateSSL(const u8* cert, u32 cert_len, char* errmsg)
     return YAPI_SUCCESS;
 }
 
-int yTcpDownloadSSLCert(const char* host, int port, u64 mstimeout, u8* buffer, u32 maxsize, u32* neededsize, char* errmsg)
+int yTcpDownloadSSLCert(const char *host, int port, u64 mstimeout, u8 *buffer, u32 maxsize, u32 *neededsize, char *errmsg)
 {
     YSSL_SOCKET sslSkt;
-    const char* pem_begin_crt = "-----BEGIN CERTIFICATE-----\n";
-    const char* pem_end_crt = "-----END CERTIFICATE-----\n";
+    const char *pem_begin_crt = "-----BEGIN CERTIFICATE-----\n";
+    const char *pem_end_crt = "-----END CERTIFICATE-----\n";
     int res;
     res = yTcpOpenSSL(&sslSkt, host, port, 1, mstimeout, errmsg);
     if (res < 0) {
@@ -441,7 +501,7 @@ int yTcpDownloadSSLCert(const char* host, int port, u64 mstimeout, u8* buffer, u
     }
 
     // allow non trusted certificate since we have no root CA installed
-    const mbedtls_x509_crt* chain;
+    const mbedtls_x509_crt *chain;
     chain = mbedtls_ssl_get_peer_cert(sslSkt->ssl);
     *neededsize = 0;
     res = YAPI_SUCCESS;
@@ -477,6 +537,9 @@ void yTcpShutdownSSL(void)
 {
     SSLLOG("YSSL: shutdown\n");
 
+#if defined(MBEDTLS_SSL_PROTO_TLS1_3)
+    mbedtls_psa_crypto_free();
+#endif
     mbedtls_x509_crt_free(&cachain);
     mbedtls_x509_crt_free(&srvcert);
     mbedtls_pk_free(&pkey);
@@ -486,7 +549,7 @@ void yTcpShutdownSSL(void)
 }
 
 
-static int mbedtls_ysend(void* ctx, const unsigned char* buf, size_t tosend)
+static int mbedtls_ysend(void *ctx, const unsigned char *buf, size_t tosend)
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     YSSL_SOCKET yssl = ctx;
@@ -503,7 +566,7 @@ static int mbedtls_ysend(void* ctx, const unsigned char* buf, size_t tosend)
 // The callback must return the number of bytes received, or a non-zero error code.
 // If performing non-blocking I/O, MBEDTLS_ERR_SSL_WANT_READ must be returned when the operation would block.
 
-static int mbedtls_yread(void* ctx, unsigned char* buf, size_t avail)
+static int mbedtls_yread(void *ctx, unsigned char *buf, size_t avail)
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     YSSL_SOCKET yssl = ctx;
@@ -522,7 +585,11 @@ static int mbedtls_yread(void* ctx, unsigned char* buf, size_t avail)
     return nread;
 }
 
-static int do_ssl_handshake(YSSL_SOCKET yssl, int skip_cert_validation, char* errmsg)
+
+#define CAN_BE_SOLVED_BY_SEC_OPTIONS 1
+#define CAN_BE_SOLVED_BY_ADD_CERT 2
+
+static int do_ssl_handshake(YSSL_SOCKET yssl, int skip_cert_validation, char *errmsg)
 {
     int ret;
     u32 flags;
@@ -535,35 +602,61 @@ static int do_ssl_handshake(YSSL_SOCKET yssl, int skip_cert_validation, char* er
     SSLLOG("SSL handshake done\n");
     SSLLOG("SSL Verifying peer X.509 certificate...\n");
     if ((flags = mbedtls_ssl_get_verify_result(yssl->ssl)) != 0) {
+        int err_msg_flag = 0;
         if (yssl->flags & YSSL_TCP_SERVER_MODE && flags == MBEDTLS_X509_BADCERT_SKIP_VERIFY) {
             return YAPI_SUCCESS;
         }
-        if ((flags & MBEDTLS_X509_BADCERT_NOT_TRUSTED) && ((yContext->sslCertOptions& YSSL_NO_TRUSTED_CA_CHECK) || skip_cert_validation)) {
-            // allow non trusted certificate since we have no root CA installed
-            flags &= ~MBEDTLS_X509_BADCERT_NOT_TRUSTED;
+        if (flags & MBEDTLS_X509_BADCERT_NOT_TRUSTED) {
+            if ((yContext->sslCertOptions & YSSL_NO_TRUSTED_CA_CHECK) || skip_cert_validation) {
+                // allow non trusted certificate since we have no root CA installed
+                flags &= ~MBEDTLS_X509_BADCERT_NOT_TRUSTED;
+            } else {
+                err_msg_flag |= CAN_BE_SOLVED_BY_SEC_OPTIONS | CAN_BE_SOLVED_BY_ADD_CERT;
+            }
         }
-        if ((flags & MBEDTLS_X509_BADCERT_EXPIRED) && ((yContext->sslCertOptions & YSSL_NO_EXPIRATION_CHECK) || skip_cert_validation)) {
-            // allow non trusted certificate since we have no root CA installed
-            flags &= ~MBEDTLS_X509_BADCERT_EXPIRED;
+        if (flags & MBEDTLS_X509_BADCERT_EXPIRED) {
+            if ((yContext->sslCertOptions & YSSL_NO_EXPIRATION_CHECK) || skip_cert_validation) {
+                // allow non trusted certificate since we have no root CA installed
+                flags &= ~MBEDTLS_X509_BADCERT_EXPIRED;
+            } else {
+                err_msg_flag |= CAN_BE_SOLVED_BY_SEC_OPTIONS;
+            }
         }
-        if ((flags & MBEDTLS_X509_BADCERT_CN_MISMATCH) && ((yContext->sslCertOptions & YSSL_NO_HOSTNAME_CHECK) || skip_cert_validation)) {
-            // allow non trusted certificate since we have no root CA installed
-            flags &= ~MBEDTLS_X509_BADCERT_CN_MISMATCH;
+        if (flags & MBEDTLS_X509_BADCERT_CN_MISMATCH) {
+            if ((yContext->sslCertOptions & YSSL_NO_HOSTNAME_CHECK) || skip_cert_validation) {
+                // allow non trusted certificate since we have no root CA installed
+                flags &= ~MBEDTLS_X509_BADCERT_CN_MISMATCH;
+            } else {
+                err_msg_flag |= CAN_BE_SOLVED_BY_SEC_OPTIONS;
+            }
         }
         if (flags) {
-            int len;
+            int len, hint_len = 0;
             char long_errmsg[2048];
+            const char *hint = NULL;
             mbedtls_x509_crt_verify_info(long_errmsg, 2048,
-                                         "SSL:", flags);
+                                         "", flags);
             len = ystrlen(long_errmsg);
             // remove trailing \n
             while (len > 0 && long_errmsg[len - 1] == '\n') {
                 long_errmsg[len - 1] = 0;
                 len--;
             }
-            if (len + 1 < YOCTO_ERRMSG_LEN) {
+
+            if (err_msg_flag == (CAN_BE_SOLVED_BY_SEC_OPTIONS | CAN_BE_SOLVED_BY_ADD_CERT)) {
+                hint = ". Consider using YAPI.AddTrustedCertificates or YAPI.SetNetworkSecurityOptions methods.";
+                hint_len = ystrlen(hint);
+            } else if (err_msg_flag == CAN_BE_SOLVED_BY_SEC_OPTIONS) {
+                hint = ". Consider using YAPI.AddTrustedCertificates method.";
+                hint_len = ystrlen(hint);
+            } else if (err_msg_flag == CAN_BE_SOLVED_BY_SEC_OPTIONS) {
+                hint = ". Consider using YAPI.AddTrustedCertificates method.";
+                hint_len = ystrlen(hint);
+            }
+            if (len + 1 < (YOCTO_ERRMSG_LEN - hint_len)) {
                 ystrcpy(errmsg, YOCTO_ERRMSG_LEN, long_errmsg);
             } else {
+                char buff[YOCTO_ERRMSG_LEN];
                 int nberr = 0;
                 int i, tail_size, used;
                 const char *tail = "...]";
@@ -573,11 +666,15 @@ static int do_ssl_handshake(YSSL_SOCKET yssl, int skip_cert_validation, char* er
                         nberr++;
                     }
                 }
-                YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "SSL handshake failed with %d error%s (res=%x)\n[", nberr, nberr > 1 ? "s" : "", flags);
+                YSPRINTF(buff, YOCTO_ERRMSG_LEN, "SSL handshake failed with %d error%s (res=%x)\n[", nberr, nberr > 1 ? "s" : "", flags);
+                ystrcat(errmsg, YOCTO_ERRMSG_LEN, buff);
                 tail_size = ystrlen(tail) + 1;
-                used = ystrlen(errmsg);
+                used = ystrlen(errmsg) + hint_len;
                 ystrncpy(errmsg + used, YOCTO_ERRMSG_LEN - used, long_errmsg, YOCTO_ERRMSG_LEN - used-1);
                 memcpy(errmsg + YOCTO_ERRMSG_LEN - tail_size, tail, tail_size);
+            }
+            if (hint_len) {
+                ystrcat(errmsg, YOCTO_ERRMSG_LEN, hint);
             }
             if (flags & MBEDTLS_X509_BADCERT_NOT_TRUSTED) {
                 return YAPI_SSL_UNK_CERT;
@@ -594,7 +691,7 @@ static int do_ssl_handshake(YSSL_SOCKET yssl, int skip_cert_validation, char* er
 }
 
 
-static int setup_ssl(yssl_socket_st* yssl, const char * remote_hostname, int skip_cert_validation, char* errmsg)
+static int setup_ssl(yssl_socket_st *yssl, const char *remote_hostname, int skip_cert_validation, char *errmsg)
 {
     int res;
     int server_mode = yssl->flags & YSSL_TCP_SERVER_MODE;
@@ -632,7 +729,7 @@ static int setup_ssl(yssl_socket_st* yssl, const char * remote_hostname, int ski
         mbedtls_ssl_conf_authmode(yssl->ssl_conf, MBEDTLS_SSL_VERIFY_OPTIONAL);
     }
 
-    
+
     // create SSL context
     yssl->ssl = yMalloc(sizeof(mbedtls_ssl_context));
     mbedtls_ssl_init(yssl->ssl);
@@ -646,7 +743,7 @@ static int setup_ssl(yssl_socket_st* yssl, const char * remote_hostname, int ski
         yFree(yssl->ssl);
         return FMT_MBEDTLS_ERR(res);
     }
-    
+
     mbedtls_ssl_set_bio(yssl->ssl, yssl, mbedtls_ysend, mbedtls_yread, NULL);
 
     // do handshake
@@ -660,10 +757,10 @@ static int setup_ssl(yssl_socket_st* yssl, const char * remote_hostname, int ski
 }
 
 
-int yTcpOpenSSL(YSSL_SOCKET* newskt, const char* host, u16 port, int skip_cert_validation, u64 mstimeout, char* errmsg)
+int yTcpOpenSSL(YSSL_SOCKET*newskt, const char *host, u16 port, int skip_cert_validation, u64 mstimeout, char *errmsg)
 {
     int res;
-    yssl_socket_st* yssl;
+    yssl_socket_st *yssl;
 
     SSLLOG("YSSL: openssl %p [dst=%s:%d %dms]\n", newskt, host, port, mstimeout);
     yssl = yMalloc(sizeof(yssl_socket_st));
@@ -685,10 +782,10 @@ int yTcpOpenSSL(YSSL_SOCKET* newskt, const char* host, u16 port, int skip_cert_v
     return YAPI_SUCCESS;
 }
 
-int yTcpAcceptSSL(YSSL_SOCKET* newskt, YSOCKET sock, char* errmsg)
+int yTcpAcceptSSL(YSSL_SOCKET*newskt, YSOCKET sock, char *errmsg)
 {
     int res;
-    yssl_socket_st* yssl;
+    yssl_socket_st *yssl;
     SSLLOG("YSSL: accept %p [skt=%d]\n", newskt, sock);
     yssl = yMalloc(sizeof(yssl_socket_st));
     memset(yssl, 0, sizeof(yssl_socket_st));
@@ -716,7 +813,7 @@ void yTcpCloseSSL(YSSL_SOCKET yssl)
     yFree(yssl);
 }
 
-YSOCKET yTcpFdSetSSL(YSSL_SOCKET yssl, void* set, YSOCKET sktmax)
+YSOCKET yTcpFdSetSSL(YSSL_SOCKET yssl, void *set, YSOCKET sktmax)
 {
 #if 0
     //SSLLOG("SSL: FD_SET %p\n", yssl);
@@ -736,7 +833,7 @@ YSOCKET yTcpFdSetSSL(YSSL_SOCKET yssl, void* set, YSOCKET sktmax)
     return sktmax;
 }
 
-int yTcpFdIsSetSSL(YSSL_SOCKET yssl, void* set)
+int yTcpFdIsSetSSL(YSSL_SOCKET yssl, void *set)
 {
     int res = FD_ISSET(yssl->tcpskt, (fd_set*)set);
     //dbglog("YSSL: socket is_set -> %d\n", res);
@@ -754,7 +851,7 @@ int yTcpFdIsSetSSL(YSSL_SOCKET yssl, void* set)
 
 // check it a socket is still valid and empty (ie: nothing to read and writable)
 // return 1 if the socket is valid or a error code
-int yTcpCheckSocketStillValidSSL(YSSL_SOCKET yssl, char* errmsg)
+int yTcpCheckSocketStillValidSSL(YSSL_SOCKET yssl, char *errmsg)
 {
     SSLLOG("YSSL: check validity (sock=%p)\n", yssl);
     if (yssl->flags & YSSL_TCP_SOCK_CLOSED) {
@@ -764,7 +861,7 @@ int yTcpCheckSocketStillValidSSL(YSSL_SOCKET yssl, char* errmsg)
 }
 
 
-int yTcpWriteSSL(YSSL_SOCKET yssl, const u8* buffer, int len, char* errmsg)
+int yTcpWriteSSL(YSSL_SOCKET yssl, const u8 *buffer, int len, char *errmsg)
 {
     SSLLOG("YSSL: write %d  bytes (sock=%p)\n", len, yssl);
 
@@ -781,11 +878,11 @@ int yTcpWriteSSL(YSSL_SOCKET yssl, const u8* buffer, int len, char* errmsg)
 }
 
 
-int yTcpReadSSL(YSSL_SOCKET yssl, u8* buffer, int len, char* errmsg)
+int yTcpReadSSL(YSSL_SOCKET yssl, u8 *buffer, int len, char *errmsg)
 {
     int res;
     int nread = 0;
-    u8* ptr = buffer;
+    u8 *ptr = buffer;
     SSLLOG("YSSL: look for data on sock %p (buflen=%d)\n", yssl, len);
 
     if (yssl->flags & YSSL_TCP_SOCK_CLOSED) {
