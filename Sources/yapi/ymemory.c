@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ymemory.c 51581 2022-11-14 11:00:14Z seb $
+ * $Id: ymemory.c 60901 2024-05-10 07:44:20Z seb $
  *
  * Basic memory check function to prevent memory leak
  *
@@ -101,7 +101,7 @@ static void  ymemdump(void)
     for(i=0, entry=yMap; i< yMapUsed ; i++,entry++){
         if(entry->state == YMEM_MALLOCED){
             ymemdumpentry(entry,"");
-            dbglog("%s : %d of %db (0x%x)\n", entry->malloc_file, entry->malloc_line, entry->malloc_size, entry->ptr);
+            //dbglog("%s : %d of %db (0x%x)\n", entry->malloc_file, entry->malloc_line, entry->malloc_size, entry->ptr);
             total+= entry->malloc_size;
             count++;
         }
@@ -363,6 +363,7 @@ int ymemfind(const u8* haystack, u32 haystack_len, const u8* needle, u32 needle_
     u32 needle_pos = 0;
 
     do {
+        
         while (needle_pos < needle_len && (abspos + needle_pos) < haystack_len && needle[needle_pos] == haystack[abspos + needle_pos]) {
             needle_pos++;
         }
@@ -372,7 +373,7 @@ int ymemfind(const u8* haystack, u32 haystack_len, const u8* needle, u32 needle_
             abspos++;
             needle_pos = 0;
         }
-    } while (abspos + needle_len < haystack_len);
+    } while (abspos + needle_len <= haystack_len);
     return -1;
 }
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef_private.h 60355 2024-04-04 07:54:54Z seb $
+ * $Id: ydef_private.h 60539 2024-04-15 08:03:02Z mvuilleu $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -113,7 +113,7 @@ typedef struct {
             void ypanic(u32 origin, u64 irritant);
         #endif
         #define MK_FILEID(a,b,c)    ((((a)-'A')<<10) | (((b)-'A')<<5) | ((c)-'A'))
-        #define MK_ORIGIN(fid,n)    (((fid) << 16) | (n))
+        #define MK_ORIGIN(fid,n)    ((((u32)fid) << 16) | (n))
         #define MK_CURPOS           MK_ORIGIN(__FILE_ID__, __LINE__)
         #define YPANIC              do { ypanic(MK_ORIGIN(__FILE_ID__, __LINE__) ,0); } while(0)
         #define YPANIC_IRR(irr)     do { ypanic(MK_ORIGIN(__FILE_ID__, __LINE__) ,irr); } while(0)

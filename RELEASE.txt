@@ -1,10 +1,6 @@
-CPPV2 v2.0.60394
+CPPV2 v2.0.61039
 
-- Add support for Yocto-RFID
-- Improve error reporting if remote TLS certificate is invalid
-- Increase the number of detectable hubs to 128
-- Increase then maximum number of connected hub to 128
-- Fix incomplete documentation
-- Fix warning about malformed XML comment
-- Fix handling of long strings in many parse situations (including json_get_key)
-- Fix return type of method DownloadHostCertificate
+- Fix authentication when request send a redirect
+- Fix compilation of QT examples
+- Fix warning when using MinGW compiler
+- Fix timeout that was not correctly calculated on YAPI::TestHub

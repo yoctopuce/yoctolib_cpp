@@ -27,10 +27,10 @@ void Inventory::on_listWidget_doubleClicked(const QModelIndex &index)
     if (module) {
         if(module->get_beacon() == YModule::BEACON_ON){
             module->setBeacon(YModule::BEACON_OFF);
-            item->setTextColor(Qt::black);
+            item->setBackground(Qt::white);
         } else {
             module->setBeacon(YModule::BEACON_ON);
-            item->setTextColor(Qt::blue);
+            item->setBackground(Qt::blue);
         }
     }
 }
@@ -43,11 +43,11 @@ void Inventory::updateInventory()
     YModule *module = YModule::FirstModule();
     while(module){
         QListWidgetItem *item = new QListWidgetItem(QString(module->get_serialNumber().c_str()));
-        if(module->get_beacon() == YModule::BEACON_ON)
-            item->setTextColor(Qt::blue);
-        else
-            item->setTextColor(Qt::black);
-
+        if(module->get_beacon() == YModule::BEACON_ON){
+            item->setBackground(Qt::blue);
+        } else {
+            item->setBackground(Qt::white);
+        }
         ui->listWidget->addItem(item);
         module = module->nextModule();
     }

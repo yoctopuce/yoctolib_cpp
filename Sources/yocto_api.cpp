@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ * $Id: yocto_api.cpp 60510 2024-04-12 09:37:02Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -2872,19 +2872,44 @@ string YAPIContext::AddTrustedCertificates(string certificate)
 }
 
 /**
+ * Set the path of Certificate Authority file on local filesystem. This method takes as a parameter
+ * the path of a file containing all certificates in PEM format.
+ * For technical reasons, only one file can be specified. So if you need to connect to several Hubs
+ * instances with self-signed certificates, you'll need to use
+ * a single file containing all the certificates end-to-end. Passing a empty string will restore the
+ * default settings. This option is only supported by PHP library.
+ *
+ * @param certificatePath : the path of the file containing all certificates in PEM format.
+ *
+ * @return an empty string if the certificate has been added correctly.
+ *         In case of error, returns a string starting with "error:".
+ */
+string YAPIContext::SetTrustedCertificatesList(string certificatePath)
+{
+    char errmsg[YOCTO_ERRMSG_LEN];
+    int res = 0;
+    res = yapiSetTrustedCertificatesList(certificatePath.c_str(), errmsg);
+    if (res < 0) {
+        return string(errmsg);
+    } else {
+        return "";
+    }
+}
+
+/**
  * Enables or disables certain TLS/SSL certificate checks.
  *
- * @param options: The options: YAPI::NO_TRUSTED_CA_CHECK,
+ * @param opts : The options are YAPI::NO_TRUSTED_CA_CHECK,
  *         YAPI::NO_EXPIRATION_CHECK, YAPI::NO_HOSTNAME_CHECK.
  *
  * @return an empty string if the options are taken into account.
  *         On error, returns a string beginning with "error:".
  */
-string YAPIContext::SetNetworkSecurityOptions(int options)
+string YAPIContext::SetNetworkSecurityOptions(int opts)
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     int res = 0;
-    res = yapiSetNetworkSecurityOptions(options, errmsg);
+    res = yapiSetNetworkSecurityOptions(opts, errmsg);
     if (res < 0) {
         return string(errmsg);
     } else {

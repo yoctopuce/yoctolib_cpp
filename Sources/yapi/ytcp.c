@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 59193 2024-02-05 10:07:10Z seb $
+ * $Id: ytcp.c 61037 2024-05-21 15:58:12Z mvuilleu $
  *
  * Implementation of a client TCP stack
  *
@@ -599,7 +599,7 @@ int yTcpOpenBasicEx(YSOCKET *newskt, const IPvX_ADDR *ip, u16 port, u64 mstimeou
     int tcp_sendbuffer;
     int addrlen;
     int socktype;
-   
+
 #ifdef WINDOWS_API
     char noDelay = 1;
     int optlen;
@@ -611,10 +611,10 @@ int yTcpOpenBasicEx(YSOCKET *newskt, const IPvX_ADDR *ip, u16 port, u64 mstimeou
 #endif
 #endif
 
-    
+
 #ifdef DEBUG_TCP
     {
-        char ipa_buff[64];
+        char ipa_buff[IPSTR_SIZE];
         iptoa(&ip, ipa_buff);
         TCPLOG("yTcpOpen %p(socket) [dst=%s port=%d %dms]\n", newskt, ipa_buff, port, mstimeout);
     }
@@ -692,7 +692,7 @@ int yTcpOpenBasicEx(YSOCKET *newskt, const IPvX_ADDR *ip, u16 port, u64 mstimeou
     if (FD_ISSET(skt, &exceptfds) || !FD_ISSET(skt, &writefds)) {
         yclosesocket(skt);
         if (errmsg) {
-            char host[48];
+            char host[IPSTR_SIZE];
             iptoa(ip, host);
             YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Unable to connect to %s:%d", host, port);
         }
@@ -773,7 +773,7 @@ int yTcpOpenBasicEx(YSOCKET *newskt, const IPvX_ADDR *ip, u16 port, u64 mstimeou
     return YAPI_SUCCESS;
 }
 
-int yTcpOpenBasic(YSOCKET* newskt, const char* host, u16 port, u64 mstimeout, char* errmsg)
+int yTcpOpenBasic(YSOCKET *newskt, const char *host, u16 port, u64 mstimeout, char *errmsg)
 {
     IPvX_ADDR ip;
     int iResult = resolveDNSCache(host, &ip, errmsg);
@@ -782,7 +782,7 @@ int yTcpOpenBasic(YSOCKET* newskt, const char* host, u16 port, u64 mstimeout, ch
     }
 #ifdef DEBUG_TCP
     {
-        char ipa_buff[64];
+        char ipa_buff[IPSTR_SIZE];
         iptoa(&ip, ipa_buff);
         TCPLOG("yTcpOpenBasic %p(socket) [dst=%s(%s):%d %dms]\n", newskt, host, ipa_buff, port, mstimeout);
     }
@@ -994,7 +994,7 @@ int yTcpOpenMulti(YSOCKET_MULTI *newskt, const char *host, u16 port, int useSSL,
         return res;
     } else {
 #ifndef NO_YSSL
-        int skip_cert_validation = useSSL > 1 ? 1: 0;
+        int skip_cert_validation = useSSL > 1 ? 1 : 0;
         int res = yTcpOpenSSL(&tmpsock->secure, host, port, skip_cert_validation, mstimeout, errmsg);
         if (res < 0) {
             yFree(tmpsock);
@@ -1249,7 +1249,9 @@ static int yTcpDownloadEx(const char *url, const char *default_host, int default
     }
     domlen = (int)(end - url);
     host = ystrndup_s(url, domlen);
-    dbglog("URL: %s %s:%d %s\n", use_ssl ?"https":"http", host, portno, path);
+#if 0
+    dbglog("URL: yTcpDownloadEx %s %s:%d %s\n", use_ssl ?"https":"http", host, portno, path);
+#endif
     return yTcpDownload(host, portno, use_ssl, path, out_buffer, mstimeout, errmsg);
 }
 
@@ -1516,6 +1518,7 @@ static int yHTTPOpenReqEx(struct _RequestSt *req, u64 mstimout, char *errmsg)
     int multipartLen = (int)strlen(multipart);
     const char *xupload = "x-upload";
     int xuploadLen = (int)strlen(xupload);
+    int use_ssl;
 
     YASSERT(req->proto == PROTO_HTTP || req->proto == PROTO_SECURE_HTTP, req->proto);
     TCPLOG("yTcpOpenReqEx %p [%x:%x %d]\n", req, req->http.skt, req->http.reuseskt, mstimout);
@@ -1531,7 +1534,12 @@ static int yHTTPOpenReqEx(struct _RequestSt *req, u64 mstimout, char *errmsg)
         req->http.reuseskt = INVALID_SOCKET_MULTI;
     } else {
         req->http.reuseskt = INVALID_SOCKET_MULTI;
-        res = yTcpOpenMulti(&req->http.skt, req->hub->url.host, req->hub->url.portno, req->proto == PROTO_SECURE_HTTP, mstimout, errmsg);
+        use_ssl = req->proto == PROTO_SECURE_HTTP;
+        if (use_ssl && req->hub->info.serial[0] &&req->hub->info.has_unsecure_open_port) {
+            // if in info.json we have a non TLS port we can skip certificate validation
+            use_ssl = 2;
+        }
+        res = yTcpOpenMulti(&req->http.skt, req->hub->url.host, req->hub->url.portno, use_ssl, mstimout, errmsg);
         if (YISERR(res)) {
             // yTcpOpen has reset the socket to INVALID
             yTcpCloseMulti(req->http.skt);
@@ -2029,7 +2037,7 @@ static int yWSOpenReqEx(struct _RequestSt *req, int tcpchan, u64 mstimeout, char
     memset(&req->ws, 0, sizeof(WSReqSt));
     // merge first line and header
     headlen = YSTRLEN(req->headerbuf);
-    req->ws.requestsize = headlen + 4 + req->bodysize;
+    req->ws.requestsize = headlen + (req->bodysize ? req->bodysize : 4);
     req->ws.requestbuf = yMalloc(req->ws.requestsize);
     p = req->ws.requestbuf;
     memcpy(p, req->headerbuf, headlen);
@@ -2856,7 +2864,7 @@ static void ws_appendTCPData(RequestSt *req, u8 *buffer, int pktlen)
     req->read_tm = yapiGetTickCount();
 }
 #ifdef DEBUG_WEBSOCKET
-const char* ystream_dbg_label[] = {
+const char *ystream_dbg_label[] = {
     "YSTREAM_EMPTY",
     "YSTREAM_TCP",
     "YSTREAM_TCP_CLOSE",
@@ -3345,6 +3353,11 @@ static int ws_processRequests(HubSt *hub, char *errmsg)
                 }
                 if (req->ws.requestpos == 0) {
                     req->ws.first_write_tm = yapiGetTickCount();
+                } else if (req->ws.requestpos < 180 && req->ws.requestpos + datalen >= 192) {
+                    // on a YoctoHub, the input FIFO is limited to 192, and we can only
+                    // accept a frame if it fits entirely in the input FIFO. So make sure
+                    // the beginning of the request gets delivered entirely
+                    datalen = 191 - req->ws.requestpos;
                 }
 
                 if (req->ws.asyncId && (req->ws.requestpos + datalen == req->ws.requestsize)) {
@@ -3360,7 +3373,7 @@ static int ws_processRequests(HubSt *hub, char *errmsg)
                             ySetEvent(&req->finished);
                             return res;
                         }
-                        WSLOG("ws_req:%p: send %d bytes on chan%d (%d/%d)\n", req, datalen, tcpchan, req->ws.requestpos, req->ws.requestsize);
+                        WSLOG("\n++++ ws_req:%p: send %d bytes on chan%d (%d/%d)\n", req, datalen, tcpchan, req->ws.requestpos, req->ws.requestsize);
                         req->ws.requestpos += datalen;
                         datalen = 0;
                     }
@@ -3370,13 +3383,13 @@ static int ws_processRequests(HubSt *hub, char *errmsg)
                     }
                     tmp_data[datalen] = req->ws.asyncId;
                     res = ws_sendFrame(hub, stream, tcpchan, tmp_data, datalen + 1, errmsg);
-                    WSLOG("req(%s:%p) sent async close chan%d:%d\n", req->hub->url.org_url, req, tcpchan, req->ws.asyncId);
+                    WSLOG("\n++++ ws_req(%p) sent %d bytes with async close chan%d:%d (%d/%d)\n", req, datalen, tcpchan, req->ws.asyncId, req->ws.requestpos, req->ws.requestsize);
                     //dumpReqQueue("as_c", req->hub, tcpchan);
                     req->ws.last_write_tm = yapiGetTickCount();
                 } else {
                     res = ws_sendFrame(hub, stream, tcpchan, req->ws.requestbuf + req->ws.requestpos, datalen, errmsg);
                     req->ws.last_write_tm = yapiGetTickCount();
-                    //WSLOG("ws_req:%p: sent %d bytes on chan%d (%d/%d)\n", req, datalen, tcpchan, req->ws.requestpos, req->ws.requestsize);
+                    WSLOG("\n++++ ws_req:%p: sent %d bytes on chan%d:%d (%d/%d)\n", req, datalen, tcpchan, req->ws.asyncId, req->ws.requestpos, req->ws.requestsize);
                 }
                 if (YISERR(res)) {
                     req->errcode = res;
@@ -3414,6 +3427,7 @@ static int ws_openBaseSocket(HubSt *basehub, int first_notification_connection, 
     int res, request_len;
     char request[256];
     struct _WSNetHubSt *wshub = &basehub->ws;
+    int usessl=0;
 
     wshub->base_state = 0;
     wshub->strym_state = 0;
@@ -3435,6 +3449,7 @@ static int ws_openBaseSocket(HubSt *basehub, int first_notification_connection, 
     if (basehub->url.proto == PROTO_HTTP || basehub->url.proto == PROTO_SECURE_HTTP) {
         return YERRMSG(YAPI_IO_ERROR, "not a WebSocket url");
     }
+#if 0
     if (!basehub->info.serial[0]) {
         int load_res = LoadInfoJson(basehub, errmsg);
         // YAPI_NOT_SUPPORTED -> old hub that does not support info.json
@@ -3442,10 +3457,15 @@ static int ws_openBaseSocket(HubSt *basehub, int first_notification_connection, 
             return load_res;
         }
     }
+#endif
     WSLOG("hub(%s) try to open WS connection at %d\n", basehub->url.org_url, basehub->notifAbsPos);
     YSPRINTF(request, 256, "GET %s/not.byn?abs=%u", basehub->url.subdomain, basehub->notifAbsPos);
-
-    res = yTcpOpenMulti(&wshub->skt, basehub->url.host, basehub->url.portno, basehub->url.proto == PROTO_SECURE_WEBSOCKET, mstimout, errmsg);
+    usessl = basehub->url.proto == PROTO_SECURE_WEBSOCKET;
+    if (usessl && basehub->info.serial[0] && basehub->info.has_unsecure_open_port) {
+        // if in info.json we have a non TLS port we can skip certificate validation
+        usessl = 2;
+    }
+    res = yTcpOpenMulti(&wshub->skt, basehub->url.host, basehub->url.portno, usessl, mstimout, errmsg);
     if (YISERR(res)) {
         // yTcpOpen has reset the socket to INVALID
         //yTcpCloseMulti(wshub->skt);
@@ -3615,6 +3635,7 @@ void* ws_thread(void *ctx)
     int buffer_ofs = 0;
     int continue_processing;
     int is_fist_attempt = 1;
+    int is_http_redirect = 0;
 
 
     yThreadSignalStart(thread);
@@ -3641,6 +3662,10 @@ void* ws_thread(void *ctx)
             yEnterCriticalSection(&hub->access);
             hub->errcode = ySetErr(res, hub->errmsg, errmsg, NULL, 0);
             yLeaveCriticalSection(&hub->access);
+            if (res == YAPI_SSL_UNK_CERT) {
+                // fatal error do not retry to reconnect
+                hub->state = NET_HUB_TOCLOSE;
+            }
             if (is_fist_attempt) {
                 break;
             }
@@ -3664,6 +3689,7 @@ void* ws_thread(void *ctx)
             } else {
                 wait = 1000;
             }
+            is_http_redirect = 0;
             //dbglog("select %"FMTu64"ms on main socket\n", wait);
             res = ws_thread_select(&hub->ws, wait, &hub->wuce, errmsg);
 #if 1
@@ -3678,7 +3704,7 @@ void* ws_thread(void *ctx)
                 int avail, rw;
                 int hdrlen;
                 u32 mask;
-                int websocket_ok = 0;
+                int websocket_ok;
                 int pktlen;
                 hub->ws.lastTraffic = yapiGetTickCount();
                 do {
@@ -3709,7 +3735,10 @@ void* ws_thread(void *ctx)
                             break;
                         }
                         p = buffer + 9;
-                        if (YSTRNCMP(p, "101", 3) != 0) {
+                        
+                        if (YSTRNCMP(p, "301", 3) != 0 || YSTRNCMP(p, "302", 3) != 0 || YSTRNCMP(p, "309", 3) != 0) {
+                            is_http_redirect = 1;
+                        } else if (YSTRNCMP(p, "101", 3) != 0) {
                             res = YERRMSG(YAPI_NOT_SUPPORTED, "hub does not support WebSocket");
                             // fatal error do not retry to reconnect
                             hub->state = NET_HUB_TOCLOSE;
@@ -3728,9 +3757,35 @@ void* ws_thread(void *ctx)
                                     hub->state = NET_HUB_TOCLOSE;
                                     break;
                                 }
+                            } else if (pos > 10 && YSTRNICMP(buffer, "Location: ", 10) == 0 && is_http_redirect) {
+                                HubURLSt new_url;
+                                int parsed_res;
+                                int notpos = ymemfind((u8*)buffer, pos - 10, (u8*)"not.byn", 7);
+                                if (notpos > 0) {
+                                    buffer[notpos] = 0;
+                                } else {
+                                    buffer[pos] = 0;
+                                }
+                                WSLOG("Redirect to %s\n", buffer + 10);
+                                parsed_res = yParseHubURL(&new_url, buffer + 10, errmsg);
+                                if (parsed_res >= 0) {
+                                    // update only host, proto and port
+                                    p = hub->url.host;
+                                    hub->url.host = ystrdup(new_url.host);
+                                    if (new_url.proto == PROTO_SECURE_HTTP) {
+                                        hub->url.proto = PROTO_SECURE_WEBSOCKET;
+                                    }
+                                    hub->url.portno = new_url.portno;
+                                    yFreeParsedURL(&new_url);
+                                    yFree(p);
+#ifdef DEBUG_WEBSOCKET
+                                    int len = sprintfURL(buffer, sizeof(buffer), &hub->url, 0);
+                                    WSLOG("new URL is %s\n", buffer);
+#endif
+                                }
+                                break;
                             }
                             if ((u64)(yapiGetTickCount() - hub->lastAttempt) > WS_CONNEXION_TIMEOUT) {
-                                res = YERR(YAPI_TIMEOUT);
                                 break;
                             }
                             pos = ySeekFifo(&hub->ws.mainfifo, (const u8*)"\r\n", 2, 0, 0, 0);
@@ -3739,6 +3794,8 @@ void* ws_thread(void *ctx)
                         if (websocket_ok) {
                             hub->ws.base_state = WS_BASE_SOCKET_UPGRADED;
                             buffer_ofs = 0;
+                        } else if (is_http_redirect) {
+                            res = YERRMSG(YAPI_IO_ERROR, "Redirection");
                         } else {
                             res = YERRMSG(YAPI_IO_ERROR, "Invalid WebSocket header");
                             // fatal error do not retry to reconnect
@@ -3872,7 +3929,9 @@ void* ws_thread(void *ctx)
             if (res == YAPI_UNAUTHORIZED || res == YAPI_DOUBLE_ACCES) {
                 hub->state = NET_HUB_TOCLOSE;
             } else {
-                ws_threadUpdateRetryCount(hub);
+                if (!is_http_redirect){
+                    ws_threadUpdateRetryCount(hub);
+                }
             }
         }
         WSLOG("hub(%s) close base socket %d:%s\n", hub->url.org_url, res, errmsg);

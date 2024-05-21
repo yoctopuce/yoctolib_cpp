@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yssl.c 60355 2024-04-04 07:54:54Z seb $
+ * $Id: yssl.c 60747 2024-04-25 08:15:16Z seb $
  *
  * Implementation of a client TCP stack with SSL
  *
@@ -607,7 +607,7 @@ static int do_ssl_handshake(YSSL_SOCKET yssl, int skip_cert_validation, char *er
             return YAPI_SUCCESS;
         }
         if (flags & MBEDTLS_X509_BADCERT_NOT_TRUSTED) {
-            if ((yContext->sslCertOptions & YSSL_NO_TRUSTED_CA_CHECK) || skip_cert_validation) {
+            if ((yContext->sslCertOptions & YAPI_NO_TRUSTED_CA_CHECK) || skip_cert_validation) {
                 // allow non trusted certificate since we have no root CA installed
                 flags &= ~MBEDTLS_X509_BADCERT_NOT_TRUSTED;
             } else {
@@ -615,7 +615,7 @@ static int do_ssl_handshake(YSSL_SOCKET yssl, int skip_cert_validation, char *er
             }
         }
         if (flags & MBEDTLS_X509_BADCERT_EXPIRED) {
-            if ((yContext->sslCertOptions & YSSL_NO_EXPIRATION_CHECK) || skip_cert_validation) {
+            if ((yContext->sslCertOptions & YAPI_NO_EXPIRATION_CHECK) || skip_cert_validation) {
                 // allow non trusted certificate since we have no root CA installed
                 flags &= ~MBEDTLS_X509_BADCERT_EXPIRED;
             } else {
@@ -623,7 +623,7 @@ static int do_ssl_handshake(YSSL_SOCKET yssl, int skip_cert_validation, char *er
             }
         }
         if (flags & MBEDTLS_X509_BADCERT_CN_MISMATCH) {
-            if ((yContext->sslCertOptions & YSSL_NO_HOSTNAME_CHECK) || skip_cert_validation) {
+            if ((yContext->sslCertOptions & YAPI_NO_HOSTNAME_CHECK) || skip_cert_validation) {
                 // allow non trusted certificate since we have no root CA installed
                 flags &= ~MBEDTLS_X509_BADCERT_CN_MISMATCH;
             } else {

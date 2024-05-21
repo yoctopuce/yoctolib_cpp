@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 60327 2024-04-03 09:39:15Z seb $
+ * $Id: yproto.h 60810 2024-04-30 10:36:37Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -809,6 +809,7 @@ typedef struct _HubInfoSt {
     HubInfoPortSt ports[NB_PROTO_IN_INFO_JSON];
     int next_port;
     int use_pure_http;
+    int has_unsecure_open_port;
 } HubInfoSt;
 
 typedef struct _HubUrlSt {
@@ -820,6 +821,10 @@ typedef struct _HubUrlSt {
     yHubProto proto;
     u16 portno;
 } HubURLSt;
+int yParseHubURL(HubURLSt* hub_url, const char* url, char* errmsg);
+void yFreeParsedURL(HubURLSt* hub);
+// no_auth : 0-> full details, 1->passwd obfuscade 2 -> no auth info
+int sprintfURL(char* out, int maxlen, HubURLSt* url, int no_auth);
 
 #define INCOMPATIBLE_JZON_ENCODING 1
 #define DISABLED_HUB 2
@@ -1059,7 +1064,7 @@ void WakeUpAllSleep(void);
 YRETCODE yapiPullDeviceLogEx(int devydx);
 YRETCODE yapiPullDeviceLog(const char* serial);
 YRETCODE yapiRequestOpen(YIOHDL_internal* iohdl, int tpchan, const char* device, const char* request, int reqlen, yapiRequestAsyncCallback callback, void* context, yapiRequestProgressCallback progress_cb, void* progress_ctx, char* errmsg);
-int LoadInfoJson(HubSt* hub, char* errmsg);
+int LoadInfoJson(HubSt* hub, u32 mstimeout, char* errmsg);
 /*****************************************************************
  * PLATFORM SPECIFIC USB code
 *****************************************************************/

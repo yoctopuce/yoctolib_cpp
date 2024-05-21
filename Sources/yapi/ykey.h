@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.h 58466 2023-12-12 11:12:09Z seb $
+ * $Id: ykey.h 61037 2024-05-21 15:58:12Z mvuilleu $
  *
  * Declaration of standard key computations
  *
@@ -108,6 +108,6 @@ u16 IPvXAddrLen(const IPvX_ADDR* addr);
 #endif
 
 char* u16toa(u16 val, char* buff);
-char* iptoa(const IPvX_ADDR* addr, char* buff);
+char* iptoa(const IPvX_ADDR* addr, char* buff); /* sizeof(buff) should be IPSTR_SIZE */
 
 #endif

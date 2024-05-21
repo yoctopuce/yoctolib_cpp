@@ -8,6 +8,7 @@ QT       += core
 
 TEMPLATE = lib
 DEFINES += YOCTOPUCEDLL_EXPORTS # permet de crée les .dll et .lib/.a voir L.55 yocto_api.h
+DEFINES += NO_YSSL # do not comile with SSL/TTL
 
 CONFIG += skip_target_version_ext
 CONFIG += shared debug_and_release build_all

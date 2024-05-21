@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 58816 2024-01-08 10:56:15Z seb $
+ * $Id: ydef.h 61037 2024-05-21 15:58:12Z mvuilleu $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -54,7 +54,9 @@ extern "C" {
 
 #ifdef _WIN64
 #define __64BITS__
+#ifndef __WIN64__
 #define __WIN64__
+#endif
 #else
 #define __32BITS__
 #endif
@@ -236,6 +238,7 @@ typedef union {
 // Basic IPv4 address
 #define IP_ADDR u32_val
 
+// Generic IPv4 or IPv6 address
 typedef union _IPvX_ADDR {
 #ifndef IPV4_ONLY
     struct {
@@ -251,6 +254,13 @@ typedef union _IPvX_ADDR {
     } v4;
 #endif
 } IPvX_ADDR;
+
+// Size of a string buffer to hold an IP address
+#ifndef IPV4_ONLY
+#define IPSTR_SIZE 46
+#else
+#define IPSTR_SIZE 16
+#endif
 
 // end of LINUX_API
 #if defined(MICROCHIP_API) || defined(TEXAS_API)

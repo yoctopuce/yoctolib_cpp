@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.c 58619 2023-12-19 10:48:56Z seb $
+ * $Id: ykey.c 61037 2024-05-21 15:58:12Z mvuilleu $
  *
  * Implementation of standard key computations
  *
@@ -772,7 +772,7 @@ int isIPEmpty(const IPvX_ADDR* addr)
 
 u16 IPvXAddrLen(const IPvX_ADDR* addr)
 {
-    char buff[40];
+    char buff[IPSTR_SIZE];
 
     iptoa(addr, buff);
 

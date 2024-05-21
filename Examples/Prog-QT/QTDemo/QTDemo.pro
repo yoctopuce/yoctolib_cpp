@@ -10,7 +10,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = QTDemo
 TEMPLATE = app
-
+DEFINES += NO_YSSL # do not comile with SSL/TTL
 
 SOURCES += main.cpp\
         inventory.cpp
