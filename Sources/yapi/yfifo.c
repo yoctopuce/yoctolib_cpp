@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yfifo.c 49591 2022-04-28 12:47:10Z mvuilleu $
+ * $Id: yfifo.c 61107 2024-05-24 07:59:31Z mvuilleu $
  *
  * Implementation of a generic fifo queue
  *
@@ -139,7 +139,7 @@ u16 yPushFifoEx(yFifoBuf* buf, const u8* data, u16 datalen)
     } else {
         u16 cplen = (u16)(fifoEnd - fifoTail);
         memcpy(fifoTail, data, cplen);
-        memcpy(fifoBuff, data + cplen, datalen - cplen);
+        memcpy(fifoBuff, data + cplen, (u16)(datalen - cplen));
         fifoTail = fifoBuff + (datalen - cplen);
     }
     buf->tail = fifoTail;
@@ -180,7 +180,7 @@ u16 yPopFifoEx(yFifoBuf* buf, u8* data, u16 datalen)
         u16 firstpart = (u16)(fifoEnd - fifoHead);
         if (data) {
             memcpy(data, fifoHead, firstpart);
-            memcpy(data + firstpart, buf->buff, datalen - firstpart);
+            memcpy(data + firstpart, buf->buff, (u16)(datalen - firstpart));
         }
         fifoHead = buf->buff + (datalen - firstpart);
     } else {
@@ -273,7 +273,7 @@ u16 yPeekFifoEx(yFifoBuf* buf, u8* data, u16 datalen, u16 startofs)
         u16 firstpart = (u16)(fifoEnd - ptr);
         if (data) {
             memcpy(data, ptr, firstpart);
-            memcpy(data + firstpart, buf->buff, datalen - firstpart);
+            memcpy(data + firstpart, buf->buff, (u16)(datalen - firstpart));
         }
     } else {
         if (data) {

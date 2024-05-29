@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 60044 2024-03-20 10:45:18Z seb $
+#  $Id: GNUmakefile 61184 2024-05-28 07:28:28Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -169,7 +169,7 @@ endif
 
 
 OPTS_DBG_WIN = $(DEF_FLAGS_WIN)
-OPTS_PROD_WIN = /nologo  $(DEF_FLAGS_WIN)
+OPTS_PROD_WIN = /nologo $(DEF_FLAGS_WIN) /guard:cf
 OPTS_STAT_WIN =  /Zl
 OPTS_DYN_WIN = /D GENERATE_DLL /W3 /WX- /O2 /Oi /Oy- /Gy /GL /MT
 

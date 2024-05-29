@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef_private.h 60539 2024-04-15 08:03:02Z mvuilleu $
+ * $Id: ydef_private.h 61107 2024-05-24 07:59:31Z mvuilleu $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -115,9 +115,9 @@ typedef struct {
         #define MK_FILEID(a,b,c)    ((((a)-'A')<<10) | (((b)-'A')<<5) | ((c)-'A'))
         #define MK_ORIGIN(fid,n)    ((((u32)fid) << 16) | (n))
         #define MK_CURPOS           MK_ORIGIN(__FILE_ID__, __LINE__)
-        #define YPANIC              do { ypanic(MK_ORIGIN(__FILE_ID__, __LINE__) ,0); } while(0)
-        #define YPANIC_IRR(irr)     do { ypanic(MK_ORIGIN(__FILE_ID__, __LINE__) ,irr); } while(0)
-        #define YASSERT(x,irr)      (void)(!(x) ? ypanic(MK_ORIGIN(__FILE_ID__, __LINE__), irr) : 0)
+        #define YPANIC              do { ypanic(MK_ORIGIN(__FILE_ID__, __LINE__) , 0); } while(0)
+        #define YPANIC_IRR(irr)     do { ypanic(MK_ORIGIN(__FILE_ID__, __LINE__) , (u32)(irr)); } while(0)
+        #define YASSERT(x,irr)      (void)(!(x) ? ypanic(MK_ORIGIN(__FILE_ID__, __LINE__), (u32)(irr)) : 0)
         #ifdef assert
         #undef assert
         #endif

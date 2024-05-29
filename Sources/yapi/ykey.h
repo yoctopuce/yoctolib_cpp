@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.h 61037 2024-05-21 15:58:12Z mvuilleu $
+ * $Id: ykey.h 61107 2024-05-24 07:59:31Z mvuilleu $
  *
  * Declaration of standard key computations
  *
@@ -60,7 +60,7 @@ int CheckWSAuth(u32 nonce, const u8* ha1, const u8* to_verify, u8* out);
 int yParseWWWAuthenticate(char* replybuf, int replysize, char** method, char** realm, char** qop, char** nonce, char** opaque);
 
 // Fill in buf with a proper digest authorization header
-int yDigestAuthorization(char* buf, int bufsize, const char* user, const char* realm, const u8* ha1,
+int yDigestAuthorization(char* buf, u16 bufsize, const char* user, const char* realm, const u8* ha1,
                           const char* nonce, const char* opaque, u32* nc, const char* method, const char* uri);
 
 // Note: This API is designed for cooperative multitasking
@@ -86,8 +86,8 @@ void MD5AddData(HASH_SUM* theSum, const u8* data, u32 len);
 void MD5Calculate(HASH_SUM* theSum, u8* result);
 #endif
 
-#define swaps(w)   ((((w)&0xff00)>>8) + (((w)&0xff)<<8))
-#define swapl(dw)  (swaps(((dw)&0xffff0000)>>16) + (swaps((dw)&0xffff)<<16))
+#define swaps(w)                    ((((w)&0xff00u)>>8u) + (((w)&0xffu)<<8u))
+#define swapl(dw)                   (swaps(((dw)&0xffff0000u)>>16u) + (swaps((dw)&0xffffu)<<16u))
 #define NETMASK_LOW(len)            swapl(((u32)1 << (32-len))-1)
 #define NETMASK_HIGH(len)           swapl(0-((u32)1 << (32-len)))
 

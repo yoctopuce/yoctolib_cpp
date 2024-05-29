@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.c 59661 2024-03-08 09:26:51Z seb $
+ * $Id: ythread.c 61094 2024-05-23 06:43:29Z seb $
  *
  * OS-independent thread and synchronization library
  *
@@ -374,7 +374,7 @@ static u32 nbycs = 0;
 #ifdef __arm__
 #define CS_BREAK        { while(1); }
 #elif defined(WINDOWS_API) && (_MSC_VER)
-#define CS_BREAK        { _asm {int 3}}
+#define CS_BREAK        { __debugbreak();}
 #else
 #define CS_BREAK        {__asm__("int3");}
 #endif

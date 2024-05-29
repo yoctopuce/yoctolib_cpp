@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ymemory.h 51694 2022-11-21 15:42:35Z seb $
+ * $Id: ymemory.h 61107 2024-05-24 07:59:31Z mvuilleu $
  *
  * Basic memory check function to prevent memory leak
  *
@@ -183,7 +183,7 @@ int ymemfind(const u8* haystack, u32 haystack_len, const u8* needle, u32 needle_
     #define ystrncmp(A,B,len)                   strncmp(A,B,len)
     #define ystricmp(A,B)                       strcasecmp(A,B)
     #define ystrnicmp(A,B,len)                  strncasecmp(A,B,len)
-    #define ystrlen(str)                        strlen(str)
+    #define ystrlen(str)                        ((u16)strlen(str))
     #define ystrdup(str)                        strdup(str)
 
 #else

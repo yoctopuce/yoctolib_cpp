@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ymemory.c 60901 2024-05-10 07:44:20Z seb $
+ * $Id: ymemory.c 61107 2024-05-24 07:59:31Z mvuilleu $
  *
  * Basic memory check function to prevent memory leak
  *
@@ -368,7 +368,7 @@ int ymemfind(const u8* haystack, u32 haystack_len, const u8* needle, u32 needle_
             needle_pos++;
         }
         if (needle_pos == needle_len) {
-            return abspos;
+            return (int)abspos;
         } else {
             abspos++;
             needle_pos = 0;

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 61037 2024-05-21 15:58:12Z mvuilleu $
+ * $Id: ytcp.c 61098 2024-05-23 08:00:27Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -3636,6 +3636,7 @@ void* ws_thread(void *ctx)
     int continue_processing;
     int is_fist_attempt = 1;
     int is_http_redirect = 0;
+    int io_error_count = 0;
 
 
     yThreadSignalStart(thread);
@@ -3673,6 +3674,7 @@ void* ws_thread(void *ctx)
             continue;
         }
         is_fist_attempt = 0;
+        io_error_count = 0;
         WSLOG("hub(%s) base socket opened (skt=%x)\n", hub->url.org_url, hub->ws.skt);
         hub->state = NET_HUB_TRYING;
         hub->ws.base_state = WS_BASE_HEADER_SENT;
@@ -3863,6 +3865,11 @@ void* ws_thread(void *ctx)
                             } else {
                                 // unhandled packet
                                 dbglog("unhandled packet:%x%x\n", header[0], header[1]);
+                                io_error_count++;
+                                if (io_error_count >= 5) {
+                                     res = YERRMSG(YAPI_IO_ERROR, "Too many IO error");
+                                     break;
+                                }
                             }
                             yPopFifo(&hub->ws.mainfifo, NULL, hdrlen + pktlen);
                             break;

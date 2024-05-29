@@ -1,6 +1,4 @@
-CPPV2 v2.0.61039
+CPPV2 v2.0.61199
 
-- Fix authentication when request send a redirect
-- Fix compilation of QT examples
-- Fix warning when using MinGW compiler
-- Fix timeout that was not correctly calculated on YAPI::TestHub
+- Reset WebSocket connection after 5 malformed packets.
+- Enable Control Flow Guard for windows

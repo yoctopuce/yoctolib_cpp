@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 59661 2024-03-08 09:26:51Z seb $
+ * $Id: yprog.c 61107 2024-05-24 07:59:31Z mvuilleu $
  *
  * Implementation of firmware upgrade functions
  *
@@ -797,7 +797,7 @@ static int uFlashZone(void)
         fctx.zOfs += datasize;
         fctx.zNbInstr -= firm_pkt.prog.pkt.size;
         fctx.stepB += firm_pkt.prog.pkt.size;
-        fctx.progress = (u16)(PROGRESS_FLASH_ERASE + (PROGRESS_FLASH_DOFLASH - PROGRESS_FLASH_ERASE) * fctx.zOfs / fctx.len);
+        fctx.progress = (s16)(PROGRESS_FLASH_ERASE + (PROGRESS_FLASH_DOFLASH - PROGRESS_FLASH_ERASE) * fctx.zOfs / fctx.len);
 
         if (fctx.stepB >= firm_dev.pr_blk_size) {
             //look for confirmation

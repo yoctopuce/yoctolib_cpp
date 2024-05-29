@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.c 61037 2024-05-21 15:58:12Z mvuilleu $
+ * $Id: ykey.c 61107 2024-05-24 07:59:31Z mvuilleu $
  *
  * Implementation of standard key computations
  *
@@ -87,11 +87,11 @@ void ComputeAuthHA1(u8* ha1, const char* user, const char* pass, const char* rea
     HASH_SUM ctx;
 
     MD5Initialize(&ctx);
-    MD5AddData(&ctx, (u8*)user, YSTRLEN(user));
+    MD5AddData(&ctx, (u8*)user, ystrlen(user));
     MD5AddData(&ctx, (u8*)":", 1);
-    MD5AddData(&ctx, (u8*)realm, YSTRLEN(realm));
+    MD5AddData(&ctx, (u8*)realm, ystrlen(realm));
     MD5AddData(&ctx, (u8*)":", 1);
-    MD5AddData(&ctx, (u8*)pass, YSTRLEN(pass));
+    MD5AddData(&ctx, (u8*)pass, ystrlen(pass));
     MD5Calculate(&ctx, ha1);
 #ifdef DEBUG_HTTP_AUTHENTICATION
     {
@@ -108,9 +108,9 @@ void ComputeAuthHA2(u8* ha2, const char* method, const char* uri)
     HASH_SUM ctx;
 
     MD5Initialize(&ctx);
-    MD5AddData(&ctx, (u8*)method, YSTRLEN(method));
+    MD5AddData(&ctx, (u8*)method, ystrlen(method));
     MD5AddData(&ctx, (u8*)":", 1);
-    MD5AddData(&ctx, (u8*)uri, YSTRLEN(uri));
+    MD5AddData(&ctx, (u8*)uri, ystrlen(uri));
     MD5Calculate(&ctx, ha2);
 #ifdef DEBUG_HTTP_AUTHENTICATION
     {
@@ -134,12 +134,12 @@ void ComputeAuthResponse(char* buf, const u8* ha1, const char* nonce, const char
     bin2str(tmpha, ha1, HTTP_AUTH_MD5_SIZE, 1);
     MD5AddData(&ctx, (u8*)tmpha, HTTP_AUTH_MD5_STRLEN);
     MD5AddData(&ctx, (u8*)":", 1);
-    MD5AddData(&ctx, (u8*)nonce, YSTRLEN(nonce));
+    MD5AddData(&ctx, (u8*)nonce, ystrlen(nonce));
     MD5AddData(&ctx, (u8*)":", 1);
     if (nc && cnonce) {
-        MD5AddData(&ctx, (u8*)nc, YSTRLEN(nc));
+        MD5AddData(&ctx, (u8*)nc, ystrlen(nc));
         MD5AddData(&ctx, (u8*)":", 1);
-        MD5AddData(&ctx, (u8*)cnonce, YSTRLEN(cnonce));
+        MD5AddData(&ctx, (u8*)cnonce, ystrlen(cnonce));
         MD5AddData(&ctx, (u8*)":auth:", 6);
     }
     bin2str(tmpha, ha2, HTTP_AUTH_MD5_SIZE, 1);
@@ -274,7 +274,7 @@ extern u32 yapiGetCNonce(u32 nc);
 
 // Write an authorization header in the buffer provided
 // method and uri can be provided in the same memory zone as destination if needed
-int yDigestAuthorization(char* buf, int bufsize, const char* user, const char* realm, const u8* ha1,
+int yDigestAuthorization(char* buf, u16 bufsize, const char* user, const char* realm, const u8* ha1,
                           const char* nonce, const char* opaque, u32* nc, const char* method, const char* uri)
 {
     u32 cnonce;
@@ -339,7 +339,7 @@ const u32 sha1_init[5] = {0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2
 static void initshaw(const char* s, u16 ofs, u8 pad, u16 xinit)
 {
     int ii, j = -1, k = 0;
-    int n = (int)strlen(s);
+    u16 n = ystrlen(s);
 
     for (ii = 0; ii < 64; ii++) {
         int i = ofs + ii;
@@ -365,10 +365,10 @@ static void initshaw(const char* s, u16 ofs, u8 pad, u16 xinit)
     if (pad) {
         if (pad == 0x80) {
             if (n <= ofs + 55) {
-                wpak.shaw[15] = 8 * n;
+                wpak.shaw[15] = 8u * n;
             }
         } else {
-            wpak.shaw[15] = 8 * (n + 68);
+            wpak.shaw[15] = 8u * (n + 68u);
         }
     }
     if (xinit) {
