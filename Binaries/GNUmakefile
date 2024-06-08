@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 61184 2024-05-28 07:28:28Z seb $
+#  $Id: GNUmakefile 61296 2024-06-06 07:03:49Z build $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -197,7 +197,7 @@ endif
 OPTS_MIPS = -DCPU_BIG_ENDIAN -I$(MIPS_TARGET_ROOT)/usr/include/ -DNO_YSSL
 OPTS_MIPSEL = -I$(MIPSEL_TARGET_ROOT)/usr/include/ -DNO_YSSL
 
-OPTS_X64 = -m64 -g -Wall -D_GNU_SOURCE
+OPTS_X64 =  -m64 -g -Wall -D_GNU_SOURCE
 OPTS_I386 = -m32 -mpclmul -msse2 -maes -D_GNU_SOURCE -march=i586
 #osx specific flags
 OPTS_OSX =
@@ -593,7 +593,7 @@ $(OBJDIR_WIN64)%.res: %.rc
 #generic compilation rules
 $(OBJDIR_I386)%.o: %.c $(ALL_H)
 	@echo compiling $@
-	@$(CC_I386) $(OPTS_I386) $(OPTS_PROD) $(OPTS_STAT) $(INC_PATH)  -c $< -o $@
+	@$(CC_I386) -std=c99  $(OPTS_I386) $(OPTS_PROD) $(OPTS_STAT) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_I386)%.o: %.cpp $(ALL_H)
 	@echo compiling $@
@@ -601,7 +601,7 @@ $(OBJDIR_I386)%.o: %.cpp $(ALL_H)
 
 $(OBJDIR_I386)%_dyn.o: %.c $(ALL_H)
 	@echo compiling $@
-	@$(CC_I386) $(OPTS_I386) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
+	@$(CC_I386) -std=c99  $(OPTS_I386) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_I386)%_dyn.o: %.cpp $(ALL_H)
 	@echo compiling $@
@@ -609,7 +609,7 @@ $(OBJDIR_I386)%_dyn.o: %.cpp $(ALL_H)
 
 $(OBJDIR_X64)%.o: %.c $(ALL_H)
 	@echo compiling $@
-	@$(CC_X64) $(OPTS_X64) $(OPTS_PROD) $(OPTS_STAT) $(INC_PATH)  -c $< -o $@
+	@$(CC_X64) -std=c99  $(OPTS_X64) $(OPTS_PROD) $(OPTS_STAT) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_X64)%.o: %.cpp $(ALL_H)
 	@echo compiling $@
@@ -617,7 +617,7 @@ $(OBJDIR_X64)%.o: %.cpp $(ALL_H)
 
 $(OBJDIR_X64)%_dyn.o: %.c $(ALL_H)
 	@echo compiling $@
-	@$(CC_X64) $(OPTS_X64) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
+	@$(CC_X64) -std=c99  $(OPTS_X64) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_X64)%_dyn.o: %.cpp $(ALL_H)
 	@echo compiling $@
