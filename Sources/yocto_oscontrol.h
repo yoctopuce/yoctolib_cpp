@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_oscontrol.h 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: yocto_oscontrol.h 61342 2024-06-11 08:30:46Z seb $
  *
  *  Declares yFindOsControl(), the high-level API for OsControl functions
  *
@@ -59,7 +59,7 @@ namespace YOCTOLIB_NAMESPACE
 class YOsControl; // forward declaration
 
 typedef void (*YOsControlValueCallback)(YOsControl *func, const string& functionValue);
-#define Y_SHUTDOWNCOUNTDOWN_INVALID     (YAPI_INVALID_UINT)
+#define Y_SHUTDOWNCOUNTDOWN_INVALID     (YAPI_INVALID_INT)
 //--- (end of YOsControl definitions)
 
 //--- (YOsControl declaration)
@@ -95,7 +95,7 @@ public:
     virtual ~YOsControl();
     //--- (YOsControl accessors declaration)
 
-    static const int SHUTDOWNCOUNTDOWN_INVALID = YAPI_INVALID_UINT;
+    static const int SHUTDOWNCOUNTDOWN_INVALID = YAPI_INVALID_INT;
 
     /**
      * Returns the remaining number of seconds before the OS shutdown, or zero when no
@@ -171,6 +171,17 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         shutdown(int secBeforeShutDown);
+
+    /**
+     * Schedules an OS reboot after a given number of seconds.
+     *
+     * @param secBeforeReboot : number of seconds before reboot
+     *
+     * @return YAPI::SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         reboot(int secBeforeReboot);
 
 
     inline static YOsControl *Find(string func)

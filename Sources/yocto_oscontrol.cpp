@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_oscontrol.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: yocto_oscontrol.cpp 61342 2024-06-11 08:30:46Z seb $
  *
  *  Implements yFindOsControl(), the high-level API for OsControl functions
  *
@@ -227,6 +227,20 @@ int YOsControl::_invokeValueCallback(string value)
 int YOsControl::shutdown(int secBeforeShutDown)
 {
     return this->set_shutdownCountdown(secBeforeShutDown);
+}
+
+/**
+ * Schedules an OS reboot after a given number of seconds.
+ *
+ * @param secBeforeReboot : number of seconds before reboot
+ *
+ * @return YAPI::SUCCESS when the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YOsControl::reboot(int secBeforeReboot)
+{
+    return this->set_shutdownCountdown(0 - secBeforeReboot);
 }
 
 YOsControl *YOsControl::nextOsControl(void)

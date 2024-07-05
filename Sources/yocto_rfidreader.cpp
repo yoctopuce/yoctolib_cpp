@@ -1024,7 +1024,7 @@ YRfidTagInfo YRfidReader::get_tagInfo(string tagId,YRfidStatus& status)
 }
 
 /**
- * Change an RFID tag configuration to prevents any further write to
+ * Changes an RFID tag configuration to prevents any further write to
  * the selected blocks. This operation is definitive and irreversible.
  * Depending on the tag type and block index, adjascent blocks may become
  * read-only as well, based on the locking granularity.
@@ -1511,7 +1511,7 @@ int YRfidReader::tagGetAFI(string tagId,YRfidOptions options,YRfidStatus& status
 }
 
 /**
- * Change an RFID tag AFI byte (ISO 15693 only).
+ * Changes an RFID tag AFI byte (ISO 15693 only).
  *
  * @param tagId : identifier of the tag to use
  * @param afi : the AFI value to write (0...255)
@@ -1601,7 +1601,7 @@ int YRfidReader::tagGetDSFID(string tagId,YRfidOptions options,YRfidStatus& stat
 }
 
 /**
- * Change an RFID tag DSFID byte (ISO 15693 only).
+ * Changes an RFID tag DSFID byte (ISO 15693 only).
  *
  * @param tagId : identifier of the tag to use
  * @param dsfid : the DSFID value to write (0...255)

@@ -220,7 +220,7 @@ public:
      */
     string          HexKey;
     /**
-     * Force the use of single-block commands to access RFID tag memory blocks.
+     * Forces the use of single-block commands to access RFID tag memory blocks.
      * By default, the Yoctopuce library uses the most efficient access strategy
      * generally available for each tag type, but you can force the use of
      * single-block commands if the RFID tags you are using do not support
@@ -229,7 +229,7 @@ public:
      */
     bool            ForceSingleBlockAccess;
     /**
-     * Force the use of multi-block commands to access RFID tag memory blocks.
+     * Forces the use of multi-block commands to access RFID tag memory blocks.
      * By default, the Yoctopuce library uses the most efficient access strategy
      * generally available for each tag type, but you can force the use of
      * multi-block commands if you know for sure that the RFID tags you are using
@@ -240,7 +240,7 @@ public:
      */
     bool            ForceMultiBlockAccess;
     /**
-     * Enable direct access to RFID tag control blocks.
+     * Enables direct access to RFID tag control blocks.
      * By default, Yoctopuce library read and write functions only work
      * on data blocks and automatically skip special blocks, as specific functions are provided
      * to configure security parameters found in control blocks.
@@ -259,7 +259,7 @@ public:
      */
     bool            DisableBoundaryChecks;
     /**
-     * Enable simulation mode to check the affected block range as well
+     * Enables simulation mode to check the affected block range as well
      * as access rights. When this option is active, the operation is
      * not fully applied to the RFID tag but the affected block range
      * is determined and the optional access key is tested on these blocks.
@@ -693,7 +693,7 @@ public:
     virtual YRfidTagInfo get_tagInfo(string tagId,YRfidStatus& status);
 
     /**
-     * Change an RFID tag configuration to prevents any further write to
+     * Changes an RFID tag configuration to prevents any further write to
      * the selected blocks. This operation is definitive and irreversible.
      * Depending on the tag type and block index, adjascent blocks may become
      * read-only as well, based on the locking granularity.
@@ -993,7 +993,7 @@ public:
     virtual int         tagGetAFI(string tagId,YRfidOptions options,YRfidStatus& status);
 
     /**
-     * Change an RFID tag AFI byte (ISO 15693 only).
+     * Changes an RFID tag AFI byte (ISO 15693 only).
      *
      * @param tagId : identifier of the tag to use
      * @param afi : the AFI value to write (0...255)
@@ -1046,7 +1046,7 @@ public:
     virtual int         tagGetDSFID(string tagId,YRfidOptions options,YRfidStatus& status);
 
     /**
-     * Change an RFID tag DSFID byte (ISO 15693 only).
+     * Changes an RFID tag DSFID byte (ISO 15693 only).
      *
      * @param tagId : identifier of the tag to use
      * @param dsfid : the DSFID value to write (0...255)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 61098 2024-05-23 08:00:27Z seb $
+ * $Id: ytcp.c 61481 2024-06-14 12:29:18Z mvuilleu $
  *
  * Implementation of a client TCP stack
  *
@@ -1426,7 +1426,12 @@ exit:
                         *d++ = *start++;
                     }
                     *d = 0;
-                    return yTcpDownloadEx(redirect_buff, host, port, usessl, out_buffer, mstimeout, errmsg);
+                    if (expiration > yapiGetTickCount()) {
+                         u32 remaining_ms = (u32)(expiration - yapiGetTickCount());
+                        return yTcpDownloadEx(redirect_buff, host, port, usessl, out_buffer, remaining_ms, errmsg);
+                    } else {
+                        return YERR(YAPI_TIMEOUT);
+                    }
                 }
             }
         }
@@ -1535,7 +1540,7 @@ static int yHTTPOpenReqEx(struct _RequestSt *req, u64 mstimout, char *errmsg)
     } else {
         req->http.reuseskt = INVALID_SOCKET_MULTI;
         use_ssl = req->proto == PROTO_SECURE_HTTP;
-        if (use_ssl && req->hub->info.serial[0] &&req->hub->info.has_unsecure_open_port) {
+        if (use_ssl && req->hub->info.serial[0] && req->hub->info.has_unsecure_open_port) {
             // if in info.json we have a non TLS port we can skip certificate validation
             use_ssl = 2;
         }
@@ -3427,7 +3432,7 @@ static int ws_openBaseSocket(HubSt *basehub, int first_notification_connection, 
     int res, request_len;
     char request[256];
     struct _WSNetHubSt *wshub = &basehub->ws;
-    int usessl=0;
+    int usessl = 0;
 
     wshub->base_state = 0;
     wshub->strym_state = 0;
@@ -3737,7 +3742,7 @@ void* ws_thread(void *ctx)
                             break;
                         }
                         p = buffer + 9;
-                        
+
                         if (YSTRNCMP(p, "301", 3) != 0 || YSTRNCMP(p, "302", 3) != 0 || YSTRNCMP(p, "309", 3) != 0) {
                             is_http_redirect = 1;
                         } else if (YSTRNCMP(p, "101", 3) != 0) {
@@ -3867,8 +3872,8 @@ void* ws_thread(void *ctx)
                                 dbglog("unhandled packet:%x%x\n", header[0], header[1]);
                                 io_error_count++;
                                 if (io_error_count >= 5) {
-                                     res = YERRMSG(YAPI_IO_ERROR, "Too many IO error");
-                                     break;
+                                    res = YERRMSG(YAPI_IO_ERROR, "Too many IO error");
+                                    break;
                                 }
                             }
                             yPopFifo(&hub->ws.mainfifo, NULL, hdrlen + pktlen);
@@ -3936,7 +3941,7 @@ void* ws_thread(void *ctx)
             if (res == YAPI_UNAUTHORIZED || res == YAPI_DOUBLE_ACCES) {
                 hub->state = NET_HUB_TOCLOSE;
             } else {
-                if (!is_http_redirect){
+                if (!is_http_redirect) {
                     ws_threadUpdateRetryCount(hub);
                 }
             }

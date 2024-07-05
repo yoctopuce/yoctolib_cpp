@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_digitalio.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: yocto_digitalio.cpp 61494 2024-06-17 08:12:29Z seb $
  *
  *  Implements yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -355,11 +355,11 @@ int YDigitalIO::set_portPolarity(int newval)
 }
 
 /**
- * Returns the port state diagnostics (Yocto-IO and Yocto-MaxiIO-V2 only). Bit 0 indicates a shortcut on
- * output 0, etc. Bit 8 indicates a power failure, and bit 9 signals overheating (overcurrent).
+ * Returns the port state diagnostics. Bit 0 indicates a shortcut on output 0, etc.
+ * Bit 8 indicates a power failure, and bit 9 signals overheating (overcurrent).
  * During normal use, all diagnostic bits should stay clear.
  *
- * @return an integer corresponding to the port state diagnostics (Yocto-IO and Yocto-MaxiIO-V2 only)
+ * @return an integer corresponding to the port state diagnostics
  *
  * On failure, throws an exception or returns YDigitalIO::PORTDIAGS_INVALID.
  */
