@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.h 60355 2024-04-04 07:54:54Z seb $
+ * $Id: ytcp.h 62146 2024-08-13 07:52:22Z seb $
  *
  *  Declaration of a client TCP stack
  *
@@ -119,9 +119,13 @@ int yTcpCheckSocketStillValidBasic(YSOCKET skt, char* errmsg);
 //#define DUMP_YSOCKET_MULTI_TRAFFIC
 
 
+#define YSOCKFLAG_secure 1
+#define YSOCKFLAG_IPV6 2
+#define YSOCKFLAG_SO_BROADCAST 4
+#define YSOCKFLAG_SO_REUSEPORT 5
 typedef struct {
-    int secure_socket;
-
+    u16 secure_socket:1;
+    u16 ipv6:1;
     union {
         YSOCKET basic;
         YSSL_SOCKET secure;
@@ -146,10 +150,10 @@ u32 yTcpGetRcvBufSizeMulti(YSOCKET_MULTI sock);
 int yTcpWriteMulti(YSOCKET_MULTI skt, const u8* buffer, int len, char* errmsg);
 void yTcpShutdownMulti(void);
 
-int yUdpOpenMulti(YSOCKET_MULTI* newskt, IPvX_ADDR* local_ip, u16 local_port, char* errmsg);
+int yUdpOpenMulti(YSOCKET_MULTI *newskt, IPvX_ADDR *local_ip, int sin6_scope_id, u16 port, u16 sockFlags, char *errmsg);
 int yUdpWriteMulti(YSOCKET_MULTI skt, IPvX_ADDR* dest_ip, u16 dest_port, const u8* buffer, int len, char* errmsg);
 int yUdpReadMulti(YSOCKET_MULTI skt, u8* buffer, int len, IPvX_ADDR* dest_ip, u16* dest_port, char* errmsg);
-int yUdpRegisterMCAST(YSOCKET_MULTI skt,  IPvX_ADDR *mcastAddr);
+int yUdpRegisterMCAST(YSOCKET_MULTI skt,  IPvX_ADDR *mcastAddr, int interfaceNo);
 
 struct _RequestSt* yReqAlloc(struct _HubSt* hub);
 int yReqOpen(struct _RequestSt* tcpreq, int wait_for_start, int tcpchan, const char* request, int reqlen, u64 mstimeout, yapiRequestAsyncCallback callback, void* context, yapiRequestProgressCallback progress_cb, void* progress_ctx, char* errmsg);
@@ -172,7 +176,7 @@ void ws_cleanup(struct _HubSt* basehub);
 #define OS_IFACE_CAN_MCAST 1
 
 #ifdef YAPI_IN_YDEVICE
-int yDetectNetworkInterfaces(u32 only_ip, os_ifaces *interfaces, int max_nb_interfaces);
+int yDetectNetworkInterfaces(IPvX_ADDR *only_ip, os_ifaces *interfaces, int max_nb_interfaces);
 #endif
 
 #define SSDP_UUID_LEN   48

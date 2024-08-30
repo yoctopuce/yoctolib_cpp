@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupschedule.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: yocto_wakeupschedule.cpp 62193 2024-08-19 12:20:58Z seb $
  *
  *  Implements yFindWakeUpSchedule(), the high-level API for WakeUpSchedule functions
  *
@@ -629,7 +629,7 @@ s64 YWakeUpSchedule::get_minutes(void)
     s64 res = 0;
 
     res = this->get_minutesB();
-    res = ((res) << (30));
+    res = (res << 30);
     res = res + this->get_minutesA();
     return res;
 }
@@ -645,9 +645,9 @@ s64 YWakeUpSchedule::get_minutes(void)
  */
 int YWakeUpSchedule::set_minutes(s64 bitmap)
 {
-    this->set_minutesA((int)(((bitmap) & (0x3fffffff))));
-    bitmap = ((bitmap) >> (30));
-    return this->set_minutesB((int)(((bitmap) & (0x3fffffff))));
+    this->set_minutesA((int)((bitmap & 0x3fffffff)));
+    bitmap = (bitmap >> 30);
+    return this->set_minutesB((int)((bitmap & 0x3fffffff)));
 }
 
 YWakeUpSchedule *YWakeUpSchedule::nextWakeUpSchedule(void)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_digitalio.cpp 61494 2024-06-17 08:12:29Z seb $
+ *  $Id: yocto_digitalio.cpp 62193 2024-08-19 12:20:58Z seb $
  *
  *  Implements yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -634,7 +634,7 @@ int YDigitalIO::get_bitState(int bitno)
 {
     int portVal = 0;
     portVal = this->get_portState();
-    return ((((portVal) >> (bitno))) & (1));
+    return ((portVal >> bitno) & 1);
 }
 
 /**
@@ -689,7 +689,7 @@ int YDigitalIO::get_bitDirection(int bitno)
 {
     int portDir = 0;
     portDir = this->get_portDirection();
-    return ((((portDir) >> (bitno))) & (1));
+    return ((portDir >> bitno) & 1);
 }
 
 /**
@@ -731,7 +731,7 @@ int YDigitalIO::get_bitPolarity(int bitno)
 {
     int portPol = 0;
     portPol = this->get_portPolarity();
-    return ((((portPol) >> (bitno))) & (1));
+    return ((portPol >> bitno) & 1);
 }
 
 /**
@@ -774,7 +774,7 @@ int YDigitalIO::get_bitOpenDrain(int bitno)
 {
     int portOpenDrain = 0;
     portOpenDrain = this->get_portOpenDrain();
-    return ((((portOpenDrain) >> (bitno))) & (1));
+    return ((portOpenDrain >> bitno) & 1);
 }
 
 /**

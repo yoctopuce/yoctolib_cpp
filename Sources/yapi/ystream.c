@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 57978 2023-11-22 10:09:09Z mvuilleu $
+ * $Id: ystream.c 62257 2024-08-22 06:30:28Z seb $
  *
  * USB stream implementation
  *
@@ -58,8 +58,9 @@
 #else
 #include <sys/time.h>
 #endif
-
+#ifndef  VIRTUAL_HUB
 //#define DEBUG_TRACE_STDOUT
+#endif
 //#define DEBUG_TRACE_FILE "c:\\tmp\\tracefile.txt"
 
 /*****************************************************************************
@@ -253,6 +254,12 @@ int dbglogf(const char* fileid, int line, const char* fmt, ...)
     return len;
 }
 
+void log_hub_stateEx(const char* fileid, int line, HubURLSt *url, char *state, char *con_type)
+{
+    char buffer[256];
+    sprintfURL(buffer, sizeof(buffer), url, 1);
+    dbglogf(fileid,line,"Hub %s is %s (%s)\n", buffer,state, con_type);
+}
 
 #ifdef __BORLANDC__
 #pragma argsused

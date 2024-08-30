@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_colorledcluster.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: yocto_colorledcluster.cpp 62193 2024-08-19 12:20:58Z seb $
  *
  *  Implements yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *
@@ -897,9 +897,9 @@ int YColorLedCluster::set_rgbColorArray(int ledIndex,vector<int> rgbList)
     idx = 0;
     while (idx < listlen) {
         rgb = rgbList[idx];
-        buff[3*idx] = (char)(((((rgb) >> (16))) & (255)));
-        buff[3*idx+1] = (char)(((((rgb) >> (8))) & (255)));
-        buff[3*idx+2] = (char)(((rgb) & (255)));
+        buff[3*idx] = (char)(((rgb >> 16) & 255));
+        buff[3*idx+1] = (char)(((rgb >> 8) & 255));
+        buff[3*idx+2] = (char)((rgb & 255));
         idx = idx + 1;
     }
 
@@ -932,9 +932,9 @@ int YColorLedCluster::rgbArrayOfs_move(int ledIndex,vector<int> rgbList,int dela
     idx = 0;
     while (idx < listlen) {
         rgb = rgbList[idx];
-        buff[3*idx] = (char)(((((rgb) >> (16))) & (255)));
-        buff[3*idx+1] = (char)(((((rgb) >> (8))) & (255)));
-        buff[3*idx+2] = (char)(((rgb) & (255)));
+        buff[3*idx] = (char)(((rgb >> 16) & 255));
+        buff[3*idx+1] = (char)(((rgb >> 8) & 255));
+        buff[3*idx+2] = (char)((rgb & 255));
         idx = idx + 1;
     }
 
@@ -1003,9 +1003,9 @@ int YColorLedCluster::set_hslColorArray(int ledIndex,vector<int> hslList)
     idx = 0;
     while (idx < listlen) {
         hsl = hslList[idx];
-        buff[3*idx] = (char)(((((hsl) >> (16))) & (255)));
-        buff[3*idx+1] = (char)(((((hsl) >> (8))) & (255)));
-        buff[3*idx+2] = (char)(((hsl) & (255)));
+        buff[3*idx] = (char)(((hsl >> 16) & 255));
+        buff[3*idx+1] = (char)(((hsl >> 8) & 255));
+        buff[3*idx+2] = (char)((hsl & 255));
         idx = idx + 1;
     }
 
@@ -1058,9 +1058,9 @@ int YColorLedCluster::hslArrayOfs_move(int ledIndex,vector<int> hslList,int dela
     idx = 0;
     while (idx < listlen) {
         hsl = hslList[idx];
-        buff[3*idx] = (char)(((((hsl) >> (16))) & (255)));
-        buff[3*idx+1] = (char)(((((hsl) >> (8))) & (255)));
-        buff[3*idx+2] = (char)(((hsl) & (255)));
+        buff[3*idx] = (char)(((hsl >> 16) & 255));
+        buff[3*idx+1] = (char)(((hsl >> 8) & 255));
+        buff[3*idx+2] = (char)((hsl & 255));
         idx = idx + 1;
     }
 
@@ -1213,7 +1213,7 @@ vector<int> YColorLedCluster::get_blinkSeqSignatures(int seqIndex,int count)
         hl = ((u8)buff[4*idx+1]);
         lh = ((u8)buff[4*idx+2]);
         ll = ((u8)buff[4*idx+3]);
-        res.push_back(((hh) << (24))+((hl) << (16))+((lh) << (8))+ll);
+        res.push_back((hh << 24)+(hl << 16)+(lh << 8)+ll);
         idx = idx + 1;
     }
     return res;
@@ -1243,7 +1243,7 @@ vector<int> YColorLedCluster::get_blinkSeqStateSpeed(int seqIndex,int count)
     while (idx < count) {
         lh = ((u8)buff[2*idx]);
         ll = ((u8)buff[2*idx+1]);
-        res.push_back(((lh) << (8))+ll);
+        res.push_back((lh << 8)+ll);
         idx = idx + 1;
     }
     return res;
@@ -1308,15 +1308,15 @@ vector<int> YColorLedCluster::get_blinkSeqState(int seqIndex,int count)
 int YColorLedCluster::hsl2rgbInt(int temp1,int temp2,int temp3)
 {
     if (temp3 >= 170) {
-        return (((temp1 + 127)) / (255));
+        return ((temp1 + 127) / 255);
     }
     if (temp3 > 42) {
         if (temp3 <= 127) {
-            return (((temp2 + 127)) / (255));
+            return ((temp2 + 127) / 255);
         }
         temp3 = 170 - temp3;
     }
-    return (((temp1*255 + (temp2-temp1) * (6 * temp3) + 32512)) / (65025));
+    return ((temp1*255 + (temp2-temp1) * (6 * temp3) + 32512) / 65025);
 }
 
 int YColorLedCluster::hsl2rgb(int hslValue)
@@ -1331,11 +1331,11 @@ int YColorLedCluster::hsl2rgb(int hslValue)
     int temp2 = 0;
     int temp3 = 0;
     int res = 0;
-    L = ((hslValue) & (0xff));
-    S = ((((hslValue) >> (8))) & (0xff));
-    H = ((((hslValue) >> (16))) & (0xff));
+    L = (hslValue & 0xff);
+    S = ((hslValue >> 8) & 0xff);
+    H = ((hslValue >> 16) & 0xff);
     if (S==0) {
-        res = ((L) << (16))+((L) << (8))+L;
+        res = (L << 16)+(L << 8)+L;
         return res;
     }
     if (L<=127) {
@@ -1373,7 +1373,7 @@ int YColorLedCluster::hsl2rgb(int hslValue)
     if (B>255) {
         B=255;
     }
-    res = ((R) << (16))+((G) << (8))+B;
+    res = (R << 16)+(G << 8)+B;
     return res;
 }
 

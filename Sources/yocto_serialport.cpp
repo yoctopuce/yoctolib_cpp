@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ * $Id: yocto_serialport.cpp 62193 2024-08-19 12:20:58Z seb $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -1048,7 +1048,7 @@ int YSerialPort::read_avail(void)
     databin = this->_download(YapiWrapper::ysprintf("rxcnt.bin?pos=%d",_rxptr));
     availPosStr = databin;
     atPos = _ystrpos(availPosStr, "@");
-    res = atoi(((availPosStr).substr(0, atPos)).c_str());
+    res = atoi((availPosStr.substr(0, atPos)).c_str());
     return res;
 }
 
@@ -1062,7 +1062,7 @@ int YSerialPort::end_tell(void)
     databin = this->_download(YapiWrapper::ysprintf("rxcnt.bin?pos=%d",_rxptr));
     availPosStr = databin;
     atPos = _ystrpos(availPosStr, "@");
-    res = atoi(((availPosStr).substr(atPos+1, (int)(availPosStr).length()-atPos-1)).c_str());
+    res = atoi((availPosStr.substr(atPos+1, (int)(availPosStr).length()-atPos-1)).c_str());
     return res;
 }
 
@@ -1323,11 +1323,11 @@ int YSerialPort::writeHex(string hexString)
     if (bufflen < 100) {
         return this->sendCommand(YapiWrapper::ysprintf("$%s",hexString.c_str()));
     }
-    bufflen = ((bufflen) >> (1));
+    bufflen = (bufflen >> 1);
     buff = string(bufflen, (char)0);
     idx = 0;
     while (idx < bufflen) {
-        hexb = (int)YAPI::_hexStr2Long((hexString).substr(2 * idx, 2));
+        hexb = (int)YAPI::_hexStr2Long(hexString.substr(2 * idx, 2));
         buff[idx] = (char)(hexb);
         idx = idx + 1;
     }
@@ -1474,7 +1474,7 @@ string YSerialPort::readStr(int nChars)
         bufflen = bufflen - 1;
     }
     _rxptr = endpos;
-    res = (buff).substr(0, bufflen);
+    res = buff.substr(0, bufflen);
     return res;
 }
 
@@ -1853,12 +1853,12 @@ vector<int> YSerialPort::queryMODBUS(int slaveNo,vector<int> pduBytes)
     int replen = 0;
     int hexb = 0;
     funCode = pduBytes[0];
-    nib = ((funCode) >> (4));
-    pat = YapiWrapper::ysprintf("%02X[%X%X]%X.*", slaveNo, nib, (nib+8),((funCode) & (15)));
+    nib = (funCode >> 4);
+    pat = YapiWrapper::ysprintf("%02X[%X%X]%X.*", slaveNo, nib, (nib+8),(funCode & 15));
     cmd = YapiWrapper::ysprintf("%02X%02X", slaveNo,funCode);
     i = 1;
     while (i < (int)pduBytes.size()) {
-        cmd = YapiWrapper::ysprintf("%s%02X", cmd.c_str(),((pduBytes[i]) & (0xff)));
+        cmd = YapiWrapper::ysprintf("%s%02X", cmd.c_str(),(pduBytes[i] & 0xff));
         i = i + 1;
     }
     if ((int)(cmd).length() <= 80) {
@@ -1879,10 +1879,10 @@ vector<int> YSerialPort::queryMODBUS(int slaveNo,vector<int> pduBytes)
     }
     if ((int)reps.size() > 1) {
         rep = this->_json_get_string(reps[0]);
-        replen = (((int)(rep).length() - 3) >> (1));
+        replen = (((int)(rep).length() - 3) >> 1);
         i = 0;
         while (i < replen) {
-            hexb = (int)YAPI::_hexStr2Long((rep).substr(2 * i + 3, 2));
+            hexb = (int)YAPI::_hexStr2Long(rep.substr(2 * i + 3, 2));
             res.push_back(hexb);
             i = i + 1;
         }
@@ -1931,10 +1931,10 @@ vector<int> YSerialPort::modbusReadBits(int slaveNo,int pduAddr,int nBits)
     int val = 0;
     int mask = 0;
     pdu.push_back(0x01);
-    pdu.push_back(((pduAddr) >> (8)));
-    pdu.push_back(((pduAddr) & (0xff)));
-    pdu.push_back(((nBits) >> (8)));
-    pdu.push_back(((nBits) & (0xff)));
+    pdu.push_back((pduAddr >> 8));
+    pdu.push_back((pduAddr & 0xff));
+    pdu.push_back((nBits >> 8));
+    pdu.push_back((nBits & 0xff));
 
     reply = this->queryMODBUS(slaveNo, pdu);
     if ((int)reply.size() == 0) {
@@ -1948,7 +1948,7 @@ vector<int> YSerialPort::modbusReadBits(int slaveNo,int pduAddr,int nBits)
     val = reply[idx];
     mask = 1;
     while (bitpos < nBits) {
-        if (((val) & (mask)) == 0) {
+        if ((val & mask) == 0) {
             res.push_back(0);
         } else {
             res.push_back(1);
@@ -1959,7 +1959,7 @@ vector<int> YSerialPort::modbusReadBits(int slaveNo,int pduAddr,int nBits)
             val = reply[idx];
             mask = 1;
         } else {
-            mask = ((mask) << (1));
+            mask = (mask << 1);
         }
     }
     return res;
@@ -1987,10 +1987,10 @@ vector<int> YSerialPort::modbusReadInputBits(int slaveNo,int pduAddr,int nBits)
     int val = 0;
     int mask = 0;
     pdu.push_back(0x02);
-    pdu.push_back(((pduAddr) >> (8)));
-    pdu.push_back(((pduAddr) & (0xff)));
-    pdu.push_back(((nBits) >> (8)));
-    pdu.push_back(((nBits) & (0xff)));
+    pdu.push_back((pduAddr >> 8));
+    pdu.push_back((pduAddr & 0xff));
+    pdu.push_back((nBits >> 8));
+    pdu.push_back((nBits & 0xff));
 
     reply = this->queryMODBUS(slaveNo, pdu);
     if ((int)reply.size() == 0) {
@@ -2004,7 +2004,7 @@ vector<int> YSerialPort::modbusReadInputBits(int slaveNo,int pduAddr,int nBits)
     val = reply[idx];
     mask = 1;
     while (bitpos < nBits) {
-        if (((val) & (mask)) == 0) {
+        if ((val & mask) == 0) {
             res.push_back(0);
         } else {
             res.push_back(1);
@@ -2015,7 +2015,7 @@ vector<int> YSerialPort::modbusReadInputBits(int slaveNo,int pduAddr,int nBits)
             val = reply[idx];
             mask = 1;
         } else {
-            mask = ((mask) << (1));
+            mask = (mask << 1);
         }
     }
     return res;
@@ -2046,10 +2046,10 @@ vector<int> YSerialPort::modbusReadRegisters(int slaveNo,int pduAddr,int nWords)
         return res;
     }
     pdu.push_back(0x03);
-    pdu.push_back(((pduAddr) >> (8)));
-    pdu.push_back(((pduAddr) & (0xff)));
-    pdu.push_back(((nWords) >> (8)));
-    pdu.push_back(((nWords) & (0xff)));
+    pdu.push_back((pduAddr >> 8));
+    pdu.push_back((pduAddr & 0xff));
+    pdu.push_back((nWords >> 8));
+    pdu.push_back((nWords & 0xff));
 
     reply = this->queryMODBUS(slaveNo, pdu);
     if ((int)reply.size() == 0) {
@@ -2061,7 +2061,7 @@ vector<int> YSerialPort::modbusReadRegisters(int slaveNo,int pduAddr,int nWords)
     regpos = 0;
     idx = 2;
     while (regpos < nWords) {
-        val = ((reply[idx]) << (8));
+        val = (reply[idx] << 8);
         idx = idx + 1;
         val = val + reply[idx];
         idx = idx + 1;
@@ -2092,10 +2092,10 @@ vector<int> YSerialPort::modbusReadInputRegisters(int slaveNo,int pduAddr,int nW
     int idx = 0;
     int val = 0;
     pdu.push_back(0x04);
-    pdu.push_back(((pduAddr) >> (8)));
-    pdu.push_back(((pduAddr) & (0xff)));
-    pdu.push_back(((nWords) >> (8)));
-    pdu.push_back(((nWords) & (0xff)));
+    pdu.push_back((pduAddr >> 8));
+    pdu.push_back((pduAddr & 0xff));
+    pdu.push_back((nWords >> 8));
+    pdu.push_back((nWords & 0xff));
 
     reply = this->queryMODBUS(slaveNo, pdu);
     if ((int)reply.size() == 0) {
@@ -2107,7 +2107,7 @@ vector<int> YSerialPort::modbusReadInputRegisters(int slaveNo,int pduAddr,int nW
     regpos = 0;
     idx = 2;
     while (regpos < nWords) {
-        val = ((reply[idx]) << (8));
+        val = (reply[idx] << 8);
         idx = idx + 1;
         val = val + reply[idx];
         idx = idx + 1;
@@ -2139,8 +2139,8 @@ int YSerialPort::modbusWriteBit(int slaveNo,int pduAddr,int value)
         value = 0xff;
     }
     pdu.push_back(0x05);
-    pdu.push_back(((pduAddr) >> (8)));
-    pdu.push_back(((pduAddr) & (0xff)));
+    pdu.push_back((pduAddr >> 8));
+    pdu.push_back((pduAddr & 0xff));
     pdu.push_back(value);
     pdu.push_back(0x00);
 
@@ -2179,19 +2179,19 @@ int YSerialPort::modbusWriteBits(int slaveNo,int pduAddr,vector<int> bits)
     int res = 0;
     res = 0;
     nBits = (int)bits.size();
-    nBytes = (((nBits + 7)) >> (3));
+    nBytes = ((nBits + 7) >> 3);
     pdu.push_back(0x0f);
-    pdu.push_back(((pduAddr) >> (8)));
-    pdu.push_back(((pduAddr) & (0xff)));
-    pdu.push_back(((nBits) >> (8)));
-    pdu.push_back(((nBits) & (0xff)));
+    pdu.push_back((pduAddr >> 8));
+    pdu.push_back((pduAddr & 0xff));
+    pdu.push_back((nBits >> 8));
+    pdu.push_back((nBits & 0xff));
     pdu.push_back(nBytes);
     bitpos = 0;
     val = 0;
     mask = 1;
     while (bitpos < nBits) {
         if (bits[bitpos] != 0) {
-            val = ((val) | (mask));
+            val = (val | mask);
         }
         bitpos = bitpos + 1;
         if (mask == 0x80) {
@@ -2199,7 +2199,7 @@ int YSerialPort::modbusWriteBits(int slaveNo,int pduAddr,vector<int> bits)
             val = 0;
             mask = 1;
         } else {
-            mask = ((mask) << (1));
+            mask = (mask << 1);
         }
     }
     if (mask != 1) {
@@ -2213,7 +2213,7 @@ int YSerialPort::modbusWriteBits(int slaveNo,int pduAddr,vector<int> bits)
     if (reply[0] != pdu[0]) {
         return res;
     }
-    res = ((reply[3]) << (8));
+    res = (reply[3] << 8);
     res = res + reply[4];
     return res;
 }
@@ -2237,10 +2237,10 @@ int YSerialPort::modbusWriteRegister(int slaveNo,int pduAddr,int value)
     int res = 0;
     res = 0;
     pdu.push_back(0x06);
-    pdu.push_back(((pduAddr) >> (8)));
-    pdu.push_back(((pduAddr) & (0xff)));
-    pdu.push_back(((value) >> (8)));
-    pdu.push_back(((value) & (0xff)));
+    pdu.push_back((pduAddr >> 8));
+    pdu.push_back((pduAddr & 0xff));
+    pdu.push_back((value >> 8));
+    pdu.push_back((value & 0xff));
 
     reply = this->queryMODBUS(slaveNo, pdu);
     if ((int)reply.size() == 0) {
@@ -2278,16 +2278,16 @@ int YSerialPort::modbusWriteRegisters(int slaveNo,int pduAddr,vector<int> values
     nWords = (int)values.size();
     nBytes = 2 * nWords;
     pdu.push_back(0x10);
-    pdu.push_back(((pduAddr) >> (8)));
-    pdu.push_back(((pduAddr) & (0xff)));
-    pdu.push_back(((nWords) >> (8)));
-    pdu.push_back(((nWords) & (0xff)));
+    pdu.push_back((pduAddr >> 8));
+    pdu.push_back((pduAddr & 0xff));
+    pdu.push_back((nWords >> 8));
+    pdu.push_back((nWords & 0xff));
     pdu.push_back(nBytes);
     regpos = 0;
     while (regpos < nWords) {
         val = values[regpos];
-        pdu.push_back(((val) >> (8)));
-        pdu.push_back(((val) & (0xff)));
+        pdu.push_back((val >> 8));
+        pdu.push_back((val & 0xff));
         regpos = regpos + 1;
     }
 
@@ -2298,7 +2298,7 @@ int YSerialPort::modbusWriteRegisters(int slaveNo,int pduAddr,vector<int> values
     if (reply[0] != pdu[0]) {
         return res;
     }
-    res = ((reply[3]) << (8));
+    res = (reply[3] << 8);
     res = res + reply[4];
     return res;
 }
@@ -2331,20 +2331,20 @@ vector<int> YSerialPort::modbusWriteAndReadRegisters(int slaveNo,int pduWriteAdd
     nWriteWords = (int)values.size();
     nBytes = 2 * nWriteWords;
     pdu.push_back(0x17);
-    pdu.push_back(((pduReadAddr) >> (8)));
-    pdu.push_back(((pduReadAddr) & (0xff)));
-    pdu.push_back(((nReadWords) >> (8)));
-    pdu.push_back(((nReadWords) & (0xff)));
-    pdu.push_back(((pduWriteAddr) >> (8)));
-    pdu.push_back(((pduWriteAddr) & (0xff)));
-    pdu.push_back(((nWriteWords) >> (8)));
-    pdu.push_back(((nWriteWords) & (0xff)));
+    pdu.push_back((pduReadAddr >> 8));
+    pdu.push_back((pduReadAddr & 0xff));
+    pdu.push_back((nReadWords >> 8));
+    pdu.push_back((nReadWords & 0xff));
+    pdu.push_back((pduWriteAddr >> 8));
+    pdu.push_back((pduWriteAddr & 0xff));
+    pdu.push_back((nWriteWords >> 8));
+    pdu.push_back((nWriteWords & 0xff));
     pdu.push_back(nBytes);
     regpos = 0;
     while (regpos < nWriteWords) {
         val = values[regpos];
-        pdu.push_back(((val) >> (8)));
-        pdu.push_back(((val) & (0xff)));
+        pdu.push_back((val >> 8));
+        pdu.push_back((val & 0xff));
         regpos = regpos + 1;
     }
 
@@ -2358,7 +2358,7 @@ vector<int> YSerialPort::modbusWriteAndReadRegisters(int slaveNo,int pduWriteAdd
     regpos = 0;
     idx = 2;
     while (regpos < nReadWords) {
-        val = ((reply[idx]) << (8));
+        val = (reply[idx] << 8);
         idx = idx + 1;
         val = val + reply[idx];
         idx = idx + 1;

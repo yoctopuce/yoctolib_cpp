@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 60510 2024-04-12 09:37:02Z seb $
+ * $Id: yocto_api.cpp 62193 2024-08-19 12:20:58Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -1271,7 +1271,7 @@ int YConsolidatedDataSet::nextRecord(vector<double>& datarec)
         s = s + 1;
     }
     if (globprogress > 0) {
-        globprogress = ((globprogress) / (_nsensors));
+        globprogress = (globprogress / _nsensors);
         if (globprogress > 99) {
             globprogress = 99;
         }
@@ -1352,7 +1352,7 @@ int YFirmwareUpdate::_processMore(int newupdate)
             return res;
         }
         _progress_c = res;
-        _progress = ((_progress_c * 9) / (10));
+        _progress = ((_progress_c * 9) / 10);
         _progress_msg = string(errmsg);
     } else {
         if (((int)(_settings).size() != 0) && ( _progress_c != 101)) {
@@ -1522,9 +1522,9 @@ int YFirmwareUpdate::startUpdate(void)
     int leng = 0;
     err = _settings;
     leng = (int)(err).length();
-    if ((leng >= 6) && ("error:" == (err).substr(0, 6))) {
+    if ((leng >= 6) && ("error:" == err.substr(0, 6))) {
         _progress = -1;
-        _progress_msg = (err).substr(6, leng - 6);
+        _progress_msg = err.substr(6, leng - 6);
     } else {
         _progress = 0;
         _progress_c = 0;
@@ -1550,15 +1550,15 @@ int YDataStream::_initFromDataSet(YDataSet* dataset,vector<int> encoded)
     double fRef = 0.0;
     vector<int> iCalib;
     // decode sequence header to extract data
-    _runNo = encoded[0] + (((encoded[1]) << (16)));
-    _utcStamp = encoded[2] + (((encoded[3]) << (16)));
+    _runNo = encoded[0] + ((encoded[1] << 16));
+    _utcStamp = encoded[2] + ((encoded[3] << 16));
     val = encoded[4];
-    _isAvg = (((val) & (0x100)) == 0);
-    samplesPerHour = ((val) & (0xff));
-    if (((val) & (0x100)) != 0) {
+    _isAvg = ((val & 0x100) == 0);
+    samplesPerHour = (val & 0xff);
+    if ((val & 0x100) != 0) {
         samplesPerHour = samplesPerHour * 3600;
     } else {
-        if (((val) & (0x200)) != 0) {
+        if ((val & 0x200) != 0) {
             samplesPerHour = samplesPerHour * 60;
         }
     }
@@ -1630,9 +1630,9 @@ int YDataStream::_initFromDataSet(YDataSet* dataset,vector<int> encoded)
     }
     // decode min/avg/max values for the sequence
     if (_nRows > 0) {
-        _avgVal = this->_decodeAvg(encoded[8] + (((((encoded[9]) ^ (0x8000))) << (16))), 1);
-        _minVal = this->_decodeVal(encoded[10] + (((encoded[11]) << (16))));
-        _maxVal = this->_decodeVal(encoded[12] + (((encoded[13]) << (16))));
+        _avgVal = this->_decodeAvg(encoded[8] + (((encoded[9] ^ 0x8000) << 16)), 1);
+        _minVal = this->_decodeVal(encoded[10] + ((encoded[11] << 16)));
+        _maxVal = this->_decodeVal(encoded[12] + ((encoded[13] << 16)));
     }
     return 0;
 }
@@ -1661,9 +1661,9 @@ int YDataStream::_parseStream(string sdata)
                 dat.push_back(NAN);
                 dat.push_back(NAN);
             } else {
-                dat.push_back(this->_decodeVal(udat[idx + 2] + (((udat[idx + 3]) << (16)))));
-                dat.push_back(this->_decodeAvg(udat[idx] + (((((udat[idx + 1]) ^ (0x8000))) << (16))), 1));
-                dat.push_back(this->_decodeVal(udat[idx + 4] + (((udat[idx + 5]) << (16)))));
+                dat.push_back(this->_decodeVal(udat[idx + 2] + (((udat[idx + 3]) << 16))));
+                dat.push_back(this->_decodeAvg(udat[idx] + ((((udat[idx + 1]) ^ 0x8000) << 16)), 1));
+                dat.push_back(this->_decodeVal(udat[idx + 4] + (((udat[idx + 5]) << 16))));
             }
             idx = idx + 6;
             _values.push_back(dat);
@@ -1674,7 +1674,7 @@ int YDataStream::_parseStream(string sdata)
             if ((udat[idx] == 65535) && (udat[idx + 1] == 65535)) {
                 dat.push_back(NAN);
             } else {
-                dat.push_back(this->_decodeAvg(udat[idx] + (((((udat[idx + 1]) ^ (0x8000))) << (16))), 1));
+                dat.push_back(this->_decodeAvg(udat[idx] + ((((udat[idx + 1]) ^ 0x8000) << 16)), 1));
             }
             _values.push_back(dat);
             idx = idx + 2;
@@ -2537,7 +2537,7 @@ int YDataSet::get_progress(void)
     if (_progress >= (int)_streams.size()) {
         return 100;
     }
-    return ((1 + (1 + _progress) * 98) / ((1 + (int)_streams.size())));
+    return ((1 + (1 + _progress) * 98) / (1 + (int)_streams.size()));
 }
 
 /**
@@ -5395,7 +5395,7 @@ YRETCODE YAPI::InitAPI(int mode, string &errmsg)
  *
  * From an operating system standpoint, it is generally not required to call
  * this function since the OS will automatically free allocated resources
- * once your program is completed. However there are two situations when
+ * once your program is completed. However, there are two situations when
  * you may really want to use that function:
  *
  * - Free all dynamically allocated memory blocks in order to
@@ -5617,7 +5617,7 @@ YRETCODE YAPI::TestHub(const string &url, int mstimeout, string &errmsg)
 
 
 /**
- * Setup the Yoctopuce library to use modules connected on a given machine. Idealy this
+ * Set up the Yoctopuce library to use modules connected on a given machine. Idealy this
  * call will be made once at the begining of your application.  The
  * parameter will determine how the API will work. Use the following values:
  *
@@ -5634,7 +5634,7 @@ YRETCODE YAPI::TestHub(const string &url, int mstimeout, string &errmsg)
  * computer, use the IP address 127.0.0.1. If the given IP is unresponsive, yRegisterHub
  * will not return until a time-out defined by ySetNetworkTimeout has elapsed.
  * However, it is possible to preventively test a connection  with yTestHub.
- * If you cannot afford a network time-out, you can use the non blocking yPregisterHub
+ * If you cannot afford a network time-out, you can use the non-blocking yPregisterHub
  * function that will establish the connection as soon as it is available.
  *
  *
@@ -5649,7 +5649,7 @@ YRETCODE YAPI::TestHub(const string &url, int mstimeout, string &errmsg)
  * while trying to access the USB modules. In particular, this means
  * that you must stop the VirtualHub software before starting
  * an application that uses direct USB access. The workaround
- * for this limitation is to setup the library to use the VirtualHub
+ * for this limitation is to set up the library to use the VirtualHub
  * rather than direct USB access.
  *
  * If access control has been activated on the hub, virtual or not, you want to
@@ -5716,7 +5716,7 @@ YRETCODE YAPI::PreregisterHub(const string &url, string &errmsg)
 }
 
 /**
- * Setup the Yoctopuce library to no more use modules connected on a previously
+ * Set up the Yoctopuce library to no more use modules connected on a previously
  * registered machine with RegisterHub.
  *
  * @param url : a string containing either "usb" or the
@@ -5932,7 +5932,7 @@ u64 YAPI::GetTickCount(void)
 /**
  * Checks if a given string is valid as logical name for a module or a function.
  * A valid logical name has a maximum of 19 characters, all among
- * A..Z, a..z, 0..9, _, and -.
+ * A...Z, a...z, 0...9, _, and -.
  * If you try to configure a logical name with an incorrect string,
  * the invalid characters are ignored.
  *
@@ -7089,13 +7089,13 @@ YFirmwareUpdate YModule::updateFirmware(string path)
 string YModule::get_allSettings(void)
 {
     string settings;
-    string json;
+    string json_bin;
     string res;
     string sep;
     string name;
     string item;
     string t_type;
-    string id;
+    string pageid;
     string url;
     string file_data;
     string file_data_bin;
@@ -7116,11 +7116,11 @@ string YModule::get_allSettings(void)
             url = YapiWrapper::ysprintf("api/%s/sensorType", templist[ii].c_str());
             t_type = this->_download(url);
             if (t_type == "RES_NTC" || t_type == "RES_LINEAR") {
-                id = ( templist[ii]).substr(11, (int)( templist[ii]).length() - 11);
-                if (id == "") {
-                    id = "1";
+                pageid =  templist[ii].substr(11, (int)( templist[ii]).length() - 11);
+                if (pageid == "") {
+                    pageid = "1";
                 }
-                temp_data_bin = this->_download(YapiWrapper::ysprintf("extra.json?page=%s",id.c_str()));
+                temp_data_bin = this->_download(YapiWrapper::ysprintf("extra.json?page=%s",pageid.c_str()));
                 if ((int)(temp_data_bin).size() > 0) {
                     item = YapiWrapper::ysprintf("%s{\"fid\":\"%s\", \"json\":%s}\n", sep.c_str(),  templist[ii].c_str(),temp_data_bin.c_str());
                     ext_settings = ext_settings + item;
@@ -7131,11 +7131,11 @@ string YModule::get_allSettings(void)
     }
     ext_settings = ext_settings + "],\n\"files\":[";
     if (this->hasFunction("files")) {
-        json = this->_download("files.json?a=dir&f=");
-        if ((int)(json).size() == 0) {
-            return json;
+        json_bin = this->_download("files.json?a=dir&f=");
+        if ((int)(json_bin).size() == 0) {
+            return json_bin;
         }
-        filelist = this->_json_get_array(json);
+        filelist = this->_json_get_array(json_bin);
         sep = "";
         for (unsigned ii = 0; ii <  filelist.size(); ii++) {
             name = this->_json_get_key( filelist[ii], "name");
@@ -7210,19 +7210,19 @@ int YModule::set_extraSettings(string jsonExtra)
 int YModule::set_allSettingsAndFiles(string settings)
 {
     string down;
-    string json;
+    string json_bin;
     string json_api;
     string json_files;
     string json_extra;
     int fuperror = 0;
     int globalres = 0;
     fuperror = 0;
-    json = settings;
-    json_api = this->_get_json_path(json, "api");
+    json_bin = settings;
+    json_api = this->_get_json_path(json_bin, "api");
     if (json_api == "") {
         return this->set_allSettings(settings);
     }
-    json_extra = this->_get_json_path(json, "extras");
+    json_extra = this->_get_json_path(json_bin, "extras");
     if (!(json_extra == "")) {
         this->set_extraSettings(json_extra);
     }
@@ -7239,7 +7239,7 @@ int YModule::set_allSettingsAndFiles(string settings)
             _throw((YRETCODE)(YAPI_IO_ERROR), "format failed");
             return YAPI_IO_ERROR;
         }
-        json_files = this->_get_json_path(json, "files");
+        json_files = this->_get_json_path(json_bin, "files");
         files = this->_json_get_array(json_files);
         for (unsigned ii = 0; ii <  files.size(); ii++) {
             name = this->_get_json_path( files[ii], "name");
@@ -7540,7 +7540,7 @@ string YModule::calibConvert(string param,string currentFuncValue,string unit_na
             param = YapiWrapper::ysprintf("%d",30 + calibType);
             i = 0;
             while (i < (int)calibData.size()) {
-                if (((i) & (1)) > 0) {
+                if ((i & 1) > 0) {
                     param = param + ":";
                 } else {
                     param = param + " ";
@@ -7553,7 +7553,7 @@ string YModule::calibConvert(string param,string currentFuncValue,string unit_na
     } else {
         if (funVer >= 1) {
             // Encode parameters for older devices
-            nPoints = (((int)calibData.size()) / (2));
+            nPoints = ((int)calibData.size() / 2);
             param = YapiWrapper::ysprintf("%d",nPoints);
             i = 0;
             while (i < 2 * nPoints) {
@@ -7637,7 +7637,6 @@ int YModule::set_allSettings(string settings)
     string value;
     string url;
     string tmp;
-    string new_calib;
     string sensorType;
     string unit_name;
     string newval;
@@ -7665,9 +7664,9 @@ int YModule::set_allSettings(string settings)
             this->_throw(YAPI_INVALID_ARGUMENT, "Invalid settings");
             return YAPI_INVALID_ARGUMENT;
         }
-        jpath = (each_str).substr(0, eqpos);
+        jpath = each_str.substr(0, eqpos);
         eqpos = eqpos + 1;
-        value = (each_str).substr(eqpos, leng - eqpos);
+        value = each_str.substr(eqpos, leng - eqpos);
         old_jpath.push_back(jpath);
         old_jpath_len.push_back((int)(jpath).length());
         old_val_arr.push_back(value);
@@ -7692,9 +7691,9 @@ int YModule::set_allSettings(string settings)
             this->_throw(YAPI_INVALID_ARGUMENT, "Invalid settings");
             return YAPI_INVALID_ARGUMENT;
         }
-        jpath = (each_str).substr(0, eqpos);
+        jpath = each_str.substr(0, eqpos);
         eqpos = eqpos + 1;
-        value = (each_str).substr(eqpos, leng - eqpos);
+        value = each_str.substr(eqpos, leng - eqpos);
         new_jpath.push_back(jpath);
         new_jpath_len.push_back((int)(jpath).length());
         new_val_arr.push_back(value);
@@ -7707,128 +7706,128 @@ int YModule::set_allSettings(string settings)
         if ((cpos < 0) || (leng == 0)) {
             continue;
         }
-        fun = (njpath).substr(0, cpos);
+        fun = njpath.substr(0, cpos);
         cpos = cpos + 1;
-        attr = (njpath).substr(cpos, leng - cpos);
+        attr = njpath.substr(cpos, leng - cpos);
         do_update = true;
         if (fun == "services") {
             do_update = false;
         }
-        if ((do_update) && (attr == "firmwareRelease")) {
+        if (do_update && (attr == "firmwareRelease")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "usbCurrent")) {
+        if (do_update && (attr == "usbCurrent")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "upTime")) {
+        if (do_update && (attr == "upTime")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "persistentSettings")) {
+        if (do_update && (attr == "persistentSettings")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "adminPassword")) {
+        if (do_update && (attr == "adminPassword")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "userPassword")) {
+        if (do_update && (attr == "userPassword")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "rebootCountdown")) {
+        if (do_update && (attr == "rebootCountdown")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "advertisedValue")) {
+        if (do_update && (attr == "advertisedValue")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "poeCurrent")) {
+        if (do_update && (attr == "poeCurrent")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "readiness")) {
+        if (do_update && (attr == "readiness")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "ipAddress")) {
+        if (do_update && (attr == "ipAddress")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "subnetMask")) {
+        if (do_update && (attr == "subnetMask")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "router")) {
+        if (do_update && (attr == "router")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "linkQuality")) {
+        if (do_update && (attr == "linkQuality")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "ssid")) {
+        if (do_update && (attr == "ssid")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "channel")) {
+        if (do_update && (attr == "channel")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "security")) {
+        if (do_update && (attr == "security")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "message")) {
+        if (do_update && (attr == "message")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "signalValue")) {
+        if (do_update && (attr == "signalValue")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "currentValue")) {
+        if (do_update && (attr == "currentValue")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "currentRawValue")) {
+        if (do_update && (attr == "currentRawValue")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "currentRunIndex")) {
+        if (do_update && (attr == "currentRunIndex")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "pulseTimer")) {
+        if (do_update && (attr == "pulseTimer")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "lastTimePressed")) {
+        if (do_update && (attr == "lastTimePressed")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "lastTimeReleased")) {
+        if (do_update && (attr == "lastTimeReleased")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "filesCount")) {
+        if (do_update && (attr == "filesCount")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "freeSpace")) {
+        if (do_update && (attr == "freeSpace")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "timeUTC")) {
+        if (do_update && (attr == "timeUTC")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "rtcTime")) {
+        if (do_update && (attr == "rtcTime")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "unixTime")) {
+        if (do_update && (attr == "unixTime")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "dateTime")) {
+        if (do_update && (attr == "dateTime")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "rawValue")) {
+        if (do_update && (attr == "rawValue")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "lastMsg")) {
+        if (do_update && (attr == "lastMsg")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "delayedPulseTimer")) {
+        if (do_update && (attr == "delayedPulseTimer")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "rxCount")) {
+        if (do_update && (attr == "rxCount")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "txCount")) {
+        if (do_update && (attr == "txCount")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "msgCount")) {
+        if (do_update && (attr == "msgCount")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "rxMsgCount")) {
+        if (do_update && (attr == "rxMsgCount")) {
             do_update = false;
         }
-        if ((do_update) && (attr == "txMsgCount")) {
+        if (do_update && (attr == "txMsgCount")) {
             do_update = false;
         }
         if (do_update) {
@@ -7852,7 +7851,6 @@ int YModule::set_allSettings(string settings)
                 old_calib = "";
                 unit_name = "";
                 sensorType = "";
-                new_calib = newval;
                 j = 0;
                 found = false;
                 while ((j < (int)old_jpath.size()) && !(found)) {
@@ -9065,7 +9063,7 @@ int YSensor::_parserHelper(void)
     if (_ystrpos(_calibrationParam, ",") >= 0) {
         // Plain text format
         iCalib = YAPI::_decodeFloats(_calibrationParam);
-        _caltyp = ((iCalib[0]) / (1000));
+        _caltyp = (iCalib[0] / 1000);
         if (_caltyp > 0) {
             if (_caltyp < YOCTO_CALIB_TYPE_OFS) {
                 // Unknown calibration type: calibrated value will be provided by the device
@@ -9483,7 +9481,7 @@ YMeasure YSensor::_decodeTimedReport(double timestamp,double duration,vector<int
             poww = poww * 0x100;
             i = i + 1;
         }
-        if (((byteVal) & (0x80)) != 0) {
+        if ((byteVal & 0x80) != 0) {
             avgRaw = avgRaw - poww;
         }
         avgVal = avgRaw / 1000.0;
@@ -9496,7 +9494,7 @@ YMeasure YSensor::_decodeTimedReport(double timestamp,double duration,vector<int
         maxVal = avgVal;
     } else {
         // averaged report: avg,avg-min,max-avg
-        sublen = 1 + ((report[1]) & (3));
+        sublen = 1 + (report[1] & 3);
         poww = 1;
         avgRaw = 0;
         byteVal = 0;
@@ -9508,10 +9506,10 @@ YMeasure YSensor::_decodeTimedReport(double timestamp,double duration,vector<int
             i = i + 1;
             sublen = sublen - 1;
         }
-        if (((byteVal) & (0x80)) != 0) {
+        if ((byteVal & 0x80) != 0) {
             avgRaw = avgRaw - poww;
         }
-        sublen = 1 + ((((report[1]) >> (2))) & (3));
+        sublen = 1 + ((report[1] >> 2) & 3);
         poww = 1;
         difRaw = 0;
         while ((sublen > 0) && (i < (int)report.size())) {
@@ -9522,7 +9520,7 @@ YMeasure YSensor::_decodeTimedReport(double timestamp,double duration,vector<int
             sublen = sublen - 1;
         }
         minRaw = avgRaw - difRaw;
-        sublen = 1 + ((((report[1]) >> (4))) & (3));
+        sublen = 1 + ((report[1] >> 4) & 3);
         poww = 1;
         difRaw = 0;
         while ((sublen > 0) && (i < (int)report.size())) {
@@ -10168,13 +10166,13 @@ vector<YDataSet> YDataLogger::get_dataSets(void)
     return this->parse_dataSets(this->_download("logger.json"));
 }
 
-vector<YDataSet> YDataLogger::parse_dataSets(string json)
+vector<YDataSet> YDataLogger::parse_dataSets(string jsonbuff)
 {
     vector<string> dslist;
     YDataSet* dataset = NULL;
     vector<YDataSet> res;
 
-    dslist = this->_json_get_array(json);
+    dslist = this->_json_get_array(jsonbuff);
     res.clear();
     for (unsigned ii = 0; ii < dslist.size(); ii++) {
         dataset = new YDataSet(this);

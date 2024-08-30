@@ -256,6 +256,12 @@
       <Unit filename="../../../Sources/yocto_messagebox.h"></Unit>
          <Option virtualFolder="Yoctopuce" />
       </Unit>
+      <Unit filename="../../../Sources/yocto_micropython.cpp"></Unit>
+         <Option virtualFolder="Yoctopuce" />
+      </Unit>
+      <Unit filename="../../../Sources/yocto_micropython.h"></Unit>
+         <Option virtualFolder="Yoctopuce" />
+      </Unit>
       <Unit filename="../../../Sources/yocto_motor.cpp"></Unit>
          <Option virtualFolder="Yoctopuce" />
       </Unit>
@@ -750,6 +756,10 @@
          <Option  compilerVar="CC" />
       </Unit>
       <Unit filename="../../../Sources/yapi/mbedtls/library/pk.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/pk_ecc.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>

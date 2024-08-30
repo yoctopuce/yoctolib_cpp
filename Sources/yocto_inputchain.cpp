@@ -756,7 +756,7 @@ int YInputChain::_invokeValueCallback(string value)
 
 /**
  * Resets the application watchdog countdown.
- * If you have setup a non-zero watchdogPeriod, you should
+ * If you have set up a non-zero watchdogPeriod, you should
  * call this function on a regular basis to prevent the application
  * inactivity error to be triggered.
  *
@@ -866,7 +866,7 @@ int YInputChain::_internalEventHandler(string cbpos)
     // last element of array is the new position preceeded by '@'
     arrLen = arrLen - 1;
     lenStr = eventArr[arrLen];
-    lenStr = (lenStr).substr(1, (int)(lenStr).length()-1);
+    lenStr = lenStr.substr(1, (int)(lenStr).length()-1);
     // update processed event position pointer
     _eventPos = atoi((lenStr).c_str());
     // now generate callbacks for each event received
@@ -875,17 +875,17 @@ int YInputChain::_internalEventHandler(string cbpos)
         eventStr = eventArr[arrPos];
         eventLen = (int)(eventStr).length();
         if (eventLen >= 1) {
-            hexStamp = (eventStr).substr(0, 8);
+            hexStamp = eventStr.substr(0, 8);
             evtStamp = (int)YAPI::_hexStr2Long(hexStamp);
             typePos = _ystrpos(eventStr, ":")+1;
             if ((evtStamp >= _eventStamp) && (typePos > 8)) {
                 _eventStamp = evtStamp;
                 dataPos = _ystrpos(eventStr, "=")+1;
-                evtType = (eventStr).substr(typePos, 1);
+                evtType = eventStr.substr(typePos, 1);
                 evtData = "";
                 evtChange = "";
                 if (dataPos > 10) {
-                    evtData = (eventStr).substr(dataPos, (int)(eventStr).length()-dataPos);
+                    evtData = eventStr.substr(dataPos, (int)(eventStr).length()-dataPos);
                     if (_ystrpos("1234567", evtType) >= 0) {
                         chainIdx = atoi((evtType).c_str()) - 1;
                         evtChange = this->_strXor(evtData, _eventChains[chainIdx]);
@@ -912,19 +912,19 @@ string YInputChain::_strXor(string a,string b)
     lenA = (int)(a).length();
     lenB = (int)(b).length();
     if (lenA > lenB) {
-        res = (a).substr(0, lenA-lenB);
-        a = (a).substr(lenA-lenB, lenB);
+        res = a.substr(0, lenA-lenB);
+        a = a.substr(lenA-lenB, lenB);
         lenA = lenB;
     } else {
         res = "";
-        b = (b).substr(lenA-lenB, lenA);
+        b = b.substr(lenA-lenB, lenA);
     }
     // scan strings and compare digit by digit
     idx = 0;
     while (idx < lenA) {
-        digitA = (int)YAPI::_hexStr2Long((a).substr(idx, 1));
-        digitB = (int)YAPI::_hexStr2Long((b).substr(idx, 1));
-        res = YapiWrapper::ysprintf("%s%x", res.c_str(),((digitA) ^ (digitB)));
+        digitA = (int)YAPI::_hexStr2Long(a.substr(idx, 1));
+        digitB = (int)YAPI::_hexStr2Long(b.substr(idx, 1));
+        res = YapiWrapper::ysprintf("%s%x", res.c_str(),(digitA ^ digitB));
         idx = idx + 1;
     }
     return res;
@@ -941,11 +941,11 @@ vector<int> YInputChain::hex2array(string hexstr)
     idx = hexlen;
     while (idx > 0) {
         idx = idx - 1;
-        digit = (int)YAPI::_hexStr2Long((hexstr).substr(idx, 1));
-        res.push_back(((digit) & (1)));
-        res.push_back(((((digit) >> (1))) & (1)));
-        res.push_back(((((digit) >> (2))) & (1)));
-        res.push_back(((((digit) >> (3))) & (1)));
+        digit = (int)YAPI::_hexStr2Long(hexstr.substr(idx, 1));
+        res.push_back((digit & 1));
+        res.push_back(((digit >> 1) & 1));
+        res.push_back(((digit >> 2) & 1));
+        res.push_back(((digit >> 3) & 1));
     }
     return res;
 }

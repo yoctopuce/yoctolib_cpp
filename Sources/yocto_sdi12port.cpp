@@ -348,8 +348,8 @@ void YSdi12SensorInfo::_parseInfoStr(string infoStr)
     string errmsg;
 
     if ((int)(infoStr).length() > 1) {
-        if ((infoStr).substr(0, 2) == "ER") {
-            errmsg = (infoStr).substr(2, (int)(infoStr).length()-2);
+        if (infoStr.substr(0, 2) == "ER") {
+            errmsg = infoStr.substr(2, (int)(infoStr).length()-2);
             _addr = errmsg;
             _proto = errmsg;
             _mfg = errmsg;
@@ -358,12 +358,12 @@ void YSdi12SensorInfo::_parseInfoStr(string infoStr)
             _sn = errmsg;
             _isValid = false;
         } else {
-            _addr = (infoStr).substr(0, 1);
-            _proto = (infoStr).substr(1, 2);
-            _mfg = (infoStr).substr(3, 8);
-            _model = (infoStr).substr(11, 6);
-            _ver = (infoStr).substr(17, 3);
-            _sn = (infoStr).substr(20, (int)(infoStr).length()-20);
+            _addr = infoStr.substr(0, 1);
+            _proto = infoStr.substr(1, 2);
+            _mfg = infoStr.substr(3, 8);
+            _model = infoStr.substr(11, 6);
+            _ver = infoStr.substr(17, 3);
+            _sn = infoStr.substr(20, (int)(infoStr).length()-20);
             _isValid = true;
         }
     }
@@ -389,7 +389,7 @@ void YSdi12SensorInfo::_queryValueInfo(void)
     while (k < 10) {
         infoNbVal = _sdi12Port->querySdi12(_addr, YapiWrapper::ysprintf("IM%d",k), 5000);
         if ((int)(infoNbVal).length() > 1) {
-            value = (infoNbVal).substr(4, (int)(infoNbVal).length()-4);
+            value = infoNbVal.substr(4, (int)(infoNbVal).length()-4);
             nbVal = atoi((value).c_str());
             if (nbVal != 0) {
                 val.clear();
@@ -1308,7 +1308,7 @@ int YSdi12Port::read_avail(void)
     databin = this->_download(YapiWrapper::ysprintf("rxcnt.bin?pos=%d",_rxptr));
     availPosStr = databin;
     atPos = _ystrpos(availPosStr, "@");
-    res = atoi(((availPosStr).substr(0, atPos)).c_str());
+    res = atoi((availPosStr.substr(0, atPos)).c_str());
     return res;
 }
 
@@ -1322,7 +1322,7 @@ int YSdi12Port::end_tell(void)
     databin = this->_download(YapiWrapper::ysprintf("rxcnt.bin?pos=%d",_rxptr));
     availPosStr = databin;
     atPos = _ystrpos(availPosStr, "@");
-    res = atoi(((availPosStr).substr(atPos+1, (int)(availPosStr).length()-atPos-1)).c_str());
+    res = atoi((availPosStr.substr(atPos+1, (int)(availPosStr).length()-atPos-1)).c_str());
     return res;
 }
 
@@ -1583,11 +1583,11 @@ int YSdi12Port::writeHex(string hexString)
     if (bufflen < 100) {
         return this->sendCommand(YapiWrapper::ysprintf("$%s",hexString.c_str()));
     }
-    bufflen = ((bufflen) >> (1));
+    bufflen = (bufflen >> 1);
     buff = string(bufflen, (char)0);
     idx = 0;
     while (idx < bufflen) {
-        hexb = (int)YAPI::_hexStr2Long((hexString).substr(2 * idx, 2));
+        hexb = (int)YAPI::_hexStr2Long(hexString.substr(2 * idx, 2));
         buff[idx] = (char)(hexb);
         idx = idx + 1;
     }
@@ -1734,7 +1734,7 @@ string YSdi12Port::readStr(int nChars)
         bufflen = bufflen - 1;
     }
     _rxptr = endpos;
-    res = (buff).substr(0, bufflen);
+    res = buff.substr(0, bufflen);
     return res;
 }
 
@@ -1896,7 +1896,7 @@ string YSdi12Port::querySdi12(string sensorAddr,string cmd,int maxWait)
 
     pattern = sensorAddr;
     if ((int)(cmd).length() > 0) {
-        cmdChar = (cmd).substr(0, 1);
+        cmdChar = cmd.substr(0, 1);
     }
     if (sensorAddr == "?") {
         pattern = "..*";
@@ -1982,14 +1982,14 @@ vector<YSdi12SensorInfo> YSdi12Port::discoverAllSensors(void)
     lettreMaj = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     i = 0;
     while (i<26) {
-        res = this->querySdi12((lettreMin).substr(i, 1),"!",500);
+        res = this->querySdi12(lettreMin.substr(i, 1),"!",500);
         if ((int)(res).length() >= 1) {
             idSens.push_back(res);
         }
         i = i +1;
     }
     while (i<26) {
-        res = this->querySdi12((lettreMaj).substr(i, 1),"!",500);
+        res = this->querySdi12(lettreMaj.substr(i, 1),"!",500);
         if ((int)(res).length() >= 1) {
             idSens.push_back(res);
         }
@@ -2125,7 +2125,7 @@ int YSdi12Port::requestConcurrentMeasurements(string sensorAddr)
     string wait;
 
     wait = this->querySdi12(sensorAddr,"C",1000);
-    wait = (wait).substr(1, 3);
+    wait = wait.substr(1, 3);
     timewait = atoi((wait).c_str()) * 1000;
     return timewait;
 }

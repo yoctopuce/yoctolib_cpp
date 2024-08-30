@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ * $Id: yocto_cellular.cpp 62193 2024-08-19 12:20:58Z seb $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -1153,7 +1153,7 @@ int YCellular::_invokeValueCallback(string value)
 
 /**
  * Sends a PUK code to unlock the SIM card after three failed PIN code attempts, and
- * setup a new PIN into the SIM card. Only ten consecutive tentatives are permitted:
+ * set up a new PIN into the SIM card. Only ten consecutive tentatives are permitted:
  * after that, the SIM card will be blocked permanently without any mean of recovery
  * to use it again. Note that after calling this method, you have usually to invoke
  * method set_pin() to tell the YoctoHub which PIN to use in the future.
@@ -1169,7 +1169,7 @@ int YCellular::sendPUK(string puk,string newPin)
 {
     string gsmMsg;
     gsmMsg = this->get_message();
-    if (!((gsmMsg).substr(0, 13) == "Enter SIM PUK")) {
+    if (!(gsmMsg.substr(0, 13) == "Enter SIM PUK")) {
         _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "PUK not expected at this time");
         return YAPI_INVALID_ARGUMENT;
     }
@@ -1241,19 +1241,19 @@ string YCellular::_AT(string cmd)
     cmdLen = (int)(cmd).length();
     chrPos = _ystrpos(cmd, "#");
     while (chrPos >= 0) {
-        cmd = YapiWrapper::ysprintf("%s%c23%s", (cmd).substr(0, chrPos).c_str(), 37,(cmd).substr(chrPos+1, cmdLen-chrPos-1).c_str());
+        cmd = YapiWrapper::ysprintf("%s%c23%s", cmd.substr(0, chrPos).c_str(), 37,cmd.substr(chrPos+1, cmdLen-chrPos-1).c_str());
         cmdLen = cmdLen + 2;
         chrPos = _ystrpos(cmd, "#");
     }
     chrPos = _ystrpos(cmd, "+");
     while (chrPos >= 0) {
-        cmd = YapiWrapper::ysprintf("%s%c2B%s", (cmd).substr(0, chrPos).c_str(), 37,(cmd).substr(chrPos+1, cmdLen-chrPos-1).c_str());
+        cmd = YapiWrapper::ysprintf("%s%c2B%s", cmd.substr(0, chrPos).c_str(), 37,cmd.substr(chrPos+1, cmdLen-chrPos-1).c_str());
         cmdLen = cmdLen + 2;
         chrPos = _ystrpos(cmd, "+");
     }
     chrPos = _ystrpos(cmd, "=");
     while (chrPos >= 0) {
-        cmd = YapiWrapper::ysprintf("%s%c3D%s", (cmd).substr(0, chrPos).c_str(), 37,(cmd).substr(chrPos+1, cmdLen-chrPos-1).c_str());
+        cmd = YapiWrapper::ysprintf("%s%c3D%s", cmd.substr(0, chrPos).c_str(), 37,cmd.substr(chrPos+1, cmdLen-chrPos-1).c_str());
         cmdLen = cmdLen + 2;
         chrPos = _ystrpos(cmd, "=");
     }
@@ -1273,8 +1273,8 @@ string YCellular::_AT(string cmd)
         if (((u8)buff[idx]) == 64) {
             // continuation detected
             suffixlen = bufflen - idx;
-            cmd = YapiWrapper::ysprintf("at.txt?cmd=%s",(buffstr).substr(buffstrlen - suffixlen, suffixlen).c_str());
-            buffstr = (buffstr).substr(0, buffstrlen - suffixlen);
+            cmd = YapiWrapper::ysprintf("at.txt?cmd=%s",buffstr.substr(buffstrlen - suffixlen, suffixlen).c_str());
+            buffstr = buffstr.substr(0, buffstrlen - suffixlen);
             waitMore = waitMore - 1;
         } else {
             // request complete
@@ -1307,14 +1307,14 @@ vector<string> YCellular::get_availableOperators(void)
     idx = _ystrpos(cops, "(");
     while (idx >= 0) {
         slen = slen - (idx+1);
-        cops = (cops).substr(idx+1, slen);
+        cops = cops.substr(idx+1, slen);
         idx = _ystrpos(cops, "\"");
         if (idx > 0) {
             slen = slen - (idx+1);
-            cops = (cops).substr(idx+1, slen);
+            cops = cops.substr(idx+1, slen);
             idx = _ystrpos(cops, "\"");
             if (idx > 0) {
-                res.push_back((cops).substr(0, idx));
+                res.push_back(cops.substr(0, idx));
             }
         }
         idx = _ystrpos(cops, "(");
@@ -1349,20 +1349,20 @@ vector<YCellRecord> YCellular::quickCellSurvey(void)
     vector<YCellRecord> res;
 
     moni = this->_AT("+CCED=0;#MONI=7;#MONI");
-    mccs = (moni).substr(7, 3);
-    if ((mccs).substr(0, 1) == "0") {
-        mccs = (mccs).substr(1, 2);
+    mccs = moni.substr(7, 3);
+    if (mccs.substr(0, 1) == "0") {
+        mccs = mccs.substr(1, 2);
     }
-    if ((mccs).substr(0, 1) == "0") {
-        mccs = (mccs).substr(1, 1);
+    if (mccs.substr(0, 1) == "0") {
+        mccs = mccs.substr(1, 1);
     }
     mcc = atoi((mccs).c_str());
-    mncs = (moni).substr(11, 3);
-    if ((mncs).substr(2, 1) == ",") {
-        mncs = (mncs).substr(0, 2);
+    mncs = moni.substr(11, 3);
+    if (mncs.substr(2, 1) == ",") {
+        mncs = mncs.substr(0, 2);
     }
-    if ((mncs).substr(0, 1) == "0") {
-        mncs = (mncs).substr(1, (int)(mncs).length()-1);
+    if (mncs.substr(0, 1) == "0") {
+        mncs = mncs.substr(1, (int)(mncs).length()-1);
     }
     mnc = atoi((mncs).c_str());
     recs = _strsplit(moni,'#');
@@ -1371,21 +1371,21 @@ vector<YCellRecord> YCellular::quickCellSurvey(void)
     for (unsigned ii = 0; ii < recs.size(); ii++) {
         llen = (int)(recs[ii]).length() - 2;
         if (llen >= 44) {
-            if ((recs[ii]).substr(41, 3) == "dbm") {
-                lac = (int)YAPI::_hexStr2Long((recs[ii]).substr(16, 4));
-                cellId = (int)YAPI::_hexStr2Long((recs[ii]).substr(23, 4));
-                dbms = (recs[ii]).substr(37, 4);
-                if ((dbms).substr(0, 1) == " ") {
-                    dbms = (dbms).substr(1, 3);
+            if (recs[ii].substr(41, 3) == "dbm") {
+                lac = (int)YAPI::_hexStr2Long(recs[ii].substr(16, 4));
+                cellId = (int)YAPI::_hexStr2Long(recs[ii].substr(23, 4));
+                dbms = recs[ii].substr(37, 4);
+                if (dbms.substr(0, 1) == " ") {
+                    dbms = dbms.substr(1, 3);
                 }
                 dbm = atoi((dbms).c_str());
                 if (llen > 66) {
-                    tads = (recs[ii]).substr(54, 2);
-                    if ((tads).substr(0, 1) == " ") {
-                        tads = (tads).substr(1, 3);
+                    tads = recs[ii].substr(54, 2);
+                    if (tads.substr(0, 1) == " ") {
+                        tads = tads.substr(1, 3);
                     }
                     tad = atoi((tads).c_str());
-                    oper = (recs[ii]).substr(66, llen-66);
+                    oper = recs[ii].substr(66, llen-66);
                 } else {
                     tad = -1;
                     oper = "";
@@ -1412,18 +1412,18 @@ string YCellular::imm_decodePLMN(string mccmnc)
     if (inputlen < 5) {
         return mccmnc;
     }
-    mcc = atoi(((mccmnc).substr(0, 3)).c_str());
+    mcc = atoi((mccmnc.substr(0, 3)).c_str());
     if (mcc < 200) {
         return mccmnc;
     }
-    if ((mccmnc).substr(3, 1) == " ") {
+    if (mccmnc.substr(3, 1) == " ") {
         npos = 4;
     } else {
         npos = 3;
     }
     plmnid = mcc;
     while (plmnid < 100000 && npos < inputlen) {
-        ch = (mccmnc).substr(npos, 1);
+        ch = mccmnc.substr(npos, 1);
         nval = atoi((ch).c_str());
         if (ch == YapiWrapper::ysprintf("%d",nval)) {
             plmnid = plmnid * 10 + nval;
@@ -5884,7 +5884,7 @@ vector<string> YCellular::get_communicationProfiles(void)
         line = lines[idx];
         cpos = _ystrpos(line, ":");
         if (cpos > 0) {
-            profno = atoi(((line).substr(0, cpos)).c_str());
+            profno = atoi((line.substr(0, cpos)).c_str());
             if (profno > 1) {
                 res.push_back(line);
             }

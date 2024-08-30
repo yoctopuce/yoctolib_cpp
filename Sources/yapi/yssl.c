@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yssl.c 60747 2024-04-25 08:15:16Z seb $
+ * $Id: yssl.c 61962 2024-07-29 15:24:28Z seb $
  *
  * Implementation of a client TCP stack with SSL
  *
@@ -303,14 +303,8 @@ int yssl_generate_certificate(const char *keyfile, const char *certfile,
     san_p = san_p->next;
     san_p->next = alloc_san_obj("127.0.0.1");
     for (i = 0; i < nbiface; i++) {
-        unsigned char bytes[4];
         char buffer[128];
-        san_p = san_p->next;
-        bytes[0] = ifaces[i].ip & 0xFF;
-        bytes[1] = (ifaces[i].ip >> 8) & 0xFF;
-        bytes[2] = (ifaces[i].ip >> 16) & 0xFF;
-        bytes[3] = (ifaces[i].ip >> 24) & 0xFF;
-        YSPRINTF(buffer, 125, "%d.%d.%d.%d", bytes[0], bytes[1], bytes[2], bytes[3]);
+        iptoa(&ifaces[i].ip, buffer);
         san_p->next = alloc_san_obj(buffer);
     }
     ret = mbedtls_x509write_crt_set_subject_alternative_name(&crt, san_list);

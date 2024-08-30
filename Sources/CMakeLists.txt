@@ -48,6 +48,7 @@ set(YoctoLibHSources
 	yocto_longitude.h
 	yocto_magnetometer.h
 	yocto_messagebox.h
+	yocto_micropython.h
 	yocto_motor.h
 	yocto_multiaxiscontroller.h
 	yocto_multicellweighscale.h
@@ -129,6 +130,7 @@ set(YoctoLibCppSources
 	yocto_longitude.cpp
 	yocto_magnetometer.cpp
 	yocto_messagebox.cpp
+	yocto_micropython.cpp
 	yocto_motor.cpp
 	yocto_multiaxiscontroller.cpp
 	yocto_multicellweighscale.cpp

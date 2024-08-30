@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_refframe.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: yocto_refframe.cpp 62193 2024-08-19 12:20:58Z seb $
  *
  *  Implements yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -149,7 +149,7 @@ int YRefFrame::set_mountPos(int newval)
  * indicated by the compass is the difference between the measured magnetic
  * heading and the reference bearing indicated here.
  *
- * For instance, if you setup as reference bearing the value of the earth
+ * For instance, if you set up as reference bearing the value of the earth
  * magnetic declination, the compass will provide the orientation relative
  * to the geographic North.
  *
@@ -421,7 +421,7 @@ Y_MOUNTPOSITION YRefFrame::get_mountPosition(void)
     if (position < 0) {
         return Y_MOUNTPOSITION_INVALID;
     }
-    return (Y_MOUNTPOSITION) ((position) >> (2));
+    return (Y_MOUNTPOSITION) (position >> 2);
 }
 
 /**
@@ -446,7 +446,7 @@ Y_MOUNTORIENTATION YRefFrame::get_mountOrientation(void)
     if (position < 0) {
         return Y_MOUNTORIENTATION_INVALID;
     }
-    return (Y_MOUNTORIENTATION) ((position) & (3));
+    return (Y_MOUNTORIENTATION) (position & 3);
 }
 
 /**
@@ -477,7 +477,7 @@ Y_MOUNTORIENTATION YRefFrame::get_mountOrientation(void)
 int YRefFrame::set_mountPosition(Y_MOUNTPOSITION position,Y_MOUNTORIENTATION orientation)
 {
     int mixedPos = 0;
-    mixedPos = ((position) << (2)) + orientation;
+    mixedPos = (position << 2) + orientation;
     return this->set_mountPos(mixedPos);
 }
 
@@ -504,11 +504,11 @@ int YRefFrame::get_calibrationState(void)
 
     calibParam = this->get_calibrationParam();
     iCalib = YAPI::_decodeFloats(calibParam);
-    caltyp = ((iCalib[0]) / (1000));
+    caltyp = (iCalib[0] / 1000);
     if (caltyp != 33) {
         return YAPI_NOT_SUPPORTED;
     }
-    res = ((iCalib[1]) / (1000));
+    res = (iCalib[1] / 1000);
     return res;
 }
 
@@ -534,11 +534,11 @@ int YRefFrame::get_measureQuality(void)
 
     calibParam = this->get_calibrationParam();
     iCalib = YAPI::_decodeFloats(calibParam);
-    caltyp = ((iCalib[0]) / (1000));
+    caltyp = (iCalib[0] / 1000);
     if (caltyp != 33) {
         return YAPI_NOT_SUPPORTED;
     }
-    res = ((iCalib[2]) / (1000));
+    res = (iCalib[2] / 1000);
     return res;
 }
 
@@ -616,7 +616,7 @@ int YRefFrame::start3DCalibration(void)
     _calibStageProgress = 0;
     _calibProgress = 1;
     _calibInternalPos = 0;
-    _calibPrevTick = (int) ((YAPI::GetTickCount()) & (0x7FFFFFFF));
+    _calibPrevTick = (int) ((YAPI::GetTickCount()) & 0x7FFFFFFF);
     _calibOrient.clear();
     _calibDataAccX.clear();
     _calibDataAccY.clear();
@@ -666,14 +666,14 @@ int YRefFrame::more3DCalibrationV1(void)
         return YAPI_SUCCESS;
     }
     // make sure we leave at least 160 ms between samples
-    currTick =  (int) ((YAPI::GetTickCount()) & (0x7FFFFFFF));
-    if (((currTick - _calibPrevTick) & (0x7FFFFFFF)) < 160) {
+    currTick =  (int) ((YAPI::GetTickCount()) & 0x7FFFFFFF);
+    if (((currTick - _calibPrevTick) & 0x7FFFFFFF) < 160) {
         return YAPI_SUCCESS;
     }
     // load current accelerometer values, make sure we are on a straight angle
     // (default timeout to 0,5 sec without reading measure when out of range)
     _calibStageHint = "Set down the device on a steady horizontal surface";
-    _calibPrevTick = ((currTick + 500) & (0x7FFFFFFF));
+    _calibPrevTick = ((currTick + 500) & 0x7FFFFFFF);
     jsonData = this->_download("api/accelerometer.json");
     xVal = atoi((this->_json_get_key(jsonData, "xValue")).c_str()) / 65536.0;
     yVal = atoi((this->_json_get_key(jsonData, "yValue")).c_str()) / 65536.0;
@@ -757,15 +757,15 @@ int YRefFrame::more3DCalibrationV1(void)
     _calibDataAccZ.push_back(zVal);
     _calibDataAcc.push_back(norm);
     _calibInternalPos = _calibInternalPos + 1;
-    _calibProgress = 1 + 16 * (_calibStage - 1) + ((16 * _calibInternalPos) / (_calibCount));
+    _calibProgress = 1 + 16 * (_calibStage - 1) + ((16 * _calibInternalPos) / _calibCount);
     if (_calibInternalPos < _calibCount) {
-        _calibStageProgress = 1 + ((99 * _calibInternalPos) / (_calibCount));
+        _calibStageProgress = 1 + ((99 * _calibInternalPos) / _calibCount);
         return YAPI_SUCCESS;
     }
     // Stage done, compute preliminary result
     intpos = (_calibStage - 1) * _calibCount;
     this->_calibSort(intpos, intpos + _calibCount);
-    intpos = intpos + ((_calibCount) / (2));
+    intpos = intpos + (_calibCount / 2);
     _calibLogMsg = YapiWrapper::ysprintf("Stage %d: median is %d,%d,%d", _calibStage,
     (int) floor(1000*_calibDataAccX[intpos]+0.5),
     (int) floor(1000*_calibDataAccY[intpos]+0.5),(int) floor(1000*_calibDataAccZ[intpos]+0.5));
@@ -773,7 +773,7 @@ int YRefFrame::more3DCalibrationV1(void)
     _calibStage = _calibStage + 1;
     if (_calibStage < 7) {
         _calibStageHint = "Turn the device on another face";
-        _calibPrevTick = ((currTick + 500) & (0x7FFFFFFF));
+        _calibPrevTick = ((currTick + 500) & 0x7FFFFFFF);
         _calibStageProgress = 0;
         _calibInternalPos = 0;
         return YAPI_SUCCESS;
@@ -784,7 +784,7 @@ int YRefFrame::more3DCalibrationV1(void)
     zVal = 0;
     idx = 0;
     while (idx < 6) {
-        intpos = idx * _calibCount + ((_calibCount) / (2));
+        intpos = idx * _calibCount + (_calibCount / 2);
         orient = _calibOrient[idx];
         if (orient == 0 || orient == 1) {
             zVal = zVal + _calibDataAccZ[intpos];
@@ -822,7 +822,7 @@ int YRefFrame::more3DCalibrationV1(void)
     zVal = 0;
     idx = 0;
     while (idx < 6) {
-        intpos = idx * _calibCount + ((_calibCount) / (2));
+        intpos = idx * _calibCount + (_calibCount / 2);
         orient = _calibOrient[idx];
         if (orient == 0 || orient == 1) {
             zVal = zVal + _calibDataAcc[intpos];
@@ -862,11 +862,11 @@ int YRefFrame::more3DCalibrationV2(void)
     }
     // make sure we don't start before previous calibration is cleared
     if (_calibStage == 1) {
-        currTick = (int) ((YAPI::GetTickCount()) & (0x7FFFFFFF));
-        currTick = ((currTick - _calibPrevTick) & (0x7FFFFFFF));
+        currTick = (int) ((YAPI::GetTickCount()) & 0x7FFFFFFF);
+        currTick = ((currTick - _calibPrevTick) & 0x7FFFFFFF);
         if (currTick < 1600) {
             _calibStageHint = "Set down the device on a steady horizontal surface";
-            _calibStageProgress = ((currTick) / (40));
+            _calibStageProgress = (currTick / 40);
             _calibProgress = 1;
             return YAPI_SUCCESS;
         }
@@ -874,9 +874,9 @@ int YRefFrame::more3DCalibrationV2(void)
 
     calibParam = this->_download("api/refFrame/calibrationParam.txt");
     iCalib = YAPI::_decodeFloats(calibParam);
-    cal3 = ((iCalib[1]) / (1000));
-    calAcc = ((cal3) / (100));
-    calMag = ((cal3) / (10)) - 10*calAcc;
+    cal3 = (iCalib[1] / 1000);
+    calAcc = (cal3 / 100);
+    calMag = (cal3 / 10) - 10*calAcc;
     calGyr = ((cal3) % (10));
     if (calGyr < 3) {
         _calibStageHint = "Set down the device on a steady horizontal surface";
@@ -1021,9 +1021,9 @@ int YRefFrame::save3DCalibrationV1(void)
         }
     }
     if (scaleExp > 0) {
-        scaleX = ((scaleX) >> (scaleExp));
-        scaleY = ((scaleY) >> (scaleExp));
-        scaleZ = ((scaleZ) >> (scaleExp));
+        scaleX = (scaleX >> scaleExp);
+        scaleY = (scaleY >> scaleExp);
+        scaleZ = (scaleZ >> scaleExp);
     }
     if (scaleX < 0) {
         scaleX = scaleX + 1024;
@@ -1034,8 +1034,8 @@ int YRefFrame::save3DCalibrationV1(void)
     if (scaleZ < 0) {
         scaleZ = scaleZ + 1024;
     }
-    scaleLo = ((((scaleY) & (15))) << (12)) + ((scaleX) << (2)) + scaleExp;
-    scaleHi = ((scaleZ) << (6)) + ((scaleY) >> (4));
+    scaleLo = ((scaleY & 15) << 12) + (scaleX << 2) + scaleExp;
+    scaleHi = (scaleZ << 6) + (scaleY >> 4);
     // Save calibration parameters
     newcalib = YapiWrapper::ysprintf("5,%d,%d,%d,%d,%d", shiftX, shiftY, shiftZ, scaleLo,scaleHi);
     _calibStage = 0;

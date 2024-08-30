@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwmoutput.h 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: yocto_pwmoutput.h 61964 2024-07-29 15:54:55Z seb $
  *
  *  Declares yFindPwmOutput(), the high-level API for PwmOutput functions
  *
@@ -96,7 +96,7 @@ typedef enum {
  * YPwmOutput Class: PWM generator control interface, available for instance in the Yocto-PWM-Tx
  *
  * The YPwmOutput class allows you to drive a pulse-width modulated output (PWM).
- * You can configure the frequency as well as the duty cycle, and setup progressive
+ * You can configure the frequency as well as the duty cycle, and set up progressive
  * transitions.
  */
 class YOCTO_CLASS_EXPORT YPwmOutput: public YFunction {

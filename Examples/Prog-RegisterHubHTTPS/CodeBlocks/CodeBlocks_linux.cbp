@@ -315,6 +315,10 @@
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/pk_ecc.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
       <Unit filename="../../../Sources/yapi/mbedtls/library/pkcs12.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />

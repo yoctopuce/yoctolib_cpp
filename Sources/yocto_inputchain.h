@@ -451,7 +451,7 @@ public:
 
     /**
      * Resets the application watchdog countdown.
-     * If you have setup a non-zero watchdogPeriod, you should
+     * If you have set up a non-zero watchdogPeriod, you should
      * call this function on a regular basis to prevent the application
      * inactivity error to be triggered.
      *

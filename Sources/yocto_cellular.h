@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.h 59978 2024-03-18 15:04:46Z mvuilleu $
+ * $Id: yocto_cellular.h 61964 2024-07-29 15:54:55Z seb $
  *
  * Declares yFindCellular(), the high-level API for Cellular functions
  *
@@ -721,7 +721,7 @@ public:
 
     /**
      * Sends a PUK code to unlock the SIM card after three failed PIN code attempts, and
-     * setup a new PIN into the SIM card. Only ten consecutive tentatives are permitted:
+     * set up a new PIN into the SIM card. Only ten consecutive tentatives are permitted:
      * after that, the SIM card will be blocked permanently without any mean of recovery
      * to use it again. Note that after calling this method, you have usually to invoke
      * method set_pin() to tell the YoctoHub which PIN to use in the future.

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 60947 2024-05-15 08:10:06Z seb $
+ * $Id: yapi.c 62257 2024-08-22 06:30:28Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -3927,6 +3927,7 @@ static void* yhelper_thread(void *ctx)
                                         if (!memcmp((u8*)buffer, (u8*)"HTTP/1.1 200", 12)) {
                                             hub->state = NET_HUB_ESTABLISHED;
                                             setNotificationConnectionON(hub);
+                                            log_hub_state(&hub->url, "connected", "HTTP");
                                         }
                                     } else if (eoh >= 2) {
                                         yPopFifo(&(hub->not_fifo), (u8*)buffer, 2);
@@ -3934,6 +3935,7 @@ static void* yhelper_thread(void *ctx)
                                         if (!memcmp((u8*)buffer, (u8*)"OK", 2)) {
                                             hub->state = NET_HUB_ESTABLISHED;
                                             setNotificationConnectionON(hub);
+                                            log_hub_state(&hub->url, "connected", "HTTP");
                                         }
                                     }
                                     if (hub->state != NET_HUB_ESTABLISHED) {
@@ -3951,14 +3953,13 @@ static void* yhelper_thread(void *ctx)
                             hub->http.lastTraffic = yapiGetTickCount();
                         } else {
                             if (hub->send_ping && ((u64)(yapiGetTickCount() - hub->http.lastTraffic)) > NET_HUB_NOT_CONNECTION_TIMEOUT) {
-#ifdef TRACE_NET_HUB
 
                                 dbglog("network hub %s didn't respond for too long (%d)\n", hub->url.org_url, res);
-#endif
                                 // hub did not send data for too long. Close the connection and bring it back.
                                 yReqClose(req);
                                 hub->state = NET_HUB_DISCONNECTED;
                                 setNotificationConnectionOFF(hub);
+                                log_hub_state(&hub->url, "disconnected", "HTTP");
                             }
                             // nothing more to be read, exit loop
                             break;
@@ -3992,6 +3993,7 @@ static void* yhelper_thread(void *ctx)
                             hub->errcode = ySetErr(res, hub->errmsg, errmsg, NULL, 0);
                             yLeaveCriticalSection(&hub->access);
                         }
+                        log_hub_state(&hub->url, "disconnected", "HTTP");
 #ifdef DEBUG_NET_NOTIFICATION
                         YSPRINTF(Dbuffer, 1024, "Network hub %s has closed the connection for notification\n", hub->url.host);
                         dumpNotif(Dbuffer);
@@ -4195,7 +4197,7 @@ static YRETCODE yapiRegisterHubEx(const char *url, int checkacces, char *errmsg)
         if (checkacces) {
             // ensure the thread has been able to connect to the hub
             u64 timeout = yapiGetTickCount() + YctxNetworkTimeout;
-            while (!isNotificationConnectionON(hubst) && hubst->state != NET_HUB_CLOSED && timeout > yapiGetTickCount()) {
+            while (!isNotificationConnectionON(hubst) && hubst->errcode==YAPI_SUCCESS && timeout > yapiGetTickCount()) {
                 yapiSleep(100, errmsg);
             }
             if (!isNotificationConnectionON(hubst)) {
@@ -4468,18 +4470,15 @@ static YRETCODE yapiTestHub_internal(const char *url, int mstimeout, char *errms
 {
     int freeApi = 0;
     int res;
-
+    if (YSTRICMP(url, "net") == 0) {
+        return YERRMSG(YAPI_INVALID_ARGUMENT, "Invalid URL");
+    }
     if (!yContext) {
         YPROPERR(yapiInitAPI_internal(0, NULL, NULL, errmsg));
         freeApi = 1;
     }
 
     if (YSTRICMP(url, "usb") == 0) {
-        if (freeApi) {
-            yapiFreeAPI_internal();
-        }
-        res = YAPI_SUCCESS;
-    } else if (YSTRICMP(url, "net") == 0) {
         if (freeApi) {
             yapiFreeAPI_internal();
         }
@@ -4508,7 +4507,7 @@ static YRETCODE yapiTestHub_internal(const char *url, int mstimeout, char *errms
 
                 // ensure the thread has been able to connect to the hub
                 timeout = yapiGetTickCount() + mstimeout;
-                while (!isNotificationConnectionON(hubst) && hubst->state != NET_HUB_CLOSED && timeout > yapiGetTickCount()) {
+                while (!isNotificationConnectionON(hubst) && hubst->errcode==YAPI_SUCCESS && timeout > yapiGetTickCount()) {
                     yapiSleep(10, errmsg);
                 }
                 if (!isNotificationConnectionON(hubst)) {

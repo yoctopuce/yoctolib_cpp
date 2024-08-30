@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef_private.h 61107 2024-05-24 07:59:31Z mvuilleu $
+ * $Id: ydef_private.h 62135 2024-08-12 07:37:33Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -45,11 +45,12 @@ extern "C" {
 
 #include "ydef.h"
 
+#define OS_IFACE_NAME_MAX_LEN 128
 typedef struct {
     u32 flags;
-    u32 ip;
-    u32 netmask;
-    char ipa[128];
+    IPvX_ADDR ip;
+    char name[OS_IFACE_NAME_MAX_LEN];
+    int ifindex;
 } os_ifaces;
 
 #if defined(WINDOWS_API)

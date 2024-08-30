@@ -238,16 +238,16 @@ string YRfidOptions::imm_getParams(void)
         opt = 0;
     }
     if (ForceMultiBlockAccess) {
-        opt = ((opt) | (2));
+        opt = (opt | 2);
     }
     if (EnableRawAccess) {
-        opt = ((opt) | (4));
+        opt = (opt | 4);
     }
     if (DisableBoundaryChecks) {
-        opt = ((opt) | (8));
+        opt = (opt | 8);
     }
     if (EnableDryRun) {
-        opt = ((opt) | (16));
+        opt = (opt | 16);
     }
     res = YapiWrapper::ysprintf("&o=%d",opt);
     if (KeyType != 0) {
@@ -1096,8 +1096,8 @@ vector<bool> YRfidReader::get_tagLockState(string tagId,int firstBlock,int nBloc
     binRes = YAPI::_hexStr2Bin(this->_json_get_key(json, "bitmap"));
     idx = 0;
     while (idx < nBlocks) {
-        val = ((u8)binRes[((idx) >> (3))]);
-        isLocked = (((val) & (((1) << (((idx) & (7)))))) != 0);
+        val = ((u8)binRes[(idx >> 3)]);
+        isLocked = ((val & (1 << (idx & 7))) != 0);
         res.push_back(isLocked);
         idx = idx + 1;
     }
@@ -1144,8 +1144,8 @@ vector<bool> YRfidReader::get_tagSpecialBlocks(string tagId,int firstBlock,int n
     binRes = YAPI::_hexStr2Bin(this->_json_get_key(json, "bitmap"));
     idx = 0;
     while (idx < nBlocks) {
-        val = ((u8)binRes[((idx) >> (3))]);
-        isLocked = (((val) & (((1) << (((idx) & (7)))))) != 0);
+        val = ((u8)binRes[(idx >> 3)]);
+        isLocked = ((val & (1 << (idx & 7))) != 0);
         res.push_back(isLocked);
         idx = idx + 1;
     }
@@ -1413,7 +1413,7 @@ int YRfidReader::tagWriteHex(string tagId,int firstBlock,string hexString,YRfidO
     int idx = 0;
     int hexb = 0;
     bufflen = (int)(hexString).length();
-    bufflen = ((bufflen) >> (1));
+    bufflen = (bufflen >> 1);
     if (bufflen <= 16) {
         // short data, use an URL-based command
         optstr = options.imm_getParams();
@@ -1425,7 +1425,7 @@ int YRfidReader::tagWriteHex(string tagId,int firstBlock,string hexString,YRfidO
         buff = string(bufflen, (char)0);
         idx = 0;
         while (idx < bufflen) {
-            hexb = (int)YAPI::_hexStr2Long((hexString).substr(2 * idx, 2));
+            hexb = (int)YAPI::_hexStr2Long(hexString.substr(2 * idx, 2));
             buff[idx] = (char)(hexb);
             idx = idx + 1;
         }
@@ -1723,8 +1723,8 @@ int YRfidReader::_internalEventHandler(string cbVal)
     string evtData;
     // detect possible power cycle of the reader to clear event pointer
     cbPos = atoi((cbVal).c_str());
-    cbPos = ((cbPos) / (1000));
-    cbDPos = ((cbPos - _prevCbPos) & (0x7ffff));
+    cbPos = (cbPos / 1000);
+    cbDPos = ((cbPos - _prevCbPos) & 0x7ffff);
     _prevCbPos = cbPos;
     if (cbDPos > 16384) {
         _eventPos = 0;
@@ -1748,7 +1748,7 @@ int YRfidReader::_internalEventHandler(string cbVal)
         // first element of array is the new position preceeded by '@'
         arrPos = 1;
         lenStr = eventArr[0];
-        lenStr = (lenStr).substr(1, (int)(lenStr).length()-1);
+        lenStr = lenStr.substr(1, (int)(lenStr).length()-1);
         // update processed event position pointer
         _eventPos = atoi((lenStr).c_str());
     } else {
@@ -1766,7 +1766,7 @@ int YRfidReader::_internalEventHandler(string cbVal)
         arrPos = 0;
         arrLen = arrLen - 1;
         lenStr = eventArr[arrLen];
-        lenStr = (lenStr).substr(1, (int)(lenStr).length()-1);
+        lenStr = lenStr.substr(1, (int)(lenStr).length()-1);
         // update processed event position pointer
         _eventPos = atoi((lenStr).c_str());
     }
@@ -1776,18 +1776,18 @@ int YRfidReader::_internalEventHandler(string cbVal)
         eventLen = (int)(eventStr).length();
         typePos = _ystrpos(eventStr, ":")+1;
         if ((eventLen >= 14) && (typePos > 10)) {
-            hexStamp = (eventStr).substr(0, 8);
+            hexStamp = eventStr.substr(0, 8);
             intStamp = (int)YAPI::_hexStr2Long(hexStamp);
             if (intStamp >= _eventStamp) {
                 _eventStamp = intStamp;
-                binMStamp = (eventStr).substr(8, 2);
+                binMStamp = eventStr.substr(8, 2);
                 msStamp = (((u8)binMStamp[0])-64) * 32 + ((u8)binMStamp[1]);
                 evtStamp = intStamp + (0.001 * msStamp);
                 dataPos = _ystrpos(eventStr, "=")+1;
-                evtType = (eventStr).substr(typePos, 1);
+                evtType = eventStr.substr(typePos, 1);
                 evtData = "";
                 if (dataPos > 10) {
-                    evtData = (eventStr).substr(dataPos, eventLen-dataPos);
+                    evtData = eventStr.substr(dataPos, eventLen-dataPos);
                 }
                 if (_eventCallback != NULL) {
                     _eventCallback(this, evtStamp, evtType, evtData);

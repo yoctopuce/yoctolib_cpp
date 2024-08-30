@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_temperature.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: yocto_temperature.cpp 62193 2024-08-19 12:20:58Z seb $
  *
  *  Implements yFindTemperature(), the high-level API for Temperature functions
  *
@@ -557,14 +557,14 @@ int YTemperature::loadThermistorResponseTable(vector<double>& tempValues,vector<
     resValues.clear();
 
     id = this->get_functionId();
-    id = (id).substr(11, (int)(id).length() - 11);
+    id = id.substr(11, (int)(id).length() - 11);
     if (id == "") {
         id = "1";
     }
     bin_json = this->_download(YapiWrapper::ysprintf("extra.json?page=%s",id.c_str()));
     paramlist = this->_json_get_array(bin_json);
     // first convert all temperatures to float
-    siz = (((int)paramlist.size()) >> (1));
+    siz = ((int)paramlist.size() >> 1);
     templist.clear();
     idx = 0;
     while (idx < siz) {

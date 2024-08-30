@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multisenscontroller.h 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: yocto_multisenscontroller.h 61964 2024-07-29 15:54:55Z seb $
  *
  *  Declares yFindMultiSensController(), the high-level API for MultiSensController functions
  *
@@ -78,7 +78,7 @@ typedef enum {
  * YMultiSensController Class: Sensor chain configuration interface, available for instance in the
  * Yocto-Temperature-IR
  *
- * The YMultiSensController class allows you to setup a customized
+ * The YMultiSensController class allows you to set up a customized
  * sensor chain on devices featuring that functionality.
  */
 class YOCTO_CLASS_EXPORT YMultiSensController: public YFunction {

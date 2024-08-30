@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 60810 2024-04-30 10:36:37Z seb $
+ * $Id: yproto.h 62257 2024-08-22 06:30:28Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -1103,6 +1103,8 @@ void ypUpdateYdx(int devydx, Notification_funydx funInfo, const char* funcval);
 /**********************************************************************
   GENERIC DEVICE LIST FUNCTION
  **********************************************************************/
+#define log_hub_state(url, state, con_type) log_hub_stateEx(__FILENAME__,__LINE__, url, state, con_type)
+void log_hub_stateEx(const char* fileid, int line, HubURLSt* url, char* state, char* con_type);
 
 // return the yDeviceSt *from a matching string (serial or name)
 #define FIND_FROM_SERIAL 1

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 61481 2024-06-14 12:29:18Z mvuilleu $
+ * $Id: ytcp.c 62257 2024-08-22 06:30:28Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -304,9 +304,40 @@ static int yNetLogErrEx(u32 line, unsigned err)
 }
 #endif
 
+//#define DEBUG_SOCKET_USAGE
 #ifdef DEBUG_SOCKET_USAGE
 
+
+static void dump_udp_packet(char *str, const u8 *buffer, int size, IPvX_ADDR *remote_ip, u16 port, YSOCKET skt)
+{
+    int pos, j;
+    char buff[IPSTR_SIZE];
+    iptoa(remote_ip, buff);
+    dbglog("UDP: %s %d bytes addr=%s port=%d (sock=%d)\n", str, size, buff, port, skt);
+#if 1
+    for (pos = 0; pos < size; pos += 16) {
+        char buffer2[32];
+        memset(buffer2, '.', 16);
+
+        for (j = 0; j < 16 && pos + j < size; j++) {
+            if (buffer[pos + j] >= ' ') {
+                buffer2[j] = buffer[pos + j];
+            }
+        }
+        buffer2[j] = 0;
+        dbglog("UDP: %02x.%02x.%02x.%02x %02x.%02x.%02x.%02x %02x.%02x.%02x.%02x %02x.%02x.%02x.%02x    %s\n",
+               buffer[pos+0], buffer[pos+1], buffer[pos+2], buffer[pos+3],
+               buffer[pos+4], buffer[pos+5], buffer[pos+6], buffer[pos+7],
+               buffer[pos+8], buffer[pos+9], buffer[pos+10], buffer[pos+11],
+               buffer[pos+12], buffer[pos+13], buffer[pos+14], buffer[pos+15],
+               (char*)buffer2);
+    }
+#endif
+}
+
+
 #define yclosesocket(skt) yclosesocket_ex(__FILENAME__, __LINE__, skt)
+
 void yclosesocket_ex(const char *file, int line, YSOCKET skt)
 {
     dbglogf(file, line, "close socket %x\n", skt);
@@ -315,34 +346,117 @@ void yclosesocket_ex(const char *file, int line, YSOCKET skt)
 
 
 #define ysocket(domain, type, protocol) ysocket_ex(__FILENAME__, __LINE__, domain, type, protocol)
+
 YSOCKET ysocket_ex(const char *file, int line, int domain, int type, int protocol)
 {
     YSOCKET skt = socket(domain, type, protocol);
-    dbglogf(file, line, "open socket %x (%x,%x,%x)\n", skt, domain, type, protocol);
+    dbglogf(file, line, "open socket %d (%x,%x,%x)\n", skt, domain, type, protocol);
     return skt;
 }
 
+#define ybind(skt, addr, addrlen) ybind_ex(__FILENAME__, __LINE__, skt, addr, addrlen)
+
+int ybind_ex(const char *file, int line, YSOCKET skt, struct sockaddr *addr, socklen_t addrlen)
+{
+    int res = bind(skt, addr, addrlen);
+    if (res < 0) {
+        char errmsg[YOCTO_ERRMSG_LEN];
+        int err = SOCK_ERR;
+        yNetSetErrEx(__FILENAME__, __LINE__, err, errmsg);
+        dbglogf(file, line, "bind failed with code %d: %s (skt=%d, addr=%p len=%d)\n", err, errmsg, skt, addr, addrlen);
+    }
+    if (addrlen == sizeof(struct sockaddr_in6)) {
+        struct sockaddr_in6 *p = (struct sockaddr_in6*)addr;
+        u8 *d = (u8*)&p->sin6_addr;
+        dbglogf(file, line, "bind ipv6 skt=%d, ptr=%p len=%d\n", skt, addr, addrlen);
+        dbglogf(file, line, "family=%d sin6_port=%x(=%d) scope_id=%d flowinfo=%d\n", p->sin6_family, p->sin6_port, ntohs(p->sin6_port), p->sin6_scope_id, p->sin6_flowinfo);
+        dbglogf(file, line, "addr=%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x:%x\n",
+                d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[8], d[9], d[10], d[11], d[12], d[13], d[14], d[15]);
+    } else if (addrlen == sizeof(struct sockaddr_in)) {
+        struct sockaddr_in *p = (struct sockaddr_in*)addr;
+        u8 *d = (u8*)&p->sin_addr;
+        dbglogf(file, line, "bind ipv4 skt=%d, ptr=%p len=%d\n", skt, addr, addrlen);
+        dbglogf(file, line, "family=%d sin6_port=%x(=%d)\n", p->sin_family, p->sin_port, ntohs(p->sin_port));
+        dbglogf(file, line, "addr=%d.%d.%d.%d\n", d[0], d[1], d[2], d[3]);
+    } else {
+        dbglogf(file, line, "bind skt=%d, addr=%p len=%d\n", skt, addr, addrlen);
+    }
+    return res;
+}
+
+
 #define ysend(skt, buf, len, flags) ysend_ex(__FILENAME__, __LINE__, skt, buf, len, flags)
-int ysend_ex(const char * file, int line, YSOCKET skt, const char* buffer, int tosend, int  flags)
+
+int ysend_ex(const char *file, int line, YSOCKET skt, const char *buffer, int tosend, int flags)
 {
     int res = (int)send(skt, buffer, tosend, flags);
     //dbglogf(file, line, "send socket %x (%d,%x -> %d)\n", skt, tosend, flags, res);
-    return  res;
+    return res;
+}
+
+#define ysendto(skt, buf, len, flags, dst, addrlen) ysendto_ex(__FILENAME__, __LINE__, skt, buf, len, flags, dst, addrlen)
+
+int ysendto_ex(const char *file, int line, YSOCKET skt, const char *buffer, int len, int flags, const struct sockaddr *dest_addr, socklen_t addrlen)
+
+{
+    IPvX_ADDR remote_ip;
+    u16 remote_port;
+    int res = (int)sendto(skt, buffer, len, flags, dest_addr, addrlen);
+    dbglogf(file, line, "sendto socket %d (%d,%x -> %d)\n", skt, len, flags, res);
+    if (addrlen == sizeof(struct sockaddr_in6)) {
+        struct sockaddr_in6 *addr_ipv6 = (struct sockaddr_in6*)dest_addr;
+        memcpy(&remote_ip.v6.addr, &addr_ipv6->sin6_addr, sizeof(addr_ipv6->sin6_addr));
+        remote_port = ntohs(addr_ipv6->sin6_port);
+    } else {
+        struct sockaddr_in *addr_ipv4 = (struct sockaddr_in*)dest_addr;
+        setIPv4Val(&remote_ip, addr_ipv4->sin_addr.s_addr);
+        remote_port = ntohs(addr_ipv4->sin_port);
+    }
+    dump_udp_packet("write", (const u8*)buffer, res, &remote_ip, remote_port, skt);
+    return res;
 }
 
 #define yrecv(skt, buf, len, flags) yrecv_ex(__FILENAME__, __LINE__, skt, buf, len, flags)
-int yrecv_ex(const char * file, int line, YSOCKET skt, char *buf, int len, int flags)
+
+int yrecv_ex(const char *file, int line, YSOCKET skt, char *buf, int len, int flags)
 {
     int res = recv(skt, buf, len, flags);
     //dbglogf(file, line, "read socket %x (%d,%x -> %d)\n", skt, len, flags, res);
-    return  res;
+    return res;
 }
+
+#define  yrecvfrom(skt, buf, len, flags, src, src_len) yrecvfrom_ex(__FILENAME__, __LINE__, skt, buf, len, flags, src, src_len)
+
+int yrecvfrom_ex(const char *file, int line, YSOCKET skt, char *buf, int len, int flags, struct sockaddr *src_addr, socklen_t *addrlen)
+{
+    IPvX_ADDR remote_ip;
+    u16 remote_port;
+    int res = (int)recvfrom(skt, buf, len, flags, src_addr, addrlen);
+    if (*addrlen == sizeof(struct sockaddr_in6)) {
+        struct sockaddr_in6 *addr_ipv6 = (struct sockaddr_in6*)src_addr;
+        memcpy(&remote_ip.v6.addr, &addr_ipv6->sin6_addr, sizeof(addr_ipv6->sin6_addr));
+        remote_port = ntohs(addr_ipv6->sin6_port);
+    } else {
+        struct sockaddr_in *addr_ipv4 = (struct sockaddr_in*)src_addr;
+        setIPv4Val(&remote_ip, addr_ipv4->sin_addr.s_addr);
+        remote_port = ntohs(addr_ipv4->sin_port);
+    }
+    if (res >= 0) {
+        dbglogf(file, line, "read from socket %d (%d,%x -> %d)\n", skt, len, flags, res);
+        dump_udp_packet("read", (const u8*)buf, res, &remote_ip, remote_port, skt);
+    }
+    return res;
+}
+
 
 #else
 #define yclosesocket(skt) closesocket(skt)
 #define ysocket(domain, type, protocol) socket(domain, type, protocol)
+#define ybind(socket, addr, len) bind(socket, addr, len)
 #define ysend(skt, buf, len, flags) send(skt, buf, len, flags)
+#define ysendto(skt, buf, len, flags, addr, addrlen) sendto(skt, buf, len, flags, addr, addrlen)
 #define yrecv(skt, buf, len, flags) recv(skt, buf, len, flags)
+#define yrecvfrom(skt, buf, len, flags, addr, addrlen) recvfrom(skt, buf, len, flags, addr, addrlen)
 #endif
 
 void yInitWakeUpSocket(WakeUpSocket *wuce)
@@ -374,7 +488,7 @@ int yStartWakeUpSocket(WakeUpSocket *wuce, char *errmsg)
     memset(&localh, 0, localh_size);
     localh.sin_family = AF_INET;
     localh.sin_addr.s_addr = inet_addr("127.0.0.1");
-    if (bind(wuce->listensock, (struct sockaddr*)&localh, localh_size) < 0) {
+    if (ybind(wuce->listensock, (struct sockaddr*)&localh, localh_size) < 0) {
         return yNetSetErr();
     }
     if (getsockname(wuce->listensock, (struct sockaddr*)&localh, &localh_size) < 0) {
@@ -976,7 +1090,7 @@ int yTcpInitMulti(char *errmsg)
 int yTcpOpenMulti(YSOCKET_MULTI *newskt, const char *host, u16 port, int useSSL, u64 mstimeout, char *errmsg)
 {
     YSOCKET_MULTI tmpsock;
-    MTCPLOG("MTCP: Open %p [dst=%d:%d %dms]\n", newskt, ip, port, mstimeout);
+    MTCPLOG("MTCP: Open %p [dst=%s:%d %dms]\n", newskt, host, port, mstimeout);
     tmpsock = yMalloc(sizeof(YSOCKET_MULTI_ST));
     memset(tmpsock, 0, sizeof(YSOCKET_MULTI_ST));
 #ifdef DUMP_YSOCKET_MULTI_TRAFFIC
@@ -1427,7 +1541,7 @@ exit:
                     }
                     *d = 0;
                     if (expiration > yapiGetTickCount()) {
-                         u32 remaining_ms = (u32)(expiration - yapiGetTickCount());
+                        u32 remaining_ms = (u32)(expiration - yapiGetTickCount());
                         return yTcpDownloadEx(redirect_buff, host, port, usessl, out_buffer, remaining_ms, errmsg);
                     } else {
                         return YERR(YAPI_TIMEOUT);
@@ -1894,16 +2008,42 @@ static int yHTTPMultiSelectReq(struct _RequestSt **reqs, int size, u64 ms, WakeU
 }
 
 
-int yUdpOpenMulti(YSOCKET_MULTI *newskt, IPvX_ADDR *local_ip, u16 port, char *errmsg)
+int yUdpOpenMulti(YSOCKET_MULTI *newskt, IPvX_ADDR *local_ip, int sin6_scope_id, u16 port, u16 sockFlags, char *errmsg)
 {
-    int res;
+    int res, sockfamily, addrlen;
     u32 optval;
-    socklen_t socksize;
-    struct sockaddr_in sockaddr;
     YSOCKET sock;
+    u8 addr[sizeof(struct sockaddr_storage)];
+    memset(addr, 0, sizeof(struct sockaddr_storage));
+#if defined(DEBUG_MULTI_TCP) || defined(DEBUG_SOCKET_USAGE)
+    char buff[IPSTR_SIZE];
+#endif
 
-    MTCPLOG("MUdp: Open %p [dst=%d:%d]\n", newskt, local_ip->v4.addr.Val, port);
-    sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (sockFlags & YSOCKFLAG_IPV6) {
+        struct sockaddr_in6 *addr_v6 = (struct sockaddr_in6*)&addr;
+        sockfamily = PF_INET6;
+        addr_v6->sin6_family = AF_INET6;
+        if (local_ip) {
+            memcpy(&addr_v6->sin6_addr, local_ip->v6.addr, sizeof(addr_v6->sin6_addr));
+            addr_v6->sin6_scope_id = sin6_scope_id;
+        } else {
+            addr_v6->sin6_addr = in6addr_any;
+        }
+        addr_v6->sin6_port = htons(port);
+        addrlen = sizeof(struct sockaddr_in6);
+    } else {
+        struct sockaddr_in *addr_v4 = (struct sockaddr_in*)&addr;
+        sockfamily = PF_INET;
+        addr_v4->sin_family = AF_INET;
+        if (local_ip) {
+            addr_v4->sin_addr.s_addr = local_ip->v4.addr.Val;
+        } else {
+            addr_v4->sin_addr.s_addr = INADDR_ANY;
+        }
+        addr_v4->sin_port = htons(port);
+        addrlen = sizeof(struct sockaddr_in);
+    }
+    sock = ysocket(sockfamily, SOCK_DGRAM, IPPROTO_UDP);
     if (sock == INVALID_SOCKET) {
         return yNetLogErr();
     }
@@ -1915,79 +2055,124 @@ int yUdpOpenMulti(YSOCKET_MULTI *newskt, IPvX_ADDR *local_ip, u16 port, char *er
         return res;
     }
 #ifdef SO_REUSEPORT
-    setsockopt(sock, SOL_SOCKET, SO_REUSEPORT, (char *)&optval, sizeof(optval));
-#endif
-    // set port to 0 since we accept any port
-    socksize = sizeof(struct sockaddr_in);
-    memset(&sockaddr, 0, socksize);
-    sockaddr.sin_family = AF_INET;
-    if (local_ip) {
-        sockaddr.sin_addr.s_addr = local_ip->v4.addr.Val;
-    } else {
-        sockaddr.sin_addr.s_addr = INADDR_ANY;
+    if (sockFlags & YSOCKFLAG_SO_REUSEPORT) {
+        setsockopt(sock, SOL_SOCKET, SO_REUSEPORT, (char *)&optval, sizeof(optval));
     }
-    sockaddr.sin_port = htons(port);
-
-#ifdef DEBUG_UDP
-    dbglog("bind socket %d %X:%d\n", sock, sockaddr.sin_addr.s_addr, port);
 #endif
-    if (bind(sock, (struct sockaddr*)&sockaddr, socksize) < 0) {
+
+    if (sockFlags & YSOCKFLAG_SO_BROADCAST) {
+        setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (char*)&optval, sizeof(optval));
+    }
+    if (ybind(sock, (struct sockaddr*)&addr, addrlen) < 0) {
         res = yNetLogErr();
         closesocket(sock);
         return res;
     }
+#ifdef DEBUG_SOCKET_USAGE
+    {
+        iptoa(local_ip, buff);
+        dbglog("udp bind socket %d to %s port=%d flags=%d\n", sock, buff, port, sockFlags);
+    }
+#endif
 
     *newskt = yMalloc(sizeof(YSOCKET_MULTI_ST));
     memset(*newskt, 0, sizeof(YSOCKET_MULTI_ST));
     (*newskt)->basic = sock;
-
+    if (sockFlags & YSOCKFLAG_IPV6) {
+        (*newskt)->ipv6 = 1;
+    }
+#ifdef DEBUG_MULTI_TCP
+    iptoa(local_ip, buff);
+    MTCPLOG("MUdp: Open %p [addr=%s port=%d]\n", *newskt, buff, port);
+#endif
     return YAPI_SUCCESS;
 }
 
-
 int yUdpWriteMulti(YSOCKET_MULTI skt, IPvX_ADDR *dest_ip, u16 dest_port, const u8 *buffer, int len, char *errmsg)
 {
-    int sent;
-    struct sockaddr_in sockaddr_dst;
-
-    memset(&sockaddr_dst, 0, sizeof(struct sockaddr_in));
-    sockaddr_dst.sin_family = AF_INET;
-    sockaddr_dst.sin_port = htons(dest_port);
-    sockaddr_dst.sin_addr.s_addr = dest_ip->v4.addr.Val;
-    sent = (int)sendto(skt->basic, buffer, len, 0, (struct sockaddr*)&sockaddr_dst, sizeof(struct sockaddr_in));
+    int sent, socklen;
+    struct sockaddr_storage storage;
+    struct sockaddr_in6 *addr_ipv6 = (struct sockaddr_in6*)&storage;
+    struct sockaddr_in *addr_ipv4 = (struct sockaddr_in*)&storage;
+    memset(&storage, 0, sizeof(struct sockaddr_storage));
+    if (skt->ipv6) {
+        socklen = sizeof(struct sockaddr_in6);
+        memset(addr_ipv6, 0, socklen);
+        addr_ipv6->sin6_family = AF_INET6;
+        addr_ipv6->sin6_port = htons(dest_port);
+        memcpy(&addr_ipv6->sin6_addr, &dest_ip->v6.addr, sizeof(addr_ipv6->sin6_addr));
+        sent = (int)ysendto(skt->basic, (const char*) buffer, len, 0, (struct sockaddr*)&storage, socklen);
+    } else {
+        socklen = sizeof(struct sockaddr_in);
+        memset(&storage, 0, socklen);
+        addr_ipv4->sin_family = AF_INET;
+        addr_ipv4->sin_port = htons(dest_port);
+        addr_ipv4->sin_addr.s_addr = dest_ip->v4.addr.Val;
+        sent = (int)ysendto(skt->basic, (const char*) buffer, len, 0, (struct sockaddr*)&storage, socklen);
+    }
     if (sent < 0) {
         return yNetSetErr();
     }
     return sent;
 }
 
-int yUdpReadMulti(YSOCKET_MULTI skt, u8 *buffer, int len, IPvX_ADDR *dest_ip, u16 *dest_port, char *errmsg)
+int yUdpReadMulti(YSOCKET_MULTI skt, u8 *buffer, int len, IPvX_ADDR *ip_out, u16 *port_out, char *errmsg)
 {
 
-    struct sockaddr_in sockaddr_remote;
-    socklen_t sockaddr_remote_size = sizeof(sockaddr_remote);
+    struct sockaddr_storage storage;
+    socklen_t sockaddr_remote_size;
+    IPvX_ADDR remote_ip;
+    u16 remote_port;
+
+    sockaddr_remote_size = sizeof(struct sockaddr_in6);
     // received packet
-    int received = (int)recvfrom(skt->basic, buffer, len, 0, (struct sockaddr*)&sockaddr_remote, &sockaddr_remote_size);
+    int received = (int)yrecvfrom(skt->basic, (char*) buffer, len, 0, (struct sockaddr*) &storage, &sockaddr_remote_size);
     if (received > 0) {
-        if (dest_ip) {
-            setIPv4Val(dest_ip, sockaddr_remote.sin_addr.s_addr);
+
+        if (sockaddr_remote_size == sizeof(struct sockaddr_in6)) {
+            struct sockaddr_in6 *addr_ipv6 = (struct sockaddr_in6*)&storage;
+            memcpy(&remote_ip.v6.addr, &addr_ipv6->sin6_addr, sizeof(addr_ipv6->sin6_addr));
+            remote_port = ntohs(addr_ipv6->sin6_port);
+        } else {
+            struct sockaddr_in *addr_ipv4 = (struct sockaddr_in*)&storage;
+            setIPv4Val(&remote_ip, addr_ipv4->sin_addr.s_addr);
+            remote_port = ntohs(addr_ipv4->sin_port);
         }
-        if (dest_port) {
-            *dest_port = ntohs(sockaddr_remote.sin_port);
+        if (ip_out) {
+            *ip_out = remote_ip;
         }
+        if (port_out) {
+            *port_out = remote_port;
+        }
+    } else if (received < 0) {
+        return yNetSetErr();
     }
     return received;
 }
 
-int yUdpRegisterMCAST(YSOCKET_MULTI skt, IPvX_ADDR *mcastAddr)
+#ifndef IPV6_ADD_MEMBERSHIP
+#define IPV6_ADD_MEMBERSHIP IPV6_JOIN_GROUP
+#endif
+
+int yUdpRegisterMCAST(YSOCKET_MULTI skt, IPvX_ADDR *mcastAddr, int interfaceNo)
 {
-    struct ip_mreq mcast_membership;
     int res = YAPI_SUCCESS;
-    memset(&mcast_membership, 0, sizeof(mcast_membership));
-    mcast_membership.imr_multiaddr.s_addr = mcastAddr->v4.addr.Val;
-    mcast_membership.imr_interface.s_addr = INADDR_ANY;
-    if (setsockopt(skt->basic, IPPROTO_IP, IP_ADD_MEMBERSHIP, (void*)&mcast_membership, sizeof(mcast_membership)) < 0) {
-        res = yNetLogErr();
+    if (skt->ipv6 == 0) {
+        struct ip_mreq mcast_membership;
+        memset(&mcast_membership, 0, sizeof(mcast_membership));
+        mcast_membership.imr_multiaddr.s_addr = mcastAddr->v4.addr.Val;
+        mcast_membership.imr_interface.s_addr = INADDR_ANY;
+        if (setsockopt(skt->basic, IPPROTO_IP, IP_ADD_MEMBERSHIP, (void*)&mcast_membership, sizeof(mcast_membership)) < 0) {
+            res = yNetLogErr();
+        }
+    } else {
+        struct ipv6_mreq mcast_membership6;
+        memset(&mcast_membership6, 0, sizeof(mcast_membership6));
+        memcpy(&mcast_membership6.ipv6mr_multiaddr, mcastAddr, sizeof(mcast_membership6.ipv6mr_multiaddr));
+        mcast_membership6.ipv6mr_interface = interfaceNo;
+        if (setsockopt(skt->basic, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, (void*)&mcast_membership6, sizeof(mcast_membership6)) < 0) {
+            res = yNetLogErr();
+        }
     }
     return res;
 }
@@ -3105,6 +3290,7 @@ static int ws_parseIncomingFrame(HubSt *hub, u8 *buffer, int pktlen, char *errms
                     hub->attemptDelay = 500;
                     hub->errcode = YAPI_SUCCESS;
                     WSLOG("hub(%s): connected as %s\n", hub->url.org_url, user);
+                    log_hub_state(&hub->url, "connected", "WebSocket");
                 } else {
                     YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Authentication as %s failed (%s:%d)", user, __FILENAME__, __LINE__);
                     return YAPI_UNAUTHORIZED;
@@ -3117,6 +3303,7 @@ static int ws_parseIncomingFrame(HubSt *hub, u8 *buffer, int pktlen, char *errms
                     hub->attemptDelay = 500;
                     hub->errcode = YAPI_SUCCESS;
                     WSLOG("hub(%s): connected\n", hub->url.org_url);
+                    log_hub_state(&hub->url, "connected", "WebSocket");
                 } else {
                     if (YSTRCMP(user, "admin") == 0 && !hub->rw_access) {
                         YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Authentication as %s failed", user);
@@ -3639,10 +3826,8 @@ void* ws_thread(void *ctx)
     char buffer[2048];
     int buffer_ofs = 0;
     int continue_processing;
-    int is_fist_attempt = 1;
-    int is_http_redirect = 0;
-    int io_error_count = 0;
-
+    int is_http_redirect;
+    int io_error_count;
 
     yThreadSignalStart(thread);
     WSLOG("hub(%s) start thread \n", hub->url.org_url);
@@ -3672,13 +3857,10 @@ void* ws_thread(void *ctx)
                 // fatal error do not retry to reconnect
                 hub->state = NET_HUB_TOCLOSE;
             }
-            if (is_fist_attempt) {
-                break;
-            }
             ws_threadUpdateRetryCount(hub);
             continue;
         }
-        is_fist_attempt = 0;
+
         io_error_count = 0;
         WSLOG("hub(%s) base socket opened (skt=%x)\n", hub->url.org_url, hub->ws.skt);
         hub->state = NET_HUB_TRYING;
@@ -3916,7 +4098,7 @@ void* ws_thread(void *ctx)
                 } while (!need_more_data && !YISERR(res));
             }
             if (hub->send_ping && ((u64)(yapiGetTickCount() - hub->ws.lastTraffic)) > NET_HUB_NOT_CONNECTION_TIMEOUT) {
-                WSLOG("PING: network hub %s didn't respond for too long (%d)\n", hub->url.org_url, res);
+                dbglog("PING: network hub %s didn't respond for too long (%d)\n", hub->url.org_url, res);
                 continue_processing = 0;
                 closeAllReq(hub, res, errmsg);
             } else if (!YISERR(res)) {
@@ -3934,20 +4116,19 @@ void* ws_thread(void *ctx)
         } while (continue_processing);
         if (YISERR(res)) {
             WSLOG("WS: hub(%s) IO error %d:%s\n", hub->url.org_url, res, errmsg);
-            yEnterCriticalSection(&hub->access);
-            hub->errcode = ySetErr(res, hub->errmsg, errmsg, NULL, 0);
-            yLeaveCriticalSection(&hub->access);
-            closeAllReq(hub, res, errmsg);
-            if (res == YAPI_UNAUTHORIZED || res == YAPI_DOUBLE_ACCES) {
-                hub->state = NET_HUB_TOCLOSE;
-            } else {
-                if (!is_http_redirect) {
-                    ws_threadUpdateRetryCount(hub);
-                }
+            if (!is_http_redirect) {
+                yEnterCriticalSection(&hub->access);
+                hub->errcode = ySetErr(res, hub->errmsg, errmsg, NULL, 0);
+                yLeaveCriticalSection(&hub->access);
+                closeAllReq(hub, res, errmsg);
+                if (res == YAPI_UNAUTHORIZED || res == YAPI_DOUBLE_ACCES) {
+                    hub->state = NET_HUB_TOCLOSE;
+                } 
             }
         }
         WSLOG("hub(%s) close base socket %d:%s\n", hub->url.org_url, res, errmsg);
         ws_closeBaseSocket(&hub->ws);
+        log_hub_state(&hub->url, "disconnected", "WebSocket");
         if (hub->state != NET_HUB_TOCLOSE) {
             hub->state = NET_HUB_DISCONNECTED;
         }
@@ -3981,7 +4162,10 @@ void ip2a(u32 ip, char *buffer)
 
 
 #ifdef WINDOWS_API
-YSTATIC int yDetectNetworkInterfaces(u32 only_ip, os_ifaces *interfaces, int max_nb_interfaces)
+// Link with Iphlpapi.lib
+#pragma comment(lib, "IPHLPAPI.lib")
+
+YSTATIC int legacyDetectNetworkInterfaces(IPvX_ADDR *only_ip, os_ifaces *interfaces, int max_nb_interfaces)
 {
     INTERFACE_INFO winIfaces[NB_OS_IFACES];
     DWORD returnedSize, nbifaces, i;
@@ -4009,16 +4193,15 @@ YSTATIC int yDetectNetworkInterfaces(u32 only_ip, os_ifaces *interfaces, int max
         if (winIfaces[i].iiFlags & IFF_UP) {
             if (winIfaces[i].iiFlags & IFF_MULTICAST)
                 interfaces[nbDetectedIfaces].flags |= OS_IFACE_CAN_MCAST;
-            if (only_ip != 0 && only_ip != winIfaces[i].iiAddress.AddressIn.sin_addr.S_un.S_addr) {
+            if (!isIPEmpty(only_ip) && isIPv4(only_ip) && only_ip->v4.addr.Val != winIfaces[i].iiAddress.AddressIn.sin_addr.S_un.S_addr) {
                 continue;
             }
-            interfaces[nbDetectedIfaces].ip = winIfaces[i].iiAddress.AddressIn.sin_addr.S_un.S_addr;
-            interfaces[nbDetectedIfaces].netmask = winIfaces[i].iiNetmask.AddressIn.sin_addr.S_un.S_addr;
+            interfaces[nbDetectedIfaces].ip.v4.addr.Val = winIfaces[i].iiAddress.AddressIn.sin_addr.S_un.S_addr;
 #ifdef DEBUG_NET_DETECTION
             {
                 char buffer[128];
-                ip2a(interfaces[nbDetectedIfaces].ip, buffer);
-                dbglog(" iface%d: ip %s\n", i, buffer);
+                ip2a(interfaces[nbDetectedIfaces].ip.v4.addr.Val, buffer);
+                dbglog(" iface%d: ip %s (%x)\n", i, buffer, interfaces[nbDetectedIfaces].flags);
             }
 #endif
             nbDetectedIfaces++;
@@ -4029,15 +4212,90 @@ YSTATIC int yDetectNetworkInterfaces(u32 only_ip, os_ifaces *interfaces, int max
 #endif
     return nbDetectedIfaces;
 }
+
+
+YSTATIC int yDetectNetworkInterfaces(IPvX_ADDR *only_ip, os_ifaces *interfaces, int max_nb_interfaces)
+{
+    IP_ADAPTER_ADDRESSES *addresses = NULL;
+    ULONG addres_len = 0;
+    int i;
+    int nbDetectedIfaces = 0;
+
+    ULONG dwRetVal = GetAdaptersAddresses(AF_UNSPEC, 0, NULL, addresses, &addres_len);
+    if (dwRetVal == ERROR_BUFFER_OVERFLOW) {
+        addresses = yMalloc(addres_len);
+        dwRetVal = GetAdaptersAddresses(AF_UNSPEC, 0, NULL, addresses, &addres_len);
+    }
+    memset(interfaces, 0, max_nb_interfaces * sizeof(os_ifaces));
+    if (dwRetVal == NO_ERROR) {
+        IP_ADAPTER_ADDRESSES *paddr = addresses;
+        while (paddr) {
+            PIP_ADAPTER_UNICAST_ADDRESS pUnicast;
+            if (paddr->IfType == IF_TYPE_ETHERNET_CSMACD && paddr->OperStatus == IfOperStatusUp) {
+                pUnicast = paddr->FirstUnicastAddress;
+                for (i = 0; pUnicast != NULL; i++) {
+                    if (pUnicast->Address.iSockaddrLength == sizeof(struct sockaddr_in)) {
+                        struct sockaddr_in *addr_v4 = (struct sockaddr_in*)pUnicast->Address.lpSockaddr;
+                        if (only_ip == NULL || isIPEmpty(only_ip) || (isIPv4(only_ip) && only_ip->v4.addr.Val == addr_v4->sin_addr.s_addr)) {
+                            setIPv4Val(&interfaces[nbDetectedIfaces].ip, addr_v4->sin_addr.s_addr);
+                            interfaces[nbDetectedIfaces].ifindex = paddr->IfIndex;
+                        } else {
+                            pUnicast = pUnicast->Next;
+                            continue;
+                        }
+                    } else {
+                        struct sockaddr_in6 *addr_v6 = (struct sockaddr_in6*)pUnicast->Address.lpSockaddr;
+                        if (only_ip == NULL || isIPEmpty(only_ip) || (!isIPv4(only_ip) && memcmp(&only_ip->v6.addr, &addr_v6->sin6_addr, sizeof(IPvX_ADDR)) == 0)) {
+                            memcpy(&interfaces[nbDetectedIfaces].ip.v6.addr, &addr_v6->sin6_addr, sizeof(IPvX_ADDR));
+                            interfaces[nbDetectedIfaces].ifindex = paddr->IfIndex;
+                        } else {
+                            pUnicast = pUnicast->Next;
+                            continue;
+                        }
+                    }
+                    if ((paddr->Flags & IP_ADAPTER_NO_MULTICAST) == 0) {
+                        interfaces[nbDetectedIfaces].flags |= OS_IFACE_CAN_MCAST;
+                    }
+#ifdef DEBUG_NET_DETECTION
+                    {
+                        char buffer[IPSTR_SIZE];
+                        iptoa(&interfaces[nbDetectedIfaces].ip, buffer);
+                        dbglog(" iface%d: ip %s (%x iface=%d)\n", nbDetectedIfaces, buffer, interfaces[nbDetectedIfaces].flags, interfaces[nbDetectedIfaces].ifindex);
+                    }
+#endif
+                    nbDetectedIfaces++;
+                    pUnicast = pUnicast->Next;
+                }
+            }
+            paddr = paddr->Next;
+        }
+    } else {
+        char errmsg[YOCTO_ERRMSG_LEN];
+        if (dwRetVal == ERROR_NO_DATA) {
+            nbDetectedIfaces = legacyDetectNetworkInterfaces(only_ip, interfaces, max_nb_interfaces);
+        } else {
+            yNetSetErrEx(__FILENAME__, __LINE__, dwRetVal, errmsg);
+            dbglog(errmsg);
+        }
+
+    }
+    if (addresses) {
+        yFree(addresses);
+    }
+#ifdef DEBUG_NET_DETECTION
+    dbglog("%d interfaces are usable\n", nbDetectedIfaces);
+#endif
+    return nbDetectedIfaces;
+}
 #else
 
 #include <net/if.h>
 #include <ifaddrs.h>
-YSTATIC int yDetectNetworkInterfaces(u32 only_ip, os_ifaces *interfaces, int max_nb_interfaces)
+YSTATIC int yDetectNetworkInterfaces(IPvX_ADDR *only_ip, os_ifaces *interfaces, int max_nb_interfaces)
 {
+#if 1
     struct ifaddrs *if_addrs = NULL;
     struct ifaddrs *p = NULL;
-#if 1
     int nbDetectedIfaces = 0;
     memset(interfaces, 0, max_nb_interfaces * sizeof(os_ifaces));
     if (getifaddrs(&if_addrs) != 0){
@@ -4046,41 +4304,52 @@ YSTATIC int yDetectNetworkInterfaces(u32 only_ip, os_ifaces *interfaces, int max
     }
     p = if_addrs;
     while (p) {
-        if (p->ifa_addr && p->ifa_addr->sa_family == AF_INET) {
-            struct sockaddr_in *tmp;
-            u32 ip, netmask;
-            tmp = (struct sockaddr_in*)p->ifa_addr;
-            ip = tmp->sin_addr.s_addr;
-            if (only_ip != 0 && only_ip != ip){
+        if (p->ifa_addr && (p->ifa_addr->sa_family == AF_INET || p->ifa_addr->sa_family == AF_INET6)) {
+            IPvX_ADDR ip;
+            if (p->ifa_addr->sa_family == AF_INET) {
+                struct sockaddr_in *tmp = (struct sockaddr_in*)p->ifa_addr;
+                setIPv4Val(&ip, tmp->sin_addr.s_addr);
+            } else {
+                struct sockaddr_in6 *tmp6 = (struct sockaddr_in6*)p->ifa_addr;
+                memcpy(&ip, &tmp6->sin6_addr, sizeof(IPvX_ADDR));
+            }
+            if (only_ip != NULL && !isIPEmpty(only_ip) && memcmp(only_ip, &ip, sizeof(IPvX_ADDR))!=0){
+#if 0//def DEBUG_NET_DETECTION
+                char buff[IPSTR_SIZE];
+                char buff2[IPSTR_SIZE];
+                iptoa(&ip, buff);
+                iptoa(only_ip, buff2);
+                dbglog("drop %s : %s !=%s (%X)\n", p->ifa_name, buff, buff2, p->ifa_flags);
+#endif
                 p = p->ifa_next;
                 continue;
             }
-            tmp = (struct sockaddr_in*)p->ifa_netmask;
-            netmask = tmp->sin_addr.s_addr;
             if ((p->ifa_flags & IFF_LOOPBACK) == 0){
                 if (p->ifa_flags & IFF_UP && p->ifa_flags & IFF_RUNNING){
-#ifdef DEBUG_NET_DETECTION
-                    ylogf("%s : ", p->ifa_name);
-                    ylogIP(ip);
-                    ylogf("/");
-                    ylogIP(netmask);
-                    ylogf(" (%X)\n", p->ifa_flags);
-#endif
                     if (p->ifa_flags & IFF_MULTICAST){
                         interfaces[nbDetectedIfaces].flags |= OS_IFACE_CAN_MCAST;
                     }
+                    ystrcpy(interfaces[nbDetectedIfaces].name,OS_IFACE_NAME_MAX_LEN, p->ifa_name);
+                    interfaces[nbDetectedIfaces].ifindex = if_nametoindex(p->ifa_name);  
+                    if (interfaces[nbDetectedIfaces].ifindex == 0) {
+                        dbglog("Warning: Unable to get interfaces index for %s\n", p->ifa_name);
+                    }
                     interfaces[nbDetectedIfaces].ip = ip;
-                    interfaces[nbDetectedIfaces].netmask = netmask;
+#ifdef DEBUG_NET_DETECTION
+                    {
+                        char buff[IPSTR_SIZE];
+                        iptoa(&ip, buff);
+                        dbglog("Iface %s : %s (flags=%X iface=%d)\n", p->ifa_name, buff, p->ifa_flags,interfaces[nbDetectedIfaces].ifindex);
+                    }
+#endif
                     nbDetectedIfaces++;
                 }
             }
 #ifdef DEBUG_NET_DETECTION
             else {
-                ylogf("drop %s : ", p->ifa_name);
-                ylogIP(ip);
-                ylogf("/");
-                ylogIP(netmask);
-                ylogf(" (%X)\n", p->ifa_flags);
+                char buff[IPSTR_SIZE];
+                iptoa(&ip, buff);
+                dbglog("drop %s : %s (%X)\n", p->ifa_name, buff, p->ifa_flags);
             }
 #endif
         }
@@ -4091,7 +4360,7 @@ YSTATIC int yDetectNetworkInterfaces(u32 only_ip, os_ifaces *interfaces, int max
     int nbDetectedIfaces = 1;
     memset(interfaces, 0, max_nb_interfaces * sizeof(os_ifaces));
     interfaces[0].flags |= OS_IFACE_CAN_MCAST;
-    interfaces[0].ip = INADDR_ANY;
+    setIPv4Val(&interfaces[0].ip,INADDR_ANY);
 #endif
     return nbDetectedIfaces;
 }
@@ -4102,6 +4371,15 @@ YSTATIC int yDetectNetworkInterfaces(u32 only_ip, os_ifaces *interfaces, int max
 static const char *discovery =
     "M-SEARCH * HTTP/1.1\r\n"
     "HOST:" YSSDP_MCAST_ADDR_STR ":" TOSTRING(YSSDP_PORT) "\r\n"
+    "MAN:\"ssdp:discover\"\r\n"
+    "MX:5\r\n"
+    "ST:" YSSDP_URN_YOCTOPUCE"\r\n"
+    "\r\n";
+
+
+static const char *discovery_v6 =
+    "M-SEARCH * HTTP/1.1\r\n"
+    "HOST:" YSSDP_MCAST_ADDR6_STR ":" TOSTRING(YSSDP_PORT) "\r\n"
     "MAN:\"ssdp:discover\"\r\n"
     "MX:5\r\n"
     "ST:" YSSDP_URN_YOCTOPUCE"\r\n"
@@ -4322,13 +4600,15 @@ static void ySSDP_parseSSPDMessage(SSDPInfos *SSDP, char *message, int msg_len)
     }
 #if 0
     else {
-        dbglog("SSDP drop invalid message:\n%s\n",message);
+        dbglog("SSDP drop invalid message:\n%s\n", message);
     }
 #endif
 }
 
 static os_ifaces detectedIfaces[NB_OS_IFACES];
 static int nbDetectedIfaces = 0;
+static const IPvX_ADDR ssdp_mcast_addr = {.v6 = {.addr = {0x02ff, 0, 0, 0, 0, 0, 0, 0x0c00}}};
+
 
 static void* ySSDP_thread(void *ctx)
 {
@@ -4381,8 +4661,11 @@ static void* ySSDP_thread(void *ctx)
         ySSDPCheckExpiration(SSDP);
         if (res != 0) {
             for (i = 0; i < nbDetectedIfaces; i++) {
+                struct sockaddr_storage addr;
+                socklen_t sockaddr_remote_size = sizeof(struct sockaddr_in6);
+
                 if (FD_ISSET(SSDP->request_sock[i], &fds)) {
-                    received = (int)yrecv(SSDP->request_sock[i], (char*)buffer, sizeof(buffer)-1, 0);
+                    received = (int)yrecvfrom(SSDP->request_sock[i], (char*)buffer, sizeof(buffer)-1, 0, (struct sockaddr*) &addr, &sockaddr_remote_size);
                     if (received > 0) {
                         buffer[received] = 0;
                         ySSDP_parseSSPDMessage(SSDP, (char*)buffer, received);
@@ -4390,7 +4673,7 @@ static void* ySSDP_thread(void *ctx)
                 }
                 if (FD_ISSET(SSDP->notify_sock[i], &fds)) {
                     //dbglog("new packet on interface %d\n", i);
-                    received = (int)yrecv(SSDP->notify_sock[i], (char *)buffer, sizeof(buffer)-1, 0);
+                    received = (int)yrecvfrom(SSDP->notify_sock[i], (char *)buffer, sizeof(buffer)-1, 0, (struct sockaddr*) &addr, &sockaddr_remote_size);
                     if (received > 0) {
                         buffer[received] = 0;
                         ySSDP_parseSSPDMessage(SSDP, (char*)buffer, received);
@@ -4408,15 +4691,31 @@ static void* ySSDP_thread(void *ctx)
 int ySSDPDiscover(SSDPInfos *SSDP, char *errmsg)
 {
     int sent, len, i;
-    struct sockaddr_in sockaddr_dst;
+    struct sockaddr_storage storage;
+    socklen_t socklen;
 
     for (i = 0; i < nbDetectedIfaces; i++) {
-        memset(&sockaddr_dst, 0, sizeof(struct sockaddr_in));
-        sockaddr_dst.sin_family = AF_INET;
-        sockaddr_dst.sin_port = htons(YSSDP_PORT);
-        sockaddr_dst.sin_addr.s_addr = inet_addr(YSSDP_MCAST_ADDR_STR);
-        len = (int)strlen(discovery);
-        sent = (int)sendto(SSDP->request_sock[i], discovery, len, 0, (struct sockaddr*)&sockaddr_dst, sizeof(struct sockaddr_in));
+        if (isIPv4(&detectedIfaces[i].ip)) {
+            struct sockaddr_in *addr_ipv4 = (struct sockaddr_in*)&storage;
+            socklen = sizeof(struct sockaddr_in);
+            memset(&storage, 0, socklen);
+            addr_ipv4->sin_family = AF_INET;
+            addr_ipv4->sin_port = htons(YSSDP_PORT);
+            addr_ipv4->sin_addr.s_addr = inet_addr(YSSDP_MCAST_ADDR_STR);
+            len = ystrlen(discovery);
+            sent = (int)ysendto(SSDP->request_sock[i], discovery, len, 0, (struct sockaddr*)&storage, socklen);
+
+        } else {
+            struct sockaddr_in6 *addr_ipv6 = (struct sockaddr_in6*)&storage;
+            socklen = sizeof(struct sockaddr_in6);
+            memset(addr_ipv6, 0, socklen);
+            addr_ipv6->sin6_family = AF_INET6;
+            addr_ipv6->sin6_port = htons(YSSDP_PORT);
+            memcpy(&addr_ipv6->sin6_addr, &ssdp_mcast_addr, sizeof(addr_ipv6->sin6_addr));
+            len = ystrlen(discovery_v6);
+            sent = (int)sendto(SSDP->request_sock[i], discovery_v6, len, 0, (struct sockaddr*)&storage, socklen);
+
+        }
         if (sent < 0) {
             return yNetSetErr();
         }
@@ -4430,8 +4729,6 @@ int ySSDPStart(SSDPInfos *SSDP, ssdpHubDiscoveryCallback callback, char *errmsg)
     u32 optval;
     int i;
     socklen_t socksize;
-    struct sockaddr_in sockaddr;
-    struct ip_mreq mcast_membership;
 
     if (SSDP->started)
         return YAPI_SUCCESS;
@@ -4442,54 +4739,107 @@ int ySSDPStart(SSDPInfos *SSDP, ssdpHubDiscoveryCallback callback, char *errmsg)
 
     for (i = 0; i < nbDetectedIfaces; i++) {
         //create M-search socket
-        SSDP->request_sock[i] = ysocket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
-        if (SSDP->request_sock[i] == INVALID_SOCKET) {
-            return yNetSetErr();
-        }
-
-        optval = 1;
-        setsockopt(SSDP->request_sock[i], SOL_SOCKET, SO_REUSEADDR, (char*)&optval, sizeof(optval));
+        if (isIPv4(&detectedIfaces[i].ip)) {
+            struct ip_mreq mcast_membership;
+            struct sockaddr_in sockaddr;
+            SSDP->request_sock[i] = ysocket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+            if (SSDP->request_sock[i] == INVALID_SOCKET) {
+                return yNetSetErr();
+            }
+            optval = 1;
+            setsockopt(SSDP->request_sock[i], SOL_SOCKET, SO_REUSEADDR, (char*)&optval, sizeof(optval));
 #ifdef SO_REUSEPORT
-        setsockopt(SSDP->request_sock[i], SOL_SOCKET, SO_REUSEPORT, (char *)&optval, sizeof(optval));
+            setsockopt(SSDP->request_sock[i], SOL_SOCKET, SO_REUSEPORT, (char *)&optval, sizeof(optval));
 #endif
+            // set port to 0 since we accept any port
+            socksize = sizeof(sockaddr);
+            memset(&sockaddr, 0, socksize);
+            sockaddr.sin_family = AF_INET;
+            sockaddr.sin_addr.s_addr = detectedIfaces[i].ip.v4.addr.Val;
+            if (ybind(SSDP->request_sock[i], (struct sockaddr*)&sockaddr, socksize) < 0) {
+                return yNetSetErr();
+            }
+            //create NOTIFY socket
+            SSDP->notify_sock[i] = ysocket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+            if (SSDP->notify_sock[i] == INVALID_SOCKET) {
+                return yNetSetErr();
+            }
 
-        // set port to 0 since we accept any port
-        socksize = sizeof(sockaddr);
-        memset(&sockaddr, 0, socksize);
-        sockaddr.sin_family = AF_INET;
-        sockaddr.sin_addr.s_addr = detectedIfaces[i].ip;
-        if (bind(SSDP->request_sock[i], (struct sockaddr*)&sockaddr, socksize) < 0) {
-            return yNetSetErr();
-        }
-        //create NOTIFY socket
-        SSDP->notify_sock[i] = ysocket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
-        if (SSDP->notify_sock[i] == INVALID_SOCKET) {
-            return yNetSetErr();
-        }
-
-        optval = 1;
-        setsockopt(SSDP->notify_sock[i], SOL_SOCKET, SO_REUSEADDR, (char*)&optval, sizeof(optval));
+            optval = 1;
+            setsockopt(SSDP->notify_sock[i], SOL_SOCKET, SO_REUSEADDR, (char*)&optval, sizeof(optval));
 #ifdef SO_REUSEPORT
         setsockopt(SSDP->notify_sock[i], SOL_SOCKET, SO_REUSEPORT, (char *)&optval, sizeof(optval));
 #endif
 
-        // set port to 0 since we accept any port
-        socksize = sizeof(sockaddr);
-        memset(&sockaddr, 0, socksize);
-        sockaddr.sin_family = AF_INET;
-        sockaddr.sin_port = htons(YSSDP_PORT);
-        sockaddr.sin_addr.s_addr = 0;
-        if (bind(SSDP->notify_sock[i], (struct sockaddr*)&sockaddr, socksize) < 0) {
-            return yNetSetErr();
-        }
+            // set port to 0 since we accept any port
+            socksize = sizeof(sockaddr);
+            memset(&sockaddr, 0, socksize);
+            sockaddr.sin_family = AF_INET;
+            sockaddr.sin_port = htons(YSSDP_PORT);
+            sockaddr.sin_addr.s_addr = 0;
+            if (ybind(SSDP->notify_sock[i], (struct sockaddr*)&sockaddr, socksize) < 0) {
+                return yNetSetErr();
+            }
+            mcast_membership.imr_multiaddr.s_addr = inet_addr(YSSDP_MCAST_ADDR_STR);
+            mcast_membership.imr_interface.s_addr = detectedIfaces[i].ip.v4.addr.Val;
+            if (setsockopt(SSDP->notify_sock[i], IPPROTO_IP, IP_ADD_MEMBERSHIP, (void*)&mcast_membership, sizeof(mcast_membership)) < 0) {
+                yNetLogErr();
+                dbglog("Unable to add multicast membership for SSDP");
+                yclosesocket(SSDP->notify_sock[i]);
+                SSDP->notify_sock[i] = INVALID_SOCKET;
+            }
+        } else {
+            struct ipv6_mreq mcast_membership6;
+            struct sockaddr_in6 addr_v6;
+            SSDP->request_sock[i] = ysocket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+            if (SSDP->request_sock[i] == INVALID_SOCKET) {
+                return yNetSetErr();
+            }
 
-        mcast_membership.imr_multiaddr.s_addr = inet_addr(YSSDP_MCAST_ADDR_STR);
-        mcast_membership.imr_interface.s_addr = detectedIfaces[i].ip;
-        if (setsockopt(SSDP->notify_sock[i], IPPROTO_IP, IP_ADD_MEMBERSHIP, (void*)&mcast_membership, sizeof(mcast_membership)) < 0) {
-            dbglog("Unable to add multicast membership for SSDP");
-            yNetLogErr();
-            yclosesocket(SSDP->notify_sock[i]);
-            SSDP->notify_sock[i] = INVALID_SOCKET;
+            optval = 1;
+            setsockopt(SSDP->request_sock[i], SOL_SOCKET, SO_REUSEADDR, (char*)&optval, sizeof(optval));
+#ifdef SO_REUSEPORT
+        setsockopt(SSDP->request_sock[i], SOL_SOCKET, SO_REUSEPORT, (char *)&optval, sizeof(optval));
+#endif
+
+            // set port to 0 since we accept any port
+            socksize = sizeof(struct sockaddr_in6);
+            memset(&addr_v6, 0, socksize);
+            addr_v6.sin6_family = AF_INET6;
+            addr_v6.sin6_scope_id = detectedIfaces[i].ifindex;
+            memcpy(&addr_v6.sin6_addr, detectedIfaces[i].ip.v6.addr, sizeof(addr_v6.sin6_addr));
+            if (ybind(SSDP->request_sock[i], (struct sockaddr*)&addr_v6, socksize) < 0) {
+                return yNetSetErr();
+            }
+
+            //create NOTIFY socket
+            SSDP->notify_sock[i] = ysocket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+            if (SSDP->notify_sock[i] == INVALID_SOCKET) {
+                return yNetSetErr();
+            }
+            optval = 1;
+            setsockopt(SSDP->notify_sock[i], SOL_SOCKET, SO_REUSEADDR, (char*)&optval, sizeof(optval));
+#ifdef SO_REUSEPORT
+            setsockopt(SSDP->notify_sock[i], SOL_SOCKET, SO_REUSEPORT, (char *)&optval, sizeof(optval));
+#endif
+            socksize = sizeof(struct sockaddr_in6);
+            memset(&addr_v6, 0, socksize);
+            addr_v6.sin6_family = AF_INET6;
+            addr_v6.sin6_port = htons(YSSDP_PORT);
+            memcpy(&addr_v6.sin6_addr, detectedIfaces[i].ip.v6.addr, sizeof(addr_v6.sin6_addr));
+            addr_v6.sin6_scope_id = detectedIfaces[i].ifindex;
+            if (ybind(SSDP->notify_sock[i], (struct sockaddr*)&addr_v6, socksize) < 0) {
+                return yNetSetErr();
+            }
+            memset(&mcast_membership6, 0, sizeof(mcast_membership6));
+            memcpy(&mcast_membership6.ipv6mr_multiaddr, &ssdp_mcast_addr, sizeof(mcast_membership6.ipv6mr_multiaddr));
+            mcast_membership6.ipv6mr_interface = detectedIfaces[i].ifindex;
+            if (setsockopt(SSDP->notify_sock[i], IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, (void*)&mcast_membership6, sizeof(mcast_membership6)) < 0) {
+                yNetLogErr();
+                dbglog("Unable to add multicast membership for SSDP");
+                yclosesocket(SSDP->notify_sock[i]);
+                SSDP->notify_sock[i] = INVALID_SOCKET;
+            }
         }
     }
     //yThreadCreate will not create a new thread if there is already one running

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: yocto_spiport.cpp 62193 2024-08-19 12:20:58Z seb $
  *
  *  Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -1151,7 +1151,7 @@ int YSpiPort::read_avail(void)
     databin = this->_download(YapiWrapper::ysprintf("rxcnt.bin?pos=%d",_rxptr));
     availPosStr = databin;
     atPos = _ystrpos(availPosStr, "@");
-    res = atoi(((availPosStr).substr(0, atPos)).c_str());
+    res = atoi((availPosStr.substr(0, atPos)).c_str());
     return res;
 }
 
@@ -1165,7 +1165,7 @@ int YSpiPort::end_tell(void)
     databin = this->_download(YapiWrapper::ysprintf("rxcnt.bin?pos=%d",_rxptr));
     availPosStr = databin;
     atPos = _ystrpos(availPosStr, "@");
-    res = atoi(((availPosStr).substr(atPos+1, (int)(availPosStr).length()-atPos-1)).c_str());
+    res = atoi((availPosStr.substr(atPos+1, (int)(availPosStr).length()-atPos-1)).c_str());
     return res;
 }
 
@@ -1426,11 +1426,11 @@ int YSpiPort::writeHex(string hexString)
     if (bufflen < 100) {
         return this->sendCommand(YapiWrapper::ysprintf("$%s",hexString.c_str()));
     }
-    bufflen = ((bufflen) >> (1));
+    bufflen = (bufflen >> 1);
     buff = string(bufflen, (char)0);
     idx = 0;
     while (idx < bufflen) {
-        hexb = (int)YAPI::_hexStr2Long((hexString).substr(2 * idx, 2));
+        hexb = (int)YAPI::_hexStr2Long(hexString.substr(2 * idx, 2));
         buff[idx] = (char)(hexb);
         idx = idx + 1;
     }
@@ -1577,7 +1577,7 @@ string YSpiPort::readStr(int nChars)
         bufflen = bufflen - 1;
     }
     _rxptr = endpos;
-    res = (buff).substr(0, bufflen);
+    res = buff.substr(0, bufflen);
     return res;
 }
 

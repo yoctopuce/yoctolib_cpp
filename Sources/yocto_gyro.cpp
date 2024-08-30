@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ * $Id: yocto_gyro.cpp 62193 2024-08-19 12:20:58Z seb $
  *
  * Implements yFindGyro(), the high-level API for Gyro functions
  *
@@ -571,8 +571,8 @@ int YGyro::_loadQuaternion(void)
 {
     int now_stamp = 0;
     int age_ms = 0;
-    now_stamp = (int) ((YAPI::GetTickCount()) & (0x7FFFFFFF));
-    age_ms = (((now_stamp - _qt_stamp)) & (0x7FFFFFFF));
+    now_stamp = (int) ((YAPI::GetTickCount()) & 0x7FFFFFFF);
+    age_ms = ((now_stamp - _qt_stamp) & 0x7FFFFFFF);
     if ((age_ms >= 10) || (_qt_stamp == 0)) {
         if (this->_load_unsafe(10) != YAPI_SUCCESS) {
             return YAPI_DEVICE_NOT_FOUND;
@@ -858,7 +858,7 @@ int YGyro::_invokeGyroCallbacks(int qtIndex,double qtValue)
     if (qtIndex < 4) {
         return 0;
     }
-    _qt_stamp = (int) ((YAPI::GetTickCount()) & (0x7FFFFFFF));
+    _qt_stamp = (int) ((YAPI::GetTickCount()) & 0x7FFFFFFF);
     if (_quatCallback != NULL) {
         _quatCallback(this, _w, _x, _y, _z);
     }

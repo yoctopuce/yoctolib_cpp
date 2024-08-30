@@ -201,7 +201,7 @@ int YInputCaptureData::_decodeSnapBin(string sdata)
             recOfs = recOfs + 1;
         }
     }
-    if (((recOfs) & (1)) == 1) {
+    if ((recOfs & 1) == 1) {
         // align to next word
         recOfs = recOfs + 1;
     }
@@ -1070,7 +1070,7 @@ YInputCaptureData YInputCapture::get_immediateCapture(int msDuration)
     if (msDuration > 1000) {
         msDuration = 1000;
     }
-    snapStart = ((-msDuration) / (2));
+    snapStart = ((-msDuration) / 2);
     snapUrl = YapiWrapper::ysprintf("snap.bin?t=%d&d=%d", snapStart,msDuration);
 
     snapData = this->_download(snapUrl);

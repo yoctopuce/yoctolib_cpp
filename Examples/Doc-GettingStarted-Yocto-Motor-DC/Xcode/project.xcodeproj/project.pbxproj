@@ -71,6 +71,7 @@
 		B8A727A817E0CD3A00572868559e /* padlock.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057ca59d4f6 /* padlock.c */; };
 		B8A727A817E0CD3A005726981d2d /* pem.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057b2b90a9a /* pem.c */; };
 		B8A727A817E0CD3A005797e0fd94 /* pk.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057d2ccce1d /* pk.c */; };
+		B8A727A817E0CD3A00576def83f9 /* pk_ecc.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057e414ff30 /* pk_ecc.c */; };
 		B8A727A817E0CD3A0057fd8da5a3 /* pkcs12.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00577476d96a /* pkcs12.c */; };
 		B8A727A817E0CD3A005792561f3 /* pkcs5.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00572172486a /* pkcs5.c */; };
 		B8A727A817E0CD3A0057aa1b59d /* pkcs7.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005722f69c04 /* pkcs7.c */; };
@@ -221,6 +222,7 @@
 		B8A727A817E0CD3A0057ca59d4f6 /* padlock.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = padlock.c; path = ../../../Sources/yapi/mbedtls/library/padlock.c; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057b2b90a9a /* pem.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pem.c; path = ../../../Sources/yapi/mbedtls/library/pem.c; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057d2ccce1d /* pk.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pk.c; path = ../../../Sources/yapi/mbedtls/library/pk.c; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057e414ff30 /* pk_ecc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pk_ecc.c; path = ../../../Sources/yapi/mbedtls/library/pk_ecc.c; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00577476d96a /* pkcs12.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pkcs12.c; path = ../../../Sources/yapi/mbedtls/library/pkcs12.c; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00572172486a /* pkcs5.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pkcs5.c; path = ../../../Sources/yapi/mbedtls/library/pkcs5.c; sourceTree = "<group>"; };
 		B8A727A817E0CD3A005722f69c04 /* pkcs7.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pkcs7.c; path = ../../../Sources/yapi/mbedtls/library/pkcs7.c; sourceTree = "<group>"; };
@@ -437,6 +439,7 @@
 				B8A727A817E0CD3A0057ca59d4f6 /* padlock.c */,
 				B8A727A817E0CD3A0057b2b90a9a /* pem.c */,
 				B8A727A817E0CD3A0057d2ccce1d /* pk.c */,
+				B8A727A817E0CD3A0057e414ff30 /* pk_ecc.c */,
 				B8A727A817E0CD3A00577476d96a /* pkcs12.c */,
 				B8A727A817E0CD3A00572172486a /* pkcs5.c */,
 				B8A727A817E0CD3A005722f69c04 /* pkcs7.c */,
@@ -562,7 +565,7 @@
 		B8A727A817E0CD3A005734158374 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				B8FE65001472686800FD11A2 /* project */,
+				B8FE65001472686800FD11A2 /* Doc-GettingStarted-Yocto-Motor-DC */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -572,7 +575,7 @@
 /* Begin PBXNativeTarget section */
 		B8FE64FF1472686800FD11A2 /* project */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B8FE650A1472686800FD11A2 /* Build configuration list for PBXNativeTarget "project" */;
+			buildConfigurationList = B8FE650A1472686800FD11A2 /* Build configuration list for PBXNativeTarget "Doc-GettingStarted-Yocto-Motor-DC" */;
 			buildPhases = (
 				B8FE64FC1472686800FD11A2 /* Sources */,
 				B8FE64FD1472686800FD11A2 /* Frameworks */,
@@ -582,8 +585,8 @@
 			);
 			dependencies = (
 			);
-			name = project;
-			productName = project;
+			name = Doc-GettingStarted-Yocto-Motor-DC;
+			productName = Doc-GettingStarted-Yocto-Motor-DC;
 			productReference = B8FE65001472686800FD11A2 /* project */;
 			productType = "com.apple.product-type.tool";
 		};
@@ -597,7 +600,7 @@
 				LastUpgradeCheck = 1420;
 				ORGANIZATIONNAME = "Yoctopuce Sàrl";
 			};
-			buildConfigurationList = B8FE64FA1472686800FD11A2 /* Build configuration list for PBXProject "project" */;
+			buildConfigurationList = B8FE64FA1472686800FD11A2 /* Build configuration list for PBXProject "Doc-GettingStarted-Yocto-Motor-DC" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -610,7 +613,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				B8FE64FF1472686800FD11A2 /* project */,
+				B8FE64FF1472686800FD11A2 /* Doc-GettingStarted-Yocto-Motor-DC */,
 			);
 		};
 /* End PBXProject section */
@@ -683,6 +686,7 @@
 				B8A727A817E0CD3A00572868559e /* padlock.c in Sources */,
 				B8A727A817E0CD3A005726981d2d /* pem.c in Sources */,
 				B8A727A817E0CD3A005797e0fd94 /* pk.c in Sources */,
+				B8A727A817E0CD3A00576def83f9 /* pk_ecc.c in Sources */,
 				B8A727A817E0CD3A0057fd8da5a3 /* pkcs12.c in Sources */,
 				B8A727A817E0CD3A005792561f3 /* pkcs5.c in Sources */,
 				B8A727A817E0CD3A0057aa1b59d /* pkcs7.c in Sources */,
@@ -748,7 +752,7 @@
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_COMMA = NO;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -762,8 +766,8 @@
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -779,14 +783,12 @@
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-								GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -800,7 +802,7 @@
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_COMMA = NO;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -814,7 +816,7 @@
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
+
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = YES;
 				DEAD_CODE_STRIPPING = YES;
@@ -824,7 +826,6 @@
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -845,7 +846,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "-";
 				DEAD_CODE_STRIPPING = YES;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
+
 				FUSE_BUILD_SCRIPT_PHASES = YES;
 				HEADER_SEARCH_PATHS = (
 					"../../../Sources",
@@ -862,7 +863,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "-";
 				DEAD_CODE_STRIPPING = YES;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
+
 				FUSE_BUILD_SCRIPT_PHASES = YES;
 				HEADER_SEARCH_PATHS = (
 					"../../../Sources",
@@ -876,7 +877,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		B8FE64FA1472686800FD11A2 /* Build configuration list for PBXProject "project" */ = {
+		B8FE64FA1472686800FD11A2 /* Build configuration list for PBXProject "Doc-GettingStarted-Yocto-Motor-DC" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B8FE65081472686800FD11A2 /* Debug */,
@@ -885,7 +886,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B8FE650A1472686800FD11A2 /* Build configuration list for PBXNativeTarget "project" */ = {
+		B8FE650A1472686800FD11A2 /* Build configuration list for PBXNativeTarget "Doc-GettingStarted-Yocto-Motor-DC" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B8FE650B1472686800FD11A2 /* Debug */,

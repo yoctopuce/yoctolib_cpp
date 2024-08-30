@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_steppermotor.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: yocto_steppermotor.cpp 62193 2024-08-19 12:20:58Z seb $
  *
  *  Implements yFindStepperMotor(), the high-level API for StepperMotor functions
  *
@@ -205,7 +205,7 @@ int YStepperMotor::get_diags(void)
 
 /**
  * Changes the current logical motor position, measured in steps.
- * This command does not cause any motor move, as its purpose is only to setup
+ * This command does not cause any motor move, as its purpose is only to set up
  * the origin of the position counter. The fractional part of the position,
  * that corresponds to the physical position of the rotor, is not changed.
  * To trigger a motor move, use methods moveTo() or moveRel()
@@ -946,7 +946,7 @@ int YStepperMotor::sendCommand(string command)
     string retBin;
     int res = 0;
     id = this->get_functionId();
-    id = (id).substr(12, 1);
+    id = id.substr(12, 1);
     url = YapiWrapper::ysprintf("cmd.txt?%s=%s", id.c_str(),command.c_str());
     //may throw an exception
     retBin = this->_download(url);

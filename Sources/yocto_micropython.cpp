@@ -56,6 +56,8 @@ using namespace YOCTOLIB_NAMESPACE;
 YMicroPython::YMicroPython(const string& func): YFunction(func)
 //--- (YMicroPython initialization)
     ,_lastMsg(LASTMSG_INVALID)
+    ,_heapUsage(HEAPUSAGE_INVALID)
+    ,_xheapUsage(XHEAPUSAGE_INVALID)
     ,_currentScript(CURRENTSCRIPT_INVALID)
     ,_startupScript(STARTUPSCRIPT_INVALID)
     ,_command(COMMAND_INVALID)
@@ -91,6 +93,12 @@ int YMicroPython::_parseAttr(YJSONObject *json_val)
     if(json_val->has("lastMsg")) {
         _lastMsg =  json_val->getString("lastMsg");
     }
+    if(json_val->has("heapUsage")) {
+        _heapUsage =  json_val->getInt("heapUsage");
+    }
+    if(json_val->has("xheapUsage")) {
+        _xheapUsage =  json_val->getInt("xheapUsage");
+    }
     if(json_val->has("currentScript")) {
         _currentScript =  json_val->getString("currentScript");
     }
@@ -125,6 +133,68 @@ string YMicroPython::get_lastMsg(void)
             }
         }
         res = _lastMsg;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the percentage of micropython main memory in use,
+ * as observed at the end of the last garbage collection.
+ *
+ * @return an integer corresponding to the percentage of micropython main memory in use,
+ *         as observed at the end of the last garbage collection
+ *
+ * On failure, throws an exception or returns YMicroPython::HEAPUSAGE_INVALID.
+ */
+int YMicroPython::get_heapUsage(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YMicroPython::HEAPUSAGE_INVALID;
+                }
+            }
+        }
+        res = _heapUsage;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the percentage of micropython external memory in use,
+ * as observed at the end of the last garbage collection.
+ *
+ * @return an integer corresponding to the percentage of micropython external memory in use,
+ *         as observed at the end of the last garbage collection
+ *
+ * On failure, throws an exception or returns YMicroPython::XHEAPUSAGE_INVALID.
+ */
+int YMicroPython::get_xheapUsage(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YMicroPython::XHEAPUSAGE_INVALID;
+                }
+            }
+        }
+        res = _xheapUsage;
     } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
@@ -287,13 +357,13 @@ int YMicroPython::set_command(const string& newval)
 /**
  * Retrieves a MicroPython interpreter for a given identifier.
  * The identifier can be specified using several formats:
- * <ul>
- * <li>FunctionLogicalName</li>
- * <li>ModuleSerialNumber.FunctionIdentifier</li>
- * <li>ModuleSerialNumber.FunctionLogicalName</li>
- * <li>ModuleLogicalName.FunctionIdentifier</li>
- * <li>ModuleLogicalName.FunctionLogicalName</li>
- * </ul>
+ *
+ * - FunctionLogicalName
+ * - ModuleSerialNumber.FunctionIdentifier
+ * - ModuleSerialNumber.FunctionLogicalName
+ * - ModuleLogicalName.FunctionIdentifier
+ * - ModuleLogicalName.FunctionLogicalName
+ *
  *
  * This function does not require that the MicroPython interpreter is online at the time
  * it is invoked. The returned object is nevertheless valid.
@@ -398,7 +468,7 @@ int YMicroPython::_invokeValueCallback(string value)
 int YMicroPython::eval(string codeName,string mpyCode)
 {
     string fullname;
-    inr res;
+    int res = 0;
     fullname = YapiWrapper::ysprintf("mpy:%s",codeName.c_str());
     res = this->_upload(fullname, mpyCode);
     return res;
@@ -442,7 +512,6 @@ string YMicroPython::get_lastLogs(void)
 {
     string buff;
     int bufflen = 0;
-    int endpos = 0;
     string res;
 
     buff = this->_download("mpy.txt");
@@ -450,7 +519,7 @@ string YMicroPython::get_lastLogs(void)
     while ((bufflen > 0) && (((u8)buff[bufflen]) != 64)) {
         bufflen = bufflen - 1;
     }
-    res = (buff).substr(0, bufflen);
+    res = buff.substr(0, bufflen);
     return res;
 }
 
@@ -477,12 +546,12 @@ int YMicroPython::registerLogCallback(YMicroPythonLogCallback callback)
     if (callback != NULL) {
         this->registerValueCallback(yInternalEventCallback);
     } else {
-        this->registerValueCallback((YMicroPythonLogCallback) NULL);
+        this->registerValueCallback((YMicroPythonValueCallback) NULL);
     }
     return 0;
 }
 
-YMicroPythonLogCallback_callback* YMicroPython::get_logCallback(void)
+YMicroPythonLogCallback YMicroPython::get_logCallback(void)
 {
     return _logCallback;
 }
@@ -501,8 +570,8 @@ int YMicroPython::_internalEventHandler(string cbVal)
     int arrPos = 0;
     string logMsg;
     // detect possible power cycle of the reader to clear event pointer
-    cbPos = (int)YAPI::_hexStr2Long((cbVal).substr(1, (int)(cbVal).length()-1));
-    cbDPos = ((cbPos - _prevCbPos) & (0xfffff));
+    cbPos = (int)YAPI::_hexStr2Long(cbVal.substr(1, (int)(cbVal).length()-1));
+    cbDPos = ((cbPos - _prevCbPos) & 0xfffff);
     _prevCbPos = cbPos;
     if (cbDPos > 65536) {
         _logPos = 0;
@@ -532,7 +601,7 @@ int YMicroPython::_internalEventHandler(string cbVal)
         _throw((YRETCODE)(YAPI_IO_ERROR), "fail to download micropython logs");
         return YAPI_IO_ERROR;
     }
-    lenStr = (contentStr).substr(endPos+1, (int)(contentStr).length()-(endPos+1));
+    lenStr = contentStr.substr(endPos+1, (int)(contentStr).length()-(endPos+1));
     // update processed event position pointer
     _logPos = atoi((lenStr).c_str());
     if (_isFirstCb) {
@@ -546,7 +615,7 @@ int YMicroPython::_internalEventHandler(string cbVal)
         _throw((YRETCODE)(YAPI_IO_ERROR), "fail to download micropython logs");
         return YAPI_IO_ERROR;
     }
-    contentStr = (contentStr).substr(0, endPos);
+    contentStr = contentStr.substr(0, endPos);
     msgArr = _strsplit(contentStr,'\n');
     arrLen = (int)msgArr.size() - 1;
     if (arrLen > 0) {

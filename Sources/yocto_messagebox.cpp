@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ * $Id: yocto_messagebox.cpp 62193 2024-08-19 12:20:58Z seb $
  *
  * Implements yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -142,15 +142,15 @@ int YSms::get_alphabet(void)
 
 int YSms::get_msgClass(void)
 {
-    if (((_mclass) & (16)) == 0) {
+    if ((_mclass & 16) == 0) {
         return -1;
     }
-    return ((_mclass) & (3));
+    return (_mclass & 3);
 }
 
 int YSms::get_dcs(void)
 {
-    return ((_mclass) | ((((_alphab) << (2)))));
+    return (_mclass | ((_alphab << 2)));
 }
 
 string YSms::get_timestamp(void)
@@ -184,7 +184,7 @@ string YSms::get_textData(void)
     }
     if (_alphab == 2) {
         // using UCS-2 alphabet
-        isosize = (((int)(_udata).size()) >> (1));
+        isosize = ((int)(_udata).size() >> 1);
         isolatin = string(isosize, (char)0);
         i = 0;
         while (i < isosize) {
@@ -209,7 +209,7 @@ vector<int> YSms::get_unicodeData(void)
     }
     if (_alphab == 2) {
         // using UCS-2 alphabet
-        unisize = (((int)(_udata).size()) >> (1));
+        unisize = ((int)(_udata).size() >> 1);
         res.clear();
         i = 0;
         while (i < unisize) {
@@ -345,8 +345,8 @@ int YSms::set_msgClass(int val)
 
 int YSms::set_dcs(int val)
 {
-    _alphab = (((((val) >> (2)))) & (3));
-    _mclass = ((val) & (16+3));
+    _alphab = (((val >> 2)) & 3);
+    _mclass = (val & (16+3));
     _npdu = 0;
     return YAPI_SUCCESS;
 }
@@ -511,14 +511,14 @@ int YSms::addUnicodeData(vector<int> val)
         uni = val[i];
         if (uni >= 65536) {
             surrogate = uni - 65536;
-            uni = (((((surrogate) >> (10))) & (1023))) + 55296;
-            udata[udatalen] = (char)(((uni) >> (8)));
-            udata[udatalen+1] = (char)(((uni) & (255)));
+            uni = (((surrogate >> 10) & 1023)) + 55296;
+            udata[udatalen] = (char)((uni >> 8));
+            udata[udatalen+1] = (char)((uni & 255));
             udatalen = udatalen + 2;
-            uni = (((surrogate) & (1023))) + 56320;
+            uni = ((surrogate & 1023)) + 56320;
         }
-        udata[udatalen] = (char)(((uni) >> (8)));
-        udata[udatalen+1] = (char)(((uni) & (255)));
+        udata[udatalen] = (char)((uni >> 8));
+        udata[udatalen+1] = (char)((uni & 255));
         udatalen = udatalen + 2;
         i = i + 1;
     }
@@ -624,7 +624,7 @@ string YSms::encodeAddress(string addr)
         res[0] = (char)(0);
         return res;
     }
-    res = string(2+((numlen+1) >> (1)), (char)0);
+    res = string(2+((numlen+1) >> 1), (char)0);
     res[0] = (char)(numlen);
     if (((u8)bytes[0]) == 43) {
         res[1] = (char)(145);
@@ -637,18 +637,18 @@ string YSms::encodeAddress(string addr)
     while (i < srclen) {
         val = ((u8)bytes[i]);
         if ((val >= 48) && (val < 58)) {
-            if (((numlen) & (1)) == 0) {
+            if ((numlen & 1) == 0) {
                 digit = val - 48;
             } else {
-                res[((numlen) >> (1))] = (char)(digit + 16*(val-48));
+                res[(numlen >> 1)] = (char)(digit + 16*(val-48));
             }
             numlen = numlen + 1;
         }
         i = i + 1;
     }
     // pad with F if needed
-    if (((numlen) & (1)) != 0) {
-        res[((numlen) >> (1))] = (char)(digit + 240);
+    if ((numlen & 1) != 0) {
+        res[(numlen >> 1)] = (char)(digit + 240);
     }
     return res;
 }
@@ -667,10 +667,10 @@ string YSms::decodeAddress(string addr,int ofs,int siz)
         return "";
     }
     res = "";
-    addrType = ((((u8)addr[ofs])) & (112));
+    addrType = (((u8)addr[ofs]) & 112);
     if (addrType == 80) {
         // alphanumeric number
-        siz = ((4*siz) / (7));
+        siz = ((4*siz) / 7);
         gsm7 = string(siz, (char)0);
         rpos = 1;
         carry = 0;
@@ -684,8 +684,8 @@ string YSms::decodeAddress(string addr,int ofs,int siz)
             } else {
                 byt = ((u8)addr[ofs+rpos]);
                 rpos = rpos + 1;
-                gsm7[i] = (char)(((carry) | ((((((byt) << (nbits)))) & (127)))));
-                carry = ((byt) >> ((7 - nbits)));
+                gsm7[i] = (char)((carry | (((byt << nbits)) & 127)));
+                carry = (byt >> (7 - nbits));
                 nbits = nbits + 1;
             }
             i = i + 1;
@@ -696,16 +696,16 @@ string YSms::decodeAddress(string addr,int ofs,int siz)
         if (addrType == 16) {
             res = "+";
         }
-        siz = (((siz+1)) >> (1));
+        siz = ((siz+1) >> 1);
         i = 0;
         while (i < siz) {
             byt = ((u8)addr[ofs+i+1]);
-            res = YapiWrapper::ysprintf("%s%x%x", res.c_str(), ((byt) & (15)),((byt) >> (4)));
+            res = YapiWrapper::ysprintf("%s%x%x", res.c_str(), (byt & 15),(byt >> 4));
             i = i + 1;
         }
         // remove padding digit if needed
-        if (((((u8)addr[ofs+siz])) >> (4)) == 15) {
-            res = (res).substr(0, (int)(res).length()-1);
+        if ((((u8)addr[ofs+siz]) >> 4) == 15) {
+            res = res.substr(0, (int)(res).length()-1);
         }
         return res;
     }
@@ -725,19 +725,19 @@ string YSms::encodeTimeStamp(string exp)
         res = string(0, (char)0);
         return res;
     }
-    if ((exp).substr(0, 1) == "+") {
-        n = atoi(((exp).substr(1, explen-1)).c_str());
+    if (exp.substr(0, 1) == "+") {
+        n = atoi((exp.substr(1, explen-1)).c_str());
         res = string(1, (char)0);
         if (n > 30*86400) {
-            n = 192+(((n+6*86400)) / ((7*86400)));
+            n = 192+((n+6*86400) / (7*86400));
         } else {
             if (n > 86400) {
-                n = 166+(((n+86399)) / (86400));
+                n = 166+((n+86399) / 86400);
             } else {
                 if (n > 43200) {
-                    n = 143+(((n-43200+1799)) / (1800));
+                    n = 143+((n-43200+1799) / 1800);
                 } else {
-                    n = -1+(((n+299)) / (300));
+                    n = -1+((n+299) / 300);
                 }
             }
         }
@@ -747,9 +747,9 @@ string YSms::encodeTimeStamp(string exp)
         res[0] = (char)(n);
         return res;
     }
-    if ((exp).substr(4, 1) == "-" || (exp).substr(4, 1) == "/") {
+    if (exp.substr(4, 1) == "-" || exp.substr(4, 1) == "/") {
         // ignore century
-        exp = (exp).substr(2, explen-2);
+        exp = exp.substr(2, explen-2);
         explen = (int)(exp).length();
     }
     expasc = exp;
@@ -763,7 +763,7 @@ string YSms::encodeTimeStamp(string exp)
             if ((v2 >= 48) && (v2 < 58)) {
                 v1 = v1 - 48;
                 v2 = v2 - 48;
-                res[n] = (char)((((v2) << (4))) + v1);
+                res[n] = (char)(((v2 << 4)) + v1);
                 n = n + 1;
                 i = i + 1;
             }
@@ -782,7 +782,7 @@ string YSms::encodeTimeStamp(string exp)
             v1 = ((u8)expasc[i+1]);
             v2 = ((u8)expasc[i+2]);
             if ((v1 >= 48) && (v1 < 58) && (v1 >= 48) && (v1 < 58)) {
-                v1 = (((10*(v1 - 48)+(v2 - 48))) / (15));
+                v1 = ((10*(v1 - 48)+(v2 - 48)) / 15);
                 n = n - 1;
                 v2 = 4 * ((u8)res[n]) + v1;
                 if (((u8)expasc[i-3]) == 45) {
@@ -828,7 +828,7 @@ string YSms::decodeTimeStamp(string exp,int ofs,int siz)
     i = 0;
     while ((i < siz) && (i < 6)) {
         byt = ((u8)exp[ofs+i]);
-        res = YapiWrapper::ysprintf("%s%x%x", res.c_str(), ((byt) & (15)),((byt) >> (4)));
+        res = YapiWrapper::ysprintf("%s%x%x", res.c_str(), (byt & 15),(byt >> 4));
         if (i < 3) {
             if (i < 2) {
                 res = YapiWrapper::ysprintf("%s-",res.c_str());
@@ -845,13 +845,13 @@ string YSms::decodeTimeStamp(string exp,int ofs,int siz)
     if (siz == 7) {
         byt = ((u8)exp[ofs+i]);
         sign = "+";
-        if (((byt) & (8)) != 0) {
+        if ((byt & 8) != 0) {
             byt = byt - 8;
             sign = "-";
         }
-        byt = (10*(((byt) & (15)))) + (((byt) >> (4)));
-        hh = YapiWrapper::ysprintf("%d",((byt) >> (2)));
-        ss = YapiWrapper::ysprintf("%d",15*(((byt) & (3))));
+        byt = (10*((byt & 15))) + ((byt >> 4));
+        hh = YapiWrapper::ysprintf("%d",(byt >> 2));
+        ss = YapiWrapper::ysprintf("%d",15*((byt & 3)));
         if ((int)(hh).length()<2) {
             hh = YapiWrapper::ysprintf("0%s",hh.c_str());
         }
@@ -871,9 +871,9 @@ int YSms::udataSize(void)
     res = (int)(_udata).size();
     if (_alphab == 0) {
         if (udhsize > 0) {
-            res = res + (((8 + 8*udhsize + 6)) / (7));
+            res = res + ((8 + 8*udhsize + 6) / 7);
         }
-        res = (((res * 7 + 7)) / (8));
+        res = ((res * 7 + 7) / 8);
     } else {
         if (udhsize > 0) {
             res = res + 1 + udhsize;
@@ -906,7 +906,7 @@ string YSms::encodeUserData(void)
     if (_alphab == 0) {
         // 7-bit encoding
         if (udhsize > 0) {
-            udhlen = (((8 + 8*udhsize + 6)) / (7));
+            udhlen = ((8 + 8*udhsize + 6) / 7);
             nbits = 7*udhlen - 8 - 8*udhsize;
         }
         res[0] = (char)(udhlen+udlen);
@@ -936,10 +936,10 @@ string YSms::encodeUserData(void)
                 nbits = 7;
             } else {
                 thi_b = ((u8)_udata[i]);
-                res[wpos] = (char)(((carry) | ((((((thi_b) << (nbits)))) & (255)))));
+                res[wpos] = (char)((carry | (((thi_b << nbits)) & 255)));
                 wpos = wpos + 1;
                 nbits = nbits - 1;
-                carry = ((thi_b) >> ((7 - nbits)));
+                carry = (thi_b >> (7 - nbits));
             }
             i = i + 1;
         }
@@ -974,9 +974,9 @@ int YSms::generateParts(void)
     udlen = (int)(_udata).size();
     mss = 140 - 1 - 5 - udhsize;
     if (_alphab == 0) {
-        mss = (((mss * 8 - 6)) / (7));
+        mss = ((mss * 8 - 6) / 7);
     }
-    _npdu = (((udlen+mss-1)) / (mss));
+    _npdu = ((udlen+mss-1) / mss);
     _parts.clear();
     partno = 0;
     wpos = 0;
@@ -1166,7 +1166,7 @@ int YSms::parsePdu(string pdu)
     rpos = 1+((u8)pdu[0]);
     pdutyp = ((u8)pdu[rpos]);
     rpos = rpos + 1;
-    _deliv = (((pdutyp) & (3)) == 0);
+    _deliv = ((pdutyp & 3) == 0);
     if (_deliv) {
         addrlen = ((u8)pdu[rpos]);
         rpos = rpos + 1;
@@ -1180,8 +1180,8 @@ int YSms::parsePdu(string pdu)
         rpos = rpos + 1;
         _dest = this->decodeAddress(pdu, rpos, addrlen);
         _orig = "";
-        if ((((pdutyp) & (16))) != 0) {
-            if ((((pdutyp) & (8))) != 0) {
+        if (((pdutyp & 16)) != 0) {
+            if (((pdutyp & 8)) != 0) {
                 tslen = 7;
             } else {
                 tslen= 1;
@@ -1190,13 +1190,13 @@ int YSms::parsePdu(string pdu)
             tslen = 0;
         }
     }
-    rpos = rpos + ((((addrlen+3)) >> (1)));
+    rpos = rpos + (((addrlen+3) >> 1));
     _pid = ((u8)pdu[rpos]);
     rpos = rpos + 1;
     dcs = ((u8)pdu[rpos]);
     rpos = rpos + 1;
-    _alphab = (((((dcs) >> (2)))) & (3));
-    _mclass = ((dcs) & (16+3));
+    _alphab = (((dcs >> 2)) & 3);
+    _mclass = (dcs & (16+3));
     _stamp = this->decodeTimeStamp(pdu, rpos, tslen);
     rpos = rpos + tslen;
     // parse user data (including udh)
@@ -1204,7 +1204,7 @@ int YSms::parsePdu(string pdu)
     carry = 0;
     udlen = ((u8)pdu[rpos]);
     rpos = rpos + 1;
-    if (((pdutyp) & (64)) != 0) {
+    if ((pdutyp & 64) != 0) {
         udhsize = ((u8)pdu[rpos]);
         rpos = rpos + 1;
         _udh = string(udhsize, (char)0);
@@ -1216,12 +1216,12 @@ int YSms::parsePdu(string pdu)
         }
         if (_alphab == 0) {
             // 7-bit encoding
-            udhlen = (((8 + 8*udhsize + 6)) / (7));
+            udhlen = ((8 + 8*udhsize + 6) / 7);
             nbits = 7*udhlen - 8 - 8*udhsize;
             if (nbits > 0) {
                 thi_b = ((u8)pdu[rpos]);
                 rpos = rpos + 1;
-                carry = ((thi_b) >> (nbits));
+                carry = (thi_b >> nbits);
                 nbits = 8 - nbits;
             }
         } else {
@@ -1245,8 +1245,8 @@ int YSms::parsePdu(string pdu)
             } else {
                 thi_b = ((u8)pdu[rpos]);
                 rpos = rpos + 1;
-                _udata[i] = (char)(((carry) | ((((((thi_b) << (nbits)))) & (127)))));
-                carry = ((thi_b) >> ((7 - nbits)));
+                _udata[i] = (char)((carry | (((thi_b << nbits)) & 127)));
+                carry = (thi_b >> (7 - nbits));
                 nbits = nbits + 1;
             }
             i = i + 1;
@@ -1775,10 +1775,10 @@ int YMessageBox::clearSIMSlot(int slot)
         this->clearCache();
         bitmapStr = this->get_slotsBitmap();
         newBitmap = YAPI::_hexStr2Bin(bitmapStr);
-        idx = ((slot) >> (3));
+        idx = (slot >> 3);
         if (idx < (int)(newBitmap).size()) {
-            bitVal = ((1) << ((((slot) & (7)))));
-            if ((((((u8)newBitmap[idx])) & (bitVal))) != 0) {
+            bitVal = (1 << ((slot & 7)));
+            if (((((u8)newBitmap[idx]) & bitVal)) != 0) {
                 _prevBitmapStr = "";
                 int_res = this->set_command(YapiWrapper::ysprintf("DS%d",slot));
                 if (int_res < 0) {
@@ -1813,19 +1813,19 @@ string YMessageBox::_AT(string cmd)
     cmdLen = (int)(cmd).length();
     chrPos = _ystrpos(cmd, "#");
     while (chrPos >= 0) {
-        cmd = YapiWrapper::ysprintf("%s%c23%s", (cmd).substr(0, chrPos).c_str(), 37,(cmd).substr(chrPos+1, cmdLen-chrPos-1).c_str());
+        cmd = YapiWrapper::ysprintf("%s%c23%s", cmd.substr(0, chrPos).c_str(), 37,cmd.substr(chrPos+1, cmdLen-chrPos-1).c_str());
         cmdLen = cmdLen + 2;
         chrPos = _ystrpos(cmd, "#");
     }
     chrPos = _ystrpos(cmd, "+");
     while (chrPos >= 0) {
-        cmd = YapiWrapper::ysprintf("%s%c2B%s", (cmd).substr(0, chrPos).c_str(), 37,(cmd).substr(chrPos+1, cmdLen-chrPos-1).c_str());
+        cmd = YapiWrapper::ysprintf("%s%c2B%s", cmd.substr(0, chrPos).c_str(), 37,cmd.substr(chrPos+1, cmdLen-chrPos-1).c_str());
         cmdLen = cmdLen + 2;
         chrPos = _ystrpos(cmd, "+");
     }
     chrPos = _ystrpos(cmd, "=");
     while (chrPos >= 0) {
-        cmd = YapiWrapper::ysprintf("%s%c3D%s", (cmd).substr(0, chrPos).c_str(), 37,(cmd).substr(chrPos+1, cmdLen-chrPos-1).c_str());
+        cmd = YapiWrapper::ysprintf("%s%c3D%s", cmd.substr(0, chrPos).c_str(), 37,cmd.substr(chrPos+1, cmdLen-chrPos-1).c_str());
         cmdLen = cmdLen + 2;
         chrPos = _ystrpos(cmd, "=");
     }
@@ -1845,8 +1845,8 @@ string YMessageBox::_AT(string cmd)
         if (((u8)buff[idx]) == 64) {
             // continuation detected
             suffixlen = bufflen - idx;
-            cmd = YapiWrapper::ysprintf("at.txt?cmd=%s",(buffstr).substr(buffstrlen - suffixlen, suffixlen).c_str());
-            buffstr = (buffstr).substr(0, buffstrlen - suffixlen);
+            cmd = YapiWrapper::ysprintf("at.txt?cmd=%s",buffstr.substr(buffstrlen - suffixlen, suffixlen).c_str());
+            buffstr = buffstr.substr(0, buffstrlen - suffixlen);
             waitMore = waitMore - 1;
         } else {
             // request complete
@@ -2127,7 +2127,7 @@ string YMessageBox::gsm2str(string gsm)
     }
     resstr = resbin;
     if ((int)(resstr).length() > reslen) {
-        resstr = (resstr).substr(0, reslen);
+        resstr = resstr.substr(0, reslen);
     }
     return resstr;
 }
@@ -2246,10 +2246,10 @@ int YMessageBox::checkNewMessages(void)
     while (pduIdx < (int)_pdus.size()) {
         sms = _pdus[pduIdx];
         slot = sms.get_slot();
-        idx = ((slot) >> (3));
+        idx = (slot >> 3);
         if (idx < (int)(newBitmap).size()) {
-            bitVal = ((1) << ((((slot) & (7)))));
-            if ((((((u8)newBitmap[idx])) & (bitVal))) != 0) {
+            bitVal = (1 << ((slot & 7)));
+            if (((((u8)newBitmap[idx]) & bitVal)) != 0) {
                 newArr.push_back(sms);
                 if (sms.get_concatCount() == 0) {
                     newMsg.push_back(sms);
@@ -2274,13 +2274,13 @@ int YMessageBox::checkNewMessages(void)
     // receive new messages
     slot = 0;
     while (slot < nslots) {
-        idx = ((slot) >> (3));
-        bitVal = ((1) << ((((slot) & (7)))));
+        idx = (slot >> 3);
+        bitVal = (1 << ((slot & 7)));
         prevBit = 0;
         if (idx < (int)(prevBitmap).size()) {
-            prevBit = ((((u8)prevBitmap[idx])) & (bitVal));
+            prevBit = (((u8)prevBitmap[idx]) & bitVal);
         }
-        if ((((((u8)newBitmap[idx])) & (bitVal))) != 0) {
+        if (((((u8)newBitmap[idx]) & bitVal)) != 0) {
             if (prevBit == 0) {
                 sms = this->fetchPdu(slot);
                 newArr.push_back(sms);

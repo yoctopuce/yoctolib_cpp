@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 60510 2024-04-12 09:37:02Z seb $
+ * $Id: yocto_api.h 62193 2024-08-19 12:20:58Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -789,7 +789,7 @@ public:
      *
      * From an operating system standpoint, it is generally not required to call
      * this function since the OS will automatically free allocated resources
-     * once your program is completed. However there are two situations when
+     * once your program is completed. However, there are two situations when
      * you may really want to use that function:
      *
      * - Free all dynamically allocated memory blocks in order to
@@ -900,7 +900,7 @@ public:
      */
     static  YRETCODE    TestHub(const string& url, int mstimeout, string& errmsg);
     /**
-     * Setup the Yoctopuce library to use modules connected on a given machine. Idealy this
+     * Set up the Yoctopuce library to use modules connected on a given machine. Idealy this
      * call will be made once at the begining of your application.  The
      * parameter will determine how the API will work. Use the following values:
      *
@@ -917,7 +917,7 @@ public:
      * computer, use the IP address 127.0.0.1. If the given IP is unresponsive, yRegisterHub
      * will not return until a time-out defined by ySetNetworkTimeout has elapsed.
      * However, it is possible to preventively test a connection  with yTestHub.
-     * If you cannot afford a network time-out, you can use the non blocking yPregisterHub
+     * If you cannot afford a network time-out, you can use the non-blocking yPregisterHub
      * function that will establish the connection as soon as it is available.
      *
      *
@@ -932,7 +932,7 @@ public:
      * while trying to access the USB modules. In particular, this means
      * that you must stop the VirtualHub software before starting
      * an application that uses direct USB access. The workaround
-     * for this limitation is to setup the library to use the VirtualHub
+     * for this limitation is to set up the library to use the VirtualHub
      * rather than direct USB access.
      *
      * If access control has been activated on the hub, virtual or not, you want to
@@ -973,7 +973,7 @@ public:
     static  YRETCODE    PreregisterHub(const string& url, string& errmsg);
 
     /**
-     * Setup the Yoctopuce library to no more use modules connected on a previously
+     * Set up the Yoctopuce library to no more use modules connected on a previously
      * registered machine with RegisterHub.
      *
      * @param url : a string containing either "usb" or the
@@ -1048,7 +1048,7 @@ public:
     /**
      * Checks if a given string is valid as logical name for a module or a function.
      * A valid logical name has a maximum of 19 characters, all among
-     * A..Z, a..z, 0..9, _, and -.
+     * A...Z, a...z, 0...9, _, and -.
      * If you try to configure a logical name with an incorrect string,
      * the invalid characters are ignored.
      *
@@ -3506,7 +3506,7 @@ public:
  * The YSensor class is the parent class for all Yoctopuce sensor types. It can be
  * used to read the current value and unit of any sensor, read the min/max
  * value, configure autonomous recording frequency and access recorded data.
- * It also provide a function to register a callback invoked each time the
+ * It also provides a function to register a callback invoked each time the
  * observed value changes, or at a predefined interval. Using this class rather
  * than a specific subclass makes it possible to create generic applications
  * that work with any Yoctopuce sensor, even those that do not yet exist.
@@ -4129,7 +4129,7 @@ inline YRETCODE yInitAPI(int mode, string& errmsg)
  *
  * From an operating system standpoint, it is generally not required to call
  * this function since the OS will automatically free allocated resources
- * once your program is completed. However there are two situations when
+ * once your program is completed. However, there are two situations when
  * you may really want to use that function:
  *
  * - Free all dynamically allocated memory blocks in order to
@@ -4235,7 +4235,7 @@ inline void yRegisterCalibrationHandler(int calibrationType, yCalibrationHandler
 { YAPI::RegisterCalibrationHandler(calibrationType, calibrationHandler); }
 
 /**
- * Setup the Yoctopuce library to use modules connected on a given machine. Idealy this
+ * Set up the Yoctopuce library to use modules connected on a given machine. Idealy this
  * call will be made once at the begining of your application.  The
  * parameter will determine how the API will work. Use the following values:
  *
@@ -4252,7 +4252,7 @@ inline void yRegisterCalibrationHandler(int calibrationType, yCalibrationHandler
  * computer, use the IP address 127.0.0.1. If the given IP is unresponsive, yRegisterHub
  * will not return until a time-out defined by ySetNetworkTimeout has elapsed.
  * However, it is possible to preventively test a connection  with yTestHub.
- * If you cannot afford a network time-out, you can use the non blocking yPregisterHub
+ * If you cannot afford a network time-out, you can use the non-blocking yPregisterHub
  * function that will establish the connection as soon as it is available.
  *
  *
@@ -4267,7 +4267,7 @@ inline void yRegisterCalibrationHandler(int calibrationType, yCalibrationHandler
  * while trying to access the USB modules. In particular, this means
  * that you must stop the VirtualHub software before starting
  * an application that uses direct USB access. The workaround
- * for this limitation is to setup the library to use the VirtualHub
+ * for this limitation is to set up the library to use the VirtualHub
  * rather than direct USB access.
  *
  * If access control has been activated on the hub, virtual or not, you want to
@@ -4310,7 +4310,7 @@ inline YRETCODE yPreregisterHub(const string& url, string& errmsg)
 { return YAPI::PreregisterHub(url,errmsg); }
 
 /**
- * Setup the Yoctopuce library to no more use modules connected on a previously
+ * Set up the Yoctopuce library to no more use modules connected on a previously
  * registered machine with RegisterHub.
  *
  * @param url : a string containing either "usb" or the
@@ -4412,7 +4412,7 @@ inline u64 yGetTickCount(void)
 /**
  * Checks if a given string is valid as logical name for a module or a function.
  * A valid logical name has a maximum of 19 characters, all among
- * A..Z, a..z, 0..9, _, and -.
+ * A...Z, a...z, 0...9, _, and -.
  * If you try to configure a logical name with an incorrect string,
  * the invalid characters are ignored.
  *
@@ -4750,7 +4750,7 @@ public:
      */
     virtual vector<YDataSet> get_dataSets(void);
 
-    virtual vector<YDataSet> parse_dataSets(string json);
+    virtual vector<YDataSet> parse_dataSets(string jsonbuff);
 
 
     inline static YDataLogger *Find(string func)

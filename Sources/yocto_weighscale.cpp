@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_weighscale.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: yocto_weighscale.cpp 62193 2024-08-19 12:20:58Z seb $
  *
  *  Implements yFindWeighScale(), the high-level API for WeighScale functions
  *
@@ -730,11 +730,11 @@ int YWeighScale::loadCompensationTable(int tableIndex,vector<double>& tempValues
     double comp = 0.0;
 
     id = this->get_functionId();
-    id = (id).substr(10, (int)(id).length() - 10);
+    id = id.substr(10, (int)(id).length() - 10);
     bin_json = this->_download(YapiWrapper::ysprintf("extra.json?page=%d",(4*atoi((id).c_str()))+tableIndex));
     paramlist = this->_json_get_array(bin_json);
     // convert all values to float and append records
-    siz = (((int)paramlist.size()) >> (1));
+    siz = ((int)paramlist.size() >> 1);
     tempValues.clear();
     compValues.clear();
     idx = 0;

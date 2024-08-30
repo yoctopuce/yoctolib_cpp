@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_rangefinder.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: yocto_rangefinder.cpp 62193 2024-08-19 12:20:58Z seb $
  *
  *  Implements yFindRangeFinder(), the high-level API for RangeFinder functions
  *
@@ -525,10 +525,10 @@ double YRangeFinder::get_hardwareCalibrationTemperature(void)
 {
     string hwcal;
     hwcal = this->get_hardwareCalibration();
-    if (!((hwcal).substr(0, 1) == "@")) {
+    if (!(hwcal.substr(0, 1) == "@")) {
         return YAPI_INVALID_DOUBLE;
     }
-    return atoi(((hwcal).substr(1, (int)(hwcal).length())).c_str());
+    return atoi((hwcal.substr(1, (int)(hwcal).length())).c_str());
 }
 
 /**

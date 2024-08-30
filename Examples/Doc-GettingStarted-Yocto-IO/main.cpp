@@ -1,13 +1,13 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 59576 2024-02-29 09:36:30Z seb $
+ *  $Id: main.cpp 62191 2024-08-19 12:19:27Z seb $
  *
- *  An example that show how to use a  Yocto-IO
+ *  An example that shows how to use a  Yocto-IO
  *
  *  You can find more information on our web site:
  *   Yocto-IO documentation:
  *      https://www.yoctopuce.com/EN/products/yocto-io/doc.html
- *   C++ V2 API Reference:
+ *   C++ API Reference:
  *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
  *
  *********************************************************************/

@@ -61,6 +61,8 @@ class YMicroPython; // forward declaration
 typedef void (*YMicroPythonValueCallback)(YMicroPython *func, const string& functionValue);
 typedef void (*YMicroPythonLogCallback)(YMicroPython *obj, const string& logline);
 #define Y_LASTMSG_INVALID               (YAPI_INVALID_STRING)
+#define Y_HEAPUSAGE_INVALID             (YAPI_INVALID_UINT)
+#define Y_XHEAPUSAGE_INVALID            (YAPI_INVALID_UINT)
 #define Y_CURRENTSCRIPT_INVALID         (YAPI_INVALID_STRING)
 #define Y_STARTUPSCRIPT_INVALID         (YAPI_INVALID_STRING)
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
@@ -84,6 +86,8 @@ protected:
     //--- (YMicroPython attributes)
     // Attributes (function value cache)
     string          _lastMsg;
+    int             _heapUsage;
+    int             _xheapUsage;
     string          _currentScript;
     string          _startupScript;
     string          _command;
@@ -109,6 +113,8 @@ public:
     //--- (YMicroPython accessors declaration)
 
     static const string LASTMSG_INVALID;
+    static const int HEAPUSAGE_INVALID = YAPI_INVALID_UINT;
+    static const int XHEAPUSAGE_INVALID = YAPI_INVALID_UINT;
     static const string CURRENTSCRIPT_INVALID;
     static const string STARTUPSCRIPT_INVALID;
     static const string COMMAND_INVALID;
@@ -124,6 +130,34 @@ public:
 
     inline string       lastMsg(void)
     { return this->get_lastMsg(); }
+
+    /**
+     * Returns the percentage of micropython main memory in use,
+     * as observed at the end of the last garbage collection.
+     *
+     * @return an integer corresponding to the percentage of micropython main memory in use,
+     *         as observed at the end of the last garbage collection
+     *
+     * On failure, throws an exception or returns YMicroPython::HEAPUSAGE_INVALID.
+     */
+    int                 get_heapUsage(void);
+
+    inline int          heapUsage(void)
+    { return this->get_heapUsage(); }
+
+    /**
+     * Returns the percentage of micropython external memory in use,
+     * as observed at the end of the last garbage collection.
+     *
+     * @return an integer corresponding to the percentage of micropython external memory in use,
+     *         as observed at the end of the last garbage collection
+     *
+     * On failure, throws an exception or returns YMicroPython::XHEAPUSAGE_INVALID.
+     */
+    int                 get_xheapUsage(void);
+
+    inline int          xheapUsage(void)
+    { return this->get_xheapUsage(); }
 
     /**
      * Returns the name of currently active script, if any.
@@ -192,13 +226,13 @@ public:
     /**
      * Retrieves a MicroPython interpreter for a given identifier.
      * The identifier can be specified using several formats:
-     * <ul>
-     * <li>FunctionLogicalName</li>
-     * <li>ModuleSerialNumber.FunctionIdentifier</li>
-     * <li>ModuleSerialNumber.FunctionLogicalName</li>
-     * <li>ModuleLogicalName.FunctionIdentifier</li>
-     * <li>ModuleLogicalName.FunctionLogicalName</li>
-     * </ul>
+     *
+     * - FunctionLogicalName
+     * - ModuleSerialNumber.FunctionIdentifier
+     * - ModuleSerialNumber.FunctionLogicalName
+     * - ModuleLogicalName.FunctionIdentifier
+     * - ModuleLogicalName.FunctionLogicalName
+     *
      *
      * This function does not require that the MicroPython interpreter is online at the time
      * it is invoked. The returned object is nevertheless valid.
@@ -290,7 +324,7 @@ public:
      */
     virtual int         registerLogCallback(YMicroPythonLogCallback callback);
 
-    virtual YMicroPythonLogCallback_callback* get_logCallback(void);
+    virtual YMicroPythonLogCallback get_logCallback(void);
 
     virtual int         _internalEventHandler(string cbVal);
 
@@ -335,13 +369,13 @@ public:
 /**
  * Retrieves a MicroPython interpreter for a given identifier.
  * The identifier can be specified using several formats:
- * <ul>
- * <li>FunctionLogicalName</li>
- * <li>ModuleSerialNumber.FunctionIdentifier</li>
- * <li>ModuleSerialNumber.FunctionLogicalName</li>
- * <li>ModuleLogicalName.FunctionIdentifier</li>
- * <li>ModuleLogicalName.FunctionLogicalName</li>
- * </ul>
+ *
+ * - FunctionLogicalName
+ * - ModuleSerialNumber.FunctionIdentifier
+ * - ModuleSerialNumber.FunctionLogicalName
+ * - ModuleLogicalName.FunctionIdentifier
+ * - ModuleLogicalName.FunctionLogicalName
+ *
  *
  * This function does not require that the MicroPython interpreter is online at the time
  * it is invoked. The returned object is nevertheless valid.

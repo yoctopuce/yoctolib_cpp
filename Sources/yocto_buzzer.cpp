@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_buzzer.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: yocto_buzzer.cpp 62193 2024-08-19 12:20:58Z seb $
  *
  *  Implements yFindBuzzer(), the high-level API for Buzzer functions
  *
@@ -594,7 +594,7 @@ int YBuzzer::addNotesToPlaySeq(string notes)
         }
         if (ch == 46) {
             // . (duration modifier)
-            num = ((num * 2) / (3));
+            num = ((num * 2) / 3);
         }
         if (((ch == 32) || (i+1 == notesLen)) && ((note > -99) || (typ != 3))) {
             if (num == 0) {
@@ -615,7 +615,7 @@ int YBuzzer::addNotesToPlaySeq(string notes)
                 }
                 pitch = prevPitch + dNote;
                 freq = (int) floor(440 * exp(pitch * 0.05776226504666)+0.5);
-                ms16 = ((ms) >> (4));
+                ms16 = (ms >> 4);
                 rest = 0;
                 if (typ == 3) {
                     rest = 2 * ms16;

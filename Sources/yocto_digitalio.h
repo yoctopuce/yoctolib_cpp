@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_digitalio.h 61494 2024-06-17 08:12:29Z seb $
+ *  $Id: yocto_digitalio.h 61964 2024-07-29 15:54:55Z seb $
  *
  *  Declares yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -83,7 +83,7 @@ typedef enum {
  * Yocto-Maxi-IO-V2
  *
  * The YDigitalIO class allows you drive a Yoctopuce digital input/output port.
- * It can be used to setup the direction of each channel, to read the state of each channel
+ * It can be used to set up the direction of each channel, to read the state of each channel
  * and to switch the state of each channel configures as an output.
  * You can work on all channels at once, or one by one. Most functions
  * use a binary representation for channels where bit 0 matches channel #0 , bit 1 matches channel

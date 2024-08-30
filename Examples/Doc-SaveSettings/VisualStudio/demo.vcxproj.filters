@@ -107,6 +107,9 @@
     <ClCompile Include="..\..\..\Sources\yocto_messagebox.cpp">
       <Filter>Yoctopuce</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_micropython.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\Sources\yocto_motor.cpp">
       <Filter>Yoctopuce</Filter>
     </ClCompile>
@@ -392,6 +395,9 @@
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pk.c">
       <Filter>Yoctopuce\yapi\MbedTLS</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pk_ecc.c">
+      <Filter>Yoctopuce\yapi\MbedTLS</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pkcs12.c">
       <Filter>Yoctopuce\yapi\MbedTLS</Filter>
     </ClCompile>
@@ -654,6 +660,9 @@
       <Filter>Yoctopuce</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Sources\yocto_messagebox.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_micropython.h">
       <Filter>Yoctopuce</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Sources\yocto_motor.h">

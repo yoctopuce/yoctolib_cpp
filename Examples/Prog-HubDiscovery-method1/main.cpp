@@ -15,7 +15,7 @@ static void HubDiscovered(const string& serial, const string& url)
   if (KnownHubs.find(serial) != KnownHubs.end()) return;
 
   cout << "hub found: " << serial << " (" << url << ")" << endl;
-
+#if 0
   // connect to the hub
   string msg;
   YAPI::RegisterHub(url, msg);
@@ -41,6 +41,8 @@ static void HubDiscovered(const string& serial, const string& url)
 
   // disconnect from the hub
   YAPI::UnregisterHub(url);
+#endif
+
 }
 
 int main(int argc, const char * argv[])

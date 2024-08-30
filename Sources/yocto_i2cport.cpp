@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_i2cport.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: yocto_i2cport.cpp 62193 2024-08-19 12:20:58Z seb $
  *
  *  Implements yFindI2cPort(), the high-level API for I2cPort functions
  *
@@ -1018,7 +1018,7 @@ int YI2cPort::read_avail(void)
     databin = this->_download(YapiWrapper::ysprintf("rxcnt.bin?pos=%d",_rxptr));
     availPosStr = databin;
     atPos = _ystrpos(availPosStr, "@");
-    res = atoi(((availPosStr).substr(0, atPos)).c_str());
+    res = atoi((availPosStr.substr(0, atPos)).c_str());
     return res;
 }
 
@@ -1032,7 +1032,7 @@ int YI2cPort::end_tell(void)
     databin = this->_download(YapiWrapper::ysprintf("rxcnt.bin?pos=%d",_rxptr));
     availPosStr = databin;
     atPos = _ystrpos(availPosStr, "@");
-    res = atoi(((availPosStr).substr(atPos+1, (int)(availPosStr).length()-atPos-1)).c_str());
+    res = atoi((availPosStr.substr(atPos+1, (int)(availPosStr).length()-atPos-1)).c_str());
     return res;
 }
 
@@ -1333,7 +1333,7 @@ string YI2cPort::i2cSendAndReceiveBin(int slaveAddr,string buff,int rcvCount)
         _throw((YRETCODE)(YAPI_IO_ERROR), "I2C protocol error");
         return rcvbytes;
     }
-    reply = (reply).substr((int)(reply).length()-2*rcvCount, 2*rcvCount);
+    reply = reply.substr((int)(reply).length()-2*rcvCount, 2*rcvCount);
     rcvbytes = YAPI::_hexStr2Bin(reply);
     return rcvbytes;
 }
@@ -1404,7 +1404,7 @@ vector<int> YI2cPort::i2cSendAndReceiveArray(int slaveAddr,vector<int> values,in
         _throw((YRETCODE)(YAPI_IO_ERROR), "I2C protocol error");
         return res;
     }
-    reply = (reply).substr((int)(reply).length()-2*rcvCount, 2*rcvCount);
+    reply = reply.substr((int)(reply).length()-2*rcvCount, 2*rcvCount);
     rcvbytes = YAPI::_hexStr2Bin(reply);
     res.clear();
     idx = 0;

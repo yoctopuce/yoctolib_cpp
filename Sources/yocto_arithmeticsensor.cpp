@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_arithmeticsensor.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: yocto_arithmeticsensor.cpp 62193 2024-08-19 12:20:58Z seb $
  *
  *  Implements yFindArithmeticSensor(), the high-level API for ArithmeticSensor functions
  *
@@ -324,17 +324,17 @@ double YArithmeticSensor::defineExpression(string expr,string descr)
     string diags;
     double resval = 0.0;
     id = this->get_functionId();
-    id = (id).substr(16, (int)(id).length() - 16);
+    id = id.substr(16, (int)(id).length() - 16);
     fname = YapiWrapper::ysprintf("arithmExpr%s.txt",id.c_str());
 
     content = YapiWrapper::ysprintf("// %s\n%s", descr.c_str(),expr.c_str());
     data = this->_uploadEx(fname, content);
     diags = data;
-    if (!((diags).substr(0, 8) == "Result: ")) {
+    if (!(diags.substr(0, 8) == "Result: ")) {
         _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), diags);
         return YAPI_INVALID_DOUBLE;
     }
-    resval = atof(((diags).substr(8, (int)(diags).length()-8)).c_str());
+    resval = atof((diags.substr(8, (int)(diags).length()-8)).c_str());
     return resval;
 }
 
@@ -353,13 +353,13 @@ string YArithmeticSensor::loadExpression(void)
     string content;
     int idx = 0;
     id = this->get_functionId();
-    id = (id).substr(16, (int)(id).length() - 16);
+    id = id.substr(16, (int)(id).length() - 16);
     fname = YapiWrapper::ysprintf("arithmExpr%s.txt",id.c_str());
 
     content = this->_download(fname);
     idx = _ystrpos(content, "\n");
     if (idx > 0) {
-        content = (content).substr(idx+1, (int)(content).length()-(idx+1));
+        content = content.substr(idx+1, (int)(content).length()-(idx+1));
     }
     return content;
 }

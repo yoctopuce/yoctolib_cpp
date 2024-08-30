@@ -191,6 +191,9 @@
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pk.c">
       <Filter>Yoctopuce\yapi\MbedTLS</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pk_ecc.c">
+      <Filter>Yoctopuce\yapi\MbedTLS</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\pkcs12.c">
       <Filter>Yoctopuce\yapi\MbedTLS</Filter>
     </ClCompile>

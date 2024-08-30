@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 61037 2024-05-21 15:58:12Z mvuilleu $
+ * $Id: ydef.h 61954 2024-07-29 12:28:26Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -960,6 +960,7 @@ typedef union {
 
 #define YSSDP_PORT 1900
 #define YSSDP_MCAST_ADDR_STR  "239.255.255.250"
+#define YSSDP_MCAST_ADDR6_STR "[ff02::c]"
 #define YSSDP_URN_YOCTOPUCE "urn:yoctopuce-com:device:hub:1"
 
 // prototype of the async request completion callback

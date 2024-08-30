@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 61296 2024-06-06 07:03:49Z build $
+#  $Id: GNUmakefile 62283 2024-08-26 19:30:19Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -62,6 +62,7 @@ TEST_SRC = ../Examples/Doc-Inventory/main.cpp
 #C++ output directories
 DIR_WIN32 = windows/
 DIR_WIN64 = windows/amd64/
+DIR_WINARM = windows/arm64/
 DIR_I386 = linux/i386/
 DIR_X64 = linux/x86_64/
 DIR_ARMEL = linux/armel/
@@ -75,6 +76,7 @@ DIR_OSX32 = osx32/
 #C lowlevel output directories
 YAPI_DIR_WIN32 =  windows/yapi/
 YAPI_DIR_WIN64 =  windows/yapi/amd64/
+YAPI_DIR_WINARM =  windows/yapi/arm64/
 YAPI_DIR_I386 = $(DIR_I386)yapi/
 YAPI_DIR_X64 = $(DIR_X64)yapi/
 YAPI_DIR_ARMEL = $(DIR_ARMEL)yapi/
@@ -88,6 +90,7 @@ YAPI_DIR_OSX32 = $(DIR_OSX32)yapi/
 # temp obj directories
 OBJDIR_WIN32 = $(DIR_WIN32)objs/
 OBJDIR_WIN64 = $(DIR_WIN64)objs/
+OBJDIR_WINARM = $(DIR_WINARM)objs/
 OBJDIR_I386 = $(DIR_I386)objs/
 OBJDIR_X64 = $(DIR_X64)objs/
 OBJDIR_ARMEL = $(DIR_ARMEL)objs/
@@ -98,14 +101,12 @@ OBJDIR_MIPSEL = $(DIR_MIPSEL)objs/
 OBJDIR_OSX = $(DIR_OSX)objs/
 OBJDIR_OSX32 = $(DIR_OSX32)objs/
 
-
 DEF_SSL_GCC  = -DNO_YSSL
-
-
 
 #CC compiler for each arch
 CC_WIN32 = cl
 CC_WIN64 = cl
+CC_WINARM = cl
 CC_I386 = gcc
 CC_X64 = gcc
 ifdef TOOLCHAIN_QARM
@@ -132,6 +133,7 @@ CC_OSX32 = gcc
 #CPP compiler for each arch
 CPP_WIN32 = cl
 CPP_WIN64 = cl
+CPP_WINARM = cl
 CPP_I386 = g++
 CPP_X64 = g++
 ifdef TOOLCHAIN_QARM
@@ -175,7 +177,7 @@ OPTS_DYN_WIN = /D GENERATE_DLL /W3 /WX- /O2 /Oi /Oy- /Gy /GL /MT
 
 OPTS_WIN32 =
 OPTS_WIN64 =
-
+OPTS_WINARM =
 
 # most compatible ARMEL options, using soft-float
 ifdef TOOLCHAIN_QARM
@@ -207,6 +209,7 @@ OPTS_OSX32 = -m32
 #link optionsfor each arch
 LINKWITH_WIN32 = "Advapi32.lib" "bcrypt.lib"
 LINKWITH_WIN64 = "Advapi32.lib" "bcrypt.lib"
+LINKWITH_WINARM = "Advapi32.lib" "bcrypt.lib"
 LINKWITH_I386 = -lm -lpthread -lusb-1.0
 LINKWITH_X64 = -lm -lpthread -lusb-1.0
 ifdef TOOLCHAIN_QARM
@@ -230,6 +233,7 @@ LINKWITH_OSX =
 
 YAPI_LINKWITH_WIN32 = "Advapi32.lib"
 YAPI_LINKWITH_WIN64 = "Advapi32.lib"
+YAPI_LINKWITH_WINARM = "Advapi32.lib"
 YAPI_LINKWITH_I386 = -lpthread -lusb-1.0
 YAPI_LINKWITH_X64 = -lpthread -lusb-1.0
 ifdef TOOLCHAIN_QARM
@@ -257,6 +261,7 @@ YAPI_LINKWITH_OSX32 =
 #striper for each arch :-)
 STRIP_WIN32 = $(XDCTOOLS)strip
 STRIP_WIN64 = $(XDCTOOLS)strip
+STRIP_WINARM = $(XDCTOOLS)strip
 STRIP_I386 = strip
 STRIP_X64 = strip
 ifdef TOOLCHAIN_QARM
@@ -280,6 +285,8 @@ LIBS_YAPI_WIN32   = $(YAPI_DIR_WIN32)yapi-static.lib $(YAPI_DIR_WIN32)yapi.dll
 LIBS_WIN32        = $(DIR_WIN32)yocto-static.lib $(DIR_WIN32)yocto.dll $(LIBS_YAPI_WIN32)
 LIBS_YAPI_WIN64   = $(YAPI_DIR_WIN64)yapi-static.lib $(YAPI_DIR_WIN64)yapi.dll
 LIBS_WIN64        = $(DIR_WIN64)yocto-static.lib $(DIR_WIN64)yocto.dll $(LIBS_YAPI_WIN64)
+LIBS_YAPI_WINARM  = $(YAPI_DIR_WINARM)yapi.dll $(YAPI_DIR_WINARM)yapi-static.lib
+LIBS_WINARM       = $(LIBS_YAPI_WINARM) $(DIR_WINARM)yocto-static.lib $(DIR_WINARM)yocto.dll
 LIBS_YAPI_I386    = $(YAPI_DIR_I386)libyapi-static.a $(YAPI_DIR_I386)libyapi.so.1.0.1
 LIBS_I386         = $(DIR_I386)libyocto-static.a $(DIR_I386)libyocto.so.1.0.1 $(LIBS_YAPI_I386)
 LIBS_YAPI_X64     = $(YAPI_DIR_X64)libyapi-static.a $(YAPI_DIR_X64)libyapi.so.1.0.1
@@ -297,11 +304,8 @@ LIBS_MIPSEL       = $(DIR_MIPSEL)libyocto-static.a $(DIR_MIPSEL)libyocto.so.1.0.
 LIBS_OSX          = $(DIR_OSX)libyocto-static.a  $(YAPI_DIR_OSX)libyapi-static.a $(DIR_OSX)libyocto.dylib $(YAPI_DIR_OSX)libyapi.dylib
 LIBS_OSX32        = $(YAPI_DIR_OSX32)libyapi.dylib
 
-
-
 #define all object needed
 SOURCES_DIR = ../Sources/
-
 
 #-- yocto_patch_start --
 YOCTO_API_OBJS_STAT = yocto_api.o\
@@ -340,6 +344,7 @@ YOCTO_API_OBJS_STAT = yocto_api.o\
 	yocto_longitude.o \
 	yocto_magnetometer.o \
 	yocto_messagebox.o \
+	yocto_micropython.o \
 	yocto_motor.o \
 	yocto_multiaxiscontroller.o \
 	yocto_multicellweighscale.o \
@@ -380,8 +385,6 @@ YOCTO_API_OBJS_STAT = yocto_api.o\
 	yocto_wireless.o \
 
 #-- yocto_patch_stop --
-
-
 
 
 #-- mbedtls_patch_start --
@@ -428,6 +431,7 @@ MBEDTLS_OBJS_STAT = \
 	padlock.o \
 	pem.o \
 	pk.o \
+	pk_ecc.o \
 	pkcs12.o \
 	pkcs5.o \
 	pkcs7.o \
@@ -504,6 +508,7 @@ ALL_OBJS_DYN    = $(YAPI_OBJS_DYN)  $(YOCTO_API_OBJS_DYN)
 #create a new definitions for each platform using macro
 ALL_OBJS_STAT_WIN32    = $(patsubst %.o, $(OBJDIR_WIN32)%.obj, $(ALL_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_win.o)
 ALL_OBJS_STAT_WIN64    = $(patsubst %.o, $(OBJDIR_WIN64)%.obj, $(ALL_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_win.o)
+ALL_OBJS_STAT_WINARM    = $(patsubst %.o, $(OBJDIR_WINARM)%.obj, $(ALL_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_win.o)
 ALL_OBJS_STAT_I386    = $(patsubst %.o, $(OBJDIR_I386)%.o, $(ALL_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_lin.o)
 ALL_OBJS_STAT_X64    = $(patsubst %.o, $(OBJDIR_X64)%.o, $(ALL_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_lin.o)
 ALL_OBJS_STAT_ARMEL = $(patsubst %.o, $(OBJDIR_ARMEL)%.o, $(ALL_OBJS_STAT) ypkt_lin.o)
@@ -515,6 +520,7 @@ ALL_OBJS_STAT_OSX   = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(ALL_OBJS_STAT) $(MBEDT
 
 ALL_OBJS_DYN_WIN32    = $(patsubst %.o, $(OBJDIR_WIN32)%.obj, $(ALL_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_win_dyn.o)
 ALL_OBJS_DYN_WIN64    = $(patsubst %.o, $(OBJDIR_WIN64)%.obj, $(ALL_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_win_dyn.o)
+ALL_OBJS_DYN_WINARM    = $(patsubst %.o, $(OBJDIR_WINARM)%.obj, $(ALL_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_win_dyn.o)
 ALL_OBJS_DYN_I386     = $(patsubst %.o, $(OBJDIR_I386)%.o, $(ALL_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_lin_dyn.o)
 ALL_OBJS_DYN_X64     = $(patsubst %.o, $(OBJDIR_X64)%.o, $(ALL_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_lin_dyn.o)
 ALL_OBJS_DYN_ARMEL  = $(patsubst %.o, $(OBJDIR_ARMEL)%.o, $(ALL_OBJS_DYN) ypkt_lin_dyn.o)
@@ -526,6 +532,7 @@ ALL_OBJS_DYN_OSX    = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(ALL_OBJS_DYN) $(MBEDTL
 
 YAPI_OBJS_STAT_WIN32  = $(patsubst %.o, $(OBJDIR_WIN32)%.obj, $(YAPI_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_win.o)
 YAPI_OBJS_STAT_WIN64  = $(patsubst %.o, $(OBJDIR_WIN64)%.obj, $(YAPI_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_win.o)
+YAPI_OBJS_STAT_WINARM  = $(patsubst %.o, $(OBJDIR_WINARM)%.obj, $(YAPI_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_win.o)
 YAPI_OBJS_STAT_I386  = $(patsubst %.o, $(OBJDIR_I386)%.o, $(YAPI_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_lin.o)
 YAPI_OBJS_STAT_X64  = $(patsubst %.o, $(OBJDIR_X64)%.o, $(YAPI_OBJS_STAT) $(MBEDTLS_OBJS_STAT) ypkt_lin.o)
 YAPI_OBJS_STAT_ARMEL = $(patsubst %.o, $(OBJDIR_ARMEL)%.o, $(YAPI_OBJS_STAT) ypkt_lin.o)
@@ -537,6 +544,7 @@ YAPI_OBJS_STAT_OSX  = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(YAPI_OBJS_STAT) $(MBED
 
 YAPI_OBJS_DYN_WIN32  = $(patsubst %.o, $(OBJDIR_WIN32)%.obj, $(YAPI_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_win.o)
 YAPI_OBJS_DYN_WIN64  = $(patsubst %.o, $(OBJDIR_WIN64)%.obj, $(YAPI_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_win.o)
+YAPI_OBJS_DYN_WINARM  = $(patsubst %.o, $(OBJDIR_WINARM)%.obj, $(YAPI_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_win.o)
 YAPI_OBJS_DYN_I386 = $(patsubst %.o, $(OBJDIR_I386)%.o, $(YAPI_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_lin_dyn.o)
 YAPI_OBJS_DYN_X64 = $(patsubst %.o, $(OBJDIR_X64)%.o, $(YAPI_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_lin_dyn.o)
 YAPI_OBJS_DYN_ARMEL = $(patsubst %.o, $(OBJDIR_ARMEL)%.o, $(YAPI_OBJS_DYN) ypkt_lin_dyn.o)
@@ -553,9 +561,7 @@ INCLUDES    = $(YAPI_SOURCES_DIR) $(SOURCES_DIR) $(MBEDTLS_INCLUDE_DIR)
 INC_PATH    = $(patsubst %,-I%,$(subst :, ,$(INCLUDES)))
 INC_PATH_WIN = $(patsubst %,/I %,$(subst :, ,$(INCLUDES)))
 
-
 ALL_H       = $(wildcard $(patsubst %,%*.h,$(subst :, ,$(YAPI_SOURCES_DIR) $(SOURCES_DIR)  $(MBEDTLS_INCLUDE_DIR))))
-
 fwd: default
 
 # WINDOW 32bits
@@ -588,6 +594,22 @@ $(OBJDIR_WIN64)%_dyn.obj: %.cpp $(ALL_H)
 	@$(CPP_WIN64) $(OPTS_WIN64) $(OPTS_PROD_WIN) $(OPTS_DYN_WIN) $(INC_PATH_WIN) /EHsc /Fo$@ /c $<
 
 $(OBJDIR_WIN64)%.res: %.rc
+	$(RC) /fo $@ $<
+
+# WINDOW ARM 64bits
+$(OBJDIR_WINARM)%.obj: %.c $(ALL_H)
+	@$(CC_WINARM) $(OPTS_WINARM) $(OPTS_PROD_WIN) $(OPTS_STAT_WIN) $(INC_PATH_WIN) /Fo$@ /c $<
+
+$(OBJDIR_WINARM)%.obj: %.cpp $(ALL_H)
+	@$(CPP_WINARM) $(OPTS_WINARM) $(OPTS_PROD_WIN) $(OPTS_STAT_WIN) $(INC_PATH_WIN) /EHsc /Fo$@ /c $<
+
+$(OBJDIR_WINARM)%_dyn.obj: %.c $(ALL_H)
+	@$(CC_WINARM) $(OPTS_WINARM) $(OPTS_PROD_WIN) $(OPTS_DYN_WIN) $(INC_PATH_WIN) /Fo$@ /c $<
+
+$(OBJDIR_WINARM)%_dyn.obj: %.cpp $(ALL_H)
+	@$(CPP_WINARM) $(OPTS_WINARM) $(OPTS_PROD_WIN) $(OPTS_DYN_WIN) $(INC_PATH_WIN) /EHsc /Fo$@ /c $<
+
+$(OBJDIR_WINARM)%.res: %.rc
 	$(RC) /fo $@ $<
 
 #generic compilation rules
@@ -778,6 +800,35 @@ $(DIR_WIN64)test.exe: $(OBJDIR_WIN64) $(YAPI_DIR_WIN64) $(ALL_OBJS_STAT_WIN64) $
 	@$(RM) -rf $@
 	@echo linking $@
 	@$(CPP_WIN64) $(OPTS_WIN64) $(INC_PATH_WIN)  /Fe$@ $(TEST_SRC) $(ALL_OBJS_STAT_WIN64) $(LINKWITH_WIN64)
+
+
+# WINDOW ARM LIBRARY RULES
+$(DIR_WINARM)yocto-static.lib: $(OBJDIR_WINARM) $(ALL_OBJS_STAT_WINARM) $(ALL_H)
+	@$(RM) -rf $@
+	@echo building lib ($@)
+	@lib /MACHINE:ARM64 /OUT:$@ $(ALL_OBJS_STAT_WINARM)
+
+$(YAPI_DIR_WINARM)yapi-static.lib: $(OBJDIR_WINARM) $(YAPI_DIR_WINARM) $(YAPI_OBJS_STAT_WINARM) $(ALL_H)
+	@$(RM) -rf $@
+	@echo building lib ($@)
+	@lib /MACHINE:ARM64 /OUT:$@ $(YAPI_OBJS_STAT_WINARM)
+
+$(DIR_WINARM)yocto.dll: $(OBJDIR_WINARM) $(ALL_OBJS_DYN_WINARM) $(OBJDIR_WINARM)winresourceARM.res $(ALL_H)
+	@echo building dll $@
+	@$(CPP_WINARM) $(ALL_OBJS_DYN_WINARM) $(OBJDIR_WINARM)winresourceARM.res /nologo /Fe$@ /Fa(R) /link  /MACHINE:ARM64  /DLL  $(LINKWITH_WINARM)
+
+$(YAPI_DIR_WINARM)yapi.dll: $(OBJDIR_WINARM) $(YAPI_DIR_WINARM) $(YAPI_OBJS_DYN_WINARM) $(OBJDIR_WINARM)yapiresourceARM.res  $(ALL_H)
+	@echo building dll $@
+ifdef JAVA_HOME
+	@echo java_home set to $(JAVA_HOME)
+endif
+	@$(CC_WINARM) $(YAPI_OBJS_DYN_WINARM) $(OBJDIR_WINARM)yapiresourceARM.res /W3 /WX- /O2 /Oi /Oy- /MT /Gy /GL /nologo /Fe$@ /Fa(R) /link  /MACHINE:ARM64  /DLL $(LINKWITH_WINARM)
+
+$(DIR_WINARM)test.exe: $(OBJDIR_WINARM) $(YAPI_DIR_WINARM) $(ALL_OBJS_STAT_WINARM) $(ALL_H) $(TEST_SRC)
+	@$(RM) -rf $@
+	@echo linking $@
+	@$(CPP_WINARM) $(OPTS_WINARM) $(INC_PATH_WIN)  /Fe$@ $(TEST_SRC) $(ALL_OBJS_STAT_WINARM) $(LINKWITH_WINARM)
+
 
 
 # INTEL 386 LIBRARY RULES
@@ -1024,6 +1075,11 @@ win64: $(LIBS_WIN64)
 release_win64: $(LIBS_WIN64)
 	@$(MAKE) clean_obj_win64
 
+winARM: $(LIBS_WINARM)
+
+release_winARM: $(LIBS_WINARM)
+	@$(MAKE) clean_obj_winARM
+
 i386: $(LIBS_I386)
 
 release_i386: $(LIBS_I386)
@@ -1166,9 +1222,9 @@ else
 	exit 1
 endif
 
-$(DIR_WIN32) $(DIR_WIN64) $(DIR_I386) $(DIR_X64) $(DIR_ARMEL) $(DIR_ARMHF) $(DIR_AARCH64) $(DIR_MIPS) $(DIR_MIPSEL) $(DIR_OSX) $(DIR_OSX32) \
-$(YAPI_DIR_WIN32) $(YAPI_DIR_WIN64) $(YAPI_DIR_I386) $(YAPI_DIR_X64) $(YAPI_DIR_ARMEL) $(YAPI_DIR_ARMHF) $(YAPI_DIR_AARCH64) $(YAPI_DIR_MIPS) $(YAPI_DIR_MIPSEL) $(YAPI_DIR_OSX) $(YAPI_DIR_OSX32) \
-$(OBJDIR_WIN32) $(OBJDIR_WIN64) $(OBJDIR_I386) $(OBJDIR_X64) $(OBJDIR_ARMEL) $(OBJDIR_ARMHF) $(OBJDIR_AARCH64) $(OBJDIR_MIPS) $(OBJDIR_MIPSEL) $(OBJDIR_OSX) $(OBJDIR_OSX32) :
+$(DIR_WIN32) $(DIR_WIN64) $(DIR_WINARM) $(DIR_I386) $(DIR_X64) $(DIR_ARMEL) $(DIR_ARMHF) $(DIR_AARCH64) $(DIR_MIPS) $(DIR_MIPSEL) $(DIR_OSX) $(DIR_OSX32) \
+$(YAPI_DIR_WIN32) $(YAPI_DIR_WIN64) $(YAPI_DIR_WINARM) $(YAPI_DIR_I386) $(YAPI_DIR_X64) $(YAPI_DIR_ARMEL) $(YAPI_DIR_ARMHF) $(YAPI_DIR_AARCH64) $(YAPI_DIR_MIPS) $(YAPI_DIR_MIPSEL) $(YAPI_DIR_OSX) $(YAPI_DIR_OSX32) \
+$(OBJDIR_WIN32) $(OBJDIR_WIN64) $(OBJDIR_WINARM) $(OBJDIR_I386) $(OBJDIR_X64) $(OBJDIR_ARMEL) $(OBJDIR_ARMHF) $(OBJDIR_AARCH64) $(OBJDIR_MIPS) $(OBJDIR_MIPSEL) $(OBJDIR_OSX) $(OBJDIR_OSX32) :
 	@$(MKDIR) -p $@
 
 clean_obj_win32:
@@ -1176,6 +1232,9 @@ clean_obj_win32:
 
 clean_obj_win64:
 	@$(RM) -rf $(OBJDIR_WIN64)
+
+clean_obj_winARM:
+	@$(RM) -rf $(OBJDIR_WINARM)
 
 clean_obj_i386:
 	@$(RM) -rf $(OBJDIR_I386)
@@ -1216,6 +1275,9 @@ clean_win32: clean_obj_win32
 clean_win64: clean_obj_win64
 	@$(RM) -rf $(DIR_WIN64)
 
+clean_winARM: clean_obj_winARM
+	@$(RM) -rf $(DIR_WINARM)
+
 clean_armel: clean_obj_armel
 	@$(RM) -rf $(DIR_ARMEL)
 
@@ -1237,6 +1299,6 @@ clean_osx: clean_obj_osx
 clean_osx32: clean_obj_osx32
 	@$(RM) -rf $(DIR_OSX32)
 
-clean clean_all: clean_win32 clean_win64 clean_i386 clean_x64 clean_armel clean_armhf clean_mips clean_mipsel clean_osx clean_osx32 clean_aarch64
+clean clean_all: clean_win32 clean_win64 clean_winARM clean_i386 clean_x64 clean_armel clean_armhf clean_mips clean_mipsel clean_osx clean_osx32 clean_aarch64
 	echo clean
 
