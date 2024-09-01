@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 62283 2024-08-26 19:30:19Z seb $
+#  $Id: GNUmakefile 62367 2024-09-01 10:19:27Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -174,6 +174,10 @@ OPTS_DBG_WIN = $(DEF_FLAGS_WIN)
 OPTS_PROD_WIN = /nologo $(DEF_FLAGS_WIN) /guard:cf
 OPTS_STAT_WIN =  /Zl
 OPTS_DYN_WIN = /D GENERATE_DLL /W3 /WX- /O2 /Oi /Oy- /Gy /GL /MT
+ifdef JAVA_HOME
+OPTS_DYN_WIN = /DYAPI_WITH_JNI /I "$(JAVA_HOME)/include" /I "$(JAVA_HOME)/include/win32"
+endif
+
 
 OPTS_WIN32 =
 OPTS_WIN64 =

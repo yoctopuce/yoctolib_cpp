@@ -11,11 +11,11 @@ FILEVERSION    	VER_FILEVERSION
   {
    VALUE "CompanyName", "    Yoctopuce Sarl\0"
    VALUE "LegalCopyright",   "Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.\0"
-   VALUE "FileDescription",  "Yoctopuce yAPI 2.0 dll (64 bits)\0"
+   VALUE "FileDescription",  "Yoctopuce yAPI 2.0 dll (ARM 64 bits)\0"
    VALUE "FileVersion",      VER_FILEVERSION_STR
    VALUE "InternalName",     "yapi\0"
    VALUE "OriginalFilename", "yapi.dll\0"
-   VALUE "ProductName",      "Yoctopuce yAPI 2.0 (64 bits)\0"
+   VALUE "ProductName",      "Yoctopuce yAPI 2.0 (ARM 64 bits)\0"
    VALUE "ProductVersion",   YOCTO_API_BUILD_NO
   }
  }
