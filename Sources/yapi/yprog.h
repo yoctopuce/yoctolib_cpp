@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.h 57827 2023-11-10 17:21:24Z mvuilleu $
+ * $Id: yprog.h 62592 2024-09-16 13:00:51Z seb $
  *
  * Declaration of firmware upgrade functions
  *
@@ -165,6 +165,7 @@ typedef struct {
 #define IS_TEXAS_FAMILY(devid_family)    ((devid_family) != FAMILY_PIC24FJ256DA210 && (devid_family) != FAMILY_PIC24FJ64GB004)
 
 typedef struct {
+    USB_Packet pkt;
     ProgIface iface;
     u32 pr_blk_size;
     u32 er_blk_size;
@@ -184,9 +185,6 @@ typedef struct {
 #endif
 } BootloaderSt;
 
-// from yfirmupd.c
-extern BootloaderSt firm_dev;
-extern USB_Packet firm_pkt;
 
 #ifndef C30
 #pragma pack(pop)
@@ -199,10 +197,10 @@ int ypIsSendBootloaderBusy(BootloaderSt* dev);
 
 // Return 0 if there command was successfully queued for sending
 // Return -1 if the output channel is busy and the command could not be sent
-int ypSendBootloaderCmd(BootloaderSt* dev, const USB_Packet* pkt, char* errmsg);
+int ypSendBootloaderCmd(BootloaderSt* dev, char* errmsg);
 // Return 0 if a reply packet was available and returned
 // Return -1 if there was no reply available
-int ypGetBootloaderReply(BootloaderSt* dev, USB_Packet* pkt, char* errmsg);
+int ypGetBootloaderReply(BootloaderSt* dev, char* errmsg);
 // Power cycle the device
 int ypBootloaderShutdown(BootloaderSt* dev);
 int IsValidBynHead(const byn_head_multi* head, u32 size, u16 flags, char* errmsg);
@@ -211,7 +209,7 @@ int IsValidBynHead(const byn_head_multi* head, u32 size, u16 flags, char* errmsg
 const char* prog_GetCPUName(BootloaderSt* dev);
 int ValidateBynCompat(const byn_head_multi* head, u32 size, const char* serial, u16 flags, BootloaderSt* dev, char* errmsg);
 int IsValidBynFile(const byn_head_multi* head, u32 size, const char* serial, u16 flags, char* errmsg);
-int BlockingRead(BootloaderSt* dev, USB_Packet* pkt, int maxwait, char* errmsg);
+int BlockingRead(BootloaderSt* dev, int maxwait, char* errmsg);
 int SendDataPacket(BootloaderSt* dev, int program, u32 address, u8* data, int size, char* errmsg);
 #endif
 
@@ -317,27 +315,30 @@ typedef struct {
     char errmsg[FLASH_ERRMSG_LEN];
 } FIRMWARE_CONTEXT;
 
-extern FIRMWARE_CONTEXT fctx;
+//extern FIRMWARE_CONTEXT fctx;
 
 
 // memo: u=universal y=yapi h=hub
 
 #ifdef YAPI_IN_YDEVICE
-#define uGetFirmware(ofs, dst, size) hProgGetFirmware(ofs, dst, size)
+#define uGetFirmware(ctx, ofs, dst, size) hProgGetFirmware(ofs, dst, size)
 void hProgInit(void);
 void hProgFree(void);
 #else
-#define uGetFirmware(ofs, dst, size) yGetFirmware(ofs, dst, size)
-void yProgInit(void);
-void yProgFree(void);
+#define uGetFirmware(ctx, ofs, dst, size) yGetFirmware(ctx ,ofs, dst, size)
+void yProgInit(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev);
+void yProgFree(FIRMWARE_CONTEXT *fctx);
 YRETCODE yapiCheckFirmware_internal(const char* serial, const char* rev, u32 flags, const char* path, char* buffer, int buffersize, int* fullsize, char* errmsg);
 YRETCODE yapiUpdateFirmware_internal(const char* serial, const char* firmwarePath, const char* settings, int force, int startUpdate, char* msg);
+
 #endif
 
 
-#define uGetFirmwareBynHead(head_ptr) {uGetFirmware(0, (u8*)(head_ptr), sizeof(byn_head_multi));decode_byn_head_multi(head_ptr);}
-#define uGetFirmwareBynZone(offset,zone_ptr) {uGetFirmware(offset,(u8*)(zone_ptr),sizeof(byn_zone)); decode_byn_zone(zone_ptr);}
+#define uGetFirmwareBynHead(ctx, head_ptr) {uGetFirmware(ctx, 0, (u8*)(head_ptr), sizeof(byn_head_multi));decode_byn_head_multi(head_ptr);}
+#define uGetFirmwareBynZone(ctx, offset,zone_ptr) {uGetFirmware(ctx, offset,(u8*)(zone_ptr),sizeof(byn_zone)); decode_byn_zone(zone_ptr);}
 
-YPROG_RESULT uFlashDevice(void);
+int uSendReboot(BootloaderSt* fdev, u16 signature);
+
+YPROG_RESULT uFlashDevice(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev);
 int yNetHubGetBootloaders(const char* hubserial, char* buffer, char* errmsg);
 #endif

@@ -98,7 +98,7 @@ int main(int argc, const char* argv[])
             shield.push_back(serial);
         } else if (product.substr(0, 9) == "YoctoHub-") {
             hubs.push_back(serial);
-        } else if (product != "VirtualHub") {
+        } else if (product.substr(0, 10) != "VirtualHub") {
             devices.push_back(serial);
         }
         module = module->nextModule();

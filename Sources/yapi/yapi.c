@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 62257 2024-08-22 06:30:28Z seb $
+ * $Id: yapi.c 62685 2024-09-23 06:42:22Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -2949,15 +2949,17 @@ static YRETCODE yapiInitAPI_internal(int detect_type, const char *certificate, c
     if (detect_type & Y_DETECT_NET) {
         if (YISERR(ySSDPStart(&ctx->SSDP, ssdpEntryUpdate, errmsg))) {
             yTcpShutdownMulti();
-            yCloseEvent(&yContext->yapiSleepWakeUpEvent);
+            yCloseEvent(&ctx->yapiSleepWakeUpEvent);
             deleteAllCS(ctx);
             yFree(ctx);
             return YAPI_IO_ERROR;
         }
     }
+    ctx->fctx = yMalloc(sizeof(FIRMWARE_CONTEXT));
+    ctx->firm_dev = yMalloc(sizeof(BootloaderSt));
     yContext = ctx;
 #ifndef YAPI_IN_YDEVICE
-    yProgInit();
+    yProgInit(yContext->fctx, yContext->firm_dev);
 #endif
 
 #ifdef LINUX_API
@@ -3052,7 +3054,9 @@ static void yapiFreeAPI_internal(void)
 
 
 #ifndef YAPI_IN_YDEVICE
-    yProgFree();
+    yProgFree(yContext->fctx);
+    yFree(yContext->fctx);
+    yFree(yContext->firm_dev);
 #endif
     yEnterCriticalSection(&yContext->updateDev_cs);
     yEnterCriticalSection(&yContext->handleEv_cs);

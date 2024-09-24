@@ -73,6 +73,8 @@ set(YoctoLibHSources
 	yocto_segmenteddisplay.h
 	yocto_serialport.h
 	yocto_servo.h
+	yocto_spectralchannel.h
+	yocto_spectralsensor.h
 	yocto_spiport.h
 	yocto_steppermotor.h
 	yocto_temperature.h
@@ -155,6 +157,8 @@ set(YoctoLibCppSources
 	yocto_segmenteddisplay.cpp
 	yocto_serialport.cpp
 	yocto_servo.cpp
+	yocto_spectralchannel.cpp
+	yocto_spectralsensor.cpp
 	yocto_spiport.cpp
 	yocto_steppermotor.cpp
 	yocto_temperature.cpp

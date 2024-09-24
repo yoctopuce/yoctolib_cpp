@@ -70,6 +70,8 @@
 		B8A727A817E0CD3A0057b6735e96 /* yocto_segmenteddisplay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057abc15497 /* yocto_segmenteddisplay.cpp */; };
 		B8A727A817E0CD3A00574b766e53 /* yocto_serialport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057a04e7dbe /* yocto_serialport.cpp */; };
 		B8A727A817E0CD3A00576df8d92d /* yocto_servo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00577c6c6b29 /* yocto_servo.cpp */; };
+		B8A727A817E0CD3A005769c92f5b /* yocto_spectralchannel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00576cd34a4b /* yocto_spectralchannel.cpp */; };
+		B8A727A817E0CD3A0057f8630b58 /* yocto_spectralsensor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057e251089f /* yocto_spectralsensor.cpp */; };
 		B8A727A817E0CD3A005754853e73 /* yocto_spiport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005715863843 /* yocto_spiport.cpp */; };
 		B8A727A817E0CD3A005745702ca6 /* yocto_steppermotor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00572a1e0be1 /* yocto_steppermotor.cpp */; };
 		B8A727A817E0CD3A0057b1fed39d /* yocto_temperature.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00576fae754b /* yocto_temperature.cpp */; };
@@ -333,6 +335,10 @@
 		B8A727A817E0CD3A005769da58fb /* yocto_serialport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_serialport.h; path = ../../../Sources/yocto_serialport.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00577c6c6b29 /* yocto_servo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_servo.cpp; path = ../../../Sources/yocto_servo.cpp; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057a63727ed /* yocto_servo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_servo.h; path = ../../../Sources/yocto_servo.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00576cd34a4b /* yocto_spectralchannel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_spectralchannel.cpp; path = ../../../Sources/yocto_spectralchannel.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00574dd67bb5 /* yocto_spectralchannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_spectralchannel.h; path = ../../../Sources/yocto_spectralchannel.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057e251089f /* yocto_spectralsensor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_spectralsensor.cpp; path = ../../../Sources/yocto_spectralsensor.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057e31f3791 /* yocto_spectralsensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_spectralsensor.h; path = ../../../Sources/yocto_spectralsensor.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A005715863843 /* yocto_spiport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_spiport.cpp; path = ../../../Sources/yocto_spiport.cpp; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00575451922c /* yocto_spiport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_spiport.h; path = ../../../Sources/yocto_spiport.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00572a1e0be1 /* yocto_steppermotor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_steppermotor.cpp; path = ../../../Sources/yocto_steppermotor.cpp; sourceTree = "<group>"; };
@@ -676,6 +682,10 @@
 				B8A727A817E0CD3A005769da58fb /* yocto_serialport.h */,
 				B8A727A817E0CD3A00577c6c6b29 /* yocto_servo.cpp */,
 				B8A727A817E0CD3A0057a63727ed /* yocto_servo.h */,
+				B8A727A817E0CD3A00576cd34a4b /* yocto_spectralchannel.cpp */,
+				B8A727A817E0CD3A00574dd67bb5 /* yocto_spectralchannel.h */,
+				B8A727A817E0CD3A0057e251089f /* yocto_spectralsensor.cpp */,
+				B8A727A817E0CD3A0057e31f3791 /* yocto_spectralsensor.h */,
 				B8A727A817E0CD3A005715863843 /* yocto_spiport.cpp */,
 				B8A727A817E0CD3A00575451922c /* yocto_spiport.h */,
 				B8A727A817E0CD3A00572a1e0be1 /* yocto_steppermotor.cpp */,
@@ -1035,6 +1045,8 @@
 				B8A727A817E0CD3A0057b6735e96 /* yocto_segmenteddisplay.cpp in Sources */,
 				B8A727A817E0CD3A00574b766e53 /* yocto_serialport.cpp in Sources */,
 				B8A727A817E0CD3A00576df8d92d /* yocto_servo.cpp in Sources */,
+				B8A727A817E0CD3A005769c92f5b /* yocto_spectralchannel.cpp in Sources */,
+				B8A727A817E0CD3A0057f8630b58 /* yocto_spectralsensor.cpp in Sources */,
 				B8A727A817E0CD3A005754853e73 /* yocto_spiport.cpp in Sources */,
 				B8A727A817E0CD3A005745702ca6 /* yocto_steppermotor.cpp in Sources */,
 				B8A727A817E0CD3A0057b1fed39d /* yocto_temperature.cpp in Sources */,

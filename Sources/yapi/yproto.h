@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 62257 2024-08-22 06:30:28Z seb $
+ * $Id: yproto.h 62592 2024-09-16 13:00:51Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -978,6 +978,7 @@ extern u64 YctxDeviceListValidityMs;
 extern u32 YctxNetworkTimeout;
 
 #define FAKE_USB_HUB ((HubSt* )((u8*)NULL+1))
+#include "yprog.h"
 
 // structure that contain information about the API
 typedef struct {
@@ -1028,6 +1029,8 @@ typedef struct {
     yStrRef usbdevices[ALLOC_YDX_PER_HUB];
     int usb_global_err;
     char usb_global_err_msg[YOCTO_ERRMSG_LEN];
+    FIRMWARE_CONTEXT* fctx;
+    BootloaderSt* firm_dev;
 #if defined(WINDOWS_API)
     HANDLE apiLock;
     HANDLE nameLock;

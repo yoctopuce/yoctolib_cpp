@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 62367 2024-09-01 10:19:27Z seb $
+#  $Id: GNUmakefile 62588 2024-09-16 07:53:38Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -175,7 +175,7 @@ OPTS_PROD_WIN = /nologo $(DEF_FLAGS_WIN) /guard:cf
 OPTS_STAT_WIN =  /Zl
 OPTS_DYN_WIN = /D GENERATE_DLL /W3 /WX- /O2 /Oi /Oy- /Gy /GL /MT
 ifdef JAVA_HOME
-OPTS_DYN_WIN = /DYAPI_WITH_JNI /I "$(JAVA_HOME)/include" /I "$(JAVA_HOME)/include/win32"
+OPTS_DYN_WIN = /D GENERATE_DLL /W3 /WX- /O2 /Oi /Oy- /Gy /GL /MT /DYAPI_WITH_JNI /I "$(JAVA_HOME)/include" /I "$(JAVA_HOME)/include/win32"
 endif
 
 
@@ -373,6 +373,8 @@ YOCTO_API_OBJS_STAT = yocto_api.o\
 	yocto_segmenteddisplay.o \
 	yocto_serialport.o \
 	yocto_servo.o \
+	yocto_spectralchannel.o \
+	yocto_spectralsensor.o \
 	yocto_spiport.o \
 	yocto_steppermotor.o \
 	yocto_temperature.o \

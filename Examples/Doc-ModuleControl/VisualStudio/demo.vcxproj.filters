@@ -182,6 +182,12 @@
     <ClCompile Include="..\..\..\Sources\yocto_servo.cpp">
       <Filter>Yoctopuce</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_spectralchannel.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_spectralsensor.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\Sources\yocto_spiport.cpp">
       <Filter>Yoctopuce</Filter>
     </ClCompile>
@@ -735,6 +741,12 @@
       <Filter>Yoctopuce</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Sources\yocto_servo.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_spectralchannel.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_spectralsensor.h">
       <Filter>Yoctopuce</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Sources\yocto_spiport.h">
