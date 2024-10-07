@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 62685 2024-09-23 06:42:22Z seb $
+ * $Id: yapi.c 62842 2024-10-04 07:41:58Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -2603,10 +2603,6 @@ static HubSt* yapiAllocHub(const char *url, u32 mstimeout, int *error_code, char
 #endif
     if (hub->url.proto != PROTO_SECURE_WEBSOCKET && hub->url.proto != PROTO_WEBSOCKET) {
         int res = LoadInfoJson(hub,mstimeout, errmsg);
-        if (res == YAPI_NOT_SUPPORTED) {
-            // in case the request is redirected to a https url
-            return NULL;
-        }
         if (res >= 0) {
             yStrRef serial = yHashPutStr(hub->info.serial);
             if ((res = checkForSameHubAccess(hub, serial, errmsg)) < 0) {

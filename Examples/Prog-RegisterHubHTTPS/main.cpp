@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 60210 2024-03-26 08:23:51Z seb $
+ *  $Id: main.cpp 62776 2024-09-27 06:43:05Z seb $
  *
  *  Hello world exampel
  *
@@ -23,6 +23,7 @@ static string load_cert_from_file(const string &host)
     long cert_size;
     char *cert_data;
     string path = host + ".crt";
+    long size;
 
     fd = fopen(path.c_str(), "r");
     if (!fd) {
@@ -32,7 +33,10 @@ static string load_cert_from_file(const string &host)
     cert_size = ftell(fd);
     fseek(fd, 0, SEEK_SET);
     cert_data = (char*)malloc(cert_size + 1);
-    fread(cert_data, 1, cert_size, fd);
+    size = (long) fread(cert_data, 1, cert_size, fd);
+    if (size != cert_size) {
+        return "";
+    }
     fclose(fd);
     return string(cert_data, cert_size);
 

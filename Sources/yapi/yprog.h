@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.h 62592 2024-09-16 13:00:51Z seb $
+ * $Id: yprog.h 62771 2024-09-26 09:25:21Z seb $
  *
  * Declaration of firmware upgrade functions
  *
@@ -272,6 +272,7 @@ typedef enum {
 #define FLASH_SUBDEV_TIMEOUT     59000u
 #define YPROG_BOOTLOADER_TIMEOUT 20000u
 #define YPROG_FORCE_FW_UPDATE    1u
+#define YPROG_ONLY_VALIDATE      2u
 
 #ifdef EMBEDDED_API
 #define FLASH_ERRMSG_LEN        56
