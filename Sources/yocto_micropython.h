@@ -60,6 +60,14 @@ class YMicroPython; // forward declaration
 
 typedef void (*YMicroPythonValueCallback)(YMicroPython *func, const string& functionValue);
 typedef void (*YMicroPythonLogCallback)(YMicroPython *obj, const string& logline);
+#ifndef _Y_DEBUGMODE_ENUM
+#define _Y_DEBUGMODE_ENUM
+typedef enum {
+    Y_DEBUGMODE_OFF = 0,
+    Y_DEBUGMODE_ON = 1,
+    Y_DEBUGMODE_INVALID = -1,
+} Y_DEBUGMODE_enum;
+#endif
 #define Y_LASTMSG_INVALID               (YAPI_INVALID_STRING)
 #define Y_HEAPUSAGE_INVALID             (YAPI_INVALID_UINT)
 #define Y_XHEAPUSAGE_INVALID            (YAPI_INVALID_UINT)
@@ -90,6 +98,7 @@ protected:
     int             _xheapUsage;
     string          _currentScript;
     string          _startupScript;
+    Y_DEBUGMODE_enum _debugMode;
     string          _command;
     YMicroPythonValueCallback _valueCallbackMicroPython;
     YMicroPythonLogCallback _logCallback;
@@ -117,6 +126,9 @@ public:
     static const int XHEAPUSAGE_INVALID = YAPI_INVALID_UINT;
     static const string CURRENTSCRIPT_INVALID;
     static const string STARTUPSCRIPT_INVALID;
+    static const Y_DEBUGMODE_enum DEBUGMODE_OFF = Y_DEBUGMODE_OFF;
+    static const Y_DEBUGMODE_enum DEBUGMODE_ON = Y_DEBUGMODE_ON;
+    static const Y_DEBUGMODE_enum DEBUGMODE_INVALID = Y_DEBUGMODE_INVALID;
     static const string COMMAND_INVALID;
 
     /**
@@ -213,6 +225,33 @@ public:
     int             set_startupScript(const string& newval);
     inline int      setStartupScript(const string& newval)
     { return this->set_startupScript(newval); }
+
+    /**
+     * Returns the activation state of micropython debugging interface.
+     *
+     * @return either YMicroPython::DEBUGMODE_OFF or YMicroPython::DEBUGMODE_ON, according to the activation
+     * state of micropython debugging interface
+     *
+     * On failure, throws an exception or returns YMicroPython::DEBUGMODE_INVALID.
+     */
+    Y_DEBUGMODE_enum    get_debugMode(void);
+
+    inline Y_DEBUGMODE_enum debugMode(void)
+    { return this->get_debugMode(); }
+
+    /**
+     * Changes the activation state of micropython debugging interface.
+     *
+     * @param newval : either YMicroPython::DEBUGMODE_OFF or YMicroPython::DEBUGMODE_ON, according to the
+     * activation state of micropython debugging interface
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_debugMode(Y_DEBUGMODE_enum newval);
+    inline int      setDebugMode(Y_DEBUGMODE_enum newval)
+    { return this->set_debugMode(newval); }
 
     string              get_command(void);
 

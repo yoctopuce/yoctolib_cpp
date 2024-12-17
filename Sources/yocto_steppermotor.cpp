@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_steppermotor.cpp 62193 2024-08-19 12:20:58Z seb $
+ *  $Id: yocto_steppermotor.cpp 63324 2024-11-13 09:33:07Z seb $
  *
  *  Implements yFindStepperMotor(), the high-level API for StepperMotor functions
  *
@@ -947,7 +947,7 @@ int YStepperMotor::sendCommand(string command)
     int res = 0;
     id = this->get_functionId();
     id = id.substr(12, 1);
-    url = YapiWrapper::ysprintf("cmd.txt?%s=%s", id.c_str(),command.c_str());
+    url = YapiWrapper::ysprintf("cmd.txt?%s=%s",id.c_str(),command.c_str());
     //may throw an exception
     retBin = this->_download(url);
     res = ((u8)retBin[0]);

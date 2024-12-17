@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.cpp 62193 2024-08-19 12:20:58Z seb $
+ * $Id: yocto_messagebox.cpp 63324 2024-11-13 09:33:07Z seb $
  *
  * Implements yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -700,7 +700,7 @@ string YSms::decodeAddress(string addr,int ofs,int siz)
         i = 0;
         while (i < siz) {
             byt = ((u8)addr[ofs+i+1]);
-            res = YapiWrapper::ysprintf("%s%x%x", res.c_str(), (byt & 15),(byt >> 4));
+            res = YapiWrapper::ysprintf("%s%x%x",res.c_str(),(byt & 15),(byt >> 4));
             i = i + 1;
         }
         // remove padding digit if needed
@@ -828,7 +828,7 @@ string YSms::decodeTimeStamp(string exp,int ofs,int siz)
     i = 0;
     while ((i < siz) && (i < 6)) {
         byt = ((u8)exp[ofs+i]);
-        res = YapiWrapper::ysprintf("%s%x%x", res.c_str(), (byt & 15),(byt >> 4));
+        res = YapiWrapper::ysprintf("%s%x%x",res.c_str(),(byt & 15),(byt >> 4));
         if (i < 3) {
             if (i < 2) {
                 res = YapiWrapper::ysprintf("%s-",res.c_str());
@@ -858,7 +858,7 @@ string YSms::decodeTimeStamp(string exp,int ofs,int siz)
         if ((int)(ss).length()<2) {
             ss = YapiWrapper::ysprintf("0%s",ss.c_str());
         }
-        res = YapiWrapper::ysprintf("%s%s%s:%s", res.c_str(), sign.c_str(), hh.c_str(),ss.c_str());
+        res = YapiWrapper::ysprintf("%s%s%s:%s",res.c_str(),sign.c_str(),hh.c_str(),ss.c_str());
     }
     return res;
 }
@@ -1125,16 +1125,14 @@ int YSms::parseUserDataHeader(void)
         if (i + ielen <= udhlen) {
             if ((iei == 0) && (ielen == 3)) {
                 // concatenated SMS, 8-bit ref
-                sig = YapiWrapper::ysprintf("%s-%s-%02x-%02x", _orig.c_str(), _dest.c_str(),
-                _mref,((u8)_udh[i]));
+                sig = YapiWrapper::ysprintf("%s-%s-%02x-%02x",_orig.c_str(),_dest.c_str(),_mref,((u8)_udh[i]));
                 _aggSig = sig;
                 _aggCnt = ((u8)_udh[i+1]);
                 _aggIdx = ((u8)_udh[i+2]);
             }
             if ((iei == 8) && (ielen == 4)) {
                 // concatenated SMS, 16-bit ref
-                sig = YapiWrapper::ysprintf("%s-%s-%02x-%02x%02x", _orig.c_str(), _dest.c_str(),
-                _mref, ((u8)_udh[i]),((u8)_udh[i+1]));
+                sig = YapiWrapper::ysprintf("%s-%s-%02x-%02x%02x",_orig.c_str(),_dest.c_str(),_mref,((u8)_udh[i]),((u8)_udh[i+1]));
                 _aggSig = sig;
                 _aggCnt = ((u8)_udh[i+2]);
                 _aggIdx = ((u8)_udh[i+3]);
@@ -1813,19 +1811,19 @@ string YMessageBox::_AT(string cmd)
     cmdLen = (int)(cmd).length();
     chrPos = _ystrpos(cmd, "#");
     while (chrPos >= 0) {
-        cmd = YapiWrapper::ysprintf("%s%c23%s", cmd.substr(0, chrPos).c_str(), 37,cmd.substr(chrPos+1, cmdLen-chrPos-1).c_str());
+        cmd = YapiWrapper::ysprintf("%s%c23%s",cmd.substr(0, chrPos).c_str(),37,cmd.substr(chrPos+1, cmdLen-chrPos-1).c_str());
         cmdLen = cmdLen + 2;
         chrPos = _ystrpos(cmd, "#");
     }
     chrPos = _ystrpos(cmd, "+");
     while (chrPos >= 0) {
-        cmd = YapiWrapper::ysprintf("%s%c2B%s", cmd.substr(0, chrPos).c_str(), 37,cmd.substr(chrPos+1, cmdLen-chrPos-1).c_str());
+        cmd = YapiWrapper::ysprintf("%s%c2B%s",cmd.substr(0, chrPos).c_str(),37,cmd.substr(chrPos+1, cmdLen-chrPos-1).c_str());
         cmdLen = cmdLen + 2;
         chrPos = _ystrpos(cmd, "+");
     }
     chrPos = _ystrpos(cmd, "=");
     while (chrPos >= 0) {
-        cmd = YapiWrapper::ysprintf("%s%c3D%s", cmd.substr(0, chrPos).c_str(), 37,cmd.substr(chrPos+1, cmdLen-chrPos-1).c_str());
+        cmd = YapiWrapper::ysprintf("%s%c3D%s",cmd.substr(0, chrPos).c_str(),37,cmd.substr(chrPos+1, cmdLen-chrPos-1).c_str());
         cmdLen = cmdLen + 2;
         chrPos = _ystrpos(cmd, "=");
     }
@@ -1852,7 +1850,7 @@ string YMessageBox::_AT(string cmd)
             // request complete
             waitMore = 0;
         }
-        res = YapiWrapper::ysprintf("%s%s", res.c_str(),buffstr.c_str());
+        res = YapiWrapper::ysprintf("%s%s",res.c_str(),buffstr.c_str());
     }
     return res;
 }

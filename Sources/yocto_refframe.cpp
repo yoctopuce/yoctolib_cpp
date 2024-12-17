@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_refframe.cpp 62193 2024-08-19 12:20:58Z seb $
+ *  $Id: yocto_refframe.cpp 63324 2024-11-13 09:33:07Z seb $
  *
  *  Implements yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -766,9 +766,7 @@ int YRefFrame::more3DCalibrationV1(void)
     intpos = (_calibStage - 1) * _calibCount;
     this->_calibSort(intpos, intpos + _calibCount);
     intpos = intpos + (_calibCount / 2);
-    _calibLogMsg = YapiWrapper::ysprintf("Stage %d: median is %d,%d,%d", _calibStage,
-    (int) floor(1000*_calibDataAccX[intpos]+0.5),
-    (int) floor(1000*_calibDataAccY[intpos]+0.5),(int) floor(1000*_calibDataAccZ[intpos]+0.5));
+    _calibLogMsg = YapiWrapper::ysprintf("Stage %d: median is %d,%d,%d",_calibStage,(int) floor(1000*_calibDataAccX[intpos]+0.5),(int) floor(1000*_calibDataAccY[intpos]+0.5),(int) floor(1000*_calibDataAccZ[intpos]+0.5));
     // move to next stage
     _calibStage = _calibStage + 1;
     if (_calibStage < 7) {
@@ -1037,7 +1035,7 @@ int YRefFrame::save3DCalibrationV1(void)
     scaleLo = ((scaleY & 15) << 12) + (scaleX << 2) + scaleExp;
     scaleHi = (scaleZ << 6) + (scaleY >> 4);
     // Save calibration parameters
-    newcalib = YapiWrapper::ysprintf("5,%d,%d,%d,%d,%d", shiftX, shiftY, shiftZ, scaleLo,scaleHi);
+    newcalib = YapiWrapper::ysprintf("5,%d,%d,%d,%d,%d",shiftX,shiftY,shiftZ,scaleLo,scaleHi);
     _calibStage = 0;
     return this->set_calibrationParam(newcalib);
 }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 62257 2024-08-22 06:30:28Z seb $
+ * $Id: ytcp.c 63543 2024-12-02 08:36:55Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -2008,7 +2008,7 @@ static int yHTTPMultiSelectReq(struct _RequestSt **reqs, int size, u64 ms, WakeU
 }
 
 
-int yUdpOpenMulti(YSOCKET_MULTI *newskt, IPvX_ADDR *local_ip, int sin6_scope_id, u16 port, u16 sockFlags, char *errmsg)
+int ySocketOpenBindMulti(YSOCKET_MULTI *newskt, IPvX_ADDR *local_ip, int is_udp, int sin6_scope_id, u16 port, u16 sockFlags, char *errmsg)
 {
     int res, sockfamily, addrlen;
     u32 optval;
@@ -2043,7 +2043,11 @@ int yUdpOpenMulti(YSOCKET_MULTI *newskt, IPvX_ADDR *local_ip, int sin6_scope_id,
         addr_v4->sin_port = htons(port);
         addrlen = sizeof(struct sockaddr_in);
     }
-    sock = ysocket(sockfamily, SOCK_DGRAM, IPPROTO_UDP);
+    if (is_udp) {
+        sock = ysocket(sockfamily, SOCK_DGRAM, IPPROTO_UDP);
+    }else {
+        sock = ysocket(sockfamily, SOCK_STREAM, IPPROTO_TCP);
+    }
     if (sock == INVALID_SOCKET) {
         return yNetLogErr();
     }
@@ -4180,9 +4184,10 @@ YSTATIC int legacyDetectNetworkInterfaces(IPvX_ADDR *only_ip, os_ifaces *interfa
     }
     if (WSAIoctl(sock, SIO_GET_INTERFACE_LIST, NULL, 0, winIfaces, sizeof(winIfaces), &returnedSize, NULL, NULL) < 0) {
         yNetLogErr();
+        closesocket(sock);
         return -1;
     }
-
+    closesocket(sock);
     nbifaces = returnedSize / sizeof(INTERFACE_INFO);
 #ifdef DEBUG_NET_DETECTION
     dbglog("windows returned %d interfaces\n", nbifaces);
@@ -4231,7 +4236,7 @@ YSTATIC int yDetectNetworkInterfaces(IPvX_ADDR *only_ip, os_ifaces *interfaces, 
         IP_ADAPTER_ADDRESSES *paddr = addresses;
         while (paddr) {
             PIP_ADAPTER_UNICAST_ADDRESS pUnicast;
-            if (paddr->IfType == IF_TYPE_ETHERNET_CSMACD && paddr->OperStatus == IfOperStatusUp) {
+            if (paddr->IfType != IF_TYPE_SOFTWARE_LOOPBACK && paddr->OperStatus == IfOperStatusUp) {
                 pUnicast = paddr->FirstUnicastAddress;
                 for (i = 0; pUnicast != NULL; i++) {
                     if (pUnicast->Address.iSockaddrLength == sizeof(struct sockaddr_in)) {
@@ -4355,7 +4360,7 @@ YSTATIC int yDetectNetworkInterfaces(IPvX_ADDR *only_ip, os_ifaces *interfaces, 
         }
         p = p->ifa_next;
     }
-
+    freeifaddrs(if_addrs);
 #else
     int nbDetectedIfaces = 1;
     memset(interfaces, 0, max_nb_interfaces * sizeof(os_ifaces));

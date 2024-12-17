@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_arithmeticsensor.cpp 62193 2024-08-19 12:20:58Z seb $
+ *  $Id: yocto_arithmeticsensor.cpp 63324 2024-11-13 09:33:07Z seb $
  *
  *  Implements yFindArithmeticSensor(), the high-level API for ArithmeticSensor functions
  *
@@ -327,7 +327,7 @@ double YArithmeticSensor::defineExpression(string expr,string descr)
     id = id.substr(16, (int)(id).length() - 16);
     fname = YapiWrapper::ysprintf("arithmExpr%s.txt",id.c_str());
 
-    content = YapiWrapper::ysprintf("// %s\n%s", descr.c_str(),expr.c_str());
+    content = YapiWrapper::ysprintf("// %s\n%s",descr.c_str(),expr.c_str());
     data = this->_uploadEx(fname, content);
     diags = data;
     if (!(diags.substr(0, 8) == "Result: ")) {
@@ -403,7 +403,7 @@ int YArithmeticSensor::defineAuxiliaryFunction(string name,vector<double> inputV
     while (idx < siz) {
         inputVal = inputValues[idx];
         outputVal = outputValues[idx];
-        defstr = YapiWrapper::ysprintf("%s%g:%g\n", defstr.c_str(), inputVal,outputVal);
+        defstr = YapiWrapper::ysprintf("%s%g:%g\n",defstr.c_str(),inputVal,outputVal);
         idx = idx + 1;
     }
     fname = YapiWrapper::ysprintf("userMap%s.txt",name.c_str());

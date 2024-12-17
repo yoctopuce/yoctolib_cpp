@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 62193 2024-08-19 12:20:58Z seb $
+ * $Id: yocto_api.h 63464 2024-11-25 13:48:09Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -412,6 +412,8 @@ class YJSONNumber : public YJSONContent
         s64 _intValue;
         double _doubleValue;
         bool _isFloat;
+    private:
+        int decode_number(bool neg, int start, int cur_pos);
     public:
         YJSONNumber(const string& data, int start, int stop);
         YJSONNumber(YJSONNumber *ref);
@@ -588,7 +590,7 @@ public:
      * Modifies the network connection delay for yRegisterHub() and yUpdateDeviceList().
      * This delay impacts only the YoctoHubs and VirtualHub
      * which are accessible through the network. By default, this delay is of 20000 milliseconds,
-     * but depending or you network you may want to change this delay,
+     * but depending on your network you may want to change this delay,
      * gor example if your network infrastructure is based on a GSM connection.
      *
      * @param networkMsTimeout : the network connection delay in milliseconds.
@@ -600,7 +602,7 @@ public:
      * Returns the network connection delay for yRegisterHub() and yUpdateDeviceList().
      * This delay impacts only the YoctoHubs and VirtualHub
      * which are accessible through the network. By default, this delay is of 20000 milliseconds,
-     * but depending or you network you may want to change this delay,
+     * but depending on your network you may want to change this delay,
      * for example if your network infrastructure is based on a GSM connection.
      *
      * @return the network connection delay in milliseconds.
@@ -1190,7 +1192,7 @@ public:
      * Modifies the network connection delay for yRegisterHub() and yUpdateDeviceList().
      * This delay impacts only the YoctoHubs and VirtualHub
      * which are accessible through the network. By default, this delay is of 20000 milliseconds,
-     * but depending or you network you may want to change this delay,
+     * but depending on your network you may want to change this delay,
      * gor example if your network infrastructure is based on a GSM connection.
      *
      * @param networkMsTimeout : the network connection delay in milliseconds.
@@ -1208,7 +1210,7 @@ public:
      * Returns the network connection delay for yRegisterHub() and yUpdateDeviceList().
      * This delay impacts only the YoctoHubs and VirtualHub
      * which are accessible through the network. By default, this delay is of 20000 milliseconds,
-     * but depending or you network you may want to change this delay,
+     * but depending on your network you may want to change this delay,
      * for example if your network infrastructure is based on a GSM connection.
      *
      * @return the network connection delay in milliseconds.
@@ -2213,7 +2215,7 @@ public:
      * Modifies tthe network connection delay for this hub.
      * The default value is inherited from ySetNetworkTimeout
      * at the time when the hub is registered, but it can be updated
-     * afterwards for each specific hub if necessary.
+     * afterward for each specific hub if necessary.
      *
      * @param networkMsTimeout : the network connection delay in milliseconds.
      * @noreturn
@@ -2224,7 +2226,7 @@ public:
      * Returns the network connection delay for this hub.
      * The default value is inherited from ySetNetworkTimeout
      * at the time when the hub is registered, but it can be updated
-     * afterwards for each specific hub if necessary.
+     * afterward for each specific hub if necessary.
      *
      * @return the network connection delay in milliseconds.
      */
@@ -2406,6 +2408,7 @@ public:
     vector<string> _json_get_array(const string& json);
     string      _get_json_path(const string& json, const string& path);
     string      _decode_json_string(const string& json);
+    int         _decode_json_int(const string& json);
     string      _parseString(yJsonStateMachine& j);
     int         _parseEx(yJsonStateMachine& j);
 
@@ -3405,7 +3408,7 @@ public:
 
     /**
      * Returns the icon of the module. The icon is a PNG image and does not
-     * exceeds 1536 bytes.
+     * exceed 1536 bytes.
      *
      * @return a binary buffer with module icon, in png format.
      *         On failure, throws an exception or returns  YAPI::INVALID_STRING.

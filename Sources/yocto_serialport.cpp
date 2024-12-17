@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 62193 2024-08-19 12:20:58Z seb $
+ * $Id: yocto_serialport.cpp 63464 2024-11-25 13:48:09Z seb $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -951,7 +951,7 @@ string YSerialPort::readLine(void)
     }
     // last element of array is the new position
     msglen = msglen - 1;
-    _rxptr = atoi((msgarr[msglen]).c_str());
+    _rxptr = this->_decode_json_int(msgarr[msglen]);
     if (msglen == 0) {
         return "";
     }
@@ -989,7 +989,7 @@ vector<string> YSerialPort::readMessages(string pattern,int maxWait)
     vector<string> res;
     int idx = 0;
 
-    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&pat=%s", _rxptr, maxWait,pattern.c_str());
+    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&pat=%s",_rxptr,maxWait,pattern.c_str());
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);
     msglen = (int)msgarr.size();
@@ -998,7 +998,7 @@ vector<string> YSerialPort::readMessages(string pattern,int maxWait)
     }
     // last element of array is the new position
     msglen = msglen - 1;
-    _rxptr = atoi((msgarr[msglen]).c_str());
+    _rxptr = this->_decode_json_int(msgarr[msglen]);
     idx = 0;
     while (idx < msglen) {
         res.push_back(this->_json_get_string(msgarr[idx]));
@@ -1088,12 +1088,12 @@ string YSerialPort::queryLine(string query,int maxWait)
     string res;
     if ((int)(query).length() <= 80) {
         // fast query
-        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=!%s", maxWait,this->_escapeAttr(query).c_str());
+        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=!%s",maxWait,this->_escapeAttr(query).c_str());
     } else {
         // long query
         prevpos = this->end_tell();
         this->_upload("txdata", query + "\r\n");
-        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&pos=%d", maxWait,prevpos);
+        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&pos=%d",maxWait,prevpos);
     }
 
     msgbin = this->_download(url);
@@ -1104,7 +1104,7 @@ string YSerialPort::queryLine(string query,int maxWait)
     }
     // last element of array is the new position
     msglen = msglen - 1;
-    _rxptr = atoi((msgarr[msglen]).c_str());
+    _rxptr = this->_decode_json_int(msgarr[msglen]);
     if (msglen == 0) {
         return "";
     }
@@ -1135,12 +1135,12 @@ string YSerialPort::queryHex(string hexString,int maxWait)
     string res;
     if ((int)(hexString).length() <= 80) {
         // fast query
-        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=$%s", maxWait,hexString.c_str());
+        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=$%s",maxWait,hexString.c_str());
     } else {
         // long query
         prevpos = this->end_tell();
         this->_upload("txdata", YAPI::_hexStr2Bin(hexString));
-        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&pos=%d", maxWait,prevpos);
+        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&pos=%d",maxWait,prevpos);
     }
 
     msgbin = this->_download(url);
@@ -1151,7 +1151,7 @@ string YSerialPort::queryHex(string hexString,int maxWait)
     }
     // last element of array is the new position
     msglen = msglen - 1;
-    _rxptr = atoi((msgarr[msglen]).c_str());
+    _rxptr = this->_decode_json_int(msgarr[msglen]);
     if (msglen == 0) {
         return "";
     }
@@ -1464,7 +1464,7 @@ string YSerialPort::readStr(int nChars)
         nChars = 65535;
     }
 
-    buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d", _rxptr,nChars));
+    buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d",_rxptr,nChars));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
     mult = 1;
@@ -1501,7 +1501,7 @@ string YSerialPort::readBin(int nChars)
         nChars = 65535;
     }
 
-    buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d", _rxptr,nChars));
+    buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d",_rxptr,nChars));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
     mult = 1;
@@ -1544,7 +1544,7 @@ vector<int> YSerialPort::readArray(int nChars)
         nChars = 65535;
     }
 
-    buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d", _rxptr,nChars));
+    buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d",_rxptr,nChars));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
     mult = 1;
@@ -1587,7 +1587,7 @@ string YSerialPort::readHex(int nBytes)
         nBytes = 65535;
     }
 
-    buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d", _rxptr,nBytes));
+    buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d",_rxptr,nBytes));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
     mult = 1;
@@ -1600,11 +1600,11 @@ string YSerialPort::readHex(int nBytes)
     res = "";
     ofs = 0;
     while (ofs + 3 < bufflen) {
-        res = YapiWrapper::ysprintf("%s%02X%02X%02X%02X", res.c_str(), ((u8)buff[ofs]), ((u8)buff[ofs + 1]), ((u8)buff[ofs + 2]),((u8)buff[ofs + 3]));
+        res = YapiWrapper::ysprintf("%s%02X%02X%02X%02X",res.c_str(),((u8)buff[ofs]),((u8)buff[ofs + 1]),((u8)buff[ofs + 2]),((u8)buff[ofs + 3]));
         ofs = ofs + 4;
     }
     while (ofs < bufflen) {
-        res = YapiWrapper::ysprintf("%s%02X", res.c_str(),((u8)buff[ofs]));
+        res = YapiWrapper::ysprintf("%s%02X",res.c_str(),((u8)buff[ofs]));
         ofs = ofs + 1;
     }
     return res;
@@ -1690,7 +1690,7 @@ vector<YSnoopingRecord> YSerialPort::snoopMessagesEx(int maxWait,int maxMsg)
     vector<YSnoopingRecord> res;
     int idx = 0;
 
-    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&t=0&len=%d", _rxptr, maxWait,maxMsg);
+    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&t=0&len=%d",_rxptr,maxWait,maxMsg);
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);
     msglen = (int)msgarr.size();
@@ -1699,7 +1699,7 @@ vector<YSnoopingRecord> YSerialPort::snoopMessagesEx(int maxWait,int maxMsg)
     }
     // last element of array is the new position
     msglen = msglen - 1;
-    _rxptr = atoi((msgarr[msglen]).c_str());
+    _rxptr = this->_decode_json_int(msgarr[msglen]);
     idx = 0;
     while (idx < msglen) {
         res.push_back(YSnoopingRecord(msgarr[idx]));
@@ -1779,10 +1779,10 @@ int YSerialPort::_internalEventHandler(string advstr)
     msglen = msglen - 1;
     if (!(_eventCallback != NULL)) {
         // first simulated event, use it only to initialize reference values
-        _eventPos = atoi((msgarr[msglen]).c_str());
+        _eventPos = this->_decode_json_int(msgarr[msglen]);
         return YAPI_SUCCESS;
     }
-    _eventPos = atoi((msgarr[msglen]).c_str());
+    _eventPos = this->_decode_json_int(msgarr[msglen]);
     idx = 0;
     while (idx < msglen) {
         _eventCallback(this, YSnoopingRecord(msgarr[idx]));
@@ -1804,7 +1804,7 @@ int YSerialPort::_internalEventHandler(string advstr)
 int YSerialPort::writeStxEtx(string text)
 {
     string buff;
-    buff = YapiWrapper::ysprintf("%c%s%c", 2, text.c_str(),3);
+    buff = YapiWrapper::ysprintf("%c%s%c",2,text.c_str(),3);
     // send string using file upload
     return this->_upload("txdata", buff);
 }
@@ -1854,21 +1854,21 @@ vector<int> YSerialPort::queryMODBUS(int slaveNo,vector<int> pduBytes)
     int hexb = 0;
     funCode = pduBytes[0];
     nib = (funCode >> 4);
-    pat = YapiWrapper::ysprintf("%02X[%X%X]%X.*", slaveNo, nib, (nib+8),(funCode & 15));
-    cmd = YapiWrapper::ysprintf("%02X%02X", slaveNo,funCode);
+    pat = YapiWrapper::ysprintf("%02X[%X%X]%X.*",slaveNo,nib,(nib+8),(funCode & 15));
+    cmd = YapiWrapper::ysprintf("%02X%02X",slaveNo,funCode);
     i = 1;
     while (i < (int)pduBytes.size()) {
-        cmd = YapiWrapper::ysprintf("%s%02X", cmd.c_str(),(pduBytes[i] & 0xff));
+        cmd = YapiWrapper::ysprintf("%s%02X",cmd.c_str(),(pduBytes[i] & 0xff));
         i = i + 1;
     }
     if ((int)(cmd).length() <= 80) {
         // fast query
-        url = YapiWrapper::ysprintf("rxmsg.json?cmd=:%s&pat=:%s", cmd.c_str(),pat.c_str());
+        url = YapiWrapper::ysprintf("rxmsg.json?cmd=:%s&pat=:%s",cmd.c_str(),pat.c_str());
     } else {
         // long query
         prevpos = this->end_tell();
         this->_upload("txdata:", YAPI::_hexStr2Bin(cmd));
-        url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=2000&pat=:%s", prevpos,pat.c_str());
+        url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=2000&pat=:%s",prevpos,pat.c_str());
     }
 
     msgs = this->_download(url);

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ * $Id: yocto_display.cpp 63324 2024-11-13 09:33:07Z seb $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -1423,7 +1423,7 @@ YDisplayLayer* YDisplay::get_displayLayer(int layerId)
     if ((int)_allDisplayLayers.size() == 0) {
         idx = 0;
         while (idx < layercount) {
-            _allDisplayLayers.push_back(new YDisplayLayer( this,idx));
+            _allDisplayLayers.push_back(new YDisplayLayer(this,idx));
             idx = idx + 1;
         }
     }

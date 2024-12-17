@@ -251,7 +251,7 @@ string YRfidOptions::imm_getParams(void)
     }
     res = YapiWrapper::ysprintf("&o=%d",opt);
     if (KeyType != 0) {
-        res = YapiWrapper::ysprintf("%s&k=%02x:%s", res.c_str(), KeyType,HexKey.c_str());
+        res = YapiWrapper::ysprintf("%s&k=%02x:%s",res.c_str(),KeyType,HexKey.c_str());
     }
     return res;
 }
@@ -684,7 +684,7 @@ void YRfidStatus::imm_init(string tagId,int errCode,int errBlk,int fab,int lab)
             errMsg = "Radio is OFF (refreshRate=0).";
         }
         if (errBlk >= 0) {
-            errMsg = YapiWrapper::ysprintf("%s (block %d)", errMsg.c_str(),errBlk);
+            errMsg = YapiWrapper::ysprintf("%s (block %d)",errMsg.c_str(),errBlk);
         }
     }
     _tagId = tagId;

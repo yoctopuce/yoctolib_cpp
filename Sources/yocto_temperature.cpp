@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_temperature.cpp 62193 2024-08-19 12:20:58Z seb $
+ *  $Id: yocto_temperature.cpp 63324 2024-11-13 09:33:07Z seb $
  *
  *  Implements yFindTemperature(), the high-level API for Temperature functions
  *
@@ -513,7 +513,7 @@ int YTemperature::set_thermistorResponseTable(vector<double> tempValues,vector<d
             idx = idx + 1;
         }
         if (found > 0) {
-            res = this->set_command(YapiWrapper::ysprintf("m%d:%d", (int) floor(1000*curr+0.5),(int) floor(1000*currTemp+0.5)));
+            res = this->set_command(YapiWrapper::ysprintf("m%d:%d",(int) floor(1000*curr+0.5),(int) floor(1000*currTemp+0.5)));
             if (!(res==YAPI_SUCCESS)) {
                 _throw((YRETCODE)(YAPI_IO_ERROR), "unable to reset thermistor parameters");
                 return YAPI_IO_ERROR;

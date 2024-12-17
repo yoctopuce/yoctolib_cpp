@@ -114,6 +114,10 @@
 		B8A727A817E0CD3A0057c31c2064 /* ssl_tls.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057212da10c /* ssl_tls.c */; };
 		B8A727A817E0CD3A0057d4273138 /* ssl_tls12_client.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057f99583af /* ssl_tls12_client.c */; };
 		B8A727A817E0CD3A0057a0d9a179 /* ssl_tls12_server.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00578d6b13ee /* ssl_tls12_server.c */; };
+		B8A727A817E0CD3A00573be55a06 /* ssl_tls13_client.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00571657e891 /* ssl_tls13_client.c */; };
+		B8A727A817E0CD3A0057521331b3 /* ssl_tls13_generic.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00573c5585e6 /* ssl_tls13_generic.c */; };
+		B8A727A817E0CD3A00577bce6998 /* ssl_tls13_keys.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057f64cb4e2 /* ssl_tls13_keys.c */; };
+		B8A727A817E0CD3A00574f1bca47 /* ssl_tls13_server.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005762a978d0 /* ssl_tls13_server.c */; };
 		B8A727A817E0CD3A00574d18914a /* threading.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00577a832162 /* threading.c */; };
 		B8A727A817E0CD3A005771ba78c /* timing.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00578ee0db45 /* timing.c */; };
 		B8A727A817E0CD3A0057eaebb3a7 /* version.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00578da32cf /* version.c */; };
@@ -267,6 +271,10 @@
 		B8A727A817E0CD3A0057212da10c /* ssl_tls.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ssl_tls.c; path = ../../../Sources/yapi/mbedtls/library/ssl_tls.c; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057f99583af /* ssl_tls12_client.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ssl_tls12_client.c; path = ../../../Sources/yapi/mbedtls/library/ssl_tls12_client.c; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00578d6b13ee /* ssl_tls12_server.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ssl_tls12_server.c; path = ../../../Sources/yapi/mbedtls/library/ssl_tls12_server.c; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00571657e891 /* ssl_tls13_client.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ssl_tls13_client.c; path = ../../../Sources/yapi/mbedtls/library/ssl_tls13_client.c; sourceTree = "<group>"; };
+		B8A727A817E0CD3A00573c5585e6 /* ssl_tls13_generic.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ssl_tls13_generic.c; path = ../../../Sources/yapi/mbedtls/library/ssl_tls13_generic.c; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057f64cb4e2 /* ssl_tls13_keys.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ssl_tls13_keys.c; path = ../../../Sources/yapi/mbedtls/library/ssl_tls13_keys.c; sourceTree = "<group>"; };
+		B8A727A817E0CD3A005762a978d0 /* ssl_tls13_server.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ssl_tls13_server.c; path = ../../../Sources/yapi/mbedtls/library/ssl_tls13_server.c; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00577a832162 /* threading.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = threading.c; path = ../../../Sources/yapi/mbedtls/library/threading.c; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00578ee0db45 /* timing.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = timing.c; path = ../../../Sources/yapi/mbedtls/library/timing.c; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00578da32cf /* version.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = version.c; path = ../../../Sources/yapi/mbedtls/library/version.c; sourceTree = "<group>"; };
@@ -486,6 +494,10 @@
 				B8A727A817E0CD3A0057212da10c /* ssl_tls.c */,
 				B8A727A817E0CD3A0057f99583af /* ssl_tls12_client.c */,
 				B8A727A817E0CD3A00578d6b13ee /* ssl_tls12_server.c */,
+				B8A727A817E0CD3A00571657e891 /* ssl_tls13_client.c */,
+				B8A727A817E0CD3A00573c5585e6 /* ssl_tls13_generic.c */,
+				B8A727A817E0CD3A0057f64cb4e2 /* ssl_tls13_keys.c */,
+				B8A727A817E0CD3A005762a978d0 /* ssl_tls13_server.c */,
 				B8A727A817E0CD3A00577a832162 /* threading.c */,
 				B8A727A817E0CD3A00578ee0db45 /* timing.c */,
 				B8A727A817E0CD3A00578da32cf /* version.c */,
@@ -734,6 +746,10 @@
 				B8A727A817E0CD3A0057c31c2064 /* ssl_tls.c in Sources */,
 				B8A727A817E0CD3A0057d4273138 /* ssl_tls12_client.c in Sources */,
 				B8A727A817E0CD3A0057a0d9a179 /* ssl_tls12_server.c in Sources */,
+				B8A727A817E0CD3A00573be55a06 /* ssl_tls13_client.c in Sources */,
+				B8A727A817E0CD3A0057521331b3 /* ssl_tls13_generic.c in Sources */,
+				B8A727A817E0CD3A00577bce6998 /* ssl_tls13_keys.c in Sources */,
+				B8A727A817E0CD3A00574f1bca47 /* ssl_tls13_server.c in Sources */,
 				B8A727A817E0CD3A00574d18914a /* threading.c in Sources */,
 				B8A727A817E0CD3A005771ba78c /* timing.c in Sources */,
 				B8A727A817E0CD3A0057eaebb3a7 /* version.c in Sources */,

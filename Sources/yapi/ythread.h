@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.h 49088 2022-03-17 11:11:53Z seb $
+ * $Id: ythread.h 63696 2024-12-13 17:44:50Z mvuilleu $
  *
  * OS-independent thread and synchronization library
  *
@@ -42,7 +42,7 @@
 #include "ydef.h"
 
 /*********************************************************************
- * EVENT FUNCTION 
+ * EVENT FUNCTIONS
  *********************************************************************/
 
 #ifdef WINDOWS_API
@@ -79,12 +79,14 @@ void yCloseEvent(yEvent* ev);
 
 
 /*********************************************************************
- * THREAD FUNCTION 
+ * THREAD FUNCTIONS
  *********************************************************************/
 #ifdef WIN32
-typedef HANDLE osThread;
+typedef HANDLE              osThread;
+#define yCurrentThread()    GetCurrentThread()
 #else
-typedef pthread_t   osThread;
+typedef pthread_t           osThread;
+#define yCurrentThread()    pthread_self()
 #endif
 
 typedef enum {

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 62193 2024-08-19 12:20:58Z seb $
+ * $Id: yocto_cellular.cpp 63324 2024-11-13 09:33:07Z seb $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -1241,19 +1241,19 @@ string YCellular::_AT(string cmd)
     cmdLen = (int)(cmd).length();
     chrPos = _ystrpos(cmd, "#");
     while (chrPos >= 0) {
-        cmd = YapiWrapper::ysprintf("%s%c23%s", cmd.substr(0, chrPos).c_str(), 37,cmd.substr(chrPos+1, cmdLen-chrPos-1).c_str());
+        cmd = YapiWrapper::ysprintf("%s%c23%s",cmd.substr(0, chrPos).c_str(),37,cmd.substr(chrPos+1, cmdLen-chrPos-1).c_str());
         cmdLen = cmdLen + 2;
         chrPos = _ystrpos(cmd, "#");
     }
     chrPos = _ystrpos(cmd, "+");
     while (chrPos >= 0) {
-        cmd = YapiWrapper::ysprintf("%s%c2B%s", cmd.substr(0, chrPos).c_str(), 37,cmd.substr(chrPos+1, cmdLen-chrPos-1).c_str());
+        cmd = YapiWrapper::ysprintf("%s%c2B%s",cmd.substr(0, chrPos).c_str(),37,cmd.substr(chrPos+1, cmdLen-chrPos-1).c_str());
         cmdLen = cmdLen + 2;
         chrPos = _ystrpos(cmd, "+");
     }
     chrPos = _ystrpos(cmd, "=");
     while (chrPos >= 0) {
-        cmd = YapiWrapper::ysprintf("%s%c3D%s", cmd.substr(0, chrPos).c_str(), 37,cmd.substr(chrPos+1, cmdLen-chrPos-1).c_str());
+        cmd = YapiWrapper::ysprintf("%s%c3D%s",cmd.substr(0, chrPos).c_str(),37,cmd.substr(chrPos+1, cmdLen-chrPos-1).c_str());
         cmdLen = cmdLen + 2;
         chrPos = _ystrpos(cmd, "=");
     }
@@ -1280,7 +1280,7 @@ string YCellular::_AT(string cmd)
             // request complete
             waitMore = 0;
         }
-        res = YapiWrapper::ysprintf("%s%s", res.c_str(),buffstr.c_str());
+        res = YapiWrapper::ysprintf("%s%s",res.c_str(),buffstr.c_str());
     }
     return res;
 }

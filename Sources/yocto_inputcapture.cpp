@@ -184,20 +184,20 @@ int YInputCaptureData::_decodeSnapBin(string sdata)
     _trigUTC = _trigUTC + (ms / 1000.0);
     recOfs = 24;
     while (((u8)sdata[recOfs]) >= 32) {
-        _var1unit = YapiWrapper::ysprintf("%s%c", _var1unit.c_str(),((u8)sdata[recOfs]));
+        _var1unit = YapiWrapper::ysprintf("%s%c",_var1unit.c_str(),((u8)sdata[recOfs]));
         recOfs = recOfs + 1;
     }
     if (_var2size > 0) {
         recOfs = recOfs + 1;
         while (((u8)sdata[recOfs]) >= 32) {
-            _var2unit = YapiWrapper::ysprintf("%s%c", _var2unit.c_str(),((u8)sdata[recOfs]));
+            _var2unit = YapiWrapper::ysprintf("%s%c",_var2unit.c_str(),((u8)sdata[recOfs]));
             recOfs = recOfs + 1;
         }
     }
     if (_var3size > 0) {
         recOfs = recOfs + 1;
         while (((u8)sdata[recOfs]) >= 32) {
-            _var3unit = YapiWrapper::ysprintf("%s%c", _var3unit.c_str(),((u8)sdata[recOfs]));
+            _var3unit = YapiWrapper::ysprintf("%s%c",_var3unit.c_str(),((u8)sdata[recOfs]));
             recOfs = recOfs + 1;
         }
     }
@@ -1071,7 +1071,7 @@ YInputCaptureData YInputCapture::get_immediateCapture(int msDuration)
         msDuration = 1000;
     }
     snapStart = ((-msDuration) / 2);
-    snapUrl = YapiWrapper::ysprintf("snap.bin?t=%d&d=%d", snapStart,msDuration);
+    snapUrl = YapiWrapper::ysprintf("snap.bin?t=%d&d=%d",snapStart,msDuration);
 
     snapData = this->_download(snapUrl);
     return YInputCaptureData(this,snapData);

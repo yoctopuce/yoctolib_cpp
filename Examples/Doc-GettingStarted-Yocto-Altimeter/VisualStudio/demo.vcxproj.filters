@@ -308,6 +308,18 @@
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls12_server.c">
       <Filter>Yoctopuce\yapi\MbedTLS</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_client.c">
+      <Filter>Yoctopuce\yapi\MbedTLS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_generic.c">
+      <Filter>Yoctopuce\yapi\MbedTLS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_keys.c">
+      <Filter>Yoctopuce\yapi\MbedTLS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_server.c">
+      <Filter>Yoctopuce\yapi\MbedTLS</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\threading.c">
       <Filter>Yoctopuce\yapi\MbedTLS</Filter>
     </ClCompile>

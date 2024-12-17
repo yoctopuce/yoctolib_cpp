@@ -60,6 +60,7 @@ YMicroPython::YMicroPython(const string& func): YFunction(func)
     ,_xheapUsage(XHEAPUSAGE_INVALID)
     ,_currentScript(CURRENTSCRIPT_INVALID)
     ,_startupScript(STARTUPSCRIPT_INVALID)
+    ,_debugMode(DEBUGMODE_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackMicroPython(NULL)
     ,_logCallback(NULL)
@@ -104,6 +105,9 @@ int YMicroPython::_parseAttr(YJSONObject *json_val)
     }
     if(json_val->has("startupScript")) {
         _startupScript =  json_val->getString("startupScript");
+    }
+    if(json_val->has("debugMode")) {
+        _debugMode =  (Y_DEBUGMODE_enum)json_val->getInt("debugMode");
     }
     if(json_val->has("command")) {
         _command =  json_val->getString("command");
@@ -308,6 +312,62 @@ int YMicroPython::set_startupScript(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("startupScript", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the activation state of micropython debugging interface.
+ *
+ * @return either YMicroPython::DEBUGMODE_OFF or YMicroPython::DEBUGMODE_ON, according to the activation
+ * state of micropython debugging interface
+ *
+ * On failure, throws an exception or returns YMicroPython::DEBUGMODE_INVALID.
+ */
+Y_DEBUGMODE_enum YMicroPython::get_debugMode(void)
+{
+    Y_DEBUGMODE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YMicroPython::DEBUGMODE_INVALID;
+                }
+            }
+        }
+        res = _debugMode;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the activation state of micropython debugging interface.
+ *
+ * @param newval : either YMicroPython::DEBUGMODE_OFF or YMicroPython::DEBUGMODE_ON, according to the
+ * activation state of micropython debugging interface
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YMicroPython::set_debugMode(Y_DEBUGMODE_enum newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("debugMode", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
@@ -619,7 +679,7 @@ int YMicroPython::_internalEventHandler(string cbVal)
     msgArr = _strsplit(contentStr,'\n');
     arrLen = (int)msgArr.size() - 1;
     if (arrLen > 0) {
-        logMsg = YapiWrapper::ysprintf("%s%s", _prevPartialLog.c_str(),msgArr[0].c_str());
+        logMsg = YapiWrapper::ysprintf("%s%s",_prevPartialLog.c_str(),msgArr[0].c_str());
         if (_logCallback != NULL) {
             _logCallback(this, logMsg);
         }
@@ -633,7 +693,7 @@ int YMicroPython::_internalEventHandler(string cbVal)
             arrPos = arrPos + 1;
         }
     }
-    _prevPartialLog = YapiWrapper::ysprintf("%s%s", _prevPartialLog.c_str(),msgArr[arrLen].c_str());
+    _prevPartialLog = YapiWrapper::ysprintf("%s%s",_prevPartialLog.c_str(),msgArr[arrLen].c_str());
     return YAPI_SUCCESS;
 }
 

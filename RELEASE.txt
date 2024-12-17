@@ -1,4 +1,5 @@
-CPPV2 v2.0.62875
+CPPV2 v2.0.63744
 
-- Fix connection to YoctoHub with very old firmware
-- Fix crash if Network discovery cannot be started correctly
+- Update Mbed-TLS lib (v3.6.2)
+- Fix network discovery for Windows host with only WiFi interface
+- Better logs verbosity of connection to VirtualHub for Web

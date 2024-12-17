@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_i2cport.cpp 62193 2024-08-19 12:20:58Z seb $
+ *  $Id: yocto_i2cport.cpp 63464 2024-11-25 13:48:09Z seb $
  *
  *  Implements yFindI2cPort(), the high-level API for I2cPort functions
  *
@@ -921,7 +921,7 @@ string YI2cPort::readLine(void)
     }
     // last element of array is the new position
     msglen = msglen - 1;
-    _rxptr = atoi((msgarr[msglen]).c_str());
+    _rxptr = this->_decode_json_int(msgarr[msglen]);
     if (msglen == 0) {
         return "";
     }
@@ -959,7 +959,7 @@ vector<string> YI2cPort::readMessages(string pattern,int maxWait)
     vector<string> res;
     int idx = 0;
 
-    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&pat=%s", _rxptr, maxWait,pattern.c_str());
+    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&pat=%s",_rxptr,maxWait,pattern.c_str());
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);
     msglen = (int)msgarr.size();
@@ -968,7 +968,7 @@ vector<string> YI2cPort::readMessages(string pattern,int maxWait)
     }
     // last element of array is the new position
     msglen = msglen - 1;
-    _rxptr = atoi((msgarr[msglen]).c_str());
+    _rxptr = this->_decode_json_int(msgarr[msglen]);
     idx = 0;
     while (idx < msglen) {
         res.push_back(this->_json_get_string(msgarr[idx]));
@@ -1058,12 +1058,12 @@ string YI2cPort::queryLine(string query,int maxWait)
     string res;
     if ((int)(query).length() <= 80) {
         // fast query
-        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=!%s", maxWait,this->_escapeAttr(query).c_str());
+        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=!%s",maxWait,this->_escapeAttr(query).c_str());
     } else {
         // long query
         prevpos = this->end_tell();
         this->_upload("txdata", query + "\r\n");
-        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&pos=%d", maxWait,prevpos);
+        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&pos=%d",maxWait,prevpos);
     }
 
     msgbin = this->_download(url);
@@ -1074,7 +1074,7 @@ string YI2cPort::queryLine(string query,int maxWait)
     }
     // last element of array is the new position
     msglen = msglen - 1;
-    _rxptr = atoi((msgarr[msglen]).c_str());
+    _rxptr = this->_decode_json_int(msgarr[msglen]);
     if (msglen == 0) {
         return "";
     }
@@ -1105,12 +1105,12 @@ string YI2cPort::queryHex(string hexString,int maxWait)
     string res;
     if ((int)(hexString).length() <= 80) {
         // fast query
-        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=$%s", maxWait,hexString.c_str());
+        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=$%s",maxWait,hexString.c_str());
     } else {
         // long query
         prevpos = this->end_tell();
         this->_upload("txdata", YAPI::_hexStr2Bin(hexString));
-        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&pos=%d", maxWait,prevpos);
+        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&pos=%d",maxWait,prevpos);
     }
 
     msgbin = this->_download(url);
@@ -1121,7 +1121,7 @@ string YI2cPort::queryHex(string hexString,int maxWait)
     }
     // last element of array is the new position
     msglen = msglen - 1;
-    _rxptr = atoi((msgarr[msglen]).c_str());
+    _rxptr = this->_decode_json_int(msgarr[msglen]);
     if (msglen == 0) {
         return "";
     }
@@ -1201,7 +1201,7 @@ int YI2cPort::i2cSendBin(int slaveAddr,string buff)
     idx = 0;
     while (idx < nBytes) {
         val = ((u8)buff[idx]);
-        msg = YapiWrapper::ysprintf("%s%02x", msg.c_str(),val);
+        msg = YapiWrapper::ysprintf("%s%02x",msg.c_str(),val);
         idx = idx + 1;
     }
 
@@ -1246,7 +1246,7 @@ int YI2cPort::i2cSendArray(int slaveAddr,vector<int> values)
     idx = 0;
     while (idx < nBytes) {
         val = values[idx];
-        msg = YapiWrapper::ysprintf("%s%02x", msg.c_str(),val);
+        msg = YapiWrapper::ysprintf("%s%02x",msg.c_str(),val);
         idx = idx + 1;
     }
 
@@ -1299,7 +1299,7 @@ string YI2cPort::i2cSendAndReceiveBin(int slaveAddr,string buff,int rcvCount)
     idx = 0;
     while (idx < nBytes) {
         val = ((u8)buff[idx]);
-        msg = YapiWrapper::ysprintf("%s%02x", msg.c_str(),val);
+        msg = YapiWrapper::ysprintf("%s%02x",msg.c_str(),val);
         idx = idx + 1;
     }
     idx = 0;
@@ -1309,7 +1309,7 @@ string YI2cPort::i2cSendAndReceiveBin(int slaveAddr,string buff,int rcvCount)
             idx = idx + 255;
         }
         if (rcvCount - idx > 2) {
-            msg = YapiWrapper::ysprintf("%sxx*%02X", msg.c_str(),(rcvCount - idx));
+            msg = YapiWrapper::ysprintf("%sxx*%02X",msg.c_str(),(rcvCount - idx));
             idx = rcvCount;
         }
     }
@@ -1370,7 +1370,7 @@ vector<int> YI2cPort::i2cSendAndReceiveArray(int slaveAddr,vector<int> values,in
     idx = 0;
     while (idx < nBytes) {
         val = values[idx];
-        msg = YapiWrapper::ysprintf("%s%02x", msg.c_str(),val);
+        msg = YapiWrapper::ysprintf("%s%02x",msg.c_str(),val);
         idx = idx + 1;
     }
     idx = 0;
@@ -1380,7 +1380,7 @@ vector<int> YI2cPort::i2cSendAndReceiveArray(int slaveAddr,vector<int> values,in
             idx = idx + 255;
         }
         if (rcvCount - idx > 2) {
-            msg = YapiWrapper::ysprintf("%sxx*%02X", msg.c_str(),(rcvCount - idx));
+            msg = YapiWrapper::ysprintf("%sxx*%02X",msg.c_str(),(rcvCount - idx));
             idx = rcvCount;
         }
     }
@@ -1558,7 +1558,7 @@ int YI2cPort::writeBin(string buff)
     idx = 0;
     while (idx < nBytes) {
         val = ((u8)buff[idx]);
-        msg = YapiWrapper::ysprintf("%s%02x", msg.c_str(),val);
+        msg = YapiWrapper::ysprintf("%s%02x",msg.c_str(),val);
         idx = idx + 1;
     }
 
@@ -1587,7 +1587,7 @@ int YI2cPort::writeArray(vector<int> byteList)
     idx = 0;
     while (idx < nBytes) {
         val = byteList[idx];
-        msg = YapiWrapper::ysprintf("%s%02x", msg.c_str(),val);
+        msg = YapiWrapper::ysprintf("%s%02x",msg.c_str(),val);
         idx = idx + 1;
     }
 
@@ -1617,7 +1617,7 @@ vector<YI2cSnoopingRecord> YI2cPort::snoopMessagesEx(int maxWait,int maxMsg)
     vector<YI2cSnoopingRecord> res;
     int idx = 0;
 
-    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&t=0&len=%d", _rxptr, maxWait,maxMsg);
+    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&t=0&len=%d",_rxptr,maxWait,maxMsg);
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);
     msglen = (int)msgarr.size();
@@ -1626,7 +1626,7 @@ vector<YI2cSnoopingRecord> YI2cPort::snoopMessagesEx(int maxWait,int maxMsg)
     }
     // last element of array is the new position
     msglen = msglen - 1;
-    _rxptr = atoi((msgarr[msglen]).c_str());
+    _rxptr = this->_decode_json_int(msgarr[msglen]);
     idx = 0;
     while (idx < msglen) {
         res.push_back(YI2cSnoopingRecord(msgarr[idx]));

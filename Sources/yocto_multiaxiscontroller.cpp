@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multiaxiscontroller.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: yocto_multiaxiscontroller.cpp 63324 2024-11-13 09:33:07Z seb $
  *
  *  Implements yFindMultiAxisController(), the high-level API for MultiAxisController functions
  *
@@ -352,7 +352,7 @@ int YMultiAxisController::findHomePosition(vector<double> speed)
     cmd = YapiWrapper::ysprintf("H%d",(int) floor(1000*speed[0]+0.5));
     i = 1;
     while (i < ndim) {
-        cmd = YapiWrapper::ysprintf("%s,%d", cmd.c_str(),(int) floor(1000*speed[i]+0.5));
+        cmd = YapiWrapper::ysprintf("%s,%d",cmd.c_str(),(int) floor(1000*speed[i]+0.5));
         i = i + 1;
     }
     return this->sendCommand(cmd);
@@ -378,7 +378,7 @@ int YMultiAxisController::moveTo(vector<double> absPos)
     cmd = YapiWrapper::ysprintf("M%d",(int) floor(16*absPos[0]+0.5));
     i = 1;
     while (i < ndim) {
-        cmd = YapiWrapper::ysprintf("%s,%d", cmd.c_str(),(int) floor(16*absPos[i]+0.5));
+        cmd = YapiWrapper::ysprintf("%s,%d",cmd.c_str(),(int) floor(16*absPos[i]+0.5));
         i = i + 1;
     }
     return this->sendCommand(cmd);
@@ -404,7 +404,7 @@ int YMultiAxisController::moveRel(vector<double> relPos)
     cmd = YapiWrapper::ysprintf("m%d",(int) floor(16*relPos[0]+0.5));
     i = 1;
     while (i < ndim) {
-        cmd = YapiWrapper::ysprintf("%s,%d", cmd.c_str(),(int) floor(16*relPos[i]+0.5));
+        cmd = YapiWrapper::ysprintf("%s,%d",cmd.c_str(),(int) floor(16*relPos[i]+0.5));
         i = i + 1;
     }
     return this->sendCommand(cmd);

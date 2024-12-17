@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_multicellweighscale.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: yocto_multicellweighscale.cpp 63324 2024-11-13 09:33:07Z seb $
  *
  *  Implements yFindMultiCellWeighScale(), the high-level API for MultiCellWeighScale functions
  *
@@ -786,7 +786,7 @@ int YMultiCellWeighScale::tare(void)
  */
 int YMultiCellWeighScale::setupSpan(double currWeight,double maxWeight)
 {
-    return this->set_command(YapiWrapper::ysprintf("S%d:%d", (int) floor(1000*currWeight+0.5),(int) floor(1000*maxWeight+0.5)));
+    return this->set_command(YapiWrapper::ysprintf("S%d:%d",(int) floor(1000*currWeight+0.5),(int) floor(1000*maxWeight+0.5)));
 }
 
 YMultiCellWeighScale *YMultiCellWeighScale::nextMultiCellWeighScale(void)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_weighscale.cpp 62193 2024-08-19 12:20:58Z seb $
+ *  $Id: yocto_weighscale.cpp 63324 2024-11-13 09:33:07Z seb $
  *
  *  Implements yFindWeighScale(), the high-level API for WeighScale functions
  *
@@ -662,7 +662,7 @@ int YWeighScale::tare(void)
  */
 int YWeighScale::setupSpan(double currWeight,double maxWeight)
 {
-    return this->set_command(YapiWrapper::ysprintf("S%d:%d", (int) floor(1000*currWeight+0.5),(int) floor(1000*maxWeight+0.5)));
+    return this->set_command(YapiWrapper::ysprintf("S%d:%d",(int) floor(1000*currWeight+0.5),(int) floor(1000*maxWeight+0.5)));
 }
 
 int YWeighScale::setCompensationTable(int tableIndex,vector<double> tempValues,vector<double> compValues)
@@ -708,7 +708,7 @@ int YWeighScale::setCompensationTable(int tableIndex,vector<double> tempValues,v
             idx = idx + 1;
         }
         if (found > 0) {
-            res = this->set_command(YapiWrapper::ysprintf("%dm%d:%d", tableIndex, (int) floor(1000*curr+0.5),(int) floor(1000*currComp+0.5)));
+            res = this->set_command(YapiWrapper::ysprintf("%dm%d:%d",tableIndex,(int) floor(1000*curr+0.5),(int) floor(1000*currComp+0.5)));
             if (!(res==YAPI_SUCCESS)) {
                 _throw((YRETCODE)(YAPI_IO_ERROR), "unable to set thermal compensation table");
                 return YAPI_IO_ERROR;

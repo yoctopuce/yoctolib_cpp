@@ -395,7 +395,7 @@ void YSdi12SensorInfo::_queryValueInfo(void)
                 val.clear();
                 i = 0;
                 while (i < nbVal) {
-                    cmd = YapiWrapper::ysprintf("IM%d_00%d", k,i+1);
+                    cmd = YapiWrapper::ysprintf("IM%d_00%d",k,i+1);
                     infoVal = _sdi12Port->querySdi12(_addr, cmd, 5000);
                     data = _strsplit(infoVal,';');
                     data = _strsplit(data[0],',');
@@ -1211,7 +1211,7 @@ string YSdi12Port::readLine(void)
     }
     // last element of array is the new position
     msglen = msglen - 1;
-    _rxptr = atoi((msgarr[msglen]).c_str());
+    _rxptr = this->_decode_json_int(msgarr[msglen]);
     if (msglen == 0) {
         return "";
     }
@@ -1249,7 +1249,7 @@ vector<string> YSdi12Port::readMessages(string pattern,int maxWait)
     vector<string> res;
     int idx = 0;
 
-    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&pat=%s", _rxptr, maxWait,pattern.c_str());
+    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&pat=%s",_rxptr,maxWait,pattern.c_str());
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);
     msglen = (int)msgarr.size();
@@ -1258,7 +1258,7 @@ vector<string> YSdi12Port::readMessages(string pattern,int maxWait)
     }
     // last element of array is the new position
     msglen = msglen - 1;
-    _rxptr = atoi((msgarr[msglen]).c_str());
+    _rxptr = this->_decode_json_int(msgarr[msglen]);
     idx = 0;
     while (idx < msglen) {
         res.push_back(this->_json_get_string(msgarr[idx]));
@@ -1348,12 +1348,12 @@ string YSdi12Port::queryLine(string query,int maxWait)
     string res;
     if ((int)(query).length() <= 80) {
         // fast query
-        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=!%s", maxWait,this->_escapeAttr(query).c_str());
+        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=!%s",maxWait,this->_escapeAttr(query).c_str());
     } else {
         // long query
         prevpos = this->end_tell();
         this->_upload("txdata", query + "\r\n");
-        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&pos=%d", maxWait,prevpos);
+        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&pos=%d",maxWait,prevpos);
     }
 
     msgbin = this->_download(url);
@@ -1364,7 +1364,7 @@ string YSdi12Port::queryLine(string query,int maxWait)
     }
     // last element of array is the new position
     msglen = msglen - 1;
-    _rxptr = atoi((msgarr[msglen]).c_str());
+    _rxptr = this->_decode_json_int(msgarr[msglen]);
     if (msglen == 0) {
         return "";
     }
@@ -1395,12 +1395,12 @@ string YSdi12Port::queryHex(string hexString,int maxWait)
     string res;
     if ((int)(hexString).length() <= 80) {
         // fast query
-        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=$%s", maxWait,hexString.c_str());
+        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=$%s",maxWait,hexString.c_str());
     } else {
         // long query
         prevpos = this->end_tell();
         this->_upload("txdata", YAPI::_hexStr2Bin(hexString));
-        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&pos=%d", maxWait,prevpos);
+        url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&pos=%d",maxWait,prevpos);
     }
 
     msgbin = this->_download(url);
@@ -1411,7 +1411,7 @@ string YSdi12Port::queryHex(string hexString,int maxWait)
     }
     // last element of array is the new position
     msglen = msglen - 1;
-    _rxptr = atoi((msgarr[msglen]).c_str());
+    _rxptr = this->_decode_json_int(msgarr[msglen]);
     if (msglen == 0) {
         return "";
     }
@@ -1724,7 +1724,7 @@ string YSdi12Port::readStr(int nChars)
         nChars = 65535;
     }
 
-    buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d", _rxptr,nChars));
+    buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d",_rxptr,nChars));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
     mult = 1;
@@ -1761,7 +1761,7 @@ string YSdi12Port::readBin(int nChars)
         nChars = 65535;
     }
 
-    buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d", _rxptr,nChars));
+    buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d",_rxptr,nChars));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
     mult = 1;
@@ -1804,7 +1804,7 @@ vector<int> YSdi12Port::readArray(int nChars)
         nChars = 65535;
     }
 
-    buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d", _rxptr,nChars));
+    buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d",_rxptr,nChars));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
     mult = 1;
@@ -1847,7 +1847,7 @@ string YSdi12Port::readHex(int nBytes)
         nBytes = 65535;
     }
 
-    buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d", _rxptr,nBytes));
+    buff = this->_download(YapiWrapper::ysprintf("rxdata.bin?pos=%d&len=%d",_rxptr,nBytes));
     bufflen = (int)(buff).size() - 1;
     endpos = 0;
     mult = 1;
@@ -1860,11 +1860,11 @@ string YSdi12Port::readHex(int nBytes)
     res = "";
     ofs = 0;
     while (ofs + 3 < bufflen) {
-        res = YapiWrapper::ysprintf("%s%02X%02X%02X%02X", res.c_str(), ((u8)buff[ofs]), ((u8)buff[ofs + 1]), ((u8)buff[ofs + 2]),((u8)buff[ofs + 3]));
+        res = YapiWrapper::ysprintf("%s%02X%02X%02X%02X",res.c_str(),((u8)buff[ofs]),((u8)buff[ofs + 1]),((u8)buff[ofs + 2]),((u8)buff[ofs + 3]));
         ofs = ofs + 4;
     }
     while (ofs < bufflen) {
-        res = YapiWrapper::ysprintf("%s%02X", res.c_str(),((u8)buff[ofs]));
+        res = YapiWrapper::ysprintf("%s%02X",res.c_str(),((u8)buff[ofs]));
         ofs = ofs + 1;
     }
     return res;
@@ -1908,8 +1908,8 @@ string YSdi12Port::querySdi12(string sensorAddr,string cmd,int maxWait)
         }
     }
     pattern = this->_escapeAttr(pattern);
-    fullCmd = this->_escapeAttr(YapiWrapper::ysprintf("+%s%s!", sensorAddr.c_str(),cmd.c_str()));
-    url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=%s&pat=%s", maxWait, fullCmd.c_str(),pattern.c_str());
+    fullCmd = this->_escapeAttr(YapiWrapper::ysprintf("+%s%s!",sensorAddr.c_str(),cmd.c_str()));
+    url = YapiWrapper::ysprintf("rxmsg.json?len=1&maxw=%d&cmd=%s&pat=%s",maxWait,fullCmd.c_str(),pattern.c_str());
 
     msgbin = this->_download(url);
     if ((int)(msgbin).size()<2) {
@@ -1922,7 +1922,7 @@ string YSdi12Port::querySdi12(string sensorAddr,string cmd,int maxWait)
     }
     // last element of array is the new position
     msglen = msglen - 1;
-    _rxptr = atoi((msgarr[msglen]).c_str());
+    _rxptr = this->_decode_json_int(msgarr[msglen]);
     if (msglen == 0) {
         return "";
     }
@@ -1945,7 +1945,7 @@ YSdi12SensorInfo YSdi12Port::discoverSingleSensor(void)
 
     resStr = this->querySdi12("?","",5000);
     if (resStr == "") {
-        return YSdi12SensorInfo( this,"ERSensor Not Found");
+        return YSdi12SensorInfo(this,"ERSensor Not Found");
     }
 
     return this->getSensorInformation(resStr);
@@ -2084,9 +2084,9 @@ YSdi12SensorInfo YSdi12Port::getSensorInformation(string sensorAddr)
 
     res = this->querySdi12(sensorAddr,"I",1000);
     if (res == "") {
-        return YSdi12SensorInfo(this ,"ERSensor Not Found");
+        return YSdi12SensorInfo(this,"ERSensor Not Found");
     }
-    sensor = YSdi12SensorInfo(this ,res);
+    sensor = YSdi12SensorInfo(this,res);
     sensor._queryValueInfo();
     return sensor;
 }
@@ -2153,7 +2153,7 @@ vector<YSdi12SnoopingRecord> YSdi12Port::snoopMessagesEx(int maxWait,int maxMsg)
     vector<YSdi12SnoopingRecord> res;
     int idx = 0;
 
-    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&t=0&len=%d", _rxptr, maxWait,maxMsg);
+    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=%d&t=0&len=%d",_rxptr,maxWait,maxMsg);
     msgbin = this->_download(url);
     msgarr = this->_json_get_array(msgbin);
     msglen = (int)msgarr.size();
@@ -2162,7 +2162,7 @@ vector<YSdi12SnoopingRecord> YSdi12Port::snoopMessagesEx(int maxWait,int maxMsg)
     }
     // last element of array is the new position
     msglen = msglen - 1;
-    _rxptr = atoi((msgarr[msglen]).c_str());
+    _rxptr = this->_decode_json_int(msgarr[msglen]);
     idx = 0;
     while (idx < msglen) {
         res.push_back(YSdi12SnoopingRecord(msgarr[idx]));

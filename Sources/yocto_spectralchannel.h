@@ -101,6 +101,9 @@ public:
     static const int RAWCOUNT_INVALID = YAPI_INVALID_INT;
 
     /**
+     * Retrieves the raw count of data samples.
+     * This method returns the current value of rawCount, representing the total number of samples collected
+     * by the sensor.
      *
      * @return an integer
      *

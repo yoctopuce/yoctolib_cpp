@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ * $Id: yocto_wireless.cpp 63324 2024-11-13 09:33:07Z seb $
  *
  * Implements yFindWireless(), the high-level API for Wireless functions
  *
@@ -553,7 +553,7 @@ int YWireless::startWlanScan(void)
  */
 int YWireless::joinNetwork(string ssid,string securityKey)
 {
-    return this->set_wlanConfig(YapiWrapper::ysprintf("INFRA:%s\\%s", ssid.c_str(),securityKey.c_str()));
+    return this->set_wlanConfig(YapiWrapper::ysprintf("INFRA:%s\\%s",ssid.c_str(),securityKey.c_str()));
 }
 
 /**
@@ -579,7 +579,7 @@ int YWireless::joinNetwork(string ssid,string securityKey)
  */
 int YWireless::adhocNetwork(string ssid,string securityKey)
 {
-    return this->set_wlanConfig(YapiWrapper::ysprintf("ADHOC:%s\\%s", ssid.c_str(),securityKey.c_str()));
+    return this->set_wlanConfig(YapiWrapper::ysprintf("ADHOC:%s\\%s",ssid.c_str(),securityKey.c_str()));
 }
 
 /**
@@ -606,7 +606,7 @@ int YWireless::adhocNetwork(string ssid,string securityKey)
  */
 int YWireless::softAPNetwork(string ssid,string securityKey)
 {
-    return this->set_wlanConfig(YapiWrapper::ysprintf("SOFTAP:%s\\%s", ssid.c_str(),securityKey.c_str()));
+    return this->set_wlanConfig(YapiWrapper::ysprintf("SOFTAP:%s\\%s",ssid.c_str(),securityKey.c_str()));
 }
 
 /**

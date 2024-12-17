@@ -924,7 +924,7 @@ string YInputChain::_strXor(string a,string b)
     while (idx < lenA) {
         digitA = (int)YAPI::_hexStr2Long(a.substr(idx, 1));
         digitB = (int)YAPI::_hexStr2Long(b.substr(idx, 1));
-        res = YapiWrapper::ysprintf("%s%x", res.c_str(),(digitA ^ digitB));
+        res = YapiWrapper::ysprintf("%s%x",res.c_str(),(digitA ^ digitB));
         idx = idx + 1;
     }
     return res;

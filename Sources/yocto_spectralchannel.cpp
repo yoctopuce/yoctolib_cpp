@@ -81,6 +81,9 @@ int YSpectralChannel::_parseAttr(YJSONObject *json_val)
 
 
 /**
+ * Retrieves the raw count of data samples.
+ * This method returns the current value of rawCount, representing the total number of samples collected
+ * by the sensor.
  *
  * @return an integer
  *

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_network.cpp 61964 2024-07-29 15:54:55Z seb $
+ *  $Id: yocto_network.cpp 63324 2024-11-13 09:33:07Z seb $
  *
  *  Implements yFindNetwork(), the high-level API for Network functions
  *
@@ -1810,7 +1810,7 @@ int YNetwork::_invokeValueCallback(string value)
  */
 int YNetwork::useDHCP(string fallbackIpAddr,int fallbackSubnetMaskLen,string fallbackRouter)
 {
-    return this->set_ipConfig(YapiWrapper::ysprintf("DHCP:%s/%d/%s", fallbackIpAddr.c_str(), fallbackSubnetMaskLen,fallbackRouter.c_str()));
+    return this->set_ipConfig(YapiWrapper::ysprintf("DHCP:%s/%d/%s",fallbackIpAddr.c_str(),fallbackSubnetMaskLen,fallbackRouter.c_str()));
 }
 
 /**
@@ -1842,7 +1842,7 @@ int YNetwork::useDHCPauto(void)
  */
 int YNetwork::useStaticIP(string ipAddress,int subnetMaskLen,string router)
 {
-    return this->set_ipConfig(YapiWrapper::ysprintf("STATIC:%s/%d/%s", ipAddress.c_str(), subnetMaskLen,router.c_str()));
+    return this->set_ipConfig(YapiWrapper::ysprintf("STATIC:%s/%d/%s",ipAddress.c_str(),subnetMaskLen,router.c_str()));
 }
 
 /**

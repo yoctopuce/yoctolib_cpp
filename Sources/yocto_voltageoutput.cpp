@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_voltageoutput.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: yocto_voltageoutput.cpp 63324 2024-11-13 09:33:07Z seb $
  *
  *  Implements yFindVoltageOutput(), the high-level API for VoltageOutput functions
  *
@@ -345,7 +345,7 @@ int YVoltageOutput::voltageMove(double V_target,int ms_duration)
     if (V_target > 10.0) {
         V_target = 10.0;
     }
-    newval = YapiWrapper::ysprintf("%d:%d", (int) floor(V_target*65536+0.5),ms_duration);
+    newval = YapiWrapper::ysprintf("%d:%d",(int) floor(V_target*65536+0.5),ms_duration);
 
     return this->set_voltageTransition(newval);
 }

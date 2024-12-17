@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.h 62146 2024-08-13 07:52:22Z seb $
+ * $Id: ytcp.h 63227 2024-11-07 08:31:49Z seb $
  *
  *  Declaration of a client TCP stack
  *
@@ -150,7 +150,7 @@ u32 yTcpGetRcvBufSizeMulti(YSOCKET_MULTI sock);
 int yTcpWriteMulti(YSOCKET_MULTI skt, const u8* buffer, int len, char* errmsg);
 void yTcpShutdownMulti(void);
 
-int yUdpOpenMulti(YSOCKET_MULTI *newskt, IPvX_ADDR *local_ip, int sin6_scope_id, u16 port, u16 sockFlags, char *errmsg);
+int ySocketOpenBindMulti(YSOCKET_MULTI *newskt, IPvX_ADDR *local_ip, int is_udp, int sin6_scope_id, u16 port, u16 sockFlags, char *errmsg);
 int yUdpWriteMulti(YSOCKET_MULTI skt, IPvX_ADDR* dest_ip, u16 dest_port, const u8* buffer, int len, char* errmsg);
 int yUdpReadMulti(YSOCKET_MULTI skt, u8* buffer, int len, IPvX_ADDR* dest_ip, u16* dest_port, char* errmsg);
 int yUdpRegisterMCAST(YSOCKET_MULTI skt,  IPvX_ADDR *mcastAddr, int interfaceNo);

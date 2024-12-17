@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_digitalio.cpp 62193 2024-08-19 12:20:58Z seb $
+ *  $Id: yocto_digitalio.cpp 63324 2024-11-13 09:33:07Z seb $
  *
  *  Implements yFindDigitalIO(), the high-level API for DigitalIO functions
  *
@@ -791,7 +791,7 @@ int YDigitalIO::get_bitOpenDrain(int bitno)
  */
 int YDigitalIO::pulse(int bitno,int ms_duration)
 {
-    return this->set_command(YapiWrapper::ysprintf("Z%d,0,%d", bitno,ms_duration));
+    return this->set_command(YapiWrapper::ysprintf("Z%d,0,%d",bitno,ms_duration));
 }
 
 /**

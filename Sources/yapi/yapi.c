@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 62842 2024-10-04 07:41:58Z seb $
+ * $Id: yapi.c 62987 2024-10-15 09:17:49Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -2602,7 +2602,7 @@ static HubSt* yapiAllocHub(const char *url, u32 mstimeout, int *error_code, char
     }
 #endif
     if (hub->url.proto != PROTO_SECURE_WEBSOCKET && hub->url.proto != PROTO_WEBSOCKET) {
-        int res = LoadInfoJson(hub,mstimeout, errmsg);
+        int res = LoadInfoJson(hub, mstimeout, errmsg);
         if (res >= 0) {
             yStrRef serial = yHashPutStr(hub->info.serial);
             if ((res = checkForSameHubAccess(hub, serial, errmsg)) < 0) {
@@ -3589,12 +3589,15 @@ int handleNetNotification(HubSt *hub)
     p = buffer + 1;
     if (pkttype == NOTIFY_NETPKT_NOT_SYNC) {
         int testPing;
+        u64 newpos;
 #ifdef DEBUG_NET_NOTIFICATION
         YSPRINTF(Dbuffer,512,"Sync from %d to %s\n",
              hub->notifAbsPos, p);
         dumpNotif(Dbuffer);
 #endif
-        hub->notifAbsPos = atoi(p);
+        newpos = atoll(p);
+        YASSERT(newpos <= 0xffffffff, newpos);
+        hub->notifAbsPos = (u32)newpos;
         //look if we have a \n just after the sync notification
         // if yes this mean that the hub will send some ping notification
         testPing = ySeekFifo(&(hub->not_fifo), (u8*)&netstop, 1, 0, 1, 0);
@@ -3926,16 +3929,19 @@ static void* yhelper_thread(void *ctx)
                                         yPopFifo(&(hub->not_fifo), NULL, eoh + 4 - 12);
                                         if (!memcmp((u8*)buffer, (u8*)"HTTP/1.1 200", 12)) {
                                             hub->state = NET_HUB_ESTABLISHED;
+                                            if (hub->notConLastAlive==0 || (yapiGetTickCount() - hub->notConLastAlive) > 4000){
+                                                log_hub_state(&hub->url, "connected", "HTTP");
+                                            }
                                             setNotificationConnectionON(hub);
-                                            log_hub_state(&hub->url, "connected", "HTTP");
+                                            
                                         }
                                     } else if (eoh >= 2) {
                                         yPopFifo(&(hub->not_fifo), (u8*)buffer, 2);
                                         yPopFifo(&(hub->not_fifo), NULL, eoh + 4 - 2);
                                         if (!memcmp((u8*)buffer, (u8*)"OK", 2)) {
                                             hub->state = NET_HUB_ESTABLISHED;
-                                            setNotificationConnectionON(hub);
                                             log_hub_state(&hub->url, "connected", "HTTP");
+                                            setNotificationConnectionON(hub);
                                         }
                                     }
                                     if (hub->state != NET_HUB_ESTABLISHED) {
@@ -3959,7 +3965,9 @@ static void* yhelper_thread(void *ctx)
                                 yReqClose(req);
                                 hub->state = NET_HUB_DISCONNECTED;
                                 setNotificationConnectionOFF(hub);
-                                log_hub_state(&hub->url, "disconnected", "HTTP");
+                                if (!hub->info.use_pure_http) {
+                                    log_hub_state(&hub->url, "disconnected", "HTTP");
+                                }
                             }
                             // nothing more to be read, exit loop
                             break;
@@ -3981,6 +3989,7 @@ static void* yhelper_thread(void *ctx)
                             // dbglog("Disconnected from network hub %s (%s)\n", hub->host, errmsg);
                             setNotificationConnectionOFF(hub);
                             hub->state = NET_HUB_TOCLOSE;
+                            log_hub_state(&hub->url, "disconnected", "HTTP");
                         } else {
                             //error -> retry with a delay and invalidate the connextion status
                             setNotificationConnectionOFF(hub);
@@ -3992,8 +4001,9 @@ static void* yhelper_thread(void *ctx)
                             yEnterCriticalSection(&hub->access);
                             hub->errcode = ySetErr(res, hub->errmsg, errmsg, NULL, 0);
                             yLeaveCriticalSection(&hub->access);
+                            log_hub_state(&hub->url, "disconnected", "HTTP");
                         }
-                        log_hub_state(&hub->url, "disconnected", "HTTP");
+                        
 #ifdef DEBUG_NET_NOTIFICATION
                         YSPRINTF(Dbuffer, 1024, "Network hub %s has closed the connection for notification\n", hub->url.host);
                         dumpNotif(Dbuffer);
@@ -4197,7 +4207,7 @@ static YRETCODE yapiRegisterHubEx(const char *url, int checkacces, char *errmsg)
         if (checkacces) {
             // ensure the thread has been able to connect to the hub
             u64 timeout = yapiGetTickCount() + YctxNetworkTimeout;
-            while (!isNotificationConnectionON(hubst) && hubst->errcode==YAPI_SUCCESS && timeout > yapiGetTickCount()) {
+            while (!isNotificationConnectionON(hubst) && hubst->errcode == YAPI_SUCCESS && timeout > yapiGetTickCount()) {
                 yapiSleep(100, errmsg);
             }
             if (!isNotificationConnectionON(hubst)) {
@@ -4484,7 +4494,7 @@ static YRETCODE yapiTestHub_internal(const char *url, int mstimeout, char *errms
         }
         res = YAPI_SUCCESS;
     } else {
-        HubSt *hubst = yapiAllocHub(url, mstimeout,&res, errmsg);
+        HubSt *hubst = yapiAllocHub(url, mstimeout, &res, errmsg);
         if (hubst) {
 #ifdef TRACE_NET_HUB
             dbglog("HUB: test %s \n", hubst->url.org_url);
@@ -4507,7 +4517,7 @@ static YRETCODE yapiTestHub_internal(const char *url, int mstimeout, char *errms
 
                 // ensure the thread has been able to connect to the hub
                 timeout = yapiGetTickCount() + mstimeout;
-                while (!isNotificationConnectionON(hubst) && hubst->errcode==YAPI_SUCCESS && timeout > yapiGetTickCount()) {
+                while (!isNotificationConnectionON(hubst) && hubst->errcode == YAPI_SUCCESS && timeout > yapiGetTickCount()) {
                     yapiSleep(10, errmsg);
                 }
                 if (!isNotificationConnectionON(hubst)) {
@@ -6181,9 +6191,13 @@ void yapiRegisterRawReportV2Cb(yRawReportV2Cb callback)
 #include <stdio.h>
 
 
-typedef enum
-{
+typedef enum {
     trcInitAPI = 0,
+    trcInitAPIEx,
+    trcSSSrv,
+    trcSSLGet,
+    trcSSLSet,
+    trcSSLAddEx,
     trcFreeAPI,
     trcRegisterLogFunction,
     trcRegisterDeviceLogCallback,
@@ -6226,7 +6240,7 @@ typedef enum
     trcHTTPRequestAsyncOutOfBand,
     trcHTTPRequest,
     trcRegisterHubDiscoveryCallback,
-    yapiRegisterWakupCb,
+    trcRegisterWakupCb,
     trcTriggerHubDiscovery,
     trcGetBootloaders,
     trcIsModuleWritable,
@@ -6245,14 +6259,21 @@ typedef enum
     trcSetNetworkTimeout,
     trcGetNetDevListValidity,
     trcSetNetDevListValidity,
+    trcGetNextHubRef,
+    trGetHubStrAttr,
+    trGetHubIntAttr,
+    trSetHubIntAttr
 } TRC_FUN;
 
 
-
-
-static const char * trc_funname[] =
+static const char *trc_funname[] =
 {
     "initApi",
+    "initApiEx",
+    "trcSSSrv",
+    "trcSSLGet",
+    "trcSSLSet",
+    "trcSSLAddEx",
     "freeApi",
     "RegLog",
     "RegDeviceLog",
@@ -6314,6 +6335,10 @@ static const char * trc_funname[] =
     "SetNetworkTimeout",
     "GetNetDevListValidity",
     "SetNetDevListValidity",
+    "GetNextHubRef",
+    "GetHubStrAttr",
+    "GetHubIntAttr",
+    "SetHubIntAttr"
 
 };
 
@@ -6322,10 +6347,10 @@ static const char *dlltracefile = YDLL_TRACE_FILE;
 static void write_line(const char *ptr, int len)
 {
     FILE *f;
-    if (YFOPEN(&f,dlltracefile,"a+") != 0) {
+    if (YFOPEN(&f, dlltracefile, "a+") != 0) {
         return;
     }
-    fwrite(ptr,1,len,f);
+    fwrite(ptr, 1, len, f);
     fclose(f);
 
 }
@@ -6338,7 +6363,7 @@ static void trace_dll(u64 t, char prefix, TRC_FUN trcfun, const char *action)
     if (trc_basetime == 0) {
         trc_basetime = t;
     }
-    int len = YSPRINTF(buffer, 512, "%"FMTu64"%c%s%s\n", (t-trc_basetime), prefix, trc_funname[trcfun], action);
+    int len = YSPRINTF(buffer, 512, "%"FMTu64"%c%s%s\n", (t - trc_basetime), prefix, trc_funname[trcfun], action);
     write_line(buffer, len);
 }
 
@@ -6384,11 +6409,10 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiInitAPIEx(int detect_type, const char *certfil
     return res;
 }
 
-
 YRETCODE YAPI_FUNCTION_EXPORT yapiSetSSLCertificateSrv(const char *certfile, const char *keyfile, char *errmsg)
 {
     YRETCODE res;
-    YDLL_CALL_ENTER(trcSSLEx);
+    YDLL_CALL_ENTER(trcSSSrv);
     res = yapiSetSSLCertificateSrv_internal(certfile, keyfile, errmsg);
     YDLL_CALL_LEAVE(res);
     return res;

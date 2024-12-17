@@ -320,6 +320,10 @@
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls12_client.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls12_server.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_client.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_generic.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_keys.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_server.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\threading.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\timing.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\version.c" />

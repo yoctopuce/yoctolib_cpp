@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwmoutput.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: yocto_pwmoutput.cpp 63324 2024-11-13 09:33:07Z seb $
  *
  *  Implements yFindPwmOutput(), the high-level API for PwmOutput functions
  *
@@ -715,7 +715,7 @@ int YPwmOutput::pulseDurationMove(double ms_target,int ms_duration)
     if (ms_target < 0.0) {
         ms_target = 0.0;
     }
-    newval = YapiWrapper::ysprintf("%dms:%d", (int) floor(ms_target*65536+0.5),ms_duration);
+    newval = YapiWrapper::ysprintf("%dms:%d",(int) floor(ms_target*65536+0.5),ms_duration);
     return this->set_pwmTransition(newval);
 }
 
@@ -740,7 +740,7 @@ int YPwmOutput::dutyCycleMove(double target,int ms_duration)
     if (target > 100.0) {
         target = 100.0;
     }
-    newval = YapiWrapper::ysprintf("%d:%d", (int) floor(target*65536+0.5),ms_duration);
+    newval = YapiWrapper::ysprintf("%d:%d",(int) floor(target*65536+0.5),ms_duration);
     return this->set_pwmTransition(newval);
 }
 
@@ -761,7 +761,7 @@ int YPwmOutput::frequencyMove(double target,int ms_duration)
     if (target < 0.001) {
         target = 0.001;
     }
-    newval = YapiWrapper::ysprintf("%gHz:%d", target,ms_duration);
+    newval = YapiWrapper::ysprintf("%gHz:%d",target,ms_duration);
     return this->set_pwmTransition(newval);
 }
 
@@ -782,7 +782,7 @@ int YPwmOutput::frequencyMove(double target,int ms_duration)
 int YPwmOutput::phaseMove(double target,int ms_duration)
 {
     string newval;
-    newval = YapiWrapper::ysprintf("%gps:%d", target,ms_duration);
+    newval = YapiWrapper::ysprintf("%gps:%d",target,ms_duration);
     return this->set_pwmTransition(newval);
 }
 
@@ -804,7 +804,7 @@ int YPwmOutput::triggerPulsesByDuration(double ms_target,int n_pulses)
     if (ms_target < 0.0) {
         ms_target = 0.0;
     }
-    newval = YapiWrapper::ysprintf("%dms*%d", (int) floor(ms_target*65536+0.5),n_pulses);
+    newval = YapiWrapper::ysprintf("%dms*%d",(int) floor(ms_target*65536+0.5),n_pulses);
     return this->set_pwmTransition(newval);
 }
 
@@ -829,7 +829,7 @@ int YPwmOutput::triggerPulsesByDutyCycle(double target,int n_pulses)
     if (target > 100.0) {
         target = 100.0;
     }
-    newval = YapiWrapper::ysprintf("%d*%d", (int) floor(target*65536+0.5),n_pulses);
+    newval = YapiWrapper::ysprintf("%d*%d",(int) floor(target*65536+0.5),n_pulses);
     return this->set_pwmTransition(newval);
 }
 
@@ -850,7 +850,7 @@ int YPwmOutput::triggerPulsesByFrequency(double target,int n_pulses)
     if (target < 0.001) {
         target = 0.001;
     }
-    newval = YapiWrapper::ysprintf("%gHz*%d", target,n_pulses);
+    newval = YapiWrapper::ysprintf("%gHz*%d",target,n_pulses);
     return this->set_pwmTransition(newval);
 }
 

@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 62588 2024-09-16 07:53:38Z seb $
+#  $Id: GNUmakefile 63653 2024-12-12 09:09:31Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -479,6 +479,10 @@ MBEDTLS_OBJS_STAT = \
 	ssl_tls.o \
 	ssl_tls12_client.o \
 	ssl_tls12_server.o \
+	ssl_tls13_client.o \
+	ssl_tls13_generic.o \
+	ssl_tls13_keys.o \
+	ssl_tls13_server.o \
 	threading.o \
 	timing.o \
 	version.o \
