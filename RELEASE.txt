@@ -1,5 +1,5 @@
-CPPV2 v2.0.63744
+CPPV2 v2.0.63797
 
-- Update Mbed-TLS lib (v3.6.2)
-- Fix network discovery for Windows host with only WiFi interface
-- Better logs verbosity of connection to VirtualHub for Web
+(Misc)- purepython:now use const() for float as well //63791
+(Misc)- ympy_cross:fix Windows compilation //63792
+(cpp)- Add Example for Yocto-Spectral //63787
