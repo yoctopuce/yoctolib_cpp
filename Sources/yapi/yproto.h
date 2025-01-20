@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 62592 2024-09-16 13:00:51Z seb $
+ * $Id: yproto.h 63868 2024-12-23 13:41:20Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -180,24 +180,9 @@ typedef struct {
 /*****************************************************************************
   MEMORY MANAGEMENT FUNCTION:
  ****************************************************************************/
-//#define YSAFE_MEMORY
+
 
 #include "ymemory.h"
-#ifdef YSAFE_MEMORY
-#define yMalloc(size)                   ySafeMalloc(__FILENAME__,__LINE__,size)
-#define yFree(ptr)                      {ySafeFree(__FILENAME__,__LINE__,ptr);ptr=NULL;}
-#define yTracePtr(ptr)                  ySafeTrace(__FILENAME__,__LINE__,ptr)
-#ifndef YMEMORY_ALLOW_MALLOC
-#undef malloc
-#undef free
-#define malloc(size)                    yForbiden_SafeMalloc(size)
-#define free(ptr)                       yForbiden_SafeFree(ptr)
-#endif
-#else
-#define yMalloc(size)                   malloc(size)
-#define yFree(ptr)                      free(ptr)
-#define yTracePtr(ptr)
-#endif
 
 #define yMemset(dst,val,size)           memset(dst,val,size)
 #define yMemcpy(dst,src,size)           memcpy(dst,src,size)

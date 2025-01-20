@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yjni.c 56623 2023-09-20 07:47:56Z seb $
+ * $Id: yjni.c 64136 2025-01-13 15:05:15Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -79,6 +79,21 @@ JNIEXPORT jstring JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_getAPIVersion(
     return (*env)->NewStringUTF(env, version);
 }
 
+/*
+ * Class:     com_yoctopuce_YoctoAPI_YJniWrapper
+ * Method:    getYAPISharedLibraryPath
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_getYAPISharedLibraryPath(JNIEnv *env, jclass thisObj)
+{
+    char buffer[512];
+    char errmsg[YOCTO_ERRMSG_LEN];
+    int len = yapiGetDLLPath(buffer,512, errmsg);
+    if (len > 0) {
+        return (*env)->NewStringUTF(env, buffer);
+    }
+    return (*env)->NewStringUTF(env, "");
+}
 
 /*
  * Class:     com_yoctopuce_YoctoAPI_YJniWrapper
@@ -89,7 +104,7 @@ JNIEXPORT jstring JNICALL Java_com_yoctopuce_YoctoAPI_YJniWrapper_addUdevRule(JN
 {
     char errmsg[YOCTO_ERRMSG_LEN];
     if (yapiAddUdevRulesForYocto(force, errmsg) < 0) {
-        return (*env)->NewStringUTF(env, "errmsg");
+        return (*env)->NewStringUTF(env, errmsg);
     }
     return (*env)->NewStringUTF(env, "");
 }

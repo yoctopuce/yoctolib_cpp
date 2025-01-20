@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 63653 2024-12-12 09:09:31Z seb $
+#  $Id: GNUmakefile 64172 2025-01-15 07:44:31Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -162,7 +162,7 @@ RC = rc
 OPTS_DBG = -g -Wall $(DEF_FLAGS_GCC)
 OPTS_PROD = -g -Wall $(DEF_FLAGS_GCC)
 OPTS_STAT =
-OPTS_DYN = -fPIC
+OPTS_DYN = -fPIC -DGENERATE_DYN
 
 OPTS_JAVA = -fPIC -DYAPI_WITH_JNI -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux -I$(JAVA_HOME)/include/darwin
 ifdef JAVA_HOME
@@ -185,23 +185,23 @@ OPTS_WINARM =
 
 # most compatible ARMEL options, using soft-float
 ifdef TOOLCHAIN_QARM
-OPTS_ARMEL = -I$(STAGING_QARM)/usr/include/ -O2 -mfloat-abi=soft -march=armv5 -marm -DBUILD_ARMEL -DNO_YSSL
+OPTS_ARMEL = -I$(STAGING_QARM)/usr/include/ -O2 -mfloat-abi=soft -march=armv5 -marm -DBUILD_ARMEL -DNO_YSSL -D_GNU_SOURCE
 else
-OPTS_ARMEL = -mfloat-abi=soft -march=armv5 -DBUILD_ARMEL -D_XOPEN_SOURCE=500 -D_BSD_SOURCE -DNO_YSSL
+OPTS_ARMEL = -mfloat-abi=soft -march=armv5 -DBUILD_ARMEL -D_XOPEN_SOURCE=500 -D_BSD_SOURCE -DNO_YSSL -D_GNU_SOURCE
 endif
 ifdef TOOLCHAIN_ARMHF
 # reduced ARMHF options to run properly on raspian-thing, but still be compatible with hard-floats VFP
-OPTS_ARMHF = -I$(STAGING_ARMHF)/usr/include/ $(OPTS_DBG) -mfloat-abi=hard -march=armv6 -marm -DBUILD_ARMHF
+OPTS_ARMHF = -I$(STAGING_ARMHF)/usr/include/ $(OPTS_DBG) -mfloat-abi=hard -march=armv6 -marm -DBUILD_ARMHF -D_GNU_SOURCE
 else
-OPTS_ARMHF = -mfloat-abi=hard -march=armv6 -marm -DBUILD_ARMHF -Wno-psabi
+OPTS_ARMHF = -mfloat-abi=hard -march=armv6 -marm -DBUILD_ARMHF -Wno-psabi -D_GNU_SOURCE
 endif
 ifdef TOOLCHAIN_AARCH64
-OPTS_AARCH64 = -I$(STAGING_AARCH64)/usr/include/ $(OPTS_DBG) -march=native -DBUILD_AARCH64
+OPTS_AARCH64 = -I$(STAGING_AARCH64)/usr/include/ $(OPTS_DBG) -march=native -DBUILD_AARCH64 -D_GNU_SOURCE
 else
-OPTS_AARCH64 = -march=native -DBUILD_AARCH64
+OPTS_AARCH64 = -march=native -DBUILD_AARCH64  -D_GNU_SOURCE
 endif
-OPTS_MIPS = -DCPU_BIG_ENDIAN -I$(MIPS_TARGET_ROOT)/usr/include/ -DNO_YSSL
-OPTS_MIPSEL = -I$(MIPSEL_TARGET_ROOT)/usr/include/ -DNO_YSSL
+OPTS_MIPS = -DCPU_BIG_ENDIAN -I$(MIPS_TARGET_ROOT)/usr/include/ -DNO_YSSL -D_GNU_SOURCE
+OPTS_MIPSEL = -I$(MIPSEL_TARGET_ROOT)/usr/include/ -DNO_YSSL -D_GNU_SOURCE
 
 OPTS_X64 =  -m64 -g -Wall -D_GNU_SOURCE
 OPTS_I386 = -m32 -mpclmul -msse2 -maes -D_GNU_SOURCE -march=i586
@@ -214,25 +214,25 @@ OPTS_OSX32 = -m32
 LINKWITH_WIN32 = "Advapi32.lib" "bcrypt.lib"
 LINKWITH_WIN64 = "Advapi32.lib" "bcrypt.lib"
 LINKWITH_WINARM = "Advapi32.lib" "bcrypt.lib"
-LINKWITH_I386 = -lm -lpthread -lusb-1.0
-LINKWITH_X64 = -lm -lpthread -lusb-1.0
+LINKWITH_I386 = -lm -lpthread -lusb-1.0 -ldl
+LINKWITH_X64 = -lm -lpthread -lusb-1.0 -ldl
 ifdef TOOLCHAIN_QARM
-LINKWITH_ARMEL = -L$(STAGING_QARM)/usr/lib/ -lm -lpthread -lusb-1.0
+LINKWITH_ARMEL = -L$(STAGING_QARM)/usr/lib/ -lm -lpthread -lusb-1.0 -ldl
 else
-LINKWITH_ARMEL = -lm -lpthread -lusb-1.0
+LINKWITH_ARMEL = -lm -lpthread -lusb-1.0 -ldl
 endif
 ifdef TOOLCHAIN_ARMHF
-LINKWITH_ARMHF = -L$(STAGING_ARMHF)/usr/lib/ -lm -lpthread -lusb-1.0
+LINKWITH_ARMHF = -L$(STAGING_ARMHF)/usr/lib/ -lm -lpthread -lusb-1.0 -ldl
 else
-LINKWITH_ARMHF = -lm -lpthread -lusb-1.0
+LINKWITH_ARMHF = -lm -lpthread -lusb-1.0 -ldl
 endif
 ifdef TOOLCHAIN_AARCH64
-LINKWITH_AARCH64 = -L$(STAGING_AARCH64)/usr/lib/ -lm -lpthread -lusb-1.0
+LINKWITH_AARCH64 = -L$(STAGING_AARCH64)/usr/lib/ -lm -lpthread -lusb-1.0 -ldl
 else
 LINKWITH_AARCH64 = -lm -lpthread -lusb-1.0
 endif
-LINKWITH_MIPS = -L$(MIPS_TARGET_ROOT)/usr/lib/ -lm -lpthread -lusb-1.0
-LINKWITH_MIPSEL = -L$(MIPSEL_TARGET_ROOT)/usr/lib/ -lm -lpthread -lusb-1.0
+LINKWITH_MIPS = -L$(MIPS_TARGET_ROOT)/usr/lib/ -lm -lpthread -lusb-1.0 -ldl
+LINKWITH_MIPSEL = -L$(MIPSEL_TARGET_ROOT)/usr/lib/ -lm -lpthread -lusb-1.0 -ldl
 LINKWITH_OSX =
 
 YAPI_LINKWITH_WIN32 = "Advapi32.lib"
@@ -241,22 +241,22 @@ YAPI_LINKWITH_WINARM = "Advapi32.lib"
 YAPI_LINKWITH_I386 = -lpthread -lusb-1.0
 YAPI_LINKWITH_X64 = -lpthread -lusb-1.0
 ifdef TOOLCHAIN_QARM
-YAPI_LINKWITH_ARMEL = -L$(STAGING_QARM)/usr/lib/ -lpthread -lusb-1.0
+YAPI_LINKWITH_ARMEL = -L$(STAGING_QARM)/usr/lib/ -lpthread -lusb-1.0 -ldl
 else
-YAPI_LINKWITH_ARMEL = -lpthread -lusb-1.0
+YAPI_LINKWITH_ARMEL = -lpthread -lusb-1.0 -ldl
 endif
 ifdef TOOLCHAIN_ARMHF
-YAPI_LINKWITH_ARMHF = -L$(STAGING_ARMHF)/usr/lib/    -lpthread -lusb-1.0
+YAPI_LINKWITH_ARMHF = -L$(STAGING_ARMHF)/usr/lib/    -lpthread -lusb-1.0 -ldl
 else
-YAPI_LINKWITH_ARMHF = -lpthread -lusb-1.0
+YAPI_LINKWITH_ARMHF = -lpthread -lusb-1.0 -ldl
 endif
 ifdef TOOLCHAIN_AARCH64
-YAPI_LINKWITH_AARCH64 = -L$(STAGING_AARCH64)/usr/lib/    -lpthread -lusb-1.0
+YAPI_LINKWITH_AARCH64 = -L$(STAGING_AARCH64)/usr/lib/    -lpthread -lusb-1.0 -ldl
 else
-YAPI_LINKWITH_AARCH64 = -lpthread -lusb-1.0
+YAPI_LINKWITH_AARCH64 = -lpthread -lusb-1.0 -ldl
 endif
-YAPI_LINKWITH_MIPS = -L$(MIPS_TARGET_ROOT)/usr/lib/ -lpthread -lusb-1.0
-YAPI_LINKWITH_MIPSEL = -L$(MIPSEL_TARGET_ROOT)/usr/lib/ -lpthread -lusb-1.0
+YAPI_LINKWITH_MIPS = -L$(MIPS_TARGET_ROOT)/usr/lib/ -lpthread -lusb-1.0 -ldl
+YAPI_LINKWITH_MIPSEL = -L$(MIPSEL_TARGET_ROOT)/usr/lib/ -lpthread -lusb-1.0 -ldl
 YAPI_LINKWITH_OSX =
 YAPI_LINKWITH_OSX32 =
 

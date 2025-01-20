@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 63704 2024-12-16 10:05:02Z seb $
+ * $Id: yocto_api.cpp 64239 2025-01-16 10:24:05Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -2767,6 +2767,29 @@ int YAPIContext::GetDeviceListValidity(void)
     int res = 0;
     res = yapiGetNetDevListValidity();
     return res;
+}
+
+/**
+ * Returns the path to the dynamic YAPI library. This function is useful for debugging problems loading the
+ * dynamic library YAPI:: This function is supported by the C#, Python and VB languages. The other
+ * libraries return an
+ * empty string.
+ *
+ * @return a string containing the path of the YAPI dynamic library.
+ */
+string YAPIContext::GetYAPISharedLibraryPath(void)
+{
+    char errmsg[YOCTO_ERRMSG_LEN];
+    char smallbuff[4096];
+    int res = 0;
+    string path;
+    res = yapiGetDLLPath(smallbuff, 4096, errmsg);
+    if (res < 0) {
+        path = "error:" + string(errmsg);
+    } else {
+        path = string(smallbuff, res);
+    }
+    return path;
 }
 
 /**

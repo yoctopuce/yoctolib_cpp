@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_colorled.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: yocto_colorled.cpp 64082 2025-01-07 09:41:13Z seb $
  *
  *  Implements yFindColorLed(), the high-level API for ColorLed functions
  *
@@ -381,8 +381,9 @@ int YColorLed::get_rgbColorAtPowerOn(void)
 
 /**
  * Changes the color that the LED displays by default when the module is turned on.
- * Remember to call the saveToFlash()
- * method of the module if the modification must be kept.
+ * Remember to call the saveLedsConfigAtPowerOn() method of the module if the modification must be kept.
+ * Note: for the original modules Yocto-Color (version 1) et Yocto-PowerColor, the  saveToFlash()
+ * method must be used instead.
  *
  * @param newval : an integer corresponding to the color that the LED displays by default when the
  * module is turned on
@@ -692,6 +693,18 @@ int YColorLed::stopBlinkSeq(void)
 int YColorLed::resetBlinkSeq(void)
 {
     return this->sendCommand("Z");
+}
+
+/**
+ * Saves the LEDs power-on configuration.  Warning: this method is not supported by
+ * Yocto-Color (version 1) and Yocto-PowerColor modules. For these devices, the saveToFlash()
+ * method of the module must be used instead.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YColorLed::saveLedsConfigAtPowerOn(void)
+{
+    return this->sendCommand("W");
 }
 
 YColorLed *YColorLed::nextColorLed(void)

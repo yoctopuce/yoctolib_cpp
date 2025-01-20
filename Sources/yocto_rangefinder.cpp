@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_rangefinder.cpp 62193 2024-08-19 12:20:58Z seb $
+ *  $Id: yocto_rangefinder.cpp 64098 2025-01-08 10:59:39Z seb $
  *
  *  Implements yFindRangeFinder(), the high-level API for RangeFinder functions
  *
@@ -535,7 +535,7 @@ double YRangeFinder::get_hardwareCalibrationTemperature(void)
  * Triggers a sensor calibration according to the current ambient temperature. That
  * calibration process needs no physical interaction with the sensor. It is performed
  * automatically at device startup, but it is recommended to start it again when the
- * temperature delta since the latest calibration exceeds 8°C.
+ * temperature delta since the latest calibration exceeds 8 degrees Celsius.
  *
  * @return YAPI::SUCCESS if the call succeeds.
  *         On failure, throws an exception or returns a negative error code.

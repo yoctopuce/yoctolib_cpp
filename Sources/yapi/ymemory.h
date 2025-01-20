@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ymemory.h 61107 2024-05-24 07:59:31Z mvuilleu $
+ * $Id: ymemory.h 63958 2024-12-29 13:51:29Z seb $
  *
  * Basic memory check function to prevent memory leak
  *
@@ -39,12 +39,19 @@
 
 #ifndef YMEMORY_H
 #define YMEMORY_H
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 #include "ydef.h"
 #include "ydef_private.h"
 
 /*****************************************************************************
   MEMORY MANAGEMENT FUNCTION:
  ****************************************************************************/
+
+//#define YSAFE_MEMORY
 
 #ifdef FREERTOS_API
 
@@ -62,24 +69,15 @@
     #define free(ptr)                       yForbiden_free(ptr)
     #define calloc(nbelm, size)             yForbiden_calloc(nbelm, size)
 #else
-
-
+  
     #ifdef YSAFE_MEMORY
         void  ySafeMemoryInit(u32 nbentry);
-        void* ySafeMalloc(const char *file,u32 line,u32 size);
-        void  ySafeFree(const char *file,u32 line,void *ptr);
-        void  ySafeTrace(const char *file,u32 line,void *ptr);
+        void* ySafeMalloc(const char *file, u32 line, u32 size);
+        void  ySafeFree(const char *file, u32 line, void *ptr);
+        void  ySafeTrace(const char *file, u32 line, void *ptr);
         void  ySafeMemoryDump(void *discard);
         void  ySafeMemoryStop(void);
-    #else
-        #define ySafeMemoryInit(nbentry) {}
-        #define ySafeMemoryDump(discard) {}
-        #define ySafeMemoryStop() {}
-    #endif
 
-    //#define YSAFE_MEMORY
-
-    #ifdef YSAFE_MEMORY
         #define yMalloc(size)                   ySafeMalloc(__FILENAME__,__LINE__,size)
         #define yFree(ptr)                      {ySafeFree(__FILENAME__,__LINE__,ptr);ptr=NULL;}
         #define yTracePtr(ptr)                  ySafeTrace(__FILENAME__,__LINE__,ptr)
@@ -90,11 +88,24 @@
             #define free(ptr)                       yForbiden_free(ptr)
         #endif
     #else
+#ifdef WINDOWS_API
+#ifdef YAPI_IN_YDEVICE
+        #define yMalloc(size)                   malloc(size)
+        #define yFree(ptr)                      free(ptr)
+#else
+        #define yMalloc(size)                   GlobalAlloc(GMEM_FIXED, size)
+        #define yFree(ptr)                      GlobalFree(ptr)
+#endif
+#else        
         #include <stdlib.h>
         #define yMalloc(size)                   malloc(size)
         #define yFree(ptr)                      free(ptr)
+#endif
         #define yTracePtr(ptr)
-    #endif
+        #define ySafeMemoryInit(nbentry) {}
+        #define ySafeMemoryDump(discard) {}
+        #define ySafeMemoryStop() {}
+#endif
 
     #define yMemset(dst,val,size)           memset(dst,val,size)
     #define yMemcpy(dst,src,size)           memcpy(dst,src,size)
@@ -109,8 +120,15 @@
     #endif
 #endif
 
+#ifdef YSAFE_MEMORY
+char* ySafestrdup(const char *file, u32 line, const char* src);
+char* ySafestrndup(const char *file, u32 line, const char* src, unsigned len);
+#define ystrdup_s(ptr)           ySafestrdup(__FILENAME__,__LINE__,ptr)
+#define ystrndup_s(ptr,len)      ySafestrndup(__FILENAME__,__LINE__,ptr, len)
+#else
 char* ystrdup_s(const char* src);
 char* ystrndup_s(const char* src, unsigned len);
+#endif
 YRETCODE ystrcpy_s(char* dst, unsigned dstsize, const char* src);
 YRETCODE ystrncpy_s(char* dst, unsigned dstsize, const char* src, unsigned len);
 YRETCODE ystrcat_s(char* dst, unsigned dstsize, const char* src);
@@ -219,5 +237,9 @@ int ymemfind(const u8* haystack, u32 haystack_len, const u8* needle, u32 needle_
         #define ystrdup(str)                        ystrdup_s(str)
     #endif
 
+#endif
+
+#ifdef  __cplusplus
+}
 #endif
 #endif

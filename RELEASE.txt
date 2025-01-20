@@ -1,5 +1,7 @@
-CPPV2 v2.0.63797
+CPPV2 v2.0.64286
 
-(Misc)- purepython:now use const() for float as well //63791
-(Misc)- ympy_cross:fix Windows compilation //63792
-(cpp)- Add Example for Yocto-Spectral //63787
+- Add YAPI::GetYAPISharedLibraryPath Method
+- Use GlobalAlloc on Windows instead of malloc
+- Remove exotic char form YCellular class
+- Fix some memory leak
+- Fix YHub->isReadOnly() result if connected as admin on a protected hub.

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef_private.h 62135 2024-08-12 07:37:33Z seb $
+ * $Id: ydef_private.h 64144 2025-01-14 08:13:07Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *

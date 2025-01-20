@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 62987 2024-10-15 09:17:49Z seb $
+ * $Id: yapi.c 64172 2025-01-15 07:44:31Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -36,7 +36,6 @@
  *  WARRANTY, OR OTHERWISE.
  *
  *********************************************************************/
-
 #include "ydef_private.h"
 #define __FILE_ID__     MK_FILEID('Y','A','P')
 #define __FILENAME__   "yapi"
@@ -60,6 +59,7 @@
 #include <time.h>
 #else
 #include <sys/time.h>
+#include <dlfcn.h>
 #endif
 
 #ifdef LINUX_API
@@ -2539,6 +2539,7 @@ int LoadInfoJson(HubSt *hub, u32 mstimeout, char *errmsg)
                 if (hub->url.proto == PROTO_AUTO) {
                     hub->url.proto = PROTO_LEGACY;
                 }
+                yFree(info_data);
                 return res;
             }
 #ifdef TRACE_NET_HUB
@@ -2556,6 +2557,7 @@ int LoadInfoJson(HubSt *hub, u32 mstimeout, char *errmsg)
                 int use_pure_http;
             } HubInfoSt;
 #endif
+            yFree(info_data);
         } else if (res == YAPI_SSL_UNK_CERT) {
             return res;
         } else {
@@ -2738,6 +2740,7 @@ static void unregisterNetHub(HubSt *refhub)
             break;
         }
     }
+    yFreeParsedURL(&refhub->url);
     yapiFreeHub(refhub);
 }
 
@@ -4078,7 +4081,19 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetDLLPath(char *path, int pathsize, char *err
         return YERR(YAPI_IO_ERROR);
     }
 #else
+#if defined(_GNU_SOURCE) && defined(GENERATE_DYN)
+    Dl_info infos;
+
+    if(dladdr((void*)"yapiRegisterHub", &infos) == 0)
+    {
+        YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "dladdr failed: %s", dlerror());
+        return YAPI_IO_ERROR;
+    }
+
+    return YSPRINTF(path, pathsize, infos.dli_fname);
+#else
     return YERR(YAPI_NOT_SUPPORTED);
+#endif
 #endif
 }
 
@@ -4145,7 +4160,6 @@ static YRETCODE yapiRegisterHubEx(const char *url, int checkacces, char *errmsg)
             return YAPI_SUCCESS;
         }
         yLeaveCriticalSection(&yContext->enum_cs);
-
     retry:
         hubst = yapiAllocHub(urlbuff, YctxNetworkTimeout, &res, errmsg);
         if (hubst == NULL) {
@@ -4395,7 +4409,7 @@ static int yapiGetHubIntAttr_internal(int ref, const char *attrname)
             return hub->netTimeout;
         }
         if (YSTRCMP(attrname, "isReadOnly") == 0) {
-            return hub->writeProtected;
+            return hub->writeProtected && !hub->rw_access;
         }
         if (YSTRCMP(attrname, "isOnline") == 0) {
             return isNotificationConnectionON(hub);

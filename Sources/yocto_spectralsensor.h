@@ -80,6 +80,7 @@ typedef enum {
 #define Y_NEARRAL2_INVALID              (YAPI_INVALID_STRING)
 #define Y_NEARRAL3_INVALID              (YAPI_INVALID_STRING)
 #define Y_NEARHTMLCOLOR_INVALID         (YAPI_INVALID_STRING)
+#define Y_NEARSIMPLECOLOR_INVALID       (YAPI_INVALID_STRING)
 #define Y_LEDCURRENTATPOWERON_INVALID   (YAPI_INVALID_INT)
 #define Y_INTEGRATIONTIMEATPOWERON_INVALID (YAPI_INVALID_INT)
 #define Y_GAINATPOWERON_INVALID         (YAPI_INVALID_INT)
@@ -115,6 +116,7 @@ protected:
     string          _nearRAL2;
     string          _nearRAL3;
     string          _nearHTMLColor;
+    string          _nearSimpleColor;
     int             _ledCurrentAtPowerOn;
     int             _integrationTimeAtPowerOn;
     int             _gainAtPowerOn;
@@ -150,6 +152,7 @@ public:
     static const string NEARRAL2_INVALID;
     static const string NEARRAL3_INVALID;
     static const string NEARHTMLCOLOR_INVALID;
+    static const string NEARSIMPLECOLOR_INVALID;
     static const int LEDCURRENTATPOWERON_INVALID = YAPI_INVALID_INT;
     static const int INTEGRATIONTIMEATPOWERON_INVALID = YAPI_INVALID_INT;
     static const int GAINATPOWERON_INVALID = YAPI_INVALID_INT;
@@ -170,9 +173,7 @@ public:
 
     /**
      * Changes the luminosity of the module leds. The parameter is a
-     * value between 0 and 100.
-     * Remember to call the saveToFlash() method of the module if the
-     * modification must be kept.
+     * value between 0 and 254.
      *
      * @param newval : an integer corresponding to the luminosity of the module leds
      *
@@ -202,7 +203,6 @@ public:
     /**
      * Returns the resolution of the measured values. The resolution corresponds to the numerical precision
      * of the measures, which is not always the same as the actual precision of the sensor.
-     * Remember to call the saveToFlash() method of the module if the modification must be kept.
      *
      * @return a floating point number corresponding to the resolution of the measured values
      *
@@ -273,9 +273,10 @@ public:
     { return this->set_gain(newval); }
 
     /**
-     * Return the model for the estimation colors.
+     * Returns the model for color estimation.
      *
-     * @return either YSpectralSensor::ESTIMATIONMODEL_REFLECTION or YSpectralSensor::ESTIMATIONMODEL_EMISSION
+     * @return either YSpectralSensor::ESTIMATIONMODEL_REFLECTION or
+     * YSpectralSensor::ESTIMATIONMODEL_EMISSION, according to the model for color estimation
      *
      * On failure, throws an exception or returns YSpectralSensor::ESTIMATIONMODEL_INVALID.
      */
@@ -285,9 +286,11 @@ public:
     { return this->get_estimationModel(); }
 
     /**
-     * Change the model for the estimation colors.
+     * Changes the model for color estimation.
+     * Remember to call the saveToFlash() method of the module if the modification must be kept.
      *
-     * @param newval : either YSpectralSensor::ESTIMATIONMODEL_REFLECTION or YSpectralSensor::ESTIMATIONMODEL_EMISSION
+     * @param newval : either YSpectralSensor::ESTIMATIONMODEL_REFLECTION or
+     * YSpectralSensor::ESTIMATIONMODEL_EMISSION, according to the model for color estimation
      *
      * @return YAPI::SUCCESS if the call succeeds.
      *
@@ -311,11 +314,11 @@ public:
     { return this->get_saturation(); }
 
     /**
-     * Returns the estimated color in RGB format.
+     * Returns the estimated color in RGB format (0xRRGGBB).
      * This method retrieves the estimated color values
      * and returns them as an RGB object or structure.
      *
-     * @return an integer corresponding to the estimated color in RGB format
+     * @return an integer corresponding to the estimated color in RGB format (0xRRGGBB)
      *
      * On failure, throws an exception or returns YSpectralSensor::ESTIMATEDRGB_INVALID.
      */
@@ -325,11 +328,11 @@ public:
     { return this->get_estimatedRGB(); }
 
     /**
-     * Returns the estimated color in HSL format.
+     * Returns the estimated color in HSL (Hue, Saturation, Lightness) format.
      * This method retrieves the estimated color values
      * and returns them as an HSL object or structure.
      *
-     * @return an integer corresponding to the estimated color in HSL format
+     * @return an integer corresponding to the estimated color in HSL (Hue, Saturation, Lightness) format
      *
      * On failure, throws an exception or returns YSpectralSensor::ESTIMATEDHSL_INVALID.
      */
@@ -386,6 +389,20 @@ public:
     inline string       nearHTMLColor(void)
     { return this->get_nearHTMLColor(); }
 
+    /**
+     * Returns the estimated color.
+     * This method retrieves the estimated color values
+     * and returns them as the color name.
+     *
+     * @return a string corresponding to the estimated color
+     *
+     * On failure, throws an exception or returns YSpectralSensor::NEARSIMPLECOLOR_INVALID.
+     */
+    string              get_nearSimpleColor(void);
+
+    inline string       nearSimpleColor(void)
+    { return this->get_nearSimpleColor(); }
+
     int                 get_ledCurrentAtPowerOn(void);
 
     inline int          ledCurrentAtPowerOn(void)
@@ -407,14 +424,6 @@ public:
     inline int      setLedCurrentAtPowerOn(int newval)
     { return this->set_ledCurrentAtPowerOn(newval); }
 
-    /**
-     * Retrieves the integration time at power-on.
-     * This method updates the power-on integration time value.
-     *
-     * @return an integer
-     *
-     * On failure, throws an exception or returns YSpectralSensor::INTEGRATIONTIMEATPOWERON_INVALID.
-     */
     int                 get_integrationTimeAtPowerOn(void);
 
     inline int          integrationTimeAtPowerOn(void)

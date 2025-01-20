@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 63787 2024-12-19 08:58:54Z seb $
+ *  $Id: main.cpp 63864 2024-12-23 11:55:34Z tiago $
  *
  *  An example that show how to use a  Yocto-Spectral
  *
@@ -67,7 +67,8 @@ int main(int argc, const char * argv[])
   spectralSensor->set_integrationTime(150);
   spectralSensor->set_ledCurrent(6);
 
-  cout << "Current near estimated HTML color: " << spectralSensor->get_nearHTMLColor() << endl;
+  cout << "Near color: " << spectralSensor->get_nearSimpleColor() << endl;
+  //cout << "Color HEX: " << spectralSensor->get_estimatedRGB() << endl;
   u64 now = YAPI::GetTickCount();
   while (YAPI::GetTickCount() - now < 3000) {
     // wait 3 sec to show the message

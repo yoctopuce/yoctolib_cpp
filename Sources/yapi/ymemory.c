@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ymemory.c 61717 2024-06-28 10:02:10Z seb $
+ * $Id: ymemory.c 63869 2024-12-23 13:49:56Z seb $
  *
  * Basic memory check function to prevent memory leak
  *
@@ -88,7 +88,7 @@ static void ymemdumpentry(YMEM_ENTRY *entry, const char *prefix)
 }
 
 
-static void ymemdump(void)
+static void ymemdump(const void *discard)
 {
     u32 i;
     YMEM_ENTRY *entry;
@@ -98,7 +98,7 @@ static void ymemdump(void)
     dbglog("Malloc:\n");
     total = count = 0;
     for (i = 0, entry = yMap; i < yMapUsed; i++, entry++) {
-        if (entry->state == YMEM_MALLOCED) {
+        if (entry->state == YMEM_MALLOCED && discard != entry->ptr) {
             ymemdumpentry(entry, "");
             //dbglog("%s : %d of %db (0x%x)\n", entry->malloc_file, entry->malloc_line, entry->malloc_size, entry->ptr);
             total += entry->malloc_size;
@@ -119,8 +119,8 @@ static void ymemdump(void)
 
 void ySafeMemoryInit(u32 nbentry)
 {
-    YASSERT(yMap==NULL);
-    YASSERT(yMapSize==0);
+    YASSERT(yMap==NULL, yMap);
+    YASSERT(yMapSize==0, yMapSize);
     yInitializeCriticalSection(&yMapCS);
     yEnterCriticalSection(&yMapCS);
     yMap = malloc(nbentry * sizeof(YMEM_ENTRY));
@@ -150,7 +150,7 @@ void* ySafeMalloc(const char *file, u32 line, u32 size)
         }
         if (i == yMapSize) {
             dbglog("No more entry available for ySafeMalloc\n\n");
-            ymemdump();
+            ymemdump(NULL);
             yLeaveCriticalSection(&yMapCS);
             return NULL;
         }
@@ -160,7 +160,7 @@ void* ySafeMalloc(const char *file, u32 line, u32 size)
     ptr = malloc(size);
     if (!ptr) {
         dbglog("No more memory available (unable to allocate %d bytes)\n\n", size);
-        ymemdump();
+        ymemdump(NULL);
         yLeaveCriticalSection(&yMapCS);
         return NULL;
     }
@@ -185,21 +185,21 @@ void ySafeFree(const char *file, u32 line, void *ptr)
 
     yEnterCriticalSection(&yMapCS);
     for (i = 0, entry = yMap; i < yMapUsed; i++, entry++) {
-        YASSERT(entry->state != YMEM_NOT_USED);
+        YASSERT(entry->state != YMEM_NOT_USED, entry->state);
         if (entry->ptr == ptr)
             break;
     }
     if (i == yMapUsed) {
         dbglog("Free of unallocated pointer 0x%x at %s:%d\n\n", ptr, file, line);
-        ymemdump();
-        YASSERT(0);
+        ymemdump(NULL);
+        YPANIC;
     }
     if (entry->state == YMEM_FREED) {
         dbglog("Free of already freed pointer (0x%x) at %s:%d\n", ptr, file, line);
         dbglog("was allocated at %s:%d size =%d freed at %s:%d\n\n",
                entry->malloc_file, entry->malloc_line, entry->malloc_size, entry->free_file, entry->free_line);
-        ymemdump();
-        YASSERT(0);
+        ymemdump(NULL);
+        YPANIC;
     }
     free(entry->ptr);
     entry->free_file = file;
@@ -217,21 +217,21 @@ void ySafeTrace(const char *file, u32 line, void *ptr)
 
     yEnterCriticalSection(&yMapCS);
     for (i = 0, entry = yMap; i < yMapUsed; i++, entry++) {
-        YASSERT(entry->state != YMEM_NOT_USED);
+        YASSERT(entry->state != YMEM_NOT_USED, entry->state);
         if (entry->ptr == ptr)
             break;
     }
     if (i == yMapUsed) {
         dbglog("Update trace of unallocated pointer 0x%x at %s:%d\n\n", ptr, file, line);
-        ymemdump();
-        YASSERT(0);
+        ymemdump(NULL);
+        YPANIC;
     }
     if (entry->state == YMEM_FREED) {
         dbglog("Update trace of already freed pointer (0x%x) at %s:%d\n", ptr, file, line);
         dbglog("was allocated at %s:%d size =%d freed at %s:%d\n\n",
                entry->malloc_file, entry->malloc_line, entry->malloc_size, entry->free_file, entry->free_line);
-        ymemdump();
-        YASSERT(0);
+        ymemdump(NULL);
+        YPANIC;
     }
     ymemdumpentry(entry, "trace");
     entry->malloc_file = file;
@@ -251,7 +251,7 @@ void ySafeMemoryDump(void *discard)
         }
     }
     if (i < yMapUsed) {
-        ymemdump();
+        ymemdump(discard);
     } else {
         dbglog("No memory leak detected\n");
     }
@@ -284,11 +284,26 @@ YRETCODE ystrcpy_s(char *dst, unsigned dstsize, const char *src)
 }
 
 #ifndef EMBEDDED_API
-
+#ifdef YSAFE_MEMORY
+char* ySafestrdup(const char *file, u32 line, const char* src)
+{
+    int len = (int)strlen(src);
+    char *tmp = ySafeMalloc(file,line, len + 1);
+    memcpy(tmp, src, len + 1);
+    return tmp;
+}
+char* ySafestrndup(const char *file, u32 line, const char* src, unsigned len)
+{
+    char *tmp = ySafeMalloc(file, line, len + 1);
+    memcpy(tmp, src, len);
+    tmp[len] = 0;
+    return tmp;
+}
+#else
 char* ystrdup_s(const char *src)
 {
     int len = (int)strlen(src);
-    char *tmp = yMalloc(len+1);
+    char *tmp = yMalloc(len + 1);
     memcpy(tmp, src, len + 1);
     return tmp;
 }
@@ -300,6 +315,7 @@ char* ystrndup_s(const char *src, unsigned len)
     tmp[len] = 0;
     return tmp;
 }
+#endif
 #endif
 
 YRETCODE ystrcat_s(char *dst, unsigned dstsize, const char *src)

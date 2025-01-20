@@ -1437,7 +1437,7 @@ int YRfidReader::tagWriteHex(string tagId,int firstBlock,string hexString,YRfidO
  * Writes data provided as an ASCII string to an RFID tag memory.
  * The write operation may span accross multiple blocks if the
  * number of bytes to write is larger than the RFID tag block size.
- * Note that only the characters présent  in  the provided string
+ * Note that only the characters present in the provided string
  * will be written, there is no notion of string length. If your
  * string data have variable length, you'll have to encode the
  * string length yourself, with a terminal zero for instannce.

@@ -215,9 +215,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\main.cpp" />
-    <ClCompile Include="..\..\..\Sources\yocto_spectralchannel.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_spectralsensor.cpp" />
+    <ClCompile Include="..\main.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_api.cpp" />
     <ClCompile Include="..\..\..\Sources\yapi\yapi.c" />
     <ClCompile Include="..\..\..\Sources\yapi\yfifo.c" />
@@ -332,11 +331,8 @@
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509_create.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509_crl.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509_crt.c" />
-
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Sources\yocto_spectralchannel.h" />
-    <ClInclude Include="..\..\..\Sources\yocto_spectralsensor.h" />
     <ClInclude Include="..\..\..\Sources\yocto_api.h" />
     <ClInclude Include="..\..\..\Sources\yapi\yapi.h" />
     <ClInclude Include="..\..\..\Sources\yapi\ydef.h" />
@@ -404,7 +400,7 @@
     <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\ssl_misc.h" />
     <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_invasive.h" />
     <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_keys.h" />
-
+    <ClInclude Include="..\..\..\Sources\yocto_spectralsensor.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

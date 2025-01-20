@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 63464 2024-11-25 13:48:09Z seb $
+ * $Id: yocto_api.h 64192 2025-01-15 09:29:03Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -524,6 +524,16 @@ public:
     virtual int         GetDeviceListValidity(void);
 
     /**
+     * Returns the path to the dynamic YAPI library. This function is useful for debugging problems loading the
+     * dynamic library YAPI:: This function is supported by the C#, Python and VB languages. The other
+     * libraries return an
+     * empty string.
+     *
+     * @return a string containing the path of the YAPI dynamic library.
+     */
+    virtual string      GetYAPISharedLibraryPath(void);
+
+    /**
      * Adds a UDEV rule which authorizes all users to access Yoctopuce modules
      * connected to the USB ports. This function works only under Linux. The process that
      * calls this method must have root privileges because this method changes the Linux configuration.
@@ -738,7 +748,7 @@ public:
     static const u32 NO_TRUSTED_CA_CHECK   = 1;       // Disables certificate checking
     static const u32 NO_EXPIRATION_CHECK   = 2;       // Disables certificate expiration date checking
     static const u32 NO_HOSTNAME_CHECK     = 4;       // Disable hostname checking
-    static const u32 LEGACY                = 8;       // Allow non secure connection (similar to v1.10)
+    static const u32 LEGACY                = 8;       // Allow non-secure connection (similar to v1.10)
 
 //--- (end of generated code: YFunction return codes)
 
@@ -1094,6 +1104,22 @@ public:
             YAPI::InitAPI(0, errmsg);
         }
         return YAPI::_yapiContext.GetDeviceListValidity();
+    }
+    /**
+     * Returns the path to the dynamic YAPI library. This function is useful for debugging problems loading the
+     * dynamic library YAPI:: This function is supported by the C#, Python and VB languages. The other
+     * libraries return an
+     * empty string.
+     *
+     * @return a string containing the path of the YAPI dynamic library.
+     */
+    inline static string GetYAPISharedLibraryPath(void)
+    {
+        if (!YAPI::_apiInitialized) {
+            string errmsg;
+            YAPI::InitAPI(0, errmsg);
+        }
+        return YAPI::_yapiContext.GetYAPISharedLibraryPath();
     }
     /**
      * Adds a UDEV rule which authorizes all users to access Yoctopuce modules

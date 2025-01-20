@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_i2cport.cpp 63464 2024-11-25 13:48:09Z seb $
+ *  $Id: yocto_i2cport.cpp 64098 2025-01-08 10:59:39Z seb $
  *
  *  Implements yFindI2cPort(), the high-level API for I2cPort functions
  *
@@ -1465,8 +1465,7 @@ int YI2cPort::writeStr(string codes)
 }
 
 /**
- * Sends a text-encoded I2C code stream to the I2C bus, and terminate
- * the message en relâchant le bus.
+ * Sends a text-encoded I2C code stream to the I2C bus, and release the bus.
  * An I2C code stream is a string made of hexadecimal data bytes,
  * but that may also include the I2C state transitions code:
  * "{S}" to emit a start condition,
