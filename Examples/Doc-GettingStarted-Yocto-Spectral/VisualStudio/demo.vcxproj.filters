@@ -2,6 +2,12 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_colorsensor.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_spectralchannel.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\Sources\yocto_api.cpp">
       <Filter>Yoctopuce</Filter>
     </ClCompile>
@@ -344,11 +350,15 @@
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509_crt.c">
       <Filter>Yoctopuce\yapi\MbedTLS</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Sources\yocto_spectralsensor.cpp">
-      <Filter>Yoctopuce</Filter>
-    </ClCompile>
+
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\Sources\yocto_colorsensor.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_spectralchannel.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\Sources\yocto_api.h">
       <Filter>Yoctopuce</Filter>
     </ClInclude>
@@ -550,9 +560,7 @@
     <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_keys.h">
       <Filter>Yoctopuce\yapi\MbedTLS</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Sources\yocto_spectralsensor.h">
-      <Filter>Yoctopuce</Filter>
-    </ClInclude>
+
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Yoctopuce">
@@ -564,5 +572,6 @@
     <Filter Include="Yoctopuce\yapi\MbedTLS">
       <UniqueIdentifier>{2f2ae26b-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
     </Filter>
+
   </ItemGroup>
 </Project>

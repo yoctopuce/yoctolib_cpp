@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupmonitor.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: svn_id $
  *
  *  Implements yFindWakeUpMonitor(), the high-level API for WakeUpMonitor functions
  *
@@ -270,8 +270,8 @@ int YWakeUpMonitor::set_nextWakeUp(s64 newval)
  *
  * @return a value among YWakeUpMonitor::WAKEUPREASON_USBPOWER, YWakeUpMonitor::WAKEUPREASON_EXTPOWER,
  * YWakeUpMonitor::WAKEUPREASON_ENDOFSLEEP, YWakeUpMonitor::WAKEUPREASON_EXTSIG1,
- * YWakeUpMonitor::WAKEUPREASON_SCHEDULE1 and YWakeUpMonitor::WAKEUPREASON_SCHEDULE2 corresponding to
- * the latest wake up reason
+ * YWakeUpMonitor::WAKEUPREASON_SCHEDULE1, YWakeUpMonitor::WAKEUPREASON_SCHEDULE2 and
+ * YWakeUpMonitor::WAKEUPREASON_SCHEDULE3 corresponding to the latest wake up reason
  *
  * On failure, throws an exception or returns YWakeUpMonitor::WAKEUPREASON_INVALID.
  */

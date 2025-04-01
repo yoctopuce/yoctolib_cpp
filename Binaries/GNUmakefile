@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 64172 2025-01-15 07:44:31Z seb $
+#  $Id: GNUmakefile 65244 2025-03-21 06:47:51Z mvuilleu $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -325,6 +325,7 @@ YOCTO_API_OBJS_STAT = yocto_api.o\
 	yocto_cellular.o \
 	yocto_colorled.o \
 	yocto_colorledcluster.o \
+	yocto_colorsensor.o \
 	yocto_compass.o \
 	yocto_current.o \
 	yocto_currentloopoutput.o \
@@ -374,7 +375,6 @@ YOCTO_API_OBJS_STAT = yocto_api.o\
 	yocto_serialport.o \
 	yocto_servo.o \
 	yocto_spectralchannel.o \
-	yocto_spectralsensor.o \
 	yocto_spiport.o \
 	yocto_steppermotor.o \
 	yocto_temperature.o \

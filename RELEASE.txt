@@ -1,7 +1,4 @@
-CPPV2 v2.0.64286
+CPPV2 v2.0.65451
 
-- Add YAPI::GetYAPISharedLibraryPath Method
-- Use GlobalAlloc on Windows instead of malloc
-- Remove exotic char form YCellular class
-- Fix some memory leak
-- Fix YHub->isReadOnly() result if connected as admin on a protected hub.
+- Add ColorSensor class
+- Fix the project name in some CMakeLists.txt files

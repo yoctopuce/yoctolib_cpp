@@ -1,19 +1,19 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 63864 2024-12-23 11:55:34Z tiago $
+ *  $Id: main.cpp 65287 2025-03-24 13:18:15Z seb $
  *
- *  An example that show how to use a  Yocto-Spectral
+ *  An example that shows how to use a  Yocto-Spectral
  *
  *  You can find more information on our web site:
  *   Yocto-Spectral documentation:
  *      https://www.yoctopuce.com/EN/products/yocto-spectral/doc.html
- *   C++ V2 API Reference:
+ *   C++ API Reference:
  *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
  *
  *********************************************************************/
 
 #include "yocto_api.h"
-#include "yocto_spectralsensor.h"
+#include "yocto_colorsensor.h"
 #include <iostream>
 #include <stdlib.h>
 
@@ -35,7 +35,7 @@ int main(int argc, const char * argv[])
 {
   string errmsg;
   string target;
-  YSpectralSensor *spectralSensor;
+  YColorSensor *colorSensor;
 
   if (argc < 2) {
     usage();
@@ -49,29 +49,29 @@ int main(int argc, const char * argv[])
   }
 
   if (target == "any") {
-      spectralSensor = YSpectralSensor::FirstSpectralSensor();
-    if (spectralSensor == NULL) {
+      colorSensor = YColorSensor::FirstColorSensor();
+    if (colorSensor == NULL) {
       cerr << "No module connected (check USB cable)" << endl;
       return 1;
     }
   } else {
     target = (string) argv[1];
-    spectralSensor = YSpectralSensor::FindSpectralSensor(target + ".spectralSensor");
-    if (!spectralSensor->isOnline()) {
+    colorSensor = YColorSensor::FindColorSensor(target + ".colorSensor");
+    if (!colorSensor->isOnline()) {
       cerr << "Module not connected (check USB cable)" << endl;
       return 1;
     }
   }
   // sample code configure Yocto-Spectral
-  spectralSensor->set_gain(6);
-  spectralSensor->set_integrationTime(150);
-  spectralSensor->set_ledCurrent(6);
-
-  cout << "Near color: " << spectralSensor->get_nearSimpleColor() << endl;
-  //cout << "Color HEX: " << spectralSensor->get_estimatedRGB() << endl;
-  u64 now = YAPI::GetTickCount();
-  while (YAPI::GetTickCount() - now < 3000) {
-    // wait 3 sec to show the message
+  colorSensor->set_workingMode(Y_WORKINGMODE_AUTO); // Set Working Mode Auto
+  colorSensor->set_estimationModel(Y_ESTIMATIONMODEL_REFLECTION); // Set Prediction Model Reflexion
+  cout << "Press Enter to stop..." << endl;
+  while (colorSensor->isOnline()) {
+	  cout << "Near color: " << colorSensor->get_nearSimpleColor() << endl;
+	  cout << "RGB HEX: " << hex << colorSensor->get_estimatedRGB() << endl;
+	  cout << "------------------------------------" << endl;
+      cout << "  (press Ctrl-C to exit)" << endl;
+      YAPI::Sleep(2000, errmsg);
   }
 
   YAPI::FreeAPI();

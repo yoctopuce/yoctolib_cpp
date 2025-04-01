@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_audioout.h 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: svn_id $
  *
  *  Declares yFindAudioOut(), the high-level API for AudioOut functions
  *

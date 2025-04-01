@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_poweroutput.h 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: svn_id $
  *
  *  Declares yFindPowerOutput(), the high-level API for PowerOutput functions
  *

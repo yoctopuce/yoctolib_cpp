@@ -46,16 +46,16 @@
          <Add option="-fexceptions" />
       </Compiler>
       <Unit filename="../main.cpp" />
+      <Unit filename="../../../Sources/yocto_colorsensor.cpp"></Unit>
+         <Option virtualFolder="Yoctopuce" />
+      </Unit>
+      <Unit filename="../../../Sources/yocto_colorsensor.h"></Unit>
+         <Option virtualFolder="Yoctopuce" />
+      </Unit>
       <Unit filename="../../../Sources/yocto_spectralchannel.cpp"></Unit>
          <Option virtualFolder="Yoctopuce" />
       </Unit>
       <Unit filename="../../../Sources/yocto_spectralchannel.h"></Unit>
-         <Option virtualFolder="Yoctopuce" />
-      </Unit>
-      <Unit filename="../../../Sources/yocto_spectralsensor.cpp"></Unit>
-         <Option virtualFolder="Yoctopuce" />
-      </Unit>
-      <Unit filename="../../../Sources/yocto_spectralsensor.h"></Unit>
          <Option virtualFolder="Yoctopuce" />
       </Unit>
       <Unit filename="../../../Sources/yocto_api.cpp"></Unit>

@@ -2,13 +2,14 @@
     "main": "main.cpp",
     "other_files": [],
     "ylib": [
+        "yocto_colorsensor",
         "yocto_spectralchannel",
-        "yocto_spectralsensor",
         "yocto_api"
     ],
     "skip": false,
     "xcode": true,
     "vstudio": true,
     "gnu": true,
+    "cmake": true,
     "cb": true
 }

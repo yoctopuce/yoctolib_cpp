@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_daisychain.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ *  $Id: svn_id $
  *
  *  Implements yFindDaisyChain(), the high-level API for DaisyChain functions
  *

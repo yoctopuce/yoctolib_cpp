@@ -3,11 +3,11 @@
 #
 cmake_minimum_required (VERSION 3.8)
 
-project(ExampleName)
+project(Prog-HubDiscovery-method2)
 
 add_subdirectory(../../Sources yoctolib_bin)
 
 # Add source to this project's executable.
-add_executable (ExampleName "main.cpp")
+add_executable (Prog-HubDiscovery-method2 "main.cpp")
 
-target_link_libraries(ExampleName PUBLIC YoctoLib)
+target_link_libraries(Prog-HubDiscovery-method2 PUBLIC YoctoLib)

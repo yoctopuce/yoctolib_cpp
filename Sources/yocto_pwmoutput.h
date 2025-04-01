@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_pwmoutput.h 61964 2024-07-29 15:54:55Z seb $
+ *  $Id: svn_id $
  *
  *  Declares yFindPwmOutput(), the high-level API for PwmOutput functions
  *

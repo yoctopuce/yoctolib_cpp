@@ -725,14 +725,27 @@ public:
     { return YInputCapture::FindInputCapture(func); }
 
     /**
-     * comment from .yc definition
+     * Continues the enumeration of instant snapshot triggers started using yFirstInputCapture().
+     * Caution: You can't make any assumption about the returned instant snapshot triggers order.
+     * If you want to find a specific an instant snapshot trigger, use InputCapture.findInputCapture()
+     * and a hardwareID or a logical name.
+     *
+     * @return a pointer to a YInputCapture object, corresponding to
+     *         an instant snapshot trigger currently online, or a NULL pointer
+     *         if there are no more instant snapshot triggers to enumerate.
      */
            YInputCapture   *nextInputCapture(void);
     inline YInputCapture   *next(void)
     { return this->nextInputCapture();}
 
     /**
-     * comment from .yc definition
+     * Starts the enumeration of instant snapshot triggers currently accessible.
+     * Use the method YInputCapture::nextInputCapture() to iterate on
+     * next instant snapshot triggers.
+     *
+     * @return a pointer to a YInputCapture object, corresponding to
+     *         the first instant snapshot trigger currently online, or a NULL pointer
+     *         if there are none.
      */
            static YInputCapture *FirstInputCapture(void);
     inline static YInputCapture *First(void)
@@ -776,7 +789,13 @@ public:
 inline YInputCapture *yFindInputCapture(const string& func)
 { return YInputCapture::FindInputCapture(func);}
 /**
- * comment from .yc definition
+ * Starts the enumeration of instant snapshot triggers currently accessible.
+ * Use the method YInputCapture::nextInputCapture() to iterate on
+ * next instant snapshot triggers.
+ *
+ * @return a pointer to a YInputCapture object, corresponding to
+ *         the first instant snapshot trigger currently online, or a NULL pointer
+ *         if there are none.
  */
 inline YInputCapture *yFirstInputCapture(void)
 { return YInputCapture::FirstInputCapture();}

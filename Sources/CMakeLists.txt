@@ -25,6 +25,7 @@ set(YoctoLibHSources
 	yocto_cellular.h
 	yocto_colorled.h
 	yocto_colorledcluster.h
+	yocto_colorsensor.h
 	yocto_compass.h
 	yocto_current.h
 	yocto_currentloopoutput.h
@@ -74,7 +75,6 @@ set(YoctoLibHSources
 	yocto_serialport.h
 	yocto_servo.h
 	yocto_spectralchannel.h
-	yocto_spectralsensor.h
 	yocto_spiport.h
 	yocto_steppermotor.h
 	yocto_temperature.h
@@ -109,6 +109,7 @@ set(YoctoLibCppSources
 	yocto_cellular.cpp
 	yocto_colorled.cpp
 	yocto_colorledcluster.cpp
+	yocto_colorsensor.cpp
 	yocto_compass.cpp
 	yocto_current.cpp
 	yocto_currentloopoutput.cpp
@@ -158,7 +159,6 @@ set(YoctoLibCppSources
 	yocto_serialport.cpp
 	yocto_servo.cpp
 	yocto_spectralchannel.cpp
-	yocto_spectralsensor.cpp
 	yocto_spiport.cpp
 	yocto_steppermotor.cpp
 	yocto_temperature.cpp

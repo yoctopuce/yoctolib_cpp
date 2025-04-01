@@ -2,7 +2,7 @@
  *
  *  $Id: svn_id $
  *
- *  Implements yFindSpectralSensor(), the high-level API for SpectralSensor functions
+ *  Implements yFindColorSensor(), the high-level API for ColorSensor functions
  *
  *  - - - - - - - - - License information: - - - - - - - - -
  *
@@ -44,23 +44,24 @@
 #include <math.h>
 #include <stdlib.h>
 
-#include "yocto_spectralsensor.h"
+#include "yocto_colorsensor.h"
 #include "yapi/yjson.h"
 #include "yapi/yapi.h"
-#define  __FILE_ID__  "spectralsensor"
+#define  __FILE_ID__  "colorsensor"
 
 #ifdef YOCTOLIB_NAMESPACE
 using namespace YOCTOLIB_NAMESPACE;
 #endif
 
-YSpectralSensor::YSpectralSensor(const string& func): YFunction(func)
-//--- (YSpectralSensor initialization)
+YColorSensor::YColorSensor(const string& func): YFunction(func)
+//--- (YColorSensor initialization)
+    ,_estimationModel(ESTIMATIONMODEL_INVALID)
+    ,_workingMode(WORKINGMODE_INVALID)
+    ,_saturation(SATURATION_INVALID)
     ,_ledCurrent(LEDCURRENT_INVALID)
-    ,_resolution(RESOLUTION_INVALID)
+    ,_ledCalibration(LEDCALIBRATION_INVALID)
     ,_integrationTime(INTEGRATIONTIME_INVALID)
     ,_gain(GAIN_INVALID)
-    ,_estimationModel(ESTIMATIONMODEL_INVALID)
-    ,_saturation(SATURATION_INVALID)
     ,_estimatedRGB(ESTIMATEDRGB_INVALID)
     ,_estimatedHSL(ESTIMATEDHSL_INVALID)
     ,_estimatedXYZ(ESTIMATEDXYZ_INVALID)
@@ -70,50 +71,50 @@ YSpectralSensor::YSpectralSensor(const string& func): YFunction(func)
     ,_nearRAL3(NEARRAL3_INVALID)
     ,_nearHTMLColor(NEARHTMLCOLOR_INVALID)
     ,_nearSimpleColor(NEARSIMPLECOLOR_INVALID)
-    ,_ledCurrentAtPowerOn(LEDCURRENTATPOWERON_INVALID)
-    ,_integrationTimeAtPowerOn(INTEGRATIONTIMEATPOWERON_INVALID)
-    ,_gainAtPowerOn(GAINATPOWERON_INVALID)
-    ,_valueCallbackSpectralSensor(NULL)
-//--- (end of YSpectralSensor initialization)
+    ,_nearSimpleColorIndex(NEARSIMPLECOLORINDEX_INVALID)
+    ,_valueCallbackColorSensor(NULL)
+//--- (end of YColorSensor initialization)
 {
-    _className="SpectralSensor";
+    _className="ColorSensor";
 }
 
-YSpectralSensor::~YSpectralSensor()
+YColorSensor::~YColorSensor()
 {
-//--- (YSpectralSensor cleanup)
-//--- (end of YSpectralSensor cleanup)
+//--- (YColorSensor cleanup)
+//--- (end of YColorSensor cleanup)
 }
-//--- (YSpectralSensor implementation)
+//--- (YColorSensor implementation)
 // static attributes
-const double YSpectralSensor::RESOLUTION_INVALID = YAPI_INVALID_DOUBLE;
-const string YSpectralSensor::ESTIMATEDXYZ_INVALID = YAPI_INVALID_STRING;
-const string YSpectralSensor::ESTIMATEDOKLAB_INVALID = YAPI_INVALID_STRING;
-const string YSpectralSensor::NEARRAL1_INVALID = YAPI_INVALID_STRING;
-const string YSpectralSensor::NEARRAL2_INVALID = YAPI_INVALID_STRING;
-const string YSpectralSensor::NEARRAL3_INVALID = YAPI_INVALID_STRING;
-const string YSpectralSensor::NEARHTMLCOLOR_INVALID = YAPI_INVALID_STRING;
-const string YSpectralSensor::NEARSIMPLECOLOR_INVALID = YAPI_INVALID_STRING;
+const string YColorSensor::ESTIMATEDXYZ_INVALID = YAPI_INVALID_STRING;
+const string YColorSensor::ESTIMATEDOKLAB_INVALID = YAPI_INVALID_STRING;
+const string YColorSensor::NEARRAL1_INVALID = YAPI_INVALID_STRING;
+const string YColorSensor::NEARRAL2_INVALID = YAPI_INVALID_STRING;
+const string YColorSensor::NEARRAL3_INVALID = YAPI_INVALID_STRING;
+const string YColorSensor::NEARHTMLCOLOR_INVALID = YAPI_INVALID_STRING;
+const string YColorSensor::NEARSIMPLECOLOR_INVALID = YAPI_INVALID_STRING;
 
-int YSpectralSensor::_parseAttr(YJSONObject *json_val)
+int YColorSensor::_parseAttr(YJSONObject *json_val)
 {
+    if(json_val->has("estimationModel")) {
+        _estimationModel =  (Y_ESTIMATIONMODEL_enum)json_val->getInt("estimationModel");
+    }
+    if(json_val->has("workingMode")) {
+        _workingMode =  (Y_WORKINGMODE_enum)json_val->getInt("workingMode");
+    }
+    if(json_val->has("saturation")) {
+        _saturation =  json_val->getInt("saturation");
+    }
     if(json_val->has("ledCurrent")) {
         _ledCurrent =  json_val->getInt("ledCurrent");
     }
-    if(json_val->has("resolution")) {
-        _resolution =  floor(json_val->getDouble("resolution") / 65.536 + 0.5) / 1000.0;
+    if(json_val->has("ledCalibration")) {
+        _ledCalibration =  json_val->getInt("ledCalibration");
     }
     if(json_val->has("integrationTime")) {
         _integrationTime =  json_val->getInt("integrationTime");
     }
     if(json_val->has("gain")) {
         _gain =  json_val->getInt("gain");
-    }
-    if(json_val->has("estimationModel")) {
-        _estimationModel =  (Y_ESTIMATIONMODEL_enum)json_val->getInt("estimationModel");
-    }
-    if(json_val->has("saturation")) {
-        _saturation =  json_val->getInt("saturation");
     }
     if(json_val->has("estimatedRGB")) {
         _estimatedRGB =  json_val->getInt("estimatedRGB");
@@ -142,29 +143,136 @@ int YSpectralSensor::_parseAttr(YJSONObject *json_val)
     if(json_val->has("nearSimpleColor")) {
         _nearSimpleColor =  json_val->getString("nearSimpleColor");
     }
-    if(json_val->has("ledCurrentAtPowerOn")) {
-        _ledCurrentAtPowerOn =  json_val->getInt("ledCurrentAtPowerOn");
-    }
-    if(json_val->has("integrationTimeAtPowerOn")) {
-        _integrationTimeAtPowerOn =  json_val->getInt("integrationTimeAtPowerOn");
-    }
-    if(json_val->has("gainAtPowerOn")) {
-        _gainAtPowerOn =  json_val->getInt("gainAtPowerOn");
+    if(json_val->has("nearSimpleColorIndex")) {
+        _nearSimpleColorIndex =  (Y_NEARSIMPLECOLORINDEX_enum)json_val->getInt("nearSimpleColorIndex");
     }
     return YFunction::_parseAttr(json_val);
 }
 
 
 /**
- * Returns the current value of the LED.
- * This method retrieves the current flowing through the LED
- * and returns it as an integer or an object.
+ * Returns the model for color estimation.
  *
- * @return an integer corresponding to the current value of the LED
+ * @return either YColorSensor::ESTIMATIONMODEL_REFLECTION or YColorSensor::ESTIMATIONMODEL_EMISSION,
+ * according to the model for color estimation
  *
- * On failure, throws an exception or returns YSpectralSensor::LEDCURRENT_INVALID.
+ * On failure, throws an exception or returns YColorSensor::ESTIMATIONMODEL_INVALID.
  */
-int YSpectralSensor::get_ledCurrent(void)
+Y_ESTIMATIONMODEL_enum YColorSensor::get_estimationModel(void)
+{
+    Y_ESTIMATIONMODEL_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YColorSensor::ESTIMATIONMODEL_INVALID;
+                }
+            }
+        }
+        res = _estimationModel;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the model for color estimation.
+ * Remember to call the saveToFlash() method of the module if the modification must be kept.
+ *
+ * @param newval : either YColorSensor::ESTIMATIONMODEL_REFLECTION or
+ * YColorSensor::ESTIMATIONMODEL_EMISSION, according to the model for color estimation
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YColorSensor::set_estimationModel(Y_ESTIMATIONMODEL_enum newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
+        res = _setAttr("estimationModel", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the active working mode.
+ *
+ * @return either YColorSensor::WORKINGMODE_AUTO or YColorSensor::WORKINGMODE_EXPERT, according to the
+ * active working mode
+ *
+ * On failure, throws an exception or returns YColorSensor::WORKINGMODE_INVALID.
+ */
+Y_WORKINGMODE_enum YColorSensor::get_workingMode(void)
+{
+    Y_WORKINGMODE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YColorSensor::WORKINGMODE_INVALID;
+                }
+            }
+        }
+        res = _workingMode;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the operating mode.
+ * Remember to call the saveToFlash() method of the module if the modification must be kept.
+ *
+ * @param newval : either YColorSensor::WORKINGMODE_AUTO or YColorSensor::WORKINGMODE_EXPERT, according
+ * to the operating mode
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YColorSensor::set_workingMode(Y_WORKINGMODE_enum newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
+        res = _setAttr("workingMode", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the current saturation of the sensor.
+ * This function updates the sensor's saturation value.
+ *
+ * @return an integer corresponding to the current saturation of the sensor
+ *
+ * On failure, throws an exception or returns YColorSensor::SATURATION_INVALID.
+ */
+int YColorSensor::get_saturation(void)
 {
     int res = 0;
     yEnterCriticalSection(&_this_cs);
@@ -173,7 +281,36 @@ int YSpectralSensor::get_ledCurrent(void)
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
-                    return YSpectralSensor::LEDCURRENT_INVALID;
+                    return YColorSensor::SATURATION_INVALID;
+                }
+            }
+        }
+        res = _saturation;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the current value of the LED.
+ *
+ * @return an integer corresponding to the current value of the LED
+ *
+ * On failure, throws an exception or returns YColorSensor::LEDCURRENT_INVALID.
+ */
+int YColorSensor::get_ledCurrent(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YColorSensor::LEDCURRENT_INVALID;
                 }
             }
         }
@@ -196,7 +333,7 @@ int YSpectralSensor::get_ledCurrent(void)
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YSpectralSensor::set_ledCurrent(int newval)
+int YColorSensor::set_ledCurrent(int newval)
 {
     string rest_val;
     int res;
@@ -213,57 +350,55 @@ int YSpectralSensor::set_ledCurrent(int newval)
 }
 
 /**
- * Changes the resolution of the measured physical values. The resolution corresponds to the numerical precision
- * when displaying value. It does not change the precision of the measure itself.
- * Remember to call the saveToFlash() method of the module if the modification must be kept.
+ * Returns the LED current at calibration.
  *
- * @param newval : a floating point number corresponding to the resolution of the measured physical values
+ * @return an integer corresponding to the LED current at calibration
  *
- * @return YAPI::SUCCESS if the call succeeds.
- *
- * On failure, throws an exception or returns a negative error code.
+ * On failure, throws an exception or returns YColorSensor::LEDCALIBRATION_INVALID.
  */
-int YSpectralSensor::set_resolution(double newval)
+int YColorSensor::get_ledCalibration(void)
 {
-    string rest_val;
-    int res;
-    yEnterCriticalSection(&_this_cs);
-    try {
-        char buf[32]; SAFE_SPRINTF(buf, 32, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
-        res = _setAttr("resolution", rest_val);
-    } catch (std::exception &) {
-         yLeaveCriticalSection(&_this_cs);
-         throw;
-    }
-    yLeaveCriticalSection(&_this_cs);
-    return res;
-}
-
-/**
- * Returns the resolution of the measured values. The resolution corresponds to the numerical precision
- * of the measures, which is not always the same as the actual precision of the sensor.
- *
- * @return a floating point number corresponding to the resolution of the measured values
- *
- * On failure, throws an exception or returns YSpectralSensor::RESOLUTION_INVALID.
- */
-double YSpectralSensor::get_resolution(void)
-{
-    double res = 0.0;
+    int res = 0;
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
-                    return YSpectralSensor::RESOLUTION_INVALID;
+                    return YColorSensor::LEDCALIBRATION_INVALID;
                 }
             }
         }
-        res = _resolution;
+        res = _ledCalibration;
     } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Sets the LED current for calibration.
+ * Remember to call the saveToFlash() method of the module if the modification must be kept.
+ *
+ * @param newval : an integer
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YColorSensor::set_ledCalibration(int newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
+        res = _setAttr("ledCalibration", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
     }
     yLeaveCriticalSection(&_this_cs);
     return res;
@@ -276,9 +411,9 @@ double YSpectralSensor::get_resolution(void)
  *
  * @return an integer corresponding to the current integration time
  *
- * On failure, throws an exception or returns YSpectralSensor::INTEGRATIONTIME_INVALID.
+ * On failure, throws an exception or returns YColorSensor::INTEGRATIONTIME_INVALID.
  */
-int YSpectralSensor::get_integrationTime(void)
+int YColorSensor::get_integrationTime(void)
 {
     int res = 0;
     yEnterCriticalSection(&_this_cs);
@@ -287,7 +422,7 @@ int YSpectralSensor::get_integrationTime(void)
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
-                    return YSpectralSensor::INTEGRATIONTIME_INVALID;
+                    return YColorSensor::INTEGRATIONTIME_INVALID;
                 }
             }
         }
@@ -301,18 +436,18 @@ int YSpectralSensor::get_integrationTime(void)
 }
 
 /**
- * Sets the integration time for data processing.
- * This method takes a parameter `val` and assigns it
+ * Changes the integration time for data processing.
+ * This method takes a parameter and assigns it
  * as the new integration time. This affects the duration
  * for which data is integrated before being processed.
  *
- * @param newval : an integer
+ * @param newval : an integer corresponding to the integration time for data processing
  *
  * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YSpectralSensor::set_integrationTime(int newval)
+int YColorSensor::set_integrationTime(int newval)
 {
     string rest_val;
     int res;
@@ -329,14 +464,14 @@ int YSpectralSensor::set_integrationTime(int newval)
 }
 
 /**
- * Retrieves the current gain.
+ * Returns the current gain.
  * This method updates the gain value.
  *
- * @return an integer
+ * @return an integer corresponding to the current gain
  *
- * On failure, throws an exception or returns YSpectralSensor::GAIN_INVALID.
+ * On failure, throws an exception or returns YColorSensor::GAIN_INVALID.
  */
-int YSpectralSensor::get_gain(void)
+int YColorSensor::get_gain(void)
 {
     int res = 0;
     yEnterCriticalSection(&_this_cs);
@@ -345,7 +480,7 @@ int YSpectralSensor::get_gain(void)
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
-                    return YSpectralSensor::GAIN_INVALID;
+                    return YColorSensor::GAIN_INVALID;
                 }
             }
         }
@@ -359,18 +494,18 @@ int YSpectralSensor::get_gain(void)
 }
 
 /**
- * Sets the gain for signal processing.
- * This method takes a parameter `val` and assigns it
+ * Changes the gain for signal processing.
+ * This method takes a parameter and assigns it
  * as the new gain. This affects the sensitivity and
  * intensity of the processed signal.
  *
- * @param newval : an integer
+ * @param newval : an integer corresponding to the gain for signal processing
  *
  * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YSpectralSensor::set_gain(int newval)
+int YColorSensor::set_gain(int newval)
 {
     string rest_val;
     int res;
@@ -387,102 +522,13 @@ int YSpectralSensor::set_gain(int newval)
 }
 
 /**
- * Returns the model for color estimation.
- *
- * @return either YSpectralSensor::ESTIMATIONMODEL_REFLECTION or
- * YSpectralSensor::ESTIMATIONMODEL_EMISSION, according to the model for color estimation
- *
- * On failure, throws an exception or returns YSpectralSensor::ESTIMATIONMODEL_INVALID.
- */
-Y_ESTIMATIONMODEL_enum YSpectralSensor::get_estimationModel(void)
-{
-    Y_ESTIMATIONMODEL_enum res;
-    yEnterCriticalSection(&_this_cs);
-    try {
-        if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
-                {
-                    yLeaveCriticalSection(&_this_cs);
-                    return YSpectralSensor::ESTIMATIONMODEL_INVALID;
-                }
-            }
-        }
-        res = _estimationModel;
-    } catch (std::exception &) {
-        yLeaveCriticalSection(&_this_cs);
-        throw;
-    }
-    yLeaveCriticalSection(&_this_cs);
-    return res;
-}
-
-/**
- * Changes the model for color estimation.
- * Remember to call the saveToFlash() method of the module if the modification must be kept.
- *
- * @param newval : either YSpectralSensor::ESTIMATIONMODEL_REFLECTION or
- * YSpectralSensor::ESTIMATIONMODEL_EMISSION, according to the model for color estimation
- *
- * @return YAPI::SUCCESS if the call succeeds.
- *
- * On failure, throws an exception or returns a negative error code.
- */
-int YSpectralSensor::set_estimationModel(Y_ESTIMATIONMODEL_enum newval)
-{
-    string rest_val;
-    int res;
-    yEnterCriticalSection(&_this_cs);
-    try {
-        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
-        res = _setAttr("estimationModel", rest_val);
-    } catch (std::exception &) {
-         yLeaveCriticalSection(&_this_cs);
-         throw;
-    }
-    yLeaveCriticalSection(&_this_cs);
-    return res;
-}
-
-/**
- * Returns the current saturation of the sensor.
- * This function updates the sensor's saturation value.
- *
- * @return an integer corresponding to the current saturation of the sensor
- *
- * On failure, throws an exception or returns YSpectralSensor::SATURATION_INVALID.
- */
-int YSpectralSensor::get_saturation(void)
-{
-    int res = 0;
-    yEnterCriticalSection(&_this_cs);
-    try {
-        if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
-                {
-                    yLeaveCriticalSection(&_this_cs);
-                    return YSpectralSensor::SATURATION_INVALID;
-                }
-            }
-        }
-        res = _saturation;
-    } catch (std::exception &) {
-        yLeaveCriticalSection(&_this_cs);
-        throw;
-    }
-    yLeaveCriticalSection(&_this_cs);
-    return res;
-}
-
-/**
  * Returns the estimated color in RGB format (0xRRGGBB).
- * This method retrieves the estimated color values
- * and returns them as an RGB object or structure.
  *
  * @return an integer corresponding to the estimated color in RGB format (0xRRGGBB)
  *
- * On failure, throws an exception or returns YSpectralSensor::ESTIMATEDRGB_INVALID.
+ * On failure, throws an exception or returns YColorSensor::ESTIMATEDRGB_INVALID.
  */
-int YSpectralSensor::get_estimatedRGB(void)
+int YColorSensor::get_estimatedRGB(void)
 {
     int res = 0;
     yEnterCriticalSection(&_this_cs);
@@ -491,7 +537,7 @@ int YSpectralSensor::get_estimatedRGB(void)
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
-                    return YSpectralSensor::ESTIMATEDRGB_INVALID;
+                    return YColorSensor::ESTIMATEDRGB_INVALID;
                 }
             }
         }
@@ -506,14 +552,12 @@ int YSpectralSensor::get_estimatedRGB(void)
 
 /**
  * Returns the estimated color in HSL (Hue, Saturation, Lightness) format.
- * This method retrieves the estimated color values
- * and returns them as an HSL object or structure.
  *
  * @return an integer corresponding to the estimated color in HSL (Hue, Saturation, Lightness) format
  *
- * On failure, throws an exception or returns YSpectralSensor::ESTIMATEDHSL_INVALID.
+ * On failure, throws an exception or returns YColorSensor::ESTIMATEDHSL_INVALID.
  */
-int YSpectralSensor::get_estimatedHSL(void)
+int YColorSensor::get_estimatedHSL(void)
 {
     int res = 0;
     yEnterCriticalSection(&_this_cs);
@@ -522,7 +566,7 @@ int YSpectralSensor::get_estimatedHSL(void)
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
-                    return YSpectralSensor::ESTIMATEDHSL_INVALID;
+                    return YColorSensor::ESTIMATEDHSL_INVALID;
                 }
             }
         }
@@ -537,14 +581,12 @@ int YSpectralSensor::get_estimatedHSL(void)
 
 /**
  * Returns the estimated color in XYZ format.
- * This method retrieves the estimated color values
- * and returns them as an XYZ object or structure.
  *
  * @return a string corresponding to the estimated color in XYZ format
  *
- * On failure, throws an exception or returns YSpectralSensor::ESTIMATEDXYZ_INVALID.
+ * On failure, throws an exception or returns YColorSensor::ESTIMATEDXYZ_INVALID.
  */
-string YSpectralSensor::get_estimatedXYZ(void)
+string YColorSensor::get_estimatedXYZ(void)
 {
     string res;
     yEnterCriticalSection(&_this_cs);
@@ -553,7 +595,7 @@ string YSpectralSensor::get_estimatedXYZ(void)
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
-                    return YSpectralSensor::ESTIMATEDXYZ_INVALID;
+                    return YColorSensor::ESTIMATEDXYZ_INVALID;
                 }
             }
         }
@@ -568,14 +610,12 @@ string YSpectralSensor::get_estimatedXYZ(void)
 
 /**
  * Returns the estimated color in OkLab format.
- * This method retrieves the estimated color values
- * and returns them as an OkLab object or structure.
  *
  * @return a string corresponding to the estimated color in OkLab format
  *
- * On failure, throws an exception or returns YSpectralSensor::ESTIMATEDOKLAB_INVALID.
+ * On failure, throws an exception or returns YColorSensor::ESTIMATEDOKLAB_INVALID.
  */
-string YSpectralSensor::get_estimatedOkLab(void)
+string YColorSensor::get_estimatedOkLab(void)
 {
     string res;
     yEnterCriticalSection(&_this_cs);
@@ -584,7 +624,7 @@ string YSpectralSensor::get_estimatedOkLab(void)
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
-                    return YSpectralSensor::ESTIMATEDOKLAB_INVALID;
+                    return YColorSensor::ESTIMATEDOKLAB_INVALID;
                 }
             }
         }
@@ -597,7 +637,14 @@ string YSpectralSensor::get_estimatedOkLab(void)
     return res;
 }
 
-string YSpectralSensor::get_nearRAL1(void)
+/**
+ * Returns the estimated color in RAL format.
+ *
+ * @return a string corresponding to the estimated color in RAL format
+ *
+ * On failure, throws an exception or returns YColorSensor::NEARRAL1_INVALID.
+ */
+string YColorSensor::get_nearRAL1(void)
 {
     string res;
     yEnterCriticalSection(&_this_cs);
@@ -606,7 +653,7 @@ string YSpectralSensor::get_nearRAL1(void)
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
-                    return YSpectralSensor::NEARRAL1_INVALID;
+                    return YColorSensor::NEARRAL1_INVALID;
                 }
             }
         }
@@ -619,7 +666,14 @@ string YSpectralSensor::get_nearRAL1(void)
     return res;
 }
 
-string YSpectralSensor::get_nearRAL2(void)
+/**
+ * Returns the estimated color in RAL format.
+ *
+ * @return a string corresponding to the estimated color in RAL format
+ *
+ * On failure, throws an exception or returns YColorSensor::NEARRAL2_INVALID.
+ */
+string YColorSensor::get_nearRAL2(void)
 {
     string res;
     yEnterCriticalSection(&_this_cs);
@@ -628,7 +682,7 @@ string YSpectralSensor::get_nearRAL2(void)
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
-                    return YSpectralSensor::NEARRAL2_INVALID;
+                    return YColorSensor::NEARRAL2_INVALID;
                 }
             }
         }
@@ -641,7 +695,14 @@ string YSpectralSensor::get_nearRAL2(void)
     return res;
 }
 
-string YSpectralSensor::get_nearRAL3(void)
+/**
+ * Returns the estimated color in RAL format.
+ *
+ * @return a string corresponding to the estimated color in RAL format
+ *
+ * On failure, throws an exception or returns YColorSensor::NEARRAL3_INVALID.
+ */
+string YColorSensor::get_nearRAL3(void)
 {
     string res;
     yEnterCriticalSection(&_this_cs);
@@ -650,7 +711,7 @@ string YSpectralSensor::get_nearRAL3(void)
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
-                    return YSpectralSensor::NEARRAL3_INVALID;
+                    return YColorSensor::NEARRAL3_INVALID;
                 }
             }
         }
@@ -663,7 +724,14 @@ string YSpectralSensor::get_nearRAL3(void)
     return res;
 }
 
-string YSpectralSensor::get_nearHTMLColor(void)
+/**
+ * Returns the estimated HTML color .
+ *
+ * @return a string corresponding to the estimated HTML color
+ *
+ * On failure, throws an exception or returns YColorSensor::NEARHTMLCOLOR_INVALID.
+ */
+string YColorSensor::get_nearHTMLColor(void)
 {
     string res;
     yEnterCriticalSection(&_this_cs);
@@ -672,7 +740,7 @@ string YSpectralSensor::get_nearHTMLColor(void)
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
-                    return YSpectralSensor::NEARHTMLCOLOR_INVALID;
+                    return YColorSensor::NEARHTMLCOLOR_INVALID;
                 }
             }
         }
@@ -686,15 +754,13 @@ string YSpectralSensor::get_nearHTMLColor(void)
 }
 
 /**
- * Returns the estimated color.
- * This method retrieves the estimated color values
- * and returns them as the color name.
+ * Returns the estimated color .
  *
  * @return a string corresponding to the estimated color
  *
- * On failure, throws an exception or returns YSpectralSensor::NEARSIMPLECOLOR_INVALID.
+ * On failure, throws an exception or returns YColorSensor::NEARSIMPLECOLOR_INVALID.
  */
-string YSpectralSensor::get_nearSimpleColor(void)
+string YColorSensor::get_nearSimpleColor(void)
 {
     string res;
     yEnterCriticalSection(&_this_cs);
@@ -703,7 +769,7 @@ string YSpectralSensor::get_nearSimpleColor(void)
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
-                    return YSpectralSensor::NEARSIMPLECOLOR_INVALID;
+                    return YColorSensor::NEARSIMPLECOLOR_INVALID;
                 }
             }
         }
@@ -716,20 +782,33 @@ string YSpectralSensor::get_nearSimpleColor(void)
     return res;
 }
 
-int YSpectralSensor::get_ledCurrentAtPowerOn(void)
+/**
+ * Returns the estimated color as an index.
+ *
+ * @return a value among YColorSensor::NEARSIMPLECOLORINDEX_BROWN,
+ * YColorSensor::NEARSIMPLECOLORINDEX_RED, YColorSensor::NEARSIMPLECOLORINDEX_ORANGE,
+ * YColorSensor::NEARSIMPLECOLORINDEX_YELLOW, YColorSensor::NEARSIMPLECOLORINDEX_WHITE,
+ * YColorSensor::NEARSIMPLECOLORINDEX_GRAY, YColorSensor::NEARSIMPLECOLORINDEX_BLACK,
+ * YColorSensor::NEARSIMPLECOLORINDEX_GREEN, YColorSensor::NEARSIMPLECOLORINDEX_BLUE,
+ * YColorSensor::NEARSIMPLECOLORINDEX_PURPLE and YColorSensor::NEARSIMPLECOLORINDEX_PINK corresponding
+ * to the estimated color as an index
+ *
+ * On failure, throws an exception or returns YColorSensor::NEARSIMPLECOLORINDEX_INVALID.
+ */
+Y_NEARSIMPLECOLORINDEX_enum YColorSensor::get_nearSimpleColorIndex(void)
 {
-    int res = 0;
+    Y_NEARSIMPLECOLORINDEX_enum res;
     yEnterCriticalSection(&_this_cs);
     try {
         if (_cacheExpiration <= YAPI::GetTickCount()) {
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
-                    return YSpectralSensor::LEDCURRENTATPOWERON_INVALID;
+                    return YColorSensor::NEARSIMPLECOLORINDEX_INVALID;
                 }
             }
         }
-        res = _ledCurrentAtPowerOn;
+        res = _nearSimpleColorIndex;
     } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
@@ -739,134 +818,7 @@ int YSpectralSensor::get_ledCurrentAtPowerOn(void)
 }
 
 /**
- * Sets the LED current at power-on.
- * This method takes a parameter `val` and assigns it to startupLumin, representing the LED current defined
- * at startup.
- * Remember to call the saveToFlash() method of the module if the modification must be kept.
- *
- * @param newval : an integer
- *
- * @return YAPI::SUCCESS if the call succeeds.
- *
- * On failure, throws an exception or returns a negative error code.
- */
-int YSpectralSensor::set_ledCurrentAtPowerOn(int newval)
-{
-    string rest_val;
-    int res;
-    yEnterCriticalSection(&_this_cs);
-    try {
-        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
-        res = _setAttr("ledCurrentAtPowerOn", rest_val);
-    } catch (std::exception &) {
-         yLeaveCriticalSection(&_this_cs);
-         throw;
-    }
-    yLeaveCriticalSection(&_this_cs);
-    return res;
-}
-
-int YSpectralSensor::get_integrationTimeAtPowerOn(void)
-{
-    int res = 0;
-    yEnterCriticalSection(&_this_cs);
-    try {
-        if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
-                {
-                    yLeaveCriticalSection(&_this_cs);
-                    return YSpectralSensor::INTEGRATIONTIMEATPOWERON_INVALID;
-                }
-            }
-        }
-        res = _integrationTimeAtPowerOn;
-    } catch (std::exception &) {
-        yLeaveCriticalSection(&_this_cs);
-        throw;
-    }
-    yLeaveCriticalSection(&_this_cs);
-    return res;
-}
-
-/**
- * Sets the integration time at power-on.
- * This method takes a parameter `val` and assigns it to startupIntegTime, representing the integration time
- * defined at startup.
- * Remember to call the saveToFlash() method of the module if the modification must be kept.
- *
- * @param newval : an integer
- *
- * @return YAPI::SUCCESS if the call succeeds.
- *
- * On failure, throws an exception or returns a negative error code.
- */
-int YSpectralSensor::set_integrationTimeAtPowerOn(int newval)
-{
-    string rest_val;
-    int res;
-    yEnterCriticalSection(&_this_cs);
-    try {
-        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
-        res = _setAttr("integrationTimeAtPowerOn", rest_val);
-    } catch (std::exception &) {
-         yLeaveCriticalSection(&_this_cs);
-         throw;
-    }
-    yLeaveCriticalSection(&_this_cs);
-    return res;
-}
-
-int YSpectralSensor::get_gainAtPowerOn(void)
-{
-    int res = 0;
-    yEnterCriticalSection(&_this_cs);
-    try {
-        if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
-                {
-                    yLeaveCriticalSection(&_this_cs);
-                    return YSpectralSensor::GAINATPOWERON_INVALID;
-                }
-            }
-        }
-        res = _gainAtPowerOn;
-    } catch (std::exception &) {
-        yLeaveCriticalSection(&_this_cs);
-        throw;
-    }
-    yLeaveCriticalSection(&_this_cs);
-    return res;
-}
-
-/**
- * Sets the gain at power-on.
- * This method takes a parameter `val` and assigns it to startupGain, representing the gain defined at startup.
- * Remember to call the saveToFlash() method of the module if the modification must be kept.
- *
- * @param newval : an integer
- *
- * @return YAPI::SUCCESS if the call succeeds.
- *
- * On failure, throws an exception or returns a negative error code.
- */
-int YSpectralSensor::set_gainAtPowerOn(int newval)
-{
-    string rest_val;
-    int res;
-    yEnterCriticalSection(&_this_cs);
-    try {
-        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
-        res = _setAttr("gainAtPowerOn", rest_val);
-    } catch (std::exception &) {
-         yLeaveCriticalSection(&_this_cs);
-         throw;
-    }
-    yLeaveCriticalSection(&_this_cs);
-    return res;
-}
-
-/**
- * Retrieves a spectral sensor for a given identifier.
+ * Retrieves a color sensor for a given identifier.
  * The identifier can be specified using several formats:
  *
  * - FunctionLogicalName
@@ -876,11 +828,11 @@ int YSpectralSensor::set_gainAtPowerOn(int newval)
  * - ModuleLogicalName.FunctionLogicalName
  *
  *
- * This function does not require that the spectral sensor is online at the time
+ * This function does not require that the color sensor is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method isOnline() to test if the spectral sensor is
+ * Use the method isOnline() to test if the color sensor is
  * indeed online at a given time. In case of ambiguity when looking for
- * a spectral sensor by logical name, no error is notified: the first instance
+ * a color sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
@@ -888,23 +840,23 @@ int YSpectralSensor::set_gainAtPowerOn(int newval)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the spectral sensor, for instance
- *         MyDevice.spectralSensor.
+ * @param func : a string that uniquely characterizes the color sensor, for instance
+ *         MyDevice.colorSensor.
  *
- * @return a YSpectralSensor object allowing you to drive the spectral sensor.
+ * @return a YColorSensor object allowing you to drive the color sensor.
  */
-YSpectralSensor* YSpectralSensor::FindSpectralSensor(string func)
+YColorSensor* YColorSensor::FindColorSensor(string func)
 {
-    YSpectralSensor* obj = NULL;
+    YColorSensor* obj = NULL;
     int taken = 0;
     if (YAPI::_apiInitialized) {
         yEnterCriticalSection(&YAPI::_global_cs);
         taken = 1;
     }try {
-        obj = (YSpectralSensor*) YFunction::_FindFromCache("SpectralSensor", func);
+        obj = (YColorSensor*) YFunction::_FindFromCache("ColorSensor", func);
         if (obj == NULL) {
-            obj = new YSpectralSensor(func);
-            YFunction::_AddToCache("SpectralSensor", func, obj);
+            obj = new YColorSensor(func);
+            YFunction::_AddToCache("ColorSensor", func, obj);
         }
     } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
@@ -925,7 +877,7 @@ YSpectralSensor* YSpectralSensor::FindSpectralSensor(string func)
  *         the new advertised value.
  * @noreturn
  */
-int YSpectralSensor::registerValueCallback(YSpectralSensorValueCallback callback)
+int YColorSensor::registerValueCallback(YColorSensorValueCallback callback)
 {
     string val;
     if (callback != NULL) {
@@ -933,7 +885,7 @@ int YSpectralSensor::registerValueCallback(YSpectralSensorValueCallback callback
     } else {
         YFunction::_UpdateValueCallbackList(this, false);
     }
-    _valueCallbackSpectralSensor = callback;
+    _valueCallbackColorSensor = callback;
     // Immediately invoke value callback with current value
     if (callback != NULL && this->isOnline()) {
         val = _advertisedValue;
@@ -944,41 +896,59 @@ int YSpectralSensor::registerValueCallback(YSpectralSensorValueCallback callback
     return 0;
 }
 
-int YSpectralSensor::_invokeValueCallback(string value)
+int YColorSensor::_invokeValueCallback(string value)
 {
-    if (_valueCallbackSpectralSensor != NULL) {
-        _valueCallbackSpectralSensor(this, value);
+    if (_valueCallbackColorSensor != NULL) {
+        _valueCallbackColorSensor(this, value);
     } else {
         YFunction::_invokeValueCallback(value);
     }
     return 0;
 }
 
-YSpectralSensor *YSpectralSensor::nextSpectralSensor(void)
+/**
+ * Turns on the LEDs at the current used during calibration.
+ * On failure, throws an exception or returns YColorSensor::DATA_INVALID.
+ */
+int YColorSensor::turnLedOn(void)
+{
+    return this->set_ledCurrent(this->get_ledCalibration());
+}
+
+/**
+ * Turns off the LEDs.
+ * On failure, throws an exception or returns YColorSensor::DATA_INVALID.
+ */
+int YColorSensor::turnLedOff(void)
+{
+    return this->set_ledCurrent(0);
+}
+
+YColorSensor *YColorSensor::nextColorSensor(void)
 {
     string  hwid;
 
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
-    return YSpectralSensor::FindSpectralSensor(hwid);
+    return YColorSensor::FindColorSensor(hwid);
 }
 
-YSpectralSensor *YSpectralSensor::FirstSpectralSensor(void)
+YColorSensor *YColorSensor::FirstColorSensor(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
 
-    if(YISERR(YapiWrapper::getFunctionsByClass("SpectralSensor", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
+    if(YISERR(YapiWrapper::getFunctionsByClass("ColorSensor", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {
         return NULL;
     }
-    return YSpectralSensor::FindSpectralSensor(serial+"."+funcId);
+    return YColorSensor::FindColorSensor(serial+"."+funcId);
 }
 
-//--- (end of YSpectralSensor implementation)
+//--- (end of YColorSensor implementation)
 
-//--- (YSpectralSensor functions)
-//--- (end of YSpectralSensor functions)
+//--- (YColorSensor functions)
+//--- (end of YColorSensor functions)

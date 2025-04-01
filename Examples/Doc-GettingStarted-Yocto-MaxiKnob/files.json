@@ -13,5 +13,6 @@
     "xcode": true,
     "vstudio": true,
     "gnu": true,
+    "cmake": true,
     "cb": true
 }

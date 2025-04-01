@@ -118,6 +118,12 @@
       <Unit filename="../../../Sources/yocto_colorledcluster.h"></Unit>
          <Option virtualFolder="Yoctopuce" />
       </Unit>
+      <Unit filename="../../../Sources/yocto_colorsensor.cpp"></Unit>
+         <Option virtualFolder="Yoctopuce" />
+      </Unit>
+      <Unit filename="../../../Sources/yocto_colorsensor.h"></Unit>
+         <Option virtualFolder="Yoctopuce" />
+      </Unit>
       <Unit filename="../../../Sources/yocto_compass.cpp"></Unit>
          <Option virtualFolder="Yoctopuce" />
       </Unit>
@@ -410,12 +416,6 @@
          <Option virtualFolder="Yoctopuce" />
       </Unit>
       <Unit filename="../../../Sources/yocto_spectralchannel.h"></Unit>
-         <Option virtualFolder="Yoctopuce" />
-      </Unit>
-      <Unit filename="../../../Sources/yocto_spectralsensor.cpp"></Unit>
-         <Option virtualFolder="Yoctopuce" />
-      </Unit>
-      <Unit filename="../../../Sources/yocto_spectralsensor.h"></Unit>
          <Option virtualFolder="Yoctopuce" />
       </Unit>
       <Unit filename="../../../Sources/yocto_spiport.cpp"></Unit>

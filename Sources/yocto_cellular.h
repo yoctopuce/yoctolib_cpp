@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.h 61964 2024-07-29 15:54:55Z seb $
+ * $Id: yocto_cellular.h 64863 2025-03-05 14:06:40Z mvuilleu $
  *
  * Declares yFindCellular(), the high-level API for Cellular functions
  *
@@ -791,10 +791,8 @@ public:
      */
     virtual vector<YCellRecord> quickCellSurvey(void);
 
-    virtual string      imm_decodePLMN(string mccmnc);
-
     /**
-     * Returns the cell operator brand for a given MCC/MNC pair.
+     * Returns the cell operator brand for a given MCC/MNC pair (DEPRECATED).
      *
      * @param mccmnc : a string starting with a MCC code followed by a MNC code,
      *

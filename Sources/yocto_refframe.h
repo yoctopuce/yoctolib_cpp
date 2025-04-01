@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_refframe.h 61964 2024-07-29 15:54:55Z seb $
+ *  $Id: svn_id $
  *
  *  Declares yFindRefFrame(), the high-level API for RefFrame functions
  *

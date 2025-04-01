@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 64239 2025-01-16 10:24:05Z seb $
+ * $Id: yocto_api.cpp 65105 2025-03-17 12:44:54Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -7158,7 +7158,7 @@ string YModule::get_allSettings(void)
     }
     ext_settings = ext_settings + "],\n\"files\":[";
     if (this->hasFunction("files")) {
-        json = this->_download("files.json?a=dir&f=");
+        json = this->_download("files.json?a=dir&d=1&f=");
         if ((int)(json).size() == 0) {
             return json;
         }
@@ -7167,8 +7167,12 @@ string YModule::get_allSettings(void)
         for (unsigned ii = 0; ii < filelist.size(); ii++) {
             name = this->_json_get_key(filelist[ii], "name");
             if (((int)(name).length() > 0) && !(name == "startupConf.json")) {
-                file_data_bin = this->_download(this->_escapeAttr(name));
-                file_data = YAPI::_bin2HexStr(file_data_bin);
+                if (name.substr((int)(name).length()-1, 1) == "/") {
+                    file_data = "";
+                } else {
+                    file_data_bin = this->_download(this->_escapeAttr(name));
+                    file_data = YAPI::_bin2HexStr(file_data_bin);
+                }
                 item = YapiWrapper::ysprintf("%s{\"name\":\"%s\", \"data\":\"%s\"}\n",sep.c_str(),name.c_str(),file_data.c_str());
                 ext_settings = ext_settings + item;
                 sep = ",";

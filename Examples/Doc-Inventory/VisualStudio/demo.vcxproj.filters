@@ -38,6 +38,9 @@
     <ClCompile Include="..\..\..\Sources\yocto_colorledcluster.cpp">
       <Filter>Yoctopuce</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_colorsensor.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\Sources\yocto_compass.cpp">
       <Filter>Yoctopuce</Filter>
     </ClCompile>
@@ -183,9 +186,6 @@
       <Filter>Yoctopuce</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Sources\yocto_spectralchannel.cpp">
-      <Filter>Yoctopuce</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Sources\yocto_spectralsensor.cpp">
       <Filter>Yoctopuce</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Sources\yocto_spiport.cpp">
@@ -611,6 +611,9 @@
     <ClInclude Include="..\..\..\Sources\yocto_colorledcluster.h">
       <Filter>Yoctopuce</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_colorsensor.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\Sources\yocto_compass.h">
       <Filter>Yoctopuce</Filter>
     </ClInclude>
@@ -756,9 +759,6 @@
       <Filter>Yoctopuce</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Sources\yocto_spectralchannel.h">
-      <Filter>Yoctopuce</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Sources\yocto_spectralsensor.h">
       <Filter>Yoctopuce</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Sources\yocto_spiport.h">

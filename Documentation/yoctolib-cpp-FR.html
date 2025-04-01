@@ -5,12 +5,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <style type="text/css">
 /*********************************************************************
- *
- * $Id: yoctolib-cpp-FR.html 64159 2025-01-14 13:50:18Z mvuilleu $
- *
  * Searchable documentation browser for Yoctopuce Library
  *
- * (note: the reference file to edit is yoctolib-cpp-FR.html)
+ * (note: the reference file to edit is yoctolib-x-EN.html)
  *
  * - - - - - - - - - License information: - - - - - - - - -
  *
@@ -383,7 +380,7 @@ doc['Module']={'':{syn:'Interface de contr\xF4le des param\xE8tres g\xE9n\xE9rau
 ,'log':{syn:'Ajoute un message arbitraire dans les logs du module.',lib:'%&rarr;log()',pro:'<span id=int>int</span> log(<span id=str>string</span> <span id=pn>text</span>)',cmt:'<p>Ajoute un message arbitraire dans les logs du module. Cette fonction est utile en particulier pour tracer l\x27ex\xE9cution de callbacks HTTP. Si un saut de ligne est d\xE9sir\xE9 apr\xE8s le message, il doit \xEAtre inclus dans la cha\xEEne de caract\xE8re.</p>',par:{text:'le message \xE0 ajouter aux logs du module.'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op\xE9ration se d\xE9roule sans erreur.',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne un code d\x27erreur n\xE9gatif.'}
 ,'nextModule':{syn:'Continue l\x27\xE9num\xE9ration des modules commenc\xE9e \xE0 l\x27aide de <tt>yFirstModule()</tt>.',lib:'%&rarr;nextModule()',pro:'<span id=obj>YModule *</span> nextModule()',cmt:'<p>Continue l\x27\xE9num\xE9ration des modules commenc\xE9e \xE0 l\x27aide de <tt>yFirstModule()</tt>. Attention, vous ne pouvez faire aucune supposition sur l\x27ordre dans lequel les modules sont retourn\xE9s. Si vous souhaitez retrouver un module sp\xE9cifique, utilisez <tt>Module.findModule()</tt> avec un hardwareID ou un nom logique.</p>',ret:'un pointeur sur un objet <tt>YModule</tt> accessible en ligne, ou <tt>null</tt> lorsque l\x27\xE9num\xE9ration est termin\xE9e.'}
 ,'reboot':{syn:'Agende un simple red\xE9marrage du module dans un nombre donn\xE9 de secondes.',lib:'%&rarr;reboot()',pro:'<span id=int>int</span> reboot(<span id=int>int</span> <span id=pn>secBeforeReboot</span>)',cmt:'<p>Agende un simple red\xE9marrage du module dans un nombre donn\xE9 de secondes.</p>',par:{secBeforeReboot:'nombre de secondes avant de red\xE9marrer'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op\xE9ration se d\xE9roule sans erreur.',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne un code d\x27erreur n\xE9gatif.'}
-,'registerBeaconCallback':{syn:'Enregistre une fonction de callback qui sera appel\xE9e \xE0 chaque changement d\x27\xE9tat de la balise de localisation du module.',lib:'%&rarr;registerBeaconCallback()',pro:'<span id=int>int</span> registerBeaconCallback(<span id=obj>YModuleBeaconCallback</span> <span id=pn>callback</span>)',cmt:'<p>Enregistre une fonction de callback qui sera appel\xE9e \xE0 chaque changement d\x27\xE9tat de la balise de localisation du module. La fonction de callback doit accepter deux arguments: l?objet YModule dont la balise a chang\xE9, et un entier repr\xE9sentant l\x27\xE9tat de la balise de localisation.</p>',par:{callback:'la fonction de callback \xE0 rappeler, ou <tt>null</tt> pour supprimer un callback d\xE9j\xE0 enregistr\xE9.'}}
+,'registerBeaconCallback':{syn:'Enregistre une fonction de callback qui sera appel\xE9e \xE0 chaque changement d\x27\xE9tat de la balise de localisation du module.',lib:'%&rarr;registerBeaconCallback()',pro:'<span id=int>int</span> registerBeaconCallback(<span id=obj>YModuleBeaconCallback</span> <span id=pn>callback</span>)',cmt:'<p>Enregistre une fonction de callback qui sera appel\xE9e \xE0 chaque changement d\x27\xE9tat de la balise de localisation du module. La fonction de callback doit accepter deux arguments: l\x27objet YModule dont la balise a chang\xE9, et un entier repr\xE9sentant l\x27\xE9tat de la balise de localisation.</p>',par:{callback:'la fonction de callback \xE0 rappeler, ou <tt>null</tt> pour supprimer un callback d\xE9j\xE0 enregistr\xE9.'}}
 ,'registerConfigChangeCallback':{syn:'Enregistre une fonction de callback qui sera appel\xE9e \xE0 chaque fois qu\x27un r\xE9glage persistant d\x27un module est modifi\xE9 (par exemple changement d\x27unit\xE9 de mesure, etc.) ',lib:'%&rarr;registerConfigChangeCallback()',pro:'<span id=int>int</span> registerConfigChangeCallback(<span id=obj>YModuleConfigChangeCallback</span> <span id=pn>callback</span>)',cmt:'<p>Enregistre une fonction de callback qui sera appel\xE9e \xE0 chaque fois qu\x27un r\xE9glage persistant d\x27un module est modifi\xE9 (par exemple changement d\x27unit\xE9 de mesure, etc.)</p>',par:{callback:'une proc\xE9dure qui prend un <tt>YModule</tt> en param\xE8tre, ou <tt>null</tt> pour supprimer un callback d\xE9ja enregistr\xE9.'}}
 ,'registerLogCallback':{syn:'Enregistre une fonction de callback qui sera appel\xE9e \xE0 chaque fois le module \xE9met un message de log.',lib:'%&rarr;registerLogCallback()',pro:'<span id=int>int</span> registerLogCallback(<span id=obj>YModuleLogCallback</span> <span id=pn>callback</span>)',cmt:'<p>Enregistre une fonction de callback qui sera appel\xE9e \xE0 chaque fois le module \xE9met un message de log. Utile pour d\xE9bugger le fonctionnement d\x27un module Yoctopuce.</p>',par:{callback:'la fonction de callback \xE0 rappeler, ou un pointeur nul. La fonction de callback doit accepter deux arguments: l\x27objet <tt>YModule</tt> qui a produit un log, et une cha\xEEne de caract\xE8res qui contient le log On failure, throws an exception or returns a negative error code.'}}
 ,'revertFromFlash':{syn:'Recharge les r\xE9glages stock\xE9s dans le m\xE9moire non volatile du module, comme \xE0 la mise sous tension du module.',lib:'%&rarr;revertFromFlash()',pro:'<span id=int>int</span> revertFromFlash()',cmt:'<p>Recharge les r\xE9glages stock\xE9s dans le m\xE9moire non volatile du module, comme \xE0 la mise sous tension du module.</p>',ret:'<tt>YAPI.SUCCESS</tt> si l\x27op\xE9ration se d\xE9roule sans erreur.',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne un code d\x27erreur n\xE9gatif.'}
@@ -871,7 +868,7 @@ doc['Cellular']={'':{syn:'Interface pour int\xE9ragir avec les interfaces r\xE9s
 ,'_AT':{syn:'Envoie une commande AT au module GSM, et retourne le r\xE9sultat.',lib:'%&rarr;_AT()',pro:'<span id=str>string</span> _AT(<span id=str>string</span> <span id=pn>cmd</span>)',cmt:'<p>Envoie une commande AT au module GSM, et retourne le r\xE9sultat. La commande ne s\x27ex\xE9cute que lorsque le module GSM dans un \xE9tat standard, et doit le laisser exactement dans le m\xEAme \xE9tat. N\x27utilisez cette fonction qu\x27avec la plus grande prudence !</p>',par:{cmd:'la commande AT \xE0 ex\xE9cuter, comme par exemple: \x22+CCLK?\x22'},ret:'une cha\xEEne de caract\xE8res contenant le r\xE9sultat de la commande. Les lignes vides sont automatiquement filtr\xE9es du r\xE9sultat.'}
 ,'clearCache':{syn:'Invalide le cache.',lib:'%&rarr;clearCache()',pro:'<span id=obj>void</span> clearCache()',cmt:'<p>Invalide le cache. Invalide le cache des valeurs courantes de l\x27interface cellulaire. Force le prochain appel \xE0 une m\xE9thode get_xxx() ou loadxxx() pour charger les les donn\xE9es depuis le module.</p>'}
 ,'clearDataCounters':{syn:'R\xE9initialise les compteurs de donn\xE9es transmises et re\xE7ues.',lib:'%&rarr;clearDataCounters()',pro:'<span id=int>int</span> clearDataCounters()',cmt:'<p>R\xE9initialise les compteurs de donn\xE9es transmises et re\xE7ues.</p>',ret:'<tt>YAPI.SUCCESS</tt> si l\x27op\xE9ration se d\xE9roule sans erreur.',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne un code d\x27erreur n\xE9gatif.'}
-,'decodePLMN':{syn:'Retourne le nom usuel de l\x27op\xE9rateur cellulaire pour une paire MCC/MNC donn\xE9e.',lib:'%&rarr;decodePLMN()',pro:'<span id=str>string</span> decodePLMN(<span id=str>string</span> <span id=pn>mccmnc</span>)',cmt:'<p>Retourne le nom usuel de l\x27op\xE9rateur cellulaire pour une paire MCC/MNC donn\xE9e.</p>',par:{mccmnc:'une cha\xEEne de caract\xE8res commen\xE7ant par un code MCC, suivi par un code MNC.'},ret:'une cha\xEEne contenant le nom usuel de l\x27op\xE9rateur correspondant.'}
+,'decodePLMN':{syn:'Retourne le nom usuel de l\x27op\xE9rateur cellulaire pour une paire MCC/MNC donn\xE9e (DEPRECATED).',lib:'%&rarr;decodePLMN()',pro:'<span id=str>string</span> decodePLMN(<span id=str>string</span> <span id=pn>mccmnc</span>)',cmt:'<p>Retourne le nom usuel de l\x27op\xE9rateur cellulaire pour une paire MCC/MNC donn\xE9e (DEPRECATED).</p>',par:{mccmnc:'une cha\xEEne de caract\xE8res commen\xE7ant par un code MCC, suivi par un code MNC.'},ret:'une cha\xEEne contenant le nom usuel de l\x27op\xE9rateur correspondant.'}
 ,'describe':{syn:'Retourne un court texte d\xE9crivant de mani\xE8re non-ambig\xFCe l\x27instance de l\x27interface cellulaire au format <tt>TYPE(NAME)=SERIAL&#46;FUNCTIONID</tt>.',lib:'%&rarr;describe()',pro:'<span id=str>string</span> describe()',cmt:'<p>Retourne un court texte d\xE9crivant de mani\xE8re non-ambig\xFCe l\x27instance de l\x27interface cellulaire au format <tt>TYPE(NAME)=SERIAL&#46;FUNCTIONID</tt>. Plus pr\xE9cis\xE9ment, <tt>TYPE</tt> correspond au type de fonction, <tt>NAME</tt> correspond au nom utils\xE9 lors du premier acc\xE8s a la fonction, <tt>SERIAL</tt> correspond au num\xE9ro de s\xE9rie du module si le module est connect\xE9, ou <tt>\x22unresolved\x22</tt> sinon, et <tt>FUNCTIONID</tt> correspond \xE0 l\x27identifiant mat\xE9riel de la fonction si le module est connect\xE9. Par exemple, La methode va retourner <tt>Relay(MyCustomName.relay1)=RELAYLO1-123456.relay1</tt> si le module est d\xE9j\xE0 connect\xE9 ou <tt>Relay(BadCustomeName.relay1)=unresolved</tt> si le module n\x27est pas d\xE9j\xE0 connect\xE9. Cette methode ne declenche aucune transaction USB ou TCP et peut donc \xEAtre utilis\xE9 dans un debuggeur.</p>',ret:'une cha\xEEne de caract\xE8res d\xE9crivant l\x27interface cellulaire (ex: <tt>Relay(MyCustomName.relay1)=RELAYLO1-123456.relay1</tt>)'}
 ,'get_advertisedValue':{syn:'Retourne la valeur courante de l\x27interface cellulaire (pas plus de 6 caract\xE8res).',lib:'%&rarr;get_advertisedValue()',pro:'<span id=str>string</span> get_advertisedValue()',cmt:'<p>Retourne la valeur courante de l\x27interface cellulaire (pas plus de 6 caract\xE8res).</p>',ret:'une cha\xEEne de caract\xE8res repr\xE9sentant la valeur courante de l\x27interface cellulaire (pas plus de 6 caract\xE8res).',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>YCellular.ADVERTISEDVALUE_INVALID</tt>.'}
 ,'get_airplaneMode':{syn:'Retourne vrai si le mode avion est activ\xE9 (radio d\xE9sactiv\xE9e).',lib:'%&rarr;get_airplaneMode()',pro:'<span id=int>Y_AIRPLANEMODE_enum</span> get_airplaneMode()',cmt:'<p>Retourne vrai si le mode avion est activ\xE9 (radio d\xE9sactiv\xE9e).</p>',ret:'soit <tt>YCellular.AIRPLANEMODE_OFF</tt>, soit <tt>YCellular.AIRPLANEMODE_ON</tt>, selon vrai si le mode avion est activ\xE9 (radio d\xE9sactiv\xE9e)',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YCellular.AIRPLANEMODE_INVALID</tt>.'}
@@ -961,6 +958,7 @@ doc['ColorLed']={'':{syn:'Interface pour int\xE9ragir avec les LEDs RGB, disponi
 ,'registerValueCallback':{syn:'Enregistre la fonction de callback qui est appel\xE9e \xE0 chaque changement de la valeur publi\xE9e.',lib:'%&rarr;registerValueCallback()',pro:'<span id=int>int</span> registerValueCallback(<span id=obj>YColorLedValueCallback</span> <span id=pn>callback</span>)',cmt:'<p>Enregistre la fonction de callback qui est appel\xE9e \xE0 chaque changement de la valeur publi\xE9e. Ce callback n\x27est appel\xE9 que durant l\x27ex\xE9cution de <tt>ySleep</tt> ou <tt>yHandleEvents</tt>. Cela permet \xE0 l\x27appelant de contr\xF4ler quand les callback peuvent se produire. Il est important d\x27appeler l\x27une de ces deux fonctions p\xE9riodiquement pour garantir que les callback ne soient pas appel\xE9s trop tard. Pour d\xE9sactiver un callback, il suffit d\x27appeler cette m\xE9thode en lui passant un pointeur nul.</p>',par:{callback:'la fonction de callback \xE0 rappeler, ou un pointeur nul. La fonction de callback doit accepter deux arguments: l\x27object fonction dont la valeur a chang\xE9, et la cha\xEEne de caract\xE8re d\xE9crivant la nouvelle valeur publi\xE9e.'}}
 ,'resetBlinkSeq':{syn:'efface le contenu de la sequence de clignotement.',lib:'%&rarr;resetBlinkSeq()',pro:'<span id=int>int</span> resetBlinkSeq()',cmt:'<p>efface le contenu de la sequence de clignotement.</p>',ret:'<tt>YAPI.SUCCESS</tt> si l\x27op\xE9ration se d\xE9roule sans erreur. En cas d\x27erreur, d\xE9clenche une exception ou retourne un code d\x27erreur n\xE9gatif.'}
 ,'rgbMove':{syn:'Effectue une transition continue dans l\x27espace RGB entre la couleur courante et une nouvelle couleur.',lib:'%&rarr;rgbMove()',pro:'<span id=int>int</span> rgbMove(<span id=int>int</span> <span id=pn>rgb_target</span>, <span id=int>int</span> <span id=pn>ms_duration</span>)',cmt:'<p>Effectue une transition continue dans l\x27espace RGB entre la couleur courante et une nouvelle couleur.</p>',par:{rgb_target:'couleur RGB d\xE9sir\xE9e \xE0 la fin de la transition',ms_duration:'dur\xE9e de la transition, en millisecondes'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op&eacute;ration se d&eacute;roule sans erreur.',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne un code d\x27erreur n&eacute;gatif.'}
+,'saveLedsConfigAtPowerOn':{syn:'Sauve la configuration de d\xE9marrage des LEDs.',lib:'%&rarr;saveLedsConfigAtPowerOn()',pro:'<span id=int>int</span> saveLedsConfigAtPowerOn()',cmt:'<p>Sauve la configuration de d\xE9marrage des LEDs. Attention: cette m\xE9thode ne fonctionne pas sur les modules Yocto-Color (version 1) et Yocto-PowerColor. Pour ces modules il faut utiliser la m\xE9thode <tt>saveToFlash()</tt> du module.</p>',ret:'<tt>YAPI.SUCCESS</tt> si l\x27op\xE9ration se d\xE9roule sans erreur.',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne un code d\x27erreur n\xE9gatif.'}
 ,'set_hslColor':{syn:'Modifie la couleur courante de la LED, en utilisant une couleur HSL sp\xE9cifi\xE9e.',lib:'%&rarr;set_hslColor()',pro:'<span id=int>int</span> set_hslColor(<span id=int>int</span> <span id=pn>newval</span>)',cmt:'<p>Modifie la couleur courante de la LED, en utilisant une couleur HSL sp\xE9cifi\xE9e. L\x27encodage est r\xE9alis\xE9 de la mani\xE8re suivante: 0xHHSSLL.</p>',par:{newval:'un entier repr&eacute;sentant la couleur courante de la LED, en utilisant une couleur HSL sp\xE9cifi\xE9e'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op&eacute;ration se d&eacute;roule sans erreur.',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne un code d\x27erreur n&eacute;gatif.'}
 ,'set_logicalName':{syn:'Modifie le nom logique de la LED RGB.',lib:'%&rarr;set_logicalName()',pro:'<span id=int>int</span> set_logicalName(<span id=str>string</span> <span id=pn>newval</span>)',cmt:'<p>Modifie le nom logique de la LED RGB. Vous pouvez utiliser <tt>yCheckLogicalName()</tt> pour v\xE9rifier si votre param\xE8tre est valide. N\x27oubliez pas d\x27appeler la m\xE9thode <tt>saveToFlash()</tt> du module si le r\xE9glage doit \xEAtre pr\xE9serv\xE9.</p>',par:{newval:'une cha\xEEne de caract\xE8res repr\xE9sentant le nom logique de la LED RGB.'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27appel se d\xE9roule sans erreur.',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne un code d\x27erreur n\xE9gatif.'}
 ,'set_rgbColor':{syn:'Modifie la couleur courante de la LED, en utilisant une couleur RGB (Rouge Vert Bleu).',lib:'%&rarr;set_rgbColor()',pro:'<span id=int>int</span> set_rgbColor(<span id=int>int</span> <span id=pn>newval</span>)',cmt:'<p>Modifie la couleur courante de la LED, en utilisant une couleur RGB (Rouge Vert Bleu). L\x27encodage est r\xE9alis\xE9 de la mani\xE8re suivante: 0xRRGGBB.</p>',par:{newval:'un entier repr&eacute;sentant la couleur courante de la LED, en utilisant une couleur RGB (Rouge Vert Bleu)'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op&eacute;ration se d&eacute;roule sans erreur.',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne un code d\x27erreur n&eacute;gatif.'}
@@ -1046,6 +1044,60 @@ doc['ColorLedCluster']={'':{syn:'Interface pour int\xE9ragir avec les clusters d
 ,'unmuteValueCallbacks':ds.unmuteValueCallbacks
 };
 //--- (end of generated code: ColorLedCluster)
+//--- (generated code: ColorSensor)
+doc['ColorSensor']={'':{syn:'Interface pour int\xE9ragir avec les capteurs de couleurs',inc:'#include &quot;yocto_colorsensor.h&quot;',cmt:'<p>La classe <tt>YColorSensor</tt> permet de lire et de configurer les capteurs de couleurs Yoctopuce. Elle h\xE9rite de la classe <tt>YSensor</tt> toutes les fonctions de base des capteurs Yoctopuce: lecture de mesures, callbacks, enregistreur de donn\xE9es.</p>'}
+,'FindColorSensor':{syn:'Permet de retrouver un capteur de couleurs d\x27apr\xE8s un identifiant donn\xE9.',lib:'YColorSensor::FindColorSensor()',pro:'<span id=obj>YColorSensor*</span> FindColorSensor(<span id=str>string</span> <span id=pn>func</span>)',cmt:'<p>Permet de retrouver un capteur de couleurs d\x27apr\xE8s un identifiant donn\xE9. L\x27identifiant peut \xEAtre sp\xE9cifi\xE9 sous plusieurs formes:<br> <ul> <li>NomLogiqueFonction</li> <li>NoSerieModule.IdentifiantFonction</li> <li>NoSerieModule.NomLogiqueFonction</li> <li>NomLogiqueModule.IdentifiantMat\xE9riel</li> <li>NomLogiqueModule.NomLogiqueFonction</li> </ul></p><p> Cette fonction n\x27exige pas que le capteur de couleurs soit en ligne au moment ou elle est appel\xE9e, l\x27objet retourn\xE9 sera n\xE9anmoins valide. Utiliser la m\xE9thode <tt>YColorSensor.isOnline()</tt> pour tester si le capteur de couleurs est utilisable \xE0 un moment donn\xE9. En cas d\x27ambigu\xEFt\xE9 lorsqu\x27on fait une recherche par nom logique, aucune erreur ne sera notifi\xE9e: la premi\xE8re instance trouv\xE9e sera renvoy\xE9e. La recherche se fait d\x27abord par nom mat\xE9riel, puis par nom logique.</p><p> Si un appel \xE0 la m\xE9thode is_online() de cet objet renvoie FAUX alors que vous \xEAtes s\xFBr que le module correspondant est ben branch\xE9, v\xE9rifiez que vous n\x27avez pas oubli\xE9 d\x27appeler registerHub() \xE0 l\x27initialisation de de l\x27application.</p>',par:{func:'une cha\xEEne de caract\xE8res qui r\xE9f\xE9rence le capteur de couleurs sans ambigu\xEFt\xE9, par exemple <tt>MyDevice.colorSensor</tt>.'},ret:'un objet de classe <tt>YColorSensor</tt> qui permet ensuite de contr\xF4ler le capteur de couleurs.'}
+,'FirstColorSensor':{syn:'Commence l\x27\xE9num\xE9ration des capteurs de couleurs accessibles par la librairie.',lib:'YColorSensor::FirstColorSensor()',pro:'<span id=obj>YColorSensor *</span> FirstColorSensor()',cmt:'<p>Commence l\x27\xE9num\xE9ration des capteurs de couleurs accessibles par la librairie. Utiliser la fonction <tt>YColorSensor.nextColorSensor()</tt> pour it\xE9rer sur les autres capteurs de couleurs.</p>',ret:'un pointeur sur un objet <tt>YColorSensor</tt>, correspondant au premier capteur couleurs accessible en ligne, ou <tt>null</tt> s\x27il n\x27y a pas de capteurs de couleurs disponibles.'}
+,'clearCache':{syn:'Invalide le cache.',lib:'%&rarr;clearCache()',pro:'<span id=obj>void</span> clearCache()',cmt:'<p>Invalide le cache. Invalide le cache des valeurs courantes du capteur de couleurs. Force le prochain appel \xE0 une m\xE9thode get_xxx() ou loadxxx() pour charger les les donn\xE9es depuis le module.</p>'}
+,'describe':{syn:'Retourne un court texte d\xE9crivant de mani\xE8re non-ambig\xFCe l\x27instance du capteur de couleurs au format <tt>TYPE(NAME)=SERIAL&#46;FUNCTIONID</tt>.',lib:'%&rarr;describe()',pro:'<span id=str>string</span> describe()',cmt:'<p>Retourne un court texte d\xE9crivant de mani\xE8re non-ambig\xFCe l\x27instance du capteur de couleurs au format <tt>TYPE(NAME)=SERIAL&#46;FUNCTIONID</tt>. Plus pr\xE9cis\xE9ment, <tt>TYPE</tt> correspond au type de fonction, <tt>NAME</tt> correspond au nom utils\xE9 lors du premier acc\xE8s a la fonction, <tt>SERIAL</tt> correspond au num\xE9ro de s\xE9rie du module si le module est connect\xE9, ou <tt>\x22unresolved\x22</tt> sinon, et <tt>FUNCTIONID</tt> correspond \xE0 l\x27identifiant mat\xE9riel de la fonction si le module est connect\xE9. Par exemple, La methode va retourner <tt>Relay(MyCustomName.relay1)=RELAYLO1-123456.relay1</tt> si le module est d\xE9j\xE0 connect\xE9 ou <tt>Relay(BadCustomeName.relay1)=unresolved</tt> si le module n\x27est pas d\xE9j\xE0 connect\xE9. Cette methode ne declenche aucune transaction USB ou TCP et peut donc \xEAtre utilis\xE9 dans un debuggeur.</p>',ret:'une cha\xEEne de caract\xE8res d\xE9crivant le capteur de couleurs (ex: <tt>Relay(MyCustomName.relay1)=RELAYLO1-123456.relay1</tt>)'}
+,'get_advertisedValue':{syn:'Retourne la valeur courante du capteur de couleurs (pas plus de 6 caract\xE8res).',lib:'%&rarr;get_advertisedValue()',pro:'<span id=str>string</span> get_advertisedValue()',cmt:'<p>Retourne la valeur courante du capteur de couleurs (pas plus de 6 caract\xE8res).</p>',ret:'une cha\xEEne de caract\xE8res repr\xE9sentant la valeur courante du capteur de couleurs (pas plus de 6 caract\xE8res).',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>YColorSensor.ADVERTISEDVALUE_INVALID</tt>.'}
+,'get_errorMessage':{syn:'Retourne le message correspondant \xE0 la derni\xE8re erreur survenue lors de l\x27utilisation du capteur de couleurs.',lib:'%&rarr;get_errorMessage()',pro:'<span id=str>string</span> get_errorMessage()',cmt:'<p>Retourne le message correspondant \xE0 la derni\xE8re erreur survenue lors de l\x27utilisation du capteur de couleurs. Cette m\xE9thode est principalement utile lorsque la librairie Yoctopuce est utilis\xE9e en d\xE9sactivant la gestion des exceptions.</p>',ret:'une cha\xEEne de caract\xE8res correspondant au message de la derni\xE8re erreur qui s\x27est produit lors de l\x27utilisation du capteur de couleurs.'}
+,'get_errorType':{syn:'Retourne le code d\x27erreur correspondant \xE0 la derni\xE8re erreur survenue lors de l\x27utilisation du capteur de couleurs.',lib:'%&rarr;get_errorType()',pro:'<span id=int>YRETCODE</span> get_errorType()',cmt:'<p>Retourne le code d\x27erreur correspondant \xE0 la derni\xE8re erreur survenue lors de l\x27utilisation du capteur de couleurs. Cette m\xE9thode est principalement utile lorsque la librairie Yoctopuce est utilis\xE9e en d\xE9sactivant la gestion des exceptions.</p>',ret:'un nombre correspondant au code de la derni\xE8re erreur qui s\x27est produit lors de l\x27utilisation du capteur de couleurs.'}
+,'get_estimatedHSL':{syn:'Retourne la couleur estim\xE9e au format HSL (Teinte, Saturation, Luminosit\xE9).',lib:'%&rarr;get_estimatedHSL()',pro:'<span id=int>int</span> get_estimatedHSL()',cmt:'<p>Retourne la couleur estim\xE9e au format HSL (Teinte, Saturation, Luminosit\xE9).</p>',ret:'un entier repr&eacute;sentant la couleur estim\xE9e au format HSL (Teinte, Saturation, Luminosit\xE9)',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YColorSensor.ESTIMATEDHSL_INVALID</tt>.'}
+,'get_estimatedOkLab':{syn:'Retourne la couleur estim\xE9e au format OkLab.',lib:'%&rarr;get_estimatedOkLab()',pro:'<span id=str>string</span> get_estimatedOkLab()',cmt:'<p>Retourne la couleur estim\xE9e au format OkLab.</p>',ret:'une cha&icirc;ne de caract&egrave;res repr&eacute;sentant la couleur estim\xE9e au format OkLab',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YColorSensor.ESTIMATEDOKLAB_INVALID</tt>.'}
+,'get_estimatedRGB':{syn:'Retourne la couleur estim\xE9e au format RGB (0xRRGGBB).',lib:'%&rarr;get_estimatedRGB()',pro:'<span id=int>int</span> get_estimatedRGB()',cmt:'<p>Retourne la couleur estim\xE9e au format RGB (0xRRGGBB).</p>',ret:'un entier repr&eacute;sentant la couleur estim\xE9e au format RGB (0xRRGGBB)',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YColorSensor.ESTIMATEDRGB_INVALID</tt>.'}
+,'get_estimatedXYZ':{syn:'Retourne la couleur estim\xE9e au format XYZ.',lib:'%&rarr;get_estimatedXYZ()',pro:'<span id=str>string</span> get_estimatedXYZ()',cmt:'<p>Retourne la couleur estim\xE9e au format XYZ.</p>',ret:'une cha&icirc;ne de caract&egrave;res repr&eacute;sentant la couleur estim\xE9e au format XYZ',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YColorSensor.ESTIMATEDXYZ_INVALID</tt>.'}
+,'get_estimationModel':{syn:'Retourne le mod\xE8le utilis\xE9 pour l\x27estimation des couleurs.',lib:'%&rarr;get_estimationModel()',pro:'<span id=int>Y_ESTIMATIONMODEL_enum</span> get_estimationModel()',cmt:'<p>Retourne le mod\xE8le utilis\xE9 pour l\x27estimation des couleurs.</p>',ret:'soit <tt>YColorSensor.ESTIMATIONMODEL_REFLECTION</tt>, soit <tt>YColorSensor.ESTIMATIONMODEL_EMISSION</tt>, selon le mod\xE8le utilis\xE9 pour l\x27estimation des couleurs',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YColorSensor.ESTIMATIONMODEL_INVALID</tt>.'}
+,'get_friendlyName':{syn:'Retourne un identifiant global du capteur de couleurs au format <tt>NOM_MODULE&#46;NOM_FONCTION</tt>.',lib:'%&rarr;get_friendlyName()',pro:'<span id=str>string</span> get_friendlyName()',cmt:'<p>Retourne un identifiant global du capteur de couleurs au format <tt>NOM_MODULE&#46;NOM_FONCTION</tt>. Le cha\xEEne retourn\xE9e utilise soit les noms logiques du module et du capteur de couleurs s\x27ils sont d\xE9finis, soit respectivement le num\xE9ro de s\xE9rie du module et l\x27identifant mat\xE9riel du capteur de couleurs (par exemple: <tt>MyCustomName.relay1</tt>)</p>',ret:'une cha\xEEne de caract\xE8res identifiant le capteur de couleurs en utilisant les noms logiques (ex: <tt>MyCustomName.relay1</tt>)',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>YColorSensor.FRIENDLYNAME_INVALID</tt>.'}
+,'get_functionDescriptor':ds.get_functionDescriptor
+,'get_functionId':{syn:'Retourne l\x27identifiant mat\xE9riel du capteur de couleurs, sans r\xE9f\xE9rence au module.',lib:'%&rarr;get_functionId()',pro:'<span id=str>string</span> get_functionId()',cmt:'<p>Retourne l\x27identifiant mat\xE9riel du capteur de couleurs, sans r\xE9f\xE9rence au module. Par example <tt>relay1</tt>.</p>',ret:'une cha\xEEne de caract\xE8res identifiant le capteur de couleurs (ex: <tt>relay1</tt>)',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>YColorSensor.FUNCTIONID_INVALID</tt>.'}
+,'get_gain':{syn:'Retourne le gain actuel.',lib:'%&rarr;get_gain()',pro:'<span id=int>int</span> get_gain()',cmt:'<p>Retourne le gain actuel. Cette m\xE9thode met \xE0 jour la valeur de gain.</p>',ret:'un entier repr&eacute;sentant le gain actuel',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YColorSensor.GAIN_INVALID</tt>.'}
+,'get_hardwareId':{syn:'Retourne l\x27identifiant mat\xE9riel unique du capteur de couleurs au format <tt>SERIAL.FUNCTIONID</tt>.',lib:'%&rarr;get_hardwareId()',pro:'<span id=str>string</span> get_hardwareId()',cmt:'<p>Retourne l\x27identifiant mat\xE9riel unique du capteur de couleurs au format <tt>SERIAL.FUNCTIONID</tt>. L\x27identifiant unique est compos\xE9 du num\xE9ro de s\xE9rie du module et de l\x27identifiant mat\xE9riel du capteur de couleurs (par example <tt>RELAYLO1-123456.relay1</tt>).</p>',ret:'une cha\xEEne de caract\xE8res identifiant le capteur de couleurs (ex: <tt>RELAYLO1-123456.relay1</tt>)',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>YColorSensor.HARDWAREID_INVALID</tt>.'}
+,'get_integrationTime':{syn:'Retourne le temps d\x27int\xE9gration actuel.',lib:'%&rarr;get_integrationTime()',pro:'<span id=int>int</span> get_integrationTime()',cmt:'<p>Retourne le temps d\x27int\xE9gration actuel. Cette m\xE9thode r\xE9cup\xE8re la valeur du temps d\x27int\xE9gration utilis\xE9 pour le traitement des donn\xE9es et la renvoie sous forme d\x27un entier ou d\x27un objet.</p>',ret:'un entier repr&eacute;sentant le temps d\x27int\xE9gration actuel',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YColorSensor.INTEGRATIONTIME_INVALID</tt>.'}
+,'get_ledCalibration':{syn:'Retourne le courant de la LED a la calibration.',lib:'%&rarr;get_ledCalibration()',pro:'<span id=int>int</span> get_ledCalibration()',cmt:'<p>Retourne le courant de la LED a la calibration.</p>',ret:'un entier repr&eacute;sentant le courant de la LED a la calibration',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YColorSensor.LEDCALIBRATION_INVALID</tt>.'}
+,'get_ledCurrent':{syn:'Retourne le courant actuel de la LED.',lib:'%&rarr;get_ledCurrent()',pro:'<span id=int>int</span> get_ledCurrent()',cmt:'<p>Retourne le courant actuel de la LED.</p>',ret:'un entier repr&eacute;sentant le courant actuel de la LED',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YColorSensor.LEDCURRENT_INVALID</tt>.'}
+,'get_logicalName':{syn:'Retourne le nom logique du capteur de couleurs.',lib:'%&rarr;get_logicalName()',pro:'<span id=str>string</span> get_logicalName()',cmt:'<p>Retourne le nom logique du capteur de couleurs.</p>',ret:'une cha\xEEne de caract\xE8res repr\xE9sentant le nom logique du capteur de couleurs.',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>YColorSensor.LOGICALNAME_INVALID</tt>.'}
+,'get_module':{syn:'Retourne l\x27objet <tt>YModule</tt> correspondant au module Yoctopuce qui h\xE9berge la fonction.',lib:'%&rarr;get_module()',pro:'<span id=obj>YModule *</span> get_module()',cmt:'<p>Retourne l\x27objet <tt>YModule</tt> correspondant au module Yoctopuce qui h\xE9berge la fonction. Si la fonction ne peut \xEAtre trouv\xE9e sur aucun module, l\x27instance de <tt>YModule</tt> retourn\xE9e ne sera pas joignable.</p>',ret:'une instance de <tt>YModule</tt>'}
+,'get_nearHTMLColor':{syn:'Retourne la couleur HTML estim\xE9e.',lib:'%&rarr;get_nearHTMLColor()',pro:'<span id=str>string</span> get_nearHTMLColor()',cmt:'<p>Retourne la couleur HTML estim\xE9e.</p>',ret:'une cha&icirc;ne de caract&egrave;res repr&eacute;sentant la couleur HTML estim\xE9e',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YColorSensor.NEARHTMLCOLOR_INVALID</tt>.'}
+,'get_nearRAL1':{syn:'Retourne la couleur estim\xE9e en format RAL.',lib:'%&rarr;get_nearRAL1()',pro:'<span id=str>string</span> get_nearRAL1()',cmt:'<p>Retourne la couleur estim\xE9e en format RAL.</p>',ret:'une cha&icirc;ne de caract&egrave;res repr&eacute;sentant la couleur estim\xE9e en format RAL',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YColorSensor.NEARRAL1_INVALID</tt>.'}
+,'get_nearRAL2':{syn:'Retourne la couleur estim\xE9e en format RAL.',lib:'%&rarr;get_nearRAL2()',pro:'<span id=str>string</span> get_nearRAL2()',cmt:'<p>Retourne la couleur estim\xE9e en format RAL.</p>',ret:'une cha&icirc;ne de caract&egrave;res repr&eacute;sentant la couleur estim\xE9e en format RAL',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YColorSensor.NEARRAL2_INVALID</tt>.'}
+,'get_nearRAL3':{syn:'Retourne la couleur estim\xE9e en format RAL.',lib:'%&rarr;get_nearRAL3()',pro:'<span id=str>string</span> get_nearRAL3()',cmt:'<p>Retourne la couleur estim\xE9e en format RAL.</p>',ret:'une cha&icirc;ne de caract&egrave;res repr&eacute;sentant la couleur estim\xE9e en format RAL',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YColorSensor.NEARRAL3_INVALID</tt>.'}
+,'get_nearSimpleColor':{syn:'Retourne la couleur estim\xE9e.',lib:'%&rarr;get_nearSimpleColor()',pro:'<span id=str>string</span> get_nearSimpleColor()',cmt:'<p>Retourne la couleur estim\xE9e.</p>',ret:'une cha&icirc;ne de caract&egrave;res repr&eacute;sentant la couleur estim\xE9e',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YColorSensor.NEARSIMPLECOLOR_INVALID</tt>.'}
+,'get_nearSimpleColorIndex':{syn:'Retourne la couleur estim\xE9e sous forme d\x27un indice.',lib:'%&rarr;get_nearSimpleColorIndex()',pro:'<span id=int>Y_NEARSIMPLECOLORINDEX_enum</span> get_nearSimpleColorIndex()',cmt:'<p>Retourne la couleur estim\xE9e sous forme d\x27un indice.</p>',ret:'une valeur parmi <tt>YColorSensor.NEARSIMPLECOLORINDEX_BROWN</tt>, <tt>YColorSensor.NEARSIMPLECOLORINDEX_RED</tt>, <tt>YColorSensor.NEARSIMPLECOLORINDEX_ORANGE</tt>, <tt>YColorSensor.NEARSIMPLECOLORINDEX_YELLOW</tt>, <tt>YColorSensor.NEARSIMPLECOLORINDEX_WHITE</tt>, <tt>YColorSensor.NEARSIMPLECOLORINDEX_GRAY</tt>, <tt>YColorSensor.NEARSIMPLECOLORINDEX_BLACK</tt>, <tt>YColorSensor.NEARSIMPLECOLORINDEX_GREEN</tt>, <tt>YColorSensor.NEARSIMPLECOLORINDEX_BLUE</tt>, <tt>YColorSensor.NEARSIMPLECOLORINDEX_PURPLE</tt> et <tt>YColorSensor.NEARSIMPLECOLORINDEX_PINK</tt> repr&eacute;sentant la couleur estim\xE9e sous forme d\x27un indice',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YColorSensor.NEARSIMPLECOLORINDEX_INVALID</tt>.'}
+,'get_saturation':{syn:'Retourne la saturation actuelle du capteur.',lib:'%&rarr;get_saturation()',pro:'<span id=int>int</span> get_saturation()',cmt:'<p>Retourne la saturation actuelle du capteur. Cette fonction met \xE0 jour la valeur de saturation du capteur.</p>',ret:'un entier repr&eacute;sentant la saturation actuelle du capteur',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YColorSensor.SATURATION_INVALID</tt>.'}
+,'get_serialNumber':ds.get_serialNumber
+,'get_userData':{syn:'Retourne le contenu de l\x27attribut userData, pr\xE9c\xE9demment stock\xE9 \xE0 l\x27aide de la m\xE9thode <tt>set_userData</tt>.',lib:'%&rarr;get_userData()',pro:'<span id=obj>void *</span> get_userData()',cmt:'<p>Retourne le contenu de l\x27attribut userData, pr\xE9c\xE9demment stock\xE9 \xE0 l\x27aide de la m\xE9thode <tt>set_userData</tt>. Cet attribut n\x27es pas utilis\xE9 directement par l\x27API. Il est \xE0 la disposition de l\x27appelant pour stocker un contexte.</p>',ret:'l\x27objet stock\xE9 pr\xE9c\xE9demment par l\x27appelant.'}
+,'get_workingMode':{syn:'Retourne le mode de fonctionnement actif.',lib:'%&rarr;get_workingMode()',pro:'<span id=int>Y_WORKINGMODE_enum</span> get_workingMode()',cmt:'<p>Retourne le mode de fonctionnement actif.</p>',ret:'soit <tt>YColorSensor.WORKINGMODE_AUTO</tt>, soit <tt>YColorSensor.WORKINGMODE_EXPERT</tt>, selon le mode de fonctionnement actif',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YColorSensor.WORKINGMODE_INVALID</tt>.'}
+,'isOnline':{syn:'V\xE9rifie si le module h\xE9bergeant le capteur de couleurs est joignable, sans d\xE9clencher d\x27erreur.',lib:'%&rarr;isOnline()',pro:'<span id=bool>bool</span> isOnline()',cmt:'<p>V\xE9rifie si le module h\xE9bergeant le capteur de couleurs est joignable, sans d\xE9clencher d\x27erreur. Si les valeurs des attributs en cache du capteur de couleurs sont valides au moment de l\x27appel, le module est consid\xE9r\xE9 joignable. Cette fonction ne cause en aucun cas d\x27exception, quelle que soit l\x27erreur qui pourrait se produire lors de la v\xE9rification de joignabilit\xE9.</p>',ret:'<tt>true</tt> si le capteur de couleurs est joignable, <tt>false</tt> sinon'}
+,'isReadOnly':ds.isReadOnly
+,'load':{syn:'Met en cache les valeurs courantes du capteur de couleurs, avec une dur\xE9e de validit\xE9 sp\xE9cifi\xE9e.',lib:'%&rarr;load()',pro:'<span id=int>YRETCODE</span> load(<span id=int>int</span> <span id=pn>msValidity</span>)',cmt:'<p>Met en cache les valeurs courantes du capteur de couleurs, avec une dur\xE9e de validit\xE9 sp\xE9cifi\xE9e. Par d\xE9faut, lorsqu\x27on acc\xE8de \xE0 un module, tous les attributs des fonctions du module sont automatiquement mises en cache pour la dur\xE9e standard (5 ms). Cette m\xE9thode peut \xEAtre utilis\xE9e pour marquer occasionellement les donn\xE9es cach\xE9es comme valides pour une plus longue p\xE9riode, par exemple dans le but de r\xE9duire le trafic r\xE9seau.</p>',par:{msValidity:'un entier correspondant \xE0 la dur\xE9e de validit\xE9 attribu\xE9e aux les param\xE8tres charg\xE9s, en millisecondes'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op\xE9ration se d\xE9roule sans erreur.',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne un code d\x27erreur n\xE9gatif.'}
+,'loadAttribute':ds.loadAttribute
+,'muteValueCallbacks':ds.muteValueCallbacks
+,'nextColorSensor':{syn:'Continue l\x27\xE9num\xE9ration des capteurs de couleurs commenc\xE9e \xE0 l\x27aide de <tt>yFirstColorSensor()</tt> Attention, vous ne pouvez faire aucune supposition sur l\x27ordre dans lequel les capteurs de couleurs sont retourn\xE9s.',lib:'%&rarr;nextColorSensor()',pro:'<span id=obj>YColorSensor *</span> nextColorSensor()',cmt:'<p>Continue l\x27\xE9num\xE9ration des capteurs de couleurs commenc\xE9e \xE0 l\x27aide de <tt>yFirstColorSensor()</tt> Attention, vous ne pouvez faire aucune supposition sur l\x27ordre dans lequel les capteurs de couleurs sont retourn\xE9s. Si vous souhaitez retrouver un capteur de couleurs sp\xE9cifique, utilisez <tt>ColorSensor.findColorSensor()</tt> avec un hardwareID ou un nom logique.</p>',ret:'un pointeur sur un objet <tt>YColorSensor</tt> accessible en ligne, ou <tt>null</tt> lorsque l\x27\xE9num\xE9ration est termin\xE9e.'}
+,'registerValueCallback':{syn:'Enregistre la fonction de callback qui est appel\xE9e \xE0 chaque changement de la valeur publi\xE9e.',lib:'%&rarr;registerValueCallback()',pro:'<span id=int>int</span> registerValueCallback(<span id=obj>YColorSensorValueCallback</span> <span id=pn>callback</span>)',cmt:'<p>Enregistre la fonction de callback qui est appel\xE9e \xE0 chaque changement de la valeur publi\xE9e. Ce callback n\x27est appel\xE9 que durant l\x27ex\xE9cution de <tt>ySleep</tt> ou <tt>yHandleEvents</tt>. Cela permet \xE0 l\x27appelant de contr\xF4ler quand les callback peuvent se produire. Il est important d\x27appeler l\x27une de ces deux fonctions p\xE9riodiquement pour garantir que les callback ne soient pas appel\xE9s trop tard. Pour d\xE9sactiver un callback, il suffit d\x27appeler cette m\xE9thode en lui passant un pointeur nul.</p>',par:{callback:'la fonction de callback \xE0 rappeler, ou un pointeur nul. La fonction de callback doit accepter deux arguments: l\x27object fonction dont la valeur a chang\xE9, et la cha\xEEne de caract\xE8re d\xE9crivant la nouvelle valeur publi\xE9e.'}}
+,'set_estimationModel':{syn:'Modifie le mod\xE8le pour l\x27estimation des couleurs.',lib:'%&rarr;set_estimationModel()',pro:'<span id=int>int</span> set_estimationModel(<span id=int>Y_ESTIMATIONMODEL_enum</span> <span id=pn>newval</span>)',cmt:'<p>Modifie le mod\xE8le pour l\x27estimation des couleurs. N\x27oubliez pas d\x27appeler la m\xE9thode <tt>saveToFlash()</tt> du module si le r\xE9glage doit \xEAtre pr\xE9serv\xE9.</p>',par:{newval:'soit <tt>YColorSensor.ESTIMATIONMODEL_REFLECTION</tt>, soit <tt>YColorSensor.ESTIMATIONMODEL_EMISSION</tt>, selon le mod\xE8le pour l\x27estimation des couleurs'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op&eacute;ration se d&eacute;roule sans erreur.',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne un code d\x27erreur n&eacute;gatif.'}
+,'set_gain':{syn:'Modifie le gain pour le traitement du signal.',lib:'%&rarr;set_gain()',pro:'<span id=int>int</span> set_gain(<span id=int>int</span> <span id=pn>newval</span>)',cmt:'<p>Modifie le gain pour le traitement du signal. Cette m\xE9thode prend une valeur comme param\xE8tre et l\x27assigne comme nouveau gain. Cela influence la sensibilit\xE9 et l\x27intensit\xE9 du signal trait\xE9.</p>',par:{newval:'un entier repr&eacute;sentant le gain pour le traitement du signal'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op&eacute;ration se d&eacute;roule sans erreur.',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne un code d\x27erreur n&eacute;gatif.'}
+,'set_integrationTime':{syn:'Modifie le temps d\x27int\xE9gration pour le traitement des donn\xE9es.',lib:'%&rarr;set_integrationTime()',pro:'<span id=int>int</span> set_integrationTime(<span id=int>int</span> <span id=pn>newval</span>)',cmt:'<p>Modifie le temps d\x27int\xE9gration pour le traitement des donn\xE9es. Cette m\xE9thode prend une valeur comme param\xE8tre et l\x27assigne comme nouveau temps d\x27int\xE9gration. Cela influence la dur\xE9e pendant laquelle les donn\xE9es sont int\xE9gr\xE9es avant d\x27\xEAtre trait\xE9es.</p>',par:{newval:'un entier repr&eacute;sentant le temps d\x27int\xE9gration pour le traitement des donn\xE9es'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op&eacute;ration se d&eacute;roule sans erreur.',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne un code d\x27erreur n&eacute;gatif.'}
+,'set_ledCalibration':{syn:'Modifie le courant de la led durant le calibration.',lib:'%&rarr;set_ledCalibration()',pro:'<span id=int>int</span> set_ledCalibration(<span id=int>int</span> <span id=pn>newval</span>)',cmt:'<p>Modifie le courant de la led durant le calibration. N\x27oubliez pas d\x27appeler la m\xE9thode <tt>saveToFlash()</tt> du module si le r\xE9glage doit \xEAtre pr\xE9serv\xE9.</p>',par:{newval:'un entier repr&eacute;sentant le courant de la led durant le calibration'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op&eacute;ration se d&eacute;roule sans erreur.',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne un code d\x27erreur n&eacute;gatif.'}
+,'set_ledCurrent':{syn:'Modifie la luminosit\xE9 des leds du module.',lib:'%&rarr;set_ledCurrent()',pro:'<span id=int>int</span> set_ledCurrent(<span id=int>int</span> <span id=pn>newval</span>)',cmt:'<p>Modifie la luminosit\xE9 des leds du module. Le param\xEAtre est une valeur entre 0 et 254.</p>',par:{newval:'un entier repr&eacute;sentant la luminosit\xE9 des leds du module'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op&eacute;ration se d&eacute;roule sans erreur.',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne un code d\x27erreur n&eacute;gatif.'}
+,'set_logicalName':{syn:'Modifie le nom logique du capteur de couleurs.',lib:'%&rarr;set_logicalName()',pro:'<span id=int>int</span> set_logicalName(<span id=str>string</span> <span id=pn>newval</span>)',cmt:'<p>Modifie le nom logique du capteur de couleurs. Vous pouvez utiliser <tt>yCheckLogicalName()</tt> pour v\xE9rifier si votre param\xE8tre est valide. N\x27oubliez pas d\x27appeler la m\xE9thode <tt>saveToFlash()</tt> du module si le r\xE9glage doit \xEAtre pr\xE9serv\xE9.</p>',par:{newval:'une cha\xEEne de caract\xE8res repr\xE9sentant le nom logique du capteur de couleurs.'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27appel se d\xE9roule sans erreur.',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne un code d\x27erreur n\xE9gatif.'}
+,'set_userData':dm.set_userData
+,'set_workingMode':{syn:'Modifie le mode utili\xE9.',lib:'%&rarr;set_workingMode()',pro:'<span id=int>int</span> set_workingMode(<span id=int>Y_WORKINGMODE_enum</span> <span id=pn>newval</span>)',cmt:'<p>Modifie le mode utili\xE9. N\x27oubliez pas d\x27appeler la m\xE9thode <tt>saveToFlash()</tt> du module si le r\xE9glage doit \xEAtre pr\xE9serv\xE9.</p>',par:{newval:'soit <tt>YColorSensor.WORKINGMODE_AUTO</tt>, soit <tt>YColorSensor.WORKINGMODE_EXPERT</tt>, selon le mode utili\xE9'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op&eacute;ration se d&eacute;roule sans erreur.',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne un code d\x27erreur n&eacute;gatif.'}
+,'turnLedOff':{syn:'Eteins les LED.',lib:'%&rarr;turnLedOff()',pro:'<span id=int>int</span> turnLedOff()',cmt:'<p>Eteins les LED. En cas d\x27erreur, d\xE9clenche une exception ou retourne Y_DATA_INVALID.</p>'}
+,'turnLedOn':{syn:'Allume les LED au courant utilis\xE9 durant la calibration.',lib:'%&rarr;turnLedOn()',pro:'<span id=int>int</span> turnLedOn()',cmt:'<p>Allume les LED au courant utilis\xE9 durant la calibration. En cas d\x27erreur, d\xE9clenche une exception ou retourne Y_DATA_INVALID.</p>'}
+,'unmuteValueCallbacks':ds.unmuteValueCallbacks
+};
+//--- (end of generated code: ColorSensor)
 //--- (generated code: Compass)
 doc['Compass']={'':{syn:'Interface pour int\xE9ragir avec les fonctions boussole, disponibles par exemple dans le Yocto-3D-V2',inc:'#include &quot;yocto_compass.h&quot;',cmt:'<p>La classe <tt>YCompass</tt> permet de lire et de configurer les fonctions boussole Yoctopuce. Elle h\xE9rite de la classe <tt>YSensor</tt> toutes les fonctions de base des capteurs Yoctopuce: lecture de mesures, callbacks, enregistreur de donn\xE9es.</p>'}
 ,'FindCompass':{syn:'Permet de retrouver une fonction boussole d\x27apr\xE8s un identifiant donn\xE9.',lib:'YCompass::FindCompass()',pro:'<span id=obj>YCompass*</span> FindCompass(<span id=str>string</span> <span id=pn>func</span>)',cmt:'<p>Permet de retrouver une fonction boussole d\x27apr\xE8s un identifiant donn\xE9. L\x27identifiant peut \xEAtre sp\xE9cifi\xE9 sous plusieurs formes:<br> <ul> <li>NomLogiqueFonction</li> <li>NoSerieModule.IdentifiantFonction</li> <li>NoSerieModule.NomLogiqueFonction</li> <li>NomLogiqueModule.IdentifiantMat\xE9riel</li> <li>NomLogiqueModule.NomLogiqueFonction</li> </ul></p><p> Cette fonction n\x27exige pas que la fonction boussole soit en ligne au moment ou elle est appel\xE9e, l\x27objet retourn\xE9 sera n\xE9anmoins valide. Utiliser la m\xE9thode <tt>YCompass.isOnline()</tt> pour tester si la fonction boussole est utilisable \xE0 un moment donn\xE9. En cas d\x27ambigu\xEFt\xE9 lorsqu\x27on fait une recherche par nom logique, aucune erreur ne sera notifi\xE9e: la premi\xE8re instance trouv\xE9e sera renvoy\xE9e. La recherche se fait d\x27abord par nom mat\xE9riel, puis par nom logique.</p><p> Si un appel \xE0 la m\xE9thode is_online() de cet objet renvoie FAUX alors que vous \xEAtes s\xFBr que le module correspondant est ben branch\xE9, v\xE9rifiez que vous n\x27avez pas oubli\xE9 d\x27appeler registerHub() \xE0 l\x27initialisation de de l\x27application.</p>',par:{func:'une cha\xEEne de caract\xE8res qui r\xE9f\xE9rence la fonction boussole sans ambigu\xEFt\xE9, par exemple <tt>Y3DMK002.compass</tt>.'},ret:'un objet de classe <tt>YCompass</tt> qui permet ensuite de contr\xF4ler la fonction boussole.'}
@@ -1903,15 +1955,17 @@ doc['I2cPort']={'':{syn:'Interface pour int\xE9ragir avec les ports I2C, disponi
 doc['I2cSnoopingRecord']={'':{syn:'Description d\x27un message I2C intercept\xE9, retourn\xE9e par la m\xE9thode <tt>i2cPort.snoopMessages</tt>',inc:'#include &quot;yocto_i2cport.h&quot;'}
 ,'get_direction':{syn:'Retourne la direction du message (RX=0, TX=1).',lib:'%&rarr;get_direction()',pro:'<span id=int>int</span> get_direction()',cmt:'<p>Retourne la direction du message (RX=0, TX=1).</p>',ret:'la direction du message (RX=0, TX=1).'}
 ,'get_message':{syn:'Retourne le contenu du message.',lib:'%&rarr;get_message()',pro:'<span id=str>string</span> get_message()',cmt:'<p>Retourne le contenu du message.</p>',ret:'le contenu du message.'}
+,'get_pos':{syn:'Retourne la position absolue de la fin du message.',lib:'%&rarr;get_pos()',pro:'<span id=int>int</span> get_pos()',cmt:'<p>Retourne la position absolue de la fin du message.</p>',ret:'la position absolue de la fin du message.'}
 ,'get_time':{syn:'Retourne le temps \xE9coul\xE9, en ms, depuis le d\xE9but du message pr\xE9c\xE9dent.',lib:'%&rarr;get_time()',pro:'<span id=int>int</span> get_time()',cmt:'<p>Retourne le temps \xE9coul\xE9, en ms, depuis le d\xE9but du message pr\xE9c\xE9dent.</p>',ret:'le temps \xE9coul\xE9, en ms, depuis le d\xE9but du message pr\xE9c\xE9dent.'}
 };
 //--- (end of generated code: I2cSnoopingRecord)
 //--- (generated code: InputCapture)
 doc['InputCapture']={'':{syn:'Interface pour int\xE9ragir avec les d\xE9clencheurs de mesure instantan\xE9e',inc:'#include &quot;yocto_inputcapture.h&quot;',cmt:'<p>La classe <tt>YInputCapture</tt> permet d\x27obtenir le d\xE9tail des mesures \xE9chantillonn\xE9es par un capteur \xE9lectrique Yoctopuce. La capture peut \xEAtre d\xE9clench\xE9e manuellement, ou configur\xE9e pour d\xE9tecter des \xE9v\xE9nements particuliers.</p>'}
 ,'FindInputCapture':{syn:'Permet de retrouver un d\xE9clencheur de mesure instantan\xE9e d\x27apr\xE8s un identifiant donn\xE9.',lib:'YInputCapture::FindInputCapture()',pro:'<span id=obj>YInputCapture*</span> FindInputCapture(<span id=str>string</span> <span id=pn>func</span>)',cmt:'<p>Permet de retrouver un d\xE9clencheur de mesure instantan\xE9e d\x27apr\xE8s un identifiant donn\xE9. L\x27identifiant peut \xEAtre sp\xE9cifi\xE9 sous plusieurs formes:<br> <ul> <li>NomLogiqueFonction</li> <li>NoSerieModule.IdentifiantFonction</li> <li>NoSerieModule.NomLogiqueFonction</li> <li>NomLogiqueModule.IdentifiantMat\xE9riel</li> <li>NomLogiqueModule.NomLogiqueFonction</li> </ul></p><p> Cette fonction n\x27exige pas que le d\xE9clencheur de mesure instantan\xE9e soit en ligne au moment ou elle est appel\xE9e, l\x27objet retourn\xE9 sera n\xE9anmoins valide. Utiliser la m\xE9thode <tt>YInputCapture.isOnline()</tt> pour tester si le d\xE9clencheur de mesure instantan\xE9e est utilisable \xE0 un moment donn\xE9. En cas d\x27ambigu\xEFt\xE9 lorsqu\x27on fait une recherche par nom logique, aucune erreur ne sera notifi\xE9e: la premi\xE8re instance trouv\xE9e sera renvoy\xE9e. La recherche se fait d\x27abord par nom mat\xE9riel, puis par nom logique.</p><p> Si un appel \xE0 la m\xE9thode is_online() de cet objet renvoie FAUX alors que vous \xEAtes s\xFBr que le module correspondant est ben branch\xE9, v\xE9rifiez que vous n\x27avez pas oubli\xE9 d\x27appeler registerHub() \xE0 l\x27initialisation de de l\x27application.</p>',par:{func:'une cha\xEEne de caract\xE8res qui r\xE9f\xE9rence le d\xE9clencheur de mesure instantan\xE9e sans ambigu\xEFt\xE9, par exemple <tt>MyDevice.inputCapture</tt>.'},ret:'un objet de classe <tt>YInputCapture</tt> qui permet ensuite de contr\xF4ler le d\xE9clencheur de mesure instantan\xE9e.'}
+,'FirstInputCapture':{syn:'Commence l\x27\xE9num\xE9ration des d\xE9clencheurs de mesure instantan\xE9e accessibles par la librairie.',lib:'YInputCapture::FirstInputCapture()',pro:'<span id=obj>YInputCapture *</span> FirstInputCapture()',cmt:'<p>Commence l\x27\xE9num\xE9ration des d\xE9clencheurs de mesure instantan\xE9e accessibles par la librairie. Utiliser la fonction <tt>YInputCapture.nextInputCapture()</tt> pour it\xE9rer sur les autres d\xE9clencheurs de mesure instantan\xE9e.</p>',ret:'un pointeur sur un objet <tt>YInputCapture</tt>, correspondant au premier d\xE9clencheur de mesure instantan\xE9e accessible en ligne, ou <tt>null</tt> s\x27il n\x27y a pas de d\xE9clencheurs de mesure instantan\xE9e disponibles.'}
 ,'clearCache':{syn:'Invalide le cache.',lib:'%&rarr;clearCache()',pro:'<span id=obj>void</span> clearCache()',cmt:'<p>Invalide le cache. Invalide le cache des valeurs courantes du d\xE9clencheur de mesure instantan\xE9e. Force le prochain appel \xE0 une m\xE9thode get_xxx() ou loadxxx() pour charger les les donn\xE9es depuis le module.</p>'}
 ,'describe':{syn:'Retourne un court texte d\xE9crivant de mani\xE8re non-ambig\xFCe l\x27instance du d\xE9clencheur de mesure instantan\xE9e au format <tt>TYPE(NAME)=SERIAL&#46;FUNCTIONID</tt>.',lib:'%&rarr;describe()',pro:'<span id=str>string</span> describe()',cmt:'<p>Retourne un court texte d\xE9crivant de mani\xE8re non-ambig\xFCe l\x27instance du d\xE9clencheur de mesure instantan\xE9e au format <tt>TYPE(NAME)=SERIAL&#46;FUNCTIONID</tt>. Plus pr\xE9cis\xE9ment, <tt>TYPE</tt> correspond au type de fonction, <tt>NAME</tt> correspond au nom utils\xE9 lors du premier acc\xE8s a la fonction, <tt>SERIAL</tt> correspond au num\xE9ro de s\xE9rie du module si le module est connect\xE9, ou <tt>\x22unresolved\x22</tt> sinon, et <tt>FUNCTIONID</tt> correspond \xE0 l\x27identifiant mat\xE9riel de la fonction si le module est connect\xE9. Par exemple, La methode va retourner <tt>Relay(MyCustomName.relay1)=RELAYLO1-123456.relay1</tt> si le module est d\xE9j\xE0 connect\xE9 ou <tt>Relay(BadCustomeName.relay1)=unresolved</tt> si le module n\x27est pas d\xE9j\xE0 connect\xE9. Cette methode ne declenche aucune transaction USB ou TCP et peut donc \xEAtre utilis\xE9 dans un debuggeur.</p>',ret:'une cha\xEEne de caract\xE8res d\xE9crivant le d\xE9clencheur de mesure instantan\xE9e (ex: <tt>Relay(MyCustomName.relay1)=RELAYLO1-123456.relay1</tt>)'}
-,'get_advertisedValue':{syn:'Retourne une courte cha\xEEne de caract\xE8res repr\xE9sentant l\x27\xE9tat courant du d\xE9clencheur de mesure instantan\xE9e.',lib:'%&rarr;get_advertisedValue()',pro:'<span id=str>string</span> get_advertisedValue()',cmt:'<p>Retourne une courte cha\xEEne de caract\xE8res repr\xE9sentant l\x27\xE9tat courant du d\xE9clencheur de mesure instantan\xE9e.</p>',ret:'une cha&icirc;ne de caract&egrave;res repr&eacute;sentant une courte cha\xEEne de caract\xE8res repr\xE9sentant l\x27\xE9tat courant du d\xE9clencheur de mesure instantan\xE9e',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YInputCapture.ADVERTISEDVALUE_INVALID</tt>.'}
+,'get_advertisedValue':{syn:'Retourne la valeur courante du d\xE9clencheur de mesure instantan\xE9e (pas plus de 6 caract\xE8res).',lib:'%&rarr;get_advertisedValue()',pro:'<span id=str>string</span> get_advertisedValue()',cmt:'<p>Retourne la valeur courante du d\xE9clencheur de mesure instantan\xE9e (pas plus de 6 caract\xE8res).</p>',ret:'une cha\xEEne de caract\xE8res repr\xE9sentant la valeur courante du d\xE9clencheur de mesure instantan\xE9e (pas plus de 6 caract\xE8res).',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>YInputCapture.ADVERTISEDVALUE_INVALID</tt>.'}
 ,'get_captureType':{syn:'Retourne le type de capture conditionnelle automatique.',lib:'%&rarr;get_captureType()',pro:'<span id=int>Y_CAPTURETYPE_enum</span> get_captureType()',cmt:'<p>Retourne le type de capture conditionnelle automatique.</p>',ret:'une valeur parmi <tt>YInputCapture.CAPTURETYPE_NONE</tt>, <tt>YInputCapture.CAPTURETYPE_TIMED</tt>, <tt>YInputCapture.CAPTURETYPE_V_MAX</tt>, <tt>YInputCapture.CAPTURETYPE_V_MIN</tt>, <tt>YInputCapture.CAPTURETYPE_I_MAX</tt>, <tt>YInputCapture.CAPTURETYPE_I_MIN</tt>, <tt>YInputCapture.CAPTURETYPE_P_MAX</tt>, <tt>YInputCapture.CAPTURETYPE_P_MIN</tt>, <tt>YInputCapture.CAPTURETYPE_V_AVG_MAX</tt>, <tt>YInputCapture.CAPTURETYPE_V_AVG_MIN</tt>, <tt>YInputCapture.CAPTURETYPE_V_RMS_MAX</tt>, <tt>YInputCapture.CAPTURETYPE_V_RMS_MIN</tt>, <tt>YInputCapture.CAPTURETYPE_I_AVG_MAX</tt>, <tt>YInputCapture.CAPTURETYPE_I_AVG_MIN</tt>, <tt>YInputCapture.CAPTURETYPE_I_RMS_MAX</tt>, <tt>YInputCapture.CAPTURETYPE_I_RMS_MIN</tt>, <tt>YInputCapture.CAPTURETYPE_P_AVG_MAX</tt>, <tt>YInputCapture.CAPTURETYPE_P_AVG_MIN</tt>, <tt>YInputCapture.CAPTURETYPE_PF_MIN</tt> et <tt>YInputCapture.CAPTURETYPE_DPF_MIN</tt> repr&eacute;sentant le type de capture conditionnelle automatique',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YInputCapture.CAPTURETYPE_INVALID</tt>.'}
 ,'get_captureTypeAtStartup':{syn:'Retourne le type de capture conditionnelle automatique appliqu\xE9e au d\xE9marrage du module.',lib:'%&rarr;get_captureTypeAtStartup()',pro:'<span id=int>Y_CAPTURETYPEATSTARTUP_enum</span> get_captureTypeAtStartup()',cmt:'<p>Retourne le type de capture conditionnelle automatique appliqu\xE9e au d\xE9marrage du module.</p>',ret:'une valeur parmi <tt>YInputCapture.CAPTURETYPEATSTARTUP_NONE</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_TIMED</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_V_MAX</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_V_MIN</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_I_MAX</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_I_MIN</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_P_MAX</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_P_MIN</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_V_AVG_MAX</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_V_AVG_MIN</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_V_RMS_MAX</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_V_RMS_MIN</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_I_AVG_MAX</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_I_AVG_MIN</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_I_RMS_MAX</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_I_RMS_MIN</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_P_AVG_MAX</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_P_AVG_MIN</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_PF_MIN</tt> et <tt>YInputCapture.CAPTURETYPEATSTARTUP_DPF_MIN</tt> repr&eacute;sentant le type de capture conditionnelle automatique appliqu\xE9e au d\xE9marrage du module',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YInputCapture.CAPTURETYPEATSTARTUP_INVALID</tt>.'}
 ,'get_condAlign':{syn:'Retourne la position relative de l\x27\xE9v\xE9nement de d\xE9clenchement dans la capture.',lib:'%&rarr;get_condAlign()',pro:'<span id=int>int</span> get_condAlign()',cmt:'<p>Retourne la position relative de l\x27\xE9v\xE9nement de d\xE9clenchement dans la capture. Si la valeur est 50%, la capture sera centr\xE9e sur l\x27\xE9v\xE9nement.</p>',ret:'un entier repr&eacute;sentant la position relative de l\x27\xE9v\xE9nement de d\xE9clenchement dans la capture',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YInputCapture.CONDALIGN_INVALID</tt>.'}
@@ -1926,7 +1980,7 @@ doc['InputCapture']={'':{syn:'Interface pour int\xE9ragir avec les d\xE9clencheu
 ,'get_immediateCapture':{syn:'Retourne une capture imm\xE9diate de l\x27\xE9tat des entr\xE9es du module.',lib:'%&rarr;get_immediateCapture()',pro:'<span id=obj>YInputCaptureData</span> get_immediateCapture(<span id=int>int</span> <span id=pn>msDuration</span>)',cmt:'<p>Retourne une capture imm\xE9diate de l\x27\xE9tat des entr\xE9es du module.</p>',par:{msDuration:'dur\xE9e de la capture instantan\xE9e \xE0 effectuer, en millisecondes (typiquement entre 20 et 1000).'},ret:'un objet <tt>YInputCaptureData</tt> qui permet de r\xE9cup\xE9rer une fen\xEAtre de mesure instantan\xE9e des entr\xE9es du module pour la dur\xE9e sp\xE9cifi\xE9e. En cas d\x27erreur, d\xE9clenche une exception ou retourne une capture vide.'}
 ,'get_lastCapture':{syn:'Retourne le d\xE9tail de la derni\xE8re capture automatique effectu\xE9e.',lib:'%&rarr;get_lastCapture()',pro:'<span id=obj>YInputCaptureData</span> get_lastCapture()',cmt:'<p>Retourne le d\xE9tail de la derni\xE8re capture automatique effectu\xE9e.</p>',ret:'un objet <tt>YInputCaptureData</tt> qui permet de r\xE9cup\xE9rer toutes les mesures et les m\xE9ta-informations disponibles au sujet de ces mesures. En cas d\x27erreur, d\xE9clenche une exception ou retourne une capture vide.'}
 ,'get_lastCaptureTime':{syn:'Retourne le temps absolu (nombre de millisecondes) entre la mise sous tension du module et la derni\xE8re capture effectu\xE9e (moment du d\xE9clenchement), ou z\xE9ro si aucune capture n\x27a \xE9t\xE9 d\xE9clench\xE9e.',lib:'%&rarr;get_lastCaptureTime()',pro:'<span id=int>s64</span> get_lastCaptureTime()',cmt:'<p>Retourne le temps absolu (nombre de millisecondes) entre la mise sous tension du module et la derni\xE8re capture effectu\xE9e (moment du d\xE9clenchement), ou z\xE9ro si aucune capture n\x27a \xE9t\xE9 d\xE9clench\xE9e.</p>',ret:'un entier repr&eacute;sentant le temps absolu (nombre de millisecondes) entre la mise sous tension du module et la derni\xE8re capture effectu\xE9e (moment du d\xE9clenchement), ou z\xE9ro si aucune capture n\x27a \xE9t\xE9 d\xE9clench\xE9e',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YInputCapture.LASTCAPTURETIME_INVALID</tt>.'}
-,'get_logicalName':{syn:'Retourne le nom logique du d\xE9clencheur de mesure instantan\xE9e.',lib:'%&rarr;get_logicalName()',pro:'<span id=str>string</span> get_logicalName()',cmt:'<p>Retourne le nom logique du d\xE9clencheur de mesure instantan\xE9e.</p>',ret:'une cha&icirc;ne de caract&egrave;res repr&eacute;sentant le nom logique du d\xE9clencheur de mesure instantan\xE9e',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YInputCapture.LOGICALNAME_INVALID</tt>.'}
+,'get_logicalName':{syn:'Retourne le nom logique du d\xE9clencheur de mesure instantan\xE9e.',lib:'%&rarr;get_logicalName()',pro:'<span id=str>string</span> get_logicalName()',cmt:'<p>Retourne le nom logique du d\xE9clencheur de mesure instantan\xE9e.</p>',ret:'une cha\xEEne de caract\xE8res repr\xE9sentant le nom logique du d\xE9clencheur de mesure instantan\xE9e.',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>YInputCapture.LOGICALNAME_INVALID</tt>.'}
 ,'get_module':{syn:'Retourne l\x27objet <tt>YModule</tt> correspondant au module Yoctopuce qui h\xE9berge la fonction.',lib:'%&rarr;get_module()',pro:'<span id=obj>YModule *</span> get_module()',cmt:'<p>Retourne l\x27objet <tt>YModule</tt> correspondant au module Yoctopuce qui h\xE9berge la fonction. Si la fonction ne peut \xEAtre trouv\xE9e sur aucun module, l\x27instance de <tt>YModule</tt> retourn\xE9e ne sera pas joignable.</p>',ret:'une instance de <tt>YModule</tt>'}
 ,'get_nSamples':{syn:'Retourne le nombre d\x27\xE9chantillons qui seront captur\xE9s.',lib:'%&rarr;get_nSamples()',pro:'<span id=int>int</span> get_nSamples()',cmt:'<p>Retourne le nombre d\x27\xE9chantillons qui seront captur\xE9s.</p>',ret:'un entier repr&eacute;sentant le nombre d\x27\xE9chantillons qui seront captur\xE9s',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YInputCapture.NSAMPLES_INVALID</tt>.'}
 ,'get_samplingRate':{syn:'Retourne la fr\xE9quence d\x27\xE9chantillonnage, en Hz.',lib:'%&rarr;get_samplingRate()',pro:'<span id=int>int</span> get_samplingRate()',cmt:'<p>Retourne la fr\xE9quence d\x27\xE9chantillonnage, en Hz.</p>',ret:'un entier repr&eacute;sentant la fr\xE9quence d\x27\xE9chantillonnage, en Hz',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YInputCapture.SAMPLINGRATE_INVALID</tt>.'}
@@ -1937,13 +1991,14 @@ doc['InputCapture']={'':{syn:'Interface pour int\xE9ragir avec les d\xE9clencheu
 ,'load':{syn:'Met en cache les valeurs courantes du d\xE9clencheur de mesure instantan\xE9e, avec une dur\xE9e de validit\xE9 sp\xE9cifi\xE9e.',lib:'%&rarr;load()',pro:'<span id=int>YRETCODE</span> load(<span id=int>int</span> <span id=pn>msValidity</span>)',cmt:'<p>Met en cache les valeurs courantes du d\xE9clencheur de mesure instantan\xE9e, avec une dur\xE9e de validit\xE9 sp\xE9cifi\xE9e. Par d\xE9faut, lorsqu\x27on acc\xE8de \xE0 un module, tous les attributs des fonctions du module sont automatiquement mises en cache pour la dur\xE9e standard (5 ms). Cette m\xE9thode peut \xEAtre utilis\xE9e pour marquer occasionellement les donn\xE9es cach\xE9es comme valides pour une plus longue p\xE9riode, par exemple dans le but de r\xE9duire le trafic r\xE9seau.</p>',par:{msValidity:'un entier correspondant \xE0 la dur\xE9e de validit\xE9 attribu\xE9e aux les param\xE8tres charg\xE9s, en millisecondes'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op\xE9ration se d\xE9roule sans erreur.',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne un code d\x27erreur n\xE9gatif.'}
 ,'loadAttribute':ds.loadAttribute
 ,'muteValueCallbacks':ds.muteValueCallbacks
+,'nextInputCapture':{syn:'Continue l\x27\xE9num\xE9ration des d\xE9clencheurs de mesure instantan\xE9e commenc\xE9e \xE0 l\x27aide de <tt>yFirstInputCapture()</tt> Attention, vous ne pouvez faire aucune supposition sur l\x27ordre dans lequel les d\xE9clencheurs de mesure instantan\xE9e sont retourn\xE9s.',lib:'%&rarr;nextInputCapture()',pro:'<span id=obj>YInputCapture *</span> nextInputCapture()',cmt:'<p>Continue l\x27\xE9num\xE9ration des d\xE9clencheurs de mesure instantan\xE9e commenc\xE9e \xE0 l\x27aide de <tt>yFirstInputCapture()</tt> Attention, vous ne pouvez faire aucune supposition sur l\x27ordre dans lequel les d\xE9clencheurs de mesure instantan\xE9e sont retourn\xE9s. Si vous souhaitez retrouver un d\xE9clencheur de mesure instantan\xE9e sp\xE9cifique, utilisez <tt>InputCapture.findInputCapture()</tt> avec un hardwareID ou un nom logique.</p>',ret:'un pointeur sur un objet <tt>YInputCapture</tt> accessible en ligne, ou <tt>null</tt> lorsque l\x27\xE9num\xE9ration est termin\xE9e.'}
 ,'registerValueCallback':{syn:'Enregistre la fonction de callback qui est appel\xE9e \xE0 chaque changement de la valeur publi\xE9e.',lib:'%&rarr;registerValueCallback()',pro:'<span id=int>int</span> registerValueCallback(<span id=obj>YInputCaptureValueCallback</span> <span id=pn>callback</span>)',cmt:'<p>Enregistre la fonction de callback qui est appel\xE9e \xE0 chaque changement de la valeur publi\xE9e. Ce callback n\x27est appel\xE9 que durant l\x27ex\xE9cution de <tt>ySleep</tt> ou <tt>yHandleEvents</tt>. Cela permet \xE0 l\x27appelant de contr\xF4ler quand les callback peuvent se produire. Il est important d\x27appeler l\x27une de ces deux fonctions p\xE9riodiquement pour garantir que les callback ne soient pas appel\xE9s trop tard. Pour d\xE9sactiver un callback, il suffit d\x27appeler cette m\xE9thode en lui passant un pointeur nul.</p>',par:{callback:'la fonction de callback \xE0 rappeler, ou un pointeur nul. La fonction de callback doit accepter deux arguments: l\x27object fonction dont la valeur a chang\xE9, et la cha\xEEne de caract\xE8re d\xE9crivant la nouvelle valeur publi\xE9e.'}}
 ,'set_captureType':{syn:'Modifie le type de capture conditionnelle automatique.',lib:'%&rarr;set_captureType()',pro:'<span id=int>int</span> set_captureType(<span id=int>Y_CAPTURETYPE_enum</span> <span id=pn>newval</span>)',cmt:'<p>Modifie le type de capture conditionnelle automatique.</p>',par:{newval:'une valeur parmi <tt>YInputCapture.CAPTURETYPE_NONE</tt>, <tt>YInputCapture.CAPTURETYPE_TIMED</tt>, <tt>YInputCapture.CAPTURETYPE_V_MAX</tt>, <tt>YInputCapture.CAPTURETYPE_V_MIN</tt>, <tt>YInputCapture.CAPTURETYPE_I_MAX</tt>, <tt>YInputCapture.CAPTURETYPE_I_MIN</tt>, <tt>YInputCapture.CAPTURETYPE_P_MAX</tt>, <tt>YInputCapture.CAPTURETYPE_P_MIN</tt>, <tt>YInputCapture.CAPTURETYPE_V_AVG_MAX</tt>, <tt>YInputCapture.CAPTURETYPE_V_AVG_MIN</tt>, <tt>YInputCapture.CAPTURETYPE_V_RMS_MAX</tt>, <tt>YInputCapture.CAPTURETYPE_V_RMS_MIN</tt>, <tt>YInputCapture.CAPTURETYPE_I_AVG_MAX</tt>, <tt>YInputCapture.CAPTURETYPE_I_AVG_MIN</tt>, <tt>YInputCapture.CAPTURETYPE_I_RMS_MAX</tt>, <tt>YInputCapture.CAPTURETYPE_I_RMS_MIN</tt>, <tt>YInputCapture.CAPTURETYPE_P_AVG_MAX</tt>, <tt>YInputCapture.CAPTURETYPE_P_AVG_MIN</tt>, <tt>YInputCapture.CAPTURETYPE_PF_MIN</tt> et <tt>YInputCapture.CAPTURETYPE_DPF_MIN</tt> repr&eacute;sentant le type de capture conditionnelle automatique'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op&eacute;ration se d&eacute;roule sans erreur.',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne un code d\x27erreur n&eacute;gatif.'}
 ,'set_captureTypeAtStartup':{syn:'Modifie le type de capture conditionnelle automatique appliqu\xE9e au d\xE9marrage du module.',lib:'%&rarr;set_captureTypeAtStartup()',pro:'<span id=int>int</span> set_captureTypeAtStartup(<span id=int>Y_CAPTURETYPEATSTARTUP_enum</span> <span id=pn>newval</span>)',cmt:'<p>Modifie le type de capture conditionnelle automatique appliqu\xE9e au d\xE9marrage du module. </p><p> Si vous souhaitez que le changement de ce param\xE8tre soit conserv\xE9 apr\xE8s un red\xE9marrage du module, n\x27oubliez pas d\x27appeler la m\xE9thode <tt>saveToFlash()</tt>.</p>',par:{newval:'une valeur parmi <tt>YInputCapture.CAPTURETYPEATSTARTUP_NONE</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_TIMED</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_V_MAX</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_V_MIN</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_I_MAX</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_I_MIN</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_P_MAX</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_P_MIN</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_V_AVG_MAX</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_V_AVG_MIN</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_V_RMS_MAX</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_V_RMS_MIN</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_I_AVG_MAX</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_I_AVG_MIN</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_I_RMS_MAX</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_I_RMS_MIN</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_P_AVG_MAX</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_P_AVG_MIN</tt>, <tt>YInputCapture.CAPTURETYPEATSTARTUP_PF_MIN</tt> et <tt>YInputCapture.CAPTURETYPEATSTARTUP_DPF_MIN</tt> repr&eacute;sentant le type de capture conditionnelle automatique appliqu\xE9e au d\xE9marrage du module'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op&eacute;ration se d&eacute;roule sans erreur.',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne un code d\x27erreur n&eacute;gatif.'}
 ,'set_condAlign':{syn:'Modifie la position relative de l\x27\xE9v\xE9nement de d\xE9clenchement dans la capture.',lib:'%&rarr;set_condAlign()',pro:'<span id=int>int</span> set_condAlign(<span id=int>int</span> <span id=pn>newval</span>)',cmt:'<p>Modifie la position relative de l\x27\xE9v\xE9nement de d\xE9clenchement dans la capture. Si la valeur est 50%, la capture sera centr\xE9e sur l\x27\xE9v\xE9nement. </p><p> Si vous souhaitez que le changement de ce param\xE8tre soit conserv\xE9 apr\xE8s un red\xE9marrage du module, n\x27oubliez pas d\x27appeler la m\xE9thode <tt>saveToFlash()</tt>.</p>',par:{newval:'un entier repr&eacute;sentant la position relative de l\x27\xE9v\xE9nement de d\xE9clenchement dans la capture'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op&eacute;ration se d&eacute;roule sans erreur.',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne un code d\x27erreur n&eacute;gatif.'}
 ,'set_condValue':{syn:'Modifie la valeur limite actuelle pour la capture conditionnelle automatique.',lib:'%&rarr;set_condValue()',pro:'<span id=int>int</span> set_condValue(<span id=dbl>double</span> <span id=pn>newval</span>)',cmt:'<p>Modifie la valeur limite actuelle pour la capture conditionnelle automatique.</p>',par:{newval:'une valeur num&eacute;rique repr&eacute;sentant la valeur limite actuelle pour la capture conditionnelle automatique'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op&eacute;ration se d&eacute;roule sans erreur.',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne un code d\x27erreur n&eacute;gatif.'}
 ,'set_condValueAtStartup':{syn:'Modifie la valeur limite pour la capture conditionnelle automatique appliqu\xE9e au d\xE9marrage du module.',lib:'%&rarr;set_condValueAtStartup()',pro:'<span id=int>int</span> set_condValueAtStartup(<span id=dbl>double</span> <span id=pn>newval</span>)',cmt:'<p>Modifie la valeur limite pour la capture conditionnelle automatique appliqu\xE9e au d\xE9marrage du module. </p><p> Si vous souhaitez que le changement de ce param\xE8tre soit conserv\xE9 apr\xE8s un red\xE9marrage du module, n\x27oubliez pas d\x27appeler la m\xE9thode <tt>saveToFlash()</tt>.</p>',par:{newval:'une valeur num&eacute;rique repr&eacute;sentant la valeur limite pour la capture conditionnelle automatique appliqu\xE9e au d\xE9marrage du module'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op&eacute;ration se d&eacute;roule sans erreur.',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne un code d\x27erreur n&eacute;gatif.'}
-,'set_logicalName':{syn:'Modifie le nom logique du d\xE9clencheur de mesure instantan\xE9e.',lib:'%&rarr;set_logicalName()',pro:'<span id=int>int</span> set_logicalName(<span id=str>string</span> <span id=pn>newval</span>)',cmt:'<p>Modifie le nom logique du d\xE9clencheur de mesure instantan\xE9e. Vous pouvez utiliser <tt>yCheckLogicalName()</tt> pour v\xE9rifier si votre param\xE8tre est valide. N\x27oubliez pas d\x27appeler la m\xE9thode <tt>saveToFlash()</tt> du module si le r\xE9glage doit \xEAtre pr\xE9serv\xE9.</p>',par:{newval:'une cha&icirc;ne de caract&egrave;res repr&eacute;sentant le nom logique du d\xE9clencheur de mesure instantan\xE9e'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op&eacute;ration se d&eacute;roule sans erreur.',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne un code d\x27erreur n&eacute;gatif.'}
+,'set_logicalName':{syn:'Modifie le nom logique du d\xE9clencheur de mesure instantan\xE9e.',lib:'%&rarr;set_logicalName()',pro:'<span id=int>int</span> set_logicalName(<span id=str>string</span> <span id=pn>newval</span>)',cmt:'<p>Modifie le nom logique du d\xE9clencheur de mesure instantan\xE9e. Vous pouvez utiliser <tt>yCheckLogicalName()</tt> pour v\xE9rifier si votre param\xE8tre est valide. N\x27oubliez pas d\x27appeler la m\xE9thode <tt>saveToFlash()</tt> du module si le r\xE9glage doit \xEAtre pr\xE9serv\xE9.</p>',par:{newval:'une cha\xEEne de caract\xE8res repr\xE9sentant le nom logique du d\xE9clencheur de mesure instantan\xE9e.'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27appel se d\xE9roule sans erreur.',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne un code d\x27erreur n\xE9gatif.'}
 ,'set_nSamples':{syn:'Modifie le nombre d\x27\xE9chantillons qui seront captur\xE9s.',lib:'%&rarr;set_nSamples()',pro:'<span id=int>int</span> set_nSamples(<span id=int>int</span> <span id=pn>newval</span>)',cmt:'<p>Modifie le nombre d\x27\xE9chantillons qui seront captur\xE9s. La nombre maximal d\xE9pend de la m\xE9moire du module. </p><p> Si vous souhaitez que le changement de ce param\xE8tre soit conserv\xE9 apr\xE8s un red\xE9marrage du module, n\x27oubliez pas d\x27appeler la m\xE9thode <tt>saveToFlash()</tt>.</p>',par:{newval:'un entier repr&eacute;sentant le nombre d\x27\xE9chantillons qui seront captur\xE9s'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op&eacute;ration se d&eacute;roule sans erreur.',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne un code d\x27erreur n&eacute;gatif.'}
 ,'set_userData':dm.set_userData
 ,'unmuteValueCallbacks':ds.unmuteValueCallbacks
@@ -3769,6 +3824,7 @@ doc['SpectralChannel']={'':{syn:'Interface pour int\xE9ragir avec les canaux d\x
 ,'get_logicalName':{syn:'Retourne le nom logique du canal d\x27analyse spectrale.',lib:'%&rarr;get_logicalName()',pro:'<span id=str>string</span> get_logicalName()',cmt:'<p>Retourne le nom logique du canal d\x27analyse spectrale.</p>',ret:'une cha\xEEne de caract\xE8res repr\xE9sentant le nom logique du canal d\x27analyse spectrale.',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>YSpectralChannel.LOGICALNAME_INVALID</tt>.'}
 ,'get_lowestValue':{syn:'Retourne la valeur minimale observ\xE9e pour l\x27intensit\xE9 spectrale depuis le d\xE9marrage du module.',lib:'%&rarr;get_lowestValue()',pro:'<span id=dbl>double</span> get_lowestValue()',cmt:'<p>Retourne la valeur minimale observ\xE9e pour l\x27intensit\xE9 spectrale depuis le d\xE9marrage du module. Peut \xEAtre r\xE9initialis\xE9 \xE0 une valeur arbitraire gr\xE2ce \xE0 set_lowestValue().</p>',ret:'une valeur num&eacute;rique repr&eacute;sentant la valeur minimale observ\xE9e pour l\x27intensit\xE9 spectrale depuis le d\xE9marrage du module',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YSpectralChannel.LOWESTVALUE_INVALID</tt>.'}
 ,'get_module':ds.get_module
+,'get_rawCount':{syn:'R\xE9cup\xE8re la valeur brut des \xE9chantillons de donn\xE9es.',lib:'%&rarr;get_rawCount()',pro:'<span id=int>int</span> get_rawCount()',cmt:'<p>R\xE9cup\xE8re la valeur brut des \xE9chantillons de donn\xE9es. Cette m\xE9thode renvoie la valeur actuelle de rawCount, repr\xE9sentant le nombre total d\x27\xE9chantillons collect\xE9s par le capteur.</p>',ret:'un entier',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YSpectralChannel.RAWCOUNT_INVALID</tt>.'}
 ,'get_recordedData':ds.get_recordedData
 ,'get_reportFrequency':{syn:'Retourne la fr\xE9quence de notification p\xE9riodique des valeurs mesur\xE9es, ou \x22OFF\x22 si les notifications p\xE9riodiques sont d\xE9sactiv\xE9es pour cette fonction.',lib:'%&rarr;get_reportFrequency()',pro:'<span id=str>string</span> get_reportFrequency()',cmt:'<p>Retourne la fr\xE9quence de notification p\xE9riodique des valeurs mesur\xE9es, ou \x22OFF\x22 si les notifications p\xE9riodiques sont d\xE9sactiv\xE9es pour cette fonction.</p>',ret:'une cha&icirc;ne de caract&egrave;res repr&eacute;sentant la fr\xE9quence de notification p\xE9riodique des valeurs mesur\xE9es, ou \x22OFF\x22 si les notifications p\xE9riodiques sont d\xE9sactiv\xE9es pour cette fonction',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YSpectralChannel.REPORTFREQUENCY_INVALID</tt>.'}
 ,'get_resolution':{syn:'Retourne la r\xE9solution des valeurs mesur\xE9es.',lib:'%&rarr;get_resolution()',pro:'<span id=dbl>double</span> get_resolution()',cmt:'<p>Retourne la r\xE9solution des valeurs mesur\xE9es. La r\xE9solution correspond \xE0 la pr\xE9cision num\xE9rique de la repr\xE9sentation des mesures. Elle n\x27est pas forc\xE9ment identique \xE0 la pr\xE9cision r\xE9elle du capteur. N\x27oubliez pas d\x27appeler la m\xE9thode <tt>saveToFlash()</tt> du module si le r\xE9glage doit \xEAtre pr\xE9serv\xE9.</p>',ret:'une valeur num&eacute;rique repr&eacute;sentant la r\xE9solution des valeurs mesur\xE9es',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YSpectralChannel.RESOLUTION_INVALID</tt>.'}
@@ -3798,49 +3854,6 @@ doc['SpectralChannel']={'':{syn:'Interface pour int\xE9ragir avec les canaux d\x
 ,'unmuteValueCallbacks':ds.unmuteValueCallbacks
 };
 //--- (end of generated code: SpectralChannel)
-//--- (generated code: SpectralSensor)
-doc['SpectralSensor']={'':{syn:'Interface pour int\xE9ragir avec les capteurs spectraux',inc:'#include &quot;yocto_spectralsensor.h&quot;',cmt:'<p>La classe <tt>YSpectralSensor</tt> permet de lire et de configurer les capteurs spectraux Yoctopuce. Elle h\xE9rite de la classe <tt>YSensor</tt> toutes les fonctions de base des capteurs Yoctopuce: lecture de mesures, callbacks, enregistreur de donn\xE9es.</p>'}
-,'FindSpectralSensor':{syn:'Permet de retrouver un capteur spectral d\x27apr\xE8s un identifiant donn\xE9.',lib:'YSpectralSensor::FindSpectralSensor()',pro:'<span id=obj>YSpectralSensor*</span> FindSpectralSensor(<span id=str>string</span> <span id=pn>func</span>)',cmt:'<p>Permet de retrouver un capteur spectral d\x27apr\xE8s un identifiant donn\xE9. L\x27identifiant peut \xEAtre sp\xE9cifi\xE9 sous plusieurs formes:<br> <ul> <li>NomLogiqueFonction</li> <li>NoSerieModule.IdentifiantFonction</li> <li>NoSerieModule.NomLogiqueFonction</li> <li>NomLogiqueModule.IdentifiantMat\xE9riel</li> <li>NomLogiqueModule.NomLogiqueFonction</li> </ul></p><p> Cette fonction n\x27exige pas que le capteur spectral soit en ligne au moment ou elle est appel\xE9e, l\x27objet retourn\xE9 sera n\xE9anmoins valide. Utiliser la m\xE9thode <tt>YSpectralSensor.isOnline()</tt> pour tester si le capteur spectral est utilisable \xE0 un moment donn\xE9. En cas d\x27ambigu\xEFt\xE9 lorsqu\x27on fait une recherche par nom logique, aucune erreur ne sera notifi\xE9e: la premi\xE8re instance trouv\xE9e sera renvoy\xE9e. La recherche se fait d\x27abord par nom mat\xE9riel, puis par nom logique.</p><p> Si un appel \xE0 la m\xE9thode is_online() de cet objet renvoie FAUX alors que vous \xEAtes s\xFBr que le module correspondant est ben branch\xE9, v\xE9rifiez que vous n\x27avez pas oubli\xE9 d\x27appeler registerHub() \xE0 l\x27initialisation de de l\x27application.</p>',par:{func:'une cha\xEEne de caract\xE8res qui r\xE9f\xE9rence le capteur spectral sans ambigu\xEFt\xE9, par exemple <tt>MyDevice.spectralSensor</tt>.'},ret:'un objet de classe <tt>YSpectralSensor</tt> qui permet ensuite de contr\xF4ler le capteur spectral.'}
-,'FirstSpectralSensor':{syn:'Commence l\x27\xE9num\xE9ration des capteurs spectraux accessibles par la librairie.',lib:'YSpectralSensor::FirstSpectralSensor()',pro:'<span id=obj>YSpectralSensor *</span> FirstSpectralSensor()',cmt:'<p>Commence l\x27\xE9num\xE9ration des capteurs spectraux accessibles par la librairie. Utiliser la fonction <tt>YSpectralSensor.nextSpectralSensor()</tt> pour it\xE9rer sur les autres capteurs spectraux.</p>',ret:'un pointeur sur un objet <tt>YSpectralSensor</tt>, correspondant au premier capteur spectral accessible en ligne, ou <tt>null</tt> s\x27il n\x27y a pas de capteurs spectraux disponibles.'}
-,'clearCache':{syn:'Invalide le cache.',lib:'%&rarr;clearCache()',pro:'<span id=obj>void</span> clearCache()',cmt:'<p>Invalide le cache. Invalide le cache des valeurs courantes du capteur spectral. Force le prochain appel \xE0 une m\xE9thode get_xxx() ou loadxxx() pour charger les les donn\xE9es depuis le module.</p>'}
-,'describe':{syn:'Retourne un court texte d\xE9crivant de mani\xE8re non-ambig\xFCe l\x27instance du capteur spectral au format <tt>TYPE(NAME)=SERIAL&#46;FUNCTIONID</tt>.',lib:'%&rarr;describe()',pro:'<span id=str>string</span> describe()',cmt:'<p>Retourne un court texte d\xE9crivant de mani\xE8re non-ambig\xFCe l\x27instance du capteur spectral au format <tt>TYPE(NAME)=SERIAL&#46;FUNCTIONID</tt>. Plus pr\xE9cis\xE9ment, <tt>TYPE</tt> correspond au type de fonction, <tt>NAME</tt> correspond au nom utils\xE9 lors du premier acc\xE8s a la fonction, <tt>SERIAL</tt> correspond au num\xE9ro de s\xE9rie du module si le module est connect\xE9, ou <tt>\x22unresolved\x22</tt> sinon, et <tt>FUNCTIONID</tt> correspond \xE0 l\x27identifiant mat\xE9riel de la fonction si le module est connect\xE9. Par exemple, La methode va retourner <tt>Relay(MyCustomName.relay1)=RELAYLO1-123456.relay1</tt> si le module est d\xE9j\xE0 connect\xE9 ou <tt>Relay(BadCustomeName.relay1)=unresolved</tt> si le module n\x27est pas d\xE9j\xE0 connect\xE9. Cette methode ne declenche aucune transaction USB ou TCP et peut donc \xEAtre utilis\xE9 dans un debuggeur.</p>',ret:'une cha\xEEne de caract\xE8res d\xE9crivant le capteur spectral (ex: <tt>Relay(MyCustomName.relay1)=RELAYLO1-123456.relay1</tt>)'}
-,'get_advertisedValue':{syn:'Retourne la valeur courante du capteur spectral (pas plus de 6 caract\xE8res).',lib:'%&rarr;get_advertisedValue()',pro:'<span id=str>string</span> get_advertisedValue()',cmt:'<p>Retourne la valeur courante du capteur spectral (pas plus de 6 caract\xE8res).</p>',ret:'une cha\xEEne de caract\xE8res repr\xE9sentant la valeur courante du capteur spectral (pas plus de 6 caract\xE8res).',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>YSpectralSensor.ADVERTISEDVALUE_INVALID</tt>.'}
-,'get_errorMessage':{syn:'Retourne le message correspondant \xE0 la derni\xE8re erreur survenue lors de l\x27utilisation du capteur spectral.',lib:'%&rarr;get_errorMessage()',pro:'<span id=str>string</span> get_errorMessage()',cmt:'<p>Retourne le message correspondant \xE0 la derni\xE8re erreur survenue lors de l\x27utilisation du capteur spectral. Cette m\xE9thode est principalement utile lorsque la librairie Yoctopuce est utilis\xE9e en d\xE9sactivant la gestion des exceptions.</p>',ret:'une cha\xEEne de caract\xE8res correspondant au message de la derni\xE8re erreur qui s\x27est produit lors de l\x27utilisation du capteur spectral.'}
-,'get_errorType':{syn:'Retourne le code d\x27erreur correspondant \xE0 la derni\xE8re erreur survenue lors de l\x27utilisation du capteur spectral.',lib:'%&rarr;get_errorType()',pro:'<span id=int>YRETCODE</span> get_errorType()',cmt:'<p>Retourne le code d\x27erreur correspondant \xE0 la derni\xE8re erreur survenue lors de l\x27utilisation du capteur spectral. Cette m\xE9thode est principalement utile lorsque la librairie Yoctopuce est utilis\xE9e en d\xE9sactivant la gestion des exceptions.</p>',ret:'un nombre correspondant au code de la derni\xE8re erreur qui s\x27est produit lors de l\x27utilisation du capteur spectral.'}
-,'get_estimatedHSL':{syn:'Retourne la couleur estim\xE9e au format HSL (Teinte, Saturation, Luminosit\xE9).',lib:'%&rarr;get_estimatedHSL()',pro:'<span id=int>int</span> get_estimatedHSL()',cmt:'<p>Retourne la couleur estim\xE9e au format HSL (Teinte, Saturation, Luminosit\xE9). Cette m\xE9thode r\xE9cup\xE8re les valeurs de couleur estim\xE9es et les renvoie sous la forme d\x27un objet ou d\x27une structure HSL.</p>',ret:'un entier repr&eacute;sentant la couleur estim\xE9e au format HSL (Teinte, Saturation, Luminosit\xE9)',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YSpectralSensor.ESTIMATEDHSL_INVALID</tt>.'}
-,'get_estimatedOkLab':{syn:'Retourne la couleur estim\xE9e au format OkLab.',lib:'%&rarr;get_estimatedOkLab()',pro:'<span id=str>string</span> get_estimatedOkLab()',cmt:'<p>Retourne la couleur estim\xE9e au format OkLab. Cette m\xE9thode r\xE9cup\xE8re les valeurs de couleur estim\xE9es et les renvoie sous la forme d\x27un objet ou d\x27une structure OkLab.</p>',ret:'une cha&icirc;ne de caract&egrave;res repr&eacute;sentant la couleur estim\xE9e au format OkLab',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YSpectralSensor.ESTIMATEDOKLAB_INVALID</tt>.'}
-,'get_estimatedXYZ':{syn:'Retourne la couleur estim\xE9e au format XYZ.',lib:'%&rarr;get_estimatedXYZ()',pro:'<span id=str>string</span> get_estimatedXYZ()',cmt:'<p>Retourne la couleur estim\xE9e au format XYZ. Cette m\xE9thode r\xE9cup\xE8re les valeurs de couleur estim\xE9es et les renvoie sous la forme d\x27un objet ou d\x27une structure XYZ.</p>',ret:'une cha&icirc;ne de caract&egrave;res repr&eacute;sentant la couleur estim\xE9e au format XYZ',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YSpectralSensor.ESTIMATEDXYZ_INVALID</tt>.'}
-,'get_estimationModel':{syn:'Retourne le mod\xE8le pour l\x27estimation des couleurs.',lib:'%&rarr;get_estimationModel()',pro:'<span id=int>Y_ESTIMATIONMODEL_enum</span> get_estimationModel()',cmt:'<p>Retourne le mod\xE8le pour l\x27estimation des couleurs.</p>',ret:'soit <tt>YSpectralSensor.ESTIMATIONMODEL_REFLECTION</tt>, soit <tt>YSpectralSensor.ESTIMATIONMODEL_EMISSION</tt>, selon le mod\xE8le pour l\x27estimation des couleurs',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YSpectralSensor.ESTIMATIONMODEL_INVALID</tt>.'}
-,'get_friendlyName':{syn:'Retourne un identifiant global du capteur spectral au format <tt>NOM_MODULE&#46;NOM_FONCTION</tt>.',lib:'%&rarr;get_friendlyName()',pro:'<span id=str>string</span> get_friendlyName()',cmt:'<p>Retourne un identifiant global du capteur spectral au format <tt>NOM_MODULE&#46;NOM_FONCTION</tt>. Le cha\xEEne retourn\xE9e utilise soit les noms logiques du module et du capteur spectral s\x27ils sont d\xE9finis, soit respectivement le num\xE9ro de s\xE9rie du module et l\x27identifant mat\xE9riel du capteur spectral (par exemple: <tt>MyCustomName.relay1</tt>)</p>',ret:'une cha\xEEne de caract\xE8res identifiant le capteur spectral en utilisant les noms logiques (ex: <tt>MyCustomName.relay1</tt>)',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>YSpectralSensor.FRIENDLYNAME_INVALID</tt>.'}
-,'get_functionDescriptor':ds.get_functionDescriptor
-,'get_functionId':{syn:'Retourne l\x27identifiant mat\xE9riel du capteur spectral, sans r\xE9f\xE9rence au module.',lib:'%&rarr;get_functionId()',pro:'<span id=str>string</span> get_functionId()',cmt:'<p>Retourne l\x27identifiant mat\xE9riel du capteur spectral, sans r\xE9f\xE9rence au module. Par example <tt>relay1</tt>.</p>',ret:'une cha\xEEne de caract\xE8res identifiant le capteur spectral (ex: <tt>relay1</tt>)',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>YSpectralSensor.FUNCTIONID_INVALID</tt>.'}
-,'get_hardwareId':{syn:'Retourne l\x27identifiant mat\xE9riel unique du capteur spectral au format <tt>SERIAL.FUNCTIONID</tt>.',lib:'%&rarr;get_hardwareId()',pro:'<span id=str>string</span> get_hardwareId()',cmt:'<p>Retourne l\x27identifiant mat\xE9riel unique du capteur spectral au format <tt>SERIAL.FUNCTIONID</tt>. L\x27identifiant unique est compos\xE9 du num\xE9ro de s\xE9rie du module et de l\x27identifiant mat\xE9riel du capteur spectral (par example <tt>RELAYLO1-123456.relay1</tt>).</p>',ret:'une cha\xEEne de caract\xE8res identifiant le capteur spectral (ex: <tt>RELAYLO1-123456.relay1</tt>)',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>YSpectralSensor.HARDWAREID_INVALID</tt>.'}
-,'get_integrationTime':{syn:'Retourne le temps d\x27int\xE9gration actuel.',lib:'%&rarr;get_integrationTime()',pro:'<span id=int>int</span> get_integrationTime()',cmt:'<p>Retourne le temps d\x27int\xE9gration actuel. Cette m\xE9thode r\xE9cup\xE8re la valeur du temps d\x27int\xE9gration utilis\xE9 pour le traitement des donn\xE9es et la renvoie sous forme d\x27un entier ou d\x27un objet.</p>',ret:'un entier repr&eacute;sentant le temps d\x27int\xE9gration actuel',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YSpectralSensor.INTEGRATIONTIME_INVALID</tt>.'}
-,'get_ledCurrent':{syn:'Retourne le courant actuel de la LED.',lib:'%&rarr;get_ledCurrent()',pro:'<span id=int>int</span> get_ledCurrent()',cmt:'<p>Retourne le courant actuel de la LED. Cette m\xE9thode r\xE9cup\xE8re la valeur du courant qui circule \xE0 travers la LED et la renvoie sous forme d\x27un entier ou d\x27un objet.</p>',ret:'un entier repr&eacute;sentant le courant actuel de la LED',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YSpectralSensor.LEDCURRENT_INVALID</tt>.'}
-,'get_logicalName':{syn:'Retourne le nom logique du capteur spectral.',lib:'%&rarr;get_logicalName()',pro:'<span id=str>string</span> get_logicalName()',cmt:'<p>Retourne le nom logique du capteur spectral.</p>',ret:'une cha\xEEne de caract\xE8res repr\xE9sentant le nom logique du capteur spectral.',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>YSpectralSensor.LOGICALNAME_INVALID</tt>.'}
-,'get_module':{syn:'Retourne l\x27objet <tt>YModule</tt> correspondant au module Yoctopuce qui h\xE9berge la fonction.',lib:'%&rarr;get_module()',pro:'<span id=obj>YModule *</span> get_module()',cmt:'<p>Retourne l\x27objet <tt>YModule</tt> correspondant au module Yoctopuce qui h\xE9berge la fonction. Si la fonction ne peut \xEAtre trouv\xE9e sur aucun module, l\x27instance de <tt>YModule</tt> retourn\xE9e ne sera pas joignable.</p>',ret:'une instance de <tt>YModule</tt>'}
-,'get_nearSimpleColor':{syn:'Retourne la couleur estim\xE9e.',lib:'%&rarr;get_nearSimpleColor()',pro:'<span id=str>string</span> get_nearSimpleColor()',cmt:'<p>Retourne la couleur estim\xE9e. Cette m\xE9thode r\xE9cup\xE8re les valeurs de couleur estim\xE9es et les renvoie sous la forme du nom de la couleur.</p>',ret:'une cha&icirc;ne de caract&egrave;res repr&eacute;sentant la couleur estim\xE9e',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YSpectralSensor.NEARSIMPLECOLOR_INVALID</tt>.'}
-,'get_saturation':{syn:'Retourne la saturation actuelle du capteur.',lib:'%&rarr;get_saturation()',pro:'<span id=int>int</span> get_saturation()',cmt:'<p>Retourne la saturation actuelle du capteur. Cette fonction met \xE0 jour la valeur de saturation du capteur.</p>',ret:'un entier repr&eacute;sentant la saturation actuelle du capteur',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YSpectralSensor.SATURATION_INVALID</tt>.'}
-,'get_serialNumber':ds.get_serialNumber
-,'get_userData':{syn:'Retourne le contenu de l\x27attribut userData, pr\xE9c\xE9demment stock\xE9 \xE0 l\x27aide de la m\xE9thode <tt>set_userData</tt>.',lib:'%&rarr;get_userData()',pro:'<span id=obj>void *</span> get_userData()',cmt:'<p>Retourne le contenu de l\x27attribut userData, pr\xE9c\xE9demment stock\xE9 \xE0 l\x27aide de la m\xE9thode <tt>set_userData</tt>. Cet attribut n\x27es pas utilis\xE9 directement par l\x27API. Il est \xE0 la disposition de l\x27appelant pour stocker un contexte.</p>',ret:'l\x27objet stock\xE9 pr\xE9c\xE9demment par l\x27appelant.'}
-,'isOnline':{syn:'V\xE9rifie si le module h\xE9bergeant le capteur spectral est joignable, sans d\xE9clencher d\x27erreur.',lib:'%&rarr;isOnline()',pro:'<span id=bool>bool</span> isOnline()',cmt:'<p>V\xE9rifie si le module h\xE9bergeant le capteur spectral est joignable, sans d\xE9clencher d\x27erreur. Si les valeurs des attributs en cache du capteur spectral sont valides au moment de l\x27appel, le module est consid\xE9r\xE9 joignable. Cette fonction ne cause en aucun cas d\x27exception, quelle que soit l\x27erreur qui pourrait se produire lors de la v\xE9rification de joignabilit\xE9.</p>',ret:'<tt>true</tt> si le capteur spectral est joignable, <tt>false</tt> sinon'}
-,'isReadOnly':ds.isReadOnly
-,'load':{syn:'Met en cache les valeurs courantes du capteur spectral, avec une dur\xE9e de validit\xE9 sp\xE9cifi\xE9e.',lib:'%&rarr;load()',pro:'<span id=int>YRETCODE</span> load(<span id=int>int</span> <span id=pn>msValidity</span>)',cmt:'<p>Met en cache les valeurs courantes du capteur spectral, avec une dur\xE9e de validit\xE9 sp\xE9cifi\xE9e. Par d\xE9faut, lorsqu\x27on acc\xE8de \xE0 un module, tous les attributs des fonctions du module sont automatiquement mises en cache pour la dur\xE9e standard (5 ms). Cette m\xE9thode peut \xEAtre utilis\xE9e pour marquer occasionellement les donn\xE9es cach\xE9es comme valides pour une plus longue p\xE9riode, par exemple dans le but de r\xE9duire le trafic r\xE9seau.</p>',par:{msValidity:'un entier correspondant \xE0 la dur\xE9e de validit\xE9 attribu\xE9e aux les param\xE8tres charg\xE9s, en millisecondes'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op\xE9ration se d\xE9roule sans erreur.',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne un code d\x27erreur n\xE9gatif.'}
-,'loadAttribute':ds.loadAttribute
-,'muteValueCallbacks':ds.muteValueCallbacks
-,'nextSpectralSensor':{syn:'Continue l\x27\xE9num\xE9ration des capteurs spectraux commenc\xE9e \xE0 l\x27aide de <tt>yFirstSpectralSensor()</tt> Attention, vous ne pouvez faire aucune supposition sur l\x27ordre dans lequel les capteurs spectraux sont retourn\xE9s.',lib:'%&rarr;nextSpectralSensor()',pro:'<span id=obj>YSpectralSensor *</span> nextSpectralSensor()',cmt:'<p>Continue l\x27\xE9num\xE9ration des capteurs spectraux commenc\xE9e \xE0 l\x27aide de <tt>yFirstSpectralSensor()</tt> Attention, vous ne pouvez faire aucune supposition sur l\x27ordre dans lequel les capteurs spectraux sont retourn\xE9s. Si vous souhaitez retrouver un capteur spectral sp\xE9cifique, utilisez <tt>SpectralSensor.findSpectralSensor()</tt> avec un hardwareID ou un nom logique.</p>',ret:'un pointeur sur un objet <tt>YSpectralSensor</tt> accessible en ligne, ou <tt>null</tt> lorsque l\x27\xE9num\xE9ration est termin\xE9e.'}
-,'registerValueCallback':{syn:'Enregistre la fonction de callback qui est appel\xE9e \xE0 chaque changement de la valeur publi\xE9e.',lib:'%&rarr;registerValueCallback()',pro:'<span id=int>int</span> registerValueCallback(<span id=obj>YSpectralSensorValueCallback</span> <span id=pn>callback</span>)',cmt:'<p>Enregistre la fonction de callback qui est appel\xE9e \xE0 chaque changement de la valeur publi\xE9e. Ce callback n\x27est appel\xE9 que durant l\x27ex\xE9cution de <tt>ySleep</tt> ou <tt>yHandleEvents</tt>. Cela permet \xE0 l\x27appelant de contr\xF4ler quand les callback peuvent se produire. Il est important d\x27appeler l\x27une de ces deux fonctions p\xE9riodiquement pour garantir que les callback ne soient pas appel\xE9s trop tard. Pour d\xE9sactiver un callback, il suffit d\x27appeler cette m\xE9thode en lui passant un pointeur nul.</p>',par:{callback:'la fonction de callback \xE0 rappeler, ou un pointeur nul. La fonction de callback doit accepter deux arguments: l\x27object fonction dont la valeur a chang\xE9, et la cha\xEEne de caract\xE8re d\xE9crivant la nouvelle valeur publi\xE9e.'}}
-,'set_estimationModel':{syn:'Modifie le mod\xE8le pour l\x27estimation des couleurs.',lib:'%&rarr;set_estimationModel()',pro:'<span id=int>int</span> set_estimationModel(<span id=int>Y_ESTIMATIONMODEL_enum</span> <span id=pn>newval</span>)',cmt:'<p>Modifie le mod\xE8le pour l\x27estimation des couleurs. N\x27oubliez pas d\x27appeler la m\xE9thode <tt>saveToFlash()</tt> du module si le r\xE9glage doit \xEAtre pr\xE9serv\xE9.</p>',par:{newval:'soit <tt>YSpectralSensor.ESTIMATIONMODEL_REFLECTION</tt>, soit <tt>YSpectralSensor.ESTIMATIONMODEL_EMISSION</tt>, selon le mod\xE8le pour l\x27estimation des couleurs'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op&eacute;ration se d&eacute;roule sans erreur.',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne un code d\x27erreur n&eacute;gatif.'}
-,'set_gain':{syn:'D\xE9finit le gain pour le traitement du signal.',lib:'%&rarr;set_gain()',pro:'<span id=int>int</span> set_gain(<span id=int>int</span> <span id=pn>newval</span>)',cmt:'<p>D\xE9finit le gain pour le traitement du signal. Cette m\xE9thode prend une valeur `val` comme param\xE8tre et l\x27assigne comme nouveau gain. Cela influence la sensibilit\xE9 et l\x27intensit\xE9 du signal trait\xE9.</p>',par:{newval:'un entier'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op&eacute;ration se d&eacute;roule sans erreur.',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne un code d\x27erreur n&eacute;gatif.'}
-,'set_gainAtPowerOn':{syn:'D\xE9finit le gain au d\xE9marrage.',lib:'%&rarr;set_gainAtPowerOn()',pro:'<span id=int>int</span> set_gainAtPowerOn(<span id=int>int</span> <span id=pn>newval</span>)',cmt:'<p>D\xE9finit le gain au d\xE9marrage. Cette m\xE9thode prend une valeur `val` comme param\xE8treet l\x27assigne \xE0 startupGain, repr\xE9sentant le gain d\xE9fini lors de la mise sous tension. N\x27oubliez pas d\x27appeler la m\xE9thode <tt>saveToFlash()</tt> du module si le r\xE9glage doit \xEAtre pr\xE9serv\xE9.</p>',par:{newval:'un entier'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op&eacute;ration se d&eacute;roule sans erreur.',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne un code d\x27erreur n&eacute;gatif.'}
-,'set_integrationTime':{syn:'D\xE9finit le temps d\x27int\xE9gration pour le traitement des donn\xE9es.',lib:'%&rarr;set_integrationTime()',pro:'<span id=int>int</span> set_integrationTime(<span id=int>int</span> <span id=pn>newval</span>)',cmt:'<p>D\xE9finit le temps d\x27int\xE9gration pour le traitement des donn\xE9es. Cette m\xE9thode prend une valeur `val` comme param\xE8tre et l\x27assigne comme nouveau temps d\x27int\xE9gration. Cela influence la dur\xE9e pendant laquelle les donn\xE9es sont int\xE9gr\xE9es avant d\x27\xEAtre trait\xE9es.</p>',par:{newval:'un entier'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op&eacute;ration se d&eacute;roule sans erreur.',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne un code d\x27erreur n&eacute;gatif.'}
-,'set_ledCurrent':{syn:'Modifie la luminosit\xE9 des leds du module.',lib:'%&rarr;set_ledCurrent()',pro:'<span id=int>int</span> set_ledCurrent(<span id=int>int</span> <span id=pn>newval</span>)',cmt:'<p>Modifie la luminosit\xE9 des leds du module. Le param\xEAtre est une valeur entre 0 et 254.</p>',par:{newval:'un entier repr&eacute;sentant la luminosit\xE9 des leds du module'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op&eacute;ration se d&eacute;roule sans erreur.',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne un code d\x27erreur n&eacute;gatif.'}
-,'set_logicalName':{syn:'Modifie le nom logique du capteur spectral.',lib:'%&rarr;set_logicalName()',pro:'<span id=int>int</span> set_logicalName(<span id=str>string</span> <span id=pn>newval</span>)',cmt:'<p>Modifie le nom logique du capteur spectral. Vous pouvez utiliser <tt>yCheckLogicalName()</tt> pour v\xE9rifier si votre param\xE8tre est valide. N\x27oubliez pas d\x27appeler la m\xE9thode <tt>saveToFlash()</tt> du module si le r\xE9glage doit \xEAtre pr\xE9serv\xE9.</p>',par:{newval:'une cha\xEEne de caract\xE8res repr\xE9sentant le nom logique du capteur spectral.'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27appel se d\xE9roule sans erreur.',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne un code d\x27erreur n\xE9gatif.'}
-,'set_resolution':{syn:'Retourne la r\xE9solution des valeurs mesur\xE9es.',lib:'%&rarr;set_resolution()',pro:'<span id=int>int</span> set_resolution(<span id=dbl>double</span> <span id=pn>newval</span>)',cmt:'<p>Retourne la r\xE9solution des valeurs mesur\xE9es. La r\xE9solution correspond \xE0 la pr\xE9cision num\xE9rique de la repr\xE9sentation des mesures. Elle n\x27est pas forc\xE9ment identique \xE0 la pr\xE9cision r\xE9elle du capteur.</p><p> /*:EN: Returns the resolution of the measured values. The resolution corresponds to the numerical precision of the measures, which is not always the same as the actual precision of the sensor. resolution::get() { resolution.val.value = channelResol; resolution.val.resol = 1; }</p><p> /*:FR: Modifie la r\xE9solution des valeurs physique mesur\xE9es. La r\xE9solution correspond \xE0 la pr\xE9cision de l\x27affichage des mesures. Elle ne change pas la pr\xE9cision de la mesure elle-m\xEAme. N\x27oubliez pas d\x27appeler la m\xE9thode <tt>saveToFlash()</tt> du module si le r\xE9glage doit \xEAtre pr\xE9serv\xE9.</p>',par:{newval:'une valeur num&eacute;rique'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op&eacute;ration se d&eacute;roule sans erreur.',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne un code d\x27erreur n&eacute;gatif.'}
-,'set_userData':dm.set_userData
-,'unmuteValueCallbacks':ds.unmuteValueCallbacks
-};
-//--- (end of generated code: SpectralSensor)
 //--- (generated code: SpiPort)
 doc['SpiPort']={'':{syn:'Interface pour int\xE9ragir avec les ports SPI, disponibles par exemple dans le Yocto-SPI',inc:'#include &quot;yocto_spiport.h&quot;',cmt:'<p>La classe <tt>YSpiPort</tt> permet de piloter enti\xE8rement un module d\x27interface SPI Yoctopuce. Elle permet d\x27envoyer et de recevoir des donn\xE9es, et de configurer les param\xE8tres de transmission (vitesse, nombre de bits, parit\xE9, contr\xF4le de flux et protocole). Notez que les interfaces SPI Yoctopuce ne sont pas visibles comme des ports COM virtuels. Ils sont faits pour \xEAtre utilis\xE9s comme tous les autres modules Yoctopuce.</p>'}
 ,'FindSpiPort':{syn:'Permet de retrouver un port SPI d\x27apr\xE8s un identifiant donn\xE9.',lib:'YSpiPort::FindSpiPort()',pro:'<span id=obj>YSpiPort*</span> FindSpiPort(<span id=str>string</span> <span id=pn>func</span>)',cmt:'<p>Permet de retrouver un port SPI d\x27apr\xE8s un identifiant donn\xE9. L\x27identifiant peut \xEAtre sp\xE9cifi\xE9 sous plusieurs formes:<br> <ul> <li>NomLogiqueFonction</li> <li>NoSerieModule.IdentifiantFonction</li> <li>NoSerieModule.NomLogiqueFonction</li> <li>NomLogiqueModule.IdentifiantMat\xE9riel</li> <li>NomLogiqueModule.NomLogiqueFonction</li> </ul></p><p> Cette fonction n\x27exige pas que le port SPI soit en ligne au moment ou elle est appel\xE9e, l\x27objet retourn\xE9 sera n\xE9anmoins valide. Utiliser la m\xE9thode <tt>YSpiPort.isOnline()</tt> pour tester si le port SPI est utilisable \xE0 un moment donn\xE9. En cas d\x27ambigu\xEFt\xE9 lorsqu\x27on fait une recherche par nom logique, aucune erreur ne sera notifi\xE9e: la premi\xE8re instance trouv\xE9e sera renvoy\xE9e. La recherche se fait d\x27abord par nom mat\xE9riel, puis par nom logique.</p><p> Si un appel \xE0 la m\xE9thode is_online() de cet objet renvoie FAUX alors que vous \xEAtes s\xFBr que le module correspondant est ben branch\xE9, v\xE9rifiez que vous n\x27avez pas oubli\xE9 d\x27appeler registerHub() \xE0 l\x27initialisation de de l\x27application.</p>',par:{func:'une cha\xEEne de caract\xE8res qui r\xE9f\xE9rence le port SPI sans ambigu\xEFt\xE9, par exemple <tt>YSPIMK01.spiPort</tt>.'},ret:'un objet de classe <tt>YSpiPort</tt> qui permet ensuite de contr\xF4ler le port SPI.'}
@@ -4189,39 +4202,6 @@ doc['Tvoc']={'':{syn:'Interface pour int\xE9ragir avec les capteurs de Compos\xE
 ,'unmuteValueCallbacks':ds.unmuteValueCallbacks
 };
 //--- (end of generated code: Tvoc)
-//--- (generated code: VSource)
-doc['VSource']={'':{syn:'Interface de la fonction Source de tension',inc:'#include "yocto_vsource.h"',cmt:'<p>La librairie de programmation Yoctopuce permet de commande la tension de srotir du module. Vous pouvez affecter une valeur fixe,ou faire des transition de voltage.</p>'}};
-doc['VSource']['FindVSource']={syn:'Permet de retrouver une source de tension d\x27apr\xE8s un identifiant donn\xE9.',lib:'YVSource::FindVSource()',pro:'YVSource* FindVSource(const string& <span id=pn>func</span>)',cmt:'<p>Permet de retrouver une source de tension d\x27apr\xE8s un identifiant donn\xE9. L\x27identifiant peut \xEAtre sp\xE9cifi\xE9 sous plusieurs formes:<br> <ul> <li>NomLogiqueFonction</li> <li>NoSerieModule.IdentifiantFonction</li> <li>NoSerieModule.NomLogiqueFonction</li> <li>NomLogiqueModule.IdentifiantMat\xE9riel</li> <li>NomLogiqueModule.NomLogiqueFonction</li> </ul> Cette fonction n\x27exige pas que la source de tension soit en ligne au moment ou elle est appel\xE9e, l\x27objet retourn\xE9 sera n\xE9anmoins valide. Utiliser la m\xE9thode <tt>YVSource.isOnline()</tt> pour tester si la source de tension est utilisable \xE0 un moment donn\xE9. En cas d\x27ambigu\xEFt\xE9 lorsqu\x27on fait une recherche par nom logique, aucune erreur ne sera notifi\xE9e: la premi\xE8re instance trouv\xE9e sera renvoy\xE9e. La recherche se fait d\x27abord par nom mat\xE9riel, puis par nom logique.</p>',par:{func:'une cha\xEEne de caract\xE8res qui r\xE9f\xE9rence la source de tension sans ambigu\xEFt\xE9'},ret:'un objet de classe <tt>YVSource</tt> qui permet ensuite de contr\xF4ler la source de tension.'};
-doc['VSource']['FirstVSource']={syn:'Commence l\x27\xE9num\xE9ration des sources de tension accessibles par la librairie.',lib:'YVSource::FirstVSource()',pro:'YVSource* FirstVSource()',cmt:'<p>Commence l\x27\xE9num\xE9ration des sources de tension accessibles par la librairie. Utiliser la fonction <tt>YVSource.nextVSource()</tt> pour it\xE9rer sur les autres sources de tension.</p>',ret:'un pointeur sur un objet <tt>YVSource</tt>, correspondant \xE0 la premi\xE8re source de tension accessible en ligne, ou <tt>null</tt> si il n\x27y a pas de sources de tension disponibles.'};
-doc['VSource']['describe']={syn:'Retourne un court texte d\xE9crivant la fonction au format <tt>TYPE(NAME)=SERIAL.FUNCTIONID</tt>.',lib:'vsource&rarr;describe()',pro:'string describe()',cmt:'<p>Retourne un court texte d\xE9crivant la fonction au format <tt>TYPE(NAME)=SERIAL.FUNCTIONID</tt>. Plus pr\xE9cis\xE9ment, <tt>TYPE</tt> correspond au type de fonction, <tt>NAME</tt> correspond au nom utils\xE9 lors du premier acc\xE8s a la fonction, <tt>SERIAL</tt> correspond au num\xE9ro de s\xE9rie du module si le module est connect\xE9, ou <tt>\x22unresolved\x22</tt> sinon, et <tt>FUNCTIONID</tt> correspond \xE0 l\x27identifiant mat\xE9riel de la fonction si le module est connect\xE9. Par exemple, La methode va retourner <tt>Relay(MyCustomName.relay1)=RELAYLO1-123456.relay1</tt> si le module est d\xE9j\xE0 connect\xE9 ou <tt>Relay(BadCustomeName.relay1)=unresolved</tt> si le module n\x27est pas d\xE9j\xE0 connect\xE9. Cette methode ne declenche aucune transaction USB ou TCP et peut donc \xEAtre utilis\xE9 dans un debuggeur.</p>',ret:'une cha\xEEne de caract\xE8res d\xE9crivant la fonction (ex: <tt>Relay(MyCustomName.relay1)=RELAYLO1-123456.relay1</tt>)'};
-doc['VSource']['get_advertisedValue']={syn:'Retourne la valeur courante de la source de tension (pas plus de 6 caract\xE8res).',lib:'vsource&rarr;get_advertisedValue()',pro:'string get_advertisedValue()',cmt:'<p>Retourne la valeur courante de la source de tension (pas plus de 6 caract\xE8res).</p>',ret:'une cha\xEEne de caract\xE8res repr\xE9sentant la valeur courante de la source de tension (pas plus de 6 caract\xE8res)',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>Y_ADVERTISEDVALUE_INVALID</tt>.'};
-doc['VSource']['get_errorMessage']={syn:'Retourne le message correspondant \xE0 la derni\xE8re erreur survenue lors de l\x27utilisation de la fonction.',lib:'vsource&rarr;get_errorMessage()',pro:'string get_errorMessage()',cmt:'<p>Retourne le message correspondant \xE0 la derni\xE8re erreur survenue lors de l\x27utilisation de la fonction. Cette m\xE9thode est principalement utile lorsque la librairie Yoctopuce est utilis\xE9e en d\xE9sactivant la gestion des exceptions.</p>',ret:'une cha\xEEne de caract\xE8res correspondant au message de la derni\xE8re erreur qui s\x27est produit lors de l\x27utilisation de la fonction'};
-doc['VSource']['get_errorType']={syn:'Retourne le code d\x27erreur correspondant \xE0 la derni\xE8re erreur survenue lors de l\x27utilisation de la fonction.',lib:'vsource&rarr;get_errorType()',pro:'YRETCODE get_errorType()',cmt:'<p>Retourne le code d\x27erreur correspondant \xE0 la derni\xE8re erreur survenue lors de l\x27utilisation de la fonction. Cette m\xE9thode est principalement utile lorsque la librairie Yoctopuce est utilis\xE9e en d\xE9sactivant la gestion des exceptions.</p>',ret:'un nombre correspondant au code de la derni\xE8re erreur qui s\x27est produit lors de l\x27utilisation de la fonction'};
-doc['VSource']['get_extPowerFailure']={syn:'Rend TRUE si le voltage de l\x27alimentation externe est trop bas.',lib:'vsource&rarr;get_extPowerFailure()',pro:'Y_EXTPOWERFAILURE_enum get_extPowerFailure()',cmt:'<p>Rend TRUE si le voltage de l\x27alimentation externe est trop bas.</p>',ret:'soit <tt>Y_EXTPOWERFAILURE_FALSE</tt>, soit <tt>Y_EXTPOWERFAILURE_TRUE</tt>',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>Y_EXTPOWERFAILURE_INVALID</tt>.'};
-doc['VSource']['get_failure']={syn:'Indique si le module est en condition d\x27erreur.',lib:'vsource&rarr;get_failure()',pro:'Y_FAILURE_enum get_failure()',cmt:'<p>Indique si le module est en condition d\x27erreur. Il possible de savoir de quelle erreur il s\x27agit en testant get_overheat, get_overcurrent etc... Lorsqu\x27un condition d\x27erreur est rencont\xE9e, la tension de sortie est mise \xE0 z\xE9ro est ne peut pas \xEAtre chang\xE9e tant la fonction reset() n\x27aura pas appell\xE9e.</p>',ret:'soit <tt>Y_FAILURE_FALSE</tt>, soit <tt>Y_FAILURE_TRUE</tt>',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>Y_FAILURE_INVALID</tt>.'};
-doc['VSource']['get_friendlyName']={syn:'Retourne un identifiant global de la fonction au format <tt>NOM_MODULE.NOM_FONCTION</tt>.',lib:'vsource&rarr;get_friendlyName()',pro:'virtual string get_friendlyName()',cmt:'<p>Retourne un identifiant global de la fonction au format <tt>NOM_MODULE.NOM_FONCTION</tt>. Le cha\xEEne retourn\xE9e utilise soit les noms logiques du module et de la fonction si ils sont d\xE9finis, soit respectivement le num\xE9ro de s\xE9rie du module et l\x27identifant mat\xE9riel de la fonction (par exemple: <tt>MyCustomName.relay1</tt>)</p>',ret:'une cha\xEEne de caract\xE8res identifiant la fonction en utilisant les noms logiques (ex: <tt>MyCustomName.relay1</tt>) En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>Y_FRIENDLYNAME_INVALID</tt>.'};
-doc['VSource']['get_functionDescriptor']={syn:'Retourne un identifiant unique de type <tt>YFUN_DESCR</tt> correspondant \xE0 la fonction.',lib:'vsource&rarr;get_vsourceDescriptor()',pro:'YFUN_DESCR get_functionDescriptor()',cmt:'<p>Retourne un identifiant unique de type <tt>YFUN_DESCR</tt> correspondant \xE0 la fonction. Cet identifiant peut \xEAtre utilis\xE9 pour tester si deux instance de <tt>YFunction</tt> r\xE9f\xE9rencent physiquement la m\xEAme fonction sur le m\xEAme module.</p>',ret:'un identifiant de type <tt>YFUN_DESCR</tt>. Si la fonction n\x27a jamais \xE9t\xE9 contact\xE9e, la valeur retourn\xE9e sera <tt>Y_FUNCTIONDESCRIPTOR_INVALID</tt>'};
-doc['VSource']['get_functionId']={syn:'Retourne l\x27identifiant mat\xE9riel de la fonction, sans r\xE9f\xE9rence au module.',lib:'vsource&rarr;get_vsourceId()',pro:'string get_functionId()',cmt:'<p>Retourne l\x27identifiant mat\xE9riel de la fonction, sans r\xE9f\xE9rence au module. Par example <tt>relay1</tt>.</p>',ret:'une cha\xEEne de caract\xE8res identifiant la fonction (ex: <tt>relay1</tt>) En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>Y_FUNCTIONID_INVALID</tt>.'};
-doc['VSource']['get_hardwareId']={syn:'Retourne l\x27identifiant mat\xE9riel unique de la fonction au format <tt>SERIAL.FUNCTIONID</tt>.',lib:'vsource&rarr;get_hardwareId()',pro:'string get_hardwareId()',cmt:'<p>Retourne l\x27identifiant mat\xE9riel unique de la fonction au format <tt>SERIAL.FUNCTIONID</tt>. L\x27identifiant unique est compos\xE9 du num\xE9ro de s\xE9rie du module et de l\x27identifiant mat\xE9riel de la fonction (par example <tt>RELAYLO1-123456.relay1</tt>).</p>',ret:'une cha\xEEne de caract\xE8res identifiant la fonction (ex: <tt>RELAYLO1-123456.relay1</tt>) En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>Y_HARDWAREID_INVALID</tt>.'};
-doc['VSource']['get_logicalName']={syn:'Retourne le nom logique de la source de tension.',lib:'vsource&rarr;get_logicalName()',pro:'string get_logicalName()',cmt:'<p>Retourne le nom logique de la source de tension.</p>',ret:'une cha\xEEne de caract\xE8res repr\xE9sentant le nom logique de la source de tension',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>Y_LOGICALNAME_INVALID</tt>.'};
-doc['VSource']['get_module']={syn:'Retourne l\x27objet <tt>YModule</tt> correspondant au module Yoctopuce qui h\xE9berge la fonction.',lib:'vsource&rarr;get_module()',pro:'YModule * get_module()',cmt:'<p>Retourne l\x27objet <tt>YModule</tt> correspondant au module Yoctopuce qui h\xE9berge la fonction. Si la fonction ne peut \xEAtre trouv\xE9e sur aucun module, l\x27instance de <tt>YModule</tt> retourn\xE9e ne sera pas joignable.</p>',ret:'une instance de <tt>YModule</tt>'};
-doc['VSource']['get_overCurrent']={syn:'Rend TRUE si l\x27appareil connect\xE9 \xE0 la sortie du module consomme trop de courant.',lib:'vsource&rarr;get_overCurrent()',pro:'Y_OVERCURRENT_enum get_overCurrent()',cmt:'<p>Rend TRUE si l\x27appareil connect\xE9 \xE0 la sortie du module consomme trop de courant.</p>',ret:'soit <tt>Y_OVERCURRENT_FALSE</tt>, soit <tt>Y_OVERCURRENT_TRUE</tt>',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>Y_OVERCURRENT_INVALID</tt>.'};
-doc['VSource']['get_overHeat']={syn:'Rend TRUE si le module est en surchauffe.',lib:'vsource&rarr;get_overHeat()',pro:'Y_OVERHEAT_enum get_overHeat()',cmt:'<p>Rend TRUE si le module est en surchauffe.</p>',ret:'soit <tt>Y_OVERHEAT_FALSE</tt>, soit <tt>Y_OVERHEAT_TRUE</tt>',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>Y_OVERHEAT_INVALID</tt>.'};
-doc['VSource']['get_overLoad']={syn:'Rend TRUE si le module n\x27est pas capable de tenir la tension de sortie demand\xE9e.',lib:'vsource&rarr;get_overLoad()',pro:'Y_OVERLOAD_enum get_overLoad()',cmt:'<p>Rend TRUE si le module n\x27est pas capable de tenir la tension de sortie demand\xE9e.</p>',ret:'soit <tt>Y_OVERLOAD_FALSE</tt>, soit <tt>Y_OVERLOAD_TRUE</tt>',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>Y_OVERLOAD_INVALID</tt>.'};
-doc['VSource']['get_regulationFailure']={syn:'Rend TRUE si le voltage de sortie de trop \xE9lev\xE9 par report \xE0 la tension demand\xE9e demand\xE9e.',lib:'vsource&rarr;get_regulationFailure()',pro:'Y_REGULATIONFAILURE_enum get_regulationFailure()',cmt:'<p>Rend TRUE si le voltage de sortie de trop \xE9lev\xE9 par report \xE0 la tension demand\xE9e demand\xE9e.</p>',ret:'soit <tt>Y_REGULATIONFAILURE_FALSE</tt>, soit <tt>Y_REGULATIONFAILURE_TRUE</tt>',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>Y_REGULATIONFAILURE_INVALID</tt>.'};
-doc['VSource']['get_unit']={syn:'Retourne l\x27unit\xE9 dans laquelle la tension est exprim\xE9e.',lib:'vsource&rarr;get_unit()',pro:'string get_unit()',cmt:'<p>Retourne l\x27unit\xE9 dans laquelle la tension est exprim\xE9e.</p>',ret:'une cha\xEEne de caract\xE8res repr\xE9sentant l\x27unit\xE9 dans laquelle la tension est exprim\xE9e',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>Y_UNIT_INVALID</tt>.'};
-doc['VSource']['get_userData']={syn:'Retourne le contenu de l\x27attribut userData, pr\xE9c\xE9demment stock\xE9 \xE0 l\x27aide de la m\xE9thode <tt>set_userData</tt>.',lib:'vsource&rarr;get_userData()',pro:'void * get_userData()',cmt:'<p>Retourne le contenu de l\x27attribut userData, pr\xE9c\xE9demment stock\xE9 \xE0 l\x27aide de la m\xE9thode <tt>set_userData</tt>. Cet attribut n\x27es pas utilis\xE9 directement par l\x27API. Il est \xE0 la disposition de l\x27appelant pour stocker un contexte.</p>',ret:'l\x27objet stock\xE9 pr\xE9c\xE9demment par l\x27appelant.'};
-doc['VSource']['get_voltage']={syn:'Retourne la valeur de la commande de tension de sortie en mV ',lib:'vsource&rarr;get_voltage()',pro:'int get_voltage()',cmt:'<p>Retourne la valeur de la commande de tension de sortie en mV</p>',ret:'un entier repr\xE9sentant la valeur de la commande de tension de sortie en mV',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne <tt>Y_VOLTAGE_INVALID</tt>.'};
-doc['VSource']['isOnline']={syn:'V\xE9rifie si le module h\xE9bergeant la fonction est joignable, sans d\xE9clencher d\x27erreur.',lib:'vsource&rarr;isOnline()',pro:'bool isOnline()',cmt:'<p>V\xE9rifie si le module h\xE9bergeant la fonction est joignable, sans d\xE9clencher d\x27erreur. Si les valeurs des attributs en cache de la fonction sont valides au moment de l\x27appel, le module est consid\xE9r\xE9 joignable. Cette fonction ne cause en aucun cas d\x27exception, quelle que soit l\x27erreur qui pourrait se produire lors de la v\xE9rification de joignabilit\xE9.</p>',ret:'<tt>true</tt> si la fonction est joignable, <tt>false</tt> sinon'};
-doc['VSource']['load']={syn:'Met en cache les valeurs courantes de la fonction, avec une dur\xE9e de validit\xE9 sp\xE9cifi\xE9e.',lib:'vsource&rarr;load()',pro:'YRETCODE load(int <span id=pn>msValidity</span>)',cmt:'<p>Met en cache les valeurs courantes de la fonction, avec une dur\xE9e de validit\xE9 sp\xE9cifi\xE9e. Par d\xE9faut, lorsqu\x27on acc\xE8de \xE0 un module, tous les attributs des fonctions du module sont automatiquement mises en cache pour la dur\xE9e standard (5 ms). Cette m\xE9thode peut \xEAtre utilis\xE9e pour marquer occasionellement les donn\xE9es cach\xE9es comme valides pour une plus longue p\xE9riode, par exemple dans le but de r\xE9duire le trafic r\xE9seau.</p>',par:{msValidity:'un entier correspondant \xE0 la dur\xE9e de validit\xE9 attribu\xE9e aux les param\xE8tres charg\xE9s, en millisecondes'},ret:'<tt>YAPI_SUCCESS</tt> si l\x27op\xE9ration se d\xE9roule sans erreur. En cas d\x27erreur, d\xE9clenche une exception ou retourne un code d\x27erreur n\xE9gatif.'};
-doc['VSource']['nextVSource']={syn:'Continue l\x27\xE9num\xE9ration des sources de tension commenc\xE9e \xE0 l\x27aide de <tt>yFirstVSource()</tt>.',lib:'vsource&rarr;nextVSource()',pro:'YVSource * nextVSource()',cmt:'<p>Continue l\x27\xE9num\xE9ration des sources de tension commenc\xE9e \xE0 l\x27aide de <tt>yFirstVSource()</tt>.</p>',ret:'un pointeur sur un objet <tt>YVSource</tt> accessible en ligne, ou <tt>null</tt> lorsque l\x27\xE9num\xE9ration est termin\xE9e.'};
-doc['VSource']['pulse']={syn:'Active la sortie \xE0 une tension donn\xE9e, et pour dur\xE9e sp\xE9cifi\xE9e, puis revient ensuite spontan\xE9ment \xE0 z\xE9ro volt.',lib:'vsource&rarr;pulse()',pro:'int pulse(int <span id=pn>voltage</span>, int <span id=pn>ms_duration</span>)',cmt:'<p>Active la sortie \xE0 une tension donn\xE9e, et pour dur\xE9e sp\xE9cifi\xE9e, puis revient ensuite spontan\xE9ment \xE0 z\xE9ro volt.</p>',par:{voltage:'tension demand\xE9e, en millivolts',ms_duration:'dur\xE9e de l\x27impulsion, en millisecondes'},ret:'<tt>YAPI_SUCCESS</tt> si l\x27op\xE9ration se d\xE9roule sans erreur.',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne un code d\x27erreur n\xE9gatif.'};
-doc['VSource']['registerValueCallback']={syn:'Enregistre la fonction de callback qui est appel\xE9e \xE0 chaque changement de la valeur publi\xE9e.',lib:'vsource&rarr;registerValueCallback()',pro:'void registerValueCallback(YDisplayUpdateCallback <span id=pn>callback</span>)',cmt:'<p>Enregistre la fonction de callback qui est appel\xE9e \xE0 chaque changement de la valeur publi\xE9e. Ce callback n\x27est appel\xE9 que durant l\x27ex\xE9cution de <tt>ySleep</tt> ou <tt>yHandleEvents</tt>. Cela permet \xE0 l\x27appelant de contr\xF4ler quand les callback peuvent se produire. Il est important d\x27appeler l\x27une de ces deux fonctions p\xE9riodiquement pour garantir que les callback ne soient pas appel\xE9s trop tard. Pour d\xE9sactiver un callback, il suffit d\x27appeler cette m\xE9thode en lui passant un pointeur nul.</p>',par:{callback:'la fonction de callback \xE0 rappeler, ou un pointeur nul. La fonction de callback doit accepter deux arguments: l\x27object fonction dont la valeur a chang\xE9, et la cha\xEEne de caract\xE8re d\xE9crivant la nouvelle valeur publi\xE9e.'}};
-doc['VSource']['set_logicalName']={syn:'Modifie le nom logique de la source de tension.',lib:'vsource&rarr;set_logicalName()',pro:'int set_logicalName(const string& <span id=pn>newval</span>)',cmt:'<p>Modifie le nom logique de la source de tension. Vous pouvez utiliser <tt>yCheckLogicalName()</tt> pour v\xE9rifier si votre param\xE8tre est valide. N\x27oubliez pas d\x27appeler la m\xE9thode <tt>saveToFlash()</tt> du module si le r\xE9glage doit \xEAtre pr\xE9serv\xE9.</p>',par:{newval:'une cha\xEEne de caract\xE8res repr\xE9sentant le nom logique de la source de tension'},ret:'<tt>YAPI_SUCCESS</tt> si l\x27op\xE9ration se d\xE9roule sans erreur.',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne un code d\x27erreur n\xE9gatif.'};
-doc['VSource']['set_userData']={syn:'Enregistre un contexte libre dans l\x27attribut userData de la fonction, afin de le retrouver plus tard \xE0 l\x27aide de la m\xE9thode <tt>get_userData</tt>.',lib:'vsource&rarr;set_userData()',pro:'void set_userData(void* <span id=pn>data</span>)',cmt:'<p>Enregistre un contexte libre dans l\x27attribut userData de la fonction, afin de le retrouver plus tard \xE0 l\x27aide de la m\xE9thode <tt>get_userData</tt>. Cet attribut n\x27es pas utilis\xE9 directement par l\x27API. Il est \xE0 la disposition de l\x27appelant pour stocker un contexte.</p>',par:{data:'objet quelconque \xE0 m\xE9moriser'}};
-doc['VSource']['set_voltage']={syn:'R\xE8gle la tension de sortie du module (en milliVolts).',lib:'vsource&rarr;set_voltage()',pro:'int set_voltage(int <span id=pn>newval</span>)',cmt:'<p>R\xE8gle la tension de sortie du module (en milliVolts).</p>',par:{newval:'un entier'},ret:'<tt>YAPI_SUCCESS</tt> si l\x27op\xE9ration se d\xE9roule sans erreur.',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne un code d\x27erreur n\xE9gatif.'};
-doc['VSource']['voltageMove']={syn:'D\xE9clenche une variation constante de la sortie vers une valeur donn\xE9e.',lib:'vsource&rarr;voltageMove()',pro:'int voltageMove(int <span id=pn>target</span>, int <span id=pn>ms_duration</span>)',cmt:'<p>D\xE9clenche une variation constante de la sortie vers une valeur donn\xE9e. </p>',par:{target:'nouvelle valeur de sortie \xE0 la fin de la transition, en milliVolts.',ms_duration:'dur\xE9e de la transition, en millisecondes'},ret:'<tt>YAPI_SUCCESS</tt> si l\x27op\xE9ration se d\xE9roule sans erreur.',ext:'En cas d\x27erreur, d\xE9clenche une exception ou retourne un code d\x27erreur n\xE9gatif.'};
-//--- (end of generated code: VSource)
 //--- (generated code: Voc)
 doc['Voc']={'':{syn:'Interface pour int\xE9ragir avec les capteurs de Compos\xE9s Organiques Volatils, disponibles par exemple dans le Yocto-VOC-V3',inc:'#include &quot;yocto_voc.h&quot;',cmt:'<p>La classe <tt>YVoc</tt> permet de lire et de configurer les capteurs de Compos\xE9s Organiques Volatils Yoctopuce. Elle h\xE9rite de la classe <tt>YSensor</tt> toutes les fonctions de base des capteurs Yoctopuce: lecture de mesures, callbacks, enregistreur de donn\xE9es.</p>'}
 ,'FindVoc':{syn:'Permet de retrouver un capteur de Compos\xE9s Organiques Volatils d\x27apr\xE8s un identifiant donn\xE9.',lib:'YVoc::FindVoc()',pro:'<span id=obj>YVoc*</span> FindVoc(<span id=str>string</span> <span id=pn>func</span>)',cmt:'<p>Permet de retrouver un capteur de Compos\xE9s Organiques Volatils d\x27apr\xE8s un identifiant donn\xE9. L\x27identifiant peut \xEAtre sp\xE9cifi\xE9 sous plusieurs formes:<br> <ul> <li>NomLogiqueFonction</li> <li>NoSerieModule.IdentifiantFonction</li> <li>NoSerieModule.NomLogiqueFonction</li> <li>NomLogiqueModule.IdentifiantMat\xE9riel</li> <li>NomLogiqueModule.NomLogiqueFonction</li> </ul></p><p> Cette fonction n\x27exige pas que le capteur de Compos\xE9s Organiques Volatils soit en ligne au moment ou elle est appel\xE9e, l\x27objet retourn\xE9 sera n\xE9anmoins valide. Utiliser la m\xE9thode <tt>YVoc.isOnline()</tt> pour tester si le capteur de Compos\xE9s Organiques Volatils est utilisable \xE0 un moment donn\xE9. En cas d\x27ambigu\xEFt\xE9 lorsqu\x27on fait une recherche par nom logique, aucune erreur ne sera notifi\xE9e: la premi\xE8re instance trouv\xE9e sera renvoy\xE9e. La recherche se fait d\x27abord par nom mat\xE9riel, puis par nom logique.</p><p> Si un appel \xE0 la m\xE9thode is_online() de cet objet renvoie FAUX alors que vous \xEAtes s\xFBr que le module correspondant est ben branch\xE9, v\xE9rifiez que vous n\x27avez pas oubli\xE9 d\x27appeler registerHub() \xE0 l\x27initialisation de de l\x27application.</p>',par:{func:'une cha\xEEne de caract\xE8res qui r\xE9f\xE9rence le capteur de Compos\xE9s Organiques Volatils sans ambigu\xEFt\xE9, par exemple <tt>YVOCMK03.voc</tt>.'},ret:'un objet de classe <tt>YVoc</tt> qui permet ensuite de contr\xF4ler le capteur de Compos\xE9s Organiques Volatils.'}
@@ -4382,7 +4362,7 @@ doc['WakeUpMonitor']={'':{syn:'Interface pour int\xE9ragir avec les moniteurs de
 ,'get_serialNumber':ds.get_serialNumber
 ,'get_sleepCountdown':{syn:'Retourne le temps avant le prochain sommeil.',lib:'%&rarr;get_sleepCountdown()',pro:'<span id=int>int</span> get_sleepCountdown()',cmt:'<p>Retourne le temps avant le prochain sommeil.</p>',ret:'un entier repr&eacute;sentant le temps avant le prochain sommeil',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YWakeUpMonitor.SLEEPCOUNTDOWN_INVALID</tt>.'}
 ,'get_userData':{syn:'Retourne le contenu de l\x27attribut userData, pr\xE9c\xE9demment stock\xE9 \xE0 l\x27aide de la m\xE9thode <tt>set_userData</tt>.',lib:'%&rarr;get_userData()',pro:'<span id=obj>void *</span> get_userData()',cmt:'<p>Retourne le contenu de l\x27attribut userData, pr\xE9c\xE9demment stock\xE9 \xE0 l\x27aide de la m\xE9thode <tt>set_userData</tt>. Cet attribut n\x27es pas utilis\xE9 directement par l\x27API. Il est \xE0 la disposition de l\x27appelant pour stocker un contexte.</p>',ret:'l\x27objet stock\xE9 pr\xE9c\xE9demment par l\x27appelant.'}
-,'get_wakeUpReason':{syn:'Renvoie la raison du dernier r\xE9veil.',lib:'%&rarr;get_wakeUpReason()',pro:'<span id=int>Y_WAKEUPREASON_enum</span> get_wakeUpReason()',cmt:'<p>Renvoie la raison du dernier r\xE9veil.</p>',ret:'une valeur parmi <tt>YWakeUpMonitor.WAKEUPREASON_USBPOWER</tt>, <tt>YWakeUpMonitor.WAKEUPREASON_EXTPOWER</tt>, <tt>YWakeUpMonitor.WAKEUPREASON_ENDOFSLEEP</tt>, <tt>YWakeUpMonitor.WAKEUPREASON_EXTSIG1</tt>, <tt>YWakeUpMonitor.WAKEUPREASON_SCHEDULE1</tt> et <tt>YWakeUpMonitor.WAKEUPREASON_SCHEDULE2</tt>',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YWakeUpMonitor.WAKEUPREASON_INVALID</tt>.'}
+,'get_wakeUpReason':{syn:'Renvoie la raison du dernier r\xE9veil.',lib:'%&rarr;get_wakeUpReason()',pro:'<span id=int>Y_WAKEUPREASON_enum</span> get_wakeUpReason()',cmt:'<p>Renvoie la raison du dernier r\xE9veil.</p>',ret:'une valeur parmi <tt>YWakeUpMonitor.WAKEUPREASON_USBPOWER</tt>, <tt>YWakeUpMonitor.WAKEUPREASON_EXTPOWER</tt>, <tt>YWakeUpMonitor.WAKEUPREASON_ENDOFSLEEP</tt>, <tt>YWakeUpMonitor.WAKEUPREASON_EXTSIG1</tt>, <tt>YWakeUpMonitor.WAKEUPREASON_SCHEDULE1</tt>, <tt>YWakeUpMonitor.WAKEUPREASON_SCHEDULE2</tt> et <tt>YWakeUpMonitor.WAKEUPREASON_SCHEDULE3</tt>',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YWakeUpMonitor.WAKEUPREASON_INVALID</tt>.'}
 ,'get_wakeUpState':{syn:'Revoie l\x27\xE9tat actuel du moniteur.',lib:'%&rarr;get_wakeUpState()',pro:'<span id=int>Y_WAKEUPSTATE_enum</span> get_wakeUpState()',cmt:'<p>Revoie l\x27\xE9tat actuel du moniteur.</p>',ret:'soit <tt>YWakeUpMonitor.WAKEUPSTATE_SLEEPING</tt>, soit <tt>YWakeUpMonitor.WAKEUPSTATE_AWAKE</tt>',ext:'En cas d\x27erreur, d&eacute;clenche une exception ou retourne <tt>YWakeUpMonitor.WAKEUPSTATE_INVALID</tt>.'}
 ,'isOnline':{syn:'V\xE9rifie si le module h\xE9bergeant le moniteur de r\xE9veil est joignable, sans d\xE9clencher d\x27erreur.',lib:'%&rarr;isOnline()',pro:'<span id=bool>bool</span> isOnline()',cmt:'<p>V\xE9rifie si le module h\xE9bergeant le moniteur de r\xE9veil est joignable, sans d\xE9clencher d\x27erreur. Si les valeurs des attributs en cache du moniteur de r\xE9veil sont valides au moment de l\x27appel, le module est consid\xE9r\xE9 joignable. Cette fonction ne cause en aucun cas d\x27exception, quelle que soit l\x27erreur qui pourrait se produire lors de la v\xE9rification de joignabilit\xE9.</p>',ret:'<tt>true</tt> si le moniteur de r\xE9veil est joignable, <tt>false</tt> sinon'}
 ,'isReadOnly':ds.isReadOnly
@@ -4640,7 +4620,7 @@ doc['YAPI']={'':{syn:'Fonctions g\xE9n\xE9rales',inc:'#include &quot;yocto_api.h
 ,'GetDeviceListValidity':{syn:'Retourne le d\xE9lai entre chaque \xE9num\xE9ration forc\xE9e des YoctoHubs utilis\xE9s.',lib:'YAPI::GetDeviceListValidity()',pro:'static <span id=int>int</span> GetDeviceListValidity()',cmt:'<p>Retourne le d\xE9lai entre chaque \xE9num\xE9ration forc\xE9e des YoctoHubs utilis\xE9s. Note: Cette fonction doit \xEAtre appel\xE9e apr\xE8s <tt>yInitAPI</tt>.</p>',ret:'le nombre de secondes entre chaque \xE9num\xE9ration.'}
 ,'GetNetworkTimeout':{syn:'Retourne le d\xE9lai de connexion r\xE9seau pour <tt>yRegisterHub()</tt> et <tt>yUpdateDeviceList()</tt>.',lib:'YAPI::GetNetworkTimeout()',pro:'static <span id=int>int</span> GetNetworkTimeout()',cmt:'<p>Retourne le d\xE9lai de connexion r\xE9seau pour <tt>yRegisterHub()</tt> et <tt>yUpdateDeviceList()</tt>. Ce d\xE9lai n\x27affecte que les YoctoHubs et VirtualHub qui sont accessibles par r\xE9seau. Par d\xE9faut, ce d\xE9lai est de 20000 millisecondes, mais en fonction de votre r\xE9seau il peut \xEAtre souhaitable de changer ce d\xE9lai, par exemple, si votre infrastructure r\xE9seau utilise une connexion GSM.</p>',ret:'le d\xE9lai de connexion r\xE9seau en millisecondes.'}
 ,'GetTickCount':{syn:'Retourne la valeur du compteur monotone de temps (en millisecondes).',lib:'YAPI::GetTickCount()',pro:'static <span id=int>u64</span> GetTickCount()',cmt:'<p>Retourne la valeur du compteur monotone de temps (en millisecondes). Ce compteur peut \xEAtre utilis\xE9 pour calculer des d\xE9lais en rapport avec les modules Yoctopuce, dont la base de temps est aussi la milliseconde.</p>',ret:'un long entier contenant la valeur du compteur de millisecondes.'}
-,'GetYAPISharedLibraryPath':{syn:'Retourne le chemin de la librairie dynamique YAPI.',lib:'YAPI::GetYAPISharedLibraryPath()',pro:'static <span id=str>string</span> GetYAPISharedLibraryPath()',cmt:'<p>Retourne le chemin de la librairie dynamique YAPI. Cette fonction est utile pour d\xE9bugger les probl\xE8mes de chargement de la librairie dynamique YAPI. Cette fonction est support\xE9 par les langages C#, Python et VB. Les autre librairies retournent une cha\xEEne vide. @Return une cha\xEEne contenant le path de la librairie dynamique YAPI.</p>'}
+,'GetYAPISharedLibraryPath':{syn:'Retourne le chemin de la librairie dynamique YAPI.',lib:'YAPI::GetYAPISharedLibraryPath()',pro:'static <span id=str>string</span> GetYAPISharedLibraryPath()',cmt:'<p>Retourne le chemin de la librairie dynamique YAPI. Cette fonction est utile pour d\xE9bugger les probl\xE8mes de chargement de la librairie dynamique YAPI. Cette fonction est support\xE9 par les langages C#, Python et VB. Les autre librairies retournent une cha\xEEne vide.</p>',ret:'une cha\xEEne contenant le path de la librairie dynamique YAPI.'}
 ,'HandleEvents':{syn:'Maintient la communication de la librairie avec les modules Yoctopuce.',lib:'YAPI::HandleEvents()',pro:'static <span id=int>YRETCODE</span> HandleEvents(<span id=str>string</span> <span id=pn>errmsg</span>)',cmt:'<p>Maintient la communication de la librairie avec les modules Yoctopuce. Si votre programme inclut des longues boucles d\x27attente, vous pouvez y inclure un appel \xE0 cette fonction pour que la librairie prenne en charge les informations mise en attente par les modules sur les canaux de communication. Ce n\x27est pas strictement indispensable mais cela peut am\xE9liorer la r\xE9activit\xE9 des la librairie pour les commandes suivantes.</p><p> Cette fonction peut signaler une erreur au cas \xE0 la communication avec un module Yoctopuce ne se passerait pas comme attendu.</p>',par:{errmsg:'une cha\xEEne de caract\xE8res pass\xE9e par r\xE9f\xE9rence, dans laquelle sera stock\xE9 un \xE9ventuel message d\x27erreur.'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op\xE9ration se d\xE9roule sans erreur.',ext:'En cas d\x27erreur retourne un code d\x27erreur n\xE9gatif.'}
 ,'InitAPI':{syn:'Initialise la librairie de programmation de Yoctopuce explicitement.',lib:'YAPI::InitAPI()',pro:'static <span id=int>YRETCODE</span> InitAPI(<span id=int>int</span> <span id=pn>mode</span>, <span id=str>string</span> <span id=pn>errmsg</span>)',cmt:'<p>Initialise la librairie de programmation de Yoctopuce explicitement. Il n\x27est pas indispensable d\x27appeler <tt>yInitAPI()</tt>, la librairie sera automatiquement initialis\xE9e de toute mani\xE8re au premier appel \xE0 <tt>yRegisterHub()</tt>.</p><p> Lorsque cette fonctin est utilis\xE9e avec comme <tt>mode</tt> la valeur <tt>YAPI.DETECT_NONE</tt>, il faut explicitement appeler <tt>yRegisterHub()</tt> pour indiquer \xE0 la librairie sur quel VirtualHub les modules sont connect\xE9s, avant d\x27essayer d\x27y acc\xE9der.</p>',par:{mode:'un entier sp\xE9cifiant le type de d\xE9tection automatique de modules \xE0 utiliser. Les valeurs possibles sont <tt>YAPI.DETECT_NONE</tt>, <tt>YAPI.DETECT_USB</tt>, <tt>YAPI.DETECT_NET</tt> et <tt>YAPI.DETECT_ALL</tt>.',errmsg:'une cha\xEEne de caract\xE8res pass\xE9e par r\xE9f\xE9rence, dans laquelle sera stock\xE9 un \xE9ventuel message d\x27erreur.'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op\xE9ration se d\xE9roule sans erreur.',ext:'En cas d\x27erreur retourne un code d\x27erreur n\xE9gatif.'}
 ,'PreregisterHub':{syn:'Alternative plus tol\xE9rante \xE0 <tt>yRegisterHub()</tt>.',lib:'YAPI::PreregisterHub()',pro:'static <span id=int>YRETCODE</span> PreregisterHub(<span id=str>string</span> <span id=pn>url</span>, <span id=str>string</span> <span id=pn>errmsg</span>)',cmt:'<p>Alternative plus tol\xE9rante \xE0 <tt>yRegisterHub()</tt>. Cette fonction a le m\xEAme but et les m\xEAme param\xE8tres que la fonction <tt>yRegisterHub()</tt>, mais contrairement \xE0 celle-ci <tt>yPreregisterHub()</tt> ne d\xE9clenche pas d\x27erreur si le hub choisi n\x27est pas joignable au moment de l\x27appel. Si la connexion ne peut \xEAtre \xE9tablie imm\xE9diatement, une t\xE2che d\x27arri\xE8re-plan fera automatiquement et p\xE9riodiquement de nouvelles tentatives. Il est ainsi possible d\x27enregistrer un hub r\xE9seau ind\xE9pendemment de la connectivit\xE9, afin de tenter de ne le contacter que lorsqu\x27on cherche r\xE9ellement un module.</p>',par:{url:'une cha\xEEne de caract\xE8res contenant <ui>\x22usb\x22</ui>,<ui>\x22callback\x22,</ui> ou l\x27URL racine du VirtualHub \xE0 utiliser.',errmsg:'une cha\xEEne de caract\xE8res pass\xE9e par r\xE9f\xE9rence, dans laquelle sera stock\xE9 un \xE9ventuel message d\x27erreur.'},ret:'<tt>YAPI.SUCCESS</tt> si l\x27op\xE9ration se d\xE9roule sans erreur.',ext:'En cas d\x27erreur retourne un code d\x27erreur n\xE9gatif.'}
@@ -4662,771 +4642,133 @@ doc['YAPI']={'':{syn:'Fonctions g\xE9n\xE9rales',inc:'#include &quot;yocto_api.h
 };
 //--- (end of generated code: YAPI)
 //--- (end of generated code)
-//--- (start of minifiable code)
- function isProperty(clname,m)
- { return doc[clname][m].lib.indexOf('(')==-1 && Language!='Objective-C';
- }
- function isClassMethod(clname,m)
- { return (clname=='YAPI'&&doc[clname][m].pro ? doc[clname][m].pro.indexOf('static')>=0 : /^[A-Z].*/.test(m));
- }
- function MethodType(clname,m)
- { return (isProperty(clname,m)?'property':isClassMethod(clname,m)?'static':'method');
- }
-
- var isCmdLine = (Language.substr(0,3) == 'Cmd');
- var isProxy = (Language.substr(-5) == 'Proxy');
-
- function ApplySub(text,clname,attrname)
- { var pos, endpos = 0, key, rep, prefix, skip, cname,aprefix;
-   if(!text) return '';
-   prefix = (clname.substr(0,1)!='Y' ? 'Y'+clname : clname);
-   if(/^[gs]et_.*/.test(attrname)) attrname = attrname.substr(4);
-   skip = 2;
-   if(isProxy) {
-     prefix = clname.toLowerCase()+'._';
-     if(attrname != 'mountPosition' && attrname != 'drawText') {
-       skip += attrname.length;
-       prefix += attrname.substr(0,1).toUpperCase()+attrname.substr(1);      
-     }
-   } else if(sub['YAPI_SUCCESS'] && !isCmdLine) {
-     prefix = sub['YAPI_SUCCESS'].replace('YAPI',prefix).replace('SUCCESS','');
-   } else {
-     prefix += '.';
-   }
-   while((pos = text.toLowerCase().indexOf('<tt>',endpos)) >= endpos) {
-     pos += 4;
-     endpos = text.indexOf('</', pos);
-     inside = text.substr(pos,endpos-pos);
-     rep = false;
-     if(isCmdLine && inside.startsWith('YDisplayLayer.ALIGN')) {
-       rep = inside.replace(/YDisplayLayer.ALIGN(_)*/,'');
-     } else if(sub[inside]) {
-       rep = sub[inside];
-     } else if((key = inside.match(/^(\w+_)+\w+$/)) !== null) { 
-       key = key[0];
-       rep = sub[key];
-       if(!rep && key.substr(0,2)=='Y_' && !UseShortcuts) {
-         if(isCmdLine) {
-           rep = key.substr(2+attrname.length,key.length);          
-         } else {
-           rep = prefix+key.substr(skip,key.length);          
-         }
-       }
-     } else if(isCmdLine && inside.startsWith(prefix+attrname.toUpperCase()+'_')) { 
-       rep = inside.substr(prefix.length+attrname.length+1);
-     } else if((key = inside.match(/^Y[A-Za-z0-9]+$/)) !== null) {
-       key = key[0].substr(1);
-       if(doc[key]) {
-         cname = 'Y'+key;
-         if(doc.Files.get_module && doc.Files.get_module.pro.indexOf('Proxy') > 0 && 
-            text.substr(pos-7,2) != 'VI' && text.substr(endpos+6,2) != 'VI') {
-           cname += 'Proxy';
-         }
-         rep = '<a href="javascript:Show(\''+key+'\',\'\')">'+cname+'</a>';
-       }
-     } else if((key = inside.match(/^y([A-Z][A-Za-z0-9]+).*/)) !== null) {
-       ident = key[1];
-       key = key[0].substr(1);
-       if(key.match(/(First|Find)[A-Za-z0-9]+.*/)) {
-         if(!UseShortcuts) rep = inside.substr(1);
-       } else {
-         if(!UseShortcuts) {
-           rep = sub['YAPI_SUCCESS'].replace('SUCCESS',inside.substr(1));
-           if(doc['YAPI'][ident]) {
-             rep = '<a href="javascript:Show(\'YAPI\',\''+ident+'\')">'+rep+'</a>';
-           }
-         } else {
-           if(doc['YAPI'][ident]) {
-             rep = '<a href="javascript:Show(\'YAPI\',\''+ident+'\')">'+inside+'</a>';
-           }
-         }
-       }
-     } else if((key = inside.match(/^([A-Za-z][A-Za-z0-9]+)(\.|::)([A-Za-z_0-9]+).*/)) !== null) {
-       cident = key[1].substr(0,1).toUpperCase()+key[1].substr(1);
-       mident = key[3];
-       if(cident.substr(0,4)!='YAPI' && cident[0]=='Y') cident = cident.substr(1);
-       if(cident.match(/.*Proxy$/)) cident = cident.slice(0,-5);
-       if(!UseShortcuts) {
-         rep = inside;
-       } else if(mident.match(/(First|Find)[A-Za-z0-9]+.*/) || cident == 'YAPI') {
-         rep = 'y'+mident;
-       }
-       if(doc[cident] && doc[cident][mident]) {
-         rep = '<a href="javascript:Show(\''+cident+'\',\''+mident+'\')">'+rep+'</a>';
-       }
-     } else if((key = inside.match(/^(saveToFlash|isOnline).*/)) !== null) {
-       rep = '<a href="javascript:Show(\'Module\',\''+key[1]+'\')">'+inside+'</a>';
-     }
-     if(rep !== false) {      
-      text = text.substr(0, pos) + rep + text.substr(endpos);
-      endpos = pos + rep.length;
-     }
-   }
-   return text;
- }
-
- function wdg(n)
- { return document.getElementById(n); }
- function SetPosition(o,x,y)
- { var it=wdg(o);
-   it.style.top  = y;
-   it.style.left  = x;
- }
-
-function GetPositionX(o)
- { var it=wdg(o);
-   return parseInt(it.style.left);
- }
-
-function GetPositionY(o)
- { var it=wdg(o);
-   return parseInt(it.style.top);
- }
-
-function  GetWidth(o)
- {  var it=wdg(o);
-    return parseInt(it.style.width);
- }
-
-function  GetHeight(o)
- {  var it=wdg(o);
-    return parseInt(it.style.height);
- }
-
-function  SetHeight(o,h)
- {  var it=wdg(o);
-    h=parseInt(h);
-    if (h<0) h=0;
-  it.style.height  =  h+ "px";
- }
-
-function  SetWidth(o,w)
- {  var it=wdg(o);
-    w = parseInt(w);
-    if (w<0) w=0;
-  it.style.width  = parseInt(w) + "px";
- }
-
-function  SetLeft(o,l)
- {  var it=wdg(o);
-    it.style.left  = parseInt(l) + "px";
- }
-
-function  SetTop(o,t)
- {  var it=wdg(o);
-    it.style.top  = parseInt(t) + "px";
- }
-
-function  SetSize(o,w,h)
- {  var it=wdg(o);
-    w= parseInt(w);
-    if (w<0) w=0;
-    h=parseInt(h);
-    if (h<0) h=0;
-    it.style.width   = w;
-  it.style.height  = h;
- }
-
-function  GetWindowWidth()
- {   return parseInt(document.body.clientWidth);
- }
-
-function  GetWindowHeight()
- {   return parseInt(document.body.clientHeight);
- }
-
-function computeWinWH()
- { WinW             = GetWindowWidth() - 2;
-   if (WinW<600) WinW=600;
-   WinH             = GetWindowHeight() - 2;
-   if (WinH<400) WinH=400;
-}
-
-
- function getInnerHeight()
- {  var D = document;
-    return Math.max(
-        Math.max(D.body.scrollHeight, D.documentElement.scrollHeight),
-        Math.max(D.body.offsetHeight, D.documentElement.offsetHeight),
-        Math.max(D.body.clientHeight, D.documentElement.clientHeight)
-    );
- }
-
- function getInnerWidth()
- {  var D = document;
-    return Math.max(
-        Math.max(D.body.scrollWidth, D.documentElement.scrollWidth),
-        Math.max(D.body.offsetWidth, D.documentElement.offsetWidth),
-        Math.max(D.body.clientWidth, D.documentElement.clientWidth)
-    );
-
- }
-
-function onResize(fct)
-  { fct();
-    resizeCallBacks[resizeCallBacks.length]=fct;
-  }
-
-function windowResized()
-  { computeWinWH()
-    for (var i=0;i<resizeCallBacks.length;i++)
-      resizeCallBacks[i]();
-  }
-
-function jsQuote(str_in)
-{ str_in = str_in+'';
-  var str_out   = '';
-  for (i=0;i<str_in.length;i++)
-   {
-     var ascii = str_in.charCodeAt(i);
-     if ((ascii>=32)&&(ascii<=127)&&(ascii!=34)&&(ascii!=39)) str_out =str_out+str_in.charAt(i);
-     else
-      { var hex = ascii.toString(16).toUpperCase();
-        if (hex.length==1) hex = '0'+hex;
-        str_out = str_out + String.fromCharCode(92) + 'x'+ hex;
-      }
-   }
-   return str_out;
-  }
-
-
-function resizeMargin()
- {
-   SetSize("MarginLayer",marginSize,WinH-110);
-   SetLeft("FunctionsLayer",marginSize);
-   SetSize("FunctionsLayer",WinW-marginSize,WinH-110);
- }
-
-function resizeSeparator()
- { SetHeight("separatorLayer",WinH-110);
- }
-
-function positionObject(int_x,int_y)
- { this.x = int_x;
-   this.y = int_y;
- }
-
-function GetEventPosition(event)
- { var x,y;
-   if (event.changedTouches)
-    { x = event.changedTouches[0].pageX;
-      y = event.changedTouches[0].pageY;
-    }
-   else
-    {  x = event.PageX;
-       y = event.PageY;
-      if (!x)
-        { x= event.clientX + document.body.scrollLeft;
-         y= event.clientY + document.body.scrollTop;
-        }
-    }
-  return new positionObject(x,y);
- }
-
-
-function EnableDrag(var_element,onDragMove,onDragEnd)
-  {
-   //onDragMove & onDragMove are optinnals callbacks fct(DomElement,position) where position is an associtative array "x","y
-   if (document.addEventListener)
-      { var_element.addEventListener("mousedown",Drag_start,false);
-        var_element.addEventListener("touchstart",Drag_start,false);
-      }
-   else
-     if (document.attachEvent)
-       var_element.attachEvent("onmousedown",Drag_start);
-
-   if (onDragMove)  var_element.onDragMove = onDragMove;
-   if (onDragEnd)   var_element.onDragEnd  = onDragEnd;
-  }
-
- var LastDraggedObject = null;
-
- function DraggedObject(obj_element,obj_elmtInitialPos,obj_mouseInitalPos)
-  {this.element         = obj_element;
-   this.elmtInitialPos  = obj_elmtInitialPos;
-   this.elmtCurrentPos  = new positionObject(obj_elmtInitialPos.x,obj_elmtInitialPos.y);
-   this.mouseInitialPos = obj_mouseInitalPos;
-  }
-
-function Drag_start(event)
- {
-   if (!event) event = window.event;
-   var source = event.srcElement;
-
-   if (event.button!=undefined)
-    { if ((event.button!=1) && (document.attachEvent)) return;  // ie;
-      if ((event.button!=0) && (document.addEventListener)) return;  // other;
-    }
-
-   if (!source) source= this;
-   if (!source) return;
-   var originalsource=source;
-   while (source.tagName!="DIV")
-      { if (source.tagName=="A") return false;  // there is a link (a probably a button) on the way:  cancel drag
-        source=source.parentNode;
-      }
-
-   if (event.preventDefault)   event.preventDefault();
-   source.style.cursor="col-resize";
-   lastDraggedObject      = new DraggedObject( source,
-                                               new positionObject(parseInt(source.style.left),parseInt(source.style.top)),
-                                               GetEventPosition(event)
-                                              );
-   if (document.addEventListener)
-    { document.addEventListener("mousemove",Drag_mouseCapture,false);
-      document.addEventListener("mouseup",  Drag_stopMouseCapture,false);
-      document.addEventListener("touchmove",Drag_mouseCapture,false);
-      document.addEventListener("touchend", Drag_stopMouseCapture,false);
-    }
-   else
-   if (document.attachEvent)
-    { document.attachEvent("onmousemove",Drag_mouseCapture);
-      document.attachEvent("onmouseup",Drag_stopMouseCapture);
-    }
-   document.onmouseup   =   Drag_stopMouseCapture;
- }
-
-
-function Drag_mouseCapture(event)
- {
-   if (!event) event = window.event;
-   var position = GetEventPosition(event);
-   if (event.preventDefault) event.preventDefault();
-
-
-   var x = (lastDraggedObject.elmtInitialPos.x + position.x -  lastDraggedObject.mouseInitialPos.x);
-   var y = (lastDraggedObject.elmtInitialPos.y + position.y -  lastDraggedObject.mouseInitialPos.y);
-
-   var iw = getInnerWidth()
-   var ih = getInnerHeight();
-   var w  = lastDraggedObject.element.offsetWidth;
-   var h  = lastDraggedObject.element.offsetHeight;
-
-   if (x>iw-w) x=iw-w;
-   if (y>ih-h) y=ih-h;
-   if (x<0) x=0;
-   if (y<0) y=0;
-
-   var p = {x:x,y:y};
-
-   if (lastDraggedObject.element.onDragMove)
-      lastDraggedObject.element.onDragMove(lastDraggedObject.element,p);
-
-   lastDraggedObject.elmtCurrentPos.x   = p.x;
-   lastDraggedObject.elmtCurrentPos.y   = p.y;
-
-   lastDraggedObject.element.style.left = p.x+"px";
-   lastDraggedObject.element.style.top  = p.y+"px";
- }
-
-function Drag_stopMouseCapture()
- {
-   if (document.removeEventListener)
-    { document.removeEventListener("mousemove",Drag_mouseCapture,false);
-      document.removeEventListener("mouseup",  Drag_stopMouseCapture,false);
-      document.removeEventListener("touchmove",Drag_mouseCapture,false);
-      document.removeEventListener("touchend", Drag_stopMouseCapture,false);
-    }
-   else
-   if (document.detachEvent)
-    { document.detachEvent("onmousemove",Drag_mouseCapture);
-      document.detachEvent("onmouseup",Drag_stopMouseCapture);
-    }
-
-  if (lastDraggedObject)
-    { lastDraggedObject.element.style.cursor='col-resize';
-      if (lastDraggedObject.element.onDragEnd)
-       lastDraggedObject.element.onDragEnd(lastDraggedObject.element,{x:lastDraggedObject.elmtCurrentPos.x,y:lastDraggedObject.elmtCurrentPos.y});
-    }
-   lastDraggedObject = null;
- }
-
- function marginMove(el,pos)
-  {pos.y = 80;
-   if (pos.x<100) pos.x=100;
-   if (pos.x>WinW-100) pos.x=WinW-100;
-   marginSize=pos.x;
-   resizeMargin()
-  }
-
- function proto(clname, m)
-  {
-      var funcproto = doc[clname][m].pro;
-      if(isClassMethod(clname,m)) {
-          if(UseShortcuts) {
-              funcproto = funcproto.replace(m, 'y'+m);
-          } else if(doc[clname][m].lib.substr(0,1) == '[' && funcproto.substr(0,1) != '+') {
-              var params = doc[clname][m].par;
-              var methodpos = funcproto.search(m);
-              var endrettype = methodpos;
-              while(endrettype > 0 && funcproto.substr(endrettype-1,1)==' ') endrettype--;
-              var newproto = "+("+funcproto.substr(0,endrettype)+") "+m;
-              var pos = methodpos+m.length;
-              for(var p in params) {
-                  pos += funcproto.slice(pos).search(/[A-Za-z]/);
-                  var argpos = pos + funcproto.slice(pos).search('<span');
-                  var endargtype = argpos;
-                  while(endargtype > pos && funcproto.substr(endargtype-1,1)==' ') endargtype--;
-                  var endarg = argpos + funcproto.slice(argpos).search(/[,)]/);
-                  newproto += ": ("+funcproto.slice(pos, endargtype)+") "+funcproto.slice(argpos,endarg)+" ";
-                  pos = endarg;
-              }
-              funcproto = newproto;
-          }
-      }
-      return funcproto
-  }
-
- var lastindex_shown = "";
- var lastname_shown = null;
- function Show(clname,str_name,nohist)
-  {
-    if (!clname && !str_name)
-      { wdg("FunctionsLayerInner").innerHTML = NotFound;
-        return;
-      }
-    var fcthtml = NotFound;
-    lastindex_shown = clname;
-    if (clname && str_name && doc[clname] && doc[clname][str_name])
-       { lastname_shown = str_name;
-         var fct = doc[clname][str_name];
-         var funcname = fct.lib.replace('%',clname.toLowerCase());
-         var funcproto = proto(clname, str_name);
-         if(UseShortcuts && isClassMethod(clname, str_name)) {
-             funcname = 'y'+str_name+'()';
-         }
-         fcthtml = "<a class='funcHeader' href='#"+clname+"."+str_name+"'>"+funcname+'</a>'
-                   +"<br><br><span class='prototype'>"+funcproto+'</span>'
-                   +'<br><br>'+ApplySub(fct.cmt,clname,str_name);
-         if (fct.par)
-          {  fcthtml += "<span class='paramAndRet'>"+ParamLabel+'</span><br>\n';
-             fcthtml +='<table class="paramtable">'
-             for (var p in  fct.par)
-                 fcthtml +='<tr><td class="pn">'+p+'</td><td> : '+ApplySub(fct.par[p],clname,str_name)+'</td></tr>\n';
-             fcthtml +='</table><br>'
-          }
-
-         if (fct.ret)
-          { fcthtml += "<span class='paramAndRet'>"+ReturnLabel+'</span><br>\n';
-            fcthtml +='<p class="paramtable">'+ApplySub(fct.ret,clname,str_name)+'</p>\n';
-          }
-
-         if (fct.ext)  fcthtml+=ApplySub(fct.ext,clname,str_name);
-         var newstate = clname+'.'+str_name;
-         if(newstate != history.state && !nohist) {
-           history.pushState(newstate,newstate,'#'+newstate);
-         }
-      }
-     else
-     if (clname && doc[clname])
-     {  fcthtml = "<a class='funcHeader' href='#"+clname+"'>"+clname+'</a><br>'
-                + "<p>"+ApplySub(doc[clname][''].syn,clname,str_name)+"</p>"
-                + (doc[clname][''].inc != "" ? "<p>"+IncludeLabel+"</p><p class='include'>"+doc[clname][''].inc+"</p>" : "")
-                + "<p>"+ApplySub(doc[clname][''].cmt,clname,str_name)+"</p>";
-        var prevmtype = '';
-        for (m in doc[clname]) {
-          if (m!='') {
-            var funcproto = proto(clname,m);
-            var mtype = MethodType(clname,m);
-            if(prevmtype != mtype) {
-              prevmtype = mtype;
-              fcthtml +="<span class='subHeader'>"+MethodTypes[mtype]+"</span>";
-              if(clname != 'YAPI') {
-                fcthtml += "<p>" + MethodExtra[mtype] + "</p>";
-              }
-            }
-            fcthtml +="<p class='methodlist'><a class='protoindex' href='javascript:Show(\""+clname+"\",\""+m+"\")'>"+funcproto+'</a><br>'
-                    +"<span class='synlist'>"+ApplySub(doc[clname][m].syn,clname,str_name)+'</span></p>';
-          }
-        }
-        var newstate = clname;
-        if(newstate != history.state && !nohist) {
-          history.pushState(newstate,newstate,'#'+newstate);
-        }
-     }
-     wdg("FunctionsLayerInner").innerHTML = fcthtml;
-     setTimeout("wdg('FunctionsLayer').scrollTop=0;",20);
-  }
-
-  function expand(source,openonly)
-  { if (wdg(source.id+"List").style.display=='' && !openonly)
-     { wdg(source.id+"List").style.display='none';
-       wdg(source.id).src=plusimage;
-     }
-    else
-     { wdg(source.id+"List").style.display='';
-       wdg(source.id).src=minusimage;
-     }
-  }
-
- function ShowFunctions(str_currentclname)
-  { var marginhtml = "";
-    for (var clname in doc)
-    {  var icon = plusimage;
-       var onck = " onclick='expand(this";
-       var iclass = "expandColapse"; 
-       var display = "none";
-       var methodlist = "";
-       for (var method in doc[clname])
-       { if (method!='')
-         { var funcname = doc[clname][method].lib.replace('%',clname.toLowerCase());
-           var mclass = (ShowIcons ? MethodType(clname,method) : 'noicon');
-           if(UseShortcuts && mclass == 'static') funcname = 'y'+method+'()';
-           methodlist += "<a id="+clname+'.'+method+" class='"+mclass+"' href='javascript:Show(\""+clname+"\",\""+method+"\");'>"+funcname+'</a>';
-         }
-       }
-       if (methodlist == "")
-       { iclass = "noExpand";
-         onck = " ony='(";
-       } else if (str_currentclname==clname)
-       { icon = minusimage;
-         onck = " onclick='expand(this";
-         display = ""
-       }
-       marginhtml += "<span class='classheader'> <img class='"+iclass+"' id='"+clname+"' "+onck+")'' src='"+icon+"'/> ";
-       marginhtml += "<a href='javascript:Show(\""+clname+"\",\"\");' id='"+clname+"' "+onck+",true)'>"+clname+'</a></span><br>';
-       if(methodlist!="") marginhtml += "<div id='"+clname+"List' class='methodsList' style='display:"+display+"'>"+methodlist+"</div>";
-       if(clname=='YAPI'||clname=='FreeAPI') marginhtml += '<hr>';
-    }
-
-    wdg("MarginLayer").innerHTML = marginhtml;
-  }
-
- function fctMatch(clname,method,values)
-  { var found    = new Array()
-    var tosearch = new Array()
-
-    for (var i=0;i<values.length;i++)
-     if (values[i]!='' && values[i]!='y')
-      { if(values[i].substr(0,3) == '[y]')
-          tosearch[tosearch.length] = values[i].substr(3,values[i].length);
-        else
-          tosearch[tosearch.length] = values[i];
-      }
-
-    for (var i=0;i<tosearch.length;i++)
-       {  var expr     = new RegExp(tosearch[i], "i");
-          var fct = doc[clname][method]
-          var found = clname.search(expr)>=0;
-          if (!found) found=method.search(expr)>=0;
-
-          if (!found && fct.inc)
-            {if (!found && fct.syn) found=fct.syn.search(expr)>=0;
-             if (!found) found=fct.inc.search(expr)>=0;
-            }
-
-          if (!found && fct.pro) found=fct.pro.search(expr)>=0;
-          if (fct.par)
-             for (var p in  fct.par)
-              { if (!found) found=p.search(expr)>=0;
-                if (!found) found=fct.par[p].search(expr)>=0;
-              }
-          if (fct.ret)
-              { if (!found) found=fct.ret.search(expr)>=0;
-              }
-          if (!found && fct.cmt)found=fct.cmt.search(expr)>=0;
-          if (!found && fct.ext)found=fct.ext.search(expr)>=0;
-
-          if (!found) return false;
-       }
-
-
-    return true;
-
-  }
-
- var searchTimer = null;
-
- function doSearch()
-  { searchTimer = null;
-    var value= document.forms['yoctoForm'].elements['search'].value;
-
-    if (value=='')
-     { for (var clname in doc)
-        { var container = wdg(clname+"List");
-          for (var method in doc[clname])
-           if (method!='')
-             { var it = wdg(clname+'.'+method);
-               if (it) it.style.display="block";
-             }
-          wdg(clname).style.visibility='visible';
-          var container = wdg(clname+"List");
-          if (container["originalDisplay"]!="")
-           { wdg(clname+"List").style.display='none';
-             wdg(clname).src=plusimage;
-           }
-          else
-           { wdg(clname+"List").style.display='';
-             wdg(clname).src=minusimage;
-           }
-          container["originalDisplay"]=null;
-        }
-        Show(lastindex_shown,lastname_shown);
-       return;
-      }
-
-    var firstindex = '';
-    var firstname  = '';
-    qvalue = value;
-    value = '';
-    for(var i = 0; i < qvalue.length; i++) {
-        var c = qvalue.charAt(i);
-        if(c == '\\' || c == '[' || c == ']' || c == '(' || c == ')') {
-            value += '.';
-        } else {
-          if (c!=' ')  value+='['+qvalue.charAt(i)+']';
-                   else value+=' ';
-        }
-    }
-    for (var clname in doc)
-     { var  matchfound=false;
-       var container = wdg(clname+"List");
-       if (!container["originalDisplay"]) container["originalDisplay"]=null;
-       if (container["originalDisplay"]==null) container["originalDisplay"] = container.style.display;
-       values = value.split(' ');
-       for (var method in doc[clname])
-
-         { var it  = wdg(clname+'.'+method);
-           var match = fctMatch(clname,method,values);
-               if (match)
-                 {  if (it) it.style.display="block";
-                     matchfound=true;
-                    if (firstindex=='') {firstindex=clname; firstname = method;}
-                 }
-              else
-                 { if (it) it.style.display="none";
-                 }
-         }
-
-      if  (matchfound)
-          { wdg(clname+"List").style.display='';
-            wdg(clname).src=minusimage;
-            wdg(clname).style.visibility='visible';
-          }
-         else
-          { wdg(clname+"List").style.display='none';
-            wdg(clname).style.visibility='hidden';
-            wdg(clname).src=plusimage;
-          }
-     }
-    Show(firstindex,firstname);
-  }
-
- function initSearch()
-  { if (searchTimer!=null)  clearTimeout(searchTimer);
-    searchTimer = setTimeout('doSearch()',500);
-  }
-
- function sortObject(o) 
-  { var sorted = {}, key, newkey, a = [];
-    for (key in o) {
-        if (o.hasOwnProperty(key)) a.push(key);
-    }
-    a.sort();
-    for (key = 0; key < a.length; key++) {
-        newkey = a[key];
-        if(newkey.substr(0,1)=='*') {
-          newkey = newkey.substr(3);
-        }
-        sorted[newkey] = o[a[key]];
-    }
-    return sorted;
-}
-
-function OOcheckboxChange()
-{ UseShortcuts =  document.forms["yoctoForm"].elements["OOcheckbox"].checked;
-  ShowFunctions(lastindex_shown);
-  Show(lastindex_shown,lastname_shown);
-}
-
-function parseHash(arg)
-{
-  var defclass = "Introduction";
-  var defmethod = "";
-  if(window.location.hash.length > 1) {
-    var words = window.location.hash.substr(1).split('.');
-    var cname = words[0];
-    if(cname != "YAPI" && cname[0] == 'Y') cname = cname.substr(1);
-    if(doc[cname]) {
-      defclass = words[0];
-      ShowFunctions(defclass);
-      if(words.length > 1 && doc[defclass][words[1]]) {
-        defmethod = words[1];
-        var idxwdg = wdg('MarginLayer');
-        var itemwdg = wdg(defclass+'.'+defmethod);
-        var scrollTop = Math.max(itemwdg.offsetTop - (idxwdg.clientHeight>>1), 0);
-        setTimeout("wdg('MarginLayer').scrollTop="+scrollTop+";",20);
-      }
-    } else {
-      ShowFunctions();
-    }
-  } else {
-    ShowFunctions();
-  }
-  Show(defclass,defmethod,(arg==='NoH'));
-}
-
-function InitHTMLRef()
-{
-  wdg('langdt').innerHTML = Language;
-  computeWinWH();
-  onResize(function(){SetWidth("BannerLayer",WinW)});
-  onResize(resizeMargin);
-  onResize(function(){SetWidth("FooterLayer",WinW);SetTop("FooterLayer",WinH-30);});
-  onResize(resizeSeparator);
-  EnableDrag(wdg("separatorLayer"),marginMove,marginMove);
-  if (UseShortcuts!=null)
-   { var td = wdg("oosyntax");
-     var widget ='<input type="checkbox" id="OOcheckbox" onclick="OOcheckboxChange(this);"> ' + AbbrevLabel;
-     td.innerHTML = widget;
-     td.title =AbbrevHint;
-     td.alt =AbbrevHint;
-   }
-  if(Language!='LabVIEW') {
-    var rule = '';
-    var types = ['int','obj','dbl','str','arr','bool'];
-    for(var i = 0; i < types.length; i++) {
-      rule += ', span#'+types[i]+', td.'+types[i];
-    }
-    if(isCmdLine) {
-      rule += ', span#pn, td.pn';
-    }
-    rule = rule.substr(2)+'{ color: #196719 !important;}';
-    document.styleSheets[0].insertRule(rule, 1);
-    doc['*Y.YAPI'] = doc['YAPI'];
-    delete doc['YAPI'];
-  }
-  var specialClasses = [];
-  for(clname in doc) { 
-    if(!doc[clname].isReadOnly) {
-      specialClasses.push(clname);
-    }
-    // add function aliases to the substitution list
-    for(funcname in doc[clname]) { 
-      if(isClassMethod(clname,funcname)) { 
-        // class method, generate shortcut
-        sub['y'+funcname] = doc[clname][funcname].lib;
-      }
-    }
-  }
-  if(isCmdLine) {
-    for(funcname in doc['DisplayLayer']) { 
-      if(!doc['Display'][funcname]) {
-        doc['Display'][funcname] = doc['DisplayLayer'][funcname];
-      }
-    }
-    for(clname of specialClasses) {
-      if(clname.substr(0,2) != '*0') {
-        delete doc[clname];        
-      }
-    }
-  }
-  doc = sortObject(doc);
-  parseHash('NoH');
-  window.onresize = windowResized;
-  window.onhashchange = parseHash;
-}
-//--- (end of minifiable code)
+function isProperty(clname,m){return doc[clname][m].lib.indexOf('(')==-1&&Language!='Objective-C';}
+function isClassMethod(clname,m){return(clname=='YAPI'&&doc[clname][m].pro?doc[clname][m].pro.indexOf('static')>=0:/^[A-Z].*/.test(m));}
+function MethodType(clname,m){return(isProperty(clname,m)?'property':isClassMethod(clname,m)?'static':'method');}
+var isCmdLine=(Language.substr(0,3)=='Cmd');var isProxy=(Language.substr(-5)=='Proxy');function ApplySub(text,clname,attrname){var pos,endpos=0,key,rep,prefix,skip,cname,aprefix;if(!text)return'';prefix=(clname.substr(0,1)!='Y'?'Y'+clname:clname);if(/^[gs]et_.*/.test(attrname))attrname=attrname.substr(4);skip=2;if(isProxy){prefix=clname.toLowerCase()+'._';if(attrname!='mountPosition'&&attrname!='drawText'){skip+=attrname.length;prefix+=attrname.substr(0,1).toUpperCase()+attrname.substr(1);}}else if(sub['YAPI_SUCCESS']&&!isCmdLine){prefix=sub['YAPI_SUCCESS'].replace('YAPI',prefix).replace('SUCCESS','');}else{prefix+='.';}
+while((pos=text.toLowerCase().indexOf('<tt>',endpos))>=endpos){pos+=4;endpos=text.indexOf('</',pos);inside=text.substr(pos,endpos-pos);rep=false;if(isCmdLine&&inside.startsWith('YDisplayLayer.ALIGN')){rep=inside.replace(/YDisplayLayer.ALIGN(_)*/,'');}else if(sub[inside]){rep=sub[inside];}else if((key=inside.match(/^(\w+_)+\w+$/))!==null){key=key[0];rep=sub[key];if(!rep&&key.substr(0,2)=='Y_'&&!UseShortcuts){if(isCmdLine){rep=key.substr(2+attrname.length,key.length);}else{rep=prefix+key.substr(skip,key.length);}}}else if(isCmdLine&&inside.startsWith(prefix+attrname.toUpperCase()+'_')){rep=inside.substr(prefix.length+attrname.length+1);}else if((key=inside.match(/^Y[A-Za-z0-9]+$/))!==null){key=key[0].substr(1);if(doc[key]){cname='Y'+key;if(doc.Files.get_module&&doc.Files.get_module.pro.indexOf('Proxy')>0&&text.substr(pos-7,2)!='VI'&&text.substr(endpos+6,2)!='VI'){cname+='Proxy';}
+rep='<a href="javascript:Show(\''+key+'\',\'\')">'+cname+'</a>';}}else if((key=inside.match(/^y([A-Z][A-Za-z0-9]+).*/))!==null){ident=key[1];key=key[0].substr(1);if(key.match(/(First|Find)[A-Za-z0-9]+.*/)){if(!UseShortcuts)rep=inside.substr(1);}else{if(!UseShortcuts){rep=sub['YAPI_SUCCESS'].replace('SUCCESS',inside.substr(1));if(doc['YAPI'][ident]){rep='<a href="javascript:Show(\'YAPI\',\''+ident+'\')">'+rep+'</a>';}}else{if(doc['YAPI'][ident]){rep='<a href="javascript:Show(\'YAPI\',\''+ident+'\')">'+inside+'</a>';}}}}else if((key=inside.match(/^([A-Za-z][A-Za-z0-9]+)(\.|::)([A-Za-z_0-9]+).*/))!==null){cident=key[1].substr(0,1).toUpperCase()+key[1].substr(1);mident=key[3];if(cident.substr(0,4)!='YAPI'&&cident[0]=='Y')cident=cident.substr(1);if(cident.match(/.*Proxy$/))cident=cident.slice(0,-5);if(!UseShortcuts){rep=inside;}else if(mident.match(/(First|Find)[A-Za-z0-9]+.*/)||cident=='YAPI'){rep='y'+mident;}
+if(doc[cident]&&doc[cident][mident]){rep='<a href="javascript:Show(\''+cident+'\',\''+mident+'\')">'+rep+'</a>';}}else if((key=inside.match(/^(saveToFlash|isOnline).*/))!==null){rep='<a href="javascript:Show(\'Module\',\''+key[1]+'\')">'+inside+'</a>';}
+if(rep!==false){text=text.substr(0,pos)+rep+text.substr(endpos);endpos=pos+rep.length;}}
+return text;}
+function wdg(n){return document.getElementById(n);}
+function SetPosition(o,x,y){var it=wdg(o);it.style.top=y;it.style.left=x;}
+function GetPositionX(o){var it=wdg(o);return parseInt(it.style.left);}
+function GetPositionY(o){var it=wdg(o);return parseInt(it.style.top);}
+function GetWidth(o){var it=wdg(o);return parseInt(it.style.width);}
+function GetHeight(o){var it=wdg(o);return parseInt(it.style.height);}
+function SetHeight(o,h){var it=wdg(o);h=parseInt(h);if(h<0)h=0;it.style.height=h+"px";}
+function SetWidth(o,w){var it=wdg(o);w=parseInt(w);if(w<0)w=0;it.style.width=parseInt(w)+"px";}
+function SetLeft(o,l){var it=wdg(o);it.style.left=parseInt(l)+"px";}
+function SetTop(o,t){var it=wdg(o);it.style.top=parseInt(t)+"px";}
+function SetSize(o,w,h){var it=wdg(o);w=parseInt(w);if(w<0)w=0;h=parseInt(h);if(h<0)h=0;it.style.width=w;it.style.height=h;}
+function GetWindowWidth(){return parseInt(document.body.clientWidth);}
+function GetWindowHeight(){return parseInt(document.body.clientHeight);}
+function computeWinWH(){WinW=GetWindowWidth()-2;if(WinW<600)WinW=600;WinH=GetWindowHeight()-2;if(WinH<400)WinH=400;}
+function getInnerHeight(){var D=document;return Math.max(Math.max(D.body.scrollHeight,D.documentElement.scrollHeight),Math.max(D.body.offsetHeight,D.documentElement.offsetHeight),Math.max(D.body.clientHeight,D.documentElement.clientHeight));}
+function getInnerWidth(){var D=document;return Math.max(Math.max(D.body.scrollWidth,D.documentElement.scrollWidth),Math.max(D.body.offsetWidth,D.documentElement.offsetWidth),Math.max(D.body.clientWidth,D.documentElement.clientWidth));}
+function onResize(fct){fct();resizeCallBacks[resizeCallBacks.length]=fct;}
+function windowResized(){computeWinWH()
+for(var i=0;i<resizeCallBacks.length;i++)
+resizeCallBacks[i]();}
+function jsQuote(str_in){str_in=str_in+'';var str_out='';for(i=0;i<str_in.length;i++){var ascii=str_in.charCodeAt(i);if((ascii>=32)&&(ascii<=127)&&(ascii!=34)&&(ascii!=39))str_out=str_out+str_in.charAt(i);else{var hex=ascii.toString(16).toUpperCase();if(hex.length==1)hex='0'+hex;str_out=str_out+String.fromCharCode(92)+'x'+hex;}}
+return str_out;}
+function resizeMargin(){SetSize("MarginLayer",marginSize,WinH-110);SetLeft("FunctionsLayer",marginSize);SetSize("FunctionsLayer",WinW-marginSize,WinH-110);}
+function resizeSeparator(){SetHeight("separatorLayer",WinH-110);}
+function positionObject(int_x,int_y){this.x=int_x;this.y=int_y;}
+function GetEventPosition(event){var x,y;if(event.changedTouches){x=event.changedTouches[0].pageX;y=event.changedTouches[0].pageY;}
+else{x=event.PageX;y=event.PageY;if(!x){x=event.clientX+document.body.scrollLeft;y=event.clientY+document.body.scrollTop;}}
+return new positionObject(x,y);}
+function EnableDrag(var_element,onDragMove,onDragEnd){if(document.addEventListener){var_element.addEventListener("mousedown",Drag_start,false);var_element.addEventListener("touchstart",Drag_start,false);}
+else
+if(document.attachEvent)
+var_element.attachEvent("onmousedown",Drag_start);if(onDragMove)var_element.onDragMove=onDragMove;if(onDragEnd)var_element.onDragEnd=onDragEnd;}
+var LastDraggedObject=null;function DraggedObject(obj_element,obj_elmtInitialPos,obj_mouseInitalPos){this.element=obj_element;this.elmtInitialPos=obj_elmtInitialPos;this.elmtCurrentPos=new positionObject(obj_elmtInitialPos.x,obj_elmtInitialPos.y);this.mouseInitialPos=obj_mouseInitalPos;}
+function Drag_start(event){if(!event)event=window.event;var source=event.srcElement;if(event.button!=undefined){if((event.button!=1)&&(document.attachEvent))return;if((event.button!=0)&&(document.addEventListener))return;}
+if(!source)source=this;if(!source)return;var originalsource=source;while(source.tagName!="DIV"){if(source.tagName=="A")return false;source=source.parentNode;}
+if(event.preventDefault)event.preventDefault();source.style.cursor="col-resize";lastDraggedObject=new DraggedObject(source,new positionObject(parseInt(source.style.left),parseInt(source.style.top)),GetEventPosition(event));if(document.addEventListener){document.addEventListener("mousemove",Drag_mouseCapture,false);document.addEventListener("mouseup",Drag_stopMouseCapture,false);document.addEventListener("touchmove",Drag_mouseCapture,false);document.addEventListener("touchend",Drag_stopMouseCapture,false);}
+else
+if(document.attachEvent){document.attachEvent("onmousemove",Drag_mouseCapture);document.attachEvent("onmouseup",Drag_stopMouseCapture);}
+document.onmouseup=Drag_stopMouseCapture;}
+function Drag_mouseCapture(event){if(!event)event=window.event;var position=GetEventPosition(event);if(event.preventDefault)event.preventDefault();var x=(lastDraggedObject.elmtInitialPos.x+position.x-lastDraggedObject.mouseInitialPos.x);var y=(lastDraggedObject.elmtInitialPos.y+position.y-lastDraggedObject.mouseInitialPos.y);var iw=getInnerWidth()
+var ih=getInnerHeight();var w=lastDraggedObject.element.offsetWidth;var h=lastDraggedObject.element.offsetHeight;if(x>iw-w)x=iw-w;if(y>ih-h)y=ih-h;if(x<0)x=0;if(y<0)y=0;var p={x:x,y:y};if(lastDraggedObject.element.onDragMove)
+lastDraggedObject.element.onDragMove(lastDraggedObject.element,p);lastDraggedObject.elmtCurrentPos.x=p.x;lastDraggedObject.elmtCurrentPos.y=p.y;lastDraggedObject.element.style.left=p.x+"px";lastDraggedObject.element.style.top=p.y+"px";}
+function Drag_stopMouseCapture(){if(document.removeEventListener){document.removeEventListener("mousemove",Drag_mouseCapture,false);document.removeEventListener("mouseup",Drag_stopMouseCapture,false);document.removeEventListener("touchmove",Drag_mouseCapture,false);document.removeEventListener("touchend",Drag_stopMouseCapture,false);}
+else
+if(document.detachEvent){document.detachEvent("onmousemove",Drag_mouseCapture);document.detachEvent("onmouseup",Drag_stopMouseCapture);}
+if(lastDraggedObject){lastDraggedObject.element.style.cursor='col-resize';if(lastDraggedObject.element.onDragEnd)
+lastDraggedObject.element.onDragEnd(lastDraggedObject.element,{x:lastDraggedObject.elmtCurrentPos.x,y:lastDraggedObject.elmtCurrentPos.y});}
+lastDraggedObject=null;}
+function marginMove(el,pos){pos.y=80;if(pos.x<100)pos.x=100;if(pos.x>WinW-100)pos.x=WinW-100;marginSize=pos.x;resizeMargin()}
+function proto(clname,m){var funcproto=doc[clname][m].pro;if(isClassMethod(clname,m)){if(UseShortcuts){funcproto=funcproto.replace(m,'y'+m);}else if(doc[clname][m].lib.substr(0,1)=='['&&funcproto.substr(0,1)!='+'){var params=doc[clname][m].par;var methodpos=funcproto.search(m);var endrettype=methodpos;while(endrettype>0&&funcproto.substr(endrettype-1,1)==' ')endrettype--;var newproto="+("+funcproto.substr(0,endrettype)+") "+m;var pos=methodpos+m.length;for(var p in params){pos+=funcproto.slice(pos).search(/[A-Za-z]/);var argpos=pos+funcproto.slice(pos).search('<span');var endargtype=argpos;while(endargtype>pos&&funcproto.substr(endargtype-1,1)==' ')endargtype--;var endarg=argpos+funcproto.slice(argpos).search(/[,)]/);newproto+=": ("+funcproto.slice(pos,endargtype)+") "+funcproto.slice(argpos,endarg)+" ";pos=endarg;}
+funcproto=newproto;}}
+return funcproto}
+var lastindex_shown="";var lastname_shown=null;function Show(clname,str_name,nohist){if(!clname&&!str_name){wdg("FunctionsLayerInner").innerHTML=NotFound;return;}
+var fcthtml=NotFound;lastindex_shown=clname;if(clname&&str_name&&doc[clname]&&doc[clname][str_name]){lastname_shown=str_name;var fct=doc[clname][str_name];var funcname=fct.lib.replace('%',clname.toLowerCase());var funcproto=proto(clname,str_name);if(UseShortcuts&&isClassMethod(clname,str_name)){funcname='y'+str_name+'()';}
+fcthtml="<a class='funcHeader' href='#"+clname+"."+str_name+"'>"+funcname+'</a>'
++"<br><br><span class='prototype'>"+funcproto+'</span>'
++'<br><br>'+ApplySub(fct.cmt,clname,str_name);if(fct.par){fcthtml+="<span class='paramAndRet'>"+ParamLabel+'</span><br>\n';fcthtml+='<table class="paramtable">'
+for(var p in fct.par)
+fcthtml+='<tr><td class="pn">'+p+'</td><td> : '+ApplySub(fct.par[p],clname,str_name)+'</td></tr>\n';fcthtml+='</table><br>'}
+if(fct.ret){fcthtml+="<span class='paramAndRet'>"+ReturnLabel+'</span><br>\n';fcthtml+='<p class="paramtable">'+ApplySub(fct.ret,clname,str_name)+'</p>\n';}
+if(fct.ext)fcthtml+=ApplySub(fct.ext,clname,str_name);var newstate=clname+'.'+str_name;if(newstate!=history.state&&!nohist){history.pushState(newstate,newstate,'#'+newstate);}}
+else
+if(clname&&doc[clname]){fcthtml="<a class='funcHeader' href='#"+clname+"'>"+clname+'</a><br>'
++"<p>"+ApplySub(doc[clname][''].syn,clname,str_name)+"</p>"
++(doc[clname][''].inc!=""?"<p>"+IncludeLabel+"</p><p class='include'>"+doc[clname][''].inc+"</p>":"")
++"<p>"+ApplySub(doc[clname][''].cmt,clname,str_name)+"</p>";var prevmtype='';for(m in doc[clname]){if(m!=''){var funcproto=proto(clname,m);var mtype=MethodType(clname,m);if(prevmtype!=mtype){prevmtype=mtype;fcthtml+="<span class='subHeader'>"+MethodTypes[mtype]+"</span>";if(clname!='YAPI'){fcthtml+="<p>"+MethodExtra[mtype]+"</p>";}}
+fcthtml+="<p class='methodlist'><a class='protoindex' href='javascript:Show(\""+clname+"\",\""+m+"\")'>"+funcproto+'</a><br>'
++"<span class='synlist'>"+ApplySub(doc[clname][m].syn,clname,str_name)+'</span></p>';}}
+var newstate=clname;if(newstate!=history.state&&!nohist){history.pushState(newstate,newstate,'#'+newstate);}}
+wdg("FunctionsLayerInner").innerHTML=fcthtml;setTimeout("wdg('FunctionsLayer').scrollTop=0;",20);}
+function expand(source,openonly){if(wdg(source.id+"List").style.display==''&&!openonly){wdg(source.id+"List").style.display='none';wdg(source.id).src=plusimage;}
+else{wdg(source.id+"List").style.display='';wdg(source.id).src=minusimage;}}
+function ShowFunctions(str_currentclname){var marginhtml="";for(var clname in doc){var icon=plusimage;var onck=" onclick='expand(this";var iclass="expandColapse";var display="none";var methodlist="";for(var method in doc[clname]){if(method!=''){var funcname=doc[clname][method].lib.replace('%',clname.toLowerCase());var mclass=(ShowIcons?MethodType(clname,method):'noicon');if(UseShortcuts&&mclass=='static')funcname='y'+method+'()';methodlist+="<a id="+clname+'.'+method+" class='"+mclass+"' href='javascript:Show(\""+clname+"\",\""+method+"\");'>"+funcname+'</a>';}}
+if(methodlist==""){iclass="noExpand";onck=" ony='(";}else if(str_currentclname==clname){icon=minusimage;onck=" onclick='expand(this";display=""}
+marginhtml+="<span class='classheader'> <img class='"+iclass+"' id='"+clname+"' "+onck+")'' src='"+icon+"'/> ";marginhtml+="<a href='javascript:Show(\""+clname+"\",\"\");' id='"+clname+"' "+onck+",true)'>"+clname+'</a></span><br>';if(methodlist!="")marginhtml+="<div id='"+clname+"List' class='methodsList' style='display:"+display+"'>"+methodlist+"</div>";if(clname=='YAPI'||clname=='FreeAPI')marginhtml+='<hr>';}
+wdg("MarginLayer").innerHTML=marginhtml;}
+function fctMatch(clname,method,values){var found=new Array()
+var tosearch=new Array()
+for(var i=0;i<values.length;i++)
+if(values[i]!=''&&values[i]!='y'){if(values[i].substr(0,3)=='[y]')
+tosearch[tosearch.length]=values[i].substr(3,values[i].length);else
+tosearch[tosearch.length]=values[i];}
+for(var i=0;i<tosearch.length;i++){var expr=new RegExp(tosearch[i],"i");var fct=doc[clname][method]
+var found=clname.search(expr)>=0;if(!found)found=method.search(expr)>=0;if(!found&&fct.inc){if(!found&&fct.syn)found=fct.syn.search(expr)>=0;if(!found)found=fct.inc.search(expr)>=0;}
+if(!found&&fct.pro)found=fct.pro.search(expr)>=0;if(fct.par)
+for(var p in fct.par){if(!found)found=p.search(expr)>=0;if(!found)found=fct.par[p].search(expr)>=0;}
+if(fct.ret){if(!found)found=fct.ret.search(expr)>=0;}
+if(!found&&fct.cmt)found=fct.cmt.search(expr)>=0;if(!found&&fct.ext)found=fct.ext.search(expr)>=0;if(!found)return false;}
+return true;}
+var searchTimer=null;function doSearch(){searchTimer=null;var value=document.forms['yoctoForm'].elements['search'].value;if(value==''){for(var clname in doc){var container=wdg(clname+"List");for(var method in doc[clname])
+if(method!=''){var it=wdg(clname+'.'+method);if(it)it.style.display="block";}
+wdg(clname).style.visibility='visible';var container=wdg(clname+"List");if(container["originalDisplay"]!=""){wdg(clname+"List").style.display='none';wdg(clname).src=plusimage;}
+else{wdg(clname+"List").style.display='';wdg(clname).src=minusimage;}
+container["originalDisplay"]=null;}
+Show(lastindex_shown,lastname_shown);return;}
+var firstindex='';var firstname='';qvalue=value;value='';for(var i=0;i<qvalue.length;i++){var c=qvalue.charAt(i);if(c=='\\'||c=='['||c==']'||c=='('||c==')'){value+='.';}else{if(c!=' ')value+='['+qvalue.charAt(i)+']';else value+=' ';}}
+for(var clname in doc){var matchfound=false;var container=wdg(clname+"List");if(!container["originalDisplay"])container["originalDisplay"]=null;if(container["originalDisplay"]==null)container["originalDisplay"]=container.style.display;values=value.split(' ');for(var method in doc[clname]){var it=wdg(clname+'.'+method);var match=fctMatch(clname,method,values);if(match){if(it)it.style.display="block";matchfound=true;if(firstindex==''){firstindex=clname;firstname=method;}}
+else{if(it)it.style.display="none";}}
+if(matchfound){wdg(clname+"List").style.display='';wdg(clname).src=minusimage;wdg(clname).style.visibility='visible';}
+else{wdg(clname+"List").style.display='none';wdg(clname).style.visibility='hidden';wdg(clname).src=plusimage;}}
+Show(firstindex,firstname);}
+function initSearch(){if(searchTimer!=null)clearTimeout(searchTimer);searchTimer=setTimeout('doSearch()',500);}
+function sortObject(o){var sorted={},key,newkey,a=[];for(key in o){if(o.hasOwnProperty(key))a.push(key);}
+a.sort();for(key=0;key<a.length;key++){newkey=a[key];if(newkey.substr(0,1)=='*'){newkey=newkey.substr(3);}
+sorted[newkey]=o[a[key]];}
+return sorted;}
+function OOcheckboxChange(){UseShortcuts=document.forms["yoctoForm"].elements["OOcheckbox"].checked;ShowFunctions(lastindex_shown);Show(lastindex_shown,lastname_shown);}
+function parseHash(arg){var defclass="Introduction";var defmethod="";if(window.location.hash.length>1){var words=window.location.hash.substr(1).split('.');var cname=words[0];if(cname!="YAPI"&&cname[0]=='Y')cname=cname.substr(1);if(doc[cname]){defclass=words[0];ShowFunctions(defclass);if(words.length>1&&doc[defclass][words[1]]){defmethod=words[1];var idxwdg=wdg('MarginLayer');var itemwdg=wdg(defclass+'.'+defmethod);var scrollTop=Math.max(itemwdg.offsetTop-(idxwdg.clientHeight>>1),0);setTimeout("wdg('MarginLayer').scrollTop="+scrollTop+";",20);}}else{ShowFunctions();}}else{ShowFunctions();}
+Show(defclass,defmethod,(arg==='NoH'));}
+function InitHTMLRef(){wdg('langdt').innerHTML=Language;computeWinWH();onResize(function(){SetWidth("BannerLayer",WinW)});onResize(resizeMargin);onResize(function(){SetWidth("FooterLayer",WinW);SetTop("FooterLayer",WinH-30);});onResize(resizeSeparator);EnableDrag(wdg("separatorLayer"),marginMove,marginMove);if(UseShortcuts!=null){var td=wdg("oosyntax");var widget='<input type="checkbox" id="OOcheckbox" onclick="OOcheckboxChange(this);"> '+AbbrevLabel;td.innerHTML=widget;td.title=AbbrevHint;td.alt=AbbrevHint;}
+if(Language!='LabVIEW'){var rule='';var types=['int','obj','dbl','str','arr','bool'];for(var i=0;i<types.length;i++){rule+=', span#'+types[i]+', td.'+types[i];}
+if(isCmdLine){rule+=', span#pn, td.pn';}
+rule=rule.substr(2)+'{ color: #196719 !important;}';document.styleSheets[0].insertRule(rule,1);doc['*Y.YAPI']=doc['YAPI'];delete doc['YAPI'];}
+var specialClasses=[];for(clname in doc){if(!doc[clname].isReadOnly){specialClasses.push(clname);}
+for(funcname in doc[clname]){if(isClassMethod(clname,funcname)){sub['y'+funcname]=doc[clname][funcname].lib;}}}
+if(isCmdLine){for(funcname in doc['DisplayLayer']){if(!doc['Display'][funcname]){doc['Display'][funcname]=doc['DisplayLayer'][funcname];}}
+for(clname of specialClasses){if(clname.substr(0,2)!='*0'){delete doc[clname];}}}
+doc=sortObject(doc);parseHash('NoH');window.onresize=windowResized;window.onhashchange=parseHash;}
 </SCRIPT>
 </HEAD>
 <BODY>
@@ -5448,7 +4790,7 @@ function InitHTMLRef()
 <tr><td>
 <img alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAANwAAADcBYx2BhQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAGgSURBVCiRjdC9a1NhFAbw8973ed7bewm859KKc4oFwUUwk0uMkICC4gfYIjSDQhaH+ge4BOFCwEUpQsCtEEkHURCHigQjcQo4FFyKHYWsflGaq9elStVr9Yzn4cf5MHmeS1G12+1gNBrdJLkMYIHkNoD+ZDLpDAaDzBRBY4yp1+tPSZ4los0QhzYEH0+RcgLAq3K5fLoQNhqNGwBWY3d85fBM+vxHf8fdPWnc5gOSt4KiNUkukuHb/UhEZGZ35TVs/MZau1gIrbXzLph7UZTBzL4EMF8IAWwZfjrz9duu+T0L3Ic6gK2/rboGmCM77vbF/Rizqw1SjgFY++M5lUqF4/F42mw2HwJYAsJ3sHMb5JcaKEcBPIvj+NwvsFqtni+VSj3vfb/X611vtVrXACxbaxecc9sk+51O536e5/lPWKvVLkRRtJ4kCVX1c5ZlSbfbnRadIiIS7E26FEXRuqpSVafe+6sHIREROxwOL8dx3FdVJkky9d5fSdP0yUFIRCQIw/CeqkJVM+/9Upqmj/+FREQCVb2jqu/30KP/QSIi3wFqcn4o9hAuDAAAAABJRU5ErkJggg==" />
 <input name='search' onkeyup='initSearch()'></form>
-</td><td id ='oosyntax' ></td><td id='version'>2025-01-14</td>
+</td><td id ='oosyntax' ></td><td id='version'>65451</td>
 </table>
 </div>
 <div id="separatorLayer" style='top:80px;left:250px'></div>
