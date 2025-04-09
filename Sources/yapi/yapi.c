@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 64172 2025-01-15 07:44:31Z seb $
+ * $Id: yapi.c 65642 2025-04-08 09:22:17Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -4822,7 +4822,7 @@ static int yapiCheckLogicalName_internal(const char *name)
 static u16 yapiGetAPIVersion_internal(const char **version, const char **apidate)
 {
     if (version)
-        *version = YOCTO_API_VERSION_STR"."YOCTO_API_BUILD_NO;
+        *version = "2.1.654";
     if (apidate)
         *apidate = YOCTO_API_BUILD_DATE;
 

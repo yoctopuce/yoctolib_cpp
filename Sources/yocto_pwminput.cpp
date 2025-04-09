@@ -63,6 +63,7 @@ YPwmInput::YPwmInput(const string& func): YSensor(func)
     ,_pulseTimer(PULSETIMER_INVALID)
     ,_pwmReportMode(PWMREPORTMODE_INVALID)
     ,_debouncePeriod(DEBOUNCEPERIOD_INVALID)
+    ,_minFrequency(MINFREQUENCY_INVALID)
     ,_bandwidth(BANDWIDTH_INVALID)
     ,_edgesPerPeriod(EDGESPERPERIOD_INVALID)
     ,_valueCallbackPwmInput(NULL)
@@ -83,6 +84,7 @@ const double YPwmInput::DUTYCYCLE_INVALID = YAPI_INVALID_DOUBLE;
 const double YPwmInput::PULSEDURATION_INVALID = YAPI_INVALID_DOUBLE;
 const double YPwmInput::FREQUENCY_INVALID = YAPI_INVALID_DOUBLE;
 const double YPwmInput::PERIOD_INVALID = YAPI_INVALID_DOUBLE;
+const double YPwmInput::MINFREQUENCY_INVALID = YAPI_INVALID_DOUBLE;
 
 int YPwmInput::_parseAttr(YJSONObject *json_val)
 {
@@ -109,6 +111,9 @@ int YPwmInput::_parseAttr(YJSONObject *json_val)
     }
     if(json_val->has("debouncePeriod")) {
         _debouncePeriod =  json_val->getInt("debouncePeriod");
+    }
+    if(json_val->has("minFrequency")) {
+        _minFrequency =  floor(json_val->getDouble("minFrequency") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("bandwidth")) {
         _bandwidth =  json_val->getInt("bandwidth");
@@ -470,6 +475,61 @@ int YPwmInput::set_debouncePeriod(int newval)
 }
 
 /**
+ * Changes the minimum detected frequency, in Hz. Slower signals will be consider as zero frequency.
+ * Remember to call the saveToFlash() method of the module if the modification must be kept.
+ *
+ * @param newval : a floating point number corresponding to the minimum detected frequency, in Hz
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YPwmInput::set_minFrequency(double newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        res = _setAttr("minFrequency", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the minimum detected frequency, in Hz. Slower signals will be consider as zero frequency.
+ *
+ * @return a floating point number corresponding to the minimum detected frequency, in Hz
+ *
+ * On failure, throws an exception or returns YPwmInput::MINFREQUENCY_INVALID.
+ */
+double YPwmInput::get_minFrequency(void)
+{
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YPwmInput::MINFREQUENCY_INVALID;
+                }
+            }
+        }
+        res = _minFrequency;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
  * Returns the input signal sampling rate, in kHz.
  *
  * @return an integer corresponding to the input signal sampling rate, in kHz
@@ -681,7 +741,19 @@ int YPwmInput::_invokeTimedReportCallback(YMeasure value)
 }
 
 /**
- * Returns the pulse counter value as well as its timer.
+ * Resets the periodicity detection algorithm.
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YPwmInput::resetPeriodDetection(void)
+{
+    return this->set_bandwidth(this->get_bandwidth());
+}
+
+/**
+ * Resets the pulse counter value as well as its timer.
  *
  * @return YAPI::SUCCESS if the call succeeds.
  *

@@ -330,6 +330,7 @@ public:
      * This method takes a parameter and assigns it
      * as the new integration time. This affects the duration
      * for which data is integrated before being processed.
+     * Remember to call the saveToFlash() method of the module if the modification must be kept.
      *
      * @param newval : an integer corresponding to the integration time for data processing
      *
@@ -359,6 +360,7 @@ public:
      * This method takes a parameter and assigns it
      * as the new gain. This affects the sensitivity and
      * intensity of the processed signal.
+     * Remember to call the saveToFlash() method of the module if the modification must be kept.
      *
      * @param newval : an integer corresponding to the gain for signal processing
      *

@@ -85,6 +85,7 @@ typedef enum {
 #define Y_PULSECOUNTER_INVALID          (YAPI_INVALID_LONG)
 #define Y_PULSETIMER_INVALID            (YAPI_INVALID_LONG)
 #define Y_DEBOUNCEPERIOD_INVALID        (YAPI_INVALID_UINT)
+#define Y_MINFREQUENCY_INVALID          (YAPI_INVALID_DOUBLE)
 #define Y_BANDWIDTH_INVALID             (YAPI_INVALID_UINT)
 #define Y_EDGESPERPERIOD_INVALID        (YAPI_INVALID_UINT)
 //--- (end of YPwmInput definitions)
@@ -115,6 +116,7 @@ protected:
     s64             _pulseTimer;
     Y_PWMREPORTMODE_enum _pwmReportMode;
     int             _debouncePeriod;
+    double          _minFrequency;
     int             _bandwidth;
     int             _edgesPerPeriod;
     YPwmInputValueCallback _valueCallbackPwmInput;
@@ -153,6 +155,7 @@ public:
     static const Y_PWMREPORTMODE_enum PWMREPORTMODE_PWM_PERIODCOUNT = Y_PWMREPORTMODE_PWM_PERIODCOUNT;
     static const Y_PWMREPORTMODE_enum PWMREPORTMODE_INVALID = Y_PWMREPORTMODE_INVALID;
     static const int DEBOUNCEPERIOD_INVALID = YAPI_INVALID_UINT;
+    static const double MINFREQUENCY_INVALID;
     static const int BANDWIDTH_INVALID = YAPI_INVALID_UINT;
     static const int EDGESPERPERIOD_INVALID = YAPI_INVALID_UINT;
 
@@ -322,6 +325,32 @@ public:
     { return this->set_debouncePeriod(newval); }
 
     /**
+     * Changes the minimum detected frequency, in Hz. Slower signals will be consider as zero frequency.
+     * Remember to call the saveToFlash() method of the module if the modification must be kept.
+     *
+     * @param newval : a floating point number corresponding to the minimum detected frequency, in Hz
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_minFrequency(double newval);
+    inline int      setMinFrequency(double newval)
+    { return this->set_minFrequency(newval); }
+
+    /**
+     * Returns the minimum detected frequency, in Hz. Slower signals will be consider as zero frequency.
+     *
+     * @return a floating point number corresponding to the minimum detected frequency, in Hz
+     *
+     * On failure, throws an exception or returns YPwmInput::MINFREQUENCY_INVALID.
+     */
+    double              get_minFrequency(void);
+
+    inline double       minFrequency(void)
+    { return this->get_minFrequency(); }
+
+    /**
      * Returns the input signal sampling rate, in kHz.
      *
      * @return an integer corresponding to the input signal sampling rate, in kHz
@@ -426,7 +455,16 @@ public:
     virtual int         _invokeTimedReportCallback(YMeasure value);
 
     /**
-     * Returns the pulse counter value as well as its timer.
+     * Resets the periodicity detection algorithm.
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         resetPeriodDetection(void);
+
+    /**
+     * Resets the pulse counter value as well as its timer.
      *
      * @return YAPI::SUCCESS if the call succeeds.
      *
