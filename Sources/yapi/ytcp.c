@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 63543 2024-12-02 08:36:55Z seb $
+ * $Id: ytcp.c 65727 2025-04-10 15:52:52Z mvuilleu $
  *
  * Implementation of a client TCP stack
  *
@@ -1259,9 +1259,6 @@ int yTcpReadMulti(YSOCKET_MULTI skt, u8 *buffer, int len, char *errmsg)
 #ifdef DUMP_YSOCKET_MULTI_TRAFFIC
     dump_socket(skt, 0, "yTcpReadMulti", buffer, res);
 #endif
-    if (res == 308) {
-        //YDEBUG_BREAK;
-    }
     return res;
 }
 
