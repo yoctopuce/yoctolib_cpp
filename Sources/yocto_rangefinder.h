@@ -83,7 +83,7 @@ typedef enum {
  * YRangeFinder Class: range finder control interface, available for instance in the Yocto-RangeFinder
  *
  * The YRangeFinder class allows you to read and configure Yoctopuce range finders.
- * It inherits from YSensor class the core functions to read measurements,
+ * It inherits from YSensor class the core functions to read measures,
  * to register callback functions, and to access the autonomous datalogger.
  * This class adds the ability to easily perform a one-point linear calibration
  * to compensate the effect of a glass or filter placed in front of the sensor.

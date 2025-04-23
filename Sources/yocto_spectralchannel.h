@@ -62,6 +62,8 @@ typedef void (*YSpectralChannelValueCallback)(YSpectralChannel *func, const stri
 class YMeasure; // forward declaration
 typedef void (*YSpectralChannelTimedReportCallback)(YSpectralChannel *func, YMeasure measure);
 #define Y_RAWCOUNT_INVALID              (YAPI_INVALID_INT)
+#define Y_CHANNELNAME_INVALID           (YAPI_INVALID_STRING)
+#define Y_PEAKWAVELENGTH_INVALID        (YAPI_INVALID_INT)
 //--- (end of YSpectralChannel definitions)
 
 //--- (YSpectralChannel declaration)
@@ -69,7 +71,7 @@ typedef void (*YSpectralChannelTimedReportCallback)(YSpectralChannel *func, YMea
  * YSpectralChannel Class: spectral analysis channel control interface
  *
  * The YSpectralChannel class allows you to read and configure Yoctopuce spectral analysis channels.
- * It inherits from YSensor class the core functions to read measurements,
+ * It inherits from YSensor class the core functions to read measures,
  * to register callback functions, and to access the autonomous datalogger.
  */
 class YOCTO_CLASS_EXPORT YSpectralChannel: public YSensor {
@@ -81,6 +83,8 @@ protected:
     //--- (YSpectralChannel attributes)
     // Attributes (function value cache)
     int             _rawCount;
+    string          _channelName;
+    int             _peakWavelength;
     YSpectralChannelValueCallback _valueCallbackSpectralChannel;
     YSpectralChannelTimedReportCallback _timedReportCallbackSpectralChannel;
 
@@ -99,9 +103,11 @@ public:
     //--- (YSpectralChannel accessors declaration)
 
     static const int RAWCOUNT_INVALID = YAPI_INVALID_INT;
+    static const string CHANNELNAME_INVALID;
+    static const int PEAKWAVELENGTH_INVALID = YAPI_INVALID_INT;
 
     /**
-     * Retrieves the raw cspectral intensity value as measured by the sensor, without any scaling or calibration.
+     * Retrieves the raw spectral intensity value as measured by the sensor, without any scaling or calibration.
      *
      * @return an integer
      *
@@ -111,6 +117,30 @@ public:
 
     inline int          rawCount(void)
     { return this->get_rawCount(); }
+
+    /**
+     * Returns the target spectral band name.
+     *
+     * @return a string corresponding to the target spectral band name
+     *
+     * On failure, throws an exception or returns YSpectralChannel::CHANNELNAME_INVALID.
+     */
+    string              get_channelName(void);
+
+    inline string       channelName(void)
+    { return this->get_channelName(); }
+
+    /**
+     * Returns the target spectral band peak wavelenght, in nm.
+     *
+     * @return an integer corresponding to the target spectral band peak wavelenght, in nm
+     *
+     * On failure, throws an exception or returns YSpectralChannel::PEAKWAVELENGTH_INVALID.
+     */
+    int                 get_peakWavelength(void);
+
+    inline int          peakWavelength(void)
+    { return this->get_peakWavelength(); }
 
     /**
      * Retrieves a spectral analysis channel for a given identifier.

@@ -110,8 +110,8 @@ Y_ENABLED_enum YVoltage::get_enabled(void)
 }
 
 /**
- * Changes the activation state of this voltage input. When AC measurements are disabled,
- * the device will always assume a DC signal, and vice-versa. When both AC and DC measurements
+ * Changes the activation state of this voltage input. When AC measures are disabled,
+ * the device will always assume a DC signal, and vice-versa. When both AC and DC measures
  * are active, the device switches between AC and DC mode based on the relative amplitude
  * of variations compared to the average value.
  * Remember to call the saveToFlash()

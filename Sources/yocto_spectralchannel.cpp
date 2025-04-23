@@ -56,6 +56,8 @@ using namespace YOCTOLIB_NAMESPACE;
 YSpectralChannel::YSpectralChannel(const string& func): YSensor(func)
 //--- (YSpectralChannel initialization)
     ,_rawCount(RAWCOUNT_INVALID)
+    ,_channelName(CHANNELNAME_INVALID)
+    ,_peakWavelength(PEAKWAVELENGTH_INVALID)
     ,_valueCallbackSpectralChannel(NULL)
     ,_timedReportCallbackSpectralChannel(NULL)
 //--- (end of YSpectralChannel initialization)
@@ -70,18 +72,25 @@ YSpectralChannel::~YSpectralChannel()
 }
 //--- (YSpectralChannel implementation)
 // static attributes
+const string YSpectralChannel::CHANNELNAME_INVALID = YAPI_INVALID_STRING;
 
 int YSpectralChannel::_parseAttr(YJSONObject *json_val)
 {
     if(json_val->has("rawCount")) {
         _rawCount =  json_val->getInt("rawCount");
     }
+    if(json_val->has("channelName")) {
+        _channelName =  json_val->getString("channelName");
+    }
+    if(json_val->has("peakWavelength")) {
+        _peakWavelength =  json_val->getInt("peakWavelength");
+    }
     return YSensor::_parseAttr(json_val);
 }
 
 
 /**
- * Retrieves the raw cspectral intensity value as measured by the sensor, without any scaling or calibration.
+ * Retrieves the raw spectral intensity value as measured by the sensor, without any scaling or calibration.
  *
  * @return an integer
  *
@@ -101,6 +110,64 @@ int YSpectralChannel::get_rawCount(void)
             }
         }
         res = _rawCount;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the target spectral band name.
+ *
+ * @return a string corresponding to the target spectral band name
+ *
+ * On failure, throws an exception or returns YSpectralChannel::CHANNELNAME_INVALID.
+ */
+string YSpectralChannel::get_channelName(void)
+{
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSpectralChannel::CHANNELNAME_INVALID;
+                }
+            }
+        }
+        res = _channelName;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the target spectral band peak wavelenght, in nm.
+ *
+ * @return an integer corresponding to the target spectral band peak wavelenght, in nm
+ *
+ * On failure, throws an exception or returns YSpectralChannel::PEAKWAVELENGTH_INVALID.
+ */
+int YSpectralChannel::get_peakWavelength(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YSpectralChannel::PEAKWAVELENGTH_INVALID;
+                }
+            }
+        }
+        res = _peakWavelength;
     } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;

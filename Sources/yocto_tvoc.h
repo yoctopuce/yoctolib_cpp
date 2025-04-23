@@ -69,7 +69,7 @@ typedef void (*YTvocTimedReportCallback)(YTvoc *func, YMeasure measure);
  * the Yocto-VOC-V3
  *
  * The YTvoc class allows you to read and configure Yoctopuce Total Volatile Organic Compound sensors.
- * It inherits from YSensor class the core functions to read measurements,
+ * It inherits from YSensor class the core functions to read measures,
  * to register callback functions, and to access the autonomous datalogger.
  */
 class YOCTO_CLASS_EXPORT YTvoc: public YSensor {

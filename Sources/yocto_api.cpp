@@ -8493,7 +8493,7 @@ string YSensor::get_unit(void)
  * Returns the current value of the measure, in the specified unit, as a floating point number.
  * Note that a get_currentValue() call will *not* start a measure in the device, it
  * will just return the last measure that occurred in the device. Indeed, internally, each Yoctopuce
- * devices is continuously making measurements at a hardware specific frequency.
+ * devices is continuously making measures at a hardware specific frequency.
  *
  * If continuously calling  get_currentValue() leads you to performances issues, then
  * you might consider to switch to callback programming model. Check the "advanced

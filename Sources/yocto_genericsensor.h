@@ -94,7 +94,7 @@ typedef enum {
  * Yocto-0-10V-Rx, the Yocto-4-20mA-Rx, the Yocto-Bridge or the Yocto-milliVolt-Rx
  *
  * The YGenericSensor class allows you to read and configure Yoctopuce signal
- * transducers. It inherits from YSensor class the core functions to read measurements,
+ * transducers. It inherits from YSensor class the core functions to read measures,
  * to register callback functions, to access the autonomous datalogger.
  * This class adds the ability to configure the automatic conversion between the
  * measured signal and the corresponding engineering unit.
