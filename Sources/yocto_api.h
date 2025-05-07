@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 64192 2025-01-15 09:29:03Z seb $
+ * $Id: yocto_api.h 66046 2025-04-24 09:40:34Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -2160,7 +2160,7 @@ public:
 
 //--- (generated code: YHub declaration)
 /**
- * YHub Class: Hub Interface
+ * YHub Class: YoctoHub or VirtualHub currently in use by the API.
  *
  *
  */

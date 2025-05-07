@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yssl.c 61962 2024-07-29 15:24:28Z seb $
+ * $Id: yssl.c 65974 2025-04-22 09:54:29Z seb $
  *
  * Implementation of a client TCP stack with SSL
  *
@@ -463,6 +463,9 @@ int yTcpSetSrvCertificateSSL(const char *certfile, const char *keyfile, char *er
         ret = mbedtls_x509_crt_parse_file(&srvcert, certfile);
         if (ret < 0) {
             return FMT_MBEDTLS_ERR(ret);
+        }
+        if (mbedtls_x509_time_is_past(&srvcert.valid_to)){
+            dbglog("Warning: server certificate is expired\n");
         }
         SSLLOG("certificate and private key loaded and verified\n");
     } else {

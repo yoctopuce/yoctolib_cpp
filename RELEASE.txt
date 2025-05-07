@@ -1,5 +1,5 @@
-CPPV2 v2.1.5971
+CPPV2 v2.1.6320
 
-- Bump minor version number to work around Windows limitation
-- Improve YPwmInput and ColorSensor classes
-- Fix compilation of library with Cmake
+- Add documentation of YHub class
+- Update dll file information with correct version number (2.0 ->2.1)
+- Fix CMake compilation on Linux

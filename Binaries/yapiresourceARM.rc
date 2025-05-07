@@ -1,5 +1,5 @@
 #include "../Sources/yapi/yversion.h"
-#define VER_FILEVERSION             2,0
+#define VER_FILEVERSION             2,1
 #define VER_FILEVERSION_STR         YOCTO_API_BUILD_NO
 
 1 VERSIONINFO
@@ -11,11 +11,11 @@ FILEVERSION    	VER_FILEVERSION
   {
    VALUE "CompanyName", "    Yoctopuce Sarl\0"
    VALUE "LegalCopyright",   "Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.\0"
-   VALUE "FileDescription",  "Yoctopuce yAPI 2.0 dll (ARM 64 bits)\0"
+   VALUE "FileDescription",  "Yoctopuce yAPI 2.1 dll (ARM 64 bits)\0"
    VALUE "FileVersion",      VER_FILEVERSION_STR
    VALUE "InternalName",     "yapi\0"
    VALUE "OriginalFilename", "yapi.dll\0"
-   VALUE "ProductName",      "Yoctopuce yAPI 2.0 (ARM 64 bits)\0"
+   VALUE "ProductName",      "Yoctopuce yAPI 2.1 (ARM 64 bits)\0"
    VALUE "ProductVersion",   YOCTO_API_BUILD_NO
   }
  }
