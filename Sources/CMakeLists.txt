@@ -81,6 +81,7 @@ set(YoctoLibHSources
 	yocto_threshold.h
 	yocto_tilt.h
 	yocto_tvoc.h
+	yocto_virtualsensor.h
 	yocto_voc.h
 	yocto_voltage.h
 	yocto_voltageoutput.h
@@ -165,6 +166,7 @@ set(YoctoLibCppSources
 	yocto_threshold.cpp
 	yocto_tilt.cpp
 	yocto_tvoc.cpp
+	yocto_virtualsensor.cpp
 	yocto_voc.cpp
 	yocto_voltage.cpp
 	yocto_voltageoutput.cpp

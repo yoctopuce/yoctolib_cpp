@@ -1,8 +1,8 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 42585 2020-11-19 11:10:49Z seb $
+ *  $Id: main.cpp 66424 2025-05-09 08:08:29Z seb $
  *
- *  An example that show how to use a  Yocto-0-10V-Tx
+ *  An example that shows how to use a  Yocto-0-10V-Tx
  *
  *  You can find more information on our web site:
  *   Yocto-0-10V-Tx documentation:

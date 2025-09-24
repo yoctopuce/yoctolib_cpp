@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 62771 2024-09-26 09:25:21Z seb $
+ * $Id: yprog.c 68921 2025-09-10 07:47:29Z seb $
  *
  * Implementation of firmware upgrade functions
  *
@@ -119,47 +119,47 @@ void yProgFree(FIRMWARE_CONTEXT *fctx)
 
 int IsValidBynHead(const byn_head_multi *head, u32 size, u16 flags, char *errmsg)
 {
-    if(head->h.sign != BYN_SIGN){
+    if (head->h.sign != BYN_SIGN) {
         return YERRMSG(YAPI_INVALID_ARGUMENT, "Not a firmware file");
     }
-    if(YSTRLEN(head->h.serial) >= YOCTO_SERIAL_LEN){
+    if (YSTRLEN(head->h.serial) >= YOCTO_SERIAL_LEN) {
         return YERRMSG(YAPI_INVALID_ARGUMENT, "Bad serial");
     }
-    if(YSTRLEN(head->h.product) >= YOCTO_PRODUCTNAME_LEN){
+    if (YSTRLEN(head->h.product) >= YOCTO_PRODUCTNAME_LEN) {
         return YERRMSG(YAPI_INVALID_ARGUMENT, "Bad product name");
     }
-    if(YSTRLEN(head->h.firmware) >= YOCTO_FIRMWARE_LEN){
+    if (YSTRLEN(head->h.firmware) >= YOCTO_FIRMWARE_LEN) {
         return YERRMSG(YAPI_INVALID_ARGUMENT, "Bad firmware revision");
     }
-    switch(head->h.rev) {
-        case BYN_REV_V4:
-            if( head->v4.nbzones > MAX_ROM_ZONES_PER_FILES){
-                return YERRMSG(YAPI_INVALID_ARGUMENT,"Too many zones");
-            }
-            if(head->v4.datasize != size -(sizeof(byn_head_sign)+sizeof(byn_head_v4))){
-                return YERRMSG(YAPI_INVALID_ARGUMENT, "Incorrect file size");
-            }
-            return YAPI_SUCCESS;
-        case BYN_REV_V5:
-            //we do not check prog_version on YoctoHubs on purpose
-            if( head->v5.nbzones > MAX_ROM_ZONES_PER_FILES){
-                return YERRMSG(YAPI_INVALID_ARGUMENT,"Too many zones");
-            }
-            if(head->v5.datasize != size -(sizeof(byn_head_sign)+sizeof(byn_head_v5))){
-                return YERRMSG(YAPI_INVALID_ARGUMENT, "Incorrect file size");
-            }
-            return YAPI_SUCCESS;
-        case BYN_REV_V6:
-            //we do not check prog_version on YoctoHubs on purpose
-            if( head->v6.ROM_nb_zone > MAX_ROM_ZONES_PER_FILES){
-                return YERRMSG(YAPI_INVALID_ARGUMENT,"Too many ROM zones");
-            }
-            if( head->v6.FLA_nb_zone > MAX_FLASH_ZONES_PER_FILES){
-                return YERRMSG(YAPI_INVALID_ARGUMENT,"Too many FLASH zones");
-            }
-            return YAPI_SUCCESS;
-        default:
-            break;
+    switch (head->h.rev) {
+    case BYN_REV_V4:
+        if (head->v4.nbzones > MAX_ROM_ZONES_PER_FILES) {
+            return YERRMSG(YAPI_INVALID_ARGUMENT, "Too many zones");
+        }
+        if (head->v4.datasize != size - (sizeof(byn_head_sign) + sizeof(byn_head_v4))) {
+            return YERRMSG(YAPI_INVALID_ARGUMENT, "Incorrect file size");
+        }
+        return YAPI_SUCCESS;
+    case BYN_REV_V5:
+        //we do not check prog_version on YoctoHubs on purpose
+        if (head->v5.nbzones > MAX_ROM_ZONES_PER_FILES) {
+            return YERRMSG(YAPI_INVALID_ARGUMENT, "Too many zones");
+        }
+        if (head->v5.datasize != size - (sizeof(byn_head_sign) + sizeof(byn_head_v5))) {
+            return YERRMSG(YAPI_INVALID_ARGUMENT, "Incorrect file size");
+        }
+        return YAPI_SUCCESS;
+    case BYN_REV_V6:
+        //we do not check prog_version on YoctoHubs on purpose
+        if (head->v6.ROM_nb_zone > MAX_ROM_ZONES_PER_FILES) {
+            return YERRMSG(YAPI_INVALID_ARGUMENT, "Too many ROM zones");
+        }
+        if (head->v6.FLA_nb_zone > MAX_FLASH_ZONES_PER_FILES) {
+            return YERRMSG(YAPI_INVALID_ARGUMENT, "Too many FLASH zones");
+        }
+        return YAPI_SUCCESS;
+    default:
+        break;
     }
     return YERRMSG(YAPI_INVALID_ARGUMENT, "Please upgrade the hub device first");
 }
@@ -225,13 +225,13 @@ int IsValidBynHead(const byn_head_multi *head, u32 size, u16 flags, char *errmsg
             return YERRMSG(YAPI_INVALID_ARGUMENT, "Invalid programming tools revision or corrupt file");
         }
 #ifndef YBUILD_PATCH_WITH_BUILD
-            if((flags & YPROG_FORCE_FW_UPDATE) == 0 && head->v5.prog_version[0]){
-                 int byn = atoi(head->v5.prog_version);
-                 int tools=atoi(YOCTO_API_BUILD_NO);
-                 if(byn>tools){
-                     return YERRMSG(YAPI_VERSION_MISMATCH, "This firmware is too recent, please upgrade your VirtualHub or Yoctopuce library");
-                 }
+        if ((flags & YPROG_FORCE_FW_UPDATE) == 0 && head->v5.prog_version[0]) {
+            int byn = atoi(head->v5.prog_version);
+            int tools = atoi(YOCTO_API_BUILD_NO);
+            if (byn > tools) {
+                return YERRMSG(YAPI_VERSION_MISMATCH, "This firmware is too recent, please upgrade your VirtualHub or Yoctopuce library");
             }
+        }
 #endif
         if (head->v5.nbzones > MAX_ROM_ZONES_PER_FILES) {
             return YERRMSG(YAPI_INVALID_ARGUMENT, "Too many zones in .byn file");
@@ -245,13 +245,13 @@ int IsValidBynHead(const byn_head_multi *head, u32 size, u16 flags, char *errmsg
             return YERRMSG(YAPI_INVALID_ARGUMENT, "Invalid programming tools revision or corrupt file");
         }
 #ifndef YBUILD_PATCH_WITH_BUILD
-            if ((flags & YPROG_FORCE_FW_UPDATE) == 0 && head->v6.prog_version[0]){
-                int byn = atoi(head->v6.prog_version);
-                int tools=atoi(YOCTO_API_BUILD_NO);
-                if(byn>tools){
-                    return YERRMSG(YAPI_VERSION_MISMATCH, "This firmware is too recent, please upgrade your VirtualHub or Yoctopuce library");
-                }
+        if ((flags & YPROG_FORCE_FW_UPDATE) == 0 && head->v6.prog_version[0]) {
+            int byn = atoi(head->v6.prog_version);
+            int tools = atoi(YOCTO_API_BUILD_NO);
+            if (byn > tools) {
+                return YERRMSG(YAPI_VERSION_MISMATCH, "This firmware is too recent, please upgrade your VirtualHub or Yoctopuce library");
             }
+        }
 #endif
         if (head->v6.ROM_nb_zone > MAX_ROM_ZONES_PER_FILES) {
             return YERRMSG(YAPI_INVALID_ARGUMENT, "Too many ROM zones in .byn file");
@@ -361,7 +361,7 @@ int ypSendBootloaderCmd(BootloaderSt *dev, char *errmsg)
 
 // Return 0 if a reply packet was available and returned
 // Return -1 if there was no reply available or on error
-int ypGetBootloaderReply(BootloaderSt *dev,  char *errmsg)
+int ypGetBootloaderReply(BootloaderSt *dev, char *errmsg)
 {
     pktItem *ptr;
     // clear the dest buffer to avoid any misinterpretation
@@ -507,24 +507,27 @@ static void yGetFirmware(FIRMWARE_CONTEXT *fctx, u32 ofs, u8 *dst, u16 size)
 
 
 #ifdef YAPI_IN_YDEVICE
-    #define ulog ylog
-    #define ulogU16 ylogU16
-    #define ulogChar ylogChar
-    #define uLogProgress(ctx, msg) yProgLogProgress(ctx, msg)
+#define ulog ylog
+#define ulogU16 ylogU16
+#define ulogChar ylogChar
+#define uLogProgress(ctx, msg) yProgLogProgress(ctx, msg)
 
 
-    // report progress for devices and vhub
-    static void yProgLogProgress(FIRMWARE_CONTEXT *fctx, const char *msg)
-    {
+// report progress for devices and vhub
+static void yProgLogProgress(FIRMWARE_CONTEXT *fctx, const char *msg)
+{
+
+
+
 #ifndef EMBEDDED_API
-        yEnterCriticalSection(&fctx->cs);
+yEnterCriticalSection(&fctx->cs);
 #endif
-        YSTRCPY(fctx->errmsg,FLASH_ERRMSG_LEN, msg);
-        hProgLog(msg);
+YSTRCPY(fctx->errmsg, FLASH_ERRMSG_LEN, msg);
+hProgLog(msg);
 #ifndef EMBEDDED_API
-        yLeaveCriticalSection(&fctx->cs);
+yLeaveCriticalSection(&fctx->cs);
 #endif
-    }
+}
 #else
 #define ytime() ((u32) yapiGetTickCount())
 #define Flash_ready()  1
@@ -545,7 +548,7 @@ static void yProgLogProgress(FIRMWARE_CONTEXT *fctx, const char *msg)
 }
 
 
-static void osProgLogProgressEx(FIRMWARE_CONTEXT *fctx,const char *fileid, int line, int prog, const char *msg)
+static void osProgLogProgressEx(FIRMWARE_CONTEXT *fctx, const char *fileid, int line, int prog, const char *msg)
 {
     yEnterCriticalSection(&fctx->cs);
     if (prog != 0) {
@@ -553,7 +556,7 @@ static void osProgLogProgressEx(FIRMWARE_CONTEXT *fctx,const char *fileid, int l
     }
     if (msg != NULL && *msg != 0) {
 #ifdef DEBUG_FIRMWARE
-            printf("%s:%d:(%d%%) %s\n", fileid, line, prog, msg);
+        printf("%s:%d:(%d%%) %s\n", fileid, line, prog, msg);
 #endif
         YSTRCPY(yContext->fuCtx.global_message, YOCTO_ERRMSG_LEN, msg);
     }
@@ -695,12 +698,12 @@ static int uSendCmd(BootloaderSt *firm_dev, u8 cmd)
 //#define DEBUG_FW_UPDATE_STEPS
 
 #ifdef DEBUG_FW_UPDATE_STEPS
-const char* FLASH_DEVICE_STATE_STR[] = {
-    "FLASH_FIND_DEV",
+const char *FLASH_DEVICE_STATE_STR[] = {
+    "FLASH_FIND_DEV", 
 #ifndef EMBEDDED_API
-    "FLASH_CONNECT",
+"FLASH_CONNECT",
 #endif
-    "FLASH_GET_INFO",
+"FLASH_GET_INFO",
     "FLASH_VALIDATE_BYN",
     "FLASH_ERASE",
     "FLASH_WAIT_ERASE",
@@ -709,9 +712,9 @@ const char* FLASH_DEVICE_STATE_STR[] = {
     "FLASH_REBOOT",
     "FLASH_REBOOT_VALIDATE",
 #ifndef EMBEDDED_API
-    "FLASH_AUTOFLASH",
+"FLASH_AUTOFLASH",
 #endif
-    "FLASH_SUCCEEDED",
+"FLASH_SUCCEEDED",
     "FLASH_DISCONNECT",
     "FLASH_DONE"
 };
@@ -953,7 +956,7 @@ static int uFlashFlash(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
         fctx->zOfs += datasize;
         fctx->stepB += datasize;
 
-    // verify each time we finish a page or a zone
+        // verify each time we finish a page or a zone
         if ((u16)((addr & (firm_dev->ext_page_size - 1)) + datasize) >= firm_dev->ext_page_size || fctx->stepB >= fctx->bz.len) {
             fctx->zOfs -= fctx->stepB; // rewind to check
             fctx->zst = FLASH_ZONE_READ;
@@ -1018,7 +1021,7 @@ static int uFlashFlash(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
             return 0;
         }
         fctx->zOfs += fctx->stepB;
-        fctx->progress = (u16)(20 + 76 * fctx->zOfs / (BYN_HEAD_SIZE_V6 + fctx->bynHead.v6.ROM_total_size + fctx->bynHead.v6.FLA_total_size));
+        fctx->progress = (s16)(PROGRESS_FLASH_ERASE + (PROGRESS_FLASH_DOFLASH - PROGRESS_FLASH_ERASE) * fctx->zOfs / (BYN_HEAD_SIZE_V6 + fctx->bynHead.v6.ROM_total_size + fctx->bynHead.v6.FLA_total_size));
         fctx->bz.addr_page += fctx->stepB;
         fctx->bz.len -= fctx->stepB;
         if (fctx->bz.len > 0 && fctx->currzone < fctx->bynHead.v6.ROM_nb_zone &&
@@ -1136,24 +1139,20 @@ YPROG_RESULT uFlashDevice(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
             fctx->stepA = FLASH_DISCONNECT;
             return YPROG_DONE;
         }
-
+        memcpy(&fctx->bynHead, &head, sizeof(fctx->bynHead));
+        fctx->currzone = 0;
         switch (head.h.rev) {
         case BYN_REV_V4:
             fctx->bynHead.v6.ROM_nb_zone = (u8)head.v4.nbzones;
             fctx->bynHead.v6.FLA_nb_zone = 0;
-            fctx->currzone = 0;
             fctx->zOfs = BYN_HEAD_SIZE_V4;
             break;
         case BYN_REV_V5:
             fctx->bynHead.v6.ROM_nb_zone = (u8)head.v5.nbzones;
             fctx->bynHead.v6.FLA_nb_zone = 0;
-            fctx->currzone = 0;
             fctx->zOfs = BYN_HEAD_SIZE_V5;
             break;
         case BYN_REV_V6:
-            fctx->bynHead.v6.ROM_nb_zone = (u8)head.v6.ROM_nb_zone;
-            fctx->bynHead.v6.FLA_nb_zone = (u8)head.v6.FLA_nb_zone;
-            fctx->currzone = 0;
             fctx->zOfs = BYN_HEAD_SIZE_V6;
             break;
         default:
@@ -1386,8 +1385,8 @@ YPROG_RESULT uFlashDevice(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
         return YPROG_DONE;
     }
 #ifdef DEBUG_FW_UPDATE_STEPS
-    if (org_step != pfctx->stepA) {
-        dbglog("state %s ->%s\n", FLASH_DEVICE_STATE_STR[org_step], FLASH_DEVICE_STATE_STR[pfctx->stepA]);
+    if (org_step != fctx->stepA) {
+        dbglog("state %s ->%s\n", FLASH_DEVICE_STATE_STR[org_step], FLASH_DEVICE_STATE_STR[fctx->stepA]);
     }
 #endif
     return YPROG_WAITING;
@@ -1525,7 +1524,7 @@ typedef struct {
     const char *devserial;
 } ckReqHeadCtx;
 
-static int checkRequestHeader(FIRMWARE_CONTEXT* fctx, void *ctx_ptr, const char *buffer, u32 len, char *errmsg)
+static int checkRequestHeader(FIRMWARE_CONTEXT *fctx, void *ctx_ptr, const char *buffer, u32 len, char *errmsg)
 {
     ckReqHeadCtx *ctx = ctx_ptr;
     yJsonStateMachine j;
@@ -1713,7 +1712,7 @@ typedef enum {
 } FLASH_TYPE;
 
 
-static int sendHubFlashCmd(FIRMWARE_CONTEXT* fctx, const char *hubserial, const char *subpath, const char *devserial, FLASH_HUB_CMD cmd, const char *args, char *errmsg)
+static int sendHubFlashCmd(FIRMWARE_CONTEXT *fctx, const char *hubserial, const char *subpath, const char *devserial, FLASH_HUB_CMD cmd, const char *args, char *errmsg)
 {
     char buffer[512];
     const char *cmd_str;
@@ -2024,20 +2023,20 @@ static void* yFirmwareUpdate_thread(void *ctx)
         setOsGlobalProgress(yContext->fctx, 40, "Flash firmware");
         yContext->fctx->timeout = ytime() + YPROG_BOOTLOADER_TIMEOUT;
         do {
-            u_flash_res = uFlashDevice(yContext->fctx,yContext->firm_dev);
+            u_flash_res = uFlashDevice(yContext->fctx, yContext->firm_dev);
             if (u_flash_res != YPROG_DONE) {
                 setOsGlobalProgress(yContext->fctx, 40 + yContext->fctx->progress/2, yContext->fctx->errmsg);
                 yApproximateSleep(0);
             }
         } while (u_flash_res != YPROG_DONE);
         if (yContext->fctx->progress < 100) {
-            setOsGlobalProgress(yContext->fctx,YAPI_IO_ERROR, yContext->fctx->errmsg);
+            setOsGlobalProgress(yContext->fctx, YAPI_IO_ERROR, yContext->fctx->errmsg);
             goto exit_and_free;
         }
         break;
     case FLASH_NET_SELF:
         setOsGlobalProgress(yContext->fctx, 40, "Flash firmware");
-    // the hub itself -> reboot in autoflash mode
+        // the hub itself -> reboot in autoflash mode
         YSPRINTF(buffer, sizeof(buffer), reboot_hub, subpath);
         res = yapiHTTPRequest(hubserial, buffer, replybuf, sizeof(replybuf), NULL, errmsg);
         if (res < 0) {
@@ -2075,7 +2074,7 @@ static void* yFirmwareUpdate_thread(void *ctx)
             setOsGlobalProgress(yContext->fctx, YAPI_IO_ERROR, "Hub did not detect bootloader");
             goto exit_and_free;
         }
-    //start flash
+        //start flash
         setOsGlobalProgress(yContext->fctx, 50, "Flash firmware");
         YSPRINTF(buffer, sizeof(buffer), "&s=%s", yContext->fuCtx.serial);
         res = sendHubFlashCmd(yContext->fctx, hubserial, "/", yContext->fuCtx.serial, FLASH_HUB_FLASH, buffer, errmsg);
@@ -2271,9 +2270,9 @@ static YRETCODE yapiCheckFirmware_r(const char *serial, int current_rev, u16 fla
     do {
         char *name = ffd.cFileName;
 #else
-    while ((pDirent = readdir(pDir)) != NULL) {
-        char *name = pDirent->d_name;
-        struct stat buf;
+        while ((pDirent = readdir(pDir)) != NULL) {
+            char *name = pDirent->d_name;
+            struct stat buf;
 #endif
         int isdir;
         int frev = 0;

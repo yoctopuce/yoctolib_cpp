@@ -69,6 +69,7 @@ typedef enum {
     Y_ENABLED_INVALID = -1,
 } Y_ENABLED_enum;
 #endif
+#define Y_SIGNALBIAS_INVALID            (YAPI_INVALID_DOUBLE)
 //--- (end of YVoltage definitions)
 
 //--- (YVoltage declaration)
@@ -77,7 +78,7 @@ typedef enum {
  * Yocto-Volt or the Yocto-Watt
  *
  * The YVoltage class allows you to read and configure Yoctopuce voltage sensors.
- * It inherits from YSensor class the core functions to read measures,
+ * It inherits from YSensor class the core functions to read measurements,
  * to register callback functions, and to access the autonomous datalogger.
  */
 class YOCTO_CLASS_EXPORT YVoltage: public YSensor {
@@ -89,6 +90,7 @@ protected:
     //--- (YVoltage attributes)
     // Attributes (function value cache)
     Y_ENABLED_enum  _enabled;
+    double          _signalBias;
     YVoltageValueCallback _valueCallbackVoltage;
     YVoltageTimedReportCallback _timedReportCallbackVoltage;
 
@@ -109,6 +111,7 @@ public:
     static const Y_ENABLED_enum ENABLED_FALSE = Y_ENABLED_FALSE;
     static const Y_ENABLED_enum ENABLED_TRUE = Y_ENABLED_TRUE;
     static const Y_ENABLED_enum ENABLED_INVALID = Y_ENABLED_INVALID;
+    static const double SIGNALBIAS_INVALID;
 
     /**
      * Returns the activation state of this input.
@@ -123,8 +126,8 @@ public:
     { return this->get_enabled(); }
 
     /**
-     * Changes the activation state of this voltage input. When AC measures are disabled,
-     * the device will always assume a DC signal, and vice-versa. When both AC and DC measures
+     * Changes the activation state of this voltage input. When AC measurements are disabled,
+     * the device will always assume a DC signal, and vice-versa. When both AC and DC measurements
      * are active, the device switches between AC and DC mode based on the relative amplitude
      * of variations compared to the average value.
      * Remember to call the saveToFlash()
@@ -140,6 +143,37 @@ public:
     int             set_enabled(Y_ENABLED_enum newval);
     inline int      setEnabled(Y_ENABLED_enum newval)
     { return this->set_enabled(newval); }
+
+    /**
+     * Changes the DC bias configured for zero shift adjustment.
+     * If your DC current reads positive when it should be zero, set up
+     * a positive signalBias of the same value to fix the zero shift.
+     * Remember to call the saveToFlash()
+     * method of the module if the modification must be kept.
+     *
+     * @param newval : a floating point number corresponding to the DC bias configured for zero shift adjustment
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_signalBias(double newval);
+    inline int      setSignalBias(double newval)
+    { return this->set_signalBias(newval); }
+
+    /**
+     * Returns the DC bias configured for zero shift adjustment.
+     * A positive bias value is used to correct a positive DC bias,
+     * while a negative bias value is used to correct a negative DC bias.
+     *
+     * @return a floating point number corresponding to the DC bias configured for zero shift adjustment
+     *
+     * On failure, throws an exception or returns YVoltage::SIGNALBIAS_INVALID.
+     */
+    double              get_signalBias(void);
+
+    inline double       signalBias(void)
+    { return this->get_signalBias(); }
 
     /**
      * Retrieves a voltage sensor for a given identifier.
@@ -202,6 +236,20 @@ public:
     using YSensor::registerTimedReportCallback;
 
     virtual int         _invokeTimedReportCallback(YMeasure value);
+
+    /**
+     * Calibrate the device by adjusting signalBias so that the current
+     * input voltage is precisely seen as zero. Before calling this method, make
+     * sure to short the power source inputs as close as possible to the connector, and
+     * to disconnect the load to ensure the wires don't capture radiated noise.
+     * Remember to call the saveToFlash()
+     * method of the module if the modification must be kept.
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         zeroAdjust(void);
 
 
     inline static YVoltage *Find(string func)

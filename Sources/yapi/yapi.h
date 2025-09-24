@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h 60747 2024-04-25 08:15:16Z seb $
+ * $Id: yapi.h 67402 2025-06-12 07:42:01Z seb $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -138,6 +138,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiSetNetworkSecurityOptions(u32 options, char *e
 YRETCODE YAPI_FUNCTION_EXPORT yapiGetRemoteCertificate(const char* rooturl, u64 mstimout, char* buffer, int maxsize, int* neededsize, char* errmsg);
 YRETCODE YAPI_FUNCTION_EXPORT yapiSetTrustedCertificatesList(const char* certificatePath, char* errmsg);
 
+u32 YAPI_FUNCTION_EXPORT yapiCRC32(const u8 *data, int ofs, int len);
 
 /*****************************************************************************
   Function:

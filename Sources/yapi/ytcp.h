@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.h 63227 2024-11-07 08:31:49Z seb $
+ * $Id: ytcp.h 68890 2025-09-08 16:20:39Z seb $
  *
  *  Declaration of a client TCP stack
  *
@@ -49,15 +49,7 @@ extern "C" {
 #include "ydef_private.h"
 
 
-#ifdef WINDOWS_API
-/**************************************************************
- *
- *  WINDOWS IMPLEMENTATION
- *
- **************************************************************/
-
-//SOCKET RELATED DEFIITIONS AND INCLUDE
-#else
+#ifndef WINDOWS_API
 #define SOCKET_ERROR -1
 #define INVALID_SOCKET -1
 #define closesocket(s) close(s)
@@ -122,7 +114,7 @@ int yTcpCheckSocketStillValidBasic(YSOCKET skt, char* errmsg);
 #define YSOCKFLAG_secure 1
 #define YSOCKFLAG_IPV6 2
 #define YSOCKFLAG_SO_BROADCAST 4
-#define YSOCKFLAG_SO_REUSEPORT 5
+#define YSOCKFLAG_SO_REUSEPORT 8
 typedef struct {
     u16 secure_socket:1;
     u16 ipv6:1;
@@ -168,10 +160,11 @@ void yReqFree(struct _RequestSt* tcpreq);
 int yReqHasPending(struct _HubSt* hub);
 
 
-void* ws_thread(void* ctx);
+
 void ws_cleanup(struct _HubSt* basehub);
 
 #include "ythread.h"
+
 
 #define OS_IFACE_CAN_MCAST 1
 

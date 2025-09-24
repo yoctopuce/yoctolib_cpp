@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 65244 2025-03-21 06:47:51Z mvuilleu $
+#  $Id: GNUmakefile 68262 2025-08-11 07:27:54Z mvuilleu $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -381,6 +381,7 @@ YOCTO_API_OBJS_STAT = yocto_api.o\
 	yocto_threshold.o \
 	yocto_tilt.o \
 	yocto_tvoc.o \
+	yocto_virtualsensor.o \
 	yocto_voc.o \
 	yocto_voltage.o \
 	yocto_voltageoutput.o \

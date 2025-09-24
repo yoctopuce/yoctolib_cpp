@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 66046 2025-04-24 09:40:34Z seb $
+ * $Id: yocto_api.h 68387 2025-08-18 06:44:51Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -87,6 +87,7 @@ namespace YOCTOLIB_NAMESPACE
 s64 yatoi(const char *c);
 int _ystrpos(const string& haystack, const string& needle);
 vector<string> _strsplit(const string& str, char delimiter);
+s32 _bincrc(const string& data, int ofs, int len);
 
 #ifdef WINDOWS_API
 #define SAFE_SPRINTF         sprintf_s
@@ -649,6 +650,8 @@ public:
 
     virtual YHub*       getYHubObj(int hubref);
 
+    virtual YHub*       findYHubFromID(string id);
+
 #ifdef __BORLANDC__
 #pragma option pop
 #endif
@@ -743,6 +746,7 @@ public:
     static const int BUFFER_TOO_SMALL      = -18;     // The buffer provided is too small
     static const int DNS_ERROR             = -19;     // Error during name resolutions (invalid hostname or dns communication error)
     static const int SSL_UNK_CERT          = -20;     // The certificate is not correctly signed by the trusted CA
+    static const int UNCONFIGURED          = -21;     // Remote hub is not yet configured
 
     // TLS / SSL definitions
     static const u32 NO_TRUSTED_CA_CHECK   = 1;       // Disables certificate checking
@@ -1302,6 +1306,14 @@ public:
             YAPI::InitAPI(0, errmsg);
         }
         return YAPI::_yapiContext.getYHubObj(hubref);
+    }
+    inline static YHub* findYHubFromID(string id)
+    {
+        if (!YAPI::_apiInitialized) {
+            string errmsg;
+            YAPI::InitAPI(0, errmsg);
+        }
+        return YAPI::_yapiContext.findYHubFromID(id);
     }
 //--- (end of generated code: YAPIContext yapiwrapper)
 
@@ -2186,6 +2198,11 @@ public:
 
     //--- (generated code: YHub accessors declaration)
 
+    static const int TRYING = 1;
+    static const int CONNECTED = 2;
+    static const int RECONNECTING = 3;
+    static const int ABORTED = 4;
+    static const int UNREGISTERED = 5;
 
     virtual string      _getStrAttr(string attrName);
 
@@ -2209,6 +2226,11 @@ public:
      * Returns the URL currently in use to communicate with this hub.
      */
     virtual string      get_connectionUrl(void);
+
+    /**
+     * Returns the state of the connection with this hub. (TRYING, CONNECTED, RECONNECTING, ABORTED, UNREGISTERED)
+     */
+    virtual int         get_connectionState(void);
 
     /**
      * Returns the hub serial number, if the hub was already connected once.
@@ -2311,11 +2333,23 @@ public:
     static YHub*        FirstHubInUse(void);
 
     /**
+     * Retrieves hub for a given identifier. The identifier can be the URL or the
+     * serial of the hub.
+     *
+     * @param url : The url or serial of the hub.
+     *
+     * @return a pointer to a YHub object, corresponding to
+     *         the first hub currently in use by the API, or a
+     *         NULL pointer if none has been registered.
+     */
+    static YHub*        FindHubInUse(string url);
+
+    /**
      * Continues the module enumeration started using YHub::FirstHubInUse().
      * Caution: You can't make any assumption about the order of returned hubs.
      *
      * @return a pointer to a YHub object, corresponding to
-     *         the next hub currenlty in use, or a NULL pointer
+     *         the next hub currently in use, or a NULL pointer
      *         if there are no more hubs to enumerate.
      */
     virtual YHub*       nextHubInUse(void);
@@ -3428,16 +3462,16 @@ public:
      *
      * @return a binary buffer with the file content
      *
-     * On failure, throws an exception or returns  YAPI::INVALID_STRING.
+     * On failure, throws an exception or returns an empty content.
      */
     virtual string      download(string pathname);
 
     /**
      * Returns the icon of the module. The icon is a PNG image and does not
-     * exceed 1536 bytes.
+     * exceeds 1536 bytes.
      *
      * @return a binary buffer with module icon, in png format.
-     *         On failure, throws an exception or returns  YAPI::INVALID_STRING.
+     *         On failure, throws an exception or returns an empty content.
      */
     virtual string      get_icon2d(void);
 
@@ -3623,7 +3657,7 @@ public:
      * Returns the current value of the measure, in the specified unit, as a floating point number.
      * Note that a get_currentValue() call will *not* start a measure in the device, it
      * will just return the last measure that occurred in the device. Indeed, internally, each Yoctopuce
-     * devices is continuously making measures at a hardware specific frequency.
+     * devices is continuously making measurements at a hardware specific frequency.
      *
      * If continuously calling  get_currentValue() leads you to performances issues, then
      * you might consider to switch to callback programming model. Check the "advanced

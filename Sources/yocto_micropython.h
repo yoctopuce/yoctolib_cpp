@@ -51,11 +51,11 @@ namespace YOCTOLIB_NAMESPACE
 {
 #endif
 
-//--- (YMicroPython return codes)
-//--- (end of YMicroPython return codes)
-//--- (YMicroPython yapiwrapper)
-//--- (end of YMicroPython yapiwrapper)
-//--- (YMicroPython definitions)
+//--- (generated code: YMicroPython return codes)
+//--- (end of generated code: YMicroPython return codes)
+//--- (generated code: YMicroPython yapiwrapper)
+//--- (end of generated code: YMicroPython yapiwrapper)
+//--- (generated code: YMicroPython definitions)
 class YMicroPython; // forward declaration
 
 typedef void (*YMicroPythonValueCallback)(YMicroPython *func, const string& functionValue);
@@ -70,13 +70,16 @@ typedef enum {
 #endif
 #define Y_LASTMSG_INVALID               (YAPI_INVALID_STRING)
 #define Y_HEAPUSAGE_INVALID             (YAPI_INVALID_UINT)
+#define Y_HEAPFRAG_INVALID              (YAPI_INVALID_UINT)
 #define Y_XHEAPUSAGE_INVALID            (YAPI_INVALID_UINT)
+#define Y_STACKUSAGE_INVALID            (YAPI_INVALID_UINT)
 #define Y_CURRENTSCRIPT_INVALID         (YAPI_INVALID_STRING)
 #define Y_STARTUPSCRIPT_INVALID         (YAPI_INVALID_STRING)
+#define Y_STARTUPDELAY_INVALID          (YAPI_INVALID_DOUBLE)
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
-//--- (end of YMicroPython definitions)
+//--- (end of generated code: YMicroPython definitions)
 
-//--- (YMicroPython declaration)
+//--- (generated code: YMicroPython declaration)
 /**
  * YMicroPython Class: MicroPython interpreter control interface
  *
@@ -87,17 +90,20 @@ class YOCTO_CLASS_EXPORT YMicroPython: public YFunction {
 #ifdef __BORLANDC__
 #pragma option push -w-8022
 #endif
-//--- (end of YMicroPython declaration)
+//--- (end of generated code: YMicroPython declaration)
 protected:
     static void yInternalEventCallback(YMicroPython *obj, const string& value);
 
-    //--- (YMicroPython attributes)
+    //--- (generated code: YMicroPython attributes)
     // Attributes (function value cache)
     string          _lastMsg;
     int             _heapUsage;
+    int             _heapFrag;
     int             _xheapUsage;
+    int             _stackUsage;
     string          _currentScript;
     string          _startupScript;
+    double          _startupDelay;
     Y_DEBUGMODE_enum _debugMode;
     string          _command;
     YMicroPythonValueCallback _valueCallbackMicroPython;
@@ -115,17 +121,20 @@ protected:
 
     // Constructor is protected, use yFindMicroPython factory function to instantiate
     YMicroPython(const string& func);
-    //--- (end of YMicroPython attributes)
+    //--- (end of generated code: YMicroPython attributes)
 
 public:
     virtual ~YMicroPython();
-    //--- (YMicroPython accessors declaration)
+    //--- (generated code: YMicroPython accessors declaration)
 
     static const string LASTMSG_INVALID;
     static const int HEAPUSAGE_INVALID = YAPI_INVALID_UINT;
+    static const int HEAPFRAG_INVALID = YAPI_INVALID_UINT;
     static const int XHEAPUSAGE_INVALID = YAPI_INVALID_UINT;
+    static const int STACKUSAGE_INVALID = YAPI_INVALID_UINT;
     static const string CURRENTSCRIPT_INVALID;
     static const string STARTUPSCRIPT_INVALID;
+    static const double STARTUPDELAY_INVALID;
     static const Y_DEBUGMODE_enum DEBUGMODE_OFF = Y_DEBUGMODE_OFF;
     static const Y_DEBUGMODE_enum DEBUGMODE_ON = Y_DEBUGMODE_ON;
     static const Y_DEBUGMODE_enum DEBUGMODE_INVALID = Y_DEBUGMODE_INVALID;
@@ -144,10 +153,10 @@ public:
     { return this->get_lastMsg(); }
 
     /**
-     * Returns the percentage of micropython main memory in use,
+     * Returns the percentage of MicroPython main memory in use,
      * as observed at the end of the last garbage collection.
      *
-     * @return an integer corresponding to the percentage of micropython main memory in use,
+     * @return an integer corresponding to the percentage of MicroPython main memory in use,
      *         as observed at the end of the last garbage collection
      *
      * On failure, throws an exception or returns YMicroPython::HEAPUSAGE_INVALID.
@@ -158,10 +167,24 @@ public:
     { return this->get_heapUsage(); }
 
     /**
-     * Returns the percentage of micropython external memory in use,
+     * Returns the fragmentation ratio of MicroPython main memory,
      * as observed at the end of the last garbage collection.
      *
-     * @return an integer corresponding to the percentage of micropython external memory in use,
+     * @return an integer corresponding to the fragmentation ratio of MicroPython main memory,
+     *         as observed at the end of the last garbage collection
+     *
+     * On failure, throws an exception or returns YMicroPython::HEAPFRAG_INVALID.
+     */
+    int                 get_heapFrag(void);
+
+    inline int          heapFrag(void)
+    { return this->get_heapFrag(); }
+
+    /**
+     * Returns the percentage of MicroPython external memory in use,
+     * as observed at the end of the last garbage collection.
+     *
+     * @return an integer corresponding to the percentage of MicroPython external memory in use,
      *         as observed at the end of the last garbage collection
      *
      * On failure, throws an exception or returns YMicroPython::XHEAPUSAGE_INVALID.
@@ -170,6 +193,20 @@ public:
 
     inline int          xheapUsage(void)
     { return this->get_xheapUsage(); }
+
+    /**
+     * Returns the maximum percentage of MicroPython call stack in use,
+     * as observed at the end of the last garbage collection.
+     *
+     * @return an integer corresponding to the maximum percentage of MicroPython call stack in use,
+     *         as observed at the end of the last garbage collection
+     *
+     * On failure, throws an exception or returns YMicroPython::STACKUSAGE_INVALID.
+     */
+    int                 get_stackUsage(void);
+
+    inline int          stackUsage(void)
+    { return this->get_stackUsage(); }
 
     /**
      * Returns the name of currently active script, if any.
@@ -227,10 +264,41 @@ public:
     { return this->set_startupScript(newval); }
 
     /**
-     * Returns the activation state of micropython debugging interface.
+     * Changes the wait time before running the startup script on power on, between 0.1
+     * second and 25 seconds. Remember to call the saveToFlash() method of the
+     * module if the modification must be kept.
+     *
+     * @param newval : a floating point number corresponding to the wait time before running the startup
+     * script on power on, between 0.1
+     *         second and 25 seconds
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_startupDelay(double newval);
+    inline int      setStartupDelay(double newval)
+    { return this->set_startupDelay(newval); }
+
+    /**
+     * Returns the wait time before running the startup script on power on,
+     * between 0.1 second and 25 seconds.
+     *
+     * @return a floating point number corresponding to the wait time before running the startup script on power on,
+     *         between 0.1 second and 25 seconds
+     *
+     * On failure, throws an exception or returns YMicroPython::STARTUPDELAY_INVALID.
+     */
+    double              get_startupDelay(void);
+
+    inline double       startupDelay(void)
+    { return this->get_startupDelay(); }
+
+    /**
+     * Returns the activation state of MicroPython debugging interface.
      *
      * @return either YMicroPython::DEBUGMODE_OFF or YMicroPython::DEBUGMODE_ON, according to the activation
-     * state of micropython debugging interface
+     * state of MicroPython debugging interface
      *
      * On failure, throws an exception or returns YMicroPython::DEBUGMODE_INVALID.
      */
@@ -240,10 +308,10 @@ public:
     { return this->get_debugMode(); }
 
     /**
-     * Changes the activation state of micropython debugging interface.
+     * Changes the activation state of MicroPython debugging interface.
      *
      * @param newval : either YMicroPython::DEBUGMODE_OFF or YMicroPython::DEBUGMODE_ON, according to the
-     * activation state of micropython debugging interface
+     * activation state of MicroPython debugging interface
      *
      * @return YAPI::SUCCESS if the call succeeds.
      *
@@ -343,6 +411,15 @@ public:
     virtual int         reset(void);
 
     /**
+     * Clears MicroPython interpreter console log buffer.
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         clearLogs(void);
+
+    /**
      * Returns a string with last logs of the MicroPython interpreter.
      * This method return only logs that are still in the module.
      *
@@ -400,10 +477,10 @@ public:
 #ifdef __BORLANDC__
 #pragma option pop
 #endif
-    //--- (end of YMicroPython accessors declaration)
+    //--- (end of generated code: YMicroPython accessors declaration)
 };
 
-//--- (YMicroPython functions declaration)
+//--- (generated code: YMicroPython functions declaration)
 
 /**
  * Retrieves a MicroPython interpreter for a given identifier.
@@ -447,7 +524,7 @@ inline YMicroPython *yFindMicroPython(const string& func)
 inline YMicroPython *yFirstMicroPython(void)
 { return YMicroPython::FirstMicroPython();}
 
-//--- (end of YMicroPython functions declaration)
+//--- (end of generated code: YMicroPython functions declaration)
 
 #ifdef YOCTOLIB_NAMESPACE
 // end of namespace definition

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.cpp 63324 2024-11-13 09:33:07Z seb $
+ * $Id: yocto_messagebox.cpp 68482 2025-08-21 10:07:30Z mvuilleu $
  *
  * Implements yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -2304,6 +2304,7 @@ int YMessageBox::checkNewMessages(void)
     }
     _pdus = newArr;
     // append complete concatenated messages
+    newAgg.clear();
     i = 0;
     while (i < nsig) {
         sig = signatures[i];

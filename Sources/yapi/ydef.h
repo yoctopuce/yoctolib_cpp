@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 65866 2025-04-15 06:51:41Z seb $
+ * $Id: ydef.h 68921 2025-09-10 07:47:29Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -478,7 +478,8 @@ typedef enum {
     YAPI_RFID_HARD_ERROR  = -17,    // Serious RFID error (eg. write-protected, out-of-boundary), check YRfidStatus for details
     YAPI_BUFFER_TOO_SMALL = -18,    // The buffer provided is too small
     YAPI_DNS_ERROR        = -19,    // Error during name resolutions (invalid hostname or dns communication error)
-    YAPI_SSL_UNK_CERT     = -20     // The certificate is not correctly signed by the trusted CA
+    YAPI_SSL_UNK_CERT     = -20,    // The certificate is not correctly signed by the trusted CA
+    YAPI_UNCONFIGURED     = -21     // Remote hub is not yet configured
 } YRETCODE;
 
 #define YISERR(retcode)   ((retcode) < 0)
@@ -974,13 +975,13 @@ typedef void (*yapiRequestProgressCallback)(void *context, u32 acked, u32 totalb
 // PROG packets are only used in bootloader (USB DeviceID=0001/0002)
 //
 
-#define PROG_NOP         0 // nothing to do
-#define PROG_REBOOT      1 // reset the device
-#define PROG_ERASE       2 // erase completely the device
-#define PROG_PROG        3 // program the device
-#define PROG_VERIF       4 // program the device
-#define PROG_INFO        5 // get device info
-#define PROG_INFO_EXT    6 // get extended device info (flash bootloader only)
+#define PROG_NOP         0    // nothing to do
+#define PROG_REBOOT      1    // reset the device
+#define PROG_ERASE       2    // erase completely the device
+#define PROG_PROG        3    // program the device
+#define PROG_VERIF       4    // program the device
+#define PROG_INFO        5    // get device info
+#define PROG_INFO_EXT    6    // get extended device info (flash bootloader only)
 #define PROG_INFO_TI     7 // get extended device info (for Texas chip)
 
 
@@ -994,7 +995,7 @@ typedef void (*yapiRequestProgressCallback)(void *context, u32 acked, u32 totalb
 #define ERASE_BLOCK_SIZE_BADDR      (ERASE_BLOCK_SIZE_INSTR*2)
 #define PROGRAM_BLOCK_SIZE_BADDR    (PROGRAM_BLOCK_SIZE_INSTR*2)
 
-// for MSP432E we use dword as instruction length. This is not a limitation of th CPU it's just
+// for MSP432E we use dword as instruction length. This is not a limitation of the CPU it's just
 // an implement choice to match at best the microchip architecture
 #define MSP432E_INSTR_LEN                   4
 #define MSP432E_MAX_INSTR_IN_PACKET         (MAX_BYTE_IN_PACKET/MSP432E_INSTR_LEN)
@@ -1003,7 +1004,7 @@ typedef void (*yapiRequestProgressCallback)(void *context, u32 acked, u32 totalb
 #define MSP432E_ERASE_BLOCK_SIZE_BADDR      (MSP432E_ERASE_BLOCK_SIZE_INSTR * MSP432E_INSTR_LEN)  // 16KB
 #define MSP432E_PROGRAM_BLOCK_SIZE_BADDR    (MSP432E_PROGRAM_BLOCK_SIZE_INSTR * MSP432E_INSTR_LEN)    // we can write 32 dword in one operation
 
-// for TM4C123 we use dword as instruction length. This is not a limitation of th CPU it's just
+// for TM4C123 we use dword as instruction length. This is not a limitation of the CPU it's just
 // an implement choice to match at best the microchip architecture
 #define TM4C123_INSTR_LEN                   4
 #define TM4C123_MAX_INSTR_IN_PACKET         (MAX_BYTE_IN_PACKET/TM4C123_INSTR_LEN)
@@ -1168,6 +1169,11 @@ typedef union {
 
 #if defined(MICROCHIP_API) || defined(FREERTOS_API) || defined(VIRTUAL_HUB)
 #define YAPI_IN_YDEVICE
+#endif
+
+#if defined(MICROCHIP_API) || (defined(TEXAS_API) && !defined(FREERTOS_API))
+#define NO_MUTEX
+typedef u8 yCRITICAL_SECTION;
 #endif
 
 

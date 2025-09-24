@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.h 59978 2024-03-18 15:04:46Z mvuilleu $
+ * $Id: yocto_files.h 67383 2025-06-11 05:44:27Z mvuilleu $
  *
  * Declares yFindFiles(), the high-level API for Files functions
  *
@@ -145,6 +145,7 @@ class YOCTO_CLASS_EXPORT YFiles: public YFunction {
     int             _filesCount;
     int             _freeSpace;
     YFilesValueCallback _valueCallbackFiles;
+    int             _ver;
 
     friend YFiles *yFindFiles(const string& func);
     friend YFiles *yFirstFiles(void);
@@ -238,6 +239,8 @@ public:
 
     virtual string      sendCommand(string command);
 
+    virtual int         _getVersion(void);
+
     /**
      * Reinitialize the filesystem to its clean, unfragmented, empty state.
      * All files previously uploaded are permanently lost.
@@ -264,11 +267,11 @@ public:
     virtual vector<YFileRecord> get_list(string pattern);
 
     /**
-     * Test if a file exist on the filesystem of the module.
+     * Tests if a file exists on the filesystem of the module.
      *
-     * @param filename : the file name to test.
+     * @param filename : the filename to test.
      *
-     * @return a true if the file exist, false otherwise.
+     * @return true if the file exists, false otherwise.
      *
      * On failure, throws an exception.
      */
@@ -313,6 +316,20 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         remove(string pathname);
+
+    /**
+     * Returns the expected file CRC for a given content.
+     * Note that the CRC value may vary depending on the version
+     * of the filesystem used by the hub, so it is important to
+     * use this method if a reference value needs to be computed.
+     *
+     * @param content : a buffer representing a file content
+     *
+     * @return the 32-bit CRC summarizing the file content, as it would
+     *         be returned by the get_crc() method of
+     *         YFileRecord objects returned by get_list().
+     */
+    virtual int         get_content_crc(string content);
 
 
     inline static YFiles *Find(string func)

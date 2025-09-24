@@ -2,7 +2,7 @@
  *
  *  $Id: svn_id $
  *
- *  Implements yFindVoltage(), the high-level API for Voltage functions
+ *  Implements yFindVirtualSensor(), the high-level API for VirtualSensor functions
  *
  *  - - - - - - - - - License information: - - - - - - - - -
  *
@@ -44,99 +44,62 @@
 #include <math.h>
 #include <stdlib.h>
 
-#include "yocto_voltage.h"
+#include "yocto_virtualsensor.h"
 #include "yapi/yjson.h"
 #include "yapi/yapi.h"
-#define  __FILE_ID__  "voltage"
+#define  __FILE_ID__  "virtualsensor"
 
 #ifdef YOCTOLIB_NAMESPACE
 using namespace YOCTOLIB_NAMESPACE;
 #endif
 
-YVoltage::YVoltage(const string& func): YSensor(func)
-//--- (YVoltage initialization)
-    ,_enabled(ENABLED_INVALID)
-    ,_signalBias(SIGNALBIAS_INVALID)
-    ,_valueCallbackVoltage(NULL)
-    ,_timedReportCallbackVoltage(NULL)
-//--- (end of YVoltage initialization)
+YVirtualSensor::YVirtualSensor(const string& func): YSensor(func)
+//--- (YVirtualSensor initialization)
+    ,_invalidValue(INVALIDVALUE_INVALID)
+    ,_valueCallbackVirtualSensor(NULL)
+    ,_timedReportCallbackVirtualSensor(NULL)
+//--- (end of YVirtualSensor initialization)
 {
-    _className="Voltage";
+    _className="VirtualSensor";
 }
 
-YVoltage::~YVoltage()
+YVirtualSensor::~YVirtualSensor()
 {
-//--- (YVoltage cleanup)
-//--- (end of YVoltage cleanup)
+//--- (YVirtualSensor cleanup)
+//--- (end of YVirtualSensor cleanup)
 }
-//--- (YVoltage implementation)
+//--- (YVirtualSensor implementation)
 // static attributes
-const double YVoltage::SIGNALBIAS_INVALID = YAPI_INVALID_DOUBLE;
+const double YVirtualSensor::INVALIDVALUE_INVALID = YAPI_INVALID_DOUBLE;
 
-int YVoltage::_parseAttr(YJSONObject *json_val)
+int YVirtualSensor::_parseAttr(YJSONObject *json_val)
 {
-    if(json_val->has("enabled")) {
-        _enabled =  (Y_ENABLED_enum)json_val->getInt("enabled");
-    }
-    if(json_val->has("signalBias")) {
-        _signalBias =  floor(json_val->getDouble("signalBias") / 65.536 + 0.5) / 1000.0;
+    if(json_val->has("invalidValue")) {
+        _invalidValue =  floor(json_val->getDouble("invalidValue") / 65.536 + 0.5) / 1000.0;
     }
     return YSensor::_parseAttr(json_val);
 }
 
 
 /**
- * Returns the activation state of this input.
+ * Changes the measuring unit for the measured value.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
  *
- * @return either YVoltage::ENABLED_FALSE or YVoltage::ENABLED_TRUE, according to the activation state of this input
- *
- * On failure, throws an exception or returns YVoltage::ENABLED_INVALID.
- */
-Y_ENABLED_enum YVoltage::get_enabled(void)
-{
-    Y_ENABLED_enum res;
-    yEnterCriticalSection(&_this_cs);
-    try {
-        if (_cacheExpiration <= YAPI::GetTickCount()) {
-            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
-                {
-                    yLeaveCriticalSection(&_this_cs);
-                    return YVoltage::ENABLED_INVALID;
-                }
-            }
-        }
-        res = _enabled;
-    } catch (std::exception &) {
-        yLeaveCriticalSection(&_this_cs);
-        throw;
-    }
-    yLeaveCriticalSection(&_this_cs);
-    return res;
-}
-
-/**
- * Changes the activation state of this voltage input. When AC measurements are disabled,
- * the device will always assume a DC signal, and vice-versa. When both AC and DC measurements
- * are active, the device switches between AC and DC mode based on the relative amplitude
- * of variations compared to the average value.
- * Remember to call the saveToFlash()
- * method of the module if the modification must be kept.
- *
- * @param newval : either YVoltage::ENABLED_FALSE or YVoltage::ENABLED_TRUE, according to the activation
- * state of this voltage input
+ * @param newval : a string corresponding to the measuring unit for the measured value
  *
  * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YVoltage::set_enabled(Y_ENABLED_enum newval)
+int YVirtualSensor::set_unit(const string& newval)
 {
     string rest_val;
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
-        rest_val = (newval>0 ? "1" : "0");
-        res = _setAttr("enabled", rest_val);
+        rest_val = newval;
+        res = _setAttr("unit", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
@@ -146,26 +109,39 @@ int YVoltage::set_enabled(Y_ENABLED_enum newval)
 }
 
 /**
- * Changes the DC bias configured for zero shift adjustment.
- * If your DC current reads positive when it should be zero, set up
- * a positive signalBias of the same value to fix the zero shift.
- * Remember to call the saveToFlash()
- * method of the module if the modification must be kept.
+ * Changes the current value of the sensor (raw value, before calibration).
  *
- * @param newval : a floating point number corresponding to the DC bias configured for zero shift adjustment
+ * @param newval : a floating point number corresponding to the current value of the sensor (raw
+ * value, before calibration)
  *
  * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YVoltage::set_signalBias(double newval)
+int YVirtualSensor::set_currentRawValue(double newval)
 {
     string rest_val;
     int res;
     yEnterCriticalSection(&_this_cs);
     try {
         char buf[32]; SAFE_SPRINTF(buf, 32, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
-        res = _setAttr("signalBias", rest_val);
+        res = _setAttr("currentRawValue", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+int YVirtualSensor::set_sensorState(int newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
+        res = _setAttr("sensorState", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
@@ -175,15 +151,45 @@ int YVoltage::set_signalBias(double newval)
 }
 
 /**
- * Returns the DC bias configured for zero shift adjustment.
- * A positive bias value is used to correct a positive DC bias,
- * while a negative bias value is used to correct a negative DC bias.
+ * Changes the invalid value of the sensor, returned if the sensor is read when in invalid state
+ * (for instance before having been set). Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
  *
- * @return a floating point number corresponding to the DC bias configured for zero shift adjustment
+ * @param newval : a floating point number corresponding to the invalid value of the sensor, returned
+ * if the sensor is read when in invalid state
+ *         (for instance before having been set)
  *
- * On failure, throws an exception or returns YVoltage::SIGNALBIAS_INVALID.
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
  */
-double YVoltage::get_signalBias(void)
+int YVirtualSensor::set_invalidValue(double newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        res = _setAttr("invalidValue", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the invalid value of the sensor, returned if the sensor is read when in invalid state
+ * (for instance before having been set).
+ *
+ * @return a floating point number corresponding to the invalid value of the sensor, returned if the
+ * sensor is read when in invalid state
+ *         (for instance before having been set)
+ *
+ * On failure, throws an exception or returns YVirtualSensor::INVALIDVALUE_INVALID.
+ */
+double YVirtualSensor::get_invalidValue(void)
 {
     double res = 0.0;
     yEnterCriticalSection(&_this_cs);
@@ -192,11 +198,11 @@ double YVoltage::get_signalBias(void)
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
-                    return YVoltage::SIGNALBIAS_INVALID;
+                    return YVirtualSensor::INVALIDVALUE_INVALID;
                 }
             }
         }
-        res = _signalBias;
+        res = _invalidValue;
     } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
@@ -206,7 +212,7 @@ double YVoltage::get_signalBias(void)
 }
 
 /**
- * Retrieves a voltage sensor for a given identifier.
+ * Retrieves a virtual sensor for a given identifier.
  * The identifier can be specified using several formats:
  *
  * - FunctionLogicalName
@@ -216,11 +222,11 @@ double YVoltage::get_signalBias(void)
  * - ModuleLogicalName.FunctionLogicalName
  *
  *
- * This function does not require that the voltage sensor is online at the time
+ * This function does not require that the virtual sensor is online at the time
  * it is invoked. The returned object is nevertheless valid.
- * Use the method isOnline() to test if the voltage sensor is
+ * Use the method isOnline() to test if the virtual sensor is
  * indeed online at a given time. In case of ambiguity when looking for
- * a voltage sensor by logical name, no error is notified: the first instance
+ * a virtual sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *
@@ -228,23 +234,23 @@ double YVoltage::get_signalBias(void)
  * you are certain that the matching device is plugged, make sure that you did
  * call registerHub() at application initialization time.
  *
- * @param func : a string that uniquely characterizes the voltage sensor, for instance
- *         MOTORCTL.voltage.
+ * @param func : a string that uniquely characterizes the virtual sensor, for instance
+ *         MyDevice.virtualSensor1.
  *
- * @return a YVoltage object allowing you to drive the voltage sensor.
+ * @return a YVirtualSensor object allowing you to drive the virtual sensor.
  */
-YVoltage* YVoltage::FindVoltage(string func)
+YVirtualSensor* YVirtualSensor::FindVirtualSensor(string func)
 {
-    YVoltage* obj = NULL;
+    YVirtualSensor* obj = NULL;
     int taken = 0;
     if (YAPI::_apiInitialized) {
         yEnterCriticalSection(&YAPI::_global_cs);
         taken = 1;
     }try {
-        obj = (YVoltage*) YFunction::_FindFromCache("Voltage", func);
+        obj = (YVirtualSensor*) YFunction::_FindFromCache("VirtualSensor", func);
         if (obj == NULL) {
-            obj = new YVoltage(func);
-            YFunction::_AddToCache("Voltage", func, obj);
+            obj = new YVirtualSensor(func);
+            YFunction::_AddToCache("VirtualSensor", func, obj);
         }
     } catch (std::exception &) {
         if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
@@ -265,7 +271,7 @@ YVoltage* YVoltage::FindVoltage(string func)
  *         the new advertised value.
  * @noreturn
  */
-int YVoltage::registerValueCallback(YVoltageValueCallback callback)
+int YVirtualSensor::registerValueCallback(YVirtualSensorValueCallback callback)
 {
     string val;
     if (callback != NULL) {
@@ -273,7 +279,7 @@ int YVoltage::registerValueCallback(YVoltageValueCallback callback)
     } else {
         YFunction::_UpdateValueCallbackList(this, false);
     }
-    _valueCallbackVoltage = callback;
+    _valueCallbackVirtualSensor = callback;
     // Immediately invoke value callback with current value
     if (callback != NULL && this->isOnline()) {
         val = _advertisedValue;
@@ -284,10 +290,10 @@ int YVoltage::registerValueCallback(YVoltageValueCallback callback)
     return 0;
 }
 
-int YVoltage::_invokeValueCallback(string value)
+int YVirtualSensor::_invokeValueCallback(string value)
 {
-    if (_valueCallbackVoltage != NULL) {
-        _valueCallbackVoltage(this, value);
+    if (_valueCallbackVirtualSensor != NULL) {
+        _valueCallbackVirtualSensor(this, value);
     } else {
         YSensor::_invokeValueCallback(value);
     }
@@ -305,7 +311,7 @@ int YVoltage::_invokeValueCallback(string value)
  *         the new advertised value.
  * @noreturn
  */
-int YVoltage::registerTimedReportCallback(YVoltageTimedReportCallback callback)
+int YVirtualSensor::registerTimedReportCallback(YVirtualSensorTimedReportCallback callback)
 {
     YSensor* sensor = NULL;
     sensor = this;
@@ -314,14 +320,14 @@ int YVoltage::registerTimedReportCallback(YVoltageTimedReportCallback callback)
     } else {
         YFunction::_UpdateTimedReportCallbackList(sensor, false);
     }
-    _timedReportCallbackVoltage = callback;
+    _timedReportCallbackVirtualSensor = callback;
     return 0;
 }
 
-int YVoltage::_invokeTimedReportCallback(YMeasure value)
+int YVirtualSensor::_invokeTimedReportCallback(YMeasure value)
 {
-    if (_timedReportCallbackVoltage != NULL) {
-        _timedReportCallbackVoltage(this, value);
+    if (_timedReportCallbackVirtualSensor != NULL) {
+        _timedReportCallbackVirtualSensor(this, value);
     } else {
         YSensor::_invokeTimedReportCallback(value);
     }
@@ -329,55 +335,42 @@ int YVoltage::_invokeTimedReportCallback(YMeasure value)
 }
 
 /**
- * Calibrate the device by adjusting signalBias so that the current
- * input voltage is precisely seen as zero. Before calling this method, make
- * sure to short the power source inputs as close as possible to the connector, and
- * to disconnect the load to ensure the wires don't capture radiated noise.
- * Remember to call the saveToFlash()
- * method of the module if the modification must be kept.
+ * Changes the current sensor state to invalid (as if no value would have been ever set).
  *
  * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YVoltage::zeroAdjust(void)
+int YVirtualSensor::set_sensorAsInvalid(void)
 {
-    double currSignal = 0.0;
-    double bias = 0.0;
-    currSignal = this->get_currentRawValue();
-    bias = this->get_signalBias() + currSignal;
-    if (!((bias > -0.5) && (bias < 0.5))) {
-        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "suspicious zeroAdjust, please ensure that the power source inputs are shorted");
-        return YAPI_INVALID_ARGUMENT;
-    }
-    return this->set_signalBias(bias);
+    return this->set_sensorState(1);
 }
 
-YVoltage *YVoltage::nextVoltage(void)
+YVirtualSensor *YVirtualSensor::nextVirtualSensor(void)
 {
     string  hwid;
 
     if(YISERR(_nextFunction(hwid)) || hwid=="") {
         return NULL;
     }
-    return YVoltage::FindVoltage(hwid);
+    return YVirtualSensor::FindVirtualSensor(hwid);
 }
 
-YVoltage *YVoltage::FirstVoltage(void)
+YVirtualSensor *YVirtualSensor::FirstVirtualSensor(void)
 {
     vector<YFUN_DESCR>   v_fundescr;
     YDEV_DESCR             ydevice;
     string              serial, funcId, funcName, funcVal, errmsg;
 
-    if(YISERR(YapiWrapper::getFunctionsByClass("Voltage", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
+    if(YISERR(YapiWrapper::getFunctionsByClass("VirtualSensor", 0, v_fundescr, sizeof(YFUN_DESCR), errmsg)) ||
        v_fundescr.size() == 0 ||
        YISERR(YapiWrapper::getFunctionInfo(v_fundescr[0], ydevice, serial, funcId, funcName, funcVal, errmsg))) {
         return NULL;
     }
-    return YVoltage::FindVoltage(serial+"."+funcId);
+    return YVirtualSensor::FindVirtualSensor(serial+"."+funcId);
 }
 
-//--- (end of YVoltage implementation)
+//--- (end of YVirtualSensor implementation)
 
-//--- (YVoltage functions)
-//--- (end of YVoltage functions)
+//--- (YVirtualSensor functions)
+//--- (end of YVirtualSensor functions)

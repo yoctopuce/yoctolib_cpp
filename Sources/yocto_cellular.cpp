@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_cellular.cpp 64863 2025-03-05 14:06:40Z mvuilleu $
+ * $Id: yocto_cellular.cpp 68466 2025-08-19 17:31:45Z mvuilleu $
  *
  * Implements yFindCellular(), the high-level API for Cellular functions
  *
@@ -1368,24 +1368,24 @@ vector<YCellRecord> YCellular::quickCellSurvey(void)
     recs = _strsplit(moni,'#');
     // process each line in turn
     res.clear();
-    for (unsigned ii = 0; ii < recs.size(); ii++) {
-        llen = (int)(recs[ii]).length() - 2;
+    for (unsigned ii_0 = 0; ii_0 < recs.size(); ii_0++) {
+        llen = (int)(recs[ii_0]).length() - 2;
         if (llen >= 44) {
-            if (recs[ii].substr(41, 3) == "dbm") {
-                lac = (int)YAPI::_hexStr2Long(recs[ii].substr(16, 4));
-                cellId = (int)YAPI::_hexStr2Long(recs[ii].substr(23, 4));
-                dbms = recs[ii].substr(37, 4);
+            if (recs[ii_0].substr(41, 3) == "dbm") {
+                lac = (int)YAPI::_hexStr2Long(recs[ii_0].substr(16, 4));
+                cellId = (int)YAPI::_hexStr2Long(recs[ii_0].substr(23, 4));
+                dbms = recs[ii_0].substr(37, 4);
                 if (dbms.substr(0, 1) == " ") {
                     dbms = dbms.substr(1, 3);
                 }
                 dbm = atoi((dbms).c_str());
                 if (llen > 66) {
-                    tads = recs[ii].substr(54, 2);
+                    tads = recs[ii_0].substr(54, 2);
                     if (tads.substr(0, 1) == " ") {
                         tads = tads.substr(1, 3);
                     }
                     tad = atoi((tads).c_str());
-                    oper = recs[ii].substr(66, llen-66);
+                    oper = recs[ii_0].substr(66, llen-66);
                 } else {
                     tad = -1;
                     oper = "";

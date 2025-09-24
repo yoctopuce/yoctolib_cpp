@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 63868 2024-12-23 13:41:20Z seb $
+ * $Id: yproto.h 68890 2025-09-08 16:20:39Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -449,6 +449,7 @@ typedef struct {
 void dumpYPerfEntry(yPerfMon* entry, const char* name);
 
 
+
 /*****************************************************************************
  INTERNAL STRUCTURES and DEFINITIONS
 ****************************************************************************/
@@ -699,7 +700,8 @@ typedef enum {
 
 typedef enum {
     NET_HUB_DISCONNECTED=0,
-    NET_HUB_TRYING,
+    NET_HUB_FIRST_TRY,
+    NET_HUB_RETRYING,
     NET_HUB_ESTABLISHED,
     NET_HUB_TOCLOSE,
     NET_HUB_CLOSED
@@ -787,6 +789,8 @@ typedef struct _HubInfoPortSt {
 } HubInfoPortSt;
 
 
+
+
 #define NB_PROTO_IN_INFO_JSON 4
 
 typedef struct _HubInfoSt {
@@ -795,6 +799,7 @@ typedef struct _HubInfoSt {
     int next_port;
     int use_pure_http;
     int has_unsecure_open_port;
+    int security_mode;
 } HubInfoSt;
 
 typedef struct _HubUrlSt {
@@ -817,6 +822,7 @@ int sprintfURL(char* out, int maxlen, HubURLSt* url, int no_auth);
 
 typedef struct _HubSt {
     HubURLSt url;
+
     char* know_urls[MAX_KNOW_URLS_SIZE];
     HubInfoSt info; // infos form info.json
     // misc flag that are mapped to int for efficiency and thread safety
@@ -1135,6 +1141,8 @@ int  yUsbSendMeta(const char *str, USB_Meta_Pkt *pkt, int len, char *errmsg);
 int yUSBGetBooloader(const char* serial, const char* name, yInterfaceSt* iface, char* errmsg);
 
 // Misc helper
+void process_ws(yThread* thread, HubSt* hub);
+
 int checkForSameHubAccess(HubSt* hub, yStrRef serial, char* errmsg);
 int write_text_file(const char* filename, const char* content, int contentlen, char* errmsg);
 int handleNetNotification(HubSt* hub);

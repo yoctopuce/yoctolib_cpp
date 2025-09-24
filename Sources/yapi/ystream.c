@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 62257 2024-08-22 06:30:28Z seb $
+ * $Id: ystream.c 68927 2025-09-10 09:23:17Z seb $
  *
  * USB stream implementation
  *
@@ -168,7 +168,7 @@ int YFOPEN(FILE** f, const char *filename, const char *mode)
 
 static int dayofs[] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
 
-static void WriteTsamp(FILE* f)
+static void WriteTsamp(char* out)
 {
     u32 year, month, day, h, m, s;
 
@@ -206,7 +206,14 @@ static void WriteTsamp(FILE* f)
     year = y + 1970;
     day = days - dayofs[month - 1] + 1;
 #endif
-    fprintf(f, "[%04d-%02d-%02d/%02d:%02d:%02d]:", year, month, day, h, m, s);
+    YSPRINTF(out,128,"%04d-%02d-%02d/%02d:%02d:%02d", year, month, day, h, m, s);
+}
+
+static void WriteTsampToFile(FILE* f)
+{
+    char tmp[128];
+    WriteTsamp(tmp);
+    fprintf(f, "[%s]:", tmp);
 }
 
 
@@ -216,7 +223,15 @@ int vdbglogf(const char* fileid, int line, const char* fmt, va_list args)
     int len;
     int threadIdx;
     threadIdx = yThreadIndex();
+#if 0
+    {
+        char tstamp[128];
+        WriteTsamp(tstamp);
+        len = YSPRINTF(buffer, 2048, "[%s:%d]%s:% 4d: ", tstamp, threadIdx, fileid, line);
+    }
+#else
     len = YSPRINTF(buffer, 2048, "[%d]%s:% 4d: ", threadIdx, fileid, line);
+#endif
     if (len < 0 || len >= 2028 || (len = YVSPRINTF(buffer + len, 2048 - len, fmt, args)) < 0) {
         YSTRCPY(buffer, 2048, "dbglogf failed\n");
         return -1;
@@ -236,7 +251,7 @@ int vdbglogf(const char* fileid, int line, const char* fmt, va_list args)
         if (YFOPEN(&f, ytracefile, "a+") != 0) {
             return -1;
         }
-        WriteTsamp(f);
+        WriteTsampToFile(f);
         fwrite(buffer, 1, len, f);
         fclose(f);
     }

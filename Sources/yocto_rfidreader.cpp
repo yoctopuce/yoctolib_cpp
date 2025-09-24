@@ -977,8 +977,8 @@ vector<string> YRfidReader::get_tagIdList(void)
     taglist.clear();
     if ((int)(json).size() > 3) {
         jsonList = this->_json_get_array(json);
-        for (unsigned ii = 0; ii < jsonList.size(); ii++) {
-            taglist.push_back(this->_json_get_string(jsonList[ii]));
+        for (unsigned ii_0 = 0; ii_0 < jsonList.size(); ii_0++) {
+            taglist.push_back(this->_json_get_string(jsonList[ii_0]));
         }
     }
     return taglist;

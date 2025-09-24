@@ -1070,7 +1070,7 @@ YInputCaptureData YInputCapture::get_immediateCapture(int msDuration)
     if (msDuration > 1000) {
         msDuration = 1000;
     }
-    snapStart = ((-msDuration) / 2);
+    snapStart = (-msDuration / 2);
     snapUrl = YapiWrapper::ysprintf("snap.bin?t=%d&d=%d",snapStart,msDuration);
 
     snapData = this->_download(snapUrl);

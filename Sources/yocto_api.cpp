@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 65973 2025-04-22 09:50:13Z seb $
+ * $Id: yocto_api.cpp 68466 2025-08-19 17:31:45Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -134,6 +134,16 @@ s64 yatoi(const char *p)
         return value;
     }
 }
+
+s32 _bincrc(const string& data, int ofs, int len)
+{
+    u64 crc = yapiCRC32((const u8*)data.c_str(), ofs, len);
+    if (crc > 0x7fffffff) {
+        return (s32) (crc - 0x100000000ull);
+    }
+    return (s32) crc;
+}
+
 
 #ifdef YOCTOLIB_NAMESPACE
 }
@@ -2194,33 +2204,33 @@ int YDataSet::loadSummary(string data)
     summaryStopMs = YAPI_MIN_DOUBLE;
 
     // Parse complete streams
-    for (unsigned ii = 0; ii < _streams.size(); ii++) {
-        streamStartTimeMs = floor(_streams[ii]->get_realStartTimeUTC() * 1000+0.5);
-        streamDuration = _streams[ii]->get_realDuration();
+    for (unsigned ii_0 = 0; ii_0 < _streams.size(); ii_0++) {
+        streamStartTimeMs = floor(_streams[ii_0]->get_realStartTimeUTC() * 1000+0.5);
+        streamDuration = _streams[ii_0]->get_realDuration();
         streamEndTimeMs = streamStartTimeMs + floor(streamDuration * 1000+0.5);
         if ((streamStartTimeMs >= _startTimeMs) && ((_endTimeMs == 0) || (streamEndTimeMs <= _endTimeMs))) {
             // stream that are completely inside the dataset
-            previewMinVal = _streams[ii]->get_minValue();
-            previewAvgVal = _streams[ii]->get_averageValue();
-            previewMaxVal = _streams[ii]->get_maxValue();
+            previewMinVal = _streams[ii_0]->get_minValue();
+            previewAvgVal = _streams[ii_0]->get_averageValue();
+            previewMaxVal = _streams[ii_0]->get_maxValue();
             previewStartMs = streamStartTimeMs;
             previewStopMs = streamEndTimeMs;
             previewDuration = streamDuration;
         } else {
             // stream that are partially in the dataset
             // we need to parse data to filter value outside the dataset
-            if (!(_streams[ii]->_wasLoaded())) {
-                url = _streams[ii]->_get_url();
+            if (!(_streams[ii_0]->_wasLoaded())) {
+                url = _streams[ii_0]->_get_url();
                 data = _parent->_download(url);
-                _streams[ii]->_parseStream(data);
+                _streams[ii_0]->_parseStream(data);
             }
-            dataRows = _streams[ii]->get_dataRows();
+            dataRows = _streams[ii_0]->get_dataRows();
             if ((int)dataRows.size() == 0) {
                 return this->get_progress();
             }
             tim = streamStartTimeMs;
-            fitv = floor(_streams[ii]->get_firstDataSamplesInterval() * 1000+0.5);
-            itv = floor(_streams[ii]->get_dataSamplesInterval() * 1000+0.5);
+            fitv = floor(_streams[ii_0]->get_firstDataSamplesInterval() * 1000+0.5);
+            itv = floor(_streams[ii_0]->get_dataSamplesInterval() * 1000+0.5);
             nCols = (int)dataRows[0].size();
             minCol = 0;
             if (nCols > 2) {
@@ -2371,16 +2381,16 @@ int YDataSet::processMore(int progress,string data)
     }
 
     firstMeasure = true;
-    for (unsigned ii = 0; ii < dataRows.size(); ii++) {
+    for (unsigned ii_0 = 0; ii_0 < dataRows.size(); ii_0++) {
         if (firstMeasure) {
             end_ = tim + fitv;
             firstMeasure = false;
         } else {
             end_ = tim + itv;
         }
-        avgv = dataRows[ii][avgCol];
+        avgv = dataRows[ii_0][avgCol];
         if ((end_ > _startTimeMs) && ((_endTimeMs == 0) || (tim < _endTimeMs)) && !(yyisnan(avgv))) {
-            _measures.push_back(YMeasure(tim / 1000,end_ / 1000,dataRows[ii][minCol],avgv,dataRows[ii][maxCol]));
+            _measures.push_back(YMeasure(tim / 1000,end_ / 1000,dataRows[ii_0][minCol],avgv,dataRows[ii_0][maxCol]));
         }
         tim = end_;
     }
@@ -2650,9 +2660,9 @@ vector<YMeasure> YDataSet::get_measuresAt(YMeasure measure)
 
     startUtcMs = measure.get_startTimeUTC() * 1000;
     stream = NULL;
-    for (unsigned ii = 0; ii < _streams.size(); ii++) {
-        if (floor(_streams[ii]->get_realStartTimeUTC() *1000+0.5) == startUtcMs) {
-            stream = _streams[ii];
+    for (unsigned ii_0 = 0; ii_0 < _streams.size(); ii_0++) {
+        if (floor(_streams[ii_0]->get_realStartTimeUTC() *1000+0.5) == startUtcMs) {
+            stream = _streams[ii_0];
         }
     }
     if (stream == NULL) {
@@ -2680,10 +2690,10 @@ vector<YMeasure> YDataSet::get_measuresAt(YMeasure measure)
         maxCol = 0;
     }
 
-    for (unsigned ii = 0; ii < dataRows.size(); ii++) {
+    for (unsigned ii_1 = 0; ii_1 < dataRows.size(); ii_1++) {
         end_ = tim + itv;
         if ((end_ > _startTimeMs) && ((_endTimeMs == 0) || (tim < _endTimeMs))) {
-            measures.push_back(YMeasure(tim / 1000.0,end_ / 1000.0,dataRows[ii][minCol],dataRows[ii][avgCol],dataRows[ii][maxCol]));
+            measures.push_back(YMeasure(tim / 1000.0,end_ / 1000.0,dataRows[ii_1][minCol],dataRows[ii_1][avgCol],dataRows[ii_1][maxCol]));
         }
         tim = end_;
     }
@@ -3030,6 +3040,22 @@ YHub* YAPIContext::getYHubObj(int hubref)
     if (taken) yLeaveCriticalSection(&YAPI::_global_cs);
     return obj;
 }
+
+YHub* YAPIContext::findYHubFromID(string id)
+{
+    YHub* rhub = NULL;
+    rhub = this->nextHubInUseInternal(-1);
+    while (!(rhub == NULL)) {
+        if (rhub->get_serialNumber() == id) {
+            return rhub;
+        }
+        if (rhub->get_registeredUrl() == id) {
+            return rhub;
+        }
+        rhub = rhub->nextHubInUse();
+    }
+    return rhub;
+}
 //--- (end of generated code: YAPIContext implementation)
 
 //std::map<int, YHub*> YAPIContext::_yhub_cache;
@@ -3161,6 +3187,14 @@ vector<string> YHub::get_knownUrls(void)
 string YHub::get_connectionUrl(void)
 {
     return this->_getStrAttr("connectionUrl");
+}
+
+/**
+ * Returns the state of the connection with this hub. (TRYING, CONNECTED, RECONNECTING, ABORTED, UNREGISTERED)
+ */
+int YHub::get_connectionState(void)
+{
+    return this->_getIntAttr("connectionState");
 }
 
 /**
@@ -3297,11 +3331,26 @@ YHub* YHub::FirstHubInUse(void)
 }
 
 /**
+ * Retrieves hub for a given identifier. The identifier can be the URL or the
+ * serial of the hub.
+ *
+ * @param url : The url or serial of the hub.
+ *
+ * @return a pointer to a YHub object, corresponding to
+ *         the first hub currently in use by the API, or a
+ *         NULL pointer if none has been registered.
+ */
+YHub* YHub::FindHubInUse(string url)
+{
+    return YAPI::findYHubFromID(url);
+}
+
+/**
  * Continues the module enumeration started using YHub::FirstHubInUse().
  * Caution: You can't make any assumption about the order of returned hubs.
  *
  * @return a pointer to a YHub object, corresponding to
- *         the next hub currenlty in use, or a NULL pointer
+ *         the next hub currently in use, or a NULL pointer
  *         if there are no more hubs to enumerate.
  */
 YHub* YHub::nextHubInUse(void)
@@ -7138,18 +7187,18 @@ string YModule::get_allSettings(void)
     ext_settings = ", \"extras\":[";
     templist = this->get_functionIds("Temperature");
     sep = "";
-    for (unsigned ii = 0; ii < templist.size(); ii++) {
+    for (unsigned ii_0 = 0; ii_0 < templist.size(); ii_0++) {
         if (atoi((this->get_firmwareRelease()).c_str()) > 9000) {
-            url = YapiWrapper::ysprintf("api/%s/sensorType",templist[ii].c_str());
+            url = YapiWrapper::ysprintf("api/%s/sensorType",templist[ii_0].c_str());
             t_type = this->_download(url);
             if (t_type == "RES_NTC" || t_type == "RES_LINEAR") {
-                pageid = templist[ii].substr(11, (int)(templist[ii]).length() - 11);
+                pageid = templist[ii_0].substr(11, (int)(templist[ii_0]).length() - 11);
                 if (pageid == "") {
                     pageid = "1";
                 }
                 temp_data_bin = this->_download(YapiWrapper::ysprintf("extra.json?page=%s",pageid.c_str()));
                 if ((int)(temp_data_bin).size() > 0) {
-                    item = YapiWrapper::ysprintf("%s{\"fid\":\"%s\", \"json\":%s}\n",sep.c_str(),templist[ii].c_str(),temp_data_bin.c_str());
+                    item = YapiWrapper::ysprintf("%s{\"fid\":\"%s\", \"json\":%s}\n",sep.c_str(),templist[ii_0].c_str(),temp_data_bin.c_str());
                     ext_settings = ext_settings + item;
                     sep = ",";
                 }
@@ -7164,8 +7213,8 @@ string YModule::get_allSettings(void)
         }
         filelist = this->_json_get_array(json);
         sep = "";
-        for (unsigned ii = 0; ii < filelist.size(); ii++) {
-            name = this->_json_get_key(filelist[ii], "name");
+        for (unsigned ii_1 = 0; ii_1 < filelist.size(); ii_1++) {
+            name = this->_json_get_key(filelist[ii_1], "name");
             if (((int)(name).length() > 0) && !(name == "startupConf.json")) {
                 if (name.substr((int)(name).length()-1, 1) == "/") {
                     file_data = "";
@@ -7219,10 +7268,10 @@ int YModule::set_extraSettings(string jsonExtra)
     string functionId;
     string data;
     extras = this->_json_get_array(jsonExtra);
-    for (unsigned ii = 0; ii < extras.size(); ii++) {
-        tmp = this->_get_json_path(extras[ii], "fid");
+    for (unsigned ii_0 = 0; ii_0 < extras.size(); ii_0++) {
+        tmp = this->_get_json_path(extras[ii_0], "fid");
         functionId = this->_json_get_string(tmp);
-        data = this->_get_json_path(extras[ii], "json");
+        data = this->_get_json_path(extras[ii_0], "json");
         if (this->hasFunction(functionId)) {
             this->loadThermistorExtra(functionId, data);
         }
@@ -7246,7 +7295,6 @@ int YModule::set_extraSettings(string jsonExtra)
 int YModule::set_allSettingsAndFiles(string settings)
 {
     string down;
-    string json_bin;
     string json_api;
     string json_files;
     string json_extra;
@@ -7277,10 +7325,10 @@ int YModule::set_allSettingsAndFiles(string settings)
         }
         json_files = this->_get_json_path(settings, "files");
         files = this->_json_get_array(json_files);
-        for (unsigned ii = 0; ii < files.size(); ii++) {
-            tmp = this->_get_json_path(files[ii], "name");
+        for (unsigned ii_0 = 0; ii_0 < files.size(); ii_0++) {
+            tmp = this->_get_json_path(files[ii_0], "name");
             name = this->_json_get_string(tmp);
-            tmp = this->_get_json_path(files[ii], "data");
+            tmp = this->_get_json_path(files[ii_0], "data");
             data = this->_json_get_string(tmp);
             if (name == "") {
                 fuperror = fuperror + 1;
@@ -7515,8 +7563,8 @@ string YModule::calibConvert(string param,string currentFuncValue,string unit_na
         } else {
             if (paramVer == 1) {
                 words_str = _strsplit(param,',');
-                for (unsigned ii = 0; ii < words_str.size(); ii++) {
-                    words.push_back(atoi((words_str[ii]).c_str()));
+                for (unsigned ii_0 = 0; ii_0 < words_str.size(); ii_0++) {
+                    words.push_back(atoi((words_str[ii_0]).c_str()));
                 }
                 if (param == "" || (words[0] > 10)) {
                     paramScale = 0;
@@ -7694,8 +7742,8 @@ int YModule::set_allSettings(string settings)
     newval = "";
     old_json_flat = this->_flattenJsonStruct(settings);
     old_dslist = this->_json_get_array(old_json_flat);
-    for (unsigned ii = 0; ii < old_dslist.size(); ii++) {
-        each_str = this->_json_get_string(old_dslist[ii]);
+    for (unsigned ii_0 = 0; ii_0 < old_dslist.size(); ii_0++) {
+        each_str = this->_json_get_string(old_dslist[ii_0]);
         // split json path and attr
         leng = (int)(each_str).length();
         eqpos = _ystrpos(each_str, "=");
@@ -7727,9 +7775,9 @@ int YModule::set_allSettings(string settings)
     }
     actualSettings = this->_flattenJsonStruct(actualSettings);
     new_dslist = this->_json_get_array(actualSettings);
-    for (unsigned ii = 0; ii < new_dslist.size(); ii++) {
+    for (unsigned ii_1 = 0; ii_1 < new_dslist.size(); ii_1++) {
         // remove quotes
-        each_str = this->_json_get_string(new_dslist[ii]);
+        each_str = this->_json_get_string(new_dslist[ii_1]);
         // split json path and attr
         leng = (int)(each_str).length();
         eqpos = _ystrpos(each_str, "=");
@@ -7946,8 +7994,8 @@ int YModule::set_allSettings(string settings)
         }
         i = i + 1;
     }
-    for (unsigned ii = 0; ii < restoreLast.size(); ii++) {
-        subres = this->_tryExec(restoreLast[ii]);
+    for (unsigned ii_2 = 0; ii_2 < restoreLast.size(); ii_2++) {
+        subres = this->_tryExec(restoreLast[ii_2]);
         if ((res == YAPI_SUCCESS) && (subres != YAPI_SUCCESS)) {
             res = subres;
         }
@@ -7998,7 +8046,7 @@ string YModule::get_hardwareId(void)
  *
  * @return a binary buffer with the file content
  *
- * On failure, throws an exception or returns  YAPI::INVALID_STRING.
+ * On failure, throws an exception or returns an empty content.
  */
 string YModule::download(string pathname)
 {
@@ -8007,10 +8055,10 @@ string YModule::download(string pathname)
 
 /**
  * Returns the icon of the module. The icon is a PNG image and does not
- * exceed 1536 bytes.
+ * exceeds 1536 bytes.
  *
  * @return a binary buffer with module icon, in png format.
- *         On failure, throws an exception or returns  YAPI::INVALID_STRING.
+ *         On failure, throws an exception or returns an empty content.
  */
 string YModule::get_icon2d(void)
 {
@@ -8029,6 +8077,9 @@ string YModule::get_lastLogs(void)
     string content;
 
     content = this->_download("logs.txt");
+    if ((int)(content).size() == 0) {
+        return YAPI_INVALID_STRING;
+    }
     return content;
 }
 
@@ -8168,7 +8219,17 @@ YModule *YModule::FirstModule(void)
 
 //--- (end of generated code: YModule implementation)
 
-// Return a string that describes the function (class and logical name or hardware id)
+/**
+ * Returns a global identifier of the function in the format MODULE_NAME&#46;FUNCTION_NAME.
+ * The returned string uses the logical names of the module and of the function if they are defined,
+ * otherwise the serial number of the module and the hardware identifier of the function
+ * (for example: MyCustomName.relay1)
+ *
+ * @return a string that uniquely identifies the function using logical names
+ *         (ex: MyCustomName.relay1)
+ *
+ * On failure, throws an exception or returns  YFunction.FRIENDLYNAME_INVALID.
+ */
 string YModule::get_friendlyName(void)
 {
     YFUN_DESCR fundescr, moddescr;
@@ -8187,7 +8248,7 @@ string YModule::get_friendlyName(void)
             }
         }
         yLeaveCriticalSection(&_this_cs);
-        return serial;
+        return serial + ".module";
     }
     yLeaveCriticalSection(&_this_cs);
     return Y_FRIENDLYNAME_INVALID;
@@ -8493,7 +8554,7 @@ string YSensor::get_unit(void)
  * Returns the current value of the measure, in the specified unit, as a floating point number.
  * Note that a get_currentValue() call will *not* start a measure in the device, it
  * will just return the last measure that occurred in the device. Indeed, internally, each Yoctopuce
- * devices is continuously making measures at a hardware specific frequency.
+ * devices is continuously making measurements at a hardware specific frequency.
  *
  * If continuously calling  get_currentValue() leads you to performances issues, then
  * you might consider to switch to callback programming model. Check the "advanced
@@ -9423,11 +9484,11 @@ int YSensor::loadCalibrationPoints(vector<double>& rawValues,vector<double>& ref
         }
         rawValues.clear();
         refValues.clear();
-        for (unsigned ii = 0; ii < _calraw.size(); ii++) {
-            rawValues.push_back(_calraw[ii]);
+        for (unsigned ii_0 = 0; ii_0 < _calraw.size(); ii_0++) {
+            rawValues.push_back(_calraw[ii_0]);
         }
-        for (unsigned ii = 0; ii < _calref.size(); ii++) {
-            refValues.push_back(_calref[ii]);
+        for (unsigned ii_1 = 0; ii_1 < _calref.size(); ii_1++) {
+            refValues.push_back(_calref[ii_1]);
         }
     } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
@@ -10220,9 +10281,9 @@ vector<YDataSet> YDataLogger::parse_dataSets(string jsonbuff)
 
     dslist = this->_json_get_array(jsonbuff);
     res.clear();
-    for (unsigned ii = 0; ii < dslist.size(); ii++) {
+    for (unsigned ii_0 = 0; ii_0 < dslist.size(); ii_0++) {
         dataset = new YDataSet(this);
-        dataset->_parse(dslist[ii]);
+        dataset->_parse(dslist[ii_0]);
         res.push_back(*dataset);
     }
     return res;

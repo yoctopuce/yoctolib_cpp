@@ -54,12 +54,15 @@ using namespace YOCTOLIB_NAMESPACE;
 #endif
 
 YMicroPython::YMicroPython(const string& func): YFunction(func)
-//--- (YMicroPython initialization)
+//--- (generated code: YMicroPython initialization)
     ,_lastMsg(LASTMSG_INVALID)
     ,_heapUsage(HEAPUSAGE_INVALID)
+    ,_heapFrag(HEAPFRAG_INVALID)
     ,_xheapUsage(XHEAPUSAGE_INVALID)
+    ,_stackUsage(STACKUSAGE_INVALID)
     ,_currentScript(CURRENTSCRIPT_INVALID)
     ,_startupScript(STARTUPSCRIPT_INVALID)
+    ,_startupDelay(STARTUPDELAY_INVALID)
     ,_debugMode(DEBUGMODE_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackMicroPython(NULL)
@@ -67,17 +70,17 @@ YMicroPython::YMicroPython(const string& func): YFunction(func)
     ,_isFirstCb(0)
     ,_prevCbPos(0)
     ,_logPos(0)
-//--- (end of YMicroPython initialization)
+//--- (end of generated code: YMicroPython initialization)
 {
     _className="MicroPython";
 }
 
 YMicroPython::~YMicroPython()
 {
-//--- (YMicroPython cleanup)
-//--- (end of YMicroPython cleanup)
+//--- (generated code: YMicroPython cleanup)
+//--- (end of generated code: YMicroPython cleanup)
 }
-//--- (YMicroPython implementation)
+//--- (generated code: YMicroPython implementation)
 void YMicroPython::yInternalEventCallback(YMicroPython *obj, const string& value)
 {
     obj->_internalEventHandler(value);
@@ -87,6 +90,7 @@ void YMicroPython::yInternalEventCallback(YMicroPython *obj, const string& value
 const string YMicroPython::LASTMSG_INVALID = YAPI_INVALID_STRING;
 const string YMicroPython::CURRENTSCRIPT_INVALID = YAPI_INVALID_STRING;
 const string YMicroPython::STARTUPSCRIPT_INVALID = YAPI_INVALID_STRING;
+const double YMicroPython::STARTUPDELAY_INVALID = YAPI_INVALID_DOUBLE;
 const string YMicroPython::COMMAND_INVALID = YAPI_INVALID_STRING;
 
 int YMicroPython::_parseAttr(YJSONObject *json_val)
@@ -97,14 +101,23 @@ int YMicroPython::_parseAttr(YJSONObject *json_val)
     if(json_val->has("heapUsage")) {
         _heapUsage =  json_val->getInt("heapUsage");
     }
+    if(json_val->has("heapFrag")) {
+        _heapFrag =  json_val->getInt("heapFrag");
+    }
     if(json_val->has("xheapUsage")) {
         _xheapUsage =  json_val->getInt("xheapUsage");
+    }
+    if(json_val->has("stackUsage")) {
+        _stackUsage =  json_val->getInt("stackUsage");
     }
     if(json_val->has("currentScript")) {
         _currentScript =  json_val->getString("currentScript");
     }
     if(json_val->has("startupScript")) {
         _startupScript =  json_val->getString("startupScript");
+    }
+    if(json_val->has("startupDelay")) {
+        _startupDelay =  floor(json_val->getDouble("startupDelay") / 65.536 + 0.5) / 1000.0;
     }
     if(json_val->has("debugMode")) {
         _debugMode =  (Y_DEBUGMODE_enum)json_val->getInt("debugMode");
@@ -146,10 +159,10 @@ string YMicroPython::get_lastMsg(void)
 }
 
 /**
- * Returns the percentage of micropython main memory in use,
+ * Returns the percentage of MicroPython main memory in use,
  * as observed at the end of the last garbage collection.
  *
- * @return an integer corresponding to the percentage of micropython main memory in use,
+ * @return an integer corresponding to the percentage of MicroPython main memory in use,
  *         as observed at the end of the last garbage collection
  *
  * On failure, throws an exception or returns YMicroPython::HEAPUSAGE_INVALID.
@@ -177,10 +190,41 @@ int YMicroPython::get_heapUsage(void)
 }
 
 /**
- * Returns the percentage of micropython external memory in use,
+ * Returns the fragmentation ratio of MicroPython main memory,
  * as observed at the end of the last garbage collection.
  *
- * @return an integer corresponding to the percentage of micropython external memory in use,
+ * @return an integer corresponding to the fragmentation ratio of MicroPython main memory,
+ *         as observed at the end of the last garbage collection
+ *
+ * On failure, throws an exception or returns YMicroPython::HEAPFRAG_INVALID.
+ */
+int YMicroPython::get_heapFrag(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YMicroPython::HEAPFRAG_INVALID;
+                }
+            }
+        }
+        res = _heapFrag;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the percentage of MicroPython external memory in use,
+ * as observed at the end of the last garbage collection.
+ *
+ * @return an integer corresponding to the percentage of MicroPython external memory in use,
  *         as observed at the end of the last garbage collection
  *
  * On failure, throws an exception or returns YMicroPython::XHEAPUSAGE_INVALID.
@@ -199,6 +243,37 @@ int YMicroPython::get_xheapUsage(void)
             }
         }
         res = _xheapUsage;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the maximum percentage of MicroPython call stack in use,
+ * as observed at the end of the last garbage collection.
+ *
+ * @return an integer corresponding to the maximum percentage of MicroPython call stack in use,
+ *         as observed at the end of the last garbage collection
+ *
+ * On failure, throws an exception or returns YMicroPython::STACKUSAGE_INVALID.
+ */
+int YMicroPython::get_stackUsage(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YMicroPython::STACKUSAGE_INVALID;
+                }
+            }
+        }
+        res = _stackUsage;
     } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
@@ -321,10 +396,70 @@ int YMicroPython::set_startupScript(const string& newval)
 }
 
 /**
- * Returns the activation state of micropython debugging interface.
+ * Changes the wait time before running the startup script on power on, between 0.1
+ * second and 25 seconds. Remember to call the saveToFlash() method of the
+ * module if the modification must be kept.
+ *
+ * @param newval : a floating point number corresponding to the wait time before running the startup
+ * script on power on, between 0.1
+ *         second and 25 seconds
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YMicroPython::set_startupDelay(double newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%" FMTs64, (s64)floor(newval * 65536.0 + 0.5)); rest_val = string(buf);
+        res = _setAttr("startupDelay", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the wait time before running the startup script on power on,
+ * between 0.1 second and 25 seconds.
+ *
+ * @return a floating point number corresponding to the wait time before running the startup script on power on,
+ *         between 0.1 second and 25 seconds
+ *
+ * On failure, throws an exception or returns YMicroPython::STARTUPDELAY_INVALID.
+ */
+double YMicroPython::get_startupDelay(void)
+{
+    double res = 0.0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YMicroPython::STARTUPDELAY_INVALID;
+                }
+            }
+        }
+        res = _startupDelay;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the activation state of MicroPython debugging interface.
  *
  * @return either YMicroPython::DEBUGMODE_OFF or YMicroPython::DEBUGMODE_ON, according to the activation
- * state of micropython debugging interface
+ * state of MicroPython debugging interface
  *
  * On failure, throws an exception or returns YMicroPython::DEBUGMODE_INVALID.
  */
@@ -351,10 +486,10 @@ Y_DEBUGMODE_enum YMicroPython::get_debugMode(void)
 }
 
 /**
- * Changes the activation state of micropython debugging interface.
+ * Changes the activation state of MicroPython debugging interface.
  *
  * @param newval : either YMicroPython::DEBUGMODE_OFF or YMicroPython::DEBUGMODE_ON, according to the
- * activation state of micropython debugging interface
+ * activation state of MicroPython debugging interface
  *
  * @return YAPI::SUCCESS if the call succeeds.
  *
@@ -562,6 +697,21 @@ int YMicroPython::reset(void)
 }
 
 /**
+ * Clears MicroPython interpreter console log buffer.
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YMicroPython::clearLogs(void)
+{
+    int res = 0;
+
+    res = this->set_command("z");
+    return res;
+}
+
+/**
  * Returns a string with last logs of the MicroPython interpreter.
  * This method return only logs that are still in the module.
  *
@@ -721,7 +871,7 @@ YMicroPython *YMicroPython::FirstMicroPython(void)
     return YMicroPython::FindMicroPython(serial+"."+funcId);
 }
 
-//--- (end of YMicroPython implementation)
+//--- (end of generated code: YMicroPython implementation)
 
-//--- (YMicroPython functions)
-//--- (end of YMicroPython functions)
+//--- (generated code: YMicroPython functions)
+//--- (end of generated code: YMicroPython functions)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.cpp 59978 2024-03-18 15:04:46Z mvuilleu $
+ * $Id: yocto_files.cpp 68466 2025-08-19 17:31:45Z mvuilleu $
  *
  * Implements yFindFiles(), the high-level API for Files functions
  *
@@ -138,6 +138,7 @@ YFiles::YFiles(const string& func): YFunction(func)
     ,_filesCount(FILESCOUNT_INVALID)
     ,_freeSpace(FREESPACE_INVALID)
     ,_valueCallbackFiles(NULL)
+    ,_ver(0)
 //--- (end of generated code: YFiles initialization)
 {
     _className = "Files";
@@ -319,6 +320,23 @@ string YFiles::sendCommand(string command)
     return this->_download(url);
 }
 
+int YFiles::_getVersion(void)
+{
+    string json;
+    if (_ver > 0) {
+        return _ver;
+    }
+    //may throw an exception
+    json = this->sendCommand("info");
+    if (((u8)json[0]) != 123) {
+        // ascii code for '{'
+        _ver = 30;
+    } else {
+        _ver = atoi((this->_json_get_key(json, "ver")).c_str());
+    }
+    return _ver;
+}
+
 /**
  * Reinitialize the filesystem to its clean, unfragmented, empty state.
  * All files previously uploaded are permanently lost.
@@ -361,18 +379,18 @@ vector<YFileRecord> YFiles::get_list(string pattern)
     json = this->sendCommand(YapiWrapper::ysprintf("dir&f=%s",pattern.c_str()));
     filelist = this->_json_get_array(json);
     res.clear();
-    for (unsigned ii = 0; ii < filelist.size(); ii++) {
-        res.push_back(YFileRecord(filelist[ii]));
+    for (unsigned ii_0 = 0; ii_0 < filelist.size(); ii_0++) {
+        res.push_back(YFileRecord(filelist[ii_0]));
     }
     return res;
 }
 
 /**
- * Test if a file exist on the filesystem of the module.
+ * Tests if a file exists on the filesystem of the module.
  *
- * @param filename : the file name to test.
+ * @param filename : the filename to test.
  *
- * @return a true if the file exist, false otherwise.
+ * @return true if the file exists, false otherwise.
  *
  * On failure, throws an exception.
  */
@@ -446,6 +464,58 @@ int YFiles::remove(string pathname)
         return YAPI_IO_ERROR;
     }
     return YAPI_SUCCESS;
+}
+
+/**
+ * Returns the expected file CRC for a given content.
+ * Note that the CRC value may vary depending on the version
+ * of the filesystem used by the hub, so it is important to
+ * use this method if a reference value needs to be computed.
+ *
+ * @param content : a buffer representing a file content
+ *
+ * @return the 32-bit CRC summarizing the file content, as it would
+ *         be returned by the get_crc() method of
+ *         YFileRecord objects returned by get_list().
+ */
+int YFiles::get_content_crc(string content)
+{
+    int fsver = 0;
+    int sz = 0;
+    int blkcnt = 0;
+    string meta;
+    int blkidx = 0;
+    int blksz = 0;
+    int part = 0;
+    int res = 0;
+    sz = (int)(content).size();
+    if (sz == 0) {
+        res = _bincrc(content, 0, 0);
+        return res;
+    }
+
+    fsver = this->_getVersion();
+    if (fsver < 40) {
+        res = _bincrc(content, 0, sz);
+        return res;
+    }
+    blkcnt = ((sz + 255) / 256);
+    meta = string(4 * blkcnt, (char)0);
+    blkidx = 0;
+    while (blkidx < blkcnt) {
+        blksz = sz - blkidx * 256;
+        if (blksz > 256) {
+            blksz = 256;
+        }
+        part = (_bincrc(content, blkidx * 256, blksz) ^ ((int) 0xffffffff));
+        meta[4 * blkidx] = (char)((part & 255));
+        meta[4 * blkidx + 1] = (char)(((part >> 8) & 255));
+        meta[4 * blkidx + 2] = (char)(((part >> 16) & 255));
+        meta[4 * blkidx + 3] = (char)(((part >> 24) & 255));
+        blkidx = blkidx + 1;
+    }
+    res = (_bincrc(meta, 0, 4 * blkcnt) ^ ((int) 0xffffffff));
+    return res;
 }
 
 YFiles *YFiles::nextFiles(void)

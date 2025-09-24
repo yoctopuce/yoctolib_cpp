@@ -72,6 +72,7 @@ typedef enum {
 typedef enum {
     Y_WORKINGMODE_AUTO = 0,
     Y_WORKINGMODE_EXPERT = 1,
+    Y_WORKINGMODE_AUTOGAIN = 2,
     Y_WORKINGMODE_INVALID = -1,
 } Y_WORKINGMODE_enum;
 #endif
@@ -160,6 +161,7 @@ public:
     static const Y_ESTIMATIONMODEL_enum ESTIMATIONMODEL_INVALID = Y_ESTIMATIONMODEL_INVALID;
     static const Y_WORKINGMODE_enum WORKINGMODE_AUTO = Y_WORKINGMODE_AUTO;
     static const Y_WORKINGMODE_enum WORKINGMODE_EXPERT = Y_WORKINGMODE_EXPERT;
+    static const Y_WORKINGMODE_enum WORKINGMODE_AUTOGAIN = Y_WORKINGMODE_AUTOGAIN;
     static const Y_WORKINGMODE_enum WORKINGMODE_INVALID = Y_WORKINGMODE_INVALID;
     static const int LEDCURRENT_INVALID = YAPI_INVALID_UINT;
     static const int LEDCALIBRATION_INVALID = YAPI_INVALID_UINT;
@@ -222,8 +224,8 @@ public:
      * In Auto mode, sensor parameters are automatically set based on the selected estimation model.
      * In Expert mode, sensor parameters such as gain and integration time are configured manually.
      *
-     * @return either YColorSensor::WORKINGMODE_AUTO or YColorSensor::WORKINGMODE_EXPERT, according to the
-     * sensor working mode
+     * @return a value among YColorSensor::WORKINGMODE_AUTO, YColorSensor::WORKINGMODE_EXPERT and
+     * YColorSensor::WORKINGMODE_AUTOGAIN corresponding to the sensor working mode
      *
      * On failure, throws an exception or returns YColorSensor::WORKINGMODE_INVALID.
      */
@@ -238,8 +240,8 @@ public:
      * In Expert mode, sensor parameters such as gain and integration time are configured manually.
      * Remember to call the saveToFlash() method of the module if the modification must be kept.
      *
-     * @param newval : either YColorSensor::WORKINGMODE_AUTO or YColorSensor::WORKINGMODE_EXPERT, according
-     * to the sensor working mode
+     * @param newval : a value among YColorSensor::WORKINGMODE_AUTO, YColorSensor::WORKINGMODE_EXPERT and
+     * YColorSensor::WORKINGMODE_AUTOGAIN corresponding to the sensor working mode
      *
      * @return YAPI::SUCCESS if the call succeeds.
      *

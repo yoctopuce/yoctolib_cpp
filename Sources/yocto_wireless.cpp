@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_wireless.cpp 63324 2024-11-13 09:33:07Z seb $
+ * $Id: yocto_wireless.cpp 68466 2025-08-19 17:31:45Z mvuilleu $
  *
  * Implements yFindWireless(), the high-level API for Wireless functions
  *
@@ -629,8 +629,8 @@ vector<YWlanRecord> YWireless::get_detectedWlans(void)
     json = this->_download("wlan.json?by=name");
     wlanlist = this->_json_get_array(json);
     res.clear();
-    for (unsigned ii = 0; ii < wlanlist.size(); ii++) {
-        res.push_back(YWlanRecord(wlanlist[ii]));
+    for (unsigned ii_0 = 0; ii_0 < wlanlist.size(); ii_0++) {
+        res.push_back(YWlanRecord(wlanlist[ii_0]));
     }
     return res;
 }
