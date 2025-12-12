@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h 67402 2025-06-12 07:42:01Z seb $
+ * $Id: yapi.h 70670 2025-12-09 11:04:34Z seb $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -139,6 +139,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetRemoteCertificate(const char* rooturl, u64 
 YRETCODE YAPI_FUNCTION_EXPORT yapiSetTrustedCertificatesList(const char* certificatePath, char* errmsg);
 
 u32 YAPI_FUNCTION_EXPORT yapiCRC32(const u8 *data, int ofs, int len);
+YAPI_FUNCTION_EXPORT const char* yapiGetPlatform(void);
 
 /*****************************************************************************
   Function:
@@ -1162,6 +1163,7 @@ int YAPI_FUNCTION_EXPORT yapiSetHubIntAttr(int ref, const char* attrname, int va
 YRETCODE YAPI_FUNCTION_EXPORT yapiGetAllJsonKeys(const char* jsonbuffer, char* out_buffer, int out_buffersize, int* fullsize, char* errmsg);
 YRETCODE YAPI_FUNCTION_EXPORT yapiCheckFirmware(const char* serial, const char* rev, const char* path, char* buffer, int buffersize, int* fullsize, char* errmsg);
 YRETCODE YAPI_FUNCTION_EXPORT yapiGetBootloaders(char* buffer, int buffersize, int* fullsize, char* errmsg);
+YRETCODE YAPI_FUNCTION_EXPORT yapiGetBootloaderInfo(const char* serial, BootDevInfoSt* info, char* errmsg);
 YRETCODE YAPI_FUNCTION_EXPORT yapiUpdateFirmware(const char* serial, const char* firmwarePath, const char* settings, int startUpdate, char* errmsg);
 YRETCODE YAPI_FUNCTION_EXPORT yapiUpdateFirmwareEx(const char* serial, const char* firmwarePath, const char* settings, int force, int startUpdate, char* errmsg);
 

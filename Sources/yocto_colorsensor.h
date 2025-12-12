@@ -97,6 +97,7 @@ typedef enum {
 #define Y_LEDCALIBRATION_INVALID        (YAPI_INVALID_UINT)
 #define Y_INTEGRATIONTIME_INVALID       (YAPI_INVALID_UINT)
 #define Y_GAIN_INVALID                  (YAPI_INVALID_UINT)
+#define Y_AUTOGAIN_INVALID              (YAPI_INVALID_STRING)
 #define Y_SATURATION_INVALID            (YAPI_INVALID_UINT)
 #define Y_ESTIMATEDRGB_INVALID          (YAPI_INVALID_UINT)
 #define Y_ESTIMATEDHSL_INVALID          (YAPI_INVALID_UINT)
@@ -129,6 +130,7 @@ protected:
     int             _ledCalibration;
     int             _integrationTime;
     int             _gain;
+    string          _autoGain;
     int             _saturation;
     int             _estimatedRGB;
     int             _estimatedHSL;
@@ -167,6 +169,7 @@ public:
     static const int LEDCALIBRATION_INVALID = YAPI_INVALID_UINT;
     static const int INTEGRATIONTIME_INVALID = YAPI_INVALID_UINT;
     static const int GAIN_INVALID = YAPI_INVALID_UINT;
+    static const string AUTOGAIN_INVALID;
     static const int SATURATION_INVALID = YAPI_INVALID_UINT;
     static const int ESTIMATEDRGB_INVALID = YAPI_INVALID_UINT;
     static const int ESTIMATEDHSL_INVALID = YAPI_INVALID_UINT;
@@ -369,6 +372,32 @@ public:
     int             set_gain(int newval);
     inline int      setGain(int newval)
     { return this->set_gain(newval); }
+
+    /**
+     * Returns the current autogain parameters of the sensor as a character string.
+     * The returned parameter format is: "Min &lt; Channel &lt; Max:Saturation".
+     *
+     * @return a string corresponding to the current autogain parameters of the sensor as a character string
+     *
+     * On failure, throws an exception or returns YColorSensor::AUTOGAIN_INVALID.
+     */
+    string              get_autoGain(void);
+
+    inline string       autoGain(void)
+    { return this->get_autoGain(); }
+
+    /**
+     * Remember to call the saveToFlash() method of the module if the modification must be kept.
+     *
+     * @param newval : a string
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_autoGain(const string& newval);
+    inline int      setAutoGain(const string& newval)
+    { return this->set_autoGain(newval); }
 
     /**
      * Returns the current saturation state of the sensor, as an integer.
@@ -590,6 +619,22 @@ public:
     using YFunction::registerValueCallback;
 
     virtual int         _invokeValueCallback(string value);
+
+    /**
+     * Changes the sensor automatic gain control settings.
+     * Remember to call the saveToFlash() method of the module if the modification must be kept.
+     *
+     * @param channel : reference channel to use for automated gain control.
+     * @param minRaw : lower threshold for the measured raw value, below which the gain is
+     *         automatically increased as long as possible.
+     * @param maxRaw : high threshold for the measured raw value, over which the gain is
+     *         automatically decreased as long as possible.
+     * @param noSatur : enables gain reduction in case of sensor saturation.
+     *
+     * @return YAPI::SUCCESS if the operation completes successfully.
+     *         On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         configureAutoGain(string channel,int minRaw,int maxRaw,bool noSatur);
 
     /**
      * Turns on the built-in illumination LEDs using the same current as used during the latest calibration.

@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 68262 2025-08-11 07:27:54Z mvuilleu $
+#  $Id: GNUmakefile 70567 2025-12-04 08:54:16Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -101,7 +101,22 @@ OBJDIR_MIPSEL = $(DIR_MIPSEL)objs/
 OBJDIR_OSX = $(DIR_OSX)objs/
 OBJDIR_OSX32 = $(DIR_OSX32)objs/
 
-DEF_SSL_GCC  = -DNO_YSSL
+DEF_GLOBAL  =
+
+ifdef WIN_XP
+NO_YSSL = 1
+$(info compile for WinXP)
+DEF_GLOBAL  = _WIN32_WINNT=0x0501
+endif
+
+ifdef NO_YSSL
+$(info disable ssl)
+DEF_GLOBAL  += NO_YSSL
+endif
+
+DEF_FLAGS_WIN = $(patsubst %, /D%, $(DEF_GLOBAL))
+
+DEF_FLAGS_GCC= $(patsubst %, -D%, $(DEF_GLOBAL))
 
 #CC compiler for each arch
 CC_WIN32 = cl
@@ -157,6 +172,7 @@ CPP_OSX = g++
 CPP_OSX32 = g++
 
 RC = rc
+
 
 #generic flags
 OPTS_DBG = -g -Wall $(DEF_FLAGS_GCC)
@@ -393,7 +409,7 @@ YOCTO_API_OBJS_STAT = yocto_api.o\
 
 #-- yocto_patch_stop --
 
-
+ifndef  NO_YSSL
 #-- mbedtls_patch_start --
 MBEDTLS_OBJS_STAT = \
 	aes.o \
@@ -497,8 +513,7 @@ MBEDTLS_OBJS_STAT = \
 	x509_crt.o \
 
 #-- mbedtls_patch_stop --
-
-
+endif
 
 YOCTO_API_OBJS_DYN  = $(patsubst %.o, %_dyn.o,$(YOCTO_API_OBJS_STAT))
 

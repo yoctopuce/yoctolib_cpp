@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.h 68890 2025-09-08 16:20:39Z seb $
+ * $Id: ytcp.h 69916 2025-10-31 13:53:54Z mvuilleu $
  *
  *  Declaration of a client TCP stack
  *
@@ -145,7 +145,7 @@ void yTcpShutdownMulti(void);
 int ySocketOpenBindMulti(YSOCKET_MULTI *newskt, IPvX_ADDR *local_ip, int is_udp, int sin6_scope_id, u16 port, u16 sockFlags, char *errmsg);
 int yUdpWriteMulti(YSOCKET_MULTI skt, IPvX_ADDR* dest_ip, u16 dest_port, const u8* buffer, int len, char* errmsg);
 int yUdpReadMulti(YSOCKET_MULTI skt, u8* buffer, int len, IPvX_ADDR* dest_ip, u16* dest_port, char* errmsg);
-int yUdpRegisterMCAST(YSOCKET_MULTI skt,  IPvX_ADDR *mcastAddr, int interfaceNo);
+int yUdpRegisterMCAST(YSOCKET_MULTI skt, IPvX_ADDR *localAddr, IPvX_ADDR *mcastAddr, int interfaceNo);
 
 struct _RequestSt* yReqAlloc(struct _HubSt* hub);
 int yReqOpen(struct _RequestSt* tcpreq, int wait_for_start, int tcpchan, const char* request, int reqlen, u64 mstimeout, yapiRequestAsyncCallback callback, void* context, yapiRequestProgressCallback progress_cb, void* progress_ctx, char* errmsg);

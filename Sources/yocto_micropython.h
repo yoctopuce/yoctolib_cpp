@@ -60,6 +60,7 @@ class YMicroPython; // forward declaration
 
 typedef void (*YMicroPythonValueCallback)(YMicroPython *func, const string& functionValue);
 typedef void (*YMicroPythonLogCallback)(YMicroPython *obj, const string& logline);
+
 #ifndef _Y_DEBUGMODE_ENUM
 #define _Y_DEBUGMODE_ENUM
 typedef enum {
@@ -282,10 +283,10 @@ public:
 
     /**
      * Returns the wait time before running the startup script on power on,
-     * between 0.1 second and 25 seconds.
+     * measured in seconds.
      *
      * @return a floating point number corresponding to the wait time before running the startup script on power on,
-     *         between 0.1 second and 25 seconds
+     *         measured in seconds
      *
      * On failure, throws an exception or returns YMicroPython::STARTUPDELAY_INVALID.
      */

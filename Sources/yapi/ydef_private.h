@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef_private.h 64144 2025-01-14 08:13:07Z seb $
+ * $Id: ydef_private.h 69925 2025-11-03 06:59:19Z mvuilleu $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -52,6 +52,15 @@ typedef struct {
     char name[OS_IFACE_NAME_MAX_LEN];
     int ifindex;
 } os_ifaces;
+
+
+#define BOOTLDR_NO_START                0
+#define BOOTLDR_RET_STARTED_FROM_APP    1
+#define BOOTLDR_RET_STARTED_FROM_NO_APP 2
+#define BOOTLDR_RET_STARTED_FROM_BUTTON 3
+#define BOOTLDR_RET_UPDATE_SUCCESS      4
+#define BOOTLDR_RET_UPDATE_FAILED       5
+#define BOOTLDR_PANIC                   6
 
 #if defined(WINDOWS_API)
     #if defined(__64BITS__)
@@ -122,7 +131,11 @@ typedef struct {
         #ifdef assert
         #undef assert
         #endif
+        #if defined(DEBUG) || defined(VIRTUAL_HUB)
         #define assert(cond)        YASSERT(cond,0)
+        #else
+        #define assert(cond)
+        #endif
     #else
         #define YPANIC              {dbglog("YPANIC:%s:%d\n",__FILENAME__ , __LINE__);}
         #define YPANIC_IRR(irr)     YPANIC

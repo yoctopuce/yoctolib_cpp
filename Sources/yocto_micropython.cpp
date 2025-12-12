@@ -426,10 +426,10 @@ int YMicroPython::set_startupDelay(double newval)
 
 /**
  * Returns the wait time before running the startup script on power on,
- * between 0.1 second and 25 seconds.
+ * measured in seconds.
  *
  * @return a floating point number corresponding to the wait time before running the startup script on power on,
- *         between 0.1 second and 25 seconds
+ *         measured in seconds
  *
  * On failure, throws an exception or returns YMicroPython::STARTUPDELAY_INVALID.
  */

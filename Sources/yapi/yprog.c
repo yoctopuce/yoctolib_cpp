@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 68921 2025-09-10 07:47:29Z seb $
+ * $Id: yprog.c 69675 2025-10-24 09:24:38Z seb $
  *
  * Implementation of firmware upgrade functions
  *
@@ -77,7 +77,7 @@
 void yProgInit(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
 {
     // BYN header must have an even number of bytes
-    YASSERT((sizeof(byn_head_multi)& 1) == 0, 0);
+    YASSERT((sizeof(byn_head_multi) & 1) == 0, 0);
 
     memset(fctx, 0, sizeof(FIRMWARE_CONTEXT));
     fctx->stepA = FLASH_DONE;
@@ -404,11 +404,11 @@ int SendDataPacket(BootloaderSt *dev, int program, u32 address, u8 *data, int si
     dev->pkt.prog.pkt.adress_low = address & 0xffff;
     dev->pkt.prog.pkt.addres_high = (address >> 16) & 0xff;
     if (IS_TEXAS_FAMILY(dev->devid_family)) {
-        if (size > MSP432E_MAX_INSTR_IN_PACKET) {
-            size = MSP432E_MAX_INSTR_IN_PACKET;
+        if (size > TEXAS_MAX_INSTR_IN_PACKET) {
+            size = TEXAS_MAX_INSTR_IN_PACKET;
         }
         if (size) {
-            memcpy(dev->pkt.prog.pkt.data, data, size * MSP432E_INSTR_LEN);
+            memcpy(dev->pkt.prog.pkt.data, data, size * TEXAS_INSTR_LEN);
         }
     } else {
         if (size > MAX_INSTR_IN_PACKET) {
@@ -638,20 +638,46 @@ static int uGetDeviceInfo(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
 #ifdef DEBUG_FIRMWARE
             ulog("PROG_INFO_EXT received\n");
 #endif
-            firm_dev->er_blk_size = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.er_blk_size);
-            firm_dev->pr_blk_size = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.pr_blk_size);
-            firm_dev->last_addr = DECODE_U32(firm_dev->pkt.prog.pktinfo_ext.last_addr);
-            firm_dev->settings_addr = DECODE_U32(firm_dev->pkt.prog.pktinfo_ext.settings_addr);
-            firm_dev->devid_family = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.devidl) >> 8;
-            firm_dev->devid_model = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.devidl) & 0xff;
-            firm_dev->devid_rev = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.devidh);
-            firm_dev->startconfig = DECODE_U32(firm_dev->pkt.prog.pktinfo_ext.config_start);
-            firm_dev->endofconfig = DECODE_U32(firm_dev->pkt.prog.pktinfo_ext.config_stop);
-            firm_dev->ext_jedec_id = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.ext_jedec_id);
-            firm_dev->ext_page_size = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.ext_page_size);
-            firm_dev->ext_total_pages = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.ext_total_pages);
-            firm_dev->first_code_page = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.first_code_page);
-            firm_dev->first_yfs3_page = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.first_yfs3_page);
+            if (firm_dev->pkt.prog.pktinfo_ext.version == 3) {
+                firm_dev->er_blk_size = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.v3.er_blk_size);
+                firm_dev->pr_blk_size = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.v3.pr_blk_size);
+                firm_dev->last_addr = DECODE_U32(firm_dev->pkt.prog.pktinfo_ext.v3.last_addr);
+                firm_dev->devid_family = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.v3.devidl) >> 8;
+                firm_dev->devid_model = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.v3.devidl) & 0xff;
+                firm_dev->ext_jedec_id = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.v3.ext_jedec_id);
+                firm_dev->ext_page_size = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.v3.ext_page_size);
+                firm_dev->ext_total_pages = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.v3.ext_total_pages);
+                firm_dev->first_code_page = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.v3.first_code_page);
+                firm_dev->first_yfs3_page = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.v3.first_yfs3_page);
+#ifndef EMBEDDED_API
+                memset(firm_dev->fw_rev, 0, YOCTO_FIRMWARE_LEN);
+                if (firm_dev->pkt.prog.pktinfo_ext.v3.fw_version.asBytes[0] != 0xff && firm_dev->pkt.prog.pktinfo_ext.v3.fw_version.asBytes[1] != 0xff &&
+                    firm_dev->pkt.prog.pktinfo_ext.v3.fw_version.asBytes[2] != 0xff && firm_dev->pkt.prog.pktinfo_ext.v3.fw_version.asBytes[3] != 0xff) {
+                    YSTRNCPY(firm_dev->fw_rev, YOCTO_FIRMWARE_LEN, firm_dev->pkt.prog.pktinfo_ext.v3.fw_version.data.buildVersion, sizeof(firm_dev->pkt.prog.pktinfo_ext.v3.fw_version.data.buildVersion));
+                }
+                firm_dev->yfsSignature = firm_dev->pkt.prog.pktinfo_ext.v3.fw_version.data.yfsSignature;
+                firm_dev->panic_origin = DECODE_U32(firm_dev->pkt.prog.pktinfo_ext.v3.panic_origin);
+                firm_dev->panic_irritant = DECODE_U32(firm_dev->pkt.prog.pktinfo_ext.v3.panic_irritant);
+                firm_dev->blr_result = DECODE_U32(firm_dev->pkt.prog.pktinfo_ext.v3.blr_result);
+                firm_dev->blr_start = DECODE_U32(firm_dev->pkt.prog.pktinfo_ext.v3.blr_start);
+#endif
+
+            } else {
+                firm_dev->er_blk_size = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.v2.er_blk_size);
+                firm_dev->pr_blk_size = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.v2.pr_blk_size);
+                firm_dev->last_addr = DECODE_U32(firm_dev->pkt.prog.pktinfo_ext.v2.last_addr);
+                firm_dev->settings_addr = DECODE_U32(firm_dev->pkt.prog.pktinfo_ext.v2.settings_addr);
+                firm_dev->devid_family = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.v2.devidl) >> 8;
+                firm_dev->devid_model = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.v2.devidl) & 0xff;
+                firm_dev->devid_rev = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.v2.devidh);
+                firm_dev->startconfig = DECODE_U32(firm_dev->pkt.prog.pktinfo_ext.v2.config_start);
+                firm_dev->endofconfig = DECODE_U32(firm_dev->pkt.prog.pktinfo_ext.v2.config_stop);
+                firm_dev->ext_jedec_id = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.v2.ext_jedec_id);
+                firm_dev->ext_page_size = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.v2.ext_page_size);
+                firm_dev->ext_total_pages = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.v2.ext_total_pages);
+                firm_dev->first_code_page = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.v2.first_code_page);
+                firm_dev->first_yfs3_page = DECODE_U16(firm_dev->pkt.prog.pktinfo_ext.v2.first_yfs3_page);
+            }
             uLogProgress(fctx, "Device info retrieved");
             fctx->stepB = 0;
             fctx->stepA = FLASH_VALIDATE_BYN;
@@ -721,6 +747,65 @@ const char *FLASH_DEVICE_STATE_STR[] = {
 
 #endif
 
+#ifndef EMBEDDED_API
+int getProgressPercent(PROGRESS_FLASH_PHASE phase, u32 cputype)
+{
+
+    if (phase == PHASE_FIND_DEV) {
+        return 2;
+    }
+    if (phase == PHASE_SUCCEEDED) {
+        return 100;
+    }
+
+
+    if (IS_TEXAS_FAMILY(cputype)) {
+        switch (phase) {
+        case PHASE_CONNECT:
+            return 2;
+        case PHASE_GET_INFO:
+            return 2;
+        case PHASE_VALIDATE_BYN:
+            return 3;
+        case PHASE_ERASE:
+            return 10;
+        case PHASE_DOFLASH:
+            return 70;
+        case PHASE_REBOOT:
+            return 71;
+        case PHASE_REBOOT_VALIDATE:
+            return 72;
+        case PHASE_AUTOFLASH:
+            return 72;
+        default:
+            return -1;
+        }
+    } else {
+        switch (phase) {
+        case PHASE_CONNECT:
+            return 2;
+        case PHASE_GET_INFO:
+            return 2;
+        case PHASE_VALIDATE_BYN:
+            return 3;
+        case PHASE_ERASE:
+            return 31;
+        case PHASE_DOFLASH:
+            return 85;
+        case PHASE_REBOOT:
+            return 95;
+        case PHASE_REBOOT_VALIDATE:
+            return 98;
+        case PHASE_AUTOFLASH:
+            return 98;
+        default:
+            return -1;
+        }
+    }
+    return 0;
+}
+#endif
+
 static int uFlashZone(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
 {
     u16 datasize;
@@ -740,18 +825,18 @@ static int uFlashZone(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
         YSTRCPY(msg, FLASH_ERRMSG_LEN, "Flash zone");
 #if defined(DEBUG_FIRMWARE)
 #ifdef EMBEDDED_API
-            {
-                char *p = msg + 10;
-                *p++ = ' ';
-                u16toa(fctx->currzone, p);
-                p += ystrlen(p);
-                *p++ = ':';
-                u32toa(fctx->zOfs, p);
-                p += ystrlen(p);
-            }
+        {
+            char *p = msg + 10;
+            *p++ = ' ';
+            u16toa(fctx->currzone, p);
+            p += ystrlen(p);
+            *p++ = ':';
+            u32toa(fctx->zOfs, p);
+            p += ystrlen(p);
+        }
 #else
         YSPRINTF(msg, FLASH_ERRMSG_LEN, "Flash zone %d:%d : %x(%x)", fctx->currzone, fctx->zOfs, fctx->bz.addr_page, fctx->bz.len);
-        dbglog("Flash zone %d:%x : %x(%x + %x)\n", fctx->currzone, fctx->zOfs, fctx->bz.addr_page, fctx->bz.len , sizeof(byn_zone));
+        dbglog("Flash zone %d:%x : %x(%x + %x)\n", fctx->currzone, fctx->zOfs, fctx->bz.addr_page, fctx->bz.len, sizeof(byn_zone));
 #endif
 #endif
         uLogProgress(fctx, msg);
@@ -761,8 +846,8 @@ static int uFlashZone(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
         }
         fctx->zOfs += sizeof(byn_zone);
         fctx->zNbInstr = fctx->bz.len / 3;
-        if(fctx->zNbInstr > (firm_dev->settings_addr-fctx->bz.addr_page)/2){
-            fctx->zNbInstr = (firm_dev->settings_addr-fctx->bz.addr_page)/2;
+        if (fctx->zNbInstr > (firm_dev->settings_addr - fctx->bz.addr_page) / 2) {
+            fctx->zNbInstr = (firm_dev->settings_addr - fctx->bz.addr_page) / 2;
         }
         fctx->stepB = 0;
         if (fctx->zNbInstr < (u32)firm_dev->pr_blk_size) {
@@ -778,7 +863,7 @@ static int uFlashZone(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
         memset(&firm_dev->pkt, 0, sizeof(USB_Packet));
         if (fctx->flags & YPROG_ONLY_VALIDATE) {
             firm_dev->pkt.prog.pkt.type = PROG_VERIF;
-        }else{
+        } else {
             firm_dev->pkt.prog.pkt.type = PROG_PROG;
         }
         firm_dev->pkt.prog.pkt.adress_low = DECODE_U16(fctx->bz.addr_page & 0xffff);
@@ -797,7 +882,8 @@ static int uFlashZone(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
         fctx->bz.len -= datasize;
         fctx->zNbInstr -= firm_dev->pkt.prog.pkt.size;
         fctx->stepB += firm_dev->pkt.prog.pkt.size;
-        fctx->progress = (s16)(PROGRESS_FLASH_ERASE + (PROGRESS_FLASH_DOFLASH - PROGRESS_FLASH_ERASE) * fctx->zOfs / fctx->len);
+
+        fctx->progress = (s16)(PROGRESS_FLASH_ERASE(firm_dev->devid_family) + (PROGRESS_FLASH_DOFLASH(firm_dev->devid_family) - PROGRESS_FLASH_ERASE(firm_dev->devid_family)) * fctx->zOfs / fctx->len);
 
         if (fctx->stepB >= firm_dev->pr_blk_size) {
             //look for confirmation
@@ -827,7 +913,7 @@ static int uFlashZone(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
         fctx->stepB = fctx->stepB - firm_dev->pr_blk_size;
         if (fctx->zNbInstr == 0) {
             fctx->zst = FLASH_ZONE_START;
-            fctx->zOfs +=  fctx->bz.len;
+            fctx->zOfs += fctx->bz.len;
             fctx->currzone++;
         } else {
             fctx->zst = FLASH_ZONE_PROG;
@@ -855,6 +941,7 @@ int uSendReboot(BootloaderSt *firm_dev, u16 signature)
     ypSendBootloaderCmd(firm_dev, NULL);
     return 1;
 }
+
 
 static int uSendErase(BootloaderSt *firm_dev, u16 firstPage, u16 nPages)
 {
@@ -941,11 +1028,11 @@ static int uFlashFlash(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
 #ifdef DEBUG_FIRMWARE
         {
             u32 page, pos;
-            GET_PROG_POS_PAGENO(firm_dev->pkt.prog.pkt_ext, page,  pos);
-            pos *=4;
-            dbglog("Flash at 0x%x:0x%04x (0x%x bytes) found at 0x%x (0x%x more in fw zone)\n",page, pos,
-              2*firm_dev->pkt.prog.pkt_ext.size, fctx->zOfs, fctx->bz.len);
-         }
+            GET_PROG_POS_PAGENO(firm_dev->pkt.prog.pkt_ext, page, pos);
+            pos *= 4;
+            dbglog("Flash at 0x%x:0x%04x (0x%x bytes) found at 0x%x (0x%x more in fw zone)\n", page, pos,
+                   2 * firm_dev->pkt.prog.pkt_ext.size, fctx->zOfs, fctx->bz.len);
+        }
 #endif
         uGetFirmware(fctx, fctx->zOfs, firm_dev->pkt.prog.pkt_ext.opt.data, 2*firm_dev->pkt.prog.pkt_ext.size);
         if (ypSendBootloaderCmd(firm_dev, NULL) < 0) {
@@ -994,8 +1081,8 @@ static int uFlashFlash(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
         GET_PROG_POS_PAGENO(firm_dev->pkt.prog.pkt_ext, pageno, pos);
 #ifdef DEBUG_FIRMWARE
         dbglog("Verif at 0x%x:0x%x (up to 0x%x bytes)\n", pageno,
-               pos <<2,
-               2*firm_dev->pkt.prog.pkt_ext.size);
+               pos << 2,
+               2 * firm_dev->pkt.prog.pkt_ext.size);
 #endif
         addr = pageno * firm_dev->ext_page_size + (pos << 2);
         YASSERT(addr >= fctx->bz.addr_page, addr);
@@ -1013,7 +1100,7 @@ static int uFlashFlash(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
             }
 #ifdef DEBUG_FIRMWARE
         } else {
-            dbglog("Skip verification for block at addr 0x%x (block ends at %x)\n", addr, fctx->bz.addr_page + fctx->stepB);
+                dbglog("Skip verification for block at addr 0x%x (block ends at %x)\n", addr, fctx->bz.addr_page + fctx->stepB);
 #endif
         }
         if ((addr & (firm_dev->ext_page_size - 1)) + 2 * (u32)firm_dev->pkt.prog.pkt_ext.size < (u32)firm_dev->ext_page_size) {
@@ -1021,7 +1108,7 @@ static int uFlashFlash(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
             return 0;
         }
         fctx->zOfs += fctx->stepB;
-        fctx->progress = (s16)(PROGRESS_FLASH_ERASE + (PROGRESS_FLASH_DOFLASH - PROGRESS_FLASH_ERASE) * fctx->zOfs / (BYN_HEAD_SIZE_V6 + fctx->bynHead.v6.ROM_total_size + fctx->bynHead.v6.FLA_total_size));
+        fctx->progress = (s16)(PROGRESS_FLASH_ERASE(firm_dev->devid_family) + (PROGRESS_FLASH_DOFLASH(firm_dev->devid_family) - PROGRESS_FLASH_ERASE(firm_dev->devid_family)) * fctx->zOfs / (BYN_HEAD_SIZE_V6 + fctx->bynHead.v6.ROM_total_size + fctx->bynHead.v6.FLA_total_size));
         fctx->bz.addr_page += fctx->stepB;
         fctx->bz.len -= fctx->stepB;
         if (fctx->bz.len > 0 && fctx->currzone < fctx->bynHead.v6.ROM_nb_zone &&
@@ -1087,7 +1174,7 @@ YPROG_RESULT uFlashDevice(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
 #endif
             return YPROG_DONE;
         }
-        fctx->progress = PROGRESS_FLASH_FIND_DEV;
+        fctx->progress = PROGRESS_FLASH_FIND_DEV(0);
         uLogProgress(fctx, "Device detected");
 
 #if defined(DEBUG_FIRMWARE) && defined(EMBEDDED_API)
@@ -1162,12 +1249,12 @@ YPROG_RESULT uFlashDevice(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
             fctx->stepA = FLASH_DISCONNECT;
             break;
         }
-        fctx->progress = PROGRESS_FLASH_VALIDATE_BYN;
+        fctx->progress = PROGRESS_FLASH_VALIDATE_BYN(firm_dev->devid_family);
         if (fctx->flags & YPROG_ONLY_VALIDATE) {
             // skip erase
             fctx->stepA = FLASH_DOFLASH;
             fctx->stepB = 0;
-        }else{
+        } else {
             fctx->stepA = FLASH_ERASE;
         }
 #ifndef EMBEDDED_API
@@ -1184,7 +1271,7 @@ YPROG_RESULT uFlashDevice(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
         fctx->zst = FLASH_ZONE_START;
         fctx->stepB = 0;
 #ifdef EMBEDDED_API
-        res = uSendCmd(firm_dev,PROG_ERASE);
+        res = uSendCmd(firm_dev, PROG_ERASE);
 #else
         if (firm_dev->ext_total_pages) {
             int npages = firm_dev->ext_total_pages - fctx->flashPage;
@@ -1194,8 +1281,8 @@ YPROG_RESULT uFlashDevice(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
             ulog(" pages still to erase\n");
 #endif
             if (npages > maxpages) npages = maxpages;
-            res = uSendErase(firm_dev,fctx->flashPage, npages);
-            if (res >0){
+            res = uSendErase(firm_dev, fctx->flashPage, npages);
+            if (res > 0) {
                 fctx->flashPage += npages;
             }
         } else {
@@ -1245,7 +1332,7 @@ YPROG_RESULT uFlashDevice(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
                     ulogU16((u16)(ytime() - pfctx->stepB));
                     ulog("\n");
 #endif
-                    fctx->progress = PROGRESS_FLASH_VALIDATE_BYN + ((PROGRESS_FLASH_ERASE - PROGRESS_FLASH_VALIDATE_BYN) * fctx->flashPage / firm_dev->ext_total_pages);
+                    fctx->progress = PROGRESS_FLASH_VALIDATE_BYN(firm_dev->devid_family) + ((PROGRESS_FLASH_ERASE(firm_dev->devid_family) - PROGRESS_FLASH_VALIDATE_BYN(firm_dev->devid_family)) * fctx->flashPage / firm_dev->ext_total_pages);
                     uLogProgress(fctx, "Erasing flash");
                     if (fctx->flashPage < firm_dev->ext_total_pages) {
                         fctx->stepA = FLASH_ERASE;
@@ -1299,7 +1386,7 @@ YPROG_RESULT uFlashDevice(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
         break;
 
     case FLASH_REBOOT:
-        fctx->progress = PROGRESS_FLASH_REBOOT;
+        fctx->progress = PROGRESS_FLASH_REBOOT(firm_dev->devid_family);
 #ifdef DEBUG_FIRMWARE
         ulog("Send reboot\n");
 #endif
@@ -1307,11 +1394,14 @@ YPROG_RESULT uFlashDevice(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
 #ifdef EMBEDDED_API
         res = ypBootloaderShutdown(firm_dev);
         if (res < 0) {
+
+
+
 #ifdef DEBUG_FIRMWARE
-            ulog("reboot failed\n");
+        ulog("reboot failed\n");
 #endif
-            YSTRCPY(fctx->errmsg,sizeof(fctx->errmsg),"Unable to reboot bootloader");
-            fctx->stepA = FLASH_DISCONNECT;
+        YSTRCPY(fctx->errmsg, sizeof(fctx->errmsg), "Unable to reboot bootloader");
+        fctx->stepA = FLASH_DISCONNECT;
         }
 #else
         uSendCmd(firm_dev, PROG_REBOOT);
@@ -1323,7 +1413,7 @@ YPROG_RESULT uFlashDevice(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
         break;
     case FLASH_REBOOT_VALIDATE:
         if (uGetBootloader(fctx->bynHead.h.serial, NULL) < 0) {
-            fctx->progress = PROGRESS_FLASH_REBOOT_VALIDATE;
+            fctx->progress = PROGRESS_FLASH_REBOOT_VALIDATE(firm_dev->devid_family);
 #ifdef DEBUG_FIRMWARE
             ulog("device not present\n");
 #endif
@@ -1358,9 +1448,43 @@ YPROG_RESULT uFlashDevice(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
         break;
 #ifndef EMBEDDED_API
     case FLASH_AUTOFLASH:
-        fctx->progress = PROGRESS_FLASH_AUTOFLASH;
+        fctx->progress = PROGRESS_FLASH_AUTOFLASH(firm_dev->devid_family);
         if (uSendReboot(firm_dev,START_AUTOFLASHER_SIGN) > 0) {
-            fctx->stepA = FLASH_SUCCEEDED;            
+            if (IS_TEXAS_FAMILY(firm_dev->devid_family)) {
+                fctx->timeout = ytime() + ZONE_VERIF_TIMEOUT;
+                fctx->stepA = FLASH_AUTOFLASH_MONITOR;
+            } else {
+                fctx->stepA = FLASH_SUCCEEDED;
+            }
+        }
+        break;
+    case FLASH_AUTOFLASH_MONITOR:
+        if (ypGetBootloaderReply(firm_dev, NULL) < 0) {
+            if ((s32)(fctx->timeout - ytime()) < 0) {
+#ifdef DEBUG_FIRMWARE
+                dbglog("Bootloader did not send autoflash progress\n");
+#endif
+                YSTRCPY(fctx->errmsg, FLASH_ERRMSG_LEN, "Bootloader did not send autoflash progress");
+                fctx->stepA = FLASH_DISCONNECT;
+                break;
+            }
+            break;
+        }
+        if (firm_dev->pkt.prog.pkt.type != PROG_INFO_EXT && firm_dev->pkt.prog.pktinfo_ext.version != 3) {
+            dbglog("Invalid pkt respond after autofl\n");
+            YSTRCPY(fctx->errmsg, FLASH_ERRMSG_LEN, "Invalid pkt respond after autofl");
+            fctx->stepA = FLASH_DISCONNECT;
+            break;
+        }
+        fctx->progress = (s16)(PROGRESS_FLASH_AUTOFLASH(firm_dev->devid_family) + (PROGRESS_FLASH_SUCCEEDED(firm_dev->devid_family) - PROGRESS_FLASH_AUTOFLASH(firm_dev->devid_family)) * firm_dev->pkt.prog.pktinfo_ext.v4.progress / firm_dev->pkt.prog.pktinfo_ext.v4.total);
+#ifdef DEBUG_FIRMWARE
+        {
+            int per = 100 * firm_dev->pkt.prog.pktinfo_ext.v4.progress / firm_dev->pkt.prog.pktinfo_ext.v4.total;
+            dbglog("autoflash 0x%x / 0x%x (%d%%)\n", firm_dev->pkt.prog.pktinfo_ext.v4.progress, firm_dev->pkt.prog.pktinfo_ext.v4.total, per);
+        }
+#endif
+        if (firm_dev->pkt.prog.pktinfo_ext.v4.progress >= firm_dev->pkt.prog.pktinfo_ext.v4.total) {
+            fctx->stepA = FLASH_SUCCEEDED;
         }
         break;
 #endif
@@ -1369,7 +1493,7 @@ YPROG_RESULT uFlashDevice(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
         ulog("Flash succeeded\n");
 #endif
         YSTRCPY(fctx->errmsg, sizeof(fctx->errmsg), "Flash succeeded");
-        fctx->progress = 100;
+        fctx->progress = PROGRESS_FLASH_SUCCEEDED(firm_dev->devid_family);
         fctx->stepA = FLASH_DISCONNECT;
     // intentionally no break
     case FLASH_DISCONNECT:
@@ -1458,6 +1582,65 @@ int yNetHubGetBootloaders(const char *hubserial, char *buffer, char *errmsg)
     subres = yapiHTTPRequestSyncDone_internal(&iohdl, NULL);
     YASSERT(!YISERR(subres), subres);
     return res;
+}
+
+// out_buff must be at least 16 char len
+static void decode_panic(u32 panic_code, char *out_buff)
+{
+    char *ptr;
+
+    out_buff[0] = 'A' + ((panic_code >> 26) & 0x1f);
+    out_buff[1] = 'A' + ((panic_code >> 21) & 0x1f);
+    out_buff[2] = 'A' + ((panic_code >> 16) & 0x1f);
+    out_buff[3] = ':';
+    ptr = out_buff + 4;
+    u32 lineNo = panic_code & 0xffff;
+    if (lineNo >= 10000) *ptr++ = '0' + (lineNo / 10000) % 10;
+    if (lineNo >= 1000) *ptr++ = '0' + (lineNo / 1000) % 10;
+    if (lineNo >= 100) *ptr++ = '0' + (lineNo / 100) % 10;
+    if (lineNo >= 10) *ptr++ = '0' + (lineNo / 10) % 10;
+    *ptr++ = '0' + lineNo % 10;
+    *ptr = 0;
+}
+
+YRETCODE yapiGetUSBBootloaderInfo(const char *serial, BootDevInfoSt *info, char *errmsg)
+{
+    BootloaderSt dev;
+    int res;
+
+    memset(info, 0, sizeof(BootDevInfoSt));
+    YSTRNCPY(info->serial, YOCTO_SERIAL_LEN, serial, YOCTO_SERIAL_LEN-1);
+    YPROPERR(yUSBGetBooloader(info->serial, NULL, &dev.iface, errmsg));
+    YPROPERR(yyySetup(&dev.iface,errmsg));
+    memset(&dev.pkt, 0, sizeof(USB_Prog_Packet));
+    dev.pkt.prog.pkt.type = PROG_INFO;
+    res = ypSendBootloaderCmd(&dev, errmsg);
+    if (!YISERR(res)) {
+        dev.pkt.prog.pkt.type = PROG_NOP;
+        res = BlockingRead(&dev, 1000, errmsg);
+        if (!YISERR(res)) {
+            info->bld_version = 1;
+            if (dev.pkt.prog.pktinfo.type == PROG_INFO_EXT) {
+                if (dev.pkt.prog.pktinfo_ext.version == 3) {
+                    info->bld_version = 2;
+                    decode_panic(DECODE_U32(dev.pkt.prog.pktinfo_ext.v3.panic_origin), info->panic_origin);
+                    info->panic_irritant = DECODE_U32(dev.pkt.prog.pktinfo_ext.v3.panic_irritant);
+                    info->blr_result = DECODE_U32(dev.pkt.prog.pktinfo_ext.v3.blr_result);
+                    info->blr_start = DECODE_U32(dev.pkt.prog.pktinfo_ext.v3.blr_start);
+                    if (dev.pkt.prog.pktinfo_ext.v3.fw_version.asBytes[0] != 0xff && dev.pkt.prog.pktinfo_ext.v3.fw_version.asBytes[1] != 0xff &&
+                        dev.pkt.prog.pktinfo_ext.v3.fw_version.asBytes[2] != 0xff && dev.pkt.prog.pktinfo_ext.v3.fw_version.asBytes[3] != 0xff) {
+                        memcpy(info->fw_rev, dev.pkt.prog.pktinfo_ext.v3.fw_version.data.buildVersion, YOCTO_FIRMWARE_LEN - 2);
+                    }
+                    info->yfsSignature = DECODE_U16(dev.pkt.prog.pktinfo_ext.v3.fw_version.data.yfsSignature);
+                }
+            }
+        }
+    }
+    yyyPacketShutdown(&dev.iface);
+    if (YISERR(res)) {
+        return res;
+    }
+    return YAPI_SUCCESS;
 }
 
 
@@ -1688,7 +1871,7 @@ static int upload(const char *hubserial, const char *subpath, const char *filena
     p = buffer + YSTRLEN(buffer);
     memcpy(p, data, data_len);
     p += data_len;
-    YASSERT(p - buffer < buffer_size, p-buffer);
+    YASSERT(p - buffer < buffer_size, p - buffer);
     buffer_size -= (int)(p - buffer);
     YSTRCPY(p, buffer_size, "\r\n--");
     YSTRCAT(p, buffer_size, boundary);
@@ -2025,7 +2208,7 @@ static void* yFirmwareUpdate_thread(void *ctx)
         do {
             u_flash_res = uFlashDevice(yContext->fctx, yContext->firm_dev);
             if (u_flash_res != YPROG_DONE) {
-                setOsGlobalProgress(yContext->fctx, 40 + yContext->fctx->progress/2, yContext->fctx->errmsg);
+                setOsGlobalProgress(yContext->fctx, 40 + yContext->fctx->progress / 2, yContext->fctx->errmsg);
                 yApproximateSleep(0);
             }
         } while (u_flash_res != YPROG_DONE);
@@ -2044,7 +2227,7 @@ static void* yFirmwareUpdate_thread(void *ctx)
             goto exit_and_free;
         }
         for (i = 0; i < 8; i++) {
-            setOsGlobalProgress(yContext->fctx, 50 + i*5, "Flash firmware");
+            setOsGlobalProgress(yContext->fctx, 50 + i * 5, "Flash firmware");
             yApproximateSleep(1000);
         }
         break;
@@ -2435,5 +2618,51 @@ YRETCODE yapiUpdateFirmware_internal(const char *serial, const char *firmwarePat
     yLeaveCriticalSection(&yContext->fctx->cs);
     return res;
 }
+
+
+YRETCODE yapiGetBootloadersDevsEx(BootDevInfoSt *buffer, unsigned int maxNbInfo, unsigned int *totalBootladers, char *errmsg)
+{
+    int nbifaces = 0;
+    yInterfaceSt *iface;
+    yInterfaceSt *runifaces = NULL;
+    int i;
+    u32 totalBoot, copyedBoot;
+    BootDevInfoSt *info = buffer;
+    YRETCODE res;
+
+    if (!yContext)
+        return YERR(YAPI_NOT_INITIALIZED);
+
+    if ((yContext->detecttype & Y_DETECT_USB) == 0) {
+        return YERRMSG(YAPI_INVALID_ARGUMENT, "You must init the yAPI with Y_DETECT_USB flag");
+    }
+
+    if (YISERR(res = (YRETCODE)yyyUSBGetInterfaces(&runifaces, &nbifaces, errmsg))) {
+        return res;
+    }
+
+    totalBoot = copyedBoot = 0;
+
+    for (i = 0, iface = runifaces; i < nbifaces; i++, iface++) {
+        if (iface->deviceid != YOCTO_DEVID_BOOTLOADER)
+            continue;
+
+        if (buffer && copyedBoot < maxNbInfo) {
+            YPROPERR(yapiGetUSBBootloaderInfo(iface->serial, info, errmsg));
+            info++;
+            copyedBoot++;
+        }
+        totalBoot++;
+    }
+    // free all tmp ifaces
+    if (runifaces) {
+        yFree(runifaces);
+    }
+    if (totalBootladers)
+        *totalBootladers = totalBoot;
+
+    return (YRETCODE)copyedBoot;
+}
+
 
 #endif

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 68466 2025-08-19 17:31:45Z mvuilleu $
+ * $Id: yocto_api.cpp 70666 2025-12-09 10:26:00Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -937,9 +937,21 @@ string YJSONObject::getKeyFromIdx(int i)
 {
     return _keys[i];
 }
+ YCalibCtx * YDataStream::ycalib_ctx(const string& str, yCalibrationHandler calhdl, int caltyp, const vector<int> & param, const vector<double>& calraw, const vector<double> & calref)
+{
+    _cal_stat.src = str;
+    _cal_stat.hdl = calhdl;
+    _cal_stat.typ = caltyp;
+    _cal_stat.par = param;
+    _cal_stat.raw = calraw;
+    _cal_stat.cal = calref;
+    return &_cal_stat;
+}
 
 
 YDataStream::YDataStream(YFunction *parent):
+    _cal_stat(YCalibCtx()),
+    _cal(NULL),
     //--- (generated code: YDataStream initialization)
     _parent(NULL)
     ,_runNo(0)
@@ -955,7 +967,6 @@ YDataStream::YDataStream(YFunction *parent):
     ,_minVal(0.0)
     ,_avgVal(0.0)
     ,_maxVal(0.0)
-    ,_caltyp(0)
     ,_isLoaded(0)
 //--- (end of generated code: YDataStream initialization)
 {
@@ -965,6 +976,8 @@ YDataStream::YDataStream(YFunction *parent):
 
 // YDataStream constructor for the new datalogger
 YDataStream::YDataStream(YFunction *parent, YDataSet &dataset, const vector<int> &encoded):
+    _cal_stat(YCalibCtx()),
+    _cal(NULL),
     //--- (generated code: YDataStream initialization)
     _parent(NULL)
     ,_runNo(0)
@@ -980,7 +993,6 @@ YDataStream::YDataStream(YFunction *parent, YDataSet &dataset, const vector<int>
     ,_minVal(0.0)
     ,_avgVal(0.0)
     ,_maxVal(0.0)
-    ,_caltyp(0)
     ,_isLoaded(0)
 //--- (end of generated code: YDataStream initialization)
 {
@@ -992,9 +1004,11 @@ YDataStream::YDataStream(YFunction *parent, YDataSet &dataset, const vector<int>
 YDataStream::~YDataStream()
 {
     _columnNames.clear();
-    _calpar.clear();
-    _calraw.clear();
-    _calref.clear();
+    if (_cal !=NULL) {
+        delete _cal;
+        _cal = NULL;
+    }
+
     _values.clear();
 }
 
@@ -1554,15 +1568,59 @@ int YFirmwareUpdate::startUpdate(void)
 // static attributes
 
 
+int YDataStream::_parseCalibArr(vector<int> iCalib)
+{
+    int caltyp = 0;
+    yCalibrationHandler calhdl;
+    int maxpos = 0;
+    int position = 0;
+    vector<int> calpar;
+    vector<double> calraw;
+    vector<double> calref;
+    double fRaw = 0.0;
+    double fRef = 0.0;
+    caltyp = (iCalib[0] / 1000);
+    if (caltyp < YOCTO_CALIB_TYPE_OFS) {
+        // Unknown calibration type: calibrated value will be provided by the device
+        _cal = NULL;
+        return YAPI_SUCCESS;
+    }
+    calhdl = YAPI::_getCalibrationHandler(caltyp);
+    if (!(calhdl != NULL)) {
+        // Unknown calibration type: calibrated value will be provided by the device
+        _cal = NULL;
+        return YAPI_SUCCESS;
+    }
+    // New 32 bits text format
+    maxpos = (int)iCalib.size();
+    calpar.clear();
+    position = 1;
+    while (position < maxpos) {
+        calpar.push_back(iCalib[position]);
+        position = position + 1;
+    }
+    calraw.clear();
+    calref.clear();
+    position = 1;
+    while (position + 1 < maxpos) {
+        fRaw = iCalib[position];
+        fRaw = fRaw / 1000.0;
+        fRef = iCalib[position + 1];
+        fRef = fRef / 1000.0;
+        calraw.push_back(fRaw);
+        calref.push_back(fRef);
+        position = position + 2;
+    }
+    _cal = this->ycalib_ctx("", calhdl, caltyp, calpar, calraw, calref);
+    return YAPI_SUCCESS;
+}
+
 int YDataStream::_initFromDataSet(YDataSet* dataset,vector<int> encoded)
 {
     int val = 0;
-    int i = 0;
-    int maxpos = 0;
     int ms_offset = 0;
     int samplesPerHour = 0;
-    double fRaw = 0.0;
-    double fRef = 0.0;
+    int caltyp = 0;
     vector<int> iCalib;
     // decode sequence header to extract data
     _runNo = encoded[0] + ((encoded[1] << 16));
@@ -1607,28 +1665,11 @@ int YDataStream::_initFromDataSet(YDataSet* dataset,vector<int> encoded)
     }
     // precompute decoding parameters
     iCalib = dataset->_get_calibration();
-    _caltyp = iCalib[0];
-    if (_caltyp != 0) {
-        _calhdl = YAPI::_getCalibrationHandler(_caltyp);
-        maxpos = (int)iCalib.size();
-        _calpar.clear();
-        _calraw.clear();
-        _calref.clear();
-        i = 1;
-        while (i < maxpos) {
-            _calpar.push_back(iCalib[i]);
-            i = i + 1;
-        }
-        i = 1;
-        while (i + 1 < maxpos) {
-            fRaw = iCalib[i];
-            fRaw = fRaw / 1000.0;
-            fRef = iCalib[i + 1];
-            fRef = fRef / 1000.0;
-            _calraw.push_back(fRaw);
-            _calref.push_back(fRef);
-            i = i + 2;
-        }
+    caltyp = iCalib[0];
+    if (caltyp == 0) {
+        _cal = NULL;
+    } else {
+        this->_parseCalibArr(iCalib);
     }
     // preload column names for backward-compatibility
     _functionId = dataset->get_functionId();
@@ -1735,12 +1776,9 @@ int YDataStream::loadStream(void)
 double YDataStream::_decodeVal(int w)
 {
     double val = 0.0;
-    val = w;
-    val = val / 1000.0;
-    if (_caltyp != 0) {
-        if (_calhdl != NULL) {
-            val = _calhdl(val, _caltyp, _calpar, _calraw, _calref);
-        }
+    val = (w) / 1000.0;
+    if (!(_cal == NULL)) {
+        val = _cal->hdl(val, _cal->typ, _cal->par, _cal->raw, _cal->cal);
     }
     return val;
 }
@@ -1748,12 +1786,9 @@ double YDataStream::_decodeVal(int w)
 double YDataStream::_decodeAvg(int dw,int count)
 {
     double val = 0.0;
-    val = dw;
-    val = val / 1000.0;
-    if (_caltyp != 0) {
-        if (_calhdl != NULL) {
-            val = _calhdl(val, _caltyp, _calpar, _calraw, _calref);
-        }
+    val = (dw) / 1000.0;
+    if (!(_cal == NULL)) {
+        val = _cal->hdl(val, _cal->typ, _cal->par, _cal->raw, _cal->cal);
     }
     return val;
 }
@@ -1807,7 +1842,7 @@ int YDataStream::get_startTime(void)
  */
 s64 YDataStream::get_startTimeUTC(void)
 {
-    return (int) floor(_startTime+0.5);
+    return (s64) floor(_startTime+0.5);
 }
 
 /**
@@ -3717,6 +3752,25 @@ string YFunction::get_serialNumber(void)
 int YFunction::_parserHelper(void)
 {
     return 0;
+}
+
+bool YFunction::_is_valid_pass(string passwd)
+{
+    string tmp;
+    if ((int)(passwd).length() > YAPI_HASH_BUF_SIZE) {
+        tmp = YapiWrapper::ysprintf("Password too long (max %d chars) :%s",YAPI_HASH_BUF_SIZE,passwd.c_str());
+        this->_throw(YAPI_INVALID_ARGUMENT, tmp);
+        return false;
+    }
+    if (_ystrpos(passwd, "@") >=0) {
+        this->_throw(YAPI_INVALID_ARGUMENT, "Character @ is not allowed in password");
+        return false;
+    }
+    if (_ystrpos(passwd, "/") >=0) {
+        this->_throw(YAPI_INVALID_ARGUMENT, "Character / is not allowed in password");
+        return false;
+    }
+    return true;
 }
 
 YFunction *YFunction::nextFunction(void)
@@ -8438,7 +8492,9 @@ string YModule::functionBaseType(int functionIndex)
 
 
 YSensor::YSensor(const string &func): YFunction(func)
-                                      //--- (generated code: YSensor initialization)
+    ,_cal_stat(YCalibCtx())
+    ,_cal(NULL)
+//--- (generated code: YSensor initialization)
     ,_unit(UNIT_INVALID)
     ,_currentValue(CURRENTVALUE_INVALID)
     ,_lowestValue(LOWESTVALUE_INVALID)
@@ -8452,16 +8508,25 @@ YSensor::YSensor(const string &func): YFunction(func)
     ,_sensorState(SENSORSTATE_INVALID)
     ,_valueCallbackSensor(NULL)
     ,_timedReportCallbackSensor(NULL)
-    ,_prevTimedReport(0.0)
+    ,_prevTR(0.0)
     ,_iresol(0.0)
-    ,_offset(0.0)
-    ,_scale(0.0)
-    ,_decexp(0.0)
-    ,_caltyp(0)
 //--- (end of generated code: YSensor initialization)
+
 {
     _className = "Sensor";
 }
+
+ YCalibCtx * YSensor::ycalib_ctx(const string& str, yCalibrationHandler calhdl, int caltyp, const vector<int> & param, const vector<double>& calraw, const vector<double> & calref)
+{
+    _cal_stat.src = str;
+    _cal_stat.hdl = calhdl;
+    _cal_stat.typ = caltyp;
+    _cal_stat.par = param;
+    _cal_stat.raw = calraw;
+    _cal_stat.cal = calref;
+    return &_cal_stat;
+}
+
 
 YSensor::~YSensor()
 {
@@ -8578,12 +8643,18 @@ double YSensor::get_currentValue(void)
                 }
             }
         }
-        res = this->_applyCalibration(_currentRawValue);
-        if (res == YSensor::CURRENTVALUE_INVALID) {
+        if (_cal == NULL) {
             res = _currentValue;
+        } else {
+            res = this->_applyCalibration(_currentRawValue);
         }
-        res = res * _iresol;
-        res = floor(res+0.5) / _iresol;
+        if (res == YSensor::CURRENTVALUE_INVALID) {
+            {
+                yLeaveCriticalSection(&_this_cs);
+                return res;
+            }
+        }
+        res = floor(res * _iresol+0.5) / _iresol;
     } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
@@ -8640,8 +8711,7 @@ double YSensor::get_lowestValue(void)
                 }
             }
         }
-        res = _lowestValue * _iresol;
-        res = floor(res+0.5) / _iresol;
+        res = floor(_lowestValue * _iresol+0.5) / _iresol;
     } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
@@ -8698,8 +8768,7 @@ double YSensor::get_highestValue(void)
                 }
             }
         }
-        res = _highestValue * _iresol;
-        res = floor(res+0.5) / _iresol;
+        res = floor(_highestValue * _iresol+0.5) / _iresol;
     } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
@@ -9143,120 +9212,22 @@ int YSensor::_invokeValueCallback(string value)
 
 int YSensor::_parserHelper(void)
 {
-    int position = 0;
-    int maxpos = 0;
-    vector<int> iCalib;
-    int iRaw = 0;
-    int iRef = 0;
-    double fRaw = 0.0;
-    double fRef = 0.0;
-    _caltyp = -1;
-    _scale = -1;
-    _calpar.clear();
-    _calraw.clear();
-    _calref.clear();
+    string calibStr;
     // Store inverted resolution, to provide better rounding
     if (_resolution > 0) {
         _iresol = floor(1.0 / _resolution+0.5);
     } else {
         _iresol = 10000;
-        _resolution = 0.0001;
     }
-    // Old format: supported when there is no calibration
-    if (_calibrationParam == "" || _calibrationParam == "0") {
-        _caltyp = 0;
+    // Shortcut when there is no calibration parameter
+    calibStr = _calibrationParam;
+    if (calibStr == "0," || calibStr == "" || calibStr == "0") {
+        _cal = NULL;
         return 0;
     }
-    if (_ystrpos(_calibrationParam, ",") >= 0) {
-        // Plain text format
-        iCalib = YAPI::_decodeFloats(_calibrationParam);
-        _caltyp = (iCalib[0] / 1000);
-        if (_caltyp > 0) {
-            if (_caltyp < YOCTO_CALIB_TYPE_OFS) {
-                // Unknown calibration type: calibrated value will be provided by the device
-                _caltyp = -1;
-                return 0;
-            }
-            _calhdl = YAPI::_getCalibrationHandler(_caltyp);
-            if (!(_calhdl != NULL)) {
-                // Unknown calibration type: calibrated value will be provided by the device
-                _caltyp = -1;
-                return 0;
-            }
-        }
-        // New 32 bits text format
-        _offset = 0;
-        _scale = 1000;
-        maxpos = (int)iCalib.size();
-        _calpar.clear();
-        position = 1;
-        while (position < maxpos) {
-            _calpar.push_back(iCalib[position]);
-            position = position + 1;
-        }
-        _calraw.clear();
-        _calref.clear();
-        position = 1;
-        while (position + 1 < maxpos) {
-            fRaw = iCalib[position];
-            fRaw = fRaw / 1000.0;
-            fRef = iCalib[position + 1];
-            fRef = fRef / 1000.0;
-            _calraw.push_back(fRaw);
-            _calref.push_back(fRef);
-            position = position + 2;
-        }
-    } else {
-        // Recorder-encoded format, including encoding
-        iCalib = YAPI::_decodeWords(_calibrationParam);
-        // In case of unknown format, calibrated value will be provided by the device
-        if ((int)iCalib.size() < 2) {
-            _caltyp = -1;
-            return 0;
-        }
-        // Save variable format (scale for scalar, or decimal exponent)
-        _offset = 0;
-        _scale = 1;
-        _decexp = 1.0;
-        position = iCalib[0];
-        while (position > 0) {
-            _decexp = _decexp * 10;
-            position = position - 1;
-        }
-        // Shortcut when there is no calibration parameter
-        if ((int)iCalib.size() == 2) {
-            _caltyp = 0;
-            return 0;
-        }
-        _caltyp = iCalib[2];
-        _calhdl = YAPI::_getCalibrationHandler(_caltyp);
-        // parse calibration points
-        if (_caltyp <= 10) {
-            maxpos = _caltyp;
-        } else {
-            if (_caltyp <= 20) {
-                maxpos = _caltyp - 10;
-            } else {
-                maxpos = 5;
-            }
-        }
-        maxpos = 3 + 2 * maxpos;
-        if (maxpos > (int)iCalib.size()) {
-            maxpos = (int)iCalib.size();
-        }
-        _calpar.clear();
-        _calraw.clear();
-        _calref.clear();
-        position = 3;
-        while (position + 1 < maxpos) {
-            iRaw = iCalib[position];
-            iRef = iCalib[position + 1];
-            _calpar.push_back(iRaw);
-            _calpar.push_back(iRef);
-            _calraw.push_back(YAPI::_decimalToDouble(iRaw));
-            _calref.push_back(YAPI::_decimalToDouble(iRef));
-            position = position + 2;
-        }
+    // Parse calibration parameters only if they have changed
+    if (_cal == NULL || !(_cal->src == calibStr)) {
+        this->_parseCalibStr(calibStr);
     }
     return 0;
 }
@@ -9271,10 +9242,11 @@ int YSensor::_parserHelper(void)
  */
 bool YSensor::isSensorReady(void)
 {
-    if (!(this->isOnline())) {
-        return false;
-    }
-    if (!(_sensorState == 0)) {
+    try {
+        if (this->get_sensorState() != 0) {
+            return false;
+        }
+    } catch (std::exception&) {
         return false;
     }
     return true;
@@ -9302,6 +9274,101 @@ YDataLogger* YSensor::get_dataLogger(void)
     hwid = serial + ".dataLogger";
     logger = YDataLogger::FindDataLogger(hwid);
     return logger;
+}
+
+int YSensor::_parseCalibStr(string calibStr)
+{
+    vector<int> iCalib;
+    int caltyp = 0;
+    yCalibrationHandler calhdl;
+    int maxpos = 0;
+    int position = 0;
+    vector<int> calpar;
+    vector<double> calraw;
+    vector<double> calref;
+    double fRaw = 0.0;
+    double fRef = 0.0;
+    int iRaw = 0;
+    int iRef = 0;
+    if (_ystrpos(calibStr, ",") >= 0) {
+        // Plain text format
+        iCalib = YAPI::_decodeFloats(calibStr);
+        caltyp = (iCalib[0] / 1000);
+        if (caltyp < YOCTO_CALIB_TYPE_OFS) {
+            // Unknown calibration type: calibrated value will be provided by the device
+            _cal = NULL;
+            return YAPI_SUCCESS;
+        }
+        calhdl = YAPI::_getCalibrationHandler(caltyp);
+        if (!(calhdl != NULL)) {
+            // Unknown calibration type: calibrated value will be provided by the device
+            _cal = NULL;
+            return YAPI_SUCCESS;
+        }
+        // New 32 bits text format
+        maxpos = (int)iCalib.size();
+        calpar.clear();
+        position = 1;
+        while (position < maxpos) {
+            calpar.push_back(iCalib[position]);
+            position = position + 1;
+        }
+        calraw.clear();
+        calref.clear();
+        position = 1;
+        while (position + 1 < maxpos) {
+            fRaw = iCalib[position];
+            fRaw = fRaw / 1000.0;
+            fRef = iCalib[position + 1];
+            fRef = fRef / 1000.0;
+            calraw.push_back(fRaw);
+            calref.push_back(fRef);
+            position = position + 2;
+        }
+    } else {
+        // Old recorder-encoded format, including encoding
+        iCalib = YAPI::_decodeWords(calibStr);
+        if ((int)iCalib.size() <= 2) {
+            // Unknown calibration type: calibrated value will be provided by the device
+            _cal = NULL;
+            return YAPI_SUCCESS;
+        }
+        caltyp = iCalib[2];
+        calhdl = YAPI::_getCalibrationHandler(caltyp);
+        if (!(calhdl != NULL)) {
+            // Unknown calibration type: calibrated value will be provided by the device
+            _cal = NULL;
+            return YAPI_SUCCESS;
+        }
+        if (caltyp <= 10) {
+            maxpos = caltyp;
+        } else {
+            if (caltyp <= 20) {
+                maxpos = caltyp - 10;
+            } else {
+                maxpos = 5;
+            }
+        }
+        maxpos = 3 + 2 * maxpos;
+        if (maxpos > (int)iCalib.size()) {
+            maxpos = (int)iCalib.size();
+        }
+        calpar.clear();
+        calraw.clear();
+        calref.clear();
+        position = 3;
+        while (position + 1 < maxpos) {
+            iRaw = iCalib[position];
+            iRef = iCalib[position + 1];
+            calpar.push_back(iRaw);
+            calpar.push_back(iRef);
+            calraw.push_back(YAPI::_decimalToDouble(iRaw));
+            calref.push_back(YAPI::_decimalToDouble(iRef));
+            position = position + 2;
+        }
+    }
+    _cal = this->ycalib_ctx(calibStr, calhdl, caltyp, calpar, calraw, calref);
+    return YAPI_SUCCESS;
 }
 
 /**
@@ -9467,7 +9534,7 @@ int YSensor::loadCalibrationPoints(vector<double>& rawValues,vector<double>& ref
     // Load function parameters if not yet loaded
     yEnterCriticalSection(&_this_cs);
     try {
-        if ((_scale == 0) || (_cacheExpiration <= YAPI::GetTickCount())) {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
             if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
                 {
                     yLeaveCriticalSection(&_this_cs);
@@ -9475,20 +9542,19 @@ int YSensor::loadCalibrationPoints(vector<double>& rawValues,vector<double>& ref
                 }
             }
         }
-        if (_caltyp < 0) {
-            this->_throw(YAPI_NOT_SUPPORTED, "Calibration parameters format mismatch. Please upgrade your library or firmware.");
+        if (_cal == NULL) {
             {
                 yLeaveCriticalSection(&_this_cs);
-                return YAPI_NOT_SUPPORTED;
+                return YAPI_SUCCESS;
             }
         }
         rawValues.clear();
         refValues.clear();
-        for (unsigned ii_0 = 0; ii_0 < _calraw.size(); ii_0++) {
-            rawValues.push_back(_calraw[ii_0]);
+        for (unsigned ii_0 = 0; ii_0 < _cal->raw.size(); ii_0++) {
+            rawValues.push_back(_cal->raw[ii_0]);
         }
-        for (unsigned ii_1 = 0; ii_1 < _calref.size(); ii_1++) {
-            refValues.push_back(_calref[ii_1]);
+        for (unsigned ii_1 = 0; ii_1 < _cal->cal.size(); ii_1++) {
+            refValues.push_back(_cal->cal[ii_1]);
         }
     } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
@@ -9512,18 +9578,7 @@ string YSensor::_encodeCalibrationPoints(vector<double> rawValues,vector<double>
     if (npt == 0) {
         return "0";
     }
-    // Load function parameters if not yet loaded
-    if (_scale == 0) {
-        if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
-            return YAPI_INVALID_STRING;
-        }
-    }
-    // Detect old firmware
-    if ((_caltyp < 0) || (_scale < 0)) {
-        this->_throw(YAPI_NOT_SUPPORTED, "Calibration parameters format mismatch. Please upgrade your library or firmware.");
-        return "0";
-    }
-    // 32-bit fixed-point encoding
+    // Encode using newer 32-bit fixed-point method
     res = YapiWrapper::ysprintf("%d",YOCTO_CALIB_TYPE_OFS);
     idx = 0;
     while (idx < npt) {
@@ -9535,19 +9590,13 @@ string YSensor::_encodeCalibrationPoints(vector<double> rawValues,vector<double>
 
 double YSensor::_applyCalibration(double rawValue)
 {
+    if (_cal == NULL) {
+        return rawValue;
+    }
     if (rawValue == Y_CURRENTVALUE_INVALID) {
         return Y_CURRENTVALUE_INVALID;
     }
-    if (_caltyp == 0) {
-        return rawValue;
-    }
-    if (_caltyp < 0) {
-        return Y_CURRENTVALUE_INVALID;
-    }
-    if (!(_calhdl != NULL)) {
-        return Y_CURRENTVALUE_INVALID;
-    }
-    return _calhdl(rawValue, _caltyp, _calpar, _calraw, _calref);
+    return _cal->hdl(rawValue, _cal->typ, _cal->par, _cal->raw, _cal->cal);
 }
 
 YMeasure YSensor::_decodeTimedReport(double timestamp,double duration,vector<int> report)
@@ -9568,10 +9617,10 @@ YMeasure YSensor::_decodeTimedReport(double timestamp,double duration,vector<int
     if (duration > 0) {
         startTime = timestamp - duration;
     } else {
-        startTime = _prevTimedReport;
+        startTime = _prevTR;
     }
     endTime = timestamp;
-    _prevTimedReport = endTime;
+    _prevTR = endTime;
     if (startTime == 0) {
         startTime = endTime;
     }
@@ -9592,10 +9641,8 @@ YMeasure YSensor::_decodeTimedReport(double timestamp,double duration,vector<int
             avgRaw = avgRaw - poww;
         }
         avgVal = avgRaw / 1000.0;
-        if (_caltyp != 0) {
-            if (_calhdl != NULL) {
-                avgVal = _calhdl(avgVal, _caltyp, _calpar, _calraw, _calref);
-            }
+        if (!(_cal == NULL)) {
+            avgVal = _cal->hdl(avgVal, _cal->typ, _cal->par, _cal->raw, _cal->cal);
         }
         minVal = avgVal;
         maxVal = avgVal;
@@ -9641,12 +9688,10 @@ YMeasure YSensor::_decodeTimedReport(double timestamp,double duration,vector<int
         avgVal = avgRaw / 1000.0;
         minVal = minRaw / 1000.0;
         maxVal = maxRaw / 1000.0;
-        if (_caltyp != 0) {
-            if (_calhdl != NULL) {
-                avgVal = _calhdl(avgVal, _caltyp, _calpar, _calraw, _calref);
-                minVal = _calhdl(minVal, _caltyp, _calpar, _calraw, _calref);
-                maxVal = _calhdl(maxVal, _caltyp, _calpar, _calraw, _calref);
-            }
+        if (!(_cal == NULL)) {
+            avgVal = _cal->hdl(avgVal, _cal->typ, _cal->par, _cal->raw, _cal->cal);
+            minVal = _cal->hdl(minVal, _cal->typ, _cal->par, _cal->raw, _cal->cal);
+            maxVal = _cal->hdl(maxVal, _cal->typ, _cal->par, _cal->raw, _cal->cal);
         }
     }
     return YMeasure(startTime,endTime,minVal,avgVal,maxVal);
@@ -9656,10 +9701,8 @@ double YSensor::_decodeVal(int w)
 {
     double val = 0.0;
     val = w;
-    if (_caltyp != 0) {
-        if (_calhdl != NULL) {
-            val = _calhdl(val, _caltyp, _calpar, _calraw, _calref);
-        }
+    if (!(_cal == NULL)) {
+        val = _cal->hdl(val, _cal->typ, _cal->par, _cal->raw, _cal->cal);
     }
     return val;
 }
@@ -9668,10 +9711,8 @@ double YSensor::_decodeAvg(int dw)
 {
     double val = 0.0;
     val = dw;
-    if (_caltyp != 0) {
-        if (_calhdl != NULL) {
-            val = _calhdl(val, _caltyp, _calpar, _calraw, _calref);
-        }
+    if (!(_cal == NULL)) {
+        val = _cal->hdl(val, _cal->typ, _cal->par, _cal->raw, _cal->cal);
     }
     return val;
 }
@@ -10317,3 +10358,5 @@ YDataLogger *YDataLogger::FirstDataLogger(void)
 
 //--- (generated code: YDataLogger functions)
 //--- (end of generated code: YDataLogger functions)
+
+

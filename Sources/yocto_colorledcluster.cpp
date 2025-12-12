@@ -1082,7 +1082,7 @@ int YColorLedCluster::hslArrayOfs_move(int ledIndex,vector<int> hslList,int dela
  */
 string YColorLedCluster::get_rgbColorBuffer(int ledIndex,int count)
 {
-    return this->_download(YapiWrapper::ysprintf("rgb.bin?typ=0&pos=%d&len=%d",3*ledIndex,3*count));
+    return this->_download(YapiWrapper::ysprintf("rgb.bin?typ=%d&pos=%d&len=%d",0,3*ledIndex,3*count));
 }
 
 /**
@@ -1106,7 +1106,7 @@ vector<int> YColorLedCluster::get_rgbColorArray(int ledIndex,int count)
     int g = 0;
     int b = 0;
 
-    buff = this->_download(YapiWrapper::ysprintf("rgb.bin?typ=0&pos=%d&len=%d",3*ledIndex,3*count));
+    buff = this->_download(YapiWrapper::ysprintf("rgb.bin?typ=%d&pos=%d&len=%d",0,3*ledIndex,3*count));
     res.clear();
     idx = 0;
     while (idx < count) {
@@ -1140,7 +1140,7 @@ vector<int> YColorLedCluster::get_rgbColorArrayAtPowerOn(int ledIndex,int count)
     int g = 0;
     int b = 0;
 
-    buff = this->_download(YapiWrapper::ysprintf("rgb.bin?typ=4&pos=%d&len=%d",3*ledIndex,3*count));
+    buff = this->_download(YapiWrapper::ysprintf("rgb.bin?typ=%d&pos=%d&len=%d",4,3*ledIndex,3*count));
     res.clear();
     idx = 0;
     while (idx < count) {
@@ -1172,7 +1172,7 @@ vector<int> YColorLedCluster::get_linkedSeqArray(int ledIndex,int count)
     int idx = 0;
     int seq = 0;
 
-    buff = this->_download(YapiWrapper::ysprintf("rgb.bin?typ=1&pos=%d&len=%d",ledIndex,count));
+    buff = this->_download(YapiWrapper::ysprintf("rgb.bin?typ=%d&pos=%d&len=%d",1,ledIndex,count));
     res.clear();
     idx = 0;
     while (idx < count) {
@@ -1205,7 +1205,7 @@ vector<int> YColorLedCluster::get_blinkSeqSignatures(int seqIndex,int count)
     int lh = 0;
     int ll = 0;
 
-    buff = this->_download(YapiWrapper::ysprintf("rgb.bin?typ=2&pos=%d&len=%d",4*seqIndex,4*count));
+    buff = this->_download(YapiWrapper::ysprintf("rgb.bin?typ=%d&pos=%d&len=%d",2,4*seqIndex,4*count));
     res.clear();
     idx = 0;
     while (idx < count) {
@@ -1237,7 +1237,7 @@ vector<int> YColorLedCluster::get_blinkSeqStateSpeed(int seqIndex,int count)
     int lh = 0;
     int ll = 0;
 
-    buff = this->_download(YapiWrapper::ysprintf("rgb.bin?typ=6&pos=%d&len=%d",seqIndex,count));
+    buff = this->_download(YapiWrapper::ysprintf("rgb.bin?typ=%d&pos=%d&len=%d",6,seqIndex,count));
     res.clear();
     idx = 0;
     while (idx < count) {
@@ -1266,7 +1266,7 @@ vector<int> YColorLedCluster::get_blinkSeqStateAtPowerOn(int seqIndex,int count)
     int idx = 0;
     int started = 0;
 
-    buff = this->_download(YapiWrapper::ysprintf("rgb.bin?typ=5&pos=%d&len=%d",seqIndex,count));
+    buff = this->_download(YapiWrapper::ysprintf("rgb.bin?typ=%d&pos=%d&len=%d",5,seqIndex,count));
     res.clear();
     idx = 0;
     while (idx < count) {
@@ -1294,7 +1294,7 @@ vector<int> YColorLedCluster::get_blinkSeqState(int seqIndex,int count)
     int idx = 0;
     int started = 0;
 
-    buff = this->_download(YapiWrapper::ysprintf("rgb.bin?typ=3&pos=%d&len=%d",seqIndex,count));
+    buff = this->_download(YapiWrapper::ysprintf("rgb.bin?typ=%d&pos=%d&len=%d",3,seqIndex,count));
     res.clear();
     idx = 0;
     while (idx < count) {
@@ -1341,39 +1341,29 @@ int YColorLedCluster::hsl2rgb(int hslValue)
     if (L<=127) {
         temp2 = L * (255 + S);
     } else {
-        temp2 = (L+S) * 255 - L*S;
+        temp2 = (L + S) * 255 - L * S;
     }
     temp1 = 510 * L - temp2;
     // R
-    temp3 = (H + 85);
-    if (temp3 > 255) {
-        temp3 = temp3-255;
-    }
+    temp3 = ((H + 85) & 0xff);
     R = this->hsl2rgbInt(temp1, temp2, temp3);
     // G
-    temp3 = H;
-    if (temp3 > 255) {
-        temp3 = temp3-255;
-    }
+    temp3 = (H & 0xff);
     G = this->hsl2rgbInt(temp1, temp2, temp3);
     // B
-    if (H >= 85) {
-        temp3 = H - 85 ;
-    } else {
-        temp3 = H + 170;
-    }
+    temp3 = ((H + 170) & 0xff);
     B = this->hsl2rgbInt(temp1, temp2, temp3);
     // just in case
-    if (R>255) {
-        R=255;
+    if (R > 255) {
+        R = 255;
     }
-    if (G>255) {
-        G=255;
+    if (G > 255) {
+        G = 255;
     }
-    if (B>255) {
-        B=255;
+    if (B > 255) {
+        B = 255;
     }
-    res = (R << 16)+(G << 8)+B;
+    res = (R << 16) + (G << 8) + B;
     return res;
 }
 

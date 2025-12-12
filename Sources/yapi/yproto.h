@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 68890 2025-09-08 16:20:39Z seb $
+ * $Id: yproto.h 69540 2025-10-20 13:06:09Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -39,7 +39,9 @@
 
 #ifndef  YPROTO_H
 #define  YPROTO_H
-
+#ifdef  __cplusplus
+extern "C" {
+#endif
 #include "ydef_private.h"
 #ifdef WINDOWS_API
 #ifndef _WIN32_WINNT
@@ -1161,6 +1163,10 @@ u32 decodeHex(const char* p, int nbdigit);
 #else
 int ylocaltime(struct tm* _out, const time_t* time);
 int ygmtime(struct tm* _out, const time_t* time);
+#endif
+
+#ifdef  __cplusplus
+}
 #endif
 
 #endif

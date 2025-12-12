@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.cpp 63464 2024-11-25 13:48:09Z seb $
+ *  $Id: yocto_spiport.cpp 70736 2025-12-12 07:53:30Z mvuilleu $
  *
  *  Implements yFindSpiPort(), the high-level API for SpiPort functions
  *
@@ -1506,7 +1506,8 @@ int YSpiPort::readByte(void)
     reqlen = 1024;
     buff = this->readBin(reqlen);
     bufflen = (int)(buff).size();
-    if (_rxptr == currpos+bufflen) {
+    if ((bufflen > 0) && (_rxptr == currpos+bufflen)) {
+        // up to 1024 bytes in buffer, all in direction Rx
         res = ((u8)buff[0]);
         _rxptr = currpos+1;
         _rxbuffptr = currpos;
@@ -1518,7 +1519,8 @@ int YSpiPort::readByte(void)
     reqlen = 16;
     buff = this->readBin(reqlen);
     bufflen = (int)(buff).size();
-    if (_rxptr == currpos+bufflen) {
+    if ((bufflen > 0) && (_rxptr == currpos+bufflen)) {
+        // up to 16 bytes in buffer, all in direction Rx
         res = ((u8)buff[0]);
         _rxptr = currpos+1;
         _rxbuffptr = currpos;

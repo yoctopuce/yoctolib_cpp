@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 68927 2025-09-10 09:23:17Z seb $
+ * $Id: ystream.c 70471 2025-11-24 15:03:35Z seb $
  *
  * USB stream implementation
  *
@@ -512,7 +512,7 @@ static void devStopEnum(LOCATION yPrivDeviceSt* dev)
 static void devReportErrorFromIdle(LOCATION yPrivDeviceSt* dev, char* error_to_set)
 {
     //get access
-    dbglog("Error from idle %s(%d) : %s\n", dev->infos.serial, dev->rstatus, error_to_set);
+    dbglog("Error from idle %s(%d): %s\n", dev->infos.serial, dev->rstatus, error_to_set);
     switch (dev->rstatus) {
     case YRUN_STOPED:
         break;
@@ -2020,7 +2020,7 @@ static void yDispatchReportV2(yPrivDeviceSt* dev, u8* data, int pktsize)
         int  len = report->extraLen + 1;
         if (report->funYdx == 0xf) {
             struct timeval now;
-            gettimeofday(&now, NULL);
+            ygettimeofday(&now, NULL);
             u64 t = data[1] + 0x100u * data[2] + 0x10000u * data[3] + 0x1000000u * data[4];
             u32 ms = data[5] << 2;
             if (len >= 7) {
@@ -2653,7 +2653,21 @@ int yUsbIdle(void)
         if (res == YAPI_SUCCESS) {
             u32 currUtcTime, currUtcMs;
             if (YISERR(yDispatchReceive(p,0,errmsg))) {
-                dbglog("yPacketDispatchReceive error:%s\n", errmsg);
+                // This happens typically when a device is disconnected.
+                // If this is the case, simplify the message to make it more readable
+                const char *fromWindowsCode = strstr(errmsg, "(1167)");
+                if (fromWindowsCode) {
+                    memmove(errmsg, fromWindowsCode, strlen(fromWindowsCode)+1);
+                }
+                // Also remove extra CR/LF at the end which looks bad
+                u32 len = (u32)strlen(errmsg);
+                while (len > 0 && (errmsg[len - 1] == '\r' || errmsg[len - 1] == '\n')) {
+                    len--;
+                }
+                errmsg[len] = 0;
+                // No need to log this error once more in this function, 
+                // it will be reported just below by devReportErrorFromIdle
+                // dbglog("yPacketDispatchReceive error: %s\n", errmsg);
                 devReportErrorFromIdle(PUSH_LOCATION p, errmsg);
                 continue;
             }
@@ -2687,7 +2701,7 @@ int yUsbIdle(void)
                 if (!YISERR(devCheckAsyncIO(PUSH_LOCATION p,errmsg))) {
                     int sendClose = 0;
                     if (YISERR(yDispatchReceive(p,0,errmsg))) {
-                        dbglog("yPacketDispatchReceive error:%s\n", errmsg);
+                        dbglog("yPacketDispatchReceive error: %s\n", errmsg);
                         devReportError(PUSH_LOCATION p, errmsg);
                         continue;
                     }
@@ -3016,7 +3030,7 @@ int yUsbClose(YIOHDL_internal* ioghdl, char* errmsg)
     }
     //dbglog("* yUsbClose for %d, httpstate=%d\n",p->iohdl,p->httpstate);
     if (p->httpstate == YHTTP_CLOSED || p->httpstate == YHTTP_CLOSE_BY_API) {
-        dbglog("yUsb double-close");
+        dbglog("yUsb double-close\n");
         YPERF_LEAVE(yUsbClose);
         return YAPI_SUCCESS;
     }
@@ -3034,17 +3048,17 @@ int yUsbClose(YIOHDL_internal* ioghdl, char* errmsg)
     // send connection close
     if (!yStreamGetTxBuff(p, &pktdata, &maxpktlen)) {
         if (YISERR(yStreamFlush(p,errmsg))) {
-            dbglog("Unable to flush pending data");
+            dbglog("Unable to flush pending data\n");
             deviceDead = 1;
         }
         yStreamGetTxBuff(p, &pktdata, &maxpktlen);
     }
     if (!deviceDead && p->httpstate >= YHTTP_INREQUEST) {
         if (YISERR(yStreamTransmit(p,YSTREAM_TCP_CLOSE,0,errmsg))) {
-            dbglog("Unable to send connection close");
+            dbglog("Unable to send connection close\n");
             deviceDead = 1;
         } else if (YISERR(yStreamFlush(p,errmsg))) {
-            dbglog("Unable to flush connection close");
+            dbglog("Unable to flush connection close\n");
             deviceDead = 1;
         }
     }

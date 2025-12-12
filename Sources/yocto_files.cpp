@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.cpp 68466 2025-08-19 17:31:45Z mvuilleu $
+ * $Id: yocto_files.cpp 70518 2025-11-26 16:18:50Z mvuilleu $
  *
  * Implements yFindFiles(), the high-level API for Files functions
  *
@@ -489,14 +489,11 @@ int YFiles::get_content_crc(string content)
     int part = 0;
     int res = 0;
     sz = (int)(content).size();
-    if (sz == 0) {
-        res = _bincrc(content, 0, 0);
-        return res;
-    }
 
     fsver = this->_getVersion();
     if (fsver < 40) {
         res = _bincrc(content, 0, sz);
+        res = ((res & 0x7fffffff) - 2 * ((res >> 1) & 0x40000000));
         return res;
     }
     blkcnt = ((sz + 255) / 256);
@@ -515,6 +512,7 @@ int YFiles::get_content_crc(string content)
         blkidx = blkidx + 1;
     }
     res = (_bincrc(meta, 0, 4 * blkcnt) ^ ((int) 0xffffffff));
+    res = ((res & 0x7fffffff) - 2 * ((res >> 1) & 0x40000000));
     return res;
 }
 

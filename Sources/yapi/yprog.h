@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.h 68921 2025-09-10 07:47:29Z seb $
+ * $Id: yprog.h 69647 2025-10-24 07:05:49Z seb $
  *
  * Declaration of firmware upgrade functions
  *
@@ -40,7 +40,9 @@
 #ifndef YPROG_H
 #define YPROG_H
 #include "ydef.h"
-
+#ifdef  __cplusplus
+extern "C" {
+#endif
 #ifdef EMBEDDED_API
 typedef int ProgIface;
 #else
@@ -177,11 +179,17 @@ typedef struct {
     u32 startconfig;
     u32 endofconfig;
 #ifndef EMBEDDED_API
-    u16 ext_jedec_id;
-    u16 ext_page_size;
-    u16 ext_total_pages;
-    u16 first_code_page;
-    u16 first_yfs3_page;
+    u16  ext_jedec_id;
+    u16  ext_page_size;
+    u16  ext_total_pages;
+    u16  first_code_page;
+    u16  first_yfs3_page;
+    char fw_rev[YOCTO_FIRMWARE_LEN];
+    u16  yfsSignature;
+    u32  panic_origin;
+    u32  panic_irritant;
+    u32  blr_result;
+    u32  blr_start;
 #endif
 } BootloaderSt;
 
@@ -190,6 +198,8 @@ typedef struct {
 #pragma pack(pop)
 #endif
 YRETCODE yapiGetBootloadersDevs(char* serials, unsigned int maxNbSerial, unsigned int* totalBootladers, char* errmsg);
+YRETCODE yapiGetUSBBootloaderInfo(const char* serial, BootDevInfoSt* info, char* errmsg);
+YRETCODE yapiGetBootloadersDevsEx(BootDevInfoSt* buffer, unsigned int maxNbInfo, unsigned int* totalBootladers, char* errmsg);
 
 // Return 1 if the communication channel to the device is busy
 // Return 0 if there is no ongoing transaction with the device
@@ -240,6 +250,7 @@ typedef enum {
     FLASH_REBOOT_VALIDATE,
 #ifndef EMBEDDED_API
     FLASH_AUTOFLASH,
+    FLASH_AUTOFLASH_MONITOR,
 #endif
     FLASH_SUCCEEDED,
     FLASH_DISCONNECT,
@@ -254,17 +265,43 @@ typedef enum {
 } FLASH_ZONE_STATE;
 
 // Progress value at the end of each state
-#define PROGRESS_FLASH_FIND_DEV 2
-#define PROGRESS_FLASH_CONNECT 2
-#define PROGRESS_FLASH_GET_INFO 2
-#define PROGRESS_FLASH_VALIDATE_BYN 3
-#define PROGRESS_FLASH_ERASE 31
-#define PROGRESS_FLASH_DOFLASH 85
-#define PROGRESS_FLASH_REBOOT 95
-#define PROGRESS_FLASH_REBOOT_VALIDATE 98
-#define PROGRESS_FLASH_AUTOFLASH 98
-#define PROGRESS_FLASH_SUCCEEDED 100
+#ifdef EMBEDDED_API
+#define PROGRESS_FLASH_FIND_DEV(dummy) 2
+#define PROGRESS_FLASH_CONNECT(dummy) 2
+#define PROGRESS_FLASH_GET_INFO(dummy) 2
+#define PROGRESS_FLASH_VALIDATE_BYN(dummy) 3
+#define PROGRESS_FLASH_ERASE(dummy) 31
+#define PROGRESS_FLASH_DOFLASH(dummy) 85      //14s
+#define PROGRESS_FLASH_REBOOT(dummy) 95
+#define PROGRESS_FLASH_REBOOT_VALIDATE(dummy) 98
+#define PROGRESS_FLASH_AUTOFLASH(dummy) 98     //102s
+#define PROGRESS_FLASH_SUCCEEDED(dummy) 100    //141s
+#else
+typedef enum {
+    PHASE_FIND_DEV,
+    PHASE_CONNECT,
+    PHASE_GET_INFO,
+    PHASE_VALIDATE_BYN,
+    PHASE_ERASE,
+    PHASE_DOFLASH,
+    PHASE_REBOOT,
+    PHASE_REBOOT_VALIDATE,
+    PHASE_AUTOFLASH,
+    PHASE_SUCCEEDED
+} PROGRESS_FLASH_PHASE;
+int getProgressPercent(PROGRESS_FLASH_PHASE phase, u32 cputype);
+#define PROGRESS_FLASH_FIND_DEV(cputype)       getProgressPercent(PHASE_FIND_DEV, cputype)
+#define PROGRESS_FLASH_CONNECT(cputype)         getProgressPercent(PHASE_CONNECT, cputype)
+#define PROGRESS_FLASH_GET_INFO(cputype)        getProgressPercent(PHASE_GET_INFO, cputype)
+#define PROGRESS_FLASH_VALIDATE_BYN(cputype)    getProgressPercent(PHASE_VALIDATE_BYN, cputype)
+#define PROGRESS_FLASH_ERASE(cputype)           getProgressPercent(PHASE_ERASE, cputype)
+#define PROGRESS_FLASH_DOFLASH(cputype)         getProgressPercent(PHASE_DOFLASH, cputype)
+#define PROGRESS_FLASH_REBOOT(cputype)          getProgressPercent(PHASE_REBOOT, cputype)
+#define PROGRESS_FLASH_REBOOT_VALIDATE(cputype) getProgressPercent(PHASE_REBOOT_VALIDATE, cputype)
+#define PROGRESS_FLASH_AUTOFLASH(cputype)       getProgressPercent(PHASE_AUTOFLASH, cputype)
+#define PROGRESS_FLASH_SUCCEEDED(cputype)       getProgressPercent(PHASE_SUCCEEDED, cputype)
 
+#endif
 
 #define BLOCK_FLASH_TIMEOUT       4000u
 #define PROG_GET_INFO_TIMEOUT    10000u
@@ -342,4 +379,9 @@ int uSendReboot(BootloaderSt* fdev, u16 signature);
 
 YPROG_RESULT uFlashDevice(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev);
 int yNetHubGetBootloaders(const char* hubserial, char* buffer, char* errmsg);
+
+#ifdef  __cplusplus
+}
+#endif
+
 #endif

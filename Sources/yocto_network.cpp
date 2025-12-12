@@ -666,8 +666,7 @@ int YNetwork::set_userPassword(const string& newval)
 {
     string rest_val;
     int res;
-    if (newval.length() > YAPI_HASH_BUF_SIZE) {
-        _throw(YAPI_INVALID_ARGUMENT, "Password too long :" + newval);
+    if (!_is_valid_pass(newval)) {
         return YAPI_INVALID_ARGUMENT;
     }
     yEnterCriticalSection(&_this_cs);
@@ -730,8 +729,7 @@ int YNetwork::set_adminPassword(const string& newval)
 {
     string rest_val;
     int res;
-    if (newval.length() > YAPI_HASH_BUF_SIZE) {
-        _throw(YAPI_INVALID_ARGUMENT, "Password too long :" + newval);
+    if (!_is_valid_pass(newval)) {
         return YAPI_INVALID_ARGUMENT;
     }
     yEnterCriticalSection(&_this_cs);

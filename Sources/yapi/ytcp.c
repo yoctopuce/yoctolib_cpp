@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 68890 2025-09-08 16:20:39Z seb $
+ * $Id: ytcp.c 70470 2025-11-24 15:03:05Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -299,7 +299,7 @@ static int yNetLogErrEx(u32 line, unsigned err)
     int retval;
     char errmsg[YOCTO_ERRMSG_LEN];
     retval = yNetSetErrEx(__FILENAME__, line, err, errmsg);
-    dbglog("%s", errmsg);
+    dbglog("%s\n", errmsg);
     return retval;
 }
 #endif
@@ -979,7 +979,7 @@ int yTcpWriteBasic(YSOCKET skt, const u8 *buffer, int len, char *errmsg)
 #ifdef WINDOWS_API
             if (SOCK_ERR != WSAEWOULDBLOCK)
 #else
-            if (SOCK_ERR != EAGAIN || SOCK_ERR == EINTR)
+            if (SOCK_ERR != EAGAIN && SOCK_ERR != EINTR)
 #endif
             {
                 return yNetSetErr();
@@ -1009,6 +1009,9 @@ int yTcpReadBasic(YSOCKET skt, u8 *buffer, int len, char *errmsg)
 #ifdef WINDOWS_API
         if (SOCK_ERR == WSAEWOULDBLOCK) {
             return 0;
+        }
+        if (SOCK_ERR == WSAECONNABORTED || SOCK_ERR == WSAECONNRESET) {
+            return YERR(YAPI_NO_MORE_DATA);
         }
 #else
         if (SOCK_ERR == EAGAIN || SOCK_ERR == EINTR) {
@@ -1338,12 +1341,13 @@ void yTcpShutdownMulti(void)
 static int yTcpDownloadEx(const char *url, const char *default_host, int default_port, int default_usessl, u8 **out_buffer, u32 mstimeout, char *errmsg)
 {
     int len, domlen;
-    const char *end, *p;
+    const char *end, *endv6,*p;
     const char *pos, *posplus;
     int use_ssl = default_usessl;
     const char *host = default_host;
     const char *path = NULL;
     int portno = default_port;
+    int res;
 
     if (YSTRNCMP(url, "http://", 7) == 0) {
         url += 7;
@@ -1371,24 +1375,39 @@ static int yTcpDownloadEx(const char *url, const char *default_host, int default
         }
         end = p;
     }
-    pos = strchr(url, ':');
-    posplus = pos + 1;
-    if (pos && pos < end) {
-        len = (int)(end - posplus);
-        if (len < 7) {
-            char buffer[8];
-            memcpy(buffer, posplus, len);
-            buffer[len] = '\0';
-            portno = atoi(buffer);
+    if (p > url) {
+        // url does not start with / -> parse host infos
+        endv6 = strchr(url, ']');
+        pos = strchr(url, ':');
+        if (endv6 && pos && endv6 < end && endv6 > url) {
+            // ipv6 URL
+            host = ystrndup_s(url, (int)(endv6 + 1 - url));
+            pos = strchr(endv6, ':');
         }
-        end = pos;
+        posplus = pos + 1;
+        if (pos && pos < end) {
+            len = (int)(end - posplus);
+            if (len < 7) {
+                char buffer[8];
+                memcpy(buffer, posplus, len);
+                buffer[len] = '\0';
+                portno = atoi(buffer);
+            }
+            end = pos;
+        }
+        if (host == default_host) {
+            domlen = (int)(end - url);
+            host = ystrndup_s(url, domlen);
+        }
     }
-    domlen = (int)(end - url);
-    host = ystrndup_s(url, domlen);
 #if 0
     dbglog("URL: yTcpDownloadEx %s %s:%d %s\n", use_ssl ?"https":"http", host, portno, path);
 #endif
-    return yTcpDownload(host, portno, use_ssl, path, out_buffer, mstimeout, errmsg);
+    res = yTcpDownload(host, portno, use_ssl, path, out_buffer, mstimeout, errmsg);
+    if (host && host != default_host) {
+        yFree((char *)host);
+    }
+    return res;
 }
 
 int yTcpDownload(const char *host, int port, int usessl, const char *url, u8 **out_buffer, u32 mstimeout, char *errmsg)
@@ -2180,14 +2199,14 @@ int yUdpReadMulti(YSOCKET_MULTI skt, u8 *buffer, int len, IPvX_ADDR *ip_out, u16
 #define IPV6_ADD_MEMBERSHIP IPV6_JOIN_GROUP
 #endif
 
-int yUdpRegisterMCAST(YSOCKET_MULTI skt, IPvX_ADDR *mcastAddr, int interfaceNo)
+int yUdpRegisterMCAST(YSOCKET_MULTI skt, IPvX_ADDR *localAddr, IPvX_ADDR *mcastAddr, int interfaceNo)
 {
     int res = YAPI_SUCCESS;
     if (skt->ipv6 == 0) {
         struct ip_mreq mcast_membership;
         memset(&mcast_membership, 0, sizeof(mcast_membership));
         mcast_membership.imr_multiaddr.s_addr = mcastAddr->v4.addr.Val;
-        mcast_membership.imr_interface.s_addr = INADDR_ANY;
+        mcast_membership.imr_interface.s_addr = localAddr->v4.addr.Val;
         if (setsockopt(skt->basic, IPPROTO_IP, IP_ADD_MEMBERSHIP, (void*)&mcast_membership, sizeof(mcast_membership)) < 0) {
             res = yNetLogErr();
         }

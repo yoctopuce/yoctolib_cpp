@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 68921 2025-09-10 07:47:29Z seb $
+ * $Id: ydef.h 69647 2025-10-24 07:05:49Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -952,8 +952,16 @@ typedef union {
     u8 encaps;
 } WSStreamHead;
 
-
-
+typedef struct {
+    u16  bld_version;
+    u16  yfsSignature;
+    u32  panic_irritant;
+    u32  blr_result;
+    u32  blr_start;
+    char panic_origin[16];
+    char serial[YOCTO_SERIAL_LEN];
+    char fw_rev[YOCTO_FIRMWARE_LEN];
+} BootDevInfoSt;
 
 //
 // SSDP global definitions for hubs
@@ -982,7 +990,7 @@ typedef void (*yapiRequestProgressCallback)(void *context, u32 acked, u32 totalb
 #define PROG_VERIF       4    // program the device
 #define PROG_INFO        5    // get device info
 #define PROG_INFO_EXT    6    // get extended device info (flash bootloader only)
-#define PROG_INFO_TI     7 // get extended device info (for Texas chip)
+#define PROG_AUTO_FLASH  0x10 // pseudo packet to handle autoflash
 
 
 #define INSTR_LEN                   3
@@ -995,23 +1003,14 @@ typedef void (*yapiRequestProgressCallback)(void *context, u32 acked, u32 totalb
 #define ERASE_BLOCK_SIZE_BADDR      (ERASE_BLOCK_SIZE_INSTR*2)
 #define PROGRAM_BLOCK_SIZE_BADDR    (PROGRAM_BLOCK_SIZE_INSTR*2)
 
-// for MSP432E we use dword as instruction length. This is not a limitation of the CPU it's just
+// for TEXAS we use dword as instruction length. This is not a limitation of the CPU it's just
 // an implement choice to match at best the microchip architecture
-#define MSP432E_INSTR_LEN                   4
-#define MSP432E_MAX_INSTR_IN_PACKET         (MAX_BYTE_IN_PACKET/MSP432E_INSTR_LEN)
-#define MSP432E_ERASE_BLOCK_SIZE_INSTR      0x1000            // the minimal erase size in nb instr
-#define MSP432E_PROGRAM_BLOCK_SIZE_INSTR    32                // the minimal program size in nb instr
-#define MSP432E_ERASE_BLOCK_SIZE_BADDR      (MSP432E_ERASE_BLOCK_SIZE_INSTR * MSP432E_INSTR_LEN)  // 16KB
-#define MSP432E_PROGRAM_BLOCK_SIZE_BADDR    (MSP432E_PROGRAM_BLOCK_SIZE_INSTR * MSP432E_INSTR_LEN)    // we can write 32 dword in one operation
-
-// for TM4C123 we use dword as instruction length. This is not a limitation of the CPU it's just
-// an implement choice to match at best the microchip architecture
-#define TM4C123_INSTR_LEN                   4
-#define TM4C123_MAX_INSTR_IN_PACKET         (MAX_BYTE_IN_PACKET/TM4C123_INSTR_LEN)
-#define TM4C123_ERASE_BLOCK_SIZE_INSTR      0x1000            // the minimal erase size in nb instr
-#define TM4C123_PROGRAM_BLOCK_SIZE_INSTR    32                // the minimal program size in nb instr
-#define TM4C123_ERASE_BLOCK_SIZE_BADDR      (TM4C123_ERASE_BLOCK_SIZE_INSTR * TM4C123_INSTR_LEN)  // 16KB
-#define TM4C123_PROGRAM_BLOCK_SIZE_BADDR    (TM4C123_PROGRAM_BLOCK_SIZE_INSTR * TM4C123_INSTR_LEN)    // we can write 32 dword in one operation
+#define TEXAS_INSTR_LEN                   4
+#define TEXAS_MAX_INSTR_IN_PACKET         (MAX_BYTE_IN_PACKET/TEXAS_INSTR_LEN)
+#define TEXAS_ERASE_BLOCK_SIZE_INSTR      0x1000            // the minimal erase size in nb instr
+#define TEXAS_PROGRAM_BLOCK_SIZE_INSTR    32                // the minimal program size in nb instr
+#define TEXAS_ERASE_BLOCK_SIZE_BADDR      (TEXAS_ERASE_BLOCK_SIZE_INSTR * TEXAS_INSTR_LEN)  // 16KB
+#define TEXAS_PROGRAM_BLOCK_SIZE_BADDR    (TEXAS_PROGRAM_BLOCK_SIZE_INSTR * TEXAS_INSTR_LEN)    // we can write 32 dword in one operation
 
 // For Texas chips address and size of memory are count in BYTES (not in instructions of words)
 typedef union {
@@ -1029,7 +1028,7 @@ typedef union {
         u16 adress_low;
         union {
             u8  data[MAX_BYTE_IN_PACKET];
-            u32 data32[MSP432E_MAX_INSTR_IN_PACKET];
+            u32 data32[TEXAS_MAX_INSTR_IN_PACKET];
         };
     } pkt;
     struct {
@@ -1081,19 +1080,44 @@ typedef union {
         u8   size : 5;
 #endif
         u8   version;
-        u16  pr_blk_size;
-        u16  devidl;
-        u16  devidh;
-        u32  settings_addr;
-        u32  last_addr;
-        u32  config_start;
-        u32  config_stop;
-        u16  er_blk_size;
-        u16  ext_jedec_id;
-        u16  ext_page_size;
-        u16  ext_total_pages;
-        u16  first_code_page;
-        u16  first_yfs3_page;
+        union {
+            struct {
+                u16  pr_blk_size;
+                u16  devidl;
+                u16  devidh;
+                u32  settings_addr;
+                u32  last_addr;
+                u32  config_start;
+                u32  config_stop;
+                u16  er_blk_size;
+                u16  ext_jedec_id;
+                u16  ext_page_size;
+                u16  ext_total_pages;
+                u16  first_code_page;
+                u16  first_yfs3_page;
+            } v2;
+            struct {
+                u8   pad; //4
+                u16  pr_blk_size;
+                u16  er_blk_size; //8
+                u32  last_addr; //12
+                u16  devidl;
+                u16  ext_jedec_id; //16
+                u16  ext_page_size;
+                u16  ext_total_pages; //20
+                u16  first_code_page;
+                u16  first_yfs3_page; //24
+                u32  panic_origin; // 28
+                u32  panic_irritant; //32
+                u32  blr_result; // 36
+                u32  blr_start; // 40
+                yFirmwareSt fw_version; //62
+            } v3;
+            struct {
+                u32  progress;
+                u32  total;
+            } v4;
+        };
     } pktinfo_ext;
 } USB_Prog_Packet;
 

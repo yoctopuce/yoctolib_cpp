@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yssl.c 65974 2025-04-22 09:54:29Z seb $
+ * $Id: yssl.c 70527 2025-11-27 09:14:11Z seb $
  *
  * Implementation of a client TCP stack with SSL
  *
@@ -148,7 +148,7 @@ static mbedtls_pk_context pkey;
 
 #ifdef DEBUG_SSL
 
-static void my_debug(void* ctx, int level, const char* file, int line, const char* str)
+static void my_debug(void *ctx, int level, const char *file, int line, const char *str)
 {
     dbglog("%s:%04d: %s", file, line, str);
 }
@@ -418,7 +418,7 @@ int yTcpInitSSL(char *errmsg)
 #endif
 #ifdef ADD_DEFAULT_X509_CERTS
     ret = mbedtls_x509_crt_parse(&cachain, (const unsigned char*)SSL_CA_PEM,
-        sizeof(SSL_CA_PEM));
+                                 sizeof(SSL_CA_PEM));
 
     if (ret != 0) {
         return FMT_MBEDTLS_ERR(ret);
@@ -464,8 +464,17 @@ int yTcpSetSrvCertificateSSL(const char *certfile, const char *keyfile, char *er
         if (ret < 0) {
             return FMT_MBEDTLS_ERR(ret);
         }
-        if (mbedtls_x509_time_is_past(&srvcert.valid_to)){
+        if (mbedtls_x509_time_is_past(&srvcert.valid_to)) {
+#ifdef YAPI_IN_YDEVICE
+            if (yContext && yContext->log) {
+                const char *warning = "Warning: server certificate is expired\n";
+                yContext->log(warning, ystrlen(warning));
+                warning = "    ==>  Start VirtualHub-V2 with --renew_cert to update certificate\n";
+                yContext->log(warning, ystrlen(warning));
+            }
+#else
             dbglog("Warning: server certificate is expired\n");
+#endif
         }
         SSLLOG("certificate and private key loaded and verified\n");
     } else {

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.c 61094 2024-05-23 06:43:29Z seb $
+ * $Id: ythread.c 69912 2025-10-31 10:13:09Z mvuilleu $
  *
  * OS-independent thread and synchronization library
  *
@@ -468,7 +468,7 @@ static void dump_YCS(yCRITICAL_SECTION *csptr)
     } else {
         state_str = "INVALID";
     }
-    //fixme printf("%p:%02x: state=%s lock=%d\n", ycs, ycs->no, state_str, ycs->lock);
+    // printf("%p:%02x: state=%s lock=%d\n", ycs, ycs->no, state_str, ycs->lock);
     for (i = 0; i < YCS_NB_TRACE; i++) {
         u32 action = ycs->last_actions[i].action;
         const char* action_str = "INVALID";
@@ -479,8 +479,8 @@ static void dump_YCS(yCRITICAL_SECTION *csptr)
         if (file_str == NULL) {
             file_str = "NULL";
         }
-        //fixme printf(" - %s on %s:%d  (th=%d)\n", action_str,
-            //file_str, ycs->last_actions[i].lineno, ycs->last_actions[i].thread);
+        // printf(" - %s on %s:%d  (th=%d)\n", action_str, file_str,
+        //        ycs->last_actions[i].lineno, ycs->last_actions[i].thread);
     }
 }
 

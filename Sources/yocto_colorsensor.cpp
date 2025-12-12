@@ -61,6 +61,7 @@ YColorSensor::YColorSensor(const string& func): YFunction(func)
     ,_ledCalibration(LEDCALIBRATION_INVALID)
     ,_integrationTime(INTEGRATIONTIME_INVALID)
     ,_gain(GAIN_INVALID)
+    ,_autoGain(AUTOGAIN_INVALID)
     ,_saturation(SATURATION_INVALID)
     ,_estimatedRGB(ESTIMATEDRGB_INVALID)
     ,_estimatedHSL(ESTIMATEDHSL_INVALID)
@@ -85,6 +86,7 @@ YColorSensor::~YColorSensor()
 }
 //--- (YColorSensor implementation)
 // static attributes
+const string YColorSensor::AUTOGAIN_INVALID = YAPI_INVALID_STRING;
 const string YColorSensor::ESTIMATEDXYZ_INVALID = YAPI_INVALID_STRING;
 const string YColorSensor::ESTIMATEDOKLAB_INVALID = YAPI_INVALID_STRING;
 const string YColorSensor::NEARRAL1_INVALID = YAPI_INVALID_STRING;
@@ -112,6 +114,9 @@ int YColorSensor::_parseAttr(YJSONObject *json_val)
     }
     if(json_val->has("gain")) {
         _gain =  json_val->getInt("gain");
+    }
+    if(json_val->has("autoGain")) {
+        _autoGain =  json_val->getString("autoGain");
     }
     if(json_val->has("saturation")) {
         _saturation =  json_val->getInt("saturation");
@@ -496,6 +501,61 @@ int YColorSensor::set_gain(int newval)
     try {
         char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("gain", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the current autogain parameters of the sensor as a character string.
+ * The returned parameter format is: "Min &lt; Channel &lt; Max:Saturation".
+ *
+ * @return a string corresponding to the current autogain parameters of the sensor as a character string
+ *
+ * On failure, throws an exception or returns YColorSensor::AUTOGAIN_INVALID.
+ */
+string YColorSensor::get_autoGain(void)
+{
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YColorSensor::AUTOGAIN_INVALID;
+                }
+            }
+        }
+        res = _autoGain;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Remember to call the saveToFlash() method of the module if the modification must be kept.
+ *
+ * @param newval : a string
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YColorSensor::set_autoGain(const string& newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("autoGain", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
@@ -953,6 +1013,32 @@ int YColorSensor::_invokeValueCallback(string value)
         YFunction::_invokeValueCallback(value);
     }
     return 0;
+}
+
+/**
+ * Changes the sensor automatic gain control settings.
+ * Remember to call the saveToFlash() method of the module if the modification must be kept.
+ *
+ * @param channel : reference channel to use for automated gain control.
+ * @param minRaw : lower threshold for the measured raw value, below which the gain is
+ *         automatically increased as long as possible.
+ * @param maxRaw : high threshold for the measured raw value, over which the gain is
+ *         automatically decreased as long as possible.
+ * @param noSatur : enables gain reduction in case of sensor saturation.
+ *
+ * @return YAPI::SUCCESS if the operation completes successfully.
+ *         On failure, throws an exception or returns a negative error code.
+ */
+int YColorSensor::configureAutoGain(string channel,int minRaw,int maxRaw,bool noSatur)
+{
+    string opt;
+    if (noSatur) {
+        opt = "nosat";
+    } else {
+        opt = "";
+    }
+
+    return this->set_autoGain(YapiWrapper::ysprintf("%d < %s < %d:%s",minRaw,channel.c_str(),maxRaw,opt.c_str()));
 }
 
 /**

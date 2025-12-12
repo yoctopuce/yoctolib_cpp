@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 68387 2025-08-18 06:44:51Z seb $
+ * $Id: yocto_api.h 70550 2025-12-02 11:13:55Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -47,6 +47,7 @@
 #include <stdexcept>
 #include <cfloat>
 #include <cmath>
+
 
 using std::string;
 using std::vector;
@@ -460,6 +461,15 @@ public:
 };
 
 
+class YCalibCtx {
+public:
+    string              src;
+    yCalibrationHandler hdl;
+    int                 typ;
+    vector<int>         par;
+    vector<double>      raw;
+    vector<double>      cal;
+};
 
 
 
@@ -1459,6 +1469,9 @@ class YOCTO_CLASS_EXPORT YDataStream {
 #endif
 //--- (end of generated code: YDataStream declaration)
 protected:
+    YCalibCtx       _cal_stat;
+    YCalibCtx       *_cal;
+
     //--- (generated code: YDataStream attributes)
     // Attributes (function value cache)
     YFunction*      _parent;
@@ -1477,15 +1490,11 @@ protected:
     double          _minVal;
     double          _avgVal;
     double          _maxVal;
-    int             _caltyp;
-    vector<int>     _calpar;
-    vector<double>  _calraw;
-    vector<double>  _calref;
     vector< vector<double> > _values;
     bool            _isLoaded;
     //--- (end of generated code: YDataStream attributes)
 
-    yCalibrationHandler _calhdl;
+    YCalibCtx * ycalib_ctx(const string& str, yCalibrationHandler calhdl, int caltyp, const vector<int> & param, const vector<double>& calraw, const vector<double> & calref);
 
 public:
     YDataStream(YFunction *parent);
@@ -1498,6 +1507,8 @@ public:
 
     //--- (generated code: YDataStream accessors declaration)
 
+
+    virtual int         _parseCalibArr(vector<int> iCalib);
 
     virtual int         _initFromDataSet(YDataSet* dataset,vector<int> encoded);
 
@@ -2642,6 +2653,8 @@ public:
 
     virtual int         _parserHelper(void);
 
+    virtual bool        _is_valid_pass(string passwd);
+
 
     inline static YFunction *Find(string func)
     { return YFunction::FindFunction(func); }
@@ -3561,7 +3574,6 @@ public:
 
 
 
-
 //--- (generated code: YSensor declaration)
 /**
  * YSensor Class: Sensor function interface.
@@ -3582,6 +3594,8 @@ class YOCTO_CLASS_EXPORT YSensor: public YFunction {
 #endif
 //--- (end of generated code: YSensor declaration)
 protected:
+    YCalibCtx       _cal_stat;
+    YCalibCtx       *_cal;
     //--- (generated code: YSensor attributes)
     // Attributes (function value cache)
     string          _unit;
@@ -3597,16 +3611,8 @@ protected:
     int             _sensorState;
     YSensorValueCallback _valueCallbackSensor;
     YSensorTimedReportCallback _timedReportCallbackSensor;
-    double          _prevTimedReport;
+    double          _prevTR;
     double          _iresol;
-    double          _offset;
-    double          _scale;
-    double          _decexp;
-    int             _caltyp;
-    vector<int>     _calpar;
-    vector<double>  _calraw;
-    vector<double>  _calref;
-    yCalibrationHandler _calhdl;
 
     friend YSensor *yFindSensor(const string& func);
     friend YSensor *yFirstSensor(void);
@@ -3617,6 +3623,7 @@ protected:
     // Constructor is protected, use yFindSensor factory function to instantiate
     YSensor(const string& func);
     //--- (end of generated code: YSensor attributes)
+    YCalibCtx * ycalib_ctx(const string& str, yCalibrationHandler calhdl, int caltyp, const vector<int> & param, const vector<double>& calraw, const vector<double> & calref);
 
     //--- (generated code: YSensor initialization)
     //--- (end of generated code: YSensor initialization)
@@ -3960,6 +3967,8 @@ public:
      * @return an YDatalogger object, or NULL on error.
      */
     virtual YDataLogger* get_dataLogger(void);
+
+    virtual int         _parseCalibStr(string calibStr);
 
     /**
      * Starts the data logger on the device. Note that the data logger
