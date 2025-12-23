@@ -16,6 +16,10 @@
                <Add option="-g" />
             <Add directory="../../../Sources" />
             <Add directory="../../../Sources/yapi/mbedtls/include" />
+            <Add directory="../../../Sources/yapi/mbedtls/tf-psa-crypto/core" />
+            <Add directory="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include" />
+            <Add directory="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src" />
+            <Add directory="../../../Sources/yapi/mbedtls/tf-psa-crypto/include" />
 
             </Compiler>
             <Linker>
@@ -32,6 +36,10 @@
                <Add option="-O2" />
             <Add directory="../../../Sources" />
             <Add directory="../../../Sources/yapi/mbedtls/include" />
+            <Add directory="../../../Sources/yapi/mbedtls/tf-psa-crypto/core" />
+            <Add directory="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include" />
+            <Add directory="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src" />
+            <Add directory="../../../Sources/yapi/mbedtls/tf-psa-crypto/include" />
 
             </Compiler>
             <Linker>
@@ -183,75 +191,15 @@
       <Unit filename="../../../Sources/yapi/yssl.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/aes.c"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/error.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/aesce.c"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/x509write_crt.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/aesni.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/aria.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/asn1parse.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/asn1write.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/base64.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/bignum.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/bignum_core.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/camellia.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ccm.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/chacha20.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/chachapoly.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/cipher.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/cipher_wrap.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/cmac.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/constant_time.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ctr_drbg.c"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/x509_create.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
@@ -259,231 +207,23 @@
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/des.c"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/x509.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/dhm.c"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/x509_crt.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ecdh.c"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/x509write.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ecdsa.c"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/x509_oid.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ecjpake.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ecp.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ecp_curves.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/entropy.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/entropy_poll.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/error.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/gcm.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/hkdf.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/hmac_drbg.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/lmots.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/lms.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/md.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/md5.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/net_sockets.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/nist_kw.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/oid.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/padlock.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/pem.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/pk.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/pk_ecc.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/pkcs12.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/pkcs5.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/pkcs7.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/pkparse.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/pkwrite.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/pk_wrap.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/platform.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/platform_util.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/poly1305.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_aead.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_cipher.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_client.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_driver_wrappers_no_static.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_ecp.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_ffdh.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_hash.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_mac.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_pake.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_rsa.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_slot_management.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_storage.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_its_file.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_util.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ripemd160.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/rsa.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/rsa_alt_helpers.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/sha1.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/sha256.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/sha3.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/sha512.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_cache.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_ciphersuites.c"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_tls.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
@@ -491,23 +231,15 @@
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_cookie.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_debug_helpers_generated.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
       <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_msg.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_ticket.c"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_ciphersuites.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_tls.c"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_tls13_client.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
@@ -519,15 +251,7 @@
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_tls13_client.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
       <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_tls13_generic.c"></Unit>
-         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
-         <Option  compilerVar="CC" />
-      </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_tls13_keys.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
@@ -535,207 +259,527 @@
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/threading.c"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_tls13_keys.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/timing.c"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/core/psa_its_file.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/version.c"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/core/psa_crypto_slot_management.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/version_features.c"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/core/psa_crypto.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/x509.c"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/core/psa_crypto_client.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/x509write.c"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/core/psa_crypto_storage.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/x509write_crt.c"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/core/psa_crypto_driver_wrappers_no_static.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/x509write_csr.c"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/cmac.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/x509_create.c"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/md5.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/x509_crl.c"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/gcm.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/x509_crt.c"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/aes.c"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
          <Option  compilerVar="CC" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/aesce.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/aesce.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/rsa.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/pk_ecc.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/oid.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/poly1305.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/ctr_drbg.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/chacha20.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/ecdh.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/ecdsa.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/cipher_wrap.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/base64.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/pk_rsa.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/pkcs5.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/aesni.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/rsa_alt_helpers.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/entropy_poll.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/hmac_drbg.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/camellia.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/aria.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/ripemd160.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/sha1.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/sha256.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/sha512.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/sha3.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/ccm.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/chachapoly.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/ecjpake.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/psa_crypto_mac.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/psa_crypto_rsa.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/psa_crypto_ecp.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/psa_crypto_ffdh.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/pk_wrap.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/ecp.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/cipher.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/md.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/psa_crypto_aead.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/psa_crypto_hash.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/psa_crypto_pake.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/constant_time.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/ecp_curves.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/psa_crypto_cipher.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/entropy.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/platform_util.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/threading.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/asn1write.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/asn1parse.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/pem.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/pk.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/pkparse.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/pkwrite.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/bignum.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/psa_util.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/bignum_core.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/include/mbedtls/build_info.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/aesni.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/include/mbedtls/debug.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/alignment.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/include/mbedtls/error.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/base64_internal.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/include/mbedtls/mbedtls_config.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/bignum_core.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/include/mbedtls/net_sockets.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/bignum_mod.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/include/mbedtls/oid.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/bignum_mod_raw.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/include/mbedtls/pkcs7.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/bignum_mod_raw_invasive.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/include/mbedtls/ssl.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/bn_mul.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/include/mbedtls/ssl_cache.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/check_crypto_config.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/include/mbedtls/ssl_ciphersuites.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/cipher_wrap.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/include/mbedtls/ssl_cookie.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/common.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/include/mbedtls/ssl_ticket.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/constant_time_impl.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/include/mbedtls/timing.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/constant_time_internal.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/include/mbedtls/version.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ecp_internal_alt.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/include/mbedtls/x509.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ecp_invasive.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/include/mbedtls/x509_crl.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/entropy_poll.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/include/mbedtls/x509_crt.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/lmots.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/include/mbedtls/x509_csr.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/md_psa.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/include/threading_alt.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/md_wrap.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/config_adjust_legacy_crypto.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/mps_common.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/aes.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/mps_error.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/aria.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/mps_reader.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/bignum.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/mps_trace.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/block_cipher.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/padlock.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/camellia.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/pkwrite.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/ccm.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/pk_internal.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/chacha20.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/pk_wrap.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/chachapoly.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_aead.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/cipher.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_cipher.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/cmac.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_core.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/config_adjust_legacy_from_psa.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_core_common.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/config_adjust_test_accelerators.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_driver_wrappers.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/config_psa.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_driver_wrappers_no_static.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/ctr_drbg.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_ecp.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/ecdh.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_ffdh.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/ecdsa.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_hash.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/ecjpake.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_invasive.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/ecp.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_its.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/entropy.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_mac.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/error_common.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_pake.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/gcm.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_random_impl.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/hmac_drbg.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_rsa.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/md5.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_se.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/pkcs5.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_slot_management.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/poly1305.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_crypto_storage.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/ripemd160.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/psa_util_internal.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/rsa.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/rsa_alt_helpers.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/sha1.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_client.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/sha256.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_debug_helpers.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/sha3.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_misc.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private/sha512.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_tls13_invasive.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/include/mbedtls/private_access.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
-      <Unit filename="../../../Sources/yapi/mbedtls/library/ssl_tls13_keys.h"></Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/mbedtls/asn1.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/mbedtls/asn1write.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/mbedtls/base64.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/mbedtls/compat-3-crypto.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/mbedtls/constant_time.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/mbedtls/lms.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/mbedtls/md.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/mbedtls/memory_buffer_alloc.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/mbedtls/nist_kw.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/mbedtls/pem.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/mbedtls/pk.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/mbedtls/platform.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/mbedtls/platform_time.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/mbedtls/platform_util.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/mbedtls/private/config_psa.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/mbedtls/private/pk_private.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/mbedtls/psa_util.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/mbedtls/threading.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/psa/crypto.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/psa/crypto_builtin_composites.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/psa/crypto_builtin_key_derivation.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/psa/crypto_builtin_primitives.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/psa/crypto_compat.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/psa/crypto_config.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/psa/crypto_driver_common.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/psa/crypto_driver_contexts_composites.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/psa/crypto_driver_contexts_key_derivation.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/psa/crypto_driver_contexts_primitives.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/psa/crypto_driver_random.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/psa/crypto_extra.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/psa/crypto_platform.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/psa/crypto_sizes.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/psa/crypto_struct.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/psa/crypto_types.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/psa/crypto_values.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/tf-psa-crypto/build_info.h"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/include/tf-psa-crypto/version.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
     

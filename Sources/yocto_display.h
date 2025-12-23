@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.h 59978 2024-03-18 15:04:46Z mvuilleu $
+ * $Id: yocto_display.h 70932 2025-12-22 09:11:53Z seb $
  *
  * Declares yFindDisplay(), the high-level API for Display functions
  *
@@ -78,6 +78,7 @@ typedef enum {
     Y_DISPLAYTYPE_MONO = 0,
     Y_DISPLAYTYPE_GRAY = 1,
     Y_DISPLAYTYPE_RGB = 2,
+    Y_DISPLAYTYPE_EPAPER = 3,
     Y_DISPLAYTYPE_INVALID = -1,
 } Y_DISPLAYTYPE_enum;
 #endif
@@ -653,6 +654,7 @@ public:
     static const Y_DISPLAYTYPE_enum DISPLAYTYPE_MONO = Y_DISPLAYTYPE_MONO;
     static const Y_DISPLAYTYPE_enum DISPLAYTYPE_GRAY = Y_DISPLAYTYPE_GRAY;
     static const Y_DISPLAYTYPE_enum DISPLAYTYPE_RGB = Y_DISPLAYTYPE_RGB;
+    static const Y_DISPLAYTYPE_enum DISPLAYTYPE_EPAPER = Y_DISPLAYTYPE_EPAPER;
     static const Y_DISPLAYTYPE_enum DISPLAYTYPE_INVALID = Y_DISPLAYTYPE_INVALID;
     static const int LAYERWIDTH_INVALID = YAPI_INVALID_UINT;
     static const int LAYERHEIGHT_INVALID = YAPI_INVALID_UINT;
@@ -796,8 +798,9 @@ public:
     /**
      * Returns the display type: monochrome, gray levels or full color.
      *
-     * @return a value among YDisplay::DISPLAYTYPE_MONO, YDisplay::DISPLAYTYPE_GRAY and
-     * YDisplay::DISPLAYTYPE_RGB corresponding to the display type: monochrome, gray levels or full color
+     * @return a value among YDisplay::DISPLAYTYPE_MONO, YDisplay::DISPLAYTYPE_GRAY,
+     * YDisplay::DISPLAYTYPE_RGB and YDisplay::DISPLAYTYPE_EPAPER corresponding to the display type:
+     * monochrome, gray levels or full color
      *
      * On failure, throws an exception or returns YDisplay::DISPLAYTYPE_INVALID.
      */

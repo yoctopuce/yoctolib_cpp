@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 63324 2024-11-13 09:33:07Z seb $
+ * $Id: yocto_display.cpp 70932 2025-12-22 09:11:53Z seb $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -980,8 +980,9 @@ int YDisplay::get_displayHeight(void)
 /**
  * Returns the display type: monochrome, gray levels or full color.
  *
- * @return a value among YDisplay::DISPLAYTYPE_MONO, YDisplay::DISPLAYTYPE_GRAY and
- * YDisplay::DISPLAYTYPE_RGB corresponding to the display type: monochrome, gray levels or full color
+ * @return a value among YDisplay::DISPLAYTYPE_MONO, YDisplay::DISPLAYTYPE_GRAY,
+ * YDisplay::DISPLAYTYPE_RGB and YDisplay::DISPLAYTYPE_EPAPER corresponding to the display type:
+ * monochrome, gray levels or full color
  *
  * On failure, throws an exception or returns YDisplay::DISPLAYTYPE_INVALID.
  */

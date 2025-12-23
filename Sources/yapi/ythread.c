@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.c 69912 2025-10-31 10:13:09Z mvuilleu $
+ * $Id: ythread.c 70935 2025-12-22 11:20:54Z seb $
  *
  * OS-independent thread and synchronization library
  *
@@ -43,34 +43,36 @@
 
 #include "ythread.h"
 
+#include "threading_alt.h"
+
 #ifdef WINDOWS_API
 
 static DWORD yTlsBucket = TLS_OUT_OF_INDEXES;
 static DWORD yNextThreadIdx = 1;
 
-void yCreateEvent(yEvent* event)
+void yCreateEvent(yEvent *event)
 {
     *event = CreateEvent(0, 0, 0, 0);
 }
 
-void yCreateManualEvent(yEvent* event, int initialState)
+void yCreateManualEvent(yEvent *event, int initialState)
 {
     *event = CreateEvent(0, TRUE, initialState != 0, 0);
 }
 
 
-void ySetEvent(yEvent* ev)
+void ySetEvent(yEvent *ev)
 {
     SetEvent(*ev);
 }
 
-void yResetEvent(yEvent* ev)
+void yResetEvent(yEvent *ev)
 {
     ResetEvent(*ev);
 }
 
 
-int yWaitForEvent(yEvent* ev, int time)
+int yWaitForEvent(yEvent *ev, int time)
 {
     DWORD usec;
     DWORD res;
@@ -83,13 +85,13 @@ int yWaitForEvent(yEvent* ev, int time)
     return res == WAIT_OBJECT_0;
 }
 
-void yCloseEvent(yEvent* ev)
+void yCloseEvent(yEvent *ev)
 {
     CloseHandle(*ev);
 }
 
 
-static int yCreateDetachedThreadEx(osThread* th_hdl, const char* name, void* (*fun)(void*), void* arg)
+static int yCreateDetachedThreadEx(osThread *th_hdl, const char *name, void* (*fun)(void *), void *arg)
 {
     *th_hdl = CreateThread(
         NULL, // default security attributes
@@ -105,19 +107,19 @@ static int yCreateDetachedThreadEx(osThread* th_hdl, const char* name, void* (*f
 }
 
 
-static void yReleaseDetachedThreadEx(osThread* th_hdl)
+static void yReleaseDetachedThreadEx(osThread *th_hdl)
 {
     CloseHandle(*th_hdl);
 }
 
 
-static int yWaitEndThread(osThread* th)
+static int yWaitEndThread(osThread *th)
 {
     DWORD result = WaitForSingleObject(*th, INFINITE);
     return result == WAIT_OBJECT_0 ? 0 : -1;
 }
 
-static void yKillThread(osThread* th)
+static void yKillThread(osThread *th)
 {
     TerminateThread(*th, 0);
 }
@@ -125,7 +127,7 @@ static void yKillThread(osThread* th)
 
 int yThreadIndex(void)
 {
-    u8* tls_ptr;
+    u8 *tls_ptr;
 
     if (yTlsBucket == TLS_OUT_OF_INDEXES) {
         // Only happens the very first time, from main thread
@@ -174,7 +176,7 @@ void yCreateManualEvent(yEvent *ev, int initialState)
     ev->autoreset = 0;
 }
 
-void    ySetEvent(yEvent *ev)
+void ySetEvent(yEvent *ev)
 {
     pthread_mutex_lock(&ev->mtx);
     ev->verif = 1;
@@ -186,7 +188,7 @@ void    ySetEvent(yEvent *ev)
 
 }
 
-void    yResetEvent(yEvent *ev)
+void yResetEvent(yEvent *ev)
 {
     pthread_mutex_lock(&ev->mtx);
     ev->verif = 0;
@@ -195,7 +197,7 @@ void    yResetEvent(yEvent *ev)
 }
 
 
-int   yWaitForEvent(yEvent *ev, int time)
+int yWaitForEvent(yEvent *ev, int time)
 {
     int retval;
     pthread_mutex_lock(&ev->mtx);
@@ -222,13 +224,13 @@ int   yWaitForEvent(yEvent *ev, int time)
     return retval;
 
 }
-void   yCloseEvent(yEvent *ev)
+void yCloseEvent(yEvent *ev)
 {
     pthread_cond_destroy(&ev->cond);
     pthread_mutex_destroy(&ev->mtx);
 }
 
-static int    yCreateDetachedThreadEx(osThread *th, const char *name, void* (*fun)(void *), void *arg)
+static int yCreateDetachedThreadEx(osThread *th, const char *name, void* (*fun)(void *), void *arg)
 {
     pthread_attr_t attr;
     int result;
@@ -242,19 +244,17 @@ static int    yCreateDetachedThreadEx(osThread *th, const char *name, void* (*fu
         result = 0;
     }
 #if 0
-    if (name != NULL){
+if (name!= NULL){
        pthread_setname_np(*th, name);
     }
 #endif
-    pthread_attr_destroy(&attr);
+pthread_attr_destroy(&attr);
 
     return result;
 }
 
-static void    yReleaseDetachedThreadEx(osThread *th_hdl)
-{
-}
-
+static void yReleaseDetachedThreadEx(osThread *th_hdl)
+{}
 
 
 static int yWaitEndThread(osThread *th)
@@ -268,24 +268,24 @@ static void yKillThread(osThread *th)
     pthread_cancel(*th);
 }
 
-int    yThreadIndex(void)
+int yThreadIndex(void)
 {
     int res;
 
     pthread_once(&yInitKeyOnce, initTsdKey);
-    res = (int)((u8 *)pthread_getspecific(yTsdKey) - (u8 *)NULL);
+    res = (int)((u8*)pthread_getspecific(yTsdKey) - (u8*)NULL);
     if (!res) {
         // tiny risk of race condition, but thread idx is only
         // used for debug log purposes and is not sensitive
         res = yNextThreadIdx++;
-        pthread_setspecific(yTsdKey, (void*)((u8 *)NULL + res));
+        pthread_setspecific(yTsdKey, (void*)((u8*)NULL + res));
     }
     return res;
 }
 
 #endif
 
-int yCreateDetachedThreadNamed(const char* name, void* (*fun)(void*), void* arg)
+int yCreateDetachedThreadNamed(const char *name, void* (*fun)(void *), void *arg)
 {
     osThread th_hdl;
     if (yCreateDetachedThreadEx(&th_hdl, name, fun, arg) < 0) {
@@ -296,7 +296,7 @@ int yCreateDetachedThreadNamed(const char* name, void* (*fun)(void*), void* arg)
 }
 
 
-int yThreadCreateNamed(yThread* yth, const char* name, void* (*fun)(void*), void* arg)
+int yThreadCreateNamed(yThread *yth, const char *name, void* (*fun)(void *), void *arg)
 {
     if (yth->st == YTHREAD_RUNNING)
         return 0; // already started nothing to do
@@ -314,14 +314,14 @@ int yThreadCreateNamed(yThread* yth, const char* name, void* (*fun)(void*), void
     return -1;
 }
 
-int yThreadIsRunning(yThread* yth)
+int yThreadIsRunning(yThread *yth)
 {
     if (yth->st == YTHREAD_RUNNING || yth->st == YTHREAD_MUST_STOP)
         return 1;
     return 0;
 }
 
-void yThreadSignalStart(yThread* yth)
+void yThreadSignalStart(yThread *yth)
 {
     //send ok to parent thread
     yth->st = YTHREAD_RUNNING;
@@ -329,24 +329,24 @@ void yThreadSignalStart(yThread* yth)
 }
 
 
-void yThreadSignalEnd(yThread* yth)
+void yThreadSignalEnd(yThread *yth)
 {
     yth->st = YTHREAD_STOPED;
 }
 
-void yThreadRequestEnd(yThread* yth)
+void yThreadRequestEnd(yThread *yth)
 {
     if (yth->st == YTHREAD_RUNNING) {
         yth->st = YTHREAD_MUST_STOP;
     }
 }
 
-int yThreadMustEnd(yThread* yth)
+int yThreadMustEnd(yThread *yth)
 {
     return yth->st != YTHREAD_RUNNING;
 }
 
-void yThreadKill(yThread* yth)
+void yThreadKill(yThread *yth)
 {
     if (yThreadIsRunning(yth)) {
 #ifdef WINDOWS_API
@@ -440,39 +440,39 @@ static void yLeaveDebugCS()
 
 #endif //ifdef WINDOWS_API
 
-static const char* YCS_STATE_STR[] = {
-     "UNALLOCATED",
-     "ALLOCATED",
-     "DELETED"
+static const char *YCS_STATE_STR[] = {
+    "UNALLOCATED",
+    "ALLOCATED",
+    "DELETED"
 };
 
-static const char* YCS_ACTION_STR[] = {
-     "NONE   ",
-     "INIT   ",
-     "LOCK   ",
-     "LOCKTRY",
-     "RELEASE",
-     "DELETE "
+static const char *YCS_ACTION_STR[] = {
+    "NONE   ",
+    "INIT   ",
+    "LOCK   ",
+    "LOCKTRY",
+    "RELEASE",
+    "DELETE "
 };
 static void dump_YCS(yCRITICAL_SECTION *csptr)
 {
     int i;
     yCRITICAL_SECTION_ST *ycs = *csptr;
-    const char* state_str;
+    const char *state_str;
     if (csptr == NULL) {
         printf("NULL csptr");
         return;
     }
     if (ycs->state < sizeof(YCS_STATE_STR)) {
-        state_str= YCS_STATE_STR[ycs->state];
+        state_str = YCS_STATE_STR[ycs->state];
     } else {
         state_str = "INVALID";
     }
     // printf("%p:%02x: state=%s lock=%d\n", ycs, ycs->no, state_str, ycs->lock);
     for (i = 0; i < YCS_NB_TRACE; i++) {
         u32 action = ycs->last_actions[i].action;
-        const char* action_str = "INVALID";
-        const char* file_str = ycs->last_actions[i].fileid;
+        const char *action_str = "INVALID";
+        const char *file_str = ycs->last_actions[i].fileid;
         if (action < sizeof(YCS_ACTION_STR)) {
             action_str = YCS_ACTION_STR[action];
         }
@@ -484,9 +484,9 @@ static void dump_YCS(yCRITICAL_SECTION *csptr)
     }
 }
 
-static void pushCSAction(int threadid, const char* fileid, int lineno, yCRITICAL_SECTION_ST *csptr, YCS_ACTION action)
+static void pushCSAction(int threadid, const char *fileid, int lineno, yCRITICAL_SECTION_ST *csptr, YCS_ACTION action)
 {
-    memmove(&csptr->last_actions[1], &csptr->last_actions[0], sizeof(YCS_LOC)*(YCS_NB_TRACE - 1));
+    memmove(&csptr->last_actions[1], &csptr->last_actions[0], sizeof(YCS_LOC) * (YCS_NB_TRACE - 1));
     csptr->last_actions[0].thread = threadid;
     csptr->last_actions[0].fileid = fileid;
     csptr->last_actions[0].lineno = lineno;
@@ -494,7 +494,7 @@ static void pushCSAction(int threadid, const char* fileid, int lineno, yCRITICAL
 }
 
 
-void yDbgInitializeCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION *csptr)
+void yDbgInitializeCriticalSection(const char *fileid, int lineno, yCRITICAL_SECTION *csptr)
 {
     int res;
     int threadid = yThreadIndex();
@@ -510,16 +510,16 @@ void yDbgInitializeCriticalSection(const char* fileid, int lineno, yCRITICAL_SEC
     (*csptr)->state = YCS_ALLOCATED;
     pushCSAction(threadid, fileid, lineno, (*csptr), YCS_INIT);
 #if defined(WINDOWS_API)
-    res = 0;
-    InitializeCriticalSection(&((*csptr)->cs));
+res = 0;
+InitializeCriticalSection(&((*csptr)->cs));
 #else
-    res = pthread_mutex_init(&((*csptr)->cs), NULL);
+res = pthread_mutex_init(&((*csptr)->cs), NULL);
 #endif
-    CS_ASSERT(res == 0);
+CS_ASSERT(res== 0);
 }
 
 
-void yDbgEnterCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION *csptr)
+void yDbgEnterCriticalSection(const char *fileid, int lineno, yCRITICAL_SECTION *csptr)
 {
     int res;
     int threadid = yThreadIndex();
@@ -529,22 +529,22 @@ void yDbgEnterCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION 
 
     if ((*csptr)->no == CS_TRACK_NO || CS_TRACK_NO < 0) {
         //printf("enter CS on %s:%d:%p (%d)\n", fileid, lineno, (*csptr), (*csptr)->no);
-}
+    }
 
 #if defined(WINDOWS_API)
-    res = 0;
-    EnterCriticalSection(&((*csptr)->cs));
+res = 0;
+EnterCriticalSection(&((*csptr)->cs));
 #else
-    res = pthread_mutex_lock(&((*csptr)->cs));
+res = pthread_mutex_lock(&((*csptr)->cs));
 #endif
-    CS_ASSERT(res == 0);
-    CS_ASSERT((*csptr)->lock == 0);
-    (*csptr)->lock++;
-    pushCSAction(threadid, fileid, lineno, (*csptr), YCS_LOCK);
+CS_ASSERT(res== 0);
+CS_ASSERT((*csptr)->lock== 0);
+(*csptr)->lock++;
+pushCSAction(threadid, fileid, lineno, (*csptr), YCS_LOCK);
 }
 
 
-int yDbgTryEnterCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION *csptr)
+int yDbgTryEnterCriticalSection(const char *fileid, int lineno, yCRITICAL_SECTION *csptr)
 {
     int res;
     int threadid = yThreadIndex();
@@ -558,24 +558,24 @@ int yDbgTryEnterCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTIO
 
 
 #if defined(WINDOWS_API)
-    res = TryEnterCriticalSection(&((*csptr)->cs));
-    if (res == 0)
+res = TryEnterCriticalSection(&((*csptr)->cs));
+    if (res== 0)
         return 0;
-    CS_ASSERT(res == 1);
+CS_ASSERT(res== 1);
 #else
-    res = pthread_mutex_trylock(&((*csptr)->cs));
-    if (res == EBUSY)
+res = pthread_mutex_trylock(&((*csptr)->cs));
+    if (res== EBUSY)
         return 0;
-    CS_ASSERT(res == 0);
+CS_ASSERT(res== 0);
 #endif
-    CS_ASSERT((*csptr)->lock == 0);
-    (*csptr)->lock++;
-    pushCSAction(threadid, fileid, lineno, (*csptr), YCS_LOCKTRY);
+CS_ASSERT((*csptr)->lock== 0);
+(*csptr)->lock++;
+pushCSAction(threadid, fileid, lineno, (*csptr), YCS_LOCKTRY);
     return 1;
 }
 
 
-void yDbgLeaveCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION *csptr)
+void yDbgLeaveCriticalSection(const char *fileid, int lineno, yCRITICAL_SECTION *csptr)
 {
     int res;
     int threadid = yThreadIndex();
@@ -592,15 +592,15 @@ void yDbgLeaveCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION 
     pushCSAction(threadid, fileid, lineno, (*csptr), YCS_RELEASE);
 
 #if defined(WINDOWS_API)
-    res = 0;
-    LeaveCriticalSection(&((*csptr)->cs));
+res = 0;
+LeaveCriticalSection(&((*csptr)->cs));
 #else
-    res = pthread_mutex_unlock(&((*csptr)->cs));
+res = pthread_mutex_unlock(&((*csptr)->cs));
 #endif
-    CS_ASSERT(res == 0);
+CS_ASSERT(res== 0);
 }
 
-void yDbgDeleteCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION *csptr)
+void yDbgDeleteCriticalSection(const char *fileid, int lineno, yCRITICAL_SECTION *csptr)
 {
     int res;
     int threadid = yThreadIndex();
@@ -615,14 +615,14 @@ void yDbgDeleteCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION
     }
 
 #if defined(WINDOWS_API)
-    res = 0;
-    DeleteCriticalSection(&((*csptr)->cs));
+res = 0;
+DeleteCriticalSection(&((*csptr)->cs));
 #else
-    res = pthread_mutex_destroy(&((*csptr)->cs));
+res = pthread_mutex_destroy(&((*csptr)->cs));
 #endif
-    CS_ASSERT(res == 0);
-    (*csptr)->state = YCS_DELETED;
-    pushCSAction(threadid, fileid, lineno, (*csptr), YCS_DELETE);
+CS_ASSERT(res== 0);
+(*csptr)->state = YCS_DELETED;
+pushCSAction(threadid, fileid, lineno, (*csptr), YCS_DELETE);
 }
 
 #else /* not DEBUG_CRITICAL_SECTION */
@@ -636,14 +636,24 @@ typedef struct {
 #if defined(WINDOWS_API)
     CRITICAL_SECTION cs;
 #else
-    pthread_mutex_t              cs;
+    pthread_mutex_t cs;
 #endif
 } yCRITICAL_SECTION_ST;
 
+#ifndef NO_YSSL
 
-void yInitializeCriticalSection(yCRITICAL_SECTION* cs)
+typedef struct {
+#if defined(WINDOWS_API)
+    CONDITION_VARIABLE cvar;
+#else
+    pthread_cond_t  cvar;
+#endif
+} yCONDITION_VARIABLE_ST;
+#endif
+
+void yInitializeCriticalSection(yCRITICAL_SECTION *cs)
 {
-    yCRITICAL_SECTION_ST* ycsptr;
+    yCRITICAL_SECTION_ST *ycsptr;
     ycsptr = (yCRITICAL_SECTION_ST*)malloc(sizeof(yCRITICAL_SECTION_ST));
     memset(ycsptr, 0, sizeof(yCRITICAL_SECTION_ST));
 #if defined(WINDOWS_API)
@@ -659,9 +669,9 @@ void yInitializeCriticalSection(yCRITICAL_SECTION* cs)
     *cs = ycsptr;
 }
 
-void yEnterCriticalSection(yCRITICAL_SECTION* cs)
+void yEnterCriticalSection(yCRITICAL_SECTION *cs)
 {
-    yCRITICAL_SECTION_ST* ycsptr = (yCRITICAL_SECTION_ST*)(*cs);
+    yCRITICAL_SECTION_ST *ycsptr = (yCRITICAL_SECTION_ST*)(*cs);
 #if defined(WINDOWS_API)
     EnterCriticalSection(&(ycsptr->cs));
 #else
@@ -669,9 +679,9 @@ void yEnterCriticalSection(yCRITICAL_SECTION* cs)
 #endif
 }
 
-int yTryEnterCriticalSection(yCRITICAL_SECTION* cs)
+int yTryEnterCriticalSection(yCRITICAL_SECTION *cs)
 {
-    yCRITICAL_SECTION_ST* ycsptr = (yCRITICAL_SECTION_ST*)(*cs);
+    yCRITICAL_SECTION_ST *ycsptr = (yCRITICAL_SECTION_ST*)(*cs);
 #if defined(WINDOWS_API)
     return TryEnterCriticalSection(&(ycsptr->cs));
 #else
@@ -684,9 +694,9 @@ int yTryEnterCriticalSection(yCRITICAL_SECTION* cs)
 #endif
 }
 
-void yLeaveCriticalSection(yCRITICAL_SECTION* cs)
+void yLeaveCriticalSection(yCRITICAL_SECTION *cs)
 {
-    yCRITICAL_SECTION_ST* ycsptr = (yCRITICAL_SECTION_ST*)(*cs);
+    yCRITICAL_SECTION_ST *ycsptr = (yCRITICAL_SECTION_ST*)(*cs);
 #if defined(WINDOWS_API)
     LeaveCriticalSection(&(ycsptr->cs));
 #else
@@ -694,9 +704,9 @@ void yLeaveCriticalSection(yCRITICAL_SECTION* cs)
 #endif
 }
 
-void yDeleteCriticalSection(yCRITICAL_SECTION* cs)
+void yDeleteCriticalSection(yCRITICAL_SECTION *cs)
 {
-    yCRITICAL_SECTION_ST* ycsptr = (yCRITICAL_SECTION_ST*)(*cs);
+    yCRITICAL_SECTION_ST *ycsptr = (yCRITICAL_SECTION_ST*)(*cs);
 #if defined(WINDOWS_API)
     DeleteCriticalSection(&(ycsptr->cs));
 #else
@@ -705,5 +715,67 @@ void yDeleteCriticalSection(yCRITICAL_SECTION* cs)
     free(*cs);
     *cs = NULL;
 }
+#ifndef NO_YSSL
+
+int yInitializeConditionVariable(yCONDITION_VARIABLE *var)
+{
+    yCONDITION_VARIABLE_ST *yvarptr;
+    yvarptr = (yCONDITION_VARIABLE_ST*)malloc(sizeof(yCONDITION_VARIABLE_ST));
+    memset(yvarptr, 0, sizeof(yCONDITION_VARIABLE_ST));
+
+#ifdef WINDOWS_API
+    InitializeConditionVariable(&(yvarptr->cvar));
+    return 0;
+#else
+    return pthread_cond_init(&(yvarptr->cvar), NULL);
+#endif
+    *var = yvarptr;
+}
+
+void yDeleteConditionVariable(yCONDITION_VARIABLE *var)
+{
+    yCONDITION_VARIABLE_ST *yvarptr = (yCONDITION_VARIABLE_ST*)(*var);
+
+#ifndef WINDOWS_API
+    pthread_cond_destroy(&(yvarptr->cvar));
+#endif
+    free(yvarptr);
+    *var = NULL;
+}
+
+int yWakeConditionVariable(yCONDITION_VARIABLE *var)
+{
+    yCONDITION_VARIABLE_ST *yvarptr = (yCONDITION_VARIABLE_ST*)(*var);
+#ifdef WINDOWS_API
+    WakeConditionVariable(&(yvarptr->cvar));
+    return 0;
+#else
+    return pthread_cond_signal(&(yvarptr->cvar));
+#endif
+}
+
+int yWakeAllConditionVariable(yCONDITION_VARIABLE *var)
+{
+    yCONDITION_VARIABLE_ST *yvarptr = (yCONDITION_VARIABLE_ST*)(*var);
+#ifdef WINDOWS_API
+    WakeAllConditionVariable(&(yvarptr->cvar));
+    return 0;
+#else
+    return pthread_cond_broadcast(&(yvarptr->cvar));
+#endif
+}
+
+int ySleepConditionVariableCS(yCONDITION_VARIABLE *var, yCRITICAL_SECTION *cs)
+{
+    yCONDITION_VARIABLE_ST *yvarptr = (yCONDITION_VARIABLE_ST*)(*var);
+    yCRITICAL_SECTION_ST *ycsptr = (yCRITICAL_SECTION_ST*)(*cs);
+#ifdef WINDOWS_API
+    return SleepConditionVariableCS(&(yvarptr->cvar), &(ycsptr->cs), INFINITE) ? 0 : -1;
+#else
+    return pthread_cond_wait(&(yvarptr->cvar),  &(ycsptr->cs));
+#endif
+}
+
+#endif
 
 #endif

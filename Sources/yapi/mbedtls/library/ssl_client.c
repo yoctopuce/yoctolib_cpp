@@ -5,7 +5,7 @@
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
-#include "common.h"
+#include "ssl_misc.h"
 
 #if defined(MBEDTLS_SSL_CLI_C)
 #if defined(MBEDTLS_SSL_PROTO_TLS1_3) || defined(MBEDTLS_SSL_PROTO_TLS1_2)
@@ -17,7 +17,6 @@
 #include "mbedtls/platform.h"
 
 #include "ssl_client.h"
-#include "ssl_misc.h"
 #include "ssl_tls13_keys.h"
 #include "ssl_debug_helpers.h"
 
@@ -142,7 +141,7 @@ static int ssl_write_alpn_ext(mbedtls_ssl_context *ssl,
      *     ProtocolName protocol_name_list<2..2^16-1>
      * } ProtocolNameList;
      */
-    for (const char **cur = ssl->conf->alpn_list; *cur != NULL; cur++) {
+    for (const char *const *cur = ssl->conf->alpn_list; *cur != NULL; cur++) {
         /*
          * mbedtls_ssl_conf_set_alpn_protocols() checked that the length of
          * protocol names is less than 255.
@@ -223,7 +222,7 @@ static int ssl_write_supported_groups_ext(mbedtls_ssl_context *ssl,
     unsigned char *p = buf;
     unsigned char *named_group_list; /* Start of named_group_list */
     size_t named_group_list_len;     /* Length of named_group_list */
-    const uint16_t *group_list = mbedtls_ssl_get_groups(ssl);
+    const uint16_t *group_list = ssl->conf->group_list;
 
     *out_len = 0;
 
@@ -726,9 +725,8 @@ static int ssl_generate_random(mbedtls_ssl_context *ssl)
 #endif /* MBEDTLS_HAVE_TIME */
     }
 
-    ret = ssl->conf->f_rng(ssl->conf->p_rng,
-                           randbytes + gmt_unix_time_len,
-                           MBEDTLS_CLIENT_HELLO_RANDOM_LEN - gmt_unix_time_len);
+    ret = psa_generate_random(randbytes + gmt_unix_time_len,
+                              MBEDTLS_CLIENT_HELLO_RANDOM_LEN - gmt_unix_time_len);
     return ret;
 }
 
@@ -868,9 +866,9 @@ static int ssl_prepare_client_hello(mbedtls_ssl_context *ssl)
     if (session_id_len != session_negotiate->id_len) {
         session_negotiate->id_len = session_id_len;
         if (session_id_len > 0) {
-            ret = ssl->conf->f_rng(ssl->conf->p_rng,
-                                   session_negotiate->id,
-                                   session_id_len);
+
+            ret = psa_generate_random(session_negotiate->id,
+                                      session_id_len);
             if (ret != 0) {
                 MBEDTLS_SSL_DEBUG_RET(1, "creating session id failed", ret);
                 return ret;

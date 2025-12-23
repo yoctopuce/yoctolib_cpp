@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 70567 2025-12-04 08:54:16Z seb $
+#  $Id: GNUmakefile 70835 2025-12-15 15:46:41Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -412,105 +412,92 @@ YOCTO_API_OBJS_STAT = yocto_api.o\
 ifndef  NO_YSSL
 #-- mbedtls_patch_start --
 MBEDTLS_OBJS_STAT = \
-	aes.o \
-	aesce.o \
-	aesni.o \
-	aria.o \
-	asn1parse.o \
-	asn1write.o \
-	base64.o \
-	bignum.o \
-	bignum_core.o \
-	camellia.o \
-	ccm.o \
-	chacha20.o \
-	chachapoly.o \
-	cipher.o \
-	cipher_wrap.o \
-	cmac.o \
-	constant_time.o \
-	ctr_drbg.o \
-	debug.o \
-	des.o \
-	dhm.o \
-	ecdh.o \
-	ecdsa.o \
-	ecjpake.o \
-	ecp.o \
-	ecp_curves.o \
-	entropy.o \
-	entropy_poll.o \
-	error.o \
-	gcm.o \
-	hkdf.o \
-	hmac_drbg.o \
-	lmots.o \
-	lms.o \
-	md.o \
-	md5.o \
-	net_sockets.o \
-	nist_kw.o \
-	oid.o \
-	padlock.o \
-	pem.o \
-	pk.o \
-	pk_ecc.o \
-	pkcs12.o \
-	pkcs5.o \
-	pkcs7.o \
-	pkparse.o \
-	pkwrite.o \
-	pk_wrap.o \
-	platform.o \
-	platform_util.o \
-	poly1305.o \
-	psa_crypto.o \
-	psa_crypto_aead.o \
-	psa_crypto_cipher.o \
-	psa_crypto_client.o \
-	psa_crypto_driver_wrappers_no_static.o \
-	psa_crypto_ecp.o \
-	psa_crypto_ffdh.o \
-	psa_crypto_hash.o \
-	psa_crypto_mac.o \
-	psa_crypto_pake.o \
-	psa_crypto_rsa.o \
-	psa_crypto_slot_management.o \
-	psa_crypto_storage.o \
-	psa_its_file.o \
-	psa_util.o \
-	ripemd160.o \
-	rsa.o \
-	rsa_alt_helpers.o \
-	sha1.o \
-	sha256.o \
-	sha3.o \
-	sha512.o \
-	ssl_cache.o \
-	ssl_ciphersuites.o \
-	ssl_client.o \
-	ssl_cookie.o \
-	ssl_debug_helpers_generated.o \
-	ssl_msg.o \
-	ssl_ticket.o \
-	ssl_tls.o \
-	ssl_tls12_client.o \
-	ssl_tls12_server.o \
-	ssl_tls13_client.o \
-	ssl_tls13_generic.o \
-	ssl_tls13_keys.o \
-	ssl_tls13_server.o \
-	threading.o \
-	timing.o \
-	version.o \
-	version_features.o \
-	x509.o \
-	x509write.o \
-	x509write_crt.o \
-	x509write_csr.o \
-	x509_create.o \
-	x509_crl.o \
-	x509_crt.o \
+	library/error.o \
+	library/x509write_crt.o \
+	library/x509_create.o \
+	library/debug.o \
+	library/x509.o \
+	library/x509_crt.o \
+	library/x509write.o \
+	library/x509_oid.o \
+	library/ssl_tls.o \
+	library/ssl_client.o \
+	library/ssl_msg.o \
+	library/ssl_ciphersuites.o \
+	library/ssl_tls13_client.o \
+	library/ssl_tls12_client.o \
+	library/ssl_tls12_server.o \
+	library/ssl_tls13_generic.o \
+	library/ssl_tls13_server.o \
+	library/ssl_tls13_keys.o \
+	tf-psa-crypto/core/psa_its_file.o \
+	tf-psa-crypto/core/psa_crypto_slot_management.o \
+	tf-psa-crypto/core/psa_crypto.o \
+	tf-psa-crypto/core/psa_crypto_client.o \
+	tf-psa-crypto/core/psa_crypto_storage.o \
+	tf-psa-crypto/core/psa_crypto_driver_wrappers_no_static.o \
+	tf-psa-crypto/drivers/builtin/src/cmac.o \
+	tf-psa-crypto/drivers/builtin/src/md5.o \
+	tf-psa-crypto/drivers/builtin/src/gcm.o \
+	tf-psa-crypto/drivers/builtin/src/aes.o \
+	tf-psa-crypto/drivers/builtin/src/aesce.o \
+	tf-psa-crypto/drivers/builtin/src/rsa.o \
+	tf-psa-crypto/drivers/builtin/src/pk_ecc.o \
+	tf-psa-crypto/drivers/builtin/src/oid.o \
+	tf-psa-crypto/drivers/builtin/src/poly1305.o \
+	tf-psa-crypto/drivers/builtin/src/ctr_drbg.o \
+	tf-psa-crypto/drivers/builtin/src/chacha20.o \
+	tf-psa-crypto/drivers/builtin/src/ecdh.o \
+	tf-psa-crypto/drivers/builtin/src/ecdsa.o \
+	tf-psa-crypto/drivers/builtin/src/cipher_wrap.o \
+	tf-psa-crypto/drivers/builtin/src/base64.o \
+	tf-psa-crypto/drivers/builtin/src/pk_rsa.o \
+	tf-psa-crypto/drivers/builtin/src/pkcs5.o \
+	tf-psa-crypto/drivers/builtin/src/aesni.o \
+	tf-psa-crypto/drivers/builtin/src/rsa_alt_helpers.o \
+	tf-psa-crypto/drivers/builtin/src/entropy_poll.o \
+	tf-psa-crypto/drivers/builtin/src/hmac_drbg.o \
+	tf-psa-crypto/drivers/builtin/src/camellia.o \
+	tf-psa-crypto/drivers/builtin/src/aria.o \
+	tf-psa-crypto/drivers/builtin/src/ripemd160.o \
+	tf-psa-crypto/drivers/builtin/src/sha1.o \
+	tf-psa-crypto/drivers/builtin/src/sha256.o \
+	tf-psa-crypto/drivers/builtin/src/sha512.o \
+	tf-psa-crypto/drivers/builtin/src/sha3.o \
+	tf-psa-crypto/drivers/builtin/src/ccm.o \
+	tf-psa-crypto/drivers/builtin/src/chachapoly.o \
+	tf-psa-crypto/drivers/builtin/src/ecjpake.o \
+	tf-psa-crypto/drivers/builtin/src/psa_crypto_mac.o \
+	tf-psa-crypto/drivers/builtin/src/psa_crypto_rsa.o \
+	tf-psa-crypto/drivers/builtin/src/psa_crypto_ecp.o \
+	tf-psa-crypto/drivers/builtin/src/psa_crypto_ffdh.o \
+	tf-psa-crypto/drivers/builtin/src/pk_wrap.o \
+	tf-psa-crypto/drivers/builtin/src/ecp.o \
+	tf-psa-crypto/drivers/builtin/src/cipher.o \
+	tf-psa-crypto/drivers/builtin/src/md.o \
+	tf-psa-crypto/drivers/builtin/src/psa_crypto_aead.o \
+	tf-psa-crypto/drivers/builtin/src/psa_crypto_hash.o \
+	tf-psa-crypto/drivers/builtin/src/psa_crypto_pake.o \
+	tf-psa-crypto/drivers/builtin/src/constant_time.o \
+	tf-psa-crypto/drivers/builtin/src/ecp_curves.o \
+	tf-psa-crypto/drivers/builtin/src/psa_crypto_cipher.o \
+	tf-psa-crypto/drivers/builtin/src/entropy.o \
+	tf-psa-crypto/drivers/builtin/src/platform_util.o \
+	tf-psa-crypto/drivers/builtin/src/threading.o \
+	tf-psa-crypto/drivers/builtin/src/asn1write.o \
+	tf-psa-crypto/drivers/builtin/src/asn1parse.o \
+	tf-psa-crypto/drivers/builtin/src/pem.o \
+	tf-psa-crypto/drivers/builtin/src/pk.o \
+	tf-psa-crypto/drivers/builtin/src/pkparse.o \
+	tf-psa-crypto/drivers/builtin/src/pkwrite.o \
+	tf-psa-crypto/drivers/builtin/src/bignum.o \
+	tf-psa-crypto/drivers/builtin/src/psa_util.o \
+	tf-psa-crypto/drivers/builtin/src/bignum_core.o \
+
+
+MBEDTLS_DIR         = $(YAPI_SOURCES_DIR)mbedtls/
+MBEDTLS_SOURCES_DIR = $(MBEDTLS_DIR)library/
+MBEDTLS_INCLUDE_DIR = $(MBEDTLS_DIR)include $(MBEDTLS_DIR)tf-psa-crypto/core $(MBEDTLS_DIR)tf-psa-crypto/drivers/builtin/include $(MBEDTLS_DIR)tf-psa-crypto/drivers/builtin/src $(MBEDTLS_DIR)tf-psa-crypto/include
 
 #-- mbedtls_patch_stop --
 endif
@@ -521,10 +508,6 @@ YAPI_SOURCES_DIR    = $(SOURCES_DIR)yapi/
 
 YAPI_OBJS_STAT = yapi.o ystream.o yprog.o yfifo.o ykey.o yhash.o yjson.o ytcp.o ymemory.o ythread.o yjni.o yssl.o
 YAPI_OBJS_DYN   = $(patsubst %.o, %_dyn.o,$(YAPI_OBJS_STAT))
-
-MBEDTLS_DIR           = $(YAPI_SOURCES_DIR)mbedtls/
-MBEDTLS_INCLUDE_DIR   = $(MBEDTLS_DIR)include/
-MBEDTLS_SOURCES_DIR  = $(MBEDTLS_DIR)library/
 
 MBEDTLS_OBJS_DYN   = $(patsubst %.o, %_dyn.o,$(MBEDTLS_OBJS_STAT))
 
@@ -581,7 +564,7 @@ YAPI_OBJS_DYN_MIPSEL = $(patsubst %.o, $(OBJDIR_MIPSEL)%.o, $(YAPI_OBJS_DYN) ypk
 YAPI_OBJS_DYN_OSX = $(patsubst %.o, $(OBJDIR_OSX)%.o, $(YAPI_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_osx_dyn.o)
 YAPI_OBJS_DYN_OSX32 = $(patsubst %.o, $(OBJDIR_OSX32)%.o, $(YAPI_OBJS_DYN) $(MBEDTLS_OBJS_DYN) ypkt_osx_dyn.o)
 
-VPATH       = $(YAPI_SOURCES_DIR) $(SOURCES_DIR) $(MBEDTLS_SOURCES_DIR)
+VPATH       = $(YAPI_SOURCES_DIR) $(SOURCES_DIR) $(MBEDTLS_DIR)
 INCLUDES    = $(YAPI_SOURCES_DIR) $(SOURCES_DIR) $(MBEDTLS_INCLUDE_DIR)
 
 INC_PATH    = $(patsubst %,-I%,$(subst :, ,$(INCLUDES)))
@@ -592,12 +575,14 @@ fwd: default
 
 # WINDOW 32bits
 $(OBJDIR_WIN32)%.obj: %.c $(ALL_H)
+	@$(MKDIR) -p $(@D)
 	@$(CC_WIN32) $(OPTS_WIN32) $(OPTS_PROD_WIN) $(OPTS_STAT_WIN) $(INC_PATH_WIN) /Fo$@ /c $<
 
 $(OBJDIR_WIN32)%.obj: %.cpp $(ALL_H)
 	@$(CPP_WIN32) $(OPTS_WIN32) $(OPTS_PROD_WIN) $(OPTS_STAT_WIN) $(INC_PATH_WIN) /EHsc /Fo$@ /c $<
 
 $(OBJDIR_WIN32)%_dyn.obj: %.c $(ALL_H)
+	@$(MKDIR) -p $(@D)
 	@$(CC_WIN32) $(OPTS_WIN32) $(OPTS_PROD_WIN) $(OPTS_DYN_WIN) $(INC_PATH_WIN) /Fo$@ /c $<
 
 $(OBJDIR_WIN32)%_dyn.obj: %.cpp $(ALL_H)
@@ -608,12 +593,14 @@ $(OBJDIR_WIN32)%.res: %.rc
 
 # WINDOW 64bits
 $(OBJDIR_WIN64)%.obj: %.c $(ALL_H)
+	@$(MKDIR) -p $(@D)
 	@$(CC_WIN64) $(OPTS_WIN64) $(OPTS_PROD_WIN) $(OPTS_STAT_WIN) $(INC_PATH_WIN) /Fo$@ /c $<
 
 $(OBJDIR_WIN64)%.obj: %.cpp $(ALL_H)
 	@$(CPP_WIN64) $(OPTS_WIN64) $(OPTS_PROD_WIN) $(OPTS_STAT_WIN) $(INC_PATH_WIN) /EHsc /Fo$@ /c $<
 
 $(OBJDIR_WIN64)%_dyn.obj: %.c $(ALL_H)
+	@$(MKDIR) -p $(@D)
 	@$(CC_WIN64) $(OPTS_WIN64) $(OPTS_PROD_WIN) $(OPTS_DYN_WIN) $(INC_PATH_WIN) /Fo$@ /c $<
 
 $(OBJDIR_WIN64)%_dyn.obj: %.cpp $(ALL_H)
@@ -624,12 +611,14 @@ $(OBJDIR_WIN64)%.res: %.rc
 
 # WINDOW ARM 64bits
 $(OBJDIR_WINARM)%.obj: %.c $(ALL_H)
+	@$(MKDIR) -p $(@D)
 	@$(CC_WINARM) $(OPTS_WINARM) $(OPTS_PROD_WIN) $(OPTS_STAT_WIN) $(INC_PATH_WIN) /Fo$@ /c $<
 
 $(OBJDIR_WINARM)%.obj: %.cpp $(ALL_H)
 	@$(CPP_WINARM) $(OPTS_WINARM) $(OPTS_PROD_WIN) $(OPTS_STAT_WIN) $(INC_PATH_WIN) /EHsc /Fo$@ /c $<
 
 $(OBJDIR_WINARM)%_dyn.obj: %.c $(ALL_H)
+	@$(MKDIR) -p $(@D)
 	@$(CC_WINARM) $(OPTS_WINARM) $(OPTS_PROD_WIN) $(OPTS_DYN_WIN) $(INC_PATH_WIN) /Fo$@ /c $<
 
 $(OBJDIR_WINARM)%_dyn.obj: %.cpp $(ALL_H)
@@ -641,6 +630,7 @@ $(OBJDIR_WINARM)%.res: %.rc
 #generic compilation rules
 $(OBJDIR_I386)%.o: %.c $(ALL_H)
 	@echo compiling $@
+	@$(MKDIR) -p $(@D)
 	@$(CC_I386) -std=c99  $(OPTS_I386) $(OPTS_PROD) $(OPTS_STAT) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_I386)%.o: %.cpp $(ALL_H)
@@ -649,6 +639,7 @@ $(OBJDIR_I386)%.o: %.cpp $(ALL_H)
 
 $(OBJDIR_I386)%_dyn.o: %.c $(ALL_H)
 	@echo compiling $@
+	@$(MKDIR) -p $(@D)
 	@$(CC_I386) -std=c99  $(OPTS_I386) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_I386)%_dyn.o: %.cpp $(ALL_H)
@@ -657,6 +648,7 @@ $(OBJDIR_I386)%_dyn.o: %.cpp $(ALL_H)
 
 $(OBJDIR_X64)%.o: %.c $(ALL_H)
 	@echo compiling $@
+	@$(MKDIR) -p $(@D)
 	@$(CC_X64) -std=c99  $(OPTS_X64) $(OPTS_PROD) $(OPTS_STAT) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_X64)%.o: %.cpp $(ALL_H)
@@ -665,6 +657,7 @@ $(OBJDIR_X64)%.o: %.cpp $(ALL_H)
 
 $(OBJDIR_X64)%_dyn.o: %.c $(ALL_H)
 	@echo compiling $@
+	@$(MKDIR) -p $(@D)
 	@$(CC_X64) -std=c99  $(OPTS_X64) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_X64)%_dyn.o: %.cpp $(ALL_H)
@@ -673,6 +666,7 @@ $(OBJDIR_X64)%_dyn.o: %.cpp $(ALL_H)
 
 $(OBJDIR_ARMEL)%.o: %.c $(ALL_H)
 	@echo compiling $@
+	@$(MKDIR) -p $(@D)
 	@$(CC_ARMEL) $(OPTS_ARMEL) $(OPTS_PROD) $(OPTS_STAT) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_ARMEL)%.o: %.cpp $(ALL_H)
@@ -681,6 +675,7 @@ $(OBJDIR_ARMEL)%.o: %.cpp $(ALL_H)
 
 $(OBJDIR_ARMEL)%_dyn.o: %.c $(ALL_H)
 	@echo compiling $@
+	@$(MKDIR) -p $(@D)
 	@$(CC_ARMEL) $(OPTS_ARMEL) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_ARMEL)%_dyn.o: %.cpp $(ALL_H)
@@ -689,6 +684,7 @@ $(OBJDIR_ARMEL)%_dyn.o: %.cpp $(ALL_H)
 
 $(OBJDIR_ARMHF)%.o: %.c $(ALL_H)
 	@echo compiling $@
+	@$(MKDIR) -p $(@D)
 	@$(CC_ARMHF) $(OPTS_ARMHF) $(OPTS_PROD) $(OPTS_STAT) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_ARMHF)%.o: %.cpp $(ALL_H)
@@ -697,6 +693,7 @@ $(OBJDIR_ARMHF)%.o: %.cpp $(ALL_H)
 
 $(OBJDIR_ARMHF)%_dyn.o: %.c $(ALL_H)
 	@echo compiling $@
+	@$(MKDIR) -p $(@D)
 	@$(CC_ARMHF) $(OPTS_ARMHF) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_ARMHF)%_dyn.o: %.cpp $(ALL_H)
@@ -705,6 +702,7 @@ $(OBJDIR_ARMHF)%_dyn.o: %.cpp $(ALL_H)
 
 $(OBJDIR_AARCH64)%.o: %.c $(ALL_H)
 	@echo compiling $@
+	@$(MKDIR) -p $(@D)
 	@$(CC_AARCH64) $(OPTS_AARCH64) $(OPTS_PROD) $(OPTS_STAT) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_AARCH64)%.o: %.cpp $(ALL_H)
@@ -713,6 +711,7 @@ $(OBJDIR_AARCH64)%.o: %.cpp $(ALL_H)
 
 $(OBJDIR_AARCH64)%_dyn.o: %.c $(ALL_H)
 	@echo compiling $@
+	@$(MKDIR) -p $(@D)
 	@$(CC_AARCH64) $(OPTS_AARCH64) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_AARCH64)%_dyn.o: %.cpp $(ALL_H)
@@ -753,6 +752,7 @@ $(OBJDIR_MIPSEL)%_dyn.o: %.cpp $(ALL_H)
 
 $(OBJDIR_OSX)%.o: %.c $(ALL_H)
 	@echo compiling $@
+	@$(MKDIR) -p $(@D)
 	@$(CC_OSX) $(OPTS_OSX) $(OPTS_PROD) $(OPTS_STAT) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_OSX)%.o: %.cpp $(ALL_H)
@@ -761,6 +761,7 @@ $(OBJDIR_OSX)%.o: %.cpp $(ALL_H)
 
 $(OBJDIR_OSX)%_dyn.o: %.c $(ALL_H)
 	@echo compiling $@
+	@$(MKDIR) -p $(@D)
 	@$(CC_OSX) $(OPTS_OSX) $(OPTS_PROD) $(OPTS_DYN) $(INC_PATH)  -c $< -o $@
 
 $(OBJDIR_OSX)%_dyn.o: %.cpp $(ALL_H)

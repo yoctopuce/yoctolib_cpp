@@ -42,10 +42,15 @@
 #include "../../ydef.h"
 
 
-typedef struct mbedtls_threading_mutex_t
+typedef struct mbedtls_platform_mutex_t
 {
     yCRITICAL_SECTION mutex;
-} mbedtls_threading_mutex_t;
+} mbedtls_platform_mutex_t;
 
+
+typedef struct mbedtls_platform_condition_variable_t
+{
+    yCONDITION_VARIABLE var;
+} mbedtls_platform_condition_variable_t;
 
 #endif

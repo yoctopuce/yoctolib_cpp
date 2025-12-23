@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yssl.c 70527 2025-11-27 09:14:11Z seb $
+ * $Id: yssl.c 70935 2025-12-22 11:20:54Z seb $
  *
  * Implementation of a client TCP stack with SSL
  *
@@ -42,16 +42,15 @@
 #define __FILENAME__   "yssl"
 
 #ifndef NO_YSSL
+#include "psa/crypto.h"
 #include "mbedtls/build_info.h"
-#include "mbedtls/ssl.h"
-#include "mbedtls/debug.h"
+#include "mbedtls/platform.h"
 #include "mbedtls/net_sockets.h"
-#include "mbedtls/ctr_drbg.h"
-#include "mbedtls/entropy.h"
 #include "mbedtls/error.h"
+
 #include "mbedtls/threading.h"
-#include <mbedtls/base64.h>
-#include <mbedtls/pem.h>
+#include "mbedtls/pk.h"
+#include "mbedtls/pem.h"
 #endif
 
 #include "yproto.h"
@@ -60,7 +59,7 @@
 
 
 #ifndef NO_YSSL
-#include "mbedtls/platform.h"
+//#include "mbedtls/platform.h"
 
 #ifdef WINDOWS_API
 #define SOCK_ERR    (WSAGetLastError())
@@ -142,8 +141,8 @@ static int format_mbedtls_err(const char *fileid, int lineno, int err, char *err
 }
 
 static mbedtls_x509_crt cachain, srvcert;
-static mbedtls_ctr_drbg_context ctr_drbg;
-static mbedtls_entropy_context entropy;
+//static mbedtls_ctr_drbg_context ctr_drbg;
+//static mbedtls_entropy_context entropy;
 static mbedtls_pk_context pkey;
 
 #ifdef DEBUG_SSL
@@ -158,25 +157,31 @@ static void my_debug(void *ctx, int level, const char *file, int line, const cha
 int yssl_generate_private_key(const char *keyfile, u32 nbits, char *errmsg)
 {
     int ret;
-    mbedtls_pk_context key;
     FILE *fd;
     unsigned char output_buf[16000];
     unsigned char *c = output_buf;
     size_t len = 0;
+    psa_key_id_t key_id;
 
-    mbedtls_pk_init(&key);
-    ret = mbedtls_pk_setup(&key, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
-    if (ret != 0) {
-        return FMT_MBEDTLS_ERR(ret);
+    psa_crypto_init();
+
+    struct psa_key_attributes_s key_attributes = psa_key_attributes_init();
+    psa_set_key_usage_flags(&key_attributes, PSA_KEY_USAGE_SIGN_HASH | PSA_KEY_USAGE_VERIFY_HASH);
+    psa_set_key_algorithm(&key_attributes, PSA_ALG_RSA_PKCS1V15_SIGN(PSA_ALG_SHA_256));
+    psa_set_key_type(&key_attributes, PSA_KEY_TYPE_RSA_KEY_PAIR);
+    psa_set_key_bits(&key_attributes, nbits);
+    psa_status_t status = psa_generate_key(&key_attributes, &key_id);
+    if (status != PSA_SUCCESS) {
+        return FMT_MBEDTLS_ERR(status);
     }
-
-    ret = mbedtls_rsa_gen_key(mbedtls_pk_rsa(key), mbedtls_ctr_drbg_random, &ctr_drbg, nbits, 65537);
-    if (ret != 0) {
-        return FMT_MBEDTLS_ERR(ret);
-    }
-
 
     memset(output_buf, 0, 16000);
+    mbedtls_pk_context key;
+    mbedtls_pk_init(&key);
+    ret = mbedtls_pk_copy_from_psa(key_id, &key);
+    if (ret != 0) {
+        return (ret);
+    }
     if ((ret = mbedtls_pk_write_key_pem(&key, output_buf, 16000)) != 0)
         return (ret);
 
@@ -208,7 +213,7 @@ int yssl_write_certificate(void *crt_void, const char *certfilename, char *errms
     mbedtls_x509write_cert *crt = crt_void;
 
     memset(buffer, 0, 4096);
-    ret = mbedtls_x509write_crt_pem(crt, buffer, 4096, mbedtls_ctr_drbg_random, &ctr_drbg);
+    ret = mbedtls_x509write_crt_pem(crt, buffer, 4096);
     if (ret < 0) {
         return FMT_MBEDTLS_ERR(ret);
     }
@@ -258,9 +263,7 @@ int yssl_generate_certificate(const char *keyfile, const char *certfile,
 {
     mbedtls_pk_context key;
     mbedtls_x509write_cert crt;
-    mbedtls_mpi serial;
     char subject_name[1024];
-    uint8_t rand_serial[20];
     struct tm timeinfo;
     time_t rawtime;
     char from[16];
@@ -270,22 +273,15 @@ int yssl_generate_certificate(const char *keyfile, const char *certfile,
     mbedtls_x509_san_list *san_list = alloc_san_obj("localhost");
     mbedtls_x509_san_list *san_p = san_list;
 
-
+    psa_crypto_init(); //todo: check return value
     mbedtls_pk_init(&key);
     mbedtls_x509write_crt_init(&crt);
 
-    int ret = mbedtls_pk_parse_keyfile(&key, keyfile, NULL,
-                                       mbedtls_ctr_drbg_random, &ctr_drbg);
+    int ret = mbedtls_pk_parse_keyfile(&key, keyfile, NULL);
     if (ret != 0) {
         return FMT_MBEDTLS_ERR(ret);
     }
 
-    mbedtls_mpi_init(&serial);
-    mbedtls_ctr_drbg_random(&ctr_drbg, rand_serial, 20);
-    ret = mbedtls_mpi_read_binary(&serial, rand_serial, 20);
-    if (ret != 0) {
-        return FMT_MBEDTLS_ERR(ret);
-    }
 
     // self signed certificate use same key for subject and issuer
     mbedtls_x509write_crt_set_subject_key(&crt, &key);
@@ -327,10 +323,6 @@ int yssl_generate_certificate(const char *keyfile, const char *certfile,
     }
     mbedtls_x509write_crt_set_version(&crt, MBEDTLS_X509_CRT_VERSION_3);
     mbedtls_x509write_crt_set_md_alg(&crt, MBEDTLS_MD_SHA256);
-    ret = mbedtls_x509write_crt_set_serial(&crt, &serial);
-    if (ret != 0) {
-        return FMT_MBEDTLS_ERR(ret);
-    }
     // compute time string
     time(&rawtime);
     ygmtime(&timeinfo, &rawtime);
@@ -356,31 +348,58 @@ int yssl_generate_certificate(const char *keyfile, const char *certfile,
     return ret;
 }
 
-static void yssl_mutex_init(mbedtls_threading_mutex_t *mutex)
+static int yssl_mutex_init(mbedtls_platform_mutex_t *mutex)
 {
     yInitializeCriticalSection(&mutex->mutex);
+    return 0;
 }
 
-static void yssl_mutex_free(mbedtls_threading_mutex_t *mutex)
+static void yssl_mutex_free(mbedtls_platform_mutex_t *mutex)
 {
     yDeleteCriticalSection(&mutex->mutex);
 }
 
-static int yssl_mutex_lock(mbedtls_threading_mutex_t *mutex)
+static int yssl_mutex_lock(mbedtls_platform_mutex_t *mutex)
 {
     yEnterCriticalSection(&mutex->mutex);
     return 0;
 }
 
-static int yssl_mutex_unlock(mbedtls_threading_mutex_t *mutex)
+static int yssl_mutex_unlock(mbedtls_platform_mutex_t *mutex)
 {
     yLeaveCriticalSection(&mutex->mutex);
     return 0;
 }
 
+
+static int yssl_cond_init(mbedtls_platform_condition_variable_t *var)
+{
+    return yInitializeConditionVariable(&var->var);
+}
+
+static void yssl_cond_destroy(mbedtls_platform_condition_variable_t *var)
+{
+    yDeleteConditionVariable(&var->var);
+}
+
+static int yssl_cond_signal(mbedtls_platform_condition_variable_t *var)
+{
+    return yWakeConditionVariable(&var->var);
+}
+
+static int yssl_cond_broadcast(mbedtls_platform_condition_variable_t *var)
+{
+    return yWakeAllConditionVariable(&var->var);
+}
+
+static int yssl_cond_wait(mbedtls_platform_condition_variable_t *var, mbedtls_platform_mutex_t *mutex)
+{
+    return ySleepConditionVariableCS(&var->var, &mutex->mutex);
+}
+
+
 int yTcpInitSSL(char *errmsg)
 {
-    int ret;
 #if defined(MBEDTLS_SSL_PROTO_TLS1_3)
     psa_status_t status;
 #endif
@@ -396,26 +415,20 @@ int yTcpInitSSL(char *errmsg)
     mbedtls_threading_set_alt(yssl_mutex_init,
                               yssl_mutex_free,
                               yssl_mutex_lock,
-                              yssl_mutex_unlock);
+                              yssl_mutex_unlock,
+                              yssl_cond_init,
+                              yssl_cond_destroy,
+                              yssl_cond_signal,
+                              yssl_cond_broadcast,
+                              yssl_cond_wait);
 
-
-    mbedtls_x509_crt_init(&cachain);
-    mbedtls_x509_crt_init(&srvcert);
-    mbedtls_ctr_drbg_init(&ctr_drbg);
-    mbedtls_pk_init(&pkey);
-    SSLLOG("Seeding the random number generator...\n");
-    mbedtls_entropy_init(&entropy);
-    ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func,
-                                &entropy, NULL, 0);
-    if (ret != 0) {
-        return FMT_MBEDTLS_ERR(ret);
-    }
-#if defined(MBEDTLS_SSL_PROTO_TLS1_3)
     status = psa_crypto_init();
     if (status != PSA_SUCCESS) {
         return YERRMSG(YAPI_SSL_ERROR, "Failed to initialize PSA Crypto");
     }
-#endif
+    mbedtls_x509_crt_init(&cachain);
+    mbedtls_x509_crt_init(&srvcert);
+    mbedtls_pk_init(&pkey);
 #ifdef ADD_DEFAULT_X509_CERTS
     ret = mbedtls_x509_crt_parse(&cachain, (const unsigned char*)SSL_CA_PEM,
                                  sizeof(SSL_CA_PEM));
@@ -442,8 +455,7 @@ int yTcpSetSrvCertificateSSL(const char *certfile, const char *keyfile, char *er
         fclose(fd);
 
         mbedtls_pk_free(&pkey);
-        ret = mbedtls_pk_parse_keyfile(&pkey, keyfile, NULL,
-                                       mbedtls_ctr_drbg_random, &ctr_drbg);
+        ret = mbedtls_pk_parse_keyfile(&pkey, keyfile, NULL);
         if (ret < 0) {
             return FMT_MBEDTLS_ERR(ret);
         }
@@ -542,15 +554,10 @@ int yTcpDownloadSSLCert(const char *host, int port, u64 mstimeout, u8 *buffer, u
 void yTcpShutdownSSL(void)
 {
     SSLLOG("YSSL: shutdown\n");
-
-#if defined(MBEDTLS_SSL_PROTO_TLS1_3)
-    mbedtls_psa_crypto_free();
-#endif
     mbedtls_x509_crt_free(&cachain);
     mbedtls_x509_crt_free(&srvcert);
     mbedtls_pk_free(&pkey);
-    mbedtls_ctr_drbg_free(&ctr_drbg);
-    mbedtls_entropy_free(&entropy);
+    mbedtls_psa_crypto_free();
     mbedtls_threading_free_alt();
 }
 
@@ -601,7 +608,7 @@ static int do_ssl_handshake(YSSL_SOCKET yssl, int skip_cert_validation, char *er
     u32 flags;
 
     while ((ret = mbedtls_ssl_handshake(yssl->ssl)) != 0) {
-        if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
+        if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE && ret != MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET) {
             return FMT_MBEDTLS_ERR(ret);
         }
     }
@@ -723,7 +730,6 @@ static int setup_ssl(yssl_socket_st *yssl, const char *remote_hostname, int skip
     if (!server_mode) {
         mbedtls_ssl_conf_ca_chain(yssl->ssl_conf, &cachain, NULL);
     }
-    mbedtls_ssl_conf_rng(yssl->ssl_conf, mbedtls_ctr_drbg_random, &ctr_drbg);
 
     if (server_mode) {
         res = mbedtls_ssl_conf_own_cert(yssl->ssl_conf, &srvcert, &pkey);
@@ -902,7 +908,7 @@ int yTcpReadSSL(YSSL_SOCKET yssl, u8 *buffer, int len, char *errmsg)
         if (res == 0 || res == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY) {
             yssl->flags |= YSSL_TCP_SOCK_CLOSED;
         } else if (res < 0) {
-            if (res != MBEDTLS_ERR_SSL_WANT_READ && res != MBEDTLS_ERR_SSL_WANT_WRITE) {
+            if (res != MBEDTLS_ERR_SSL_WANT_READ && res != MBEDTLS_ERR_SSL_WANT_WRITE && res != MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET) {
                 return FMT_MBEDTLS_ERR(res);
             }
         } else {

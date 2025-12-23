@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 70470 2025-11-24 15:03:05Z seb $
+ * $Id: ytcp.c 70863 2025-12-18 10:36:36Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -3487,8 +3487,8 @@ static RequestSt* closeAllReq(HubSt *hub, int err, const char *errmsg)
                 YSTRCPY(req->errmsg, YOCTO_ERRMSG_LEN, errmsg);
                 req->ws.state = REQ_CLOSED_BY_BOTH;
                 ySetEvent(&req->finished);
-                yLeaveCriticalSection(&req->access);
             }
+            yLeaveCriticalSection(&req->access);
             req = req->ws.next;
         }
 

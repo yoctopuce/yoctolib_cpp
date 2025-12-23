@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.h 63696 2024-12-13 17:44:50Z mvuilleu $
+ * $Id: ythread.h 70943 2025-12-22 13:10:14Z seb $
  *
  * OS-independent thread and synchronization library
  *
@@ -77,6 +77,17 @@ void yResetEvent(yEvent* ev);
 int yWaitForEvent(yEvent* ev, int time);
 void yCloseEvent(yEvent* ev);
 
+/*********************************************************************
+ * CONDITION_VARIABLE FUNCTIONS
+ *********************************************************************/
+
+#ifndef FREERTOS_API
+int yInitializeConditionVariable(yCONDITION_VARIABLE* var);
+void yDeleteConditionVariable(yCONDITION_VARIABLE* var);
+int yWakeConditionVariable(yCONDITION_VARIABLE* var);
+int yWakeAllConditionVariable(yCONDITION_VARIABLE* var);
+int ySleepConditionVariableCS(yCONDITION_VARIABLE* var, yCRITICAL_SECTION* mutex);
+#endif
 
 /*********************************************************************
  * THREAD FUNCTIONS

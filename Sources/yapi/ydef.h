@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 69647 2025-10-24 07:05:49Z seb $
+ * $Id: ydef.h 70943 2025-12-22 13:10:14Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -444,6 +444,9 @@ void yDbgDeleteCriticalSection(const char* fileid, int lineno, yCRITICAL_SECTION
 
 // Critical sections on a real OS
 typedef void* yCRITICAL_SECTION;
+typedef void* yCONDITION_VARIABLE;
+
+
 
 #define DECLARE_CRITICALSECTION(decl) decl;
 void yInitializeCriticalSection(yCRITICAL_SECTION *cs);
@@ -1198,6 +1201,7 @@ typedef union {
 #if defined(MICROCHIP_API) || (defined(TEXAS_API) && !defined(FREERTOS_API))
 #define NO_MUTEX
 typedef u8 yCRITICAL_SECTION;
+typedef void* yCONDITION_VARIABLE;
 #endif
 
 
