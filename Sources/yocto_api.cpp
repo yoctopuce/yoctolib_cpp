@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 70666 2025-12-09 10:26:00Z seb $
+ * $Id: yocto_api.cpp 71292 2026-01-12 13:47:54Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -39,7 +39,7 @@
 #define __FILE_ID__ "yocto_api"
 #define _CRT_SECURE_NO_DEPRECATE
 #define YMEMORY_ALLOW_MALLOC
-
+#define __FILENAME__   "yocto"
 #include "yocto_api.h"
 
 #ifdef WINDOWS_API

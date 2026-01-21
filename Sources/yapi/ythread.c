@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.c 70935 2025-12-22 11:20:54Z seb $
+ * $Id: ythread.c 71294 2026-01-12 15:25:39Z seb $
  *
  * OS-independent thread and synchronization library
  *
@@ -638,6 +638,8 @@ typedef struct {
 #else
     pthread_mutex_t cs;
 #endif
+    const char* fileid;
+    int         lineno;
 } yCRITICAL_SECTION_ST;
 
 #ifndef NO_YSSL
@@ -651,7 +653,7 @@ typedef struct {
 } yCONDITION_VARIABLE_ST;
 #endif
 
-void yInitializeCriticalSection(yCRITICAL_SECTION *cs)
+void yInitializeCriticalSectionEx(yCRITICAL_SECTION *cs)
 {
     yCRITICAL_SECTION_ST *ycsptr;
     ycsptr = (yCRITICAL_SECTION_ST*)malloc(sizeof(yCRITICAL_SECTION_ST));
@@ -669,7 +671,7 @@ void yInitializeCriticalSection(yCRITICAL_SECTION *cs)
     *cs = ycsptr;
 }
 
-void yEnterCriticalSection(yCRITICAL_SECTION *cs)
+void yEnterCriticalSectionEx(const char* fileid, int lineno, yCRITICAL_SECTION *cs)
 {
     yCRITICAL_SECTION_ST *ycsptr = (yCRITICAL_SECTION_ST*)(*cs);
 #if defined(WINDOWS_API)
@@ -677,26 +679,38 @@ void yEnterCriticalSection(yCRITICAL_SECTION *cs)
 #else
     pthread_mutex_lock(&(ycsptr->cs));
 #endif
+    ycsptr->fileid = fileid;
+    ycsptr->lineno = lineno;
 }
 
-int yTryEnterCriticalSection(yCRITICAL_SECTION *cs)
+int yTryEnterCriticalSectionEx(const char* fileid, int lineno, yCRITICAL_SECTION *cs)
 {
     yCRITICAL_SECTION_ST *ycsptr = (yCRITICAL_SECTION_ST*)(*cs);
+    int taken;
 #if defined(WINDOWS_API)
-    return TryEnterCriticalSection(&(ycsptr->cs));
+    taken = TryEnterCriticalSection(&(ycsptr->cs));
 #else
     {
         int res = pthread_mutex_trylock(&(ycsptr->cs));
-        if (res == EBUSY)
-            return 0;
-        return 1;
+        if (res == EBUSY) {
+            taken= 0;
+        } else {
+            taken = 1;
+        }
     }
 #endif
+    if (taken) {
+        ycsptr->fileid = fileid;
+        ycsptr->lineno = lineno;
+    }
+    return taken;
 }
 
-void yLeaveCriticalSection(yCRITICAL_SECTION *cs)
+void yLeaveCriticalSectionEx(yCRITICAL_SECTION *cs)
 {
     yCRITICAL_SECTION_ST *ycsptr = (yCRITICAL_SECTION_ST*)(*cs);
+    ycsptr->fileid = NULL;
+    ycsptr->lineno = -1;
 #if defined(WINDOWS_API)
     LeaveCriticalSection(&(ycsptr->cs));
 #else
@@ -704,7 +718,7 @@ void yLeaveCriticalSection(yCRITICAL_SECTION *cs)
 #endif
 }
 
-void yDeleteCriticalSection(yCRITICAL_SECTION *cs)
+void yDeleteCriticalSectionEx(yCRITICAL_SECTION *cs)
 {
     yCRITICAL_SECTION_ST *ycsptr = (yCRITICAL_SECTION_ST*)(*cs);
 #if defined(WINDOWS_API)
@@ -715,6 +729,7 @@ void yDeleteCriticalSection(yCRITICAL_SECTION *cs)
     free(*cs);
     *cs = NULL;
 }
+#endif
 #ifndef NO_YSSL
 
 int yInitializeConditionVariable(yCONDITION_VARIABLE *var)
@@ -778,4 +793,3 @@ int ySleepConditionVariableCS(yCONDITION_VARIABLE *var, yCRITICAL_SECTION *cs)
 
 #endif
 
-#endif

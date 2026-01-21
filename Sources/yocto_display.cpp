@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 70932 2025-12-22 09:11:53Z seb $
+ * $Id: yocto_display.cpp 71207 2026-01-07 18:17:59Z mvuilleu $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -620,7 +620,9 @@ YDisplay::YDisplay(const string& func): YFunction(func)
     ,_enabled(ENABLED_INVALID)
     ,_startupSeq(STARTUPSEQ_INVALID)
     ,_brightness(BRIGHTNESS_INVALID)
+    ,_autoInvertDelay(AUTOINVERTDELAY_INVALID)
     ,_orientation(ORIENTATION_INVALID)
+    ,_displayPanel(DISPLAYPANEL_INVALID)
     ,_displayWidth(DISPLAYWIDTH_INVALID)
     ,_displayHeight(DISPLAYHEIGHT_INVALID)
     ,_displayType(DISPLAYTYPE_INVALID)
@@ -652,6 +654,7 @@ YDisplay::~YDisplay()
 //--- (generated code: YDisplay implementation)
 // static attributes
 const string YDisplay::STARTUPSEQ_INVALID = YAPI_INVALID_STRING;
+const string YDisplay::DISPLAYPANEL_INVALID = YAPI_INVALID_STRING;
 const string YDisplay::COMMAND_INVALID = YAPI_INVALID_STRING;
 
 int YDisplay::_parseAttr(YJSONObject *json_val)
@@ -665,8 +668,14 @@ int YDisplay::_parseAttr(YJSONObject *json_val)
     if(json_val->has("brightness")) {
         _brightness =  json_val->getInt("brightness");
     }
+    if(json_val->has("autoInvertDelay")) {
+        _autoInvertDelay =  json_val->getInt("autoInvertDelay");
+    }
     if(json_val->has("orientation")) {
         _orientation =  (Y_ORIENTATION_enum)json_val->getInt("orientation");
+    }
+    if(json_val->has("displayPanel")) {
+        _displayPanel =  json_val->getString("displayPanel");
     }
     if(json_val->has("displayWidth")) {
         _displayWidth =  json_val->getInt("displayWidth");
@@ -862,6 +871,69 @@ int YDisplay::set_brightness(int newval)
 }
 
 /**
+ * Returns the interval between automatic display inversions, or 0 if automatic
+ * inversion is disabled. Using the automatic inversion mechanism reduces the
+ * burn-in that occurs on OLED screens over long periods when the same content
+ * remains displayed on the screen.
+ *
+ * @return an integer corresponding to the interval between automatic display inversions, or 0 if automatic
+ *         inversion is disabled
+ *
+ * On failure, throws an exception or returns YDisplay::AUTOINVERTDELAY_INVALID.
+ */
+int YDisplay::get_autoInvertDelay(void)
+{
+    int res = 0;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDisplay::AUTOINVERTDELAY_INVALID;
+                }
+            }
+        }
+        res = _autoInvertDelay;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the interval between automatic display inversions.
+ * The parameter is the number of seconds, or 0 to disable automatic inversion.
+ * Using the automatic inversion mechanism reduces the burn-in that occurs on OLED
+ * screens over long periods when the same content remains displayed on the screen.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
+ *
+ * @param newval : an integer corresponding to the interval between automatic display inversions
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YDisplay::set_autoInvertDelay(int newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
+        res = _setAttr("autoInvertDelay", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
  * Returns the currently selected display orientation.
  *
  * @return a value among YDisplay::ORIENTATION_LEFT, YDisplay::ORIENTATION_UP,
@@ -911,6 +983,64 @@ int YDisplay::set_orientation(Y_ORIENTATION_enum newval)
     try {
         char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("orientation", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the exact model of the display panel.
+ *
+ * @return a string corresponding to the exact model of the display panel
+ *
+ * On failure, throws an exception or returns YDisplay::DISPLAYPANEL_INVALID.
+ */
+string YDisplay::get_displayPanel(void)
+{
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YDisplay::DISPLAYPANEL_INVALID;
+                }
+            }
+        }
+        res = _displayPanel;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the model of display to match the connected display panel.
+ * This function has no effect if the module does not support the selected
+ * display panel.
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
+ *
+ * @param newval : a string corresponding to the model of display to match the connected display panel
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YDisplay::set_displayPanel(const string& newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("displayPanel", rest_val);
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
@@ -1239,6 +1369,50 @@ int YDisplay::resetAll(void)
 }
 
 /**
+ * Forces an ePaper screen to perform a regenerative update using the slow
+ * update method. Periodic use of the slow method (total panel update with
+ * multiple inversions) prevents ghosting effects and improves contrast.
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YDisplay::regenerateDisplay(void)
+{
+    return this->sendCommand("z");
+}
+
+/**
+ * Disables screen refresh for a short period of time. The combination of
+ * postponeRefresh and triggerRefresh can be used as an
+ * alternative to double-buffering to avoid flickering during display updates.
+ *
+ * @param duration : duration of deactivation in milliseconds (max. 30 seconds)
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YDisplay::postponeRefresh(int duration)
+{
+    return this->sendCommand(YapiWrapper::ysprintf("t%d",duration));
+}
+
+/**
+ * Trigger an immediate screen refresh. The combination of
+ * postponeRefresh and triggerRefresh can be used as an
+ * alternative to double-buffering to avoid flickering during display updates.
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YDisplay::triggerRefresh(void)
+{
+    return this->sendCommand("t0");
+}
+
+/**
  * Smoothly changes the brightness of the screen to produce a fade-in or fade-out
  * effect.
  *
@@ -1429,6 +1603,212 @@ YDisplayLayer* YDisplay::get_displayLayer(int layerId)
         }
     }
     return _allDisplayLayers[layerId];
+}
+
+/**
+ * Returns a color image with the current content of the display.
+ * The image is returned as a binary object, where each byte represents a pixel,
+ * from left to right and from top to bottom. The palette used to map byte
+ * values to RGB colors is filled into the list provided as argument.
+ * In all cases, the first palette entry (value 0) corresponds to the
+ * screen default background color.
+ * The image dimensions are given by the display width and height.
+ *
+ * @param palette : a list to be filled with the image palette
+ *
+ * @return a binary object if the call succeeds.
+ *
+ * On failure, throws an exception or returns an empty binary object.
+ */
+string YDisplay::readDisplay(vector<int> palette)
+{
+    string zipmap;
+    int zipsize = 0;
+    int zipwidth = 0;
+    int zipheight = 0;
+    int ziprotate = 0;
+    int zipcolors = 0;
+    int zipcol = 0;
+    int zipbits = 0;
+    int zipmask = 0;
+    int srcpos = 0;
+    int endrun = 0;
+    int srcpat = 0;
+    int srcbit = 0;
+    int srcval = 0;
+    int srcx = 0;
+    int srcy = 0;
+    int srci = 0;
+    int incx = 0;
+    string pixmap;
+    int pixcount = 0;
+    int pixval = 0;
+    int pixpos = 0;
+    string rotmap;
+    pixmap = string(0, (char)0);
+    // Check if the display firmware has autoInvertDelay and pixels.bin support
+
+    if (this->get_autoInvertDelay() < 0) {
+        // Old firmware, use uncompressed GIF output to rebuild pixmap
+        zipmap = this->_download("display.gif");
+        zipsize = (int)(zipmap).size();
+        if (zipsize == 0) {
+            return pixmap;
+        }
+        if (!(zipsize >= 32)) {
+            _throw((YRETCODE)(YAPI_IO_ERROR), "not a GIF image");
+            return pixmap;
+        }
+        if (!((((u8)zipmap[0]) == 71) && (((u8)zipmap[2]) == 70))) {
+            _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "not a GIF image");
+            return pixmap;
+        }
+        zipwidth = ((u8)zipmap[6]) + 256 * ((u8)zipmap[7]);
+        zipheight = ((u8)zipmap[8]) + 256 * ((u8)zipmap[9]);
+        palette.clear();
+        zipcol = ((u8)zipmap[13]) * 65536 + ((u8)zipmap[14]) * 256 + ((u8)zipmap[15]);
+        palette.push_back(zipcol);
+        zipcol = ((u8)zipmap[16]) * 65536 + ((u8)zipmap[17]) * 256 + ((u8)zipmap[18]);
+        palette.push_back(zipcol);
+        pixcount = zipwidth * zipheight;
+        pixmap = string(pixcount, (char)0);
+        pixpos = 0;
+        srcpos = 30;
+        zipsize = zipsize - 2;
+        while (srcpos < zipsize) {
+            // load next run size
+            endrun = srcpos + 1 + ((u8)zipmap[srcpos]);
+            srcpos = srcpos + 1;
+            while (srcpos < endrun) {
+                srcval = ((u8)zipmap[srcpos]);
+                srcpos = srcpos + 1;
+                srcbit = 8;
+                while (srcbit != 0) {
+                    if (srcbit < 3) {
+                        srcval = srcval + (((u8)zipmap[srcpos]) << srcbit);
+                        srcpos = srcpos + 1;
+                    }
+                    pixval = (srcval & 7);
+                    srcval = (srcval >> 3);
+                    if (!((pixval > 1) && (pixval != 4))) {
+                        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "unexpected encoding");
+                        return pixmap;
+                    }
+                    pixmap[pixpos] = (char)(pixval);
+                    pixpos = pixpos + 1;
+                    srcbit = srcbit - 3;
+                }
+            }
+        }
+        return pixmap;
+    }
+    // New firmware, use compressed pixels.bin
+    zipmap = this->_download("pixels.bin");
+    zipsize = (int)(zipmap).size();
+    if (zipsize == 0) {
+        return pixmap;
+    }
+    if (!(zipsize >= 16)) {
+        _throw((YRETCODE)(YAPI_IO_ERROR), "not a pixmap");
+        return pixmap;
+    }
+    if (!((((u8)zipmap[0]) == 80) && (((u8)zipmap[2]) == 88))) {
+        _throw((YRETCODE)(YAPI_INVALID_ARGUMENT), "not a pixmap");
+        return pixmap;
+    }
+    zipwidth = ((u8)zipmap[4]) + 256 * ((u8)zipmap[5]);
+    zipheight = ((u8)zipmap[6]) + 256 * ((u8)zipmap[7]);
+    ziprotate = ((u8)zipmap[8]);
+    zipcolors = ((u8)zipmap[9]);
+    palette.clear();
+    srcpos = 10;
+    srci = 0;
+    while (srci < zipcolors) {
+        zipcol = ((u8)zipmap[srcpos]) * 65536 + ((u8)zipmap[srcpos+1]) * 256 + ((u8)zipmap[srcpos+2]);
+        palette.push_back(zipcol);
+        srcpos = srcpos + 3;
+        srci = srci + 1;
+    }
+    zipbits = 1;
+    while ((1 << zipbits) < zipcolors) {
+        zipbits = zipbits + 1;
+    }
+    zipmask = (1 << zipbits) - 1;
+    pixcount = zipwidth * zipheight;
+    pixmap = string(pixcount, (char)0);
+    srcx = 0;
+    srcy = 0;
+    incx = (8 / zipbits);
+    srcval = 0;
+    while (srcpos < zipsize) {
+        // load next compression pattern byte
+        srcpat = ((u8)zipmap[srcpos]);
+        srcpos = srcpos + 1;
+        srcbit = 7;
+        while (srcbit >= 0) {
+            // get next bitmap byte
+            if ((srcpat & 128) != 0) {
+                srcval = ((u8)zipmap[srcpos]);
+                srcpos = srcpos + 1;
+            }
+            srcpat = (srcpat << 1);
+            pixpos = srcy * zipwidth + srcx;
+            // produce 8 pixels (or 4, if bitmap uses 2 bits per pixel)
+            srci = 8 - zipbits;
+            while (srci >= 0) {
+                pixval = ((srcval >> srci) & zipmask);
+                pixmap[pixpos] = (char)(pixval);
+                pixpos = pixpos + 1;
+                srci = srci - zipbits;
+            }
+            srcy = srcy + 1;
+            if (srcy >= zipheight) {
+                srcy = 0;
+                srcx = srcx + incx;
+                // drop last bytes if image is not a multiple of 8
+                if (srcx >= zipwidth) {
+                    srcbit = 0;
+                }
+            }
+            srcbit = srcbit - 1;
+        }
+    }
+    // rotate pixmap to match display orientation
+    if (ziprotate == 0) {
+        return pixmap;
+    }
+    if ((ziprotate & 2) != 0) {
+        // rotate buffer 180 degrees by swapping pixels
+        srcpos = 0;
+        pixpos = pixcount - 1;
+        while (srcpos < pixpos) {
+            pixval = ((u8)pixmap[srcpos]);
+            pixmap[srcpos] = (char)(((u8)pixmap[pixpos]));
+            pixmap[pixpos] = (char)(pixval);
+            srcpos = srcpos + 1;
+            pixpos = pixpos - 1;
+        }
+    }
+    if ((ziprotate & 1) == 0) {
+        return pixmap;
+    }
+    // rotate 90 ccw: first pixel is bottom left
+    rotmap = string(pixcount, (char)0);
+    srcx = 0;
+    srcy = zipwidth - 1;
+    srcpos = 0;
+    while (srcpos < pixcount) {
+        pixval = ((u8)pixmap[srcpos]);
+        pixpos = srcy * zipheight + srcx;
+        rotmap[pixpos] = (char)(pixval);
+        srcy = srcy - 1;
+        if (srcy < 0) {
+            srcx = srcx + 1;
+            srcy = zipwidth - 1;
+        }
+        srcpos = srcpos + 1;
+    }
+    return rotmap;
 }
 
 YDisplay *YDisplay::nextDisplay(void)

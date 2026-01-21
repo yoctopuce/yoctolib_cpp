@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 70943 2025-12-22 13:10:14Z seb $
+ * $Id: ydef.h 71294 2026-01-12 15:25:39Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -406,7 +406,17 @@ typedef struct {
     YCS_LOC             last_actions[YCS_NB_TRACE];
 } yCRITICAL_SECTION_ST;
 
+
+typedef struct {
+#if defined(WINDOWS_API)
+    CONDITION_VARIABLE cvar;
+#else
+    pthread_cond_t  cvar;
+#endif
+} yCONDITION_VARIABLE_ST;
+
 typedef yCRITICAL_SECTION_ST* yCRITICAL_SECTION;
+typedef yCONDITION_VARIABLE_ST* yCONDITION_VARIABLE;
 
 void yInitDebugCS();
 void yFreeDebugCS();
@@ -449,11 +459,17 @@ typedef void* yCONDITION_VARIABLE;
 
 
 #define DECLARE_CRITICALSECTION(decl) decl;
-void yInitializeCriticalSection(yCRITICAL_SECTION *cs);
-void yEnterCriticalSection(yCRITICAL_SECTION *cs);
-int yTryEnterCriticalSection(yCRITICAL_SECTION *cs);
-void yLeaveCriticalSection(yCRITICAL_SECTION *cs);
-void yDeleteCriticalSection(yCRITICAL_SECTION *cs);
+void yInitializeCriticalSectionEx(yCRITICAL_SECTION *cs);
+void yEnterCriticalSectionEx(const char* fileid, int lineno, yCRITICAL_SECTION *cs);
+int yTryEnterCriticalSectionEx(const char* fileid, int lineno, yCRITICAL_SECTION *cs);
+void yLeaveCriticalSectionEx(yCRITICAL_SECTION *cs);
+void yDeleteCriticalSectionEx(yCRITICAL_SECTION *cs);
+
+#define yInitializeCriticalSection(cs)  yInitializeCriticalSectionEx(cs);
+#define yEnterCriticalSection(cs)       yEnterCriticalSectionEx(__FILE__,__LINE__,cs)
+#define yTryEnterCriticalSection(cs)    yTryEnterCriticalSectionEx(__FILE__,__LINE__,cs)
+#define yLeaveCriticalSection(cs)       yLeaveCriticalSectionEx(cs)
+#define yDeleteCriticalSection(cs)      yDeleteCriticalSectionEx(cs)
 
 #endif
 

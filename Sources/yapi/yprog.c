@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 69675 2025-10-24 09:24:38Z seb $
+ * $Id: yprog.c 71179 2026-01-05 09:56:43Z seb $
  *
  * Implementation of firmware upgrade functions
  *
@@ -1460,13 +1460,18 @@ YPROG_RESULT uFlashDevice(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
         break;
     case FLASH_AUTOFLASH_MONITOR:
         if (ypGetBootloaderReply(firm_dev, NULL) < 0) {
+            if (fctx->progress >= 99) {
+                // Windows is probably dropping the last packets before reboot
+                // Continue anyway
+                fctx->stepA = FLASH_SUCCEEDED;
+                break;
+            }
             if ((s32)(fctx->timeout - ytime()) < 0) {
 #ifdef DEBUG_FIRMWARE
                 dbglog("Bootloader did not send autoflash progress\n");
 #endif
                 YSTRCPY(fctx->errmsg, FLASH_ERRMSG_LEN, "Bootloader did not send autoflash progress");
                 fctx->stepA = FLASH_DISCONNECT;
-                break;
             }
             break;
         }

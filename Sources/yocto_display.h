@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.h 70932 2025-12-22 09:11:53Z seb $
+ * $Id: yocto_display.h 71207 2026-01-07 18:17:59Z mvuilleu $
  *
  * Declares yFindDisplay(), the high-level API for Display functions
  *
@@ -84,6 +84,8 @@ typedef enum {
 #endif
 #define Y_STARTUPSEQ_INVALID            (YAPI_INVALID_STRING)
 #define Y_BRIGHTNESS_INVALID            (YAPI_INVALID_UINT)
+#define Y_AUTOINVERTDELAY_INVALID       (YAPI_INVALID_UINT)
+#define Y_DISPLAYPANEL_INVALID          (YAPI_INVALID_STRING)
 #define Y_DISPLAYWIDTH_INVALID          (YAPI_INVALID_UINT)
 #define Y_DISPLAYHEIGHT_INVALID         (YAPI_INVALID_UINT)
 #define Y_LAYERWIDTH_INVALID            (YAPI_INVALID_UINT)
@@ -609,7 +611,9 @@ class YOCTO_CLASS_EXPORT YDisplay: public YFunction {
     Y_ENABLED_enum  _enabled;
     string          _startupSeq;
     int             _brightness;
+    int             _autoInvertDelay;
     Y_ORIENTATION_enum _orientation;
+    string          _displayPanel;
     int             _displayWidth;
     int             _displayHeight;
     Y_DISPLAYTYPE_enum _displayType;
@@ -644,11 +648,13 @@ public:
     static const Y_ENABLED_enum ENABLED_INVALID = Y_ENABLED_INVALID;
     static const string STARTUPSEQ_INVALID;
     static const int BRIGHTNESS_INVALID = YAPI_INVALID_UINT;
+    static const int AUTOINVERTDELAY_INVALID = YAPI_INVALID_UINT;
     static const Y_ORIENTATION_enum ORIENTATION_LEFT = Y_ORIENTATION_LEFT;
     static const Y_ORIENTATION_enum ORIENTATION_UP = Y_ORIENTATION_UP;
     static const Y_ORIENTATION_enum ORIENTATION_RIGHT = Y_ORIENTATION_RIGHT;
     static const Y_ORIENTATION_enum ORIENTATION_DOWN = Y_ORIENTATION_DOWN;
     static const Y_ORIENTATION_enum ORIENTATION_INVALID = Y_ORIENTATION_INVALID;
+    static const string DISPLAYPANEL_INVALID;
     static const int DISPLAYWIDTH_INVALID = YAPI_INVALID_UINT;
     static const int DISPLAYHEIGHT_INVALID = YAPI_INVALID_UINT;
     static const Y_DISPLAYTYPE_enum DISPLAYTYPE_MONO = Y_DISPLAYTYPE_MONO;
@@ -743,6 +749,40 @@ public:
     { return this->set_brightness(newval); }
 
     /**
+     * Returns the interval between automatic display inversions, or 0 if automatic
+     * inversion is disabled. Using the automatic inversion mechanism reduces the
+     * burn-in that occurs on OLED screens over long periods when the same content
+     * remains displayed on the screen.
+     *
+     * @return an integer corresponding to the interval between automatic display inversions, or 0 if automatic
+     *         inversion is disabled
+     *
+     * On failure, throws an exception or returns YDisplay::AUTOINVERTDELAY_INVALID.
+     */
+    int                 get_autoInvertDelay(void);
+
+    inline int          autoInvertDelay(void)
+    { return this->get_autoInvertDelay(); }
+
+    /**
+     * Changes the interval between automatic display inversions.
+     * The parameter is the number of seconds, or 0 to disable automatic inversion.
+     * Using the automatic inversion mechanism reduces the burn-in that occurs on OLED
+     * screens over long periods when the same content remains displayed on the screen.
+     * Remember to call the saveToFlash() method of the module if the
+     * modification must be kept.
+     *
+     * @param newval : an integer corresponding to the interval between automatic display inversions
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_autoInvertDelay(int newval);
+    inline int      setAutoInvertDelay(int newval)
+    { return this->set_autoInvertDelay(newval); }
+
+    /**
      * Returns the currently selected display orientation.
      *
      * @return a value among YDisplay::ORIENTATION_LEFT, YDisplay::ORIENTATION_UP,
@@ -770,6 +810,35 @@ public:
     int             set_orientation(Y_ORIENTATION_enum newval);
     inline int      setOrientation(Y_ORIENTATION_enum newval)
     { return this->set_orientation(newval); }
+
+    /**
+     * Returns the exact model of the display panel.
+     *
+     * @return a string corresponding to the exact model of the display panel
+     *
+     * On failure, throws an exception or returns YDisplay::DISPLAYPANEL_INVALID.
+     */
+    string              get_displayPanel(void);
+
+    inline string       displayPanel(void)
+    { return this->get_displayPanel(); }
+
+    /**
+     * Changes the model of display to match the connected display panel.
+     * This function has no effect if the module does not support the selected
+     * display panel.
+     * Remember to call the saveToFlash()
+     * method of the module if the modification must be kept.
+     *
+     * @param newval : a string corresponding to the model of display to match the connected display panel
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_displayPanel(const string& newval);
+    inline int      setDisplayPanel(const string& newval)
+    { return this->set_displayPanel(newval); }
 
     /**
      * Returns the display width, in pixels.
@@ -912,6 +981,41 @@ public:
     virtual int         resetAll(void);
 
     /**
+     * Forces an ePaper screen to perform a regenerative update using the slow
+     * update method. Periodic use of the slow method (total panel update with
+     * multiple inversions) prevents ghosting effects and improves contrast.
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         regenerateDisplay(void);
+
+    /**
+     * Disables screen refresh for a short period of time. The combination of
+     * postponeRefresh and triggerRefresh can be used as an
+     * alternative to double-buffering to avoid flickering during display updates.
+     *
+     * @param duration : duration of deactivation in milliseconds (max. 30 seconds)
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         postponeRefresh(int duration);
+
+    /**
+     * Trigger an immediate screen refresh. The combination of
+     * postponeRefresh and triggerRefresh can be used as an
+     * alternative to double-buffering to avoid flickering during display updates.
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         triggerRefresh(void);
+
+    /**
      * Smoothly changes the brightness of the screen to produce a fade-in or fade-out
      * effect.
      *
@@ -1045,6 +1149,23 @@ public:
      * On failure, throws an exception or returns NULL.
      */
     virtual YDisplayLayer* get_displayLayer(int layerId);
+
+    /**
+     * Returns a color image with the current content of the display.
+     * The image is returned as a binary object, where each byte represents a pixel,
+     * from left to right and from top to bottom. The palette used to map byte
+     * values to RGB colors is filled into the list provided as argument.
+     * In all cases, the first palette entry (value 0) corresponds to the
+     * screen default background color.
+     * The image dimensions are given by the display width and height.
+     *
+     * @param palette : a list to be filled with the image palette
+     *
+     * @return a binary object if the call succeeds.
+     *
+     * On failure, throws an exception or returns an empty binary object.
+     */
+    virtual string      readDisplay(vector<int> palette);
 
 
     inline static YDisplay *Find(string func)

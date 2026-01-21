@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 70835 2025-12-15 15:46:41Z seb $
+#  $Id: GNUmakefile 71333 2026-01-19 11:41:19Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -792,7 +792,7 @@ $(YAPI_DIR_WIN32)yapi.dll: $(OBJDIR_WIN32) $(YAPI_DIR_WIN32) $(YAPI_OBJS_DYN_WIN
 ifdef JAVA_HOME
 	@echo java_home set to $(JAVA_HOME)
 endif
-	@$(CC_WIN32) $(YAPI_OBJS_DYN_WIN32) $(OBJDIR_WIN32)yapiresource.res /W3 /WX- /O2 /Oi /Oy- /MT /Gy /GL /nologo /Fe$@ /Fa(R) /link /DLL $(LINKWITH_WIN32) /DEF:$(YAPI_SOURCES_DIR)yapi.def
+	@$(CC_WIN32) $(YAPI_OBJS_DYN_WIN32) $(OBJDIR_WIN32)yapiresource.res /W3 /WX- /O2 /Oi /Oy- /MT /Gy /GL /nologo /Fe$@ /Fa(R) /link /DLL $(LINKWITH_WIN32) /MAP /DEF:$(YAPI_SOURCES_DIR)yapi.def
 
 $(DIR_WIN32)test.exe: $(OBJDIR_WIN32) $(YAPI_DIR_WIN32) $(ALL_OBJS_STAT_WIN32) $(ALL_H) $(TEST_SRC)
 	@$(RM) -rf $@
@@ -821,7 +821,7 @@ $(YAPI_DIR_WIN64)yapi.dll: $(OBJDIR_WIN64) $(YAPI_DIR_WIN64) $(YAPI_OBJS_DYN_WIN
 ifdef JAVA_HOME
 	@echo java_home set to $(JAVA_HOME)
 endif
-	@$(CC_WIN64) $(YAPI_OBJS_DYN_WIN64) $(OBJDIR_WIN64)yapiresource64.res /W3 /WX- /O2 /Oi /Oy- /MT /Gy /GL /nologo /Fe$@ /Fa(R) /link  /MACHINE:X64  /DLL $(LINKWITH_WIN64)
+	@$(CC_WIN64) $(YAPI_OBJS_DYN_WIN64) $(OBJDIR_WIN64)yapiresource64.res /W3 /WX- /O2 /Oi /Oy- /MT /Gy /GL /nologo /Fe$@ /Fa(R) /link  /MACHINE:X64 /MAP /DLL $(LINKWITH_WIN64)
 
 $(DIR_WIN64)test.exe: $(OBJDIR_WIN64) $(YAPI_DIR_WIN64) $(ALL_OBJS_STAT_WIN64) $(ALL_H) $(TEST_SRC)
 	@$(RM) -rf $@
@@ -849,7 +849,7 @@ $(YAPI_DIR_WINARM)yapi.dll: $(OBJDIR_WINARM) $(YAPI_DIR_WINARM) $(YAPI_OBJS_DYN_
 ifdef JAVA_HOME
 	@echo java_home set to $(JAVA_HOME)
 endif
-	@$(CC_WINARM) $(YAPI_OBJS_DYN_WINARM) $(OBJDIR_WINARM)yapiresourceARM.res /W3 /WX- /O2 /Oi /Oy- /MT /Gy /GL /nologo /Fe$@ /Fa(R) /link  /MACHINE:ARM64  /DLL $(LINKWITH_WINARM)
+	@$(CC_WINARM) $(YAPI_OBJS_DYN_WINARM) $(OBJDIR_WINARM)yapiresourceARM.res /W3 /WX- /O2 /Oi /Oy- /MT /Gy /GL /nologo /Fe$@ /Fa(R) /link /MAP /MACHINE:ARM64  /DLL $(LINKWITH_WINARM)
 
 $(DIR_WINARM)test.exe: $(OBJDIR_WINARM) $(YAPI_DIR_WINARM) $(ALL_OBJS_STAT_WINARM) $(ALL_H) $(TEST_SRC)
 	@$(RM) -rf $@
