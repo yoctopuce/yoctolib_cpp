@@ -16,6 +16,7 @@ set(YoctoLibHSources
 	yocto_accelerometer.h
 	yocto_altitude.h
 	yocto_anbutton.h
+	yocto_angularspeed.h
 	yocto_arithmeticsensor.h
 	yocto_audioin.h
 	yocto_audioout.h
@@ -27,6 +28,7 @@ set(YoctoLibHSources
 	yocto_colorledcluster.h
 	yocto_colorsensor.h
 	yocto_compass.h
+	yocto_counter.h
 	yocto_current.h
 	yocto_currentloopoutput.h
 	yocto_daisychain.h
@@ -55,6 +57,7 @@ set(YoctoLibHSources
 	yocto_multicellweighscale.h
 	yocto_multisenscontroller.h
 	yocto_network.h
+	yocto_orientation.h
 	yocto_oscontrol.h
 	yocto_power.h
 	yocto_poweroutput.h
@@ -74,6 +77,8 @@ set(YoctoLibHSources
 	yocto_segmenteddisplay.h
 	yocto_serialport.h
 	yocto_servo.h
+	yocto_soundlevel.h
+	yocto_soundspectrum.h
 	yocto_spectralchannel.h
 	yocto_spiport.h
 	yocto_steppermotor.h
@@ -101,6 +106,7 @@ set(YoctoLibCppSources
 	yocto_accelerometer.cpp
 	yocto_altitude.cpp
 	yocto_anbutton.cpp
+	yocto_angularspeed.cpp
 	yocto_arithmeticsensor.cpp
 	yocto_audioin.cpp
 	yocto_audioout.cpp
@@ -112,6 +118,7 @@ set(YoctoLibCppSources
 	yocto_colorledcluster.cpp
 	yocto_colorsensor.cpp
 	yocto_compass.cpp
+	yocto_counter.cpp
 	yocto_current.cpp
 	yocto_currentloopoutput.cpp
 	yocto_daisychain.cpp
@@ -140,6 +147,7 @@ set(YoctoLibCppSources
 	yocto_multicellweighscale.cpp
 	yocto_multisenscontroller.cpp
 	yocto_network.cpp
+	yocto_orientation.cpp
 	yocto_oscontrol.cpp
 	yocto_power.cpp
 	yocto_poweroutput.cpp
@@ -159,6 +167,8 @@ set(YoctoLibCppSources
 	yocto_segmenteddisplay.cpp
 	yocto_serialport.cpp
 	yocto_servo.cpp
+	yocto_soundlevel.cpp
+	yocto_soundspectrum.cpp
 	yocto_spectralchannel.cpp
 	yocto_spiport.cpp
 	yocto_steppermotor.cpp

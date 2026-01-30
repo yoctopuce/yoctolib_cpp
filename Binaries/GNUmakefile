@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 71333 2026-01-19 11:41:19Z seb $
+#  $Id: GNUmakefile 71568 2026-01-27 15:30:59Z mvuilleu $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -332,6 +332,7 @@ YOCTO_API_OBJS_STAT = yocto_api.o\
 	yocto_accelerometer.o \
 	yocto_altitude.o \
 	yocto_anbutton.o \
+	yocto_angularspeed.o \
 	yocto_arithmeticsensor.o \
 	yocto_audioin.o \
 	yocto_audioout.o \
@@ -343,6 +344,7 @@ YOCTO_API_OBJS_STAT = yocto_api.o\
 	yocto_colorledcluster.o \
 	yocto_colorsensor.o \
 	yocto_compass.o \
+	yocto_counter.o \
 	yocto_current.o \
 	yocto_currentloopoutput.o \
 	yocto_daisychain.o \
@@ -371,6 +373,7 @@ YOCTO_API_OBJS_STAT = yocto_api.o\
 	yocto_multicellweighscale.o \
 	yocto_multisenscontroller.o \
 	yocto_network.o \
+	yocto_orientation.o \
 	yocto_oscontrol.o \
 	yocto_power.o \
 	yocto_poweroutput.o \
@@ -390,6 +393,8 @@ YOCTO_API_OBJS_STAT = yocto_api.o\
 	yocto_segmenteddisplay.o \
 	yocto_serialport.o \
 	yocto_servo.o \
+	yocto_soundlevel.o \
+	yocto_soundspectrum.o \
 	yocto_spectralchannel.o \
 	yocto_spiport.o \
 	yocto_steppermotor.o \

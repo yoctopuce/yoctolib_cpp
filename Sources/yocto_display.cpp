@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 71207 2026-01-07 18:17:59Z mvuilleu $
+ * $Id: yocto_display.cpp 71629 2026-01-29 15:08:26Z mvuilleu $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -56,8 +56,13 @@ using namespace YOCTOLIB_NAMESPACE;
 
 YDisplayLayer::YDisplayLayer(YDisplay *parent, int id):
 //--- (generated code: YDisplayLayer initialization)
+    _polyPrevX(0)
+    ,_polyPrevY(0)
 //--- (end of generated code: YDisplayLayer initialization)
-_display(parent),_id(id),_cmdbuff(""),_hidden(false)
+    ,_display(parent)
+    ,_id(id)
+    ,_cmdbuff("")
+    ,_hidden(false)
 {}
 
 
@@ -145,8 +150,11 @@ int YDisplayLayer::clear(void)
 }
 
 /**
- * Selects the pen color for all subsequent drawing functions,
- * including text drawing. The pen color is provided as an RGB value.
+ * Selects the color to be used for all subsequent drawing functions,
+ * for filling as well as for line and text drawing.
+ * To select a different fill and outline color, use
+ * selectFillColor and selectLineColor.
+ * The pen color is provided as an RGB value.
  * For grayscale or monochrome displays, the value is
  * automatically converted to the proper range.
  *
@@ -163,7 +171,10 @@ int YDisplayLayer::selectColorPen(int color)
 
 /**
  * Selects the pen gray level for all subsequent drawing functions,
- * including text drawing. The gray level is provided as a number between
+ * for filling as well as for line and text drawing.
+ * To select a different fill and outline color, use
+ * selectFillColor and selectLineColor.
+ * The gray level is provided as a number between
  * 0 (black) and 255 (white, or whichever the lightest color is).
  * For monochrome displays (without gray levels), any value
  * lower than 128 is rendered as black, and any value equal
@@ -196,21 +207,95 @@ int YDisplayLayer::selectEraser(void)
 }
 
 /**
- * Enables or disables anti-aliasing for drawing oblique lines and circles.
- * Anti-aliasing provides a smoother aspect when looked from far enough,
- * but it can add fuzziness when the display is looked from very close.
- * At the end of the day, it is your personal choice.
- * Anti-aliasing is enabled by default on grayscale and color displays,
- * but you can disable it if you prefer. This setting has no effect
- * on monochrome displays.
+ * Selects the color to be used for filling rectangular bars,
+ * discs and polygons. The color is provided as an RGB value.
+ * For grayscale or monochrome displays, the value is
+ * automatically converted to the proper range.
+ * You can also use the constants FG_INK to use the
+ * default drawing colour, BG_INK to use the default
+ * background colour, and NO_INK to disable filling.
  *
- * @param mode : true to enable anti-aliasing, false to
- *         disable it.
+ * @param color : the desired drawing color, as a 24-bit RGB value,
+ *         or one of the constants NO_INK, FG_INK
+ *         or BG_INK
  *
  * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
+int YDisplayLayer::selectFillColor(int color)
+{
+    int r = 0;
+    int g = 0;
+    int b = 0;
+    if (color==-1) {
+        return this->command_push("f_");
+    }
+    if (color==-2) {
+        return this->command_push("f-");
+    }
+    if (color==-3) {
+        return this->command_push("f.");
+    }
+    r = ((color >> 20) & 15);
+    g = ((color >> 12) & 15);
+    b = ((color >> 4) & 15);
+    return this->command_push(YapiWrapper::ysprintf("f%x%x%x",r,g,b));
+}
+
+/**
+ * Selects the color to be used for drawing the outline of rectangular
+ * bars, discs and polygons, as well as for drawing lines and text.
+ * The color is provided as an RGB value.
+ * For grayscale or monochrome displays, the value is
+ * automatically converted to the proper range.
+ * You can also use the constants FG_INK to use the
+ * default drawing colour, BG_INK to use the default
+ * background colour, and NO_INK to disable outline drawing.
+ *
+ * @param color : the desired drawing color, as a 24-bit RGB value,
+ *         or one of the constants NO_INK, FG_INK
+ *         or BG_INK
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YDisplayLayer::selectLineColor(int color)
+{
+    int r = 0;
+    int g = 0;
+    int b = 0;
+    if (color==-1) {
+        return this->command_push("l_");
+    }
+    if (color==-2) {
+        return this->command_push("l-");
+    }
+    if (color==-3) {
+        return this->command_push("l*");
+    }
+    r = ((color >> 20) & 15);
+    g = ((color >> 12) & 15);
+    b = ((color >> 4) & 15);
+    return this->command_push(YapiWrapper::ysprintf("l%x%x%x",r,g,b));
+}
+
+/**
+ * Selects the line width for drawing the outline of rectangular
+ * bars, discs and polygons, as well as for drawing lines.
+ *
+ * @param width : the desired line width, in pixels
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YDisplayLayer::selectLineWidth(int width)
+{
+    return this->command_push(YapiWrapper::ysprintf("t%d",width));
+}
+
 int YDisplayLayer::setAntialiasingMode(bool mode)
 {
     return this->command_push(YapiWrapper::ysprintf("a%d",mode));
@@ -344,10 +429,10 @@ int YDisplayLayer::drawText(int x,int y,Y_ALIGN anchor,string text)
 }
 
 /**
- * Draws a GIF image at the specified position. The GIF image must have been previously
- * uploaded to the device built-in memory. If you experience problems using an image
- * file, check the device logs for any error message such as missing image file or bad
- * image file format.
+ * Draws an image previously uploaded to the device filesystem, at the specified position.
+ * At present time, GIF images are the only supported image format. If you experience
+ * problems using an image file, check the device logs for any error message such as
+ * missing image file or bad image file format.
  *
  * @param x : the distance from left of layer to the left of the image, in pixels
  * @param y : the distance from top of layer to the top of the image, in pixels
@@ -390,6 +475,26 @@ int YDisplayLayer::drawBitmap(int x,int y,int w,string bitmap,int bgcol)
 }
 
 /**
+ * Draws a GIF image provided as a binary buffer at the specified position.
+ * If the image drawing must be included in an animation sequence, save it
+ * in the device filesystem first and use drawImage instead.
+ *
+ * @param x : the distance from left of layer to the left of the image, in pixels
+ * @param y : the distance from top of layer to the top of the image, in pixels
+ * @param gifimage : a binary object with the content of a GIF file
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YDisplayLayer::drawGIF(int x,int y,string gifimage)
+{
+    string destname;
+    destname = YapiWrapper::ysprintf("layer%d:G,-1@%d,%d",_id,x,y);
+    return _display->upload(destname,gifimage);
+}
+
+/**
  * Moves the drawing pointer of this layer to the specified position.
  *
  * @param x : the distance from left of layer, in pixels
@@ -419,6 +524,58 @@ int YDisplayLayer::moveTo(int x,int y)
 int YDisplayLayer::lineTo(int x,int y)
 {
     return this->command_flush(YapiWrapper::ysprintf("-%d,%d",x,y));
+}
+
+/**
+ * Starts drawing a polygon with the first corner at the specified position.
+ *
+ * @param x : the distance from left of layer, in pixels
+ * @param y : the distance from top of layer, in pixels
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YDisplayLayer::polygonStart(int x,int y)
+{
+    _polyPrevX = x;
+    _polyPrevY = y;
+    return this->command_push(YapiWrapper::ysprintf("[%d,%d",x,y));
+}
+
+/**
+ * Adds a point to the currently open polygon, previously opened using
+ * polygonStart.
+ *
+ * @param x : the distance from left of layer to the new point, in pixels
+ * @param y : the distance from top of layer to the new point, in pixels
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YDisplayLayer::polygonAdd(int x,int y)
+{
+    int dx = 0;
+    int dy = 0;
+    dx = x - _polyPrevX;
+    dy = y - _polyPrevY;
+    _polyPrevX = x;
+    _polyPrevY = y;
+    return this->command_flush(YapiWrapper::ysprintf(";%d,%d",dx,dy));
+}
+
+/**
+ * Close the currently open polygon, fill its content the fill color currently
+ * selected for the layer, and draw its outline using the selected line color.
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YDisplayLayer::polygonEnd(void)
+{
+    return this->command_flush("]");
 }
 
 /**
@@ -1395,7 +1552,7 @@ int YDisplay::regenerateDisplay(void)
  */
 int YDisplay::postponeRefresh(int duration)
 {
-    return this->sendCommand(YapiWrapper::ysprintf("t%d",duration));
+    return this->sendCommand(YapiWrapper::ysprintf("H%d",duration));
 }
 
 /**
@@ -1409,7 +1566,7 @@ int YDisplay::postponeRefresh(int duration)
  */
 int YDisplay::triggerRefresh(void)
 {
-    return this->sendCommand("t0");
+    return this->sendCommand("H0");
 }
 
 /**
