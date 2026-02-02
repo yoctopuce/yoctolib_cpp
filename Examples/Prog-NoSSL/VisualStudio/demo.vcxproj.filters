@@ -1,0 +1,565 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_accelerometer.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_altitude.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_anbutton.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_arithmeticsensor.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_audioin.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_audioout.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_bluetoothlink.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_buzzer.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_carbondioxide.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_cellular.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_colorled.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_colorledcluster.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_colorsensor.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_compass.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_current.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_currentloopoutput.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_daisychain.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_digitalio.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_display.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_dualpower.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_files.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_genericsensor.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_gps.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_groundspeed.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_gyro.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_hubport.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_humidity.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_i2cport.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_inputcapture.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_inputchain.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_latitude.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_led.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_lightsensor.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_longitude.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_magnetometer.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_messagebox.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_micropython.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_motor.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_multiaxiscontroller.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_multicellweighscale.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_multisenscontroller.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_network.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_oscontrol.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_power.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_poweroutput.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_powersupply.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_pressure.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_proximity.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_pwminput.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_pwmoutput.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_pwmpowersource.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_quadraturedecoder.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_rangefinder.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_realtimeclock.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_refframe.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_relay.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_rfidreader.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_sdi12port.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_segmenteddisplay.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_serialport.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_servo.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_spectralchannel.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_spiport.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_steppermotor.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_temperature.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_threshold.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_tilt.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_tvoc.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_virtualsensor.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_voc.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_voltage.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_voltageoutput.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_wakeupmonitor.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_wakeupschedule.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_watchdog.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_weighscale.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_wireless.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_api.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\yapi.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\yfifo.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\yhash.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\yjson.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ykey.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ymemory.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\yprog.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ystream.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ytcp.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ythread.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ypkt_lin.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ypkt_win.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ypkt_osx.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\yssl.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\Sources\yocto_accelerometer.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_altitude.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_anbutton.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_arithmeticsensor.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_audioin.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_audioout.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_bluetoothlink.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_buzzer.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_carbondioxide.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_cellular.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_colorled.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_colorledcluster.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_colorsensor.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_compass.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_current.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_currentloopoutput.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_daisychain.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_digitalio.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_display.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_dualpower.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_files.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_genericsensor.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_gps.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_groundspeed.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_gyro.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_hubport.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_humidity.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_i2cport.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_inputcapture.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_inputchain.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_latitude.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_led.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_lightsensor.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_longitude.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_magnetometer.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_messagebox.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_micropython.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_motor.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_multiaxiscontroller.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_multicellweighscale.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_multisenscontroller.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_network.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_oscontrol.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_power.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_poweroutput.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_powersupply.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_pressure.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_proximity.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_pwminput.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_pwmoutput.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_pwmpowersource.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_quadraturedecoder.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_rangefinder.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_realtimeclock.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_refframe.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_relay.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_rfidreader.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_sdi12port.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_segmenteddisplay.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_serialport.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_servo.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_spectralchannel.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_spiport.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_steppermotor.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_temperature.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_threshold.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_tilt.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_tvoc.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_virtualsensor.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_voc.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_voltage.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_voltageoutput.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_wakeupmonitor.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_wakeupschedule.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_watchdog.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_weighscale.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_wireless.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_api.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yapi.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\ydef.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yfifo.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yhash.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yjson.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\ykey.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\ymemory.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yprog.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yproto.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\ytcp.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\ythread.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yversion.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yssl.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Yoctopuce">
+      <UniqueIdentifier>{4ab10f33-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi">
+      <UniqueIdentifier>{f5ada74-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

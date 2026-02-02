@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.c 71294 2026-01-12 15:25:39Z seb $
+ * $Id: ythread.c 71692 2026-02-02 07:33:19Z seb $
  *
  * OS-independent thread and synchronization library
  *
@@ -42,8 +42,9 @@
 #define __FILENAME__   "ythread"
 
 #include "ythread.h"
-
+#ifndef NO_YSSL
 #include "threading_alt.h"
+#endif
 
 #ifdef WINDOWS_API
 

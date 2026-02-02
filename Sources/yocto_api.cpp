@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 71292 2026-01-12 13:47:54Z seb $
+ * $Id: yocto_api.cpp 71691 2026-02-02 06:59:29Z mvuilleu $
  *
  * High-level programming interface, common to all modules
  *
@@ -3624,7 +3624,9 @@ YFunction* YFunction::FindFunction(string func)
 
 /**
  * Registers the callback function that is invoked on every change of advertised value.
- * The callback is invoked only during the execution of ySleep or yHandleEvents.
+ * The callback is called once when it is registered, passing the current advertised value
+ * of the function, provided that it is not an empty string.
+ * The callback is then invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
  * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
  *
@@ -6927,7 +6929,9 @@ YModule* YModule::FindModule(string func)
 
 /**
  * Registers the callback function that is invoked on every change of advertised value.
- * The callback is invoked only during the execution of ySleep or yHandleEvents.
+ * The callback is called once when it is registered, passing the current advertised value
+ * of the function, provided that it is not an empty string.
+ * The callback is then invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
  * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
  *
@@ -9172,7 +9176,9 @@ YSensor* YSensor::FindSensor(string func)
 
 /**
  * Registers the callback function that is invoked on every change of advertised value.
- * The callback is invoked only during the execution of ySleep or yHandleEvents.
+ * The callback is called once when it is registered, passing the current advertised value
+ * of the function, provided that it is not an empty string.
+ * The callback is then invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
  * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
  *
@@ -10246,7 +10252,9 @@ YDataLogger* YDataLogger::FindDataLogger(string func)
 
 /**
  * Registers the callback function that is invoked on every change of advertised value.
- * The callback is invoked only during the execution of ySleep or yHandleEvents.
+ * The callback is called once when it is registered, passing the current advertised value
+ * of the function, provided that it is not an empty string.
+ * The callback is then invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
  * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
  *

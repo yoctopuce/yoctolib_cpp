@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.cpp 70518 2025-11-26 16:18:50Z mvuilleu $
+ * $Id: yocto_files.cpp 71691 2026-02-02 06:59:29Z mvuilleu $
  *
  * Implements yFindFiles(), the high-level API for Files functions
  *
@@ -274,7 +274,9 @@ YFiles* YFiles::FindFiles(string func)
 
 /**
  * Registers the callback function that is invoked on every change of advertised value.
- * The callback is invoked only during the execution of ySleep or yHandleEvents.
+ * The callback is called once when it is registered, passing the current advertised value
+ * of the function, provided that it is not an empty string.
+ * The callback is then invoked only during the execution of ySleep or yHandleEvents.
  * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
  * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
  *
