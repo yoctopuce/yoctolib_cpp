@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 69540 2025-10-20 13:06:09Z seb $
+ * $Id: yproto.h 71761 2026-02-03 11:00:46Z seb $
  *
  * Definitions and prototype common to all supported OS
  *

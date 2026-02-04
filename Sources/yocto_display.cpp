@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 71691 2026-02-02 06:59:29Z mvuilleu $
+ * $Id: yocto_display.cpp 71752 2026-02-02 17:42:37Z mvuilleu $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -1265,11 +1265,11 @@ int YDisplay::get_displayHeight(void)
 }
 
 /**
- * Returns the display type: monochrome, gray levels or full color.
+ * Returns the display type: monochrome OLED, black and white ePaper, color ePaper, etc.
  *
- * @return a value among YDisplay::DISPLAYTYPE_MONO, YDisplay::DISPLAYTYPE_GRAY,
- * YDisplay::DISPLAYTYPE_RGB and YDisplay::DISPLAYTYPE_EPAPER corresponding to the display type:
- * monochrome, gray levels or full color
+ * @return a value among YDisplay::DISPLAYTYPE_MONO, YDisplay::DISPLAYTYPE_EPAPER_BW,
+ * YDisplay::DISPLAYTYPE_EPAPER_BWR and YDisplay::DISPLAYTYPE_EPAPER_BWRY corresponding to the display
+ * type: monochrome OLED, black and white ePaper, color ePaper, etc
  *
  * On failure, throws an exception or returns YDisplay::DISPLAYTYPE_INVALID.
  */

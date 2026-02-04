@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.h 71691 2026-02-02 06:59:29Z mvuilleu $
+ * $Id: yocto_display.h 71752 2026-02-02 17:42:37Z mvuilleu $
  *
  * Declares yFindDisplay(), the high-level API for Display functions
  *
@@ -76,9 +76,9 @@ typedef enum {
 #define _Y_DISPLAYTYPE_ENUM
 typedef enum {
     Y_DISPLAYTYPE_MONO = 0,
-    Y_DISPLAYTYPE_GRAY = 1,
-    Y_DISPLAYTYPE_RGB = 2,
-    Y_DISPLAYTYPE_EPAPER = 3,
+    Y_DISPLAYTYPE_EPAPER_BW = 1,
+    Y_DISPLAYTYPE_EPAPER_BWR = 2,
+    Y_DISPLAYTYPE_EPAPER_BWRY = 3,
     Y_DISPLAYTYPE_INVALID = -1,
 } Y_DISPLAYTYPE_enum;
 #endif
@@ -754,9 +754,9 @@ public:
     static const int DISPLAYWIDTH_INVALID = YAPI_INVALID_UINT;
     static const int DISPLAYHEIGHT_INVALID = YAPI_INVALID_UINT;
     static const Y_DISPLAYTYPE_enum DISPLAYTYPE_MONO = Y_DISPLAYTYPE_MONO;
-    static const Y_DISPLAYTYPE_enum DISPLAYTYPE_GRAY = Y_DISPLAYTYPE_GRAY;
-    static const Y_DISPLAYTYPE_enum DISPLAYTYPE_RGB = Y_DISPLAYTYPE_RGB;
-    static const Y_DISPLAYTYPE_enum DISPLAYTYPE_EPAPER = Y_DISPLAYTYPE_EPAPER;
+    static const Y_DISPLAYTYPE_enum DISPLAYTYPE_EPAPER_BW = Y_DISPLAYTYPE_EPAPER_BW;
+    static const Y_DISPLAYTYPE_enum DISPLAYTYPE_EPAPER_BWR = Y_DISPLAYTYPE_EPAPER_BWR;
+    static const Y_DISPLAYTYPE_enum DISPLAYTYPE_EPAPER_BWRY = Y_DISPLAYTYPE_EPAPER_BWRY;
     static const Y_DISPLAYTYPE_enum DISPLAYTYPE_INVALID = Y_DISPLAYTYPE_INVALID;
     static const int LAYERWIDTH_INVALID = YAPI_INVALID_UINT;
     static const int LAYERHEIGHT_INVALID = YAPI_INVALID_UINT;
@@ -961,11 +961,11 @@ public:
     { return this->get_displayHeight(); }
 
     /**
-     * Returns the display type: monochrome, gray levels or full color.
+     * Returns the display type: monochrome OLED, black and white ePaper, color ePaper, etc.
      *
-     * @return a value among YDisplay::DISPLAYTYPE_MONO, YDisplay::DISPLAYTYPE_GRAY,
-     * YDisplay::DISPLAYTYPE_RGB and YDisplay::DISPLAYTYPE_EPAPER corresponding to the display type:
-     * monochrome, gray levels or full color
+     * @return a value among YDisplay::DISPLAYTYPE_MONO, YDisplay::DISPLAYTYPE_EPAPER_BW,
+     * YDisplay::DISPLAYTYPE_EPAPER_BWR and YDisplay::DISPLAYTYPE_EPAPER_BWRY corresponding to the display
+     * type: monochrome OLED, black and white ePaper, color ePaper, etc
      *
      * On failure, throws an exception or returns YDisplay::DISPLAYTYPE_INVALID.
      */

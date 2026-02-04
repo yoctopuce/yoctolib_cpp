@@ -190,13 +190,49 @@ set(YoctoLibCppSources
 )
 
 add_library (YoctoLib ${YoctoLibCppSources} ${YoctoLibHSources})
+if(WIN32 AND BUILD_SHARED_LIBS)
+	target_compile_definitions(YoctoLib PRIVATE GENERATE_DLL)
+endif()
 
 # add yapi low level api
 add_subdirectory(yapi)
 target_link_libraries(YoctoLib PRIVATE yapi)
-target_include_directories (YoctoLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(YoctoLib
+	PUBLIC
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/yapi>
+		$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+		$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/yapi>
+)
 set_target_properties(YoctoLib PROPERTIES SOVERSION 1)
 set_target_properties(YoctoLib PROPERTIES LIBRARY_OUTPUT_NAME yocto)
-install(TARGETS YoctoLib DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(FILES ${YoctoLibHSources} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES yapi/yapi.h yapi/ydef.h yapi/yversion.h yapi/yjson.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/yapi)
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+	"${CMAKE_CURRENT_BINARY_DIR}/yoctolib-version.cmake"
+	VERSION ${VERSION}
+	COMPATIBILITY SameMajorVersion
+)
+configure_package_config_file(
+	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/yoctolib-config.cmake.in"
+	"${CMAKE_CURRENT_BINARY_DIR}/yoctolib-config.cmake"
+	INSTALL_DESTINATION share/yoctolib
+)
+install(TARGETS YoctoLib yapi
+	EXPORT YoctoLibTargets
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+install(EXPORT YoctoLibTargets
+	FILE yoctolib-targets.cmake
+	NAMESPACE yoctolib::
+	DESTINATION share/yoctolib
+)
+install(FILES
+	"${CMAKE_CURRENT_BINARY_DIR}/yoctolib-config.cmake"
+	"${CMAKE_CURRENT_BINARY_DIR}/yoctolib-version.cmake"
+	DESTINATION share/yoctolib
+)

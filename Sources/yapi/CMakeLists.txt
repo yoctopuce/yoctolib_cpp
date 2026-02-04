@@ -119,7 +119,7 @@ set(YAPI_C_FILES
 	yssl.c
 )
 
-add_library (yapi ${YAPI_C_FILES}  ${MBEDTLS_C_FILES})
+add_library (yapi STATIC ${YAPI_C_FILES}  ${MBEDTLS_C_FILES})
 if(USE_YSSL)
 #-- mbedtls_patch_inc_start --
     target_include_directories(yapi PRIVATE mbedtls/include)
@@ -134,11 +134,18 @@ target_link_libraries(yapi PRIVATE bcrypt.lib)
 endif()
 endif()
 
-target_include_directories (yapi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(yapi PUBLIC
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/yapi>
+)
 
 # add pthread usb-1.0 library only on linux
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-target_link_libraries (yapi LINK_PUBLIC pthread usb-1.0)
+	set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+	find_package(Threads REQUIRED)
+	find_package(PkgConfig REQUIRED)
+	pkg_check_modules(libusb REQUIRED IMPORTED_TARGET libusb-1.0)
+	target_link_libraries(yapi LINK_PUBLIC Threads::Threads PkgConfig::libusb)
 endif()
 
 if (APPLE)
@@ -154,7 +161,3 @@ if (APPLE)
 endif()
 
 set_target_properties(yapi PROPERTIES SOVERSION 1)
-install(TARGETS yapi DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(FILES yapi.h ydef.h yversion.h yjson.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/yapi)
-
-
