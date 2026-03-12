@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yfifo.c 61107 2024-05-24 07:59:31Z mvuilleu $
+ * $Id: yfifo.c 72140 2026-02-19 14:05:32Z mvuilleu $
  *
  * Implementation of a generic fifo queue
  *
@@ -366,8 +366,8 @@ u16 ySeekFifoEx(yFifoBuf* buf, const u8* pattern, u16 patlen, u16 startofs, u16 
         u16 pletter = pattern[patidx];
 
         if (bTextCompare && pletter >= 'A' && bletter >= 'A' && pletter <= 'z' && bletter <= 'z') {
-            pletter &= ~32;
-            bletter &= ~32;
+            pletter &= ~32u;
+            bletter &= ~32u;
         }
         if (pletter == bletter) {
             if (patidx == 0) {

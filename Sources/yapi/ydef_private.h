@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef_private.h 69925 2025-11-03 06:59:19Z mvuilleu $
+ * $Id: ydef_private.h 72398 2026-03-10 11:27:05Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -101,12 +101,10 @@ typedef struct {
 #endif
 
 #if defined(TEXAS_API)
-#define YSAFECODE(sectname)         __attribute__((section(".ysafetext." #sectname))) sectname
 #define BSS_SECTION(sectname)       __attribute__((section(".bss." #sectname)))
 #define DATA_SECTION(sectname)      __attribute__((section(".data." #sectname)))
 #define RODATA_SECTION(sectname)    __attribute__((section(".rodata." #sectname)))
 #else
-#define YSAFECODE(sectname)         sectname
 #define BSS_SECTION(sectname)
 #define DATA_SECTION(sectname)
 #define RODATA_SECTION(sectname)
@@ -118,7 +116,7 @@ typedef struct {
 #else
     #ifdef YAPI_IN_YDEVICE
         #ifdef EMBEDDED_API
-            void ypanic(u32 origin, u32 irritant);
+            __attribute__((naked, noreturn)) void ypanic(u32 origin, u32 irritant);
         #else
             void ypanic(u32 origin, u64 irritant);
         #endif

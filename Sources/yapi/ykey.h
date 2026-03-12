@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.h 61107 2024-05-24 07:59:31Z mvuilleu $
+ * $Id: ykey.h 72199 2026-02-20 16:55:37Z mvuilleu $
  *
  * Declaration of standard key computations
  *
@@ -63,18 +63,10 @@ int yParseWWWAuthenticate(char* replybuf, int replysize, char** method, char** r
 int yDigestAuthorization(char* buf, u16 bufsize, const char* user, const char* realm, const u8* ha1,
                           const char* nonce, const char* opaque, u32* nc, const char* method, const char* uri);
 
-// Note: This API is designed for cooperative multitasking
-//       It is not multithread-safe
-void yInitPsk(const char* pass, const char* ssid);
-int yIterPsk(u8* res, const char* ssid);
-u8* ySHA1(const char* text);
-
 // MD5 hash structures
-#ifndef MICROCHIP_API
 typedef struct {
     u32 buf[4];
     u32 bits[2];
-
     union {
         u8 in[64];
         u32 in32[16];
@@ -84,7 +76,25 @@ typedef struct {
 void MD5Initialize(HASH_SUM* theSum);
 void MD5AddData(HASH_SUM* theSum, const u8* data, u32 len);
 void MD5Calculate(HASH_SUM* theSum, u8* result);
-#endif
+
+// Note: This SHA API is designed for cooperative multitasking.
+//       It is not multithread-safe, and limited to 512MB.
+
+// SHA1 hash structures
+typedef struct {
+    u32  state[5];
+    u8   buf[64];
+    u32  buflen;
+    u32  total;
+} SHA1_SUM;
+
+void SHA1Initialize(SHA1_SUM* ctx);
+void SHA1AddData(SHA1_SUM* ctx, const u8* data, u32 len);
+void SHA1Calculate(SHA1_SUM* ctx, u8* out);
+
+void yInitPsk(const char* pass, const char* ssid);
+int yIterPsk(u8* res, const char* ssid);
+u8* ySHA1(const char* text);
 
 #define swaps(w)                    ((((w)&0xff00u)>>8u) + (((w)&0xffu)<<8u))
 #define swapl(dw)                   (swaps(((dw)&0xffff0000u)>>16u) + (swaps((dw)&0xffffu)<<16u))

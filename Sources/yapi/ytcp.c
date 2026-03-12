@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 70863 2025-12-18 10:36:36Z seb $
+ * $Id: ytcp.c 72204 2026-02-21 11:08:47Z mvuilleu $
  *
  * Implementation of a client TCP stack
  *
@@ -2049,7 +2049,7 @@ static int yHTTPMultiSelectReq(struct _RequestSt **reqs, int size, u64 ms, WakeU
 }
 
 
-int ySocketOpenBindMulti(YSOCKET_MULTI *newskt, IPvX_ADDR *local_ip, int is_udp, int sin6_scope_id, u16 port, u16 sockFlags, char *errmsg)
+int ySocketOpenBindMulti(YSOCKET_MULTI *newskt, IPvX_ADDR *local_ip, int is_udp, int sin6_scope_id, u16 port, u16 sockFlags)
 {
     int res, sockfamily, addrlen;
     u32 optval;

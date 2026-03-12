@@ -9,9 +9,9 @@ message(STATUS "Include Mbed TLS library")
 set(MBEDTLS_C_FILES
 #-- mbedtls_patch_start --
 	mbedtls/library/error.c
+	mbedtls/library/debug.c
 	mbedtls/library/x509write_crt.c
 	mbedtls/library/x509_create.c
-	mbedtls/library/debug.c
 	mbedtls/library/x509.c
 	mbedtls/library/x509_crt.c
 	mbedtls/library/x509write.c
@@ -26,6 +26,7 @@ set(MBEDTLS_C_FILES
 	mbedtls/library/ssl_tls13_generic.c
 	mbedtls/library/ssl_tls13_server.c
 	mbedtls/library/ssl_tls13_keys.c
+	mbedtls/library/ssl_cookie.c
 	mbedtls/tf-psa-crypto/core/psa_its_file.c
 	mbedtls/tf-psa-crypto/core/psa_crypto_slot_management.c
 	mbedtls/tf-psa-crypto/core/psa_crypto.c
@@ -35,7 +36,6 @@ set(MBEDTLS_C_FILES
 	mbedtls/tf-psa-crypto/drivers/builtin/src/cmac.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/md5.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/gcm.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/aes.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/aesce.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/rsa.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/pk_ecc.c
@@ -45,6 +45,7 @@ set(MBEDTLS_C_FILES
 	mbedtls/tf-psa-crypto/drivers/builtin/src/chacha20.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/ecdh.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/ecdsa.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/block_cipher.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/cipher_wrap.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/base64.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/pk_rsa.c
@@ -57,7 +58,6 @@ set(MBEDTLS_C_FILES
 	mbedtls/tf-psa-crypto/drivers/builtin/src/aria.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/ripemd160.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/sha1.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/sha256.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/sha512.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/sha3.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/ccm.c
@@ -89,6 +89,8 @@ set(MBEDTLS_C_FILES
 	mbedtls/tf-psa-crypto/drivers/builtin/src/bignum.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/psa_util.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/bignum_core.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/aes.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/sha256.c
 
 #-- mbedtls_patch_stop --
 )

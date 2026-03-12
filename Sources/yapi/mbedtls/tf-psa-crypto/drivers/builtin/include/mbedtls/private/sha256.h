@@ -19,6 +19,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef TEXAS_API
+#include <ti/drivers/SHA2.h>
+#endif
+
 /** SHA-256 input data was malformed. */
 #define MBEDTLS_ERR_SHA256_BAD_INPUT_DATA                 PSA_ERROR_INVALID_ARGUMENT
 
@@ -34,9 +38,13 @@ extern "C" {
  *                 made in the call to mbedtls_sha256_starts().
  */
 typedef struct mbedtls_sha256_context {
+#ifdef TEXAS_API
+    SHA2_Object object;                          /*!< Driver specific data object     */
+#else
     unsigned char MBEDTLS_PRIVATE(buffer)[64];   /*!< The data block being processed. */
     uint32_t MBEDTLS_PRIVATE(total)[2];          /*!< The number of Bytes processed.  */
     uint32_t MBEDTLS_PRIVATE(state)[8];          /*!< The intermediate digest state.  */
+#endif
 #if defined(MBEDTLS_SHA224_C)
     int MBEDTLS_PRIVATE(is224);                  /*!< Determines which function to use:
                                                     0: Use SHA-256, or 1: Use SHA-224. */

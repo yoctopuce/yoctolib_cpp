@@ -50,6 +50,10 @@
 /** Invalid input data. */
 #define MBEDTLS_ERR_AES_BAD_INPUT_DATA                    PSA_ERROR_INVALID_ARGUMENT
 
+#ifdef TEXAS_API
+#include <ti/drivers/cryptoutils/cryptokey/CryptoKey.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -58,6 +62,10 @@ extern "C" {
  * \brief The AES context-type definition.
  */
 typedef struct mbedtls_aes_context {
+#ifdef TEXAS_API
+    CryptoKey           cryptoKey;               /*!<  input to the crypto driver   */
+    uint8_t             keyMaterial[32];         /*!<  storage for the key   */
+#else
     int MBEDTLS_PRIVATE(nr);                     /*!< The number of rounds. */
     size_t MBEDTLS_PRIVATE(rk_offset);           /*!< The offset in array elements to AES
                                                     round keys in the buffer. */
@@ -70,6 +78,7 @@ typedef struct mbedtls_aes_context {
                                                     simplifying key expansion in the 256-bit
                                                     case by generating an extra round key. */
 #endif /* MBEDTLS_AES_ONLY_128_BIT_KEY_LENGTH */
+#endif
 }
 mbedtls_aes_context;
 

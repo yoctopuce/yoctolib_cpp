@@ -61,6 +61,8 @@ class YOrientation; // forward declaration
 typedef void (*YOrientationValueCallback)(YOrientation *func, const string& functionValue);
 class YMeasure; // forward declaration
 typedef void (*YOrientationTimedReportCallback)(YOrientation *func, YMeasure measure);
+#define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
+#define Y_ZEROOFFSET_INVALID            (YAPI_INVALID_DOUBLE)
 //--- (end of YOrientation definitions)
 
 //--- (YOrientation declaration)
@@ -79,11 +81,16 @@ class YOCTO_CLASS_EXPORT YOrientation: public YSensor {
 protected:
     //--- (YOrientation attributes)
     // Attributes (function value cache)
+    string          _command;
+    double          _zeroOffset;
     YOrientationValueCallback _valueCallbackOrientation;
     YOrientationTimedReportCallback _timedReportCallbackOrientation;
 
     friend YOrientation *yFindOrientation(const string& func);
     friend YOrientation *yFirstOrientation(void);
+
+    // Function-specific method for parsing of JSON output and caching result
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindOrientation factory function to instantiate
     YOrientation(const string& func);
@@ -93,6 +100,47 @@ public:
     virtual ~YOrientation();
     //--- (YOrientation accessors declaration)
 
+    static const string COMMAND_INVALID;
+    static const double ZEROOFFSET_INVALID;
+
+    string              get_command(void);
+
+    inline string       command(void)
+    { return this->get_command(); }
+
+    int             set_command(const string& newval);
+    inline int      setCommand(const string& newval)
+    { return this->set_command(newval); }
+
+    /**
+     * Sets an offset between the orientation reported by the sensor and the actual orientation. This
+     * can typically be used  to compensate for mechanical offset. This offset can also be set
+     * automatically using the zero() method.
+     * Remember to call the saveToFlash() method of the module if the modification must be kept.
+     * On failure, throws an exception or returns a negative error code.
+     *
+     * @param newval : a floating point number
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_zeroOffset(double newval);
+    inline int      setZeroOffset(double newval)
+    { return this->set_zeroOffset(newval); }
+
+    /**
+     * Returns the Offset between the orientation reported by the sensor and the actual orientation.
+     *
+     * @return a floating point number corresponding to the Offset between the orientation reported by the
+     * sensor and the actual orientation
+     *
+     * On failure, throws an exception or returns YOrientation::ZEROOFFSET_INVALID.
+     */
+    double              get_zeroOffset(void);
+
+    inline double       zeroOffset(void)
+    { return this->get_zeroOffset(); }
 
     /**
      * Retrieves an orientation sensor for a given identifier.
@@ -126,11 +174,11 @@ public:
 
     /**
      * Registers the callback function that is invoked on every change of advertised value.
-     * The callback is called once when it is registered, passing the current advertised value
-     * of the function, provided that it is not an empty string.
      * The callback is then invoked only during the execution of ySleep or yHandleEvents.
-     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
+     * This provides control over the time when the callback is triggered. For good responsiveness,
+     * remember to call one of these two functions periodically. The callback is called once juste after beeing
+     * registered, passing the current advertised value  of the function, provided that it is not an empty string.
+     * To unregister a callback, pass a NULL pointer as argument.
      *
      * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
@@ -157,6 +205,62 @@ public:
     using YSensor::registerTimedReportCallback;
 
     virtual int         _invokeTimedReportCallback(YMeasure value);
+
+    virtual int         sendCommand(string command);
+
+    /**
+     * Reset the sensor's zero to current position by automatically setting a new offset.
+     * Remember to call the saveToFlash() method of the module if the modification must be kept.
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         zero(void);
+
+    /**
+     * Modifies the calibration of the MA600A sensor using an array of 32
+     * values representing the offset in degrees between the true values and
+     * those measured regularly every 11.25 degrees starting from zero. The calibration
+     * is applied immediately and is stored permanently in the MA600A sensor.
+     * Before calculating the offset values, remember to clear any previous
+     * calibration using the clearCalibration function and set
+     * the zero offset  to 0. After a calibration change, the sensor will stop
+     * measurements for about one second.
+     * Do not confuse this function with the generic calibrateFromPoints function,
+     * which works at the YSensor level and is not necessarily well suited to
+     * a sensor returning circular values.
+     *
+     * @param offsetValues : array of 32 floating point values in the [-11.25..+11.25] range
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         set_calibration(vector<double>& offsetValues);
+
+    /**
+     * Retrieves offset correction data points previously entered using the method
+     * set_calibration.
+     *
+     * @param offsetValues : array of 32 floating point numbers, that will be filled by the
+     *         function with the offset values for the correction points.
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         get_Calibration(vector<double>& offsetValues);
+
+    /**
+     * Cancels any calibration set with set_calibration. This function
+     * is equivalent to calling set_calibration with only zeros.
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         clearCalibration(void);
 
 
     inline static YOrientation *Find(string func)

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 71752 2026-02-02 17:42:37Z mvuilleu $
+ * $Id: yocto_display.cpp 72057 2026-02-17 09:44:53Z mvuilleu $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -1471,11 +1471,11 @@ YDisplay* YDisplay::FindDisplay(string func)
 
 /**
  * Registers the callback function that is invoked on every change of advertised value.
- * The callback is called once when it is registered, passing the current advertised value
- * of the function, provided that it is not an empty string.
  * The callback is then invoked only during the execution of ySleep or yHandleEvents.
- * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
- * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
+ * This provides control over the time when the callback is triggered. For good responsiveness,
+ * remember to call one of these two functions periodically. The callback is called once juste after beeing
+ * registered, passing the current advertised value  of the function, provided that it is not an empty string.
+ * To unregister a callback, pass a NULL pointer as argument.
  *
  * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and the character string describing
@@ -1798,7 +1798,6 @@ string YDisplay::readDisplay(vector<int> palette)
     int srcx = 0;
     int srcy = 0;
     int srci = 0;
-    int incx = 0;
     string pixmap;
     int pixcount = 0;
     int pixval = 0;
@@ -1897,7 +1896,6 @@ string YDisplay::readDisplay(vector<int> palette)
     pixmap = string(pixcount, (char)0);
     srcx = 0;
     srcy = 0;
-    incx = (8 / zipbits);
     srcval = 0;
     while (srcpos < zipsize) {
         // load next compression pattern byte
@@ -1909,11 +1907,15 @@ string YDisplay::readDisplay(vector<int> palette)
             if ((srcpat & 128) != 0) {
                 srcval = ((u8)zipmap[srcpos]);
                 srcpos = srcpos + 1;
+                if (zipbits > 1) {
+                    srcval = (srcval << 8) + ((u8)zipmap[srcpos]);
+                    srcpos = srcpos + 1;
+                }
             }
             srcpat = (srcpat << 1);
             pixpos = srcy * zipwidth + srcx;
-            // produce 8 pixels (or 4, if bitmap uses 2 bits per pixel)
-            srci = 8 - zipbits;
+            // produce 8 pixels
+            srci = 7 * zipbits;
             while (srci >= 0) {
                 pixval = ((srcval >> srci) & zipmask);
                 pixmap[pixpos] = (char)(pixval);
@@ -1923,7 +1925,7 @@ string YDisplay::readDisplay(vector<int> palette)
             srcy = srcy + 1;
             if (srcy >= zipheight) {
                 srcy = 0;
-                srcx = srcx + incx;
+                srcx = srcx + 8;
                 // drop last bytes if image is not a multiple of 8
                 if (srcx >= zipwidth) {
                     srcbit = 0;

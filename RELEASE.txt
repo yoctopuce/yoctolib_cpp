@@ -1,3 +1,5 @@
-CPPV2 v2.1.11761
+CPPV2 v2.1.12413
 
-- Fix CMakeLists.txt to work with vcpkg
+- Add error handling when sending SMS
+- Add registerSmsCallback support
+- Add example showing how to use SMS functions (Prog-SMS-Example)

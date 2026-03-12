@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.c 61107 2024-05-24 07:59:31Z mvuilleu $
+ * $Id: ykey.c 72199 2026-02-20 16:55:37Z mvuilleu $
  *
  * Implementation of standard key computations
  *
@@ -43,15 +43,9 @@
 
 #include "ykey.h"
 
-#ifdef MICROCHIP_API
-#include "yocto.h"
-#include "Yocto/yapi_ext.h"
-#define ntohl(dw) swapl(dw)
-#else
 #include <string.h>
 #ifndef WINDOWS_API
 #include <arpa/inet.h>
-#endif
 #endif
 #include "ymemory.h"
 #include "yfifo.h"
@@ -76,8 +70,6 @@ void bin2str(char* to, const u8* p, u16 len, u8 addnull)
     }
     if (addnull) *to = '\0';
 }
-
-#if !defined(MICROCHIP_API) || defined(HTTP_ON_NET)
 
 //#define DEBUG_HTTP_AUTHENTICATION
 
@@ -452,9 +444,85 @@ u8* ySHA1(const char* text)
     return (u8*)wpak.shau;
 }
 
-#endif
+static void sha1_process_block(SHA1_SUM* ctx)
+{
+    itershaw(ctx->state);
+    ctx->state[0] = wpak.shaw[0];
+    ctx->state[1] = wpak.shaw[1];
+    ctx->state[2] = wpak.shaw[2];
+    ctx->state[3] = wpak.shaw[3];
+    ctx->state[4] = wpak.shaw[4];
+}
 
-#if !defined(MICROCHIP_API) || defined(MRF24)
+static void sha1_pack_block(const u8* blk)
+{
+    int i, k;
+    for (i = 0; i < 16; i++) {
+        wpak.shaw[i] = 0;
+        for (k = 0; k < 4; k++) {
+            wpak.shaw[i] = (wpak.shaw[i] << 8) | blk[i * 4 + k];
+        }
+    }
+}
+
+void SHA1Initialize(SHA1_SUM* ctx)
+{
+    memcpy(ctx->state, sha1_init, sizeof(ctx->state));
+    ctx->buflen = 0;
+    ctx->total  = 0;
+}
+
+void SHA1AddData(SHA1_SUM* ctx, const u8* data, u32 len)
+{
+    while (len > 0) {
+        u32 avail = 64 - ctx->buflen;
+        u32 rw = (len < avail) ? len : avail;
+        memcpy(ctx->buf + ctx->buflen, data, rw);
+        ctx->buflen += rw;
+        ctx->total  += rw;
+        data        += rw;
+        len         -= rw;
+        if (ctx->buflen == 64) {
+            sha1_pack_block(ctx->buf);
+            sha1_process_block(ctx);
+            ctx->buflen = 0;
+        }
+    }
+}
+
+void SHA1Calculate(SHA1_SUM* ctx, u8* out)
+{
+    u32 bitlen = ctx->total * 8;
+    u32 i;
+
+    ctx->buf[ctx->buflen++] = 0x80;
+
+    if (ctx->buflen > 56) {
+        memset(ctx->buf + ctx->buflen, 0, 64 - ctx->buflen);
+        sha1_pack_block(ctx->buf);
+        sha1_process_block(ctx);
+        ctx->buflen = 0;
+    }
+
+    memset(ctx->buf + ctx->buflen, 0, 56 - ctx->buflen);
+    ctx->buf[56] = 0;
+    ctx->buf[57] = 0;
+    ctx->buf[58] = 0;
+    ctx->buf[59] = 0;
+    ctx->buf[60] = (u8)(bitlen >> 24);
+    ctx->buf[61] = (u8)(bitlen >> 16);
+    ctx->buf[62] = (u8)(bitlen >>  8);
+    ctx->buf[63] = (u8)(bitlen      );
+    sha1_pack_block(ctx->buf);
+    sha1_process_block(ctx);
+
+    for (i = 0; i < 5; i++) {
+        out[i * 4 + 0] = (u8)(ctx->state[i] >> 24);
+        out[i * 4 + 1] = (u8)(ctx->state[i] >> 16);
+        out[i * 4 + 2] = (u8)(ctx->state[i] >>  8);
+        out[i * 4 + 3] = (u8)(ctx->state[i]      );
+    }
+}
 
 void yInitPsk(const char* pass, const char* ssid)
 {
@@ -513,9 +581,6 @@ int yIterPsk(u8* res, const char* ssid)
     return 1;
 }
 
-#endif
-
-#ifndef MICROCHIP_API
 /*
  * MD5 implementation below is mostly from Sergey Lyubka, author of SHTTPD.
  * Any other implementation would do as well, but we like this one.
@@ -709,8 +774,6 @@ void MD5Calculate(HASH_SUM* ctx, u8 *digest)
     memcpy(digest, ctx->buf, 16);
     memset((char*)ctx, 0, sizeof(*ctx));
 }
-#endif
-
 
 #ifndef IPV4_ONLY
 void setIPv6Mask(IPvX_ADDR* addr, u16 nbits)
@@ -734,7 +797,7 @@ void setIPv4Mask(IPvX_ADDR* addr, u16 nbits)
     setIPv4Val(addr, NETMASK_HIGH(nbits));
 }
 
-void YSAFECODE(setIPv4Val)(IPvX_ADDR* addr, u32 ipval)
+void setIPv4Val(IPvX_ADDR* addr, u32 ipval)
 {
     memset((u8*)addr->v4.pad, 0, 10);
     addr->v4.pad[5] = 0xffff;
@@ -783,10 +846,9 @@ u16 IPvXAddrLen(const IPvX_ADDR* addr)
 #endif
 
 
-
 static const u16 decPow[4] = {10, 100, 1000, 10000};
 
- char* YSAFECODE(u16toa)(u16 val, char* buff)
+ char* u16toa(u16 val, char* buff)
 {
     u16 i, printed = 0, digit, divisor;
 
@@ -808,7 +870,7 @@ static const u16 decPow[4] = {10, 100, 1000, 10000};
     return buff;
 }
 
-char* YSAFECODE(iptoa)(const IPvX_ADDR* addr, char* buff)
+char* iptoa(const IPvX_ADDR* addr, char* buff)
 {
 #ifndef IPV4_ONLY
     u16 i, nz, maxnz, zend;

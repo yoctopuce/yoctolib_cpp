@@ -61,6 +61,7 @@ class YCounter; // forward declaration
 typedef void (*YCounterValueCallback)(YCounter *func, const string& functionValue);
 class YMeasure; // forward declaration
 typedef void (*YCounterTimedReportCallback)(YCounter *func, YMeasure measure);
+#define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 //--- (end of YCounter definitions)
 
 //--- (YCounter declaration)
@@ -79,11 +80,15 @@ class YOCTO_CLASS_EXPORT YCounter: public YSensor {
 protected:
     //--- (YCounter attributes)
     // Attributes (function value cache)
+    string          _command;
     YCounterValueCallback _valueCallbackCounter;
     YCounterTimedReportCallback _timedReportCallbackCounter;
 
     friend YCounter *yFindCounter(const string& func);
     friend YCounter *yFirstCounter(void);
+
+    // Function-specific method for parsing of JSON output and caching result
+    virtual int     _parseAttr(YJSONObject *json_val);
 
     // Constructor is protected, use yFindCounter factory function to instantiate
     YCounter(const string& func);
@@ -93,6 +98,16 @@ public:
     virtual ~YCounter();
     //--- (YCounter accessors declaration)
 
+    static const string COMMAND_INVALID;
+
+    string              get_command(void);
+
+    inline string       command(void)
+    { return this->get_command(); }
+
+    int             set_command(const string& newval);
+    inline int      setCommand(const string& newval)
+    { return this->set_command(newval); }
 
     /**
      * Retrieves a counter for a given identifier.
@@ -126,11 +141,11 @@ public:
 
     /**
      * Registers the callback function that is invoked on every change of advertised value.
-     * The callback is called once when it is registered, passing the current advertised value
-     * of the function, provided that it is not an empty string.
      * The callback is then invoked only during the execution of ySleep or yHandleEvents.
-     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
+     * This provides control over the time when the callback is triggered. For good responsiveness,
+     * remember to call one of these two functions periodically. The callback is called once juste after beeing
+     * registered, passing the current advertised value  of the function, provided that it is not an empty string.
+     * To unregister a callback, pass a NULL pointer as argument.
      *
      * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
@@ -157,6 +172,17 @@ public:
     using YSensor::registerTimedReportCallback;
 
     virtual int         _invokeTimedReportCallback(YMeasure value);
+
+    virtual int         sendCommand(string command);
+
+    /**
+     * Reset the counter to zero.
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         zero(void);
 
 
     inline static YCounter *Find(string func)

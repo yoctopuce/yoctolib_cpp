@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.h 71691 2026-02-02 06:59:29Z mvuilleu $
+ * $Id: yocto_messagebox.h 72410 2026-03-11 07:18:41Z mvuilleu $
  *
  * Declares yFindMessageBox(), the high-level API for MessageBox functions
  *
@@ -56,6 +56,9 @@ namespace YOCTOLIB_NAMESPACE
 class YMessageBox; // forward declaration
 
 typedef void (*YMessageBoxValueCallback)(YMessageBox *func, const string& functionValue);
+class YSms; // forward declaration
+typedef void (*YSmsCallback)(YMessageBox *obj, YSms sms);
+
 #define Y_SLOTSINUSE_INVALID            (YAPI_INVALID_UINT)
 #define Y_SLOTSCOUNT_INVALID            (YAPI_INVALID_UINT)
 #define Y_SLOTSBITMAP_INVALID           (YAPI_INVALID_STRING)
@@ -86,6 +89,7 @@ class YOCTO_CLASS_EXPORT YSms {
     YMessageBox*    _mbox;
     int             _slot;
     bool            _deliv;
+    bool            _isnew;
     string          _smsc;
     int             _mref;
     string          _orig;
@@ -122,11 +126,11 @@ public:
 
     virtual int         get_msgRef(void);
 
-    virtual string      get_sender(void);
+    virtual int         get_protocolId(void);
 
     virtual string      get_recipient(void);
 
-    virtual int         get_protocolId(void);
+    virtual bool        isNew(void);
 
     virtual bool        isReceived(void);
 
@@ -136,19 +140,44 @@ public:
 
     virtual int         get_dcs(void);
 
-    virtual string      get_timestamp(void);
-
     virtual string      get_userDataHeader(void);
 
     virtual string      get_userData(void);
 
     /**
-     * Returns the content of the message.
+     * Returns true iff the message is a "Flash" SMS (class 0 message). Flash messages
+     * are displayed on the handset immediately and usually not saved on the SIM card.
      *
-     * @return  a string with the content of the message.
+     * @return a boolean.
+     */
+    virtual bool        isFlashMessage(void);
+
+    /**
+     * Returns the reported message timestamp.
+     *
+     * @return the timestamp as a text string.
+     */
+    virtual string      get_timestamp(void);
+
+    /**
+     * Returns the reported message sender.
+     *
+     * @return a text string.
+     */
+    virtual string      get_sender(void);
+
+    /**
+     * Returns the content of the message as a text string.
+     *
+     * @return a string with the content of the message.
      */
     virtual string      get_textData(void);
 
+    /**
+     * Returns the content of the message, as a list of integer unicode values.
+     *
+     * @return a list of integers.
+     */
     virtual vector<int> get_unicodeData(void);
 
     virtual int         get_partCount(void);
@@ -166,6 +195,8 @@ public:
     virtual int         set_slot(int val);
 
     virtual int         set_received(bool val);
+
+    virtual int         set_new(bool val);
 
     virtual int         set_smsc(string val);
 
@@ -192,7 +223,7 @@ public:
     virtual int         convertToUnicode(void);
 
     /**
-     * Add a regular text to the SMS. This function support messages
+     * Adds regular text to the SMS. This function support messages
      * of more than 160 characters. ISO-latin accented characters
      * are supported. For messages with special unicode characters such as asian
      * characters and emoticons, use the  addUnicodeData method.
@@ -204,10 +235,10 @@ public:
     virtual int         addText(string val);
 
     /**
-     * Add a unicode text to the SMS. This function support messages
+     * Adds unicode characters to the SMS. This function support messages
      * of more than 160 characters, using SMS concatenation.
      *
-     * @param val : an array of special unicode characters
+     * @param val : a list of unicode characters provided as integers
      *
      * @return YAPI::SUCCESS when the call succeeds.
      */
@@ -247,6 +278,13 @@ public:
      */
     virtual int         send(void);
 
+    /**
+     * Delete the SMS from the SIM card.
+     *
+     * @return YAPI::SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
     virtual int         deleteFromSIM(void);
 
 #ifdef __BORLANDC__
@@ -270,6 +308,7 @@ class YOCTO_CLASS_EXPORT YMessageBox: public YFunction {
 #endif
 //--- (end of generated code: YMessageBox declaration)
 protected:
+    static void yInternalEventCallback(YMessageBox *obj, const string& value);
     //--- (generated code: YMessageBox attributes)
     // Attributes (function value cache)
     int             _slotsInUse;
@@ -280,6 +319,7 @@ protected:
     string          _obey;
     string          _command;
     YMessageBoxValueCallback _valueCallbackMessageBox;
+    YSmsCallback    _smsCallback;
     int             _nextMsgRef;
     string          _prevBitmapStr;
     vector<YSms>    _pdus;
@@ -469,11 +509,11 @@ public:
 
     /**
      * Registers the callback function that is invoked on every change of advertised value.
-     * The callback is called once when it is registered, passing the current advertised value
-     * of the function, provided that it is not an empty string.
      * The callback is then invoked only during the execution of ySleep or yHandleEvents.
-     * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
-     * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
+     * This provides control over the time when the callback is triggered. For good responsiveness,
+     * remember to call one of these two functions periodically. The callback is called once juste after beeing
+     * registered, passing the current advertised value  of the function, provided that it is not an empty string.
+     * To unregister a callback, pass a NULL pointer as argument.
      *
      * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
      *         arguments: the function object of which the value has changed, and the character string describing
@@ -489,7 +529,7 @@ public:
 
     virtual int         clearSIMSlot(int slot);
 
-    virtual string      _AT(string cmd);
+    virtual int         sendPDU(string pdu);
 
     virtual YSms        fetchPdu(int slot);
 
@@ -570,6 +610,23 @@ public:
      * On failure, throws an exception or returns an empty list.
      */
     virtual vector<YSms> get_messages(void);
+
+    /**
+     * Registers a callback function to be called each time that a new SMS is received.
+     * The callback is invoked only during the execution of ySleep or yHandleEvents.
+     * This provides control over the time when the callback is triggered.
+     * For good responsiveness, remember to call one of these two functions periodically.
+     * To unregister a callback, pass a NULL pointer as argument.
+     *
+     * @param callback : the callback function to call, or a NULL pointer.
+     *         The callback function should take four arguments:
+     *         the YMessageBox object that emitted the event, and
+     *         the YSms object containing the received message.
+     *         On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         registerSmsCallback(YSmsCallback callback);
+
+    virtual int         _internalEventHandler(string cbVal);
 
 
     inline static YMessageBox *Find(string func)

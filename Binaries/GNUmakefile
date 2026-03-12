@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 71568 2026-01-27 15:30:59Z mvuilleu $
+#  $Id: GNUmakefile 72281 2026-03-05 09:43:04Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -418,9 +418,9 @@ ifndef  NO_YSSL
 #-- mbedtls_patch_start --
 MBEDTLS_OBJS_STAT = \
 	library/error.o \
+	library/debug.o \
 	library/x509write_crt.o \
 	library/x509_create.o \
-	library/debug.o \
 	library/x509.o \
 	library/x509_crt.o \
 	library/x509write.o \
@@ -435,6 +435,7 @@ MBEDTLS_OBJS_STAT = \
 	library/ssl_tls13_generic.o \
 	library/ssl_tls13_server.o \
 	library/ssl_tls13_keys.o \
+	library/ssl_cookie.o \
 	tf-psa-crypto/core/psa_its_file.o \
 	tf-psa-crypto/core/psa_crypto_slot_management.o \
 	tf-psa-crypto/core/psa_crypto.o \
@@ -444,7 +445,6 @@ MBEDTLS_OBJS_STAT = \
 	tf-psa-crypto/drivers/builtin/src/cmac.o \
 	tf-psa-crypto/drivers/builtin/src/md5.o \
 	tf-psa-crypto/drivers/builtin/src/gcm.o \
-	tf-psa-crypto/drivers/builtin/src/aes.o \
 	tf-psa-crypto/drivers/builtin/src/aesce.o \
 	tf-psa-crypto/drivers/builtin/src/rsa.o \
 	tf-psa-crypto/drivers/builtin/src/pk_ecc.o \
@@ -454,6 +454,7 @@ MBEDTLS_OBJS_STAT = \
 	tf-psa-crypto/drivers/builtin/src/chacha20.o \
 	tf-psa-crypto/drivers/builtin/src/ecdh.o \
 	tf-psa-crypto/drivers/builtin/src/ecdsa.o \
+	tf-psa-crypto/drivers/builtin/src/block_cipher.o \
 	tf-psa-crypto/drivers/builtin/src/cipher_wrap.o \
 	tf-psa-crypto/drivers/builtin/src/base64.o \
 	tf-psa-crypto/drivers/builtin/src/pk_rsa.o \
@@ -466,7 +467,6 @@ MBEDTLS_OBJS_STAT = \
 	tf-psa-crypto/drivers/builtin/src/aria.o \
 	tf-psa-crypto/drivers/builtin/src/ripemd160.o \
 	tf-psa-crypto/drivers/builtin/src/sha1.o \
-	tf-psa-crypto/drivers/builtin/src/sha256.o \
 	tf-psa-crypto/drivers/builtin/src/sha512.o \
 	tf-psa-crypto/drivers/builtin/src/sha3.o \
 	tf-psa-crypto/drivers/builtin/src/ccm.o \
@@ -498,6 +498,8 @@ MBEDTLS_OBJS_STAT = \
 	tf-psa-crypto/drivers/builtin/src/bignum.o \
 	tf-psa-crypto/drivers/builtin/src/psa_util.o \
 	tf-psa-crypto/drivers/builtin/src/bignum_core.o \
+	tf-psa-crypto/drivers/builtin/src/aes.o \
+	tf-psa-crypto/drivers/builtin/src/sha256.o \
 
 
 MBEDTLS_DIR         = $(YAPI_SOURCES_DIR)mbedtls/

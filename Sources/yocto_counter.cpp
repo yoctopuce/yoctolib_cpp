@@ -55,6 +55,7 @@ using namespace YOCTOLIB_NAMESPACE;
 
 YCounter::YCounter(const string& func): YSensor(func)
 //--- (YCounter initialization)
+    ,_command(COMMAND_INVALID)
     ,_valueCallbackCounter(NULL)
     ,_timedReportCallbackCounter(NULL)
 //--- (end of YCounter initialization)
@@ -69,7 +70,54 @@ YCounter::~YCounter()
 }
 //--- (YCounter implementation)
 // static attributes
+const string YCounter::COMMAND_INVALID = YAPI_INVALID_STRING;
 
+int YCounter::_parseAttr(YJSONObject *json_val)
+{
+    if(json_val->has("command")) {
+        _command =  json_val->getString("command");
+    }
+    return YSensor::_parseAttr(json_val);
+}
+
+
+string YCounter::get_command(void)
+{
+    string res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCounter::COMMAND_INVALID;
+                }
+            }
+        }
+        res = _command;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+int YCounter::set_command(const string& newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = newval;
+        res = _setAttr("command", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
 
 /**
  * Retrieves a counter for a given identifier.
@@ -122,11 +170,11 @@ YCounter* YCounter::FindCounter(string func)
 
 /**
  * Registers the callback function that is invoked on every change of advertised value.
- * The callback is called once when it is registered, passing the current advertised value
- * of the function, provided that it is not an empty string.
  * The callback is then invoked only during the execution of ySleep or yHandleEvents.
- * This provides control over the time when the callback is triggered. For good responsiveness, remember to call
- * one of these two functions periodically. To unregister a callback, pass a NULL pointer as argument.
+ * This provides control over the time when the callback is triggered. For good responsiveness,
+ * remember to call one of these two functions periodically. The callback is called once juste after beeing
+ * registered, passing the current advertised value  of the function, provided that it is not an empty string.
+ * To unregister a callback, pass a NULL pointer as argument.
  *
  * @param callback : the callback function to call, or a NULL pointer. The callback function should take two
  *         arguments: the function object of which the value has changed, and the character string describing
@@ -194,6 +242,23 @@ int YCounter::_invokeTimedReportCallback(YMeasure value)
         YSensor::_invokeTimedReportCallback(value);
     }
     return 0;
+}
+
+int YCounter::sendCommand(string command)
+{
+    return this->set_command(command);
+}
+
+/**
+ * Reset the counter to zero.
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YCounter::zero(void)
+{
+    return this->sendCommand("Z");
 }
 
 YCounter *YCounter::nextCounter(void)
