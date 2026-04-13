@@ -55,6 +55,7 @@ using namespace YOCTOLIB_NAMESPACE;
 
 YCounter::YCounter(const string& func): YSensor(func)
 //--- (YCounter initialization)
+    ,_decimalMode(DECIMALMODE_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackCounter(NULL)
     ,_timedReportCallbackCounter(NULL)
@@ -74,12 +75,72 @@ const string YCounter::COMMAND_INVALID = YAPI_INVALID_STRING;
 
 int YCounter::_parseAttr(YJSONObject *json_val)
 {
+    if(json_val->has("decimalMode")) {
+        _decimalMode =  (Y_DECIMALMODE_enum)json_val->getInt("decimalMode");
+    }
     if(json_val->has("command")) {
         _command =  json_val->getString("command");
     }
     return YSensor::_parseAttr(json_val);
 }
 
+
+/**
+ * Returns a value indicating if the senseur compute whole or fractional values.
+ *
+ * @return either YCounter::DECIMALMODE_FALSE or YCounter::DECIMALMODE_TRUE, according to a value
+ * indicating if the senseur compute whole or fractional values
+ *
+ * On failure, throws an exception or returns YCounter::DECIMALMODE_INVALID.
+ */
+Y_DECIMALMODE_enum YCounter::get_decimalMode(void)
+{
+    Y_DECIMALMODE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YCounter::DECIMALMODE_INVALID;
+                }
+            }
+        }
+        res = _decimalMode;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Changes the sensor's operating mode so that it computes integer or decimal values.
+ * Remember to call the saveToFlash() method of the module if the modification must be kept.
+ *
+ * @param newval : either YCounter::DECIMALMODE_FALSE or YCounter::DECIMALMODE_TRUE, according to the
+ * sensor's operating mode so that it computes integer or decimal values
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YCounter::set_decimalMode(Y_DECIMALMODE_enum newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("decimalMode", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
 
 string YCounter::get_command(void)
 {
@@ -252,7 +313,10 @@ int YCounter::sendCommand(string command)
 /**
  * Reset the counter to zero.
  *
- * @return YAPI::SUCCESS if the call succeeds.
+ * @return YAPI::SUCCESS if the call succeeds. Please note that this function only resets
+ *         the integer part of the counter. In CONTINUOUS mode, the decimal part is calculated
+ *         from the angle measured by the sensor. To set the decimal part of the sensor to zero,
+ *         the origin of the sensor must be changed with the YOrientation.zero().
  *
  * On failure, throws an exception or returns a negative error code.
  */

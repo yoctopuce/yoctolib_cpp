@@ -19,7 +19,7 @@ import jsonschema
 import jinja2
 
 import framework_scripts_path # pylint: disable=unused-import
-#from mbedtls_framework import build_tree
+from mbedtls_framework import build_tree
 
 JSONSchema = NewType('JSONSchema', object)
 # The Driver is an Object, but practically it's indexable and can called a dictionary to
@@ -165,8 +165,7 @@ def main() -> int:
     """
     Main with command line arguments.
     """
-    #def_arg_project_root = build_tree.guess_project_root()
-    def_arg_project_root = "../"
+    def_arg_project_root = build_tree.guess_project_root()
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--project-root', default=def_arg_project_root,
@@ -180,11 +179,10 @@ def main() -> int:
     args = parser.parse_args()
 
     project_root = os.path.abspath(args.project_root)
-    #if build_tree.looks_like_mbedtls_root(project_root):
-    #    project_root = os.path.join(project_root, 'tf-psa-crypto')
+    if build_tree.looks_like_mbedtls_root(project_root):
+        project_root = os.path.join(project_root, 'tf-psa-crypto')
 
-    #crypto_core_directory = build_tree.crypto_core_directory(project_root)
-    crypto_core_directory= "../core"
+    crypto_core_directory = build_tree.crypto_core_directory(project_root)
 
     output_directory = args.output_directory if args.output_directory is not None else \
         crypto_core_directory

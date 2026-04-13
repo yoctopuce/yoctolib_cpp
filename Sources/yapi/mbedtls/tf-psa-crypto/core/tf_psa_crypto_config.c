@@ -65,4 +65,6 @@
 #include <psa/crypto_sizes.h>
 
 /* Additional domain-specific checks */
+#if defined(MBEDTLS_PSA_CRYPTO_C)
 #include "psa_crypto_random_impl.h"
+#endif

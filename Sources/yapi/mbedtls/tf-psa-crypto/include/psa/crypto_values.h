@@ -588,7 +588,7 @@
 /** SEC Koblitz curves over prime fields.
  *
  * This family comprises the following curves:
- * secp192k1, secp256k1.
+ * secp256k1.
  * They are defined in _Standards for Efficient Cryptography_,
  * _SEC 2: Recommended Elliptic Curve Domain Parameters_.
  * https://www.secg.org/sec2-v2.pdf
@@ -598,7 +598,7 @@
 /** SEC random curves over prime fields.
  *
  * This family comprises the following curves:
- * secp192r1, secp256r1, secp384r1, secp521r1.
+ * secp256r1, secp384r1, secp521r1.
  * They are defined in _Standards for Efficient Cryptography_,
  * _SEC 2: Recommended Elliptic Curve Domain Parameters_.
  * https://www.secg.org/sec2-v2.pdf
@@ -778,6 +778,7 @@
 #define PSA_ALG_CATEGORY_ASYMMETRIC_ENCRYPTION  ((psa_algorithm_t) 0x07000000)
 #define PSA_ALG_CATEGORY_KEY_DERIVATION         ((psa_algorithm_t) 0x08000000)
 #define PSA_ALG_CATEGORY_KEY_AGREEMENT          ((psa_algorithm_t) 0x09000000)
+#define PSA_ALG_CATEGORY_XOF                    ((psa_algorithm_t) 0x0d000000)
 
 /** Whether an algorithm is vendor-defined.
  *
@@ -895,6 +896,18 @@
     (PSA_ALG_IS_KEY_DERIVATION(alg) &&              \
      (alg) & PSA_ALG_KEY_DERIVATION_STRETCHING_FLAG)
 
+/** Whether the specified algorithm is a XOF (extendable-output function)
+ * algorithm.
+ *
+ * \param alg An algorithm identifier (value of type #psa_algorithm_t).
+ *
+ * \return 1 if \p alg is a XOF algorithm, 0 otherwise.
+ *         This macro may return either 0 or 1 if \p alg is not a supported
+ *         algorithm identifier.
+ */
+#define PSA_ALG_IS_XOF(alg)                                            \
+    (((alg) & PSA_ALG_CATEGORY_MASK) == PSA_ALG_CATEGORY_XOF)
+
 /** An invalid algorithm identifier value. */
 /* *INDENT-OFF* (https://github.com/ARM-software/psa-arch-tests/issues/337) */
 #define PSA_ALG_NONE                            ((psa_algorithm_t)0)
@@ -969,6 +982,36 @@
  * perform an operation. It is only valid to build policies.
  */
 #define PSA_ALG_ANY_HASH                        ((psa_algorithm_t) 0x020000ff)
+
+/** The SHAKE128 XOF (extendable-output function) algorithm.
+ *
+ * This is the SHAKE128 extendable-output function defined in FIPS 202,
+ * based on the Keccak sponge construction.
+ */
+#define PSA_ALG_SHAKE128                        ((psa_algorithm_t) 0x0d000100)
+
+/** The SHAKE256 XOF (extendable-output function) algorithm.
+ *
+ * This is the SHAKE256 extendable-output function defined in FIPS 202,
+ * based on the Keccak sponge construction.
+ */
+#define PSA_ALG_SHAKE256                        ((psa_algorithm_t) 0x0d000200)
+
+#define PSA_ALG_XOF_CONTEXT_FLAG                ((psa_algorithm_t) 0x00008000)
+/** Whether the specified XOF algorithm supports a context.
+ *
+ * \param xof_alg       A XOF algorithm (\c PSA_ALG_XXX value such that
+ *                      #PSA_ALG_IS_XOF(\p xof_alg) is true).
+ *
+ * \return              \c 1 if \p xof_alg supports a context parameter
+ *                      passed with psa_xof_set_context(). This includes
+ *                      XOF algorithms with an optional context.
+ *                      \c 0 if \p xof_alg does not allow a context parameter.
+ *                      Unspecified if \p xof_alg is not a supported
+ *                      XOF algorithm.
+ */
+#define PSA_ALG_XOF_HAS_CONTEXT(xof_alg)        \
+    (((xof_alg) & PSA_ALG_XOF_CONTEXT_FLAG) != 0)
 
 #define PSA_ALG_MAC_SUBCATEGORY_MASK            ((psa_algorithm_t) 0x00c00000)
 #define PSA_ALG_HMAC_BASE                       ((psa_algorithm_t) 0x03800000)

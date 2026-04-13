@@ -11,8 +11,10 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
-#ifndef MBEDTLS_BIGNUM_INTERNAL_H
-#define MBEDTLS_BIGNUM_INTERNAL_H
+#ifndef TF_PSA_CRYPTO_BIGNUM_INTERNAL_H
+#define TF_PSA_CRYPTO_BIGNUM_INTERNAL_H
+
+#include "constant_time_internal.h"
 
 /**
  * \brief          Perform a modular exponentiation: X = A^E mod N
@@ -119,4 +121,44 @@ int mbedtls_mpi_inv_mod_even_in_range(mbedtls_mpi *X,
                                       mbedtls_mpi const *A,
                                       mbedtls_mpi const *N);
 
-#endif /* bignum_internal.h */
+/** Choose between two mbedtls_mpi_uint values.
+ *
+ * Functionally equivalent to:
+ *
+ * condition ? if1 : if0.
+ *
+ * \param condition     Condition to test.
+ * \param if1           Value to use if \p condition == MBEDTLS_CT_TRUE.
+ * \param if0           Value to use if \p condition == MBEDTLS_CT_FALSE.
+ *
+ * \return  \c if1 if \p condition == MBEDTLS_CT_TRUE, otherwise \c if0.
+ */
+static inline mbedtls_mpi_uint mbedtls_ct_mpi_uint_if(mbedtls_ct_condition_t condition,
+                                                      mbedtls_mpi_uint if1,
+                                                      mbedtls_mpi_uint if0)
+{
+    return (mbedtls_mpi_uint) mbedtls_ct_if(condition,
+                                            (mbedtls_ct_uint_t) if1,
+                                            (mbedtls_ct_uint_t) if0);
+}
+
+/** Choose between an mbedtls_mpi_uint value and 0.
+ *
+ * Functionally equivalent to:
+ *
+ * condition ? if1 : 0.
+ *
+ * Functionally equivalent to mbedtls_ct_mpi_uint_if(condition, if1, 0) but
+ * results in smaller code size.
+ *
+ * \param condition     Condition to test.
+ * \param if1           Value to use if \p condition == MBEDTLS_CT_TRUE.
+ *
+ * \return  \c if1 if \p condition == MBEDTLS_CT_TRUE, otherwise 0.
+ */
+static inline mbedtls_mpi_uint mbedtls_ct_mpi_uint_if_else_0(
+    mbedtls_ct_condition_t condition, mbedtls_mpi_uint if1)
+{
+    return (mbedtls_mpi_uint) (condition & if1);
+}
+#endif /* TF_PSA_CRYPTO_BIGNUM_INTERNAL_H */

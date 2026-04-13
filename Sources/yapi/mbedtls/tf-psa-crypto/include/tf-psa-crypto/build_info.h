@@ -25,7 +25,7 @@
  * Major, Minor, Patchlevel
  */
 #define TF_PSA_CRYPTO_VERSION_MAJOR  1
-#define TF_PSA_CRYPTO_VERSION_MINOR  0
+#define TF_PSA_CRYPTO_VERSION_MINOR  1
 #define TF_PSA_CRYPTO_VERSION_PATCH  0
 
 /**
@@ -33,9 +33,9 @@
  *    MMNNPP00
  *    Major version | Minor version | Patch version
  */
-#define TF_PSA_CRYPTO_VERSION_NUMBER        0x01000000
-#define TF_PSA_CRYPTO_VERSION_STRING        "1.0.0"
-#define TF_PSA_CRYPTO_VERSION_STRING_FULL   "TF-PSA-Crypto 1.0.0"
+#define TF_PSA_CRYPTO_VERSION_NUMBER         0x01010000
+#define TF_PSA_CRYPTO_VERSION_STRING         "1.1.0"
+#define TF_PSA_CRYPTO_VERSION_STRING_FULL    "TF-PSA-Crypto 1.1.0"
 
 /* Macros for build-time platform detection */
 
@@ -48,6 +48,11 @@
     (defined(__arm__) || defined(_M_ARM) || \
     defined(_M_ARMT) || defined(__thumb__) || defined(__thumb2__))
 #define MBEDTLS_ARCH_IS_ARM32
+#endif
+
+#if !defined(MBEDTLS_ARCH_IS_THUMB) && \
+    defined(_M_ARMT) || defined(__thumb__) || defined(__thumb2__)
+#define MBEDTLS_ARCH_IS_THUMB
 #endif
 
 #if !defined(MBEDTLS_ARCH_IS_X64) && \
@@ -95,12 +100,6 @@
 #define _CRT_SECURE_NO_DEPRECATE 1
 #endif
 
-/* Define `inline` on some non-C99-compliant compilers. */
-#if (defined(__ARMCC_VERSION) || defined(_MSC_VER)) && \
-    !defined(inline) && !defined(__cplusplus)
-#define inline __inline
-#endif
-
 #if defined(TF_PSA_CRYPTO_CONFIG_FILES_READ)
 #error \
     "Something went wrong: TF_PSA_CRYPTO_CONFIG_FILES_READ defined before reading the config files!"
@@ -138,23 +137,44 @@
 #endif
 #endif
 
-/* Auto-enable MBEDTLS_MD_C if needed by a module that didn't require it
- * in a previous release, to ensure backwards compatibility.
- */
-#if defined(MBEDTLS_PKCS5_C)
-#define MBEDTLS_MD_C
+/* Tweak the configuration of PSA mechanisms. */
+#include "tf-psa-crypto/private/crypto_adjust_config_synonyms.h"
+#include "tf-psa-crypto/private/crypto_adjust_config_auto_enabled.h"
+#include "tf-psa-crypto/private/crypto_adjust_config_dependencies.h"
+#include "tf-psa-crypto/private/crypto_adjust_config_key_pair_types.h"
+
+/* Define additional internal symbols based on the library configuration. */
+#include "tf-psa-crypto/private/crypto_adjust_config_derived.h"
+
+#if defined(MBEDTLS_PSA_CRYPTO_C)
+/* If we are implementing PSA crypto ourselves (as opposed to only
+ * having client-side stubs), enable built-in drivers for all the
+ * mechanisms activated with `PSA_WANT_xxx` that are not
+ * accelerated. */
+#include "mbedtls/private/crypto_adjust_config_enable_builtins.h"
+
+#if defined(TF_PSA_CRYPTO_TEST_LIBTESTDRIVER1)
+#include "mbedtls/private/libtestdriver1-crypto_adjust_config_enable_builtins.h"
 #endif
 
-/* PSA crypto specific configuration options
- * - If config_psa.h reads a configuration option in preprocessor directive,
- *   this symbol should be set before its inclusion. (e.g. MBEDTLS_MD_C)
- * - If config_psa.h writes a configuration option in conditional directive,
- *   this symbol should be consulted after its inclusion.
- *   (e.g. MBEDTLS_MD_LIGHT)
- */
-#include "mbedtls/private/config_psa.h"
+/* Special header to adjust the configuration to make a build
+ * where all enabled mechanisms are provided both as built-in and
+ * through drivers. See the comment at the top of the
+ * header file for details. */
+#if defined(MBEDTLS_CONFIG_ADJUST_TEST_ACCELERATORS) //no-check-names
+#include "mbedtls/private/config_adjust_test_accelerators.h"
+#endif
+#endif /* MBEDTLS_PSA_CRYPTO_C */
 
-#include "mbedtls/config_adjust_legacy_crypto.h"
+/* Define additional symbols used by support modules. */
+#include "tf-psa-crypto/private/crypto_adjust_config_support.h"
+
+/* Define additional symbols used by built-in crypto modules. */
+#include "mbedtls/private/crypto_adjust_config_tweak_builtins.h"
+
+#if defined(TF_PSA_CRYPTO_TEST_LIBTESTDRIVER1)
+#include "mbedtls/private/libtestdriver1-crypto_adjust_config_tweak_builtins.h"
+#endif
 
 /* Indicate that all configuration symbols are set,
  * even the ones that are calculated programmatically.
@@ -162,13 +182,6 @@
  * etc.).
  */
 #define TF_PSA_CRYPTO_CONFIG_IS_FINALIZED
-
-/* Up to Mbed TLS 3.6, build_info.h included check_config.h which included
- * <limits.h>. Keep including it until it's explicitly included everywhere
- * that uses definitions from <limits.h>.
- * https://github.com/Mbed-TLS/mbedtls/issues/10305
- */
-#include <limits.h>
 
 /*
  * Avoid warning from -pedantic. This is a convenient place for this

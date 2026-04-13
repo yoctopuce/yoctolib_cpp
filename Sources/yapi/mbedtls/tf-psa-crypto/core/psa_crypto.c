@@ -31,6 +31,7 @@
  * stored keys. */
 #include "psa_crypto_storage.h"
 
+#include "psa_crypto_random.h"
 #include "psa_crypto_random_impl.h"
 
 #include <stdlib.h>
@@ -48,7 +49,6 @@
 #include "mbedtls/private/ccm.h"
 #include "mbedtls/private/cmac.h"
 #include "mbedtls/constant_time.h"
-#include "mbedtls/private/ecdh.h"
 #include "mbedtls/private/ecp.h"
 #include "mbedtls/private/entropy.h"
 #include "mbedtls/private/error_common.h"
@@ -481,19 +481,8 @@ psa_status_t mbedtls_to_psa_error(int ret)
             return PSA_ERROR_INSUFFICIENT_ENTROPY;
 #endif
 
-#if defined(MBEDTLS_ECP_LIGHT)
         case MBEDTLS_ERR_ECP_INVALID_KEY:
             return PSA_ERROR_INVALID_ARGUMENT;
-        case MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE:
-            return PSA_ERROR_NOT_SUPPORTED;
-        case MBEDTLS_ERR_ECP_RANDOM_FAILED:
-            return PSA_ERROR_INSUFFICIENT_ENTROPY;
-
-#if defined(MBEDTLS_ECP_RESTARTABLE)
-        case MBEDTLS_ERR_ECP_IN_PROGRESS:
-            return PSA_OPERATION_INCOMPLETE;
-#endif
-#endif
 
         case MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED:
             return PSA_ERROR_CORRUPTION_DETECTED;
@@ -1757,7 +1746,7 @@ static psa_status_t psa_validate_key_attributes(const psa_key_attributes_t *attr
             return PSA_ERROR_INVALID_ARGUMENT;
         }
     } else {
-        if (!psa_is_valid_key_id(psa_get_key_id(attributes), 0)) {
+        if (!psa_key_id_is_user(MBEDTLS_SVC_KEY_ID_GET_KEY_ID(key))) {
             return PSA_ERROR_INVALID_ARGUMENT;
         }
     }
@@ -2469,6 +2458,189 @@ psa_status_t psa_hash_clone(const psa_hash_operation_t *source_operation,
 
     return status;
 }
+
+
+/****************************************************************/
+/* XOF */
+/****************************************************************/
+
+psa_status_t psa_xof_abort(psa_xof_operation_t *operation)
+{
+    /* Aborting a non-active operation is allowed */
+    if (operation->id == 0) {
+        return PSA_SUCCESS;
+    }
+
+    psa_status_t status = psa_driver_wrapper_xof_abort(operation);
+    memset(operation, 0, sizeof(*operation));
+
+    return status;
+}
+
+psa_status_t psa_xof_setup(psa_xof_operation_t *operation,
+                           psa_algorithm_t alg)
+{
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+
+    /* A context must be freshly initialized before it can be set up. */
+    if (operation->id != 0) {
+        status = PSA_ERROR_BAD_STATE;
+        goto exit;
+    }
+
+    if (!PSA_ALG_IS_XOF(alg)) {
+        status = PSA_ERROR_INVALID_ARGUMENT;
+        goto exit;
+    }
+
+    /* Make sure the driver-dependent part of the operation is zeroed.
+     * This is a guarantee we make to drivers. Initializing the operation
+     * does not necessarily take care of it, since the context is a
+     * union and initializing a union does not necessarily initialize
+     * all of its members. */
+    memset(&operation->ctx, 0, sizeof(operation->ctx));
+
+    status = psa_driver_wrapper_xof_setup(operation, alg);
+
+exit:
+    if (status == PSA_SUCCESS) {
+        operation->active = 1;
+        if ((alg & PSA_ALG_XOF_CONTEXT_FLAG) != 0) {
+            /* So far there are no XOF algorithms with an optional context */
+            operation->allows_context = 1;
+            operation->requires_context = 1;
+        }
+    } else {
+        psa_xof_abort(operation);
+    }
+
+    return status;
+}
+
+psa_status_t psa_xof_set_context(psa_xof_operation_t *operation,
+                                 const uint8_t *context_external,
+                                 size_t context_length)
+{
+    if (operation->id == 0) {
+        return PSA_ERROR_BAD_STATE;
+    }
+    if (!operation->active) {
+        return PSA_ERROR_BAD_STATE;
+    }
+    if (!operation->allows_context) {
+        return PSA_ERROR_BAD_STATE;
+    }
+    if (operation->has_context) {
+        return PSA_ERROR_BAD_STATE;
+    }
+    if (operation->has_input) {
+        return PSA_ERROR_BAD_STATE;
+    }
+    if (operation->has_output) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+    LOCAL_INPUT_DECLARE(context_external, context);
+
+    operation->has_context = 1;
+
+    LOCAL_INPUT_ALLOC(context_external, context_length, context);
+    status = psa_driver_wrapper_xof_set_context(operation,
+                                                context, context_length);
+    // Label otherwise unused when MBEDTLS_PSA_ASSUME_EXCLUSIVE_BUFFERS is enabled
+    goto exit;
+
+exit:
+    if (status != PSA_SUCCESS) {
+        psa_xof_abort(operation);
+    }
+
+    LOCAL_INPUT_FREE(context_external, context);
+    return status;
+}
+
+psa_status_t psa_xof_update(psa_xof_operation_t *operation,
+                            const uint8_t *input_external,
+                            size_t input_length)
+{
+    if (operation->id == 0) {
+        return PSA_ERROR_BAD_STATE;
+    }
+    if (!operation->active) {
+        return PSA_ERROR_BAD_STATE;
+    }
+    if (!operation->has_context && operation->requires_context) {
+        return PSA_ERROR_BAD_STATE;
+    }
+    if (operation->has_output) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+    LOCAL_INPUT_DECLARE(input_external, input);
+
+    operation->has_input = 1;
+
+    /* Don't require XOF implementations to behave correctly on a
+     * zero-length input, which may have an invalid pointer. */
+    if (input_length == 0) {
+        return PSA_SUCCESS;
+    }
+
+    LOCAL_INPUT_ALLOC(input_external, input_length, input);
+    status = psa_driver_wrapper_xof_update(operation, input, input_length);
+    // Label otherwise unused when MBEDTLS_PSA_ASSUME_EXCLUSIVE_BUFFERS is enabled
+    goto exit;
+
+exit:
+    if (status != PSA_SUCCESS) {
+        psa_xof_abort(operation);
+    }
+
+    LOCAL_INPUT_FREE(input_external, input);
+    return status;
+}
+
+psa_status_t psa_xof_output(psa_xof_operation_t *operation,
+                            uint8_t *output_external,
+                            size_t output_length)
+{
+    if (operation->id == 0) {
+        return PSA_ERROR_BAD_STATE;
+    }
+    if (!operation->active) {
+        return PSA_ERROR_BAD_STATE;
+    }
+    if (!operation->has_context && operation->requires_context) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+    LOCAL_OUTPUT_DECLARE(output_external, output);
+
+    operation->has_output = 1;
+
+    /* Don't require XOF implementations to behave correctly on a
+     * zero-length output, which may have an invalid pointer. */
+    if (output_length == 0) {
+        return PSA_SUCCESS;
+    }
+
+    LOCAL_OUTPUT_ALLOC(output_external, output_length, output);
+    status = psa_driver_wrapper_xof_output(operation, output, output_length);
+    // Label otherwise unused when MBEDTLS_PSA_ASSUME_EXCLUSIVE_BUFFERS is enabled
+    goto exit;
+
+exit:
+    if (status != PSA_SUCCESS) {
+        psa_xof_abort(operation);
+    }
+
+    LOCAL_OUTPUT_FREE(output_external, output);
+    return status;
+}
+
 
 
 /****************************************************************/
@@ -3768,7 +3940,12 @@ psa_status_t psa_verify_hash_abort(
 void mbedtls_psa_interruptible_set_max_ops(uint32_t max_ops)
 {
 
-#if (defined(MBEDTLS_PSA_BUILTIN_ALG_ECDSA) || \
+#if (defined(MBEDTLS_PSA_BUILTIN_ALG_ECDH) || \
+    defined(MBEDTLS_PSA_BUILTIN_KEY_TYPE_ECC_KEY_PAIR_GENERATE) || \
+    defined(MBEDTLS_PSA_BUILTIN_KEY_TYPE_ECC_KEY_PAIR_IMPORT) || \
+    defined(MBEDTLS_PSA_BUILTIN_KEY_TYPE_ECC_KEY_PAIR_EXPORT) || \
+    defined(MBEDTLS_PSA_BUILTIN_KEY_TYPE_ECC_PUBLIC_KEY) || \
+    defined(MBEDTLS_PSA_BUILTIN_ALG_ECDSA) || \
     defined(MBEDTLS_PSA_BUILTIN_ALG_DETERMINISTIC_ECDSA)) && \
     defined(MBEDTLS_ECP_RESTARTABLE)
 
@@ -4265,25 +4442,8 @@ static psa_status_t psa_generate_random_internal(uint8_t *output,
     return PSA_SUCCESS;
 
 #else /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
-
-    while (output_size > 0) {
-        int ret = MBEDTLS_ERR_PLATFORM_FEATURE_UNSUPPORTED;
-        size_t request_size =
-            (output_size > MBEDTLS_PSA_RANDOM_MAX_REQUEST ?
-             MBEDTLS_PSA_RANDOM_MAX_REQUEST :
-             output_size);
-#if defined(MBEDTLS_CTR_DRBG_C)
-        ret = mbedtls_ctr_drbg_random(&global_data.rng.drbg, output, request_size);
-#elif defined(MBEDTLS_HMAC_DRBG_C)
-        ret = mbedtls_hmac_drbg_random(&global_data.rng.drbg, output, request_size);
-#endif /* !MBEDTLS_CTR_DRBG_C && !MBEDTLS_HMAC_DRBG_C */
-        if (ret != 0) {
-            return mbedtls_to_psa_error(ret);
-        }
-        output_size -= request_size;
-        output += request_size;
-    }
-    return PSA_SUCCESS;
+    return psa_random_internal_generate(&global_data.rng,
+                                        output, output_size);
 #endif /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
 }
 
@@ -5376,6 +5536,10 @@ exit:
 
 static psa_status_t psa_aead_final_checks(const psa_aead_operation_t *operation)
 {
+    if (operation->alg == PSA_ALG_CCM && !operation->lengths_set) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
     if (operation->id == 0 || !operation->nonce_set) {
         return PSA_ERROR_BAD_STATE;
     }
@@ -7751,10 +7915,8 @@ psa_status_t psa_raw_key_agreement(psa_algorithm_t alg,
      * for the output size. The PSA specification only guarantees that this
      * function works if output_size >= PSA_RAW_KEY_AGREEMENT_OUTPUT_SIZE(...),
      * but it might be nice to allow smaller buffers if the output fits.
-     * At the time of writing this comment, with only ECDH implemented,
-     * PSA_RAW_KEY_AGREEMENT_OUTPUT_SIZE() is exact so the point is moot.
-     * If FFDH is implemented, PSA_RAW_KEY_AGREEMENT_OUTPUT_SIZE() can easily
-     * be exact for it as well. */
+     * At the time of writing this comment, for both FFDH and ECDH,
+     * PSA_RAW_KEY_AGREEMENT_OUTPUT_SIZE() is exact so the point is moot. */
     expected_length =
         PSA_RAW_KEY_AGREEMENT_OUTPUT_SIZE(slot->attr.type, slot->attr.bits);
     if (output_size < expected_length) {
@@ -8027,18 +8189,7 @@ static void mbedtls_psa_random_init(mbedtls_psa_random_context_t *rng)
 #if defined(MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG)
     memset(rng, 0, sizeof(*rng));
 #else /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
-
-    /* Set default configuration if
-     * mbedtls_psa_crypto_configure_entropy_sources() hasn't been called. */
-    if (rng->entropy_init == NULL) {
-        rng->entropy_init = mbedtls_entropy_init;
-    }
-    if (rng->entropy_free == NULL) {
-        rng->entropy_free = mbedtls_entropy_free;
-    }
-
-    rng->entropy_init(&rng->entropy);
-    mbedtls_psa_drbg_init(&rng->drbg);
+    psa_random_internal_init(rng);
 #endif /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
 }
 
@@ -8052,8 +8203,7 @@ static void mbedtls_psa_random_free(mbedtls_psa_random_context_t *rng)
 #if defined(MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG)
     memset(rng, 0, sizeof(*rng));
 #else /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
-    mbedtls_psa_drbg_free(&rng->drbg);
-    rng->entropy_free(&rng->entropy);
+    psa_random_internal_free(rng);
 #endif /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
 }
 
@@ -8066,10 +8216,84 @@ static psa_status_t mbedtls_psa_random_seed(mbedtls_psa_random_context_t *rng)
     (void) rng;
     return PSA_SUCCESS;
 #else /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
-    const unsigned char drbg_seed[] = "PSA";
-    int ret = mbedtls_psa_drbg_seed(&rng->drbg, &rng->entropy,
-                                    drbg_seed, sizeof(drbg_seed) - 1);
+    return psa_random_internal_seed(rng);
+#endif /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
+}
+
+psa_status_t psa_random_reseed(const uint8_t *perso, size_t perso_size)
+{
+    GUARD_MODULE_INITIALIZED;
+#if defined(MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG)
+    (void) perso;
+    (void) perso_size;
+    return PSA_ERROR_NOT_SUPPORTED;
+#else /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
+#if defined(MBEDTLS_THREADING_C)
+    if (mbedtls_mutex_lock(&mbedtls_threading_psa_rngdata_mutex) != 0) {
+        return PSA_ERROR_SERVICE_FAILURE;
+    }
+#endif /* defined(MBEDTLS_THREADING_C) */
+    int ret = mbedtls_psa_drbg_reseed(&global_data.rng.drbg,
+                                      perso, perso_size);
+#if defined(MBEDTLS_THREADING_C)
+    mbedtls_mutex_unlock(&mbedtls_threading_psa_rngdata_mutex);
+#endif /* defined(MBEDTLS_THREADING_C) */
     return mbedtls_to_psa_error(ret);
+#endif /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
+}
+
+psa_status_t psa_random_deplete(void)
+{
+    GUARD_MODULE_INITIALIZED;
+#if defined(MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG)
+    return PSA_ERROR_NOT_SUPPORTED;
+#else /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
+#if defined(MBEDTLS_THREADING_C)
+    if (mbedtls_mutex_lock(&mbedtls_threading_psa_rngdata_mutex) != 0) {
+        return PSA_ERROR_SERVICE_FAILURE;
+    }
+#endif /* defined(MBEDTLS_THREADING_C) */
+    mbedtls_psa_drbg_deplete(&global_data.rng.drbg);
+#if defined(MBEDTLS_THREADING_C)
+    mbedtls_mutex_unlock(&mbedtls_threading_psa_rngdata_mutex);
+#endif /* defined(MBEDTLS_THREADING_C) */
+    return PSA_SUCCESS;
+#endif /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
+}
+
+psa_status_t psa_random_set_prediction_resistance(unsigned enabled)
+{
+    GUARD_MODULE_INITIALIZED;
+
+#if defined(MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG)
+    (void) enabled;
+    return PSA_ERROR_NOT_SUPPORTED;
+#else /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
+
+    if (enabled != 0 && enabled != 1) {
+        return PSA_ERROR_INVALID_ARGUMENT;
+    }
+
+#if MBEDTLS_ENTROPY_TRUE_SOURCES > 0
+#if defined(MBEDTLS_THREADING_C)
+    if (mbedtls_mutex_lock(&mbedtls_threading_psa_rngdata_mutex) != 0) {
+        return PSA_ERROR_SERVICE_FAILURE;
+    }
+#endif /* defined(MBEDTLS_THREADING_C) */
+    mbedtls_psa_drbg_set_prediction_resistance(&global_data.rng.drbg, enabled);
+#if defined(MBEDTLS_THREADING_C)
+    mbedtls_mutex_unlock(&mbedtls_threading_psa_rngdata_mutex);
+#endif /* defined(MBEDTLS_THREADING_C) */
+    return PSA_SUCCESS;
+
+#else /* MBEDTLS_ENTROPY_TRUE_SOURCES > 0 */
+    if (enabled) {
+        return PSA_ERROR_NOT_SUPPORTED;
+    } else {
+        return PSA_SUCCESS;
+    }
+
+#endif /* MBEDTLS_ENTROPY_TRUE_SOURCES > 0 */
 #endif /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
 }
 
@@ -8605,20 +8829,11 @@ static psa_status_t mbedtls_psa_crypto_init_subsystem(mbedtls_psa_crypto_subsyst
 
             /* Initialize and seed the random generator. */
             if (global_data.rng_state == RNG_NOT_INITIALIZED && driver_wrappers_initialized) {
-#if !defined(MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG) && !defined(MBEDTLS_STATIC_ASSERT_SUPPORT)
-                if (MBEDTLS_PSA_CRYPTO_RNG_HASH != PSA_ALG_SHA_256 &&
-                    MBEDTLS_PSA_CRYPTO_RNG_HASH != PSA_ALG_SHA_512) {
-                    status = PSA_ERROR_INSUFFICIENT_ENTROPY;
-                } else
-#endif
-                {
-                    mbedtls_psa_random_init(&global_data.rng);
-                    global_data.rng_state = RNG_INITIALIZED;
-
-                    status = mbedtls_psa_random_seed(&global_data.rng);
-                    if (status == PSA_SUCCESS) {
-                        global_data.rng_state = RNG_SEEDED;
-                    }
+                mbedtls_psa_random_init(&global_data.rng);
+                global_data.rng_state = RNG_INITIALIZED;
+                status = mbedtls_psa_random_seed(&global_data.rng);
+                if (status == PSA_SUCCESS) {
+                    global_data.rng_state = RNG_SEEDED;
                 }
             }
 

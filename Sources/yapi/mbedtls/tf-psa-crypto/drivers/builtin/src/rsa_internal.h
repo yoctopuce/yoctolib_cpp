@@ -11,8 +11,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
-#ifndef MBEDTLS_RSA_INTERNAL_H
-#define MBEDTLS_RSA_INTERNAL_H
+#ifndef TF_PSA_CRYPTO_RSA_INTERNAL_H
+#define TF_PSA_CRYPTO_RSA_INTERNAL_H
 
 #include "mbedtls/private/rsa.h"
 #include "mbedtls/asn1.h"
@@ -61,8 +61,6 @@ int mbedtls_rsa_parse_pubkey(mbedtls_rsa_context *rsa, const unsigned char *key,
  *
  * \return          On success, the number of bytes written to the output buffer
  *                  (i.e. a value > 0).
- * \return          MBEDTLS_ERR_RSA_BAD_INPUT_DATA if the RSA context does not
- *                  contain a valid key pair.
  * \return          MBEDTLS_ERR_ASN1_xxx in case of failure while writing to the
  *                  output buffer.
  *
@@ -97,7 +95,7 @@ int mbedtls_rsa_write_pubkey(const mbedtls_rsa_context *rsa, unsigned char *star
 
 #if defined(MBEDTLS_PKCS1_V21)
 /**
- * \brief This function is analogue to \c mbedtls_rsa_rsassa_pss_sign().
+ * \brief This function is analogue to \c mbedtls_rsa_rsassa_pss_sign_ext().
  *        The only difference between them is that this function is more flexible
  *        on the parameters of \p ctx that are set with \c mbedtls_rsa_set_padding().
  *
@@ -106,7 +104,7 @@ int mbedtls_rsa_write_pubkey(const mbedtls_rsa_context *rsa, unsigned char *star
  *        - allows the hash_id of \p ctx to be MBEDTLS_MD_NONE,
  *          in which case it uses \p md_alg as the hash_id.
  *
- * \note  Refer to \c mbedtls_rsa_rsassa_pss_sign() for a description
+ * \note  Refer to \c mbedtls_rsa_rsassa_pss_sign_ext() for a description
  *        of the functioning and parameters of this function.
  */
 int mbedtls_rsa_rsassa_pss_sign_no_mode_check(mbedtls_rsa_context *ctx,
@@ -118,4 +116,4 @@ int mbedtls_rsa_rsassa_pss_sign_no_mode_check(mbedtls_rsa_context *ctx,
                                               unsigned char *sig);
 #endif /* MBEDTLS_PKCS1_V21 */
 
-#endif /* rsa_internal.h */
+#endif /* TF_PSA_CRYPTO_RSA_INTERNAL_H */

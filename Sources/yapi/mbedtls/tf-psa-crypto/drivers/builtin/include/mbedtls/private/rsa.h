@@ -13,18 +13,14 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
-#ifndef MBEDTLS_RSA_H
-#define MBEDTLS_RSA_H
+#ifndef TF_PSA_CRYPTO_MBEDTLS_PRIVATE_RSA_H
+#define TF_PSA_CRYPTO_MBEDTLS_PRIVATE_RSA_H
 #include "mbedtls/private_access.h"
 
 #include "tf-psa-crypto/build_info.h"
 
 #include "mbedtls/private/bignum.h"
 #include "mbedtls/md.h"
-
-#if defined(MBEDTLS_THREADING_C)
-#include "mbedtls/threading.h"
-#endif
 
 /*
  * RSA Error codes
@@ -79,10 +75,6 @@ extern "C" {
  * \brief   The RSA context structure.
  */
 typedef struct mbedtls_rsa_context {
-    int MBEDTLS_PRIVATE(ver);                    /*!<  Reserved for internal purposes.
-                                                  *    Do not set this field in application
-                                                  *    code. Its meaning might change without
-                                                  *    notice. */
     size_t MBEDTLS_PRIVATE(len);                 /*!<  The size of \p N in Bytes. */
 
     mbedtls_mpi MBEDTLS_PRIVATE(N);              /*!<  The public modulus. */
@@ -111,10 +103,6 @@ typedef struct mbedtls_rsa_context {
                                                     as specified in md.h for use in the MGF
                                                     mask generating function used in the
                                                     EME-OAEP and EMSA-PSS encodings. */
-#if defined(MBEDTLS_THREADING_C)
-    /* Invariant: the mutex is initialized iff ver != 0. */
-    mbedtls_threading_mutex_t MBEDTLS_PRIVATE(mutex);    /*!<  Thread-safety mutex. */
-#endif
 }
 mbedtls_rsa_context;
 
@@ -190,235 +178,6 @@ int mbedtls_rsa_get_padding_mode(const mbedtls_rsa_context *ctx);
 int mbedtls_rsa_get_md_alg(const mbedtls_rsa_context *ctx);
 
 /**
- * \brief          This function imports a set of core parameters into an
- *                 RSA context.
- *
- * \note           This function can be called multiple times for successive
- *                 imports, if the parameters are not simultaneously present.
- *
- *                 Any sequence of calls to this function should be followed
- *                 by a call to mbedtls_rsa_complete(), which checks and
- *                 completes the provided information to a ready-for-use
- *                 public or private RSA key.
- *
- * \note           See mbedtls_rsa_complete() for more information on which
- *                 parameters are necessary to set up a private or public
- *                 RSA key.
- *
- * \note           The imported parameters are copied and need not be preserved
- *                 for the lifetime of the RSA context being set up.
- *
- * \param ctx      The initialized RSA context to store the parameters in.
- * \param N        The RSA modulus. This may be \c NULL.
- * \param P        The first prime factor of \p N. This may be \c NULL.
- * \param Q        The second prime factor of \p N. This may be \c NULL.
- * \param D        The private exponent. This may be \c NULL.
- * \param E        The public exponent. This may be \c NULL.
- *
- * \return         \c 0 on success.
- * \return         A non-zero error code on failure.
- */
-int mbedtls_rsa_import(mbedtls_rsa_context *ctx,
-                       const mbedtls_mpi *N,
-                       const mbedtls_mpi *P, const mbedtls_mpi *Q,
-                       const mbedtls_mpi *D, const mbedtls_mpi *E);
-
-/**
- * \brief          This function imports core RSA parameters, in raw big-endian
- *                 binary format, into an RSA context.
- *
- * \note           This function can be called multiple times for successive
- *                 imports, if the parameters are not simultaneously present.
- *
- *                 Any sequence of calls to this function should be followed
- *                 by a call to mbedtls_rsa_complete(), which checks and
- *                 completes the provided information to a ready-for-use
- *                 public or private RSA key.
- *
- * \note           See mbedtls_rsa_complete() for more information on which
- *                 parameters are necessary to set up a private or public
- *                 RSA key.
- *
- * \note           The imported parameters are copied and need not be preserved
- *                 for the lifetime of the RSA context being set up.
- *
- * \param ctx      The initialized RSA context to store the parameters in.
- * \param N        The RSA modulus. This may be \c NULL.
- * \param N_len    The Byte length of \p N; it is ignored if \p N == NULL.
- * \param P        The first prime factor of \p N. This may be \c NULL.
- * \param P_len    The Byte length of \p P; it is ignored if \p P == NULL.
- * \param Q        The second prime factor of \p N. This may be \c NULL.
- * \param Q_len    The Byte length of \p Q; it is ignored if \p Q == NULL.
- * \param D        The private exponent. This may be \c NULL.
- * \param D_len    The Byte length of \p D; it is ignored if \p D == NULL.
- * \param E        The public exponent. This may be \c NULL.
- * \param E_len    The Byte length of \p E; it is ignored if \p E == NULL.
- *
- * \return         \c 0 on success.
- * \return         A non-zero error code on failure.
- */
-int mbedtls_rsa_import_raw(mbedtls_rsa_context *ctx,
-                           unsigned char const *N, size_t N_len,
-                           unsigned char const *P, size_t P_len,
-                           unsigned char const *Q, size_t Q_len,
-                           unsigned char const *D, size_t D_len,
-                           unsigned char const *E, size_t E_len);
-
-/**
- * \brief          This function completes an RSA context from
- *                 a set of imported core parameters.
- *
- *                 To setup an RSA public key, precisely \c N and \c E
- *                 must have been imported.
- *
- *                 To setup an RSA private key, sufficient information must
- *                 be present for the other parameters to be derivable.
- *
- *                 The default implementation supports the following:
- *                 <ul><li>Derive \c P, \c Q from \c N, \c D, \c E.</li>
- *                 <li>Derive \c N, \c D from \c P, \c Q, \c E.</li></ul>
- *                 Alternative implementations need not support these.
- *
- *                 If this function runs successfully, it guarantees that
- *                 the RSA context can be used for RSA operations without
- *                 the risk of failure or crash.
- *
- * \warning        This function need not perform consistency checks
- *                 for the imported parameters. In particular, parameters that
- *                 are not needed by the implementation might be silently
- *                 discarded and left unchecked. To check the consistency
- *                 of the key material, see mbedtls_rsa_check_privkey().
- *
- * \param ctx      The initialized RSA context holding imported parameters.
- *
- * \return         \c 0 on success.
- * \return         #MBEDTLS_ERR_RSA_BAD_INPUT_DATA if the attempted derivations
- *                 failed.
- *
- */
-int mbedtls_rsa_complete(mbedtls_rsa_context *ctx);
-
-/**
- * \brief          This function exports the core parameters of an RSA key.
- *
- *                 If this function runs successfully, the non-NULL buffers
- *                 pointed to by \p N, \p P, \p Q, \p D, and \p E are fully
- *                 written, with additional unused space filled leading by
- *                 zero Bytes.
- *
- *                 Possible reasons for returning
- *                 #MBEDTLS_ERR_PLATFORM_FEATURE_UNSUPPORTED:<ul>
- *                 <li>An alternative RSA implementation is in use, which
- *                 stores the key externally, and either cannot or should
- *                 not export it into RAM.</li>
- *                 <li>A SW or HW implementation might not support a certain
- *                 deduction. For example, \p P, \p Q from \p N, \p D,
- *                 and \p E if the former are not part of the
- *                 implementation.</li></ul>
- *
- *                 If the function fails due to an unsupported operation,
- *                 the RSA context stays intact and remains usable.
- *
- * \param ctx      The initialized RSA context.
- * \param N        The MPI to hold the RSA modulus.
- *                 This may be \c NULL if this field need not be exported.
- * \param P        The MPI to hold the first prime factor of \p N.
- *                 This may be \c NULL if this field need not be exported.
- * \param Q        The MPI to hold the second prime factor of \p N.
- *                 This may be \c NULL if this field need not be exported.
- * \param D        The MPI to hold the private exponent.
- *                 This may be \c NULL if this field need not be exported.
- * \param E        The MPI to hold the public exponent.
- *                 This may be \c NULL if this field need not be exported.
- *
- * \return         \c 0 on success.
- * \return         #MBEDTLS_ERR_PLATFORM_FEATURE_UNSUPPORTED if exporting the
- *                 requested parameters cannot be done due to missing
- *                 functionality or because of security policies.
- * \return         A non-zero return code on any other failure.
- *
- */
-int mbedtls_rsa_export(const mbedtls_rsa_context *ctx,
-                       mbedtls_mpi *N, mbedtls_mpi *P, mbedtls_mpi *Q,
-                       mbedtls_mpi *D, mbedtls_mpi *E);
-
-/**
- * \brief          This function exports core parameters of an RSA key
- *                 in raw big-endian binary format.
- *
- *                 If this function runs successfully, the non-NULL buffers
- *                 pointed to by \p N, \p P, \p Q, \p D, and \p E are fully
- *                 written, with additional unused space filled leading by
- *                 zero Bytes.
- *
- *                 Possible reasons for returning
- *                 #MBEDTLS_ERR_PLATFORM_FEATURE_UNSUPPORTED:<ul>
- *                 <li>An alternative RSA implementation is in use, which
- *                 stores the key externally, and either cannot or should
- *                 not export it into RAM.</li>
- *                 <li>A SW or HW implementation might not support a certain
- *                 deduction. For example, \p P, \p Q from \p N, \p D,
- *                 and \p E if the former are not part of the
- *                 implementation.</li></ul>
- *                 If the function fails due to an unsupported operation,
- *                 the RSA context stays intact and remains usable.
- *
- * \note           The length parameters are ignored if the corresponding
- *                 buffer pointers are NULL.
- *
- * \param ctx      The initialized RSA context.
- * \param N        The Byte array to store the RSA modulus,
- *                 or \c NULL if this field need not be exported.
- * \param N_len    The size of the buffer for the modulus.
- * \param P        The Byte array to hold the first prime factor of \p N,
- *                 or \c NULL if this field need not be exported.
- * \param P_len    The size of the buffer for the first prime factor.
- * \param Q        The Byte array to hold the second prime factor of \p N,
- *                 or \c NULL if this field need not be exported.
- * \param Q_len    The size of the buffer for the second prime factor.
- * \param D        The Byte array to hold the private exponent,
- *                 or \c NULL if this field need not be exported.
- * \param D_len    The size of the buffer for the private exponent.
- * \param E        The Byte array to hold the public exponent,
- *                 or \c NULL if this field need not be exported.
- * \param E_len    The size of the buffer for the public exponent.
- *
- * \return         \c 0 on success.
- * \return         #MBEDTLS_ERR_PLATFORM_FEATURE_UNSUPPORTED if exporting the
- *                 requested parameters cannot be done due to missing
- *                 functionality or because of security policies.
- * \return         A non-zero return code on any other failure.
- */
-int mbedtls_rsa_export_raw(const mbedtls_rsa_context *ctx,
-                           unsigned char *N, size_t N_len,
-                           unsigned char *P, size_t P_len,
-                           unsigned char *Q, size_t Q_len,
-                           unsigned char *D, size_t D_len,
-                           unsigned char *E, size_t E_len);
-
-/**
- * \brief          This function exports CRT parameters of a private RSA key.
- *
- * \note           Alternative RSA implementations not using CRT-parameters
- *                 internally can implement this function based on
- *                 mbedtls_rsa_deduce_opt().
- *
- * \param ctx      The initialized RSA context.
- * \param DP       The MPI to hold \c D modulo `P-1`,
- *                 or \c NULL if it need not be exported.
- * \param DQ       The MPI to hold \c D modulo `Q-1`,
- *                 or \c NULL if it need not be exported.
- * \param QP       The MPI to hold modular inverse of \c Q modulo \c P,
- *                 or \c NULL if it need not be exported.
- *
- * \return         \c 0 on success.
- * \return         A non-zero error code on failure.
- *
- */
-int mbedtls_rsa_export_crt(const mbedtls_rsa_context *ctx,
-                           mbedtls_mpi *DP, mbedtls_mpi *DQ, mbedtls_mpi *QP);
-
-/**
  * \brief          This function retrieves the length of the RSA modulus in bits.
  *
  * \param ctx      The initialized RSA context.
@@ -489,24 +248,13 @@ int mbedtls_rsa_check_pubkey(const mbedtls_rsa_context *ctx);
  *
  * \warning    This function should catch accidental misconfigurations
  *             like swapping of parameters, but it cannot establish full
- *             trust in neither the quality nor the consistency of the key
- *             material that was used to setup the given RSA context:
- *             <ul><li>Consistency: Imported parameters that are irrelevant
- *             for the implementation might be silently dropped. If dropped,
- *             the current function does not have access to them,
- *             and therefore cannot check them. See mbedtls_rsa_complete().
- *             If you want to check the consistency of the entire
- *             content of a PKCS1-encoded RSA private key, for example, you
- *             should use mbedtls_rsa_validate_params() before setting
- *             up the RSA context.
- *             Additionally, if the implementation performs empirical checks,
- *             these checks substantiate but do not guarantee consistency.</li>
- *             <li>Quality: This function is not expected to perform
+ *             trust in the quality of the key material that was used to setup
+ *             the given RSA context. This function is not expected to perform
  *             extended quality assessments like checking that the prime
  *             factors are safe. Additionally, it is the responsibility of the
  *             user to ensure the trustworthiness of the source of his RSA
  *             parameters, which goes beyond what is effectively checkable
- *             by the library.</li></ul>
+ *             by the library.
  *
  * \param ctx  The initialized RSA context to check.
  *
@@ -817,7 +565,7 @@ int mbedtls_rsa_rsaes_oaep_decrypt(mbedtls_rsa_context *ctx,
  *                 of \p ctx->N. For example, 128 Bytes if RSA-1024 is used.
  *
  * \note           For PKCS#1 v2.1 encoding, see comments on
- *                 mbedtls_rsa_rsassa_pss_sign() for details on
+ *                 mbedtls_rsa_rsassa_pss_sign_ext() for details on
  *                 \p md_alg and \p hash_id.
  *
  * \param ctx      The initialized RSA context to use.
@@ -933,54 +681,6 @@ int mbedtls_rsa_rsassa_pss_sign_ext(mbedtls_rsa_context *ctx,
                                     int saltlen,
                                     unsigned char *sig);
 
-/**
- * \brief          This function performs a PKCS#1 v2.1 PSS signature
- *                 operation (RSASSA-PSS-SIGN).
- *
- * \note           The \c hash_id set in \p ctx by calling
- *                 mbedtls_rsa_set_padding() selects the hash used for the
- *                 encoding operation and for the mask generation function
- *                 (MGF1). For more details on the encoding operation and the
- *                 mask generation function, consult <em>RFC-3447: Public-Key
- *                 Cryptography Standards (PKCS) #1 v2.1: RSA Cryptography
- *                 Specifications</em>.
- *
- * \note           This function always uses the maximum possible salt size,
- *                 up to the length of the payload hash. This choice of salt
- *                 size complies with FIPS 186-4 §5.5 (e) and RFC 8017 (PKCS#1
- *                 v2.2) §9.1.1 step 3. Furthermore this function enforces a
- *                 minimum salt size which is the hash size minus 2 bytes. If
- *                 this minimum size is too large given the key size (the salt
- *                 size, plus the hash size, plus 2 bytes must be no more than
- *                 the key size in bytes), this function returns
- *                 #MBEDTLS_ERR_RSA_BAD_INPUT_DATA.
- *
- * \param ctx      The initialized RSA context to use.
- * \param f_rng    The RNG function. It is mandatory and must not be \c NULL.
- * \param p_rng    The RNG context to be passed to \p f_rng. This may be \c NULL
- *                 if \p f_rng doesn't need a context argument.
- * \param md_alg   The message-digest algorithm used to hash the original data.
- *                 Use #MBEDTLS_MD_NONE for signing raw data.
- * \param hashlen  The length of the message digest or raw data in Bytes.
- *                 If \p md_alg is not #MBEDTLS_MD_NONE, this must match the
- *                 output length of the corresponding hash algorithm.
- * \param hash     The buffer holding the message digest or raw data.
- *                 This must be a readable buffer of at least \p hashlen Bytes.
- * \param sig      The buffer to hold the signature. This must be a writable
- *                 buffer of length \c ctx->len Bytes. For example, \c 256 Bytes
- *                 for an 2048-bit RSA modulus. A buffer length of
- *                 #MBEDTLS_MPI_MAX_SIZE is always safe.
- *
- * \return         \c 0 if the signing operation was successful.
- * \return         An \c MBEDTLS_ERR_RSA_XXX error code on failure.
- */
-int mbedtls_rsa_rsassa_pss_sign(mbedtls_rsa_context *ctx,
-                                int (*f_rng)(void *, unsigned char *, size_t),
-                                void *p_rng,
-                                mbedtls_md_type_t md_alg,
-                                unsigned int hashlen,
-                                const unsigned char *hash,
-                                unsigned char *sig);
 #endif /* MBEDTLS_PKCS1_V21 */
 
 /**
@@ -991,7 +691,7 @@ int mbedtls_rsa_rsassa_pss_sign(mbedtls_rsa_context *ctx,
  *                 verification.
  *
  * \note           For PKCS#1 v2.1 encoding, see comments on
- *                 mbedtls_rsa_rsassa_pss_verify() about \c md_alg and
+ *                 mbedtls_rsa_rsassa_pss_verify_ext() about \c md_alg and
  *                 \c hash_id.
  *
  * \param ctx      The initialized RSA public key context to use.
@@ -1039,41 +739,6 @@ int mbedtls_rsa_rsassa_pkcs1_v15_verify(mbedtls_rsa_context *ctx,
                                         unsigned int hashlen,
                                         const unsigned char *hash,
                                         const unsigned char *sig);
-
-/**
- * \brief          This function performs a PKCS#1 v2.1 PSS verification
- *                 operation (RSASSA-PSS-VERIFY).
- *
- * \note           The \c hash_id set in \p ctx by calling
- *                 mbedtls_rsa_set_padding() selects the hash used for the
- *                 encoding operation and for the mask generation function
- *                 (MGF1). For more details on the encoding operation and the
- *                 mask generation function, consult <em>RFC-3447: Public-Key
- *                 Cryptography Standards (PKCS) #1 v2.1: RSA Cryptography
- *                 Specifications</em>. If the \c hash_id set in \p ctx by
- *                 mbedtls_rsa_set_padding() is #MBEDTLS_MD_NONE, the \p md_alg
- *                 parameter is used.
- *
- * \param ctx      The initialized RSA public key context to use.
- * \param md_alg   The message-digest algorithm used to hash the original data.
- *                 Use #MBEDTLS_MD_NONE for signing raw data.
- * \param hashlen  The length of the message digest or raw data in Bytes.
- *                 If \p md_alg is not #MBEDTLS_MD_NONE, this must match the
- *                 output length of the corresponding hash algorithm.
- * \param hash     The buffer holding the message digest or raw data.
- *                 This must be a readable buffer of at least \p hashlen Bytes.
- * \param sig      The buffer holding the signature. This must be a readable
- *                 buffer of length \c ctx->len Bytes. For example, \c 256 Bytes
- *                 for an 2048-bit RSA modulus.
- *
- * \return         \c 0 if the verify operation was successful.
- * \return         An \c MBEDTLS_ERR_RSA_XXX error code on failure.
- */
-int mbedtls_rsa_rsassa_pss_verify(mbedtls_rsa_context *ctx,
-                                  mbedtls_md_type_t md_alg,
-                                  unsigned int hashlen,
-                                  const unsigned char *hash,
-                                  const unsigned char *sig);
 
 /**
  * \brief          This function performs a PKCS#1 v2.1 PSS verification
@@ -1153,4 +818,4 @@ int mbedtls_rsa_self_test(int verbose);
 }
 #endif
 
-#endif /* rsa.h */
+#endif /* TF_PSA_CRYPTO_MBEDTLS_PRIVATE_RSA_H */

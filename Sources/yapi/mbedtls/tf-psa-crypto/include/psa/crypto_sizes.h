@@ -252,10 +252,6 @@
 #define PSA_VENDOR_ECC_MAX_CURVE_BITS 256u
 #elif defined(PSA_WANT_ECC_MONTGOMERY_255)
 #define PSA_VENDOR_ECC_MAX_CURVE_BITS 255u
-#elif defined(PSA_WANT_ECC_SECP_R1_192)
-#define PSA_VENDOR_ECC_MAX_CURVE_BITS 192u
-#elif defined(PSA_WANT_ECC_SECP_K1_192)
-#define PSA_VENDOR_ECC_MAX_CURVE_BITS 192u
 #else
 #define PSA_VENDOR_ECC_MAX_CURVE_BITS 0u
 #endif
@@ -315,7 +311,7 @@
  *                      with the algorithm.
  */
 #define PSA_MAC_LENGTH(key_type, key_bits, alg)                                   \
-    ((alg) & PSA_ALG_MAC_TRUNCATION_MASK ? PSA_MAC_TRUNCATED_LENGTH(alg) :        \
+    (((alg) & PSA_ALG_MAC_TRUNCATION_MASK) ? PSA_MAC_TRUNCATED_LENGTH(alg) :      \
      PSA_ALG_IS_HMAC(alg) ? PSA_HASH_LENGTH(PSA_ALG_HMAC_GET_HASH(alg)) :         \
      PSA_ALG_IS_BLOCK_CIPHER_MAC(alg) ? PSA_BLOCK_CIPHER_BLOCK_LENGTH(key_type) : \
      ((void) (key_type), (void) (key_bits), 0u))
@@ -743,11 +739,15 @@
  * number of bits.
  *
  * This definition assumes that bits <= 2^19 - 9 so that the length field
- * is at most 3 bytes. The length of the encoding is the length of the
- * bit string padded to a whole number of bytes plus:
- * - 1 type byte;
- * - 1 to 3 length bytes;
- * - 0 to 1 bytes of leading 0 due to the sign bit.
+ * is at most 3 bytes. The length of the encoding is overestimated as follows:
+ *
+ * - Take int(bits / 8) as the number of full bytes taken by the value.
+ * - Add 1 extra byte, to account for either:
+ *   - A leading-zero byte, needed if the top bit of the value is 1
+ *     and bits % 8 == 0 (encoding in two's complement)
+ *   - Extra bits, when bits % 8 != 0
+ * - Add 1 type byte
+ * - Add 3 length bytes
  */
 #define PSA_KEY_EXPORT_ASN1_INTEGER_MAX_SIZE(bits)      \
     ((bits) / 8u + 5u)
@@ -784,7 +784,7 @@
  *
  * - 4 bytes of SEQUENCE overhead;
  * - 3 bytes of version;
- * - 7 half-size INTEGERs plus 2 full-size INTEGERs,
+ * - 5 half-size INTEGERs plus 2 full-size INTEGERs,
  *   overapproximated as 9 half-size INTEGERS;
  * - 7 bytes for the public exponent.
  */
@@ -901,15 +901,11 @@
  *         If the parameters are not valid, the return value is unspecified.
  */
 #define PSA_EXPORT_KEY_OUTPUT_SIZE(key_type, key_bits)                                              \
-    (PSA_KEY_TYPE_IS_UNSTRUCTURED(key_type) ? PSA_BITS_TO_BYTES(key_bits) :                         \
-     PSA_KEY_TYPE_IS_DH(key_type) ? PSA_BITS_TO_BYTES(key_bits) :                                   \
-     (key_type) == PSA_KEY_TYPE_RSA_KEY_PAIR ? PSA_KEY_EXPORT_RSA_KEY_PAIR_MAX_SIZE(key_bits) :     \
+    ((key_type) == PSA_KEY_TYPE_RSA_KEY_PAIR ? PSA_KEY_EXPORT_RSA_KEY_PAIR_MAX_SIZE(key_bits) :     \
      (key_type) == PSA_KEY_TYPE_RSA_PUBLIC_KEY ? PSA_KEY_EXPORT_RSA_PUBLIC_KEY_MAX_SIZE(key_bits) : \
-     (key_type) == PSA_KEY_TYPE_DSA_KEY_PAIR ? PSA_KEY_EXPORT_DSA_KEY_PAIR_MAX_SIZE(key_bits) :     \
-     (key_type) == PSA_KEY_TYPE_DSA_PUBLIC_KEY ? PSA_KEY_EXPORT_DSA_PUBLIC_KEY_MAX_SIZE(key_bits) : \
      PSA_KEY_TYPE_IS_ECC_KEY_PAIR(key_type) ? PSA_KEY_EXPORT_ECC_KEY_PAIR_MAX_SIZE(key_bits) :      \
      PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(key_type) ? PSA_KEY_EXPORT_ECC_PUBLIC_KEY_MAX_SIZE(key_bits) :  \
-     0u)
+     PSA_BITS_TO_BYTES(key_bits)) /*unstructured; FFDH public or private*/
 
 /** Sufficient output buffer size for psa_export_public_key().
  *
@@ -1027,7 +1023,8 @@
     PSA_KEY_EXPORT_FFDH_PUBLIC_KEY_MAX_SIZE(PSA_VENDOR_FFDH_MAX_KEY_BITS)
 #endif
 
-#define PSA_EXPORT_KEY_PAIR_OR_PUBLIC_MAX_SIZE \
+/* This is the name that was standardized in PSA Crypto v1.3 */
+#define PSA_EXPORT_ASYMMETRIC_KEY_MAX_SIZE \
     ((PSA_EXPORT_KEY_PAIR_MAX_SIZE > PSA_EXPORT_PUBLIC_KEY_MAX_SIZE) ? \
      PSA_EXPORT_KEY_PAIR_MAX_SIZE : PSA_EXPORT_PUBLIC_KEY_MAX_SIZE)
 

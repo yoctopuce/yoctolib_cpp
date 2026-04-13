@@ -16,12 +16,8 @@
 
 #include "tf-psa-crypto/build_info.h"
 #include "mbedtls/compat-3-crypto.h"
-
 #include "mbedtls/md.h"
-
-#if defined(MBEDTLS_PSA_CRYPTO_CLIENT)
 #include "psa/crypto.h"
-#endif
 
 /** Type mismatch, eg attempt to do ECDSA with an RSA key */
 #define MBEDTLS_ERR_PK_TYPE_MISMATCH       -0x3F00
@@ -61,61 +57,26 @@ typedef enum {
  * \brief   Maximum size of a signature made by mbedtls_pk_sign() and other
  *          signature functions.
  */
-/* We need to set MBEDTLS_PK_SIGNATURE_MAX_SIZE to the maximum signature
- * size among the supported signature types. Do it by starting at 0,
- * then incrementally increasing to be large enough for each supported
- * signature mechanism.
- *
- * The resulting value can be 0, for example if MBEDTLS_ECDH_C is enabled
- * (which allows the pk module to be included) but neither MBEDTLS_ECDSA_C
- * nor MBEDTLS_RSA_C nor any PSA signature mechanism (PSA).
+/* Start with PSA_SIGNATURE_MAX_SIZE. However in builds with only ECDSA, we need
+ * to account for the overhead the ASN.1 encoding used by PK. In builds with
+ * RSA, the maximum size for RSA is probably larger than ECDSA+overhead.
  */
-#define MBEDTLS_PK_SIGNATURE_MAX_SIZE 0
-
-#if defined(MBEDTLS_RSA_C) && \
-    MBEDTLS_MPI_MAX_SIZE > MBEDTLS_PK_SIGNATURE_MAX_SIZE
-/* For RSA, the signature can be as large as the bignum module allows.*/
-#undef MBEDTLS_PK_SIGNATURE_MAX_SIZE
-#define MBEDTLS_PK_SIGNATURE_MAX_SIZE MBEDTLS_MPI_MAX_SIZE
-#endif
-
-#if defined(MBEDTLS_ECDSA_C) &&                                 \
-    MBEDTLS_ECDSA_MAX_LEN > MBEDTLS_PK_SIGNATURE_MAX_SIZE
-/* For ECDSA, the ecdsa module exports a constant for the maximum
- * signature size. */
-#undef MBEDTLS_PK_SIGNATURE_MAX_SIZE
-#define MBEDTLS_PK_SIGNATURE_MAX_SIZE MBEDTLS_ECDSA_MAX_LEN
-#endif
-
-#if PSA_SIGNATURE_MAX_SIZE > MBEDTLS_PK_SIGNATURE_MAX_SIZE
-/* PSA_SIGNATURE_MAX_SIZE is the maximum size of a signature made
- * through the PSA API in the PSA representation. */
-#undef MBEDTLS_PK_SIGNATURE_MAX_SIZE
 #define MBEDTLS_PK_SIGNATURE_MAX_SIZE PSA_SIGNATURE_MAX_SIZE
-#endif
-
-#if PSA_VENDOR_ECDSA_SIGNATURE_MAX_SIZE + 11 > MBEDTLS_PK_SIGNATURE_MAX_SIZE
 /* The Mbed TLS representation is different for ECDSA signatures:
  * PSA uses the raw concatenation of r and s,
  * whereas Mbed TLS uses the ASN.1 representation (SEQUENCE of two INTEGERs).
  * Add the overhead of ASN.1: up to (1+2) + 2 * (1+2+1) for the
  * types, lengths (represented by up to 2 bytes), and potential leading
  * zeros of the INTEGERs and the SEQUENCE. */
+#if PSA_VENDOR_ECDSA_SIGNATURE_MAX_SIZE + 11 > MBEDTLS_PK_SIGNATURE_MAX_SIZE
 #undef MBEDTLS_PK_SIGNATURE_MAX_SIZE
 #define MBEDTLS_PK_SIGNATURE_MAX_SIZE (PSA_VENDOR_ECDSA_SIGNATURE_MAX_SIZE + 11)
 #endif
 
-/* Keep this symbol for backward compatibility. There is code in the framework
- * which depends on this. Once 3.6 LTS branch will reach end-of-life framework's
- * code can be adjusted and this define removed. */
+/* These macros are no longer used in the library, but still used by some test
+ * code in the framework. Once 3.6 LTS branch will reach end-of-life framework's
+ * code can be adjusted and these defines removed. */
 #define MBEDTLS_PK_USE_PSA_EC_DATA
-
-/* This is identical to MBEDTLS_PK_USE_PSA_EC_DATA above, but for RSA keys.
- * The main reason for having it is that framework code is shared between
- * the develoment branch and the 3.6 LTS one and we need a way to tell from which
- * of the two we're building.
- * This symbol is not used in builtin driver and tests and it can be removed
- * at the same time as MBEDTLS_PK_USE_PSA_EC_DATA. */
 #define MBEDTLS_PK_USE_PSA_RSA_DATA
 
 /* Opaque internal type */
@@ -127,14 +88,17 @@ typedef struct mbedtls_pk_info_t mbedtls_pk_info_t;
 #define MBEDTLS_PK_MAX_RSA_PUBKEY_RAW_LEN \
     PSA_KEY_EXPORT_RSA_PUBLIC_KEY_MAX_SIZE(PSA_VENDOR_RSA_MAX_KEY_BITS)
 
-#define MBEDTLS_PK_MAX_PUBKEY_RAW_LEN \
-    (MBEDTLS_PK_MAX_EC_PUBKEY_RAW_LEN > MBEDTLS_PK_MAX_RSA_PUBKEY_RAW_LEN) ? \
-    MBEDTLS_PK_MAX_EC_PUBKEY_RAW_LEN : MBEDTLS_PK_MAX_RSA_PUBKEY_RAW_LEN
-
-typedef enum {
-    MBEDTLS_PK_RSA_PKCS_V15 = 0,
-    MBEDTLS_PK_RSA_PKCS_V21,
-} mbedtls_pk_rsa_padding_t;
+#define MBEDTLS_PK_MAX_PUBKEY_RAW_LEN 0
+#if defined(PSA_WANT_KEY_TYPE_ECC_PUBLIC_KEY) && \
+    MBEDTLS_PK_MAX_EC_PUBKEY_RAW_LEN > MBEDTLS_PK_MAX_PUBKEY_RAW_LEN
+#undef MBEDTLS_PK_MAX_PUBKEY_RAW_LEN
+#define MBEDTLS_PK_MAX_PUBKEY_RAW_LEN MBEDTLS_PK_MAX_EC_PUBKEY_RAW_LEN
+#endif
+#if defined(PSA_WANT_KEY_TYPE_RSA_PUBLIC_KEY) && \
+    MBEDTLS_PK_MAX_RSA_PUBKEY_RAW_LEN > MBEDTLS_PK_MAX_PUBKEY_RAW_LEN
+#undef MBEDTLS_PK_MAX_PUBKEY_RAW_LEN
+#define MBEDTLS_PK_MAX_PUBKEY_RAW_LEN MBEDTLS_PK_MAX_RSA_PUBKEY_RAW_LEN
+#endif
 
 /**
  * \brief           Public key container
@@ -142,21 +106,19 @@ typedef enum {
 typedef struct mbedtls_pk_context {
     /* Public key information. */
     const mbedtls_pk_info_t *MBEDTLS_PRIVATE(pk_info);
-    /* Previously: underlying public key context.
-     * Now unused (by public functions at least). */
-    void *MBEDTLS_PRIVATE(pk_ctx);
 
-    /* The following field is used to store the ID of a private key for:
-     * - EC keys (MBEDTLS_PK_ECKEY, MBEDTLS_PK_ECKEY_DH, MBEDTLS_PK_ECDSA)
-     * - Wrapped keys (EC or RSA).
+    /* The PSA key type of the key represented by the context.
+     *
+     * Note: Valid even for public keys, which are not backed by a PSA key. */
+    psa_key_type_t MBEDTLS_PRIVATE(psa_type);
+
+    /* The following field is used to store the ID of a private key.
      *
      * priv_id = MBEDTLS_SVC_KEY_ID_INIT when PK context wraps only the public
      * key.
-     *
-     * Other keys still use the pk_ctx to store their own context. */
+     */
     mbedtls_svc_key_id_t MBEDTLS_PRIVATE(priv_id);
 
-#if defined(PSA_WANT_KEY_TYPE_RSA_PUBLIC_KEY) || defined(PSA_WANT_KEY_TYPE_ECC_PUBLIC_KEY)
     /* Public EC or RSA key in raw format, where raw here means the format returned
      * by psa_export_public_key(). */
     uint8_t MBEDTLS_PRIVATE(pub_raw)[MBEDTLS_PK_MAX_PUBKEY_RAW_LEN];
@@ -166,22 +128,11 @@ typedef struct mbedtls_pk_context {
 
     /* Bits of the private/public key. */
     size_t MBEDTLS_PRIVATE(bits);
-#endif /* PSA_WANT_KEY_TYPE_RSA_PUBLIC_KEY || PSA_WANT_KEY_TYPE_ECC_PUBLIC_KEY */
 
 #if defined(PSA_WANT_KEY_TYPE_ECC_PUBLIC_KEY)
     /* EC family. Only applies to EC keys. */
     psa_ecc_family_t MBEDTLS_PRIVATE(ec_family);
 #endif /* PSA_WANT_KEY_TYPE_ECC_PUBLIC_KEY */
-
-#if defined(PSA_WANT_KEY_TYPE_RSA_PUBLIC_KEY)
-    /* Padding associated to the RSA key. It only affects RSA public key since
-     * the private one is imported into PSA with v1.5 as main algorithm and
-     * v2.1 as enrollment algorithm. */
-    mbedtls_pk_rsa_padding_t MBEDTLS_PRIVATE(rsa_padding);
-
-    /* Hash algorithm to be used with RSA public key. */
-    psa_algorithm_t MBEDTLS_PRIVATE(rsa_hash_alg);
-#endif /* PSA_WANT_KEY_TYPE_RSA_PUBLIC_KEY */
 } mbedtls_pk_context;
 
 #if defined(MBEDTLS_ECP_RESTARTABLE)
@@ -269,8 +220,7 @@ void mbedtls_pk_restart_free(mbedtls_pk_restart_ctx *ctx);
  * The resulting context can only perform operations that are allowed by the
  * key's policy. Additionally, it currently has the following limitations:
  * - restartable operations can't be used;
- * - for RSA keys, signature verification is not supported, and neither is use
- *   of \c mbedtls_pk_check_pair().
+ * - for RSA keys, signature verification is not supported.
  *
  * \warning The PSA wrapped key must remain valid as long as the wrapping PK
  *          context is in use, that is at least between the point this function
@@ -341,8 +291,6 @@ size_t mbedtls_pk_get_bitlen(const mbedtls_pk_context *ctx);
  */
 int mbedtls_pk_can_do_psa(const mbedtls_pk_context *pk, psa_algorithm_t alg,
                           psa_key_usage_t usage);
-
-#if defined(MBEDTLS_PSA_CRYPTO_CLIENT)
 /**
  * \brief           Determine valid PSA attributes that can be used to
  *                  import a key into PSA.
@@ -432,6 +380,21 @@ int mbedtls_pk_can_do_psa(const mbedtls_pk_context *pk, psa_algorithm_t alg,
 int mbedtls_pk_get_psa_attributes(const mbedtls_pk_context *pk,
                                   psa_key_usage_t usage,
                                   psa_key_attributes_t *attributes);
+/**
+ * \brief           Get the PSA key type corresponding to the key represented
+ *                  by the given PK context.
+ *
+ * \param pk        The context to query. It must already be initialized.
+ *
+ * \return          A PSA key type. Specifically, one of:
+ *                      - PSA_KEY_TYPE_RSA_KEY_PAIR
+ *                      - PSA_KEY_TYPE_RSA_PUBLIC_KEY
+ *                      - PSA_KEY_TYPE_ECC_KEY_PAIR(curve)
+ *                      - PSA_KEY_TYPE_ECC_PUBLIC_KEY(curve)
+ * \return          PSA_KEY_TYPE_NONE, if the context has not been populated.
+ */
+psa_key_type_t mbedtls_pk_get_key_type(const mbedtls_pk_context *pk);
+
 
 /**
  * \brief           Import a key into the PSA key store.
@@ -537,7 +500,6 @@ int mbedtls_pk_copy_from_psa(mbedtls_svc_key_id_t key_id, mbedtls_pk_context *pk
  *                  parameters are not correct.
  */
 int mbedtls_pk_copy_public_from_psa(mbedtls_svc_key_id_t key_id, mbedtls_pk_context *pk);
-#endif /* MBEDTLS_PSA_CRYPTO_CLIENT */
 
 /**
  * \brief           Verify signature.
@@ -722,15 +684,10 @@ int mbedtls_pk_sign_ext(mbedtls_pk_sigalg_t sig_type,
 /**
  * \brief           Check if a public-private pair of keys matches.
  *
- * \note            This function currently does not work on keys created with
- *                  \c mbedtls_pk_wrap_psa().
- *
  * \param pub       Context holding a public key.
  * \param prv       Context holding a private (and public) key.
  *
  * \return          \c 0 on success (keys were checked and match each other).
- * \return          #MBEDTLS_ERR_PK_FEATURE_UNAVAILABLE if the keys could not
- *                  be checked - in that case they may or may not match.
  * \return          #PSA_ERROR_INVALID_ARGUMENT if a context is invalid.
  * \return          Another non-zero value if the keys do not match.
  */
@@ -889,6 +846,39 @@ int mbedtls_pk_write_pubkey_pem(const mbedtls_pk_context *ctx, unsigned char *bu
  */
 int mbedtls_pk_write_key_pem(const mbedtls_pk_context *ctx, unsigned char *buf, size_t size);
 #endif /* MBEDTLS_PEM_WRITE_C */
+
+/**
+ * \brief       Write the public key of the provided PK context in "PSA friendly"
+ *              format.
+ *
+ * \note        "PSA friendly" format means that the obtained output buffer can
+ *              be directly imported into PSA using psa_import_key() without
+ *              any modification.
+ *
+ * \param ctx       PK context from which the public key is extracted. It must
+ *                  have been populated.
+ * \param buf       Output buffer where the public key is written. It must not
+ *                  be NULL.
+ * \param buf_size  Size of \p buf buffer in bytes.
+ *                  #PSA_EXPORT_PUBLIC_KEY_MAX_SIZE can be used as safe value
+ *                  that fit all the key types enabled in the build of the
+ *                  PSA Crypto Core.
+ *                  Otherwise the following more accurate values can be used:
+ *                  - #PSA_KEY_EXPORT_ECC_PUBLIC_KEY_MAX_SIZE(bitlen) for EC keys,
+ *                  - #PSA_KEY_EXPORT_RSA_PUBLIC_KEY_MAX_SIZE(bitlen) for RSA keys,
+ *                  where the 'bitlen' parameter can be obtained through
+ *                  #mbedtls_pk_get_bitlen() on the same PK context.
+ * \param buf_len   Amount of bytes written into \p buf if the exporting
+ *                  operation is successful. In case of failure the value is 0.
+ *                  It must not be NULL.
+ *
+ * \return          0 if successful.
+ * \return          #MBEDTLS_ERR_PK_BAD_INPUT_DATA if \p ctx has not been populated.
+ * \return          #MBEDTLS_ERR_PK_BUFFER_TOO_SMALL if the provided output buffer
+ *                  is too small to contain the public key.
+ */
+int mbedtls_pk_write_pubkey_psa(const mbedtls_pk_context *ctx, unsigned char *buf,
+                                size_t buf_size, size_t *buf_len);
 #endif /* MBEDTLS_PK_WRITE_C */
 
 #ifdef __cplusplus

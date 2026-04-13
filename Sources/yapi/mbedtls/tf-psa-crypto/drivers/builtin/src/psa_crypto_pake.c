@@ -114,8 +114,6 @@ static psa_status_t mbedtls_ecjpake_to_psa_error(int ret)
             return PSA_ERROR_DATA_INVALID;
         case MBEDTLS_ERR_MD_FEATURE_UNAVAILABLE:
             return PSA_ERROR_NOT_SUPPORTED;
-        case MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED:
-            return PSA_ERROR_CORRUPTION_DETECTED;
         default:
             return PSA_ERROR_GENERIC_ERROR;
     }

@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 72281 2026-03-05 09:43:04Z seb $
+#  $Id: GNUmakefile 72633 2026-04-08 10:29:36Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -417,94 +417,103 @@ YOCTO_API_OBJS_STAT = yocto_api.o\
 ifndef  NO_YSSL
 #-- mbedtls_patch_start --
 MBEDTLS_OBJS_STAT = \
-	library/error.o \
 	library/debug.o \
-	library/x509write_crt.o \
-	library/x509_create.o \
-	library/x509.o \
-	library/x509_crt.o \
-	library/x509write.o \
-	library/x509_oid.o \
-	library/ssl_tls.o \
-	library/ssl_client.o \
-	library/ssl_msg.o \
+	library/error.o \
 	library/ssl_ciphersuites.o \
-	library/ssl_tls13_client.o \
+	library/ssl_client.o \
+	library/ssl_cookie.o \
+	library/ssl_debug_helpers_generated.o \
+	library/ssl_msg.o \
+	library/ssl_tls.o \
 	library/ssl_tls12_client.o \
 	library/ssl_tls12_server.o \
+	library/ssl_tls13_client.o \
 	library/ssl_tls13_generic.o \
-	library/ssl_tls13_server.o \
 	library/ssl_tls13_keys.o \
-	library/ssl_cookie.o \
-	tf-psa-crypto/core/psa_its_file.o \
-	tf-psa-crypto/core/psa_crypto_slot_management.o \
+	library/ssl_tls13_server.o \
+	library/x509.o \
+	library/x509_create.o \
+	library/x509_crt.o \
+	library/x509_oid.o \
+	library/x509write.o \
+	library/x509write_crt.o \
 	tf-psa-crypto/core/psa_crypto.o \
 	tf-psa-crypto/core/psa_crypto_client.o \
-	tf-psa-crypto/core/psa_crypto_storage.o \
 	tf-psa-crypto/core/psa_crypto_driver_wrappers_no_static.o \
-	tf-psa-crypto/drivers/builtin/src/cmac.o \
-	tf-psa-crypto/drivers/builtin/src/md5.o \
-	tf-psa-crypto/drivers/builtin/src/gcm.o \
+	tf-psa-crypto/core/psa_crypto_random.o \
+	tf-psa-crypto/core/psa_crypto_slot_management.o \
+	tf-psa-crypto/core/psa_crypto_storage.o \
+	tf-psa-crypto/core/psa_its_file.o \
+	tf-psa-crypto/core/psa_util.o \
+	tf-psa-crypto/drivers/builtin/src/aes.o \
 	tf-psa-crypto/drivers/builtin/src/aesce.o \
-	tf-psa-crypto/drivers/builtin/src/rsa.o \
-	tf-psa-crypto/drivers/builtin/src/pk_ecc.o \
-	tf-psa-crypto/drivers/builtin/src/oid.o \
-	tf-psa-crypto/drivers/builtin/src/poly1305.o \
-	tf-psa-crypto/drivers/builtin/src/ctr_drbg.o \
-	tf-psa-crypto/drivers/builtin/src/chacha20.o \
-	tf-psa-crypto/drivers/builtin/src/ecdh.o \
-	tf-psa-crypto/drivers/builtin/src/ecdsa.o \
-	tf-psa-crypto/drivers/builtin/src/block_cipher.o \
-	tf-psa-crypto/drivers/builtin/src/cipher_wrap.o \
-	tf-psa-crypto/drivers/builtin/src/base64.o \
-	tf-psa-crypto/drivers/builtin/src/pk_rsa.o \
-	tf-psa-crypto/drivers/builtin/src/pkcs5.o \
 	tf-psa-crypto/drivers/builtin/src/aesni.o \
-	tf-psa-crypto/drivers/builtin/src/rsa_alt_helpers.o \
-	tf-psa-crypto/drivers/builtin/src/entropy_poll.o \
-	tf-psa-crypto/drivers/builtin/src/hmac_drbg.o \
-	tf-psa-crypto/drivers/builtin/src/camellia.o \
 	tf-psa-crypto/drivers/builtin/src/aria.o \
-	tf-psa-crypto/drivers/builtin/src/ripemd160.o \
-	tf-psa-crypto/drivers/builtin/src/sha1.o \
-	tf-psa-crypto/drivers/builtin/src/sha512.o \
-	tf-psa-crypto/drivers/builtin/src/sha3.o \
+	tf-psa-crypto/drivers/builtin/src/bignum.o \
+	tf-psa-crypto/drivers/builtin/src/bignum_core.o \
+	tf-psa-crypto/drivers/builtin/src/block_cipher.o \
+	tf-psa-crypto/drivers/builtin/src/camellia.o \
 	tf-psa-crypto/drivers/builtin/src/ccm.o \
+	tf-psa-crypto/drivers/builtin/src/chacha20.o \
+	tf-psa-crypto/drivers/builtin/src/chacha20_neon.o \
 	tf-psa-crypto/drivers/builtin/src/chachapoly.o \
+	tf-psa-crypto/drivers/builtin/src/cipher.o \
+	tf-psa-crypto/drivers/builtin/src/cipher_wrap.o \
+	tf-psa-crypto/drivers/builtin/src/cmac.o \
+	tf-psa-crypto/drivers/builtin/src/ctr_drbg.o \
+	tf-psa-crypto/drivers/builtin/src/ecdsa.o \
 	tf-psa-crypto/drivers/builtin/src/ecjpake.o \
-	tf-psa-crypto/drivers/builtin/src/psa_crypto_mac.o \
-	tf-psa-crypto/drivers/builtin/src/psa_crypto_rsa.o \
+	tf-psa-crypto/drivers/builtin/src/ecp.o \
+	tf-psa-crypto/drivers/builtin/src/ecp_curves.o \
+	tf-psa-crypto/drivers/builtin/src/entropy.o \
+	tf-psa-crypto/drivers/builtin/src/entropy_poll.o \
+	tf-psa-crypto/drivers/builtin/src/gcm.o \
+	tf-psa-crypto/drivers/builtin/src/hmac_drbg.o \
+	tf-psa-crypto/drivers/builtin/src/md5.o \
+	tf-psa-crypto/drivers/builtin/src/poly1305.o \
+	tf-psa-crypto/drivers/builtin/src/psa_crypto_aead.o \
+	tf-psa-crypto/drivers/builtin/src/psa_crypto_cipher.o \
 	tf-psa-crypto/drivers/builtin/src/psa_crypto_ecp.o \
 	tf-psa-crypto/drivers/builtin/src/psa_crypto_ffdh.o \
-	tf-psa-crypto/drivers/builtin/src/pk_wrap.o \
-	tf-psa-crypto/drivers/builtin/src/ecp.o \
-	tf-psa-crypto/drivers/builtin/src/cipher.o \
-	tf-psa-crypto/drivers/builtin/src/md.o \
-	tf-psa-crypto/drivers/builtin/src/psa_crypto_aead.o \
 	tf-psa-crypto/drivers/builtin/src/psa_crypto_hash.o \
+	tf-psa-crypto/drivers/builtin/src/psa_crypto_mac.o \
 	tf-psa-crypto/drivers/builtin/src/psa_crypto_pake.o \
-	tf-psa-crypto/drivers/builtin/src/constant_time.o \
-	tf-psa-crypto/drivers/builtin/src/ecp_curves.o \
-	tf-psa-crypto/drivers/builtin/src/psa_crypto_cipher.o \
-	tf-psa-crypto/drivers/builtin/src/entropy.o \
-	tf-psa-crypto/drivers/builtin/src/platform_util.o \
-	tf-psa-crypto/drivers/builtin/src/threading.o \
-	tf-psa-crypto/drivers/builtin/src/asn1write.o \
-	tf-psa-crypto/drivers/builtin/src/asn1parse.o \
-	tf-psa-crypto/drivers/builtin/src/pem.o \
-	tf-psa-crypto/drivers/builtin/src/pk.o \
-	tf-psa-crypto/drivers/builtin/src/pkparse.o \
-	tf-psa-crypto/drivers/builtin/src/pkwrite.o \
-	tf-psa-crypto/drivers/builtin/src/bignum.o \
-	tf-psa-crypto/drivers/builtin/src/psa_util.o \
-	tf-psa-crypto/drivers/builtin/src/bignum_core.o \
-	tf-psa-crypto/drivers/builtin/src/aes.o \
+	tf-psa-crypto/drivers/builtin/src/psa_crypto_rsa.o \
+	tf-psa-crypto/drivers/builtin/src/psa_crypto_xof.o \
+	tf-psa-crypto/drivers/builtin/src/psa_util_internal.o \
+	tf-psa-crypto/drivers/builtin/src/ripemd160.o \
+	tf-psa-crypto/drivers/builtin/src/rsa.o \
+	tf-psa-crypto/drivers/builtin/src/rsa_alt_helpers.o \
+	tf-psa-crypto/drivers/builtin/src/sha1.o \
 	tf-psa-crypto/drivers/builtin/src/sha256.o \
+	tf-psa-crypto/drivers/builtin/src/sha3.o \
+	tf-psa-crypto/drivers/builtin/src/sha512.o \
+	tf-psa-crypto/extras/lmots.o \
+	tf-psa-crypto/extras/lms.o \
+	tf-psa-crypto/extras/md.o \
+	tf-psa-crypto/extras/nist_kw.o \
+	tf-psa-crypto/extras/pk.o \
+	tf-psa-crypto/extras/pk_ecc.o \
+	tf-psa-crypto/extras/pk_rsa.o \
+	tf-psa-crypto/extras/pk_wrap.o \
+	tf-psa-crypto/extras/pkparse.o \
+	tf-psa-crypto/extras/pkwrite.o \
+	tf-psa-crypto/platform/memory_buffer_alloc.o \
+	tf-psa-crypto/platform/platform.o \
+	tf-psa-crypto/platform/platform_util.o \
+	tf-psa-crypto/platform/threading.o \
+	tf-psa-crypto/utilities/asn1parse.o \
+	tf-psa-crypto/utilities/asn1write.o \
+	tf-psa-crypto/utilities/base64.o \
+	tf-psa-crypto/utilities/constant_time.o \
+	tf-psa-crypto/utilities/oid.o \
+	tf-psa-crypto/utilities/pem.o \
+	tf-psa-crypto/utilities/pkcs5.o \
 
 
 MBEDTLS_DIR         = $(YAPI_SOURCES_DIR)mbedtls/
 MBEDTLS_SOURCES_DIR = $(MBEDTLS_DIR)library/
-MBEDTLS_INCLUDE_DIR = $(MBEDTLS_DIR)include $(MBEDTLS_DIR)tf-psa-crypto/core $(MBEDTLS_DIR)tf-psa-crypto/drivers/builtin/include $(MBEDTLS_DIR)tf-psa-crypto/drivers/builtin/src $(MBEDTLS_DIR)tf-psa-crypto/include
+MBEDTLS_INCLUDE_DIR = $(MBEDTLS_DIR)include $(MBEDTLS_DIR)tf-psa-crypto/core $(MBEDTLS_DIR)tf-psa-crypto/drivers/builtin/include $(MBEDTLS_DIR)tf-psa-crypto/drivers/builtin/src $(MBEDTLS_DIR)tf-psa-crypto/include $(MBEDTLS_DIR)tf-psa-crypto/extras $(MBEDTLS_DIR)tf-psa-crypto/utilities $(MBEDTLS_DIR)tf-psa-crypto/platform
 
 #-- mbedtls_patch_stop --
 endif

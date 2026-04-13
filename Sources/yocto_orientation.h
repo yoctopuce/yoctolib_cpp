@@ -61,6 +61,14 @@ class YOrientation; // forward declaration
 typedef void (*YOrientationValueCallback)(YOrientation *func, const string& functionValue);
 class YMeasure; // forward declaration
 typedef void (*YOrientationTimedReportCallback)(YOrientation *func, YMeasure measure);
+#ifndef _Y_COUNTERCLOCKWISE_ENUM
+#define _Y_COUNTERCLOCKWISE_ENUM
+typedef enum {
+    Y_COUNTERCLOCKWISE_FALSE = 0,
+    Y_COUNTERCLOCKWISE_TRUE = 1,
+    Y_COUNTERCLOCKWISE_INVALID = -1,
+} Y_COUNTERCLOCKWISE_enum;
+#endif
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 #define Y_ZEROOFFSET_INVALID            (YAPI_INVALID_DOUBLE)
 //--- (end of YOrientation definitions)
@@ -81,6 +89,7 @@ class YOCTO_CLASS_EXPORT YOrientation: public YSensor {
 protected:
     //--- (YOrientation attributes)
     // Attributes (function value cache)
+    Y_COUNTERCLOCKWISE_enum _counterClockwise;
     string          _command;
     double          _zeroOffset;
     YOrientationValueCallback _valueCallbackOrientation;
@@ -100,8 +109,39 @@ public:
     virtual ~YOrientation();
     //--- (YOrientation accessors declaration)
 
+    static const Y_COUNTERCLOCKWISE_enum COUNTERCLOCKWISE_FALSE = Y_COUNTERCLOCKWISE_FALSE;
+    static const Y_COUNTERCLOCKWISE_enum COUNTERCLOCKWISE_TRUE = Y_COUNTERCLOCKWISE_TRUE;
+    static const Y_COUNTERCLOCKWISE_enum COUNTERCLOCKWISE_INVALID = Y_COUNTERCLOCKWISE_INVALID;
     static const string COMMAND_INVALID;
     static const double ZEROOFFSET_INVALID;
+
+    /**
+     * Returns a value indicating whether the sensor is operating in a counterclockwise direction.
+     *
+     * @return either YOrientation::COUNTERCLOCKWISE_FALSE or YOrientation::COUNTERCLOCKWISE_TRUE, according
+     * to a value indicating whether the sensor is operating in a counterclockwise direction
+     *
+     * On failure, throws an exception or returns YOrientation::COUNTERCLOCKWISE_INVALID.
+     */
+    Y_COUNTERCLOCKWISE_enum get_counterClockwise(void);
+
+    inline Y_COUNTERCLOCKWISE_enum counterClockwise(void)
+    { return this->get_counterClockwise(); }
+
+    /**
+     * Defines the operating direction of the sensor.
+     * Remember to call the saveToFlash() method of the module if the
+     * modification must be kept.
+     *
+     * @param newval : either YOrientation::COUNTERCLOCKWISE_FALSE or YOrientation::COUNTERCLOCKWISE_TRUE
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_counterClockwise(Y_COUNTERCLOCKWISE_enum newval);
+    inline int      setCounterClockwise(Y_COUNTERCLOCKWISE_enum newval)
+    { return this->set_counterClockwise(newval); }
 
     string              get_command(void);
 
@@ -117,7 +157,6 @@ public:
      * can typically be used  to compensate for mechanical offset. This offset can also be set
      * automatically using the zero() method.
      * Remember to call the saveToFlash() method of the module if the modification must be kept.
-     * On failure, throws an exception or returns a negative error code.
      *
      * @param newval : a floating point number
      *
@@ -213,8 +252,7 @@ public:
      * Remember to call the saveToFlash() method of the module if the modification must be kept.
      *
      * @return YAPI::SUCCESS if the call succeeds.
-     *
-     * On failure, throws an exception or returns a negative error code.
+     *         On failure, throws an exception or returns a negative error code.
      */
     virtual int         zero(void);
 

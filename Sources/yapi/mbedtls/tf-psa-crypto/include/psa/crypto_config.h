@@ -86,6 +86,8 @@
 #define PSA_WANT_ALG_TLS12_PRF                  1
 #define PSA_WANT_ALG_TLS12_PSK_TO_MS            1
 #define PSA_WANT_ALG_TLS12_ECJPAKE_TO_PMS       1
+#define PSA_WANT_ALG_SHAKE128                   1
+#define PSA_WANT_ALG_SHAKE256                   1
 
 #define PSA_WANT_ECC_BRAINPOOL_P_R1_256         1
 #define PSA_WANT_ECC_BRAINPOOL_P_R1_384         1
@@ -98,10 +100,6 @@
 #define PSA_WANT_ECC_SECP_R1_256                1
 #define PSA_WANT_ECC_SECP_R1_384                1
 #define PSA_WANT_ECC_SECP_R1_521                1
-/* These 2 curves are not part of the public API. They are kept temporarily for
- * internal testing only and will removed in a future minor version. */
-//#define PSA_WANT_ECC_SECP_K1_192                1
-//#define PSA_WANT_ECC_SECP_R1_192                1
 
 #define PSA_WANT_DH_RFC7919_2048                1
 #define PSA_WANT_DH_RFC7919_3072                1
@@ -162,7 +160,7 @@
  * based buffer to 'allocate' dynamic memory. (replaces calloc() and free()
  * calls)
  *
- * Module:  drivers/builtin/src/memory_buffer_alloc.c
+ * Module:  platform/memory_buffer_alloc.c
  *
  * Requires: MBEDTLS_PLATFORM_C
  *           MBEDTLS_PLATFORM_MEMORY (to use it within Mbed TLS)
@@ -252,7 +250,7 @@
  * \note This abstraction layer must be enabled on Windows (including MSYS2)
  * as other modules rely on it for a fixed snprintf implementation.
  *
- * Module:  drivers/builtin/src/platform.c
+ * Module:  platform/platform.c
  * Caller:  Most other .c files
  *
  * This module enables abstraction of common (libc) functions.
@@ -271,8 +269,10 @@
  *
  * All these define require MBEDTLS_PLATFORM_C to be defined!
  *
- * \note MBEDTLS_PLATFORM_SNPRINTF_ALT is required on Windows;
- * it will be enabled automatically by check_config.h
+ * \note MBEDTLS_PLATFORM_SNPRINTF_ALT and MBEDTLS_PLATFORM_VSNPRINTF_ALT
+ * are required on some Windows C runtimes.
+ * They will be enabled automatically by build_info.h when building with
+ * older versions of MSVC or with MinGW32.
  *
  * \warning MBEDTLS_PLATFORM_XXX_ALT cannot be defined at the same time as
  * MBEDTLS_PLATFORM_XXX_MACRO!
@@ -457,7 +457,7 @@
  * PSA crypto functions are ever called from a single thread. Note that
  * this includes indirect calls, for example through PK.
  *
- * Module:  drivers/builtin/src/threading.c
+ * Module:  platform/threading.c
  *
  * This allows different threading implementations (built-in or
  * provided externally).
@@ -527,6 +527,38 @@
 //#define MBEDTLS_PLATFORM_TIME_TYPE_MACRO       time_t /**< Default time macro to use, can be undefined. MBEDTLS_HAVE_TIME must be enabled */
 //#define MBEDTLS_PLATFORM_VSNPRINTF_MACRO    vsnprintf /**< Default vsnprintf macro to use, can be undefined */
 //#define MBEDTLS_PRINTF_MS_TIME    PRId64 /**< Default fmt for printf. That's avoid compiler warning if mbedtls_ms_time_t is redefined */
+
+/** \def MBEDTLS_PLATFORM_DEV_RANDOM
+ *
+ * Path to a special file that returns cryptographic-quality random bytes
+ * when read. This is used by the default platform entropy source on
+ * non-Windows platforms unless a dedicated system call is available
+ * (see #MBEDTLS_PSA_BUILTIN_GET_ENTROPY).
+ *
+ * The default value is `/dev/random`, which is suitable on most platforms
+ * other than Linux. On Linux, either `/dev/random` or `/dev/urandom`
+ * may be the right choice, depending on the circumstances:
+ *
+ * - If possible, the library will use the getrandom() system call,
+ *   which is preferable, and #MBEDTLS_PLATFORM_DEV_RANDOM is not used.
+ * - If there is a dedicated hardware entropy source (e.g. RDRAND on x86
+ *   processors), then both `/dev/random` and `/dev/urandom` are fine.
+ * - `/dev/random` is always secure. However, with kernels older than 5.6,
+ *   `/dev/random` often blocks unnecessarily if there is no dedicated
+ *   hardware entropy source.
+ * - `/dev/urandom` never blocks. However, it may return predictable data
+ *   if it is used early after the kernel boots, especially on embedded
+ *   devices without an interactive user.
+ *
+ * Thus you should change the value to `/dev/urandom` if your application
+ * definitely won't be used on a device running Linux without a dedicated
+ * entropy source early during or after boot.
+ *
+ *
+ * This is the default value of ::mbedtls_platform_dev_random, which
+ * can be changed at run time.
+ */
+//#define MBEDTLS_PLATFORM_DEV_RANDOM "/dev/random"
 
 /** \} name SECTION: Platform abstraction layer */
 
@@ -731,7 +763,7 @@
  *
  * Enable the LMS stateful-hash asymmetric signature algorithm.
  *
- * Module:  drivers/builtin/src/lms.c
+ * Module:  extras/lms.c
  * Caller:
  *
  * Requires: MBEDTLS_PSA_CRYPTO_C
@@ -758,16 +790,16 @@
  * Enable the generic layer for message digest (hashing).
  *
  * Requires: MBEDTLS_PSA_CRYPTO_C with at least one hash.
- * Module:  drivers/builtin/src/md.c
- * Caller:  drivers/builtin/src/constant_time.c
- *          drivers/builtin/src/ecdsa.c
+ * Module:  extras/md.c
+ * Caller:  drivers/builtin/src/ecdsa.c
  *          drivers/builtin/src/ecjpake.c
  *          drivers/builtin/src/hmac_drbg.c
- *          drivers/builtin/src/pk.c
- *          drivers/builtin/src/pkcs5.c
  *          drivers/builtin/src/psa_crypto_ecp.c
  *          drivers/builtin/src/psa_crypto_rsa.c
  *          drivers/builtin/src/rsa.c
+ *          extras/pk.c
+ *          utilities/constant_time.c
+ *          utilities/pkcs5.c
  *
  * Uncomment to enable generic message digest wrappers.
  */
@@ -780,7 +812,7 @@
  * KW (also known as RFC 3394) and KWP (RFC 5649).
  * Currently these modes are only supported with AES.
  *
- * Module:  drivers/builtin/src/nist_kw.c
+ * Module:  extras/nist_kw.c
  *
  * Auto enables: PSA_WANT_ALG_ECB_NO_PADDING
  */
@@ -791,10 +823,12 @@
  *
  * Enable the generic public (asymmetric) key layer.
  *
- * Module:  drivers/builtin/src/pk.c
+ * Module:  extras/pk.c
  * Caller:  drivers/builtin/src/psa_crypto_rsa.c
  *
- * Requires: MBEDTLS_MD_C, the built-in RSA or ECP implementation
+ * Requires: #MBEDTLS_PSA_CRYPTO_CLIENT and at least one between
+ *           #PSA_WANT_KEY_TYPE_RSA_PUBLIC_KEY and
+ *           #PSA_WANT_KEY_TYPE_ECC_PUBLIC_KEY.
  *
  * Uncomment to enable generic public key wrappers.
  */
@@ -805,7 +839,7 @@
  *
  * Enable PKCS#5 functions.
  *
- * Module:  drivers/builtin/src/pkcs5.c
+ * Module:  utilities/pkcs5.c
  *
  * Auto-enables: MBEDTLS_MD_C
  *
@@ -818,7 +852,7 @@
  *
  * Enable the generic public (asymmetric) key parser.
  *
- * Module:  drivers/builtin/src/pkparse.c
+ * Module:  extras/pkparse.c
  *
  * Requires: MBEDTLS_ASN1_PARSE_C, MBEDTLS_PK_C
  *
@@ -854,7 +888,7 @@
  *
  * Enable the generic public (asymmetric) key writer.
  *
- * Module:  drivers/builtin/src/pkwrite.c
+ * Module:  extras/pkwrite.c
  *
  * Requires: MBEDTLS_ASN1_WRITE_C, MBEDTLS_PK_C
  *
@@ -876,9 +910,9 @@
  *
  * Enable the generic ASN1 parser.
  *
- * Module:  drivers/builtin/src/asn1.c
- * Caller:  drivers/builtin/src/pkcs5.c
- *          drivers/builtin/src/pkparse.c
+ * Module:  utilities/asn1parse.c
+ * Caller:  extras/pkparse.c
+ *          utilities/pkcs5.c
  */
 #define MBEDTLS_ASN1_PARSE_C
 
@@ -887,9 +921,9 @@
  *
  * Enable the generic ASN1 writer.
  *
- * Module:  drivers/builtin/src/asn1write.c
+ * Module:  utilities/asn1write.c
  * Caller:  drivers/builtin/src/ecdsa.c
- *          drivers/builtin/src/pkwrite.c
+ *          extras/pkwrite.c
  */
 #define MBEDTLS_ASN1_WRITE_C
 
@@ -898,8 +932,8 @@
  *
  * Enable the Base64 module.
  *
- * Module:  drivers/builtin/src/base64.c
- * Caller:  drivers/builtin/src/pem.c
+ * Module:  utilities/base64.c
+ * Caller:  utilities/pem.c
  *
  * This module is required for PEM support (required by X.509).
  */
@@ -910,8 +944,8 @@
  *
  * Enable PEM decoding / parsing.
  *
- * Module:  drivers/builtin/src/pem.c
- * Caller:  drivers/builtin/src/pkparse.c
+ * Module:  utilities/pem.c
+ * Caller:  extras/pkparse.c
  *
  * Requires: MBEDTLS_BASE64_C
  *           optionally PSA_WANT_ALG_MD5
@@ -925,8 +959,8 @@
  *
  * Enable PEM encoding / writing.
  *
- * Module:  drivers/builtin/src/pem.c
- * Caller:  drivers/builtin/src/pkwrite.c
+ * Module:  utilities/pem.c
+ * Caller:  extras/pkwrite.c
  *
  * Requires: MBEDTLS_BASE64_C
  *
@@ -1049,6 +1083,7 @@
  *       A future version may reevaluate the prioritization of DRBG mechanisms.
  */
 #define MBEDTLS_PSA_CRYPTO_C
+
 /**
  * \def MBEDTLS_PSA_ASSUME_EXCLUSIVE_BUFFERS
  *
@@ -1080,7 +1115,8 @@
  * - getrandom() on Linux (if syscall() is available at compile time);
  * - getrandom() on FreeBSD and DragonFlyBSD (if available at compile time);
  * - `sysctl(KERN_ARND)` on FreeBSD and NetBSD;
- * - `/dev/urandom` on Unix-like platforms (unless one of the above is used);
+ * - #MBEDTLS_PLATFORM_DEV_RANDOM on Unix-like platforms (unless one of the
+ *   above is used);
  * - BCryptGenRandom() on Windows.
  *
  * You should enable this option if your platform has one of these. If not:
@@ -1583,10 +1619,7 @@
 
 /**
  * Enable the verified implementations of ECDH primitives from Project Everest
- * (currently only Curve25519). This feature changes the layout of ECDH
- * contexts and therefore is a compatibility break for applications that access
- * fields of a mbedtls_ecdh_context structure directly. See also
- * MBEDTLS_ECDH_LEGACY_CONTEXT in drivers/builtin/include/mbedtls/private/ecdh.h.
+ * (currently only Curve25519).
  *
  * The Everest code is provided under the Apache 2.0 license only; therefore enabling this
  * option is not compatible with taking the library under the GPL v2.0-or-later license.
@@ -1612,9 +1645,9 @@
  * This allows various functions to pause by returning
  * #PSA_OPERATION_INCOMPLETE and then be called later again in
  * order to further progress and eventually complete their operation. This is
- * controlled through mbedtls_ecp_set_max_ops() which limits the maximum
+ * controlled through psa_interruptible_set_max_ops() which limits the maximum
  * number of ECC operations a function may perform before pausing; see
- * mbedtls_ecp_set_max_ops() for more information.
+ * psa_interruptible_set_max_ops() for more information.
  *
  * This is useful in non-threaded environments if you want to avoid blocking
  * for too long on ECC (and, hence, X.509 or SSL/TLS) operations.
@@ -1684,7 +1717,7 @@
  *      drivers/builtin/src/aesni.h
  *      drivers/builtin/src/aria.c
  *      drivers/builtin/src/bn_mul.h
- *      drivers/builtin/src/constant_time.c
+ *      utilities/constant_time.c
  *
  * Required by:
  *      MBEDTLS_AESCE_C
@@ -1975,6 +2008,41 @@
 
 /* RSA OPTIONS */
 //#define MBEDTLS_RSA_GEN_KEY_MIN_BITS            1024 /**<  Minimum RSA key size that can be generated in bits (Minimum possible value is 128 bits) */
+
+/**
+ * \def TF_PSA_CRYPTO_PQCP_MLDSA_ENABLED
+ *
+ * Enable mldsa-native from the PQCP (post-quantum code package) driver.
+ * This is an integration of https://github.com/pq-code-package/mldsa-native
+ * in TF-PSA-Crypto.
+ *
+ * \warning This option is experimental. It may change or be removed without
+ *          notice.
+ *
+ * Module:  drivers/pqcp/src/wrap_mldsa_native.c
+ *
+ * Uncomment to include mldsa-native in libtfpsacrypto.
+ */
+//#define TF_PSA_CRYPTO_PQCP_MLDSA_ENABLED
+
+/**
+ * \def TF_PSA_CRYPTO_PQCP_MLDSA_87_ENABLED
+ *
+ * Enable mldsa-native from the PQCP (post-quantum code package) driver
+ * for the security level 87.
+ * This is an integration of https://github.com/pq-code-package/mldsa-native
+ * in TF-PSA-Crypto.
+ *
+ * \warning This option is experimental. It may change or be removed without
+ *          notice.
+ *
+ * Requires: TF_PSA_CRYPTO_PQCP_MLDSA_ENABLED
+ *
+ * Module:  drivers/pqcp/src/wrap_mldsa_native.c
+ *
+ * Uncomment to include MLDSA-87 from mldsa-native in libtfpsacrypto.
+ */
+//#define TF_PSA_CRYPTO_PQCP_MLDSA_87_ENABLED
 
 /** \} name SECTION: Builtin drivers */
 

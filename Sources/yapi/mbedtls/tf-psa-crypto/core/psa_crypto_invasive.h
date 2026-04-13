@@ -13,8 +13,8 @@
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
-#ifndef PSA_CRYPTO_INVASIVE_H
-#define PSA_CRYPTO_INVASIVE_H
+#ifndef TF_PSA_CRYPTO_PSA_CRYPTO_INVASIVE_H
+#define TF_PSA_CRYPTO_PSA_CRYPTO_INVASIVE_H
 
 #include "tf-psa-crypto/build_info.h"
 
@@ -82,4 +82,4 @@ extern void (*psa_output_post_copy_hook)(const uint8_t *output, size_t output_le
 
 #endif /* MBEDTLS_TEST_HOOKS && MBEDTLS_PSA_CRYPTO_C */
 
-#endif /* PSA_CRYPTO_INVASIVE_H */
+#endif /* TF_PSA_CRYPTO_PSA_CRYPTO_INVASIVE_H */

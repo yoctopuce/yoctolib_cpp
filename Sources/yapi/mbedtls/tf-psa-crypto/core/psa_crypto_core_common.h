@@ -8,8 +8,8 @@
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
-#ifndef PSA_CRYPTO_CORE_COMMON_H
-#define PSA_CRYPTO_CORE_COMMON_H
+#ifndef TF_PSA_CRYPTO_PSA_CRYPTO_CORE_COMMON_H
+#define TF_PSA_CRYPTO_PSA_CRYPTO_CORE_COMMON_H
 
 /** Return an offset into a buffer.
  *
@@ -49,4 +49,4 @@ static inline const unsigned char *psa_crypto_buffer_offset_const(
     return p == NULL ? NULL : p + n;
 }
 
-#endif /* PSA_CRYPTO_CORE_COMMON_H */
+#endif /* TF_PSA_CRYPTO_PSA_CRYPTO_CORE_COMMON_H */

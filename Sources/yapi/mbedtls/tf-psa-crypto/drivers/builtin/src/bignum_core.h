@@ -65,8 +65,8 @@
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
-#ifndef MBEDTLS_BIGNUM_CORE_H
-#define MBEDTLS_BIGNUM_CORE_H
+#ifndef TF_PSA_CRYPTO_BIGNUM_CORE_H
+#define TF_PSA_CRYPTO_BIGNUM_CORE_H
 
 #include "tf_psa_crypto_common.h"
 
@@ -876,4 +876,4 @@ void mbedtls_mpi_core_gcd_modinv_odd(mbedtls_mpi_uint *G,
                                      size_t N_limbs,
                                      mbedtls_mpi_uint *T);
 
-#endif /* MBEDTLS_BIGNUM_CORE_H */
+#endif /* TF_PSA_CRYPTO_BIGNUM_CORE_H */

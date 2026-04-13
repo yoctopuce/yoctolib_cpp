@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 71294 2026-01-12 15:25:39Z seb $
+ * $Id: ydef.h 72622 2026-04-07 07:05:42Z seb $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -222,7 +222,6 @@ typedef uint64_t                u64;
 typedef int64_t                 s64;
 #define VARIABLE_SIZE           0
 #ifdef FREERTOS_API
-#include <pthread.h>
 #include <errno.h>
 #endif
 

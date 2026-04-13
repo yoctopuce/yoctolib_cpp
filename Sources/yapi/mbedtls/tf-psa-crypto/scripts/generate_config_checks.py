@@ -8,7 +8,7 @@ from typing import Iterator
 import framework_scripts_path # pylint: disable=unused-import
 from mbedtls_framework.config_checks_generator import * \
     #pylint: disable=wildcard-import,unused-wildcard-import
-from mbedtls_framework import config_history
+from mbedtls_framework import config_macros
 
 ALWAYS_ENABLED_SINCE_1_0 = frozenset([
     'MBEDTLS_PSA_CRYPTO_CONFIG',
@@ -17,18 +17,29 @@ ALWAYS_ENABLED_SINCE_1_0 = frozenset([
 
 def checkers_for_removed_options() -> Iterator[Checker]:
     """Discover removed options. Yield corresponding checkers."""
-    history = config_history.ConfigHistory()
-    old_public = history.options('mbedtls', '3.6')
-    new_public = (history.options('tfpsacrypto', '1.0') |
-                  history.options('mbedtls', '4.0'))
-    internal = history.internal('tfpsacrypto', '1.0')
+    previous_major = config_macros.History('mbedtls', '3.6')
+    # Query historical data about Mbed TLS. We don't query live data
+    # because TF-PSA-Crypto has to be able to compile on its own, without
+    # a surrounding Mbed TLS source tree.
+    tls = config_macros.History('mbedtls', '4.0')
+    current = config_macros.Current()
+    # Don't complain about options that have moved to Mbed TLS!
+    # It's perfectly fine to set Mbed TLS 4.x options in the
+    # TF-PSA-Crypto 1.x config file.
+    # (If we re-add an option in Mbed TLS 4.x after removing it in 4.0,
+    # we'll need to update our tls reference to avoid a complaint here.)
+    new_public = current.options() | tls.options()
+    old_public = previous_major.options()
     for option in sorted(old_public - new_public):
         if option in ALWAYS_ENABLED_SINCE_1_0:
             continue
-        if option in internal:
-            yield Internal(option)
-        else:
-            yield Removed(option, 'TF-PSA_Crypto 1.0')
+        yield Removed(option, 'TF-PSA_Crypto 1.0')
+    for option in sorted(current.internal() - new_public - old_public):
+        # Macros describing accelerator drivers are not in the config
+        # file, but it's ok if integrators put them there.
+        if option.startswith('MBEDTLS_PSA_ACCEL_'):
+            continue
+        yield Internal(option)
 
 def all_checkers() -> Iterator[Checker]:
     """Yield all checkers."""

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 71179 2026-01-05 09:56:43Z seb $
+ * $Id: yprog.c 72548 2026-03-26 08:16:41Z seb $
  *
  * Implementation of firmware upgrade functions
  *
@@ -547,6 +547,9 @@ static void yProgLogProgress(FIRMWARE_CONTEXT *fctx, const char *msg)
     yLeaveCriticalSection(&fctx->cs);
 }
 
+#ifdef DEBUG_FIRMWARE
+char last_log[512] = "";;
+#endif
 
 static void osProgLogProgressEx(FIRMWARE_CONTEXT *fctx, const char *fileid, int line, int prog, const char *msg)
 {
@@ -556,7 +559,14 @@ static void osProgLogProgressEx(FIRMWARE_CONTEXT *fctx, const char *fileid, int 
     }
     if (msg != NULL && *msg != 0) {
 #ifdef DEBUG_FIRMWARE
-        printf("%s:%d:(%d%%) %s\n", fileid, line, prog, msg);
+        {
+            char log[512];
+            YSPRINTF(log, 512, "%s:%d:(%d%%) %s\n", fileid, line, prog, msg);
+            if (strcmp(last_log, log)) {
+                printf("%s:%d:(%d%%) %s\n", fileid, line, prog, msg);
+                strcpy(last_log, log);
+            }
+        }
 #endif
         YSTRCPY(yContext->fuCtx.global_message, YOCTO_ERRMSG_LEN, msg);
     }
@@ -1100,7 +1110,7 @@ static int uFlashFlash(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
             }
 #ifdef DEBUG_FIRMWARE
         } else {
-                dbglog("Skip verification for block at addr 0x%x (block ends at %x)\n", addr, fctx->bz.addr_page + fctx->stepB);
+            dbglog("Skip verification for block at addr 0x%x (block ends at %x)\n", addr, fctx->bz.addr_page + fctx->stepB);
 #endif
         }
         if ((addr & (firm_dev->ext_page_size - 1)) + 2 * (u32)firm_dev->pkt.prog.pkt_ext.size < (u32)firm_dev->ext_page_size) {
@@ -1452,6 +1462,7 @@ YPROG_RESULT uFlashDevice(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
         if (uSendReboot(firm_dev,START_AUTOFLASHER_SIGN) > 0) {
             if (IS_TEXAS_FAMILY(firm_dev->devid_family)) {
                 fctx->timeout = ytime() + ZONE_VERIF_TIMEOUT;
+                uLogProgress(fctx, "Installing new firmware");
                 fctx->stepA = FLASH_AUTOFLASH_MONITOR;
             } else {
                 fctx->stepA = FLASH_SUCCEEDED;
@@ -2034,7 +2045,20 @@ static void* yFirmwareUpdate_thread(void *ctx)
     if (ofs < 0) {
         res = yLoadFirmwareFile(yContext->fuCtx.firmwarePath, &yContext->fctx->firmware, errmsg);
     } else {
-        res = yDownloadFirmware(yContext->fuCtx.firmwarePath, ofs, &yContext->fctx->firmware, errmsg);
+        // recheck if www.yoctopuce.com look for best fw. We normally do not need that except
+        // if we manually create a YFirmwareUpdate object (ex update from bootloader)
+        if (YSTRNCMP(yContext->fuCtx.firmwarePath, "www.yoctopuce.com", 17) == 0) {
+            int fullsize = 0;
+            res = yapiCheckFirmware_internal(yContext->fuCtx.serial, "0", 0, "www.yoctopuce.com", replybuf, 512, &fullsize, errmsg);
+            if (YISERR(res)) {
+                setOsGlobalProgress(yContext->fctx, res, errmsg);
+                goto exitthread;
+            }
+            ofs = isWebPath(replybuf);
+            res = yDownloadFirmware(replybuf, ofs, &yContext->fctx->firmware, errmsg);
+        } else {
+            res = yDownloadFirmware(yContext->fuCtx.firmwarePath, ofs, &yContext->fctx->firmware, errmsg);
+        }
     }
     if (YISERR(res)) {
         setOsGlobalProgress(yContext->fctx, res, errmsg);
@@ -2165,7 +2189,7 @@ static void* yFirmwareUpdate_thread(void *ctx)
             setOsGlobalProgress(yContext->fctx, res, errmsg);
             goto exit_and_free;
         }
-
+        // save settings before fw update
         if (type == FLASH_NET_SELF) {
             const char *settingsOnly, *services;
             u8 *startupconf_data;

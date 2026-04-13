@@ -6,8 +6,8 @@
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
-#ifndef PSA_CRYPTO_ITS_H
-#define PSA_CRYPTO_ITS_H
+#ifndef TF_PSA_CRYPTO_PSA_CRYPTO_ITS_H
+#define TF_PSA_CRYPTO_PSA_CRYPTO_ITS_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -128,4 +128,4 @@ psa_status_t psa_its_remove(psa_storage_uid_t uid);
 }
 #endif
 
-#endif /* PSA_CRYPTO_ITS_H */
+#endif /* TF_PSA_CRYPTO_PSA_CRYPTO_ITS_H */

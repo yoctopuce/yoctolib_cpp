@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.h 70943 2025-12-22 13:10:14Z seb $
+ * $Id: ythread.h 72622 2026-04-07 07:05:42Z seb $
  *
  * OS-independent thread and synchronization library
  *
@@ -87,7 +87,6 @@ void yDeleteConditionVariable(yCONDITION_VARIABLE* var);
 int yWakeConditionVariable(yCONDITION_VARIABLE* var);
 int yWakeAllConditionVariable(yCONDITION_VARIABLE* var);
 int ySleepConditionVariableCS(yCONDITION_VARIABLE* var, yCRITICAL_SECTION* mutex);
-#endif
 
 /*********************************************************************
  * THREAD FUNCTIONS
@@ -130,6 +129,7 @@ void yThreadRequestEnd(yThread* yth);
 int yThreadMustEnd(yThread* yth);
 void yThreadKill(yThread* yth);
 int yThreadIndex(void);
+#endif
 
 #ifdef  __cplusplus
 }

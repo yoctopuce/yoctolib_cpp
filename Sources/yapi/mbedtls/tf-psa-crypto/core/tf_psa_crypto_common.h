@@ -1,17 +1,35 @@
 /**
  * \file tf_psa_crypto_common.h
  *
- * \brief Utility macros for internal use in the library
+ * \brief Utility macros for internal use in the library.
+ *
+ * This file should be included as the first thing in all library C files.
+ * It must not be included by sample programs, since sample programs
+ * illustrate what you can do without the library sources.
+ * It may be included (often indirectly) by test code that isn't purely
+ * black-box testing.
+ *
+ * This file takes care of setting up requirements for platform headers.
+ * It includes the library configuration and derived macros.
+ * It additionally defines various utility macros and other definitions
+ * (but no function declarations).
  */
 /*
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
-#ifndef MBEDTLS_LIBRARY_COMMON_H
-#define MBEDTLS_LIBRARY_COMMON_H
+#ifndef TF_PSA_CRYPTO_TF_PSA_CRYPTO_COMMON_H
+#define TF_PSA_CRYPTO_TF_PSA_CRYPTO_COMMON_H
 
+/* Before including any system header, declare some macros to tell system
+ * headers what we expect of them. */
+#include "tf_psa_crypto_platform_requirements.h"
+
+/* From this point onwards, ensure we have the library configuration and
+ * the configuration-derived macros. */
 #include "tf-psa-crypto/build_info.h"
+
 #include "alignment.h"
 
 #include <assert.h>
@@ -25,6 +43,24 @@
 #elif defined(MBEDTLS_PLATFORM_IS_WINDOWS_ON_ARM64)
 #include <arm64_neon.h>
 #define MBEDTLS_HAVE_NEON_INTRINSICS
+#endif
+
+/* Decide whether we're built for a Unix-like platform.
+ */
+#if defined(MBEDTLS_TEST_PLATFORM_IS_NOT_UNIXLIKE) //no-check-names
+/* We may be building on a Unix-like platform, but for test purposes,
+ * do not try to use Unix features. */
+#elif defined(_WIN32)
+/* If Windows platform interfaces are available, we use them, even if
+ * a Unix-like might also to be available. */
+/* defined(_WIN32) ==> we can include <windows.h> */
+#elif defined(unix) || defined(__unix) || defined(__unix__) ||    \
+    (defined(__APPLE__) && defined(__MACH__)) ||                  \
+    defined(__HAIKU__) ||                                         \
+    defined(__midipix__) ||                                       \
+    /* Add other Unix-like platform indicators here ^^^^ */ 0
+/* defined(MBEDTLS_PLATFORM_IS_UNIXLIKE) ==> we can include <unistd.h> */
+#define MBEDTLS_PLATFORM_IS_UNIXLIKE
 #endif
 
 /** Helper to define a function as static except when building invasive tests.
@@ -82,7 +118,7 @@ extern void (*mbedtls_test_hook_test_fail)(const char *test, int line, const cha
 /* A compile-time constant with the value 0. If `const_expr` is not a
  * compile-time constant with a nonzero value, cause a compile-time error. */
 #define STATIC_ASSERT_EXPR(const_expr)                                \
-    (0 && sizeof(struct { unsigned int STATIC_ASSERT : 1 - 2 * !(const_expr); }))
+    (0 && sizeof(struct { unsigned int STATIC_ASSERT : (const_expr) ? 1 : -1; }))
 
 /* Return the scalar value `value` (possibly promoted). This is a compile-time
  * constant if `value` is. `condition` must be a compile-time constant.
@@ -99,6 +135,13 @@ extern void (*mbedtls_test_hook_test_fail)(const char *test, int line, const cha
  * fall back to the unsafe implementation. */
 #define ARRAY_LENGTH(array) ARRAY_LENGTH_UNSAFE(array)
 #endif
+
+#if defined(__has_builtin)
+#define MBEDTLS_HAS_BUILTIN(x) __has_builtin(x)
+#else
+#define MBEDTLS_HAS_BUILTIN(x) 0
+#endif
+
 /** Allow library to access its structs' private members.
  *
  * Although structs defined in header files are publicly available,
@@ -208,6 +251,14 @@ static inline void mbedtls_xor(unsigned char *r,
         return;
     }
 #endif
+#if defined(MBEDTLS_COMPILER_IS_GCC) && MBEDTLS_HAS_BUILTIN(__builtin_constant_p)
+    /* Some GCC versions (e.g. 14.3) with compile-time array bounds checking are confused
+     * when the byte-by-byte tail case is unused because the length is a constant multiple
+     * of 16. Eliminate a run-time check by only doing this for constant values. */
+    if (__builtin_constant_p(n) && n % 16 == 0) {
+        return;
+    }
+#endif
 #elif defined(MBEDTLS_ARCH_IS_X64) || defined(MBEDTLS_ARCH_IS_ARM64)
     /* This codepath probably only makes sense on architectures with 64-bit registers */
     for (; (i + 8) <= n; i += 8) {
@@ -219,6 +270,14 @@ static inline void mbedtls_xor(unsigned char *r,
         return;
     }
 #endif
+#if defined(MBEDTLS_COMPILER_IS_GCC) && MBEDTLS_HAS_BUILTIN(__builtin_constant_p)
+    /* Some GCC versions (e.g. 14.3) with compile-time array bounds checking are confused
+     * when the byte-by-byte tail case is unused because the length is a constant multiple
+     * of 8. Eliminate a run-time check by only doing this for constant values. */
+    if (__builtin_constant_p(n) && n % 8 == 0) {
+        return;
+    }
+#endif
 #else
     for (; (i + 4) <= n; i += 4) {
         uint32_t x = mbedtls_get_unaligned_uint32(a + i) ^ mbedtls_get_unaligned_uint32(b + i);
@@ -226,6 +285,14 @@ static inline void mbedtls_xor(unsigned char *r,
     }
 #if defined(__IAR_SYSTEMS_ICC__)
     if (n % 4 == 0) {
+        return;
+    }
+#endif
+#if defined(MBEDTLS_COMPILER_IS_GCC) && MBEDTLS_HAS_BUILTIN(__builtin_constant_p)
+    /* Some GCC versions (e.g. 14.3) with compile-time array bounds checking are confused
+     * when the byte-by-byte tail case is unused because the length is a constant multiple
+     * of 4. Eliminate a run-time check by only doing this for constant values. */
+    if (__builtin_constant_p(n) && n % 4 == 0) {
         return;
     }
 #endif
@@ -351,36 +418,134 @@ static inline void mbedtls_xor_no_simd(unsigned char *r,
 #endif
 #endif
 
-/* Always provide a static assert macro, so it can be used unconditionally.
- * It does nothing on systems where we don't know how to define a static assert.
+/** \def MBEDTLS_STATIC_ASSERT
+ *
+ * A static assert macro, equivalent to `static_assert` or `_Static_assert`
+ * in modern C.
+ *
+ * You can use `MBEDTLS_STATIC_ASSERT(expr, msg)` in any position where a
+ * declaration is permitted, both at the toplevel and within a function.
+ * This macro may not be used inside an expression (see #STATIC_ASSERT_EXPR,
+ * available on fewer platforms).
+ *
+ * \param expr  An expression which must be a compile-time constant with
+ *              an integer value. This doesn't have to be a preprocessor
+ *              constant, for example it can use `sizeof`.
+ *              The compilation fails if the value is 0.
+ * \param msg   An error messsage to display if the value of \p expr is 0.
  */
-/* Can't use the C11-style `defined(static_assert)` on FreeBSD, since it
- * defines static_assert even with -std=c99, but then complains about it.
- */
-#if defined(static_assert) && !defined(__FreeBSD__)
+#if __STDC_VERSION__ >= 202311L
+/* static_assert is a keyword since C23 */
 #define MBEDTLS_STATIC_ASSERT(expr, msg)    static_assert(expr, msg)
-/* The GCC compiler supports _Static_assert since version 4.6 even with C99 so checking the
- * compiler version should suffice.
- * For non GCC compilers we check that C>=11 is used since C11 introduced _Static_assert.
- */
-#define MBEDTLS_STATIC_ASSERT_SUPPORT
-#elif !defined(__cplusplus) && \
-    ((defined(__GNUC__) && ((__GNUC__ == 4 && __GNUC_MINOR >= 6) || __GNUC__ > 4)) || \
-    (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L))
-#define MBEDTLS_STATIC_ASSERT(expr, msg)    _Static_assert(expr, msg)
-#define MBEDTLS_STATIC_ASSERT_SUPPORT
-#else
-/* Make sure `MBEDTLS_STATIC_ASSERT(expr, msg);` is valid both inside and
- * outside a function. We choose a struct declaration, which can be repeated
- * any number of times and does not need a matching definition. */
-#define MBEDTLS_STATIC_ASSERT(expr, msg)                                \
-    struct ISO_C_does_not_allow_extra_semicolon_outside_of_a_function
-#endif
 
-#if defined(__has_builtin)
-#define MBEDTLS_HAS_BUILTIN(x) __has_builtin(x)
+#elif __STDC_VERSION__ >= 201112L
+/* _Static_assert is a keyword since C11 */
+#define MBEDTLS_STATIC_ASSERT(expr, msg)    _Static_assert(expr, msg)
+
+#elif defined(static_assert) && !defined(__STRICT_ANSI__)
+/* If static_assert is defined as a macro, presumably from <assert.h>
+ * included above, then trust that it is what we expect.
+ * This is a common extension even before C11.
+ * However, don't use it if it looks like a build with `gcc -c99 -pedantic`
+ * or `clang -c99 -pedantic`, because they would complain about the use of
+ * a feature that doesn't exist in C99.
+ */
+#define MBEDTLS_STATIC_ASSERT(expr, msg)    static_assert(expr, msg)
+
+#elif defined(_MSC_VER)
+/* MSVC has `static_assert` as a keyword (not a macro) since
+ * Visual Studio 2010.
+ */
+#define MBEDTLS_STATIC_ASSERT(expr, msg)    static_assert(expr, msg)
+
+#elif defined(__GNUC__) && \
+    ((__GNUC__ == 4 && __GNUC_MINOR__ >= 6) || __GNUC__ > 4) && \
+    !defined(__STRICT_ANSI__)
+/* _Static_assert is a keyword since GCC 4.6.
+ * However, don't use it if it looks like a build with `gcc -c99 -pedantic`
+ * or `clang -c99 -pedantic`, because they would complain about the use of
+ * a feature that doesn't exist in C99.
+ */
+#define MBEDTLS_STATIC_ASSERT(expr, msg)    _Static_assert(expr, msg)
+
+#elif defined(__COUNTER__)
+/* Fall back to a hack that works in practice with non-ancient GCC-like
+ * compilers and MSVC, and doesn't trigger `-Wredundant-decls`.
+ *
+ * See the `#else` block below for an explanation. Here, we add another
+ * layer to make the declared name unique using the special preprocessor
+ * token `__COUNTER__`.
+ */
+#define MBEDTLS_STATIC_ASSERT_COUNTER(expr, counter) \
+    struct mbedtls_static_assert_anchor##counter { \
+        unsigned int STATIC_ASSERT : (expr) ? 1 : -1; \
+    }
+#define MBEDTLS_STATIC_ASSERT_WRAP(expr, counter) \
+    MBEDTLS_STATIC_ASSERT_COUNTER(expr, counter)
+#define MBEDTLS_STATIC_ASSERT(expr, msg) \
+    MBEDTLS_STATIC_ASSERT_WRAP(expr, __COUNTER__)
+
 #else
-#define MBEDTLS_HAS_BUILTIN(x) 0
+/* Fall back to a hack that works in practice with almost all C compilers.
+ *
+ * Constraints:
+ * - Must be valid C99 when `expr` is a constant expression with a nonzero value.
+ * - Must compile without warnings on known compilers when `expr` is a
+ *   constant expression with a nonzero value.
+ * - Must be valid both at file scope and inside a function.
+ * - Must allow multiple static assertions in the same scope.
+ * - Must not rely on `__LINE__` to create unique identifiers, since this
+ *   could lead to collisions, e.g. if `MBEDTLS_STATIC_ASSERT` is used in
+ *   a header, or if a macro expands to multiple uses of
+ *   `MBEDTLS_STATIC_ASSERT`.
+ * - Should result in an error when `expr` evaluates to 0.
+ *
+ * How it works:
+ * - Ostensibly declare a function. This function will never be used, but
+ *   declaring a function that won't be used is routine.
+ * - The function's name is in our namespace, so we just need to avoid that
+ *   name for any other purpose.
+ * - Declaring the same function with the same prototype multiple times is
+ *   also common (it triggers `gcc -Wredundant-decls`, but we handle
+ *   non-ancient GCC separately above).
+ * - The function returns a pointer to an array.
+ * - The array size involves parsing an anonymous struct declaration.
+ * - The struct declaration contains a bit-field whose width is 1 if the
+ *   assertion is true, and -1 otherwise. This is a constraint violation,
+ *   requiring a diagnostic.
+ *
+ * Limitations:
+ * - If you have multiple static assertions in the same scope,
+ *   `gcc -Wredundant-decls` complains.
+ * - When the assertion fails, some compilers complain about a negative
+ *   bit-field width without displaying the problematic line, so the message
+ *   is not visible.
+ *
+ * On Godbolt compiler explorer, the only failures I could find are:
+ * - CCC (Claude C Compiler) as of 2026-03-02 ignores the assertion.
+ * - Chibicc 2020-12-07 ignores the assertion.
+ * - LC3 (trunk) ignores the assertion.
+ * - MSVC warns about assertions, whether they pass or not:
+ *   "warning C4116: unnamed type definition in parentheses"
+ *   This doesn't matter because non-ancient MSVC supports __COUNTER__,
+ *   which is covered above.
+ * - ppci 0.5.5 complains of a syntax error.
+ * - SDCC 4.5.0 (and earlier) complains if there are multiple assertions in
+ *   the same scope, even if they pass:
+ *   "extern definition for 'mbedtls_static_assert_anchor' mismatches with declaration."
+ * - x86 tendra (trunk) complains if there are multiple assertions in
+ *   the same scope, even if they pass:
+ *   " The types 'int ( * ( void ) ) [<exp1>]' and 'int ( * ( void ) ) [<exp2>]' are incompatible."
+ * - vast (trunk) complains about assertions at function scope,
+ *   even if they pass:
+ *   "unexpected error: failed to legalize operation 'll.func' that was explicitly marked illegal"
+ *   This doesn't matter because it supports __COUNTER__,  which is covered
+ *   above.
+ */
+#define MBEDTLS_STATIC_ASSERT(expr, msg)                                \
+    extern int (*mbedtls_static_assert_anchor(void))[sizeof(struct {    \
+        int STATIC_ASSERT : (expr) ? 1 : -1;                            \
+    })]
 #endif
 
 /* Define compiler branch hints */
@@ -460,4 +625,4 @@ static inline void mbedtls_xor_no_simd(unsigned char *r,
 #define MBEDTLS_ATTRIBUTE_UNTERMINATED_STRING
 #endif /* MBEDTLS_HAS_ATTRIBUTE_NONSTRING */
 
-#endif /* MBEDTLS_LIBRARY_COMMON_H */
+#endif /* TF_PSA_CRYPTO_TF_PSA_CRYPTO_COMMON_H */

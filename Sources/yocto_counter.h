@@ -61,6 +61,14 @@ class YCounter; // forward declaration
 typedef void (*YCounterValueCallback)(YCounter *func, const string& functionValue);
 class YMeasure; // forward declaration
 typedef void (*YCounterTimedReportCallback)(YCounter *func, YMeasure measure);
+#ifndef _Y_DECIMALMODE_ENUM
+#define _Y_DECIMALMODE_ENUM
+typedef enum {
+    Y_DECIMALMODE_FALSE = 0,
+    Y_DECIMALMODE_TRUE = 1,
+    Y_DECIMALMODE_INVALID = -1,
+} Y_DECIMALMODE_enum;
+#endif
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 //--- (end of YCounter definitions)
 
@@ -80,6 +88,7 @@ class YOCTO_CLASS_EXPORT YCounter: public YSensor {
 protected:
     //--- (YCounter attributes)
     // Attributes (function value cache)
+    Y_DECIMALMODE_enum _decimalMode;
     string          _command;
     YCounterValueCallback _valueCallbackCounter;
     YCounterTimedReportCallback _timedReportCallbackCounter;
@@ -98,7 +107,38 @@ public:
     virtual ~YCounter();
     //--- (YCounter accessors declaration)
 
+    static const Y_DECIMALMODE_enum DECIMALMODE_FALSE = Y_DECIMALMODE_FALSE;
+    static const Y_DECIMALMODE_enum DECIMALMODE_TRUE = Y_DECIMALMODE_TRUE;
+    static const Y_DECIMALMODE_enum DECIMALMODE_INVALID = Y_DECIMALMODE_INVALID;
     static const string COMMAND_INVALID;
+
+    /**
+     * Returns a value indicating if the senseur compute whole or fractional values.
+     *
+     * @return either YCounter::DECIMALMODE_FALSE or YCounter::DECIMALMODE_TRUE, according to a value
+     * indicating if the senseur compute whole or fractional values
+     *
+     * On failure, throws an exception or returns YCounter::DECIMALMODE_INVALID.
+     */
+    Y_DECIMALMODE_enum  get_decimalMode(void);
+
+    inline Y_DECIMALMODE_enum decimalMode(void)
+    { return this->get_decimalMode(); }
+
+    /**
+     * Changes the sensor's operating mode so that it computes integer or decimal values.
+     * Remember to call the saveToFlash() method of the module if the modification must be kept.
+     *
+     * @param newval : either YCounter::DECIMALMODE_FALSE or YCounter::DECIMALMODE_TRUE, according to the
+     * sensor's operating mode so that it computes integer or decimal values
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    int             set_decimalMode(Y_DECIMALMODE_enum newval);
+    inline int      setDecimalMode(Y_DECIMALMODE_enum newval)
+    { return this->set_decimalMode(newval); }
 
     string              get_command(void);
 
@@ -178,7 +218,10 @@ public:
     /**
      * Reset the counter to zero.
      *
-     * @return YAPI::SUCCESS if the call succeeds.
+     * @return YAPI::SUCCESS if the call succeeds. Please note that this function only resets
+     *         the integer part of the counter. In CONTINUOUS mode, the decimal part is calculated
+     *         from the angle measured by the sensor. To set the decimal part of the sensor to zero,
+     *         the origin of the sensor must be changed with the YOrientation.zero().
      *
      * On failure, throws an exception or returns a negative error code.
      */

@@ -47,15 +47,6 @@ extern "C" {
  * \{
  */
 
-/* The older Microsoft Windows common runtime provides non-conforming
- * implementations of some standard library functions, including snprintf
- * and vsnprintf. This affects MSVC and MinGW builds.
- */
-#if defined(__MINGW32__) || (defined(_MSC_VER) && _MSC_VER <= 1900)
-#define MBEDTLS_PLATFORM_HAS_NON_CONFORMING_SNPRINTF
-#define MBEDTLS_PLATFORM_HAS_NON_CONFORMING_VSNPRINTF
-#endif
-
 #if !defined(MBEDTLS_PLATFORM_NO_STD_FUNCTIONS)
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,18 +54,10 @@ extern "C" {
 #include <time.h>
 #endif
 #if !defined(MBEDTLS_PLATFORM_STD_SNPRINTF)
-#if defined(MBEDTLS_PLATFORM_HAS_NON_CONFORMING_SNPRINTF)
-#define MBEDTLS_PLATFORM_STD_SNPRINTF   mbedtls_platform_win32_snprintf /**< The default \c snprintf function to use.  */
-#else
 #define MBEDTLS_PLATFORM_STD_SNPRINTF   snprintf /**< The default \c snprintf function to use.  */
 #endif
-#endif
 #if !defined(MBEDTLS_PLATFORM_STD_VSNPRINTF)
-#if defined(MBEDTLS_PLATFORM_HAS_NON_CONFORMING_VSNPRINTF)
-#define MBEDTLS_PLATFORM_STD_VSNPRINTF   mbedtls_platform_win32_vsnprintf /**< The default \c vsnprintf function to use.  */
-#else
 #define MBEDTLS_PLATFORM_STD_VSNPRINTF   vsnprintf /**< The default \c vsnprintf function to use.  */
-#endif
 #endif
 #if !defined(MBEDTLS_PLATFORM_STD_PRINTF)
 #define MBEDTLS_PLATFORM_STD_PRINTF   printf /**< The default \c printf function to use. */
@@ -208,6 +191,16 @@ extern int (*mbedtls_printf)(const char *format, ...);
  *                      function that is called when the mbedtls_snprintf()
  *                      function is invoked by the library.
  *
+ * \note
+ * The snprintf implementation should conform to C99:
+ * - it *must* always correctly zero-terminate the buffer
+ *   (except when n == 0, then it must leave the buffer untouched)
+ * - however it is acceptable to return -1 instead of the required length when
+ *   the destination buffer is too short.
+ * - It must support common modifiers in formats, including `"%zu"` for a
+ *   `size_t` parameter and `"%lld"` for a `long long` parameter.
+ * - Floating point support is not required.
+ *
  * \param printf_func   The \c printf function implementation.
  *
  * \return              \c 0 on success.
@@ -221,20 +214,6 @@ int mbedtls_platform_set_printf(int (*printf_func)(const char *, ...));
 #define mbedtls_printf     printf
 #endif /* MBEDTLS_PLATFORM_PRINTF_MACRO */
 #endif /* MBEDTLS_PLATFORM_PRINTF_ALT */
-
-/*
- * The function pointers for snprintf
- *
- * The snprintf implementation should conform to C99:
- * - it *must* always correctly zero-terminate the buffer
- *   (except when n == 0, then it must leave the buffer untouched)
- * - however it is acceptable to return -1 instead of the required length when
- *   the destination buffer is too short.
- */
-#if defined(MBEDTLS_PLATFORM_HAS_NON_CONFORMING_SNPRINTF)
-/* For Windows (inc. MSYS2), we provide our own fixed implementation */
-int mbedtls_platform_win32_snprintf(char *s, size_t n, const char *fmt, ...);
-#endif
 
 #if defined(MBEDTLS_PLATFORM_SNPRINTF_ALT)
 extern int (*mbedtls_snprintf)(char *s, size_t n, const char *format, ...);
@@ -257,21 +236,6 @@ int mbedtls_platform_set_snprintf(int (*snprintf_func)(char *s, size_t n,
 #define mbedtls_snprintf   MBEDTLS_PLATFORM_STD_SNPRINTF
 #endif /* MBEDTLS_PLATFORM_SNPRINTF_MACRO */
 #endif /* MBEDTLS_PLATFORM_SNPRINTF_ALT */
-
-/*
- * The function pointers for vsnprintf
- *
- * The vsnprintf implementation should conform to C99:
- * - it *must* always correctly zero-terminate the buffer
- *   (except when n == 0, then it must leave the buffer untouched)
- * - however it is acceptable to return -1 instead of the required length when
- *   the destination buffer is too short.
- */
-#if defined(MBEDTLS_PLATFORM_HAS_NON_CONFORMING_VSNPRINTF)
-#include <stdarg.h>
-/* For Older Windows (inc. MSYS2), we provide our own fixed implementation */
-int mbedtls_platform_win32_vsnprintf(char *s, size_t n, const char *fmt, va_list arg);
-#endif
 
 #if defined(MBEDTLS_PLATFORM_VSNPRINTF_ALT)
 #include <stdarg.h>
@@ -385,6 +349,29 @@ int mbedtls_platform_set_exit(void (*exit_func)(int status));
 #define MBEDTLS_EXIT_FAILURE MBEDTLS_PLATFORM_STD_EXIT_FAILURE
 #else
 #define MBEDTLS_EXIT_FAILURE 1
+#endif
+
+#if defined(MBEDTLS_PSA_BUILTIN_GET_ENTROPY) && \
+    !(defined(_WIN32) && !defined(EFIX64) && !defined(EFI32))
+/* Platforms where MBEDTLS_PLATFORM_DEV_RANDOM is used
+ * unless a dedicated system call is available both at
+ * compile time and at run time. */
+#define MBEDTLS_PLATFORM_HAVE_DEV_RANDOM
+#endif
+
+#if !defined(MBEDTLS_PLATFORM_DEV_RANDOM)
+#define MBEDTLS_PLATFORM_DEV_RANDOM "/dev/random"
+#endif
+
+#if defined(MBEDTLS_PLATFORM_HAVE_DEV_RANDOM)
+/**
+ * Path to a special file that returns cryptographic-quality random bytes
+ * when read.
+ *
+ * The default value is #MBEDTLS_PLATFORM_DEV_RANDOM.
+ * See the documentation of this option for guidance.
+ */
+extern const char *mbedtls_platform_dev_random;
 #endif
 
 /*
@@ -523,4 +510,4 @@ void mbedtls_platform_teardown(mbedtls_platform_context *ctx);
 }
 #endif
 
-#endif /* platform.h */
+#endif /* MBEDTLS_PLATFORM_H */

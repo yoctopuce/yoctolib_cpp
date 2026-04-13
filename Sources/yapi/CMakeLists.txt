@@ -8,89 +8,98 @@ if(USE_YSSL)
 message(STATUS "Include Mbed TLS library")
 set(MBEDTLS_C_FILES
 #-- mbedtls_patch_start --
-	mbedtls/library/error.c
 	mbedtls/library/debug.c
-	mbedtls/library/x509write_crt.c
-	mbedtls/library/x509_create.c
-	mbedtls/library/x509.c
-	mbedtls/library/x509_crt.c
-	mbedtls/library/x509write.c
-	mbedtls/library/x509_oid.c
-	mbedtls/library/ssl_tls.c
-	mbedtls/library/ssl_client.c
-	mbedtls/library/ssl_msg.c
+	mbedtls/library/error.c
 	mbedtls/library/ssl_ciphersuites.c
-	mbedtls/library/ssl_tls13_client.c
+	mbedtls/library/ssl_client.c
+	mbedtls/library/ssl_cookie.c
+	mbedtls/library/ssl_debug_helpers_generated.c
+	mbedtls/library/ssl_msg.c
+	mbedtls/library/ssl_tls.c
 	mbedtls/library/ssl_tls12_client.c
 	mbedtls/library/ssl_tls12_server.c
+	mbedtls/library/ssl_tls13_client.c
 	mbedtls/library/ssl_tls13_generic.c
-	mbedtls/library/ssl_tls13_server.c
 	mbedtls/library/ssl_tls13_keys.c
-	mbedtls/library/ssl_cookie.c
-	mbedtls/tf-psa-crypto/core/psa_its_file.c
-	mbedtls/tf-psa-crypto/core/psa_crypto_slot_management.c
+	mbedtls/library/ssl_tls13_server.c
+	mbedtls/library/x509.c
+	mbedtls/library/x509_create.c
+	mbedtls/library/x509_crt.c
+	mbedtls/library/x509_oid.c
+	mbedtls/library/x509write.c
+	mbedtls/library/x509write_crt.c
 	mbedtls/tf-psa-crypto/core/psa_crypto.c
 	mbedtls/tf-psa-crypto/core/psa_crypto_client.c
-	mbedtls/tf-psa-crypto/core/psa_crypto_storage.c
 	mbedtls/tf-psa-crypto/core/psa_crypto_driver_wrappers_no_static.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/cmac.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/md5.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/gcm.c
+	mbedtls/tf-psa-crypto/core/psa_crypto_random.c
+	mbedtls/tf-psa-crypto/core/psa_crypto_slot_management.c
+	mbedtls/tf-psa-crypto/core/psa_crypto_storage.c
+	mbedtls/tf-psa-crypto/core/psa_its_file.c
+	mbedtls/tf-psa-crypto/core/psa_util.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/aes.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/aesce.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/rsa.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/pk_ecc.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/oid.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/poly1305.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/ctr_drbg.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/chacha20.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/ecdh.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/ecdsa.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/block_cipher.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/cipher_wrap.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/base64.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/pk_rsa.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/pkcs5.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/aesni.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/rsa_alt_helpers.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/entropy_poll.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/hmac_drbg.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/camellia.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/aria.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/ripemd160.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/sha1.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/sha512.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/sha3.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/bignum.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/bignum_core.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/block_cipher.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/camellia.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/ccm.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/chacha20.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/chacha20_neon.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/chachapoly.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/cipher.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/cipher_wrap.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/cmac.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/ctr_drbg.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/ecdsa.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/ecjpake.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/psa_crypto_mac.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/psa_crypto_rsa.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/ecp.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/ecp_curves.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/entropy.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/entropy_poll.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/gcm.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/hmac_drbg.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/md5.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/poly1305.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/psa_crypto_aead.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/psa_crypto_cipher.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/psa_crypto_ecp.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/psa_crypto_ffdh.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/pk_wrap.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/ecp.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/cipher.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/md.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/psa_crypto_aead.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/psa_crypto_hash.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/psa_crypto_mac.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/psa_crypto_pake.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/constant_time.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/ecp_curves.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/psa_crypto_cipher.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/entropy.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/platform_util.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/threading.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/asn1write.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/asn1parse.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/pem.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/pk.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/pkparse.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/pkwrite.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/bignum.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/psa_util.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/bignum_core.c
-	mbedtls/tf-psa-crypto/drivers/builtin/src/aes.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/psa_crypto_rsa.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/psa_crypto_xof.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/psa_util_internal.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/ripemd160.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/rsa.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/rsa_alt_helpers.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/sha1.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/sha256.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/sha3.c
+	mbedtls/tf-psa-crypto/drivers/builtin/src/sha512.c
+	mbedtls/tf-psa-crypto/extras/lmots.c
+	mbedtls/tf-psa-crypto/extras/lms.c
+	mbedtls/tf-psa-crypto/extras/md.c
+	mbedtls/tf-psa-crypto/extras/nist_kw.c
+	mbedtls/tf-psa-crypto/extras/pk.c
+	mbedtls/tf-psa-crypto/extras/pk_ecc.c
+	mbedtls/tf-psa-crypto/extras/pk_rsa.c
+	mbedtls/tf-psa-crypto/extras/pk_wrap.c
+	mbedtls/tf-psa-crypto/extras/pkparse.c
+	mbedtls/tf-psa-crypto/extras/pkwrite.c
+	mbedtls/tf-psa-crypto/platform/memory_buffer_alloc.c
+	mbedtls/tf-psa-crypto/platform/platform.c
+	mbedtls/tf-psa-crypto/platform/platform_util.c
+	mbedtls/tf-psa-crypto/platform/threading.c
+	mbedtls/tf-psa-crypto/utilities/asn1parse.c
+	mbedtls/tf-psa-crypto/utilities/asn1write.c
+	mbedtls/tf-psa-crypto/utilities/base64.c
+	mbedtls/tf-psa-crypto/utilities/constant_time.c
+	mbedtls/tf-psa-crypto/utilities/oid.c
+	mbedtls/tf-psa-crypto/utilities/pem.c
+	mbedtls/tf-psa-crypto/utilities/pkcs5.c
 
 #-- mbedtls_patch_stop --
 )
@@ -129,6 +138,9 @@ if(USE_YSSL)
     target_include_directories(yapi PRIVATE mbedtls/tf-psa-crypto/drivers/builtin/include)
     target_include_directories(yapi PRIVATE mbedtls/tf-psa-crypto/drivers/builtin/src)
     target_include_directories(yapi PRIVATE mbedtls/tf-psa-crypto/include)
+    target_include_directories(yapi PRIVATE mbedtls/tf-psa-crypto/extras)
+    target_include_directories(yapi PRIVATE mbedtls/tf-psa-crypto/utilities)
+    target_include_directories(yapi PRIVATE mbedtls/tf-psa-crypto/platform)
 
 #-- mbedtls_patch_inc_stop --
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")

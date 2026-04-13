@@ -11,8 +11,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
-#ifndef MBEDTLS_ECP_INVASIVE_H
-#define MBEDTLS_ECP_INVASIVE_H
+#ifndef TF_PSA_CRYPTO_ECP_INVASIVE_H
+#define TF_PSA_CRYPTO_ECP_INVASIVE_H
 
 #include "tf_psa_crypto_common.h"
 #include "mbedtls/private/bignum.h"
@@ -71,25 +71,6 @@ int mbedtls_ecp_gen_privkey_mx(size_t high_bit,
                                void *p_rng);
 
 #endif /* MBEDTLS_ECP_MONTGOMERY_ENABLED */
-
-#if defined(MBEDTLS_ECP_DP_SECP192R1_ENABLED)
-
-/** Fast quasi-reduction modulo p192 (FIPS 186-3 D.2.1)
- *
- * This operation expects a 384 bit MPI and the result of the reduction
- * is a 192 bit MPI.
- *
- * \param[in,out]   Np  The address of the MPI to be converted.
- *                      Must have twice as many limbs as the modulus.
- *                      Upon return this holds the reduced value. The bitlength
- *                      of the reduced value is the same as that of the modulus
- *                      (192 bits).
- * \param[in]       Nn  The length of \p Np in limbs.
- */
-MBEDTLS_STATIC_TESTABLE
-int mbedtls_ecp_mod_p192_raw(mbedtls_mpi_uint *Np, size_t Nn);
-
-#endif /* MBEDTLS_ECP_DP_SECP192R1_ENABLED */
 
 #if defined(MBEDTLS_ECP_DP_SECP256R1_ENABLED)
 
@@ -156,30 +137,6 @@ MBEDTLS_STATIC_TESTABLE
 int  mbedtls_ecp_mod_p384_raw(mbedtls_mpi_uint *X, size_t X_limbs);
 
 #endif /* MBEDTLS_ECP_DP_SECP384R1_ENABLED */
-
-#if defined(MBEDTLS_ECP_DP_SECP192K1_ENABLED)
-
-/** Fast quasi-reduction modulo p192k1 = 2^192 - R,
- * with R = 2^32 + 2^12 + 2^8 + 2^7 + 2^6 + 2^3 + 1 = 0x01000011C9
- *
- * \param[in,out]   X       The address of the MPI to be converted.
- *                          Must have exact limb size that stores a 384-bit MPI
- *                          (double the bitlength of the modulus).
- *                          Upon return holds the reduced value which is
- *                          in range `0 <= X < 2 * N` (where N is the modulus).
- *                          The bitlength of the reduced value is the same as
- *                          that of the modulus (192 bits).
- * \param[in]       X_limbs The length of \p X in limbs.
- *
- * \return          \c 0 on success.
- * \return          #MBEDTLS_ERR_ECP_BAD_INPUT_DATA if \p X does not have
- *                  twice as many limbs as the modulus.
- * \return          #MBEDTLS_ERR_ECP_ALLOC_FAILED if memory allocation failed.
- */
-MBEDTLS_STATIC_TESTABLE
-int mbedtls_ecp_mod_p192k1_raw(mbedtls_mpi_uint *X, size_t X_limbs);
-
-#endif /* MBEDTLS_ECP_DP_SECP192K1_ENABLED */
 
 #if defined(MBEDTLS_ECP_DP_SECP256K1_ENABLED)
 
@@ -276,4 +233,4 @@ int mbedtls_ecp_modulus_setup(mbedtls_mpi_mod_modulus *N,
 
 #endif /* MBEDTLS_TEST_HOOKS && MBEDTLS_ECP_C */
 
-#endif /* MBEDTLS_ECP_INVASIVE_H */
+#endif /* TF_PSA_CRYPTO_ECP_INVASIVE_H */

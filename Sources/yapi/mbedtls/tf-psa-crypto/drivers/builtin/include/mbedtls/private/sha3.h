@@ -1,7 +1,7 @@
 /**
  * \file sha3.h
  *
- * \brief This file contains SHA-3 definitions and functions.
+ * \brief This file contains SHA-3 and SHAKE definitions and functions.
  *
  * The Secure Hash Algorithms cryptographic
  * hash functions are defined in <em>FIPS 202: SHA-3 Standard:
@@ -12,8 +12,8 @@
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
-#ifndef MBEDTLS_SHA3_H
-#define MBEDTLS_SHA3_H
+#ifndef TF_PSA_CRYPTO_MBEDTLS_PRIVATE_SHA3_H
+#define TF_PSA_CRYPTO_MBEDTLS_PRIVATE_SHA3_H
 #include "mbedtls/private_access.h"
 
 #include "tf-psa-crypto/build_info.h"
@@ -30,7 +30,7 @@ extern "C" {
 
 #if defined(MBEDTLS_DECLARE_PRIVATE_IDENTIFIERS)
 /**
- * SHA-3 family id.
+ * SHA-3 or SHAKE family id.
  *
  * It identifies the family (SHA3-256, SHA3-512, etc.)
  */
@@ -41,6 +41,8 @@ typedef enum {
     MBEDTLS_SHA3_256, /*!< SHA3-256 */
     MBEDTLS_SHA3_384, /*!< SHA3-384 */
     MBEDTLS_SHA3_512, /*!< SHA3-512 */
+    MBEDTLS_SHA3_SHAKE128, /*!< SHA3-SHAKE128 */
+    MBEDTLS_SHA3_SHAKE256, /*!< SHA3-SHAKE256 */
 } mbedtls_sha3_id;
 #endif /* MBEDTLS_DECLARE_PRIVATE_IDENTIFIERS */
 
@@ -54,19 +56,20 @@ typedef struct {
     uint32_t MBEDTLS_PRIVATE(index);
     uint16_t MBEDTLS_PRIVATE(olen);
     uint16_t MBEDTLS_PRIVATE(max_block_size);
+    uint8_t MBEDTLS_PRIVATE(finished);
 }
 mbedtls_sha3_context;
 
 #if defined(MBEDTLS_DECLARE_PRIVATE_IDENTIFIERS)
 /**
- * \brief          This function initializes a SHA-3 context.
+ * \brief          This function initializes a SHA-3 or SHAKE context.
  *
  * \param ctx      The SHA-3 context to initialize. This must not be \c NULL.
  */
 void mbedtls_sha3_init(mbedtls_sha3_context *ctx);
 
 /**
- * \brief          This function clears a SHA-3 context.
+ * \brief          This function clears a SHA-3 or SHAKE context.
  *
  * \param ctx      The SHA-3 context to clear. This may be \c NULL, in which
  *                 case this function returns immediately. If it is not \c NULL,
@@ -75,7 +78,7 @@ void mbedtls_sha3_init(mbedtls_sha3_context *ctx);
 void mbedtls_sha3_free(mbedtls_sha3_context *ctx);
 
 /**
- * \brief          This function clones the state of a SHA-3 context.
+ * \brief          This function clones the state of a SHA-3 or SHAKE context.
  *
  * \param dst      The destination context. This must be initialized.
  * \param src      The context to clone. This must be initialized.
@@ -84,11 +87,11 @@ void mbedtls_sha3_clone(mbedtls_sha3_context *dst,
                         const mbedtls_sha3_context *src);
 
 /**
- * \brief          This function starts a SHA-3 checksum
+ * \brief          This function starts a SHA-3 checksum or SHAKE XOF
  *                 calculation.
  *
  * \param ctx      The context to use. This must be initialized.
- * \param id       The id of the SHA-3 family.
+ * \param id       The id of the SHA-3 or SHAKE family.
  *
  * \return         \c 0 on success.
  * \return         A negative error code on failure.
@@ -97,7 +100,7 @@ int mbedtls_sha3_starts(mbedtls_sha3_context *ctx, mbedtls_sha3_id id);
 
 /**
  * \brief          This function feeds an input buffer into an ongoing
- *                 SHA-3 checksum calculation.
+ *                 SHA-3 or SHAKE calculation.
  *
  * \param ctx      The SHA-3 context. This must be initialized
  *                 and have a hash operation started.
@@ -116,6 +119,13 @@ int mbedtls_sha3_update(mbedtls_sha3_context *ctx,
  * \brief          This function finishes the SHA-3 operation, and writes
  *                 the result to the output buffer.
  *
+ *                 In a SHA-3 calculation, this function must be called
+ *                 exactly once, and \p olen must be the length of the
+ *                 hash variant chosen in mbedtls_sha3_starts().
+ *                 In a SHAKE calculation, this function may be called
+ *                 any number of times to obtain successive chunks of
+ *                 the XOF output.
+ *
  * \param ctx      The SHA-3 context. This must be initialized
  *                 and have a hash operation started.
  * \param output   The SHA-3 checksum result.
@@ -123,6 +133,7 @@ int mbedtls_sha3_update(mbedtls_sha3_context *ctx,
  * \param olen     Defines the length of output buffer (in bytes). For SHA-3 224, SHA-3 256,
  *                 SHA-3 384 and SHA-3 512 \c olen must equal to 28, 32, 48 and 64,
  *                 respectively.
+ *                 For SHAKE128 and SHAKE256 it can be an arbitrary number.
  *
  * \return         \c 0 on success.
  * \return         A negative error code on failure.
@@ -131,8 +142,8 @@ int mbedtls_sha3_finish(mbedtls_sha3_context *ctx,
                         uint8_t *output, size_t olen);
 
 /**
- * \brief          This function calculates the SHA-3
- *                 checksum of a buffer.
+ * \brief          This function calculates the SHA-3 checksum
+ *                 or XOF output of a buffer.
  *
  *                 The function allocates the context, performs the
  *                 calculation, and frees the context.
@@ -149,6 +160,7 @@ int mbedtls_sha3_finish(mbedtls_sha3_context *ctx,
  * \param olen     Defines the length of output buffer (in bytes). For SHA-3 224, SHA-3 256,
  *                 SHA-3 384 and SHA-3 512 \c olen must equal to 28, 32, 48 and 64,
  *                 respectively.
+ *                 For SHAKE128 and SHAKE256 it can be an arbitrary number.
  *
  * \return         \c 0 on success.
  * \return         A negative error code on failure.
@@ -174,4 +186,4 @@ int mbedtls_sha3_self_test(int verbose);
 }
 #endif
 
-#endif /* mbedtls_sha3.h */
+#endif /* TF_PSA_CRYPTO_MBEDTLS_PRIVATE_SHA3_H */

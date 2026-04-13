@@ -55,6 +55,7 @@ using namespace YOCTOLIB_NAMESPACE;
 
 YOrientation::YOrientation(const string& func): YSensor(func)
 //--- (YOrientation initialization)
+    ,_counterClockwise(COUNTERCLOCKWISE_INVALID)
     ,_command(COMMAND_INVALID)
     ,_zeroOffset(ZEROOFFSET_INVALID)
     ,_valueCallbackOrientation(NULL)
@@ -76,6 +77,9 @@ const double YOrientation::ZEROOFFSET_INVALID = YAPI_INVALID_DOUBLE;
 
 int YOrientation::_parseAttr(YJSONObject *json_val)
 {
+    if(json_val->has("counterClockwise")) {
+        _counterClockwise =  (Y_COUNTERCLOCKWISE_enum)json_val->getInt("counterClockwise");
+    }
     if(json_val->has("command")) {
         _command =  json_val->getString("command");
     }
@@ -85,6 +89,63 @@ int YOrientation::_parseAttr(YJSONObject *json_val)
     return YSensor::_parseAttr(json_val);
 }
 
+
+/**
+ * Returns a value indicating whether the sensor is operating in a counterclockwise direction.
+ *
+ * @return either YOrientation::COUNTERCLOCKWISE_FALSE or YOrientation::COUNTERCLOCKWISE_TRUE, according
+ * to a value indicating whether the sensor is operating in a counterclockwise direction
+ *
+ * On failure, throws an exception or returns YOrientation::COUNTERCLOCKWISE_INVALID.
+ */
+Y_COUNTERCLOCKWISE_enum YOrientation::get_counterClockwise(void)
+{
+    Y_COUNTERCLOCKWISE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YOrientation::COUNTERCLOCKWISE_INVALID;
+                }
+            }
+        }
+        res = _counterClockwise;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Defines the operating direction of the sensor.
+ * Remember to call the saveToFlash() method of the module if the
+ * modification must be kept.
+ *
+ * @param newval : either YOrientation::COUNTERCLOCKWISE_FALSE or YOrientation::COUNTERCLOCKWISE_TRUE
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YOrientation::set_counterClockwise(Y_COUNTERCLOCKWISE_enum newval)
+{
+    string rest_val;
+    int res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        rest_val = (newval>0 ? "1" : "0");
+        res = _setAttr("counterClockwise", rest_val);
+    } catch (std::exception &) {
+         yLeaveCriticalSection(&_this_cs);
+         throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
 
 string YOrientation::get_command(void)
 {
@@ -129,7 +190,6 @@ int YOrientation::set_command(const string& newval)
  * can typically be used  to compensate for mechanical offset. This offset can also be set
  * automatically using the zero() method.
  * Remember to call the saveToFlash() method of the module if the modification must be kept.
- * On failure, throws an exception or returns a negative error code.
  *
  * @param newval : a floating point number
  *
@@ -318,8 +378,7 @@ int YOrientation::sendCommand(string command)
  * Remember to call the saveToFlash() method of the module if the modification must be kept.
  *
  * @return YAPI::SUCCESS if the call succeeds.
- *
- * On failure, throws an exception or returns a negative error code.
+ *         On failure, throws an exception or returns a negative error code.
  */
 int YOrientation::zero(void)
 {

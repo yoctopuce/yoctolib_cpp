@@ -1,11 +1,11 @@
-/*
+/* -*-c-*-
  *  Error message information
  *
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
-#include "tf_psa_crypto_common.h"
+#include "mbedtls_common.h"
 
 #include "mbedtls/error.h"
 
@@ -253,7 +253,7 @@ static const char *mbedtls_high_level_strerr(int error_code)
             return( "X509 - Read/write of file failed" );
         case -(MBEDTLS_ERR_X509_FATAL_ERROR):
             return( "X509 - A fatal error occurred, eg the chain is too long or the vrfy callback failed" );
-#endif /* MBEDTLS_X509_USE_C || 
+#endif /* MBEDTLS_X509_USE_C ||
           MBEDTLS_X509_CREATE_C */
 
 #if defined(MBEDTLS_CIPHER_C)
@@ -266,10 +266,6 @@ static const char *mbedtls_high_level_strerr(int error_code)
 #endif /* MBEDTLS_CIPHER_C */
 
 #if defined(MBEDTLS_ECP_C)
-        case -(MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE):
-            return( "ECP - The requested feature is not available, for example, the requested curve is not supported" );
-        case -(MBEDTLS_ERR_ECP_RANDOM_FAILED):
-            return( "ECP - Generation of random value, such as ephemeral key, failed" );
         case -(MBEDTLS_ERR_ECP_INVALID_KEY):
             return( "ECP - Invalid private or public key" );
 #endif /* MBEDTLS_ECP_C */

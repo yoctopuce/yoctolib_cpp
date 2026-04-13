@@ -19,8 +19,8 @@
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
-#ifndef MBEDTLS_ECP_H
-#define MBEDTLS_ECP_H
+#ifndef TF_PSA_CRYPTO_MBEDTLS_PRIVATE_ECP_H
+#define TF_PSA_CRYPTO_MBEDTLS_PRIVATE_ECP_H
 #include "mbedtls/private_access.h"
 
 #include "tf-psa-crypto/build_info.h"
@@ -36,13 +36,13 @@
 /** The buffer is too small to write to. */
 #define MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL                  PSA_ERROR_BUFFER_TOO_SMALL
 /** The requested feature is not available, for example, the requested curve is not supported. */
-#define MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE               -0x4E80
+#define MBEDTLS_ERR_ECP_FEATURE_UNAVAILABLE               PSA_ERROR_NOT_SUPPORTED
 /** The signature is not valid. */
 #define MBEDTLS_ERR_ECP_VERIFY_FAILED                     PSA_ERROR_INVALID_SIGNATURE
 /** Memory allocation failed. */
 #define MBEDTLS_ERR_ECP_ALLOC_FAILED                      PSA_ERROR_INSUFFICIENT_MEMORY
 /** Generation of random value, such as ephemeral key, failed. */
-#define MBEDTLS_ERR_ECP_RANDOM_FAILED                     -0x4D00
+#define MBEDTLS_ERR_ECP_RANDOM_FAILED                     PSA_ERROR_INSUFFICIENT_ENTROPY
 /** Invalid private or public key. */
 #define MBEDTLS_ERR_ECP_INVALID_KEY                       -0x4C80
 /** Operation in progress, call again with the same parameters to continue. */
@@ -51,14 +51,12 @@
 #if defined(MBEDTLS_DECLARE_PRIVATE_IDENTIFIERS)
 /* Flags indicating whether to include code that is specific to certain
  * types of curves. These flags are for internal library use only. */
-#if defined(MBEDTLS_ECP_DP_SECP192R1_ENABLED) || \
-    defined(MBEDTLS_ECP_DP_SECP256R1_ENABLED) || \
+#if defined(MBEDTLS_ECP_DP_SECP256R1_ENABLED) || \
     defined(MBEDTLS_ECP_DP_SECP384R1_ENABLED) || \
     defined(MBEDTLS_ECP_DP_SECP521R1_ENABLED) || \
     defined(MBEDTLS_ECP_DP_BP256R1_ENABLED) || \
     defined(MBEDTLS_ECP_DP_BP384R1_ENABLED) || \
     defined(MBEDTLS_ECP_DP_BP512R1_ENABLED) || \
-    defined(MBEDTLS_ECP_DP_SECP192K1_ENABLED) || \
     defined(MBEDTLS_ECP_DP_SECP256K1_ENABLED)
 #define MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED
 #endif
@@ -99,7 +97,6 @@ extern "C" {
  */
 typedef enum {
     MBEDTLS_ECP_DP_NONE = 0,       /*!< Curve not defined. */
-    MBEDTLS_ECP_DP_SECP192R1,      /*!< Domain parameters for the 192-bit curve defined by FIPS 186-4 and SEC1. */
     MBEDTLS_ECP_DP_SECP256R1,      /*!< Domain parameters for the 256-bit curve defined by FIPS 186-4 and SEC1. */
     MBEDTLS_ECP_DP_SECP384R1,      /*!< Domain parameters for the 384-bit curve defined by FIPS 186-4 and SEC1. */
     MBEDTLS_ECP_DP_SECP521R1,      /*!< Domain parameters for the 521-bit curve defined by FIPS 186-4 and SEC1. */
@@ -107,7 +104,6 @@ typedef enum {
     MBEDTLS_ECP_DP_BP384R1,        /*!< Domain parameters for 384-bit Brainpool curve. */
     MBEDTLS_ECP_DP_BP512R1,        /*!< Domain parameters for 512-bit Brainpool curve. */
     MBEDTLS_ECP_DP_CURVE25519,     /*!< Domain parameters for Curve25519. */
-    MBEDTLS_ECP_DP_SECP192K1,      /*!< Domain parameters for 192-bit "Koblitz" curve. */
     MBEDTLS_ECP_DP_SECP256K1,      /*!< Domain parameters for 256-bit "Koblitz" curve. */
     MBEDTLS_ECP_DP_CURVE448,       /*!< Domain parameters for Curve448. */
 } mbedtls_ecp_group_id;
@@ -330,10 +326,6 @@ mbedtls_ecp_group;
 #define MBEDTLS_ECP_MAX_BITS 256
 #elif defined(MBEDTLS_ECP_DP_CURVE25519_ENABLED)
 #define MBEDTLS_ECP_MAX_BITS 255
-#elif defined(MBEDTLS_ECP_DP_SECP192K1_ENABLED)
-#define MBEDTLS_ECP_MAX_BITS 192
-#elif defined(MBEDTLS_ECP_DP_SECP192R1_ENABLED)
-#define MBEDTLS_ECP_MAX_BITS 192
 #else /* !MBEDTLS_ECP_LIGHT */
 #error "Missing definition of MBEDTLS_ECP_MAX_BITS"
 #endif /* !MBEDTLS_ECP_LIGHT */
@@ -530,9 +522,9 @@ mbedtls_ecp_curve_type mbedtls_ecp_get_type(const mbedtls_ecp_group *grp);
  *
  * \note            This function returns information about all curves
  *                  supported by the library. Some curves may not be
- *                  supported for all algorithms. Call mbedtls_ecdh_can_do()
- *                  or mbedtls_ecdsa_can_do() to check if a curve is
- *                  supported for ECDH or ECDSA.
+ *                  supported for all algorithms. Call
+ *                  mbedtls_ecdsa_can_do() to check if a curve is
+ *                  supported for ECDSA.
  *
  * \return          A statically allocated array. The last entry is 0.
  */
@@ -545,9 +537,9 @@ const mbedtls_ecp_curve_info *mbedtls_ecp_curve_list(void);
  *
  * \note            This function returns information about all curves
  *                  supported by the library. Some curves may not be
- *                  supported for all algorithms. Call mbedtls_ecdh_can_do()
- *                  or mbedtls_ecdsa_can_do() to check if a curve is
- *                  supported for ECDH or ECDSA.
+ *                  supported for all algorithms. Call
+ *                  mbedtls_ecdsa_can_do() to check if a curve is
+ *                  supported for ECDSA.
  *
  * \return          A statically allocated array,
  *                  terminated with MBEDTLS_ECP_DP_NONE.
@@ -1318,55 +1310,6 @@ int mbedtls_ecp_set_public_key(mbedtls_ecp_group_id grp_id,
 int mbedtls_ecp_read_key(mbedtls_ecp_group_id grp_id, mbedtls_ecp_keypair *key,
                          const unsigned char *buf, size_t buflen);
 
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-/**
- * \brief           This function exports an elliptic curve private key.
- *
- * \deprecated      Note that although this function accepts an output
- *                  buffer that is smaller or larger than the key, most key
- *                  import interfaces require the output to have exactly
- *                  key's nominal length. It is generally simplest to
- *                  pass the key's nominal length as \c buflen, after
- *                  checking that the output buffer is large enough.
- *                  See the description of the \p buflen parameter for
- *                  how to calculate the nominal length.
- *                  To avoid this difficulty, use mbedtls_ecp_write_key_ext()
- *                  instead.
- *                  mbedtls_ecp_write_key() is deprecated and will be
- *                  removed in a future version of the library.
- *
- * \note            If the private key was not set in \p key,
- *                  the output is unspecified. Future versions
- *                  may return an error in that case.
- *
- * \param key       The private key.
- * \param buf       The output buffer for containing the binary representation
- *                  of the key.
- *                  For Weierstrass curves, this is the big-endian
- *                  representation, padded with null bytes at the beginning
- *                  to reach \p buflen bytes.
- *                  For Montgomery curves, this is the standard byte string
- *                  representation (which is little-endian), padded with
- *                  null bytes at the end to reach \p buflen bytes.
- * \param buflen    The total length of the buffer in bytes.
- *                  The length of the output is
- *                  (`grp->nbits` + 7) / 8 bytes
- *                  where `grp->nbits` is the private key size in bits.
- *                  For Weierstrass keys, if the output buffer is smaller,
- *                  leading zeros are trimmed to fit if possible. For
- *                  Montgomery keys, the output buffer must always be large
- *                  enough for the nominal length.
- *
- * \return          \c 0 on success.
- * \return          #MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL or
- *                  #MBEDTLS_ERR_MPI_BUFFER_TOO_SMALL if the \p key
- *                  representation is larger than the available space in \p buf.
- * \return          Another negative error code on different kinds of failure.
- */
-int MBEDTLS_DEPRECATED mbedtls_ecp_write_key(mbedtls_ecp_keypair *key,
-                                             unsigned char *buf, size_t buflen);
-#endif /* MBEDTLS_DEPRECATED_REMOVED */
-
 /**
  * \brief           This function exports an elliptic curve private key.
  *
@@ -1517,4 +1460,4 @@ int mbedtls_ecp_self_test(int verbose);
 }
 #endif
 
-#endif /* ecp.h */
+#endif /* TF_PSA_CRYPTO_MBEDTLS_PRIVATE_ECP_H */

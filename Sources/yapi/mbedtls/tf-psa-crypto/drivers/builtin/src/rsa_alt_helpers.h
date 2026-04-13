@@ -27,7 +27,6 @@
  *  There are two classes of helper functions:
  *
  *  (1) Parameter-generating helpers. These are:
- *      - mbedtls_rsa_deduce_primes
  *      - mbedtls_rsa_deduce_private_exponent
  *      - mbedtls_rsa_deduce_crt
  *       Each of these functions takes a set of core RSA parameters and
@@ -44,8 +43,8 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
-#ifndef MBEDTLS_RSA_ALT_HELPERS_H
-#define MBEDTLS_RSA_ALT_HELPERS_H
+#ifndef TF_PSA_CRYPTO_RSA_ALT_HELPERS_H
+#define TF_PSA_CRYPTO_RSA_ALT_HELPERS_H
 
 #include "tf-psa-crypto/build_info.h"
 
@@ -54,35 +53,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
-/**
- * \brief          Compute RSA prime moduli P, Q from public modulus N=PQ
- *                 and a pair of private and public key.
- *
- * \note           This is a 'static' helper function not operating on
- *                 an RSA context. Alternative implementations need not
- *                 overwrite it.
- *
- * \param N        RSA modulus N = PQ, with P, Q to be found
- * \param E        RSA public exponent
- * \param D        RSA private exponent
- * \param P        Pointer to MPI holding first prime factor of N on success
- * \param Q        Pointer to MPI holding second prime factor of N on success
- *
- * \return
- *                 - 0 if successful. In this case, P and Q constitute a
- *                   factorization of N.
- *                 - A non-zero error code otherwise.
- *
- * \note           It is neither checked that P, Q are prime nor that
- *                 D, E are modular inverses wrt. P-1 and Q-1. For that,
- *                 use the helper function \c mbedtls_rsa_validate_params.
- *
- */
-int mbedtls_rsa_deduce_primes(mbedtls_mpi const *N, mbedtls_mpi const *E,
-                              mbedtls_mpi const *D,
-                              mbedtls_mpi *P, mbedtls_mpi *Q);
 
 /**
  * \brief          Compute RSA private exponent from
@@ -212,4 +182,4 @@ int mbedtls_rsa_validate_crt(const mbedtls_mpi *P,  const mbedtls_mpi *Q,
 }
 #endif
 
-#endif /* rsa_alt_helpers.h */
+#endif /* TF_PSA_CRYPTO_RSA_ALT_HELPERS_H */

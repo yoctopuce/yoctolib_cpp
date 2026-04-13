@@ -8,8 +8,8 @@
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
-#ifndef PSA_CRYPTO_STORAGE_H
-#define PSA_CRYPTO_STORAGE_H
+#ifndef TF_PSA_CRYPTO_PSA_CRYPTO_STORAGE_H
+#define TF_PSA_CRYPTO_PSA_CRYPTO_STORAGE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -198,4 +198,4 @@ psa_status_t psa_parse_key_data_from_storage(const uint8_t *storage_data,
 }
 #endif
 
-#endif /* PSA_CRYPTO_STORAGE_H */
+#endif /* TF_PSA_CRYPTO_PSA_CRYPTO_STORAGE_H */

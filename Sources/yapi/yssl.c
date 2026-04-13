@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yssl.c 72278 2026-03-05 09:23:02Z seb $
+ * $Id: yssl.c 72555 2026-03-27 10:38:38Z seb $
  *
  * Implementation of a client TCP stack with SSL
  *
@@ -461,7 +461,7 @@ int yTcpInitSSL(char *errmsg)
     SSLLOG("Init OpenSSL\n");
 #ifdef DEBUG_SSL
     // activate debug logs
-    //mbedtls_debug_set_threshold(1);
+    mbedtls_debug_set_threshold(1);
 #endif
     mbedtls_threading_set_alt(yssl_mutex_init,
                               yssl_mutex_free,
@@ -880,6 +880,7 @@ int yTcpAcceptSSL(YSSL_SOCKET*newskt, YSOCKET sock, char *errmsg)
 void yTcpCloseSSL(YSSL_SOCKET yssl)
 {
     SSLLOG("YSSL: close (sock=%p)\n", yssl);
+    mbedtls_ssl_close_notify(yssl->ssl);
     yTcpCloseBasic(yssl->tcpskt);
     mbedtls_ssl_free(yssl->ssl);
     mbedtls_ssl_config_free(yssl->ssl_conf);

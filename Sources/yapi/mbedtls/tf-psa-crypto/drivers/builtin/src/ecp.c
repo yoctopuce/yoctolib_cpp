@@ -332,12 +332,6 @@ static const mbedtls_ecp_curve_info ecp_supported_curves[] =
 #if defined(MBEDTLS_ECP_DP_BP256R1_ENABLED)
     { MBEDTLS_ECP_DP_BP256R1,      26,     256,    "brainpoolP256r1"   },
 #endif
-#if defined(MBEDTLS_ECP_DP_SECP192R1_ENABLED)
-    { MBEDTLS_ECP_DP_SECP192R1,    19,     192,    "secp192r1"         },
-#endif
-#if defined(MBEDTLS_ECP_DP_SECP192K1_ENABLED)
-    { MBEDTLS_ECP_DP_SECP192K1,    18,     192,    "secp192k1"         },
-#endif
 #if defined(MBEDTLS_ECP_DP_CURVE25519_ENABLED)
     { MBEDTLS_ECP_DP_CURVE25519,   29,     256,    "x25519"            },
 #endif
@@ -3124,42 +3118,6 @@ cleanup:
     return ret;
 }
 
-/*
- * Write a private key.
- */
-#if !defined MBEDTLS_DEPRECATED_REMOVED
-int mbedtls_ecp_write_key(mbedtls_ecp_keypair *key,
-                          unsigned char *buf, size_t buflen)
-{
-    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-
-#if defined(MBEDTLS_ECP_MONTGOMERY_ENABLED)
-    if (mbedtls_ecp_get_type(&key->grp) == MBEDTLS_ECP_TYPE_MONTGOMERY) {
-        if (key->grp.id == MBEDTLS_ECP_DP_CURVE25519) {
-            if (buflen < ECP_CURVE25519_KEY_SIZE) {
-                return MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL;
-            }
-
-        } else if (key->grp.id == MBEDTLS_ECP_DP_CURVE448) {
-            if (buflen < ECP_CURVE448_KEY_SIZE) {
-                return MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL;
-            }
-        }
-        MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary_le(&key->d, buf, buflen));
-    }
-#endif
-#if defined(MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED)
-    if (mbedtls_ecp_get_type(&key->grp) == MBEDTLS_ECP_TYPE_SHORT_WEIERSTRASS) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&key->d, buf, buflen));
-    }
-
-#endif
-cleanup:
-
-    return ret;
-}
-#endif /* MBEDTLS_DEPRECATED_REMOVED */
-
 int mbedtls_ecp_write_key_ext(const mbedtls_ecp_keypair *key,
                               size_t *olen, unsigned char *buf, size_t buflen)
 {
@@ -3408,9 +3366,6 @@ int mbedtls_ecp_self_test(int verbose)
     mbedtls_mpi m;
 
 #if defined(MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED)
-    /* Exponents especially adapted for secp192k1, which has the lowest
-     * order n of all supported curves (secp192r1 is in a slightly larger
-     * field but the order of its base point is slightly smaller). */
     const char *sw_exponents[] =
     {
         "000000000000000000000000000000000000000000000001", /* one */
@@ -3442,9 +3397,9 @@ int mbedtls_ecp_self_test(int verbose)
     mbedtls_mpi_init(&m);
 
 #if defined(MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED)
-    /* Use secp192r1 if available, or any available curve */
-#if defined(MBEDTLS_ECP_DP_SECP192R1_ENABLED)
-    MBEDTLS_MPI_CHK(mbedtls_ecp_group_load(&grp, MBEDTLS_ECP_DP_SECP192R1));
+    /* Use secp256r1 if available, or any available curve */
+#if defined(MBEDTLS_ECP_DP_SECP256R1_ENABLED)
+    MBEDTLS_MPI_CHK(mbedtls_ecp_group_load(&grp, MBEDTLS_ECP_DP_SECP256R1));
 #else
     MBEDTLS_MPI_CHK(mbedtls_ecp_group_load(&grp, mbedtls_ecp_curve_list()->grp_id));
 #endif

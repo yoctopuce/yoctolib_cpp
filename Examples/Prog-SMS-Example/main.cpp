@@ -19,7 +19,7 @@
 
 using namespace std;
 
-void smsCallback(YMessageBox *mbox, YSms sms)
+static void smsCallback(YMessageBox *mbox, YSms sms)
 {
     cout << "- dated " << sms.get_timestamp() << endl;
     cout << "  from " + sms.get_sender() << endl;

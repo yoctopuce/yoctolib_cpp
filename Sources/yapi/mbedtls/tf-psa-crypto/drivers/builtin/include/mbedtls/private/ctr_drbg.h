@@ -24,8 +24,8 @@
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
-#ifndef MBEDTLS_CTR_DRBG_H
-#define MBEDTLS_CTR_DRBG_H
+#ifndef TF_PSA_CRYPTO_MBEDTLS_PRIVATE_CTR_DRBG_H
+#define TF_PSA_CRYPTO_MBEDTLS_PRIVATE_CTR_DRBG_H
 #include "mbedtls/private_access.h"
 
 #include "tf-psa-crypto/build_info.h"
@@ -146,8 +146,7 @@ typedef struct mbedtls_ctr_drbg_context {
     unsigned char MBEDTLS_PRIVATE(counter)[16];  /*!< The counter (V). */
     int MBEDTLS_PRIVATE(reseed_counter);         /*!< The reseed counter.
                                                   * This is the number of requests that have
-                                                  * been made since the last (re)seeding,
-                                                  * minus one.
+                                                  * been made since the last (re)seeding.
                                                   * Before the initial seeding, this field
                                                   * contains the amount of entropy in bytes
                                                   * to use as a nonce for the initial seeding,
@@ -552,4 +551,4 @@ int mbedtls_ctr_drbg_self_test(int verbose);
 }
 #endif
 
-#endif /* ctr_drbg.h */
+#endif /* TF_PSA_CRYPTO_MBEDTLS_PRIVATE_CTR_DRBG_H */

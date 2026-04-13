@@ -74,10 +74,7 @@ psa_status_t mbedtls_psa_hash_abort(
 #if defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_512)
         case PSA_ALG_SHA3_512:
 #endif
-#if defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_224) || \
-            defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_256) || \
-            defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_384) || \
-            defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_512)
+#if defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_SOME_HASH)
             mbedtls_sha3_free(&operation->ctx.sha3);
             break;
 #endif
@@ -240,10 +237,7 @@ psa_status_t mbedtls_psa_hash_clone(
 #if defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_512)
         case PSA_ALG_SHA3_512:
 #endif
-#if defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_224) || \
-            defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_256) || \
-            defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_384) || \
-            defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_512)
+#if defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_SOME_HASH)
             mbedtls_sha3_clone(&target_operation->ctx.sha3,
                                &source_operation->ctx.sha3);
             break;
@@ -320,10 +314,7 @@ psa_status_t mbedtls_psa_hash_update(
 #if defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_512)
         case PSA_ALG_SHA3_512:
 #endif
-#if defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_224) || \
-    defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_256) || \
-    defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_384) || \
-    defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_512)
+#if defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_SOME_HASH)
     ret = mbedtls_sha3_update(&operation->ctx.sha3,
                               input, input_length);
     break;
@@ -410,10 +401,7 @@ psa_status_t mbedtls_psa_hash_finish(
 #if defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_512)
         case PSA_ALG_SHA3_512:
 #endif
-#if defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_224) || \
-    defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_256) || \
-    defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_384) || \
-    defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_512)
+#if defined(MBEDTLS_PSA_BUILTIN_ALG_SHA3_SOME_HASH)
     ret = mbedtls_sha3_finish(&operation->ctx.sha3, hash, hash_size);
     break;
 #endif
