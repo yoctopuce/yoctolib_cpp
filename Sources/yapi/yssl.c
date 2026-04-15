@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yssl.c 72555 2026-03-27 10:38:38Z seb $
+ * $Id: yssl.c 72704 2026-04-14 10:25:01Z seb $
  *
  * Implementation of a client TCP stack with SSL
  *
@@ -139,8 +139,6 @@ static int format_mbedtls_err(const char *fileid, int lineno, int err, char *err
 }
 
 static mbedtls_x509_crt cachain, srvcert;
-//static mbedtls_ctr_drbg_context ctr_drbg;
-//static mbedtls_entropy_context entropy;
 static mbedtls_pk_context pkey;
 
 #ifdef DEBUG_SSL
