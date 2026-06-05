@@ -1,8 +1,8 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 38862 2019-12-19 14:38:39Z seb $
+ *  $Id: main.cpp 72778 2026-04-17 08:35:28Z seb $
  *
- *  An example that show how to use a  Yocto-4-20mA-Rx
+ *  An example that shows how to use a  Yocto-4-20mA-Rx
  *
  *  You can find more information on our web site:
  *   Yocto-4-20mA-Rx documentation:

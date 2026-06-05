@@ -1,13 +1,13 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 59576 2024-02-29 09:36:30Z seb $
+ *  $Id: main.cpp 72778 2026-04-17 08:35:28Z seb $
  *
- *  An example that show how to use a  Yocto-milliVolt-Rx-BNC
+ *  An example that shows how to use a  Yocto-milliVolt-Rx-BNC
  *
  *  You can find more information on our web site:
  *   Yocto-milliVolt-Rx-BNC documentation:
  *      https://www.yoctopuce.com/EN/products/yocto-millivolt-rx-bnc/doc.html
- *   C++ V2 API Reference:
+ *   C++ API Reference:
  *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
  *
  *********************************************************************/

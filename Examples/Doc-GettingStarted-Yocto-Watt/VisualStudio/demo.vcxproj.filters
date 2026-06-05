@@ -5,6 +5,9 @@
     <ClCompile Include="..\..\..\Sources\yocto_current.cpp">
       <Filter>Yoctopuce</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_inputcapture.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\Sources\yocto_power.cpp">
       <Filter>Yoctopuce</Filter>
     </ClCompile>
@@ -336,6 +339,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Sources\yocto_current.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_inputcapture.h">
       <Filter>Yoctopuce</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Sources\yocto_power.h">

@@ -389,6 +389,54 @@ public:
     virtual int         hsl_move(int ledIndex,int count,int hslValue,int delay);
 
     /**
+     * Changes the color displayed by the last LED and shifts all currently displayed colors
+     * toward the beginning of the RGB LED string. The new color is encoded as follows: 0xRRGGBB.
+     *
+     * @param rgbValue :  new color.
+     *
+     * @return YAPI::SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         shl_rgb(int rgbValue);
+
+    /**
+     * Changes the color displayed by the first LED and shifts all currently displayed colors
+     * toward the end of the RGB LED string. The new color is encoded as follows: 0xRRGGBB.
+     *
+     * @param rgbValue :  new color.
+     *
+     * @return YAPI::SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         shr_rgb(int rgbValue);
+
+    /**
+     * Changes the color displayed by the last LED and shifts all currently displayed colors
+     * toward the beginning of the RGB LED string. The new color is encoded as follows: 0xHHSSLL.
+     *
+     * @param hslValue :  new color.
+     *
+     * @return YAPI::SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         shl_hsl(int hslValue);
+
+    /**
+     * Changes the color displayed by the first LED and shifts all currently displayed colors
+     * toward the end of the RGB LED string. The new color is encoded as follows: 0xHHSSLL.
+     *
+     * @param hslValue :  new color.
+     *
+     * @return YAPI::SUCCESS when the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         shr_hsl(int hslValue);
+
+    /**
      * Adds an RGB transition to a sequence. A sequence is a transition list, which can
      * be executed in loop by a group of LEDs.  Sequences are persistent and are saved
      * in the device flash memory as soon as the saveBlinkSeq() method is called.

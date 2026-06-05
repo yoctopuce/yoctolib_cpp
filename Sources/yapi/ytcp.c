@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 72204 2026-02-21 11:08:47Z mvuilleu $
+ * $Id: ytcp.c 73091 2026-05-05 09:20:26Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -75,12 +75,12 @@ typedef int socklen_t;
 #pragma comment(lib, "Ws2_32.lib")
 #endif
 #else
-        #pragma comment(lib, "Ws2.lib")
+#pragma comment(lib, "Ws2.lib")
 #endif
 #else
-    #include <unistd.h>
-    #include <fcntl.h>
-    #include <netdb.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <netdb.h>
 #endif
 #if defined(OSX_API) && !defined(select)
 #include <sys/_select.h>
@@ -95,16 +95,16 @@ static int ws_sendFrame(HubSt *hub, int stream, int tcpchan, const u8 *data, int
 
 
 typedef struct {
-    yPerfMon  TCPOpen_socket;
-    yPerfMon  TCPOpen_connect;
-    yPerfMon  TCPOpen_setsockopt_noblock;
-    yPerfMon  TCPOpen_setsockopt_nodelay;
-    yPerfMon  TCPOpenReq_wait;
-    yPerfMon  TCPOpenReq;
-    yPerfMon  tmp1;
-    yPerfMon  tmp2;
-    yPerfMon  tmp3;
-    yPerfMon  tmp4;
+    yPerfMon TCPOpen_socket;
+    yPerfMon TCPOpen_connect;
+    yPerfMon TCPOpen_setsockopt_noblock;
+    yPerfMon TCPOpen_setsockopt_nodelay;
+    yPerfMon TCPOpenReq_wait;
+    yPerfMon TCPOpenReq;
+    yPerfMon tmp1;
+    yPerfMon tmp2;
+    yPerfMon tmp3;
+    yPerfMon tmp4;
 } yTcpPerfMonSt;
 
 yTcpPerfMonSt yTcpPerf;
@@ -116,16 +116,16 @@ yTcpPerfMonSt yTcpPerf;
 
 void dumpYTcpPerf(void)
 {
-    dumpYPerfEntry(&yTcpPerf.TCPOpen_socket,"TCPOpen:socket");
-    dumpYPerfEntry(&yTcpPerf.TCPOpen_connect,"TCPOpen:connect");
-    dumpYPerfEntry(&yTcpPerf.TCPOpen_setsockopt_noblock,"TCPOpen:sockopt_noblock");
-    dumpYPerfEntry(&yTcpPerf.TCPOpen_setsockopt_nodelay,"TCPOpen:sockopt_nodelay");
-    dumpYPerfEntry(&yTcpPerf.TCPOpenReq_wait,"TCPOpenReq:wait");
-    dumpYPerfEntry(&yTcpPerf.TCPOpenReq,"TCPOpenReq");
-    dumpYPerfEntry(&yTcpPerf.tmp1,"TCP:tmp1");
-    dumpYPerfEntry(&yTcpPerf.tmp2,"TCP:tmp2");
-    dumpYPerfEntry(&yTcpPerf.tmp3,"TCP:tmp3");
-    dumpYPerfEntry(&yTcpPerf.tmp4,"TCP:tmp4");
+    dumpYPerfEntry(&yTcpPerf.TCPOpen_socket, "TCPOpen:socket");
+    dumpYPerfEntry(&yTcpPerf.TCPOpen_connect, "TCPOpen:connect");
+    dumpYPerfEntry(&yTcpPerf.TCPOpen_setsockopt_noblock, "TCPOpen:sockopt_noblock");
+    dumpYPerfEntry(&yTcpPerf.TCPOpen_setsockopt_nodelay, "TCPOpen:sockopt_nodelay");
+    dumpYPerfEntry(&yTcpPerf.TCPOpenReq_wait, "TCPOpenReq:wait");
+    dumpYPerfEntry(&yTcpPerf.TCPOpenReq, "TCPOpenReq");
+    dumpYPerfEntry(&yTcpPerf.tmp1, "TCP:tmp1");
+    dumpYPerfEntry(&yTcpPerf.tmp2, "TCP:tmp2");
+    dumpYPerfEntry(&yTcpPerf.tmp3, "TCP:tmp3");
+    dumpYPerfEntry(&yTcpPerf.tmp4, "TCP:tmp4");
 }
 #else
 #define YPERF_TCP_ENTER(NAME)
@@ -144,10 +144,10 @@ void dumpYTcpPerf(void)
 
 #ifndef WINDOWS_API
 #include <time.h>
-int ylocaltime(struct tm *_out,const time_t *time)
+int ylocaltime(struct tm *_out, const time_t *time)
 {
     struct tm *tmp = localtime(time);
-    memcpy(_out,tmp,sizeof(struct tm));
+    memcpy(_out, tmp, sizeof(struct tm));
     return 0;
 }
 #endif
@@ -158,10 +158,10 @@ int ylocaltime(struct tm *_out,const time_t *time)
 yFifoBuf trace_fifo;
 int trace_fifo_initialized = 0;
 
-int write_onfile(const char* filename, char* mode, const char* bin, int binsize)
+int write_onfile(const char *filename, char *mode, const char *bin, int binsize)
 {
 
-    if (trace_fifo_initialized==0) {
+    if (trace_fifo_initialized == 0) {
         int size = 1024 * 15;
         u8 *ptr = yMalloc(size);
         yFifoInitEx(&trace_fifo, ptr, size);
@@ -172,14 +172,14 @@ int write_onfile(const char* filename, char* mode, const char* bin, int binsize)
     return 0;
 }
 #else
-int write_onfile(const char * filename, char *mode, const char * bin, int binsize)
+int write_onfile(const char *filename, char *mode, const char *bin, int binsize)
 {
     FILE *f;
     int retry_count = 1;
     // write on file
 retry:
     if (YFOPEN(&f, filename, mode) != 0) {
-        if (retry_count--){
+        if (retry_count--) {
             //_mkdir("sock_trace");
             goto retry;
         }
@@ -191,7 +191,7 @@ retry:
 }
 #endif
 
-void TRACE_SOCK_APPEND(const char *filename, int clear_log, const char *msg, const u8 * bin, int binsize, u64 start_tm)
+void TRACE_SOCK_APPEND(const char *filename, int clear_log, const char *msg, const u8 *bin, int binsize, u64 start_tm)
 {
     char buffer[2048], buffer2[64];
     struct tm timeinfo;
@@ -203,33 +203,33 @@ void TRACE_SOCK_APPEND(const char *filename, int clear_log, const char *msg, con
     strftime(buffer2, sizeof(buffer2), "%Y-%m-%d %H:%M:%S", &timeinfo);
     //format first info line
     threadIdx = yThreadIndex();
-    first_len = YSPRINTF(buffer, 2048, "[%s/%"FMTu64"](%d): %s\n",buffer2, yapiGetTickCount() - start_tm, threadIdx, msg);
+    first_len = YSPRINTF(buffer, 2048, "[%s/%"FMTu64"](%d): %s\n", buffer2, yapiGetTickCount() - start_tm, threadIdx, msg);
     // write on file
     write_onfile(filename, clear_log ? "wb" : "ab", buffer, first_len);
     dbglog("-----%s %d bytes (%"FMTu64")\n", msg, binsize, yapiGetTickCount() -start_tm);
     int pos, j;
     YSPRINTF(buffer, 2048, "   dump %d bytes\n", binsize);
     write_onfile(filename, "ab", buffer, ystrlen(buffer));
-    for(pos = 0; pos < binsize; pos += 16) {
+    for (pos = 0; pos < binsize; pos += 16) {
         memset(buffer2, '.', 16);
 
-        for(j = 0; j < 16 && pos + j < binsize; j++){
-            if(bin[pos+j] >= ' '){
-                buffer2[j] = bin[pos+j];
+        for (j = 0; j < 16 && pos + j < binsize; j++) {
+            if (bin[pos + j] >= ' ') {
+                buffer2[j] = bin[pos + j];
             }
         }
         buffer2[j] = 0;
         YSPRINTF(buffer, 2048, "   %02x.%02x.%02x.%02x %02x.%02x.%02x.%02x %02x.%02x.%02x.%02x %02x.%02x.%02x.%02x    %s\n",
-                   bin[pos+0], bin[pos+1], bin[pos+2], bin[pos+3],
-            bin[pos+4], bin[pos+5], bin[pos+6], bin[pos+7],
-            bin[pos+8], bin[pos+9], bin[pos+10], bin[pos+11],
-            bin[pos+12], bin[pos+13], bin[pos+14], bin[pos+15],
-                   (char*)buffer2);
+                 bin[pos + 0], bin[pos + 1], bin[pos + 2], bin[pos + 3],
+                 bin[pos + 4], bin[pos + 5], bin[pos + 6], bin[pos + 7],
+                 bin[pos + 8], bin[pos + 9], bin[pos + 10], bin[pos + 11],
+                 bin[pos + 12], bin[pos + 13], bin[pos + 14], bin[pos + 15],
+                 (char*)buffer2);
         write_onfile(filename, "ab", buffer, ystrlen(buffer));
     }
 }
 
-void dump_socket(YSOCKET_MULTI newskt, int clear_log, const char* msg, const u8* bin, int binsize )
+void dump_socket(YSOCKET_MULTI newskt, int clear_log, const char *msg, const u8 *bin, int binsize)
 {
     char filename[256];
     u64 creation_tm = 0;
@@ -286,8 +286,8 @@ int yNetSetErrEx(const char *fileid, u32 line, unsigned err, char *errmsg)
         len--;
     }
 #else
-    len=YSTRLEN(errmsg);
-    strcpy(errmsg+len, strerror((int)err));
+    len = YSTRLEN(errmsg);
+    strcpy(errmsg + len, strerror((int)err));
 #endif
     return YAPI_IO_ERROR;
 }
@@ -315,7 +315,7 @@ static void dump_udp_packet(char *str, const u8 *buffer, int size, IPvX_ADDR *re
     iptoa(remote_ip, buff);
     dbglog("UDP: %s %d bytes addr=%s port=%d (sock=%d)\n", str, size, buff, port, skt);
 #if 1
-    for (pos = 0; pos < size; pos += 16) {
+for (pos =0; pos<size; pos+= 16) {
         char buffer2[32];
         memset(buffer2, '.', 16);
 
@@ -718,10 +718,10 @@ int yTcpOpenBasicEx(YSOCKET *newskt, const IPvX_ADDR *ip, u16 port, u64 mstimeou
     char noDelay = 1;
     int optlen;
 #else
-    int  noDelay = 1;
+    int noDelay = 1;
     socklen_t optlen;
 #ifdef SO_NOSIGPIPE
-    int  noSigpipe = 1;
+    int noSigpipe = 1;
 #endif
 #endif
 
@@ -769,7 +769,7 @@ int yTcpOpenBasicEx(YSOCKET *newskt, const IPvX_ADDR *ip, u16 port, u64 mstimeou
     flags = fcntl(skt, F_GETFL, 0);
     fcntl(skt, F_SETFL, flags | O_NONBLOCK);
 #ifdef SO_NOSIGPIPE
-    setsockopt(skt, SOL_SOCKET, SO_NOSIGPIPE, (void *)&noSigpipe, sizeof(int));
+    setsockopt(skt, SOL_SOCKET, SO_NOSIGPIPE, (void*)&noSigpipe, sizeof(int));
 #endif
 #endif
     YPERF_TCP_LEAVE(TCPOpen_setsockopt_noblock);
@@ -812,24 +812,24 @@ int yTcpOpenBasicEx(YSOCKET *newskt, const IPvX_ADDR *ip, u16 port, u64 mstimeou
     YPERF_TCP_ENTER(TCPOpen_setsockopt_nodelay);
     if (setsockopt(skt, IPPROTO_TCP, TCP_NODELAY, &noDelay, sizeof(noDelay)) < 0) {
 #if 0
-        switch(errno) {
-            case EBADF:
-                dbglog("The argument sockfd is not a valid descriptor.\n");
-                break;
-            case EFAULT:
-                dbglog("The address pointed to by optval is not in a valid part of the process address space. For getsockopt(), "
-                        "this error may also be returned if optlen is not in a valid part of the process address space.\n");
-                break;
-            case EINVAL:
-                dbglog("optlen invalid in setsockopt(). In some cases this error can also occur for an invalid value in optval "
-                       "(e.g., for the IP_ADD_MEMBERSHIP option described in ip(7)).\n");
-                break;
-            case ENOPROTOOPT:
-                dbglog("The option is unknown at the level indicated.\n");
-                break;
-            case ENOTSOCK:
-                dbglog("The argument sockfd is a file, not a socket.\n");
-                break;
+        switch (errno) {
+        case EBADF:
+            dbglog("The argument sockfd is not a valid descriptor.\n");
+            break;
+        case EFAULT:
+            dbglog("The address pointed to by optval is not in a valid part of the process address space. For getsockopt(), "
+                "this error may also be returned if optlen is not in a valid part of the process address space.\n");
+            break;
+        case EINVAL:
+            dbglog("optlen invalid in setsockopt(). In some cases this error can also occur for an invalid value in optval "
+                "(e.g., for the IP_ADD_MEMBERSHIP option described in ip(7)).\n");
+            break;
+        case ENOPROTOOPT:
+            dbglog("The option is unknown at the level indicated.\n");
+            break;
+        case ENOTSOCK:
+            dbglog("The argument sockfd is a file, not a socket.\n");
+            break;
         }
 #endif
         dbglog("SetSockOpt TCP_NODELAY failed %d\n", errno);
@@ -925,7 +925,7 @@ retry:
     res = select((int)skt + 1, &readfds, &writefds, &exceptfds, &timeout);
     if (res < 0) {
 #ifndef WINDOWS_API
-        if(SOCK_ERR == EAGAIN || SOCK_ERR == EINTR){
+        if (SOCK_ERR == EAGAIN || SOCK_ERR == EINTR) {
             goto retry;
         } else
 #endif
@@ -1310,7 +1310,7 @@ static int yTcpWriteMultiForce(YSOCKET_MULTI skt, const u8 *buffer, int len, cha
                 res = select((int)tcpskt + 1,NULL, &fds,NULL, &timeout);
                 if (res < 0) {
 #ifndef WINDOWS_API
-                    if(SOCK_ERR == EAGAIN || SOCK_ERR == EINTR){
+                    if (SOCK_ERR == EAGAIN || SOCK_ERR == EINTR) {
                         continue;
                     } else
 #endif
@@ -1341,7 +1341,7 @@ void yTcpShutdownMulti(void)
 static int yTcpDownloadEx(const char *url, const char *default_host, int default_port, int default_usessl, u8 **out_buffer, u32 mstimeout, char *errmsg)
 {
     int len, domlen;
-    const char *end, *endv6,*p;
+    const char *end, *endv6, *p;
     const char *pos, *posplus;
     int use_ssl = default_usessl;
     const char *host = default_host;
@@ -1448,7 +1448,7 @@ int yTcpDownload(const char *host, int port, int usessl, const char *url, u8 **o
         res = select(max + 1, &fds,NULL,NULL, &timeout);
         if (res < 0) {
 #ifndef WINDOWS_API
-            if(SOCK_ERR == EAGAIN || SOCK_ERR == EINTR){
+            if (SOCK_ERR == EAGAIN || SOCK_ERR == EINTR) {
                 continue;
             } else
 #endif
@@ -1612,7 +1612,7 @@ static int yTcpCheckReqTimeout(struct _RequestSt *req, char *errmsg)
             u64 last_rd = now - req->read_tm;
 
             dbglog("Long Idle TCP request %p = %"FMTu64"ms total = %"FMTu64"ms (read=%"FMTu64"ms write=%"FMTu64")\n",
-                req, idle_durration, duration, last_rd, last_wr);
+                   req, idle_durration, duration, last_rd, last_wr);
         }
 #endif
         if (duration > req->timeout_tm) {
@@ -1623,8 +1623,8 @@ static int yTcpCheckReqTimeout(struct _RequestSt *req, char *errmsg)
 #ifdef DEBUG_SLOW_TCP
         else {
             if (duration > (req->timeout_tm - (req->timeout_tm / 4))) {
-                dbglog("Slow TCP request %p = %dms\n",req,duration);
-                dbglog("req = %s\n",req->headerbuf);
+                dbglog("Slow TCP request %p = %dms\n", req, duration);
+                dbglog("req = %s\n", req->headerbuf);
             }
         }
 #endif
@@ -1939,7 +1939,7 @@ static int yHTTPMultiSelectReq(struct _RequestSt **reqs, int size, u64 ms, WakeU
     res = select((int)sktmax + 1, &fds, NULL, NULL, &timeout);
     if (res < 0) {
 #ifndef WINDOWS_API
-        if(SOCK_ERR == EAGAIN || SOCK_ERR == EINTR){
+        if (SOCK_ERR == EAGAIN || SOCK_ERR == EINTR) {
             return 0;
         } else
 #endif
@@ -2101,7 +2101,7 @@ int ySocketOpenBindMulti(YSOCKET_MULTI *newskt, IPvX_ADDR *local_ip, int is_udp,
     }
 #ifdef SO_REUSEPORT
     if (sockFlags & YSOCKFLAG_SO_REUSEPORT) {
-        setsockopt(sock, SOL_SOCKET, SO_REUSEPORT, (char *)&optval, sizeof(optval));
+        setsockopt(sock, SOL_SOCKET, SO_REUSEPORT, (char*)&optval, sizeof(optval));
     }
 #endif
 
@@ -2226,28 +2226,27 @@ int yUdpRegisterMCAST(YSOCKET_MULTI skt, IPvX_ADDR *localAddr, IPvX_ADDR *mcastA
 * WebSocket implementation for generic requests
 *******************************************************************************/
 #if 0
-static void dumpReqQueue(const char * msg, HubSt* hub, int tcpchan)
+static void dumpReqQueue(const char *msg, HubSt *hub, int tcpchan)
 {
-    struct _RequestSt* req;
+    struct _RequestSt *req;
     char buffer[1024];
     req = hub->ws.chan[tcpchan].requests;
-    YSPRINTF(buffer,2048,"dmp_%s(%d):", msg, tcpchan);
+    YSPRINTF(buffer, 2048, "dmp_%s(%d):", msg, tcpchan);
     dbglog("%s\n", buffer);
-    while (req != NULL ) {
+    while (req != NULL) {
         char sbuffer[512];
-        YSPRINTF(sbuffer,512," %p(%d:%d %d->%d)", req, req->ws.state, req->ws.asyncId, req->ws.requestpos,req->ws.requestsize);
+        YSPRINTF(sbuffer, 512, " %p(%d:%d %d->%d)", req, req->ws.state, req->ws.asyncId, req->ws.requestpos, req->ws.requestsize);
         dbglog("%s\n", sbuffer);
         req = req->ws.next;
     }
 }
 
-static void dumpbin(char *out, u8* buffer, int pktlen)
+static void dumpbin(char *out, u8 *buffer, int pktlen)
 {
     int i;
-    for (i = 0; i  < pktlen ;i++)
-    {
+    for (i = 0; i < pktlen; i++) {
         u8 val = *buffer++;
-        if (val <32 ) {
+        if (val < 32) {
             val = ' ';
         } else if (val > 126) {
             val = '~';
@@ -2339,8 +2338,8 @@ retry:
     dumpReqQueue("open", hub, tcpchan);
     {
         char dump_buf[512];
-        int len = req->ws.requestsize >=512 ? 511:req->ws.requestsize;
-        dumpbin(dump_buf,req->ws.requestbuf,len);
+        int len = req->ws.requestsize >= 512 ? 511 : req->ws.requestsize;
+        dumpbin(dump_buf, req->ws.requestbuf, len);
         dump_buf[len] = 0;
         WSLOG("uop(%p):%s\n", req, dump_buf);
     }
@@ -2444,41 +2443,41 @@ static void yWSRemoveReq(struct _RequestSt *req)
 static void dumpTCPReq(const char *fileid, int lineno, struct _RequestSt *req)
 {
     int w;
-    int has_cs  =yTryEnterCriticalSection(&req->access);
+    int has_cs = yTryEnterCriticalSection(&req->access);
     const char *proto;
     const char *state;
 
     dbglog("dump TCPReq %p from %s:%d\n", req, fileid, lineno);
-    if (req->hub){
+    if (req->hub) {
         dbglog("Hub: %s\n", req->hub->name);
-    } else{
+    } else {
         dbglog("Hub: null\n");
     }
 
 
     switch (req->ws.state) {
-        case REQ_CLOSED_BY_BOTH:
-            state ="state=REQ_CLOSED_BY_BOTH";
-            break;
-        case REQ_OPEN:
-            state ="state=REQ_OPEN";
-            break;
-        case REQ_CLOSED_BY_HUB:
-            state ="state=REQ_CLOSED_BY_HUB";
-            break;
-        case REQ_CLOSED_BY_API:
-            state ="state=REQ_CLOSED_BY_API";
-            break;
-        case REQ_ERROR:
-            state ="state=REQ_ERROR";
-            break;
-        default:
-            state ="state=??";
-            break;
+    case REQ_CLOSED_BY_BOTH:
+        state = "state=REQ_CLOSED_BY_BOTH";
+        break;
+    case REQ_OPEN:
+        state = "state=REQ_OPEN";
+        break;
+    case REQ_CLOSED_BY_HUB:
+        state = "state=REQ_CLOSED_BY_HUB";
+        break;
+    case REQ_CLOSED_BY_API:
+        state = "state=REQ_CLOSED_BY_API";
+        break;
+    case REQ_ERROR:
+        state = "state=REQ_ERROR";
+        break;
+    default:
+        state = "state=??";
+        break;
     }
 
     dbglog("%s retcode=%d (retrycount=%d) errmsg=%s\n", state, req->errcode, req->retryCount, req->errmsg);
-    switch(req->proto){
+    switch (req->proto) {
         case PROTO_LEGACY: proto ="PROTO_LEGACY"; break;
         case PROTO_AUTO: proto = "PROTO_AUTO"; break;
         case PROTO_SECURE: proto = "PROTO_SECURE"; break;
@@ -2492,7 +2491,7 @@ static void dumpTCPReq(const char *fileid, int lineno, struct _RequestSt *req)
     dbglog("time open=%"FMTx64" last read=%"FMTx64" last write=%"FMTx64"  timeout=%"FMTx64"\n", req->open_tm, req->read_tm, req->write_tm, req->timeout_tm);
     dbglog("read=%d (readpos=%d)\n", req->replysize, req->replysize);
     dbglog("callback=%p context=%p\n", req->callback, req->context);
-    if (req->headerbuf){
+    if (req->headerbuf) {
         dbglog("req[%s]\n", req->headerbuf);
     } else {
         dbglog("null\n");
@@ -2741,7 +2740,7 @@ void yReqClose(struct _RequestSt *req)
         u64 last_rd = req->read_tm - req->open_tm;
 
         dbglog("request %p  total=%"FMTu64"ms (read=%"FMTu64"ms write=%"FMTu64")\n",
-            req, duration, last_rd, last_wr);
+               req, duration, last_rd, last_wr);
     }
 #endif
     yEnterCriticalSection(&req->access);
@@ -2755,7 +2754,7 @@ void yReqClose(struct _RequestSt *req)
             u64 first = req->ws.first_write_tm - req->open_tm;
 
             dbglog("request.ws %p first_write=%"FMTu64"ms last_write=%"FMTu64")\n",
-                req, first, last);
+                   req, first, last);
 #endif
             yWSCloseReq(req);
         }
@@ -3134,14 +3133,14 @@ static int ws_parseIncomingFrame(HubSt *hub, u8 *buffer, int pktlen, char *errms
     pktlen--;
 
 #if 0
-    dbglog("WS: IN %s tcpchan%d len=%d\n", ystream_dbg_label[strym.stream],strym.tcpchan,pktlen);
+    dbglog("WS: IN %s tcpchan%d len=%d\n", ystream_dbg_label[strym.stream], strym.tcpchan, pktlen);
 #endif
 
     switch (strym.stream) {
     case YSTREAM_TCP_NOTIF:
         if (pktlen > 0) {
 #if 0
-        {
+            {
                 FILE *f;
                 //printf("%s", buffer);
                 YASSERT(YFOPEN(&f, "req_trace\\api_not.txt", "ab") == 0);
@@ -3176,7 +3175,7 @@ static int ws_parseIncomingFrame(HubSt *hub, u8 *buffer, int pktlen, char *errms
 #if 0
         {
             char dump_buf[512];
-            dumpbin(dump_buf,buffer, pktlen);
+            dumpbin(dump_buf, buffer, pktlen);
             dump_buf[pktlen] = 0;
             WSLOG("use(%p):%s\n", req, dump_buf);
         }
@@ -3227,7 +3226,7 @@ static int ws_parseIncomingFrame(HubSt *hub, u8 *buffer, int pktlen, char *errms
 #if 0
         {
             char dump_buf[512];
-            dumpbin(dump_buf,buffer, pktlen);
+            dumpbin(dump_buf, buffer, pktlen);
             dump_buf[pktlen] = 0;
             WSLOG("use(%p):%s\n", req, dump_buf);
         }
@@ -3690,7 +3689,7 @@ static int ws_openBaseSocket(HubSt *basehub, int first_notification_connection, 
     if (!basehub->info.serial[0]) {
         int load_res = LoadInfoJson(basehub, errmsg);
         // YAPI_NOT_SUPPORTED -> old hub that does not support info.json
-        if (load_res  < 0 && load_res != YAPI_NOT_SUPPORTED) {
+        if (load_res < 0 && load_res != YAPI_NOT_SUPPORTED) {
             return load_res;
         }
     }
@@ -4337,76 +4336,80 @@ YSTATIC int yDetectNetworkInterfaces(IPvX_ADDR *only_ip, os_ifaces *interfaces, 
 #include <ifaddrs.h>
 YSTATIC int yDetectNetworkInterfaces(IPvX_ADDR *only_ip, os_ifaces *interfaces, int max_nb_interfaces)
 {
+
+
 #if 1
-    struct ifaddrs *if_addrs = NULL;
-    struct ifaddrs *p = NULL;
-    int nbDetectedIfaces = 0;
-    memset(interfaces, 0, max_nb_interfaces * sizeof(os_ifaces));
-    if (getifaddrs(&if_addrs) != 0){
+struct ifaddrs *if_addrs = NULL;
+struct ifaddrs *p = NULL;
+int nbDetectedIfaces = 0;
+memset(interfaces, 0, max_nb_interfaces *sizeof(os_ifaces));
+    if (getifaddrs(&if_addrs)!= 0){
         yNetLogErr();
         return -1;
     }
-    p = if_addrs;
+p = if_addrs;
     while (p) {
-        if (p->ifa_addr && (p->ifa_addr->sa_family == AF_INET || p->ifa_addr->sa_family == AF_INET6)) {
-            IPvX_ADDR ip;
-            if (p->ifa_addr->sa_family == AF_INET) {
-                struct sockaddr_in *tmp = (struct sockaddr_in*)p->ifa_addr;
-                setIPv4Val(&ip, tmp->sin_addr.s_addr);
-            } else {
-                struct sockaddr_in6 *tmp6 = (struct sockaddr_in6*)p->ifa_addr;
-                memcpy(&ip, &tmp6->sin6_addr, sizeof(IPvX_ADDR));
-            }
-            if (only_ip != NULL && !isIPEmpty(only_ip) && memcmp(only_ip, &ip, sizeof(IPvX_ADDR))!=0){
+    if (p->ifa_addr && (p->ifa_addr->sa_family == AF_INET || p->ifa_addr->sa_family == AF_INET6)) {
+        IPvX_ADDR ip;
+        if (p->ifa_addr->sa_family == AF_INET) {
+            struct sockaddr_in *tmp = (struct sockaddr_in*)p->ifa_addr;
+            setIPv4Val(&ip, tmp->sin_addr.s_addr);
+        } else {
+            struct sockaddr_in6 *tmp6 = (struct sockaddr_in6*)p->ifa_addr;
+            memcpy(&ip, &tmp6->sin6_addr, sizeof(IPvX_ADDR));
+        }
+        if (only_ip != NULL && !isIPEmpty(only_ip) && memcmp(only_ip, &ip, sizeof(IPvX_ADDR)) != 0) {
+
+
 #if 0//def DEBUG_NET_DETECTION
-                char buff[IPSTR_SIZE];
-                char buff2[IPSTR_SIZE];
-                iptoa(&ip, buff);
-                iptoa(only_ip, buff2);
-                dbglog("drop %s : %s !=%s (%X)\n", p->ifa_name, buff, buff2, p->ifa_flags);
+char buff[IPSTR_SIZE];
+char buff2[IPSTR_SIZE];
+iptoa(&ip, buff);
+iptoa(only_ip, buff2);
+dbglog("drop %s : %s !=%s (%X)\n", p->ifa_name, buff, buff2, p->ifa_flags);
 #endif
-                p = p->ifa_next;
+p = p->ifa_next;
                 continue;
             }
-            if ((p->ifa_flags & IFF_LOOPBACK) == 0){
+            if ((p->ifa_flags& IFF_LOOPBACK) == 0){
                 if (p->ifa_flags & IFF_UP && p->ifa_flags & IFF_RUNNING){
                     if (p->ifa_flags & IFF_MULTICAST){
                         interfaces[nbDetectedIfaces].flags |= OS_IFACE_CAN_MCAST;
                     }
-                    ystrcpy(interfaces[nbDetectedIfaces].name,OS_IFACE_NAME_MAX_LEN, p->ifa_name);
+                    ystrcpy(interfaces[nbDetectedIfaces].name, OS_IFACE_NAME_MAX_LEN, p->ifa_name);
                     interfaces[nbDetectedIfaces].ifindex = if_nametoindex(p->ifa_name);  
                     if (interfaces[nbDetectedIfaces].ifindex == 0) {
                         dbglog("Warning: Unable to get interfaces index for %s\n", p->ifa_name);
                     }
                     interfaces[nbDetectedIfaces].ip = ip;
 #ifdef DEBUG_NET_DETECTION
-                    {
+{
                         char buff[IPSTR_SIZE];
                         iptoa(&ip, buff);
-                        dbglog("Iface %s : %s (flags=%X iface=%d)\n", p->ifa_name, buff, p->ifa_flags,interfaces[nbDetectedIfaces].ifindex);
+                        dbglog("Iface %s : %s (flags=%X iface=%d)\n", p->ifa_name, buff, p->ifa_flags, interfaces[nbDetectedIfaces].ifindex);
                     }
 #endif
-                    nbDetectedIfaces++;
+nbDetectedIfaces++;
                 }
             }
 #ifdef DEBUG_NET_DETECTION
-            else {
+else {
                 char buff[IPSTR_SIZE];
                 iptoa(&ip, buff);
                 dbglog("drop %s : %s (%X)\n", p->ifa_name, buff, p->ifa_flags);
             }
 #endif
-        }
-        p = p->ifa_next;
+}
+p = p->ifa_next;
     }
-    freeifaddrs(if_addrs);
+freeifaddrs(if_addrs);
 #else
-    int nbDetectedIfaces = 1;
-    memset(interfaces, 0, max_nb_interfaces * sizeof(os_ifaces));
-    interfaces[0].flags |= OS_IFACE_CAN_MCAST;
-    setIPv4Val(&interfaces[0].ip,INADDR_ANY);
+int nbDetectedIfaces = 1;
+memset(interfaces, 0, max_nb_interfaces *sizeof(os_ifaces));
+interfaces[0].flags|= OS_IFACE_CAN_MCAST;
+setIPv4Val(&interfaces[0].ip,INADDR_ANY);
 #endif
-    return nbDetectedIfaces;
+return nbDetectedIfaces;
 }
 
 #endif
@@ -4467,24 +4470,40 @@ static int uuidToSerial(const char *uuid, char *serial)
         *s++ = hexatochar(*u, *(u + 1));
     }
     *s++ = '-';
+
     u = strstr(uuid, "-COFF-EE");
-    if (u == NULL) {
-        return -1;
+    if (u != NULL) {
+        u += 8;
+        while (*u == '0') u++;
+        len = YSTRLEN(u);
+        if (YSTRNCMP(serial, "VIRTHUB0", YOCTO_BASE_SERIAL_LEN) == 0 || (YSTRNCMP(serial, "VIRTHUB2", YOCTO_BASE_SERIAL_LEN) == 0)) {
+            padlen = YOCTO_SERIAL_SEED_SIZE - 1;
+        } else {
+            padlen = 5;
+        }
+        for (i = len; i < padlen; i++) {
+            *s++ = '0';
+        }
+        *s = 0;
+        YSTRCAT(serial, YOCTO_SERIAL_LEN, u);
+        return 0;
     }
-    u += 8;
-    while (*u == '0') u++;
-    len = YSTRLEN(u);
-    if (YSTRNCMP(serial, "VIRTHUB0", YOCTO_BASE_SERIAL_LEN) == 0) {
-        padlen = YOCTO_SERIAL_SEED_SIZE - 1;
-    } else {
-        padlen = 5;
+    u = strstr(uuid, "-COFF-DD");
+    if (u != NULL) {
+        u += 12;
+        *s++ = 'X';
+        *s++ = *u++;
+        *s++ = *u++;
+        *s++ = ':';
+        *s++ = *u++;
+        *s++ = *u++;
+        *s++ = ':';
+        *s++ = *u++;
+        *s = *u;
+        return 0;
     }
-    for (i = len; i < padlen; i++) {
-        *s++ = '0';
-    }
-    *s = 0;
-    YSTRCAT(serial, YOCTO_SERIAL_LEN, u);
-    return 0;
+    return -1;
+
 }
 
 
@@ -4617,13 +4636,19 @@ static void ySSDP_parseSSPDMessage(SSDPInfos *SSDP, char *message, int msg_len)
             p = usn;
             // ReSharper disable once CppPossiblyErroneousEmptyStatements
             while (*p && *p++ != ':');
-            if (!*p) return;
+            if (!*p) {
+                return;
+            }
             uuid = p;
             // ReSharper disable once CppPossiblyErroneousEmptyStatements
             while (*p && *p++ != ':');
-            if (*p != ':') return;
+            if (*p != ':') {
+                return;
+            }
             *(p++ - 1) = 0;
-            if (!*p) return;
+            if (!*p) {
+                return;
+            }
             urn = p;
             // parse Location
             if (YSTRNCMP(location, "http://", 7) == 0) {
@@ -4635,11 +4660,18 @@ static void ySSDP_parseSSPDMessage(SSDPInfos *SSDP, char *message, int msg_len)
             p = cache;
             // ReSharper disable once CppPossiblyErroneousEmptyStatements
             while (*p && *p++ != '=');
-            if (!*p) return;
+            if (!*p) {
+                return;
+            }
             cacheVal = atoi(p);
             if (YSTRCMP(urn, YSSDP_URN_YOCTOPUCE) == 0) {
                 ySSDPUpdateCache(SSDP, uuid, location, cacheVal);
             }
+#if 0
+            else {
+                dbglog("SSDP: unknown URN: %s\n", urn);
+            }
+#endif
         }
     }
 #if 0
@@ -4691,7 +4723,7 @@ static void* ySSDP_thread(void *ctx)
         res = select((int)sktmax + 1, &fds, NULL, NULL, &timeout);
         if (res < 0) {
 #ifndef WINDOWS_API
-            if(SOCK_ERR == EAGAIN || SOCK_ERR == EINTR){
+            if (SOCK_ERR == EAGAIN || SOCK_ERR == EINTR) {
                 continue;
             } else
 #endif
@@ -4793,7 +4825,7 @@ int ySSDPStart(SSDPInfos *SSDP, ssdpHubDiscoveryCallback callback, char *errmsg)
             optval = 1;
             setsockopt(SSDP->request_sock[i], SOL_SOCKET, SO_REUSEADDR, (char*)&optval, sizeof(optval));
 #ifdef SO_REUSEPORT
-            setsockopt(SSDP->request_sock[i], SOL_SOCKET, SO_REUSEPORT, (char *)&optval, sizeof(optval));
+            setsockopt(SSDP->request_sock[i], SOL_SOCKET, SO_REUSEPORT, (char*)&optval, sizeof(optval));
 #endif
             // set port to 0 since we accept any port
             socksize = sizeof(sockaddr);
@@ -4812,7 +4844,7 @@ int ySSDPStart(SSDPInfos *SSDP, ssdpHubDiscoveryCallback callback, char *errmsg)
             optval = 1;
             setsockopt(SSDP->notify_sock[i], SOL_SOCKET, SO_REUSEADDR, (char*)&optval, sizeof(optval));
 #ifdef SO_REUSEPORT
-        setsockopt(SSDP->notify_sock[i], SOL_SOCKET, SO_REUSEPORT, (char *)&optval, sizeof(optval));
+            setsockopt(SSDP->notify_sock[i], SOL_SOCKET, SO_REUSEPORT, (char*)&optval, sizeof(optval));
 #endif
 
             // set port to 0 since we accept any port
@@ -4843,7 +4875,7 @@ int ySSDPStart(SSDPInfos *SSDP, ssdpHubDiscoveryCallback callback, char *errmsg)
             optval = 1;
             setsockopt(SSDP->request_sock[i], SOL_SOCKET, SO_REUSEADDR, (char*)&optval, sizeof(optval));
 #ifdef SO_REUSEPORT
-        setsockopt(SSDP->request_sock[i], SOL_SOCKET, SO_REUSEPORT, (char *)&optval, sizeof(optval));
+            setsockopt(SSDP->request_sock[i], SOL_SOCKET, SO_REUSEPORT, (char*)&optval, sizeof(optval));
 #endif
 
             // set port to 0 since we accept any port
@@ -4864,7 +4896,7 @@ int ySSDPStart(SSDPInfos *SSDP, ssdpHubDiscoveryCallback callback, char *errmsg)
             optval = 1;
             setsockopt(SSDP->notify_sock[i], SOL_SOCKET, SO_REUSEADDR, (char*)&optval, sizeof(optval));
 #ifdef SO_REUSEPORT
-            setsockopt(SSDP->notify_sock[i], SOL_SOCKET, SO_REUSEPORT, (char *)&optval, sizeof(optval));
+            setsockopt(SSDP->notify_sock[i], SOL_SOCKET, SO_REUSEPORT, (char*)&optval, sizeof(optval));
 #endif
             socksize = sizeof(struct sockaddr_in6);
             memset(&addr_v6, 0, socksize);

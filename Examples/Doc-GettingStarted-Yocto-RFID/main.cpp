@@ -1,12 +1,12 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 59991 2024-03-18 17:25:52Z seb $
+ *  $Id: main.cpp 72955 2026-04-24 08:26:36Z seb $
  *
- *  An example that shows how to use a  Yocto-RFID-15693
+ *  An example that shows how to use a  Yocto-RFID
  *
  *  You can find more information on our web site:
- *   Yocto-RFID-15693 documentation:
- *      https://www.yoctopuce.com/EN/products/yocto-rfid-15693/doc.html
+ *   Yocto-RFID documentation:
+ *      https://www.yoctopuce.com/EN/products/yocto-rfid/doc.html
  *   C++ API Reference:
  *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
  *

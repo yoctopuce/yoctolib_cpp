@@ -2,6 +2,15 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_humidity.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_temperature.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_tvoc.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\Sources\yocto_voc.cpp">
       <Filter>Yoctopuce</Filter>
     </ClCompile>
@@ -329,6 +338,15 @@
 
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\Sources\yocto_humidity.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_temperature.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_tvoc.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\Sources\yocto_voc.h">
       <Filter>Yoctopuce</Filter>
     </ClInclude>

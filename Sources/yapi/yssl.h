@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yssl.h 60355 2024-04-04 07:54:54Z seb $
+ * $Id: yssl.h 73081 2026-05-04 13:51:15Z seb $
  *
  *  Declaration of a client TCP stack
  *
@@ -95,17 +95,6 @@ int yTcpReadSSL(YSSL_SOCKET skt, u8* buffer, int len, char* errmsg);
 u32 yTcpGetRcvBufSizeSSL(YSSL_SOCKET skt);
 int yTcpDownloadSSLCert(const char* host, int port, u64 mstimeout, u8* buffer, u32 maxsize, u32* neededsize, char* errmsg);
 
-
-/*
- * some helper function that need to be called after yTcpInitSSL()
- */
-int yssl_generate_private_key(const char* keyfile, u32 nbits, char* errmsg);
-int yssl_write_certificate(void* crt, const char* certfilename, char* errmsg);
-int yssl_generate_certificate(const char* keyfile, const char* certfile,
-                              const char* country, const char* state,
-                              const char* organisation, const char* common_name,
-                              const os_ifaces *ifaces, int nbiface,
-                              time_t expiration, char* errmsg);
 
 #else
 typedef u32 YSSL_SOCKET;

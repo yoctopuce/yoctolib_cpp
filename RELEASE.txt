@@ -1,4 +1,4 @@
-CPPV2 v2.1.12708
+CPPV2 v2.1.14544
 
-- Fix README.md
-- Fix missing files on GitHub
+- Add support for new device firmware
+- Fix Prog-HubDiscovery-method1 example

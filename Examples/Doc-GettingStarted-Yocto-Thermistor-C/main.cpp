@@ -1,8 +1,8 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 38820 2019-12-18 18:01:14Z seb $
+ *  $Id: main.cpp 72955 2026-04-24 08:26:36Z seb $
  *
- *  An example that show how to use a  Yocto-Thermistor-C
+ *  An example that shows how to use a  Yocto-Thermistor-C
  *
  *  You can find more information on our web site:
  *   Yocto-Thermistor-C documentation:

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 72057 2026-02-17 09:44:53Z mvuilleu $
+ * $Id: yocto_display.cpp 74504 2026-06-01 14:50:23Z seb $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -56,53 +56,15 @@ using namespace YOCTOLIB_NAMESPACE;
 
 YDisplayLayer::YDisplayLayer(YDisplay *parent, int id):
 //--- (generated code: YDisplayLayer initialization)
-    _polyPrevX(0)
+    _cmdbuff("")
+    ,_hidden(false)
+    ,_polyPrevX(0)
     ,_polyPrevY(0)
 //--- (end of generated code: YDisplayLayer initialization)
     ,_display(parent)
     ,_id(id)
-    ,_cmdbuff("")
-    ,_hidden(false)
 {}
 
-
-int YDisplayLayer::flush_now(void)
-{
-    int res = YAPI_SUCCESS;
-    if(_cmdbuff.length() > 0) {
-        res = _display->sendCommand(_cmdbuff);
-        _cmdbuff="";
-    }
-    return res;
-}
-
-
-// internal function to send a command for this layer
-int YDisplayLayer::command_push(string cmd)
-{
-    int res = YAPI_SUCCESS;
-
-    if(_cmdbuff.length() + cmd.length() >= 100) {
-        // force flush before, to prevent overflow
-        res = flush_now();
-    }
-    if(_cmdbuff.length() == 0) {
-        // always prepend layer ID first
-        _cmdbuff.append(YapiWrapper::ysprintf("%d",_id));
-    }
-    _cmdbuff.append(cmd);
-    return res;
-}
-
-// internal function to send a command for this layer
-int YDisplayLayer::command_flush(string cmd)
-{
-    int  res = command_push(cmd);
-    if(_hidden) {
-        return res;
-    }
-    return flush_now();
-}
 
 int YDisplayLayer::drawBitmap(int x,int y,int w,const std::vector<unsigned char>& data,int bgcol)
 {
@@ -117,6 +79,58 @@ int YDisplayLayer::drawBitmap(int x,int y,int w,const std::vector<unsigned char>
 //--- (generated code: YDisplayLayer implementation)
 // static attributes
 
+
+bool YDisplayLayer::must_be_flushed(void)
+{
+    return (int)(_cmdbuff).length() > 0;
+}
+
+int YDisplayLayer::resetHiddenFlag(void)
+{
+    _hidden = false;
+    return YAPI_SUCCESS;
+}
+
+int YDisplayLayer::flush_now(void)
+{
+    int res = 0;
+    res = YAPI_SUCCESS;
+    if ((int)(_cmdbuff).length() > 0) {
+        res = _display->sendCommand(_cmdbuff);
+        _cmdbuff = "";
+    }
+    return res;
+}
+
+int YDisplayLayer::command_push(string cmd)
+{
+    int res = 0;
+    res = YAPI_SUCCESS;
+    if ((int)(_cmdbuff).length() + (int)(cmd).length() >= 100) {
+        // force flush before, to prevent overflow
+        this->flush_now();
+    }
+    if ((int)(_cmdbuff).length() == 0) {
+        // always prepend layer ID first
+        _cmdbuff = YapiWrapper::ysprintf("%d",_id);
+    }
+    _cmdbuff = _cmdbuff + cmd;
+    return res;
+}
+
+int YDisplayLayer::command_flush(string cmd)
+{
+    int res = 0;
+
+    res = this->command_push(cmd);
+    if (_hidden) {
+        return res;
+    }
+    if (_display->isFrozen()) {
+        return res;
+    }
+    return this->flush_now();
+}
 
 /**
  * Reverts the layer to its initial state (fully transparent, default settings).
@@ -763,12 +777,6 @@ int YDisplayLayer::get_layerHeight(void)
 {
     return _display->get_layerHeight();
 }
-
-int YDisplayLayer::resetHiddenFlag(void)
-{
-    _hidden = false;
-    return YAPI_SUCCESS;
-}
 //--- (end of generated code: YDisplayLayer implementation)
 
 
@@ -788,10 +796,9 @@ YDisplay::YDisplay(const string& func): YFunction(func)
     ,_layerCount(LAYERCOUNT_INVALID)
     ,_command(COMMAND_INVALID)
     ,_valueCallbackDisplay(NULL)
+    ,_frozenUntil(0)
+    ,_recording(0)
 //--- (end of generated code: YDisplay initialization)
-            ,_allDisplayLayers(0)
-            ,_recording(false)
-            ,_sequence("")
 {
     _className ="Display";
 }
@@ -1511,6 +1518,45 @@ int YDisplay::_invokeValueCallback(string value)
     return 0;
 }
 
+int YDisplay::sendCommand(string cmd)
+{
+    if (!(_recording)) {
+        return this->set_command(cmd);
+    }
+    _sequence = YapiWrapper::ysprintf("%s%s\n",_sequence.c_str(),cmd.c_str());
+    return YAPI_SUCCESS;
+}
+
+int YDisplay::flushLayers(void)
+{
+    for (unsigned ii_0 = 0; ii_0 < _allDisplayLayers.size(); ii_0++) {
+        if (_allDisplayLayers[ii_0]->must_be_flushed()) {
+            _allDisplayLayers[ii_0]->flush_now();
+        }
+    }
+    return YAPI_SUCCESS;
+}
+
+int YDisplay::resetHiddenLayerFlags(void)
+{
+    for (unsigned ii_0 = 0; ii_0 < _allDisplayLayers.size(); ii_0++) {
+        _allDisplayLayers[ii_0]->resetHiddenFlag();
+    }
+    return YAPI_SUCCESS;
+}
+
+bool YDisplay::isFrozen(void)
+{
+    if (_frozenUntil == 0) {
+        return false;
+    }
+    if (_frozenUntil <= YAPI::GetTickCount()) {
+        _frozenUntil = 0;
+        return false;
+    }
+    return true;
+}
+
 /**
  * Clears the display screen and resets all display layers to their default state.
  * Using this function in a sequence will kill the sequence play-back. Don't use that
@@ -1542,6 +1588,54 @@ int YDisplay::regenerateDisplay(void)
 }
 
 /**
+ * Returns the current state of an ePaper display, specifically to
+ * determine whether an update is in progress or whether a
+ * configuration issue has been detected. If a display configuration
+ * error has been detected, the error message can be retrieved.
+ *
+ * @param errmsg : a string passed by reference to receive the error message.
+ *
+ * @return a value among the enumeration YDisplay::DISPLAYSTATE
+ *         (YDisplay::DISPLAYSTATE_FAILURE, YDisplay::DISPLAYSTATE_OFF,
+ *         YDisplay::DISPLAYSTATE_POWERING, YDisplay::DISPLAYSTATE_IDLE,
+ *         YDisplay::DISPLAYSTATE_REFRESHING)
+ *         corresponding to the current display state.
+ */
+Y_DISPLAYSTATE YDisplay::get_ePaperState(string& errmsg)
+{
+    string json;
+    string dispError;
+    int dispState = 0;
+
+    if (this->get_displayType() == Y_DISPLAYTYPE_MONO) {
+        errmsg = "Not an ePaper display";
+        return (Y_DISPLAYSTATE) 0;
+    }
+    json = this->_download("disp.json");
+    if ((int)(json).size() == 0) {
+        errmsg = this->get_errorMessage();
+        return (Y_DISPLAYSTATE) 0;
+    } else {
+        dispError = this->_json_get_string(this->_get_json_path(json, "err"));
+        errmsg = dispError;
+        if ((int)(dispError).length() > 0) {
+            return (Y_DISPLAYSTATE) 0;
+        }
+        dispState = atoi((this->_json_get_key(json, "state")).c_str());
+        if (dispState > 10) {
+            return (Y_DISPLAYSTATE) 4;
+        }
+        if (dispState == 10) {
+            return (Y_DISPLAYSTATE) 3;
+        }
+        if (dispState > 0) {
+            return (Y_DISPLAYSTATE) 2;
+        }
+    }
+    return (Y_DISPLAYSTATE) 1;
+}
+
+/**
  * Disables screen refresh for a short period of time. The combination of
  * postponeRefresh and triggerRefresh can be used as an
  * alternative to double-buffering to avoid flickering during display updates.
@@ -1554,6 +1648,7 @@ int YDisplay::regenerateDisplay(void)
  */
 int YDisplay::postponeRefresh(int duration)
 {
+    _frozenUntil = YAPI::GetTickCount() + duration;
     return this->sendCommand(YapiWrapper::ysprintf("H%d",duration));
 }
 
@@ -1568,6 +1663,8 @@ int YDisplay::postponeRefresh(int duration)
  */
 int YDisplay::triggerRefresh(void)
 {
+    _frozenUntil = 0;
+    this->flushLayers();
     return this->sendCommand("H0");
 }
 
@@ -1690,6 +1787,7 @@ int YDisplay::stopSequence(void)
  */
 int YDisplay::upload(string pathname,string content)
 {
+    this->flushLayers();
     return this->_upload(pathname, content);
 }
 
@@ -1997,32 +2095,6 @@ YDisplay *YDisplay::FirstDisplay(void)
 }
 
 //--- (end of generated code: YDisplay implementation)
-
-int YDisplay::flushLayers(void)
-{
-    for(unsigned i = 0; i < _allDisplayLayers.size(); i++) {
-        _allDisplayLayers[i]->flush_now();
-    }
-    return YAPI_SUCCESS;
-}
-
-// internal function to clear hidden flag during resetAll
-void YDisplay::resetHiddenLayerFlags(void)
-{
-    for(unsigned i = 0; i < _allDisplayLayers.size(); i++) {
-        _allDisplayLayers[i]->resetHiddenFlag();
-    }
-}
-
-int YDisplay::sendCommand(string cmd)
-{
-    if(!_recording) {
-        return this->set_command(cmd);
-    }
-    _sequence += cmd+"\n";
-    return YAPI_SUCCESS;
-}
-
 
 //--- (generated code: YDisplay functions)
 //--- (end of generated code: YDisplay functions)

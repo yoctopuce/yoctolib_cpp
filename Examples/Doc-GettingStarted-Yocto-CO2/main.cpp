@@ -1,8 +1,8 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 38820 2019-12-18 18:01:14Z seb $
+ *  $Id: main.cpp 72778 2026-04-17 08:35:28Z seb $
  *
- *  An example that show how to use a  Yocto-CO2
+ *  An example that shows how to use a  Yocto-CO2
  *
  *  You can find more information on our web site:
  *   Yocto-CO2 documentation:

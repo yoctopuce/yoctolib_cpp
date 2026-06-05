@@ -1,11 +1,11 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 52637 2023-01-06 08:44:51Z seb $
+ *  $Id: main.cpp 72954 2026-04-24 08:13:06Z seb $
  *
  *  Doc-Inventory example
  *
  *  You can find more information on our web site:
- *   C++ V2 API Reference:
+ *   C++ API Reference:
  *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
  *
  *********************************************************************/

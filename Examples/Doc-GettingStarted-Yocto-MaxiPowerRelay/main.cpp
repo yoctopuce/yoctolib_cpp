@@ -1,13 +1,13 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 59576 2024-02-29 09:36:30Z seb $
+ *  $Id: main.cpp 72778 2026-04-17 08:35:28Z seb $
  *
- *  An example that show how to use a  Yocto-MaxiPowerRelay
+ *  An example that shows how to use a  Yocto-MaxiPowerRelay
  *
  *  You can find more information on our web site:
  *   Yocto-MaxiPowerRelay documentation:
  *      https://www.yoctopuce.com/EN/products/yocto-maxipowerrelay/doc.html
- *   C++ V2 API Reference:
+ *   C++ API Reference:
  *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
  *
  *********************************************************************/

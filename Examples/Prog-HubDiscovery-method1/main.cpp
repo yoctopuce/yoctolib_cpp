@@ -7,57 +7,62 @@ using namespace std;
 
 static std::set<string> KnownHubs;
 
-static void HubDiscovered(const string& serial, const string& url)
+static void HubDiscovered(const string &serial, const string &url)
 {
-  // The call-back can be called several times for the same hub
-  // (the discovery technique is based on a periodic broadcast)
-  // So we use a dictionnary to avoid duplicates
-  if (KnownHubs.find(serial) != KnownHubs.end()) return;
+    // The call-back can be called several times for the same hub
+    // (the discovery technique is based on a periodic broadcast)
+    // So we use a dictionnary to avoid duplicates
+    if (KnownHubs.find(serial) != KnownHubs.end()) return;
 
-  cout << "hub found: " << serial << " (" << url << ")" << endl;
-#if 0
-  // connect to the hub
-  string msg;
-  YAPI::RegisterHub(url, msg);
+    cout << "hub found: " << serial << " (" << url << ")" << endl;
 
-  //  find the hub module
-  YModule *hub = YModule::FindModule(serial);
+    // add the hub to the dictionary so we won't have to
+    // process is again.
+    KnownHubs.insert(serial);
 
-  // iterate on all functions on the module and find the ports
-  int fctCount =  hub->functionCount();
-  for (int i = 0; i < fctCount; i++) {
-    // retreive the hardware name of the ith function
-    string fctHwdName = hub->functionId(i);
-    if (fctHwdName.length() > 7 && fctHwdName.substr(0, 7) == "hubPort") {
-      // The port logical name is always the serial#
-      // of the connected device
-      string deviceid =  hub->functionName(i);
-      cout << "  " << fctHwdName << " : " << deviceid << endl;
+    // connect to the hub
+    string msg;
+    int res = YAPI::RegisterHub(url, msg);
+    if (res != YAPI::SUCCESS) {
+        // Ignore hub with authentication
+        cout << "  Ignore hub " << serial << " (" << msg << ")" << endl;
+        return;
     }
-  }
-  // add the hub to the dictionnary so we won't have to
-  // process is again.
-  KnownHubs.insert(serial);
 
-  // disconnect from the hub
-  YAPI::UnregisterHub(url);
-#endif
+    //  find the hub module
+    YModule *hub = YModule::FindModule(serial);
+
+    // iterate on all functions on the module and find the ports
+    int fctCount = hub->functionCount();
+    for (int i = 0; i < fctCount; i++) {
+        // retreive the hardware name of the ith function
+        string fctHwdName = hub->functionId(i);
+        if (fctHwdName.length() > 7 && fctHwdName.substr(0, 7) == "hubPort") {
+            // The port logical name is always the serial#
+            // of the connected device
+            string deviceid = hub->functionName(i);
+            cout << "  " << fctHwdName << " : " << deviceid << endl;
+        }
+    }
+
+    // disconnect from the hub
+    YAPI::UnregisterHub(url);
 
 }
 
-int main(int argc, const char * argv[])
+int main(int argc, const char *argv[])
 {
-  string errmsg;
+    string errmsg;
 
-  cout << "Waiting for hubs to signal themselves..." << endl;
+    cout << "Waiting for hubs to signal themselves..." << endl;
 
-  // register the callback: HubDiscovered will be
-  // invoked each time a hub signals its presence
-  YAPI::RegisterHubDiscoveryCallback(HubDiscovered);
+    // register the callback: HubDiscovered will be
+    // invoked each time a hub signals its presence
+    YAPI::RegisterHubDiscoveryCallback(HubDiscovered);
 
-  // wait for 30 seconds, doing nothing.
-  for (int i = 0 ; i < 30; i++) {
-    YAPI::UpdateDeviceList(errmsg);
-    YAPI::Sleep(1000, errmsg);
-  }
+    // wait for 30 seconds, doing nothing.
+    for (int i = 0; i < 30; i++) {
+        YAPI::UpdateDeviceList(errmsg);
+        YAPI::Sleep(1000, errmsg);
+    }
 }

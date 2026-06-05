@@ -79,6 +79,8 @@ set(MBEDTLS_C_FILES
 	mbedtls/tf-psa-crypto/drivers/builtin/src/sha256.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/sha3.c
 	mbedtls/tf-psa-crypto/drivers/builtin/src/sha512.c
+	mbedtls/tf-psa-crypto/drivers/p256-m/p256-m/p256-m.c
+	mbedtls/tf-psa-crypto/drivers/p256-m/p256-m_driver_entrypoints.c
 	mbedtls/tf-psa-crypto/extras/lmots.c
 	mbedtls/tf-psa-crypto/extras/lms.c
 	mbedtls/tf-psa-crypto/extras/md.c

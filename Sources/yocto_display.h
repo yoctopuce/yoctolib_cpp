@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.h 72057 2026-02-17 09:44:53Z mvuilleu $
+ * $Id: yocto_display.h 73721 2026-05-22 17:28:09Z mvuilleu $
  *
  * Declares yFindDisplay(), the high-level API for Display functions
  *
@@ -82,6 +82,17 @@ typedef enum {
     Y_DISPLAYTYPE_INVALID = -1,
 } Y_DISPLAYTYPE_enum;
 #endif
+    #ifndef _Y_DISPLAYSTATE
+    #define _Y_DISPLAYSTATE
+    typedef enum {
+        Y_DISPLAYSTATE_FAILURE = 0 ,
+        Y_DISPLAYSTATE_OFF = 1 ,
+        Y_DISPLAYSTATE_POWERING = 2 ,
+        Y_DISPLAYSTATE_IDLE = 3 ,
+        Y_DISPLAYSTATE_REFRESHING = 4
+    } Y_DISPLAYSTATE;
+    #endif
+
 #define Y_STARTUPSEQ_INVALID            (YAPI_INVALID_STRING)
 #define Y_BRIGHTNESS_INVALID            (YAPI_INVALID_UINT)
 #define Y_AUTOINVERTDELAY_INVALID       (YAPI_INVALID_UINT)
@@ -137,6 +148,8 @@ class YOCTO_CLASS_EXPORT YDisplayLayer {
 //--- (end of generated code: YDisplayLayer declaration)
     //--- (generated code: YDisplayLayer attributes)
     // Attributes (function value cache)
+    string          _cmdbuff;
+    bool            _hidden;
     int             _polyPrevX;
     int             _polyPrevY;
     //--- (end of generated code: YDisplayLayer attributes)
@@ -148,15 +161,8 @@ class YOCTO_CLASS_EXPORT YDisplayLayer {
 
     YDisplay *_display;
     int    _id;
-    string _cmdbuff;
-    bool   _hidden;
-
-    // internal function to send a command for this layer
-    int command_push(string cmd);
-    int command_flush(string cmd);
 
 public:
-    int flush_now();
     virtual ~YDisplayLayer(){};
     YDisplayLayer(YDisplay *parent, int id);
     //--- (generated code: YDisplayLayer accessors declaration)
@@ -180,6 +186,16 @@ public:
     static const Y_ALIGN ALIGN_CENTER_RIGHT = Y_ALIGN_CENTER_RIGHT;
     static const Y_ALIGN ALIGN_BASELINE_RIGHT = Y_ALIGN_BASELINE_RIGHT;
     static const Y_ALIGN ALIGN_BOTTOM_RIGHT = Y_ALIGN_BOTTOM_RIGHT;
+
+    virtual bool        must_be_flushed(void);
+
+    virtual int         resetHiddenFlag(void);
+
+    virtual int         flush_now(void);
+
+    virtual int         command_push(string cmd);
+
+    virtual int         command_flush(string cmd);
 
     /**
      * Reverts the layer to its initial state (fully transparent, default settings).
@@ -670,8 +686,6 @@ public:
      */
     virtual int         get_layerHeight(void);
 
-    virtual int         resetHiddenFlag(void);
-
 #ifdef __BORLANDC__
 #pragma option pop
 #endif
@@ -719,6 +733,9 @@ class YOCTO_CLASS_EXPORT YDisplay: public YFunction {
     string          _command;
     YDisplayValueCallback _valueCallbackDisplay;
     vector<YDisplayLayer*> _allDisplayLayers;
+    u64             _frozenUntil;
+    bool            _recording;
+    string          _sequence;
 
     friend YDisplay *yFindDisplay(const string& func);
     friend YDisplay *yFirstDisplay(void);
@@ -729,8 +746,6 @@ class YOCTO_CLASS_EXPORT YDisplay: public YFunction {
     // Constructor is protected, use yFindDisplay factory function to instantiate
     YDisplay(const string& func);
     //--- (end of generated code: YDisplay attributes)
-    bool                    _recording;
-    string                  _sequence;
 
     //--- (generated code: YDisplay initialization)
     //--- (end of generated code: YDisplay initialization)
@@ -762,6 +777,11 @@ public:
     static const int LAYERHEIGHT_INVALID = YAPI_INVALID_UINT;
     static const int LAYERCOUNT_INVALID = YAPI_INVALID_UINT;
     static const string COMMAND_INVALID;
+    static const Y_DISPLAYSTATE DISPLAYSTATE_FAILURE = Y_DISPLAYSTATE_FAILURE;
+    static const Y_DISPLAYSTATE DISPLAYSTATE_OFF = Y_DISPLAYSTATE_OFF;
+    static const Y_DISPLAYSTATE DISPLAYSTATE_POWERING = Y_DISPLAYSTATE_POWERING;
+    static const Y_DISPLAYSTATE DISPLAYSTATE_IDLE = Y_DISPLAYSTATE_IDLE;
+    static const Y_DISPLAYSTATE DISPLAYSTATE_REFRESHING = Y_DISPLAYSTATE_REFRESHING;
 
     /**
      * Returns true if the screen is powered, false otherwise.
@@ -1067,6 +1087,14 @@ public:
 
     virtual int         _invokeValueCallback(string value);
 
+    virtual int         sendCommand(string cmd);
+
+    virtual int         flushLayers(void);
+
+    virtual int         resetHiddenLayerFlags(void);
+
+    virtual bool        isFrozen(void);
+
     /**
      * Clears the display screen and resets all display layers to their default state.
      * Using this function in a sequence will kill the sequence play-back. Don't use that
@@ -1088,6 +1116,22 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         regenerateDisplay(void);
+
+    /**
+     * Returns the current state of an ePaper display, specifically to
+     * determine whether an update is in progress or whether a
+     * configuration issue has been detected. If a display configuration
+     * error has been detected, the error message can be retrieved.
+     *
+     * @param errmsg : a string passed by reference to receive the error message.
+     *
+     * @return a value among the enumeration YDisplay::DISPLAYSTATE
+     *         (YDisplay::DISPLAYSTATE_FAILURE, YDisplay::DISPLAYSTATE_OFF,
+     *         YDisplay::DISPLAYSTATE_POWERING, YDisplay::DISPLAYSTATE_IDLE,
+     *         YDisplay::DISPLAYSTATE_REFRESHING)
+     *         corresponding to the current display state.
+     */
+    virtual Y_DISPLAYSTATE get_ePaperState(string& errmsg);
 
     /**
      * Disables screen refresh for a short period of time. The combination of
@@ -1300,13 +1344,6 @@ public:
 #endif
     //--- (end of generated code: YDisplay accessors declaration)
 
-
-    int flushLayers(void);
-
-    int sendCommand(string cmd);
-
-    // internal function to clear hidden flag during resetAll
-    void resetHiddenLayerFlags(void);
 };
 
 //--- (generated code: YDisplay functions declaration)

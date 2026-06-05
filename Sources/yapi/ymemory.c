@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ymemory.c 63869 2024-12-23 13:49:56Z seb $
+ * $Id: ymemory.c 74512 2026-06-03 07:40:50Z seb $
  *
  * Basic memory check function to prevent memory leak
  *
@@ -402,7 +402,6 @@ void *yCallocOrigin(size_t nmemb, size_t xSize, uint32_t origin )
 }
 #endif
 
-#if !defined(EMBEDDED_API)
 
 int yvsprintf_s(char* dst, unsigned dstsize, const char* fmt, va_list arg)
 {
@@ -430,4 +429,4 @@ int ysprintf_s(char* dst, unsigned dstsize, const char* fmt, ...)
     return len;
 }
 
-#endif
+

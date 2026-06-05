@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ymemory.h 63958 2024-12-29 13:51:29Z seb $
+ * $Id: ymemory.h 74512 2026-06-03 07:40:50Z seb $
  *
  * Basic memory check function to prevent memory leak
  *
@@ -135,10 +135,8 @@ YRETCODE ystrcat_s(char* dst, unsigned dstsize, const char* src);
 YRETCODE ystrncat_s(char* dst, unsigned dstsize, const char* src, unsigned len);
 int ymemfind(const u8* haystack, u32 haystack_len, const u8* needle, u32 needle_len);
 
-#if !defined(EMBEDDED_API)
-    int ysprintf_s(char* dst, unsigned dstsize, const char* fmt, ...);
-    int yvsprintf_s(char* dst, unsigned dstsize, const char* fmt, va_list arg);
-#endif
+int yvsprintf_s(char* dst, unsigned dstsize, const char* fmt, va_list arg);
+int ysprintf_s(char* dst, unsigned dstsize, const char* fmt, ...);
 
 #if defined(WINDOWS_API) && defined(_MSC_VER) && !defined(WINCE)
     #define YSTRCMP(A,B)                        strcmp(A,B)
@@ -243,3 +241,4 @@ int ymemfind(const u8* haystack, u32 haystack_len, const u8* needle, u32 needle_
 }
 #endif
 #endif
+

@@ -1,8 +1,8 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 38864 2019-12-19 14:50:03Z seb $
+ *  $Id: main.cpp 72778 2026-04-17 08:35:28Z seb $
  *
- *  An example that show how to use a  Yocto-Thermocouple
+ *  An example that shows how to use a  Yocto-Thermocouple
  *
  *  You can find more information on our web site:
  *   Yocto-Thermocouple documentation:

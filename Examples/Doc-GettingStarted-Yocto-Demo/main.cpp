@@ -1,8 +1,8 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 45539 2021-06-14 07:23:58Z web $
+ *  $Id: main.cpp 72778 2026-04-17 08:35:28Z seb $
  *
- *  An example that show how to use a  Yocto-Demo
+ *  An example that shows how to use a  Yocto-Demo
  *
  *  You can find more information on our web site:
  *   Yocto-Demo documentation:

@@ -219,6 +219,7 @@ required by the library:
 ```
 /Sources/yocto_api.cpp
 /Sources/yocto_accelerometer.cpp
+/Sources/yocto_airquality.cpp
 /Sources/yocto_altitude.cpp
 /Sources/yocto_anbutton.cpp
 /Sources/yocto_angularspeed.cpp
@@ -399,6 +400,8 @@ required by the library:
 /Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/sha256.c
 /Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/sha3.c
 /Sources/yapi/mbedtls/tf-psa-crypto/drivers/builtin/src/sha512.c
+/Sources/yapi/mbedtls/tf-psa-crypto/drivers/p256-m/p256-m/p256-m.c
+/Sources/yapi/mbedtls/tf-psa-crypto/drivers/p256-m/p256-m_driver_entrypoints.c
 /Sources/yapi/mbedtls/tf-psa-crypto/extras/lmots.c
 /Sources/yapi/mbedtls/tf-psa-crypto/extras/lms.c
 /Sources/yapi/mbedtls/tf-psa-crypto/extras/md.c
@@ -426,6 +429,7 @@ required by the library:
 ```
 /Sources/yocto_api.h
 /Sources/yocto_accelerometer.h
+/Sources/yocto_airquality.h
 /Sources/yocto_altitude.h
 /Sources/yocto_anbutton.h
 /Sources/yocto_angularspeed.h

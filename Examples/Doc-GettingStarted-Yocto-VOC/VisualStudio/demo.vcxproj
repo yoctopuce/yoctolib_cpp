@@ -216,6 +216,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_humidity.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_temperature.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_tvoc.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_voc.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_api.cpp" />
     <ClCompile Include="..\..\..\Sources\yapi\yapi.c" />
@@ -327,6 +330,9 @@
 
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\Sources\yocto_humidity.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_temperature.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_tvoc.h" />
     <ClInclude Include="..\..\..\Sources\yocto_voc.h" />
     <ClInclude Include="..\..\..\Sources\yocto_api.h" />
     <ClInclude Include="..\..\..\Sources\yapi\yapi.h" />

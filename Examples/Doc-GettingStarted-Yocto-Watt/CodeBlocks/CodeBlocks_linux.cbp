@@ -66,6 +66,12 @@
       <Unit filename="../../../Sources/yocto_current.h"></Unit>
          <Option virtualFolder="Yoctopuce" />
       </Unit>
+      <Unit filename="../../../Sources/yocto_inputcapture.cpp"></Unit>
+         <Option virtualFolder="Yoctopuce" />
+      </Unit>
+      <Unit filename="../../../Sources/yocto_inputcapture.h"></Unit>
+         <Option virtualFolder="Yoctopuce" />
+      </Unit>
       <Unit filename="../../../Sources/yocto_power.cpp"></Unit>
          <Option virtualFolder="Yoctopuce" />
       </Unit>

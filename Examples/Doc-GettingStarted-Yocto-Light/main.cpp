@@ -1,13 +1,13 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 46880 2021-10-21 09:08:05Z seb $
+ *  $Id: main.cpp 72778 2026-04-17 08:35:28Z seb $
  *
- *  An example that show how to use a  Yocto-Light
+ *  An example that shows how to use a  Yocto-Light
  *
  *  You can find more information on our web site:
  *   Yocto-Light documentation:
  *      https://www.yoctopuce.com/EN/products/yocto-light/doc.html
- *   C++ V2 API Reference:
+ *   C++ API Reference:
  *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
  *
  *********************************************************************/

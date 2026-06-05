@@ -14,6 +14,7 @@ set(YoctoLibHSources
 #-- yocto_patch_h_start --
 	yocto_api.h
 	yocto_accelerometer.h
+	yocto_airquality.h
 	yocto_altitude.h
 	yocto_anbutton.h
 	yocto_angularspeed.h
@@ -104,6 +105,7 @@ set(YoctoLibCppSources
 #-- yocto_patch_start --
 	yocto_api.cpp
 	yocto_accelerometer.cpp
+	yocto_airquality.cpp
 	yocto_altitude.cpp
 	yocto_anbutton.cpp
 	yocto_angularspeed.cpp

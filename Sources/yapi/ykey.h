@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.h 72199 2026-02-20 16:55:37Z mvuilleu $
+ * $Id: ykey.h 73334 2026-05-15 10:03:07Z seb $
  *
  * Declaration of standard key computations
  *
@@ -120,4 +120,24 @@ u16 IPvXAddrLen(const IPvX_ADDR* addr);
 char* u16toa(u16 val, char* buff);
 char* iptoa(const IPvX_ADDR* addr, char* buff); /* sizeof(buff) should be IPSTR_SIZE */
 
+// dates helpers
+
+#if defined(USE_YOCTOTIMER)
+#define DATEENCODINGREQUIRED
+#endif
+#if defined(ATTR_GPSCOORDINATESYSTEM)
+#define DATEENCODINGREQUIRED
+#endif
+#if defined(TELIT)
+#define DATEENCODINGREQUIRED
+#endif
+
+#if defined(DATEENCODINGREQUIRED) || !defined(EMBEDDED_API)
+void    DateWrap(u16 *year, u16* month, u16* day, u16* h, u16* m , u16* wday);
+u16     DayPerMonth(u16 month, u16 year);
+void    DecodeDATE(u32 input, u16 *year, u16 *month, u16 *day, u16 *h, u16 *m, u16 *s);
+u32     EncodeDATE(u32 year, u16 month, u16 day, u16 h, u16 m, u16 s);
+void    DecodeDateOnly(u32 input, u16 *year, u16 *month, u16 *day);
+void    DecodeTimeOnly(u32 input, u16 *h, u16 *m, u16 *s);
+#endif
 #endif

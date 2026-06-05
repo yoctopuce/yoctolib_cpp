@@ -1,13 +1,13 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 44664 2021-04-23 09:45:05Z seb $
+ *  $Id: main.cpp 72778 2026-04-17 08:35:28Z seb $
  *
- *  An example that show how to use a  Yocto-MaxiMicroVolt-Rx
+ *  An example that shows how to use a  Yocto-MaxiMicroVolt-Rx
  *
  *  You can find more information on our web site:
  *   Yocto-MaxiMicroVolt-Rx documentation:
  *      https://www.yoctopuce.com/EN/products/yocto-maximicrovolt-rx/doc.html
- *   C++ V2 API Reference:
+ *   C++ API Reference:
  *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
  *
  *********************************************************************/

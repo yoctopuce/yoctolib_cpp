@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 72633 2026-04-08 10:29:36Z seb $
+#  $Id: GNUmakefile 73721 2026-05-22 17:28:09Z mvuilleu $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -330,6 +330,7 @@ SOURCES_DIR = ../Sources/
 #-- yocto_patch_start --
 YOCTO_API_OBJS_STAT = yocto_api.o\
 	yocto_accelerometer.o \
+	yocto_airquality.o \
 	yocto_altitude.o \
 	yocto_anbutton.o \
 	yocto_angularspeed.o \
@@ -488,6 +489,8 @@ MBEDTLS_OBJS_STAT = \
 	tf-psa-crypto/drivers/builtin/src/sha256.o \
 	tf-psa-crypto/drivers/builtin/src/sha3.o \
 	tf-psa-crypto/drivers/builtin/src/sha512.o \
+	tf-psa-crypto/drivers/p256-m/p256-m/p256-m.o \
+	tf-psa-crypto/drivers/p256-m/p256-m_driver_entrypoints.o \
 	tf-psa-crypto/extras/lmots.o \
 	tf-psa-crypto/extras/lms.o \
 	tf-psa-crypto/extras/md.o \

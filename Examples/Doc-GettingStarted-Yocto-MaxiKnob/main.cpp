@@ -1,13 +1,13 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 60131 2024-03-25 08:10:06Z seb $
+ *  $Id: main.cpp 72778 2026-04-17 08:35:28Z seb $
  *
- *  An example that show how to use a  Yocto-MaxiKnob
+ *  An example that shows how to use a  Yocto-MaxiKnob
  *
  *  You can find more information on our web site:
  *   Yocto-MaxiKnob documentation:
  *      https://www.yoctopuce.com/EN/products/yocto-maxiknob/doc.html
- *   C++ V2 API Reference:
+ *   C++ API Reference:
  *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
  *
  *********************************************************************/

@@ -1,13 +1,13 @@
 /*********************************************************************
  *
- *  $Id: main.cpp 47220 2021-11-10 10:08:11Z seb $
+ *  $Id: main.cpp 72778 2026-04-17 08:35:28Z seb $
  *
- *  An example that show how to use a  Yocto-Amp
+ *  An example that shows how to use a  Yocto-Amp
  *
  *  You can find more information on our web site:
  *   Yocto-Amp documentation:
  *      https://www.yoctopuce.com/EN/products/yocto-amp/doc.html
- *   C++ V2 API Reference:
+ *   C++ API Reference:
  *      https://www.yoctopuce.com/EN/doc/reference/yoctolib-cpp-EN.html
  *
  *********************************************************************/

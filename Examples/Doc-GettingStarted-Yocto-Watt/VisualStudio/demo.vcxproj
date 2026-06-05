@@ -217,6 +217,7 @@
   <ItemGroup>
     <ClCompile Include="..\main.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_current.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_inputcapture.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_power.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_voltage.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_api.cpp" />
@@ -330,6 +331,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Sources\yocto_current.h" />
+    <ClInclude Include="..\..\..\Sources\yocto_inputcapture.h" />
     <ClInclude Include="..\..\..\Sources\yocto_power.h" />
     <ClInclude Include="..\..\..\Sources\yocto_voltage.h" />
     <ClInclude Include="..\..\..\Sources\yocto_api.h" />

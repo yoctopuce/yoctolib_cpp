@@ -60,6 +60,24 @@
          <Add option="-fexceptions" />
       </Compiler>
       <Unit filename="../main.cpp" />
+      <Unit filename="../../../Sources/yocto_humidity.cpp"></Unit>
+         <Option virtualFolder="Yoctopuce" />
+      </Unit>
+      <Unit filename="../../../Sources/yocto_humidity.h"></Unit>
+         <Option virtualFolder="Yoctopuce" />
+      </Unit>
+      <Unit filename="../../../Sources/yocto_temperature.cpp"></Unit>
+         <Option virtualFolder="Yoctopuce" />
+      </Unit>
+      <Unit filename="../../../Sources/yocto_temperature.h"></Unit>
+         <Option virtualFolder="Yoctopuce" />
+      </Unit>
+      <Unit filename="../../../Sources/yocto_tvoc.cpp"></Unit>
+         <Option virtualFolder="Yoctopuce" />
+      </Unit>
+      <Unit filename="../../../Sources/yocto_tvoc.h"></Unit>
+         <Option virtualFolder="Yoctopuce" />
+      </Unit>
       <Unit filename="../../../Sources/yocto_voc.cpp"></Unit>
          <Option virtualFolder="Yoctopuce" />
       </Unit>

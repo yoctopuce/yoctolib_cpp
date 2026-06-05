@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ykey.c 72199 2026-02-20 16:55:37Z mvuilleu $
+ * $Id: ykey.c 73334 2026-05-15 10:03:07Z seb $
  *
  * Implementation of standard key computations
  *
@@ -40,6 +40,8 @@
 #include "ydef_private.h"
 #define __FILE_ID__     MK_FILEID('Y','K','Y')
 #define __FILENAME__   "ykey"
+
+
 
 #include "ykey.h"
 
@@ -949,4 +951,93 @@ char* iptoa(const IPvX_ADDR* addr, char* buff)
 #endif
 
     return buff;
+}
+
+
+
+// dates helpers
+/*
+ *  human readable date to unix time stamp
+ */
+static u16 dayofs[] = { 0,31,59,90,120,151,181,212,243,273,304,334 };
+
+u32   EncodeDATE(u32 year, u16 month, u16 day, u16 h, u16 m, u16 s)
+{
+        u32     result;
+        u32     days, leap;
+
+        if(year < 100) {
+            if(year >= 70)
+                year += 1900;
+            else
+                year += 2000;
+        }
+        leap = (year >> 2) - (1970 >> 2);
+        if((year & 3) == 0 && month < 3) {
+            leap--;
+        }
+        days = (u32)(day - 1u) + dayofs[month - 1u] + 365 * (u32)(year - 1970u) + leap;
+
+        result = s + m * 60u + h * (u32)3600u + days * (u32)86400u;
+
+        return result;
+}
+
+/*
+ * Unix time stamp to human readable date
+ */
+void DecodeDateOnly(u32 input, u16 *year, u16 *month, u16 *day)
+{
+    u32 days = input / 86400;
+    u32 y = days / 365; /* relative to 1970 */
+    if (((y + 1u) >> 2) + 365u * y > days) {
+        y--;
+    }
+    days -= ((y + 1u) >> 2) + 365u * y;
+    if ((y & 3) == 2 && days == 59) {
+        *month = 2;
+    }
+    else {
+        if ((y & 3) == 2 && days >= 59)
+            days--;
+        for (*month = 1; *month < 12; (*month)++)
+            if (dayofs[*month] > (u16)days) break;
+    }
+    *year = (u16)(y + 1970);
+    *day = (u16)(days - dayofs[*month - 1] + 1);
+}
+
+void DecodeTimeOnly(u32 input, u16 *h, u16 *m, u16 *s)
+{
+    u32 secs = (input % 86400);
+    *h = (u16)(secs / 3600);
+    *m = (secs % 3600) / 60;
+    *s = secs % 60;
+}
+
+void DecodeDATE(u32 input, u16 *year, u16 *month, u16 *day, u16 *h, u16 *m, u16 *s)
+{
+    DecodeDateOnly(input, year, month, day);
+    DecodeTimeOnly(input, h, m, s);
+}
+
+u16 DayPerMonth(u16 month, u16 year)
+{
+    u8 res[] = {31,28,31,30,31,30,31,31,30,31,30,31};
+    if (month!=1) return res[month];
+    if ((year & 0x3)==0) return 29;
+    return 28;
+}
+
+void DateWrap(u16 *year, u16* month, u16* day, u16* h, u16* m , u16* wday)
+{
+    u16 dpm;
+    while (*m>=60) {(*m)-=60;(*h)++;}
+    while (*h>=24) {(*h)-=24;(*day)++;*wday=((*wday)+1)%7;}
+    while ((*day)> (dpm = DayPerMonth((*month)-1, *year))) {
+        (*day) -= dpm;
+        (*month)++;
+        while (*month>12) {(*month)-=12;(*year)++;}
+    }
+    while (*month>12) {(*month)-=12;(*year)++;}
 }
