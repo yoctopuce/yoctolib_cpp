@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.h 72204 2026-02-21 11:08:47Z mvuilleu $
+ * $Id: ytcp.h 74609 2026-06-08 12:25:01Z seb $
  *
  *  Declaration of a client TCP stack
  *
@@ -189,7 +189,7 @@ typedef struct {
 typedef void (*ssdpHubDiscoveryCallback)(const char* serial, const char* urlToRegister, const char* urlToUnregister);
 
 #define NB_SSDP_CACHE_ENTRY 128
-#define NB_OS_IFACES 8
+#define NB_OS_IFACES 64
 
 
 typedef struct {

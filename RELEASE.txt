@@ -1,4 +1,4 @@
-CPPV2 v2.1.14544
+CPPV2 v2.1.14699
 
-- Add support for new device firmware
+- Add support for new RFID tags
 - Fix Prog-HubDiscovery-method1 example

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 73091 2026-05-05 09:20:26Z seb $
+ * $Id: ytcp.c 74609 2026-06-08 12:25:01Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -4276,7 +4276,7 @@ YSTATIC int yDetectNetworkInterfaces(IPvX_ADDR *only_ip, os_ifaces *interfaces, 
             PIP_ADAPTER_UNICAST_ADDRESS pUnicast;
             if (paddr->IfType != IF_TYPE_SOFTWARE_LOOPBACK && paddr->OperStatus == IfOperStatusUp) {
                 pUnicast = paddr->FirstUnicastAddress;
-                for (i = 0; pUnicast != NULL; i++) {
+                for (i = 0; pUnicast != NULL && nbDetectedIfaces < max_nb_interfaces; i++) {
                     if (pUnicast->Address.iSockaddrLength == sizeof(struct sockaddr_in)) {
                         struct sockaddr_in *addr_v4 = (struct sockaddr_in*)pUnicast->Address.lpSockaddr;
                         if (only_ip == NULL || isIPEmpty(only_ip) || (isIPv4(only_ip) && only_ip->v4.addr.Val == addr_v4->sin_addr.s_addr)) {
@@ -4336,43 +4336,32 @@ YSTATIC int yDetectNetworkInterfaces(IPvX_ADDR *only_ip, os_ifaces *interfaces, 
 #include <ifaddrs.h>
 YSTATIC int yDetectNetworkInterfaces(IPvX_ADDR *only_ip, os_ifaces *interfaces, int max_nb_interfaces)
 {
-
-
 #if 1
-struct ifaddrs *if_addrs = NULL;
-struct ifaddrs *p = NULL;
-int nbDetectedIfaces = 0;
-memset(interfaces, 0, max_nb_interfaces *sizeof(os_ifaces));
-    if (getifaddrs(&if_addrs)!= 0){
+    struct ifaddrs *if_addrs = NULL;
+    struct ifaddrs *p = NULL;
+    int nbDetectedIfaces = 0;
+    memset(interfaces, 0, max_nb_interfaces * sizeof(os_ifaces));
+    if (getifaddrs(&if_addrs) != 0){
         yNetLogErr();
         return -1;
     }
-p = if_addrs;
+    p = if_addrs;
     while (p) {
-    if (p->ifa_addr && (p->ifa_addr->sa_family == AF_INET || p->ifa_addr->sa_family == AF_INET6)) {
-        IPvX_ADDR ip;
-        if (p->ifa_addr->sa_family == AF_INET) {
-            struct sockaddr_in *tmp = (struct sockaddr_in*)p->ifa_addr;
-            setIPv4Val(&ip, tmp->sin_addr.s_addr);
-        } else {
-            struct sockaddr_in6 *tmp6 = (struct sockaddr_in6*)p->ifa_addr;
-            memcpy(&ip, &tmp6->sin6_addr, sizeof(IPvX_ADDR));
-        }
-        if (only_ip != NULL && !isIPEmpty(only_ip) && memcmp(only_ip, &ip, sizeof(IPvX_ADDR)) != 0) {
-
-
-#if 0//def DEBUG_NET_DETECTION
-char buff[IPSTR_SIZE];
-char buff2[IPSTR_SIZE];
-iptoa(&ip, buff);
-iptoa(only_ip, buff2);
-dbglog("drop %s : %s !=%s (%X)\n", p->ifa_name, buff, buff2, p->ifa_flags);
-#endif
-p = p->ifa_next;
+        if (p->ifa_addr && (p->ifa_addr->sa_family == AF_INET || p->ifa_addr->sa_family == AF_INET6)) {
+            IPvX_ADDR ip;
+            if (p->ifa_addr->sa_family == AF_INET) {
+                struct sockaddr_in *tmp = (struct sockaddr_in*)p->ifa_addr;
+                setIPv4Val(&ip, tmp->sin_addr.s_addr);
+            } else {
+                struct sockaddr_in6 *tmp6 = (struct sockaddr_in6*)p->ifa_addr;
+                memcpy(&ip, &tmp6->sin6_addr, sizeof(IPvX_ADDR));
+            }
+            if (only_ip != NULL && !isIPEmpty(only_ip) && memcmp(only_ip, &ip, sizeof(IPvX_ADDR)) != 0) {
+                p = p->ifa_next;
                 continue;
             }
-            if ((p->ifa_flags& IFF_LOOPBACK) == 0){
-                if (p->ifa_flags & IFF_UP && p->ifa_flags & IFF_RUNNING){
+            if ((p->ifa_flags& IFF_LOOPBACK) == 0 ) {
+                if (p->ifa_flags & IFF_UP && p->ifa_flags & IFF_RUNNING && nbDetectedIfaces < max_nb_interfaces) {
                     if (p->ifa_flags & IFF_MULTICAST){
                         interfaces[nbDetectedIfaces].flags |= OS_IFACE_CAN_MCAST;
                     }
@@ -4383,33 +4372,33 @@ p = p->ifa_next;
                     }
                     interfaces[nbDetectedIfaces].ip = ip;
 #ifdef DEBUG_NET_DETECTION
-{
+                    {
                         char buff[IPSTR_SIZE];
                         iptoa(&ip, buff);
                         dbglog("Iface %s : %s (flags=%X iface=%d)\n", p->ifa_name, buff, p->ifa_flags, interfaces[nbDetectedIfaces].ifindex);
                     }
 #endif
-nbDetectedIfaces++;
+                    nbDetectedIfaces++;
                 }
             }
 #ifdef DEBUG_NET_DETECTION
-else {
+            else {
                 char buff[IPSTR_SIZE];
                 iptoa(&ip, buff);
                 dbglog("drop %s : %s (%X)\n", p->ifa_name, buff, p->ifa_flags);
             }
 #endif
-}
-p = p->ifa_next;
+        }
+        p = p->ifa_next;
     }
-freeifaddrs(if_addrs);
+    freeifaddrs(if_addrs);
 #else
-int nbDetectedIfaces = 1;
-memset(interfaces, 0, max_nb_interfaces *sizeof(os_ifaces));
-interfaces[0].flags|= OS_IFACE_CAN_MCAST;
-setIPv4Val(&interfaces[0].ip,INADDR_ANY);
+    int nbDetectedIfaces = 1;
+    memset(interfaces, 0, max_nb_interfaces *sizeof(os_ifaces));
+    interfaces[0].flags|= OS_IFACE_CAN_MCAST;
+    setIPv4Val(&interfaces[0].ip,INADDR_ANY);
 #endif
-return nbDetectedIfaces;
+    return nbDetectedIfaces;
 }
 
 #endif
