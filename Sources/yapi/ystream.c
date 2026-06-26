@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 70471 2025-11-24 15:03:35Z seb $
+ * $Id: ystream.c 74766 2026-06-18 09:51:32Z seb $
  *
  * USB stream implementation
  *
@@ -268,6 +268,30 @@ int dbglogf(const char* fileid, int line, const char* fmt, ...)
     va_end(args);
     return len;
 }
+
+#if 0
+int dbgsavefile(const char *filename, const u8 *content, int contentlen, char *errmsg)
+{
+    int res = 0;
+    FILE *f;
+
+    if (YFOPEN(&f, filename, "w") != 0) {
+        int err = errno;
+        YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Unable to open file %s (%s)", filename, strerror(err));
+        if (err == EACCES) {
+            return YAPI_UNAUTHORIZED;
+        } else {
+            return YAPI_IO_ERROR;
+        }
+    }
+    if (fwrite(content, 1, contentlen, f) <= 0) {
+        YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Unable to write to file %s", filename);
+        res = YAPI_IO_ERROR;
+    }
+    fclose(f);
+    return res;
+}
+#endif
 
 void log_hub_stateEx(const char* fileid, int line, HubURLSt *url, char *state, char *con_type)
 {

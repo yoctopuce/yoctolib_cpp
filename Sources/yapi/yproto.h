@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 71761 2026-02-03 11:00:46Z seb $
+ * $Id: yproto.h 74763 2026-06-18 08:27:43Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -375,6 +375,7 @@ __forceinline void __WSLOG(fmt, ...) {}
 
 int vdbglogf(const char* fileid, int line, const char* fmt, va_list args);
 int dbglogf(const char* fileid, int line, const char* fmt, ...);
+int dbgsavefile(const char* filename, const u8* content, int contentlen, char* errmsg);
 #if defined(_MSC_VER)
 #if (_MSC_VER > MSC_VS2003)
 #define dbglog(...)      dbglogf(__FILENAME__,__LINE__, __VA_ARGS__)
@@ -837,6 +838,7 @@ typedef struct _HubSt {
     WakeUpSocket wuce;
     yThread net_thread;
     NET_HUB_STATE state;
+    int not_chunk_remaing;
     yFifoBuf not_fifo; // notification fifo
     u8 not_buffer[1024]; // buffer for the fifo
     int retryCount;
@@ -1147,7 +1149,7 @@ void process_ws(yThread* thread, HubSt* hub);
 
 int checkForSameHubAccess(HubSt* hub, yStrRef serial, char* errmsg);
 int write_text_file(const char* filename, const char* content, int contentlen, char* errmsg);
-int handleNetNotification(HubSt* hub);
+int handleNetNotification(HubSt* hub, yFifoBuf* not_fifo);
 u32 yapiGetCNonce(u32 nc);
 YRETCODE yapiHTTPRequestSyncStartEx_internal(YIOHDL* iohdl, int tcpchan, const char* device, const char* request, int requestsize, char** reply, int* replysize, yapiRequestProgressCallback progress_cb, void* progress_ctx, char* errmsg);
 YRETCODE yapiHTTPRequestSyncDone_internal(YIOHDL* iohdl, char* errmsg);

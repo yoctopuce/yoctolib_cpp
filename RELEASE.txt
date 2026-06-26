@@ -1,4 +1,8 @@
-CPPV2 v2.1.14699
+CPPV2 v2.1.14927
 
-- Add support for new RFID tags
+- Add new YAirQuality class
+- Improve Display example
+- Fix out-of-order execution of postponeRefresh vs bitmap uploads
 - Fix Prog-HubDiscovery-method1 example
+- Fix potential non discovered VirtualHub-V2 via SSDP
+- Fix missing notifications with VirtualHub for web on http server that return chunk encoding data

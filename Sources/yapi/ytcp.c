@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 74609 2026-06-08 12:25:01Z seb $
+ * $Id: ytcp.c 74763 2026-06-18 08:27:43Z seb $
  *
  * Implementation of a client TCP stack
  *
@@ -3149,7 +3149,7 @@ static int ws_parseIncomingFrame(HubSt *hub, u8 *buffer, int pktlen, char *errms
             }
 #endif
             yPushFifo(&hub->not_fifo, buffer, pktlen);
-            while (handleNetNotification(hub));
+            while (handleNetNotification(hub, &hub->not_fifo));
         }
         break;
     case YSTREAM_EMPTY:

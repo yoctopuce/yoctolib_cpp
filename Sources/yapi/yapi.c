@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 70670 2025-12-09 11:04:34Z seb $
+ * $Id: yapi.c 74767 2026-06-19 07:05:29Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -1072,7 +1072,7 @@ static int ywpSafeCheckOverwrite(HubSt *registeredHub, HubSt *hub, yStrRef seria
     } else if (registeredHub != hub) {
         if (hub->serial_hash == serial) {
 #ifdef DEBUG_WP
-            dbglog("unregister same device connected by a VirtualHub (0x%X vs 0x%X) \n", devUrl, hub->host);
+            dbglog("unregister same device connected by a VirtualHub (0x%X vs 0x%X) \n", devUrl, hub->url.org_url);
 #endif
             return 1;
         }
@@ -1109,7 +1109,7 @@ void ywpSafeRegister(HubSt *hub, u8 devYdx, yStrRef serialref, yStrRef lnameref,
         if (hub == FAKE_USB_HUB) {
             dbglog("SAFE WP: register %s(0x%X) form USB\n", yHashGetStrPtr(serialref), serialref);
         } else {
-            dbglog("SAFE WP: register %s(0x%X) from %s:%u\n", yHashGetStrPtr(serialref), serialref, hub->host, hub->portno);
+            dbglog("SAFE WP: register %s(0x%X) from %s\n", yHashGetStrPtr(serialref), serialref, hub->url.org_url);
         }
 
     }
@@ -3344,7 +3344,7 @@ static void dumpNotif(const char *buffer)
 {
     FILE *f;
     printf("%s", buffer);
-    YASSERT(YFOPEN(&f, "c:\\tmp\\api_not.txt", "ab") == 0);
+    YASSERT(YFOPEN(&f, "c:\\tmp\\api_not.txt", "ab") == 0,0);
     fwrite(buffer, 1, YSTRLEN(buffer), f);
     fclose(f);
 }
@@ -3396,7 +3396,7 @@ static void wpUpdateTCP(HubSt *hub, const char *serial, const char *name, u8 bea
     }
 }
 
-int handleNetNotification(HubSt *hub)
+int handleNetNotification(HubSt *hub, yFifoBuf* not_fifo)
 {
     u16 pos;
     u16 end, size;
@@ -3416,12 +3416,12 @@ int handleNetNotification(HubSt *hub)
 #endif
 
     // search for start of notification
-    size = yFifoGetUsed(&(hub->not_fifo));
+    size = yFifoGetUsed(not_fifo);
     while (size >= NOTIFY_NETPKT_START_LEN) {
-        yPeekFifo(&(hub->not_fifo), &pkttype, 1, 0);
+        yPeekFifo(not_fifo, &pkttype, 1, 0);
         if (pkttype != NOTIFY_NETPKT_STOP) break;
         // drop newline and loop
-        yPopFifo(&(hub->not_fifo),NULL, 1);
+        yPopFifo(not_fifo,NULL, 1);
         // note: keep-alive packets don't count in the notification channel position
         size--;
     }
@@ -3429,19 +3429,19 @@ int handleNetNotification(HubSt *hub)
         return 0;
     }
     // make sure we have a full notification
-    end = ySeekFifo(&(hub->not_fifo), (u8*)&netstop, 1, 0, 0, 0);
+    end = ySeekFifo(not_fifo, (u8*)&netstop, 1, 0, 0, 0);
     if (end == 0xffff) {
-        if (yFifoGetFree(&(hub->not_fifo)) == 0) {
+        if (yFifoGetFree(not_fifo) == 0) {
             dbglog("Too many invalid notifications, clearing buffer\n");
-            yFifoEmpty((&(hub->not_fifo)));
+            yFifoEmpty(not_fifo);
             return 1;
         }
         return 0;
     }
     // make sure we have a full notification
-    if (0xffff != ySeekFifo(&(hub->not_fifo), (u8*)&escapechar, 1, 0, end, 0)) {
+    if (0xffff != ySeekFifo(not_fifo, (u8*)&escapechar, 1, 0, end, 0)) {
         // drop notification that contain esc char
-        yPopFifo(&(hub->not_fifo), NULL, end + 1);
+        yPopFifo(not_fifo, NULL, end + 1);
         return 1;
     }
     // handle short funcvalydx notifications
@@ -3452,7 +3452,7 @@ int handleNetNotification(HubSt *hub)
             hub->notifAbsPos += end + 1;
             return 1;
         }
-        yPopFifo(&(hub->not_fifo), (u8*)buffer, end + 1);
+        yPopFifo(not_fifo, (u8*)buffer, end + 1);
         hub->notifAbsPos += end + 1;
         p = buffer + 1;
         devydx = (*p++) - 'A';
@@ -3603,7 +3603,7 @@ int handleNetNotification(HubSt *hub)
     }
 
     // make sure packet is a valid notification
-    pos = ySeekFifo(&(hub->not_fifo), (u8*)(NOTIFY_NETPKT_START), NOTIFY_NETPKT_START_LEN, 0, end, 0);
+    pos = ySeekFifo(not_fifo, (u8*)(NOTIFY_NETPKT_START), NOTIFY_NETPKT_START_LEN, 0, end, 0);
     if (pos != 0) {
         // does not start with signature, drop everything until stop marker
 #ifdef DEBUG_NET_NOTIFICATION
@@ -3616,7 +3616,7 @@ int handleNetNotification(HubSt *hub)
                  end, pos, throwbuf);
         dumpNotif(Dbuffer);
 #else
-        yPopFifo(&(hub->not_fifo),NULL, end + 1);
+        yPopFifo(not_fifo,NULL, end + 1);
 #endif
         hub->notifAbsPos += end + 1;
         return 0;
@@ -3625,8 +3625,8 @@ int handleNetNotification(HubSt *hub)
     // full packet at start of fifo
     size = end - NOTIFY_NETPKT_START_LEN;
     YASSERT(NOTIFY_NETPKT_MAX_LEN > size, size);
-    yPopFifo(&(hub->not_fifo),NULL,NOTIFY_NETPKT_START_LEN);
-    yPopFifo(&(hub->not_fifo), (u8*)buffer, size + 1);
+    yPopFifo(not_fifo,NULL,NOTIFY_NETPKT_START_LEN);
+    yPopFifo(not_fifo, (u8*)buffer, size + 1);
     buffer[size] = 0;
     pkttype = *buffer;
     p = buffer + 1;
@@ -3643,7 +3643,7 @@ int handleNetNotification(HubSt *hub)
         hub->notifAbsPos = (u32)newpos;
         //look if we have a \n just after the sync notification
         // if yes this mean that the hub will send some ping notification
-        testPing = ySeekFifo(&(hub->not_fifo), (u8*)&netstop, 1, 0, 1, 0);
+        testPing = ySeekFifo(not_fifo, (u8*)&netstop, 1, 0, 1, 0);
         if (testPing == 0) {
 #ifdef DEBUG_NET_NOTIFICATION
             YSPRINTF(Dbuffer, 1024, "HUB: %s will send ping notification\n", hub->url.host);
@@ -3846,10 +3846,14 @@ static void process_http(yThread *thread, HubSt *hub)
     int res;
     int first_notification_connection = 1;
     int skip_first_info_json = 1;
+    yFifoBuf chunked_not_fifo;
+    int chunked_not_fifo_size = 0;
+
 #ifdef DEBUG_NET_NOTIFICATION
     char Dbuffer[1024];
 #endif
     dbglog("hub(%s:%p) start http process\n", hub->url.org_url, hub);
+    memset(&chunked_not_fifo,0,sizeof(chunked_not_fifo));
     while (!yThreadMustEnd(thread)) {
         // Handle async connections as well in this thread
         request_pending_logs(hub);
@@ -3889,6 +3893,7 @@ static void process_http(yThread *thread, HubSt *hub)
 #endif
                 // reset fifo
                 yFifoEmpty(&(hub->not_fifo));
+                hub->not_chunk_remaing = -1;
                 if (first_notification_connection) {
                     YSPRINTF(request, 256, "GET /not.byn HTTP/1.1\r\n\r\n");
                 } else {
@@ -3958,8 +3963,8 @@ static void process_http(yThread *thread, HubSt *hub)
                         if (res > 0) {
                             buffer[res] = 0;
 #if 0 //def DEBUG_NET_NOTIFICATION
-                            YSPRINTF(Dbuffer, 1024, "HUB: %X->%s push %d [\n%s\n]\n", hub->url, hub->name, res, buffer);
-                            dumpNotif(Dbuffer);
+                            YSPRINTF(Dbuffer, 1024, "HUB: %s push %d [\n%s\n]\n", hub->url.org_url, res, buffer);
+                            //dumpNotif(Dbuffer);
 #endif
                             yPushFifo(&(hub->not_fifo), (u8*)buffer, res);
                             if (hub->state == NET_HUB_FIRST_TRY || hub->state == NET_HUB_RETRYING) {
@@ -3967,15 +3972,24 @@ static void process_http(yThread *thread, HubSt *hub)
                                 if (eoh != 0xffff) {
                                     if (eoh >= 12) {
                                         yPopFifo(&(hub->not_fifo), (u8*)buffer, 12);
-                                        yPopFifo(&(hub->not_fifo), NULL, eoh + 4 - 12);
                                         if (!memcmp((u8*)buffer, (u8*)"HTTP/1.1 200", 12)) {
                                             hub->state = NET_HUB_ESTABLISHED;
                                             if (hub->notConLastAlive == 0 || (yapiGetTickCount() - hub->notConLastAlive) > 4000) {
                                                 log_hub_state(&hub->url, "connected", "HTTP");
                                             }
                                             setNotificationConnectionON(hub);
-
-                                        }
+                                            const char* str = "Transfer-Encoding";
+                                            const char* chunked = "chunked";
+                                            int enc = ySeekFifo(&(hub->not_fifo), (const u8*)str, ystrlen(str), 12, 0, 1);
+                                            if (enc != 0xffff) {
+                                                int endl = ySeekFifo(&(hub->not_fifo),  (u8*)"\r\n", 2, enc, 0, 0);
+                                                int chunk_ofs = ySeekFifo(&(hub->not_fifo),   (const u8*) chunked, ystrlen(chunked), enc, endl-enc, 1);
+                                                if (chunk_ofs != 0xffff) {
+                                                      hub->not_chunk_remaing = 0;
+                                                }
+                                            }
+                                        } 
+                                        yPopFifo(&(hub->not_fifo), NULL, eoh + 4 - 12);
                                     } else if (eoh >= 2) {
                                         yPopFifo(&(hub->not_fifo), (u8*)buffer, 2);
                                         yPopFifo(&(hub->not_fifo), NULL, eoh + 4 - 2);
@@ -3995,7 +4009,56 @@ static void process_http(yThread *thread, HubSt *hub)
                             }
                             if (hub->state == NET_HUB_ESTABLISHED) {
                                 setNotificationConnectionON(hub);
-                                while (handleNetNotification(hub));
+                                if (hub->not_chunk_remaing >= 0) {
+                                    if (hub->not_chunk_remaing == 0) {
+                                        // ensure chuck is full loaded
+                                        u16 endl = ySeekFifo(&(hub->not_fifo), (const u8*)"\r\n", 2, 0, 0, 0);
+                                        if (endl !=0xffff){
+                                            char buffer[128];
+                                            yPopFifo(&(hub->not_fifo), (u8*) buffer, endl); // get header
+                                            yPopFifo(&(hub->not_fifo),NULL, 2); // drop \r\n
+                                            int chunklen = decodeHex(buffer, endl);
+                                            if (chunklen) {
+                                                chunklen += 2; // include \r\n at the end of chunk
+                                                hub->not_chunk_remaing = chunklen;
+                                                // ensure we have an big enought fifo
+                                                if (chunked_not_fifo_size < chunklen) {
+                                                    if (chunked_not_fifo_size > 0) {
+                                                        yFree(chunked_not_fifo.buff);
+                                                        yFifoCleanup(&chunked_not_fifo);
+                                                    }
+                                                    u8* ptr = yMalloc(chunklen);
+                                                    yFifoInit(&chunked_not_fifo, ptr, chunklen);
+                                                }
+                                                yFifoEmpty(&chunked_not_fifo);
+                                            }
+                                        }
+                                    }
+                                    int chunk_size = yFifoGetUsed(&chunked_not_fifo);
+                                    while (yFifoGetUsed(&hub->not_fifo) && chunk_size < hub->not_chunk_remaing) {
+                                        int tofill = hub->not_chunk_remaing - chunk_size;
+                                        if (tofill > 0) {
+                                            // fill decoded fifo until full
+                                            u8* ptr;
+                                            u16 continuous = yPeekContinuousFifo(&hub->not_fifo, &ptr, 0);
+                                            if (continuous) {
+                                                if (continuous > tofill) {
+                                                    continuous = tofill;
+                                                }
+                                                yPushFifo(&chunked_not_fifo, ptr, continuous);
+                                                yPopFifo(&hub->not_fifo, NULL, continuous);
+                                            }
+                                        } 
+                                        chunk_size = yFifoGetUsed(&chunked_not_fifo);
+                                    }
+                                    if (chunk_size && chunk_size == hub->not_chunk_remaing){
+                                        // handle chunk in one block
+                                        while (handleNetNotification(hub,&chunked_not_fifo));
+                                        hub->not_chunk_remaing =  0;
+                                    }
+                                } else {
+                                    while (handleNetNotification(hub, &hub->not_fifo));
+                                }
                             }
                             hub->http.lastTraffic = yapiGetTickCount();
                         } else {
@@ -4065,6 +4128,10 @@ static void process_http(yThread *thread, HubSt *hub)
     if (hub->state == NET_HUB_TOCLOSE) {
         yReqClose(hub->http.notReq);
         hub->state = NET_HUB_CLOSED;
+    }
+    if (chunked_not_fifo.buff) {
+        yFree(chunked_not_fifo.buff);
+        yFifoCleanup(&chunked_not_fifo);
     }
     dbglog("hub(%s:%p) stop http process\n", hub->url.org_url, hub);
 }
@@ -4976,7 +5043,7 @@ static int yapiCheckLogicalName_internal(const char *name)
 static u16 yapiGetAPIVersion_internal(const char **version, const char **apidate)
 {
     if (version)
-        *version = "2.1.14699";
+        *version = "2.1.14927";
     if (apidate)
         *apidate = YOCTO_API_BUILD_DATE;
 
