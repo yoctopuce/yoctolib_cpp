@@ -263,6 +263,12 @@
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\sha512.c">
       <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\p256-m\p256-m\p256-m.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\p256-m\p256-m</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\p256-m\p256-m_driver_entrypoints.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\p256-m</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\extras\lmots.c">
       <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\extras</Filter>
     </ClCompile>

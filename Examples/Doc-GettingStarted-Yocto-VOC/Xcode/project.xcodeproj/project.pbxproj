@@ -11,6 +11,7 @@
 		B8447F5514726963008342F7 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B8447F5414726963008342F7 /* CoreFoundation.framework */; };
 		B8AD01202F9A178B00B4A8AC /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B8AD011F2F9A178B00B4A8AC /* CoreText.framework */; };
 		B8A727A817E0CD3A00572b3ae7b /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00577ed67fa9 /* main.cpp */; };
+		B8A727A817E0CD3A0057fb22fad0 /* yocto_airquality.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057101ae93d /* yocto_airquality.cpp */; };
 		B8A727A817E0CD3A00578b94d099 /* yocto_humidity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057ad0ce333 /* yocto_humidity.cpp */; };
 		B8A727A817E0CD3A0057b1fed39d /* yocto_temperature.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00576fae754b /* yocto_temperature.cpp */; };
 		B8A727A817E0CD3A00575be950e7 /* yocto_tvoc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057ce50083c /* yocto_tvoc.cpp */; };
@@ -101,6 +102,8 @@
 		B8A727A817E0CD3A0057838ee456 /* sha256.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057d3926bc2 /* sha256.c */; };
 		B8A727A817E0CD3A0057df9c106d /* sha3.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00574d0211fb /* sha3.c */; };
 		B8A727A817E0CD3A0057b9c507cd /* sha512.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057e9d98859 /* sha512.c */; };
+		B8A727A817E0CD3A00576465ec19 /* p256-m.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057c4f6daa /* p256-m.c */; };
+		B8A727A817E0CD3A0057e1523d02 /* p256-m_driver_entrypoints.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057eb89ecec /* p256-m_driver_entrypoints.c */; };
 		B8A727A817E0CD3A0057ee711bef /* lmots.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057f51ef820 /* lmots.c */; };
 		B8A727A817E0CD3A00573df247a3 /* lms.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00571040f534 /* lms.c */; };
 		B8A727A817E0CD3A005795ad46fe /* md.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005725f05c01 /* md.c */; };
@@ -142,6 +145,8 @@
 		B8447F5414726963008342F7 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		B8AD011F2F9A178B00B4A8AC /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
 		B8A727A817E0CD3A00577ed67fa9 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../main.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057101ae93d /* yocto_airquality.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_airquality.cpp; path = ../../../Sources/yocto_airquality.cpp; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057db3afce8 /* yocto_airquality.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_airquality.h; path = ../../../Sources/yocto_airquality.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057ad0ce333 /* yocto_humidity.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_humidity.cpp; path = ../../../Sources/yocto_humidity.cpp; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057f21555c7 /* yocto_humidity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yocto_humidity.h; path = ../../../Sources/yocto_humidity.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00576fae754b /* yocto_temperature.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = yocto_temperature.cpp; path = ../../../Sources/yocto_temperature.cpp; sourceTree = "<group>"; };
@@ -366,7 +371,9 @@
 		B8A727A817E0CD3A0057e46562bd /* wasmsupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = wasmsupport.h; path = ../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/everest/include/tf-psa-crypto/private/everest/kremlin/internal/wasmsupport.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00574a8e4b0b /* Hacl_Curve25519.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Hacl_Curve25519.h; path = ../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/everest/include/tf-psa-crypto/private/everest/vs2013/Hacl_Curve25519.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057a982c303 /* x25519.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = x25519.h; path = ../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/everest/include/tf-psa-crypto/private/everest/x25519.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057c4f6daa /* p256-m.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = p256-m.c; path = ../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/p256-m/p256-m/p256-m.c; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00579b9db422 /* p256-m.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = p256-m.h; path = ../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/p256-m/p256-m/p256-m.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057eb89ecec /* p256-m_driver_entrypoints.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = p256-m_driver_entrypoints.c; path = ../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/p256-m/p256-m_driver_entrypoints.c; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00577c5b3564 /* p256-m_driver_entrypoints.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = p256-m_driver_entrypoints.h; path = ../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/p256-m/p256-m_driver_entrypoints.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057f51ef820 /* lmots.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lmots.c; path = ../../../Sources/yapi/mbedtls/tf-psa-crypto/extras/lmots.c; sourceTree = "<group>"; };
 		B8A727A817E0CD3A005762cc21a8 /* lmots.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lmots.h; path = ../../../Sources/yapi/mbedtls/tf-psa-crypto/extras/lmots.h; sourceTree = "<group>"; };
@@ -450,6 +457,8 @@
 		B8A727A817E0CD3A005714112f86 /* Yoctopuce */ = {
 			isa = PBXGroup;
 			children = (
+				B8A727A817E0CD3A0057101ae93d /* yocto_airquality.cpp */,
+				B8A727A817E0CD3A0057db3afce8 /* yocto_airquality.h */,
 				B8A727A817E0CD3A0057ad0ce333 /* yocto_humidity.cpp */,
 				B8A727A817E0CD3A0057f21555c7 /* yocto_humidity.h */,
 				B8A727A817E0CD3A00576fae754b /* yocto_temperature.cpp */,
@@ -688,7 +697,9 @@
 				B8A727A817E0CD3A0057e46562bd /* wasmsupport.h */,
 				B8A727A817E0CD3A00574a8e4b0b /* Hacl_Curve25519.h */,
 				B8A727A817E0CD3A0057a982c303 /* x25519.h */,
+				B8A727A817E0CD3A0057c4f6daa /* p256-m.c */,
 				B8A727A817E0CD3A00579b9db422 /* p256-m.h */,
+				B8A727A817E0CD3A0057eb89ecec /* p256-m_driver_entrypoints.c */,
 				B8A727A817E0CD3A00577c5b3564 /* p256-m_driver_entrypoints.h */,
 				B8A727A817E0CD3A0057f51ef820 /* lmots.c */,
 				B8A727A817E0CD3A005762cc21a8 /* lmots.h */,
@@ -834,6 +845,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B8A727A817E0CD3A00572b3ae7b /* main.cpp in Sources */,
+				B8A727A817E0CD3A0057fb22fad0 /* yocto_airquality.cpp in Sources */,
 				B8A727A817E0CD3A00578b94d099 /* yocto_humidity.cpp in Sources */,
 				B8A727A817E0CD3A0057b1fed39d /* yocto_temperature.cpp in Sources */,
 				B8A727A817E0CD3A00575be950e7 /* yocto_tvoc.cpp in Sources */,
@@ -924,6 +936,8 @@
 				B8A727A817E0CD3A0057838ee456 /* sha256.c in Sources */,
 				B8A727A817E0CD3A0057df9c106d /* sha3.c in Sources */,
 				B8A727A817E0CD3A0057b9c507cd /* sha512.c in Sources */,
+				B8A727A817E0CD3A00576465ec19 /* p256-m.c in Sources */,
+				B8A727A817E0CD3A0057e1523d02 /* p256-m_driver_entrypoints.c in Sources */,
 				B8A727A817E0CD3A0057ee711bef /* lmots.c in Sources */,
 				B8A727A817E0CD3A00573df247a3 /* lms.c in Sources */,
 				B8A727A817E0CD3A005795ad46fe /* md.c in Sources */,

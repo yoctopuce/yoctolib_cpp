@@ -100,6 +100,8 @@
 		B8A727A817E0CD3A0057838ee456 /* sha256.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057d3926bc2 /* sha256.c */; };
 		B8A727A817E0CD3A0057df9c106d /* sha3.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00574d0211fb /* sha3.c */; };
 		B8A727A817E0CD3A0057b9c507cd /* sha512.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057e9d98859 /* sha512.c */; };
+		B8A727A817E0CD3A00576465ec19 /* p256-m.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057c4f6daa /* p256-m.c */; };
+		B8A727A817E0CD3A0057e1523d02 /* p256-m_driver_entrypoints.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057eb89ecec /* p256-m_driver_entrypoints.c */; };
 		B8A727A817E0CD3A0057ee711bef /* lmots.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A0057f51ef820 /* lmots.c */; };
 		B8A727A817E0CD3A00573df247a3 /* lms.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A00571040f534 /* lms.c */; };
 		B8A727A817E0CD3A005795ad46fe /* md.c in Sources */ = {isa = PBXBuildFile; fileRef = B8A727A817E0CD3A005725f05c01 /* md.c */; };
@@ -363,7 +365,9 @@
 		B8A727A817E0CD3A0057e46562bd /* wasmsupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = wasmsupport.h; path = ../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/everest/include/tf-psa-crypto/private/everest/kremlin/internal/wasmsupport.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00574a8e4b0b /* Hacl_Curve25519.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Hacl_Curve25519.h; path = ../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/everest/include/tf-psa-crypto/private/everest/vs2013/Hacl_Curve25519.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057a982c303 /* x25519.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = x25519.h; path = ../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/everest/include/tf-psa-crypto/private/everest/x25519.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057c4f6daa /* p256-m.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = p256-m.c; path = ../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/p256-m/p256-m/p256-m.c; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00579b9db422 /* p256-m.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = p256-m.h; path = ../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/p256-m/p256-m/p256-m.h; sourceTree = "<group>"; };
+		B8A727A817E0CD3A0057eb89ecec /* p256-m_driver_entrypoints.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = p256-m_driver_entrypoints.c; path = ../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/p256-m/p256-m_driver_entrypoints.c; sourceTree = "<group>"; };
 		B8A727A817E0CD3A00577c5b3564 /* p256-m_driver_entrypoints.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = p256-m_driver_entrypoints.h; path = ../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/p256-m/p256-m_driver_entrypoints.h; sourceTree = "<group>"; };
 		B8A727A817E0CD3A0057f51ef820 /* lmots.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lmots.c; path = ../../../Sources/yapi/mbedtls/tf-psa-crypto/extras/lmots.c; sourceTree = "<group>"; };
 		B8A727A817E0CD3A005762cc21a8 /* lmots.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lmots.h; path = ../../../Sources/yapi/mbedtls/tf-psa-crypto/extras/lmots.h; sourceTree = "<group>"; };
@@ -683,7 +687,9 @@
 				B8A727A817E0CD3A0057e46562bd /* wasmsupport.h */,
 				B8A727A817E0CD3A00574a8e4b0b /* Hacl_Curve25519.h */,
 				B8A727A817E0CD3A0057a982c303 /* x25519.h */,
+				B8A727A817E0CD3A0057c4f6daa /* p256-m.c */,
 				B8A727A817E0CD3A00579b9db422 /* p256-m.h */,
+				B8A727A817E0CD3A0057eb89ecec /* p256-m_driver_entrypoints.c */,
 				B8A727A817E0CD3A00577c5b3564 /* p256-m_driver_entrypoints.h */,
 				B8A727A817E0CD3A0057f51ef820 /* lmots.c */,
 				B8A727A817E0CD3A005762cc21a8 /* lmots.h */,
@@ -918,6 +924,8 @@
 				B8A727A817E0CD3A0057838ee456 /* sha256.c in Sources */,
 				B8A727A817E0CD3A0057df9c106d /* sha3.c in Sources */,
 				B8A727A817E0CD3A0057b9c507cd /* sha512.c in Sources */,
+				B8A727A817E0CD3A00576465ec19 /* p256-m.c in Sources */,
+				B8A727A817E0CD3A0057e1523d02 /* p256-m_driver_entrypoints.c in Sources */,
 				B8A727A817E0CD3A0057ee711bef /* lmots.c in Sources */,
 				B8A727A817E0CD3A00573df247a3 /* lms.c in Sources */,
 				B8A727A817E0CD3A005795ad46fe /* md.c in Sources */,

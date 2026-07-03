@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yssl.h 73081 2026-05-04 13:51:15Z seb $
+ * $Id: yssl.h 75006 2026-06-30 09:18:59Z seb $
  *
  *  Declaration of a client TCP stack
  *
@@ -66,6 +66,9 @@ __forceinline void __SSLLOG(fmt,...){}
 
 #ifndef NO_YSSL
 #include "yfifo.h"
+#ifdef WINDOWS_API
+#pragma comment(lib, "bcrypt.lib")
+#endif
 
 #define YSSL_BUFFER_SIZE  1024
 #define YSSL_TCP_SOCK_CLOSED  1

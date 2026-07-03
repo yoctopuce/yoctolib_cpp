@@ -805,8 +805,16 @@
       <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/everest/include/tf-psa-crypto/private/everest/x25519.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
       </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/p256-m/p256-m/p256-m.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
+      </Unit>
       <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/p256-m/p256-m/p256-m.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+      </Unit>
+      <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/p256-m/p256-m_driver_entrypoints.c"></Unit>
+         <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />
+         <Option  compilerVar="CC" />
       </Unit>
       <Unit filename="../../../Sources/yapi/mbedtls/tf-psa-crypto/drivers/p256-m/p256-m_driver_entrypoints.h"></Unit>
          <Option virtualFolder="Yoctopuce/yapi/MbedTLS" />

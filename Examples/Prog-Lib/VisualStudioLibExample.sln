@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36915.13 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UseYoctopuceLib", "UseYoctopuceLib\UseYoctopuceLib.vcxproj", "{328422A4-6491-43A7-98DB-D2C5B2746D00}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "YoctopuceLib", "YoctopuceLib\YoctopuceLib.vcxproj", "{6C7B0CCA-1BD8-485B-9DB3-E10E40B9FE94}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{328422A4-6491-43A7-98DB-D2C5B2746D00}.Debug|Win32.ActiveCfg = Debug|Win32
+		{328422A4-6491-43A7-98DB-D2C5B2746D00}.Debug|Win32.Build.0 = Debug|Win32
+		{328422A4-6491-43A7-98DB-D2C5B2746D00}.Release|Win32.ActiveCfg = Release|Win32
+		{328422A4-6491-43A7-98DB-D2C5B2746D00}.Release|Win32.Build.0 = Release|Win32
+		{6C7B0CCA-1BD8-485B-9DB3-E10E40B9FE94}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6C7B0CCA-1BD8-485B-9DB3-E10E40B9FE94}.Debug|Win32.Build.0 = Debug|Win32
+		{6C7B0CCA-1BD8-485B-9DB3-E10E40B9FE94}.Release|Win32.ActiveCfg = Release|Win32
+		{6C7B0CCA-1BD8-485B-9DB3-E10E40B9FE94}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

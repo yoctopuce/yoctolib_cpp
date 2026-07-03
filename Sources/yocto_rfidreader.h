@@ -77,6 +77,7 @@ protected:
     string          _tagId;
     int             _tagType;
     string          _typeStr;
+    int             _nfcType;
     int             _size;
     int             _usable;
     int             _blksize;
@@ -127,6 +128,14 @@ public:
      * @return a string corresponding to the RFID tag type
      */
     virtual string      get_tagTypeStr(void);
+
+    /**
+     * Returns the type of NFC type usable on the RFID tag, between 1 and 5.
+     * If no known NFC type is know for the RFID tag, returns zero.
+     *
+     * @return an integer corresponding to the RFID tag type
+     */
+    virtual int         get_tagNFCtype(void);
 
     /**
      * Returns the total memory size of the RFID tag, in bytes.
@@ -1001,6 +1010,72 @@ public:
      * happens, you can get more information from the status object.
      */
     virtual int         tagWriteStr(string tagId,int firstBlock,string text,YRfidOptions options,YRfidStatus& status);
+
+    /**
+     * Writes data provided as a binary object to an RFID tag, using NFC
+     * compatible encoding.
+     * The function will automatically create a NFC Capability Container,
+     * and encapsulate the content with the required NDEF header corresponding
+     * to the given content type.
+     *
+     * @param tagId : identifier of the tag to use
+     * @param ndefType : the content type, either "U" for a URL, or a
+     *         generic MIME type like "text/vcard"
+     * @param payload : the payload of the NDEF record
+     * @param options : an YRfidOptions object with the optional
+     *         command execution parameters, such as security key
+     *         if required
+     * @param status : an RfidStatus object that will contain
+     *         the detailled status of the operation
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code. When it
+     * happens, you can get more information from the status object.
+     */
+    virtual int         tagWriteBinNFC(string tagId,string ndefType,string payload,YRfidOptions options,YRfidStatus& status);
+
+    /**
+     * Writes an URL to an RFID tag using NFC compatible encoding, so that
+     * mobile phones with NFC support automatically offer to open
+     * the URL when reading the tag.
+     *
+     * @param tagId : identifier of the tag to use
+     * @param url : the URL to write on the tag
+     * @param options : an YRfidOptions object with the optional
+     *         command execution parameters, such as security key
+     *         if required
+     * @param status : an RfidStatus object that will contain
+     *         the detailled status of the operation
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code. When it
+     * happens, you can get more information from the status object.
+     */
+    virtual int         tagWriteUrlNFC(string tagId,string url,YRfidOptions options,YRfidStatus& status);
+
+    /**
+     * Writes WiFi settings to an RFID tag using NFC compatible encoding, so that
+     * mobile phones with NFC support automatically offer to connect to this WiFi
+     * network.
+     *
+     * @param tagId : identifier of the tag to use
+     * @param ssid : the SSID of the WiFi network to connect to
+     * @param auth : the network authentication type (currently always "WPA2")
+     * @param secret : the network password
+     * @param options : an YRfidOptions object with the optional
+     *         command execution parameters, such as security key
+     *         if required
+     * @param status : an RfidStatus object that will contain
+     *         the detailled status of the operation
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code. When it
+     * happens, you can get more information from the status object.
+     */
+    virtual int         tagWriteWifiConfigNFC(string tagId,string ssid,string auth,string secret,YRfidOptions options,YRfidStatus& status);
 
     /**
      * Reads an RFID tag AFI byte (ISO 15693 only).

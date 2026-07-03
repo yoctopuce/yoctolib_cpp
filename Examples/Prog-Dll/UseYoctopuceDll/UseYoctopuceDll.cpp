@@ -8,6 +8,7 @@ int main(int argc, const char * argv[])
 {
     string      errmsg;
 
+    cout << YAPI::GetAPIVersion() << endl;
     // Setup the API to use local USB devices
     if(YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
         cerr << "RegisterHub error: " << errmsg << endl;

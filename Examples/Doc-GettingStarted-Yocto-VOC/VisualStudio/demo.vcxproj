@@ -216,6 +216,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_airquality.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_humidity.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_temperature.cpp" />
     <ClCompile Include="..\..\..\Sources\yocto_tvoc.cpp" />
@@ -306,6 +307,8 @@
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\sha256.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\sha3.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\sha512.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\p256-m\p256-m\p256-m.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\p256-m\p256-m_driver_entrypoints.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\extras\lmots.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\extras\lms.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\extras\md.c" />
@@ -330,6 +333,7 @@
 
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\Sources\yocto_airquality.h" />
     <ClInclude Include="..\..\..\Sources\yocto_humidity.h" />
     <ClInclude Include="..\..\..\Sources\yocto_temperature.h" />
     <ClInclude Include="..\..\..\Sources\yocto_tvoc.h" />

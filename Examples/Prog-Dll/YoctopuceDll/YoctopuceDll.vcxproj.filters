@@ -1,0 +1,1461 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\..\Sources\yocto_api.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_accelerometer.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_airquality.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_altitude.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_anbutton.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_angularspeed.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_arithmeticsensor.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_audioin.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_audioout.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_bluetoothlink.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_buzzer.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_carbondioxide.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_cellular.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_colorled.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_colorledcluster.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_colorsensor.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_compass.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_counter.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_current.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_currentloopoutput.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_daisychain.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_digitalio.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_display.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_dualpower.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_files.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_genericsensor.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_gps.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_groundspeed.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_gyro.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_hubport.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_humidity.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_i2cport.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_inputcapture.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_inputchain.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_latitude.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_led.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_lightsensor.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_longitude.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_magnetometer.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_messagebox.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_micropython.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_motor.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_multiaxiscontroller.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_multicellweighscale.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_multisenscontroller.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_network.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_orientation.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_oscontrol.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_power.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_poweroutput.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_powersupply.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_pressure.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_proximity.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_pwminput.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_pwmoutput.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_pwmpowersource.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_quadraturedecoder.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_rangefinder.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_realtimeclock.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_refframe.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_relay.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_rfidreader.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_sdi12port.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_segmenteddisplay.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_serialport.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_servo.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_soundlevel.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_soundspectrum.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_spectralchannel.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_spiport.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_steppermotor.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_temperature.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_threshold.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_tilt.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_tvoc.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_virtualsensor.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_voc.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_voltage.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_voltageoutput.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_wakeupmonitor.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_wakeupschedule.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_watchdog.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_weighscale.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yocto_wireless.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\yapi.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\yfifo.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\yhash.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\yjson.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ykey.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ymemory.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\yprog.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ystream.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ytcp.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ythread.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ypkt_lin.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ypkt_win.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\ypkt_osx.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\yssl.c">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\debug.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\error.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_ciphersuites.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_client.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_cookie.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_debug_helpers_generated.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_msg.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls12_client.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls12_server.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_client.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_generic.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_keys.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_server.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509_create.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509_crt.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509_oid.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509write.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\x509write_crt.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\core\psa_crypto.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\core\psa_crypto_client.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\core\psa_crypto_driver_wrappers_no_static.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\core\psa_crypto_random.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\core\psa_crypto_slot_management.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\core\psa_crypto_storage.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\core\psa_its_file.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\core\psa_util.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\aes.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\aesce.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\aesni.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\aria.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\bignum.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\bignum_core.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\block_cipher.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\camellia.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\ccm.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\chacha20.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\chacha20_neon.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\chachapoly.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\cipher.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\cipher_wrap.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\cmac.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\ctr_drbg.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\ecdsa.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\ecjpake.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\ecp.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\ecp_curves.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\entropy.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\entropy_poll.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\gcm.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\hmac_drbg.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\md5.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\poly1305.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\psa_crypto_aead.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\psa_crypto_cipher.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\psa_crypto_ecp.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\psa_crypto_ffdh.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\psa_crypto_hash.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\psa_crypto_mac.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\psa_crypto_pake.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\psa_crypto_rsa.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\psa_crypto_xof.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\psa_util_internal.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\ripemd160.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\rsa.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\rsa_alt_helpers.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\sha1.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\sha256.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\sha3.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\sha512.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\p256-m\p256-m\p256-m.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\p256-m\p256-m</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\p256-m\p256-m_driver_entrypoints.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\p256-m</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\extras\lmots.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\extras</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\extras\lms.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\extras</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\extras\md.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\extras</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\extras\nist_kw.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\extras</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\extras\pk.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\extras</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\extras\pk_ecc.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\extras</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\extras\pk_rsa.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\extras</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\extras\pk_wrap.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\extras</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\extras\pkparse.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\extras</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\extras\pkwrite.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\extras</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\platform\memory_buffer_alloc.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\platform\platform.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\platform\platform_util.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\platform\threading.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\utilities\asn1parse.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\utilities\asn1write.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\utilities\base64.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\utilities\constant_time.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\utilities\oid.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\utilities\pem.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\utilities\pkcs5.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\utilities</Filter>
+    </ClCompile>
+
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\Sources\yocto_api.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_accelerometer.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_airquality.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_altitude.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_anbutton.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_angularspeed.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_arithmeticsensor.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_audioin.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_audioout.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_bluetoothlink.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_buzzer.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_carbondioxide.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_cellular.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_colorled.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_colorledcluster.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_colorsensor.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_compass.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_counter.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_current.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_currentloopoutput.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_daisychain.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_digitalio.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_display.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_dualpower.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_files.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_genericsensor.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_gps.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_groundspeed.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_gyro.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_hubport.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_humidity.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_i2cport.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_inputcapture.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_inputchain.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_latitude.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_led.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_lightsensor.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_longitude.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_magnetometer.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_messagebox.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_micropython.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_motor.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_multiaxiscontroller.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_multicellweighscale.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_multisenscontroller.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_network.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_orientation.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_oscontrol.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_power.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_poweroutput.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_powersupply.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_pressure.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_proximity.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_pwminput.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_pwmoutput.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_pwmpowersource.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_quadraturedecoder.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_rangefinder.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_realtimeclock.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_refframe.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_relay.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_rfidreader.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_sdi12port.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_segmenteddisplay.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_serialport.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_servo.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_soundlevel.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_soundspectrum.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_spectralchannel.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_spiport.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_steppermotor.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_temperature.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_threshold.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_tilt.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_tvoc.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_virtualsensor.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_voc.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_voltage.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_voltageoutput.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_wakeupmonitor.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_wakeupschedule.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_watchdog.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_weighscale.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yocto_wireless.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yapi.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\ydef.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yfifo.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yhash.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yjson.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\ykey.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\ymemory.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yprog.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yproto.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\ytcp.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\ythread.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yversion.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\yssl.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\ydef_private.h">
+      <Filter>Yoctopuce\yapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\include\mbedtls\build_info.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\include\mbedtls\debug.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\include\mbedtls\error.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\include\mbedtls\mbedtls_config.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\include\mbedtls\net_sockets.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\include\mbedtls\oid.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\include\mbedtls\pkcs7.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\include\mbedtls\private\config_adjust_ssl.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\include\mbedtls\private\config_adjust_x509.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\include\mbedtls\ssl.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\include\mbedtls\ssl_cache.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\include\mbedtls\ssl_ciphersuites.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\include\mbedtls\ssl_cookie.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\include\mbedtls\ssl_ticket.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\include\mbedtls\timing.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\include\mbedtls\version.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\include\mbedtls\x509.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\include\mbedtls\x509_crl.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\include\mbedtls\x509_crt.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\include\mbedtls\x509_csr.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\include\threading_alt.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\debug_internal.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\mbedtls_check_config.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\mps_common.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\mps_error.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\mps_reader.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\mps_trace.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\ssl_ciphersuites_internal.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\ssl_client.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\ssl_debug_helpers.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\ssl_misc.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_invasive.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls13_keys.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\x509_internal.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\library\x509_oid.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\core\alignment.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\core\psa_crypto_core.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\core\psa_crypto_core_common.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\core\psa_crypto_invasive.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\core\psa_crypto_its.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\core\psa_crypto_random_impl.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\core\psa_crypto_slot_management.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\core\psa_crypto_storage.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\core\tf_psa_crypto_check_config.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\core\tf_psa_crypto_common.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\aes.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\aria.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\bignum.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\block_cipher.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\camellia.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\ccm.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\chacha20.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\chachapoly.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\cipher.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\cmac.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\config_adjust_test_accelerators.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\ctr_drbg.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\ecdsa.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\ecjpake.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\ecp.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\entropy.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\error_common.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\gcm.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\hmac_drbg.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\md5.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\pkcs5.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\poly1305.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\ripemd160.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\rsa.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\sha1.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\sha256.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\sha3.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private\sha512.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\include\mbedtls\private_access.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\aesce.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\aesni.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\bignum_core.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\bignum_core_invasive.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\bignum_internal.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\bignum_mod.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\bignum_mod_raw.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\bignum_mod_raw_invasive.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\block_cipher_internal.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\bn_mul.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\cipher_invasive.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\cipher_wrap.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\ctr.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\ecp_invasive.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\entropy_poll.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\md_psa.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\psa_crypto_aead.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\psa_crypto_cipher.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\psa_crypto_ecp.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\psa_crypto_ffdh.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\psa_crypto_hash.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\psa_crypto_mac.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\psa_crypto_pake.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\psa_crypto_rsa.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\psa_util_internal.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\rsa_alt_helpers.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\rsa_internal.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\Hacl_Curve25519.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlib.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlib\FStar_UInt128.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlib\FStar_UInt64_FStar_UInt32_FStar_UInt16_FStar_UInt8.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlin\c_endianness.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlin\internal\builtin.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlin\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlin\internal\callconv.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlin\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlin\internal\compat.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlin\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlin\internal\debug.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlin\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlin\internal\target.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlin\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlin\internal\types.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlin\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlin\internal\wasmsupport.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlin\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\vs2013\Hacl_Curve25519.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\vs2013</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\x25519.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\p256-m\p256-m\p256-m.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\p256-m\p256-m</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\p256-m\p256-m_driver_entrypoints.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\p256-m</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\extras\lmots.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\extras</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\extras\md_wrap.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\extras</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\extras\pk_internal.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\extras</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\extras\pk_wrap.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\extras</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\extras\pkwrite.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\extras</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\mbedtls\asn1.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\mbedtls\asn1write.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\mbedtls\base64.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\mbedtls\compat-3-crypto.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\mbedtls\constant_time.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\mbedtls\lms.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\mbedtls\md.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\mbedtls\memory_buffer_alloc.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\mbedtls\nist_kw.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\mbedtls\pem.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\mbedtls\pk.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\mbedtls\platform.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\mbedtls\platform_time.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\mbedtls\platform_util.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\mbedtls\private\pk_private.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\mbedtls\private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\mbedtls\psa_util.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\mbedtls\threading.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\mbedtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\psa\crypto.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\psa</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\psa\crypto_compat.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\psa</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\psa\crypto_config.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\psa</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\psa\crypto_driver_common.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\psa</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\psa\crypto_driver_contexts_composites.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\psa</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\psa\crypto_driver_contexts_key_derivation.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\psa</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\psa\crypto_driver_contexts_primitives.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\psa</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\psa\crypto_driver_random.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\psa</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\psa\crypto_extra.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\psa</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\psa\crypto_platform.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\psa</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\psa\crypto_sizes.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\psa</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\psa\crypto_struct.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\psa</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\psa\crypto_types.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\psa</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\psa\crypto_values.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\psa</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\tf-psa-crypto\build_info.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\tf-psa-crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\include\tf-psa-crypto\version.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\tf-psa-crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\utilities\base64_internal.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\utilities\constant_time_impl.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\utilities\constant_time_internal.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\utilities\crypto_oid.h">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\utilities</Filter>
+    </ClInclude>
+
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Yoctopuce">
+      <UniqueIdentifier>{4ab10f33-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi">
+      <UniqueIdentifier>{f5ada74-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS">
+      <UniqueIdentifier>{2f2ae26b-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\include">
+      <UniqueIdentifier>{76721f43-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\include\mbedtls">
+      <UniqueIdentifier>{782076d0-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\include\mbedtls\private">
+      <UniqueIdentifier>{6f6a1a7a-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\library">
+      <UniqueIdentifier>{a75feb74-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto">
+      <UniqueIdentifier>{928b83c4-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\core">
+      <UniqueIdentifier>{3c66c4b3-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers">
+      <UniqueIdentifier>{86740c50-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin">
+      <UniqueIdentifier>{b4e16ab3-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include">
+      <UniqueIdentifier>{c58a2e09-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls">
+      <UniqueIdentifier>{60cfefa3-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\include\mbedtls\private">
+      <UniqueIdentifier>{8067caf2-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src">
+      <UniqueIdentifier>{fe748823-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest">
+      <UniqueIdentifier>{d24f21d8-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest\include">
+      <UniqueIdentifier>{3b634114-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest\include\tf-psa-crypto">
+      <UniqueIdentifier>{334bbc73-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private">
+      <UniqueIdentifier>{6ed5ac11-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest">
+      <UniqueIdentifier>{ba377e90-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlib">
+      <UniqueIdentifier>{b6ff802f-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlin">
+      <UniqueIdentifier>{bf49cc04-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\kremlin\internal">
+      <UniqueIdentifier>{5654f6d8-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\everest\include\tf-psa-crypto\private\everest\vs2013">
+      <UniqueIdentifier>{a2fa4b85-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\p256-m">
+      <UniqueIdentifier>{cd97ea05-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\p256-m\p256-m">
+      <UniqueIdentifier>{5f06b6b9-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\extras">
+      <UniqueIdentifier>{9f49ed8d-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include">
+      <UniqueIdentifier>{12c9a3dc-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\mbedtls">
+      <UniqueIdentifier>{75eac762-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\mbedtls\private">
+      <UniqueIdentifier>{355876d7-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\psa">
+      <UniqueIdentifier>{94f484fa-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\include\tf-psa-crypto">
+      <UniqueIdentifier>{630d1d7f-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\platform">
+      <UniqueIdentifier>{cc3f7053-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Yoctopuce\yapi\MbedTLS\tf-psa-crypto\utilities">
+      <UniqueIdentifier>{de1d0a3-6d2b-49b8-8fb9-64c21b1fdb1b}</UniqueIdentifier>
+    </Filter>
+
+  </ItemGroup>
+</Project>

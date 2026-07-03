@@ -1,0 +1,16 @@
+{
+    "main": "main.cpp",
+    "other_files": [],
+    "ylib": [
+        "yocto_display",
+        "yocto_files",
+        "yocto_temperature",
+        "yocto_api"
+    ],
+    "skip": false,
+    "xcode": true,
+    "vstudio": true,
+    "gnu": true,
+    "cmake": true,
+    "cb": true
+}

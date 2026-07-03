@@ -2,6 +2,9 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\..\..\Sources\yocto_airquality.cpp">
+      <Filter>Yoctopuce</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\Sources\yocto_humidity.cpp">
       <Filter>Yoctopuce</Filter>
     </ClCompile>
@@ -272,6 +275,12 @@
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\builtin\src\sha512.c">
       <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\builtin\src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\p256-m\p256-m\p256-m.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\p256-m\p256-m</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\drivers\p256-m\p256-m_driver_entrypoints.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\drivers\p256-m</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\tf-psa-crypto\extras\lmots.c">
       <Filter>Yoctopuce\yapi\MbedTLS\tf-psa-crypto\extras</Filter>
     </ClCompile>
@@ -338,6 +347,9 @@
 
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\Sources\yocto_airquality.h">
+      <Filter>Yoctopuce</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\Sources\yocto_humidity.h">
       <Filter>Yoctopuce</Filter>
     </ClInclude>
