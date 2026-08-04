@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 72057 2026-02-17 09:44:53Z mvuilleu $
+ * $Id: yocto_api.cpp 75356 2026-08-03 12:03:23Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -4616,6 +4616,14 @@ void YFunction::clearCache()
 }
 
 
+// Internal method to force reloading even lazy attributes (eg. displayWidth, etc)
+void YFunction::_clearLazyCache()
+{
+    clearCache();
+    _cacheExpiration = 0;
+}
+
+
 /**
  * Gets the YModule object for the device on which the function is located.
  * If the function cannot be located on any module, the returned instance of
@@ -7009,7 +7017,15 @@ int YModule::saveToFlash(void)
  */
 int YModule::revertFromFlash(void)
 {
-    return this->set_persistentSettings(Y_PERSISTENTSETTINGS_LOADED);
+    int res = 0;
+
+    res = this->set_persistentSettings(Y_PERSISTENTSETTINGS_LOADED);
+    if (!(res==YAPI_SUCCESS)) {
+        _throw((YRETCODE)(res), "unable to trigger revert settings");
+        return res;
+    }
+    this->_clearLazyCache();
+    return res;
 }
 
 /**

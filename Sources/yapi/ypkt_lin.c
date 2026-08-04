@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_lin.c 49591 2022-04-28 12:47:10Z mvuilleu $
+ * $Id: ypkt_lin.c 75354 2026-08-03 10:22:03Z seb $
  *
  * OS-specific USB packet layer, Linux version
  *
@@ -77,9 +77,9 @@ static int yLinSetErrEx(u32 line,char *intro, int err,char *errmsg)
     if (intro){
         YSPRINTF(errmsg,YOCTO_ERRMSG_LEN,"%s:%s",intro,msg);
     } else{
-        YSPRINTF(errmsg,YOCTO_ERRMSG_LEN,"LIN(%d):%s",line,msg);
+        YSPRINTF(errmsg,YOCTO_ERRMSG_LEN,"LIN(%d:%d):%s",line,err,msg);
     }
-    HALLOG("LIN(%d):%s\n",line,msg);
+    HALLOG("LIN(%d:%d):%s\n",line,err,msg);
     return YAPI_IO_ERROR;
 };
 
@@ -272,14 +272,29 @@ static void *event_thread(void *param)
 {
     yContextSt *ctx = (yContextSt*)param;
     char            errmsg[YOCTO_ERRMSG_LEN];
+
     ctx->usb_thread_state = USB_THREAD_RUNNING;
     /* Non-blocking. See if the OS has any reports to give. */
     HALLOG("Start event_thread run loop\n");
     while (ctx->usb_thread_state != USB_THREAD_MUST_STOP) {
-        int res = process_libusb_events(ctx, 1000, errmsg);
-        if (res < 0) {
-            yLinSetErr("libusb_handle_events_timeout", res,errmsg);
-            break;
+        int res;
+        if (ctx->linux_flags & YCTX_LINUX_SYNC_LIBUSB) {
+            res = libusb_handle_events(ctx->libusb);
+            if (res < 0) {
+                yLinSetErr("libusb_handle_events", res, errmsg);
+                break;
+            }
+        } else {
+            res = process_libusb_events(ctx, 1000, errmsg);
+            if (res == LIBUSB_ERROR_INVALID_PARAM){
+                if (!(ctx->linux_flags & YCTX_LINUX_SYNC_LIBUSB)) {
+                    dbglog("libusb_handle_events_timeout is not supported. Fallback to blocking API\n");
+                    ctx->linux_flags |= YCTX_LINUX_SYNC_LIBUSB;
+                }
+            } else if (res < 0) {
+                yLinSetErr("libusb_handle_events_timeout", res,errmsg);
+                break;
+            }
         }
     }
     HALLOG("event_thread run loop stopped\n");
@@ -290,7 +305,7 @@ static void *event_thread(void *param)
 
 int yyyUSB_init(yContextSt *ctx,char *errmsg)
 {
-    int res;
+    int res, count = 40;
 
     YPROPERR(yReserveGlobalAccess(ctx, errmsg));
     memset(stringCache, 0, sizeof(stringCache));
@@ -309,10 +324,13 @@ int yyyUSB_init(yContextSt *ctx,char *errmsg)
     ctx->usb_thread_state = USB_THREAD_NOT_STARTED;
     pthread_create(&ctx->usb_thread, NULL, event_thread, ctx);
     //wait thread start
-    while(ctx->usb_thread_state != USB_THREAD_RUNNING){
+    while(ctx->usb_thread_state != USB_THREAD_RUNNING && count > 0){
         usleep(50000);
+        count--;
     }
-
+    if (ctx->usb_thread_state != USB_THREAD_RUNNING){
+        return YERRMSG(YAPI_IO_ERROR,"unable to start usbthread");
+    }
     return YAPI_SUCCESS;
 }
 
@@ -321,13 +339,17 @@ int yyyUSB_stop(yContextSt *ctx,char *errmsg)
 {
     int i;
     stringCacheSt *c = stringCache;
-
-    if(ctx->usb_thread_state == USB_THREAD_RUNNING){
+    if (ctx->linux_flags & YCTX_LINUX_SYNC_LIBUSB) {
+        // if libusb_handle_events_timeout is not supported do not wait for the
+        // thread to stop. Stop the libusb and hope for the best
         ctx->usb_thread_state = USB_THREAD_MUST_STOP;
-        pthread_join(ctx->usb_thread,NULL);
+    } else {
+        if(ctx->usb_thread_state == USB_THREAD_RUNNING){
+            ctx->usb_thread_state = USB_THREAD_MUST_STOP;
+            pthread_join(ctx->usb_thread, NULL);
+        }
+        YASSERT(ctx->usb_thread_state == USB_THREAD_STOPED, ctx->usb_thread_state);
     }
-    YASSERT(ctx->usb_thread_state == USB_THREAD_STOPED, ctx->usb_thread_state);
-
     libusb_exit(ctx->libusb);
     yReleaseGlobalAccess(ctx);
     for (i = 0; i < STRING_CACHE_SIZE; i++, c++) {
@@ -593,7 +615,7 @@ static void wr_callback(struct libusb_transfer *transfer)
         HALLOG("CBwr:%s pkt error (len=%d nbError:%d)\n",iface->serial, transfer->actual_length,  iface->ioError);
         break;
     case LIBUSB_TRANSFER_TIMED_OUT :
-        HALLOG("CBwr:%s pkt timeout (%u/%u)\n",iface->serial,iface->nbPktSent,iface->nbPktSubmited);
+        HALLOG("CBwr:%s pkt timeout\n",iface->serial);
         yPktQueueSetError(&iface->txQueue, YAPI_TIMEOUT, "USB transfer ended with LIBUSB_TRANSFER_TIMED_OUT");
 #if 0
         res = sendNextPkt(iface, errmsg);

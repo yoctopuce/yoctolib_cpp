@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 74504 2026-06-01 14:50:23Z seb $
+ * $Id: yocto_display.cpp 75358 2026-08-03 12:09:23Z seb $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -580,7 +580,7 @@ int YDisplayLayer::polygonAdd(int x,int y)
 }
 
 /**
- * Close the currently open polygon, fill its content the fill color currently
+ * Closes the currently open polygon, fill its content the fill color currently
  * selected for the layer, and draw its outline using the selected line color.
  *
  * @return YAPI::SUCCESS if the call succeeds.
@@ -952,11 +952,11 @@ string YDisplay::get_startupSeq(void)
 }
 
 /**
- * Changes the name of the sequence to play when the displayed is powered on.
+ * Changes the name of the sequence to play when the display is powered on.
  * Remember to call the saveToFlash() method of the module if the
  * modification must be kept.
  *
- * @param newval : a string corresponding to the name of the sequence to play when the displayed is powered on
+ * @param newval : a string corresponding to the name of the sequence to play when the display is powered on
  *
  * @return YAPI::SUCCESS if the call succeeds.
  *
@@ -1147,6 +1147,7 @@ int YDisplay::set_orientation(Y_ORIENTATION_enum newval)
     try {
         char buf[32]; SAFE_SPRINTF(buf, 32, "%d", newval); rest_val = string(buf);
         res = _setAttr("orientation", rest_val);
+        _clearLazyCache();
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
@@ -1205,6 +1206,7 @@ int YDisplay::set_displayPanel(const string& newval)
     try {
         rest_val = newval;
         res = _setAttr("displayPanel", rest_val);
+        _clearLazyCache();
     } catch (std::exception &) {
          yLeaveCriticalSection(&_this_cs);
          throw;
@@ -1272,11 +1274,11 @@ int YDisplay::get_displayHeight(void)
 }
 
 /**
- * Returns the display type: monochrome OLED, black and white ePaper, color ePaper, etc.
+ * Returns the display type: monochrome OLED, black and white ePaper, color ePaper, and so on.
  *
  * @return a value among YDisplay::DISPLAYTYPE_MONO, YDisplay::DISPLAYTYPE_EPAPER_BW,
  * YDisplay::DISPLAYTYPE_EPAPER_BWR and YDisplay::DISPLAYTYPE_EPAPER_BWRY corresponding to the display
- * type: monochrome OLED, black and white ePaper, color ePaper, etc
+ * type: monochrome OLED, black and white ePaper, color ePaper, and so on
  *
  * On failure, throws an exception or returns YDisplay::DISPLAYTYPE_INVALID.
  */
@@ -1559,7 +1561,7 @@ bool YDisplay::isFrozen(void)
 
 /**
  * Clears the display screen and resets all display layers to their default state.
- * Using this function in a sequence will kill the sequence play-back. Don't use that
+ * Using this function in a sequence will kill the sequence play-back. Do not use that
  * function to reset the display at sequence start-up.
  *
  * @return YAPI::SUCCESS if the call succeeds.
@@ -1653,7 +1655,7 @@ int YDisplay::postponeRefresh(int duration)
 }
 
 /**
- * Trigger an immediate screen refresh. The combination of
+ * Triggers an immediate screen refresh. The combination of
  * postponeRefresh and triggerRefresh can be used as an
  * alternative to double-buffering to avoid flickering during display updates.
  *

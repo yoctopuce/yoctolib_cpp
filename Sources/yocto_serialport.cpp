@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 72057 2026-02-17 09:44:53Z mvuilleu $
+ * $Id: yocto_serialport.cpp 75301 2026-07-28 09:36:00Z seb $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -1771,22 +1771,27 @@ int YSerialPort::_internalEventHandler(string advstr)
         // first simulated event, use it only to initialize reference values
         _eventPos = 0;
     }
-
-    url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=0&t=0",_eventPos);
-    msgbin = this->_download(url);
-    msgarr = this->_json_get_array(msgbin);
-    msglen = (int)msgarr.size();
-    if (msglen == 0) {
-        return YAPI_SUCCESS;
-    }
-    // last element of array is the new position
-    msglen = msglen - 1;
-    if (!(_eventCallback != NULL)) {
-        // first simulated event, use it only to initialize reference values
+    msglen = 0;
+    try {
+        url = YapiWrapper::ysprintf("rxmsg.json?pos=%d&maxw=0&t=0",_eventPos);
+        msgbin = this->_download(url);
+        msgarr = this->_json_get_array(msgbin);
+        msglen = (int)msgarr.size();
+        if (msglen == 0) {
+            return YAPI_SUCCESS;
+        }
+        // last element of array is the new position
+        msglen = msglen - 1;
+        if (!(_eventCallback != NULL)) {
+            // first simulated event, use it only to initialize reference values
+            _eventPos = this->_decode_json_int(msgarr[msglen]);
+            return YAPI_SUCCESS;
+        }
         _eventPos = this->_decode_json_int(msgarr[msglen]);
-        return YAPI_SUCCESS;
+    } catch (std::exception&) {
+        return YAPI_IO_ERROR;
     }
-    _eventPos = this->_decode_json_int(msgarr[msglen]);
+
     idx = 0;
     while (idx < msglen) {
         _eventCallback(this, YSnoopingRecord(msgarr[idx]));

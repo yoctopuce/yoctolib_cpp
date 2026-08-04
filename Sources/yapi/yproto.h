@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 74763 2026-06-18 08:27:43Z seb $
+ * $Id: yproto.h 75354 2026-08-03 10:22:03Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -969,6 +969,7 @@ typedef struct _YIOHDL_internal {
 #define YCTX_OSX_MULTIPLES_HID 1
 #define YCTX_OSX_NO_RUN_LOOP_ON_DEVICE 2
 #define YCTX_LINUX_ON_RPI 1
+#define YCTX_LINUX_SYNC_LIBUSB 2
 extern u64 YctxDeviceListValidityMs;
 extern u32 YctxNetworkTimeout;
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.h 73721 2026-05-22 17:28:09Z mvuilleu $
+ * $Id: yocto_display.h 75263 2026-07-27 07:59:19Z seb $
  *
  * Declares yFindDisplay(), the high-level API for Display functions
  *
@@ -533,7 +533,7 @@ public:
     virtual int         polygonAdd(int x,int y);
 
     /**
-     * Close the currently open polygon, fill its content the fill color currently
+     * Closes the currently open polygon, fill its content the fill color currently
      * selected for the layer, and draw its outline using the selected line color.
      *
      * @return YAPI::SUCCESS if the call succeeds.
@@ -823,11 +823,11 @@ public:
     { return this->get_startupSeq(); }
 
     /**
-     * Changes the name of the sequence to play when the displayed is powered on.
+     * Changes the name of the sequence to play when the display is powered on.
      * Remember to call the saveToFlash() method of the module if the
      * modification must be kept.
      *
-     * @param newval : a string corresponding to the name of the sequence to play when the displayed is powered on
+     * @param newval : a string corresponding to the name of the sequence to play when the display is powered on
      *
      * @return YAPI::SUCCESS if the call succeeds.
      *
@@ -981,11 +981,11 @@ public:
     { return this->get_displayHeight(); }
 
     /**
-     * Returns the display type: monochrome OLED, black and white ePaper, color ePaper, etc.
+     * Returns the display type: monochrome OLED, black and white ePaper, color ePaper, and so on.
      *
      * @return a value among YDisplay::DISPLAYTYPE_MONO, YDisplay::DISPLAYTYPE_EPAPER_BW,
      * YDisplay::DISPLAYTYPE_EPAPER_BWR and YDisplay::DISPLAYTYPE_EPAPER_BWRY corresponding to the display
-     * type: monochrome OLED, black and white ePaper, color ePaper, etc
+     * type: monochrome OLED, black and white ePaper, color ePaper, and so on
      *
      * On failure, throws an exception or returns YDisplay::DISPLAYTYPE_INVALID.
      */
@@ -1097,7 +1097,7 @@ public:
 
     /**
      * Clears the display screen and resets all display layers to their default state.
-     * Using this function in a sequence will kill the sequence play-back. Don't use that
+     * Using this function in a sequence will kill the sequence play-back. Do not use that
      * function to reset the display at sequence start-up.
      *
      * @return YAPI::SUCCESS if the call succeeds.
@@ -1147,7 +1147,7 @@ public:
     virtual int         postponeRefresh(int duration);
 
     /**
-     * Trigger an immediate screen refresh. The combination of
+     * Triggers an immediate screen refresh. The combination of
      * postponeRefresh and triggerRefresh can be used as an
      * alternative to double-buffering to avoid flickering during display updates.
      *
