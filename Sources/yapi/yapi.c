@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 74767 2026-06-19 07:05:29Z seb $
+ * $Id: yapi.c 75551 2026-08-17 14:34:10Z seb $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -2854,11 +2854,13 @@ static YRETCODE yapiInitAPI_internal(int detect_type, const char *certificate, c
 #pragma message("yapi is compiled in 64 bits")
 #endif
 
+#ifndef NO_YSSL_ON_PURPOSE
 #ifdef NO_YSSL
 #ifdef __GNUC__
 #pragma message"ssl/tls support is disabled"
 #else
 #pragma message("ssl/tls support is disabled")
+#endif
 #endif
 #endif
 
@@ -5043,7 +5045,7 @@ static int yapiCheckLogicalName_internal(const char *name)
 static u16 yapiGetAPIVersion_internal(const char **version, const char **apidate)
 {
     if (version)
-        *version = "2.1.15391";
+        *version = "2.1.15681";
     if (apidate)
         *apidate = YOCTO_API_BUILD_DATE;
 

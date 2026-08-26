@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 72548 2026-03-26 08:16:41Z seb $
+ * $Id: yprog.c 75642 2026-08-21 09:44:14Z seb $
  *
  * Implementation of firmware upgrade functions
  *
@@ -1517,7 +1517,7 @@ YPROG_RESULT uFlashDevice(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
         ulog("Flash disconnect\n");
 #endif
 #ifndef EMBEDDED_API
-        yyyPacketShutdown(&firm_dev->iface);
+        yyyPacketShutdown(&firm_dev->iface, 0);
 #endif
         fctx->stepA = FLASH_DONE;
     // intentionally no break
@@ -1652,7 +1652,7 @@ YRETCODE yapiGetUSBBootloaderInfo(const char *serial, BootDevInfoSt *info, char 
             }
         }
     }
-    yyyPacketShutdown(&dev.iface);
+    yyyPacketShutdown(&dev.iface, 0);
     if (YISERR(res)) {
         return res;
     }

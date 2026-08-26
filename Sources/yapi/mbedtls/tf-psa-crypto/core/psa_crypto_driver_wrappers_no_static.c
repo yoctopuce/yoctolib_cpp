@@ -29,9 +29,14 @@
 #if defined(MBEDTLS_PSA_CRYPTO_C)
 
 /* BEGIN-driver headers */
-/* Headers for mbedtls_test opaque driver */
-#if defined(PSA_CRYPTO_DRIVER_TEST)
-#include "test/drivers/test_driver.h"
+/* Headers for p256 transparent driver */
+#if defined(MBEDTLS_PSA_P256M_DRIVER_ENABLED)
+#include "../drivers/p256-m/p256-m_driver_entrypoints.h"
+
+#endif
+/* Headers for pqcp transparent driver */
+#if defined(TF_PSA_CRYPTO_PQCP_MLDSA_ENABLED)
+#include "../drivers/pqcp/src/psa_crypto_mldsa.h"
 
 #endif
 /* Headers for mbedtls_test transparent driver */
@@ -39,9 +44,9 @@
 #include "test/drivers/test_driver.h"
 
 #endif
-/* Headers for p256 transparent driver */
-#if defined(MBEDTLS_PSA_P256M_DRIVER_ENABLED)
-#include "../drivers/p256-m/p256-m_driver_entrypoints.h"
+/* Headers for mbedtls_test opaque driver */
+#if defined(PSA_CRYPTO_DRIVER_TEST)
+#include "test/drivers/test_driver.h"
 
 #endif
 
@@ -52,9 +57,10 @@
  * ID 1 is reserved for the Mbed TLS software driver. */
 /* BEGIN-driver id definition */
 #define PSA_CRYPTO_MBED_TLS_DRIVER_ID (1)
-#define MBEDTLS_TEST_OPAQUE_DRIVER_ID (2)
-#define MBEDTLS_TEST_TRANSPARENT_DRIVER_ID (3)
-#define P256_TRANSPARENT_DRIVER_ID (4)
+#define P256_TRANSPARENT_DRIVER_ID (2)
+#define PQCP_TRANSPARENT_DRIVER_ID (3)
+#define MBEDTLS_TEST_TRANSPARENT_DRIVER_ID (4)
+#define MBEDTLS_TEST_OPAQUE_DRIVER_ID (5)
 
 /* END-driver id */
 
@@ -131,20 +137,6 @@ psa_status_t psa_driver_wrapper_export_public_key(
              * cycle through all known transparent accelerators */
 #if defined(PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT)
 
-#if (defined(PSA_CRYPTO_DRIVER_TEST) )
-            status = mbedtls_test_transparent_export_public_key
-                (attributes,
-                                key_buffer,
-                                key_buffer_size,
-                                data,
-                                data_size,
-                                data_length
-            );
-
-            if( status != PSA_ERROR_NOT_SUPPORTED )
-                return( status );
-#endif
-
 #if (defined(MBEDTLS_PSA_P256M_DRIVER_ENABLED) )
             status = p256_transparent_export_public_key
                 (attributes,
@@ -160,8 +152,33 @@ psa_status_t psa_driver_wrapper_export_public_key(
 #endif
 
 
+#if (defined(PSA_CRYPTO_DRIVER_TEST) )
+            status = mbedtls_test_transparent_export_public_key
+                (attributes,
+                                key_buffer,
+                                key_buffer_size,
+                                data,
+                                data_size,
+                                data_length
+            );
+
+            if( status != PSA_ERROR_NOT_SUPPORTED )
+                return( status );
+#endif
+
+
 #endif /* PSA_CRYPTO_ACCELERATOR_DRIVER_PRESENT */
             /* Fell through, meaning no accelerator supports this operation */
+
+#if defined(TF_PSA_CRYPTO_PQCP_MLDSA_ENABLED)
+            if (psa_get_key_type(attributes) == PSA_KEY_TYPE_ML_DSA_KEY_PAIR) {
+                status = tf_psa_crypto_mldsa_export_public_key(
+                            attributes,
+                            key_buffer, key_buffer_size,
+                            data, data_size, data_length);
+                return status;
+            }
+#endif
             return( psa_export_public_key_internal( attributes,
                                                     key_buffer,
                                                     key_buffer_size,

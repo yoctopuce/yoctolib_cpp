@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_lin.c 75354 2026-08-03 10:22:03Z seb $
+ * $Id: ypkt_lin.c 75642 2026-08-21 09:44:14Z seb $
  *
  * OS-specific USB packet layer, Linux version
  *
@@ -742,7 +742,7 @@ int yyySignalOutPkt(yInterfaceSt *iface, char *errmsg)
 
 
 
-void yyyPacketShutdown(yInterfaceSt  *iface)
+void yyyPacketShutdown(yInterfaceSt  *iface, int force)
 {
     if (iface && iface->hdl) {
         int res;

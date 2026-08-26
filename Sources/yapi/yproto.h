@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yproto.h 75354 2026-08-03 10:22:03Z seb $
+ * $Id: yproto.h 75642 2026-08-21 09:44:14Z seb $
  *
  * Definitions and prototype common to all supported OS
  *
@@ -1077,8 +1077,8 @@ int yyyOShdlCompare(yPrivDeviceSt* dev, yInterfaceSt* newiface);
 int yyySetup(yInterfaceSt* iface, char* errmsg);
 YRETCODE yyySendPacket(yInterfaceSt* iface, const USB_Packet* pkt, char* errmsg);
 int yyySignalOutPkt(yInterfaceSt* iface, char* errmsg);
-// close all stuff of setup
-void yyyPacketShutdown(yInterfaceSt* iface);
+// close all stuff of setup (force will not wait for end of transmission)
+void yyyPacketShutdown(yInterfaceSt* iface, int force);
 
 
 /*****************************************************************************

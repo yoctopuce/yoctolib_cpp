@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_osx.c 49591 2022-04-28 12:47:10Z mvuilleu $
+ * $Id: ypkt_osx.c 75642 2026-08-21 09:44:14Z seb $
  *
  * OS-specific USB packet layer, Mac OS X version
  *
@@ -532,7 +532,7 @@ int yyySignalOutPkt(yInterfaceSt *iface, char *errmsg)
 
 
 
-void yyyPacketShutdown(yInterfaceSt  *iface)
+void yyyPacketShutdown(yInterfaceSt  *iface, int force)
 {
     int i;
 
@@ -601,7 +601,7 @@ int yyySignalOutPkt(yInterfaceSt *iface, char *errmsg)
     return -1;
 }
 
-void yyyPacketShutdown(yInterfaceSt  *iface)
+void yyyPacketShutdown(yInterfaceSt  *iface, int force)
 {}
 
 #endif

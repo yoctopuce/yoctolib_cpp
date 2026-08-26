@@ -1,4 +1,9 @@
-CPPV2 v2.1.15391
+CPPV2 v2.1.15681
 
-- Fix potential untrapped exception when using registerSnoopingCallback
-- Fix USB support on Raspberry PI 1 that use Debian Trixie
+- Add support for large text commands via upload
+- Add methods to control ePaper fast refresh policy
+- Add XY-MODEM upload support
+- Add GIF encoding to the library for efficient pixmap upload
+- Update Mbed-TLS lib to 4.2
+- Fix encoding for triggerForcedCalibration() argument
+- Fix very slow detection of faulty device

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ypkt_win.c 70333 2025-11-17 13:30:07Z seb $
+ * $Id: ypkt_win.c 75642 2026-08-21 09:44:14Z seb $
  *
  * OS-specific USB packet layer, Windows version
  *
@@ -852,15 +852,18 @@ int yyySignalOutPkt(yInterfaceSt* iface, char* errmsg)
     return YAPI_SUCCESS;
 }
 
-void yyyPacketShutdown(yInterfaceSt* iface)
+void yyyPacketShutdown(yInterfaceSt* iface, int force)
 {
     HALLOG("yyyPacketShutdown %p\n", iface);
+
     if (yThreadIsRunning(&iface->io_thread)) {
         u64 timeout;
         yThreadRequestEnd(&iface->io_thread);
-        timeout = yapiGetTickCount() + YIO_DEFAULT_USB_TIMEOUT;
-        while (yThreadIsRunning(&iface->io_thread) && timeout >= yapiGetTickCount()) {
-            yApproximateSleep(10);
+        if (!force){
+            timeout = yapiGetTickCount() + YIO_DEFAULT_USB_TIMEOUT;
+            while (yThreadIsRunning(&iface->io_thread) && timeout >= yapiGetTickCount()) {
+                yApproximateSleep(10);
+            }
         }
         yThreadKill(&iface->io_thread);
     }

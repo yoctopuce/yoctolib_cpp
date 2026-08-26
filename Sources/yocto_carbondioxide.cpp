@@ -322,7 +322,7 @@ int YCarbonDioxide::_invokeTimedReportCallback(YMeasure value)
  */
 int YCarbonDioxide::triggerForcedCalibration(double refVal)
 {
-    return this->set_command(YapiWrapper::ysprintf("F%dC",(int) floor(1000*refVal+0.5)));
+    return this->set_command(YapiWrapper::ysprintf("F%dC",(int) floor(refVal+0.5)));
 }
 
 /**

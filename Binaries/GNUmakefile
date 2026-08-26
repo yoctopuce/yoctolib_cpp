@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 73721 2026-05-22 17:28:09Z mvuilleu $
+#  $Id: GNUmakefile 75551 2026-08-17 14:34:10Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -203,7 +203,7 @@ OPTS_WINARM =
 ifdef TOOLCHAIN_QARM
 OPTS_ARMEL = -I$(STAGING_QARM)/usr/include/ -O2 -mfloat-abi=soft -march=armv5 -marm -DBUILD_ARMEL -DNO_YSSL -D_GNU_SOURCE
 else
-OPTS_ARMEL = -mfloat-abi=soft -march=armv5 -DBUILD_ARMEL -D_XOPEN_SOURCE=500 -D_BSD_SOURCE -DNO_YSSL -D_GNU_SOURCE
+OPTS_ARMEL = -mfloat-abi=soft -march=armv5 -DBUILD_ARMEL -D_XOPEN_SOURCE=500 -D_BSD_SOURCE -DNO_YSSL -DNO_YSSL_ON_PURPOSE -D_GNU_SOURCE
 endif
 ifdef TOOLCHAIN_ARMHF
 # reduced ARMHF options to run properly on raspian-thing, but still be compatible with hard-floats VFP
@@ -216,8 +216,8 @@ OPTS_AARCH64 = -I$(STAGING_AARCH64)/usr/include/ $(OPTS_DBG) -march=native -DBUI
 else
 OPTS_AARCH64 = -march=native -DBUILD_AARCH64  -D_GNU_SOURCE
 endif
-OPTS_MIPS = -DCPU_BIG_ENDIAN -I$(MIPS_TARGET_ROOT)/usr/include/ -DNO_YSSL -D_GNU_SOURCE
-OPTS_MIPSEL = -I$(MIPSEL_TARGET_ROOT)/usr/include/ -DNO_YSSL -D_GNU_SOURCE
+OPTS_MIPS = -DCPU_BIG_ENDIAN -I$(MIPS_TARGET_ROOT)/usr/include/ -DNO_YSSL -DNO_YSSL_ON_PURPOSE -D_GNU_SOURCE
+OPTS_MIPSEL = -I$(MIPSEL_TARGET_ROOT)/usr/include/ -DNO_YSSL -DNO_YSSL_ON_PURPOSE -D_GNU_SOURCE
 
 OPTS_X64 =  -m64 -g -Wall -D_GNU_SOURCE
 OPTS_I386 = -m32 -mpclmul -msse2 -maes -D_GNU_SOURCE -march=i586

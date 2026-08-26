@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ystream.c 74766 2026-06-18 09:51:32Z seb $
+ * $Id: ystream.c 75644 2026-08-21 09:52:55Z seb $
  *
  * USB stream implementation
  *
@@ -1544,7 +1544,7 @@ error:
     }
     //shutdown all previously started interfaces;
     dbglog("Closing partially opened device %s\n", dev->infos.serial);
-    yyyPacketShutdown(&dev->iface);
+    yyyPacketShutdown(&dev->iface, 1);
     return res;
 }
 
@@ -1760,7 +1760,10 @@ static int yStreamFlush(yPrivDeviceSt* dev, char* errmsg)
         yshead->size = avail - sizeof(YSTREAM_Head);
         dev->curtxofs += sizeof(YSTREAM_Head) + yshead->size;
     }
-    YPROPERR(yyySendPacket(&dev->iface,&dev->curtxpkt->pkt, errmsg));
+    int sent_res = yyySendPacket(&dev->iface, &dev->curtxpkt->pkt, errmsg);
+    if(YISERR(sent_res)) {
+        return (YRETCODE)sent_res;
+    }
     dev->curtxofs = 0;
     return YAPI_SUCCESS;
 }
@@ -1796,7 +1799,7 @@ static void yStreamShutdown(yPrivDeviceSt* dev)
         yFree(dev->devYdxMap);
         dev->devYdxMap = NULL;
     }
-    yyyPacketShutdown(&dev->iface);
+    yyyPacketShutdown(&dev->iface, 0);
 }
 
 
@@ -2252,15 +2255,18 @@ static void FreeDevice(yPrivDeviceSt* dev)
 // Start an interface
 static int StartDevice(yPrivDeviceSt* dev, char* errmsg)
 {
-    unsigned delay = 10;
     int nb_try;
     int res = YERRMSG(YAPI_IO_ERROR, "Negotiation failed");
 
-    for (nb_try = 0; nb_try < 4; nb_try++, delay *= 4, dbglog("retrying StartDevice (%s)\n", errmsg)) {
+    for (nb_try = 0; nb_try < 2; nb_try++) {
         u64 timeout;
-        int res = yStreamSetup(dev, errmsg);
+        if (nb_try > 0) {
+            dbglog("retrying StartDevice (%s)\n", errmsg);
+        }
+
+        res = yStreamSetup(dev, errmsg);
         if (YISERR(res)) {
-            if (res == YAPI_TIMEOUT) {
+            if (res == YAPI_TIMEOUT && (dev->flags & DEV_FLAGS_GUESS_USB_PKT)==0) {
                 // we may have the Raspberry Pi 4 bug : some packets are not repported by the kernel
                 // supose that we have received the packet and try to continue with packet ack to see
                 // if we can work around this bug

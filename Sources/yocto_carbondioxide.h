@@ -61,7 +61,7 @@ class YCarbonDioxide; // forward declaration
 typedef void (*YCarbonDioxideValueCallback)(YCarbonDioxide *func, const string& functionValue);
 class YMeasure; // forward declaration
 typedef void (*YCarbonDioxideTimedReportCallback)(YCarbonDioxide *func, YMeasure measure);
-#define Y_ABCPERIOD_INVALID             (YAPI_INVALID_UINT)
+#define Y_ABCPERIOD_INVALID             (YAPI_INVALID_INT)
 #define Y_COMMAND_INVALID               (YAPI_INVALID_STRING)
 //--- (end of YCarbonDioxide definitions)
 
@@ -101,7 +101,7 @@ public:
     virtual ~YCarbonDioxide();
     //--- (YCarbonDioxide accessors declaration)
 
-    static const int ABCPERIOD_INVALID = YAPI_INVALID_UINT;
+    static const int ABCPERIOD_INVALID = YAPI_INVALID_INT;
     static const string COMMAND_INVALID;
 
     /**

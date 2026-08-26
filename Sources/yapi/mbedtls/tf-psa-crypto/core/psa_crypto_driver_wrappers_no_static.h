@@ -6,8 +6,8 @@
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
-#ifndef PSA_CRYPTO_DRIVER_WRAPPERS_NO_STATIC_H
-#define PSA_CRYPTO_DRIVER_WRAPPERS_NO_STATIC_H
+#ifndef TF_PSA_CRYPTO_PSA_CRYPTO_DRIVER_WRAPPERS_NO_STATIC_H
+#define TF_PSA_CRYPTO_PSA_CRYPTO_DRIVER_WRAPPERS_NO_STATIC_H
 
 #include "psa/crypto.h"
 #include "psa/crypto_driver_common.h"
@@ -26,6 +26,6 @@ psa_status_t psa_driver_wrapper_get_builtin_key(
     psa_key_attributes_t *attributes,
     uint8_t *key_buffer, size_t key_buffer_size, size_t *key_buffer_length);
 
-#endif /* PSA_CRYPTO_DRIVER_WRAPPERS_NO_STATIC_H */
+#endif /* TF_PSA_CRYPTO_PSA_CRYPTO_DRIVER_WRAPPERS_NO_STATIC_H */
 
 /* End of automatically generated file. */

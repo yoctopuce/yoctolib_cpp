@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 75358 2026-08-03 12:09:23Z seb $
+ * $Id: yocto_display.cpp 75637 2026-08-20 16:54:40Z mvuilleu $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -106,7 +106,7 @@ int YDisplayLayer::command_push(string cmd)
 {
     int res = 0;
     res = YAPI_SUCCESS;
-    if ((int)(_cmdbuff).length() + (int)(cmd).length() >= 100) {
+    if ((int)(_cmdbuff).length() + (int)(cmd).length() >= 64) {
         // force flush before, to prevent overflow
         this->flush_now();
     }
@@ -439,6 +439,18 @@ int YDisplayLayer::selectFont(string fontname)
  */
 int YDisplayLayer::drawText(int x,int y,Y_ALIGN anchor,string text)
 {
+    int textlen = 0;
+    string destname;
+    textlen = (int)(text).length();
+    if (textlen > 60) {
+        if (textlen > 1000) {
+            _display->_throw(YAPI_INVALID_ARGUMENT, "text too large (max 1000 characters)");
+            return YAPI_INVALID_ARGUMENT;
+        }
+        _display->flushLayers();
+        destname = YapiWrapper::ysprintf("layer%d:T%d,%d,%d,",_id,x,y,anchor);
+        return _display->upload(destname,text);
+    }
     return this->command_flush(YapiWrapper::ysprintf("T%d,%d,%d,%s%c",x,y,anchor,text.c_str(),27));
 }
 
@@ -462,33 +474,6 @@ int YDisplayLayer::drawImage(int x,int y,string imagename)
 }
 
 /**
- * Draws a bitmap at the specified position. The bitmap is provided as a binary object,
- * where each pixel maps to a bit, from left to right and from top to bottom.
- * The most significant bit of each byte maps to the leftmost pixel, and the least
- * significant bit maps to the rightmost pixel. Bits set to 1 are drawn using the
- * layer selected pen color. Bits set to 0 are drawn using the specified background
- * gray level, unless -1 is specified, in which case they are not drawn at all
- * (as if transparent).
- *
- * @param x : the distance from left of layer to the left of the bitmap, in pixels
- * @param y : the distance from top of layer to the top of the bitmap, in pixels
- * @param w : the width of the bitmap, in pixels
- * @param bitmap : a binary object
- * @param bgcol : the background gray level to use for zero bits (0 = black,
- *         255 = white), or -1 to leave the pixels unchanged
- *
- * @return YAPI::SUCCESS if the call succeeds.
- *
- * On failure, throws an exception or returns a negative error code.
- */
-int YDisplayLayer::drawBitmap(int x,int y,int w,string bitmap,int bgcol)
-{
-    string destname;
-    destname = YapiWrapper::ysprintf("layer%d:%d,%d@%d,%d",_id,w,bgcol,x,y);
-    return _display->upload(destname,bitmap);
-}
-
-/**
  * Draws a GIF image provided as a binary buffer at the specified position.
  * If the image drawing must be included in an animation sequence, save it
  * in the device filesystem first and use drawImage instead.
@@ -504,8 +489,89 @@ int YDisplayLayer::drawBitmap(int x,int y,int w,string bitmap,int bgcol)
 int YDisplayLayer::drawGIF(int x,int y,string gifimage)
 {
     string destname;
+    _display->flushLayers();
     destname = YapiWrapper::ysprintf("layer%d:G,-1@%d,%d",_id,x,y);
     return _display->upload(destname,gifimage);
+}
+
+/**
+ * Draws a bitmap at the specified position. The bitmap is provided as a binary object,
+ * where each pixel maps to a bit, from left to right and from top to bottom.
+ * The most significant bit of each byte maps to the leftmost pixel, and the least
+ * significant bit maps to the rightmost pixel. Bits set to 1 are drawn using the
+ * layer selected pen color. Bits set to 0 are drawn using the specified background
+ * color, unless NO_INK (-1) is specified, in which case they are not
+ * drawn at all (as if transparent).
+ *
+ * @param x : the distance from left of layer to the left of the bitmap, in pixels
+ * @param y : the distance from top of layer to the top of the bitmap, in pixels
+ * @param w : the width of the bitmap, in pixels
+ * @param bitmap : a binary object
+ * @param bgcol : the RGB background color to use for zero bits, as a 24-bit RGB value,
+ *         or one of the constants NO_INK, FG_INK or BG_INK
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YDisplayLayer::drawBitmap(int x,int y,int w,string bitmap,int bgcol)
+{
+    string destname;
+    int r = 0;
+    int g = 0;
+    int b = 0;
+    string rgbcol;
+    if ((w < 0) || (w > 512)) {
+        _display->_throw(YAPI_INVALID_ARGUMENT, "bitmap width must be in range 1...512");
+        return YAPI_INVALID_ARGUMENT;
+    }
+    _display->flushLayers();
+    if (bgcol <= 255) {
+        if (bgcol >= -1) {
+            // backward-compatible behaviour (gray level)
+            rgbcol = YapiWrapper::ysprintf("%d",bgcol);
+        } else {
+            // background color or foreground color
+            if (bgcol <= -3) {
+                rgbcol = "#.";
+            } else {
+                rgbcol = "#-";
+            }
+        }
+    } else {
+        // RGB color
+        r = ((bgcol >> 20) & 15);
+        g = ((bgcol >> 12) & 15);
+        b = ((bgcol >> 4) & 15);
+        rgbcol = YapiWrapper::ysprintf("#%x%x%x",r,g,b);
+    }
+    destname = YapiWrapper::ysprintf("layer%d:%d,%s@%d,%d",_id,w,rgbcol.c_str(),x,y);
+    return _display->upload(destname,bitmap);
+}
+
+/**
+ * Draws a color pixmap at the specified position. The pixmap is provided as a binary
+ * object, where each byte maps to one pixel. The 24 bit RGB value corresponding to each
+ * byte value is defined in the palette provided as extra argument.
+ * The palette maximal size is 8, and it is recommended to use the smallest possible
+ * palette size to optimize the size of data to be sent to the display.
+ * The height of the pixmap is implicitely given by the pixmap buffer size.
+ *
+ * @param x : the distance from left of layer to the left of the pixmap, in pixels
+ * @param y : the distance from top of layer to the top of the pixmap, in pixels
+ * @param w : the width of the pixmap, in pixels
+ * @param pixmap : a binary buffer where each byte maps to one pixel
+ * @param palette : an array of 24-bit RGB values, defining the color for each byte value in pixmap
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YDisplayLayer::drawPixmap(int x,int y,int w,string pixmap,vector<int> palette)
+{
+    string gifimage;
+    gifimage = _display->gifEncode(pixmap, palette, w, false);
+    return this->drawGIF(x, y, gifimage);
 }
 
 /**
@@ -607,6 +673,18 @@ int YDisplayLayer::polygonEnd(void)
  */
 int YDisplayLayer::consoleOut(string text)
 {
+    int textlen = 0;
+    string destname;
+    textlen = (int)(text).length();
+    if (textlen > 60) {
+        if (textlen > 1000) {
+            _display->_throw(YAPI_INVALID_ARGUMENT, "text too large (max 1000 characters)");
+            return YAPI_INVALID_ARGUMENT;
+        }
+        _display->flushLayers();
+        destname = YapiWrapper::ysprintf("layer%d:!",_id);
+        return _display->upload(destname,text);
+    }
     return this->command_flush(YapiWrapper::ysprintf("!%s%c",text.c_str(),27));
 }
 
@@ -1098,7 +1176,10 @@ int YDisplay::set_autoInvertDelay(int newval)
 }
 
 /**
- * Returns the currently selected display orientation.
+ * Returns the currently selected display orientation. The orientation is defined as the side of the
+ * screen where the
+ * USB connector (for OLED displays) or the ribbon cable (for ePaper panels) is located when the
+ * display is up straight.
  *
  * @return a value among YDisplay::ORIENTATION_LEFT, YDisplay::ORIENTATION_UP,
  * YDisplay::ORIENTATION_RIGHT and YDisplay::ORIENTATION_DOWN corresponding to the currently selected
@@ -1129,7 +1210,9 @@ Y_ORIENTATION_enum YDisplay::get_orientation(void)
 }
 
 /**
- * Changes the display orientation. Remember to call the saveToFlash()
+ * Changes the display orientation. he orientation is defined as the side of the screen where the
+ * USB connector (for OLED displays) or the ribbon cable (for ePaper panels) is located when the
+ * display is up straight. Remember to call the saveToFlash()
  * method of the module if the modification must be kept.
  *
  * @param newval : a value among YDisplay::ORIENTATION_LEFT, YDisplay::ORIENTATION_UP,
@@ -1188,8 +1271,7 @@ string YDisplay::get_displayPanel(void)
 /**
  * Changes the model of display to match the connected display panel.
  * This function has no effect if the module does not support the selected
- * display panel.
- * Remember to call the saveToFlash()
+ * display panel. Remember to call the saveToFlash()
  * method of the module if the modification must be kept.
  *
  * @param newval : a string corresponding to the model of display to match the connected display panel
@@ -1557,6 +1639,123 @@ bool YDisplay::isFrozen(void)
         return false;
     }
     return true;
+}
+
+/**
+ * Returns the fast refresh usage policy in use (ePaper displays only).
+ * This setting is combined with the regenerate policy to determine when the screen
+ * should be updated using a fast update versus or regenerated using a slower,
+ * flickering full refresh.
+ *
+ * @return a value among the YDisplay::FASTREFRESH enumeration
+ *         (YDisplay::FASTREFRESH_WHENEVER_POSSIBLE,
+ *         YDisplay::FASTREFRESH_WHENEVER_SUPPORTED,
+ *         YDisplay::FASTREFRESH_NEVER).
+ *
+ * On failure, throws an exception or returns YDisplay::FASTREFRESH_INVALID.
+ */
+Y_FASTREFRESH YDisplay::get_fastRefreshPolicy(void)
+{
+    int combined = 0;
+    int fmod = 0;
+    combined = this->get_brightness();
+    if (combined < 0) {
+        return Y_FASTREFRESH_INVALID;
+    }
+    fmod = (combined / 25);
+    if (fmod >= 2) {
+        fmod = fmod - 2;
+    }
+    return (Y_FASTREFRESH) fmod;
+}
+
+/**
+ * Returns the display regeneration minimal frequency (ePaper displays only).
+ * This setting is combined with the fast refresh usage policy to determine
+ * when the screen should be updated using a fast update versus or regenerated
+ * using a slower, flickering full refresh. To change the display regeneration minimal
+ * frequency, use methode set_fastRefreshPolicy().
+ *
+ * @return a value among the YDisplay::REGENERATE enumeration
+ *         (YDisplay::REGENERATE_ON_REQUEST_ONLY,
+ *         YDisplay::REGENERATE_EVERY_DAY, YDisplay::REGENERATE_EVERY_12H,
+ *         YDisplay::REGENERATE_EVERY_6H, YDisplay::REGENERATE_EVERY_3H,
+ *         YDisplay::REGENERATE_EVERY_2H, YDisplay::REGENERATE_EVERY_HOUR,
+ *         YDisplay::REGENERATE_EVERY_30MIN, YDisplay::REGENERATE_EVERY_15MIN,
+ *         YDisplay::REGENERATE_EVERY_480, YDisplay::REGENERATE_EVERY_432,
+ *         YDisplay::REGENERATE_EVERY_360, YDisplay::REGENERATE_EVERY_288,
+ *         YDisplay::REGENERATE_EVERY_240, YDisplay::REGENERATE_EVERY_192,
+ *         YDisplay::REGENERATE_EVERY_144, YDisplay::REGENERATE_EVERY_96,
+ *         YDisplay::REGENERATE_EVERY_48, YDisplay::REGENERATE_EVERY_36,
+ *         YDisplay::REGENERATE_EVERY_24, YDisplay::REGENERATE_EVERY_12,
+ *         YDisplay::REGENERATE_EVERY_10, YDisplay::REGENERATE_EVERY_8,
+ *         YDisplay::REGENERATE_EVERY_6, YDisplay::REGENERATE_EVERY_4,
+ *         YDisplay::REGENERATE_ALWAYS).
+ *
+ * On failure, throws an exception or returns YDisplay::REGENERATE_INVALID.
+ */
+Y_REGENERATE YDisplay::get_regeneratePolicy(void)
+{
+    int combined = 0;
+    int fval = 0;
+    combined= this->get_brightness();
+    if (combined < 0) {
+        return Y_REGENERATE_INVALID;
+    }
+    if (combined >= 100) {
+        fval = 25;
+    } else {
+        fval = (combined % 25);
+    }
+    return (Y_REGENERATE) fval;
+}
+
+/**
+ * Changes the fast refresh usage policy and display regeneration minimal frequency
+ * (ePaper displays only). These settings jointly determine when the screen should be
+ * updated using a fast update versus or regenerated using a slower, flickering full
+ * refresh.
+ *
+ * @param fastRefresh : a value among the YDisplay::FASTREFRESH enumeration
+ *         (YDisplay::FASTREFRESH_WHENEVER_POSSIBLE,
+ *         YDisplay::FASTREFRESH_WHENEVER_SUPPORTED,
+ *         YDisplay::FASTREFRESH_NEVER),
+ *         corresponding to the policy for using fast refresh.
+ * @param regenerate : a value among the enumeration YRefFrame.REGENERATE
+ *         (YDisplay::REGENERATE_ON_REQUEST_ONLY,
+ *         YDisplay::REGENERATE_EVERY_DAY, YDisplay::REGENERATE_EVERY_12H,
+ *         YDisplay::REGENERATE_EVERY_6H, YDisplay::REGENERATE_EVERY_3H,
+ *         YDisplay::REGENERATE_EVERY_2H, YDisplay::REGENERATE_EVERY_HOUR,
+ *         YDisplay::REGENERATE_EVERY_30MIN, YDisplay::REGENERATE_EVERY_15MIN,
+ *         YDisplay::REGENERATE_EVERY_480, YDisplay::REGENERATE_EVERY_432,
+ *         YDisplay::REGENERATE_EVERY_360, YDisplay::REGENERATE_EVERY_288,
+ *         YDisplay::REGENERATE_EVERY_240, YDisplay::REGENERATE_EVERY_192,
+ *         YDisplay::REGENERATE_EVERY_144, YDisplay::REGENERATE_EVERY_96,
+ *         YDisplay::REGENERATE_EVERY_48, YDisplay::REGENERATE_EVERY_36,
+ *         YDisplay::REGENERATE_EVERY_24, YDisplay::REGENERATE_EVERY_12,
+ *         YDisplay::REGENERATE_EVERY_10, YDisplay::REGENERATE_EVERY_8,
+ *         YDisplay::REGENERATE_EVERY_6, YDisplay::REGENERATE_EVERY_4,
+ *         YDisplay::REGENERATE_ALWAYS),
+ *         corresponding to the display minimal regeneration frequency.
+ *
+ * Remember to call the saveToFlash()
+ * method of the module if the modification must be kept.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YDisplay::set_fastRefreshPolicy(Y_FASTREFRESH fastRefresh,Y_REGENERATE regenerate)
+{
+    int combined = 0;
+    int fmod = 0;
+    int fval = 0;
+    fmod = fastRefresh;
+    fval = regenerate;
+    if ((fval == 25) || (fmod == 2)) {
+        combined = 100;
+    } else {
+        combined = 50 + fmod * 25 + fval;
+    }
+    return this->set_brightness(combined);
 }
 
 /**
@@ -2070,6 +2269,208 @@ string YDisplay::readDisplay(vector<int> palette)
         srcpos = srcpos + 1;
     }
     return rotmap;
+}
+
+string YDisplay::gifEncode(string pixmap,vector<int> palette,int w,bool shortHdr)
+{
+    int minCodeSize = 0;
+    int LZW_CLRCODE = 0;
+    int LZW_ENDCODE = 0;
+    int LZW_1STCODE = 0;
+    int codeSize = 0;
+    int maxCode = 0;
+    vector<int> codes;
+    int nCodes = 0;
+    int pixmapSize = 0;
+    string dataStream;
+    int blockStart = 0;
+    int blockEnd = 0;
+    int prevCode = 0;
+    int pixPos = 0;
+    int wrBits = 0;
+    int wrBitCnt = 0;
+    int outPos = 0;
+    int nextVal = 0;
+    int i = 0;
+    int hdrSize = 0;
+    string res;
+    int h = 0;
+
+    if ((int)palette.size() > 8) {
+        this->_throw(YAPI_INVALID_ARGUMENT, "Palette should have no more than 8 colors");
+        res = string(0, (char)0);
+        return res;
+    }
+    if ((int)palette.size() <= 4) {
+        minCodeSize = 2;
+    } else {
+        minCodeSize = 3;
+    }
+    LZW_CLRCODE = (1 << minCodeSize);
+    LZW_ENDCODE = LZW_CLRCODE + 1;
+    LZW_1STCODE = LZW_ENDCODE + 1;
+    codeSize = minCodeSize + 1;
+    maxCode = (1 << codeSize) - 1 - LZW_1STCODE;
+    codes.clear();
+    nCodes = 0;
+    pixmapSize = (int)(pixmap).size();
+    dataStream = string(((2 * pixmapSize) / 3) + 8, (char)0);
+    outPos = 0;
+    wrBits = LZW_CLRCODE;
+    wrBitCnt = 3;
+    // prefetch first byte
+    prevCode = ((u8)pixmap[0]);
+    pixPos = 1;
+    while (pixPos < pixmapSize + 3) {
+        blockStart = outPos;
+        outPos = blockStart + 1;
+        blockEnd = blockStart + 256;
+        // flush any carry-over output byte from previous data sub-block
+        while (wrBitCnt >= 8) {
+            dataStream[outPos] = (char)((wrBits & 0xff));
+            outPos = outPos + 1;
+            wrBits = (wrBits >> 8);
+            wrBitCnt = wrBitCnt - 8;
+        }
+        while ((outPos < blockEnd) && (pixPos < pixmapSize)) {
+            // search for an existing code matching the running input segment
+            // printf("[%d] ", rdBits >> 12);
+            nextVal = (prevCode | (((u8)pixmap[pixPos]) << 12));
+            pixPos = pixPos + 1;
+            if (prevCode < LZW_1STCODE) {
+                i = 0;
+            } else {
+                i = prevCode - LZW_ENDCODE;
+            }
+            while ((i < nCodes) && (codes[i] != nextVal)) {
+                i = i + 1;
+            }
+            if (i >= nCodes) {
+                // not found, emit prevCode and create new code
+                wrBits = (wrBits | (prevCode << wrBitCnt));
+                wrBitCnt = wrBitCnt + codeSize;
+                if (nCodes <= maxCode) {
+                    //fprintf(stderr, "#%d: #%d + %d\n", nextCode, nextVal & 63, nextVal >> 6);
+                    codes.push_back(nextVal);
+                    nCodes = nCodes + 1;
+                } else {
+                    codeSize = codeSize + 1;
+                    if (codeSize <= 12) {
+                        //fprintf(stderr, "#%d: #%d + %d\n", nextCode, nextVal & 63, nextVal >> 6);
+                        codes.push_back(nextVal);
+                        nCodes = nCodes + 1;
+                    } else {
+                        wrBits = (wrBits | (LZW_CLRCODE << wrBitCnt));
+                        wrBitCnt = wrBitCnt + codeSize;
+                        codes.clear();
+                        nCodes = 0;
+                        codeSize = minCodeSize + 1;
+                    }
+                    maxCode = (1 << codeSize) - 1 - LZW_1STCODE;
+                }
+                // flush one (or two) codes to output stream
+                while ((wrBitCnt >= 8) && (outPos < blockEnd)) {
+                    dataStream[outPos] = (char)((wrBits & 0xff));
+                    outPos = outPos + 1;
+                    wrBits = (wrBits >> 8);
+                    wrBitCnt = wrBitCnt - 8;
+                }
+                prevCode = (nextVal >> 12);
+            } else {
+                prevCode = i + LZW_1STCODE;
+            }
+        }
+        if (pixPos >= pixmapSize) {
+            if ((outPos < blockEnd) && (pixPos == pixmapSize)) {
+                // append code for last run
+                wrBits = (wrBits | (prevCode << wrBitCnt));
+                wrBitCnt = wrBitCnt + codeSize;
+                while ((wrBitCnt >= 8) && (outPos < blockEnd)) {
+                    dataStream[outPos] = (char)((wrBits & 0xff));
+                    outPos = outPos + 1;
+                    wrBits = (wrBits >> 8);
+                    wrBitCnt = wrBitCnt - 8;
+                }
+                pixPos = pixPos + 1;
+            }
+            if ((outPos < blockEnd) && (pixPos == pixmapSize + 1)) {
+                // append end code
+                wrBits = (wrBits | (LZW_ENDCODE << wrBitCnt));
+                wrBitCnt = wrBitCnt + codeSize;
+                while ((wrBitCnt >= 8) && (outPos < blockEnd)) {
+                    dataStream[outPos] = (char)((wrBits & 0xff));
+                    outPos = outPos + 1;
+                    wrBits = (wrBits >> 8);
+                    wrBitCnt = wrBitCnt - 8;
+                }
+                pixPos = pixPos + 1;
+            }
+            if ((outPos < blockEnd) && (pixPos == pixmapSize + 2)) {
+                // flush last 0-7 bits
+                if (wrBitCnt > 0) {
+                    dataStream[outPos] = (char)((wrBits & 0xff));
+                    outPos = outPos + 1;
+                    wrBitCnt = 0;
+                }
+                pixPos = pixPos + 1;
+            }
+        }
+        dataStream[blockStart] = (char)(outPos - (blockStart + 1));
+    }
+    blockEnd = outPos;
+    // Now write final buffer
+    hdrSize = 24 + LZW_CLRCODE * 3;
+    res = string(hdrSize + outPos + 2, (char)0);
+    // GIF89a header
+    res[0x00] = (char)(0x47);
+    res[0x01] = (char)(0x49);
+    res[0x02] = (char)(0x46);
+    res[0x03] = (char)(0x38);
+    res[0x04] = (char)(0x39);
+    res[0x05] = (char)(0x61);
+    // Logical screen descriptor
+    h = ((int)(pixmap).size() / w);
+    res[0x06] = (char)((w & 0xff));
+    res[0x07] = (char)((w >> 8));
+    res[0x08] = (char)((h & 0xff));
+    res[0x09] = (char)((h >> 8));
+    res[0x0a] = (char)(0xf0 + minCodeSize - 1);
+    res[0x0b] = (char)(0);
+    res[0x0c] = (char)(0);
+    // Palette
+    outPos = 0x0d;
+    i = 0;
+    while (i < LZW_CLRCODE) {
+        if (i < (int)palette.size()) {
+            wrBits = palette[i];
+            res[outPos] = (char)(((wrBits >> 16) & 0xff));
+            res[outPos + 1] = (char)(((wrBits >> 8) & 0xff));
+            res[outPos + 2] = (char)((wrBits & 0xff));
+        }
+        outPos = outPos + 3;
+        i = i + 1;
+    }
+    // Image descriptor
+    res[outPos] = (char)(0x2c);
+    res[outPos + 5] = (char)((w & 0xff));
+    res[outPos + 6] = (char)((w >> 8));
+    res[outPos + 7] = (char)((h & 0xff));
+    res[outPos + 8] = (char)((h >> 8));
+    outPos = outPos + 10;
+    // Prepare to append Image data
+    res[outPos] = (char)(minCodeSize);
+    i = 0;
+    while (i < blockEnd) {
+        outPos = outPos + 1;
+        res[outPos] = (char)(((u8)dataStream[i]));
+        i = i + 1;
+    }
+    // Append zero-block and trailer
+    outPos = outPos + 1;
+    res[outPos] = (char)(0);
+    outPos = outPos + 1;
+    res[outPos] = (char)(0x3b);
+    return res;
 }
 
 YDisplay *YDisplay::nextDisplay(void)

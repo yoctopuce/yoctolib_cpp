@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.h 75263 2026-07-27 07:59:19Z seb $
+ * $Id: yocto_display.h 75617 2026-08-19 06:23:32Z mvuilleu $
  *
  * Declares yFindDisplay(), the high-level API for Display functions
  *
@@ -82,6 +82,49 @@ typedef enum {
     Y_DISPLAYTYPE_INVALID = -1,
 } Y_DISPLAYTYPE_enum;
 #endif
+    #ifndef _Y_FASTREFRESH
+    #define _Y_FASTREFRESH
+    typedef enum {
+        Y_FASTREFRESH_WHENEVER_POSSIBLE = 0 ,
+        Y_FASTREFRESH_WHENEVER_SUPPORTED = 1 ,
+        Y_FASTREFRESH_NEVER = 2 ,
+        Y_FASTREFRESH_INVALID = 3
+    } Y_FASTREFRESH;
+    #endif
+
+    #ifndef _Y_REGENERATE
+    #define _Y_REGENERATE
+    typedef enum {
+        Y_REGENERATE_ON_REQUEST_ONLY = 0 ,
+        Y_REGENERATE_EVERY_DAY = 1 ,
+        Y_REGENERATE_EVERY_12H = 2 ,
+        Y_REGENERATE_EVERY_6H = 3 ,
+        Y_REGENERATE_EVERY_3H = 4 ,
+        Y_REGENERATE_EVERY_2H = 5 ,
+        Y_REGENERATE_EVERY_HOUR = 6 ,
+        Y_REGENERATE_EVERY_30MIN = 7 ,
+        Y_REGENERATE_EVERY_15MIN = 8 ,
+        Y_REGENERATE_EVERY_480 = 9 ,
+        Y_REGENERATE_EVERY_432 = 10 ,
+        Y_REGENERATE_EVERY_360 = 11 ,
+        Y_REGENERATE_EVERY_288 = 12 ,
+        Y_REGENERATE_EVERY_240 = 13 ,
+        Y_REGENERATE_EVERY_192 = 14 ,
+        Y_REGENERATE_EVERY_144 = 15 ,
+        Y_REGENERATE_EVERY_96 = 16 ,
+        Y_REGENERATE_EVERY_48 = 17 ,
+        Y_REGENERATE_EVERY_36 = 18 ,
+        Y_REGENERATE_EVERY_24 = 19 ,
+        Y_REGENERATE_EVERY_12 = 20 ,
+        Y_REGENERATE_EVERY_10 = 21 ,
+        Y_REGENERATE_EVERY_8 = 22 ,
+        Y_REGENERATE_EVERY_6 = 23 ,
+        Y_REGENERATE_EVERY_4 = 24 ,
+        Y_REGENERATE_ALWAYS = 25 ,
+        Y_REGENERATE_INVALID = 26
+    } Y_REGENERATE;
+    #endif
+
     #ifndef _Y_DISPLAYSTATE
     #define _Y_DISPLAYSTATE
     typedef enum {
@@ -89,7 +132,8 @@ typedef enum {
         Y_DISPLAYSTATE_OFF = 1 ,
         Y_DISPLAYSTATE_POWERING = 2 ,
         Y_DISPLAYSTATE_IDLE = 3 ,
-        Y_DISPLAYSTATE_REFRESHING = 4
+        Y_DISPLAYSTATE_REFRESHING = 4 ,
+        Y_DISPLAYSTATE_INVALID = 5
     } Y_DISPLAYSTATE;
     #endif
 
@@ -445,28 +489,6 @@ public:
     virtual int         drawImage(int x,int y,string imagename);
 
     /**
-     * Draws a bitmap at the specified position. The bitmap is provided as a binary object,
-     * where each pixel maps to a bit, from left to right and from top to bottom.
-     * The most significant bit of each byte maps to the leftmost pixel, and the least
-     * significant bit maps to the rightmost pixel. Bits set to 1 are drawn using the
-     * layer selected pen color. Bits set to 0 are drawn using the specified background
-     * gray level, unless -1 is specified, in which case they are not drawn at all
-     * (as if transparent).
-     *
-     * @param x : the distance from left of layer to the left of the bitmap, in pixels
-     * @param y : the distance from top of layer to the top of the bitmap, in pixels
-     * @param w : the width of the bitmap, in pixels
-     * @param bitmap : a binary object
-     * @param bgcol : the background gray level to use for zero bits (0 = black,
-     *         255 = white), or -1 to leave the pixels unchanged
-     *
-     * @return YAPI::SUCCESS if the call succeeds.
-     *
-     * On failure, throws an exception or returns a negative error code.
-     */
-    virtual int         drawBitmap(int x,int y,int w,string bitmap,int bgcol);
-
-    /**
      * Draws a GIF image provided as a binary buffer at the specified position.
      * If the image drawing must be included in an animation sequence, save it
      * in the device filesystem first and use drawImage instead.
@@ -480,6 +502,48 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         drawGIF(int x,int y,string gifimage);
+
+    /**
+     * Draws a bitmap at the specified position. The bitmap is provided as a binary object,
+     * where each pixel maps to a bit, from left to right and from top to bottom.
+     * The most significant bit of each byte maps to the leftmost pixel, and the least
+     * significant bit maps to the rightmost pixel. Bits set to 1 are drawn using the
+     * layer selected pen color. Bits set to 0 are drawn using the specified background
+     * color, unless NO_INK (-1) is specified, in which case they are not
+     * drawn at all (as if transparent).
+     *
+     * @param x : the distance from left of layer to the left of the bitmap, in pixels
+     * @param y : the distance from top of layer to the top of the bitmap, in pixels
+     * @param w : the width of the bitmap, in pixels
+     * @param bitmap : a binary object
+     * @param bgcol : the RGB background color to use for zero bits, as a 24-bit RGB value,
+     *         or one of the constants NO_INK, FG_INK or BG_INK
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         drawBitmap(int x,int y,int w,string bitmap,int bgcol);
+
+    /**
+     * Draws a color pixmap at the specified position. The pixmap is provided as a binary
+     * object, where each byte maps to one pixel. The 24 bit RGB value corresponding to each
+     * byte value is defined in the palette provided as extra argument.
+     * The palette maximal size is 8, and it is recommended to use the smallest possible
+     * palette size to optimize the size of data to be sent to the display.
+     * The height of the pixmap is implicitely given by the pixmap buffer size.
+     *
+     * @param x : the distance from left of layer to the left of the pixmap, in pixels
+     * @param y : the distance from top of layer to the top of the pixmap, in pixels
+     * @param w : the width of the pixmap, in pixels
+     * @param pixmap : a binary buffer where each byte maps to one pixel
+     * @param palette : an array of 24-bit RGB values, defining the color for each byte value in pixmap
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         drawPixmap(int x,int y,int w,string pixmap,vector<int> palette);
 
     /**
      * Moves the drawing pointer of this layer to the specified position.
@@ -777,11 +841,43 @@ public:
     static const int LAYERHEIGHT_INVALID = YAPI_INVALID_UINT;
     static const int LAYERCOUNT_INVALID = YAPI_INVALID_UINT;
     static const string COMMAND_INVALID;
+    static const Y_FASTREFRESH FASTREFRESH_WHENEVER_POSSIBLE = Y_FASTREFRESH_WHENEVER_POSSIBLE;
+    static const Y_FASTREFRESH FASTREFRESH_WHENEVER_SUPPORTED = Y_FASTREFRESH_WHENEVER_SUPPORTED;
+    static const Y_FASTREFRESH FASTREFRESH_NEVER = Y_FASTREFRESH_NEVER;
+    static const Y_FASTREFRESH FASTREFRESH_INVALID = Y_FASTREFRESH_INVALID;
+    static const Y_REGENERATE REGENERATE_ON_REQUEST_ONLY = Y_REGENERATE_ON_REQUEST_ONLY;
+    static const Y_REGENERATE REGENERATE_EVERY_DAY = Y_REGENERATE_EVERY_DAY;
+    static const Y_REGENERATE REGENERATE_EVERY_12H = Y_REGENERATE_EVERY_12H;
+    static const Y_REGENERATE REGENERATE_EVERY_6H = Y_REGENERATE_EVERY_6H;
+    static const Y_REGENERATE REGENERATE_EVERY_3H = Y_REGENERATE_EVERY_3H;
+    static const Y_REGENERATE REGENERATE_EVERY_2H = Y_REGENERATE_EVERY_2H;
+    static const Y_REGENERATE REGENERATE_EVERY_HOUR = Y_REGENERATE_EVERY_HOUR;
+    static const Y_REGENERATE REGENERATE_EVERY_30MIN = Y_REGENERATE_EVERY_30MIN;
+    static const Y_REGENERATE REGENERATE_EVERY_15MIN = Y_REGENERATE_EVERY_15MIN;
+    static const Y_REGENERATE REGENERATE_EVERY_480 = Y_REGENERATE_EVERY_480;
+    static const Y_REGENERATE REGENERATE_EVERY_432 = Y_REGENERATE_EVERY_432;
+    static const Y_REGENERATE REGENERATE_EVERY_360 = Y_REGENERATE_EVERY_360;
+    static const Y_REGENERATE REGENERATE_EVERY_288 = Y_REGENERATE_EVERY_288;
+    static const Y_REGENERATE REGENERATE_EVERY_240 = Y_REGENERATE_EVERY_240;
+    static const Y_REGENERATE REGENERATE_EVERY_192 = Y_REGENERATE_EVERY_192;
+    static const Y_REGENERATE REGENERATE_EVERY_144 = Y_REGENERATE_EVERY_144;
+    static const Y_REGENERATE REGENERATE_EVERY_96 = Y_REGENERATE_EVERY_96;
+    static const Y_REGENERATE REGENERATE_EVERY_48 = Y_REGENERATE_EVERY_48;
+    static const Y_REGENERATE REGENERATE_EVERY_36 = Y_REGENERATE_EVERY_36;
+    static const Y_REGENERATE REGENERATE_EVERY_24 = Y_REGENERATE_EVERY_24;
+    static const Y_REGENERATE REGENERATE_EVERY_12 = Y_REGENERATE_EVERY_12;
+    static const Y_REGENERATE REGENERATE_EVERY_10 = Y_REGENERATE_EVERY_10;
+    static const Y_REGENERATE REGENERATE_EVERY_8 = Y_REGENERATE_EVERY_8;
+    static const Y_REGENERATE REGENERATE_EVERY_6 = Y_REGENERATE_EVERY_6;
+    static const Y_REGENERATE REGENERATE_EVERY_4 = Y_REGENERATE_EVERY_4;
+    static const Y_REGENERATE REGENERATE_ALWAYS = Y_REGENERATE_ALWAYS;
+    static const Y_REGENERATE REGENERATE_INVALID = Y_REGENERATE_INVALID;
     static const Y_DISPLAYSTATE DISPLAYSTATE_FAILURE = Y_DISPLAYSTATE_FAILURE;
     static const Y_DISPLAYSTATE DISPLAYSTATE_OFF = Y_DISPLAYSTATE_OFF;
     static const Y_DISPLAYSTATE DISPLAYSTATE_POWERING = Y_DISPLAYSTATE_POWERING;
     static const Y_DISPLAYSTATE DISPLAYSTATE_IDLE = Y_DISPLAYSTATE_IDLE;
     static const Y_DISPLAYSTATE DISPLAYSTATE_REFRESHING = Y_DISPLAYSTATE_REFRESHING;
+    static const Y_DISPLAYSTATE DISPLAYSTATE_INVALID = Y_DISPLAYSTATE_INVALID;
 
     /**
      * Returns true if the screen is powered, false otherwise.
@@ -899,7 +995,10 @@ public:
     { return this->set_autoInvertDelay(newval); }
 
     /**
-     * Returns the currently selected display orientation.
+     * Returns the currently selected display orientation. The orientation is defined as the side of the
+     * screen where the
+     * USB connector (for OLED displays) or the ribbon cable (for ePaper panels) is located when the
+     * display is up straight.
      *
      * @return a value among YDisplay::ORIENTATION_LEFT, YDisplay::ORIENTATION_UP,
      * YDisplay::ORIENTATION_RIGHT and YDisplay::ORIENTATION_DOWN corresponding to the currently selected
@@ -913,7 +1012,9 @@ public:
     { return this->get_orientation(); }
 
     /**
-     * Changes the display orientation. Remember to call the saveToFlash()
+     * Changes the display orientation. he orientation is defined as the side of the screen where the
+     * USB connector (for OLED displays) or the ribbon cable (for ePaper panels) is located when the
+     * display is up straight. Remember to call the saveToFlash()
      * method of the module if the modification must be kept.
      *
      * @param newval : a value among YDisplay::ORIENTATION_LEFT, YDisplay::ORIENTATION_UP,
@@ -942,8 +1043,7 @@ public:
     /**
      * Changes the model of display to match the connected display panel.
      * This function has no effect if the module does not support the selected
-     * display panel.
-     * Remember to call the saveToFlash()
+     * display panel. Remember to call the saveToFlash()
      * method of the module if the modification must be kept.
      *
      * @param newval : a string corresponding to the model of display to match the connected display panel
@@ -1094,6 +1194,83 @@ public:
     virtual int         resetHiddenLayerFlags(void);
 
     virtual bool        isFrozen(void);
+
+    /**
+     * Returns the fast refresh usage policy in use (ePaper displays only).
+     * This setting is combined with the regenerate policy to determine when the screen
+     * should be updated using a fast update versus or regenerated using a slower,
+     * flickering full refresh.
+     *
+     * @return a value among the YDisplay::FASTREFRESH enumeration
+     *         (YDisplay::FASTREFRESH_WHENEVER_POSSIBLE,
+     *         YDisplay::FASTREFRESH_WHENEVER_SUPPORTED,
+     *         YDisplay::FASTREFRESH_NEVER).
+     *
+     * On failure, throws an exception or returns YDisplay::FASTREFRESH_INVALID.
+     */
+    virtual Y_FASTREFRESH get_fastRefreshPolicy(void);
+
+    /**
+     * Returns the display regeneration minimal frequency (ePaper displays only).
+     * This setting is combined with the fast refresh usage policy to determine
+     * when the screen should be updated using a fast update versus or regenerated
+     * using a slower, flickering full refresh. To change the display regeneration minimal
+     * frequency, use methode set_fastRefreshPolicy().
+     *
+     * @return a value among the YDisplay::REGENERATE enumeration
+     *         (YDisplay::REGENERATE_ON_REQUEST_ONLY,
+     *         YDisplay::REGENERATE_EVERY_DAY, YDisplay::REGENERATE_EVERY_12H,
+     *         YDisplay::REGENERATE_EVERY_6H, YDisplay::REGENERATE_EVERY_3H,
+     *         YDisplay::REGENERATE_EVERY_2H, YDisplay::REGENERATE_EVERY_HOUR,
+     *         YDisplay::REGENERATE_EVERY_30MIN, YDisplay::REGENERATE_EVERY_15MIN,
+     *         YDisplay::REGENERATE_EVERY_480, YDisplay::REGENERATE_EVERY_432,
+     *         YDisplay::REGENERATE_EVERY_360, YDisplay::REGENERATE_EVERY_288,
+     *         YDisplay::REGENERATE_EVERY_240, YDisplay::REGENERATE_EVERY_192,
+     *         YDisplay::REGENERATE_EVERY_144, YDisplay::REGENERATE_EVERY_96,
+     *         YDisplay::REGENERATE_EVERY_48, YDisplay::REGENERATE_EVERY_36,
+     *         YDisplay::REGENERATE_EVERY_24, YDisplay::REGENERATE_EVERY_12,
+     *         YDisplay::REGENERATE_EVERY_10, YDisplay::REGENERATE_EVERY_8,
+     *         YDisplay::REGENERATE_EVERY_6, YDisplay::REGENERATE_EVERY_4,
+     *         YDisplay::REGENERATE_ALWAYS).
+     *
+     * On failure, throws an exception or returns YDisplay::REGENERATE_INVALID.
+     */
+    virtual Y_REGENERATE get_regeneratePolicy(void);
+
+    /**
+     * Changes the fast refresh usage policy and display regeneration minimal frequency
+     * (ePaper displays only). These settings jointly determine when the screen should be
+     * updated using a fast update versus or regenerated using a slower, flickering full
+     * refresh.
+     *
+     * @param fastRefresh : a value among the YDisplay::FASTREFRESH enumeration
+     *         (YDisplay::FASTREFRESH_WHENEVER_POSSIBLE,
+     *         YDisplay::FASTREFRESH_WHENEVER_SUPPORTED,
+     *         YDisplay::FASTREFRESH_NEVER),
+     *         corresponding to the policy for using fast refresh.
+     * @param regenerate : a value among the enumeration YRefFrame.REGENERATE
+     *         (YDisplay::REGENERATE_ON_REQUEST_ONLY,
+     *         YDisplay::REGENERATE_EVERY_DAY, YDisplay::REGENERATE_EVERY_12H,
+     *         YDisplay::REGENERATE_EVERY_6H, YDisplay::REGENERATE_EVERY_3H,
+     *         YDisplay::REGENERATE_EVERY_2H, YDisplay::REGENERATE_EVERY_HOUR,
+     *         YDisplay::REGENERATE_EVERY_30MIN, YDisplay::REGENERATE_EVERY_15MIN,
+     *         YDisplay::REGENERATE_EVERY_480, YDisplay::REGENERATE_EVERY_432,
+     *         YDisplay::REGENERATE_EVERY_360, YDisplay::REGENERATE_EVERY_288,
+     *         YDisplay::REGENERATE_EVERY_240, YDisplay::REGENERATE_EVERY_192,
+     *         YDisplay::REGENERATE_EVERY_144, YDisplay::REGENERATE_EVERY_96,
+     *         YDisplay::REGENERATE_EVERY_48, YDisplay::REGENERATE_EVERY_36,
+     *         YDisplay::REGENERATE_EVERY_24, YDisplay::REGENERATE_EVERY_12,
+     *         YDisplay::REGENERATE_EVERY_10, YDisplay::REGENERATE_EVERY_8,
+     *         YDisplay::REGENERATE_EVERY_6, YDisplay::REGENERATE_EVERY_4,
+     *         YDisplay::REGENERATE_ALWAYS),
+     *         corresponding to the display minimal regeneration frequency.
+     *
+     * Remember to call the saveToFlash()
+     * method of the module if the modification must be kept.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         set_fastRefreshPolicy(Y_FASTREFRESH fastRefresh,Y_REGENERATE regenerate);
 
     /**
      * Clears the display screen and resets all display layers to their default state.
@@ -1308,6 +1485,8 @@ public:
      * On failure, throws an exception or returns an empty binary object.
      */
     virtual string      readDisplay(vector<int> palette);
+
+    virtual string      gifEncode(string pixmap,vector<int> palette,int w,bool shortHdr);
 
 
     inline static YDisplay *Find(string func)
