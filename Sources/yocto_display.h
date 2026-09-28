@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.h 75617 2026-08-19 06:23:32Z mvuilleu $
+ * $Id: yocto_display.h version 2.1.16087 (build 76087) $
  *
  * Declares yFindDisplay(), the high-level API for Display functions
  *

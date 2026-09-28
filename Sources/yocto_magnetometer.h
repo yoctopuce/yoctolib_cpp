@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_magnetometer.h version 2.1.16087 (build 76087) $
  *
  *  Declares yFindMagnetometer(), the high-level API for Magnetometer functions
  *

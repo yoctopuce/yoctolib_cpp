@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.h 69647 2025-10-24 07:05:49Z seb $
+ * $Id: yprog.h version 2.1.16087 (build 76087) $
  *
  * Declaration of firmware upgrade functions
  *

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_angularspeed.h version 2.1.16087 (build 76087) $
  *
  *  Declares yFindAngularSpeed(), the high-level API for AngularSpeed functions
  *

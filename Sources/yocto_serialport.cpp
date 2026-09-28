@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cpp 75514 2026-08-13 07:24:08Z mvuilleu $
+ * $Id: yocto_serialport.cpp version 2.1.16087 (build 76087) $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -165,7 +165,10 @@ YSerialPort::YSerialPort(const string& func): YFunction(func)
     ,_eventPos(0)
     ,_eventCallback(NULL)
     ,_xytotal(0)
-    ,_xysent(0)
+    ,_xyavail(0)
+    ,_xyready(0)
+    ,_xyacked(0)
+    ,_xyclose(0)
 //--- (end of generated code: YSerialPort initialization)
 {
     _className="SerialPort";
@@ -2378,184 +2381,250 @@ vector<int> YSerialPort::modbusWriteAndReadRegisters(int slaveNo,int pduWriteAdd
     return res;
 }
 
-int YSerialPort::_xymodemQueue(string proto,string fname,string buff,int timeoutSec)
+int YSerialPort::_xymodemQueue(string proto,string buff,string fname,string attributes,bool closeBatch)
 {
+    string datablock;
+
     if ((int)(_xyproto).length() > 0) {
         this->_throw(YAPI_DEVICE_BUSY, "file transfer already in progress");
         return YAPI_DEVICE_BUSY;
     }
+    datablock = string(1024, (char)0);
     _xyproto = proto;
     _xyfname = fname;
+    _xyfattr = attributes;
     _xyfdata = buff;
     _xytotal = (int)(buff).size();
-    _xysent = 0;
-    return this->_xymodemProcess(timeoutSec);
+    _xyblock = datablock;
+    _xyavail = 4096;
+    _xyready = 0;
+    _xyacked = 0;
+    _xyclose = closeBatch;
+    return this->_xymodemProcess(proto);
 }
 
-int YSerialPort::_xymodemProcess(int timeoutSec)
+int YSerialPort::_xymodemProcess(string proto)
 {
-    string proto;
+    int maxblocks = 0;
     int blksize = 0;
-    int cnt = 0;
     string datablock;
+    int cnt = 0;
     string namesuffix;
     string fullproto;
     string json;
     string jsonStr;
     string errStr;
-    int sentBytes = 0;
+    string state;
     string empty;
-    proto = _xyproto;
-    if ((int)(proto).length() == 0) {
+    if ((int)(_xyproto).length() == 0) {
         this->_throw(YAPI_INVALID_ARGUMENT, "no file transfer in progress");
         return YAPI_INVALID_ARGUMENT;
     }
-    // create a data block up to 1k
-    blksize = _xytotal - _xysent;
-    if (blksize > 1024) {
-        blksize = 1024;
+    if ((int)(proto).length() > 6) {
+        proto = proto.substr(0, 6);
     }
-    datablock = string(blksize, (char)0);
-    cnt = 0;
-    while (cnt < blksize) {
-        datablock[cnt] = (char)(((u8)_xyfdata[_xysent + cnt]));
-        cnt = cnt + 1;
+    if (!(_xyproto.substr(0, 6) == proto)) {
+        this->_throw(YAPI_INVALID_ARGUMENT, "file transfer protocol mismatch");
+        return YAPI_INVALID_ARGUMENT;
     }
-    namesuffix = "";
-    if (_xysent == 0) {
-        if (proto.substr(0, 6) == "ymodem") {
-            namesuffix = YapiWrapper::ysprintf(":%s",_xyfname.c_str());
+    if (_xyready == 0) {
+        if (proto == "ymodem") {
+            if ((int)(_xyfattr).length() == 0) {
+                namesuffix = YapiWrapper::ysprintf(":%s %d",_xyfname.c_str(),_xytotal);
+            } else {
+                namesuffix = YapiWrapper::ysprintf(":%s %d %s",_xyfname.c_str(),_xytotal,_xyfattr.c_str());
+            }
+        } else {
+            namesuffix = "";
         }
     } else {
         namesuffix = "+";
     }
-    if (_xytotal > _xysent + blksize) {
-        fullproto = YapiWrapper::ysprintf("%s-t%d-m%s",proto.c_str(),timeoutSec,namesuffix.c_str());
-    } else {
-        fullproto = YapiWrapper::ysprintf("%s-t%d%s",proto.c_str(),timeoutSec,namesuffix.c_str());
+    maxblocks = 5;
+    while ((_xyready < _xytotal) && (_xyavail >= 1040) && (maxblocks > 0)) {
+        // create a data block up to 1k
+        maxblocks = maxblocks - 1;
+        blksize = _xytotal - _xyready;
+        if (blksize >= 1024) {
+            blksize = 1024;
+            datablock = _xyblock;
+        } else {
+            datablock = string(blksize, (char)0);
+        }
+        cnt = 0;
+        while (cnt < blksize) {
+            datablock[cnt] = (char)(((u8)_xyfdata[_xyready + cnt]));
+            cnt = cnt + 1;
+        }
+        if (_xytotal > _xyready + blksize) {
+            fullproto = YapiWrapper::ysprintf("%s-m%s",_xyproto.c_str(),namesuffix.c_str());
+        } else {
+            fullproto = YapiWrapper::ysprintf("%s%s",_xyproto.c_str(),namesuffix.c_str());
+        }
+        // backup _xyproto and clear it, to drop transfer in case of exception
+        proto = _xyproto;
+        _xyproto = "";
+        json = this->_uploadEx(fullproto, datablock);
+        if ((int)(json).size() == 0) {
+            this->_throw(YAPI_IO_ERROR, "failed to receive result from device");
+            return YAPI_IO_ERROR;
+        }
+        jsonStr = json;
+        if (jsonStr.substr(2, 3) == "err") {
+            // will get error message and full status from json URL below
+            maxblocks = 0;
+        } else {
+            _xyready = _xyready + blksize;
+            _xyavail = atoi((this->_json_get_key(json, "rts")).c_str());
+            namesuffix = "+";
+        }
+        _xyproto = proto;
     }
-
-    // backup _xyproto and clear it, to drop transfer in case of exception
-    _xyproto = "";
-    json = this->_uploadEx(fullproto, datablock);
-    if ((int)(json).size() == 0) {
-        this->_throw(YAPI_IO_ERROR, "failed to receive result from device");
-        return YAPI_IO_ERROR;
+    if ((_xyready == _xytotal) && (_xyavail >= 262) && (maxblocks > 0)) {
+        _xyready = _xyready + 1;
+        if (_xyclose) {
+            // schedule transfer of NUL file to end YModem batch
+            empty = string(0, (char)0);
+            this->_uploadEx("ymodem:", empty);
+        }
     }
-    jsonStr = json;
-    errStr = this->_json_get_key(json, "err");
-    if ((int)(errStr).length() > 0) {
-        this->_throw(YAPI_IO_ERROR, errStr);
-        return YAPI_IO_ERROR;
+    {string ignore_error; YAPI::Sleep(100, ignore_error);};
+    json = this->_download(YapiWrapper::ysprintf("%s.json",proto.substr(0, 6).c_str()));
+    state = (this->_json_get_key(json, "st")).substr(0, 2);
+    _xyavail = atoi((this->_json_get_key(json, "rts")).c_str());
+    _xyacked = atoi((this->_json_get_key(json, "ack")).c_str());
+    // Only report 100% or an error when the state machine has reached a final state
+    // But we must detect individual file completion within a multi-file batch transfer
+    if (!(_xyclose) && state == "BR" && (_xyacked > 1024)) {
+        state = "ZZ";
     }
-    sentBytes = atoi((this->_json_get_key(json, "sent")).c_str());
-    if (sentBytes >= _xytotal) {
-        // done, free binary buffer
+    if (state == "ZZ") {
+        // transfer completed, free binary buffer
         empty = string(0, (char)0);
+        _xyproto = "";
         _xyfdata = empty;
+        _xyblock = empty;
+        // if transfer did not end successfully, report error
+        errStr = this->_json_get_key(json, "err");
+        if ((int)(errStr).length() > 0) {
+            this->_throw(YAPI_IO_ERROR, errStr);
+            return YAPI_IO_ERROR;
+        }
         return 100;
     }
-    _xyproto = proto;
-    _xysent = sentBytes;
-    return ((100 * sentBytes) / _xytotal);
+    // Stay at 0% unless receiver receives at least one header block
+    if (_xyacked == 0) {
+        return 0;
+    }
+    // Move to 1-99% as progress unfolds
+    cnt = _xytotal;
+    if (proto == "ymodem") {
+        cnt = cnt + 256;
+    }
+    cnt = 1 + ((99 * _xyacked) / cnt);
+    if (cnt > 99) {
+        cnt = 99;
+    }
+    return cnt;
+}
+
+int YSerialPort::_xymodemAbort(void)
+{
+    string empty;
+    int res = 0;
+    empty = string(0, (char)0);
+    _xyproto = "";
+    _xyfname = "";
+    _xyfdata = empty;
+    _xyblock = empty;
+
+    res = this->_upload("xmodem!", empty);
+    // give some extra time for the state machine to abort
+    {string ignore_error; YAPI::Sleep(10, ignore_error);};
+    return res;
 }
 
 /**
  * Initiates a buffer transmit to the serial port using the standard XMODEM protocol.
- * The function will block until the XMODEM receiver triggers the transfer,
- * up to the specified timeout.
- * Once the transfer is started, the function returns the current percentage
- * of completion. The caller should then invoke method
- * xmodemUploadMore() until it returns 100 (percent).
+ * The function will return almost immediately, but the transfer only starts when
+ * the XMODEM receiver requests it. A few kilobytes of data are buffered within the
+ * device, ready to be sent, but the caller should repeatedly invoke method
+ * xmodemUploadMore() until it returns 100 (percent) to ensure that the
+ * file transfer completes.
  *
  * @param buff : the binary buffer to send
  * @param timeoutSec : the timeout before aborting send (e.g. 60 sec)
+ * @param use1kBlocks : whether to use 1KB data blocks for faster transfer
+ *         (relatively standard XMODEM protocol extension)
  *
  * @return an integer in the range 0 to 100 (percentage of completion),
  *         or a negative error code in case of failure.
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YSerialPort::xmodemUpload(string buff,int timeoutSec)
+int YSerialPort::xmodemUpload(string buff,int timeoutSec,bool use1kBlocks)
 {
-    return this->_xymodemQueue("xmodem", "", buff, timeoutSec);
+    string proto;
+    if (use1kBlocks) {
+        proto = YapiWrapper::ysprintf("xmodem-1k-t%d",timeoutSec);
+    } else {
+        proto = YapiWrapper::ysprintf("xmodem-t%d",timeoutSec);
+    }
+
+    return this->_xymodemQueue(proto, buff, "", "", false);
 }
 
 /**
- * Continues a standard XMODEM upload previously started with xmodemUpload.
+ * Continues a XMODEM upload previously started with xmodemUpload.
  * The function will block until the data sent has been acknowledged by receiver,
  * up to the specified timeout, and return the current percentage of completion.
  * It should be called continuously until it returns the 100 (percent).
  *
- * @param timeoutSec : the timeout before aborting send (e.g. 60 sec)
- *
  * @return an integer in the range 0 to 100 (percentage of completion),
  *         or a negative error code in case of failure.
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YSerialPort::xmodemUploadMore(int timeoutSec)
+int YSerialPort::xmodemUploadMore(void)
 {
-    return this->_xymodemProcess(timeoutSec);
+    return this->_xymodemProcess("xmodem");
 }
 
 /**
- * Initiates a buffer transmit to the serial port using the standard XMODEM-1k protocol.
- * The function will block until the XMODEM receiver triggers the transfer,
- * up to the specified timeout.
- * Once the transfer is started, the function returns the current percentage
- * of completion. The caller should then invoke method
- * xmodem1kUploadMore() until it returns 100 (percent).
- *
- * @param buff : the binary buffer to send
- * @param timeoutSec : the timeout before aborting send (e.g. 60 sec)
- *
- * @return YAPI::SUCCESS if the call succeeds.
- *
+ * Abort any XMODEM or YMODEM data transfer previously started.
  * On failure, throws an exception or returns a negative error code.
  */
-int YSerialPort::xmodem1kUpload(string buff,int timeoutSec)
+int YSerialPort::xmodemAbort(void)
 {
-    return this->_xymodemQueue("xmodem-1k", "", buff, timeoutSec);
-}
-
-/**
- * Continues a XMODEM-1k upload previously started with xmodem1kUpload.
- * The function will block until the data sent has been acknowledged by receiver,
- * up to the specified timeout, and return the current percentage of completion.
- * It should be called continuously until it returns the 100 (percent).
- *
- * @param timeoutSec : the timeout before aborting send (e.g. 60 sec)
- *
- * @return an integer in the range 0 to 100 (percentage of completion),
- *         or a negative error code in case of failure.
- *
- * On failure, throws an exception or returns a negative error code.
- */
-int YSerialPort::xmodem1kUploadMore(int timeoutSec)
-{
-    return this->_xymodemProcess(timeoutSec);
+    return this->_xymodemAbort();
 }
 
 /**
  * Initiates a buffer transmit to the serial port using the standard YMODEM protocol.
- * The function will block until the YMODEM receiver triggers the transfer,
- * up to the specified timeout.
- * Once the transfer is started, the function returns the current percentage
- * of completion. The caller should then invoke method
- * ymodemUploadMore() until it returns 100 (percent).
+ * The function will return almost immediately, but the transfer only starts when
+ * the XMODEM receiver requests it. A few kilobytes of data are buffered within the
+ * device, ready to be sent, but the caller should repeatedly invoke method
+ * xmodemUploadMore() until it returns 100 (percent) to ensure that the
+ * file transfer completes.
  *
- * @param filename : the filename associated with the data in the buffer
  * @param buff : the binary buffer to send
  * @param timeoutSec : the timeout before aborting send (e.g. 60 sec)
+ * @param filename : the filename associated with the data in the buffer
+ * @param attributes : optional file attributes (eg. modif date timestamp in octal form),
+ *         or an empty string if no further attribute is required
+ * @param lastFile : TRUE to end the YMODEM batch session after this file,
+ *         or FALSE if more files will be sent in the same batch session
  *
  * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YSerialPort::ymodemUpload(string filename,string buff,int timeoutSec)
+int YSerialPort::ymodemUpload(string buff,int timeoutSec,string filename,string attributes,bool lastFile)
 {
-    return this->_xymodemQueue("ymodem", filename, buff, timeoutSec);
+    string proto;
+    proto = YapiWrapper::ysprintf("ymodem-t%d",timeoutSec);
+
+    return this->_xymodemQueue(proto, buff, filename, attributes, lastFile);
 }
 
 /**
@@ -2564,16 +2633,23 @@ int YSerialPort::ymodemUpload(string filename,string buff,int timeoutSec)
  * up to the specified timeout, and return the current percentage of completion.
  * It should be called continuously until it returns the 100 (percent).
  *
- * @param timeoutSec : the timeout before aborting send (e.g. 60 sec)
- *
  * @return an integer in the range 0 to 100 (percentage of completion),
  *         or a negative error code in case of failure.
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YSerialPort::ymodemUploadMore(int timeoutSec)
+int YSerialPort::ymodemUploadMore(void)
 {
-    return this->_xymodemProcess(timeoutSec);
+    return this->_xymodemProcess("ymodem");
+}
+
+/**
+ * Abort any XMODEM or YMODEM data transfer previously started.
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YSerialPort::ymodemAbort(void)
+{
+    return this->_xymodemAbort();
 }
 
 YSerialPort *YSerialPort::nextSerialPort(void)

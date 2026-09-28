@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_pwmpowersource.cpp version 2.1.16087 (build 76087) $
  *
  *  Implements yFindPwmPowerSource(), the high-level API for PwmPowerSource functions
  *

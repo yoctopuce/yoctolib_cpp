@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_oscontrol.cpp version 2.1.16087 (build 76087) $
  *
  *  Implements yFindOsControl(), the high-level API for OsControl functions
  *

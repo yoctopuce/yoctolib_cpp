@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yjni.h 64128 2025-01-13 14:04:32Z seb $
+ * $Id: yjni.h version 2.1.16087 (build 76087) $
  *
  * Declaration of public entry points to the low-level API
  *

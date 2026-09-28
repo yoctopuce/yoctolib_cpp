@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_micropython.h version 2.1.16087 (build 76087) $
  *
  *  Declares yFindMicroPython(), the high-level API for MicroPython functions
  *

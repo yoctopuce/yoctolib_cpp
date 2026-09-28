@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_poweroutput.cpp version 2.1.16087 (build 76087) $
  *
  *  Implements yFindPowerOutput(), the high-level API for PowerOutput functions
  *

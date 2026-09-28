@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_messagebox.h 72410 2026-03-11 07:18:41Z mvuilleu $
+ * $Id: yocto_messagebox.h version 2.1.16087 (build 76087) $
  *
  * Declares yFindMessageBox(), the high-level API for MessageBox functions
  *

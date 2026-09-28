@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_soundspectrum.h version 2.1.16087 (build 76087) $
  *
  *  Declares yFindSoundSpectrum(), the high-level API for SoundSpectrum functions
  *

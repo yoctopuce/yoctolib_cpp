@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h 75351 2026-08-02 19:45:07Z mvuilleu $
+ * $Id: yocto_api.h version 2.1.16087 (build 76087) $
  *
  * High-level programming interface, common to all modules
  *

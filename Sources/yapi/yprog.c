@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c 75642 2026-08-21 09:44:14Z seb $
+ * $Id: yprog.c version 2.1.16087 (build 76087) $
  *
  * Implementation of firmware upgrade functions
  *

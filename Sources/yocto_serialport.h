@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.h 75483 2026-08-12 06:29:41Z mvuilleu $
+ * $Id: yocto_serialport.h version 2.1.16087 (build 76087) $
  *
  * Declares yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -204,9 +204,14 @@ protected:
     YSnoopingCallback _eventCallback;
     string          _xyproto;
     string          _xyfname;
+    string          _xyfattr;
     string          _xyfdata;
     int             _xytotal;
-    int             _xysent;
+    string          _xyblock;
+    int             _xyavail;
+    int             _xyready;
+    int             _xyacked;
+    bool            _xyclose;
 
     friend YSerialPort *yFindSerialPort(const string& func);
     friend YSerialPort *yFirstSerialPort(void);
@@ -1095,92 +1100,72 @@ public:
      */
     virtual vector<int> modbusWriteAndReadRegisters(int slaveNo,int pduWriteAddr,vector<int> values,int pduReadAddr,int nReadWords);
 
-    virtual int         _xymodemQueue(string proto,string fname,string buff,int timeoutSec);
+    virtual int         _xymodemQueue(string proto,string buff,string fname,string attributes,bool closeBatch);
 
-    virtual int         _xymodemProcess(int timeoutSec);
+    virtual int         _xymodemProcess(string proto);
+
+    virtual int         _xymodemAbort(void);
 
     /**
      * Initiates a buffer transmit to the serial port using the standard XMODEM protocol.
-     * The function will block until the XMODEM receiver triggers the transfer,
-     * up to the specified timeout.
-     * Once the transfer is started, the function returns the current percentage
-     * of completion. The caller should then invoke method
-     * xmodemUploadMore() until it returns 100 (percent).
+     * The function will return almost immediately, but the transfer only starts when
+     * the XMODEM receiver requests it. A few kilobytes of data are buffered within the
+     * device, ready to be sent, but the caller should repeatedly invoke method
+     * xmodemUploadMore() until it returns 100 (percent) to ensure that the
+     * file transfer completes.
      *
      * @param buff : the binary buffer to send
      * @param timeoutSec : the timeout before aborting send (e.g. 60 sec)
+     * @param use1kBlocks : whether to use 1KB data blocks for faster transfer
+     *         (relatively standard XMODEM protocol extension)
      *
      * @return an integer in the range 0 to 100 (percentage of completion),
      *         or a negative error code in case of failure.
      *
      * On failure, throws an exception or returns a negative error code.
      */
-    virtual int         xmodemUpload(string buff,int timeoutSec);
+    virtual int         xmodemUpload(string buff,int timeoutSec,bool use1kBlocks);
 
     /**
-     * Continues a standard XMODEM upload previously started with xmodemUpload.
+     * Continues a XMODEM upload previously started with xmodemUpload.
      * The function will block until the data sent has been acknowledged by receiver,
      * up to the specified timeout, and return the current percentage of completion.
      * It should be called continuously until it returns the 100 (percent).
      *
-     * @param timeoutSec : the timeout before aborting send (e.g. 60 sec)
-     *
      * @return an integer in the range 0 to 100 (percentage of completion),
      *         or a negative error code in case of failure.
      *
      * On failure, throws an exception or returns a negative error code.
      */
-    virtual int         xmodemUploadMore(int timeoutSec);
+    virtual int         xmodemUploadMore(void);
 
     /**
-     * Initiates a buffer transmit to the serial port using the standard XMODEM-1k protocol.
-     * The function will block until the XMODEM receiver triggers the transfer,
-     * up to the specified timeout.
-     * Once the transfer is started, the function returns the current percentage
-     * of completion. The caller should then invoke method
-     * xmodem1kUploadMore() until it returns 100 (percent).
-     *
-     * @param buff : the binary buffer to send
-     * @param timeoutSec : the timeout before aborting send (e.g. 60 sec)
-     *
-     * @return YAPI::SUCCESS if the call succeeds.
-     *
+     * Abort any XMODEM or YMODEM data transfer previously started.
      * On failure, throws an exception or returns a negative error code.
      */
-    virtual int         xmodem1kUpload(string buff,int timeoutSec);
-
-    /**
-     * Continues a XMODEM-1k upload previously started with xmodem1kUpload.
-     * The function will block until the data sent has been acknowledged by receiver,
-     * up to the specified timeout, and return the current percentage of completion.
-     * It should be called continuously until it returns the 100 (percent).
-     *
-     * @param timeoutSec : the timeout before aborting send (e.g. 60 sec)
-     *
-     * @return an integer in the range 0 to 100 (percentage of completion),
-     *         or a negative error code in case of failure.
-     *
-     * On failure, throws an exception or returns a negative error code.
-     */
-    virtual int         xmodem1kUploadMore(int timeoutSec);
+    virtual int         xmodemAbort(void);
 
     /**
      * Initiates a buffer transmit to the serial port using the standard YMODEM protocol.
-     * The function will block until the YMODEM receiver triggers the transfer,
-     * up to the specified timeout.
-     * Once the transfer is started, the function returns the current percentage
-     * of completion. The caller should then invoke method
-     * ymodemUploadMore() until it returns 100 (percent).
+     * The function will return almost immediately, but the transfer only starts when
+     * the XMODEM receiver requests it. A few kilobytes of data are buffered within the
+     * device, ready to be sent, but the caller should repeatedly invoke method
+     * xmodemUploadMore() until it returns 100 (percent) to ensure that the
+     * file transfer completes.
      *
-     * @param filename : the filename associated with the data in the buffer
      * @param buff : the binary buffer to send
      * @param timeoutSec : the timeout before aborting send (e.g. 60 sec)
+     * @param filename : the filename associated with the data in the buffer
+     * @param attributes : optional file attributes (eg. modif date timestamp in octal form),
+     *         or an empty string if no further attribute is required
+     * @param lastFile : TRUE to end the YMODEM batch session after this file,
+     *         or FALSE if more files will be sent in the same batch session
      *
      * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
-    virtual int         ymodemUpload(string filename,string buff,int timeoutSec);
+    virtual int         ymodemUpload(string buff,int timeoutSec,string filename,string attributes,bool lastFile);
 
     /**
      * Continues a YMODEM upload previously started with ymodemUpload.
@@ -1188,14 +1173,18 @@ public:
      * up to the specified timeout, and return the current percentage of completion.
      * It should be called continuously until it returns the 100 (percent).
      *
-     * @param timeoutSec : the timeout before aborting send (e.g. 60 sec)
-     *
      * @return an integer in the range 0 to 100 (percentage of completion),
      *         or a negative error code in case of failure.
      *
      * On failure, throws an exception or returns a negative error code.
      */
-    virtual int         ymodemUploadMore(int timeoutSec);
+    virtual int         ymodemUploadMore(void);
+
+    /**
+     * Abort any XMODEM or YMODEM data transfer previously started.
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         ymodemAbort(void);
 
 
     inline static YSerialPort *Find(string func)

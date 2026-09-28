@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ymemory.h 74512 2026-06-03 07:40:50Z seb $
+ * $Id: ymemory.h version 2.1.16087 (build 76087) $
  *
  * Basic memory check function to prevent memory leak
  *
@@ -77,10 +77,12 @@ extern "C" {
         void  ySafeTrace(const char *file, u32 line, void *ptr);
         void  ySafeMemoryDump(void *discard);
         void  ySafeMemoryStop(void);
+        void *ySafeCalloc(const char *file, u32 line, u32 size);
 
-        #define yMalloc(size)                   ySafeMalloc(__FILENAME__,__LINE__,size)
-        #define yFree(ptr)                      {ySafeFree(__FILENAME__,__LINE__,ptr);ptr=NULL;}
-        #define yTracePtr(ptr)                  ySafeTrace(__FILENAME__,__LINE__,ptr)
+        #define yMalloc(size)                   ySafeMalloc(__FILE__,__LINE__,size)
+        #define yCalloc(num,size)               ySafeCalloc(__FILE__,__LINE__,(num) * (size))
+        #define yFree(ptr)                      {ySafeFree(__FILE__,__LINE__,ptr);ptr=NULL;}
+        #define yTracePtr(ptr)                  ySafeTrace(__FILE__,__LINE__,ptr)
         #ifndef YMEMORY_ALLOW_MALLOC
             #undef malloc
             #undef free
@@ -91,14 +93,17 @@ extern "C" {
 #ifdef WINDOWS_API
 #ifdef YAPI_IN_YDEVICE
         #define yMalloc(size)                   malloc(size)
+        #define yCalloc(num,size)               calloc(num,size)
         #define yFree(ptr)                      free(ptr)
 #else
         #define yMalloc(size)                   GlobalAlloc(GMEM_FIXED, size)
+        #define yCalloc(num,size)               GlobalAlloc(GMEM_FIXED|GMEM_ZEROINIT, (num) * (size))
         #define yFree(ptr)                      GlobalFree(ptr)
 #endif
 #else        
         #include <stdlib.h>
         #define yMalloc(size)                   malloc(size)
+        #define yCalloc(num,size)               calloc(num,size)
         #define yFree(ptr)                      free(ptr)
 #endif
         #define yTracePtr(ptr)
@@ -222,7 +227,11 @@ int ysprintf_s(char* dst, unsigned dstsize, const char* fmt, ...);
         #define ystrncmp(A,B,len)                   strncmp(A,B,len)
         #define ystricmp(A,B)                       _stricmp(A,B)
         #define ystrnicmp(A,B,len)                  _strnicmp(A,B,len)
+        #ifdef YSAFE_MEMORY
+        #define ystrdup(str)                        ystrdup_s(str)
+        #else
         #define ystrdup(str)                        _strdup(str)
+        #endif
     #else
         #define ys16toa(val,dst,dstsize)            ysprintf_s(dst,dstsize,"%d",val)
         #define yu16toa(val,dst,dstsize)            ysprintf_s(dst,dstsize,"%u",val)

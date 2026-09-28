@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_carbondioxide.h version 2.1.16087 (build 76087) $
  *
  *  Declares yFindCarbonDioxide(), the high-level API for CarbonDioxide functions
  *

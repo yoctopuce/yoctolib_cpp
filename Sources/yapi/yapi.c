@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c 75551 2026-08-17 14:34:10Z seb $
+ * $Id: yapi.c version 2.1.16087 (build 76087) $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -3018,6 +3018,8 @@ static YRETCODE yapiInitAPI_internal(int detect_type, const char *certificate, c
     return YAPI_SUCCESS;
 }
 
+#ifndef YAPI_IN_YDEVICE
+
 static YRETCODE yapiAddSSLCertificateCli_internal(const char *cert, int len, char *errmsg)
 {
 #ifndef NO_YSSL
@@ -3035,6 +3037,7 @@ static YRETCODE yapiAddSSLCertificateCli_internal(const char *cert, int len, cha
 #endif
 }
 
+#endif
 
 /*
  * CRC32 algorithm taken from the zlib source, which is
@@ -3132,6 +3135,8 @@ static void yapiFreeAPI_internal(void)
     yContext = NULL;
 }
 
+#ifndef YAPI_IN_YDEVICE
+
 static int yapiGetRemoteCertificate_internal(const char *url, u64 timeout, char *buffer, int maxsize, int *neededsize, char *errmsg)
 {
 #ifndef NO_YSSL
@@ -3162,6 +3167,8 @@ static int yapiSetTrustedCertificatesList_internal(const char *certificatePath, 
 {
     return YERRMSG(YAPI_NOT_SUPPORTED, "Only supported on PHP programming library.");
 }
+
+#endif
 
 static void yapiSetNetworkTimeout_internal(int mstimeout)
 {
@@ -5045,7 +5052,7 @@ static int yapiCheckLogicalName_internal(const char *name)
 static u16 yapiGetAPIVersion_internal(const char **version, const char **apidate)
 {
     if (version)
-        *version = "2.1.15681";
+        *version = "2.1.16087";
     if (apidate)
         *apidate = YOCTO_API_BUILD_DATE;
 
@@ -5294,6 +5301,9 @@ static int yapiRequestOpenUSB(YIOHDL_internal *iohdl, HubSt *hub, YAPI_DEVICE de
     YRETCODE res;
     int firsttime = 1;
     u64 timeout;
+    const char* p;
+    int remaing;
+   
 
     yHashGetStr(dev & 0xffff, buffer, YOCTO_SERIAL_LEN);
     timeout = yapiGetTickCount() + YAPI_BLOCKING_USBOPEN_REQUEST_TIMEOUT;
@@ -5310,6 +5320,7 @@ static int yapiRequestOpenUSB(YIOHDL_internal *iohdl, HubSt *hub, YAPI_DEVICE de
     if (res != YAPI_SUCCESS) {
         return res;
     }
+    
     if (reqlen >= 10 && reqlen <= (int)sizeof(buffer) && request[0] == 'G' && request[1] == 'E' && request[2] == 'T' && request[3] == ' ') {
         int i = 4;
         const char *p;
@@ -5333,10 +5344,22 @@ static int yapiRequestOpenUSB(YIOHDL_internal *iohdl, HubSt *hub, YAPI_DEVICE de
         reqlen = i;
         request = buffer;
     }
-    res = (YRETCODE)yUsbWrite(iohdl, request, reqlen, errmsg);
-    if (YISERR(res)) {
-        yUsbClose(iohdl, errmsg);
-        return res;
+    p = request;
+    remaing = reqlen;
+    while(remaing && yapiGetTickCount() < timeout) {
+        res = (YRETCODE)yUsbWrite(iohdl, p, remaing, errmsg);
+        if (YISERR(res)) {
+            yUsbClose(iohdl, errmsg);
+            return res;
+        }
+        remaing -= res;
+        p += res;
+        if (remaing) {
+            yApproximateSleep(1);
+        }
+    }
+    if (remaing > 0) {
+        return YERR(YAPI_TIMEOUT);
     }
     if (callback) {
         res = (YRETCODE)yUsbSetIOAsync(iohdl, callback, context, errmsg);
@@ -6759,6 +6782,8 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiSetSSLCertificateSrv(const char *certfile, con
     return res;
 }
 
+#ifndef YAPI_IN_YDEVICE
+
 YRETCODE YAPI_FUNCTION_EXPORT yapiGetRemoteCertificate(const char *rooturl, u64 timeout, char *buffer, int maxsize, int *neededsize, char *errmsg)
 {
     YRETCODE res;
@@ -6786,6 +6811,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiAddSSLCertificateCli(const char *cert, int cer
     return res;
 }
 
+#endif
 
 u32 YAPI_FUNCTION_EXPORT yapiCRC32(const u8 *data, int ofs, int len)
 {

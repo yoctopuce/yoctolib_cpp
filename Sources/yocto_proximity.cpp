@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_proximity.cpp version 2.1.16087 (build 76087) $
  *
  *  Implements yFindProximity(), the high-level API for Proximity functions
  *

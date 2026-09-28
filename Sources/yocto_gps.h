@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_gps.h version 2.1.16087 (build 76087) $
  *
  *  Declares yFindGps(), the high-level API for Gps functions
  *

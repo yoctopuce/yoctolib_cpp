@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_motor.cpp version 2.1.16087 (build 76087) $
  *
  *  Implements yFindMotor(), the high-level API for Motor functions
  *

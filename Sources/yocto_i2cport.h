@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_i2cport.h 72057 2026-02-17 09:44:53Z mvuilleu $
+ *  $Id: yocto_i2cport.h version 2.1.16087 (build 76087) $
  *
  *  Declares yFindI2cPort(), the high-level API for I2cPort functions
  *

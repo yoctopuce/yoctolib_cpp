@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yhash.c 59229 2024-02-06 08:32:54Z seb $
+ * $Id: yhash.c version 2.1.16087 (build 76087) $
  *
  * Simple hash tables and device/function information store
  *

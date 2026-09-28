@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yfifo.h 49591 2022-04-28 12:47:10Z mvuilleu $
+ * $Id: yfifo.h version 2.1.16087 (build 76087) $
  *
   * Declaration of a generic fifo queue
  *

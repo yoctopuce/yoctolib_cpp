@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yssl.c 73081 2026-05-04 13:51:15Z seb $
+ * $Id: yssl.c version 2.1.16087 (build 76087) $
  *
  * Implementation of a client TCP stack with SSL
  *
@@ -48,7 +48,9 @@
 #include "mbedtls/net_sockets.h"
 #include "mbedtls/error.h"
 
+#ifndef YAPI_IN_YDEVICE
 #include "mbedtls/threading.h"
+#endif
 #include "mbedtls/pk.h"
 #include "mbedtls/pem.h"
 #include "mbedtls/debug.h"
@@ -150,7 +152,7 @@ static void my_debug(void *ctx, int level, const char *file, int line, const cha
 
 #endif
 
-
+#ifndef YAPI_IN_YDEVICE
 static int yssl_mutex_init(mbedtls_platform_mutex_t *mutex)
 {
     yInitializeCriticalSection(&mutex->mutex);
@@ -173,7 +175,6 @@ static int yssl_mutex_unlock(mbedtls_platform_mutex_t *mutex)
     yLeaveCriticalSection(&mutex->mutex);
     return 0;
 }
-
 
 static int yssl_cond_init(mbedtls_platform_condition_variable_t *var)
 {
@@ -199,6 +200,8 @@ static int yssl_cond_wait(mbedtls_platform_condition_variable_t *var, mbedtls_pl
 {
     return ySleepConditionVariableCS(&var->var, &mutex->mutex);
 }
+#endif
+
 #ifdef DEBUG_SSL
 
 const char* mbedtls_ssl_states_str(mbedtls_ssl_states in)
@@ -259,6 +262,7 @@ int yTcpInitSSL(char *errmsg)
     // activate debug logs
     mbedtls_debug_set_threshold(1);
 #endif
+#ifndef YAPI_IN_YDEVICE
     mbedtls_threading_set_alt(yssl_mutex_init,
                               yssl_mutex_free,
                               yssl_mutex_lock,
@@ -268,7 +272,7 @@ int yTcpInitSSL(char *errmsg)
                               yssl_cond_signal,
                               yssl_cond_broadcast,
                               yssl_cond_wait);
-
+#endif
     status = psa_crypto_init();
     if (status != PSA_SUCCESS) {
         return YERRMSG(YAPI_SSL_ERROR, "Failed to initialize PSA Crypto");
@@ -299,22 +303,29 @@ int yTcpInitSSL(char *errmsg)
     return YAPI_SUCCESS;
 }
 
-
 // must be called after TcpInitSSL
 int yTcpSetSrvCertificateSSL(const char *certfile, const char *keyfile, char *errmsg)
 {
     int ret;
     FILE *fd;
+    unsigned char buffer[8192];
+    size_t len = 0;
 
     /* Load certificate and private key files, and check consistency */
     if (keyfile) {
         if (YFOPEN(&fd, keyfile, "r") != 0) {
             return YERRMSG(YAPI_SSL_ERROR, "Private key file does not exist!");
         }
+        len = fread(buffer, 1, sizeof(buffer)-1, fd);
         fclose(fd);
-
+        if (len < 256) { // under 256 bytes, this is definitely wrong
+            return YERRMSG(YAPI_SSL_ERROR, "Unable to read private key file");
+        }
         mbedtls_pk_free(&pkey);
-        ret = mbedtls_pk_parse_keyfile(&pkey, keyfile, NULL);
+        mbedtls_pk_init(&pkey);
+        buffer[len++] = 0; // mbedtls expects buffer to be null-terminated
+        ret = mbedtls_pk_parse_key(&pkey, buffer, len, NULL, 0);
+        memset(buffer, 0, len);
         if (ret < 0) {
             return FMT_MBEDTLS_ERR(ret);
         }
@@ -329,9 +340,15 @@ int yTcpSetSrvCertificateSSL(const char *certfile, const char *keyfile, char *er
         if (YFOPEN(&fd, certfile, "r") != 0) {
             return YERRMSG(YAPI_SSL_ERROR, "SSL certificate file does not exist!");
         }
+        len = fread(buffer, 1, sizeof(buffer)-1, fd);
         fclose(fd);
-        mbedtls_x509_crt_free(&srvcert);
-        ret = mbedtls_x509_crt_parse_file(&srvcert, certfile);
+        if (len < 256) { // under 256 bytes, this is definitely wrong
+            return YERRMSG(YAPI_SSL_ERROR, "Unable to read SSL certificate file");
+        }
+        mbedtls_x509_crt_init(&srvcert);
+        buffer[len++] = 0; // mbedtls expects buffer to be null-terminated
+        ret = mbedtls_x509_crt_parse(&srvcert, buffer, len);
+        memset(buffer, 0, len);
         if (ret < 0) {
             return FMT_MBEDTLS_ERR(ret);
         }
@@ -365,6 +382,8 @@ int yTcpAddClientCertificateSSL(const u8 *cert, u32 cert_len, char *errmsg)
     }
     return YAPI_SUCCESS;
 }
+
+#ifndef YAPI_IN_YDEVICE
 
 int yTcpDownloadSSLCert(const char *host, int port, u64 mstimeout, u8 *buffer, u32 maxsize, u32 *neededsize, char *errmsg)
 {
@@ -410,6 +429,8 @@ int yTcpDownloadSSLCert(const char *host, int port, u64 mstimeout, u8 *buffer, u
     return res;
 }
 
+#endif
+
 void yTcpShutdownSSL(void)
 {
     SSLLOG("YSSL: shutdown\n");
@@ -417,7 +438,9 @@ void yTcpShutdownSSL(void)
     mbedtls_x509_crt_free(&srvcert);
     mbedtls_pk_free(&pkey);
     mbedtls_psa_crypto_free();
+#ifndef YAPI_IN_YDEVICE
     mbedtls_threading_free_alt();
+#endif
 }
 
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_datalogger.cpp 28133 2017-07-25 10:40:37Z seb $
+ * $Id: yocto_datalogger.cpp version 2.1.16087 (build 76087) $
  *
  * Implements yFindDataLogger(), the high-level API for DataLogger functions
  *

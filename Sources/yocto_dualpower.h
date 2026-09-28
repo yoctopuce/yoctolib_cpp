@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_dualpower.h version 2.1.16087 (build 76087) $
  *
  *  Declares yFindDualPower(), the high-level API for DualPower functions
  *

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_colorsensor.h version 2.1.16087 (build 76087) $
  *
  *  Declares yFindColorSensor(), the high-level API for ColorSensor functions
  *

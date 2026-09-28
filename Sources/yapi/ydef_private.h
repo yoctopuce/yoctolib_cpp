@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef_private.h 72398 2026-03-10 11:27:05Z seb $
+ * $Id: ydef_private.h version 2.1.16087 (build 76087) $
  *
  * Standard definitions common to all yoctopuce projects
  *

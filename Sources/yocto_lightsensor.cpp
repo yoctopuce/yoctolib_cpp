@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_lightsensor.cpp version 2.1.16087 (build 76087) $
  *
  *  Implements yFindLightSensor(), the high-level API for LightSensor functions
  *

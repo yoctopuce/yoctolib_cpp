@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ydef.h 72622 2026-04-07 07:05:42Z seb $
+ * $Id: ydef.h version 2.1.16087 (build 76087) $
  *
  * Standard definitions common to all yoctopuce projects
  *
@@ -647,6 +647,7 @@ typedef union{
 #define YSTREAM_NOTICE_V2      7
 #define YSTREAM_TCP_NOTIF      8
 #define YSTREAM_TCP_ASYNCCLOSE 9
+#define YSTREAM_TCP_ACK       10
 
 // Data in YSTREAM_NOTICE stream
 
@@ -955,6 +956,11 @@ typedef union {
     } uploadAck;
 } USB_Meta_Pkt;
 
+
+typedef struct {
+    SAFE_U16 window;    // the UBS window size
+    u8 abs[4];          // actually a DWORD in little-endian format, number of bytes received so far
+} USB_TCP_ACK;
 
 
 typedef union {

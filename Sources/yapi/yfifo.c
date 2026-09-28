@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yfifo.c 72140 2026-02-19 14:05:32Z mvuilleu $
+ * $Id: yfifo.c version 2.1.16087 (build 76087) $
  *
  * Implementation of a generic fifo queue
  *

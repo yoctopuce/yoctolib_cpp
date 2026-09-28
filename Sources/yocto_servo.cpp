@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_servo.cpp version 2.1.16087 (build 76087) $
  *
  *  Implements yFindServo(), the high-level API for Servo functions
  *

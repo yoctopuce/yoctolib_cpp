@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_watchdog.cpp version 2.1.16087 (build 76087) $
  *
  *  Implements yFindWatchdog(), the high-level API for Watchdog functions
  *

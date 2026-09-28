@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_digitalio.cpp version 2.1.16087 (build 76087) $
  *
  *  Implements yFindDigitalIO(), the high-level API for DigitalIO functions
  *

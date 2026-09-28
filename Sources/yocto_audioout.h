@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_audioout.h version 2.1.16087 (build 76087) $
  *
  *  Declares yFindAudioOut(), the high-level API for AudioOut functions
  *

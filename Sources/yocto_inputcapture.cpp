@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_inputcapture.cpp version 2.1.16087 (build 76087) $
  *
  *  Implements yFindInputCaptureData(), the high-level API for InputCaptureData functions
  *

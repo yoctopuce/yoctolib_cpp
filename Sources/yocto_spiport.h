@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_spiport.h 72057 2026-02-17 09:44:53Z mvuilleu $
+ *  $Id: yocto_spiport.h version 2.1.16087 (build 76087) $
  *
  *  Declares yFindSpiPort(), the high-level API for SpiPort functions
  *

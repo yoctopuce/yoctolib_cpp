@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp 75356 2026-08-03 12:03:23Z seb $
+ * $Id: yocto_api.cpp version 2.1.16087 (build 76087) $
  *
  * High-level programming interface, common to all modules
  *

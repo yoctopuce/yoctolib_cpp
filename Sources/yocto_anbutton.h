@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_anbutton.h version 2.1.16087 (build 76087) $
  *
  *  Declares yFindAnButton(), the high-level API for AnButton functions
  *

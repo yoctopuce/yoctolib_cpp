@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_datalogger.h 28119 2017-07-25 07:03:40Z seb $
+ * $Id: yocto_datalogger.h version 2.1.16087 (build 76087) $
  *
  * Declares yFindDataLogger(), the high-level API for DataLogger functions
  *

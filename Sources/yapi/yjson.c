@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yjson.c 60252 2024-03-27 20:26:53Z mvuilleu $
+ * $Id: yjson.c version 2.1.16087 (build 76087) $
  *
  * Simple JSON parser (actually a slightly enhanced lexer)
  *

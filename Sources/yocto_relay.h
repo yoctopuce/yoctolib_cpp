@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_relay.h version 2.1.16087 (build 76087) $
  *
  *  Declares yFindRelay(), the high-level API for Relay functions
  *

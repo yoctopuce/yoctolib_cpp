@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_latitude.cpp version 2.1.16087 (build 76087) $
  *
  *  Implements yFindLatitude(), the high-level API for Latitude functions
  *

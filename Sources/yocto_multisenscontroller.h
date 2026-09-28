@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_multisenscontroller.h version 2.1.16087 (build 76087) $
  *
  *  Declares yFindMultiSensController(), the high-level API for MultiSensController functions
  *

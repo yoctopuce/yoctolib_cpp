@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_gyro.cpp 72057 2026-02-17 09:44:53Z mvuilleu $
+ * $Id: yocto_gyro.cpp version 2.1.16087 (build 76087) $
  *
  * Implements yFindGyro(), the high-level API for Gyro functions
  *

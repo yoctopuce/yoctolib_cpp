@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_rangefinder.cpp version 2.1.16087 (build 76087) $
  *
  *  Implements yFindRangeFinder(), the high-level API for RangeFinder functions
  *

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_hubport.cpp version 2.1.16087 (build 76087) $
  *
  *  Implements yFindHubPort(), the high-level API for HubPort functions
  *

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp 75637 2026-08-20 16:54:40Z mvuilleu $
+ * $Id: yocto_display.cpp version 2.1.16087 (build 76087) $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *

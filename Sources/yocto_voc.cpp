@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_voc.cpp version 2.1.16087 (build 76087) $
  *
  *  Implements yFindVoc(), the high-level API for Voc functions
  *

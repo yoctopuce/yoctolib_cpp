@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_threshold.h version 2.1.16087 (build 76087) $
  *
  *  Declares yFindThreshold(), the high-level API for Threshold functions
  *

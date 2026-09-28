@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ythread.h 72622 2026-04-07 07:05:42Z seb $
+ * $Id: ythread.h version 2.1.16087 (build 76087) $
  *
  * OS-independent thread and synchronization library
  *

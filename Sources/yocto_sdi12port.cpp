@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_sdi12port.cpp 54278 2023-04-28 10:10:10Z seb $
+ *  $Id: yocto_sdi12port.cpp version 2.1.16087 (build 76087) $
  *
  *  Implements yFindSdi12Port(), the high-level API for Sdi12Port functions
  *

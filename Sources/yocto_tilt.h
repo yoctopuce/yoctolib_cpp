@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_tilt.h version 2.1.16087 (build 76087) $
  *
  *  Declares yFindTilt(), the high-level API for Tilt functions
  *

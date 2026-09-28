@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_weighscale.cpp version 2.1.16087 (build 76087) $
  *
  *  Implements yFindWeighScale(), the high-level API for WeighScale functions
  *

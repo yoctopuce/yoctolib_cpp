@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_network.h version 2.1.16087 (build 76087) $
  *
  *  Declares yFindNetwork(), the high-level API for Network functions
  *

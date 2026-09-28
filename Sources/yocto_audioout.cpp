@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_audioout.cpp version 2.1.16087 (build 76087) $
  *
  *  Implements yFindAudioOut(), the high-level API for AudioOut functions
  *

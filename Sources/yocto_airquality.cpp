@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_airquality.cpp version 2.1.16087 (build 76087) $
  *
  *  Implements yFindAirQuality(), the high-level API for AirQuality functions
  *
@@ -210,7 +210,7 @@ int YAirQuality::set_aqiMode(Y_AQIMODE_enum newval)
 }
 
 /**
- * Retrieves a air quality sensor for a given identifier.
+ * Retrieves an air quality sensor for a given identifier.
  * The identifier can be specified using several formats:
  *
  * - FunctionLogicalName
@@ -224,7 +224,7 @@ int YAirQuality::set_aqiMode(Y_AQIMODE_enum newval)
  * it is invoked. The returned object is nevertheless valid.
  * Use the method isOnline() to test if the air quality sensor is
  * indeed online at a given time. In case of ambiguity when looking for
- * a air quality sensor by logical name, no error is notified: the first instance
+ * an air quality sensor by logical name, no error is notified: the first instance
  * found is returned. The search is performed first by hardware name,
  * then by logical name.
  *

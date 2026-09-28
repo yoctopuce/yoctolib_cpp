@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_altitude.cpp version 2.1.16087 (build 76087) $
  *
  *  Implements yFindAltitude(), the high-level API for Altitude functions
  *

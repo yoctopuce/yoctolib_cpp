@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_humidity.h version 2.1.16087 (build 76087) $
  *
  *  Declares yFindHumidity(), the high-level API for Humidity functions
  *

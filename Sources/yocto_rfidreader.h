@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: svn_id $
+ *  $Id: yocto_rfidreader.h version 2.1.16087 (build 76087) $
  *
  *  Declares yFindRfidReader(), the high-level API for RfidReader functions
  *

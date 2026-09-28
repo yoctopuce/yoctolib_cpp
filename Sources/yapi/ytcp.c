@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c 74763 2026-06-18 08:27:43Z seb $
+ * $Id: ytcp.c version 2.1.16087 (build 76087) $
  *
  * Implementation of a client TCP stack
  *

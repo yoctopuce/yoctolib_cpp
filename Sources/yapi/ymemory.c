@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ymemory.c 74512 2026-06-03 07:40:50Z seb $
+ * $Id: ymemory.c version 2.1.16087 (build 76087) $
  *
  * Basic memory check function to prevent memory leak
  *
@@ -59,6 +59,10 @@
 #endif
 #include "ymemory.h"
 
+// In C, free(NULL) is legal but suspiscious
+// 
+//#define DEBUG_FREENULL
+
 #ifdef YSAFE_MEMORY
 typedef enum {
     YMEM_NOT_USED = 0,
@@ -68,6 +72,7 @@ typedef enum {
 
 typedef struct {
     YMEM_STATE state;
+    u32 isMbedTLS;
     const char *malloc_file;
     u32 malloc_line;
     u32 malloc_size;
@@ -81,6 +86,8 @@ u32 yMapSize = 0;
 u32 yMapUsed = 0;
 yCRITICAL_SECTION yMapCS;
 
+int dbglogf(const char *fileid, int line, const char *fmt, ...);
+#define dbglog(...)      dbglogf(__FILENAME__,__LINE__, __VA_ARGS__)
 
 static void ymemdumpentry(YMEM_ENTRY *entry, const char *prefix)
 {
@@ -93,19 +100,26 @@ static void ymemdump(const void *discard)
     u32 i;
     YMEM_ENTRY *entry;
     u32 total, count;
+    u32 mbedtlsTotal, mbedtlsCount;
 
     dbglog("ySafeMemoryDump: %d/%d entry\n\n", yMapUsed, yMapSize);
     dbglog("Malloc:\n");
     total = count = 0;
+    mbedtlsTotal = mbedtlsCount = 0;
     for (i = 0, entry = yMap; i < yMapUsed; i++, entry++) {
         if (entry->state == YMEM_MALLOCED && discard != entry->ptr) {
             ymemdumpentry(entry, "");
             //dbglog("%s : %d of %db (0x%x)\n", entry->malloc_file, entry->malloc_line, entry->malloc_size, entry->ptr);
             total += entry->malloc_size;
             count++;
+            if (entry->isMbedTLS) {
+                mbedtlsTotal += entry->malloc_size;
+                mbedtlsCount++;
+            }
         }
     }
-    dbglog("total: %db (%d Kb) on %d entry\n\n", total, (int)(total/1024), count);
+    dbglog("total: %db (%d Kb) on %d entry\n", total, (int)(total/1024), count);
+    dbglog("embedTLS: %db (%d Kb) on %d entry\n", mbedtlsTotal, (int)(mbedtlsTotal / 1024), mbedtlsCount);
 #if 0
     dbglog("Free:\n");
     for(i=0, entry=yMap; i< yMapUsed ; i++,entry++){
@@ -119,7 +133,7 @@ static void ymemdump(const void *discard)
 
 void ySafeMemoryInit(u32 nbentry)
 {
-    YASSERT(yMap==NULL, yMap);
+    if (yMap) return;
     YASSERT(yMapSize==0, yMapSize);
     yInitializeCriticalSection(&yMapCS);
     yEnterCriticalSection(&yMapCS);
@@ -132,12 +146,24 @@ void ySafeMemoryInit(u32 nbentry)
     yLeaveCriticalSection(&yMapCS);
 }
 
-void* ySafeMalloc(const char *file, u32 line, u32 size)
+const char *ySafeFilename(const char *file)
+{
+    size_t len = strlen(file);
+    if (!len) return file;
+    const char *p = file + len - 1;
+    while (p > file && p[-1] != '\\' && p[-1] != '/') {
+        p--;
+    }
+    return p;
+}
+
+void* ySafeMalloc(const char *path, u32 line, u32 size)
 {
     u32 i;
     YMEM_ENTRY *entry;
     void *ptr;
 
+    const char *file = ySafeFilename(path);
     yEnterCriticalSection(&yMapCS);
     if (yMapUsed < yMapSize) {
         //use a new one
@@ -167,10 +193,14 @@ void* ySafeMalloc(const char *file, u32 line, u32 size)
 
     memset(entry, 0, sizeof(YMEM_ENTRY));
     entry->state = YMEM_MALLOCED;
+    entry->isMbedTLS = (strstr(path, "mbedtls") != NULL);
     entry->malloc_file = file;
     entry->malloc_line = line;
     entry->ptr = ptr;
     entry->malloc_size = size;
+    if (entry->isMbedTLS && entry->malloc_size >= 1024) {
+        dbglog("mbedtls: alloc %d bytes at %s:%d [%x]\n", size, entry->malloc_file, entry->malloc_line, entry - yMap);
+    }
     if (yMapUsed < yMapSize)
         yMapUsed++;
     yLeaveCriticalSection(&yMapCS);
@@ -178,11 +208,26 @@ void* ySafeMalloc(const char *file, u32 line, u32 size)
     return ptr;
 }
 
+void *ySafeCalloc(const char *file, u32 line, u32 size)
+{
+    void *res = ySafeMalloc(file, line, size);
+    memset(res, 0, size);
+    return res;
+}
+
 void ySafeFree(const char *file, u32 line, void *ptr)
 {
     u32 i;
     YMEM_ENTRY *entry;
 
+    if (!ptr) {
+#if defined(DEBUG_FREENULL)
+        dbglog("notice: free(NULL) at %s:%d\n\n", file, line);
+#endif
+        return;
+    }
+
+    file = ySafeFilename(file);
     yEnterCriticalSection(&yMapCS);
     for (i = 0, entry = yMap; i < yMapUsed; i++, entry++) {
         YASSERT(entry->state != YMEM_NOT_USED, entry->state);
@@ -201,6 +246,9 @@ void ySafeFree(const char *file, u32 line, void *ptr)
         ymemdump(NULL);
         YPANIC;
     }
+    if (entry->isMbedTLS && entry->malloc_size >= 1024) {
+        dbglog("mbedtls: free %d bytes from %s:%d [%x]\n", entry->malloc_size, entry->malloc_file, entry->malloc_line, i);
+    }
     free(entry->ptr);
     entry->free_file = file;
     entry->free_line = line;
@@ -215,6 +263,7 @@ void ySafeTrace(const char *file, u32 line, void *ptr)
     u32 i;
     YMEM_ENTRY *entry;
 
+    file = ySafeFilename(file);
     yEnterCriticalSection(&yMapCS);
     for (i = 0, entry = yMap; i < yMapUsed; i++, entry++) {
         YASSERT(entry->state != YMEM_NOT_USED, entry->state);
