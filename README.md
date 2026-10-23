@@ -336,6 +336,7 @@ required by the library:
 /Sources/yapi/mbedtls/library/ssl_cookie.c
 /Sources/yapi/mbedtls/library/ssl_debug_helpers_generated.c
 /Sources/yapi/mbedtls/library/ssl_msg.c
+/Sources/yapi/mbedtls/library/ssl_ticket.c
 /Sources/yapi/mbedtls/library/ssl_tls.c
 /Sources/yapi/mbedtls/library/ssl_tls12_client.c
 /Sources/yapi/mbedtls/library/ssl_tls12_server.c

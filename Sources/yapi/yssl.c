@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yssl.c version 2.1.16087 (build 76087) $
+ * $Id:yssl.c version 2.1.16635 (build 76635) $
  *
  * Implementation of a client TCP stack with SSL
  *
@@ -298,7 +298,6 @@ int yTcpInitSSL(char *errmsg)
         printf("%d: %s\n", tmp, ptr);
     }
     mbedtls_debug_set_threshold(4);
-
 #endif
     return YAPI_SUCCESS;
 }

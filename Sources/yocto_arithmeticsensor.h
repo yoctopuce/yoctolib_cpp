@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_arithmeticsensor.h version 2.1.16087 (build 76087) $
+ *  $Id:yocto_arithmeticsensor.h version 2.1.16635 (build 76635) $
  *
  *  Declares yFindArithmeticSensor(), the high-level API for ArithmeticSensor functions
  *

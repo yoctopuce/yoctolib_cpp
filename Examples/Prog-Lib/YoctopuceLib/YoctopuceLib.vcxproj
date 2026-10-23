@@ -314,6 +314,7 @@
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_cookie.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_debug_helpers_generated.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_msg.c" />
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_ticket.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls12_client.c" />
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls12_server.c" />

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ymemory.h version 2.1.16087 (build 76087) $
+ * $Id:ymemory.h version 2.1.16635 (build 76635) $
  *
  * Basic memory check function to prevent memory leak
  *
@@ -54,10 +54,8 @@ extern "C" {
 //#define YSAFE_MEMORY
 
 #ifdef FREERTOS_API
-
     // yCalloc is implemented since freeRTOS does not provide one.
     void *yCallocOrigin(size_t nmemb, size_t xSize, uint32_t origin );
-
     #include <FreeRTOS.h>
     #define yMalloc(size)                   pvPortMallocOrigin(size, MK_CURPOS)
     #define yFree(ptr)                      vPortFreeOrigin(ptr, MK_CURPOS)
@@ -68,8 +66,17 @@ extern "C" {
     #define malloc(size)                    yForbiden_malloc(size)
     #define free(ptr)                       yForbiden_free(ptr)
     #define calloc(nbelm, size)             yForbiden_calloc(nbelm, size)
+#elif defined(EMBEDDED_API)
+    #define yMalloc(size)                   yForbiden_ymalloc(size)
+    #define yFree(ptr)                      yForbiden_yfree(ptr)
+    #define yCalloc(nbelm, size)            yForbiden_ycalloc((nbelm), (size))
+    #undef malloc
+    #undef free
+    #undef calloc
+    #define malloc(size)                    yForbiden_malloc(size)
+    #define free(ptr)                       yForbiden_free(ptr)
+    #define calloc(nbelm, size)             yForbiden_calloc(nbelm, size)
 #else
-  
     #ifdef YSAFE_MEMORY
         void  ySafeMemoryInit(u32 nbentry);
         void* ySafeMalloc(const char *file, u32 line, u32 size);
@@ -78,7 +85,6 @@ extern "C" {
         void  ySafeMemoryDump(void *discard);
         void  ySafeMemoryStop(void);
         void *ySafeCalloc(const char *file, u32 line, u32 size);
-
         #define yMalloc(size)                   ySafeMalloc(__FILE__,__LINE__,size)
         #define yCalloc(num,size)               ySafeCalloc(__FILE__,__LINE__,(num) * (size))
         #define yFree(ptr)                      {ySafeFree(__FILE__,__LINE__,ptr);ptr=NULL;}
@@ -90,32 +96,43 @@ extern "C" {
             #define free(ptr)                       yForbiden_free(ptr)
         #endif
     #else
-#ifdef WINDOWS_API
-#ifdef YAPI_IN_YDEVICE
-        #define yMalloc(size)                   malloc(size)
-        #define yCalloc(num,size)               calloc(num,size)
-        #define yFree(ptr)                      free(ptr)
-#else
-        #define yMalloc(size)                   GlobalAlloc(GMEM_FIXED, size)
-        #define yCalloc(num,size)               GlobalAlloc(GMEM_FIXED|GMEM_ZEROINIT, (num) * (size))
-        #define yFree(ptr)                      GlobalFree(ptr)
-#endif
-#else        
-        #include <stdlib.h>
-        #define yMalloc(size)                   malloc(size)
-        #define yCalloc(num,size)               calloc(num,size)
-        #define yFree(ptr)                      free(ptr)
-#endif
+        #ifdef WINDOWS_API
+            #ifdef YAPI_IN_YDEVICE
+                    #define yMalloc(size)                   malloc(size)
+                    #define yCalloc(num,size)               calloc(num,size)
+                    #define yFree(ptr)                      free(ptr)
+            #else
+                    #define yMalloc(size)                   GlobalAlloc(GMEM_FIXED, size)
+                    #define yCalloc(num,size)               GlobalAlloc(GMEM_FIXED|GMEM_ZEROINIT, (num) * (size))
+                    #define yFree(ptr)                      GlobalFree(ptr)
+            #endif
+        #else
+            #include <stdlib.h>
+            #define yMalloc(size)                   malloc(size)
+            #define yCalloc(num,size)               calloc(num,size)
+            #define yFree(ptr)                      free(ptr)
+        #endif
         #define yTracePtr(ptr)
         #define ySafeMemoryInit(nbentry) {}
         #define ySafeMemoryDump(discard) {}
         #define ySafeMemoryStop() {}
-#endif
-
+    #endif
     #define yMemset(dst,val,size)           memset(dst,val,size)
     #define yMemcpy(dst,src,size)           memcpy(dst,src,size)
     #define yMemmove(dst,src,size)          memmove(dst,src,size)
 
+    // special wrappers for mbedtls within VirtualHub
+    #if defined(YSAFE_MEMORY)
+        #define MBEDTLS_CALLOC(num,size)    ymbed_safecalloc(__FILE__,__LINE__,(num)*(size))
+        #define MBEDTLS_FREE(ptr)           ymbed_safefree(__FILE__,__LINE__,ptr)
+        void *ymbed_safecalloc(const char *__file__, unsigned __line__, unsigned blkSize);
+        void  ymbed_safefree(const char *__file__, unsigned __line__, void *ptr);
+    #else
+        #define MBEDTLS_CALLOC(num,size)    ymbed_calloc((num)*(size))
+        #define MBEDTLS_FREE(ptr)           ymbed_free(ptr)
+        void *ymbed_calloc(unsigned blkSize);
+        void  ymbed_free(void *ptr);
+    #endif
 #endif
 
 #ifndef MICROCHIP_API

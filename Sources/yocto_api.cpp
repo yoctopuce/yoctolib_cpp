@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cpp version 2.1.16087 (build 76087) $
+ * $Id:yocto_api.cpp version 2.1.16635 (build 76635) $
  *
  * High-level programming interface, common to all modules
  *
@@ -2815,10 +2815,9 @@ int YAPIContext::GetDeviceListValidity(void)
 }
 
 /**
- * Returns the path to the dynamic YAPI library. This function is useful for debugging problems loading the
- * dynamic library YAPI:: This function is supported by the C#, Python and VB languages. The other
- * libraries return an
- * empty string.
+ * Returns the path to the dynamic YAPI library. This function is useful for debugging
+ * problems loading the dynamic library YAPI:: This function is supported by the C#,
+ * Python and VB languages. The other libraries return an empty string.
  *
  * @return a string containing the path of the YAPI dynamic library.
  */
@@ -2835,6 +2834,17 @@ string YAPIContext::GetYAPISharedLibraryPath(void)
         path = string(smallbuff, res);
     }
     return path;
+}
+
+string YAPIContext::_utf8Decode(string utf8buff,int fromPos,int fromLen)
+{
+    char *tmpbuff;
+    string res;
+    tmpbuff = (char *)malloc(fromLen+1);
+    yapiUtf8Decode(utf8buff.c_str(), fromPos, fromLen, tmpbuff);
+    res = string(tmpbuff);
+    free(tmpbuff);
+    return res;
 }
 
 /**
@@ -7289,7 +7299,7 @@ string YModule::get_allSettings(void)
         sep = "";
         for (unsigned ii_1 = 0; ii_1 < filelist.size(); ii_1++) {
             name = this->_json_get_key(filelist[ii_1], "name");
-            if (((int)(name).length() > 0) && !(name == "startupConf.json")) {
+            if (((int)(name).length() > 0) && !(name == "startupConf.json") && !(name.substr(0, 1) == ".")) {
                 if (name.substr((int)(name).length()-1, 1) == "/") {
                     file_data = "";
                 } else {

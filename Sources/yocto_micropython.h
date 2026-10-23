@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_micropython.h version 2.1.16087 (build 76087) $
+ *  $Id:yocto_micropython.h version 2.1.16635 (build 76635) $
  *
  *  Declares yFindMicroPython(), the high-level API for MicroPython functions
  *
@@ -61,6 +61,19 @@ class YMicroPython; // forward declaration
 typedef void (*YMicroPythonValueCallback)(YMicroPython *func, const string& functionValue);
 typedef void (*YMicroPythonLogCallback)(YMicroPython *obj, const string& logline);
 
+#ifndef _Y_VMSTATE_ENUM
+#define _Y_VMSTATE_ENUM
+typedef enum {
+    Y_VMSTATE_UNAVAILABLE = 0,
+    Y_VMSTATE_RESET = 1,
+    Y_VMSTATE_PENDING = 2,
+    Y_VMSTATE_RUNNING = 3,
+    Y_VMSTATE_PAUSED = 4,
+    Y_VMSTATE_IDLE = 5,
+    Y_VMSTATE_ERROR = 6,
+    Y_VMSTATE_INVALID = -1,
+} Y_VMSTATE_enum;
+#endif
 #ifndef _Y_DEBUGMODE_ENUM
 #define _Y_DEBUGMODE_ENUM
 typedef enum {
@@ -102,6 +115,7 @@ protected:
     int             _heapFrag;
     int             _xheapUsage;
     int             _stackUsage;
+    Y_VMSTATE_enum  _vmState;
     string          _currentScript;
     string          _startupScript;
     double          _startupDelay;
@@ -133,6 +147,14 @@ public:
     static const int HEAPFRAG_INVALID = YAPI_INVALID_UINT;
     static const int XHEAPUSAGE_INVALID = YAPI_INVALID_UINT;
     static const int STACKUSAGE_INVALID = YAPI_INVALID_UINT;
+    static const Y_VMSTATE_enum VMSTATE_UNAVAILABLE = Y_VMSTATE_UNAVAILABLE;
+    static const Y_VMSTATE_enum VMSTATE_RESET = Y_VMSTATE_RESET;
+    static const Y_VMSTATE_enum VMSTATE_PENDING = Y_VMSTATE_PENDING;
+    static const Y_VMSTATE_enum VMSTATE_RUNNING = Y_VMSTATE_RUNNING;
+    static const Y_VMSTATE_enum VMSTATE_PAUSED = Y_VMSTATE_PAUSED;
+    static const Y_VMSTATE_enum VMSTATE_IDLE = Y_VMSTATE_IDLE;
+    static const Y_VMSTATE_enum VMSTATE_ERROR = Y_VMSTATE_ERROR;
+    static const Y_VMSTATE_enum VMSTATE_INVALID = Y_VMSTATE_INVALID;
     static const string CURRENTSCRIPT_INVALID;
     static const string STARTUPSCRIPT_INVALID;
     static const double STARTUPDELAY_INVALID;
@@ -208,6 +230,21 @@ public:
 
     inline int          stackUsage(void)
     { return this->get_stackUsage(); }
+
+    /**
+     * Returns the current state of the virtual machine.
+     *
+     * @return a value among YMicroPython::VMSTATE_UNAVAILABLE, YMicroPython::VMSTATE_RESET,
+     * YMicroPython::VMSTATE_PENDING, YMicroPython::VMSTATE_RUNNING, YMicroPython::VMSTATE_PAUSED,
+     * YMicroPython::VMSTATE_IDLE and YMicroPython::VMSTATE_ERROR corresponding to the current state of the
+     * virtual machine
+     *
+     * On failure, throws an exception or returns YMicroPython::VMSTATE_INVALID.
+     */
+    Y_VMSTATE_enum      get_vmState(void);
+
+    inline Y_VMSTATE_enum vmState(void)
+    { return this->get_vmState(); }
 
     /**
      * Returns the name of currently active script, if any.
@@ -380,10 +417,40 @@ public:
     virtual int         _invokeValueCallback(string value);
 
     /**
-     * Submit MicroPython code for execution in the interpreter.
+     * Submit a short expression to MicroPython interpreter, and return
+     * the output produced by its evaluation.
+     *
+     * There is no implicit reset of the MicroPython virtual machine
+     * with this function: all global symbols defined by code that
+     * has run since last reset can be accessed freely. But if the
+     * interpreter is not at rest when the function is invoked, the
+     * call will fail.
+     *
+     * Use method reset() if you need to start
+     * from a fresh environment before starting the evaluation.
+     *
+     * The expression is limited to about 120 ASCII characters.
+     * If you need to evaluate more complex code, use the exec()
+     * method to define it as a function, check for exec completion
+     * using get_vmState() and then use eval()
+     * actually run that function and capture its output.
+     *
+     * @param pythonExpr : Short Python expression to be evaluated
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual string      eval(string pythonExpr);
+
+    /**
+     * Submit Python code for execution in the MicroPython interpreter.
      * If the MicroPython interpreter is busy, this function will
      * block until it becomes available. The code is then uploaded,
-     * compiled and executed on the fly, without beeing stored on the device filesystem.
+     * compiled unless it is already a MicroPython precompiled file,
+     * and executed on the fly, without beeing stored on the device
+     * filesystem. This method does not wait for the completion
+     * if the code execution.
      *
      * There is no implicit reset of the MicroPython interpreter with
      * this function. Use method reset() if you need to start
@@ -394,14 +461,15 @@ public:
      * in particular regarding the libraries that can be used. Please refer to
      * the documentation for more details.
      *
-     * @param codeName : name of the code file (used for error reporting only)
-     * @param mpyCode : MicroPython code to compile and execute
+     * @param codeName : name of the code buffer, with a .py extension
+     *         for source code and a .mpy extension for a precompiled file.
+     * @param mpyCode : binary buffer containing MicroPython code to execute
      *
      * @return YAPI::SUCCESS if the call succeeds.
      *
      * On failure, throws an exception or returns a negative error code.
      */
-    virtual int         eval(string codeName,string mpyCode);
+    virtual int         exec(string codeName,string mpyCode);
 
     /**
      * Stops current execution, and reset the MicroPython interpreter to initial state.
@@ -412,6 +480,18 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         reset(void);
+
+    /**
+     * Reset the MicroPython interpreter to its initial state, and start the specified
+     * program, which must have been previously uploaded to the device.
+     *
+     * @param codeFileName : filename of the MicroPython code to run
+     *
+     * @return YAPI::SUCCESS if the call succeeds.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         run(string codeFileName);
 
     /**
      * Clears MicroPython interpreter console log buffer.

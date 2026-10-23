@@ -1,6 +1,6 @@
 # *********************************************************************
 #
-#  $Id: GNUmakefile 75551 2026-08-17 14:34:10Z seb $
+#  $Id: GNUmakefile 76139 2026-10-05 07:03:41Z seb $
 #
 #  GNU Makefile for linux and Mac OS X
 #
@@ -425,6 +425,7 @@ MBEDTLS_OBJS_STAT = \
 	library/ssl_cookie.o \
 	library/ssl_debug_helpers_generated.o \
 	library/ssl_msg.o \
+	library/ssl_ticket.o \
 	library/ssl_tls.o \
 	library/ssl_tls12_client.o \
 	library/ssl_tls12_server.o \

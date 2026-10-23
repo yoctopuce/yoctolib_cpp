@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.cpp version 2.1.16087 (build 76087) $
+ * $Id:yocto_display.cpp version 2.1.16635 (build 76635) $
  *
  * Implements yFindDisplay(), the high-level API for Display functions
  *
@@ -492,6 +492,58 @@ int YDisplayLayer::drawGIF(int x,int y,string gifimage)
     _display->flushLayers();
     destname = YapiWrapper::ysprintf("layer%d:G,-1@%d,%d",_id,x,y);
     return _display->upload(destname,gifimage);
+}
+
+/**
+ * Displays a QR code at the specified position on the layer. You can choose from several
+ * QR code representation modes, depending on the desired content type (restricted alphabet
+ * vs. all characters) and the error correction level (ECC level, which can be Low, Medium,
+ * Quartile, or High). A code with a full character set and a higher error correction level is
+ * larger than a code with a limited character set and a low error correction level. You can
+ * precalculate the size of the QR code before displaying it by calling this function with
+ * a zoom factor of zero.
+ *
+ * @param x : the distance in pixels from the left edge of the layer to the left edge of the QR code
+ * @param y : the distance in pixels from the top edge of the layer to the top edge of the QR code
+ * @param mode : the QR code encoding mode, selected from the enumeration YDisplayLayer::QRMODE:
+ *         YDisplayLayer::QRMODE_BYTES_ECCH, YDisplayLayer::QRMODE_BYTES_ECCQ,
+ *         YDisplayLayer::QRMODE_BYTES_ECCM, YDisplayLayer::QRMODE_BYTES_ECCL,
+ *         YDisplayLayer::QRMODE_UPCASE_ECCH, YDisplayLayer::QRMODE_UPCASE_ECCQ,
+ *         YDisplayLayer::QRMODE_UPCASE_ECCM, YDisplayLayer::QRMODE_UPCASE_ECCL.
+ * @param zoom : the magnification factor, between 0 (not displayed) and 16
+ *         (each point of the QR code is represented by 16x16 pixels on the screen).
+ * @param text : the text to encode in the QR code
+ *
+ * @return the size of one side of the QR code in pixels if successful.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YDisplayLayer::drawQRCode(int x,int y,Y_QRMODE mode,int zoom,string text)
+{
+    string content;
+    int contentLen = 0;
+    string destname;
+    string json;
+    int qrSize = 0;
+    content = text;
+    contentLen = (int)(content).size();
+    if (zoom == 0) {
+        // no need to send actual content for computing QR code size
+        content = string(0, (char)0);
+    }
+    _display->flushLayers();
+    destname = YapiWrapper::ysprintf("layer%d:Q%d*%d,%d@%d,%d",_id,mode,zoom,contentLen,x,y);
+    json = _display->_uploadEx(destname,content);
+    if ((int)(json).size() == 0) {
+        _display->_throw(YAPI_IO_ERROR, "failed to receive size");
+        return YAPI_IO_ERROR;
+    }
+    qrSize = atoi((_display->_json_get_key(json, "size")).c_str());
+    if (qrSize >= 999) {
+        _display->_throw(YAPI_INVALID_ARGUMENT, "text is too large");
+        return YAPI_INVALID_ARGUMENT;
+    }
+    return qrSize;
 }
 
 /**
@@ -1270,6 +1322,7 @@ string YDisplay::get_displayPanel(void)
 
 /**
  * Changes the model of display to match the connected display panel.
+ * Value examples:  "E2_266_KS0_C1" , "E2_290_QS_0F22 , "E2_370_KS_0C1", "E2_417_KS_0D0" etc..
  * This function has no effect if the module does not support the selected
  * display panel. Remember to call the saveToFlash()
  * method of the module if the modification must be kept.

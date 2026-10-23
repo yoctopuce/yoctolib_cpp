@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.c version 2.1.16087 (build 76087) $
+ * $Id:ytcp.c version 2.1.16635 (build 76635) $
  *
  * Implementation of a client TCP stack
  *
@@ -698,31 +698,18 @@ static void yTcpShutdownBasic(void)
 #endif
 }
 
-
-#define DEFAULT_TCP_ROUND_TRIP_TIME  30
-#define DEFAULT_TCP_MAX_WINDOW_SIZE  (4*65536)
-
-int yTcpOpenBasicEx(YSOCKET *newskt, const IPvX_ADDR *ip, u16 port, u64 mstimeout, char *errmsg)
+// Non-blocking TCP connect, by IP address
+//
+int yTcpOpenBasicEx(YSOCKET *newskt, const IPvX_ADDR *ip, u16 port, char *errmsg)
 {
     u8 addr[sizeof(struct sockaddr_storage)];
     int iResult;
     u_long flags;
     YSOCKET skt;
-    fd_set readfds, writefds, exceptfds;
-    struct timeval timeout;
-    int tcp_sendbuffer;
     int addrlen;
     int socktype;
-
-#ifdef WINDOWS_API
-    char noDelay = 1;
-    int optlen;
-#else
-    int noDelay = 1;
-    socklen_t optlen;
 #ifdef SO_NOSIGPIPE
     int noSigpipe = 1;
-#endif
 #endif
 
     memset(&addr, 0, sizeof(addr));
@@ -756,10 +743,7 @@ int yTcpOpenBasicEx(YSOCKET *newskt, const IPvX_ADDR *ip, u16 port, u64 mstimeou
     if (skt == INVALID_SOCKET) {
         return yNetSetErr();
     }
-    YPERF_TCP_ENTER(TCPOpen_connect);
 
-    //----------------------
-    // Connect to server.
     YPERF_TCP_ENTER(TCPOpen_setsockopt_noblock);
     //set socket as non blocking
 #ifdef WINDOWS_API
@@ -773,7 +757,131 @@ int yTcpOpenBasicEx(YSOCKET *newskt, const IPvX_ADDR *ip, u16 port, u64 mstimeou
 #endif
 #endif
     YPERF_TCP_LEAVE(TCPOpen_setsockopt_noblock);
-    connect(skt, (struct sockaddr*)&addr, addrlen);
+    iResult = connect(skt, (struct sockaddr *)&addr, addrlen);
+    if (iResult < 0) {
+#ifdef WINDOWS_API
+        if (SOCK_ERR == WSAEWOULDBLOCK) {
+            *newskt = skt;
+            return YAPI_SUCCESS;
+        }
+#else
+        if (SOCK_ERR == EINPROGRESS) {
+            return YAPI_SUCCESS;
+        }
+#endif
+        yclosesocket(skt);
+        return yNetSetErr();
+    }
+    *newskt = skt;
+    return YAPI_SUCCESS;
+}
+
+#define DEFAULT_TCP_ROUND_TRIP_TIME  30
+#define DEFAULT_TCP_MAX_WINDOW_SIZE  (4*65536)
+
+int yTcpOpenBasicExFinalize(YSOCKET skt)
+{
+    int tcp_sendbuffer;
+#ifdef WINDOWS_API
+    char noDelay = 1;
+    int optlen;
+#else
+    int noDelay = 1;
+    socklen_t optlen;
+#endif
+
+    YPERF_TCP_ENTER(TCPOpen_setsockopt_nodelay);
+    if (setsockopt(skt, IPPROTO_TCP, TCP_NODELAY, &noDelay, sizeof(noDelay)) < 0) {
+#if 0
+        switch (errno) {
+            case EBADF:
+                dbglog("The argument sockfd is not a valid descriptor.\n");
+                break;
+            case EFAULT:
+                dbglog("The address pointed to by optval is not in a valid part of the process address space. For getsockopt(), "
+                    "this error may also be returned if optlen is not in a valid part of the process address space.\n");
+                break;
+            case EINVAL:
+                dbglog("optlen invalid in setsockopt(). In some cases this error can also occur for an invalid value in optval "
+                    "(e.g., for the IP_ADD_MEMBERSHIP option described in ip(7)).\n");
+                break;
+            case ENOPROTOOPT:
+                dbglog("The option is unknown at the level indicated.\n");
+                break;
+            case ENOTSOCK:
+                dbglog("The argument sockfd is a file, not a socket.\n");
+                break;
+        }
+#endif
+        dbglog("SetSockOpt TCP_NODELAY failed %d\n", errno);
+    }
+    YPERF_TCP_LEAVE(TCPOpen_setsockopt_nodelay);
+
+    // Get buffer size
+    optlen = sizeof(tcp_sendbuffer);
+    if (getsockopt(skt, SOL_SOCKET, SO_SNDBUF, (void *)&tcp_sendbuffer, &optlen) >= 0) {
+#if 0
+        dbglog("Default windows size is %d\n", tcp_sendbuffer);
+#endif
+        if (tcp_sendbuffer < DEFAULT_TCP_MAX_WINDOW_SIZE) {
+            // Set buffer size to 64k
+            tcp_sendbuffer = DEFAULT_TCP_MAX_WINDOW_SIZE;
+            if (setsockopt(skt, SOL_SOCKET, SO_SNDBUF, (void *)&tcp_sendbuffer, sizeof(tcp_sendbuffer)) < 0) {
+#if 0
+                switch (errno) {
+                    case EBADF:
+                        dbglog("The argument sockfd is not a valid descriptor.\n");
+                        break;
+                    case EFAULT:
+                        dbglog("The address pointed to by optval is not in a valid part of the process address space. For getsockopt(), "
+                            "this error may also be returned if optlen is not in a valid part of the process address space.\n");
+                        break;
+                    case EINVAL:
+                        dbglog("optlen invalid in setsockopt(). In some cases this error can also occur for an invalid value in optval "
+                            "(e.g., for the IP_ADD_MEMBERSHIP option described in ip(7)).\n");
+                        break;
+                    case ENOPROTOOPT:
+                        dbglog("The option is unknown at the level indicated.\n");
+                        break;
+                    case ENOTSOCK:
+                        dbglog("The argument sockfd is a file, not a socket.\n");
+                        break;
+    }
+#endif
+                dbglog("SetSockOpt SO_SNDBUF %d failed %d\n", tcp_sendbuffer, errno);
+            }
+        }
+    } else {
+        dbglog("getsockopt: unable to get tcp buffer size\n");
+    }
+
+    return YAPI_SUCCESS;
+}
+
+int yTcpOpenBasic(YSOCKET *newskt, const char *host, u16 port, u64 mstimeout, char *errmsg)
+{
+    IPvX_ADDR ip;
+    fd_set readfds, writefds, exceptfds;
+    struct timeval timeout;
+
+    int iResult = resolveDNSCache(host, &ip, errmsg);
+    if (iResult < 0) {
+        return iResult;
+    }
+#ifdef DEBUG_TCP
+    {
+        char ipa_buff[IPSTR_SIZE];
+        iptoa(&ip, ipa_buff);
+        TCPLOG("yTcpOpenBasic %p(socket) [dst=%s(%s):%d %dms]\n", newskt, host, ipa_buff, port, mstimeout);
+    }
+#endif
+    //----------------------
+    // Connect to server.
+    YPERF_TCP_ENTER(TCPOpen_connect);
+    iResult = yTcpOpenBasicEx(newskt, &ip, port, errmsg);
+    if (iResult < 0) {
+        return yNetSetErr();
+    }
 
     // wait for the connection with a select
     memset(&timeout, 0, sizeof(timeout));
@@ -787,113 +895,27 @@ int yTcpOpenBasicEx(YSOCKET *newskt, const IPvX_ADDR *ip, u16 port, u64 mstimeou
     FD_ZERO(&readfds);
     FD_ZERO(&writefds);
     FD_ZERO(&exceptfds);
-    FD_SET(skt, &readfds);
-    FD_SET(skt, &writefds);
-    FD_SET(skt, &exceptfds);
-    iResult = select((int)skt + 1, &readfds, &writefds, &exceptfds, &timeout);
+    FD_SET(*newskt, &writefds);
+    FD_SET(*newskt, &exceptfds);
+    iResult = select((int)*newskt + 1, &readfds, &writefds, &exceptfds, &timeout);
     if (iResult < 0) {
-        yclosesocket(skt);
+        yclosesocket(*newskt);
+        YPERF_TCP_LEAVE(TCPOpen_connect);
         return yNetSetErr();
     }
-    if (FD_ISSET(skt, &exceptfds) || !FD_ISSET(skt, &writefds)) {
-        yclosesocket(skt);
+    if (FD_ISSET(*newskt, &exceptfds) || !FD_ISSET(*newskt, &writefds)) {
+        yclosesocket(*newskt);
         if (errmsg) {
             char host[IPSTR_SIZE];
-            iptoa(ip, host);
+            iptoa(&ip, host);
             YSPRINTF(errmsg, YOCTO_ERRMSG_LEN, "Unable to connect to %s:%d", host, port);
         }
         return YAPI_IO_ERROR;
     }
+    yTcpOpenBasicExFinalize(*newskt);
     YPERF_TCP_LEAVE(TCPOpen_connect);
-    if (iResult == SOCKET_ERROR) {
-        yclosesocket(skt);
-        return yNetSetErr();
-    }
-    YPERF_TCP_ENTER(TCPOpen_setsockopt_nodelay);
-    if (setsockopt(skt, IPPROTO_TCP, TCP_NODELAY, &noDelay, sizeof(noDelay)) < 0) {
-#if 0
-        switch (errno) {
-        case EBADF:
-            dbglog("The argument sockfd is not a valid descriptor.\n");
-            break;
-        case EFAULT:
-            dbglog("The address pointed to by optval is not in a valid part of the process address space. For getsockopt(), "
-                "this error may also be returned if optlen is not in a valid part of the process address space.\n");
-            break;
-        case EINVAL:
-            dbglog("optlen invalid in setsockopt(). In some cases this error can also occur for an invalid value in optval "
-                "(e.g., for the IP_ADD_MEMBERSHIP option described in ip(7)).\n");
-            break;
-        case ENOPROTOOPT:
-            dbglog("The option is unknown at the level indicated.\n");
-            break;
-        case ENOTSOCK:
-            dbglog("The argument sockfd is a file, not a socket.\n");
-            break;
-        }
-#endif
-        dbglog("SetSockOpt TCP_NODELAY failed %d\n", errno);
-    }
-    YPERF_TCP_LEAVE(TCPOpen_setsockopt_nodelay);
-
-    // Get buffer size
-    optlen = sizeof(tcp_sendbuffer);
-    if (getsockopt(skt, SOL_SOCKET, SO_SNDBUF, (void*)&tcp_sendbuffer, &optlen) >= 0) {
-#if 0
-        dbglog("Default windows size is %d\n", tcp_sendbuffer);
-#endif
-        if (tcp_sendbuffer < DEFAULT_TCP_MAX_WINDOW_SIZE) {
-            // Set buffer size to 64k
-            tcp_sendbuffer = DEFAULT_TCP_MAX_WINDOW_SIZE;
-            if (setsockopt(skt, SOL_SOCKET, SO_SNDBUF, (void*)&tcp_sendbuffer, sizeof(tcp_sendbuffer)) < 0) {
-#if 0
-                switch (errno) {
-                case EBADF:
-                    dbglog("The argument sockfd is not a valid descriptor.\n");
-                    break;
-                case EFAULT:
-                    dbglog("The address pointed to by optval is not in a valid part of the process address space. For getsockopt(), "
-                        "this error may also be returned if optlen is not in a valid part of the process address space.\n");
-                    break;
-                case EINVAL:
-                    dbglog("optlen invalid in setsockopt(). In some cases this error can also occur for an invalid value in optval "
-                        "(e.g., for the IP_ADD_MEMBERSHIP option described in ip(7)).\n");
-                    break;
-                case ENOPROTOOPT:
-                    dbglog("The option is unknown at the level indicated.\n");
-                    break;
-                case ENOTSOCK:
-                    dbglog("The argument sockfd is a file, not a socket.\n");
-                    break;
-                }
-#endif
-                dbglog("SetSockOpt SO_SNDBUF %d failed %d\n", tcp_sendbuffer, errno);
-            }
-        }
-    } else {
-        dbglog("getsockopt: unable to get tcp buffer size\n");
-    }
-
-    *newskt = skt;
 
     return YAPI_SUCCESS;
-}
-
-int yTcpOpenBasic(YSOCKET *newskt, const char *host, u16 port, u64 mstimeout, char *errmsg)
-{
-    IPvX_ADDR ip;
-    int iResult = resolveDNSCache(host, &ip, errmsg);
-    if (iResult < 0) {
-        return iResult;
-    }
-#ifdef DEBUG_TCP
-    {
-        char ipa_buff[IPSTR_SIZE];
-        iptoa(&ip, ipa_buff);
-        TCPLOG("yTcpOpenBasic %p(socket) [dst=%s(%s):%d %dms]\n", newskt, host, ipa_buff, port, mstimeout);
-    }
-#endif
-    return yTcpOpenBasicEx(newskt, &ip, port, mstimeout, errmsg);
 }
 
 void yTcpCloseBasic(YSOCKET skt)
@@ -2048,8 +2070,7 @@ static int yHTTPMultiSelectReq(struct _RequestSt **reqs, int size, u64 ms, WakeU
     return YAPI_SUCCESS;
 }
 
-
-int ySocketOpenBindMulti(YSOCKET_MULTI *newskt, IPvX_ADDR *local_ip, int is_udp, int sin6_scope_id, u16 port, u16 sockFlags)
+int ySocketOpenBindBasic(YSOCKET *newskt, IPvX_ADDR *local_ip, int is_udp, int sin6_scope_id, u16 port, u16 sockFlags)
 {
     int res, sockfamily, addrlen;
     u32 optval;
@@ -2119,41 +2140,53 @@ int ySocketOpenBindMulti(YSOCKET_MULTI *newskt, IPvX_ADDR *local_ip, int is_udp,
         dbglog("udp bind socket %d to %s port=%d flags=%d\n", sock, buff, port, sockFlags);
     }
 #endif
+    *newskt = sock;
 
-    *newskt = yMalloc(sizeof(YSOCKET_MULTI_ST));
-    memset(*newskt, 0, sizeof(YSOCKET_MULTI_ST));
-    (*newskt)->basic = sock;
-    if (sockFlags & YSOCKFLAG_IPV6) {
-        (*newskt)->ipv6 = 1;
-    }
-#ifdef DEBUG_MULTI_TCP
-    iptoa(local_ip, buff);
-    MTCPLOG("MUdp: Open %p [addr=%s port=%d]\n", *newskt, buff, port);
-#endif
     return YAPI_SUCCESS;
 }
 
-int yUdpWriteMulti(YSOCKET_MULTI skt, IPvX_ADDR *dest_ip, u16 dest_port, const u8 *buffer, int len, char *errmsg)
+int ySocketOpenBindMulti(YSOCKET_MULTI *newskt, IPvX_ADDR *local_ip, int is_udp, int sin6_scope_id, u16 port, u16 sockFlags)
+{
+    YSOCKET sock;
+    int res;
+    
+    res = ySocketOpenBindBasic(&sock, local_ip, is_udp, sin6_scope_id, port, sockFlags);
+    if (res == YAPI_SUCCESS) {
+        *newskt = yMalloc(sizeof(YSOCKET_MULTI_ST));
+        memset(*newskt, 0, sizeof(YSOCKET_MULTI_ST));
+        (*newskt)->basic = sock;
+        if (sockFlags & YSOCKFLAG_IPV6) {
+            (*newskt)->ipv6 = 1;
+        }
+#ifdef DEBUG_MULTI_TCP
+        iptoa(local_ip, buff);
+        MTCPLOG("MUdp: Open %p [addr=%s port=%d]\n", *newskt, buff, port);
+#endif
+    }
+    return res;
+}
+
+int yUdpWriteBasic(YSOCKET skt, IPvX_ADDR *dest_ip, u16 dest_port, const u8 *buffer, int len, char *errmsg)
 {
     int sent, socklen;
     struct sockaddr_storage storage;
-    struct sockaddr_in6 *addr_ipv6 = (struct sockaddr_in6*)&storage;
-    struct sockaddr_in *addr_ipv4 = (struct sockaddr_in*)&storage;
+    struct sockaddr_in6 *addr_ipv6 = (struct sockaddr_in6 *)&storage;
+    struct sockaddr_in *addr_ipv4 = (struct sockaddr_in *)&storage;
     memset(&storage, 0, sizeof(struct sockaddr_storage));
-    if (skt->ipv6) {
+    if (!isIPv4(dest_ip)) {
         socklen = sizeof(struct sockaddr_in6);
         memset(addr_ipv6, 0, socklen);
         addr_ipv6->sin6_family = AF_INET6;
         addr_ipv6->sin6_port = htons(dest_port);
         memcpy(&addr_ipv6->sin6_addr, &dest_ip->v6.addr, sizeof(addr_ipv6->sin6_addr));
-        sent = (int)ysendto(skt->basic, (const char*) buffer, len, 0, (struct sockaddr*)&storage, socklen);
+        sent = (int)ysendto(skt, (const char *)buffer, len, 0, (struct sockaddr *)&storage, socklen);
     } else {
         socklen = sizeof(struct sockaddr_in);
         memset(&storage, 0, socklen);
         addr_ipv4->sin_family = AF_INET;
         addr_ipv4->sin_port = htons(dest_port);
         addr_ipv4->sin_addr.s_addr = dest_ip->v4.addr.Val;
-        sent = (int)ysendto(skt->basic, (const char*) buffer, len, 0, (struct sockaddr*)&storage, socklen);
+        sent = (int)ysendto(skt, (const char *)buffer, len, 0, (struct sockaddr *)&storage, socklen);
     }
     if (sent < 0) {
         return yNetSetErr();
@@ -2161,9 +2194,17 @@ int yUdpWriteMulti(YSOCKET_MULTI skt, IPvX_ADDR *dest_ip, u16 dest_port, const u
     return sent;
 }
 
-int yUdpReadMulti(YSOCKET_MULTI skt, u8 *buffer, int len, IPvX_ADDR *ip_out, u16 *port_out, char *errmsg)
+int yUdpWriteMulti(YSOCKET_MULTI skt, IPvX_ADDR *dest_ip, u16 dest_port, const u8 *buffer, int len, char *errmsg)
 {
+    if (!skt->ipv6) {
+        // Make sure the test in yUdpWriteBasic will work properly
+        YASSERT(isIPv4(dest_ip), 0);
+    }
+    return yUdpWriteBasic(skt->basic, dest_ip, dest_port, buffer, len, errmsg);
+}
 
+int yUdpReadBasic(YSOCKET skt, u8 *buffer, int len, IPvX_ADDR *ip_out, u16 *port_out, char *errmsg)
+{
     struct sockaddr_storage storage;
     socklen_t sockaddr_remote_size;
     IPvX_ADDR remote_ip;
@@ -2171,15 +2212,14 @@ int yUdpReadMulti(YSOCKET_MULTI skt, u8 *buffer, int len, IPvX_ADDR *ip_out, u16
 
     sockaddr_remote_size = sizeof(struct sockaddr_in6);
     // received packet
-    int received = (int)yrecvfrom(skt->basic, (char*) buffer, len, 0, (struct sockaddr*) &storage, &sockaddr_remote_size);
+    int received = (int)yrecvfrom(skt, (char *)buffer, len, 0, (struct sockaddr *)&storage, &sockaddr_remote_size);
     if (received > 0) {
-
         if (sockaddr_remote_size == sizeof(struct sockaddr_in6)) {
-            struct sockaddr_in6 *addr_ipv6 = (struct sockaddr_in6*)&storage;
+            struct sockaddr_in6 *addr_ipv6 = (struct sockaddr_in6 *)&storage;
             memcpy(&remote_ip.v6.addr, &addr_ipv6->sin6_addr, sizeof(addr_ipv6->sin6_addr));
             remote_port = ntohs(addr_ipv6->sin6_port);
         } else {
-            struct sockaddr_in *addr_ipv4 = (struct sockaddr_in*)&storage;
+            struct sockaddr_in *addr_ipv4 = (struct sockaddr_in *)&storage;
             setIPv4Val(&remote_ip, addr_ipv4->sin_addr.s_addr);
             remote_port = ntohs(addr_ipv4->sin_port);
         }
@@ -2195,19 +2235,24 @@ int yUdpReadMulti(YSOCKET_MULTI skt, u8 *buffer, int len, IPvX_ADDR *ip_out, u16
     return received;
 }
 
+int yUdpReadMulti(YSOCKET_MULTI skt, u8 *buffer, int len, IPvX_ADDR *ip_out, u16 *port_out, char *errmsg)
+{
+    return yUdpReadBasic(skt->basic, buffer, len, ip_out, port_out, errmsg);
+}
+
 #ifndef IPV6_ADD_MEMBERSHIP
 #define IPV6_ADD_MEMBERSHIP IPV6_JOIN_GROUP
 #endif
 
-int yUdpRegisterMCAST(YSOCKET_MULTI skt, IPvX_ADDR *localAddr, IPvX_ADDR *mcastAddr, int interfaceNo)
+int yUdpRegisterMCASTBasic(YSOCKET skt, IPvX_ADDR *localAddr, IPvX_ADDR *mcastAddr, int interfaceNo)
 {
     int res = YAPI_SUCCESS;
-    if (skt->ipv6 == 0) {
+    if (isIPv4(localAddr)) {
         struct ip_mreq mcast_membership;
         memset(&mcast_membership, 0, sizeof(mcast_membership));
         mcast_membership.imr_multiaddr.s_addr = mcastAddr->v4.addr.Val;
         mcast_membership.imr_interface.s_addr = localAddr->v4.addr.Val;
-        if (setsockopt(skt->basic, IPPROTO_IP, IP_ADD_MEMBERSHIP, (void*)&mcast_membership, sizeof(mcast_membership)) < 0) {
+        if (setsockopt(skt, IPPROTO_IP, IP_ADD_MEMBERSHIP, (void *)&mcast_membership, sizeof(mcast_membership)) < 0) {
             res = yNetLogErr();
         }
     } else {
@@ -2215,11 +2260,20 @@ int yUdpRegisterMCAST(YSOCKET_MULTI skt, IPvX_ADDR *localAddr, IPvX_ADDR *mcastA
         memset(&mcast_membership6, 0, sizeof(mcast_membership6));
         memcpy(&mcast_membership6.ipv6mr_multiaddr, mcastAddr, sizeof(mcast_membership6.ipv6mr_multiaddr));
         mcast_membership6.ipv6mr_interface = interfaceNo;
-        if (setsockopt(skt->basic, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, (void*)&mcast_membership6, sizeof(mcast_membership6)) < 0) {
+        if (setsockopt(skt, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, (void *)&mcast_membership6, sizeof(mcast_membership6)) < 0) {
             res = yNetLogErr();
         }
     }
     return res;
+}
+
+int yUdpRegisterMCAST(YSOCKET_MULTI skt, IPvX_ADDR *localAddr, IPvX_ADDR *mcastAddr, int interfaceNo)
+{
+    if (!skt->ipv6) {
+        // Make sure the test in yUdpWriteBasic will work properly
+        YASSERT(isIPv4(localAddr), 0);
+    }
+    return yUdpRegisterMCASTBasic(skt->basic, localAddr, mcastAddr, interfaceNo);
 }
 
 /********************************************************************************

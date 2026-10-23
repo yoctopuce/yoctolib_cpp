@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.h version 2.1.16087 (build 76087) $
+ * $Id:yocto_files.h version 2.1.16635 (build 76635) $
  *
  * Declares yFindFiles(), the high-level API for Files functions
  *
@@ -332,6 +332,18 @@ public:
      *         YFileRecord objects returned by get_list().
      */
     virtual int         get_content_crc(string content);
+
+    /**
+     * Returns true if the path given as argument meets the requirements
+     * for use on a Yoctopuce device. This method checks for the
+     * maximum file name length, total path length and forbidden
+     * characters.
+     *
+     * @param path : a string representing a path
+     *
+     * @return a boolean
+     */
+    virtual bool        isValidPath(string path);
 
 
     inline static YFiles *Find(string func)

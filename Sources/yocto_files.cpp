@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.cpp version 2.1.16087 (build 76087) $
+ * $Id:yocto_files.cpp version 2.1.16635 (build 76635) $
  *
  * Implements yFindFiles(), the high-level API for Files functions
  *
@@ -422,6 +422,19 @@ bool YFiles::fileExist(string filename)
  */
 string YFiles::download(string pathname)
 {
+    int idx = 0;
+    int plen = 0;
+    string res;
+    plen = (int)(pathname).length();
+    idx = 0;
+    while ((idx < plen) && pathname.substr(idx, 1) == "/") {
+        idx = idx + 1;
+    }
+    if ((idx < plen) && pathname.substr(idx, 1) == ".") {
+        this->_throw(YAPI_INVALID_ARGUMENT, "Remote file access forbidden");
+        res = string(0, (char)0);
+        return res;
+    }
     return this->_download(pathname);
 }
 
@@ -516,6 +529,43 @@ int YFiles::get_content_crc(string content)
     res = (_bincrc(meta, 0, 4 * blkcnt) ^ ((int) 0xffffffff));
     res = ((res & 0x7fffffff) - 2 * ((res >> 1) & 0x40000000));
     return res;
+}
+
+/**
+ * Returns true if the path given as argument meets the requirements
+ * for use on a Yoctopuce device. This method checks for the
+ * maximum file name length, total path length and forbidden
+ * characters.
+ *
+ * @param path : a string representing a path
+ *
+ * @return a boolean
+ */
+bool YFiles::isValidPath(string path)
+{
+    vector<string> parts;
+    int pathLen = 0;
+    int i = 0;
+    string allowedChars;
+    pathLen = (int)(path).length();
+    if (pathLen > 250) {
+        return false;
+    }
+    parts = _strsplit(path,'/');
+    for (unsigned ii_0 = 0; ii_0 < parts.size(); ii_0++) {
+        if ((int)(parts[ii_0]).length() > 31) {
+            return false;
+        }
+    }
+    allowedChars = "abcdefghijklmnopqrstuvwxyz./ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789_-[]()@";
+    i = 0;
+    while (i < pathLen) {
+        if (_ystrpos(allowedChars, path.substr(i, 1)) < 0) {
+            return false;
+        }
+        i = i + 1;
+    }
+    return true;
 }
 
 YFiles *YFiles::nextFiles(void)

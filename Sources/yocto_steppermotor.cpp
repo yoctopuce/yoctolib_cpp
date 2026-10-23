@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_steppermotor.cpp version 2.1.16087 (build 76087) $
+ *  $Id:yocto_steppermotor.cpp version 2.1.16635 (build 76635) $
  *
  *  Implements yFindStepperMotor(), the high-level API for StepperMotor functions
  *

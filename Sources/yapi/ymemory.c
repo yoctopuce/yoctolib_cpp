@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ymemory.c version 2.1.16087 (build 76087) $
+ * $Id:ymemory.c version 2.1.16635 (build 76635) $
  *
  * Basic memory check function to prevent memory leak
  *
@@ -451,7 +451,7 @@ void *yCallocOrigin(size_t nmemb, size_t xSize, uint32_t origin )
 }
 #endif
 
-
+#if !defined(TEXAS_API)
 int yvsprintf_s(char* dst, unsigned dstsize, const char* fmt, va_list arg)
 {
     int len;
@@ -477,5 +477,5 @@ int ysprintf_s(char* dst, unsigned dstsize, const char* fmt, ...)
     va_end(args);
     return len;
 }
-
+#endif
 

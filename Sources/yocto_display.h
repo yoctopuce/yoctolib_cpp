@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_display.h version 2.1.16087 (build 76087) $
+ * $Id:yocto_display.h version 2.1.16635 (build 76635) $
  *
  * Declares yFindDisplay(), the high-level API for Display functions
  *
@@ -172,6 +172,20 @@ typedef enum {
     } Y_ALIGN;
     #endif
 
+    #ifndef _Y_QRMODE
+    #define _Y_QRMODE
+    typedef enum {
+        Y_QRMODE_UPCASE_ECCL = 0 ,
+        Y_QRMODE_UPCASE_ECCM = 1 ,
+        Y_QRMODE_UPCASE_ECCQ = 2 ,
+        Y_QRMODE_UPCASE_ECCH = 3 ,
+        Y_QRMODE_BYTES_ECCL = 4 ,
+        Y_QRMODE_BYTES_ECCM = 5 ,
+        Y_QRMODE_BYTES_ECCQ = 6 ,
+        Y_QRMODE_BYTES_ECCH = 7
+    } Y_QRMODE;
+    #endif
+
 //--- (end of generated code: YDisplayLayer definitions)
 
 class YDisplay;
@@ -230,6 +244,14 @@ public:
     static const Y_ALIGN ALIGN_CENTER_RIGHT = Y_ALIGN_CENTER_RIGHT;
     static const Y_ALIGN ALIGN_BASELINE_RIGHT = Y_ALIGN_BASELINE_RIGHT;
     static const Y_ALIGN ALIGN_BOTTOM_RIGHT = Y_ALIGN_BOTTOM_RIGHT;
+    static const Y_QRMODE QRMODE_UPCASE_ECCL = Y_QRMODE_UPCASE_ECCL;
+    static const Y_QRMODE QRMODE_UPCASE_ECCM = Y_QRMODE_UPCASE_ECCM;
+    static const Y_QRMODE QRMODE_UPCASE_ECCQ = Y_QRMODE_UPCASE_ECCQ;
+    static const Y_QRMODE QRMODE_UPCASE_ECCH = Y_QRMODE_UPCASE_ECCH;
+    static const Y_QRMODE QRMODE_BYTES_ECCL = Y_QRMODE_BYTES_ECCL;
+    static const Y_QRMODE QRMODE_BYTES_ECCM = Y_QRMODE_BYTES_ECCM;
+    static const Y_QRMODE QRMODE_BYTES_ECCQ = Y_QRMODE_BYTES_ECCQ;
+    static const Y_QRMODE QRMODE_BYTES_ECCH = Y_QRMODE_BYTES_ECCH;
 
     virtual bool        must_be_flushed(void);
 
@@ -502,6 +524,32 @@ public:
      * On failure, throws an exception or returns a negative error code.
      */
     virtual int         drawGIF(int x,int y,string gifimage);
+
+    /**
+     * Displays a QR code at the specified position on the layer. You can choose from several
+     * QR code representation modes, depending on the desired content type (restricted alphabet
+     * vs. all characters) and the error correction level (ECC level, which can be Low, Medium,
+     * Quartile, or High). A code with a full character set and a higher error correction level is
+     * larger than a code with a limited character set and a low error correction level. You can
+     * precalculate the size of the QR code before displaying it by calling this function with
+     * a zoom factor of zero.
+     *
+     * @param x : the distance in pixels from the left edge of the layer to the left edge of the QR code
+     * @param y : the distance in pixels from the top edge of the layer to the top edge of the QR code
+     * @param mode : the QR code encoding mode, selected from the enumeration YDisplayLayer::QRMODE:
+     *         YDisplayLayer::QRMODE_BYTES_ECCH, YDisplayLayer::QRMODE_BYTES_ECCQ,
+     *         YDisplayLayer::QRMODE_BYTES_ECCM, YDisplayLayer::QRMODE_BYTES_ECCL,
+     *         YDisplayLayer::QRMODE_UPCASE_ECCH, YDisplayLayer::QRMODE_UPCASE_ECCQ,
+     *         YDisplayLayer::QRMODE_UPCASE_ECCM, YDisplayLayer::QRMODE_UPCASE_ECCL.
+     * @param zoom : the magnification factor, between 0 (not displayed) and 16
+     *         (each point of the QR code is represented by 16x16 pixels on the screen).
+     * @param text : the text to encode in the QR code
+     *
+     * @return the size of one side of the QR code in pixels if successful.
+     *
+     * On failure, throws an exception or returns a negative error code.
+     */
+    virtual int         drawQRCode(int x,int y,Y_QRMODE mode,int zoom,string text);
 
     /**
      * Draws a bitmap at the specified position. The bitmap is provided as a binary object,
@@ -1042,6 +1090,7 @@ public:
 
     /**
      * Changes the model of display to match the connected display panel.
+     * Value examples:  "E2_266_KS0_C1" , "E2_290_QS_0F22 , "E2_370_KS_0C1", "E2_417_KS_0D0" etc..
      * This function has no effect if the module does not support the selected
      * display panel. Remember to call the saveToFlash()
      * method of the module if the modification must be kept.

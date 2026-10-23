@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_magnetometer.cpp version 2.1.16087 (build 76087) $
+ *  $Id:yocto_magnetometer.cpp version 2.1.16635 (build 76635) $
  *
  *  Implements yFindMagnetometer(), the high-level API for Magnetometer functions
  *

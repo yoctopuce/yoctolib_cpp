@@ -15,6 +15,7 @@ set(MBEDTLS_C_FILES
 	mbedtls/library/ssl_cookie.c
 	mbedtls/library/ssl_debug_helpers_generated.c
 	mbedtls/library/ssl_msg.c
+	mbedtls/library/ssl_ticket.c
 	mbedtls/library/ssl_tls.c
 	mbedtls/library/ssl_tls12_client.c
 	mbedtls/library/ssl_tls12_server.c

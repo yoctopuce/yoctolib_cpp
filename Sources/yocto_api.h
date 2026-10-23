@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.h version 2.1.16087 (build 76087) $
+ * $Id:yocto_api.h version 2.1.16635 (build 76635) $
  *
  * High-level programming interface, common to all modules
  *
@@ -535,14 +535,15 @@ public:
     virtual int         GetDeviceListValidity(void);
 
     /**
-     * Returns the path to the dynamic YAPI library. This function is useful for debugging problems loading the
-     * dynamic library YAPI:: This function is supported by the C#, Python and VB languages. The other
-     * libraries return an
-     * empty string.
+     * Returns the path to the dynamic YAPI library. This function is useful for debugging
+     * problems loading the dynamic library YAPI:: This function is supported by the C#,
+     * Python and VB languages. The other libraries return an empty string.
      *
      * @return a string containing the path of the YAPI dynamic library.
      */
     virtual string      GetYAPISharedLibraryPath(void);
+
+    virtual string      _utf8Decode(string utf8buff,int fromPos,int fromLen);
 
     /**
      * Adds a UDEV rule which authorizes all users to access Yoctopuce modules
@@ -1120,10 +1121,9 @@ public:
         return YAPI::_yapiContext.GetDeviceListValidity();
     }
     /**
-     * Returns the path to the dynamic YAPI library. This function is useful for debugging problems loading the
-     * dynamic library YAPI:: This function is supported by the C#, Python and VB languages. The other
-     * libraries return an
-     * empty string.
+     * Returns the path to the dynamic YAPI library. This function is useful for debugging
+     * problems loading the dynamic library YAPI:: This function is supported by the C#,
+     * Python and VB languages. The other libraries return an empty string.
      *
      * @return a string containing the path of the YAPI dynamic library.
      */
@@ -1134,6 +1134,14 @@ public:
             YAPI::InitAPI(0, errmsg);
         }
         return YAPI::_yapiContext.GetYAPISharedLibraryPath();
+    }
+    inline static string _utf8Decode(string utf8buff,int fromPos,int fromLen)
+    {
+        if (!YAPI::_apiInitialized) {
+            string errmsg;
+            YAPI::InitAPI(0, errmsg);
+        }
+        return YAPI::_yapiContext._utf8Decode(utf8buff, fromPos, fromLen);
     }
     /**
      * Adds a UDEV rule which authorizes all users to access Yoctopuce modules

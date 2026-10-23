@@ -316,6 +316,9 @@
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_msg.c">
       <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_ticket.c">
+      <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\Sources\yapi\mbedtls\library\ssl_tls.c">
       <Filter>Yoctopuce\yapi\MbedTLS\library</Filter>
     </ClCompile>

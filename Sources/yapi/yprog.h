@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.h version 2.1.16087 (build 76087) $
+ * $Id:yprog.h version 2.1.16635 (build 76635) $
  *
  * Declaration of firmware upgrade functions
  *
@@ -314,7 +314,7 @@ int getProgressPercent(PROGRESS_FLASH_PHASE phase, u32 cputype);
 #ifdef EMBEDDED_API
 #define FLASH_ERRMSG_LEN        56
 #else
-#define FLASH_ERRMSG_LEN        YOCTO_ERRMSG_LEN
+#define FLASH_ERRMSG_LEN        (2*YOCTO_ERRMSG_LEN)
 #endif
 
 

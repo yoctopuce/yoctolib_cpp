@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.h version 2.1.16087 (build 76087) $
+ * $Id:yapi.h version 2.1.16635 (build 76635) $
  *
  * Declaration of public entry points to the low-level API
  *
@@ -1169,6 +1169,7 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiUpdateFirmwareEx(const char* serial, const cha
 
 int YAPI_FUNCTION_EXPORT yapiJsonDecodeString(const char* json_string, char* output);
 int YAPI_FUNCTION_EXPORT yapiJsonGetPath(const char* path, const char* json_data, int json_size, const char** result, char* errmsg);
+int YAPI_FUNCTION_EXPORT yapiUtf8Decode(const char *utf8_buffer, int inputPos, int inputSize, char *output);
 
 
 /*****************************************************************************

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yprog.c version 2.1.16087 (build 76087) $
+ * $Id:yprog.c version 2.1.16635 (build 76635) $
  *
  * Implementation of firmware upgrade functions
  *
@@ -373,7 +373,7 @@ int ypGetBootloaderReply(BootloaderSt *dev, char *errmsg)
         yFree(ptr);
         return 0;
     }
-    return YAPI_TIMEOUT; // not a fatal error, handled by caller
+    return YERR(YAPI_TIMEOUT); // not a fatal error, handled by caller
 }
 #endif
 
@@ -564,7 +564,7 @@ static void osProgLogProgressEx(FIRMWARE_CONTEXT *fctx, const char *fileid, int 
             YSPRINTF(log, 512, "%s:%d:(%d%%) %s\n", fileid, line, prog, msg);
             if (strcmp(last_log, log)) {
                 printf("%s:%d:(%d%%) %s\n", fileid, line, prog, msg);
-                strcpy(last_log, log);
+                YSTRCPY(last_log, sizeof(last_log), log);
             }
         }
 #endif
@@ -936,6 +936,112 @@ static int uFlashZone(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
     return 0;
 }
 
+
+static int uFlashZoneTI(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
+{
+    u16 datasize;
+    u32 instr_addr;
+    char msg[FLASH_ERRMSG_LEN];
+#ifndef EMBEDDED_API
+    char fullmsg[YOCTO_ERRMSG_LEN];
+#endif
+    switch (fctx->zst) {
+    case FLASH_ZONE_START:
+        if (fctx->currzone == fctx->bynHead.v6.ROM_nb_zone) {
+            fctx->stepA = FLASH_GET_INFO_BFOR_REBOOT;
+            fctx->stepB = 0;
+            fctx->zOfs = FLASH_NB_REBOOT_RETRY;
+            return 0;
+        }
+        uGetFirmwareBynZone(fctx, fctx->zOfs, &fctx->bz);
+        YSTRCPY(msg, FLASH_ERRMSG_LEN, "Flash zone");
+#if defined(DEBUG_FIRMWARE)
+#ifdef EMBEDDED_API
+        {
+            char *p = msg + 10;
+            *p++ = ' ';
+            u16toa(fctx->currzone, p);
+            p += ystrlen(p);
+            *p++ = ':';
+            u32toa(fctx->zOfs, p);
+            p += ystrlen(p);
+        }
+#else
+        YSPRINTF(msg, FLASH_ERRMSG_LEN, "Flash zone %d:%d : %x(%x)", fctx->currzone, fctx->zOfs, fctx->bz.addr_page, fctx->bz.len);
+        dbglog("Start Flash zone %d:%x : %x (%x)\n", fctx->currzone, fctx->zOfs, fctx->bz.addr_page, fctx->bz.len);
+#endif
+#endif
+        uLogProgress(fctx, msg);
+        if ((fctx->bz.addr_page % TEXAS_INSTR_LEN) != 0 || (fctx->bz.len % TEXAS_INSTR_LEN) != 0) {
+            YSTRCPY(fctx->errmsg, FLASH_ERRMSG_LEN, "ProgAlign");
+            return -1;
+        }
+        fctx->zOfs += sizeof(byn_zone);
+        fctx->zNbInstr = fctx->bz.len / TEXAS_INSTR_LEN;
+        fctx->stepB = 0;
+        fctx->zst = FLASH_ZONE_PROG;
+    //no break on purpose
+    case FLASH_ZONE_PROG:
+        if (ypIsSendBootloaderBusy(firm_dev)) {
+            return 0;
+        }
+        memset(&firm_dev->pkt, 0, sizeof(USB_Packet));
+        if (fctx->flags & YPROG_ONLY_VALIDATE) {
+            firm_dev->pkt.prog.pkt.type = PROG_VERIF;
+        } else {
+            firm_dev->pkt.prog.pkt.type = PROG_PROG;
+        }
+        instr_addr = fctx->bz.addr_page / TEXAS_INSTR_LEN + fctx->stepB;
+        firm_dev->pkt.prog.pkt.adress_low = DECODE_U16(instr_addr & 0xffff);
+        firm_dev->pkt.prog.pkt.addres_high = (instr_addr >> 16) & 0xff;
+        firm_dev->pkt.prog.pkt.size = (u8)(fctx->zNbInstr < TEXAS_MAX_INSTR_IN_PACKET ? fctx->zNbInstr : TEXAS_MAX_INSTR_IN_PACKET);
+        datasize = firm_dev->pkt.prog.pkt.size * TEXAS_INSTR_LEN;
+        uGetFirmware(fctx, fctx->zOfs, firm_dev->pkt.prog.pkt.data, datasize);
+#if defined(DEBUG_FIRMWARE) && !defined(EMBEDDED_API)
+        dbglog("Flash zone %d:0x%x star_addr=0x%x  (0x%x -> 0x%x)\n", fctx->currzone, fctx->zOfs, fctx->bz.addr_page, instr_addr *TEXAS_INSTR_LEN, (instr_addr + firm_dev->pkt.prog.pkt.size)* firm_dev->pkt.prog.pkt.size);
+#endif
+        if (ypSendBootloaderCmd(firm_dev, FULL_ERRMSG) < 0) {
+            SET_FLASH_ERRMSG(fctx->errmsg, FLASH_ERRMSG_LEN, "ProgPkt", FULL_ERRMSG);
+            return -1;
+        }
+        fctx->zOfs += datasize;
+        fctx->bz.len -= datasize;
+        fctx->zNbInstr -= firm_dev->pkt.prog.pkt.size;
+        fctx->stepB += firm_dev->pkt.prog.pkt.size;
+        fctx->progress = (s16)(PROGRESS_FLASH_ERASE(firm_dev->devid_family) + (PROGRESS_FLASH_DOFLASH(firm_dev->devid_family) - PROGRESS_FLASH_ERASE(firm_dev->devid_family)) * fctx->zOfs / fctx->len);
+        if (fctx->zNbInstr == 0 ) {
+            //look for confirmation
+            fctx->timeout = ytime() + BLOCK_FLASH_TIMEOUT;
+            fctx->zst = FLASH_ZONE_RECV_OK;
+        }
+        break;
+    case FLASH_ZONE_RECV_OK:
+        if (ypGetBootloaderReply(firm_dev, FULL_ERRMSG) < 0) {
+            if ((s32)(fctx->timeout - ytime()) < 0) {
+#if defined(DEBUG_FIRMWARE) && !defined(EMBEDDED_API)
+                dbglog("Bootloader did not send confirmation for Zone %x Block %x\n", fctx->currzone, fctx->bz.addr_page);
+#endif
+                SET_FLASH_ERRMSG(fctx->errmsg, FLASH_ERRMSG_LEN, "ProgPkt", FULL_ERRMSG);
+                return -1;
+            }
+            return 0;
+        }
+        if (firm_dev->pkt.prog.pkt.type != PROG_VERIF) {
+            YSTRCPY(fctx->errmsg, FLASH_ERRMSG_LEN, "ProgReply");
+            return -1;
+        } else {
+            u16 next_zone =  DECODE_U16(firm_dev->pkt.prog.pkt.adress_low) + 1; // we add 1 since zone 0 is the iv zone
+            fctx->zOfs += fctx->bz.len;
+            fctx->currzone = next_zone;
+            fctx->zst = FLASH_ZONE_START;
+        }
+        break;
+    default:
+        YASSERT(0, fctx->zst);
+    }
+
+    return 0;
+}
 
 #ifndef EMBEDDED_API
 
@@ -1326,7 +1432,7 @@ YPROG_RESULT uFlashDevice(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
             fctx->stepB = ytime();
         } else {
 #ifndef EMBEDDED_API
-            if (firm_dev->ext_total_pages) {
+            if (firm_dev->ext_total_pages || IS_TEXAS_FAMILY(firm_dev->devid_family)) {
                 if (ypGetBootloaderReply(firm_dev, NULL) < 0) {
                     if ((u32)(ytime() - fctx->stepB) < 2000u) {
                         return YPROG_WAITING;
@@ -1342,11 +1448,14 @@ YPROG_RESULT uFlashDevice(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
                     ulogU16((u16)(ytime() - pfctx->stepB));
                     ulog("\n");
 #endif
-                    fctx->progress = PROGRESS_FLASH_VALIDATE_BYN(firm_dev->devid_family) + ((PROGRESS_FLASH_ERASE(firm_dev->devid_family) - PROGRESS_FLASH_VALIDATE_BYN(firm_dev->devid_family)) * fctx->flashPage / firm_dev->ext_total_pages);
-                    uLogProgress(fctx, "Erasing flash");
-                    if (fctx->flashPage < firm_dev->ext_total_pages) {
-                        fctx->stepA = FLASH_ERASE;
-                        break;
+
+                    if (firm_dev->ext_total_pages) {
+                        fctx->progress = PROGRESS_FLASH_VALIDATE_BYN(firm_dev->devid_family) + ((PROGRESS_FLASH_ERASE(firm_dev->devid_family) - PROGRESS_FLASH_VALIDATE_BYN(firm_dev->devid_family)) * fctx->flashPage / firm_dev->ext_total_pages);
+                        uLogProgress(fctx, "Erasing ext flash");
+                        if (fctx->flashPage < firm_dev->ext_total_pages) {
+                            fctx->stepA = FLASH_ERASE;
+                            break;
+                        }
                     }
                 }
             } else
@@ -1363,12 +1472,20 @@ YPROG_RESULT uFlashDevice(FIRMWARE_CONTEXT *fctx, BootloaderSt *firm_dev)
         break;
     case FLASH_DOFLASH:
 #ifdef EMBEDDED_API
-        res = uFlashZone(fctx, firm_dev);
+        if (IS_TEXAS_FAMILY(firm_dev->devid_family)) {
+            res = uFlashZoneTI(fctx, firm_dev);
+        } else {
+            res = uFlashZone(fctx, firm_dev);
+        }
 #else
         if (firm_dev->ext_total_pages) {
             res = uFlashFlash(fctx, firm_dev);
         } else {
-            res = uFlashZone(fctx, firm_dev);
+            if (IS_TEXAS_FAMILY(firm_dev->devid_family)) {
+                res = uFlashZoneTI(fctx, firm_dev);
+            } else {
+                res = uFlashZone(fctx, firm_dev);
+            }
         }
 #endif
         if (res < 0) {

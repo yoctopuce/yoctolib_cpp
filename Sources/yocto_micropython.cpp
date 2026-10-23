@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_micropython.cpp version 2.1.16087 (build 76087) $
+ *  $Id:yocto_micropython.cpp version 2.1.16635 (build 76635) $
  *
  *  Implements yFindMicroPython(), the high-level API for MicroPython functions
  *
@@ -60,6 +60,7 @@ YMicroPython::YMicroPython(const string& func): YFunction(func)
     ,_heapFrag(HEAPFRAG_INVALID)
     ,_xheapUsage(XHEAPUSAGE_INVALID)
     ,_stackUsage(STACKUSAGE_INVALID)
+    ,_vmState(VMSTATE_INVALID)
     ,_currentScript(CURRENTSCRIPT_INVALID)
     ,_startupScript(STARTUPSCRIPT_INVALID)
     ,_startupDelay(STARTUPDELAY_INVALID)
@@ -109,6 +110,9 @@ int YMicroPython::_parseAttr(YJSONObject *json_val)
     }
     if(json_val->has("stackUsage")) {
         _stackUsage =  json_val->getInt("stackUsage");
+    }
+    if(json_val->has("vmState")) {
+        _vmState =  (Y_VMSTATE_enum)json_val->getInt("vmState");
     }
     if(json_val->has("currentScript")) {
         _currentScript =  json_val->getString("currentScript");
@@ -274,6 +278,38 @@ int YMicroPython::get_stackUsage(void)
             }
         }
         res = _stackUsage;
+    } catch (std::exception &) {
+        yLeaveCriticalSection(&_this_cs);
+        throw;
+    }
+    yLeaveCriticalSection(&_this_cs);
+    return res;
+}
+
+/**
+ * Returns the current state of the virtual machine.
+ *
+ * @return a value among YMicroPython::VMSTATE_UNAVAILABLE, YMicroPython::VMSTATE_RESET,
+ * YMicroPython::VMSTATE_PENDING, YMicroPython::VMSTATE_RUNNING, YMicroPython::VMSTATE_PAUSED,
+ * YMicroPython::VMSTATE_IDLE and YMicroPython::VMSTATE_ERROR corresponding to the current state of the
+ * virtual machine
+ *
+ * On failure, throws an exception or returns YMicroPython::VMSTATE_INVALID.
+ */
+Y_VMSTATE_enum YMicroPython::get_vmState(void)
+{
+    Y_VMSTATE_enum res;
+    yEnterCriticalSection(&_this_cs);
+    try {
+        if (_cacheExpiration <= YAPI::GetTickCount()) {
+            if (this->_load_unsafe(YAPI::_yapiContext.GetCacheValidity()) != YAPI_SUCCESS) {
+                {
+                    yLeaveCriticalSection(&_this_cs);
+                    return YMicroPython::VMSTATE_INVALID;
+                }
+            }
+        }
+        res = _vmState;
     } catch (std::exception &) {
         yLeaveCriticalSection(&_this_cs);
         throw;
@@ -641,10 +677,94 @@ int YMicroPython::_invokeValueCallback(string value)
 }
 
 /**
- * Submit MicroPython code for execution in the interpreter.
+ * Submit a short expression to MicroPython interpreter, and return
+ * the output produced by its evaluation.
+ *
+ * There is no implicit reset of the MicroPython virtual machine
+ * with this function: all global symbols defined by code that
+ * has run since last reset can be accessed freely. But if the
+ * interpreter is not at rest when the function is invoked, the
+ * call will fail.
+ *
+ * Use method reset() if you need to start
+ * from a fresh environment before starting the evaluation.
+ *
+ * The expression is limited to about 120 ASCII characters.
+ * If you need to evaluate more complex code, use the exec()
+ * method to define it as a function, check for exec completion
+ * using get_vmState() and then use eval()
+ * actually run that function and capture its output.
+ *
+ * @param pythonExpr : Short Python expression to be evaluated
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+string YMicroPython::eval(string pythonExpr)
+{
+    string state;
+    string content;
+    int endPos = 0;
+    int lenLen = 0;
+    string lenStr;
+    int res = 0;
+    string url;
+    string contentStr;
+    // Make sure the VM is ready to handle the evaluation
+
+    state = (this->get_advertisedValue()).substr(0, 1);
+    if (!(_ystrpos("zix", state) >= 0)) {
+        _throw((YRETCODE)(YAPI_DEVICE_BUSY), "MicroPython VM is not at rest");
+        return "";
+    }
+    // Retrieve current MicroPython console position (avoid transmitting current content if possible)
+    content = this->_download("mpy.txt?pos=2111222333");
+    endPos = (int)(content).size() - 1;
+    while ((endPos >= 0) && (((u8)content[endPos]) != 64)) {
+        endPos = endPos - 1;
+    }
+    if (!(endPos > 0)) {
+        _throw((YRETCODE)(YAPI_IO_ERROR), "failed to download MicroPython logs");
+        return "";
+    }
+    lenLen = (int)(content).size() - endPos - 1;
+    lenStr = YAPI::_utf8Decode(content, endPos + 1, lenLen);
+    // trigger the evaluation
+    res = this->set_command(YapiWrapper::ysprintf("?%s",pythonExpr.c_str()));
+    if (!(res == YAPI_SUCCESS)) {
+        _throw((YRETCODE)(res), "failed to trigger evaluation");
+        return "";
+    }
+    // wait for the evaluation to complete
+    state = (this->get_advertisedValue()).substr(0, 1);
+    while (_ystrpos("ix", state) < 0) {
+        {string ignore_error; YAPI::Sleep(50, ignore_error);};
+        state = (this->get_advertisedValue()).substr(0, 1);
+    }
+    // download the logs after the evaluation
+    url = YapiWrapper::ysprintf("mpy.txt?pos=%s",lenStr.c_str());
+    content = this->_download(url);
+    endPos = (int)(content).size() - 1;
+    while ((endPos >= 0) && (((u8)content[endPos]) != 64)) {
+        endPos = endPos - 1;
+    }
+    if (!(endPos > 0)) {
+        _throw((YRETCODE)(YAPI_IO_ERROR), "failed to download MicroPython logs");
+        return "";
+    }
+    contentStr = YAPI::_utf8Decode(content, 0, endPos - 1);
+    return contentStr;
+}
+
+/**
+ * Submit Python code for execution in the MicroPython interpreter.
  * If the MicroPython interpreter is busy, this function will
  * block until it becomes available. The code is then uploaded,
- * compiled and executed on the fly, without beeing stored on the device filesystem.
+ * compiled unless it is already a MicroPython precompiled file,
+ * and executed on the fly, without beeing stored on the device
+ * filesystem. This method does not wait for the completion
+ * if the code execution.
  *
  * There is no implicit reset of the MicroPython interpreter with
  * this function. Use method reset() if you need to start
@@ -655,14 +775,15 @@ int YMicroPython::_invokeValueCallback(string value)
  * in particular regarding the libraries that can be used. Please refer to
  * the documentation for more details.
  *
- * @param codeName : name of the code file (used for error reporting only)
- * @param mpyCode : MicroPython code to compile and execute
+ * @param codeName : name of the code buffer, with a .py extension
+ *         for source code and a .mpy extension for a precompiled file.
+ * @param mpyCode : binary buffer containing MicroPython code to execute
  *
  * @return YAPI::SUCCESS if the call succeeds.
  *
  * On failure, throws an exception or returns a negative error code.
  */
-int YMicroPython::eval(string codeName,string mpyCode)
+int YMicroPython::exec(string codeName,string mpyCode)
 {
     string fullname;
     int res = 0;
@@ -699,6 +820,29 @@ int YMicroPython::reset(void)
 }
 
 /**
+ * Reset the MicroPython interpreter to its initial state, and start the specified
+ * program, which must have been previously uploaded to the device.
+ *
+ * @param codeFileName : filename of the MicroPython code to run
+ *
+ * @return YAPI::SUCCESS if the call succeeds.
+ *
+ * On failure, throws an exception or returns a negative error code.
+ */
+int YMicroPython::run(string codeFileName)
+{
+    string currentScript;
+
+    currentScript = this->get_currentScript();
+    if (currentScript == codeFileName) {
+        // set_currentScript does nothing when the script name is unchanged,
+        // so in this case we need to force a VM reset
+        this->set_command("Z");
+    }
+    return this->set_currentScript(codeFileName);
+}
+
+/**
  * Clears MicroPython interpreter console log buffer.
  *
  * @return YAPI::SUCCESS if the call succeeds.
@@ -724,15 +868,13 @@ string YMicroPython::get_lastLogs(void)
 {
     string buff;
     int bufflen = 0;
-    string res;
 
     buff = this->_download("mpy.txt");
     bufflen = (int)(buff).size() - 1;
     while ((bufflen > 0) && (((u8)buff[bufflen]) != 64)) {
         bufflen = bufflen - 1;
     }
-    res = buff.substr(0, bufflen);
-    return res;
+    return YAPI::_utf8Decode(buff, 0, bufflen);
 }
 
 /**
@@ -775,11 +917,10 @@ int YMicroPython::_internalEventHandler(string cbVal)
     string url;
     string content;
     int endPos = 0;
-    string contentStr;
-    vector<string> msgArr;
-    int arrLen = 0;
+    int lenLen = 0;
     string lenStr;
-    int arrPos = 0;
+    int msgPos = 0;
+    int msgEnd = 0;
     string logMsg;
     // detect possible power cycle of the reader to clear event pointer
     cbPos = (int)YAPI::_hexStr2Long(cbVal.substr(1, (int)(cbVal).length()-1));
@@ -803,17 +944,17 @@ int YMicroPython::_internalEventHandler(string cbVal)
     }
 
     content = this->_download(url);
-    contentStr = content;
     // look for new position indicator at end of logs
     endPos = (int)(content).size() - 1;
     while ((endPos >= 0) && (((u8)content[endPos]) != 64)) {
         endPos = endPos - 1;
     }
     if (!(endPos > 0)) {
-        _throw((YRETCODE)(YAPI_IO_ERROR), "fail to download micropython logs");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "fail to download MicroPython logs");
         return YAPI_IO_ERROR;
     }
-    lenStr = contentStr.substr(endPos+1, (int)(contentStr).length()-(endPos+1));
+    lenLen = (int)(content).size() - endPos - 1;
+    lenStr = YAPI::_utf8Decode(content, endPos + 1, lenLen);
     // update processed event position pointer
     _logPos = atoi((lenStr).c_str());
     if (_isFirstCb) {
@@ -821,31 +962,44 @@ int YMicroPython::_internalEventHandler(string cbVal)
         _isFirstCb = false;
         return YAPI_SUCCESS;
     }
-    // now generate callbacks for each complete log line
     endPos = endPos - 1;
     if (!(((u8)content[endPos]) == 10)) {
-        _throw((YRETCODE)(YAPI_IO_ERROR), "fail to download micropython logs");
+        _throw((YRETCODE)(YAPI_IO_ERROR), "fail to download MicroPython logs");
         return YAPI_IO_ERROR;
     }
-    contentStr = contentStr.substr(0, endPos);
-    msgArr = _strsplit(contentStr,'\n');
-    arrLen = (int)msgArr.size() - 1;
-    if (arrLen > 0) {
-        logMsg = YapiWrapper::ysprintf("%s%s",_prevPartialLog.c_str(),msgArr[0].c_str());
+    if (endPos == 0) {
+        return YAPI_SUCCESS;
+    }
+    // now generate callbacks for each complete log line
+    msgPos = 0;
+    msgEnd = 0;
+    while ((msgEnd < endPos) && (((u8)content[msgEnd]) != 10)) {
+        msgEnd = msgEnd + 1;
+    }
+    logMsg = YAPI::_utf8Decode(content, msgPos, msgEnd - msgPos);
+    logMsg = YapiWrapper::ysprintf("%s%s",_prevPartialLog.c_str(),logMsg.c_str());
+    if (msgEnd < endPos) {
         if (_logCallback != NULL) {
             _logCallback(this, logMsg);
         }
-        _prevPartialLog = "";
-        arrPos = 1;
-        while (arrPos < arrLen) {
-            logMsg = msgArr[arrPos];
+    } else {
+        _prevPartialLog = logMsg;
+    }
+    while (msgEnd < endPos) {
+        msgPos = msgEnd + 1;
+        msgEnd = msgPos;
+        while ((msgEnd < endPos) && (((u8)content[msgEnd]) != 10)) {
+            msgEnd = msgEnd + 1;
+        }
+        logMsg = YAPI::_utf8Decode(content, msgPos, msgEnd - msgPos);
+        if (msgEnd < endPos) {
             if (_logCallback != NULL) {
                 _logCallback(this, logMsg);
             }
-            arrPos = arrPos + 1;
+        } else {
+            _prevPartialLog = logMsg;
         }
     }
-    _prevPartialLog = YapiWrapper::ysprintf("%s%s",_prevPartialLog.c_str(),msgArr[arrLen].c_str());
     return YAPI_SUCCESS;
 }
 

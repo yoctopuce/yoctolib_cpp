@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: ytcp.h version 2.1.16087 (build 76087) $
+ * $Id:ytcp.h version 2.1.16635 (build 76635) $
  *
  *  Declaration of a client TCP stack
  *
@@ -100,7 +100,8 @@ int yTcpDownload(const char* host, int port, int usessl, const char* url, u8** o
 int yResolveDNS(const char* name, IPvX_ADDR* addr, char* errmsg);
 
 int yTcpOpenBasic(YSOCKET* newskt, const char* host, u16 port, u64 mstimeout, char* errmsg);
-int yTcpOpenBasicEx(YSOCKET* newskt, const IPvX_ADDR* ip, u16 port, u64 mstimeout, char* errmsg);
+int yTcpOpenBasicEx(YSOCKET* newskt, const IPvX_ADDR* ip, u16 port, char* errmsg);
+int yTcpOpenBasicExFinalize(YSOCKET skt);
 void yTcpCloseBasic(YSOCKET skt);
 int yTcpReadBasic(YSOCKET skt, u8* buffer, int len, char* errmsg);
 u32 yTcpGetRcvBufSizeBasic(YSOCKET skt);
@@ -141,6 +142,11 @@ int yTcpReadMulti(YSOCKET_MULTI skt, u8* buffer, int len, char* errmsg);
 u32 yTcpGetRcvBufSizeMulti(YSOCKET_MULTI sock);
 int yTcpWriteMulti(YSOCKET_MULTI skt, const u8* buffer, int len, char* errmsg);
 void yTcpShutdownMulti(void);
+
+int ySocketOpenBindBasic(YSOCKET *newskt, IPvX_ADDR *local_ip, int is_udp, int sin6_scope_id, u16 port, u16 sockFlags);
+int yUdpWriteBasic(YSOCKET skt, IPvX_ADDR *dest_ip, u16 dest_port, const u8 *buffer, int len, char *errmsg);
+int yUdpReadBasic(YSOCKET skt, u8 *buffer, int len, IPvX_ADDR *dest_ip, u16 *dest_port, char *errmsg);
+int yUdpRegisterMCASTBasic(YSOCKET skt, IPvX_ADDR *localAddr, IPvX_ADDR *mcastAddr, int interfaceNo);
 
 int ySocketOpenBindMulti(YSOCKET_MULTI *newskt, IPvX_ADDR *local_ip, int is_udp, int sin6_scope_id, u16 port, u16 sockFlags);
 int yUdpWriteMulti(YSOCKET_MULTI skt, IPvX_ADDR* dest_ip, u16 dest_port, const u8* buffer, int len, char* errmsg);

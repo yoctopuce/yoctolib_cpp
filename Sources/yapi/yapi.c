@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yapi.c version 2.1.16087 (build 76087) $
+ * $Id:yapi.c version 2.1.16635 (build 76635) $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -5052,7 +5052,7 @@ static int yapiCheckLogicalName_internal(const char *name)
 static u16 yapiGetAPIVersion_internal(const char **version, const char **apidate)
 {
     if (version)
-        *version = "2.1.16087";
+        *version = "2.1.16635";
     if (apidate)
         *apidate = YOCTO_API_BUILD_DATE;
 
@@ -6367,6 +6367,33 @@ int yapiJsonGetPath_internal(const char *path, const char *json_data, int json_s
 }
 
 
+static int yapiUtf8Decode_internal(const char *utf8_buffer, int inputPos, int inputSize, char *output)
+{
+    const u8    *src = (const u8 *)utf8_buffer + inputPos;
+    char        *dst = output;
+    u8          c;
+
+    while((c = *src++) != 0 && inputSize > 0) {
+        inputSize--;
+        if (c < 127u) {
+            *dst++ = (char)c;
+        } else if((c == 0xc2u || c == 0xc3u) && (*src & 0xc0) == 0x80 && inputSize > 0) {
+            c = (*src++ & 0x3fu) + (c == 0xc2u ? 0x80u : 0xc0u);
+            *dst++ = (u8)c;
+            inputSize--;
+        } else {
+            *dst++ = (char)0xBF; // use inverted question mark as placeholder
+            while((*src & 0x80) != 0 && inputSize > 0) {
+                src++;
+                inputSize--;
+            }
+        }
+    }
+    *dst++ = 0;
+    return (u32)(dst - output);;
+}
+
+
 typedef struct _fullAttrInfo {
     char func[32];
     char attr[32];
@@ -7309,6 +7336,15 @@ YRETCODE YAPI_FUNCTION_EXPORT yapiGetAllJsonKeys(const char *json_buffer, char *
     YRETCODE res;
     YDLL_CALL_ENTER(trcGetAllJsonKeys);
     res = yapiGetAllJsonKeys_internal(json_buffer, buffer, buffersize, fullsize, errmsg);
+    YDLL_CALL_LEAVE(res);
+    return res;
+}
+
+int YAPI_FUNCTION_EXPORT yapiUtf8Decode(const char *utf8_buffer, int inputPos, int inputSize, char *output)
+{
+    int res;
+    YDLL_CALL_ENTER(trcUtf8Decode);
+    res = yapiUtf8Decode_internal(utf8_buffer, inputPos, inputSize, output);
     YDLL_CALL_LEAVE(res);
     return res;
 }
