@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id:yocto_audioin.h version 2.1.16635 (build 76635) $
+ *  $Id: yocto_audioin.h version 2.1.16695 (build 76695) $
  *
  *  Declares yFindAudioIn(), the high-level API for AudioIn functions
  *

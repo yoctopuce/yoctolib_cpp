@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id:yocto_serialport.cpp version 2.1.16635 (build 76635) $
+ * $Id: yocto_serialport.cpp version 2.1.16695 (build 76695) $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *

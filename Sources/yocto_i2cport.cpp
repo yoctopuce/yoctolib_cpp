@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id:yocto_i2cport.cpp version 2.1.16635 (build 76635) $
+ *  $Id: yocto_i2cport.cpp version 2.1.16695 (build 76695) $
  *
  *  Implements yFindI2cPort(), the high-level API for I2cPort functions
  *

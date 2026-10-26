@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id:yocto_quadraturedecoder.h version 2.1.16635 (build 76635) $
+ *  $Id: yocto_quadraturedecoder.h version 2.1.16695 (build 76695) $
  *
  *  Declares yFindQuadratureDecoder(), the high-level API for QuadratureDecoder functions
  *

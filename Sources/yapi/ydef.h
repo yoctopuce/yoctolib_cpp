@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id:ydef.h version 2.1.16635 (build 76635) $
+ * $Id: ydef.h version 2.1.16695 (build 76695) $
  *
  * Standard definitions common to all yoctopuce projects
  *

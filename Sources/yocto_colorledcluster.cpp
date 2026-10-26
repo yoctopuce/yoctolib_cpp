@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id:yocto_colorledcluster.cpp version 2.1.16635 (build 76635) $
+ *  $Id: yocto_colorledcluster.cpp version 2.1.16695 (build 76695) $
  *
  *  Implements yFindColorLedCluster(), the high-level API for ColorLedCluster functions
  *

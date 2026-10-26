@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id:yocto_genericsensor.cpp version 2.1.16635 (build 76635) $
+ *  $Id: yocto_genericsensor.cpp version 2.1.16695 (build 76695) $
  *
  *  Implements yFindGenericSensor(), the high-level API for GenericSensor functions
  *

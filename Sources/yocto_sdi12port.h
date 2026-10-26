@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id:yocto_sdi12port.h version 2.1.16635 (build 76635) $
+ *  $Id: yocto_sdi12port.h version 2.1.16695 (build 76695) $
  *
  *  Declares yFindSdi12Port(), the high-level API for Sdi12Port functions
  *

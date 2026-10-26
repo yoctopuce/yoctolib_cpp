@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id:yocto_dualpower.cpp version 2.1.16635 (build 76635) $
+ *  $Id: yocto_dualpower.cpp version 2.1.16695 (build 76695) $
  *
  *  Implements yFindDualPower(), the high-level API for DualPower functions
  *

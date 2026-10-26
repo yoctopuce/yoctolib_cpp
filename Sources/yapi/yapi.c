@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id:yapi.c version 2.1.16635 (build 76635) $
+ * $Id: yapi.c version 2.1.16695 (build 76695) $
  *
  * Implementation of public entry points to the low-level API
  *
@@ -5052,7 +5052,7 @@ static int yapiCheckLogicalName_internal(const char *name)
 static u16 yapiGetAPIVersion_internal(const char **version, const char **apidate)
 {
     if (version)
-        *version = "2.1.16635";
+        *version = "2.1.16695";
     if (apidate)
         *apidate = YOCTO_API_BUILD_DATE;
 

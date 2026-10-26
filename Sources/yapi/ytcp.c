@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id:ytcp.c version 2.1.16635 (build 76635) $
+ * $Id: ytcp.c version 2.1.16695 (build 76695) $
  *
  * Implementation of a client TCP stack
  *
@@ -766,6 +766,7 @@ int yTcpOpenBasicEx(YSOCKET *newskt, const IPvX_ADDR *ip, u16 port, char *errmsg
         }
 #else
         if (SOCK_ERR == EINPROGRESS) {
+            *newskt = skt;
             return YAPI_SUCCESS;
         }
 #endif

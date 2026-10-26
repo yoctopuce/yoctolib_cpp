@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id:yocto_temperature.h version 2.1.16635 (build 76635) $
+ *  $Id: yocto_temperature.h version 2.1.16695 (build 76695) $
  *
  *  Declares yFindTemperature(), the high-level API for Temperature functions
  *

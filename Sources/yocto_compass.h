@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id:yocto_compass.h version 2.1.16635 (build 76635) $
+ *  $Id: yocto_compass.h version 2.1.16695 (build 76695) $
  *
  *  Declares yFindCompass(), the high-level API for Compass functions
  *

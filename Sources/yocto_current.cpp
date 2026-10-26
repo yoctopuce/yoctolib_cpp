@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id:yocto_current.cpp version 2.1.16635 (build 76635) $
+ *  $Id: yocto_current.cpp version 2.1.16695 (build 76695) $
  *
  *  Implements yFindCurrent(), the high-level API for Current functions
  *

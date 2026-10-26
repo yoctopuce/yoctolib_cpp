@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id:yocto_longitude.h version 2.1.16635 (build 76635) $
+ *  $Id: yocto_longitude.h version 2.1.16695 (build 76695) $
  *
  *  Declares yFindLongitude(), the high-level API for Longitude functions
  *

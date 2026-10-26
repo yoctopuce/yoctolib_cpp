@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id:yocto_digitalio.cpp version 2.1.16635 (build 76635) $
+ *  $Id: yocto_digitalio.cpp version 2.1.16695 (build 76695) $
  *
  *  Implements yFindDigitalIO(), the high-level API for DigitalIO functions
  *

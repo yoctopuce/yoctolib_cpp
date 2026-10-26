@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id:yocto_lightsensor.h version 2.1.16635 (build 76635) $
+ *  $Id: yocto_lightsensor.h version 2.1.16695 (build 76695) $
  *
  *  Declares yFindLightSensor(), the high-level API for LightSensor functions
  *
